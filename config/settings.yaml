@@ -1,0 +1,10 @@
+pipeline:
+  data_dir: "./data"
+  log_dir: "./logs"
+  duckdb_path: "./data/gridflow.duckdb"
+  default_lookback_hours: 24
+  max_concurrent_requests: 5
+
+quality:
+  null_rate_threshold: 0.05
+  enable_outlier_detection: true

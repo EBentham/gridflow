@@ -1,0 +1,122 @@
+"""DuckDB catalogue management and view registration."""
+
+from __future__ import annotations
+
+import logging
+from pathlib import Path
+
+import duckdb
+
+logger = logging.getLogger(__name__)
+
+
+def get_connection(db_path: Path | str, read_only: bool = False) -> duckdb.DuckDBPyConnection:
+    """Get a DuckDB connection, creating the file if necessary."""
+    db_path = Path(db_path)
+    db_path.parent.mkdir(parents=True, exist_ok=True)
+    return duckdb.connect(str(db_path), read_only=read_only)
+
+
+def init_catalogue(db_path: Path, data_dir: Path) -> None:
+    """Initialise the DuckDB catalogue with views and metadata tables.
+
+    Creates views pointing to Parquet files and metadata tables for
+    pipeline tracking.
+    """
+    con = get_connection(db_path)
+
+    # Create metadata tables
+    con.execute("""
+        CREATE TABLE IF NOT EXISTS pipeline_runs (
+            run_id          VARCHAR PRIMARY KEY,
+            source          VARCHAR NOT NULL,
+            dataset         VARCHAR NOT NULL,
+            operation       VARCHAR NOT NULL,
+            started_at      TIMESTAMP WITH TIME ZONE NOT NULL,
+            completed_at    TIMESTAMP WITH TIME ZONE,
+            status          VARCHAR NOT NULL,
+            rows_in         INTEGER DEFAULT 0,
+            rows_out        INTEGER DEFAULT 0,
+            rows_skipped    INTEGER DEFAULT 0,
+            duration_seconds FLOAT,
+            error_message   VARCHAR,
+            parameters      VARCHAR
+        )
+    """)
+
+    con.execute("""
+        CREATE TABLE IF NOT EXISTS pipeline_watermarks (
+            source      VARCHAR NOT NULL,
+            dataset     VARCHAR NOT NULL,
+            last_end    TIMESTAMP WITH TIME ZONE NOT NULL,
+            updated_at  TIMESTAMP WITH TIME ZONE NOT NULL,
+            PRIMARY KEY (source, dataset)
+        )
+    """)
+
+    con.execute("""
+        CREATE TABLE IF NOT EXISTS quality_reports (
+            id              INTEGER,
+            run_date        TIMESTAMP WITH TIME ZONE,
+            check_name      VARCHAR,
+            dataset         VARCHAR,
+            source          VARCHAR,
+            passed          BOOLEAN,
+            metric          DOUBLE,
+            detail          VARCHAR
+        )
+    """)
+
+    # Register views for silver and gold Parquet files
+    _register_views(con, data_dir)
+
+    con.close()
+    logger.info(f"DuckDB catalogue initialised at {db_path}")
+
+
+def _register_views(con: duckdb.DuckDBPyConnection, data_dir: Path) -> None:
+    """Register DuckDB views pointing to Parquet files on disk."""
+    silver_dir = data_dir / "silver"
+    gold_dir = data_dir / "gold"
+
+    # Silver views
+    if silver_dir.exists():
+        for source_dir in silver_dir.iterdir():
+            if not source_dir.is_dir():
+                continue
+            for dataset_dir in source_dir.iterdir():
+                if not dataset_dir.is_dir():
+                    continue
+                view_name = f"silver_{dataset_dir.name}"
+                pattern = str(dataset_dir / "**" / "*.parquet").replace("\\", "/")
+                _try_create_view(con, view_name, pattern)
+
+    # Gold views
+    if gold_dir.exists():
+        for dataset_dir in gold_dir.iterdir():
+            if not dataset_dir.is_dir():
+                continue
+            view_name = f"gold_{dataset_dir.name}"
+            pattern = str(dataset_dir / "**" / "*.parquet").replace("\\", "/")
+            _try_create_view(con, view_name, pattern)
+
+
+def _try_create_view(
+    con: duckdb.DuckDBPyConnection, view_name: str, pattern: str
+) -> None:
+    """Create a view if the Parquet files exist."""
+    try:
+        con.execute(
+            f"CREATE OR REPLACE VIEW {view_name} AS "
+            f"SELECT * FROM read_parquet('{pattern}', hive_partitioning=true)"
+        )
+        logger.info(f"Registered view: {view_name}")
+    except Exception as e:
+        logger.debug(f"Could not create view {view_name}: {e}")
+
+
+def refresh_views(db_path: Path, data_dir: Path) -> None:
+    """Re-register all views from the current filesystem state."""
+    con = get_connection(db_path)
+    _register_views(con, data_dir)
+    con.close()

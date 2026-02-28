@@ -1,0 +1,36 @@
+{
+  "data": [
+    {
+      "settlementDate": "2024-01-15",
+      "settlementPeriod": 1,
+      "systemSellPrice": 45.50,
+      "systemBuyPrice": 55.00,
+      "netImbalanceVolume": -120.5,
+      "settlementRunType": "SF"
+    },
+    {
+      "settlementDate": "2024-01-15",
+      "settlementPeriod": 2,
+      "systemSellPrice": 46.75,
+      "systemBuyPrice": 56.25,
+      "netImbalanceVolume": 80.3,
+      "settlementRunType": "SF"
+    },
+    {
+      "settlementDate": "2024-01-15",
+      "settlementPeriod": 3,
+      "systemSellPrice": 48.00,
+      "systemBuyPrice": 58.50,
+      "netImbalanceVolume": -45.0,
+      "settlementRunType": "SF"
+    },
+    {
+      "settlementDate": "2024-01-15",
+      "settlementPeriod": 1,
+      "systemSellPrice": 44.00,
+      "systemBuyPrice": 54.00,
+      "netImbalanceVolume": -115.0,
+      "settlementRunType": "II"
+    }
+  ]
+}

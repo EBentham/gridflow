@@ -1,0 +1,49 @@
+sources:
+  elexon:
+    base_url: "https://data.elexon.co.uk/bmrs/api/v1"
+    api_key_env: "ELEXON_API_KEY"
+    api_key_header: "x-api-key"
+    rate_limit_per_second: 10
+    timeout: 30
+    max_retries: 5
+    datasets:
+      system_prices:
+        endpoint: "/balancing/settlement/system-prices"
+        schedule: "hourly"
+        max_query_days: 1
+      generation_by_fuel:
+        endpoint: "/generation/outturn/summary"
+        schedule: "hourly"
+        max_query_days: 1
+
+  entsoe:
+    base_url: "https://web-api.tp.entsoe.eu/api"
+    api_key_env: "ENTSOE_API_KEY"
+    api_key_header: null
+    rate_limit_per_second: 2
+    timeout: 60
+    max_retries: 5
+    datasets:
+      actual_generation:
+        document_type: "A75"
+        process_type: "A16"
+        schedule: "daily"
+        max_query_days: 1
+      crossborder_flows:
+        document_type: "A11"
+        process_type: "A16"
+        schedule: "daily"
+        max_query_days: 1
+
+  entsog:
+    base_url: "https://transparency.entsog.eu/api/v1"
+    api_key_env: "ENTSOG_API_KEY"
+    api_key_header: "x-api-key"
+    rate_limit_per_second: 5
+    timeout: 30
+    max_retries: 5
+    datasets:
+      physical_flows:
+        endpoint: "/operationaldata"
+        schedule: "daily"
+        max_query_days: 30
