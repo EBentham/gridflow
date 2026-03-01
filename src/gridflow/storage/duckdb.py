@@ -70,6 +70,9 @@ def init_catalogue(db_path: Path, data_dir: Path) -> None:
     # Register views for silver and gold Parquet files
     _register_views(con, data_dir)
 
+    # Register SQL-defined gold cross-source views
+    _register_gold_views(con)
+
     con.close()
     logger.info(f"DuckDB catalogue initialised at {db_path}")
 
@@ -115,8 +118,25 @@ def _try_create_view(
         logger.debug(f"Could not create view {view_name}: {e}")
 
 
+def _register_gold_views(con: duckdb.DuckDBPyConnection) -> None:
+    """Execute SQL files from the gold/views directory to create cross-source views."""
+    views_dir = Path(__file__).parent.parent / "gold" / "views"
+    if not views_dir.exists():
+        return
+
+    for sql_file in sorted(views_dir.glob("*.sql")):
+        try:
+            sql = sql_file.read_text()
+            con.execute(sql)
+            logger.info("Registered gold view from: %s", sql_file.name)
+        except Exception as exc:
+            # Views may reference silver tables that don't exist yet; log and continue
+            logger.debug("Could not register gold view %s: %s", sql_file.name, exc)
+
+
 def refresh_views(db_path: Path, data_dir: Path) -> None:
     """Re-register all views from the current filesystem state."""
     con = get_connection(db_path)
     _register_views(con, data_dir)
+    _register_gold_views(con)
     con.close()

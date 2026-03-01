@@ -1,0 +1,49 @@
+"""ENTSO-E Transparency Platform API endpoint definitions."""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+
+
+@dataclass(frozen=True)
+class EntsoeDocType:
+    """ENTSO-E document type definition."""
+
+    document_type: str  # e.g. "A44"
+    process_type: str | None  # e.g. "A01" (day-ahead), "A16" (realised)
+    description: str
+
+
+# ENTSO-E document type registry (dataset name -> EntsoeDocType)
+DOC_TYPES: dict[str, EntsoeDocType] = {
+    "day_ahead_prices": EntsoeDocType("A44", None, "Day-ahead prices"),
+    "actual_load": EntsoeDocType("A65", "A16", "Actual total load"),
+    "load_forecast": EntsoeDocType("A65", "A01", "Day-ahead load forecast"),
+    "actual_generation": EntsoeDocType("A75", "A16", "Actual generation per production type"),
+    "wind_solar_forecast": EntsoeDocType("A69", "A01", "Day-ahead wind / solar forecast"),
+    "cross_border_flows": EntsoeDocType("A88", None, "Physical cross-border flows"),
+    "outages_generation": EntsoeDocType("A80", None, "Unavailability of generation units"),
+    "installed_capacity": EntsoeDocType("A68", "A33", "Installed generation capacity"),
+}
+
+# EIC (Energy Identification Codes) for key bidding zones
+BIDDING_ZONES: dict[str, str] = {
+    "GB": "10YGB----------A",
+    "DE-LU": "10Y1001A1001A82H",
+    "FR": "10YFR-RTE------C",
+    "NL": "10YNL----------L",
+    "BE": "10YBE----------2",
+    "ES": "10YES-REE------0",
+    "IT": "10YIT-GRTN-----B",
+    "DK-1": "10YDK-1--------W",
+    "DK-2": "10YDK-2--------M",
+    "NO-1": "10YNO-1--------2",
+    "SE-1": "10Y1001A1001A44P",
+    "IE-SEM": "10Y1001A1001A59C",
+}
+
+# Default zones to include for each dataset (UK-centric defaults)
+DEFAULT_ZONES: list[str] = ["GB", "FR", "NL", "BE", "DE-LU", "IE-SEM"]
+
+# ENTSO-E API datetime format
+ENTSOE_DT_FORMAT = "%Y%m%d%H%M"

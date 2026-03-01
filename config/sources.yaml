@@ -1,9 +1,9 @@
 sources:
   elexon:
     base_url: "https://data.elexon.co.uk/bmrs/api/v1"
-    api_key_env: "ELEXON_API_KEY"
-    api_key_header: "x-api-key"
-    rate_limit_per_second: 10
+    api_key_env: ""
+    api_key_header: ""
+    rate_limit_per_second: 2
     timeout: 30
     max_retries: 5
     datasets:
@@ -11,34 +11,180 @@ sources:
         endpoint: "/balancing/settlement/system-prices"
         schedule: "hourly"
         max_query_days: 1
+      boal:
+        endpoint: "/datasets/BOAL"
+        schedule: "hourly"
+        max_query_days: 1
+      bod:
+        endpoint: "/datasets/BOD"
+        schedule: "hourly"
+        max_query_days: 1
+      disbsad:
+        endpoint: "/datasets/DISBSAD"
+        schedule: "daily"
+        max_query_days: 1
+      freq:
+        endpoint: "/datasets/FREQ"
+        schedule: "hourly"
+        max_query_days: 1
+      fuelhh:
+        endpoint: "/datasets/FUELHH"
+        schedule: "hourly"
+        max_query_days: 1
+      fuelinst:
+        endpoint: "/datasets/FUELINST"
+        schedule: "hourly"
+        max_query_days: 1
+      imbalngc:
+        endpoint: "/datasets/IMBALNGC"
+        schedule: "hourly"
+        max_query_days: 1
+      mid:
+        endpoint: "/datasets/MID"
+        schedule: "hourly"
+        max_query_days: 1
+      netbsad:
+        endpoint: "/datasets/NETBSAD"
+        schedule: "daily"
+        max_query_days: 1
+      ndf:
+        endpoint: "/datasets/NDF"
+        schedule: "daily"
+        max_query_days: 1
+      ndfd:
+        endpoint: "/datasets/NDFD"
+        schedule: "daily"
+        max_query_days: 1
+      pn:
+        endpoint: "/datasets/PN"
+        schedule: "hourly"
+        max_query_days: 1
+      melngc:
+        endpoint: "/datasets/MELNGC"
+        schedule: "hourly"
+        max_query_days: 1
+      fou2t14d:
+        endpoint: "/datasets/FOU2T14D"
+        schedule: "daily"
+        max_query_days: 1
+      uou2t14d:
+        endpoint: "/datasets/UOU2T14D"
+        schedule: "daily"
+        max_query_days: 1
+      windfor:
+        endpoint: "/datasets/WINDFOR"
+        schedule: "hourly"
+        max_query_days: 1
+      temp:
+        endpoint: "/datasets/TEMP"
+        schedule: "daily"
+        max_query_days: 1
       generation_by_fuel:
         endpoint: "/generation/outturn/summary"
         schedule: "hourly"
         max_query_days: 1
+      indicative_imbalance_volumes:
+        endpoint: "/balancing/settlement/indicative-imbalance-volumes"
+        schedule: "hourly"
+        max_query_days: 1
+      bmunits_reference:
+        endpoint: "/reference/bmunits/all"
+        schedule: "weekly"
+        max_query_days: 0
+
+  open_meteo:
+    base_url: "https://api.open-meteo.com/v1"
+    api_key_env: ""
+    api_key_header: ""
+    rate_limit_per_second: 5
+    timeout: 30
+    max_retries: 3
+    datasets:
+      historical:
+        endpoint: "archive"
+        schedule: "daily"
+        max_query_days: 30
+      forecast:
+        endpoint: "forecast"
+        schedule: "hourly"
+        max_query_days: 7
 
   entsoe:
-    base_url: "https://web-api.tp.entsoe.eu/api"
+    base_url: "https://web-api.tp.entsoe.eu"
     api_key_env: "ENTSOE_API_KEY"
-    api_key_header: null
-    rate_limit_per_second: 2
+    api_key_header: ""
+    rate_limit_per_second: 6
     timeout: 60
     max_retries: 5
     datasets:
+      day_ahead_prices:
+        document_type: "A44"
+        schedule: "daily"
+        max_query_days: 365
+      actual_load:
+        document_type: "A65"
+        process_type: "A16"
+        schedule: "daily"
+        max_query_days: 365
+      load_forecast:
+        document_type: "A65"
+        process_type: "A01"
+        schedule: "daily"
+        max_query_days: 365
       actual_generation:
         document_type: "A75"
         process_type: "A16"
         schedule: "daily"
         max_query_days: 1
-      crossborder_flows:
-        document_type: "A11"
-        process_type: "A16"
+      wind_solar_forecast:
+        document_type: "A69"
+        process_type: "A01"
         schedule: "daily"
         max_query_days: 1
+      cross_border_flows:
+        document_type: "A88"
+        schedule: "daily"
+        max_query_days: 365
+      outages_generation:
+        document_type: "A80"
+        schedule: "daily"
+        max_query_days: 365
+      installed_capacity:
+        document_type: "A68"
+        process_type: "A33"
+        schedule: "weekly"
+        max_query_days: 365
+
+  gie_agsi:
+    base_url: "https://agsi.gie.eu"
+    api_key_env: "GIE_API_KEY"
+    api_key_header: "x-key"
+    rate_limit_per_second: 5
+    timeout: 30
+    max_retries: 3
+    datasets:
+      storage:
+        endpoint: "/api"
+        schedule: "daily"
+        max_query_days: 30
+
+  gie_alsi:
+    base_url: "https://alsi.gie.eu"
+    api_key_env: "GIE_API_KEY"
+    api_key_header: "x-key"
+    rate_limit_per_second: 5
+    timeout: 30
+    max_retries: 3
+    datasets:
+      lng:
+        endpoint: "/api"
+        schedule: "daily"
+        max_query_days: 30
 
   entsog:
     base_url: "https://transparency.entsog.eu/api/v1"
-    api_key_env: "ENTSOG_API_KEY"
-    api_key_header: "x-api-key"
+    api_key_env: ""
+    api_key_header: ""
     rate_limit_per_second: 5
     timeout: 30
     max_retries: 5
@@ -47,3 +193,16 @@ sources:
         endpoint: "/operationaldata"
         schedule: "daily"
         max_query_days: 30
+
+  neso:
+    base_url: "https://api.carbonintensity.org.uk"
+    api_key_env: ""
+    api_key_header: ""
+    rate_limit_per_second: 10
+    timeout: 30
+    max_retries: 3
+    datasets:
+      carbon_intensity:
+        endpoint: "/intensity"
+        schedule: "hourly"
+        max_query_days: 14

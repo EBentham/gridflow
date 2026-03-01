@@ -1,0 +1,40 @@
+{
+  "data": [
+    {
+      "bmUnit": "T_DRAXX-1",
+      "name": "Drax Power Station Unit 1",
+      "fuelType": "BIOMASS",
+      "registeredCapacity": 645.0,
+      "companyName": "Drax Power Ltd",
+      "gspGroupId": "_A",
+      "nationalGridBmUnit": "DRAXX-1"
+    },
+    {
+      "bmUnit": "T_DRAXX-2",
+      "name": "Drax Power Station Unit 2",
+      "fuelType": "BIOMASS",
+      "registeredCapacity": 645.0,
+      "companyName": "Drax Power Ltd",
+      "gspGroupId": "_A",
+      "nationalGridBmUnit": "DRAXX-2"
+    },
+    {
+      "bmUnit": "T_RATS-1",
+      "name": "Ratcliffe on Soar Power Station Unit 1",
+      "fuelType": "COAL",
+      "registeredCapacity": 500.0,
+      "companyName": "Uniper UK Ltd",
+      "gspGroupId": "_C",
+      "nationalGridBmUnit": "RATS-1"
+    },
+    {
+      "bmUnit": "E_ABTH-7",
+      "name": "Aberthaw B Power Station Unit 7",
+      "fuelType": "COAL",
+      "registeredCapacity": 490.0,
+      "companyName": "RWE Generation UK plc",
+      "gspGroupId": "_K",
+      "nationalGridBmUnit": "ABTH-7"
+    }
+  ]
+}

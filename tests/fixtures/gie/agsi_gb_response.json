@@ -1,0 +1,54 @@
+{
+  "page": 1,
+  "pageSize": 300,
+  "total": 3,
+  "name": "United Kingdom",
+  "type": "country",
+  "data": [
+    {
+      "gasDayStart": "2024-01-15",
+      "gasInStorage": "28500.50",
+      "withdrawal": "1200.30",
+      "injection": "0.00",
+      "workingGasVolume": "35000.00",
+      "trend": "-3.25",
+      "full": "81.4",
+      "name": "United Kingdom",
+      "code": "GB",
+      "url": "GB",
+      "countryCode": "GB",
+      "type": "storage",
+      "status": "E"
+    },
+    {
+      "gasDayStart": "2024-01-14",
+      "gasInStorage": "29700.80",
+      "withdrawal": "1350.60",
+      "injection": "0.00",
+      "workingGasVolume": "35000.00",
+      "trend": "-4.10",
+      "full": "84.9",
+      "name": "United Kingdom",
+      "code": "GB",
+      "url": "GB",
+      "countryCode": "GB",
+      "type": "storage",
+      "status": "E"
+    },
+    {
+      "gasDayStart": "2024-01-13",
+      "gasInStorage": "31050.20",
+      "withdrawal": "980.10",
+      "injection": "0.00",
+      "workingGasVolume": "35000.00",
+      "trend": "-2.80",
+      "full": "88.7",
+      "name": "United Kingdom",
+      "code": "GB",
+      "url": "GB",
+      "countryCode": "GB",
+      "type": "storage",
+      "status": "E"
+    }
+  ]
+}

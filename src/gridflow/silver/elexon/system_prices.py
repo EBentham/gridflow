@@ -4,8 +4,7 @@ from __future__ import annotations
 
 import json
 import logging
-from datetime import date, datetime, timezone
-from pathlib import Path
+from datetime import UTC, date, datetime
 
 import polars as pl
 
@@ -108,7 +107,7 @@ class SystemPriceTransformer(BaseSilverTransformer):
         df = self._resolve_runs(df)
 
         # Add metadata columns
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         df = df.with_columns([
             pl.lit("elexon").alias("data_provider"),
             pl.lit(now).cast(pl.Datetime("us", "UTC")).alias("ingested_at"),

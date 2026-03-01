@@ -1,0 +1,43 @@
+{
+  "data": [
+    {
+      "settlementDate": "2024-01-15",
+      "settlementPeriod": 10,
+      "bmUnit": "T_DRAXX-1",
+      "acceptanceNumber": 1001,
+      "acceptanceTime": "2024-01-15T04:30:00Z",
+      "deemedBoFlag": false,
+      "soFlag": true,
+      "storProviderFlag": false,
+      "rrFlag": false,
+      "levelFrom": 0.0,
+      "levelTo": 400.0
+    },
+    {
+      "settlementDate": "2024-01-15",
+      "settlementPeriod": 10,
+      "bmUnit": "T_DRAXX-2",
+      "acceptanceNumber": 1002,
+      "acceptanceTime": "2024-01-15T04:35:00Z",
+      "deemedBoFlag": false,
+      "soFlag": false,
+      "storProviderFlag": false,
+      "rrFlag": false,
+      "levelFrom": 0.0,
+      "levelTo": 350.0
+    },
+    {
+      "settlementDate": "2024-01-15",
+      "settlementPeriod": 11,
+      "bmUnit": "T_DRAXX-1",
+      "acceptanceNumber": 1003,
+      "acceptanceTime": "2024-01-15T05:00:00Z",
+      "deemedBoFlag": false,
+      "soFlag": true,
+      "storProviderFlag": false,
+      "rrFlag": false,
+      "levelFrom": 100.0,
+      "levelTo": 400.0
+    }
+  ]
+}

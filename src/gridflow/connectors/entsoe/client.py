@@ -1,0 +1,205 @@
+"""ENTSO-E Transparency Platform API connector."""
+
+from __future__ import annotations
+
+import logging
+from datetime import datetime
+from typing import Any
+
+import httpx
+
+from gridflow.config.settings import SourceConfig
+from gridflow.connectors.base import BaseConnector, RawResponse
+from gridflow.connectors.entsoe.endpoints import (
+    BIDDING_ZONES,
+    DEFAULT_ZONES,
+    DOC_TYPES,
+    ENTSOE_DT_FORMAT,
+)
+from gridflow.connectors.registry import register_connector
+from gridflow.utils.retry import RETRY_POLICY
+
+logger = logging.getLogger(__name__)
+
+# Cross-border flow zone pairs (from_zone -> [to_zones])
+# Only GB interconnectors are included by default
+_FLOW_PAIRS: list[tuple[str, str]] = [
+    ("GB", "FR"),
+    ("GB", "NL"),
+    ("GB", "BE"),
+    ("GB", "IE-SEM"),
+    ("FR", "BE"),
+    ("FR", "DE-LU"),
+    ("NL", "DE-LU"),
+    ("NL", "BE"),
+]
+
+_ENTSOE_API_PATH = "/api"
+
+
+class EntsoeConnector(BaseConnector):
+    """Connector for the ENTSO-E Transparency Platform API.
+
+    Authentication is via query parameter (``securityToken``) rather than
+    an HTTP header, so ``_auth_headers()`` returns an empty dict and the
+    token is injected into every request's query params.
+    """
+
+    source_name = "entsoe"
+
+    def __init__(self, config: SourceConfig) -> None:
+        super().__init__(config)
+
+    # ------------------------------------------------------------------
+    # Auth: ENTSO-E uses query-param auth, not headers
+    # ------------------------------------------------------------------
+
+    def _auth_headers(self) -> dict[str, str]:
+        return {}
+
+    async def __aenter__(self) -> EntsoeConnector:
+        import asyncio
+
+        self._semaphore = asyncio.Semaphore(self.config.rate_limit_per_second)
+        self._client = httpx.AsyncClient(
+            base_url=self.config.base_url,
+            timeout=self.config.timeout,
+            # No auth headers — token goes in query params
+        )
+        return self
+
+    # ------------------------------------------------------------------
+    # Public interface
+    # ------------------------------------------------------------------
+
+    def list_datasets(self) -> list[str]:
+        return list(DOC_TYPES.keys())
+
+    async def fetch(
+        self,
+        dataset: str,
+        start: datetime,
+        end: datetime,
+        **params: Any,
+    ) -> list[RawResponse]:
+        """Fetch XML data for a date range from ENTSO-E.
+
+        Dispatches per-zone (or per-zone-pair for cross-border flows).
+        """
+        if dataset not in DOC_TYPES:
+            raise ValueError(
+                f"Unknown ENTSO-E dataset: {dataset!r}. "
+                f"Available: {list(DOC_TYPES.keys())}"
+            )
+
+        doc_type = DOC_TYPES[dataset]
+        period_start = start.strftime(ENTSOE_DT_FORMAT)
+        period_end = end.strftime(ENTSOE_DT_FORMAT)
+
+        responses: list[RawResponse] = []
+
+        if dataset == "cross_border_flows":
+            # Fetch one response per (in, out) zone pair
+            for in_zone, out_zone in _FLOW_PAIRS:
+                in_mrid = BIDDING_ZONES.get(in_zone)
+                out_mrid = BIDDING_ZONES.get(out_zone)
+                if not in_mrid or not out_mrid:
+                    continue
+                resp = await self._fetch_zone(
+                    dataset=dataset,
+                    doc_type_code=doc_type.document_type,
+                    process_type=doc_type.process_type,
+                    in_domain=in_mrid,
+                    out_domain=out_mrid,
+                    period_start=period_start,
+                    period_end=period_end,
+                )
+                responses.append(resp)
+        else:
+            # Fetch one response per bidding zone
+            for zone in DEFAULT_ZONES:
+                mrid = BIDDING_ZONES.get(zone)
+                if not mrid:
+                    continue
+                resp = await self._fetch_zone(
+                    dataset=dataset,
+                    doc_type_code=doc_type.document_type,
+                    process_type=doc_type.process_type,
+                    in_domain=mrid,
+                    out_domain=mrid,
+                    period_start=period_start,
+                    period_end=period_end,
+                )
+                responses.append(resp)
+
+        logger.info(
+            "Fetched %d responses for entsoe/%s from %s to %s",
+            len(responses),
+            dataset,
+            start,
+            end,
+        )
+        return responses
+
+    # ------------------------------------------------------------------
+    # Internal helpers
+    # ------------------------------------------------------------------
+
+    async def _fetch_zone(
+        self,
+        *,
+        dataset: str,
+        doc_type_code: str,
+        process_type: str | None,
+        in_domain: str,
+        out_domain: str,
+        period_start: str,
+        period_end: str,
+    ) -> RawResponse:
+        """Fetch a single zone (or zone pair) response from the ENTSO-E API."""
+        query_params: dict[str, str] = {
+            "documentType": doc_type_code,
+            "in_Domain.mRID": in_domain,
+            "out_Domain.mRID": out_domain,
+            "periodStart": period_start,
+            "periodEnd": period_end,
+        }
+        if process_type:
+            query_params["processType"] = process_type
+        if self.config.api_key:
+            query_params["securityToken"] = self.config.api_key
+
+        raw = await self._request(_ENTSOE_API_PATH, query_params)
+        return RawResponse(
+            body=raw.content,
+            content_type=raw.headers.get("content-type", "text/xml"),
+            source="entsoe",
+            dataset=dataset,
+            request_url=str(raw.url),
+            request_params=dict(query_params),
+            api_version="v1",
+            http_status=raw.status_code,
+        )
+
+    @RETRY_POLICY
+    async def _request(
+        self, path: str, params: dict[str, Any]
+    ) -> httpx.Response:
+        """Make a rate-limited, retried HTTP GET request."""
+        if self._client is None:
+            raise RuntimeError(
+                "Connector not initialized. Use 'async with' context manager."
+            )
+        if self._semaphore is None:
+            raise RuntimeError(
+                "Semaphore not initialized. Use 'async with' context manager."
+            )
+
+        async with self._semaphore:
+            resp = await self._client.get(path, params=params)
+            resp.raise_for_status()
+            return resp
+
+
+# Register connector
+register_connector("entsoe", EntsoeConnector)

@@ -1,0 +1,34 @@
+{
+  "data": [
+    {
+      "settlementDate": "2024-01-15",
+      "settlementPeriod": 1,
+      "id": "DISBSAD-001",
+      "soFlag": true,
+      "storProviderFlag": false,
+      "component": "ENERGY",
+      "cost": 1250.50,
+      "volume": 15.0
+    },
+    {
+      "settlementDate": "2024-01-15",
+      "settlementPeriod": 1,
+      "id": "DISBSAD-002",
+      "soFlag": false,
+      "storProviderFlag": true,
+      "component": "STOR",
+      "cost": -800.0,
+      "volume": -10.0
+    },
+    {
+      "settlementDate": "2024-01-15",
+      "settlementPeriod": 2,
+      "id": "DISBSAD-003",
+      "soFlag": true,
+      "storProviderFlag": false,
+      "component": "ENERGY",
+      "cost": 2100.0,
+      "volume": 25.0
+    }
+  ]
+}

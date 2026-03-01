@@ -1,0 +1,25 @@
+{
+  "data": [
+    {
+      "settlementDate": "2024-01-15",
+      "settlementPeriod": 1,
+      "dataProviderId": "N2EXMIP",
+      "midPrice": 65.32,
+      "volume": 12500.0
+    },
+    {
+      "settlementDate": "2024-01-15",
+      "settlementPeriod": 1,
+      "dataProviderId": "APXMIDP",
+      "midPrice": 64.87,
+      "volume": 8200.0
+    },
+    {
+      "settlementDate": "2024-01-15",
+      "settlementPeriod": 2,
+      "dataProviderId": "N2EXMIP",
+      "midPrice": 66.10,
+      "volume": 11800.0
+    }
+  ]
+}

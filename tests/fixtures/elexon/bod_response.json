@@ -1,0 +1,34 @@
+{
+  "data": [
+    {
+      "settlementDate": "2024-01-15",
+      "settlementPeriod": 10,
+      "bmUnit": "T_DRAXX-1",
+      "bidOfferPairNumber": 1,
+      "levelFrom": 0.0,
+      "levelTo": 400.0,
+      "bidPrice": -50.0,
+      "offerPrice": 75.0
+    },
+    {
+      "settlementDate": "2024-01-15",
+      "settlementPeriod": 10,
+      "bmUnit": "T_DRAXX-1",
+      "bidOfferPairNumber": 2,
+      "levelFrom": 400.0,
+      "levelTo": 600.0,
+      "bidPrice": -60.0,
+      "offerPrice": 90.0
+    },
+    {
+      "settlementDate": "2024-01-15",
+      "settlementPeriod": 10,
+      "bmUnit": "T_DRAXX-2",
+      "bidOfferPairNumber": 1,
+      "levelFrom": 0.0,
+      "levelTo": 350.0,
+      "bidPrice": -45.0,
+      "offerPrice": 80.0
+    }
+  ]
+}

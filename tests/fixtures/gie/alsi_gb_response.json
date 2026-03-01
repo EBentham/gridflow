@@ -1,0 +1,37 @@
+{
+  "page": 1,
+  "pageSize": 300,
+  "total": 2,
+  "name": "United Kingdom LNG",
+  "type": "country",
+  "data": [
+    {
+      "gasDayStart": "2024-01-15",
+      "gasInStorage": "5200.40",
+      "withdrawal": "420.10",
+      "injection": "0.00",
+      "full": "74.3",
+      "trend": "1.20",
+      "name": "United Kingdom",
+      "code": "GB",
+      "url": "GB",
+      "countryCode": "GB",
+      "type": "lng",
+      "status": "E"
+    },
+    {
+      "gasDayStart": "2024-01-14",
+      "gasInStorage": "4780.30",
+      "withdrawal": "380.50",
+      "injection": "0.00",
+      "full": "68.3",
+      "trend": "-0.90",
+      "name": "United Kingdom",
+      "code": "GB",
+      "url": "GB",
+      "countryCode": "GB",
+      "type": "lng",
+      "status": "E"
+    }
+  ]
+}

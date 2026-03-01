@@ -1,0 +1,22 @@
+{
+  "data": [
+    {
+      "settlementDate": "2024-01-15",
+      "settlementPeriod": 1,
+      "initialForecast": 4500.0,
+      "latestForecast": 4320.0
+    },
+    {
+      "settlementDate": "2024-01-15",
+      "settlementPeriod": 2,
+      "initialForecast": 4480.0,
+      "latestForecast": 4310.0
+    },
+    {
+      "settlementDate": "2024-01-15",
+      "settlementPeriod": 3,
+      "initialForecast": 4460.0,
+      "latestForecast": 4290.0
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "data": [
+    {
+      "settlementDate": "2024-01-15",
+      "settlementPeriod": 10,
+      "bmUnit": "T_DRAXX-1",
+      "levelFrom": 380.0,
+      "levelTo": 400.0
+    },
+    {
+      "settlementDate": "2024-01-15",
+      "settlementPeriod": 10,
+      "bmUnit": "T_DRAXX-2",
+      "levelFrom": 320.0,
+      "levelTo": 350.0
+    },
+    {
+      "settlementDate": "2024-01-15",
+      "settlementPeriod": 11,
+      "bmUnit": "T_DRAXX-1",
+      "levelFrom": 390.0,
+      "levelTo": 400.0
+    }
+  ]
+}

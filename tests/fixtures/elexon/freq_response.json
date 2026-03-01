@@ -1,0 +1,24 @@
+{
+  "data": [
+    {
+      "reportDateTime": "2024-01-15T00:00:00Z",
+      "frequency": 50.02
+    },
+    {
+      "reportDateTime": "2024-01-15T00:00:15Z",
+      "frequency": 50.01
+    },
+    {
+      "reportDateTime": "2024-01-15T00:00:30Z",
+      "frequency": 49.99
+    },
+    {
+      "reportDateTime": "2024-01-15T00:00:45Z",
+      "frequency": 50.00
+    },
+    {
+      "reportDateTime": "2024-01-15T00:01:00Z",
+      "frequency": 50.03
+    }
+  ]
+}

@@ -9,6 +9,40 @@ from pydantic import Field, field_validator
 from gridflow.schemas.common import BaseSchema
 
 
+class EntsoeDayAheadPrice(BaseSchema):
+    """Silver-layer schema for ENTSO-E day-ahead market prices."""
+
+    timestamp_utc: datetime
+    area_code: str  # EIC bidding zone mRID
+    price_eur_mwh: float
+    resolution: str = ""
+    data_provider: str = Field(default="entsoe")
+
+    @field_validator("timestamp_utc")
+    @classmethod
+    def must_be_utc(cls, v: datetime) -> datetime:
+        if v.tzinfo is None:
+            raise ValueError("timestamp_utc must be timezone-aware (UTC)")
+        return v
+
+
+class EntsoeActualLoad(BaseSchema):
+    """Silver-layer schema for ENTSO-E actual total load."""
+
+    timestamp_utc: datetime
+    area_code: str
+    load_mw: float
+    resolution: str = ""
+    data_provider: str = Field(default="entsoe")
+
+    @field_validator("timestamp_utc")
+    @classmethod
+    def must_be_utc(cls, v: datetime) -> datetime:
+        if v.tzinfo is None:
+            raise ValueError("timestamp_utc must be timezone-aware (UTC)")
+        return v
+
+
 class EntsoeActualGeneration(BaseSchema):
     """Silver-layer schema for ENTSO-E actual generation per type."""
 

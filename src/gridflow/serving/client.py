@@ -67,6 +67,100 @@ class GridflowClient:
             ORDER BY timestamp_utc, fuel_type
         """)
 
+    def get_fuel_generation(
+        self,
+        start: str | date,
+        end: str | date,
+    ) -> pl.DataFrame:
+        """Get half-hourly fuel generation mix for the GB grid.
+
+        Returns DataFrame with columns:
+            timestamp_utc, settlement_date, settlement_period,
+            fuel_type, generation_mw, data_provider
+        """
+        return self.query(f"""
+            SELECT timestamp_utc, settlement_date, settlement_period,
+                   fuel_type, generation_mw, data_provider
+            FROM silver_fuelhh
+            WHERE settlement_date BETWEEN '{start}' AND '{end}'
+            ORDER BY timestamp_utc, fuel_type
+        """)
+
+    def get_gas_storage(
+        self,
+        start: str | date,
+        end: str | date,
+        country_code: str | None = None,
+    ) -> pl.DataFrame:
+        """Get EU gas storage levels from GIE AGSI+.
+
+        Returns DataFrame with columns:
+            gas_day, country_code, country_name, gas_in_storage_gwh,
+            withdrawal_gwh, injection_gwh, working_gas_volume_gwh,
+            storage_pct_full, trend
+        """
+        where_clauses = [f"gas_day BETWEEN '{start}' AND '{end}'"]
+        if country_code:
+            where_clauses.append(f"country_code = '{country_code}'")
+        where = " AND ".join(where_clauses)
+        return self.query(f"""
+            SELECT gas_day, country_code, country_name,
+                   gas_in_storage_gwh, withdrawal_gwh, injection_gwh,
+                   working_gas_volume_gwh, storage_pct_full, trend
+            FROM gold_eu_gas_storage
+            WHERE {where}
+            ORDER BY gas_day DESC, country_code
+        """)
+
+    def get_weather(
+        self,
+        start: str | date,
+        end: str | date,
+        location: str | None = None,
+    ) -> pl.DataFrame:
+        """Get historical weather observations from Open-Meteo.
+
+        Returns DataFrame with columns:
+            timestamp_utc, location, latitude, longitude,
+            temperature_2m, wind_speed_10m, precipitation, hdd, cdd
+        """
+        where_clauses = [f"timestamp_utc::DATE BETWEEN '{start}' AND '{end}'"]
+        if location:
+            where_clauses.append(f"location = '{location}'")
+        where = " AND ".join(where_clauses)
+        return self.query(f"""
+            SELECT timestamp_utc, location, latitude, longitude,
+                   temperature_2m, wind_speed_10m, precipitation, hdd, cdd
+            FROM silver_historical
+            WHERE {where}
+            ORDER BY timestamp_utc, location
+        """)
+
+    def get_imbalance_context(
+        self,
+        start: str | date,
+        end: str | date,
+    ) -> pl.DataFrame:
+        """Get UK imbalance context combining prices and carbon intensity.
+
+        Returns DataFrame with columns:
+            timestamp_utc, settlement_date, settlement_period,
+            system_sell_price, system_buy_price, net_imbalance_volume,
+            run_type, carbon_intensity_forecast_gco2_kwh,
+            carbon_intensity_actual_gco2_kwh, intensity_index
+        """
+        return self.query(f"""
+            SELECT timestamp_utc, settlement_date, settlement_period,
+                   system_sell_price, system_buy_price, net_imbalance_volume,
+                   run_type,
+                   carbon_intensity_forecast_gco2_kwh,
+                   carbon_intensity_actual_gco2_kwh,
+                   intensity_index
+            FROM gold_uk_imbalance_context
+            WHERE settlement_date BETWEEN '{start}' AND '{end}'
+            ORDER BY timestamp_utc, run_type
+        """)
+
     def get_tables(self) -> list[str]:
         """List all available tables and views."""
         result = self._con.sql(

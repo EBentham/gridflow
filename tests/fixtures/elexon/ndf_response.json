@@ -1,0 +1,22 @@
+{
+  "data": [
+    {
+      "settlementDate": "2024-01-15",
+      "settlementPeriod": 1,
+      "nationalDemand": 28500.0,
+      "transmissionSystemDemand": 29800.0
+    },
+    {
+      "settlementDate": "2024-01-15",
+      "settlementPeriod": 2,
+      "nationalDemand": 28200.0,
+      "transmissionSystemDemand": 29500.0
+    },
+    {
+      "settlementDate": "2024-01-15",
+      "settlementPeriod": 3,
+      "nationalDemand": 27900.0,
+      "transmissionSystemDemand": 29200.0
+    }
+  ]
+}

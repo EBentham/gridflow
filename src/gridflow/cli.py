@@ -406,16 +406,31 @@ def _resolve_datasets(
 
 def _import_connectors() -> None:
     """Import connector modules to trigger registration."""
-    try:
-        import gridflow.connectors.elexon  # noqa: F401
-    except ImportError:
-        pass
+    for module in [
+        "gridflow.connectors.elexon",
+        "gridflow.connectors.openmeteo",
+        "gridflow.connectors.entsoe",
+        "gridflow.connectors.gie",
+        "gridflow.connectors.entsog",
+        "gridflow.connectors.neso",
+    ]:
+        try:
+            __import__(module)
+        except ImportError:
+            pass
 
 
 def _import_transformers() -> None:
     """Import transformer modules to trigger registration."""
-    try:
-        import gridflow.connectors.elexon  # noqa: F401
-        import gridflow.silver.elexon.system_prices  # noqa: F401
-    except ImportError:
-        pass
+    for module in [
+        "gridflow.silver.elexon",
+        "gridflow.silver.openmeteo",
+        "gridflow.silver.entsoe",
+        "gridflow.silver.gie",
+        "gridflow.silver.entsog",
+        "gridflow.silver.neso",
+    ]:
+        try:
+            __import__(module)
+        except ImportError:
+            pass
