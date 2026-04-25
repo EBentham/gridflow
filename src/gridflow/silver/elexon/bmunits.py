@@ -47,7 +47,7 @@ class BMUnitsTransformer(BaseSilverTransformer):
 
         if not rows:
             return pl.DataFrame()
-        return pl.DataFrame(rows)
+        return pl.DataFrame(rows, infer_schema_length=None)
 
     def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
         if raw_df.is_empty():
@@ -55,10 +55,14 @@ class BMUnitsTransformer(BaseSilverTransformer):
 
         column_mapping = {
             "bmUnit": "bm_unit_id",
+            "elexonBmUnit": "bm_unit_id",
             "name": "bm_unit_name",
+            "bmUnitName": "bm_unit_name",
             "fuelType": "fuel_type",
             "registeredCapacity": "registered_capacity_mw",
+            "generationCapacity": "registered_capacity_mw",
             "companyName": "company_name",
+            "leadPartyName": "company_name",
             "gspGroupId": "gsp_group_id",
             "nationalGridBmUnit": "national_grid_bm_unit",
         }

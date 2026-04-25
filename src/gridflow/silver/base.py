@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import os
 from abc import ABC, abstractmethod
 from datetime import date
 from pathlib import Path
@@ -63,6 +64,7 @@ class BaseSilverTransformer(ABC):
 
         # Write silver (atomic: write to temp, then rename)
         self._write_silver(clean_df, target_date)
+        self._write_csv(clean_df, target_date)
 
         logger.info(
             f"Silver write: {self.source}/{self.dataset} {target_date} -> {len(clean_df)} rows"
@@ -75,3 +77,14 @@ class BaseSilverTransformer(ABC):
         filename = f"{self.dataset}_{target_date.strftime('%Y%m%d')}.parquet"
         final_path = out_dir / filename
         write_parquet(df, final_path)
+
+    def _write_csv(self, df: pl.DataFrame, target_date: date) -> None:
+        """Write DataFrame to CSV at data/silver/{source}/{dataset}/{dataset}_{YYYYMMDD}.csv."""
+        csv_dir = self.silver_dir
+        csv_dir.mkdir(parents=True, exist_ok=True)
+        filename = f"{self.dataset}_{target_date.strftime('%Y%m%d')}.csv"
+        final_path = csv_dir / filename
+        tmp_path = csv_dir / f".tmp_{filename}"
+        df.write_csv(tmp_path)
+        os.replace(tmp_path, final_path)
+        logger.debug(f"Wrote CSV: {len(df)} rows to {final_path}")

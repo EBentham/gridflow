@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
+import json
 import logging
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from typing import Any
 
 import httpx
@@ -56,10 +57,29 @@ class ElexonConnector(BaseConnector):
                 responses.extend(date_responses)
                 current_date += timedelta(days=1)
 
+        elif endpoint.param_style == ParamStyle.SETTLEMENT_DATE_PERIOD:
+            current_date = start.date() if isinstance(start, datetime) else start
+            end_date = end.date() if isinstance(end, datetime) else end
+            while current_date <= end_date:
+                date_responses = await self._fetch_date_period(
+                    dataset, endpoint, current_date
+                )
+                responses.extend(date_responses)
+                current_date += timedelta(days=1)
+
+        elif endpoint.param_style == ParamStyle.DATE_PATH:
+            current_date = start.date() if isinstance(start, datetime) else start
+            end_date = end.date() if isinstance(end, datetime) else end
+            while current_date <= end_date:
+                date_responses = await self._fetch_date_path(dataset, endpoint, current_date)
+                responses.extend(date_responses)
+                current_date += timedelta(days=1)
+
         elif endpoint.param_style == ParamStyle.PUBLISH_DATETIME:
+            chunk_delta = timedelta(hours=endpoint.max_chunk_hours)
             current = start
             while current < end:
-                chunk_end = min(current + timedelta(days=1), end)
+                chunk_end = min(current + chunk_delta, end)
                 chunk_responses = await self._fetch_datetime_range(
                     dataset, endpoint, current, chunk_end
                 )
@@ -99,6 +119,113 @@ class ElexonConnector(BaseConnector):
                     page=page,
                     total_pages=total_pages,
                     http_status=raw.status_code,
+                    data_date=settlement_date,
+                )
+            )
+
+            if page >= total_pages:
+                break
+            page += 1
+
+        return responses
+
+    async def _fetch_date_period(
+        self,
+        dataset: str,
+        endpoint: ElexonEndpoint,
+        settlement_date: Any,
+        max_periods: int = 50,
+    ) -> list[RawResponse]:
+        """Fetch all pages for each settlement period on a given date.
+
+        Iterates through periods 1..max_periods, fetching paginated data for each.
+        Stops early when a period returns either an HTTP error or an HTTP 200 with
+        an empty ``data`` array — the latter occurs for periods 49–50 on non-DST days
+        and avoids writing empty 11-byte files to the bronze layer.
+        """
+        responses: list[RawResponse] = []
+
+        for period in range(1, max_periods + 1):
+            page = 1
+            while True:
+                query_params = build_params(
+                    endpoint,
+                    settlement_date=settlement_date,
+                    settlement_period=period,
+                    page=page,
+                )
+                try:
+                    raw = await self._request(endpoint.path, query_params)
+                except Exception:
+                    # Period doesn't exist — HTTP error (e.g. 404)
+                    break
+
+                # HTTP 200 with empty data array means this period doesn't exist
+                # (e.g. periods 49–50 on non-DST days). Stop without writing bronze.
+                try:
+                    parsed = json.loads(raw.content)
+                    if isinstance(parsed.get("data"), list) and not parsed["data"]:
+                        logger.debug(
+                            "PN period %d on %s returned empty data — stopping period iteration",
+                            period,
+                            settlement_date,
+                        )
+                        break
+                except (json.JSONDecodeError, AttributeError, TypeError):
+                    pass  # Not JSON or unexpected shape — treat as real data
+
+                current_page, total_pages = get_pagination_info(raw.content)
+                responses.append(
+                    RawResponse(
+                        body=raw.content,
+                        content_type=raw.headers.get("content-type", "application/json"),
+                        source="elexon",
+                        dataset=dataset,
+                        request_url=str(raw.url),
+                        request_params=dict(query_params),
+                        api_version="v1",
+                        page=page,
+                        total_pages=total_pages,
+                        http_status=raw.status_code,
+                        data_date=settlement_date,
+                    )
+                )
+
+                if page >= total_pages:
+                    break
+                page += 1
+
+        return responses
+
+    async def _fetch_date_path(
+        self,
+        dataset: str,
+        endpoint: ElexonEndpoint,
+        settlement_date: date,
+    ) -> list[RawResponse]:
+        """Fetch all pages for a date embedded in the URL path (DATE_PATH style)."""
+        responses: list[RawResponse] = []
+        page = 1
+        path = f"{endpoint.path}/{settlement_date.isoformat()}"
+
+        while True:
+            query_params = build_params(endpoint, page=page)
+            raw = await self._request(path, query_params)
+
+            current_page, total_pages = get_pagination_info(raw.content)
+            responses.append(
+                RawResponse(
+                    body=raw.content,
+                    content_type=raw.headers.get("content-type", "application/json"),
+                    source="elexon",
+                    dataset=dataset,
+                    request_url=str(raw.url),
+                    request_params=dict(query_params),
+                    api_version="v1",
+                    page=page,
+                    total_pages=total_pages,
+                    http_status=raw.status_code,
+                    data_date=settlement_date,
                 )
             )
 
@@ -137,6 +264,7 @@ class ElexonConnector(BaseConnector):
         """Fetch paginated data using publishDateTimeFrom/To."""
         responses: list[RawResponse] = []
         page = 1
+        data_date = start.date() if isinstance(start, datetime) else start
 
         while True:
             query_params = build_params(endpoint, start=start, end=end, page=page)
@@ -155,6 +283,7 @@ class ElexonConnector(BaseConnector):
                     page=page,
                     total_pages=total_pages,
                     http_status=raw.status_code,
+                    data_date=data_date,
                 )
             )
 

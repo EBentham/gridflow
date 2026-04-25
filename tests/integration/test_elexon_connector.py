@@ -35,11 +35,15 @@ def elexon_config() -> SourceConfig:
 @respx.mock
 @pytest.mark.asyncio
 async def test_fetch_system_prices(elexon_config: SourceConfig):
-    """Test fetching system prices with mocked HTTP."""
+    """Test fetching system prices with mocked HTTP.
+
+    system_prices uses DATE_PATH style — the date is appended to the URL path.
+    """
     fixture = (FIXTURES / "system_prices_response.json").read_text()
 
+    # DATE_PATH: connector appends /2024-01-15 to the base path
     respx.get(
-        "https://data.elexon.co.uk/bmrs/api/v1/balancing/settlement/system-prices"
+        "https://data.elexon.co.uk/bmrs/api/v1/balancing/settlement/system-prices/2024-01-15"
     ).mock(return_value=httpx.Response(200, text=fixture))
 
     async with ElexonConnector(elexon_config) as connector:
@@ -53,6 +57,8 @@ async def test_fetch_system_prices(elexon_config: SourceConfig):
     assert responses[0].http_status == 200
     assert responses[0].source == "elexon"
     assert responses[0].dataset == "system_prices"
+    assert responses[0].data_date is not None
+    assert responses[0].data_date.isoformat() == "2024-01-15"
 
     # Verify the response body contains expected data
     data = json.loads(responses[0].body)

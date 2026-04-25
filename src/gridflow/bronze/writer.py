@@ -27,15 +27,18 @@ class BronzeWriter:
         ts = response.fetched_at.strftime("%Y%m%dT%H%M%SZ")
         ext = self._extension(response.content_type)
 
-        # Build directory path
-        fetched = response.fetched_at
+        # Build directory path — partition by data date when known, else ingestion date
+        partition = (
+            response.data_date if response.data_date is not None
+            else response.fetched_at.date()
+        )
         dir_path = (
             self.bronze_dir
             / response.source
             / response.dataset
-            / str(fetched.year)
-            / f"{fetched.month:02d}"
-            / f"{fetched.day:02d}"
+            / str(partition.year)
+            / f"{partition.month:02d}"
+            / f"{partition.day:02d}"
         )
         dir_path.mkdir(parents=True, exist_ok=True)
 

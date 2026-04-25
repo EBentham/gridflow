@@ -12,11 +12,18 @@ from gridflow.silver.elexon.boal import BOALTransformer
 from gridflow.silver.elexon.bod import BODTransformer
 from gridflow.silver.elexon.demand_forecast import DemandForecastTransformer, NDFDTransformer
 from gridflow.silver.elexon.disbsad import DISBSADTransformer
+from gridflow.silver.elexon.fou2t14d import FOU2T14DTransformer
 from gridflow.silver.elexon.freq import FreqTransformer
+from gridflow.silver.elexon.fuelinst import FuelInstTransformer
 from gridflow.silver.elexon.fuelhh import FuelHHTransformer
+from gridflow.silver.elexon.imbalngc import ImbalNGCTransformer
+from gridflow.silver.elexon.melngc import MelNGCTransformer
 from gridflow.silver.elexon.mid import MIDTransformer
+from gridflow.silver.elexon.netbsad import NETBSADTransformer
 from gridflow.silver.elexon.pn import PNTransformer
 from gridflow.silver.elexon.system_prices import SystemPriceTransformer
+from gridflow.silver.elexon.temp import TempTransformer
+from gridflow.silver.elexon.uou2t14d import UOU2T14DTransformer
 from gridflow.silver.elexon.wind_forecast import WindForecastTransformer
 
 FIXTURES = Path(__file__).parent.parent / "fixtures" / "elexon"
@@ -513,3 +520,248 @@ class TestBMUnitsTransformer:
     def test_missing_bm_unit_id_returns_empty(self):
         raw = pl.DataFrame([{"fuelType": "GAS", "name": "No ID"}])
         assert self.t.transform(raw).is_empty()
+
+
+# === New transformer tests ===
+
+
+class TestNETBSADTransformer:
+    def setup_method(self):
+        self.t = _make_transformer(NETBSADTransformer)
+
+    def test_transform_basic(self):
+        data = json.loads((FIXTURES / "netbsad_response.json").read_text())
+        raw = pl.DataFrame(data["data"])
+        result = self.t.transform(raw)
+
+        assert not result.is_empty()
+        assert "timestamp_utc" in result.columns
+        assert "net_buy_price_adjustment" in result.columns
+        assert "net_sell_volume_adjustment" in result.columns
+        assert result["data_provider"][0] == "elexon"
+
+    def test_dedup_on_settlement_period(self):
+        """Duplicate (date, period) rows should keep last."""
+        raw = pl.DataFrame([
+            {"settlementDate": "2024-01-15", "settlementPeriod": 1,
+             "netBuyPriceAdjustment": 2.50, "netSellPriceAdjustment": 1.80,
+             "netBuyVolumeAdjustment": 150.0, "netSellVolumeAdjustment": -75.0},
+            {"settlementDate": "2024-01-15", "settlementPeriod": 1,
+             "netBuyPriceAdjustment": 2.55, "netSellPriceAdjustment": 1.85,
+             "netBuyVolumeAdjustment": 155.0, "netSellVolumeAdjustment": -70.0},
+        ])
+        result = self.t.transform(raw)
+        assert len(result) == 1
+
+    def test_empty_input(self):
+        assert self.t.transform(pl.DataFrame()).is_empty()
+
+    def test_missing_required_returns_empty(self):
+        raw = pl.DataFrame([{"netBuyPriceAdjustment": 2.50}])
+        assert self.t.transform(raw).is_empty()
+
+
+class TestFuelInstTransformer:
+    def setup_method(self):
+        self.t = _make_transformer(FuelInstTransformer)
+
+    def test_transform_basic(self):
+        data = json.loads((FIXTURES / "fuelinst_response.json").read_text())
+        raw = pl.DataFrame(data["data"])
+        result = self.t.transform(raw)
+
+        assert not result.is_empty()
+        assert "timestamp_utc" in result.columns
+        assert "fuel_type" in result.columns
+        assert "generation_mw" in result.columns
+        assert result["data_provider"][0] == "elexon"
+
+    def test_dedup_on_timestamp_fuel(self):
+        """Duplicate (timestamp, fuel_type) should keep last."""
+        raw = pl.DataFrame([
+            {"publishDateTime": "2024-01-15T00:00:00Z", "fuelType": "CCGT", "generation": 100.0},
+            {"publishDateTime": "2024-01-15T00:00:00Z", "fuelType": "CCGT", "generation": 110.0},
+        ])
+        result = self.t.transform(raw)
+        assert len(result) == 1
+
+    def test_empty_input(self):
+        assert self.t.transform(pl.DataFrame()).is_empty()
+
+    def test_missing_required_returns_empty(self):
+        raw = pl.DataFrame([{"publishDateTime": "2024-01-15T00:00:00Z"}])
+        assert self.t.transform(raw).is_empty()
+
+
+class TestImbalNGCTransformer:
+    def setup_method(self):
+        self.t = _make_transformer(ImbalNGCTransformer)
+
+    def test_transform_basic(self):
+        data = json.loads((FIXTURES / "imbalngc_response.json").read_text())
+        raw = pl.DataFrame(data["data"])
+        result = self.t.transform(raw)
+
+        assert not result.is_empty()
+        assert "timestamp_utc" in result.columns
+        assert "indicated_imbalance" in result.columns
+        assert result["data_provider"][0] == "elexon"
+
+    def test_dedup_on_settlement_period(self):
+        raw = pl.DataFrame([
+            {"settlementDate": "2024-01-15", "settlementPeriod": 1,
+             "publishDateTime": "2024-01-15T00:15:00Z", "indicatedImbalance": -250.0},
+            {"settlementDate": "2024-01-15", "settlementPeriod": 1,
+             "publishDateTime": "2024-01-15T00:20:00Z", "indicatedImbalance": -240.0},
+        ])
+        result = self.t.transform(raw)
+        assert len(result) == 1
+
+    def test_empty_input(self):
+        assert self.t.transform(pl.DataFrame()).is_empty()
+
+    def test_missing_required_returns_empty(self):
+        raw = pl.DataFrame([{"settlementDate": "2024-01-15"}])
+        assert self.t.transform(raw).is_empty()
+
+
+class TestMelNGCTransformer:
+    def setup_method(self):
+        self.t = _make_transformer(MelNGCTransformer)
+
+    def test_transform_basic(self):
+        data = json.loads((FIXTURES / "melngc_response.json").read_text())
+        raw = pl.DataFrame(data["data"])
+        result = self.t.transform(raw)
+
+        assert not result.is_empty()
+        assert "timestamp_utc" in result.columns
+        assert "indicated_margin" in result.columns
+        assert result["data_provider"][0] == "elexon"
+
+    def test_dedup_on_settlement_period(self):
+        raw = pl.DataFrame([
+            {"settlementDate": "2024-01-15", "settlementPeriod": 1,
+             "indicatedMargin": 3500.0},
+            {"settlementDate": "2024-01-15", "settlementPeriod": 1,
+             "indicatedMargin": 3600.0},
+        ])
+        result = self.t.transform(raw)
+        assert len(result) == 1
+
+    def test_empty_input(self):
+        assert self.t.transform(pl.DataFrame()).is_empty()
+
+    def test_missing_required_returns_empty(self):
+        raw = pl.DataFrame([{"settlementDate": "2024-01-15"}])
+        assert self.t.transform(raw).is_empty()
+
+
+class TestFOU2T14DTransformer:
+    def setup_method(self):
+        self.t = _make_transformer(FOU2T14DTransformer)
+
+    def test_transform_basic(self):
+        data = json.loads((FIXTURES / "fou2t14d_response.json").read_text())
+        raw = pl.DataFrame(data["data"])
+        result = self.t.transform(raw)
+
+        assert not result.is_empty()
+        assert "timestamp_utc" in result.columns
+        assert "fuel_type" in result.columns
+        assert "output_usable_mw" in result.columns
+        assert result["data_provider"][0] == "elexon"
+
+    def test_dedup_on_period_fuel(self):
+        raw = pl.DataFrame([
+            {"settlementDate": "2024-01-17", "settlementPeriod": 1,
+             "fuelType": "CCGT", "outputUsable": 22000.0},
+            {"settlementDate": "2024-01-17", "settlementPeriod": 1,
+             "fuelType": "CCGT", "outputUsable": 22100.0},
+        ])
+        result = self.t.transform(raw)
+        assert len(result) == 1
+
+    def test_empty_input(self):
+        assert self.t.transform(pl.DataFrame()).is_empty()
+
+    def test_missing_required_returns_empty(self):
+        raw = pl.DataFrame([{"settlementDate": "2024-01-17"}])
+        assert self.t.transform(raw).is_empty()
+
+
+class TestUOU2T14DTransformer:
+    def setup_method(self):
+        self.t = _make_transformer(UOU2T14DTransformer)
+
+    def test_transform_basic(self):
+        data = json.loads((FIXTURES / "uou2t14d_response.json").read_text())
+        raw = pl.DataFrame(data["data"])
+        result = self.t.transform(raw)
+
+        assert not result.is_empty()
+        assert "timestamp_utc" in result.columns
+        assert "bm_unit_id" in result.columns
+        assert "output_usable_mw" in result.columns
+        assert result["data_provider"][0] == "elexon"
+
+    def test_dedup_on_period_unit(self):
+        raw = pl.DataFrame([
+            {"settlementDate": "2024-01-17", "settlementPeriod": 1,
+             "bmUnit": "T_DRAXX-1", "outputUsable": 645.0},
+            {"settlementDate": "2024-01-17", "settlementPeriod": 1,
+             "bmUnit": "T_DRAXX-1", "outputUsable": 640.0},
+        ])
+        result = self.t.transform(raw)
+        assert len(result) == 1
+
+    def test_empty_input(self):
+        assert self.t.transform(pl.DataFrame()).is_empty()
+
+    def test_missing_required_returns_empty(self):
+        raw = pl.DataFrame([{"settlementDate": "2024-01-17"}])
+        assert self.t.transform(raw).is_empty()
+
+
+class TestTempTransformer:
+    def setup_method(self):
+        self.t = _make_transformer(TempTransformer)
+
+    def test_transform_basic(self):
+        data = json.loads((FIXTURES / "temp_response.json").read_text())
+        raw = pl.DataFrame(data["data"])
+        result = self.t.transform(raw)
+
+        assert not result.is_empty()
+        assert "timestamp_utc" in result.columns
+        assert "temperature" in result.columns
+        assert "normal_temperature" in result.columns
+        assert "low_temperature" in result.columns
+        assert "high_temperature" in result.columns
+        assert result["data_provider"][0] == "elexon"
+
+    def test_sorted_by_timestamp(self):
+        data = json.loads((FIXTURES / "temp_response.json").read_text())
+        raw = pl.DataFrame(data["data"])
+        result = self.t.transform(raw)
+        ts = result["timestamp_utc"].to_list()
+        assert ts == sorted(ts)
+
+    def test_dedup_on_timestamp(self):
+        raw = pl.DataFrame([
+            {"publishDateTime": "2024-01-15T00:00:00Z", "temperature": 5.0},
+            {"publishDateTime": "2024-01-15T00:00:00Z", "temperature": 5.5},
+        ])
+        result = self.t.transform(raw)
+        assert len(result) == 1
+
+    def test_empty_input(self):
+        assert self.t.transform(pl.DataFrame()).is_empty()
+
+    def test_missing_required_returns_empty(self):
+        raw = pl.DataFrame([{"normal": 6.0}])
+        assert self.t.transform(raw).is_empty()
+
+
+# TestGenerationByFuelTransformer removed — generation_by_fuel was a duplicate of fuelhh.
+# Both used /datasets/FUELHH; use fuelhh tests instead.

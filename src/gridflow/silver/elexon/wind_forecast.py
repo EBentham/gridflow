@@ -57,8 +57,11 @@ class WindForecastTransformer(BaseSilverTransformer):
             "settlementPeriod": "settlement_period",
             "initialForecast": "initial_forecast_mw",
             "latestForecast": "latest_forecast_mw",
+            "generation": "latest_forecast_mw",
             "publishDateTime": "published_at",
+            "publishTime": "published_at",
             "startTimeOfHalfHrPeriod": "start_time",
+            "startTime": "start_time",
         }
         rename_map = {k: v for k, v in column_mapping.items() if k in raw_df.columns}
         if rename_map:

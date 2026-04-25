@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import logging
 from datetime import date, datetime, timedelta, timezone
+from pathlib import Path
 from typing import Optional
 
 import typer
@@ -191,10 +192,11 @@ def build(
 @app.command()
 def backfill(
     source: str = typer.Argument(help="Data source"),
-    dataset: str = typer.Argument(help="Dataset name"),
+    dataset: Optional[str] = typer.Argument(default=None, help="Dataset name"),
     start: str = typer.Option(..., help="Start date (YYYY-MM-DD)"),
     end: str = typer.Option(..., help="End date (YYYY-MM-DD)"),
     chunk_days: int = typer.Option(7, help="Days per chunk"),
+    all_datasets: bool = typer.Option(False, "--all", help="Backfill all datasets for source"),
 ) -> None:
     """Backfill historical data in chunks."""
     from gridflow.config.settings import load_settings
@@ -203,37 +205,139 @@ def backfill(
     settings = load_settings()
     setup_logging(settings.pipeline.log_dir, settings.pipeline.log_level)
 
+    datasets = _resolve_datasets(source, dataset, all_datasets, settings)
+
     start_dt = datetime.fromisoformat(start).replace(tzinfo=timezone.utc)
     end_dt = datetime.fromisoformat(end).replace(tzinfo=timezone.utc)
 
-    current = start_dt
-    chunk_num = 0
-    while current < end_dt:
-        chunk_end = min(current + timedelta(days=chunk_days), end_dt)
-        chunk_num += 1
-        typer.echo(
-            f"Chunk {chunk_num}: {current.date()} to {chunk_end.date()}"
+    for ds in datasets:
+        typer.echo(f"\n--- Backfilling {source}/{ds} ---")
+        current = start_dt
+        chunk_num = 0
+        while current < end_dt:
+            chunk_end = min(current + timedelta(days=chunk_days), end_dt)
+            chunk_num += 1
+            typer.echo(
+                f"  Chunk {chunk_num}: {current.date()} to {chunk_end.date()}"
+            )
+
+            # Call ingest for this chunk (pass all Optional params explicitly to
+            # avoid typer OptionInfo objects leaking in as default values)
+            ingest(
+                source=source,
+                dataset=ds,
+                start=current.date().isoformat(),
+                end=chunk_end.date().isoformat(),
+                last=None,
+                all_datasets=False,
+            )
+
+            # Call transform for this chunk
+            transform(
+                source=source,
+                dataset=ds,
+                start=current.date().isoformat(),
+                end=chunk_end.date().isoformat(),
+                last=None,
+                all_datasets=False,
+            )
+
+            current = chunk_end
+
+        typer.echo(f"  {source}/{ds}: {chunk_num} chunks processed")
+
+    typer.echo("\nBackfill complete")
+
+
+@app.command()
+def export_csv(
+    source: str = typer.Argument(help="Data source"),
+    dataset: Optional[str] = typer.Argument(default=None, help="Dataset name"),
+    output_dir: Optional[str] = typer.Option(None, "--output", "-o", help="Output directory (default: data/exports/)"),
+    all_datasets: bool = typer.Option(False, "--all", help="Export all datasets for source"),
+) -> None:
+    """Export silver Parquet data to CSV files."""
+    from gridflow.config.settings import load_settings
+    from gridflow.storage.parquet import read_parquet_dir
+    from gridflow.utils.logging import setup_logging
+
+    settings = load_settings()
+    setup_logging(settings.pipeline.log_dir, settings.pipeline.log_level)
+
+    datasets = _resolve_datasets(source, dataset, all_datasets, settings)
+
+    export_base = Path(output_dir) if output_dir else settings.pipeline.data_dir / "exports"
+
+    for ds in datasets:
+        silver_dir = settings.pipeline.data_dir / "silver" / source / ds
+        if not silver_dir.exists():
+            typer.echo(f"  {source}/{ds}: no silver data found, skipping")
+            continue
+
+        df = read_parquet_dir(silver_dir)
+        if df.is_empty():
+            typer.echo(f"  {source}/{ds}: empty, skipping")
+            continue
+
+        out_dir = export_base / source
+        out_dir.mkdir(parents=True, exist_ok=True)
+        out_path = out_dir / f"{ds}.csv"
+        df.write_csv(out_path)
+        typer.echo(f"  {source}/{ds}: {len(df)} rows -> {out_path}")
+
+    typer.echo("Export complete")
+
+
+@app.command()
+def pipeline(
+    source: str = typer.Argument(help="Data source"),
+    dataset: Optional[str] = typer.Argument(default=None, help="Dataset name"),
+    start: Optional[str] = typer.Option(None, help="Start date (YYYY-MM-DD)"),
+    end: Optional[str] = typer.Option(None, help="End date (YYYY-MM-DD)"),
+    last: Optional[str] = typer.Option(None, help="Relative lookback (e.g. 24h, 7d)"),
+    all_datasets: bool = typer.Option(False, "--all", help="Run all datasets for source"),
+    gold_dataset: Optional[str] = typer.Option(None, "--gold", help="Gold dataset to build after silver"),
+) -> None:
+    """Run the full pipeline: ingest (bronze) -> transform (silver) -> build (gold).
+
+    Runs bronze and silver stages for the specified source/dataset. If --gold is
+    given, also builds that gold dataset from the resulting silver data.
+    """
+    typer.echo(f"=== Pipeline: {source} ===")
+
+    # Bronze
+    typer.echo("\n--- Bronze (ingest) ---")
+    ingest(
+        source=source,
+        dataset=dataset,
+        start=start,
+        end=end,
+        last=last,
+        all_datasets=all_datasets,
+    )
+
+    # Silver
+    typer.echo("\n--- Silver (transform) ---")
+    transform(
+        source=source,
+        dataset=dataset,
+        start=start,
+        end=end,
+        last=last,
+        all_datasets=all_datasets,
+    )
+
+    # Gold (optional)
+    if gold_dataset:
+        typer.echo("\n--- Gold (build) ---")
+        build(
+            gold_dataset=gold_dataset,
+            start=start,
+            end=end,
+            last=last,
         )
 
-        # Call ingest for this chunk
-        ingest(
-            source=source,
-            dataset=dataset,
-            start=current.date().isoformat(),
-            end=chunk_end.date().isoformat(),
-        )
-
-        # Call transform for this chunk
-        transform(
-            source=source,
-            dataset=dataset,
-            start=current.date().isoformat(),
-            end=chunk_end.date().isoformat(),
-        )
-
-        current = chunk_end
-
-    typer.echo(f"Backfill complete: {chunk_num} chunks processed")
+    typer.echo("\n=== Pipeline complete ===")
 
 
 @app.command()
@@ -342,6 +446,124 @@ def quality(
 
     reporter.write_report()
     typer.echo(reporter.summary())
+
+
+@app.command()
+def reset(
+    source: Optional[str] = typer.Argument(default=None, help="Limit reset to this source (e.g. elexon)"),
+    dataset: Optional[str] = typer.Argument(default=None, help="Limit reset to this dataset"),
+    bronze: bool = typer.Option(False, "--bronze", help="Wipe bronze layer only"),
+    silver: bool = typer.Option(False, "--silver", help="Wipe silver layer only"),
+    gold: bool = typer.Option(False, "--gold", help="Wipe gold layer only"),
+    duckdb: bool = typer.Option(False, "--duckdb", help="Wipe and recreate DuckDB catalogue only"),
+    yes: bool = typer.Option(False, "--yes", "-y", help="Skip confirmation prompt"),
+) -> None:
+    """Delete bronze / silver / gold data and reset the DuckDB catalogue.
+
+    Without layer flags all layers are wiped. Scope with SOURCE / DATASET args.
+
+    Examples:
+
+      gridflow reset --yes                          # wipe everything\n
+      gridflow reset elexon --yes                   # wipe all elexon data\n
+      gridflow reset elexon system_prices --yes     # wipe one dataset\n
+      gridflow reset elexon system_prices --silver  # silver layer only\n
+    """
+    import shutil
+
+    from gridflow.config.settings import load_settings
+    from gridflow.storage.duckdb import init_catalogue
+
+    settings = load_settings()
+    data_dir = settings.pipeline.data_dir
+
+    # If no layer flags given, wipe all layers
+    wipe_all_layers = not any([bronze, silver, gold, duckdb])
+    wipe_bronze = bronze or wipe_all_layers
+    wipe_silver = silver or wipe_all_layers
+    wipe_gold   = gold   or wipe_all_layers
+    wipe_duckdb = duckdb or wipe_all_layers
+
+    # Build human-readable scope description
+    scope_parts = []
+    if source:
+        scope_parts.append(source)
+        if dataset:
+            scope_parts.append(dataset)
+    else:
+        scope_parts.append("ALL sources")
+
+    layer_parts = []
+    if wipe_bronze: layer_parts.append("bronze")
+    if wipe_silver: layer_parts.append("silver")
+    if wipe_gold:   layer_parts.append("gold")
+    if wipe_duckdb: layer_parts.append("DuckDB")
+
+    description = f"{'/'.join(scope_parts)} [{', '.join(layer_parts)}]"
+
+    if not yes:
+        typer.echo(f"About to PERMANENTLY DELETE: {description}")
+        typer.confirm("Are you sure?", abort=True)
+
+    deleted_files = 0
+    deleted_dirs  = 0
+
+    def _wipe_dir(root: Path) -> None:
+        nonlocal deleted_files, deleted_dirs
+        if not root.exists():
+            return
+        for f in root.rglob("*"):
+            if f.is_file():
+                try:
+                    f.unlink()
+                    deleted_files += 1
+                except OSError as e:
+                    typer.echo(f"  Warning: could not delete {f}: {e}", err=True)
+        # Remove empty dirs bottom-up
+        for d in sorted(root.rglob("*"), reverse=True):
+            if d.is_dir():
+                try:
+                    if not any(d.iterdir()):
+                        d.rmdir()
+                        deleted_dirs += 1
+                except OSError:
+                    pass
+
+    def _layer_root(layer: str) -> Path:
+        """Return the target directory for a given layer + scope."""
+        base = data_dir / layer
+        if source:
+            base = base / source
+            if dataset:
+                base = base / dataset
+        return base
+
+    if wipe_bronze:
+        _wipe_dir(_layer_root("bronze"))
+
+    if wipe_silver:
+        _wipe_dir(_layer_root("silver"))
+
+    if wipe_gold:
+        if source or dataset:
+            # Gold is not organised by source — warn if scoping doesn't apply
+            typer.echo("  Note: gold layer is not source-scoped; wiping entire gold directory.")
+        _wipe_dir(data_dir / "gold")
+
+    if wipe_duckdb and settings.pipeline.duckdb_path.exists():
+        try:
+            settings.pipeline.duckdb_path.unlink()
+            deleted_files += 1
+            typer.echo(f"  Deleted DuckDB: {settings.pipeline.duckdb_path}")
+        except OSError as e:
+            typer.echo(f"  Warning: could not delete DuckDB: {e}", err=True)
+
+    typer.echo(f"Reset complete — {deleted_files} files and {deleted_dirs} directories removed.")
+
+    # Recreate a fresh DuckDB catalogue (empty — no views yet)
+    if wipe_duckdb:
+        init_catalogue(settings.pipeline.duckdb_path, data_dir)
+        typer.echo("DuckDB catalogue recreated.")
 
 
 @app.command()

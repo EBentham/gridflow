@@ -14,6 +14,7 @@ from gridflow.connectors.elexon.endpoints import (
 class TestParamStyleEnum:
     def test_all_styles_defined(self):
         assert ParamStyle.SETTLEMENT_DATE.value == "settlement_date"
+        assert ParamStyle.SETTLEMENT_DATE_PERIOD.value == "settlement_date_period"
         assert ParamStyle.PUBLISH_DATETIME.value == "publish_datetime"
         assert ParamStyle.DATE_PATH.value == "date_path"
         assert ParamStyle.NO_PARAMS.value == "no_params"
@@ -22,16 +23,16 @@ class TestParamStyleEnum:
 class TestEndpointRegistry:
     def test_expected_datasets_registered(self):
         expected = {
-            "system_prices", "boal", "bod", "disbsad", "mid", "pn",
+            "system_prices", "boal", "disbsad", "mid", "pn",
             "freq", "fuelhh", "windfor", "ndf", "ndfd",
             "bmunits_reference",
         }
         for ds in expected:
             assert ds in ENDPOINTS, f"Missing endpoint: {ds}"
 
-    def test_system_prices_uses_settlement_date_style(self):
+    def test_system_prices_uses_date_path_style(self):
         ep = ENDPOINTS["system_prices"]
-        assert ep.param_style == ParamStyle.SETTLEMENT_DATE
+        assert ep.param_style == ParamStyle.DATE_PATH
 
     def test_freq_uses_publish_datetime_style(self):
         ep = ENDPOINTS["freq"]
@@ -53,28 +54,51 @@ class TestEndpointRegistry:
 
 class TestBuildParamsSettlementDate:
     def test_basic_settlement_date(self):
-        ep = ENDPOINTS["system_prices"]
+        # pn uses SETTLEMENT_DATE_PERIOD style (still uses settlementDate param)
+        ep = ENDPOINTS["pn"]
         params = build_params(ep, settlement_date=date(2024, 1, 15))
         assert params["settlementDate"] == "2024-01-15"
         assert params["page"] == 1
 
     def test_settlement_date_with_page(self):
-        ep = ENDPOINTS["system_prices"]
+        ep = ENDPOINTS["pn"]
         params = build_params(ep, settlement_date=date(2024, 1, 15), page=3)
         assert params["page"] == 3
 
     def test_settlement_date_with_period(self):
-        ep = ENDPOINTS["system_prices"]
+        ep = ENDPOINTS["pn"]
         params = build_params(
             ep, settlement_date=date(2024, 1, 15), settlement_period=10
         )
         assert params["settlementPeriod"] == 10
 
-    def test_boal_uses_settlement_date(self):
+    def test_new_tier1_datasets_use_publish_datetime(self):
+        """All new Tier-1 datasets use PUBLISH_DATETIME style."""
+        new_datasets = [
+            "agpt", "agws", "atl", "indo", "itsdo", "indod", "nonbm",
+            "inddem", "indgen", "tsdf", "tsdfd", "lolpdrm", "remit", "soso",
+        ]
+        for ds in new_datasets:
+            assert ds in ENDPOINTS, f"Missing endpoint: {ds}"
+            ep = ENDPOINTS[ds]
+            assert ep.param_style == ParamStyle.PUBLISH_DATETIME, f"{ds} should use PUBLISH_DATETIME"
+
+    def test_market_depth_uses_date_path(self):
+        ep = ENDPOINTS["market_depth"]
+        assert ep.param_style == ParamStyle.DATE_PATH
+        assert ep.path == "/balancing/settlement/market-depth"
+
+    def test_boal_uses_from_to_publish_datetime(self):
+        # boal was moved from SETTLEMENT_DATE to PUBLISH_DATETIME (from/to params)
         ep = ENDPOINTS["boal"]
-        params = build_params(ep, settlement_date=date(2024, 1, 15))
-        assert "settlementDate" in params
-        assert params["settlementDate"] == "2024-01-15"
+        assert ep.param_style == ParamStyle.PUBLISH_DATETIME
+        assert ep.from_param == "from"
+        assert ep.to_param == "to"
+        start = datetime(2024, 1, 15, 0, 0, tzinfo=UTC)
+        end = datetime(2024, 1, 16, 0, 0, tzinfo=UTC)
+        params = build_params(ep, start=start, end=end)
+        assert "from" in params
+        assert "settlementDate" not in params
 
 
 class TestBuildParamsPublishDatetime:

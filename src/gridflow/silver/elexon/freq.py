@@ -53,6 +53,7 @@ class FreqTransformer(BaseSilverTransformer):
 
         column_mapping = {
             "reportDateTime": "timestamp_utc",
+            "measurementTime": "timestamp_utc",
             "frequency": "frequency_hz",
         }
         rename_map = {k: v for k, v in column_mapping.items() if k in raw_df.columns}

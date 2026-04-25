@@ -53,3 +53,6 @@ warn_return_any = true
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
+markers = [
+    "live: tests that ping real APIs over the network (may be slow, require internet)",
+]

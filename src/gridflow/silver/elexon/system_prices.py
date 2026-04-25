@@ -62,7 +62,9 @@ class SystemPriceTransformer(BaseSilverTransformer):
             "systemSellPrice": "system_sell_price",
             "systemBuyPrice": "system_buy_price",
             "netImbalanceVolume": "net_imbalance_volume",
+            # API may return either of these (schema evolved over time)
             "settlementRunType": "run_type",
+            "priceDerivationCode": "run_type",
         }
 
         # Only rename columns that exist
@@ -70,11 +72,11 @@ class SystemPriceTransformer(BaseSilverTransformer):
         if rename_map:
             raw_df = raw_df.rename(rename_map)
 
-        # Ensure required columns exist
+        # Ensure required columns exist (run_type is optional — not always in API)
         required = [
             "settlement_date", "settlement_period",
             "system_sell_price", "system_buy_price",
-            "net_imbalance_volume", "run_type",
+            "net_imbalance_volume",
         ]
         missing = [c for c in required if c not in raw_df.columns]
         if missing:
@@ -82,14 +84,16 @@ class SystemPriceTransformer(BaseSilverTransformer):
             return pl.DataFrame()
 
         # Cast types
-        df = raw_df.with_columns([
+        casts = [
             pl.col("settlement_date").cast(pl.Date),
             pl.col("settlement_period").cast(pl.Int32),
             pl.col("system_sell_price").cast(pl.Float64),
             pl.col("system_buy_price").cast(pl.Float64),
             pl.col("net_imbalance_volume").cast(pl.Float64),
-            pl.col("run_type").cast(pl.Utf8),
-        ])
+        ]
+        if "run_type" in raw_df.columns:
+            casts.append(pl.col("run_type").cast(pl.Utf8))
+        df = raw_df.with_columns(casts)
 
         # Derive UTC timestamp from settlement date + period
         df = df.with_columns(
@@ -104,7 +108,10 @@ class SystemPriceTransformer(BaseSilverTransformer):
         )
 
         # Resolve settlement runs: keep only the latest per SP
-        df = self._resolve_runs(df)
+        if "run_type" in df.columns:
+            df = self._resolve_runs(df)
+        else:
+            df = df.unique(subset=["settlement_date", "settlement_period"], keep="last")
 
         # Add metadata columns
         now = datetime.now(UTC)

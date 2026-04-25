@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import time
 from pathlib import Path
 
 import duckdb
@@ -10,11 +11,37 @@ import duckdb
 logger = logging.getLogger(__name__)
 
 
-def get_connection(db_path: Path | str, read_only: bool = False) -> duckdb.DuckDBPyConnection:
-    """Get a DuckDB connection, creating the file if necessary."""
+def get_connection(
+    db_path: Path | str,
+    read_only: bool = False,
+    retries: int = 8,
+    base_delay: float = 1.0,
+) -> duckdb.DuckDBPyConnection:
+    """Get a DuckDB connection, creating the file if necessary.
+
+    Retries on transient file-lock errors (e.g. cloud sync tools such as
+    Google Drive File Stream holding the file between chunks).
+    """
     db_path = Path(db_path)
     db_path.parent.mkdir(parents=True, exist_ok=True)
-    return duckdb.connect(str(db_path), read_only=read_only)
+    last_exc: Exception | None = None
+    for attempt in range(retries):
+        try:
+            return duckdb.connect(str(db_path), read_only=read_only)
+        except Exception as exc:  # noqa: BLE001
+            last_exc = exc
+            wait = base_delay * (2 ** attempt)
+            logger.warning(
+                "DuckDB connection attempt %d/%d failed (%s); retrying in %.1fs",
+                attempt + 1,
+                retries,
+                exc,
+                wait,
+            )
+            time.sleep(wait)
+    raise RuntimeError(
+        f"Could not open DuckDB at {db_path} after {retries} attempts"
+    ) from last_exc
 
 
 def init_catalogue(db_path: Path, data_dir: Path) -> None:

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from typing import Any
 
 import httpx
@@ -27,6 +27,9 @@ class RawResponse:
     page: int = 1
     total_pages: int = 1
     http_status: int = 200
+    # The calendar date the data refers to (used for bronze directory partitioning).
+    # When set, the writer partitions by data_date rather than fetched_at.
+    data_date: date | None = None
 
 
 class BaseConnector(ABC):

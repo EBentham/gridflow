@@ -15,10 +15,7 @@ sources:
         endpoint: "/datasets/BOAL"
         schedule: "hourly"
         max_query_days: 1
-      bod:
-        endpoint: "/datasets/BOD"
-        schedule: "hourly"
-        max_query_days: 1
+      # bod: removed — endpoint decommissioned by Elexon (404)
       disbsad:
         endpoint: "/datasets/DISBSAD"
         schedule: "daily"
@@ -79,14 +76,68 @@ sources:
         endpoint: "/datasets/TEMP"
         schedule: "daily"
         max_query_days: 1
-      generation_by_fuel:
-        endpoint: "/generation/outturn/summary"
+      # generation_by_fuel: removed — duplicate of fuelhh (both use /datasets/FUELHH)
+      agpt:
+        endpoint: "/datasets/AGPT"
+        schedule: "daily"
+        max_query_days: 1
+      agws:
+        endpoint: "/datasets/AGWS"
+        schedule: "daily"
+        max_query_days: 1
+      atl:
+        endpoint: "/datasets/ATL"
+        schedule: "daily"
+        max_query_days: 1
+      indo:
+        endpoint: "/datasets/INDO"
         schedule: "hourly"
         max_query_days: 1
-      indicative_imbalance_volumes:
-        endpoint: "/balancing/settlement/indicative-imbalance-volumes"
+      itsdo:
+        endpoint: "/datasets/ITSDO"
         schedule: "hourly"
         max_query_days: 1
+      indod:
+        endpoint: "/datasets/INDOD"
+        schedule: "daily"
+        max_query_days: 1
+      nonbm:
+        endpoint: "/datasets/NONBM"
+        schedule: "daily"
+        max_query_days: 1
+      inddem:
+        endpoint: "/datasets/INDDEM"
+        schedule: "daily"
+        max_query_days: 1
+      indgen:
+        endpoint: "/datasets/INDGEN"
+        schedule: "daily"
+        max_query_days: 1
+      tsdf:
+        endpoint: "/datasets/TSDF"
+        schedule: "daily"
+        max_query_days: 1
+      tsdfd:
+        endpoint: "/datasets/TSDFD"
+        schedule: "daily"
+        max_query_days: 1
+      lolpdrm:
+        endpoint: "/datasets/LOLPDRM"
+        schedule: "daily"
+        max_query_days: 1
+      remit:
+        endpoint: "/datasets/REMIT"
+        schedule: "daily"
+        max_query_days: 1
+      soso:
+        endpoint: "/datasets/SOSO"
+        schedule: "daily"
+        max_query_days: 1
+      market_depth:
+        endpoint: "/balancing/settlement/market-depth"
+        schedule: "daily"
+        max_query_days: 1
+      # indicative_imbalance_volumes: removed — endpoint decommissioned by Elexon (404)
       bmunits_reference:
         endpoint: "/reference/bmunits/all"
         schedule: "weekly"

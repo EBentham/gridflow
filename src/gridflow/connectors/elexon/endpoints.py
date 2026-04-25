@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import date, datetime
 from enum import Enum
 
@@ -11,8 +11,9 @@ class ParamStyle(Enum):
     """Elexon API parameter styles."""
 
     SETTLEMENT_DATE = "settlement_date"  # ?settlementDate=2024-01-15
+    SETTLEMENT_DATE_PERIOD = "settlement_date_period"  # ?settlementDate=...&settlementPeriod=N (iterate 1..50)
     PUBLISH_DATETIME = "publish_datetime"  # ?publishDateTimeFrom=...&publishDateTimeTo=...
-    DATE_PATH = "date_path"  # /system-prices/{settlementDate}
+    DATE_PATH = "date_path"  # /endpoint/{date}  (e.g. system-prices)
     NO_PARAMS = "no_params"  # Static endpoint (e.g., BM unit reference)
 
 
@@ -26,53 +27,64 @@ class ElexonEndpoint:
     date_param: str = "settlementDate"
     period_param: str | None = "settlementPeriod"
     supports_pagination: bool = True
-    # For publish datetime style endpoints:
+    # For publish datetime / from-to style endpoints:
     from_param: str = "publishDateTimeFrom"
     to_param: str = "publishDateTimeTo"
     # For stream endpoints (used for backfill):
     stream_path: str | None = None
+    # Max hours per request chunk (UOU2T14D has a 4-hour API limit)
+    max_chunk_hours: int = 24
 
 
 # === COMPLETE ENDPOINT REGISTRY ===
 
 ENDPOINTS: dict[str, ElexonEndpoint] = {
-    # --- Settlement date style endpoints ---
+    # --- DATE_PATH style (path-based date, no query date param) ---
     "system_prices": ElexonEndpoint(
         path="/balancing/settlement/system-prices",
         description="System Sell Price and System Buy Price per settlement period",
-        param_style=ParamStyle.SETTLEMENT_DATE,
+        param_style=ParamStyle.DATE_PATH,
     ),
+
+    # --- FROM/TO style (dataset endpoints that use ?from=ISO&to=ISO) ---
+    # NOTE: boal uses BOALF path — BOAL was removed by Elexon, BOALF is the replacement.
     "boal": ElexonEndpoint(
-        path="/datasets/BOAL",
-        description="Bid/Offer Acceptance Levels",
-        param_style=ParamStyle.SETTLEMENT_DATE,
+        path="/datasets/BOALF",
+        description="Bid/Offer Acceptance Levels Final (replaces deprecated BOAL)",
+        param_style=ParamStyle.PUBLISH_DATETIME,
+        from_param="from",
+        to_param="to",
     ),
-    "bod": ElexonEndpoint(
-        path="/datasets/BOD",
-        description="Bid/Offer Data",
-        param_style=ParamStyle.SETTLEMENT_DATE,
-    ),
+    # BOD — endpoint decommissioned by Elexon (returns 404 for all param styles)
+
     "disbsad": ElexonEndpoint(
         path="/datasets/DISBSAD",
         description="Disaggregated Balancing Services Adjustment Data",
-        param_style=ParamStyle.SETTLEMENT_DATE,
+        param_style=ParamStyle.PUBLISH_DATETIME,
+        from_param="from",
+        to_param="to",
     ),
     "mid": ElexonEndpoint(
         path="/datasets/MID",
         description="Market Index Data",
-        param_style=ParamStyle.SETTLEMENT_DATE,
+        param_style=ParamStyle.PUBLISH_DATETIME,
+        from_param="from",
+        to_param="to",
     ),
     "netbsad": ElexonEndpoint(
         path="/datasets/NETBSAD",
         description="Net Balancing Services Adjustment Data",
-        param_style=ParamStyle.SETTLEMENT_DATE,
+        param_style=ParamStyle.PUBLISH_DATETIME,
+        from_param="from",
+        to_param="to",
     ),
     "pn": ElexonEndpoint(
         path="/datasets/PN",
         description="Physical Notifications",
-        param_style=ParamStyle.SETTLEMENT_DATE,
+        param_style=ParamStyle.SETTLEMENT_DATE_PERIOD,
     ),
-    # --- Publish datetime style endpoints ---
+
+    # --- Publish datetime style (standard publishDateTimeFrom/To params) ---
     "freq": ElexonEndpoint(
         path="/datasets/FREQ",
         description="System Frequency",
@@ -118,6 +130,7 @@ ENDPOINTS: dict[str, ElexonEndpoint] = {
         path="/datasets/UOU2T14D",
         description="2-14 Day Ahead Generation Availability by BM Unit",
         param_style=ParamStyle.PUBLISH_DATETIME,
+        max_chunk_hours=4,  # API rejects ranges > 4 hours
     ),
     "windfor": ElexonEndpoint(
         path="/datasets/WINDFOR",
@@ -129,17 +142,99 @@ ENDPOINTS: dict[str, ElexonEndpoint] = {
         description="Temperature Data",
         param_style=ParamStyle.PUBLISH_DATETIME,
     ),
-    # --- Opinionated (derived) endpoints ---
-    "generation_by_fuel": ElexonEndpoint(
-        path="/generation/outturn/summary",
-        description="Generation outturn summary by fuel type",
-        param_style=ParamStyle.SETTLEMENT_DATE,
+
+    # --- ENTSO-E / B-series datasets (AGPT, AGWS, ATL) ---
+    "agpt": ElexonEndpoint(
+        path="/datasets/AGPT",
+        description="Actual Aggregated Generation Per Type (B1620)",
+        param_style=ParamStyle.PUBLISH_DATETIME,
     ),
-    "indicative_imbalance_volumes": ElexonEndpoint(
-        path="/balancing/settlement/indicative-imbalance-volumes",
-        description="Indicative imbalance volumes",
-        param_style=ParamStyle.SETTLEMENT_DATE,
+    "agws": ElexonEndpoint(
+        path="/datasets/AGWS",
+        description="Actual or Estimated Wind and Solar Power Generation (B1630)",
+        param_style=ParamStyle.PUBLISH_DATETIME,
     ),
+    "atl": ElexonEndpoint(
+        path="/datasets/ATL",
+        description="Actual Total Load Per Bidding Zone (B0610)",
+        param_style=ParamStyle.PUBLISH_DATETIME,
+    ),
+
+    # --- Initial demand/generation outturn ---
+    "indo": ElexonEndpoint(
+        path="/datasets/INDO",
+        description="Initial National Demand Outturn",
+        param_style=ParamStyle.PUBLISH_DATETIME,
+    ),
+    "itsdo": ElexonEndpoint(
+        path="/datasets/ITSDO",
+        description="Initial Transmission System Demand Outturn",
+        param_style=ParamStyle.PUBLISH_DATETIME,
+    ),
+    "indod": ElexonEndpoint(
+        path="/datasets/INDOD",
+        description="Initial National Demand Outturn (Daily Total)",
+        param_style=ParamStyle.PUBLISH_DATETIME,
+    ),
+    "nonbm": ElexonEndpoint(
+        path="/datasets/NONBM",
+        description="Non-BM STOR Generation",
+        param_style=ParamStyle.PUBLISH_DATETIME,
+    ),
+
+    # --- Indicated / day-ahead datasets ---
+    "inddem": ElexonEndpoint(
+        path="/datasets/INDDEM",
+        description="Day and Day-Ahead Indicated Demand",
+        param_style=ParamStyle.PUBLISH_DATETIME,
+    ),
+    "indgen": ElexonEndpoint(
+        path="/datasets/INDGEN",
+        description="Day and Day-Ahead Indicated Generation",
+        param_style=ParamStyle.PUBLISH_DATETIME,
+    ),
+    "tsdf": ElexonEndpoint(
+        path="/datasets/TSDF",
+        description="Transmission System Demand Forecast",
+        param_style=ParamStyle.PUBLISH_DATETIME,
+    ),
+    "tsdfd": ElexonEndpoint(
+        path="/datasets/TSDFD",
+        description="2-14 Day Ahead Transmission System Demand Forecast",
+        param_style=ParamStyle.PUBLISH_DATETIME,
+    ),
+
+    # --- Loss of Load Probability ---
+    "lolpdrm": ElexonEndpoint(
+        path="/datasets/LOLPDRM",
+        description="Loss of Load Probability and De-rated Margin",
+        param_style=ParamStyle.PUBLISH_DATETIME,
+    ),
+
+    # --- REMIT outage messages ---
+    "remit": ElexonEndpoint(
+        path="/datasets/REMIT",
+        description="REMIT Outage and Unavailability Messages",
+        param_style=ParamStyle.PUBLISH_DATETIME,
+    ),
+
+    # --- SO-SO prices ---
+    "soso": ElexonEndpoint(
+        path="/datasets/SOSO",
+        description="SO-SO Prices (Cross-Border Interconnector Trading)",
+        param_style=ParamStyle.PUBLISH_DATETIME,
+    ),
+
+    # --- Settlement Market Depth (DATE_PATH) ---
+    "market_depth": ElexonEndpoint(
+        path="/balancing/settlement/market-depth",
+        description="Settlement Market Depth per Settlement Period",
+        param_style=ParamStyle.DATE_PATH,
+    ),
+
+    # NOTE: generation_by_fuel removed — duplicate of fuelhh.
+    # Both used /datasets/FUELHH; use fuelhh instead.
+
     # --- Reference data (static, no date params) ---
     "bmunits_reference": ElexonEndpoint(
         path="/reference/bmunits/all",
@@ -147,6 +242,9 @@ ENDPOINTS: dict[str, ElexonEndpoint] = {
         param_style=ParamStyle.NO_PARAMS,
         supports_pagination=False,
     ),
+
+    # REMOVED endpoints (kept as comments for reference):
+    # "indicative_imbalance_volumes" — endpoint removed by Elexon, returns 404
 }
 
 
@@ -167,6 +265,12 @@ def build_params(
         if settlement_period is not None and endpoint.period_param:
             params[endpoint.period_param] = settlement_period
 
+    elif endpoint.param_style == ParamStyle.SETTLEMENT_DATE_PERIOD:
+        if settlement_date:
+            params[endpoint.date_param] = settlement_date.isoformat()
+        if settlement_period is not None and endpoint.period_param:
+            params[endpoint.period_param] = settlement_period
+
     elif endpoint.param_style == ParamStyle.PUBLISH_DATETIME:
         if start:
             params[endpoint.from_param] = start.strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -174,7 +278,7 @@ def build_params(
             params[endpoint.to_param] = end.strftime("%Y-%m-%dT%H:%M:%SZ")
 
     elif endpoint.param_style == ParamStyle.DATE_PATH:
-        pass  # Path parameter handled in the connector
+        pass  # Path parameter appended by the connector in _fetch_date_path()
 
     elif endpoint.param_style == ParamStyle.NO_PARAMS:
         pass  # No query parameters needed

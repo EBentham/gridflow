@@ -54,16 +54,23 @@ class BOALTransformer(BaseSilverTransformer):
 
         column_mapping = {
             "settlementDate": "settlement_date",
+            # API may return settlementPeriod or settlementPeriodFrom
             "settlementPeriod": "settlement_period",
+            "settlementPeriodFrom": "settlement_period",
             "bmUnit": "bm_unit_id",
             "acceptanceNumber": "acceptance_number",
             "acceptanceTime": "acceptance_time",
             "deemedBoFlag": "deem_flag",
             "soFlag": "so_flag",
             "storProviderFlag": "stor_flag",
+            "storFlag": "stor_flag",
             "rrFlag": "rr_flag",
             "levelFrom": "bid_offer_level_from",
             "levelTo": "bid_offer_level_to",
+            "timeFrom": "time_from",
+            "timeTo": "time_to",
+            "nationalGridBmUnit": "national_grid_bm_unit",
+            "amendmentFlag": "amendment_flag",
         }
         rename_map = {k: v for k, v in column_mapping.items() if k in raw_df.columns}
         if rename_map:

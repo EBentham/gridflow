@@ -60,16 +60,39 @@ class DemandForecastTransformer(BaseSilverTransformer):
             "settlementDate": "settlement_date",
             "settlementPeriod": "settlement_period",
             "nationalDemand": "national_demand_mw",
+            "demand": "national_demand_mw",
             "transmissionSystemDemand": "transmission_demand_mw",
             "publishDateTime": "published_at",
+            "publishTime": "published_at",
+            "forecastDate": "forecast_date",
+            "startTime": "start_time",
         }
         rename_map = {k: v for k, v in column_mapping.items() if k in raw_df.columns}
         if rename_map:
             raw_df = raw_df.rename(rename_map)
 
-        required = ["settlement_date", "settlement_period", "national_demand_mw"]
-        missing = [c for c in required if c not in raw_df.columns]
-        if missing:
+        # national_demand_mw is required
+        if "national_demand_mw" not in raw_df.columns:
+            logger.error(f"Missing required columns in NDF: ['national_demand_mw']")
+            return pl.DataFrame()
+
+        has_sp = "settlement_date" in raw_df.columns and "settlement_period" in raw_df.columns
+
+        # For NDFD: use forecast_date as settlement_date if no settlement columns
+        if not has_sp and "forecast_date" in raw_df.columns:
+            raw_df = raw_df.with_columns(
+                pl.col("forecast_date").alias("settlement_date")
+            )
+            # NDFD has no settlement period — set to 1 as placeholder
+            raw_df = raw_df.with_columns(pl.lit(1).alias("settlement_period"))
+            has_sp = True
+
+        if not has_sp:
+            missing = []
+            if "settlement_date" not in raw_df.columns:
+                missing.append("settlement_date")
+            if "settlement_period" not in raw_df.columns:
+                missing.append("settlement_period")
             logger.error(f"Missing required columns in NDF: {missing}")
             return pl.DataFrame()
 
@@ -82,16 +105,25 @@ class DemandForecastTransformer(BaseSilverTransformer):
         if "transmission_demand_mw" in df.columns:
             df = df.with_columns(pl.col("transmission_demand_mw").cast(pl.Float64))
 
-        df = df.with_columns(
-            pl.struct(["settlement_date", "settlement_period"])
-            .map_elements(
-                lambda row: settlement_period_to_utc(
-                    row["settlement_date"], row["settlement_period"]
-                ),
-                return_dtype=pl.Datetime("us", "UTC"),
+        # Derive timestamp from settlement date/period or start_time
+        if has_sp:
+            df = df.with_columns(
+                pl.struct(["settlement_date", "settlement_period"])
+                .map_elements(
+                    lambda row: settlement_period_to_utc(
+                        row["settlement_date"], row["settlement_period"]
+                    ),
+                    return_dtype=pl.Datetime("us", "UTC"),
+                )
+                .alias("timestamp_utc")
             )
-            .alias("timestamp_utc")
-        )
+        elif "start_time" in df.columns:
+            df = df.with_columns(
+                pl.col("start_time")
+                .str.to_datetime(format="%Y-%m-%dT%H:%M:%SZ", time_unit="us", strict=False)
+                .dt.replace_time_zone("UTC")
+                .alias("timestamp_utc")
+            )
 
         forecast_type = "day_ahead" if self.dataset == "ndf" else "2_14_day"
         df = df.with_columns(pl.lit(forecast_type).alias("forecast_type"))
