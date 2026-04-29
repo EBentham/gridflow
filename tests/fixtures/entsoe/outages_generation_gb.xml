@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Unavailability_MarketDocument xmlns="urn:iec62325.351:tc57wg16:451-6:unavailabilitydocument:3:0">
+  <mRID>fixture-outage-gb-20240115</mRID>
+  <revisionNumber>1</revisionNumber>
+  <type>A80</type>
+  <process.processType>A05</process.processType>
+  <createdDateTime>2024-01-15T01:00:00Z</createdDateTime>
+  <period.timeInterval>
+    <start>2024-01-15T00:00Z</start>
+    <end>2024-01-16T00:00Z</end>
+  </period.timeInterval>
+  <TimeSeries>
+    <mRID>1</mRID>
+    <businessType>A54</businessType>
+    <in_Domain.mRID codingScheme="A01">10YGB----------A</in_Domain.mRID>
+    <out_Domain.mRID codingScheme="A01">10YGB----------A</out_Domain.mRID>
+    <quantity_Measure_Unit.name>MAW</quantity_Measure_Unit.name>
+    <curveType>A01</curveType>
+    <MktPSRType>
+      <psrType>B02</psrType>
+    </MktPSRType>
+    <Period>
+      <timeInterval>
+        <start>2024-01-15T00:00Z</start>
+        <end>2024-01-16T00:00Z</end>
+      </timeInterval>
+      <resolution>PT60M</resolution>
+      <Point>
+        <position>1</position>
+        <quantity>800</quantity>
+      </Point>
+      <Point>
+        <position>2</position>
+        <quantity>800</quantity>
+      </Point>
+    </Period>
+  </TimeSeries>
+</Unavailability_MarketDocument>

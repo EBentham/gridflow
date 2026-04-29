@@ -21,10 +21,20 @@ from gridflow.schemas.entsoe import (
     EntsoeCrossborderFlow,
     EntsoeDayAheadPrice,
 )
+from gridflow.schemas.entsoe import (
+    EntsoeInstalledCapacity,
+    EntsoeLoadForecast,
+    EntsoeOutagesGeneration,
+    EntsoeWindSolarForecast,
+)
 from gridflow.silver.entsoe.actual_generation import ActualGenerationTransformer
 from gridflow.silver.entsoe.actual_load import ActualLoadTransformer
 from gridflow.silver.entsoe.cross_border_flows import CrossBorderFlowsTransformer
 from gridflow.silver.entsoe.day_ahead_prices import DayAheadPricesTransformer
+from gridflow.silver.entsoe.installed_capacity import InstalledCapacityTransformer
+from gridflow.silver.entsoe.load_forecast import LoadForecastTransformer
+from gridflow.silver.entsoe.outages_generation import OutagesGenerationTransformer
+from gridflow.silver.entsoe.wind_solar_forecast import WindSolarForecastTransformer
 
 FIXTURES = Path(__file__).parent.parent / "fixtures" / "entsoe"
 
@@ -409,4 +419,313 @@ class TestEntsoeCrossborderFlowSchema:
                 in_area_code="10YGB----------A",
                 out_area_code="10YFR-RTE------C",
                 flow_mw=1500.0,
+            )
+
+
+# ---------------------------------------------------------------------------
+# LoadForecastTransformer
+# ---------------------------------------------------------------------------
+
+
+class TestLoadForecastTransformer:
+    def setup_method(self):
+        self.t = _make_entsoe_transformer(LoadForecastTransformer)
+
+    def test_transform_basic(self):
+        raw = _make_df_from_xml("load_forecast_gb.xml", "quantity")
+        result = self.t.transform(raw)
+        assert not result.is_empty()
+        assert "load_forecast_mw" in result.columns
+        assert "area_code" in result.columns
+
+    def test_three_records(self):
+        raw = _make_df_from_xml("load_forecast_gb.xml", "quantity")
+        result = self.t.transform(raw)
+        assert len(result) == 3
+
+    def test_forecast_values(self):
+        raw = _make_df_from_xml("load_forecast_gb.xml", "quantity")
+        result = self.t.transform(raw).sort("timestamp_utc")
+        assert abs(result["load_forecast_mw"][0] - 29100) < 0.1
+
+    def test_timestamp_dtype(self):
+        raw = _make_df_from_xml("load_forecast_gb.xml", "quantity")
+        result = self.t.transform(raw)
+        assert result["timestamp_utc"].dtype == pl.Datetime("us", "UTC")
+
+    def test_30min_resolution(self):
+        raw = _make_df_from_xml("load_forecast_gb.xml", "quantity")
+        result = self.t.transform(raw).sort("timestamp_utc")
+        ts = result["timestamp_utc"].to_list()
+        assert (ts[1] - ts[0]).total_seconds() == 30 * 60
+
+    def test_data_provider(self):
+        raw = _make_df_from_xml("load_forecast_gb.xml", "quantity")
+        result = self.t.transform(raw)
+        assert result["data_provider"][0] == "entsoe"
+
+    def test_empty_input(self):
+        assert self.t.transform(pl.DataFrame()).is_empty()
+
+    def test_missing_columns_returns_empty(self):
+        raw = pl.DataFrame([{"foo": "bar"}])
+        assert self.t.transform(raw).is_empty()
+
+
+# ---------------------------------------------------------------------------
+# WindSolarForecastTransformer
+# ---------------------------------------------------------------------------
+
+
+class TestWindSolarForecastTransformer:
+    def setup_method(self):
+        self.t = _make_entsoe_transformer(WindSolarForecastTransformer)
+
+    def test_transform_basic(self):
+        raw = _make_df_from_xml("wind_solar_forecast_gb.xml", "quantity")
+        result = self.t.transform(raw)
+        assert not result.is_empty()
+        assert "forecast_mw" in result.columns
+        assert "production_type" in result.columns
+        assert "area_code" in result.columns
+
+    def test_two_production_types(self):
+        raw = _make_df_from_xml("wind_solar_forecast_gb.xml", "quantity")
+        result = self.t.transform(raw)
+        prod_types = set(result["production_type"].to_list())
+        assert "B19" in prod_types
+        assert "B18" in prod_types
+
+    def test_four_records(self):
+        raw = _make_df_from_xml("wind_solar_forecast_gb.xml", "quantity")
+        result = self.t.transform(raw)
+        assert len(result) == 4  # 2 types × 2 points
+
+    def test_forecast_values(self):
+        raw = _make_df_from_xml("wind_solar_forecast_gb.xml", "quantity")
+        result = self.t.transform(raw).filter(
+            pl.col("production_type") == "B19"
+        ).sort("timestamp_utc")
+        assert abs(result["forecast_mw"][0] - 3200) < 0.1
+
+    def test_timestamp_dtype(self):
+        raw = _make_df_from_xml("wind_solar_forecast_gb.xml", "quantity")
+        result = self.t.transform(raw)
+        assert result["timestamp_utc"].dtype == pl.Datetime("us", "UTC")
+
+    def test_data_provider(self):
+        raw = _make_df_from_xml("wind_solar_forecast_gb.xml", "quantity")
+        result = self.t.transform(raw)
+        assert result["data_provider"][0] == "entsoe"
+
+    def test_dedup(self):
+        raw = _make_df_from_xml("wind_solar_forecast_gb.xml", "quantity")
+        doubled = pl.concat([raw, raw])
+        result = self.t.transform(doubled)
+        assert len(result) == 4
+
+    def test_empty_input(self):
+        assert self.t.transform(pl.DataFrame()).is_empty()
+
+
+# ---------------------------------------------------------------------------
+# OutagesGenerationTransformer
+# ---------------------------------------------------------------------------
+
+
+class TestOutagesGenerationTransformer:
+    def setup_method(self):
+        self.t = _make_entsoe_transformer(OutagesGenerationTransformer)
+
+    def test_transform_basic(self):
+        raw = _make_df_from_xml("outages_generation_gb.xml", "quantity")
+        result = self.t.transform(raw)
+        assert not result.is_empty()
+        assert "available_capacity_mw" in result.columns
+        assert "area_code" in result.columns
+
+    def test_production_type_present(self):
+        raw = _make_df_from_xml("outages_generation_gb.xml", "quantity")
+        result = self.t.transform(raw)
+        assert "production_type" in result.columns
+        assert result["production_type"][0] == "B02"
+
+    def test_two_records(self):
+        raw = _make_df_from_xml("outages_generation_gb.xml", "quantity")
+        result = self.t.transform(raw)
+        assert len(result) == 2
+
+    def test_capacity_value(self):
+        raw = _make_df_from_xml("outages_generation_gb.xml", "quantity")
+        result = self.t.transform(raw).sort("timestamp_utc")
+        assert abs(result["available_capacity_mw"][0] - 800) < 0.1
+
+    def test_timestamp_dtype(self):
+        raw = _make_df_from_xml("outages_generation_gb.xml", "quantity")
+        result = self.t.transform(raw)
+        assert result["timestamp_utc"].dtype == pl.Datetime("us", "UTC")
+
+    def test_empty_input(self):
+        assert self.t.transform(pl.DataFrame()).is_empty()
+
+
+# ---------------------------------------------------------------------------
+# InstalledCapacityTransformer
+# ---------------------------------------------------------------------------
+
+
+class TestInstalledCapacityTransformer:
+    def setup_method(self):
+        self.t = _make_entsoe_transformer(InstalledCapacityTransformer)
+
+    def test_transform_basic(self):
+        raw = _make_df_from_xml("installed_capacity_gb.xml", "quantity")
+        result = self.t.transform(raw)
+        assert not result.is_empty()
+        assert "installed_capacity_mw" in result.columns
+        assert "production_type" in result.columns
+        assert "area_code" in result.columns
+
+    def test_two_production_types(self):
+        raw = _make_df_from_xml("installed_capacity_gb.xml", "quantity")
+        result = self.t.transform(raw)
+        prod_types = set(result["production_type"].to_list())
+        assert "B19" in prod_types
+        assert "B18" in prod_types
+
+    def test_two_records(self):
+        raw = _make_df_from_xml("installed_capacity_gb.xml", "quantity")
+        result = self.t.transform(raw)
+        assert len(result) == 2
+
+    def test_capacity_values(self):
+        raw = _make_df_from_xml("installed_capacity_gb.xml", "quantity")
+        result = self.t.transform(raw).filter(
+            pl.col("production_type") == "B19"
+        )
+        assert abs(result["installed_capacity_mw"][0] - 15200) < 0.1
+
+    def test_timestamp_dtype(self):
+        raw = _make_df_from_xml("installed_capacity_gb.xml", "quantity")
+        result = self.t.transform(raw)
+        assert result["timestamp_utc"].dtype == pl.Datetime("us", "UTC")
+
+    def test_yearly_resolution_parsed(self):
+        raw = _make_df_from_xml("installed_capacity_gb.xml", "quantity")
+        result = self.t.transform(raw)
+        # P1Y maps to 365 days timedelta — check resolution string is present
+        assert "resolution" in result.columns
+
+    def test_data_provider(self):
+        raw = _make_df_from_xml("installed_capacity_gb.xml", "quantity")
+        result = self.t.transform(raw)
+        assert result["data_provider"][0] == "entsoe"
+
+    def test_empty_input(self):
+        assert self.t.transform(pl.DataFrame()).is_empty()
+
+
+# ---------------------------------------------------------------------------
+# New schema validation
+# ---------------------------------------------------------------------------
+
+
+class TestEntsoeLoadForecastSchema:
+    _TS = datetime(2024, 1, 15, 0, 0, tzinfo=UTC)
+
+    def test_valid_record(self):
+        r = EntsoeLoadForecast(
+            timestamp_utc=self._TS,
+            area_code="10YGB----------A",
+            load_forecast_mw=29100.0,
+        )
+        assert r.data_provider == "entsoe"
+        assert r.load_forecast_mw == 29100.0
+
+    def test_naive_timestamp_rejected(self):
+        from pydantic import ValidationError
+        with pytest.raises(ValidationError):
+            EntsoeLoadForecast(
+                timestamp_utc=datetime(2024, 1, 15),
+                area_code="10YGB----------A",
+                load_forecast_mw=29100.0,
+            )
+
+
+class TestEntsoeWindSolarForecastSchema:
+    _TS = datetime(2024, 1, 15, 0, 0, tzinfo=UTC)
+
+    def test_valid_record(self):
+        r = EntsoeWindSolarForecast(
+            timestamp_utc=self._TS,
+            area_code="10YGB----------A",
+            production_type="B19",
+            forecast_mw=3200.0,
+        )
+        assert r.data_provider == "entsoe"
+        assert r.production_type == "B19"
+
+    def test_naive_timestamp_rejected(self):
+        from pydantic import ValidationError
+        with pytest.raises(ValidationError):
+            EntsoeWindSolarForecast(
+                timestamp_utc=datetime(2024, 1, 15),
+                area_code="10YGB----------A",
+                production_type="B19",
+                forecast_mw=3200.0,
+            )
+
+
+class TestEntsoeOutagesGenerationSchema:
+    _TS = datetime(2024, 1, 15, 0, 0, tzinfo=UTC)
+
+    def test_valid_record(self):
+        r = EntsoeOutagesGeneration(
+            timestamp_utc=self._TS,
+            area_code="10YGB----------A",
+            production_type="B02",
+            available_capacity_mw=800.0,
+        )
+        assert r.data_provider == "entsoe"
+        assert r.available_capacity_mw == 800.0
+
+    def test_production_type_optional(self):
+        r = EntsoeOutagesGeneration(
+            timestamp_utc=self._TS,
+            area_code="10YGB----------A",
+            available_capacity_mw=800.0,
+        )
+        assert r.production_type == ""
+
+    def test_naive_timestamp_rejected(self):
+        from pydantic import ValidationError
+        with pytest.raises(ValidationError):
+            EntsoeOutagesGeneration(
+                timestamp_utc=datetime(2024, 1, 15),
+                area_code="10YGB----------A",
+                available_capacity_mw=800.0,
+            )
+
+
+class TestEntsoeInstalledCapacitySchema:
+    _TS = datetime(2024, 1, 1, 0, 0, tzinfo=UTC)
+
+    def test_valid_record(self):
+        r = EntsoeInstalledCapacity(
+            timestamp_utc=self._TS,
+            area_code="10YGB----------A",
+            production_type="B19",
+            installed_capacity_mw=15200.0,
+        )
+        assert r.data_provider == "entsoe"
+        assert r.installed_capacity_mw == 15200.0
+
+    def test_naive_timestamp_rejected(self):
+        from pydantic import ValidationError
+        with pytest.raises(ValidationError):
+            EntsoeInstalledCapacity(
+                timestamp_utc=datetime(2024, 1, 1),
+                area_code="10YGB----------A",
+                production_type="B19",
+                installed_capacity_mw=15200.0,
             )
