@@ -24,6 +24,10 @@ DOC_TYPES: dict[str, EntsoeDocType] = {
     "cross_border_flows": EntsoeDocType("A88", None, "Physical cross-border flows"),
     "outages_generation": EntsoeDocType("A80", None, "Unavailability of generation units"),
     "installed_capacity": EntsoeDocType("A68", "A33", "Installed generation capacity"),
+    # Phase 2 additions
+    "generation_forecast": EntsoeDocType("A71", "A01", "Day-ahead generation forecast aggregated"),
+    "load_forecast_weekly": EntsoeDocType("A65", "A31", "Week-ahead load forecast"),
+    "net_transfer_capacity": EntsoeDocType("A61", "A01", "Net transfer capacity day-ahead"),
 }
 
 # EIC (Energy Identification Codes) for key bidding zones

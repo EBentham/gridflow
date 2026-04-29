@@ -4,8 +4,11 @@ from gridflow.silver.entsoe.actual_generation import ActualGenerationTransformer
 from gridflow.silver.entsoe.actual_load import ActualLoadTransformer
 from gridflow.silver.entsoe.cross_border_flows import CrossBorderFlowsTransformer
 from gridflow.silver.entsoe.day_ahead_prices import DayAheadPricesTransformer
+from gridflow.silver.entsoe.generation_forecast import GenerationForecastTransformer
 from gridflow.silver.entsoe.installed_capacity import InstalledCapacityTransformer
 from gridflow.silver.entsoe.load_forecast import LoadForecastTransformer
+from gridflow.silver.entsoe.load_forecast_weekly import LoadForecastWeeklyTransformer
+from gridflow.silver.entsoe.net_transfer_capacity import NetTransferCapacityTransformer
 from gridflow.silver.entsoe.outages_generation import OutagesGenerationTransformer
 from gridflow.silver.entsoe.wind_solar_forecast import WindSolarForecastTransformer
 
@@ -18,4 +21,7 @@ __all__ = [
     "WindSolarForecastTransformer",
     "OutagesGenerationTransformer",
     "InstalledCapacityTransformer",
+    "GenerationForecastTransformer",
+    "LoadForecastWeeklyTransformer",
+    "NetTransferCapacityTransformer",
 ]

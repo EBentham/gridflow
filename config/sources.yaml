@@ -205,6 +205,22 @@ sources:
         process_type: "A33"
         schedule: "weekly"
         max_query_days: 365
+      # Phase 2 additions
+      generation_forecast:
+        document_type: "A71"
+        process_type: "A01"
+        schedule: "daily"
+        max_query_days: 1
+      load_forecast_weekly:
+        document_type: "A65"
+        process_type: "A31"
+        schedule: "weekly"
+        max_query_days: 7
+      net_transfer_capacity:
+        document_type: "A61"
+        process_type: "A01"
+        schedule: "daily"
+        max_query_days: 365
 
   gie_agsi:
     base_url: "https://agsi.gie.eu"

@@ -158,3 +158,63 @@ class EntsoeInstalledCapacity(BaseSchema):
         if v.tzinfo is None:
             raise ValueError("timestamp_utc must be timezone-aware (UTC)")
         return v
+
+
+class EntsoeGenerationForecast(BaseSchema):
+    """Silver-layer schema for ENTSO-E day-ahead generation forecast aggregated (A71/A01).
+
+    production_type: EIC PSR type code.
+    generation_forecast_mw: Forecasted generation in MW.
+    """
+
+    timestamp_utc: datetime
+    area_code: str
+    production_type: str
+    generation_forecast_mw: float
+    resolution: str = ""
+    data_provider: str = Field(default="entsoe")
+
+    @field_validator("timestamp_utc")
+    @classmethod
+    def must_be_utc(cls, v: datetime) -> datetime:
+        if v.tzinfo is None:
+            raise ValueError("timestamp_utc must be timezone-aware (UTC)")
+        return v
+
+
+class EntsoeLoadForecastWeekly(BaseSchema):
+    """Silver-layer schema for ENTSO-E week-ahead load forecast (A65/A31)."""
+
+    timestamp_utc: datetime
+    area_code: str
+    load_forecast_mw: float
+    resolution: str = ""
+    data_provider: str = Field(default="entsoe")
+
+    @field_validator("timestamp_utc")
+    @classmethod
+    def must_be_utc(cls, v: datetime) -> datetime:
+        if v.tzinfo is None:
+            raise ValueError("timestamp_utc must be timezone-aware (UTC)")
+        return v
+
+
+class EntsoeNetTransferCapacity(BaseSchema):
+    """Silver-layer schema for ENTSO-E net transfer capacity day-ahead (A61/A01).
+
+    ntc_mw: Net transfer capacity in MW between the two zones.
+    """
+
+    timestamp_utc: datetime
+    in_area_code: str
+    out_area_code: str
+    ntc_mw: float
+    resolution: str = ""
+    data_provider: str = Field(default="entsoe")
+
+    @field_validator("timestamp_utc")
+    @classmethod
+    def must_be_utc(cls, v: datetime) -> datetime:
+        if v.tzinfo is None:
+            raise ValueError("timestamp_utc must be timezone-aware (UTC)")
+        return v

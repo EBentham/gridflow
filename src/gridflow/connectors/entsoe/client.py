@@ -21,8 +21,13 @@ from gridflow.utils.retry import RETRY_POLICY
 
 logger = logging.getLogger(__name__)
 
-# Cross-border flow zone pairs (from_zone -> [to_zones])
-# Only GB interconnectors are included by default
+# Datasets that are fetched per zone-pair rather than per zone
+_ZONE_PAIR_DATASETS: frozenset[str] = frozenset(
+    {"cross_border_flows", "net_transfer_capacity"}
+)
+
+# Cross-border zone pairs (in_zone, out_zone)
+# Only GB interconnectors and adjacent European pairs are included by default
 _FLOW_PAIRS: list[tuple[str, str]] = [
     ("GB", "FR"),
     ("GB", "NL"),
@@ -98,7 +103,7 @@ class EntsoeConnector(BaseConnector):
 
         responses: list[RawResponse] = []
 
-        if dataset == "cross_border_flows":
+        if dataset in _ZONE_PAIR_DATASETS:
             # Fetch one response per (in, out) zone pair
             for in_zone, out_zone in _FLOW_PAIRS:
                 in_mrid = BIDDING_ZONES.get(in_zone)
