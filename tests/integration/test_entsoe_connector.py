@@ -97,10 +97,10 @@ async def test_fetch_control_area_omits_process_type_when_none(
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_fetch_control_area_includes_process_type_when_set(
+async def test_fetch_imbalance_volume_omits_process_type(
     entsoe_config: SourceConfig,
 ) -> None:
-    """A86 has process_type='A16' — processType must appear in the request."""
+    """A86 imbalance_volume has process_type=None — processType must NOT appear in the request."""
     xml_body = (FIXTURES / "imbalance_volume_gb.xml").read_bytes()
     route = respx.get(f"{_ENTSOE_BASE}/api").mock(
         return_value=httpx.Response(200, content=xml_body, headers={"content-type": "text/xml"})
@@ -114,7 +114,7 @@ async def test_fetch_control_area_includes_process_type_when_set(
         )
 
     sent_params = dict(route.calls[0].request.url.params)
-    assert sent_params.get("processType") == "A16"
+    assert "processType" not in sent_params
     assert sent_params["documentType"] == "A86"
 
 
