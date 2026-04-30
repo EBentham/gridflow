@@ -218,3 +218,113 @@ class EntsoeNetTransferCapacity(BaseSchema):
         if v.tzinfo is None:
             raise ValueError("timestamp_utc must be timezone-aware (UTC)")
         return v
+
+
+class EntsoeImbalancePrices(BaseSchema):
+    """Silver-layer schema for ENTSO-E imbalance prices (A85).
+
+    business_type: A19 = excess (long system), A20 = shortage (short system).
+    price_gbp_mwh: Imbalance settlement price in GBP/MWh.
+    """
+
+    timestamp_utc: datetime
+    area_code: str  # control area EIC mRID
+    business_type: str  # A19=excess, A20=shortage
+    price_gbp_mwh: float
+    resolution: str = ""
+    data_provider: str = Field(default="entsoe")
+
+    @field_validator("timestamp_utc")
+    @classmethod
+    def must_be_utc(cls, v: datetime) -> datetime:
+        if v.tzinfo is None:
+            raise ValueError("timestamp_utc must be timezone-aware (UTC)")
+        return v
+
+
+class EntsoeImbalanceVolume(BaseSchema):
+    """Silver-layer schema for ENTSO-E imbalance volumes (A86/A16).
+
+    flow_direction: A01 = up (generation excess), A02 = down (consumption excess).
+    volume_mwh: Imbalance volume in MWh.
+    """
+
+    timestamp_utc: datetime
+    area_code: str
+    flow_direction: str  # A01=up, A02=down
+    volume_mwh: float
+    resolution: str = ""
+    data_provider: str = Field(default="entsoe")
+
+    @field_validator("timestamp_utc")
+    @classmethod
+    def must_be_utc(cls, v: datetime) -> datetime:
+        if v.tzinfo is None:
+            raise ValueError("timestamp_utc must be timezone-aware (UTC)")
+        return v
+
+
+class EntsoeActivatedBalancingQty(BaseSchema):
+    """Silver-layer schema for ENTSO-E activated balancing energy quantity (A83/A16).
+
+    business_type: A95 = upward activation, A96 = downward activation.
+    quantity_mwh: Activated quantity in MWh.
+    """
+
+    timestamp_utc: datetime
+    area_code: str
+    business_type: str  # A95=upward, A96=downward
+    quantity_mwh: float
+    resolution: str = ""
+    data_provider: str = Field(default="entsoe")
+
+    @field_validator("timestamp_utc")
+    @classmethod
+    def must_be_utc(cls, v: datetime) -> datetime:
+        if v.tzinfo is None:
+            raise ValueError("timestamp_utc must be timezone-aware (UTC)")
+        return v
+
+
+class EntsoeActivatedBalancingPrices(BaseSchema):
+    """Silver-layer schema for ENTSO-E activated balancing energy prices (A84/A16).
+
+    business_type: A95 = upward activation price, A96 = downward activation price.
+    price_gbp_mwh: Activation price in GBP/MWh.
+    """
+
+    timestamp_utc: datetime
+    area_code: str
+    business_type: str  # A95=upward, A96=downward
+    price_gbp_mwh: float
+    resolution: str = ""
+    data_provider: str = Field(default="entsoe")
+
+    @field_validator("timestamp_utc")
+    @classmethod
+    def must_be_utc(cls, v: datetime) -> datetime:
+        if v.tzinfo is None:
+            raise ValueError("timestamp_utc must be timezone-aware (UTC)")
+        return v
+
+
+class EntsoeContractedReserves(BaseSchema):
+    """Silver-layer schema for ENTSO-E contracted reserves (A81).
+
+    business_type: Reserve type code (e.g. A95=FCR, A96=aFRR, A97=mFRR).
+    quantity_mw: Contracted reserve quantity in MW.
+    """
+
+    timestamp_utc: datetime
+    area_code: str
+    business_type: str
+    quantity_mw: float
+    resolution: str = ""
+    data_provider: str = Field(default="entsoe")
+
+    @field_validator("timestamp_utc")
+    @classmethod
+    def must_be_utc(cls, v: datetime) -> datetime:
+        if v.tzinfo is None:
+            raise ValueError("timestamp_utc must be timezone-aware (UTC)")
+        return v

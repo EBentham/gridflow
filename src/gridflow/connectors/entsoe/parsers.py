@@ -57,7 +57,10 @@ def parse_timeseries_xml(
 
     Returns:
         List of dicts with keys: ``timestamp_utc``, ``value``,
-        ``in_domain``, ``out_domain``, ``production_type``, ``resolution``.
+        ``in_domain``, ``out_domain``, ``production_type``,
+        ``control_area_domain``, ``business_type``, ``flow_direction``,
+        ``resolution``. Fields absent from a given TimeSeries element are
+        returned as empty strings (backward-compatible).
     """
     try:
         from lxml import etree  # type: ignore[import-untyped]
@@ -78,14 +81,21 @@ def parse_timeseries_xml(
         if _strip_ns(ts_el.tag) != "TimeSeries":
             continue
 
-        # Extract domain codes
+        # Extract domain codes and metadata fields
         in_domain = out_domain = production_type = ""
+        control_area_domain = business_type = flow_direction = ""
         for child in ts_el:
             tag = _strip_ns(child.tag)
             if tag in ("in_Domain.mRID", "outBiddingZone_Domain.mRID"):
                 in_domain = (child.text or "").strip()
             elif tag == "out_Domain.mRID":
                 out_domain = (child.text or "").strip()
+            elif tag == "controlArea_Domain.mRID":
+                control_area_domain = (child.text or "").strip()
+            elif tag == "businessType":
+                business_type = (child.text or "").strip()
+            elif tag == "flowDirection.direction":
+                flow_direction = (child.text or "").strip()
             elif tag == "MktPSRType":
                 for sub in child:
                     if _strip_ns(sub.tag) == "psrType":
@@ -135,6 +145,9 @@ def parse_timeseries_xml(
                     "in_domain": in_domain,
                     "out_domain": out_domain,
                     "production_type": production_type,
+                    "control_area_domain": control_area_domain,
+                    "business_type": business_type,
+                    "flow_direction": flow_direction,
                     "resolution": str(resolution),
                 })
 

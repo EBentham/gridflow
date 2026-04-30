@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Balancing_MarketDocument xmlns="urn:iec62325.351:tc57wg16:451-6:balancingdocument:4:0">
+  <mRID>fixture-contracted-res-gb-20240115</mRID>
+  <revisionNumber>1</revisionNumber>
+  <type>A81</type>
+  <process.processType>A51</process.processType>
+  <createdDateTime>2024-01-14T12:00:00Z</createdDateTime>
+  <period.timeInterval>
+    <start>2024-01-15T00:00Z</start>
+    <end>2024-01-16T00:00Z</end>
+  </period.timeInterval>
+  <TimeSeries>
+    <mRID>1</mRID>
+    <businessType>A95</businessType>
+    <controlArea_Domain.mRID codingScheme="A01">10YGB----------A</controlArea_Domain.mRID>
+    <quantity_Measure_Unit.name>MAW</quantity_Measure_Unit.name>
+    <curveType>A03</curveType>
+    <Period>
+      <timeInterval>
+        <start>2024-01-15T00:00Z</start>
+        <end>2024-01-16T00:00Z</end>
+      </timeInterval>
+      <resolution>PT60M</resolution>
+      <Point>
+        <position>1</position>
+        <quantity>500</quantity>
+      </Point>
+      <Point>
+        <position>2</position>
+        <quantity>500</quantity>
+      </Point>
+    </Period>
+  </TimeSeries>
+  <TimeSeries>
+    <mRID>2</mRID>
+    <businessType>A96</businessType>
+    <controlArea_Domain.mRID codingScheme="A01">10YGB----------A</controlArea_Domain.mRID>
+    <quantity_Measure_Unit.name>MAW</quantity_Measure_Unit.name>
+    <curveType>A03</curveType>
+    <Period>
+      <timeInterval>
+        <start>2024-01-15T00:00Z</start>
+        <end>2024-01-16T00:00Z</end>
+      </timeInterval>
+      <resolution>PT60M</resolution>
+      <Point>
+        <position>1</position>
+        <quantity>350</quantity>
+      </Point>
+      <Point>
+        <position>2</position>
+        <quantity>350</quantity>
+      </Point>
+    </Period>
+  </TimeSeries>
+</Balancing_MarketDocument>

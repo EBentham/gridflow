@@ -221,6 +221,30 @@ sources:
         process_type: "A01"
         schedule: "daily"
         max_query_days: 365
+      # Phase 3 — balancing datasets (controlArea_Domain.mRID)
+      imbalance_prices:
+        document_type: "A85"
+        schedule: "daily"
+        max_query_days: 1
+      imbalance_volume:
+        document_type: "A86"
+        process_type: "A16"
+        schedule: "daily"
+        max_query_days: 1
+      activated_balancing_qty:
+        document_type: "A83"
+        process_type: "A16"
+        schedule: "daily"
+        max_query_days: 1
+      activated_balancing_prices:
+        document_type: "A84"
+        process_type: "A16"
+        schedule: "daily"
+        max_query_days: 1
+      contracted_reserves:
+        document_type: "A81"
+        schedule: "daily"
+        max_query_days: 1
 
   gie_agsi:
     base_url: "https://agsi.gie.eu"

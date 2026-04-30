@@ -10,6 +10,7 @@ import pytest
 
 from gridflow.connectors.entsoe.endpoints import (
     BIDDING_ZONES,
+    DEFAULT_CONTROL_AREAS,
     DEFAULT_ZONES,
     DOC_TYPES,
     EntsoeDocType,
@@ -22,7 +23,12 @@ from gridflow.schemas.entsoe import (
     EntsoeDayAheadPrice,
 )
 from gridflow.schemas.entsoe import (
+    EntsoeActivatedBalancingPrices,
+    EntsoeActivatedBalancingQty,
+    EntsoeContractedReserves,
     EntsoeGenerationForecast,
+    EntsoeImbalancePrices,
+    EntsoeImbalanceVolume,
     EntsoeInstalledCapacity,
     EntsoeLoadForecast,
     EntsoeLoadForecastWeekly,
@@ -30,11 +36,16 @@ from gridflow.schemas.entsoe import (
     EntsoeOutagesGeneration,
     EntsoeWindSolarForecast,
 )
+from gridflow.silver.entsoe.activated_balancing_prices import ActivatedBalancingPricesTransformer
+from gridflow.silver.entsoe.activated_balancing_qty import ActivatedBalancingQtyTransformer
 from gridflow.silver.entsoe.actual_generation import ActualGenerationTransformer
 from gridflow.silver.entsoe.actual_load import ActualLoadTransformer
+from gridflow.silver.entsoe.contracted_reserves import ContractedReservesTransformer
 from gridflow.silver.entsoe.cross_border_flows import CrossBorderFlowsTransformer
 from gridflow.silver.entsoe.day_ahead_prices import DayAheadPricesTransformer
 from gridflow.silver.entsoe.generation_forecast import GenerationForecastTransformer
+from gridflow.silver.entsoe.imbalance_prices import ImbalancePricesTransformer
+from gridflow.silver.entsoe.imbalance_volume import ImbalanceVolumeTransformer
 from gridflow.silver.entsoe.installed_capacity import InstalledCapacityTransformer
 from gridflow.silver.entsoe.load_forecast import LoadForecastTransformer
 from gridflow.silver.entsoe.load_forecast_weekly import LoadForecastWeeklyTransformer
@@ -970,4 +981,524 @@ class TestEntsoeNetTransferCapacitySchema:
                 in_area_code="10YGB----------A",
                 out_area_code="10YFR-RTE------C",
                 ntc_mw=2000.0,
+            )
+
+
+# ---------------------------------------------------------------------------
+# Phase 3 — parser: new fields (control_area_domain, business_type,
+#            flow_direction) and backward-compatibility
+# ---------------------------------------------------------------------------
+
+
+class TestParserPhase3Fields:
+    """Parser must emit new fields; existing fixtures get empty strings."""
+
+    def _load(self, filename: str) -> bytes:
+        return (FIXTURES / filename).read_bytes()
+
+    def test_existing_fixture_has_new_keys(self):
+        """Backward-compatible: price fixture now returns 3 new keys."""
+        records = parse_timeseries_xml(
+            self._load("day_ahead_prices_gb.xml"), value_tag="price.amount"
+        )
+        record = records[0]
+        assert "control_area_domain" in record
+        assert "business_type" in record
+        assert "flow_direction" in record
+
+    def test_existing_fixture_control_area_empty(self):
+        """Zone-domain fixtures have no controlArea_Domain.mRID → empty string."""
+        records = parse_timeseries_xml(
+            self._load("actual_load_gb.xml"), value_tag="quantity"
+        )
+        assert records[0]["control_area_domain"] == ""
+
+    def test_existing_fixture_flow_direction_empty(self):
+        """Zone-domain fixtures have no flowDirection.direction → empty string."""
+        records = parse_timeseries_xml(
+            self._load("actual_load_gb.xml"), value_tag="quantity"
+        )
+        assert records[0]["flow_direction"] == ""
+
+    def test_imbalance_prices_control_area_populated(self):
+        records = parse_timeseries_xml(
+            self._load("imbalance_prices_gb.xml"), value_tag="price.amount"
+        )
+        assert records[0]["control_area_domain"] == "10YGB----------A"
+
+    def test_imbalance_prices_in_domain_empty(self):
+        """A85 XML has no in_Domain.mRID → in_domain should be empty."""
+        records = parse_timeseries_xml(
+            self._load("imbalance_prices_gb.xml"), value_tag="price.amount"
+        )
+        assert records[0]["in_domain"] == ""
+
+    def test_imbalance_prices_business_types(self):
+        records = parse_timeseries_xml(
+            self._load("imbalance_prices_gb.xml"), value_tag="price.amount"
+        )
+        business_types = {r["business_type"] for r in records}
+        assert "A19" in business_types
+        assert "A20" in business_types
+
+    def test_imbalance_prices_four_records(self):
+        """2 TimeSeries × 2 points = 4 records."""
+        records = parse_timeseries_xml(
+            self._load("imbalance_prices_gb.xml"), value_tag="price.amount"
+        )
+        assert len(records) == 4
+
+    def test_imbalance_prices_values(self):
+        records = parse_timeseries_xml(
+            self._load("imbalance_prices_gb.xml"), value_tag="price.amount"
+        )
+        a19_records = [r for r in records if r["business_type"] == "A19"]
+        assert abs(a19_records[0]["value"] - 95.50) < 0.01
+
+    def test_imbalance_volume_flow_direction(self):
+        records = parse_timeseries_xml(
+            self._load("imbalance_volume_gb.xml"), value_tag="quantity"
+        )
+        directions = {r["flow_direction"] for r in records}
+        assert "A01" in directions
+        assert "A02" in directions
+
+    def test_activated_balancing_qty_business_types(self):
+        records = parse_timeseries_xml(
+            self._load("activated_balancing_qty_gb.xml"), value_tag="quantity"
+        )
+        business_types = {r["business_type"] for r in records}
+        assert "A95" in business_types
+        assert "A96" in business_types
+
+    def test_contracted_reserves_control_area(self):
+        records = parse_timeseries_xml(
+            self._load("contracted_reserves_gb.xml"), value_tag="quantity"
+        )
+        assert records[0]["control_area_domain"] == "10YGB----------A"
+
+
+# ---------------------------------------------------------------------------
+# Phase 3 — endpoints
+# ---------------------------------------------------------------------------
+
+
+class TestPhase3Endpoints:
+    def test_phase3_doc_types_populated(self):
+        for name in (
+            "imbalance_prices",
+            "imbalance_volume",
+            "activated_balancing_qty",
+            "activated_balancing_prices",
+            "contracted_reserves",
+        ):
+            assert name in DOC_TYPES, f"{name} missing from DOC_TYPES"
+
+    def test_imbalance_prices_doc_type(self):
+        ip = DOC_TYPES["imbalance_prices"]
+        assert ip.document_type == "A85"
+        assert ip.process_type is None
+        assert ip.domain_style == "control_area"
+
+    def test_imbalance_volume_doc_type(self):
+        iv = DOC_TYPES["imbalance_volume"]
+        assert iv.document_type == "A86"
+        assert iv.process_type == "A16"
+        assert iv.domain_style == "control_area"
+
+    def test_activated_balancing_qty_doc_type(self):
+        ab = DOC_TYPES["activated_balancing_qty"]
+        assert ab.document_type == "A83"
+        assert ab.domain_style == "control_area"
+
+    def test_activated_balancing_prices_doc_type(self):
+        ab = DOC_TYPES["activated_balancing_prices"]
+        assert ab.document_type == "A84"
+        assert ab.domain_style == "control_area"
+
+    def test_contracted_reserves_doc_type(self):
+        cr = DOC_TYPES["contracted_reserves"]
+        assert cr.document_type == "A81"
+        assert cr.domain_style == "control_area"
+
+    def test_zone_datasets_have_zone_style(self):
+        for name in ("day_ahead_prices", "actual_load", "actual_generation", "load_forecast"):
+            assert DOC_TYPES[name].domain_style == "zone"
+
+    def test_default_control_areas_has_gb(self):
+        assert "GB" in DEFAULT_CONTROL_AREAS
+
+    def test_default_control_areas_subset_of_bidding_zones(self):
+        for area in DEFAULT_CONTROL_AREAS:
+            assert area in BIDDING_ZONES
+
+
+# ---------------------------------------------------------------------------
+# Phase 3 — ImbalancePricesTransformer
+# ---------------------------------------------------------------------------
+
+
+class TestImbalancePricesTransformer:
+    def setup_method(self):
+        self.t = _make_entsoe_transformer(ImbalancePricesTransformer)
+
+    def test_transform_basic(self):
+        raw = _make_df_from_xml("imbalance_prices_gb.xml", "price.amount")
+        result = self.t.transform(raw)
+        assert not result.is_empty()
+        assert "price_gbp_mwh" in result.columns
+        assert "area_code" in result.columns
+        assert "business_type" in result.columns
+
+    def test_four_records(self):
+        """2 business types × 2 points = 4 records."""
+        raw = _make_df_from_xml("imbalance_prices_gb.xml", "price.amount")
+        result = self.t.transform(raw)
+        assert len(result) == 4
+
+    def test_business_types_preserved(self):
+        raw = _make_df_from_xml("imbalance_prices_gb.xml", "price.amount")
+        result = self.t.transform(raw)
+        btypes = set(result["business_type"].to_list())
+        assert "A19" in btypes
+        assert "A20" in btypes
+
+    def test_control_area_becomes_area_code(self):
+        raw = _make_df_from_xml("imbalance_prices_gb.xml", "price.amount")
+        result = self.t.transform(raw)
+        assert result["area_code"][0] == "10YGB----------A"
+
+    def test_price_values(self):
+        raw = _make_df_from_xml("imbalance_prices_gb.xml", "price.amount")
+        result = self.t.transform(raw).filter(
+            pl.col("business_type") == "A19"
+        ).sort("timestamp_utc")
+        assert abs(result["price_gbp_mwh"][0] - 95.50) < 0.01
+
+    def test_timestamp_dtype(self):
+        raw = _make_df_from_xml("imbalance_prices_gb.xml", "price.amount")
+        result = self.t.transform(raw)
+        assert result["timestamp_utc"].dtype == pl.Datetime("us", "UTC")
+
+    def test_data_provider(self):
+        raw = _make_df_from_xml("imbalance_prices_gb.xml", "price.amount")
+        result = self.t.transform(raw)
+        assert result["data_provider"][0] == "entsoe"
+
+    def test_dedup(self):
+        raw = _make_df_from_xml("imbalance_prices_gb.xml", "price.amount")
+        doubled = pl.concat([raw, raw])
+        result = self.t.transform(doubled)
+        assert len(result) == 4
+
+    def test_empty_input(self):
+        assert self.t.transform(pl.DataFrame()).is_empty()
+
+
+# ---------------------------------------------------------------------------
+# Phase 3 — ImbalanceVolumeTransformer
+# ---------------------------------------------------------------------------
+
+
+class TestImbalanceVolumeTransformer:
+    def setup_method(self):
+        self.t = _make_entsoe_transformer(ImbalanceVolumeTransformer)
+
+    def test_transform_basic(self):
+        raw = _make_df_from_xml("imbalance_volume_gb.xml", "quantity")
+        result = self.t.transform(raw)
+        assert not result.is_empty()
+        assert "volume_mwh" in result.columns
+        assert "flow_direction" in result.columns
+        assert "area_code" in result.columns
+
+    def test_four_records(self):
+        raw = _make_df_from_xml("imbalance_volume_gb.xml", "quantity")
+        result = self.t.transform(raw)
+        assert len(result) == 4
+
+    def test_flow_directions_preserved(self):
+        raw = _make_df_from_xml("imbalance_volume_gb.xml", "quantity")
+        result = self.t.transform(raw)
+        dirs = set(result["flow_direction"].to_list())
+        assert "A01" in dirs
+        assert "A02" in dirs
+
+    def test_volume_values(self):
+        raw = _make_df_from_xml("imbalance_volume_gb.xml", "quantity")
+        result = self.t.transform(raw).filter(
+            pl.col("flow_direction") == "A01"
+        ).sort("timestamp_utc")
+        assert abs(result["volume_mwh"][0] - 150) < 0.1
+
+    def test_timestamp_dtype(self):
+        raw = _make_df_from_xml("imbalance_volume_gb.xml", "quantity")
+        result = self.t.transform(raw)
+        assert result["timestamp_utc"].dtype == pl.Datetime("us", "UTC")
+
+    def test_empty_input(self):
+        assert self.t.transform(pl.DataFrame()).is_empty()
+
+
+# ---------------------------------------------------------------------------
+# Phase 3 — ActivatedBalancingQtyTransformer
+# ---------------------------------------------------------------------------
+
+
+class TestActivatedBalancingQtyTransformer:
+    def setup_method(self):
+        self.t = _make_entsoe_transformer(ActivatedBalancingQtyTransformer)
+
+    def test_transform_basic(self):
+        raw = _make_df_from_xml("activated_balancing_qty_gb.xml", "quantity")
+        result = self.t.transform(raw)
+        assert not result.is_empty()
+        assert "quantity_mwh" in result.columns
+        assert "business_type" in result.columns
+
+    def test_four_records(self):
+        raw = _make_df_from_xml("activated_balancing_qty_gb.xml", "quantity")
+        result = self.t.transform(raw)
+        assert len(result) == 4
+
+    def test_business_types_preserved(self):
+        raw = _make_df_from_xml("activated_balancing_qty_gb.xml", "quantity")
+        result = self.t.transform(raw)
+        btypes = set(result["business_type"].to_list())
+        assert "A95" in btypes
+        assert "A96" in btypes
+
+    def test_upward_qty_values(self):
+        raw = _make_df_from_xml("activated_balancing_qty_gb.xml", "quantity")
+        result = self.t.transform(raw).filter(
+            pl.col("business_type") == "A95"
+        ).sort("timestamp_utc")
+        assert abs(result["quantity_mwh"][0] - 320) < 0.1
+
+    def test_timestamp_dtype(self):
+        raw = _make_df_from_xml("activated_balancing_qty_gb.xml", "quantity")
+        result = self.t.transform(raw)
+        assert result["timestamp_utc"].dtype == pl.Datetime("us", "UTC")
+
+    def test_empty_input(self):
+        assert self.t.transform(pl.DataFrame()).is_empty()
+
+
+# ---------------------------------------------------------------------------
+# Phase 3 — ActivatedBalancingPricesTransformer
+# ---------------------------------------------------------------------------
+
+
+class TestActivatedBalancingPricesTransformer:
+    def setup_method(self):
+        self.t = _make_entsoe_transformer(ActivatedBalancingPricesTransformer)
+
+    def test_transform_basic(self):
+        raw = _make_df_from_xml("activated_balancing_prices_gb.xml", "price.amount")
+        result = self.t.transform(raw)
+        assert not result.is_empty()
+        assert "price_gbp_mwh" in result.columns
+        assert "business_type" in result.columns
+
+    def test_four_records(self):
+        raw = _make_df_from_xml("activated_balancing_prices_gb.xml", "price.amount")
+        result = self.t.transform(raw)
+        assert len(result) == 4
+
+    def test_business_types_preserved(self):
+        raw = _make_df_from_xml("activated_balancing_prices_gb.xml", "price.amount")
+        result = self.t.transform(raw)
+        btypes = set(result["business_type"].to_list())
+        assert "A95" in btypes
+        assert "A96" in btypes
+
+    def test_upward_price_values(self):
+        raw = _make_df_from_xml("activated_balancing_prices_gb.xml", "price.amount")
+        result = self.t.transform(raw).filter(
+            pl.col("business_type") == "A95"
+        ).sort("timestamp_utc")
+        assert abs(result["price_gbp_mwh"][0] - 110.00) < 0.01
+
+    def test_timestamp_dtype(self):
+        raw = _make_df_from_xml("activated_balancing_prices_gb.xml", "price.amount")
+        result = self.t.transform(raw)
+        assert result["timestamp_utc"].dtype == pl.Datetime("us", "UTC")
+
+    def test_empty_input(self):
+        assert self.t.transform(pl.DataFrame()).is_empty()
+
+
+# ---------------------------------------------------------------------------
+# Phase 3 — ContractedReservesTransformer
+# ---------------------------------------------------------------------------
+
+
+class TestContractedReservesTransformer:
+    def setup_method(self):
+        self.t = _make_entsoe_transformer(ContractedReservesTransformer)
+
+    def test_transform_basic(self):
+        raw = _make_df_from_xml("contracted_reserves_gb.xml", "quantity")
+        result = self.t.transform(raw)
+        assert not result.is_empty()
+        assert "quantity_mw" in result.columns
+        assert "business_type" in result.columns
+
+    def test_four_records(self):
+        raw = _make_df_from_xml("contracted_reserves_gb.xml", "quantity")
+        result = self.t.transform(raw)
+        assert len(result) == 4
+
+    def test_business_types_preserved(self):
+        raw = _make_df_from_xml("contracted_reserves_gb.xml", "quantity")
+        result = self.t.transform(raw)
+        btypes = set(result["business_type"].to_list())
+        assert "A95" in btypes
+        assert "A96" in btypes
+
+    def test_quantity_values(self):
+        raw = _make_df_from_xml("contracted_reserves_gb.xml", "quantity")
+        result = self.t.transform(raw).filter(
+            pl.col("business_type") == "A95"
+        ).sort("timestamp_utc")
+        assert abs(result["quantity_mw"][0] - 500) < 0.1
+
+    def test_timestamp_dtype(self):
+        raw = _make_df_from_xml("contracted_reserves_gb.xml", "quantity")
+        result = self.t.transform(raw)
+        assert result["timestamp_utc"].dtype == pl.Datetime("us", "UTC")
+
+    def test_data_provider(self):
+        raw = _make_df_from_xml("contracted_reserves_gb.xml", "quantity")
+        result = self.t.transform(raw)
+        assert result["data_provider"][0] == "entsoe"
+
+    def test_empty_input(self):
+        assert self.t.transform(pl.DataFrame()).is_empty()
+
+
+# ---------------------------------------------------------------------------
+# Phase 3 — schema validation
+# ---------------------------------------------------------------------------
+
+
+class TestEntsoeImbalancePricesSchema:
+    _TS = datetime(2024, 1, 15, 0, 0, tzinfo=UTC)
+
+    def test_valid_record(self):
+        r = EntsoeImbalancePrices(
+            timestamp_utc=self._TS,
+            area_code="10YGB----------A",
+            business_type="A19",
+            price_gbp_mwh=95.50,
+        )
+        assert r.data_provider == "entsoe"
+        assert r.price_gbp_mwh == 95.50
+        assert r.business_type == "A19"
+
+    def test_naive_timestamp_rejected(self):
+        from pydantic import ValidationError
+        with pytest.raises(ValidationError):
+            EntsoeImbalancePrices(
+                timestamp_utc=datetime(2024, 1, 15),
+                area_code="10YGB----------A",
+                business_type="A19",
+                price_gbp_mwh=95.50,
+            )
+
+
+class TestEntsoeImbalanceVolumeSchema:
+    _TS = datetime(2024, 1, 15, 0, 0, tzinfo=UTC)
+
+    def test_valid_record(self):
+        r = EntsoeImbalanceVolume(
+            timestamp_utc=self._TS,
+            area_code="10YGB----------A",
+            flow_direction="A01",
+            volume_mwh=150.0,
+        )
+        assert r.data_provider == "entsoe"
+        assert r.volume_mwh == 150.0
+        assert r.flow_direction == "A01"
+
+    def test_naive_timestamp_rejected(self):
+        from pydantic import ValidationError
+        with pytest.raises(ValidationError):
+            EntsoeImbalanceVolume(
+                timestamp_utc=datetime(2024, 1, 15),
+                area_code="10YGB----------A",
+                flow_direction="A01",
+                volume_mwh=150.0,
+            )
+
+
+class TestEntsoeActivatedBalancingQtySchema:
+    _TS = datetime(2024, 1, 15, 0, 0, tzinfo=UTC)
+
+    def test_valid_record(self):
+        r = EntsoeActivatedBalancingQty(
+            timestamp_utc=self._TS,
+            area_code="10YGB----------A",
+            business_type="A95",
+            quantity_mwh=320.0,
+        )
+        assert r.data_provider == "entsoe"
+        assert r.quantity_mwh == 320.0
+
+    def test_naive_timestamp_rejected(self):
+        from pydantic import ValidationError
+        with pytest.raises(ValidationError):
+            EntsoeActivatedBalancingQty(
+                timestamp_utc=datetime(2024, 1, 15),
+                area_code="10YGB----------A",
+                business_type="A95",
+                quantity_mwh=320.0,
+            )
+
+
+class TestEntsoeActivatedBalancingPricesSchema:
+    _TS = datetime(2024, 1, 15, 0, 0, tzinfo=UTC)
+
+    def test_valid_record(self):
+        r = EntsoeActivatedBalancingPrices(
+            timestamp_utc=self._TS,
+            area_code="10YGB----------A",
+            business_type="A95",
+            price_gbp_mwh=110.0,
+        )
+        assert r.data_provider == "entsoe"
+        assert r.price_gbp_mwh == 110.0
+
+    def test_naive_timestamp_rejected(self):
+        from pydantic import ValidationError
+        with pytest.raises(ValidationError):
+            EntsoeActivatedBalancingPrices(
+                timestamp_utc=datetime(2024, 1, 15),
+                area_code="10YGB----------A",
+                business_type="A95",
+                price_gbp_mwh=110.0,
+            )
+
+
+class TestEntsoeContractedReservesSchema:
+    _TS = datetime(2024, 1, 15, 0, 0, tzinfo=UTC)
+
+    def test_valid_record(self):
+        r = EntsoeContractedReserves(
+            timestamp_utc=self._TS,
+            area_code="10YGB----------A",
+            business_type="A95",
+            quantity_mw=500.0,
+        )
+        assert r.data_provider == "entsoe"
+        assert r.quantity_mw == 500.0
+
+    def test_naive_timestamp_rejected(self):
+        from pydantic import ValidationError
+        with pytest.raises(ValidationError):
+            EntsoeContractedReserves(
+                timestamp_utc=datetime(2024, 1, 15),
+                area_code="10YGB----------A",
+                business_type="A95",
+                quantity_mw=500.0,
             )

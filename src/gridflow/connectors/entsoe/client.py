@@ -12,6 +12,7 @@ from gridflow.config.settings import SourceConfig
 from gridflow.connectors.base import BaseConnector, RawResponse
 from gridflow.connectors.entsoe.endpoints import (
     BIDDING_ZONES,
+    DEFAULT_CONTROL_AREAS,
     DEFAULT_ZONES,
     DOC_TYPES,
     ENTSOE_DT_FORMAT,
@@ -120,6 +121,21 @@ class EntsoeConnector(BaseConnector):
                     period_end=period_end,
                 )
                 responses.append(resp)
+        elif doc_type.domain_style == "control_area":
+            # Fetch one response per control area (balancing datasets)
+            for area in DEFAULT_CONTROL_AREAS:
+                mrid = BIDDING_ZONES.get(area)
+                if not mrid:
+                    continue
+                resp = await self._fetch_control_area(
+                    dataset=dataset,
+                    doc_type_code=doc_type.document_type,
+                    process_type=doc_type.process_type,
+                    control_area_domain=mrid,
+                    period_start=period_start,
+                    period_end=period_end,
+                )
+                responses.append(resp)
         else:
             # Fetch one response per bidding zone
             for zone in DEFAULT_ZONES:
@@ -166,6 +182,45 @@ class EntsoeConnector(BaseConnector):
             "documentType": doc_type_code,
             "in_Domain.mRID": in_domain,
             "out_Domain.mRID": out_domain,
+            "periodStart": period_start,
+            "periodEnd": period_end,
+        }
+        if process_type:
+            query_params["processType"] = process_type
+        if self.config.api_key:
+            query_params["securityToken"] = self.config.api_key
+
+        raw = await self._request(_ENTSOE_API_PATH, query_params)
+        return RawResponse(
+            body=raw.content,
+            content_type=raw.headers.get("content-type", "text/xml"),
+            source="entsoe",
+            dataset=dataset,
+            request_url=str(raw.url),
+            request_params=dict(query_params),
+            api_version="v1",
+            http_status=raw.status_code,
+        )
+
+    async def _fetch_control_area(
+        self,
+        *,
+        dataset: str,
+        doc_type_code: str,
+        process_type: str | None,
+        control_area_domain: str,
+        period_start: str,
+        period_end: str,
+    ) -> RawResponse:
+        """Fetch a single control-area response from the ENTSO-E API.
+
+        Used for balancing datasets (A83, A84, A85, A86, A81) that require
+        ``controlArea_Domain.mRID`` instead of ``in_Domain.mRID`` /
+        ``out_Domain.mRID``.
+        """
+        query_params: dict[str, str] = {
+            "documentType": doc_type_code,
+            "controlArea_Domain.mRID": control_area_domain,
             "periodStart": period_start,
             "periodEnd": period_end,
         }
