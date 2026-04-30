@@ -85,6 +85,7 @@ class EntsoeLoadForecast(BaseSchema):
     area_code: str
     load_forecast_mw: float
     resolution: str = ""
+    forecast_horizon: str = "day_ahead"
     data_provider: str = Field(default="entsoe")
 
     @field_validator("timestamp_utc")
@@ -104,7 +105,7 @@ class EntsoeWindSolarForecast(BaseSchema):
     timestamp_utc: datetime
     area_code: str
     production_type: str  # B16=Wind offshore, B18=Wind onshore, B19=Solar
-    forecast_mw: float
+    generation_forecast_mw: float
     resolution: str = ""
     data_provider: str = Field(default="entsoe")
 
@@ -142,13 +143,13 @@ class EntsoeInstalledCapacity(BaseSchema):
     """Silver-layer schema for ENTSO-E installed generation capacity aggregated (A68/A33).
 
     production_type: EIC PSR type code.
-    installed_capacity_mw: Total installed capacity in MW.
+    capacity_mw: Total installed capacity in MW.
     """
 
     timestamp_utc: datetime
     area_code: str
     production_type: str
-    installed_capacity_mw: float
+    capacity_mw: float
     resolution: str = ""
     data_provider: str = Field(default="entsoe")
 
@@ -189,6 +190,7 @@ class EntsoeLoadForecastWeekly(BaseSchema):
     area_code: str
     load_forecast_mw: float
     resolution: str = ""
+    forecast_horizon: str = "week_ahead"
     data_provider: str = Field(default="entsoe")
 
     @field_validator("timestamp_utc")

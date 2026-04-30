@@ -33,7 +33,7 @@ DOC_TYPES: dict[str, EntsoeDocType] = {
     "net_transfer_capacity": EntsoeDocType("A61", "A01", "Net transfer capacity day-ahead"),
     # Phase 3 additions — balancing datasets (controlArea_Domain.mRID)
     "imbalance_prices": EntsoeDocType("A85", None, "Imbalance prices", domain_style="control_area"),
-    "imbalance_volume": EntsoeDocType("A86", "A16", "Imbalance volumes", domain_style="control_area"),
+    "imbalance_volume": EntsoeDocType("A86", None, "Imbalance volumes", domain_style="control_area"),
     "activated_balancing_qty": EntsoeDocType("A83", "A16", "Activated balancing energy quantity", domain_style="control_area"),
     "activated_balancing_prices": EntsoeDocType("A84", "A16", "Activated balancing energy prices", domain_style="control_area"),
     "contracted_reserves": EntsoeDocType("A81", None, "Contracted reserves", domain_style="control_area"),
