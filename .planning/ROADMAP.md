@@ -33,6 +33,10 @@ Audit: `docs/specs/entsoe-extension-audit.md`
 **Goal:** Align column names and missing fields across Phase 1/2 schemas to spec.
 **Closes:** GAP-01, GAP-02, GAP-03a, GAP-05, GAP-08
 **Status:** 🔲 Planned
+**Plans:** 1 plan
+
+Plans:
+- [ ] G2-01-PLAN.md — Schema contracts + transformer column alignment + test updates
 
 **Tasks:**
 1. `load_forecast` schema + transformer: add `forecast_horizon: str = "day_ahead"` literal field
