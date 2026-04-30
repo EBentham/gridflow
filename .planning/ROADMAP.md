@@ -61,6 +61,11 @@ Plans:
 **Goal:** Phase 3 transformers emit human-readable direction/reserve-type strings instead of raw ENTSO-E codes; currency fields correctly named.
 **Closes:** GAP-06, GAP-07
 **Status:** 🔲 Planned
+**Plans:** 2 plans
+
+Plans:
+- [ ] G3-01-PLAN.md — imbalance_prices + imbalance_volume schemas, transformers, tests (Wave 1)
+- [ ] G3-02-PLAN.md — activated_balancing_qty + activated_balancing_prices + contracted_reserves schemas, transformers, fixtures, tests (Wave 2)
 
 **Tasks:**
 1. `imbalance_prices`: add `direction` column ("long"/"short") mapped from A19→long, A20→short; rename `price_gbp_mwh` → `price_eur_mwh`; update schema
@@ -71,6 +76,7 @@ Plans:
 6. Update all Phase 3 schemas with new typed fields
 7. Update all Phase 3 transformer tests (new column assertions)
 8. Update Phase 3 fixture XMLs if needed to exercise direction/reserve_type paths
+9. Add `ingested_at` to all 5 Phase 3 transformers and schemas (deferred tech debt)
 
 **Files:**
 - `src/gridflow/schemas/entsoe.py`
@@ -79,6 +85,8 @@ Plans:
 - `src/gridflow/silver/entsoe/activated_balancing_qty.py`
 - `src/gridflow/silver/entsoe/activated_balancing_prices.py`
 - `src/gridflow/silver/entsoe/contracted_reserves.py`
+- `tests/fixtures/entsoe/activated_balancing_qty_gb.xml`
+- `tests/fixtures/entsoe/activated_balancing_prices_gb.xml`
 - `tests/unit/test_entsoe.py`
 
 ---
@@ -110,5 +118,4 @@ Plans:
 
 | Item | Decision |
 |------|----------|
-| `ingested_at` missing from Phase 3 transformers | Add in G3 alongside schema changes |
 | `DEFAULT_CONTROL_AREAS = ["GB"]` only | Intentional UK scope; expand when continental data is needed |
