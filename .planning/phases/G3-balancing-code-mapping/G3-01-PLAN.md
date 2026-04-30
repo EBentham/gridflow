@@ -251,7 +251,7 @@ No other schema classes in this file are touched.
 **imbalance_prices.py** — rewrite transform() method:
 
 1. Add `from datetime import UTC` to imports (if not already present). Add `datetime` import from stdlib.
-2. Update `required` set in transform(): replace `"business_type"` with `"business_type"` (it still comes from the parser, so keep it in required for the guard check), keep all others.
+2. Keep `business_type` in the `required` guard set — it still arrives from the parser and is consumed by the replace_strict mapping step (do not remove it from the required set).
 3. Change the rename dict: `"value": "price_eur_mwh"` (was `"price_gbp_mwh"`).
 4. After rename, add the direction mapping before `.select()`:
    ```python
@@ -508,7 +508,7 @@ After all edits, run the full test suite to confirm no regressions.
   </verify>
   <acceptance_criteria>
     - `uv run pytest tests/unit/test_entsoe.py -x -q` passes with 0 failures
-    - `grep "price_gbp_mwh" tests/unit/test_entsoe.py` returns zero matches (old column gone from test assertions)
+    - `grep "price_gbp_mwh" tests/unit/test_entsoe.py | grep -v "ActivatedBalancing"` returns zero matches (imbalance test classes no longer reference old column; ActivatedBalancing tests are updated in G3-02)
     - `grep "flow_direction.*A01\|flow_direction.*A02" tests/unit/test_entsoe.py` returns zero matches (raw codes gone from assertions)
     - `grep "direction.*long\|direction.*short" tests/unit/test_entsoe.py` returns matches in both imbalance transformer test classes
     - `grep "ingested_at" tests/unit/test_entsoe.py` returns at least two matches (one per transformer)
@@ -548,6 +548,9 @@ grep -n "price_eur_mwh\|direction\|ingested_at" src/gridflow/schemas/entsoe.py
 # Transformer code mappings
 grep "replace_strict" src/gridflow/silver/entsoe/imbalance_prices.py
 grep "replace_strict" src/gridflow/silver/entsoe/imbalance_volume.py
+
+# Lint
+uv run ruff check src/gridflow/schemas/entsoe.py src/gridflow/silver/entsoe/imbalance_prices.py src/gridflow/silver/entsoe/imbalance_volume.py
 
 # Full test suite
 uv run pytest tests/unit/test_entsoe.py -x -q
