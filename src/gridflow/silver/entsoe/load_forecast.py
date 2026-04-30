@@ -70,11 +70,12 @@ class LoadForecastTransformer(BaseSilverTransformer):
         df = df.with_columns([
             pl.lit("entsoe").alias("data_provider"),
             pl.lit(now).cast(pl.Datetime("us", "UTC")).alias("ingested_at"),
+            pl.lit("day_ahead").alias("forecast_horizon"),
         ])
 
         output_cols = [
             "timestamp_utc", "area_code", "load_forecast_mw",
-            "resolution", "data_provider", "ingested_at",
+            "resolution", "forecast_horizon", "data_provider", "ingested_at",
         ]
         available = [c for c in output_cols if c in df.columns]
         return df.select(available).sort("timestamp_utc", "area_code")

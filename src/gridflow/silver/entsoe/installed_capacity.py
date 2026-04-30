@@ -21,7 +21,7 @@ class InstalledCapacityTransformer(BaseSilverTransformer):
     A68/A33 (installed capacity aggregated by technology).  Resolution is
     typically P1Y (annual) or P1M.  Each TimeSeries carries ``MktPSRType /
     psrType`` to identify the generation technology.  The ``quantity`` value is
-    the total installed capacity in MW.
+    the capacity_mw: Total installed capacity in MW.
     """
 
     source = "entsoe"
@@ -62,7 +62,7 @@ class InstalledCapacityTransformer(BaseSilverTransformer):
             return pl.DataFrame()
 
         df = raw_df.rename(
-            {"value": "installed_capacity_mw", "in_domain": "area_code"}
+            {"value": "capacity_mw", "in_domain": "area_code"}
         )
 
         if df["timestamp_utc"].dtype != pl.Datetime("us", "UTC"):
@@ -70,7 +70,7 @@ class InstalledCapacityTransformer(BaseSilverTransformer):
                 pl.col("timestamp_utc").cast(pl.Datetime("us", "UTC"))
             )
 
-        df = df.with_columns(pl.col("installed_capacity_mw").cast(pl.Float64))
+        df = df.with_columns(pl.col("capacity_mw").cast(pl.Float64))
 
         if "production_type" in df.columns:
             df = df.with_columns(
@@ -91,7 +91,7 @@ class InstalledCapacityTransformer(BaseSilverTransformer):
 
         output_cols = [
             "timestamp_utc", "area_code", "production_type",
-            "installed_capacity_mw", "resolution", "data_provider", "ingested_at",
+            "capacity_mw", "resolution", "data_provider", "ingested_at",
         ]
         available = [c for c in output_cols if c in df.columns]
         return df.select(available).sort("timestamp_utc", "area_code", "production_type")

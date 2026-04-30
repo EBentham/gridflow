@@ -59,14 +59,14 @@ class WindSolarForecastTransformer(BaseSilverTransformer):
             logger.error("Missing required columns in wind_solar_forecast: %s", missing)
             return pl.DataFrame()
 
-        df = raw_df.rename({"value": "forecast_mw", "in_domain": "area_code"})
+        df = raw_df.rename({"value": "generation_forecast_mw", "in_domain": "area_code"})
 
         if df["timestamp_utc"].dtype != pl.Datetime("us", "UTC"):
             df = df.with_columns(
                 pl.col("timestamp_utc").cast(pl.Datetime("us", "UTC"))
             )
 
-        df = df.with_columns(pl.col("forecast_mw").cast(pl.Float64))
+        df = df.with_columns(pl.col("generation_forecast_mw").cast(pl.Float64))
 
         # production_type comes from parser (MktPSRType → psrType); fill empty
         if "production_type" in df.columns:
@@ -88,7 +88,7 @@ class WindSolarForecastTransformer(BaseSilverTransformer):
 
         output_cols = [
             "timestamp_utc", "area_code", "production_type",
-            "forecast_mw", "resolution", "data_provider", "ingested_at",
+            "generation_forecast_mw", "resolution", "data_provider", "ingested_at",
         ]
         available = [c for c in output_cols if c in df.columns]
         return df.select(available).sort("timestamp_utc", "area_code", "production_type")
