@@ -508,6 +508,12 @@ class TestLoadForecastTransformer:
         raw = pl.DataFrame([{"foo": "bar"}])
         assert self.t.transform(raw).is_empty()
 
+    def test_forecast_horizon_day_ahead(self):
+        raw = _make_df_from_xml("load_forecast_gb.xml", "quantity")
+        result = self.t.transform(raw)
+        assert "forecast_horizon" in result.columns
+        assert result["forecast_horizon"][0] == "day_ahead"
+
 
 # ---------------------------------------------------------------------------
 # WindSolarForecastTransformer
@@ -522,7 +528,7 @@ class TestWindSolarForecastTransformer:
         raw = _make_df_from_xml("wind_solar_forecast_gb.xml", "quantity")
         result = self.t.transform(raw)
         assert not result.is_empty()
-        assert "forecast_mw" in result.columns
+        assert "generation_forecast_mw" in result.columns
         assert "production_type" in result.columns
         assert "area_code" in result.columns
 
@@ -543,7 +549,7 @@ class TestWindSolarForecastTransformer:
         result = self.t.transform(raw).filter(
             pl.col("production_type") == "B19"
         ).sort("timestamp_utc")
-        assert abs(result["forecast_mw"][0] - 3200) < 0.1
+        assert abs(result["generation_forecast_mw"][0] - 3200) < 0.1
 
     def test_timestamp_dtype(self):
         raw = _make_df_from_xml("wind_solar_forecast_gb.xml", "quantity")
@@ -560,6 +566,12 @@ class TestWindSolarForecastTransformer:
         doubled = pl.concat([raw, raw])
         result = self.t.transform(doubled)
         assert len(result) == 4
+
+    def test_generation_forecast_mw_column_name(self):
+        raw = _make_df_from_xml("wind_solar_forecast_gb.xml", "quantity")
+        result = self.t.transform(raw)
+        assert "generation_forecast_mw" in result.columns
+        assert "forecast_mw" not in result.columns
 
     def test_empty_input(self):
         assert self.t.transform(pl.DataFrame()).is_empty()
@@ -619,7 +631,7 @@ class TestInstalledCapacityTransformer:
         raw = _make_df_from_xml("installed_capacity_gb.xml", "quantity")
         result = self.t.transform(raw)
         assert not result.is_empty()
-        assert "installed_capacity_mw" in result.columns
+        assert "capacity_mw" in result.columns
         assert "production_type" in result.columns
         assert "area_code" in result.columns
 
@@ -640,7 +652,7 @@ class TestInstalledCapacityTransformer:
         result = self.t.transform(raw).filter(
             pl.col("production_type") == "B19"
         )
-        assert abs(result["installed_capacity_mw"][0] - 15200) < 0.1
+        assert abs(result["capacity_mw"][0] - 15200) < 0.1
 
     def test_timestamp_dtype(self):
         raw = _make_df_from_xml("installed_capacity_gb.xml", "quantity")
@@ -657,6 +669,12 @@ class TestInstalledCapacityTransformer:
         raw = _make_df_from_xml("installed_capacity_gb.xml", "quantity")
         result = self.t.transform(raw)
         assert result["data_provider"][0] == "entsoe"
+
+    def test_capacity_mw_column_name(self):
+        raw = _make_df_from_xml("installed_capacity_gb.xml", "quantity")
+        result = self.t.transform(raw)
+        assert "capacity_mw" in result.columns
+        assert "installed_capacity_mw" not in result.columns
 
     def test_empty_input(self):
         assert self.t.transform(pl.DataFrame()).is_empty()
@@ -678,6 +696,7 @@ class TestEntsoeLoadForecastSchema:
         )
         assert r.data_provider == "entsoe"
         assert r.load_forecast_mw == 29100.0
+        assert r.forecast_horizon == "day_ahead"
 
     def test_naive_timestamp_rejected(self):
         from pydantic import ValidationError
@@ -697,10 +716,11 @@ class TestEntsoeWindSolarForecastSchema:
             timestamp_utc=self._TS,
             area_code="10YGB----------A",
             production_type="B19",
-            forecast_mw=3200.0,
+            generation_forecast_mw=3200.0,
         )
         assert r.data_provider == "entsoe"
         assert r.production_type == "B19"
+        assert r.generation_forecast_mw == 3200.0
 
     def test_naive_timestamp_rejected(self):
         from pydantic import ValidationError
@@ -709,7 +729,7 @@ class TestEntsoeWindSolarForecastSchema:
                 timestamp_utc=datetime(2024, 1, 15),
                 area_code="10YGB----------A",
                 production_type="B19",
-                forecast_mw=3200.0,
+                generation_forecast_mw=3200.0,
             )
 
 
@@ -752,10 +772,10 @@ class TestEntsoeInstalledCapacitySchema:
             timestamp_utc=self._TS,
             area_code="10YGB----------A",
             production_type="B19",
-            installed_capacity_mw=15200.0,
+            capacity_mw=15200.0,
         )
         assert r.data_provider == "entsoe"
-        assert r.installed_capacity_mw == 15200.0
+        assert r.capacity_mw == 15200.0
 
     def test_naive_timestamp_rejected(self):
         from pydantic import ValidationError
@@ -764,7 +784,7 @@ class TestEntsoeInstalledCapacitySchema:
                 timestamp_utc=datetime(2024, 1, 1),
                 area_code="10YGB----------A",
                 production_type="B19",
-                installed_capacity_mw=15200.0,
+                capacity_mw=15200.0,
             )
 
 
@@ -853,6 +873,12 @@ class TestLoadForecastWeeklyTransformer:
         raw = _make_df_from_xml("load_forecast_weekly_gb.xml", "quantity")
         result = self.t.transform(raw)
         assert result["data_provider"][0] == "entsoe"
+
+    def test_forecast_horizon_week_ahead(self):
+        raw = _make_df_from_xml("load_forecast_weekly_gb.xml", "quantity")
+        result = self.t.transform(raw)
+        assert "forecast_horizon" in result.columns
+        assert result["forecast_horizon"][0] == "week_ahead"
 
     def test_empty_input(self):
         assert self.t.transform(pl.DataFrame()).is_empty()
@@ -949,6 +975,7 @@ class TestEntsoeLoadForecastWeeklySchema:
         )
         assert r.data_provider == "entsoe"
         assert r.load_forecast_mw == 31500.0
+        assert r.forecast_horizon == "week_ahead"
 
     def test_naive_timestamp_rejected(self):
         from pydantic import ValidationError
@@ -1103,7 +1130,7 @@ class TestPhase3Endpoints:
     def test_imbalance_volume_doc_type(self):
         iv = DOC_TYPES["imbalance_volume"]
         assert iv.document_type == "A86"
-        assert iv.process_type == "A16"
+        assert iv.process_type is None
         assert iv.domain_style == "control_area"
 
     def test_activated_balancing_qty_doc_type(self):
