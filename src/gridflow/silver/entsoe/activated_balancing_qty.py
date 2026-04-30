@@ -27,14 +27,18 @@ class ActivatedBalancingQtyTransformer(BaseSilverTransformer):
     dataset = "activated_balancing_qty"
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
-        date_str = target_date.strftime("%Y-%m-%d")
-        bronze_dir = Path(self.bronze_dir) / "entsoe" / "activated_balancing_qty" / date_str
-        if not bronze_dir.exists():
-            logger.warning("No bronze directory: %s", bronze_dir)
+        bronze_path = (
+            self.bronze_dir
+            / str(target_date.year)
+            / f"{target_date.month:02d}"
+            / f"{target_date.day:02d}"
+        )
+        if not bronze_path.exists():
+            logger.warning("No bronze directory: %s", bronze_path)
             return pl.DataFrame()
 
         records: list[dict] = []
-        for xml_file in sorted(bronze_dir.glob("raw_*.xml")):
+        for xml_file in sorted(bronze_path.glob("raw_*.xml")):
             records.extend(
                 parse_timeseries_xml(xml_file.read_bytes(), value_tag="quantity")
             )
