@@ -1291,24 +1291,32 @@ class TestActivatedBalancingQtyTransformer:
         result = self.t.transform(raw)
         assert not result.is_empty()
         assert "quantity_mwh" in result.columns
-        assert "business_type" in result.columns
+        assert "reserve_type" in result.columns
+        assert "direction" in result.columns
 
     def test_four_records(self):
         raw = _make_df_from_xml("activated_balancing_qty_gb.xml", "quantity")
         result = self.t.transform(raw)
         assert len(result) == 4
 
-    def test_business_types_preserved(self):
+    def test_reserve_type_values(self):
         raw = _make_df_from_xml("activated_balancing_qty_gb.xml", "quantity")
         result = self.t.transform(raw)
-        btypes = set(result["business_type"].to_list())
-        assert "A95" in btypes
-        assert "A96" in btypes
+        rtypes = set(result["reserve_type"].to_list())
+        assert "fcr" in rtypes
+        assert "afrr" in rtypes
 
-    def test_upward_qty_values(self):
+    def test_direction_values(self):
+        raw = _make_df_from_xml("activated_balancing_qty_gb.xml", "quantity")
+        result = self.t.transform(raw)
+        dirs = set(result["direction"].to_list())
+        assert "up" in dirs
+        assert "down" in dirs
+
+    def test_fcr_up_qty_values(self):
         raw = _make_df_from_xml("activated_balancing_qty_gb.xml", "quantity")
         result = self.t.transform(raw).filter(
-            pl.col("business_type") == "A95"
+            (pl.col("reserve_type") == "fcr") & (pl.col("direction") == "up")
         ).sort("timestamp_utc")
         assert abs(result["quantity_mwh"][0] - 320) < 0.1
 
@@ -1316,6 +1324,11 @@ class TestActivatedBalancingQtyTransformer:
         raw = _make_df_from_xml("activated_balancing_qty_gb.xml", "quantity")
         result = self.t.transform(raw)
         assert result["timestamp_utc"].dtype == pl.Datetime("us", "UTC")
+
+    def test_ingested_at_present(self):
+        raw = _make_df_from_xml("activated_balancing_qty_gb.xml", "quantity")
+        result = self.t.transform(raw)
+        assert "ingested_at" in result.columns
 
     def test_empty_input(self):
         assert self.t.transform(pl.DataFrame()).is_empty()
@@ -1334,32 +1347,45 @@ class TestActivatedBalancingPricesTransformer:
         raw = _make_df_from_xml("activated_balancing_prices_gb.xml", "price.amount")
         result = self.t.transform(raw)
         assert not result.is_empty()
-        assert "price_gbp_mwh" in result.columns
-        assert "business_type" in result.columns
+        assert "price_eur_mwh" in result.columns
+        assert "reserve_type" in result.columns
+        assert "direction" in result.columns
 
     def test_four_records(self):
         raw = _make_df_from_xml("activated_balancing_prices_gb.xml", "price.amount")
         result = self.t.transform(raw)
         assert len(result) == 4
 
-    def test_business_types_preserved(self):
+    def test_reserve_type_values(self):
         raw = _make_df_from_xml("activated_balancing_prices_gb.xml", "price.amount")
         result = self.t.transform(raw)
-        btypes = set(result["business_type"].to_list())
-        assert "A95" in btypes
-        assert "A96" in btypes
+        rtypes = set(result["reserve_type"].to_list())
+        assert "fcr" in rtypes
+        assert "afrr" in rtypes
 
-    def test_upward_price_values(self):
+    def test_direction_values(self):
+        raw = _make_df_from_xml("activated_balancing_prices_gb.xml", "price.amount")
+        result = self.t.transform(raw)
+        dirs = set(result["direction"].to_list())
+        assert "up" in dirs
+        assert "down" in dirs
+
+    def test_fcr_up_price_values(self):
         raw = _make_df_from_xml("activated_balancing_prices_gb.xml", "price.amount")
         result = self.t.transform(raw).filter(
-            pl.col("business_type") == "A95"
+            (pl.col("reserve_type") == "fcr") & (pl.col("direction") == "up")
         ).sort("timestamp_utc")
-        assert abs(result["price_gbp_mwh"][0] - 110.00) < 0.01
+        assert abs(result["price_eur_mwh"][0] - 110.00) < 0.01
 
     def test_timestamp_dtype(self):
         raw = _make_df_from_xml("activated_balancing_prices_gb.xml", "price.amount")
         result = self.t.transform(raw)
         assert result["timestamp_utc"].dtype == pl.Datetime("us", "UTC")
+
+    def test_ingested_at_present(self):
+        raw = _make_df_from_xml("activated_balancing_prices_gb.xml", "price.amount")
+        result = self.t.transform(raw)
+        assert "ingested_at" in result.columns
 
     def test_empty_input(self):
         assert self.t.transform(pl.DataFrame()).is_empty()
@@ -1379,24 +1405,24 @@ class TestContractedReservesTransformer:
         result = self.t.transform(raw)
         assert not result.is_empty()
         assert "quantity_mw" in result.columns
-        assert "business_type" in result.columns
+        assert "reserve_type" in result.columns
 
     def test_four_records(self):
         raw = _make_df_from_xml("contracted_reserves_gb.xml", "quantity")
         result = self.t.transform(raw)
         assert len(result) == 4
 
-    def test_business_types_preserved(self):
+    def test_reserve_type_values(self):
         raw = _make_df_from_xml("contracted_reserves_gb.xml", "quantity")
         result = self.t.transform(raw)
-        btypes = set(result["business_type"].to_list())
-        assert "A95" in btypes
-        assert "A96" in btypes
+        rtypes = set(result["reserve_type"].to_list())
+        assert "fcr" in rtypes
+        assert "afrr" in rtypes
 
     def test_quantity_values(self):
         raw = _make_df_from_xml("contracted_reserves_gb.xml", "quantity")
         result = self.t.transform(raw).filter(
-            pl.col("business_type") == "A95"
+            pl.col("reserve_type") == "fcr"
         ).sort("timestamp_utc")
         assert abs(result["quantity_mw"][0] - 500) < 0.1
 
@@ -1409,6 +1435,11 @@ class TestContractedReservesTransformer:
         raw = _make_df_from_xml("contracted_reserves_gb.xml", "quantity")
         result = self.t.transform(raw)
         assert result["data_provider"][0] == "entsoe"
+
+    def test_ingested_at_present(self):
+        raw = _make_df_from_xml("contracted_reserves_gb.xml", "quantity")
+        result = self.t.transform(raw)
+        assert "ingested_at" in result.columns
 
     def test_empty_input(self):
         assert self.t.transform(pl.DataFrame()).is_empty()
@@ -1476,11 +1507,13 @@ class TestEntsoeActivatedBalancingQtySchema:
         r = EntsoeActivatedBalancingQty(
             timestamp_utc=self._TS,
             area_code="10YGB----------A",
-            business_type="A95",
+            reserve_type="fcr",
+            direction="up",
             quantity_mwh=320.0,
         )
         assert r.data_provider == "entsoe"
         assert r.quantity_mwh == 320.0
+        assert r.reserve_type == "fcr"
 
     def test_naive_timestamp_rejected(self):
         from pydantic import ValidationError
@@ -1488,7 +1521,8 @@ class TestEntsoeActivatedBalancingQtySchema:
             EntsoeActivatedBalancingQty(
                 timestamp_utc=datetime(2024, 1, 15),
                 area_code="10YGB----------A",
-                business_type="A95",
+                reserve_type="fcr",
+                direction="up",
                 quantity_mwh=320.0,
             )
 
@@ -1500,11 +1534,13 @@ class TestEntsoeActivatedBalancingPricesSchema:
         r = EntsoeActivatedBalancingPrices(
             timestamp_utc=self._TS,
             area_code="10YGB----------A",
-            business_type="A95",
-            price_gbp_mwh=110.0,
+            reserve_type="fcr",
+            direction="up",
+            price_eur_mwh=110.0,
         )
         assert r.data_provider == "entsoe"
-        assert r.price_gbp_mwh == 110.0
+        assert r.price_eur_mwh == 110.0
+        assert r.reserve_type == "fcr"
 
     def test_naive_timestamp_rejected(self):
         from pydantic import ValidationError
@@ -1512,8 +1548,9 @@ class TestEntsoeActivatedBalancingPricesSchema:
             EntsoeActivatedBalancingPrices(
                 timestamp_utc=datetime(2024, 1, 15),
                 area_code="10YGB----------A",
-                business_type="A95",
-                price_gbp_mwh=110.0,
+                reserve_type="fcr",
+                direction="up",
+                price_eur_mwh=110.0,
             )
 
 
@@ -1524,11 +1561,12 @@ class TestEntsoeContractedReservesSchema:
         r = EntsoeContractedReserves(
             timestamp_utc=self._TS,
             area_code="10YGB----------A",
-            business_type="A95",
+            reserve_type="fcr",
             quantity_mw=500.0,
         )
         assert r.data_provider == "entsoe"
         assert r.quantity_mw == 500.0
+        assert r.reserve_type == "fcr"
 
     def test_naive_timestamp_rejected(self):
         from pydantic import ValidationError
@@ -1536,6 +1574,6 @@ class TestEntsoeContractedReservesSchema:
             EntsoeContractedReserves(
                 timestamp_utc=datetime(2024, 1, 15),
                 area_code="10YGB----------A",
-                business_type="A95",
+                reserve_type="fcr",
                 quantity_mw=500.0,
             )

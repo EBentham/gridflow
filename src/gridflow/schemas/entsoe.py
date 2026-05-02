@@ -271,16 +271,19 @@ class EntsoeImbalanceVolume(BaseSchema):
 class EntsoeActivatedBalancingQty(BaseSchema):
     """Silver-layer schema for ENTSO-E activated balancing energy quantity (A83/A16).
 
-    business_type: A95 = upward activation, A96 = downward activation.
+    reserve_type: "fcr"(A95) | "afrr"(A96) | "mfrr"(A97) | "rr"(A98).
+    direction: "up"(A01=upward activation) | "down"(A02=downward activation).
     quantity_mwh: Activated quantity in MWh.
     """
 
     timestamp_utc: datetime
     area_code: str
-    business_type: str  # A95=upward, A96=downward
+    reserve_type: str  # "fcr" | "afrr" | "mfrr" | "rr"
+    direction: str     # "up" | "down"
     quantity_mwh: float
     resolution: str = ""
     data_provider: str = Field(default="entsoe")
+    ingested_at: datetime | None = None
 
     @field_validator("timestamp_utc")
     @classmethod
@@ -293,16 +296,19 @@ class EntsoeActivatedBalancingQty(BaseSchema):
 class EntsoeActivatedBalancingPrices(BaseSchema):
     """Silver-layer schema for ENTSO-E activated balancing energy prices (A84/A16).
 
-    business_type: A95 = upward activation price, A96 = downward activation price.
-    price_gbp_mwh: Activation price in GBP/MWh.
+    reserve_type: "fcr"(A95) | "afrr"(A96) | "mfrr"(A97) | "rr"(A98).
+    direction: "up"(A01) | "down"(A02).
+    price_eur_mwh: Activation price in EUR/MWh.
     """
 
     timestamp_utc: datetime
     area_code: str
-    business_type: str  # A95=upward, A96=downward
-    price_gbp_mwh: float
+    reserve_type: str  # "fcr" | "afrr" | "mfrr" | "rr"
+    direction: str     # "up" | "down"
+    price_eur_mwh: float
     resolution: str = ""
     data_provider: str = Field(default="entsoe")
+    ingested_at: datetime | None = None
 
     @field_validator("timestamp_utc")
     @classmethod
@@ -315,16 +321,17 @@ class EntsoeActivatedBalancingPrices(BaseSchema):
 class EntsoeContractedReserves(BaseSchema):
     """Silver-layer schema for ENTSO-E contracted reserves (A81).
 
-    business_type: Reserve type code (e.g. A95=FCR, A96=aFRR, A97=mFRR).
+    reserve_type: "fcr"(A95) | "afrr"(A96) | "mfrr"(A97) | "rr"(A98).
     quantity_mw: Contracted reserve quantity in MW.
     """
 
     timestamp_utc: datetime
     area_code: str
-    business_type: str
+    reserve_type: str  # "fcr" | "afrr" | "mfrr" | "rr"
     quantity_mw: float
     resolution: str = ""
     data_provider: str = Field(default="entsoe")
+    ingested_at: datetime | None = None
 
     @field_validator("timestamp_utc")
     @classmethod

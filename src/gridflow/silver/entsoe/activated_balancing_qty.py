@@ -3,8 +3,7 @@
 from __future__ import annotations
 
 import logging
-from datetime import date
-from pathlib import Path
+from datetime import UTC, date, datetime
 
 import polars as pl
 
@@ -19,8 +18,9 @@ logger = logging.getLogger(__name__)
 class ActivatedBalancingQtyTransformer(BaseSilverTransformer):
     """Transform ENTSO-E activated balancing quantity (A83/A16) bronze XML → silver Parquet.
 
-    Distinguishes upward (A95) from downward (A96) via business_type.
-    Deduplicates on (timestamp_utc, area_code, business_type).
+    Maps businessType A95→"fcr", A96→"afrr", A97→"mfrr", A98→"rr" via replace_strict.
+    Maps flowDirection A01→"up", A02→"down" via replace_strict.
+    Deduplicates on (timestamp_utc, area_code, reserve_type, direction).
     """
 
     source = "entsoe"
@@ -55,31 +55,52 @@ class ActivatedBalancingQtyTransformer(BaseSilverTransformer):
             return pl.DataFrame()
 
         available = set(raw_df.columns)
-        required = {"timestamp_utc", "value", "control_area_domain", "business_type", "resolution"}
+        required = {
+            "timestamp_utc", "value", "control_area_domain",
+            "business_type", "flow_direction", "resolution",
+        }
         if not required.issubset(available):
             missing = required - available
             logger.error("Missing columns in bronze data: %s", missing)
             return pl.DataFrame()
 
+        now = datetime.now(UTC)
         df = (
             raw_df.rename({
                 "value": "quantity_mwh",
                 "control_area_domain": "area_code",
             })
+            .with_columns([
+                pl.col("business_type").replace_strict(
+                    {"A95": "fcr", "A96": "afrr", "A97": "mfrr", "A98": "rr"}
+                ).alias("reserve_type"),
+                pl.col("flow_direction").replace_strict(
+                    {"A01": "up", "A02": "down"}
+                ).alias("direction"),
+            ])
             .select([
                 "timestamp_utc",
                 "area_code",
-                "business_type",
+                "reserve_type",
+                "direction",
                 "quantity_mwh",
                 "resolution",
             ])
-            .unique(subset=["timestamp_utc", "area_code", "business_type"], keep="last")
-            .sort(["timestamp_utc", "area_code", "business_type"])
+            .unique(subset=["timestamp_utc", "area_code", "reserve_type", "direction"], keep="last")
+            .sort(["timestamp_utc", "area_code", "reserve_type", "direction"])
             .with_columns([
                 pl.lit("entsoe").alias("data_provider"),
+                pl.lit(now).cast(pl.Datetime("us", "UTC")).alias("ingested_at"),
                 pl.col("timestamp_utc").dt.replace_time_zone("UTC"),
             ])
         )
+
+        output_cols = [
+            "timestamp_utc", "area_code", "reserve_type", "direction",
+            "quantity_mwh", "resolution", "data_provider", "ingested_at",
+        ]
+        available_cols = [c for c in output_cols if c in df.columns]
+        df = df.select(available_cols)
 
         if not df.is_empty():
             sample = df.row(0, named=True)

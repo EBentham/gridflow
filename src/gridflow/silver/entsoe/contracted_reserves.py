@@ -3,8 +3,7 @@
 from __future__ import annotations
 
 import logging
-from datetime import date
-from pathlib import Path
+from datetime import UTC, date, datetime
 
 import polars as pl
 
@@ -19,8 +18,8 @@ logger = logging.getLogger(__name__)
 class ContractedReservesTransformer(BaseSilverTransformer):
     """Transform ENTSO-E contracted reserves (A81) bronze XML → silver Parquet.
 
-    business_type encodes the reserve product (e.g. A95=FCR, A96=aFRR, A97=mFRR).
-    Deduplicates on (timestamp_utc, area_code, business_type).
+    Maps businessType A95→"fcr", A96→"afrr", A97→"mfrr", A98→"rr" via replace_strict.
+    Deduplicates on (timestamp_utc, area_code, reserve_type).
     """
 
     source = "entsoe"
@@ -61,25 +60,39 @@ class ContractedReservesTransformer(BaseSilverTransformer):
             logger.error("Missing columns in bronze data: %s", missing)
             return pl.DataFrame()
 
+        now = datetime.now(UTC)
         df = (
             raw_df.rename({
                 "value": "quantity_mw",
                 "control_area_domain": "area_code",
             })
+            .with_columns(
+                pl.col("business_type").replace_strict(
+                    {"A95": "fcr", "A96": "afrr", "A97": "mfrr", "A98": "rr"}
+                ).alias("reserve_type")
+            )
             .select([
                 "timestamp_utc",
                 "area_code",
-                "business_type",
+                "reserve_type",
                 "quantity_mw",
                 "resolution",
             ])
-            .unique(subset=["timestamp_utc", "area_code", "business_type"], keep="last")
-            .sort(["timestamp_utc", "area_code", "business_type"])
+            .unique(subset=["timestamp_utc", "area_code", "reserve_type"], keep="last")
+            .sort(["timestamp_utc", "area_code", "reserve_type"])
             .with_columns([
                 pl.lit("entsoe").alias("data_provider"),
+                pl.lit(now).cast(pl.Datetime("us", "UTC")).alias("ingested_at"),
                 pl.col("timestamp_utc").dt.replace_time_zone("UTC"),
             ])
         )
+
+        output_cols = [
+            "timestamp_utc", "area_code", "reserve_type",
+            "quantity_mw", "resolution", "data_provider", "ingested_at",
+        ]
+        available_cols = [c for c in output_cols if c in df.columns]
+        df = df.select(available_cols)
 
         if not df.is_empty():
             sample = df.row(0, named=True)
