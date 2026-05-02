@@ -39,6 +39,9 @@ See full details: [milestones/v0.2-entsoe-gaps-ROADMAP.md](milestones/v0.2-entso
 
 - [ ] **Phase H2**: ENTSO-E mocked E2E tests — URL construction + bronze→silver pipeline
   - Requirements: MOCK-01, MOCK-02, MOCK-03
+  - **Plans:** 1 plan
+  - Plans:
+    - [ ] H2-01-PLAN.md - Add mocked ENTSO-E URL-shape and bronze-to-silver integration tests
   - Success: Test validates correct URL shape (base URL + params) for all 16 ENTSO-E datasets
   - Success: Pipeline test runs bronze→silver for representative datasets using realistic XML fixtures
   - Success: All 16 datasets have at least URL-construction coverage
