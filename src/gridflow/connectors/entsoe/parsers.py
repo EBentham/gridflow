@@ -59,8 +59,9 @@ def parse_timeseries_xml(
         List of dicts with keys: ``timestamp_utc``, ``value``,
         ``in_domain``, ``out_domain``, ``production_type``,
         ``control_area_domain``, ``business_type``, ``flow_direction``,
-        ``resolution``. Fields absent from a given TimeSeries element are
-        returned as empty strings (backward-compatible).
+        ``resolution``, ``unit_mrid``, ``unit_name``. Fields absent from a
+        given TimeSeries element are returned as empty strings
+        (backward-compatible).
     """
     try:
         from lxml import etree  # type: ignore[import-untyped]
@@ -84,6 +85,7 @@ def parse_timeseries_xml(
         # Extract domain codes and metadata fields
         in_domain = out_domain = production_type = ""
         control_area_domain = business_type = flow_direction = ""
+        unit_mrid = unit_name = ""
         for child in ts_el:
             tag = _strip_ns(child.tag)
             if tag in ("in_Domain.mRID", "outBiddingZone_Domain.mRID"):
@@ -100,6 +102,13 @@ def parse_timeseries_xml(
                 for sub in child:
                     if _strip_ns(sub.tag) == "psrType":
                         production_type = (sub.text or "").strip()
+            elif tag == "RegisteredResource":
+                for sub in child:
+                    sub_tag = _strip_ns(sub.tag)
+                    if sub_tag == "mRID":
+                        unit_mrid = (sub.text or "").strip()
+                    elif sub_tag == "name":
+                        unit_name = (sub.text or "").strip()
 
         # Parse each Period
         for period_el in ts_el.iter():
@@ -149,6 +158,8 @@ def parse_timeseries_xml(
                     "business_type": business_type,
                     "flow_direction": flow_direction,
                     "resolution": str(resolution),
+                    "unit_mrid": unit_mrid,
+                    "unit_name": unit_name,
                 })
 
     return records

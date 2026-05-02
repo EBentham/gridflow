@@ -16,16 +16,13 @@ logger = logging.getLogger(__name__)
 
 
 class OutagesGenerationTransformer(BaseSilverTransformer):
-    """Transform ENTSO-E generation unavailability XML from bronze to silver.
+    """Transform ENTSO-E generation unavailability XML (A80) from bronze to silver.
 
-    The A80 document is an ``Unavailability_MarketDocument``.  Each TimeSeries
-    represents one outage interval: the ``quantity`` value is the *available*
-    capacity in MW during that interval.  ``MktPSRType / psrType`` gives the
-    generation technology code.
-
-    Note: ENTSO-E A80 XML uses the same generic ``TimeSeries + Period + Point``
-    structure as price/load documents, so ``parse_timeseries_xml`` handles it
-    without modification.
+    Each silver row represents one generation unit's unavailable MW for one
+    timestamp. unit_mrid (RegisteredResource.mRID) is the unit identity;
+    outage_type is mapped from ENTSO-E businessType (A53 -> "planned",
+    A54 -> "unplanned"). The XML <quantity> value is the unavailable MW
+    during the interval (renamed to unavailable_mw on output).
     """
 
     source = "entsoe"
@@ -59,14 +56,14 @@ class OutagesGenerationTransformer(BaseSilverTransformer):
         if raw_df.is_empty():
             return pl.DataFrame()
 
-        required = ["timestamp_utc", "value", "in_domain"]
+        required = ["timestamp_utc", "value", "in_domain", "business_type", "unit_mrid"]
         missing = [c for c in required if c not in raw_df.columns]
         if missing:
             logger.error("Missing required columns in outages_generation: %s", missing)
             return pl.DataFrame()
 
         df = raw_df.rename(
-            {"value": "available_capacity_mw", "in_domain": "area_code"}
+            {"value": "unavailable_mw", "in_domain": "area_code"}
         )
 
         if df["timestamp_utc"].dtype != pl.Datetime("us", "UTC"):
@@ -74,17 +71,26 @@ class OutagesGenerationTransformer(BaseSilverTransformer):
                 pl.col("timestamp_utc").cast(pl.Datetime("us", "UTC"))
             )
 
-        df = df.with_columns(pl.col("available_capacity_mw").cast(pl.Float64))
+        df = df.with_columns(pl.col("unavailable_mw").cast(pl.Float64))
 
-        if "production_type" in df.columns:
+        # Map businessType A53 -> "planned", A54 -> "unplanned"
+        df = df.with_columns(
+            pl.col("business_type").replace_strict(
+                {"A53": "planned", "A54": "unplanned"}
+            ).alias("outage_type")
+        )
+
+        # unit_name may be absent; ensure it is a string column with empty default
+        if "unit_name" in df.columns:
             df = df.with_columns(
-                pl.col("production_type")
-                .fill_null("")
-                .alias("production_type")
+                pl.col("unit_name").fill_null("").alias("unit_name")
             )
+        else:
+            df = df.with_columns(pl.lit("").alias("unit_name"))
 
+        # Dedup on (timestamp_utc, unit_mrid) — one row per unit per timestamp
         df = df.unique(
-            subset=["timestamp_utc", "area_code", "production_type"], keep="last"
+            subset=["timestamp_utc", "unit_mrid"], keep="last"
         )
 
         now = datetime.now(UTC)
@@ -94,11 +100,12 @@ class OutagesGenerationTransformer(BaseSilverTransformer):
         ])
 
         output_cols = [
-            "timestamp_utc", "area_code", "production_type",
-            "available_capacity_mw", "resolution", "data_provider", "ingested_at",
+            "timestamp_utc", "area_code", "unit_mrid", "unit_name",
+            "outage_type", "unavailable_mw", "resolution",
+            "data_provider", "ingested_at",
         ]
         available = [c for c in output_cols if c in df.columns]
-        return df.select(available).sort("timestamp_utc", "area_code", "production_type")
+        return df.select(available).sort("timestamp_utc", "unit_mrid")
 
 
 register_transformer("entsoe", "outages_generation", OutagesGenerationTransformer)

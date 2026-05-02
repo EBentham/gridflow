@@ -11,7 +11,7 @@
   </period.timeInterval>
   <TimeSeries>
     <mRID>1</mRID>
-    <businessType>A54</businessType>
+    <businessType>A53</businessType>
     <in_Domain.mRID codingScheme="A01">10YGB----------A</in_Domain.mRID>
     <out_Domain.mRID codingScheme="A01">10YGB----------A</out_Domain.mRID>
     <quantity_Measure_Unit.name>MAW</quantity_Measure_Unit.name>
@@ -19,6 +19,10 @@
     <MktPSRType>
       <psrType>B02</psrType>
     </MktPSRType>
+    <RegisteredResource>
+      <mRID codingScheme="A01">UNIT-DRAX-3</mRID>
+      <name>Drax Unit 3</name>
+    </RegisteredResource>
     <Period>
       <timeInterval>
         <start>2024-01-15T00:00Z</start>
@@ -32,6 +36,36 @@
       <Point>
         <position>2</position>
         <quantity>800</quantity>
+      </Point>
+    </Period>
+  </TimeSeries>
+  <TimeSeries>
+    <mRID>2</mRID>
+    <businessType>A54</businessType>
+    <in_Domain.mRID codingScheme="A01">10YGB----------A</in_Domain.mRID>
+    <out_Domain.mRID codingScheme="A01">10YGB----------A</out_Domain.mRID>
+    <quantity_Measure_Unit.name>MAW</quantity_Measure_Unit.name>
+    <curveType>A01</curveType>
+    <MktPSRType>
+      <psrType>B14</psrType>
+    </MktPSRType>
+    <RegisteredResource>
+      <mRID codingScheme="A01">UNIT-HEYSHAM-2</mRID>
+      <name>Heysham 2</name>
+    </RegisteredResource>
+    <Period>
+      <timeInterval>
+        <start>2024-01-15T00:00Z</start>
+        <end>2024-01-16T00:00Z</end>
+      </timeInterval>
+      <resolution>PT60M</resolution>
+      <Point>
+        <position>1</position>
+        <quantity>1200</quantity>
+      </Point>
+      <Point>
+        <position>2</position>
+        <quantity>1200</quantity>
       </Point>
     </Period>
   </TimeSeries>

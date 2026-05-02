@@ -120,16 +120,22 @@ class EntsoeWindSolarForecast(BaseSchema):
 class EntsoeOutagesGeneration(BaseSchema):
     """Silver-layer schema for ENTSO-E unavailability of generation units (A80).
 
-    available_capacity_mw: MW of available (non-unavailable) capacity during the interval.
-    production_type: EIC PSR type code; empty string when not present in the document.
+    One row per (timestamp_utc, unit_mrid). unit_mrid uniquely identifies the
+    generation unit (from RegisteredResource.mRID); unit_name is the
+    human-readable name when present. outage_type is the mapped form of
+    ENTSO-E businessType: A53 -> "planned", A54 -> "unplanned".
+    unavailable_mw is the MW unavailable during the interval (XML <quantity>).
     """
 
     timestamp_utc: datetime
-    area_code: str
-    production_type: str = ""
-    available_capacity_mw: float
+    area_code: str            # control area / bidding zone EIC mRID
+    unit_mrid: str            # RegisteredResource mRID — unit identity
+    unit_name: str = ""       # human-readable unit name; may be absent
+    outage_type: str          # "planned" (A53) | "unplanned" (A54)
+    unavailable_mw: float
     resolution: str = ""
     data_provider: str = Field(default="entsoe")
+    ingested_at: datetime | None = None
 
     @field_validator("timestamp_utc")
     @classmethod

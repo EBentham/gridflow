@@ -590,29 +590,70 @@ class TestOutagesGenerationTransformer:
         raw = _make_df_from_xml("outages_generation_gb.xml", "quantity")
         result = self.t.transform(raw)
         assert not result.is_empty()
-        assert "available_capacity_mw" in result.columns
+        assert "unavailable_mw" in result.columns
+        assert "unit_mrid" in result.columns
+        assert "unit_name" in result.columns
+        assert "outage_type" in result.columns
         assert "area_code" in result.columns
+        assert "production_type" not in result.columns
+        assert "available_capacity_mw" not in result.columns
 
-    def test_production_type_present(self):
+    def test_unit_mrid_values(self):
         raw = _make_df_from_xml("outages_generation_gb.xml", "quantity")
         result = self.t.transform(raw)
-        assert "production_type" in result.columns
-        assert result["production_type"][0] == "B02"
+        mrids = set(result["unit_mrid"].to_list())
+        assert mrids == {"UNIT-DRAX-3", "UNIT-HEYSHAM-2"}
 
-    def test_two_records(self):
+    def test_unit_name_values(self):
         raw = _make_df_from_xml("outages_generation_gb.xml", "quantity")
         result = self.t.transform(raw)
-        assert len(result) == 2
+        names = set(result["unit_name"].to_list())
+        assert "Drax Unit 3" in names
+        assert "Heysham 2" in names
 
-    def test_capacity_value(self):
+    def test_outage_type_mapping(self):
         raw = _make_df_from_xml("outages_generation_gb.xml", "quantity")
-        result = self.t.transform(raw).sort("timestamp_utc")
-        assert abs(result["available_capacity_mw"][0] - 800) < 0.1
+        result = self.t.transform(raw)
+        types = set(result["outage_type"].to_list())
+        assert types == {"planned", "unplanned"}
+        drax = result.filter(pl.col("unit_mrid") == "UNIT-DRAX-3")
+        assert drax["outage_type"][0] == "planned"
+        heysham = result.filter(pl.col("unit_mrid") == "UNIT-HEYSHAM-2")
+        assert heysham["outage_type"][0] == "unplanned"
+
+    def test_four_records(self):
+        raw = _make_df_from_xml("outages_generation_gb.xml", "quantity")
+        result = self.t.transform(raw)
+        assert len(result) == 4
+
+    def test_unavailable_mw_values(self):
+        raw = _make_df_from_xml("outages_generation_gb.xml", "quantity")
+        result = self.t.transform(raw).sort(["unit_mrid", "timestamp_utc"])
+        drax = result.filter(pl.col("unit_mrid") == "UNIT-DRAX-3")
+        assert abs(drax["unavailable_mw"][0] - 800) < 0.1
+        heysham = result.filter(pl.col("unit_mrid") == "UNIT-HEYSHAM-2")
+        assert abs(heysham["unavailable_mw"][0] - 1200) < 0.1
+
+    def test_dedup_on_timestamp_unit(self):
+        raw = _make_df_from_xml("outages_generation_gb.xml", "quantity")
+        doubled = pl.concat([raw, raw])
+        result = self.t.transform(doubled)
+        assert len(result) == 4
 
     def test_timestamp_dtype(self):
         raw = _make_df_from_xml("outages_generation_gb.xml", "quantity")
         result = self.t.transform(raw)
         assert result["timestamp_utc"].dtype == pl.Datetime("us", "UTC")
+
+    def test_ingested_at_present(self):
+        raw = _make_df_from_xml("outages_generation_gb.xml", "quantity")
+        result = self.t.transform(raw)
+        assert "ingested_at" in result.columns
+
+    def test_data_provider(self):
+        raw = _make_df_from_xml("outages_generation_gb.xml", "quantity")
+        result = self.t.transform(raw)
+        assert result["data_provider"][0] == "entsoe"
 
     def test_empty_input(self):
         assert self.t.transform(pl.DataFrame()).is_empty()
@@ -740,19 +781,26 @@ class TestEntsoeOutagesGenerationSchema:
         r = EntsoeOutagesGeneration(
             timestamp_utc=self._TS,
             area_code="10YGB----------A",
-            production_type="B02",
-            available_capacity_mw=800.0,
+            unit_mrid="UNIT-DRAX-3",
+            unit_name="Drax Unit 3",
+            outage_type="planned",
+            unavailable_mw=800.0,
         )
         assert r.data_provider == "entsoe"
-        assert r.available_capacity_mw == 800.0
+        assert r.unit_mrid == "UNIT-DRAX-3"
+        assert r.unit_name == "Drax Unit 3"
+        assert r.outage_type == "planned"
+        assert r.unavailable_mw == 800.0
 
-    def test_production_type_optional(self):
+    def test_unit_name_optional(self):
         r = EntsoeOutagesGeneration(
             timestamp_utc=self._TS,
             area_code="10YGB----------A",
-            available_capacity_mw=800.0,
+            unit_mrid="UNIT-DRAX-3",
+            outage_type="planned",
+            unavailable_mw=800.0,
         )
-        assert r.production_type == ""
+        assert r.unit_name == ""
 
     def test_naive_timestamp_rejected(self):
         from pydantic import ValidationError
@@ -760,7 +808,9 @@ class TestEntsoeOutagesGenerationSchema:
             EntsoeOutagesGeneration(
                 timestamp_utc=datetime(2024, 1, 15),
                 area_code="10YGB----------A",
-                available_capacity_mw=800.0,
+                unit_mrid="UNIT-DRAX-3",
+                outage_type="planned",
+                unavailable_mw=800.0,
             )
 
 
