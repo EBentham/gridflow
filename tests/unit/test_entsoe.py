@@ -1173,9 +1173,9 @@ class TestImbalancePricesTransformer:
         raw = _make_df_from_xml("imbalance_prices_gb.xml", "price.amount")
         result = self.t.transform(raw)
         assert not result.is_empty()
-        assert "price_gbp_mwh" in result.columns
+        assert "price_eur_mwh" in result.columns
         assert "area_code" in result.columns
-        assert "business_type" in result.columns
+        assert "direction" in result.columns
 
     def test_four_records(self):
         """2 business types × 2 points = 4 records."""
@@ -1183,12 +1183,12 @@ class TestImbalancePricesTransformer:
         result = self.t.transform(raw)
         assert len(result) == 4
 
-    def test_business_types_preserved(self):
+    def test_direction_values(self):
         raw = _make_df_from_xml("imbalance_prices_gb.xml", "price.amount")
         result = self.t.transform(raw)
-        btypes = set(result["business_type"].to_list())
-        assert "A19" in btypes
-        assert "A20" in btypes
+        dirs = set(result["direction"].to_list())
+        assert "long" in dirs
+        assert "short" in dirs
 
     def test_control_area_becomes_area_code(self):
         raw = _make_df_from_xml("imbalance_prices_gb.xml", "price.amount")
@@ -1198,9 +1198,9 @@ class TestImbalancePricesTransformer:
     def test_price_values(self):
         raw = _make_df_from_xml("imbalance_prices_gb.xml", "price.amount")
         result = self.t.transform(raw).filter(
-            pl.col("business_type") == "A19"
+            pl.col("direction") == "long"
         ).sort("timestamp_utc")
-        assert abs(result["price_gbp_mwh"][0] - 95.50) < 0.01
+        assert abs(result["price_eur_mwh"][0] - 95.50) < 0.01
 
     def test_timestamp_dtype(self):
         raw = _make_df_from_xml("imbalance_prices_gb.xml", "price.amount")
@@ -1211,6 +1211,11 @@ class TestImbalancePricesTransformer:
         raw = _make_df_from_xml("imbalance_prices_gb.xml", "price.amount")
         result = self.t.transform(raw)
         assert result["data_provider"][0] == "entsoe"
+
+    def test_ingested_at_present(self):
+        raw = _make_df_from_xml("imbalance_prices_gb.xml", "price.amount")
+        result = self.t.transform(raw)
+        assert "ingested_at" in result.columns
 
     def test_dedup(self):
         raw = _make_df_from_xml("imbalance_prices_gb.xml", "price.amount")
@@ -1236,7 +1241,7 @@ class TestImbalanceVolumeTransformer:
         result = self.t.transform(raw)
         assert not result.is_empty()
         assert "volume_mwh" in result.columns
-        assert "flow_direction" in result.columns
+        assert "direction" in result.columns
         assert "area_code" in result.columns
 
     def test_four_records(self):
@@ -1244,17 +1249,17 @@ class TestImbalanceVolumeTransformer:
         result = self.t.transform(raw)
         assert len(result) == 4
 
-    def test_flow_directions_preserved(self):
+    def test_direction_values(self):
         raw = _make_df_from_xml("imbalance_volume_gb.xml", "quantity")
         result = self.t.transform(raw)
-        dirs = set(result["flow_direction"].to_list())
-        assert "A01" in dirs
-        assert "A02" in dirs
+        dirs = set(result["direction"].to_list())
+        assert "long" in dirs
+        assert "short" in dirs
 
     def test_volume_values(self):
         raw = _make_df_from_xml("imbalance_volume_gb.xml", "quantity")
         result = self.t.transform(raw).filter(
-            pl.col("flow_direction") == "A01"
+            pl.col("direction") == "long"
         ).sort("timestamp_utc")
         assert abs(result["volume_mwh"][0] - 150) < 0.1
 
@@ -1262,6 +1267,11 @@ class TestImbalanceVolumeTransformer:
         raw = _make_df_from_xml("imbalance_volume_gb.xml", "quantity")
         result = self.t.transform(raw)
         assert result["timestamp_utc"].dtype == pl.Datetime("us", "UTC")
+
+    def test_ingested_at_present(self):
+        raw = _make_df_from_xml("imbalance_volume_gb.xml", "quantity")
+        result = self.t.transform(raw)
+        assert "ingested_at" in result.columns
 
     def test_empty_input(self):
         assert self.t.transform(pl.DataFrame()).is_empty()
@@ -1416,12 +1426,12 @@ class TestEntsoeImbalancePricesSchema:
         r = EntsoeImbalancePrices(
             timestamp_utc=self._TS,
             area_code="10YGB----------A",
-            business_type="A19",
-            price_gbp_mwh=95.50,
+            direction="long",
+            price_eur_mwh=95.50,
         )
         assert r.data_provider == "entsoe"
-        assert r.price_gbp_mwh == 95.50
-        assert r.business_type == "A19"
+        assert r.price_eur_mwh == 95.50
+        assert r.direction == "long"
 
     def test_naive_timestamp_rejected(self):
         from pydantic import ValidationError
@@ -1429,8 +1439,8 @@ class TestEntsoeImbalancePricesSchema:
             EntsoeImbalancePrices(
                 timestamp_utc=datetime(2024, 1, 15),
                 area_code="10YGB----------A",
-                business_type="A19",
-                price_gbp_mwh=95.50,
+                direction="long",
+                price_eur_mwh=95.50,
             )
 
 
@@ -1441,12 +1451,12 @@ class TestEntsoeImbalanceVolumeSchema:
         r = EntsoeImbalanceVolume(
             timestamp_utc=self._TS,
             area_code="10YGB----------A",
-            flow_direction="A01",
+            direction="long",
             volume_mwh=150.0,
         )
         assert r.data_provider == "entsoe"
         assert r.volume_mwh == 150.0
-        assert r.flow_direction == "A01"
+        assert r.direction == "long"
 
     def test_naive_timestamp_rejected(self):
         from pydantic import ValidationError
@@ -1454,7 +1464,7 @@ class TestEntsoeImbalanceVolumeSchema:
             EntsoeImbalanceVolume(
                 timestamp_utc=datetime(2024, 1, 15),
                 area_code="10YGB----------A",
-                flow_direction="A01",
+                direction="long",
                 volume_mwh=150.0,
             )
 

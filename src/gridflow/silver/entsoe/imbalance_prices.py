@@ -3,8 +3,7 @@
 from __future__ import annotations
 
 import logging
-from datetime import date
-from pathlib import Path
+from datetime import UTC, date, datetime
 
 import polars as pl
 
@@ -19,8 +18,8 @@ logger = logging.getLogger(__name__)
 class ImbalancePricesTransformer(BaseSilverTransformer):
     """Transform ENTSO-E imbalance prices (A85) bronze XML → silver Parquet.
 
-    Distinguishes excess (A19) from shortage (A20) via business_type.
-    Deduplicates on (timestamp_utc, area_code, business_type).
+    Maps businessType A19→"long", A20→"short" via replace_strict.
+    Deduplicates on (timestamp_utc, area_code, direction).
     """
 
     source = "entsoe"
@@ -61,27 +60,40 @@ class ImbalancePricesTransformer(BaseSilverTransformer):
             logger.error("Missing columns in bronze data: %s", missing)
             return pl.DataFrame()
 
+        now = datetime.now(UTC)
         df = (
             raw_df.rename({
-                "value": "price_gbp_mwh",
+                "value": "price_eur_mwh",
                 "control_area_domain": "area_code",
             })
+            .with_columns(
+                pl.col("business_type").replace_strict(
+                    {"A19": "long", "A20": "short"}
+                ).alias("direction")
+            )
             .select([
                 "timestamp_utc",
                 "area_code",
-                "business_type",
-                "price_gbp_mwh",
+                "direction",
+                "price_eur_mwh",
                 "resolution",
             ])
-            .unique(subset=["timestamp_utc", "area_code", "business_type"], keep="last")
-            .sort(["timestamp_utc", "area_code", "business_type"])
+            .unique(subset=["timestamp_utc", "area_code", "direction"], keep="last")
+            .sort(["timestamp_utc", "area_code", "direction"])
             .with_columns([
                 pl.lit("entsoe").alias("data_provider"),
+                pl.lit(now).cast(pl.Datetime("us", "UTC")).alias("ingested_at"),
                 pl.col("timestamp_utc").dt.replace_time_zone("UTC"),
             ])
         )
 
-        # Contract validation on first row
+        output_cols = [
+            "timestamp_utc", "area_code", "direction",
+            "price_eur_mwh", "resolution", "data_provider", "ingested_at",
+        ]
+        available_cols = [c for c in output_cols if c in df.columns]
+        df = df.select(available_cols)
+
         if not df.is_empty():
             sample = df.row(0, named=True)
             EntsoeImbalancePrices(**sample)

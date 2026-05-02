@@ -225,16 +225,17 @@ class EntsoeNetTransferCapacity(BaseSchema):
 class EntsoeImbalancePrices(BaseSchema):
     """Silver-layer schema for ENTSO-E imbalance prices (A85).
 
-    business_type: A19 = excess (long system), A20 = shortage (short system).
-    price_gbp_mwh: Imbalance settlement price in GBP/MWh.
+    direction: "long" = system surplus (A19), "short" = system deficit (A20).
+    price_eur_mwh: Imbalance settlement price in EUR/MWh.
     """
 
     timestamp_utc: datetime
     area_code: str  # control area EIC mRID
-    business_type: str  # A19=excess, A20=shortage
-    price_gbp_mwh: float
+    direction: str  # "long" | "short"
+    price_eur_mwh: float
     resolution: str = ""
     data_provider: str = Field(default="entsoe")
+    ingested_at: datetime | None = None
 
     @field_validator("timestamp_utc")
     @classmethod
@@ -247,16 +248,17 @@ class EntsoeImbalancePrices(BaseSchema):
 class EntsoeImbalanceVolume(BaseSchema):
     """Silver-layer schema for ENTSO-E imbalance volumes (A86/A16).
 
-    flow_direction: A01 = up (generation excess), A02 = down (consumption excess).
+    direction: "long" (A01=generation excess) | "short" (A02=consumption excess).
     volume_mwh: Imbalance volume in MWh.
     """
 
     timestamp_utc: datetime
     area_code: str
-    flow_direction: str  # A01=up, A02=down
+    direction: str  # "long" | "short"
     volume_mwh: float
     resolution: str = ""
     data_provider: str = Field(default="entsoe")
+    ingested_at: datetime | None = None
 
     @field_validator("timestamp_utc")
     @classmethod
