@@ -1323,6 +1323,12 @@ class TestImbalanceVolumeTransformer:
         result = self.t.transform(raw)
         assert "ingested_at" in result.columns
 
+    def test_dedup(self):
+        raw = _make_df_from_xml("imbalance_volume_gb.xml", "quantity")
+        doubled = pl.concat([raw, raw])
+        result = self.t.transform(doubled)
+        assert len(result) == 4
+
     def test_empty_input(self):
         assert self.t.transform(pl.DataFrame()).is_empty()
 
@@ -1379,6 +1385,12 @@ class TestActivatedBalancingQtyTransformer:
         raw = _make_df_from_xml("activated_balancing_qty_gb.xml", "quantity")
         result = self.t.transform(raw)
         assert "ingested_at" in result.columns
+
+    def test_dedup(self):
+        raw = _make_df_from_xml("activated_balancing_qty_gb.xml", "quantity")
+        doubled = pl.concat([raw, raw])
+        result = self.t.transform(doubled)
+        assert len(result) == 4
 
     def test_empty_input(self):
         assert self.t.transform(pl.DataFrame()).is_empty()
@@ -1437,6 +1449,12 @@ class TestActivatedBalancingPricesTransformer:
         result = self.t.transform(raw)
         assert "ingested_at" in result.columns
 
+    def test_dedup(self):
+        raw = _make_df_from_xml("activated_balancing_prices_gb.xml", "price.amount")
+        doubled = pl.concat([raw, raw])
+        result = self.t.transform(doubled)
+        assert len(result) == 4
+
     def test_empty_input(self):
         assert self.t.transform(pl.DataFrame()).is_empty()
 
@@ -1490,6 +1508,12 @@ class TestContractedReservesTransformer:
         raw = _make_df_from_xml("contracted_reserves_gb.xml", "quantity")
         result = self.t.transform(raw)
         assert "ingested_at" in result.columns
+
+    def test_dedup(self):
+        raw = _make_df_from_xml("contracted_reserves_gb.xml", "quantity")
+        doubled = pl.concat([raw, raw])
+        result = self.t.transform(doubled)
+        assert len(result) == 4
 
     def test_empty_input(self):
         assert self.t.transform(pl.DataFrame()).is_empty()
