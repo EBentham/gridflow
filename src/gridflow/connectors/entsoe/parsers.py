@@ -57,7 +57,11 @@ def parse_timeseries_xml(
 
     Returns:
         List of dicts with keys: ``timestamp_utc``, ``value``,
-        ``in_domain``, ``out_domain``, ``production_type``, ``resolution``.
+        ``in_domain``, ``out_domain``, ``production_type``,
+        ``control_area_domain``, ``business_type``, ``flow_direction``,
+        ``resolution``, ``unit_mrid``, ``unit_name``. Fields absent from a
+        given TimeSeries element are returned as empty strings
+        (backward-compatible).
     """
     try:
         from lxml import etree  # type: ignore[import-untyped]
@@ -78,18 +82,33 @@ def parse_timeseries_xml(
         if _strip_ns(ts_el.tag) != "TimeSeries":
             continue
 
-        # Extract domain codes
+        # Extract domain codes and metadata fields
         in_domain = out_domain = production_type = ""
+        control_area_domain = business_type = flow_direction = ""
+        unit_mrid = unit_name = ""
         for child in ts_el:
             tag = _strip_ns(child.tag)
             if tag in ("in_Domain.mRID", "outBiddingZone_Domain.mRID"):
                 in_domain = (child.text or "").strip()
             elif tag == "out_Domain.mRID":
                 out_domain = (child.text or "").strip()
+            elif tag == "controlArea_Domain.mRID":
+                control_area_domain = (child.text or "").strip()
+            elif tag == "businessType":
+                business_type = (child.text or "").strip()
+            elif tag == "flowDirection.direction":
+                flow_direction = (child.text or "").strip()
             elif tag == "MktPSRType":
                 for sub in child:
                     if _strip_ns(sub.tag) == "psrType":
                         production_type = (sub.text or "").strip()
+            elif tag == "RegisteredResource":
+                for sub in child:
+                    sub_tag = _strip_ns(sub.tag)
+                    if sub_tag == "mRID":
+                        unit_mrid = (sub.text or "").strip()
+                    elif sub_tag == "name":
+                        unit_name = (sub.text or "").strip()
 
         # Parse each Period
         for period_el in ts_el.iter():
@@ -135,7 +154,12 @@ def parse_timeseries_xml(
                     "in_domain": in_domain,
                     "out_domain": out_domain,
                     "production_type": production_type,
+                    "control_area_domain": control_area_domain,
+                    "business_type": business_type,
+                    "flow_direction": flow_direction,
                     "resolution": str(resolution),
+                    "unit_mrid": unit_mrid,
+                    "unit_name": unit_name,
                 })
 
     return records
