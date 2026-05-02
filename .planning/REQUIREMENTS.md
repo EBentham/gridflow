@@ -20,7 +20,7 @@
 
 - [ ] **LIVE-01**: Live test suite (`@pytest.mark.live`) fetches real data from the ENTSO-E API for a representative subset of datasets when `ENTSOE_API_KEY` is set
 - [ ] **LIVE-02**: Live tests verify that fetched XML responses parse and transform to silver without errors
-- [ ] **LIVE-03**: Live tests are skipped by default and can be opted in with `pytest -m live`; a conftest fixture gate skips automatically when no API key is present
+- [x] **LIVE-03**: Live tests are skipped by default and can be opted in with `pytest -m live`; a conftest fixture gate skips automatically when no API key is present - Phase H3
 
 ## Future Requirements
 
@@ -49,7 +49,7 @@
 | MOCK-03 | Phase H2 | Complete |
 | LIVE-01 | Phase H3 | Pending |
 | LIVE-02 | Phase H3 | Pending |
-| LIVE-03 | Phase H3 | Pending |
+| LIVE-03 | Phase H3 | Satisfied - live gate opt-in and absent-key skip verified |
 
 **Coverage:**
 - v0.3 requirements: 8 total

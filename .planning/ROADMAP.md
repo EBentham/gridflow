@@ -51,12 +51,13 @@ See full details: [milestones/v0.2-entsoe-gaps-ROADMAP.md](milestones/v0.2-entso
   - Requirements: LIVE-01, LIVE-02, LIVE-03
   - **Plans:** 2 plans
   - Plans:
-    - [ ] H3-01-PLAN.md - Add live-test scaffolding and CLI failure propagation
-    - [ ] H3-02-PLAN.md - Add all-dataset live ENTSO-E E2E and command coverage
+    - [x] H3-01-PLAN.md - Add live-test scaffolding and CLI failure propagation
+    - [x] H3-02-PLAN.md - Add all-dataset live ENTSO-E E2E and command coverage
   - Success: `pytest -m live` fetches real data from ENTSO-E API for all 16 ENTSO-E datasets
   - Success: Fetched responses parse and transform to silver without error
   - Success: Tests auto-skip when `ENTSOE_API_KEY` is absent; skipped by default without `-m live`
   - Cross-cutting constraints: H3 remains ENTSO-E-only; live tests cover all 16 datasets; command failures hard-fail with diagnostics.
+  - Status: Implementation complete; credentialed live verification pending because `ENTSOE_API_KEY` is absent in the execution environment.
 
 ---
 
