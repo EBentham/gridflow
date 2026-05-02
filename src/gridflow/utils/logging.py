@@ -10,7 +10,7 @@ from pathlib import Path
 from pythonjsonlogger import jsonlogger
 
 
-def setup_logging(log_dir: Path, level: str = "INFO") -> None:
+def setup_logging(log_dir: Path, level: str = "INFO", console_level: str | None = None) -> None:
     """Configure structured logging with JSON file output and human-readable console output."""
     log_dir.mkdir(parents=True, exist_ok=True)
 
@@ -29,14 +29,17 @@ def setup_logging(log_dir: Path, level: str = "INFO") -> None:
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     file_handler = logging.FileHandler(log_dir / f"gridflow_{today}.log")
     file_handler.setFormatter(json_formatter)
+    file_handler.setLevel(getattr(logging, level.upper()))
 
-    # Console handler
+    # Console handler — can be set to a different level than the file handler
     console_handler = logging.StreamHandler(sys.stderr)
     console_handler.setFormatter(console_formatter)
+    effective_console_level = console_level if console_level is not None else level
+    console_handler.setLevel(getattr(logging, effective_console_level.upper()))
 
-    # Root logger for gridflow
+    # Root logger for gridflow — set to DEBUG so handlers control what they emit
     root = logging.getLogger("gridflow")
-    root.setLevel(getattr(logging, level.upper()))
+    root.setLevel(logging.DEBUG)
     # Avoid duplicate handlers on repeated calls
     root.handlers.clear()
     root.addHandler(file_handler)

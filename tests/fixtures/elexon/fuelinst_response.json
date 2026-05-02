@@ -1,0 +1,22 @@
+{
+  "data": [
+    {
+      "publishDateTime": "2024-01-15T00:00:00Z",
+      "fuelType": "CCGT",
+      "generation": 12500.5,
+      "startTimeOfHalfHrPeriod": "2024-01-15T00:00:00Z"
+    },
+    {
+      "publishDateTime": "2024-01-15T00:00:00Z",
+      "fuelType": "WIND",
+      "generation": 8500.0,
+      "startTimeOfHalfHrPeriod": "2024-01-15T00:00:00Z"
+    },
+    {
+      "publishDateTime": "2024-01-15T00:05:00Z",
+      "fuelType": "CCGT",
+      "generation": 12600.0,
+      "startTimeOfHalfHrPeriod": "2024-01-15T00:00:00Z"
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "data": [
+    {
+      "settlementDate": "2024-01-15",
+      "settlementPeriod": 1,
+      "fuelType": "CCGT",
+      "generation": 12500.5
+    },
+    {
+      "settlementDate": "2024-01-15",
+      "settlementPeriod": 1,
+      "fuelType": "WIND",
+      "generation": 8500.0
+    },
+    {
+      "settlementDate": "2024-01-15",
+      "settlementPeriod": 2,
+      "fuelType": "CCGT",
+      "generation": 13000.0
+    },
+    {
+      "settlementDate": "2024-01-15",
+      "settlementPeriod": 1,
+      "fuelType": "CCGT",
+      "generation": 12550.0
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "data": [
+    {
+      "settlementDate": "2024-01-15",
+      "settlementPeriod": 1,
+      "netBuyPriceAdjustment": 2.50,
+      "netSellPriceAdjustment": 1.80,
+      "netBuyVolumeAdjustment": 150.0,
+      "netSellVolumeAdjustment": -75.0
+    },
+    {
+      "settlementDate": "2024-01-15",
+      "settlementPeriod": 2,
+      "netBuyPriceAdjustment": 3.10,
+      "netSellPriceAdjustment": 2.20,
+      "netBuyVolumeAdjustment": 180.0,
+      "netSellVolumeAdjustment": -60.0
+    },
+    {
+      "settlementDate": "2024-01-15",
+      "settlementPeriod": 1,
+      "netBuyPriceAdjustment": 2.55,
+      "netSellPriceAdjustment": 1.85,
+      "netBuyVolumeAdjustment": 155.0,
+      "netSellVolumeAdjustment": -70.0
+    }
+  ]
+}

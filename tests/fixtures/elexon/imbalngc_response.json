@@ -1,0 +1,22 @@
+{
+  "data": [
+    {
+      "settlementDate": "2024-01-15",
+      "settlementPeriod": 1,
+      "publishDateTime": "2024-01-15T00:15:00Z",
+      "indicatedImbalance": -250.5
+    },
+    {
+      "settlementDate": "2024-01-15",
+      "settlementPeriod": 2,
+      "publishDateTime": "2024-01-15T00:45:00Z",
+      "indicatedImbalance": 180.0
+    },
+    {
+      "settlementDate": "2024-01-15",
+      "settlementPeriod": 1,
+      "publishDateTime": "2024-01-15T00:20:00Z",
+      "indicatedImbalance": -240.0
+    }
+  ]
+}
