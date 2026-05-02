@@ -3,12 +3,12 @@
 from __future__ import annotations
 
 import logging
-from datetime import datetime
-from typing import Any
+import re
+from typing import TYPE_CHECKING, Any
+from xml.etree import ElementTree
 
 import httpx
 
-from gridflow.config.settings import SourceConfig
 from gridflow.connectors.base import BaseConnector, RawResponse
 from gridflow.connectors.entsoe.endpoints import (
     BIDDING_ZONES,
@@ -21,6 +21,11 @@ from gridflow.connectors.registry import register_connector
 from gridflow.utils.retry import RETRY_POLICY
 
 logger = logging.getLogger(__name__)
+
+if TYPE_CHECKING:
+    from datetime import datetime
+
+    from gridflow.config.settings import SourceConfig
 
 # Datasets that are fetched per zone-pair rather than per zone
 _ZONE_PAIR_DATASETS: frozenset[str] = frozenset(
@@ -41,6 +46,9 @@ _FLOW_PAIRS: list[tuple[str, str]] = [
 ]
 
 _ENTSOE_API_PATH = "/api"
+_ACK_REASON_NS = {
+    "ack": "urn:iec62325.351:tc57wg16:451-1:acknowledgementdocument:7:0",
+}
 
 
 class EntsoeConnector(BaseConnector):
@@ -180,8 +188,8 @@ class EntsoeConnector(BaseConnector):
         """Fetch a single zone (or zone pair) response from the ENTSO-E API."""
         query_params: dict[str, str] = {
             "documentType": doc_type_code,
-            "in_Domain.mRID": in_domain,
-            "out_Domain.mRID": out_domain,
+            "in_Domain": in_domain,
+            "out_Domain": out_domain,
             "periodStart": period_start,
             "periodEnd": period_end,
         }
@@ -215,12 +223,11 @@ class EntsoeConnector(BaseConnector):
         """Fetch a single control-area response from the ENTSO-E API.
 
         Used for balancing datasets (A83, A84, A85, A86, A81) that require
-        ``controlArea_Domain.mRID`` instead of ``in_Domain.mRID`` /
-        ``out_Domain.mRID``.
+        ``controlArea_Domain`` instead of ``in_Domain`` / ``out_Domain``.
         """
         query_params: dict[str, str] = {
             "documentType": doc_type_code,
-            "controlArea_Domain.mRID": control_area_domain,
+            "controlArea_Domain": control_area_domain,
             "periodStart": period_start,
             "periodEnd": period_end,
         }
@@ -257,8 +264,57 @@ class EntsoeConnector(BaseConnector):
 
         async with self._semaphore:
             resp = await self._client.get(path, params=params)
-            resp.raise_for_status()
+            self._raise_for_status(resp)
             return resp
+
+    def _raise_for_status(self, response: httpx.Response) -> None:
+        """Raise an ENTSO-E-aware HTTP error with acknowledgement details."""
+        try:
+            response.raise_for_status()
+        except httpx.HTTPStatusError as exc:
+            reason = _extract_acknowledgement_reason(response.content)
+            url = _redact_security_token(str(response.url))
+            message = f"ENTSO-E API error {response.status_code} for url '{url}'"
+            if reason:
+                message = f"{message}: {reason}"
+            raise httpx.HTTPStatusError(
+                message,
+                request=exc.request,
+                response=exc.response,
+            ) from exc
+
+
+def _extract_acknowledgement_reason(content: bytes) -> str:
+    """Extract code/text from an ENTSO-E Acknowledgement_MarketDocument."""
+    try:
+        root = ElementTree.fromstring(content)
+    except ElementTree.ParseError:
+        return ""
+
+    reason = root.find(".//ack:Reason", _ACK_REASON_NS)
+    if reason is None:
+        reason = root.find(".//Reason")
+    if reason is None:
+        return ""
+
+    code = reason.find("ack:code", _ACK_REASON_NS)
+    if code is None:
+        code = reason.find("code")
+    text = reason.find("ack:text", _ACK_REASON_NS)
+    if text is None:
+        text = reason.find("text")
+
+    parts = []
+    if code is not None and code.text:
+        parts.append(f"reason code {code.text.strip()}")
+    if text is not None and text.text:
+        parts.append(text.text.strip())
+    return " - ".join(parts)
+
+
+def _redact_security_token(url: str) -> str:
+    """Redact ENTSO-E query-token values from URLs."""
+    return re.sub(r"(securityToken=)[^&]+", r"\1<redacted>", url)
 
 
 # Register connector

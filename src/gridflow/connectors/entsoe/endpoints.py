@@ -12,8 +12,8 @@ class EntsoeDocType:
     document_type: str  # e.g. "A44"
     process_type: str | None  # e.g. "A01" (day-ahead), "A16" (realised)
     description: str
-    # "zone"  → in_Domain.mRID + out_Domain.mRID query params (default)
-    # "control_area" → controlArea_Domain.mRID query param (balancing datasets)
+    # "zone" -> in_Domain + out_Domain query params (default)
+    # "control_area" -> controlArea_Domain query param (balancing datasets)
     domain_style: str = "zone"
 
 
@@ -31,12 +31,20 @@ DOC_TYPES: dict[str, EntsoeDocType] = {
     "generation_forecast": EntsoeDocType("A71", "A01", "Day-ahead generation forecast aggregated"),
     "load_forecast_weekly": EntsoeDocType("A65", "A31", "Week-ahead load forecast"),
     "net_transfer_capacity": EntsoeDocType("A61", "A01", "Net transfer capacity day-ahead"),
-    # Phase 3 additions — balancing datasets (controlArea_Domain.mRID)
+    # Phase 3 additions - balancing datasets (controlArea_Domain)
     "imbalance_prices": EntsoeDocType("A85", None, "Imbalance prices", domain_style="control_area"),
-    "imbalance_volume": EntsoeDocType("A86", None, "Imbalance volumes", domain_style="control_area"),
-    "activated_balancing_qty": EntsoeDocType("A83", "A16", "Activated balancing energy quantity", domain_style="control_area"),
-    "activated_balancing_prices": EntsoeDocType("A84", "A16", "Activated balancing energy prices", domain_style="control_area"),
-    "contracted_reserves": EntsoeDocType("A81", None, "Contracted reserves", domain_style="control_area"),
+    "imbalance_volume": EntsoeDocType(
+        "A86", None, "Imbalance volumes", domain_style="control_area"
+    ),
+    "activated_balancing_qty": EntsoeDocType(
+        "A83", "A16", "Activated balancing energy quantity", domain_style="control_area"
+    ),
+    "activated_balancing_prices": EntsoeDocType(
+        "A84", "A16", "Activated balancing energy prices", domain_style="control_area"
+    ),
+    "contracted_reserves": EntsoeDocType(
+        "A81", None, "Contracted reserves", domain_style="control_area"
+    ),
 }
 
 # EIC (Energy Identification Codes) for key bidding zones

@@ -109,18 +109,24 @@ class TestEntsoeUrlConstructionAllDatasets:
                 assert params["processType"] == doc_type.process_type
 
             if doc_type.domain_style == "control_area":
-                assert "controlArea_Domain.mRID" in params
+                assert "controlArea_Domain" in params
+                assert "controlArea_Domain.mRID" not in params
+                assert "in_Domain" not in params
                 assert "in_Domain.mRID" not in params
+                assert "out_Domain" not in params
                 assert "out_Domain.mRID" not in params
             else:
-                assert "in_Domain.mRID" in params
-                assert "out_Domain.mRID" in params
+                assert "in_Domain" in params
+                assert "out_Domain" in params
+                assert "in_Domain.mRID" not in params
+                assert "out_Domain.mRID" not in params
+                assert "controlArea_Domain" not in params
                 assert "controlArea_Domain.mRID" not in params
 
         if dataset in ZONE_PAIR_DATASETS:
             assert any(
-                dict(call.request.url.params)["in_Domain.mRID"]
-                != dict(call.request.url.params)["out_Domain.mRID"]
+                dict(call.request.url.params)["in_Domain"]
+                != dict(call.request.url.params)["out_Domain"]
                 for call in route.calls
             )
 

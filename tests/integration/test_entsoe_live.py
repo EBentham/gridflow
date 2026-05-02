@@ -14,6 +14,7 @@ from datetime import UTC, date, datetime
 from pathlib import Path
 from typing import Any
 
+import httpx
 import polars as pl
 import pytest
 import typer
@@ -42,6 +43,8 @@ ENTSOE_API_KEY_ENV = "ENTSOE_API_KEY"
 LIVE_TARGET_DATE = date(2024, 1, 15)
 LIVE_START = datetime(2024, 1, 15, tzinfo=UTC)
 LIVE_END = datetime(2024, 1, 16, tzinfo=UTC)
+REQUEST_SHAPE_START = datetime(2026, 4, 15, tzinfo=UTC)
+REQUEST_SHAPE_END = datetime(2026, 4, 16, tzinfo=UTC)
 
 
 def _has_entsoe_api_key() -> bool:
@@ -355,6 +358,40 @@ class TestEntsoeLiveAllDatasets:
         rows = transformer.run(LIVE_TARGET_DATE)
 
         _assert_silver_output(tmp_data_dir, dataset, LIVE_TARGET_DATE, rows)
+
+    @requires_entsoe_api_key
+    @pytest.mark.live
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(
+        "dataset",
+        ["day_ahead_prices", "imbalance_prices"],
+    )
+    async def test_live_request_shape_uses_supported_domain_params(
+        self,
+        dataset: str,
+    ) -> None:
+        try:
+            async with EntsoeConnector(_entsoe_live_config()) as connector:
+                responses = await connector.fetch(
+                    dataset=dataset,
+                    start=REQUEST_SHAPE_START,
+                    end=REQUEST_SHAPE_END,
+                )
+        except httpx.HTTPStatusError as exc:
+            assert "Input parameter does not exist" not in str(exc)
+            raise
+
+        assert responses
+        for response in responses:
+            params = response.request_params
+            assert "in_Domain.mRID" not in params
+            assert "out_Domain.mRID" not in params
+            assert "controlArea_Domain.mRID" not in params
+            assert (
+                "in_Domain" in params
+                or "out_Domain" in params
+                or "controlArea_Domain" in params
+            )
 
 
 class TestEntsoeLiveCliCommands:
