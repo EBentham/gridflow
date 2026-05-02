@@ -94,7 +94,7 @@ Plans:
 ### Phase G4 — outages_generation unit-level schema
 **Goal:** Replace zone-aggregate outages silver with the unit-level schema the spec requires.
 **Closes:** GAP-04
-**Status:** 🔲 Planned (larger effort ~1 day)
+**Status:** ✅ Done — 2026-05-02
 
 **Tasks:**
 1. Extend `parse_timeseries_xml` to extract `RegisteredResource.mRID`, `RegisteredResource.name`, `businessType` (A53=planned/A54=unplanned) from A80 `Unavailability_MarketDocument` TimeSeries elements
