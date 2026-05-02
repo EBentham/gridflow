@@ -29,6 +29,9 @@ See full details: [milestones/v0.2-entsoe-gaps-ROADMAP.md](milestones/v0.2-entso
 
 - [ ] **Phase H1**: Fix CLI `all` positional alias — treat `all` dataset arg as `--all` flag
   - Requirements: CLI-01, CLI-02
+  - **Plans:** 1 plan
+  - Plans:
+    - [ ] H1-01-PLAN.md — Create test file and apply single-condition fix to `_resolve_datasets`
   - Success: `gridflow pipeline entsoe all --last 24h` runs all 16 datasets without error
   - Success: Same alias works for `ingest` and `transform` subcommands
   - Success: Existing `--all` flag behaviour unchanged; all current tests pass
