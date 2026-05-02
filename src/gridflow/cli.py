@@ -618,7 +618,7 @@ def _resolve_datasets(
     if not isinstance(settings, GridflowConfig):
         raise TypeError("Expected GridflowConfig")
 
-    if all_flag:
+    if all_flag or (dataset is not None and dataset.lower() == "all"):
         source_config = settings.get_source_config(source)
         return list(source_config.datasets.keys())
     if dataset:
