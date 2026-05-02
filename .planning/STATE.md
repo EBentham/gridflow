@@ -4,17 +4,17 @@ milestone_name: ENTSO-E Pipeline Validation
 status: planning
 progress:
   phases_total: 3
-  phases_complete: 1
+  phases_complete: 2
   plans_total: 3
-  plans_complete: 2
+  plans_complete: 3
 ---
 
 ## Current Position
 
-Phase: H2 - ENTSO-E mocked E2E tests
-Plan: H2-01
-Status: Ready to execute
-Last activity: 2026-05-02 — Phase H2 planned
+Phase: H3 - Live ENTSO-E test suite
+Plan: Not planned
+Status: Ready to discuss
+Last activity: 2026-05-02 — Phase H2 completed
 
 ## Project Reference
 
@@ -31,6 +31,7 @@ produces schema-valid output — verified end-to-end, not just in unit tests.
 - `all` as a positional dataset argument is a recurring UX confusion — treat it as `--all` rather than erroring
 - Live tests must be opt-in (`@pytest.mark.live`) so they don't run in CI without an API key
 - H1 implemented the `all` positional alias centrally in `_resolve_datasets`; keep future CLI dataset aliases in the shared helper
+- H2 uses mocked `respx` URL-shape tests plus fixture-backed bronze-to-silver runs to validate ENTSO-E without touching the live API
 
 ### Blockers
 

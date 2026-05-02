@@ -37,14 +37,15 @@ See full details: [milestones/v0.2-entsoe-gaps-ROADMAP.md](milestones/v0.2-entso
   - Success: Existing `--all` flag behaviour unchanged; H1 focused tests pass
   - Note: Full-suite gate is blocked by pre-existing missing Elexon silver imports, documented in H1-VERIFICATION.md
 
-- [ ] **Phase H2**: ENTSO-E mocked E2E tests — URL construction + bronze→silver pipeline
+- [x] **Phase H2**: ENTSO-E mocked E2E tests — URL construction + bronze→silver pipeline — Done 2026-05-02
   - Requirements: MOCK-01, MOCK-02, MOCK-03
   - **Plans:** 1 plan
   - Plans:
-    - [ ] H2-01-PLAN.md - Add mocked ENTSO-E URL-shape and bronze-to-silver integration tests
+    - [x] H2-01-PLAN.md - Add mocked ENTSO-E URL-shape and bronze-to-silver integration tests
   - Success: Test validates correct URL shape (base URL + params) for all 16 ENTSO-E datasets
   - Success: Pipeline test runs bronze→silver for representative datasets using realistic XML fixtures
   - Success: All 16 datasets have at least URL-construction coverage
+  - Note: Full-suite gate is blocked by pre-existing missing Elexon silver imports, documented in H2-VERIFICATION.md
 
 - [ ] **Phase H3**: Live ENTSO-E test suite (`@pytest.mark.live`)
   - Requirements: LIVE-01, LIVE-02, LIVE-03

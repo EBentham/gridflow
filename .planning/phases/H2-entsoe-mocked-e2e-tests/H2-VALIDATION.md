@@ -1,10 +1,11 @@
 ---
 phase: H2
 slug: entsoe-mocked-e2e-tests
-status: ready
+status: passed
 nyquist_compliant: true
-wave_0_complete: false
+wave_0_complete: true
 created: 2026-05-02
+completed: 2026-05-02
 ---
 
 # Phase H2 - Validation Strategy
@@ -32,15 +33,15 @@ created: 2026-05-02
 
 | Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|-----------|-------------------|-------------|--------|
-| H2-01-01 | 01 | 1 | prerequisite | env/test | `uv run --extra dev pytest tests/unit/test_entsoe.py -x -q` | existing | pending |
-| H2-01-02 | 01 | 1 | MOCK-01, MOCK-03 | integration | `uv run --extra dev pytest tests/integration/test_entsoe_mocked_e2e.py -x -q` | W0 | pending |
-| H2-01-03 | 01 | 1 | MOCK-02 | integration | `uv run --extra dev pytest tests/integration/test_entsoe_mocked_e2e.py -x -q` | W0 | pending |
-| H2-01-04 | 01 | 1 | MOCK-01, MOCK-02, MOCK-03 | regression | `uv run --extra dev pytest tests/integration/test_entsoe_mocked_e2e.py tests/integration/test_entsoe_connector.py tests/unit/test_entsoe.py -x -q` | mixed | pending |
+| H2-01-01 | 01 | 1 | prerequisite | env/test | `uv run --extra dev pytest tests/unit/test_entsoe.py -x -q` | existing | passed via phase command |
+| H2-01-02 | 01 | 1 | MOCK-01, MOCK-03 | integration | `uv run --extra dev pytest tests/integration/test_entsoe_mocked_e2e.py -x -q` | W0 | passed |
+| H2-01-03 | 01 | 1 | MOCK-02 | integration | `uv run --extra dev pytest tests/integration/test_entsoe_mocked_e2e.py -x -q` | W0 | passed |
+| H2-01-04 | 01 | 1 | MOCK-01, MOCK-02, MOCK-03 | regression | `uv run --extra dev pytest tests/integration/test_entsoe_mocked_e2e.py tests/integration/test_entsoe_connector.py tests/unit/test_entsoe.py -x -q` | mixed | passed |
 
 ## Wave 0 Requirements
 
-- [ ] `tests/integration/test_entsoe_mocked_e2e.py` - new mocked E2E integration file.
-- [ ] `pyproject.toml` - includes `tzdata` so Windows Polars UTC conversions can run.
+- [x] `tests/integration/test_entsoe_mocked_e2e.py` - new mocked E2E integration file.
+- [x] `pyproject.toml` - includes `tzdata` so Windows Polars UTC conversions can run.
 
 ## Manual-Only Verifications
 

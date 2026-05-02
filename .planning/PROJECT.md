@@ -28,10 +28,10 @@ schema-valid output — verified end-to-end, not just in unit tests.
 - ✓ outages_generation redesigned as unit-level schema — v0.2-entsoe-gaps G4
 
 - ✓ CLI treats positional `all` argument as `--all` flag — v0.3-entsoe-validation H1
+- ✓ Mocked ENTSO-E URL and bronze-to-silver E2E tests — v0.3-entsoe-validation H2
 
 ### Active
 
-- [ ] Integration tests validate ENTSO-E URL construction without hitting live API (MOCK-01, MOCK-02, MOCK-03)
 - [ ] Live test suite hits real ENTSO-E API and validates full bronze→silver chain (LIVE-01, LIVE-02, LIVE-03)
 
 ### Out of Scope
@@ -51,6 +51,7 @@ schema-valid output — verified end-to-end, not just in unit tests.
 - Windows 11 / OneDrive path — use `os.replace()` for atomic file writes
 - Previous E2E test gaps: integration tests use `respx` mocking with simplified fixtures;
   URL correctness and real API compatibility have never been validated end-to-end
+- Mocked ENTSO-E E2E coverage now validates all 16 URL shapes and representative fixture-backed bronze-to-silver flows
 
 ## Constraints
 
@@ -68,6 +69,7 @@ schema-valid output — verified end-to-end, not just in unit tests.
 | `output_cols / available_cols` pattern | New parser fields don't break non-target transformers | ✓ Good |
 | Atomic writes via `os.replace()` | Windows doesn't allow rename-to-overwrite | ✓ Good |
 | `SchemaClass(**sample)` runtime check on all transformers | Catches schema drift before it reaches DuckDB | ✓ Good |
+| Mocked ENTSO-E E2E before live tests | Proves request construction and transformer paths without API credentials | ✓ Good |
 | Live tests opt-in with `--live` marker | API key not available in CI; live tests are for developer validation | — Pending |
 
 ## Evolution
@@ -88,4 +90,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-02 after Phase H1 completion*
+*Last updated: 2026-05-02 after Phase H2 completion*

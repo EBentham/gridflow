@@ -12,9 +12,9 @@
 
 ### Testing — Mocked
 
-- [ ] **MOCK-01**: Integration test validates URL construction for each ENTSO-E dataset (correct base URL, required query parameters present) without hitting the live API
-- [ ] **MOCK-02**: Integration test runs the full bronze→silver pipeline for a representative set of ENTSO-E datasets using realistic XML fixture responses
-- [ ] **MOCK-03**: URL-shape test coverage spans all 16 ENTSO-E registered datasets
+- [x] **MOCK-01**: Integration test validates URL construction for each ENTSO-E dataset (correct base URL, required query parameters present) without hitting the live API — Phase H2
+- [x] **MOCK-02**: Integration test runs the full bronze→silver pipeline for a representative set of ENTSO-E datasets using realistic XML fixture responses — Phase H2
+- [x] **MOCK-03**: URL-shape test coverage spans all 16 ENTSO-E registered datasets — Phase H2
 
 ### Testing — Live
 
@@ -44,9 +44,9 @@
 |-------------|-------|--------|
 | CLI-01 | Phase H1 | Complete |
 | CLI-02 | Phase H1 | Complete |
-| MOCK-01 | Phase H2 | Pending |
-| MOCK-02 | Phase H2 | Pending |
-| MOCK-03 | Phase H2 | Pending |
+| MOCK-01 | Phase H2 | Complete |
+| MOCK-02 | Phase H2 | Complete |
+| MOCK-03 | Phase H2 | Complete |
 | LIVE-01 | Phase H3 | Pending |
 | LIVE-02 | Phase H3 | Pending |
 | LIVE-03 | Phase H3 | Pending |
@@ -58,4 +58,4 @@
 
 ---
 *Requirements defined: 2026-05-02*
-*Last updated: 2026-05-02 after initial definition*
+*Last updated: 2026-05-02 after Phase H2 completion*
