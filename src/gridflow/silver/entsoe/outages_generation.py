@@ -9,6 +9,7 @@ from typing import Any
 import polars as pl
 
 from gridflow.connectors.entsoe.parsers import parse_timeseries_xml
+from gridflow.schemas.entsoe import EntsoeOutagesGeneration
 from gridflow.silver.base import BaseSilverTransformer
 from gridflow.silver.registry import register_transformer
 
@@ -105,7 +106,13 @@ class OutagesGenerationTransformer(BaseSilverTransformer):
             "data_provider", "ingested_at",
         ]
         available = [c for c in output_cols if c in df.columns]
-        return df.select(available).sort("timestamp_utc", "unit_mrid")
+        df = df.select(available).sort("timestamp_utc", "unit_mrid")
+
+        if not df.is_empty():
+            sample = df.row(0, named=True)
+            EntsoeOutagesGeneration(**sample)
+
+        return df
 
 
 register_transformer("entsoe", "outages_generation", OutagesGenerationTransformer)
