@@ -1,10 +1,11 @@
-# gridflow — ENTSO-E Extension Roadmap
+# gridflow — Roadmap
 
 ---
 
 ## Milestones
 
 - ✅ **v0.2-entsoe-gaps** — Gap Closure G1–G4 (shipped 2026-05-02)
+- 🔄 **v0.3-entsoe-validation** — ENTSO-E Pipeline Validation H1–H3 (in progress)
 
 ---
 
@@ -24,8 +25,31 @@ See full details: [milestones/v0.2-entsoe-gaps-ROADMAP.md](milestones/v0.2-entso
 
 ---
 
+### 🔄 v0.3-entsoe-validation — ENTSO-E Pipeline Validation
+
+- [ ] **Phase H1**: Fix CLI `all` positional alias — treat `all` dataset arg as `--all` flag
+  - Requirements: CLI-01, CLI-02
+  - Success: `gridflow pipeline entsoe all --last 24h` runs all 16 datasets without error
+  - Success: Same alias works for `ingest` and `transform` subcommands
+  - Success: Existing `--all` flag behaviour unchanged; all current tests pass
+
+- [ ] **Phase H2**: ENTSO-E mocked E2E tests — URL construction + bronze→silver pipeline
+  - Requirements: MOCK-01, MOCK-02, MOCK-03
+  - Success: Test validates correct URL shape (base URL + params) for all 16 ENTSO-E datasets
+  - Success: Pipeline test runs bronze→silver for representative datasets using realistic XML fixtures
+  - Success: All 16 datasets have at least URL-construction coverage
+
+- [ ] **Phase H3**: Live ENTSO-E test suite (`@pytest.mark.live`)
+  - Requirements: LIVE-01, LIVE-02, LIVE-03
+  - Success: `pytest -m live` fetches real data from ENTSO-E API for a representative subset
+  - Success: Fetched responses parse and transform to silver without error
+  - Success: Tests auto-skip when `ENTSOE_API_KEY` is absent; skipped by default without `-m live`
+
+---
+
 ## Backlog
 
 | Item | Source | Notes |
 |------|--------|-------|
-| GAP-03b: wind_solar_forecast psrType mapping (B16→solar, B18→wind_onshore, B19→wind_offshore) | Gap closure audit | Deferred — only GAP-03a (column rename) was in scope; no gold consumers yet |
+| GAP-03b: wind_solar_forecast psrType mapping (B16→solar, B18→wind_onshore, B19→wind_offshore) | v0.2 gap closure audit | Deferred — no gold consumers yet |
+| Extend E2E coverage to Elexon, ENTSO-G, GIE connectors | v0.3 scope decision | ENTSO-E first; other connectors deferred |
