@@ -25,8 +25,8 @@ must_haves:
       provides: "Fixed _resolve_datasets helper — line 621 condition includes positional 'all' alias"
       contains: "all_flag or (dataset is not None and dataset.lower() == \"all\")"
     - path: "tests/unit/test_cli_resolve_datasets.py"
-      provides: "Unit tests covering CLI-01 and CLI-02 via direct helper invocation"
-      exports: ["TestAllPositionalAlias", "TestAllFlagBehaviourUnchanged", "TestSpecificDataset", "TestErrorPaths"]
+      provides: "Unit tests covering CLI-01 and CLI-02 via direct helper invocation, including ENTSO-E 16-dataset expansion"
+      exports: ["TestAllPositionalAlias", "TestEntsoeDatasetExpansion", "TestAllFlagBehaviourUnchanged", "TestSpecificDataset", "TestErrorPaths"]
   key_links:
     - from: "tests/unit/test_cli_resolve_datasets.py"
       to: "src/gridflow/cli.py"
@@ -49,8 +49,8 @@ pipeline, backfill) handle `all` as a positional alias through the single shared
 `_resolve_datasets`, with no per-command changes required.
 
 Output:
-- `tests/unit/test_cli_resolve_datasets.py` — 8 unit tests covering the alias, flag,
-  named dataset, and error paths
+- `tests/unit/test_cli_resolve_datasets.py` — 9 unit tests covering the alias, ENTSO-E
+  16-dataset expansion, flag, named dataset, and error paths
 - `src/gridflow/cli.py` — single-line condition change in `_resolve_datasets` (line 621)
 </objective>
 
@@ -113,6 +113,10 @@ def sample_config(tmp_data_dir: Path) -> GridflowConfig:
 ```
 Note: `sample_config` has one Elexon dataset (`system_prices`). Tests asserting
 "all datasets" will get `["system_prices"]` — this is correct and sufficient.
+Plan completeness note: `sample_config` proves the helper behavior using the existing
+pytest fixture, and the generated test file also includes one `load_settings()`-backed
+ENTSO-E assertion so the roadmap's "all 16 datasets" claim is verified directly
+against `config/sources.yaml`.
 </interfaces>
 </context>
 
@@ -138,6 +142,7 @@ import pytest
 import typer
 
 from gridflow.cli import _resolve_datasets
+from gridflow.config.settings import load_settings
 
 
 class TestAllPositionalAlias:
@@ -155,6 +160,17 @@ class TestAllPositionalAlias:
         """Positional 'All' (mixed case) also expands to all datasets."""
         result = _resolve_datasets("elexon", "All", False, sample_config)
         assert result == list(sample_config.get_source_config("elexon").datasets.keys())
+
+
+class TestEntsoeDatasetExpansion:
+    def test_entsoe_all_expands_to_all_16_configured_datasets(self):
+        """ENTSO-E positional 'all' expands to all configured datasets."""
+        settings = load_settings()
+        result = _resolve_datasets("entsoe", "all", False, settings)
+        expected = list(settings.get_source_config("entsoe").datasets.keys())
+
+        assert len(expected) == 16
+        assert result == expected
 
 
 class TestAllFlagBehaviourUnchanged:
@@ -193,25 +209,27 @@ Key implementation notes:
 - Direct calls to `_resolve_datasets` (no Click context) propagate `typer.BadParameter`
   as a normal Python exception — use `pytest.raises(typer.BadParameter)`, NOT
   `pytest.raises(SystemExit)`.
-- The 3 TestAllPositionalAlias tests MUST FAIL before Task 2 applies the fix (RED phase).
-  Run: `uv run pytest tests/unit/test_cli_resolve_datasets.py -x -q` — expect 3 failures.
-  If all 8 pass before the fix, something is wrong — stop and investigate.
+- The 4 positional alias tests MUST FAIL before Task 2 applies the fix (RED phase).
+  Run: `uv run pytest tests/unit/test_cli_resolve_datasets.py -x -q` — expect 4 failures.
+  If all 9 pass before the fix, something is wrong — stop and investigate.
   </action>
   <verify>
     <automated>grep -c "def test_" tests/unit/test_cli_resolve_datasets.py</automated>
   </verify>
   <acceptance_criteria>
-    - `grep -c "def test_" tests/unit/test_cli_resolve_datasets.py` outputs `8`
+    - `grep -c "def test_" tests/unit/test_cli_resolve_datasets.py` outputs `9`
     - `grep "from gridflow.cli import _resolve_datasets" tests/unit/test_cli_resolve_datasets.py` exits 0
+    - `grep "from gridflow.config.settings import load_settings" tests/unit/test_cli_resolve_datasets.py` exits 0
     - `grep "from __future__ import annotations" tests/unit/test_cli_resolve_datasets.py` exits 0
     - `grep "class TestAllPositionalAlias" tests/unit/test_cli_resolve_datasets.py` exits 0
+    - `grep "class TestEntsoeDatasetExpansion" tests/unit/test_cli_resolve_datasets.py` exits 0
     - `grep "class TestAllFlagBehaviourUnchanged" tests/unit/test_cli_resolve_datasets.py` exits 0
     - `grep "class TestSpecificDataset" tests/unit/test_cli_resolve_datasets.py` exits 0
     - `grep "class TestErrorPaths" tests/unit/test_cli_resolve_datasets.py` exits 0
-    - Running `uv run pytest tests/unit/test_cli_resolve_datasets.py -x -q` shows 3 FAILED
-      (the TestAllPositionalAlias tests) and 5 passed — this is the expected RED state
+    - Running `uv run pytest tests/unit/test_cli_resolve_datasets.py -x -q` shows 4 FAILED
+      (the alias tests) and 5 passed — this is the expected RED state
   </acceptance_criteria>
-  <done>Test file exists with 8 tests; 3 alias tests fail (RED) and 5 others pass.</done>
+  <done>Test file exists with 9 tests; 4 alias tests fail (RED) and 5 others pass.</done>
 </task>
 
 <task type="auto" tdd="true">
@@ -225,6 +243,7 @@ Key implementation notes:
     - test_lowercase_all_treated_as_flag: _resolve_datasets("elexon", "all", False, cfg) == ["system_prices"]
     - test_uppercase_all_treated_as_flag: _resolve_datasets("elexon", "ALL", False, cfg) == ["system_prices"]
     - test_mixed_case_all_treated_as_flag: _resolve_datasets("elexon", "All", False, cfg) == ["system_prices"]
+    - test_entsoe_all_expands_to_all_16_configured_datasets: _resolve_datasets("entsoe", "all", False, load_settings()) returns all 16 configured ENTSO-E datasets
     - test_all_flag_true_expands_datasets: _resolve_datasets("elexon", None, True, cfg) == ["system_prices"]
     - test_all_flag_true_with_dataset_string_expands: _resolve_datasets("elexon", "system_prices", True, cfg) == ["system_prices"]
     - test_specific_dataset_returned_as_single_item_list: _resolve_datasets("elexon", "system_prices", False, cfg) == ["system_prices"]
@@ -280,10 +299,10 @@ Why `dataset is not None and dataset.lower() == "all"` (not just `dataset == "al
   </verify>
   <acceptance_criteria>
     - `grep 'all_flag or (dataset is not None and dataset.lower() == "all")' src/gridflow/cli.py` exits 0
-    - `uv run pytest tests/unit/test_cli_resolve_datasets.py -x -q` exits 0 with 8 passed, 0 failed
+    - `uv run pytest tests/unit/test_cli_resolve_datasets.py -x -q` exits 0 with 9 passed, 0 failed
     - `uv run pytest -x -q` exits 0 (full suite green — no regressions)
   </acceptance_criteria>
-  <done>All 8 unit tests pass; full test suite green; the condition change is the only diff in cli.py.</done>
+  <done>All 9 unit tests pass; full test suite green; the condition change is the only diff in cli.py.</done>
 </task>
 
 </tasks>
@@ -292,8 +311,8 @@ Why `dataset is not None and dataset.lower() == "all"` (not just `dataset == "al
 Phase-level checks before marking H1 complete:
 
 1. `grep 'all_flag or (dataset is not None and dataset.lower() == "all")' src/gridflow/cli.py` — must exit 0
-2. `grep -c "def test_" tests/unit/test_cli_resolve_datasets.py` — must output `8`
-3. `uv run pytest tests/unit/test_cli_resolve_datasets.py -x -q` — must exit 0, 8 passed
+2. `grep -c "def test_" tests/unit/test_cli_resolve_datasets.py` — must output `9`
+3. `uv run pytest tests/unit/test_cli_resolve_datasets.py -x -q` — must exit 0, 9 passed
 4. `uv run pytest -x -q` — full suite must be green (no regressions)
 5. `git diff --name-only` — only `src/gridflow/cli.py` and `tests/unit/test_cli_resolve_datasets.py` changed
 </verification>
@@ -303,7 +322,7 @@ Phase-level checks before marking H1 complete:
 - `gridflow ingest entsoe all` and `gridflow transform entsoe all` also resolve correctly (same helper)
 - Existing `--all` flag continues to work unchanged
 - Named datasets continue to return a single-element list
-- 8 unit tests pass; full test suite green
+- 9 unit tests pass; full test suite green
 - Single-line change in cli.py; no per-command changes
 </success_criteria>
 
