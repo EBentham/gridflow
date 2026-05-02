@@ -4,7 +4,8 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from datetime import date, datetime, timedelta, timezone
+import re
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Optional
 
@@ -50,13 +51,14 @@ def ingest(
 
     source_config = settings.get_source_config(source)
     writer = BronzeWriter(settings.pipeline.data_dir)
+    failures: list[tuple[str, str]] = []
 
     for ds in datasets:
         tracker = PipelineRunTracker(con, source, ds, "ingest")
         try:
             connector = get_connector(source, source_config)
 
-            async def _do_fetch() -> list:
+            async def _do_fetch(connector=connector, ds=ds) -> list:
                 async with connector:
                     return await connector.fetch(ds, start_dt, end_dt)
 
@@ -66,12 +68,19 @@ def ingest(
             tracker.complete(rows_in=len(responses), rows_out=len(responses))
             typer.echo(f"  {source}/{ds}: {len(responses)} responses ingested")
         except Exception as e:
-            tracker.fail(str(e))
-            typer.echo(f"  {source}/{ds}: FAILED - {e}", err=True)
-            logger.exception(f"Ingest failed for {source}/{ds}")
+            error_message = _safe_error_message(str(e))
+            tracker.fail(error_message)
+            failures.append((ds, error_message))
+            typer.echo(f"  {source}/{ds}: FAILED - {error_message}", err=True)
+            logger.error("Ingest failed for %s/%s: %s", source, ds, error_message)
             continue
 
     con.close()
+    if failures:
+        typer.echo(f"Ingestion failed for {len(failures)} dataset(s):", err=True)
+        for ds, error_message in failures:
+            typer.echo(f"  {source}/{ds}: {error_message}", err=True)
+        raise typer.Exit(1)
     typer.echo("Ingestion complete")
 
 
@@ -108,6 +117,7 @@ def transform(
     con = get_connection(settings.pipeline.duckdb_path)
 
     dates = date_range(start_dt.date(), end_dt.date())
+    failures: list[tuple[str, str]] = []
 
     for ds in datasets:
         tracker = PipelineRunTracker(con, source, ds, "transform")
@@ -120,12 +130,19 @@ def transform(
             tracker.complete(rows_out=total_rows)
             typer.echo(f"  {source}/{ds}: {total_rows} rows transformed")
         except Exception as e:
-            tracker.fail(str(e))
-            typer.echo(f"  {source}/{ds}: FAILED - {e}", err=True)
-            logger.exception(f"Transform failed for {source}/{ds}")
+            error_message = _safe_error_message(str(e))
+            tracker.fail(error_message)
+            failures.append((ds, error_message))
+            typer.echo(f"  {source}/{ds}: FAILED - {error_message}", err=True)
+            logger.error("Transform failed for %s/%s: %s", source, ds, error_message)
             continue
 
     con.close()
+    if failures:
+        typer.echo(f"Transform failed for {len(failures)} dataset(s):", err=True)
+        for ds, error_message in failures:
+            typer.echo(f"  {source}/{ds}: {error_message}", err=True)
+        raise typer.Exit(1)
     typer.echo("Transform complete")
 
 
@@ -604,6 +621,16 @@ def _resolve_dates(
         )
         return start_dt, end_dt
     return now - timedelta(hours=default_lookback_hours), now
+
+
+def _safe_error_message(message: str) -> str:
+    """Redact sensitive query parameters from user-facing command errors."""
+    return re.sub(
+        r"(securityToken=)[^&\s)]+",
+        r"\1<redacted>",
+        message,
+        flags=re.IGNORECASE,
+    )
 
 
 def _resolve_datasets(

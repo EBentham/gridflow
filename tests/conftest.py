@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 import json
-from datetime import date, datetime, timezone
-from pathlib import Path
+from datetime import UTC, datetime
+from typing import TYPE_CHECKING
 
 import pytest
 
@@ -16,6 +16,21 @@ from gridflow.config.settings import (
     SourceConfig,
 )
 from gridflow.connectors.base import RawResponse
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+
+def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item]) -> None:
+    """Keep live API tests opt-in even when local credentials are present."""
+    markexpr = config.option.markexpr or ""
+    if "live" in markexpr and "not live" not in markexpr:
+        return
+
+    skip_live = pytest.mark.skip(reason="select live tests explicitly with -m live")
+    for item in items:
+        if "live" in item.keywords:
+            item.add_marker(skip_live)
 
 
 @pytest.fixture
@@ -99,7 +114,7 @@ def sample_raw_response(sample_elexon_response_data: dict) -> RawResponse:
         content_type="application/json",
         source="elexon",
         dataset="system_prices",
-        fetched_at=datetime(2024, 1, 15, 12, 0, 0, tzinfo=timezone.utc),
+        fetched_at=datetime(2024, 1, 15, 12, 0, 0, tzinfo=UTC),
         request_url="https://data.elexon.co.uk/bmrs/api/v1/balancing/settlement/system-prices",
         request_params={"settlementDate": "2024-01-15"},
         api_version="v1",
