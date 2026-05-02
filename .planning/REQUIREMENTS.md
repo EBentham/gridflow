@@ -7,8 +7,8 @@
 
 ### CLI
 
-- [ ] **CLI-01**: User can run `gridflow pipeline entsoe all --last 24h` and it processes all ENTSO-E datasets (positional `all` treated as `--all`)
-- [ ] **CLI-02**: Same `all` positional alias works for `gridflow ingest` and `gridflow transform` subcommands
+- [x] **CLI-01**: User can run `gridflow pipeline entsoe all --last 24h` and it processes all ENTSO-E datasets (positional `all` treated as `--all`) — Phase H1
+- [x] **CLI-02**: Same `all` positional alias works for `gridflow ingest` and `gridflow transform` subcommands — Phase H1
 
 ### Testing — Mocked
 
@@ -42,8 +42,8 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CLI-01 | Phase H1 | Pending |
-| CLI-02 | Phase H1 | Pending |
+| CLI-01 | Phase H1 | Complete |
+| CLI-02 | Phase H1 | Complete |
 | MOCK-01 | Phase H2 | Pending |
 | MOCK-02 | Phase H2 | Pending |
 | MOCK-03 | Phase H2 | Pending |

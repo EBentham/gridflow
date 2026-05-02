@@ -27,9 +27,10 @@ schema-valid output — verified end-to-end, not just in unit tests.
 - ✓ ENTSO-E balancing A-codes mapped to semantic strings — v0.2-entsoe-gaps G3
 - ✓ outages_generation redesigned as unit-level schema — v0.2-entsoe-gaps G4
 
+- ✓ CLI treats positional `all` argument as `--all` flag — v0.3-entsoe-validation H1
+
 ### Active
 
-- [ ] CLI treats positional `all` argument as `--all` flag (CLI-01, CLI-02)
 - [ ] Integration tests validate ENTSO-E URL construction without hitting live API (MOCK-01, MOCK-02, MOCK-03)
 - [ ] Live test suite hits real ENTSO-E API and validates full bronze→silver chain (LIVE-01, LIVE-02, LIVE-03)
 
@@ -87,4 +88,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-02 after milestone v0.3 start*
+*Last updated: 2026-05-02 after Phase H1 completion*
