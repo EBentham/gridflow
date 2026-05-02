@@ -135,6 +135,17 @@ class TestParseTimeseriesXml:
         assert "in_domain" in record
         assert "out_domain" in record
         assert "resolution" in record
+        assert "unit_mrid" in record
+        assert "unit_name" in record
+
+    def test_unit_mrid_unit_name_empty_for_non_a80(self):
+        """Non-A80 fixtures have no RegisteredResource elements — both fields must be empty strings."""
+        xml = self._load("load_forecast_gb.xml")
+        records = parse_timeseries_xml(xml, value_tag="quantity")
+        assert len(records) > 0, "fixture must produce at least one record"
+        for record in records:
+            assert record["unit_mrid"] == "", f"expected unit_mrid=='' but got {record['unit_mrid']!r}"
+            assert record["unit_name"] == "", f"expected unit_name=='' but got {record['unit_name']!r}"
 
     def test_timestamps_are_utc_datetimes(self):
         xml = self._load("day_ahead_prices_gb.xml")
