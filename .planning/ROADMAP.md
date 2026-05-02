@@ -60,12 +60,12 @@ Plans:
 ### Phase G3 — Map balancing codes to semantic values
 **Goal:** Phase 3 transformers emit human-readable direction/reserve-type strings instead of raw ENTSO-E codes; currency fields correctly named.
 **Closes:** GAP-06, GAP-07
-**Status:** 🔲 Planned
+**Status:** ✅ Done — 2026-05-02
 **Plans:** 2 plans
 
 Plans:
-- [ ] G3-01-PLAN.md — imbalance_prices + imbalance_volume schemas, transformers, tests (Wave 1)
-- [ ] G3-02-PLAN.md — activated_balancing_qty + activated_balancing_prices + contracted_reserves schemas, transformers, fixtures, tests (Wave 2)
+- [x] G3-01-PLAN.md — imbalance_prices + imbalance_volume schemas, transformers, tests (Wave 1)
+- [x] G3-02-PLAN.md — activated_balancing_qty + activated_balancing_prices + contracted_reserves schemas, transformers, fixtures, tests (Wave 2)
 
 **Tasks:**
 1. `imbalance_prices`: add `direction` column ("long"/"short") mapped from A19→long, A20→short; rename `price_gbp_mwh` → `price_eur_mwh`; update schema
