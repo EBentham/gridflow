@@ -6,7 +6,24 @@
       "Bash(done)",
       "Bash(pip install:*)",
       "Bash(python -m pytest:*)",
-      "Bash(python -m gridflow:*)"
+      "Bash(python -m gridflow:*)",
+      "mcp__obsidian-vault__obsidian_list_files_in_dir",
+      "mcp__obsidian-vault__obsidian_get_file_contents",
+      "mcp__nimbalyst-mcp__tracker_list",
+      "mcp__obsidian-vault__obsidian_list_files_in_vault",
+      "Bash(ls:*)",
+      "Bash(cat:*)",
+      "mcp__nimbalyst-mcp__tracker_get",
+      "Bash(echo:*)",
+      "Bash(npx get-shit-done-cc@latest)",
+      "Bash(sort -t: -k2 -nr)",
+      "Bash(git checkout *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)"
     ]
-  }
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "obsidian-vault"
+  ]
 }

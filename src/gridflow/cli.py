@@ -29,7 +29,11 @@ def ingest(
     from gridflow.utils.logging import setup_logging
 
     settings = load_settings()
-    setup_logging(settings.pipeline.log_dir, settings.pipeline.log_level)
+    setup_logging(
+        settings.pipeline.log_dir,
+        settings.pipeline.log_level,
+        settings.pipeline.console_log_level,
+    )
 
     start_dt, end_dt = _resolve_dates(
         start, end, last, settings.pipeline.default_lookback_hours
@@ -99,7 +103,11 @@ def transform(
     from gridflow.utils.time import date_range
 
     settings = load_settings()
-    setup_logging(settings.pipeline.log_dir, settings.pipeline.log_level)
+    setup_logging(
+        settings.pipeline.log_dir,
+        settings.pipeline.log_level,
+        settings.pipeline.console_log_level,
+    )
 
     start_dt, end_dt = _resolve_dates(
         start, end, last, settings.pipeline.default_lookback_hours
@@ -162,7 +170,11 @@ def build(
     from gridflow.gold.system_marginal_price import SystemMarginalPriceBuilder
 
     settings = load_settings()
-    setup_logging(settings.pipeline.log_dir, settings.pipeline.log_level)
+    setup_logging(
+        settings.pipeline.log_dir,
+        settings.pipeline.log_level,
+        settings.pipeline.console_log_level,
+    )
 
     start_dt, end_dt = _resolve_dates(
         start, end, last, settings.pipeline.default_lookback_hours
@@ -220,7 +232,11 @@ def backfill(
     from gridflow.utils.logging import setup_logging
 
     settings = load_settings()
-    setup_logging(settings.pipeline.log_dir, settings.pipeline.log_level)
+    setup_logging(
+        settings.pipeline.log_dir,
+        settings.pipeline.log_level,
+        settings.pipeline.console_log_level,
+    )
 
     datasets = _resolve_datasets(source, dataset, all_datasets, settings)
 
@@ -279,7 +295,11 @@ def export_csv(
     from gridflow.utils.logging import setup_logging
 
     settings = load_settings()
-    setup_logging(settings.pipeline.log_dir, settings.pipeline.log_level)
+    setup_logging(
+        settings.pipeline.log_dir,
+        settings.pipeline.log_level,
+        settings.pipeline.console_log_level,
+    )
 
     datasets = _resolve_datasets(source, dataset, all_datasets, settings)
 
@@ -411,7 +431,11 @@ def quality(
     from gridflow.storage.parquet import read_parquet_dir
 
     settings = load_settings()
-    setup_logging(settings.pipeline.log_dir, settings.pipeline.log_level)
+    setup_logging(
+        settings.pipeline.log_dir,
+        settings.pipeline.log_level,
+        settings.pipeline.console_log_level,
+    )
 
     reporter = QualityReporter(settings.pipeline.data_dir, settings.pipeline.duckdb_path)
     silver_dir = settings.pipeline.data_dir / "silver"
@@ -591,7 +615,11 @@ def init() -> None:
     from gridflow.utils.logging import setup_logging
 
     settings = load_settings()
-    setup_logging(settings.pipeline.log_dir, settings.pipeline.log_level)
+    setup_logging(
+        settings.pipeline.log_dir,
+        settings.pipeline.log_level,
+        settings.pipeline.console_log_level,
+    )
 
     settings.pipeline.data_dir.mkdir(parents=True, exist_ok=True)
     init_catalogue(settings.pipeline.duckdb_path, settings.pipeline.data_dir)

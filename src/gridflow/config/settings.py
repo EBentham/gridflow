@@ -52,6 +52,7 @@ class PipelineSettings(BaseSettings):
     default_lookback_hours: int = 24
     max_concurrent_requests: int = 5
     log_level: str = "INFO"
+    console_log_level: str = "WARNING"
 
     # Secrets (loaded from .env)
     elexon_api_key: str = Field(default="")

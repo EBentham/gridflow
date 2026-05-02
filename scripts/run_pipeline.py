@@ -103,7 +103,11 @@ def _setup() -> tuple:
 
     settings = load_settings()
     settings.pipeline.data_dir.mkdir(parents=True, exist_ok=True)
-    setup_logging(settings.pipeline.log_dir, settings.pipeline.log_level)
+    setup_logging(
+        settings.pipeline.log_dir,
+        settings.pipeline.log_level,
+        settings.pipeline.console_log_level,
+    )
     init_catalogue(settings.pipeline.duckdb_path, settings.pipeline.data_dir)
     con = get_connection(settings.pipeline.duckdb_path)
     return settings, con
