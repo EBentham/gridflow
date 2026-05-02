@@ -38,3 +38,6 @@ Thumbs.db
 .coverage
 htmlcov/
 .mypy_cache/
+
+# Symlinked vault content (source of truth lives in Obsidian vault)
+docs/specs
