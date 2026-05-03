@@ -113,7 +113,13 @@ def load_settings() -> GridflowConfig:
 
     # Build pipeline settings (env vars override YAML)
     pipeline_yaml = settings_data.get("pipeline", {})
-    pipeline = PipelineSettings(**pipeline_yaml)
+    pipeline_values = dict(pipeline_yaml)
+    env_prefix = PipelineSettings.model_config.get("env_prefix", "")
+    for field_name in PipelineSettings.model_fields:
+        env_name = f"{env_prefix}{field_name}".upper()
+        if env_name in os.environ:
+            pipeline_values[field_name] = os.environ[env_name]
+    pipeline = PipelineSettings(**pipeline_values)
 
     # Build quality config
     quality_yaml = settings_data.get("quality", {})

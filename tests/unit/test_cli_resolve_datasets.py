@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 import typer
 
@@ -65,3 +67,21 @@ class TestErrorPaths:
         """Non-GridflowConfig settings object raises TypeError."""
         with pytest.raises(TypeError):
             _resolve_datasets("elexon", "system_prices", False, object())
+
+
+class TestSettingsEnvOverrides:
+    def test_gridflow_pipeline_env_vars_override_yaml_paths(self, monkeypatch, tmp_path):
+        """Runtime GRIDFLOW_* paths should isolate CLI runs from config YAML defaults."""
+        data_dir = tmp_path / "data"
+        duckdb_path = tmp_path / "catalogue" / "gridflow.duckdb"
+        log_dir = tmp_path / "logs"
+
+        monkeypatch.setenv("GRIDFLOW_DATA_DIR", str(data_dir))
+        monkeypatch.setenv("GRIDFLOW_DUCKDB_PATH", str(duckdb_path))
+        monkeypatch.setenv("GRIDFLOW_LOG_DIR", str(log_dir))
+
+        settings = load_settings()
+
+        assert settings.pipeline.data_dir == Path(data_dir)
+        assert settings.pipeline.duckdb_path == Path(duckdb_path)
+        assert settings.pipeline.log_dir == Path(log_dir)
