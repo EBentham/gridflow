@@ -19,11 +19,11 @@
 
 ### Live API to Silver
 
-- [ ] **ELEXON-LIVE-01**: Opt-in live Elexon tests call the real public Insights API for active configured datasets with narrow, deterministic windows and assert HTTP success, JSON shape, content size, and pagination metadata.
-- [ ] **ELEXON-LIVE-02**: Opt-in live Elexon tests write real API responses to bronze and transform them to silver parquet for a representative dataset set spanning all parameter styles and major transformer families.
-- [ ] **ELEXON-LIVE-03**: Live Elexon tests verify silver output row counts, required columns, `data_provider` values where present, and schema validation via existing transformer contracts.
-- [ ] **ELEXON-LIVE-04**: Live Elexon tests explicitly classify empty/no-data responses and known removed endpoints as skip/deferred/documented outcomes, not silent passes.
-- [ ] **ELEXON-LIVE-05**: Live Elexon tests are marked `@pytest.mark.live`, are excluded from normal test runs, require no API key, and provide clear diagnostics including source, dataset, stage, URL, status, and body preview.
+- [x] **ELEXON-LIVE-01**: Opt-in live Elexon tests call the real public Insights API for active configured datasets with narrow, deterministic windows and assert HTTP success, JSON shape, content size, and pagination metadata.
+- [x] **ELEXON-LIVE-02**: Opt-in live Elexon tests write real API responses to bronze and transform them to silver parquet for a representative dataset set spanning all parameter styles and major transformer families.
+- [x] **ELEXON-LIVE-03**: Live Elexon tests verify silver output row counts, required columns, `data_provider` values where present, and schema validation via existing transformer contracts.
+- [x] **ELEXON-LIVE-04**: Live Elexon tests explicitly classify empty/no-data responses and known removed endpoints as skip/deferred/documented outcomes, not silent passes.
+- [x] **ELEXON-LIVE-05**: Live Elexon tests are marked `@pytest.mark.live`, are excluded from normal test runs, require no API key, and provide clear diagnostics including source, dataset, stage, URL, status, and body preview.
 
 ### CLI and Backfill
 
@@ -68,11 +68,11 @@
 | ELEXON-MOCK-01 | Phase I2 | Complete |
 | ELEXON-MOCK-02 | Phase I2 | Complete |
 | ELEXON-MOCK-03 | Phase I2 | Complete |
-| ELEXON-LIVE-01 | Phase I3 | Pending |
-| ELEXON-LIVE-02 | Phase I3 | Pending |
-| ELEXON-LIVE-03 | Phase I3 | Pending |
-| ELEXON-LIVE-04 | Phase I3 | Pending |
-| ELEXON-LIVE-05 | Phase I3 | Pending |
+| ELEXON-LIVE-01 | Phase I3 | Complete |
+| ELEXON-LIVE-02 | Phase I3 | Complete |
+| ELEXON-LIVE-03 | Phase I3 | Complete |
+| ELEXON-LIVE-04 | Phase I3 | Complete |
+| ELEXON-LIVE-05 | Phase I3 | Complete |
 | ELEXON-CLI-01 | Phase I4 | Pending |
 | ELEXON-CLI-02 | Phase I4 | Pending |
 | ELEXON-CLI-03 | Phase I4 | Pending |
@@ -86,4 +86,4 @@
 
 ---
 *Requirements defined: 2026-05-03*
-*Last updated: 2026-05-04 after Phase I2 completion*
+*Last updated: 2026-05-04 after Phase I3 completion*

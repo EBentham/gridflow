@@ -1,20 +1,20 @@
 ---
 milestone: v0.4
 milestone_name: Elexon Pipeline Validation
-status: ready_to_execute
+status: ready_to_plan
 progress:
   phases_total: 4
-  phases_complete: 2
+  phases_complete: 3
   plans_total: 4
-  plans_complete: 2
+  plans_complete: 3
 ---
 
 ## Current Position
 
-Phase: I3 - Elexon live API to silver test suite
-Plan: I3-01 ready to execute
-Status: Phase I3 planned; ready to execute live API-to-silver test suite
-Last activity: 2026-05-04 - Phase I3 planned
+Phase: I4 - Elexon CLI/backfill live smoke tests and milestone close-out docs
+Plan: needs planning
+Status: Phase I3 completed; ready to plan I4
+Last activity: 2026-05-04 - Phase I3 completed
 
 ## Project Reference
 
@@ -67,6 +67,7 @@ produces schema-valid output - verified end-to-end, not just in unit tests.
 - I2 planned: mocked request-shape tests and fixture-backed bronze-to-silver integration tests will cover active Elexon datasets without live network access.
 - I2 completed: non-live mocked Elexon E2E suite passes with bronze metadata, pagination/chunking, no-param, and representative silver output assertions.
 - I3 planned: opt-in live Elexon API-to-silver tests will call representative public no-key Elexon datasets, write live responses to temp bronze, transform to silver, and classify empty/deferred outcomes explicitly.
+- I3 completed: opt-in live tests now prove `system_prices`, `boal`, `freq`, `pn`, and `bmunits_reference` can flow from the public Elexon API through temp bronze into silver parquet.
 
 ### Blockers
 

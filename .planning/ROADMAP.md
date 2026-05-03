@@ -68,12 +68,12 @@ Known deferred close-out items: 4; see [STATE.md](STATE.md).
   - Success: Realistic Elexon JSON fixtures write to bronze and run representative silver transformers across the main data families.
   - Success: Tests assert bronze metadata, `data_date` partitioning, pagination/chunk behavior, and expected silver columns.
 
-- [ ] **Phase I3**: Elexon live API to silver test suite
+- [x] **Phase I3**: Elexon live API to silver test suite - completed 2026-05-04
   - Requirements: ELEXON-LIVE-01, ELEXON-LIVE-02, ELEXON-LIVE-03, ELEXON-LIVE-04, ELEXON-LIVE-05
   - **Plans:** 1 plan
   - **Wave 1:** opt-in live API-to-bronze-to-silver coverage
   - Plans:
-    - [ ] `.planning/phases/I3-elexon-live-api-to-silver-test-suite/I3-01-PLAN.md` - Elexon live API-to-silver integration suite
+    - [x] `.planning/phases/I3-elexon-live-api-to-silver-test-suite/I3-01-PLAN.md` - Elexon live API-to-silver integration suite
   - Success: Opt-in live tests call the public Elexon Insights API for active configured datasets with narrow deterministic windows.
   - Success: Representative live responses are written through `BronzeWriter`, transformed to silver parquet, and checked for rows, columns, data provider, and schema validity.
   - Success: Empty/no-data responses and known removed endpoints are classified explicitly as skip/deferred/documented outcomes.
