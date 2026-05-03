@@ -39,6 +39,12 @@ from gridflow.silver.entsoe.load_forecast_weekly import LoadForecastWeeklyTransf
 from gridflow.silver.entsoe.load_forecast_yearly import LoadForecastYearlyTransformer
 from gridflow.silver.entsoe.net_transfer_capacity import NetTransferCapacityTransformer
 from gridflow.silver.entsoe.outages_generation import OutagesGenerationTransformer
+from gridflow.silver.entsoe.outages_h7 import (
+    OutagesConsumptionTransformer,
+    OutagesOffshoreGridTransformer,
+    OutagesProductionTransformer,
+    OutagesTransmissionTransformer,
+)
 from gridflow.silver.entsoe.water_reservoirs import WaterReservoirsTransformer
 from gridflow.silver.entsoe.wind_solar_forecast import WindSolarForecastTransformer
 
@@ -52,6 +58,10 @@ __all__ = [
     "LoadForecastMonthlyTransformer",
     "WindSolarForecastTransformer",
     "OutagesGenerationTransformer",
+    "OutagesConsumptionTransformer",
+    "OutagesTransmissionTransformer",
+    "OutagesOffshoreGridTransformer",
+    "OutagesProductionTransformer",
     "InstalledCapacityTransformer",
     "GenerationForecastTransformer",
     "LoadForecastWeeklyTransformer",

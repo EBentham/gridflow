@@ -43,6 +43,33 @@ def _strip_ns(tag: str) -> str:
     return tag
 
 
+def _first_child_text(el: Any, names: set[str]) -> str:
+    for child in el:
+        if _strip_ns(child.tag) in names:
+            return (child.text or "").strip()
+    return ""
+
+
+def _root_document_metadata(root: Any) -> dict[str, str]:
+    metadata = {
+        "document_mrid": "",
+        "revision_number": "",
+        "document_status": "",
+    }
+    for child in root:
+        tag = _strip_ns(child.tag)
+        text = (child.text or "").strip()
+        if tag == "mRID":
+            metadata["document_mrid"] = text
+        elif tag == "revisionNumber":
+            metadata["revision_number"] = text
+        elif tag in {"docStatus", "docStatus.value"}:
+            metadata["document_status"] = text or _first_child_text(
+                child, {"value"}
+            )
+    return metadata
+
+
 def parse_timeseries_xml(
     xml_bytes: bytes,
     value_tag: str = "price.amount",
@@ -76,6 +103,7 @@ def parse_timeseries_xml(
         return []
 
     records: list[dict[str, Any]] = []
+    document_metadata = _root_document_metadata(root)
 
     # Collect all TimeSeries elements (namespace-agnostic)
     for ts_el in root.iter():
@@ -86,9 +114,12 @@ def parse_timeseries_xml(
         in_domain = out_domain = production_type = ""
         control_area_domain = business_type = flow_direction = ""
         unit_mrid = unit_name = ""
+        timeseries_mrid = asset_mrid = asset_name = document_status = ""
         for child in ts_el:
             tag = _strip_ns(child.tag)
-            if tag in (
+            if tag == "mRID":
+                timeseries_mrid = (child.text or "").strip()
+            elif tag in (
                 "in_Domain.mRID",
                 "In_Domain.mRID",
                 "inBiddingZone_Domain.mRID",
@@ -103,6 +134,10 @@ def parse_timeseries_xml(
                 control_area_domain = (child.text or "").strip()
             elif tag == "businessType":
                 business_type = (child.text or "").strip()
+            elif tag in {"docStatus", "docStatus.value"}:
+                document_status = (child.text or "").strip() or _first_child_text(
+                    child, {"value"}
+                )
             elif tag == "flowDirection.direction":
                 flow_direction = (child.text or "").strip()
             elif tag == "MktPSRType":
@@ -120,12 +155,33 @@ def parse_timeseries_xml(
                     sub_tag = _strip_ns(sub.tag)
                     if sub_tag == "mRID":
                         unit_mrid = (sub.text or "").strip()
+                        asset_mrid = unit_mrid
                     elif sub_tag == "name":
                         unit_name = (sub.text or "").strip()
+                        asset_name = unit_name
+            elif tag in {"Asset_RegisteredResource", "asset_RegisteredResource"}:
+                for sub in child:
+                    sub_tag = _strip_ns(sub.tag)
+                    if sub_tag == "mRID":
+                        asset_mrid = (sub.text or "").strip()
+                    elif sub_tag == "name":
+                        asset_name = (sub.text or "").strip()
+            elif tag in {
+                "Asset_RegisteredResource.mRID",
+                "asset_RegisteredResource.mRID",
+            }:
+                asset_mrid = (child.text or "").strip()
+            elif tag in {
+                "Asset_RegisteredResource.name",
+                "asset_RegisteredResource.name",
+            }:
+                asset_name = (child.text or "").strip()
             elif tag == "production_RegisteredResource.mRID":
                 unit_mrid = (child.text or "").strip()
+                asset_mrid = unit_mrid
             elif tag == "production_RegisteredResource.name":
                 unit_name = (child.text or "").strip()
+                asset_name = unit_name
             elif tag == "production_RegisteredResource.pSRType.psrType":
                 production_type = (child.text or "").strip()
 
@@ -171,6 +227,7 @@ def parse_timeseries_xml(
 
                 timestamp = start_dt + (position - 1) * resolution
                 records.append({
+                    **document_metadata,
                     "timestamp_utc": timestamp,
                     "value": value,
                     "in_domain": in_domain,
@@ -182,6 +239,11 @@ def parse_timeseries_xml(
                     "resolution": str(resolution),
                     "unit_mrid": unit_mrid,
                     "unit_name": unit_name,
+                    "timeseries_mrid": timeseries_mrid,
+                    "asset_mrid": asset_mrid,
+                    "asset_name": asset_name,
+                    "document_status": document_status
+                    or document_metadata["document_status"],
                 })
 
     return records

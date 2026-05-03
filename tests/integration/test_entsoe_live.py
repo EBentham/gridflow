@@ -401,6 +401,10 @@ class TestEntsoeLiveAllDatasets:
             "dc_link_intraday_transfer_limits",
             "offered_transfer_capacity_continuous",
             "auction_revenue",
+            "outages_consumption",
+            "outages_transmission",
+            "outages_offshore_grid",
+            "outages_production",
         ],
     )
     async def test_live_request_shape_uses_supported_domain_params(

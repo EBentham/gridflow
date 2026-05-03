@@ -200,6 +200,22 @@ sources:
         document_type: "A80"
         schedule: "daily"
         max_query_days: 365
+      outages_consumption:
+        document_type: "A76"
+        schedule: "daily"
+        max_query_days: 365
+      outages_transmission:
+        document_type: "A78"
+        schedule: "daily"
+        max_query_days: 365
+      outages_offshore_grid:
+        document_type: "A79"
+        schedule: "daily"
+        max_query_days: 365
+      outages_production:
+        document_type: "A77"
+        schedule: "daily"
+        max_query_days: 365
       installed_capacity:
         document_type: "A68"
         process_type: "A33"

@@ -444,6 +444,106 @@ class EntsoeContractedReserves(BaseSchema):
         return v
 
 
+class EntsoeOutagesConsumption(BaseSchema):
+    """Silver schema for aggregated consumption-unit outages (A76)."""
+
+    timestamp_utc: datetime
+    area_code: str
+    outage_type: str
+    unavailable_mw: float
+    business_type: str = ""
+    document_mrid: str = ""
+    document_status: str = ""
+    timeseries_mrid: str = ""
+    resolution: str = ""
+    data_provider: str = Field(default="entsoe")
+    ingested_at: datetime | None = None
+
+    @field_validator("timestamp_utc")
+    @classmethod
+    def must_be_utc(cls, v: datetime) -> datetime:
+        if v.tzinfo is None:
+            raise ValueError("timestamp_utc must be timezone-aware (UTC)")
+        return v
+
+
+class EntsoeOutagesTransmission(BaseSchema):
+    """Silver schema for transmission infrastructure outages (A78)."""
+
+    timestamp_utc: datetime
+    in_area_code: str
+    out_area_code: str
+    asset_mrid: str = ""
+    asset_name: str = ""
+    outage_type: str
+    unavailable_mw: float
+    business_type: str = ""
+    document_mrid: str = ""
+    document_status: str = ""
+    timeseries_mrid: str = ""
+    resolution: str = ""
+    data_provider: str = Field(default="entsoe")
+    ingested_at: datetime | None = None
+
+    @field_validator("timestamp_utc")
+    @classmethod
+    def must_be_utc(cls, v: datetime) -> datetime:
+        if v.tzinfo is None:
+            raise ValueError("timestamp_utc must be timezone-aware (UTC)")
+        return v
+
+
+class EntsoeOutagesOffshoreGrid(BaseSchema):
+    """Silver schema for offshore-grid infrastructure outages (A79)."""
+
+    timestamp_utc: datetime
+    area_code: str
+    asset_mrid: str = ""
+    asset_name: str = ""
+    outage_type: str = ""
+    unavailable_mw: float
+    business_type: str = ""
+    document_mrid: str = ""
+    document_status: str = ""
+    timeseries_mrid: str = ""
+    resolution: str = ""
+    data_provider: str = Field(default="entsoe")
+    ingested_at: datetime | None = None
+
+    @field_validator("timestamp_utc")
+    @classmethod
+    def must_be_utc(cls, v: datetime) -> datetime:
+        if v.tzinfo is None:
+            raise ValueError("timestamp_utc must be timezone-aware (UTC)")
+        return v
+
+
+class EntsoeOutagesProduction(BaseSchema):
+    """Silver schema for production-unit outages (A77)."""
+
+    timestamp_utc: datetime
+    area_code: str
+    unit_mrid: str
+    unit_name: str = ""
+    production_type: str = ""
+    outage_type: str
+    unavailable_mw: float
+    business_type: str = ""
+    document_mrid: str = ""
+    document_status: str = ""
+    timeseries_mrid: str = ""
+    resolution: str = ""
+    data_provider: str = Field(default="entsoe")
+    ingested_at: datetime | None = None
+
+    @field_validator("timestamp_utc")
+    @classmethod
+    def must_be_utc(cls, v: datetime) -> datetime:
+        if v.tzinfo is None:
+            raise ValueError("timestamp_utc must be timezone-aware (UTC)")
+        return v
+
+
 class EntsoeTransmissionMarketQuantity(BaseSchema):
     """Silver-layer schema for H6 transmission/market quantity time series."""
 

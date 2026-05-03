@@ -47,6 +47,12 @@ from gridflow.silver.entsoe.imbalance_prices import ImbalancePricesTransformer
 from gridflow.silver.entsoe.installed_capacity_units import InstalledCapacityUnitsTransformer
 from gridflow.silver.entsoe.load_forecast_monthly import LoadForecastMonthlyTransformer
 from gridflow.silver.entsoe.load_forecast_yearly import LoadForecastYearlyTransformer
+from gridflow.silver.entsoe.outages_h7 import (
+    OutagesConsumptionTransformer,
+    OutagesOffshoreGridTransformer,
+    OutagesProductionTransformer,
+    OutagesTransmissionTransformer,
+)
 from gridflow.silver.entsoe.water_reservoirs import WaterReservoirsTransformer
 
 FIXTURES = Path(__file__).parent.parent / "fixtures" / "entsoe"
@@ -63,6 +69,7 @@ ZONE_PAIR_DATASETS = {
     "cross_border_flows",
     "dc_link_intraday_transfer_limits",
     "net_transfer_capacity",
+    "outages_transmission",
     "offered_transfer_capacity_continuous",
     "offered_transfer_capacity_explicit",
     "offered_transfer_capacity_implicit",
@@ -280,6 +287,43 @@ class TestEntsoeUrlConstructionAllDatasets:
 
     @respx.mock
     @pytest.mark.asyncio
+    async def test_h7_outage_filters_preserve_documented_casing(
+        self,
+        entsoe_source_config: SourceConfig,
+    ) -> None:
+        route = respx.get(f"{ENTSOE_BASE}/api").mock(
+            return_value=httpx.Response(
+                200,
+                content=b"<root />",
+                headers={"content-type": "text/xml"},
+            )
+        )
+
+        async with EntsoeConnector(entsoe_source_config) as connector:
+            await connector.fetch(
+                dataset="outages_transmission",
+                start=START,
+                end=END,
+                **{
+                    "DocStatus": "A05",
+                    "mRID": "fixture-transmission-outage-gb-fr-20240115",
+                    "PeriodStartUpdate": "2024-01-15T00:00Z",
+                    "docStatus": "ignored-wrong-case",
+                },
+            )
+
+        params = dict(route.calls[0].request.url.params)
+
+        assert params["In_Domain"] == "10YGB----------A"
+        assert params["Out_Domain"] == "10YFR-RTE------C"
+        assert params["BusinessType"] == "A53"
+        assert params["DocStatus"] == "A05"
+        assert params["mRID"] == "fixture-transmission-outage-gb-fr-20240115"
+        assert params["PeriodStartUpdate"] == "2024-01-15T00:00Z"
+        assert "docStatus" not in params
+
+    @respx.mock
+    @pytest.mark.asyncio
     async def test_connector_expands_zip_xml_responses(
         self,
         entsoe_source_config: SourceConfig,
@@ -418,6 +462,34 @@ class TestEntsoeBronzeToSilverPipeline:
                 GenerationUnitsMasterDataTransformer,
                 {"area_code", "unit_mrid", "unit_name", "production_type"},
                 id="generation_units_master_data",
+            ),
+            pytest.param(
+                "outages_consumption",
+                "outages_consumption_gb.xml",
+                OutagesConsumptionTransformer,
+                {"timestamp_utc", "area_code", "unavailable_mw", "document_mrid"},
+                id="outages_consumption",
+            ),
+            pytest.param(
+                "outages_transmission",
+                "outages_transmission_gb_fr.xml",
+                OutagesTransmissionTransformer,
+                {"timestamp_utc", "in_area_code", "out_area_code", "asset_mrid"},
+                id="outages_transmission",
+            ),
+            pytest.param(
+                "outages_offshore_grid",
+                "outages_offshore_grid_gb.xml",
+                OutagesOffshoreGridTransformer,
+                {"timestamp_utc", "area_code", "asset_mrid", "document_mrid"},
+                id="outages_offshore_grid",
+            ),
+            pytest.param(
+                "outages_production",
+                "outages_production_gb.xml",
+                OutagesProductionTransformer,
+                {"timestamp_utc", "area_code", "unit_mrid", "production_type"},
+                id="outages_production",
             ),
             pytest.param(
                 "dc_link_intraday_transfer_limits",

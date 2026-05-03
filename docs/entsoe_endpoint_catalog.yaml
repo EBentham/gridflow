@@ -516,10 +516,10 @@ entries:
     optional_filters: []
     max_window: 1 year
     parser_family: quantity_timeseries
-    status: planned
+    status: implemented
     dataset: outages_consumption
     batch: H7-outages
-    reason: Needs outage schema extension.
+    reason: null
   - domain: Outages
     name: 10.1.A-B Unavailability of Transmission Infrastructure
     document_type: A78
@@ -529,10 +529,10 @@ entries:
     optional_filters: [DocStatus, mRID, PeriodStartUpdate, PeriodEndUpdate]
     max_window: 1 year
     parser_family: outage_document
-    status: planned
+    status: implemented
     dataset: outages_transmission
     batch: H7-outages
-    reason: Needs asset-level transmission outage schema.
+    reason: null
   - domain: Outages
     name: 10.1.A-B Transmission Infrastructure - Net Position Impact
     document_type: A78
@@ -545,7 +545,8 @@ entries:
     status: deferred
     dataset: outages_transmission_net_position_impact
     batch: H7-outages
-    reason: Depends on primary transmission outage schema.
+    reason: Deferred after H7; pTDF-domain net-position impact needs a
+      dedicated interpretation pass beyond the primary A78 outage document shape.
   - domain: Outages
     name: 10.1.A-B Transmission Infrastructure - Available Capacity
     document_type: A78
@@ -558,7 +559,8 @@ entries:
     status: deferred
     dataset: outages_transmission_available_capacity
     batch: H7-outages
-    reason: Depends on primary transmission outage schema.
+    reason: Deferred after H7; control-area available-capacity output needs a
+      dedicated capacity schema instead of sharing the primary A78 outage rows.
   - domain: Outages
     name: 10.1.C Unavailability of Offshore Grid Infrastructure
     document_type: A79
@@ -568,10 +570,10 @@ entries:
     optional_filters: [DocStatus, mRID]
     max_window: 1 year
     parser_family: outage_document
-    status: planned
+    status: implemented
     dataset: outages_offshore_grid
     batch: H7-outages
-    reason: Needs offshore-grid outage schema.
+    reason: null
   - domain: Outages
     name: 15.1.A-B Unavailability of Generation Units
     document_type: A80
@@ -594,10 +596,10 @@ entries:
     optional_filters: [DocStatus, mRID, RegisteredResource]
     max_window: 1 year
     parser_family: outage_document
-    status: planned
+    status: implemented
     dataset: outages_production
     batch: H7-outages
-    reason: Needs production-unit outage schema.
+    reason: null
   - domain: Outages
     name: Fall-backs
     document_type: A53
@@ -610,7 +612,8 @@ entries:
     status: deferred
     dataset: outages_fallbacks
     batch: H7-outages
-    reason: Low priority until primary outage datasets are complete.
+    reason: Deferred after H7; fallback documents are lower-priority operational
+      notices and need their own fallback-document schema.
 
   - domain: Balancing
     name: 12.3.A Current balancing state

@@ -38,7 +38,11 @@ from gridflow.schemas.entsoe import (
     EntsoeLoadForecast,
     EntsoeLoadForecastWeekly,
     EntsoeNetTransferCapacity,
+    EntsoeOutagesConsumption,
     EntsoeOutagesGeneration,
+    EntsoeOutagesOffshoreGrid,
+    EntsoeOutagesProduction,
+    EntsoeOutagesTransmission,
     EntsoeTransmissionMarketAmount,
     EntsoeTransmissionMarketQuantity,
     EntsoeWaterReservoirs,
@@ -74,6 +78,12 @@ from gridflow.silver.entsoe.load_forecast_weekly import LoadForecastWeeklyTransf
 from gridflow.silver.entsoe.load_forecast_yearly import LoadForecastYearlyTransformer
 from gridflow.silver.entsoe.net_transfer_capacity import NetTransferCapacityTransformer
 from gridflow.silver.entsoe.outages_generation import OutagesGenerationTransformer
+from gridflow.silver.entsoe.outages_h7 import (
+    OutagesConsumptionTransformer,
+    OutagesOffshoreGridTransformer,
+    OutagesProductionTransformer,
+    OutagesTransmissionTransformer,
+)
 from gridflow.silver.entsoe.water_reservoirs import WaterReservoirsTransformer
 from gridflow.silver.entsoe.wind_solar_forecast import WindSolarForecastTransformer
 
@@ -251,6 +261,20 @@ class TestParseTimeseriesXml:
         assert len(records) == 3
         assert records[0]["in_domain"] == "10YGB----------A"
         assert records[0]["out_domain"] == "10YFR-RTE------C"
+
+    def test_parse_outage_document_metadata_and_assets(self):
+        xml = self._load("outages_transmission_gb_fr.xml")
+        records = parse_timeseries_xml(xml, value_tag="quantity")
+
+        assert len(records) == 2
+        record = records[0]
+        assert record["document_mrid"] == "fixture-transmission-outage-gb-fr-20240115"
+        assert record["document_status"] == "A05"
+        assert record["timeseries_mrid"] == "transmission-ts-1"
+        assert record["asset_mrid"] == "ASSET-IFA-1"
+        assert record["asset_name"] == "IFA Interconnector Circuit 1"
+        assert record["in_domain"] == "10YGB----------A"
+        assert record["out_domain"] == "10YFR-RTE------C"
 
     def test_empty_bytes_returns_empty(self):
         records = parse_timeseries_xml(b"<root></root>", value_tag="price.amount")
@@ -722,6 +746,101 @@ class TestOutagesGenerationTransformer:
 
 
 # ---------------------------------------------------------------------------
+# Phase H7 - outage extension sources
+# ---------------------------------------------------------------------------
+
+
+class TestPhaseH7Endpoints:
+    def test_h7_doc_types_populated(self):
+        for name in (
+            "outages_consumption",
+            "outages_transmission",
+            "outages_offshore_grid",
+            "outages_production",
+        ):
+            assert name in DOC_TYPES, f"{name} missing from DOC_TYPES"
+
+    def test_h7_outage_metadata_preserves_documented_casing(self):
+        consumption = DOC_TYPES["outages_consumption"]
+        assert consumption.document_type == "A76"
+        assert consumption.extra_params == {"BusinessType": "A53"}
+        assert "DocStatus" in consumption.optional_params
+
+        transmission = DOC_TYPES["outages_transmission"]
+        assert transmission.document_type == "A78"
+        assert transmission.domain_params == ("In_Domain", "Out_Domain")
+        assert transmission.extra_params == {"BusinessType": "A53"}
+
+        offshore = DOC_TYPES["outages_offshore_grid"]
+        assert offshore.document_type == "A79"
+        assert offshore.extra_params == {}
+
+        production = DOC_TYPES["outages_production"]
+        assert production.document_type == "A77"
+        assert production.extra_params == {"BusinessType": "A53"}
+
+
+class TestPhaseH7OutageTransformers:
+    def test_consumption_transformer_preserves_document_fields(self):
+        raw = _make_df_from_xml("outages_consumption_gb.xml", "quantity")
+        transformer = _make_entsoe_transformer(OutagesConsumptionTransformer)
+
+        result = transformer.transform(raw)
+
+        assert not result.is_empty()
+        assert {"area_code", "unavailable_mw", "document_mrid"}.issubset(
+            result.columns
+        )
+        assert result["area_code"][0] == "10YGB----------A"
+        assert result["outage_type"][0] == "planned"
+        assert result["document_status"][0] == "A05"
+
+    def test_transmission_transformer_preserves_asset_and_domains(self):
+        raw = _make_df_from_xml("outages_transmission_gb_fr.xml", "quantity")
+        transformer = _make_entsoe_transformer(OutagesTransmissionTransformer)
+
+        result = transformer.transform(raw)
+
+        assert not result.is_empty()
+        assert result["in_area_code"][0] == "10YGB----------A"
+        assert result["out_area_code"][0] == "10YFR-RTE------C"
+        assert result["asset_mrid"][0] == "ASSET-IFA-1"
+        assert result["asset_name"][0] == "IFA Interconnector Circuit 1"
+
+    def test_offshore_grid_transformer_preserves_asset(self):
+        raw = _make_df_from_xml("outages_offshore_grid_gb.xml", "quantity")
+        transformer = _make_entsoe_transformer(OutagesOffshoreGridTransformer)
+
+        result = transformer.transform(raw)
+
+        assert not result.is_empty()
+        assert result["area_code"][0] == "10YGB----------A"
+        assert result["asset_mrid"][0] == "ASSET-OFFSHORE-HUB-1"
+        assert result["document_mrid"][0] == "fixture-offshore-grid-outage-gb-20240115"
+
+    def test_production_transformer_preserves_unit_identity(self):
+        raw = _make_df_from_xml("outages_production_gb.xml", "quantity")
+        transformer = _make_entsoe_transformer(OutagesProductionTransformer)
+
+        result = transformer.transform(raw)
+
+        assert not result.is_empty()
+        assert result["area_code"][0] == "10YGB----------A"
+        assert result["unit_mrid"][0] == "PROD-DRAX-3"
+        assert result["unit_name"][0] == "Drax Production Unit 3"
+        assert result["production_type"][0] == "B02"
+
+    def test_existing_generation_outage_transformer_stays_unit_level(self):
+        raw = _make_df_from_xml("outages_generation_gb.xml", "quantity")
+        result = _make_entsoe_transformer(OutagesGenerationTransformer).transform(raw)
+
+        assert "unit_mrid" in result.columns
+        assert "unit_name" in result.columns
+        assert "asset_mrid" not in result.columns
+        assert "document_mrid" not in result.columns
+
+
+# ---------------------------------------------------------------------------
 # InstalledCapacityTransformer
 # ---------------------------------------------------------------------------
 
@@ -874,6 +993,62 @@ class TestEntsoeOutagesGenerationSchema:
                 outage_type="planned",
                 unavailable_mw=800.0,
             )
+
+
+class TestEntsoeH7OutageSchemas:
+    _TS = datetime(2024, 1, 15, 0, 0, tzinfo=UTC)
+
+    def test_consumption_record(self):
+        record = EntsoeOutagesConsumption(
+            timestamp_utc=self._TS,
+            area_code="10YGB----------A",
+            outage_type="planned",
+            unavailable_mw=150.0,
+            document_mrid="fixture-consumption-outage-gb-20240115",
+            document_status="A05",
+        )
+
+        assert record.data_provider == "entsoe"
+        assert record.document_status == "A05"
+
+    def test_transmission_record(self):
+        record = EntsoeOutagesTransmission(
+            timestamp_utc=self._TS,
+            in_area_code="10YGB----------A",
+            out_area_code="10YFR-RTE------C",
+            asset_mrid="ASSET-IFA-1",
+            asset_name="IFA Interconnector Circuit 1",
+            outage_type="planned",
+            unavailable_mw=500.0,
+        )
+
+        assert record.asset_mrid == "ASSET-IFA-1"
+        assert record.data_provider == "entsoe"
+
+    def test_offshore_grid_record(self):
+        record = EntsoeOutagesOffshoreGrid(
+            timestamp_utc=self._TS,
+            area_code="10YGB----------A",
+            asset_mrid="ASSET-OFFSHORE-HUB-1",
+            outage_type="",
+            unavailable_mw=300.0,
+        )
+
+        assert record.asset_mrid == "ASSET-OFFSHORE-HUB-1"
+
+    def test_production_record(self):
+        record = EntsoeOutagesProduction(
+            timestamp_utc=self._TS,
+            area_code="10YGB----------A",
+            unit_mrid="PROD-DRAX-3",
+            unit_name="Drax Production Unit 3",
+            production_type="B02",
+            outage_type="planned",
+            unavailable_mw=700.0,
+        )
+
+        assert record.unit_mrid == "PROD-DRAX-3"
+        assert record.production_type == "B02"
 
 
 class TestEntsoeInstalledCapacitySchema:
@@ -1395,6 +1570,10 @@ class TestPhase3Endpoints:
             "cross_border_flows": "zone_pair",
             "net_transfer_capacity": "zone_pair",
             "outages_generation": "bidding_zone",
+            "outages_consumption": "bidding_zone",
+            "outages_transmission": "zone_pair",
+            "outages_offshore_grid": "bidding_zone",
+            "outages_production": "bidding_zone",
         }
         for name, domain_style in expected.items():
             assert DOC_TYPES[name].domain_style == domain_style
