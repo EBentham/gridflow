@@ -994,16 +994,16 @@ entries:
   - domain: Balancing
     name: 17.1 Activated Balancing Energy Quantity
     document_type: A83
-    process_type: A16
-    business_type: A95
+    process_type: null
+    business_type: A96
     area_params: [controlArea_Domain]
     optional_filters: []
     max_window: 1 day
     parser_family: quantity_timeseries
-    status: implemented
+    status: deferred
     dataset: activated_balancing_qty
-    batch: existing
-    reason: null
+    batch: H8-balancing-extension
+    reason: H5.5 live cleanup found the default GB control area rejects A83 as not allowed to be fetched via the service. Transformer/schema support remains, but active UK-centric all-dataset ingestion excludes this endpoint until a supported control-area strategy is introduced.
 
   - domain: Master Data
     name: Production and Generation Units

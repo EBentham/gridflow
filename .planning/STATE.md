@@ -1,20 +1,20 @@
 ---
 milestone: v0.3
 milestone_name: ENTSO-E Pipeline Validation
-status: human_needed
+status: active
 progress:
-  phases_total: 8
-  phases_complete: 4
-  plans_total: 10
-  plans_complete: 7
+  phases_total: 9
+  phases_complete: 5
+  plans_total: 11
+  plans_complete: 8
 ---
 
 ## Current Position
 
 Phase: H6 - ENTSO-E transmission and market data sources
 Plan: H6-01 next
-Status: Ready to execute H6; full all-dataset live verification still depends on ENTSOE_API_KEY
-Last activity: 2026-05-03 - H5 complete; generation-unit, reservoir, and master-data sources implemented
+Status: Ready to execute H6 on top of a passing active ENTSO-E live baseline
+Last activity: 2026-05-03 - H5.5 complete; full active ENTSO-E live suite passes with expected no-data skips
 
 ## Project Reference
 
@@ -47,12 +47,15 @@ produces schema-valid output — verified end-to-end, not just in unit tests.
 - H4-02 completed: official endpoint catalog/gap matrix added, all entries classified, and first load-domain missing source batch implemented.
 - H5-H8 planned: remaining ENTSO-E catalog rows are split into generation/reference, transmission/market, outage, and balancing-extension source batches.
 - H5-01 completed: generation unit/reference source batch implemented and verified.
+- H5.5 inserted before H6 to clean up live all-dataset behavior for sources implemented through H5.
+- H5.5 completed: active ENTSO-E live suite passes; A83 activated balancing quantity is deferred for H8/default-control-area strategy.
 
 ### Blockers
 
 - Full pytest suite currently fails during collection because `src/gridflow/silver/elexon/__init__.py` imports missing Elexon silver modules such as `agpt`; H1 focused tests pass, but milestone-level gates should address this package import mismatch.
 - H3 live verification requires `ENTSOE_API_KEY`; without it, the live suite is implemented but cannot prove real ENTSO-E fetch/bronze/silver/CLI behavior.
 - H4 UAT reported a bronze partition/backfill issue caused by missing `RawResponse.data_date`; H5 added regression coverage for ENTSO-E `data_date` and bronze partitioning.
+- H5.5 resolved live failures from invalid A83 metadata, zipped outage payloads, live unit/outage tag variants, and fixed-date no-data acknowledgements.
 
 ### Todos
 

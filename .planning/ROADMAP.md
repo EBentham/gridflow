@@ -81,6 +81,16 @@ See full details: [milestones/v0.2-entsoe-gaps-ROADMAP.md](milestones/v0.2-entso
   - Cross-cutting constraints: first re-verify the H4 bronze `data_date`/backfill partition regression; keep catalog status synchronized with DOC_TYPES.
   - Status: H5 complete; H4 bronze partition regression covered and H5 live request-shape probe passed.
 
+- [x] **Phase H5.5**: ENTSO-E live cleanup before H6 - Done 2026-05-03
+  - Requirements: LIVE-01, LIVE-02, LIVE-05, LIVE-CLEAN-01, LIVE-CLEAN-02, LIVE-CLEAN-03
+  - **Plans:** 1 plan
+  - Plans:
+    - [x] H5.5-01-PLAN.md - Debug and repair live all-dataset ENTSO-E failures through H5
+  - Success: `uv run --extra dev pytest -m live tests/integration/test_entsoe_live.py -v -rs` passes or reports only expected ENTSO-E no-data skips.
+  - Success: Incorrect endpoint metadata, zip XML payload handling, and live parser variants are fixed before H6 adds more sources.
+  - Cross-cutting constraints: keep live tests opt-in, preserve token redaction, and distinguish genuine no-data acknowledgements from malformed request shapes.
+  - Status: H5.5 complete; full live suite passes for active ENTSO-E datasets with expected no-data skips.
+
 - [ ] **Phase H6**: ENTSO-E transmission and market data sources
   - Requirements: SRC-TX-01, SRC-TX-02, SRC-TX-03, SRC-TX-04, COVER-03, LIVE-05
   - **Plans:** 1 plan

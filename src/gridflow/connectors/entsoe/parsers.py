@@ -90,6 +90,7 @@ def parse_timeseries_xml(
             tag = _strip_ns(child.tag)
             if tag in (
                 "in_Domain.mRID",
+                "inBiddingZone_Domain.mRID",
                 "outBiddingZone_Domain.mRID",
                 "BiddingZone_Domain.mRID",
                 "biddingZone_Domain.mRID",
@@ -107,6 +108,12 @@ def parse_timeseries_xml(
                 for sub in child:
                     if _strip_ns(sub.tag) == "psrType":
                         production_type = (sub.text or "").strip()
+            elif tag == "generatingUnit_PSRType.psrType":
+                production_type = (child.text or "").strip()
+            elif tag == "registeredResource.mRID":
+                unit_mrid = (child.text or "").strip()
+            elif tag == "registeredResource.name":
+                unit_name = (child.text or "").strip()
             elif tag == "RegisteredResource":
                 for sub in child:
                     sub_tag = _strip_ns(sub.tag)
@@ -114,10 +121,16 @@ def parse_timeseries_xml(
                         unit_mrid = (sub.text or "").strip()
                     elif sub_tag == "name":
                         unit_name = (sub.text or "").strip()
+            elif tag == "production_RegisteredResource.mRID":
+                unit_mrid = (child.text or "").strip()
+            elif tag == "production_RegisteredResource.name":
+                unit_name = (child.text or "").strip()
+            elif tag == "production_RegisteredResource.pSRType.psrType":
+                production_type = (child.text or "").strip()
 
         # Parse each Period
         for period_el in ts_el.iter():
-            if _strip_ns(period_el.tag) != "Period":
+            if _strip_ns(period_el.tag) not in {"Period", "Available_Period"}:
                 continue
 
             start_dt: datetime | None = None
@@ -130,6 +143,9 @@ def parse_timeseries_xml(
                         if _strip_ns(sub.tag) == "start":
                             with contextlib.suppress(ValueError):
                                 start_dt = _parse_utc(sub.text or "")
+                elif tag == "timeInterval.start":
+                    with contextlib.suppress(ValueError):
+                        start_dt = _parse_utc(child.text or "")
                 elif tag == "resolution":
                     resolution = _resolve_resolution((child.text or "").strip())
 

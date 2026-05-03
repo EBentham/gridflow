@@ -1336,7 +1336,6 @@ class TestPhase3Endpoints:
         for name in (
             "imbalance_prices",
             "imbalance_volume",
-            "activated_balancing_qty",
             "activated_balancing_prices",
             "contracted_reserves",
         ):
@@ -1356,10 +1355,7 @@ class TestPhase3Endpoints:
         assert iv.extra_params == {"businessType": "A19"}
 
     def test_activated_balancing_qty_doc_type(self):
-        ab = DOC_TYPES["activated_balancing_qty"]
-        assert ab.document_type == "A83"
-        assert ab.domain_style == "control_area"
-        assert ab.extra_params == {"businessType": "A95"}
+        assert "activated_balancing_qty" not in DOC_TYPES
 
     def test_activated_balancing_prices_doc_type(self):
         ab = DOC_TYPES["activated_balancing_prices"]

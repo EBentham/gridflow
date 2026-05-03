@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import io
+import zipfile
 from datetime import UTC, date, datetime
 from pathlib import Path
 
@@ -191,6 +193,40 @@ class TestEntsoeUrlConstructionAllDatasets:
 
         assert responses
         assert {response.data_date for response in responses} == {TARGET_DATE}
+
+    @respx.mock
+    @pytest.mark.asyncio
+    async def test_connector_expands_zip_xml_responses(
+        self,
+        entsoe_source_config: SourceConfig,
+    ) -> None:
+        zip_buffer = io.BytesIO()
+        with zipfile.ZipFile(zip_buffer, "w") as archive:
+            archive.writestr("001-outage.xml", "<root><TimeSeries /></root>")
+            archive.writestr("notes.txt", "ignored")
+
+        respx.get(f"{ENTSOE_BASE}/api").mock(
+            return_value=httpx.Response(
+                200,
+                content=zip_buffer.getvalue(),
+                headers={"content-type": "application/zip"},
+            )
+        )
+
+        async with EntsoeConnector(entsoe_source_config) as connector:
+            responses = await connector.fetch(
+                dataset="outages_generation",
+                start=START,
+                end=END,
+            )
+
+        assert len(responses) == 6
+        assert {response.content_type for response in responses} == {"text/xml"}
+        assert {response.data_date for response in responses} == {TARGET_DATE}
+        assert all(
+            response.request_params["zip_entry"] == "001-outage.xml"
+            for response in responses
+        )
 
     def test_bronze_writer_partitions_by_data_date_not_fetched_at(
         self,

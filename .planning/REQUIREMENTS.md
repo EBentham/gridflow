@@ -18,10 +18,13 @@
 
 ### Testing — Live
 
-- [ ] **LIVE-01**: Live test suite (`@pytest.mark.live`) fetches real data from the ENTSO-E API for a representative subset of datasets when `ENTSOE_API_KEY` is set
-- [ ] **LIVE-02**: Live tests verify that fetched XML responses parse and transform to silver without errors
+- [x] **LIVE-01**: Live test suite (`@pytest.mark.live`) fetches real data from the ENTSO-E API for active ENTSO-E datasets when `ENTSOE_API_KEY` is set - Phase H5.5
+- [x] **LIVE-02**: Live tests verify that fetched XML responses parse and transform to silver without errors, with explicit skips for genuine ENTSO-E no-data acknowledgements - Phase H5.5
 - [x] **LIVE-03**: Live tests are skipped by default and can be opted in with `pytest -m live`; a conftest fixture gate skips automatically when no API key is present - Phase H3
 - [x] **LIVE-04**: Opt-in live request-shape probe covers representative ENTSO-E request parameter families and rejects unsupported parameter-name errors - Phase H4
+- [x] **LIVE-CLEAN-01**: Live ENTSO-E cleanup distinguishes genuine no-data acknowledgements from invalid requests and parser regressions - Phase H5.5
+- [x] **LIVE-CLEAN-02**: ENTSO-E live `application/zip` XML responses are ingested as XML bronze inputs that downstream transformers can consume - Phase H5.5
+- [x] **LIVE-CLEAN-03**: Unit-level live XML tag variants are parsed into the same silver fields as fixture-backed unit payloads - Phase H5.5
 
 ### ENTSO-E Endpoint Coverage
 
@@ -72,10 +75,13 @@
 | MOCK-01 | Phase H2 | Complete |
 | MOCK-02 | Phase H2 | Complete |
 | MOCK-03 | Phase H2 | Complete |
-| LIVE-01 | Phase H3 | Pending |
-| LIVE-02 | Phase H3 | Pending |
+| LIVE-01 | Phase H5.5 | Complete - active ENTSO-E datasets fetch real live responses |
+| LIVE-02 | Phase H5.5 | Complete - active live XML transforms or skips explicit no-data acknowledgements |
 | LIVE-03 | Phase H3 | Satisfied - live gate opt-in and absent-key skip verified |
 | LIVE-04 | Phase H4 | Satisfied - representative live request-shape gate passes |
+| LIVE-CLEAN-01 | Phase H5.5 | Complete |
+| LIVE-CLEAN-02 | Phase H5.5 | Complete |
+| LIVE-CLEAN-03 | Phase H5.5 | Complete |
 | URL-01 | Phase H4 | Complete |
 | DOC-01 | Phase H4 | Complete |
 | COVER-01 | Phase H4 | Complete |
@@ -99,10 +105,10 @@
 | SRC-BAL-04 | Phase H8 | Planned |
 
 **Coverage:**
-- v0.3 requirements: 30 total
-- Mapped to phases: 30
+- v0.3 requirements: 33 total
+- Mapped to phases: 33
 - Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-05-02*
-*Last updated: 2026-05-03 after Phase H5 completion*
+*Last updated: 2026-05-03 after Phase H5.5 live cleanup*

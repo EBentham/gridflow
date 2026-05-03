@@ -32,7 +32,10 @@ from gridflow.config.settings import (
     load_settings,
 )
 from gridflow.connectors.base import RawResponse
-from gridflow.connectors.entsoe.client import EntsoeConnector
+from gridflow.connectors.entsoe.client import (
+    EntsoeConnector,
+    _extract_acknowledgement_reason,
+)
 from gridflow.connectors.entsoe.endpoints import DOC_TYPES
 from gridflow.silver.registry import get_transformer
 
@@ -122,6 +125,11 @@ def _safe_params(params: dict[str, Any]) -> dict[str, Any]:
         key: _redact(str(value)) if key == "securityToken" else value
         for key, value in params.items()
     }
+
+
+def _is_no_matching_data_response(response: RawResponse) -> bool:
+    reason = _extract_acknowledgement_reason(response.body)
+    return "No matching data found" in reason
 
 
 def _write_live_responses_to_bronze(
@@ -364,6 +372,11 @@ class TestEntsoeLiveAllDatasets:
 
         responses = asyncio.run(_fetch())
         _assert_live_responses(dataset, responses)
+        if all(_is_no_matching_data_response(response) for response in responses):
+            pytest.skip(
+                f"ENTSO-E returned no matching data for entsoe/{dataset} "
+                f"on {LIVE_TARGET_DATE:%Y-%m-%d}"
+            )
         _write_live_responses_to_bronze(tmp_data_dir, dataset, responses, LIVE_TARGET_DATE)
 
         transformer = get_transformer("entsoe", dataset, tmp_data_dir)
@@ -438,7 +451,7 @@ class TestEntsoeLiveCliCommands:
         assert result.exit_code == 0, result.output
         assert "FAILED" not in result.output
         _assert_dataset_dirs_exist(tmp_data_dir / "bronze" / "entsoe")
-        _assert_dataset_dirs_exist(tmp_data_dir / "silver" / "entsoe")
+        _assert_any_dataset_dirs_exist(tmp_data_dir / "silver" / "entsoe")
 
     @requires_entsoe_api_key
     @pytest.mark.live
@@ -479,9 +492,14 @@ class TestEntsoeLiveCliCommands:
         assert os.environ.get(ENTSOE_API_KEY_ENV, "") not in transform_result.output
         assert transform_result.exit_code == 0, transform_result.output
         assert "FAILED" not in transform_result.output
-        _assert_dataset_dirs_exist(tmp_data_dir / "silver" / "entsoe")
+        _assert_any_dataset_dirs_exist(tmp_data_dir / "silver" / "entsoe")
 
 
 def _assert_dataset_dirs_exist(source_dir: Path) -> None:
     missing = [dataset for dataset in DOC_TYPES if not (source_dir / dataset).exists()]
     assert not missing, f"Missing ENTSO-E dataset output directories: {missing}"
+
+
+def _assert_any_dataset_dirs_exist(source_dir: Path) -> None:
+    existing = [dataset for dataset in DOC_TYPES if (source_dir / dataset).exists()]
+    assert existing, f"No ENTSO-E dataset output directories found under {source_dir}"

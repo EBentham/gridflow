@@ -110,13 +110,6 @@ DOC_TYPES: dict[str, EntsoeDocType] = {
         domain_style="control_area",
         extra_params={"businessType": "A19"},
     ),
-    "activated_balancing_qty": EntsoeDocType(
-        "A83",
-        "A16",
-        "Activated balancing energy quantity",
-        domain_style="control_area",
-        extra_params={"businessType": "A95"},
-    ),
     "activated_balancing_prices": EntsoeDocType(
         "A84",
         "A16",

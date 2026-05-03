@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import io
 import logging
 import re
+import zipfile
 from datetime import datetime
 from typing import TYPE_CHECKING, Any
 from xml.etree import ElementTree
@@ -122,7 +124,7 @@ class EntsoeConnector(BaseConnector):
                     period_start=period_start,
                     period_end=period_end,
                 )
-                responses.append(resp)
+                responses.extend(resp)
         elif doc_type.domain_style == "control_area":
             # Fetch one response per control area (balancing datasets)
             for area in DEFAULT_CONTROL_AREAS:
@@ -137,7 +139,7 @@ class EntsoeConnector(BaseConnector):
                     period_start=period_start,
                     period_end=period_end,
                 )
-                responses.append(resp)
+                responses.extend(resp)
         else:
             # Fetch one response per bidding zone using the dataset's documented
             # domain parameter style.
@@ -153,7 +155,7 @@ class EntsoeConnector(BaseConnector):
                     period_start=period_start,
                     period_end=period_end,
                 )
-                responses.append(resp)
+                responses.extend(resp)
 
         logger.info(
             "Fetched %d responses for entsoe/%s from %s to %s",
@@ -177,7 +179,7 @@ class EntsoeConnector(BaseConnector):
         out_domain: str | None,
         period_start: str,
         period_end: str,
-    ) -> RawResponse:
+    ) -> list[RawResponse]:
         """Fetch a single ENTSO-E document using the dataset's request style."""
         query_params: dict[str, str] = {"documentType": doc_type.document_type}
         if doc_type.date_param:
@@ -204,17 +206,36 @@ class EntsoeConnector(BaseConnector):
 
         raw = await self._request(_ENTSOE_API_PATH, query_params)
         data_date = datetime.strptime(period_start, ENTSOE_DT_FORMAT).date()
-        return RawResponse(
-            body=raw.content,
-            content_type=raw.headers.get("content-type", "text/xml"),
-            source="entsoe",
-            dataset=dataset,
-            request_url=str(raw.url),
-            request_params=dict(query_params),
-            api_version="v1",
-            http_status=raw.status_code,
-            data_date=data_date,
-        )
+        content_type = raw.headers.get("content-type", "text/xml")
+        if _is_zip_response(content_type, raw.content):
+            return [
+                RawResponse(
+                    body=entry_body,
+                    content_type="text/xml",
+                    source="entsoe",
+                    dataset=dataset,
+                    request_url=str(raw.url),
+                    request_params={**query_params, "zip_entry": entry_name},
+                    api_version="v1",
+                    http_status=raw.status_code,
+                    data_date=data_date,
+                )
+                for entry_name, entry_body in _iter_zip_xml(raw.content)
+            ]
+
+        return [
+            RawResponse(
+                body=raw.content,
+                content_type=content_type,
+                source="entsoe",
+                dataset=dataset,
+                request_url=str(raw.url),
+                request_params=dict(query_params),
+                api_version="v1",
+                http_status=raw.status_code,
+                data_date=data_date,
+            )
+        ]
 
     @RETRY_POLICY
     async def _request(
@@ -278,6 +299,24 @@ def _extract_acknowledgement_reason(content: bytes) -> str:
     if text is not None and text.text:
         parts.append(text.text.strip())
     return " - ".join(parts)
+
+
+def _is_zip_response(content_type: str, content: bytes) -> bool:
+    base_type = content_type.split(";")[0].strip().lower()
+    return base_type in {
+        "application/zip",
+        "application/x-zip-compressed",
+    } or content.startswith(b"PK\x03\x04")
+
+
+def _iter_zip_xml(content: bytes) -> list[tuple[str, bytes]]:
+    with zipfile.ZipFile(io.BytesIO(content)) as archive:
+        entries: list[tuple[str, bytes]] = []
+        for name in archive.namelist():
+            if name.endswith("/") or not name.lower().endswith(".xml"):
+                continue
+            entries.append((name, archive.read(name)))
+    return entries
 
 
 def _domain_params(
