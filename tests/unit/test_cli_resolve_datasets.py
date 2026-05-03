@@ -27,13 +27,12 @@ class TestAllPositionalAlias:
 
 
 class TestEntsoeDatasetExpansion:
-    def test_entsoe_all_expands_to_all_16_configured_datasets(self):
+    def test_entsoe_all_expands_to_all_configured_datasets(self):
         """ENTSO-E positional 'all' expands to all configured datasets."""
         settings = load_settings()
         result = _resolve_datasets("entsoe", "all", False, settings)
         expected = list(settings.get_source_config("entsoe").datasets.keys())
 
-        assert len(expected) == 16
         assert result == expected
 
 

@@ -382,7 +382,7 @@ class TestEntsoeLive:
         from gridflow.connectors.entsoe.endpoints import BIDDING_ZONES
 
         params = {
-            "documentType": "A88",
+            "documentType": "A11",
             "in_Domain.mRID": BIDDING_ZONES["GB"],
             "out_Domain.mRID": BIDDING_ZONES["FR"],
             "periodStart": "202602010000",

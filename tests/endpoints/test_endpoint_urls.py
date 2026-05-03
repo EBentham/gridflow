@@ -298,7 +298,7 @@ class TestEntsoeEndpointDefinitions:
         ("load_forecast", "A65", "A01"),
         ("actual_generation", "A75", "A16"),
         ("wind_solar_forecast", "A69", "A01"),
-        ("cross_border_flows", "A88", None),
+        ("cross_border_flows", "A11", None),
         ("outages_generation", "A80", None),
         ("installed_capacity", "A68", "A33"),
     ])
@@ -371,7 +371,7 @@ class TestEntsoeUrlConstruction:
             "periodEnd": REF_END.strftime(ENTSOE_DT_FORMAT),
         }
 
-        assert params["documentType"] == "A88"
+        assert params["documentType"] == "A11"
         assert params["in_Domain.mRID"] == "10YGB----------A"
         assert params["out_Domain.mRID"] == "10YFR-RTE------C"
 
