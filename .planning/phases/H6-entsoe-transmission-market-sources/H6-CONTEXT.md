@@ -1,7 +1,7 @@
 ---
 phase: H6
 slug: entsoe-transmission-market-sources
-status: ready_for_planning
+status: complete
 created: 2026-05-03
 ---
 

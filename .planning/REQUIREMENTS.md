@@ -38,10 +38,10 @@
 - [x] **SRC-GEN-02**: Actual generation per generation unit is available as `actual_generation_units` with unit identity fields - Phase H5
 - [x] **SRC-GEN-03**: Water reservoirs and hydro storage plants are available as `water_reservoirs` - Phase H5
 - [x] **SRC-GEN-04**: Production and generation unit master data is available as `generation_units_master_data` or explicitly deferred if the reference payload needs a separate modelling phase - Phase H5
-- [ ] **SRC-TX-01**: Transmission transfer/capacity variants are implemented for H6 planned catalog rows - Phase H6
-- [ ] **SRC-TX-02**: Commercial schedule and net-position variants are implemented for H6 planned catalog rows - Phase H6
-- [ ] **SRC-TX-03**: Market allocation, auction revenue, transfer-capacity use, and capacity allocated/nominated datasets are implemented for H6 planned catalog rows - Phase H6
-- [ ] **SRC-TX-04**: Congestion management datasets are implemented for H6 planned catalog rows - Phase H6
+- [x] **SRC-TX-01**: Transmission transfer/capacity variants are implemented for H6 planned catalog rows - Phase H6
+- [x] **SRC-TX-02**: Commercial schedule and net-position variants are implemented for H6 planned catalog rows - Phase H6
+- [x] **SRC-TX-03**: Market allocation, auction revenue, transfer-capacity use, and capacity allocated/nominated datasets are implemented for H6 planned catalog rows - Phase H6
+- [x] **SRC-TX-04**: Congestion management datasets are implemented for H6 planned catalog rows - Phase H6
 - [ ] **SRC-OUT-01**: Aggregated consumption outage data is available as `outages_consumption` - Phase H7
 - [ ] **SRC-OUT-02**: Transmission and offshore-grid outage data are available as `outages_transmission` and `outages_offshore_grid` - Phase H7
 - [ ] **SRC-OUT-03**: Production-unit outage data is available as `outages_production` - Phase H7
@@ -86,16 +86,16 @@
 | DOC-01 | Phase H4 | Complete |
 | COVER-01 | Phase H4 | Complete |
 | COVER-02 | Phase H4 | Complete for first load-domain batch; remaining batches tracked in endpoint catalog |
-| COVER-03 | Phases H5-H8 | Partial - H5 rows implemented; H6-H8 remain planned |
-| LIVE-05 | Phases H5-H8 | Partial - H5 request-shape gate passed; H6-H8 remain planned |
+| COVER-03 | Phases H5-H8 | Partial - H5-H6 rows implemented or reclassified; H7-H8 remain planned |
+| LIVE-05 | Phases H5-H8 | Partial - H5-H6 request-shape gates passed; H7-H8 remain planned |
 | SRC-GEN-01 | Phase H5 | Complete |
 | SRC-GEN-02 | Phase H5 | Complete |
 | SRC-GEN-03 | Phase H5 | Complete |
 | SRC-GEN-04 | Phase H5 | Complete |
-| SRC-TX-01 | Phase H6 | Planned |
-| SRC-TX-02 | Phase H6 | Planned |
-| SRC-TX-03 | Phase H6 | Planned |
-| SRC-TX-04 | Phase H6 | Planned |
+| SRC-TX-01 | Phase H6 | Complete |
+| SRC-TX-02 | Phase H6 | Complete |
+| SRC-TX-03 | Phase H6 | Complete |
+| SRC-TX-04 | Phase H6 | Complete |
 | SRC-OUT-01 | Phase H7 | Planned |
 | SRC-OUT-02 | Phase H7 | Planned |
 | SRC-OUT-03 | Phase H7 | Planned |
@@ -111,4 +111,4 @@
 
 ---
 *Requirements defined: 2026-05-02*
-*Last updated: 2026-05-03 after Phase H5.5 live cleanup*
+*Last updated: 2026-05-03 after Phase H6 transmission/market sources*

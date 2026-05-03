@@ -35,11 +35,11 @@ schema-valid output — verified end-to-end, not just in unit tests.
 - [x] ENTSO-E load month/year forecasts and forecast margin added through the medallion path - v0.3-entsoe-validation H4
 - [x] ENTSO-E generation unit, water reservoir, and generation-unit master data sources added through the medallion path - v0.3-entsoe-validation H5
 - [x] ENTSO-E live cleanup verifies implemented H1-H5 sources against real API availability and payload formats - v0.3-entsoe-validation H5.5
+- [x] ENTSO-E transmission, commercial schedule, allocation, congestion, and market-position sources added or explicitly reclassified - v0.3-entsoe-validation H6
 
 ### Active
 
-- [ ] Remaining ENTSO-E endpoint catalog batches H6-H8 are implemented as follow-up source-family batches
-  - H6: transmission, commercial schedule, allocation, congestion, and market-position sources
+- [ ] Remaining ENTSO-E endpoint catalog batches H7-H8 are implemented as follow-up source-family batches
   - H7: consumption, transmission, offshore-grid, and production outage sources
   - H8: balancing state, bid, capacity, cross-zonal capacity, and financial balancing sources
 
@@ -56,7 +56,7 @@ schema-valid output — verified end-to-end, not just in unit tests.
 
 - Medallion architecture: Bronze (raw Parquet) → Silver (normalised Parquet) → Gold (modelling-ready)
 - DuckDB serves as the catalogue layer with views over silver Parquet files
-- ENTSO-E connector uses XML parsing for 22 active datasets across documented ENTSO-E document families
+- ENTSO-E connector uses XML parsing for 38 active datasets across documented ENTSO-E document families
 - All transformers call `SchemaClass(**sample)` on first row as runtime contract check
 - Polars `replace_strict` is used for A-code mapping — unknown codes raise at transform time
 - Windows 11 / OneDrive path — use `os.replace()` for atomic file writes
@@ -68,6 +68,7 @@ schema-valid output — verified end-to-end, not just in unit tests.
 - `docs/entsoe_endpoint_catalog.yaml` is the auditable source for official Postman endpoint classification and follow-up implementation batches.
 - H5 added `date_param` request metadata for A95 reference-data endpoints that use `Implementation_DateAndOrTime=YYYY-MM-DD` instead of period windows.
 - H5.5 inserted a cleanup gate before H6 because the full credentialed ENTSO-E live suite exposed unsupported active A83 metadata for the default GB control area, zipped outage payloads, live parser tag variants, and genuine fixed-date no-data acknowledgements.
+- H6 added `optional_params` request metadata plus shared zone-pair quantity/amount transformer families for transmission and market time-series datasets; B09 `flow_based_allocations` remains deferred for dedicated parser/schema review.
 
 ## Constraints
 
@@ -75,7 +76,7 @@ schema-valid output — verified end-to-end, not just in unit tests.
 - **Test runner**: pytest -x -q with `respx` for HTTP mocking
 - **Platform**: Windows 11 — `os.replace()` for atomic writes, forward-slash paths in tests
 - **ENTSO-E API**: requires `ENTSOE_API_KEY` env var; live tests must be opt-in (`--live`)
-- **Compatibility**: all 16 existing ENTSO-E transformers must remain passing after CLI changes
+- **Compatibility**: existing ENTSO-E transformers and active H1-H6 datasets must remain passing after source-batch changes
 
 ## Key Decisions
 
@@ -89,6 +90,7 @@ schema-valid output — verified end-to-end, not just in unit tests.
 | Endpoint catalog as coverage source | Prevents silent ENTSO-E omissions and gives each gap an owner batch | ✓ Good |
 | H5-H8 split by source family | Keeps remaining ENTSO-E source coverage reviewable and lets parser/schema risk stay isolated by domain | Planned |
 | H5.5 live cleanup before H6 | New source batches should build on a live-tested H1-H5 baseline | Adopted |
+| B09 flow-based allocations deferred in H6 | Allocation documents need dedicated parser/schema review rather than generic TimeSeries widening | Adopted |
 | Live tests opt-in with `--live` marker | API key not available in CI; live tests are for developer validation | — Pending |
 
 ## Evolution
@@ -109,4 +111,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-03 after Phase H5.5 live cleanup*
+*Last updated: 2026-05-03 after Phase H6 transmission/market sources*

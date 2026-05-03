@@ -4,17 +4,17 @@ milestone_name: ENTSO-E Pipeline Validation
 status: active
 progress:
   phases_total: 9
-  phases_complete: 5
+  phases_complete: 6
   plans_total: 11
-  plans_complete: 8
+  plans_complete: 9
 ---
 
 ## Current Position
 
-Phase: H6 - ENTSO-E transmission and market data sources
-Plan: H6-01 next
-Status: Ready to execute H6 on top of a passing active ENTSO-E live baseline
-Last activity: 2026-05-03 - H5.5 complete; full active ENTSO-E live suite passes with expected no-data skips
+Phase: H7 - ENTSO-E outage extension data sources
+Plan: H7-01 next
+Status: Ready to plan/execute H7 after H6 transmission and market source completion
+Last activity: 2026-05-03 - H6 complete; targeted non-live and live request-shape gates pass
 
 ## Project Reference
 
@@ -39,6 +39,8 @@ produces schema-valid output — verified end-to-end, not just in unit tests.
 - H4-02 uses `docs/entsoe_endpoint_catalog.yaml` as the auditable source of truth for implemented/planned/deferred/excluded ENTSO-E endpoint coverage.
 - The first missing-source batch promotes load month/year forecasts and year-ahead forecast margin; generation-unit, transmission, outage, and balancing-extension families remain planned catalog batches.
 - H5 adds generation-unit, reservoir, and generation-unit master-data sources, including an A95 reference-date request style.
+- H6 adds transmission/market source rows through metadata-driven request construction, shared zone-pair quantity/amount transformers, and exact-cased optional filter forwarding.
+- H6 defers `flow_based_allocations` because B09 allocation documents need dedicated parser/schema review rather than the generic TimeSeries transformer path.
 
 ### Roadmap Evolution
 
@@ -49,6 +51,7 @@ produces schema-valid output — verified end-to-end, not just in unit tests.
 - H5-01 completed: generation unit/reference source batch implemented and verified.
 - H5.5 inserted before H6 to clean up live all-dataset behavior for sources implemented through H5.
 - H5.5 completed: active ENTSO-E live suite passes; A83 activated balancing quantity is deferred for H8/default-control-area strategy.
+- H6 completed: 16 transmission/market datasets implemented and live request-shape probes pass for representative H6 families.
 
 ### Blockers
 

@@ -91,14 +91,15 @@ See full details: [milestones/v0.2-entsoe-gaps-ROADMAP.md](milestones/v0.2-entso
   - Cross-cutting constraints: keep live tests opt-in, preserve token redaction, and distinguish genuine no-data acknowledgements from malformed request shapes.
   - Status: H5.5 complete; full live suite passes for active ENTSO-E datasets with expected no-data skips.
 
-- [ ] **Phase H6**: ENTSO-E transmission and market data sources
+- [x] **Phase H6**: ENTSO-E transmission and market data sources - Done 2026-05-03
   - Requirements: SRC-TX-01, SRC-TX-02, SRC-TX-03, SRC-TX-04, COVER-03, LIVE-05
   - **Plans:** 1 plan
   - Plans:
-    - [ ] H6-01-PLAN.md - Add transmission, commercial schedule, capacity allocation, congestion, and market-position sources
+    - [x] H6-01-PLAN.md - Add transmission, commercial schedule, capacity allocation, congestion, and market-position sources
   - Success: H6 catalog rows are implemented or explicitly reclassified with reasons.
   - Success: Zone-pair request styles support documented optional market filters without ad hoc connector branches.
   - Cross-cutting constraints: batch by parser family, keep large schema additions reviewable, and preserve existing 19 ENTSO-E datasets.
+  - Status: H6 complete; 16 transmission/market datasets added, `flow_based_allocations` explicitly deferred for dedicated allocation-document schema review, and H6 live request-shape probes passed.
 
 - [ ] **Phase H7**: ENTSO-E outage extension data sources
   - Requirements: SRC-OUT-01, SRC-OUT-02, SRC-OUT-03, COVER-03, LIVE-05
