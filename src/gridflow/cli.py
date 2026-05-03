@@ -4,7 +4,8 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from datetime import date, datetime, timedelta, timezone
+import re
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Optional
 
@@ -28,7 +29,11 @@ def ingest(
     from gridflow.utils.logging import setup_logging
 
     settings = load_settings()
-    setup_logging(settings.pipeline.log_dir, settings.pipeline.log_level)
+    setup_logging(
+        settings.pipeline.log_dir,
+        settings.pipeline.log_level,
+        settings.pipeline.console_log_level,
+    )
 
     start_dt, end_dt = _resolve_dates(
         start, end, last, settings.pipeline.default_lookback_hours
@@ -50,13 +55,14 @@ def ingest(
 
     source_config = settings.get_source_config(source)
     writer = BronzeWriter(settings.pipeline.data_dir)
+    failures: list[tuple[str, str]] = []
 
     for ds in datasets:
         tracker = PipelineRunTracker(con, source, ds, "ingest")
         try:
             connector = get_connector(source, source_config)
 
-            async def _do_fetch() -> list:
+            async def _do_fetch(connector=connector, ds=ds) -> list:
                 async with connector:
                     return await connector.fetch(ds, start_dt, end_dt)
 
@@ -66,12 +72,19 @@ def ingest(
             tracker.complete(rows_in=len(responses), rows_out=len(responses))
             typer.echo(f"  {source}/{ds}: {len(responses)} responses ingested")
         except Exception as e:
-            tracker.fail(str(e))
-            typer.echo(f"  {source}/{ds}: FAILED - {e}", err=True)
-            logger.exception(f"Ingest failed for {source}/{ds}")
+            error_message = _safe_error_message(str(e))
+            tracker.fail(error_message)
+            failures.append((ds, error_message))
+            typer.echo(f"  {source}/{ds}: FAILED - {error_message}", err=True)
+            logger.error("Ingest failed for %s/%s: %s", source, ds, error_message)
             continue
 
     con.close()
+    if failures:
+        typer.echo(f"Ingestion failed for {len(failures)} dataset(s):", err=True)
+        for ds, error_message in failures:
+            typer.echo(f"  {source}/{ds}: {error_message}", err=True)
+        raise typer.Exit(1)
     typer.echo("Ingestion complete")
 
 
@@ -90,7 +103,11 @@ def transform(
     from gridflow.utils.time import date_range
 
     settings = load_settings()
-    setup_logging(settings.pipeline.log_dir, settings.pipeline.log_level)
+    setup_logging(
+        settings.pipeline.log_dir,
+        settings.pipeline.log_level,
+        settings.pipeline.console_log_level,
+    )
 
     start_dt, end_dt = _resolve_dates(
         start, end, last, settings.pipeline.default_lookback_hours
@@ -108,6 +125,7 @@ def transform(
     con = get_connection(settings.pipeline.duckdb_path)
 
     dates = date_range(start_dt.date(), end_dt.date())
+    failures: list[tuple[str, str]] = []
 
     for ds in datasets:
         tracker = PipelineRunTracker(con, source, ds, "transform")
@@ -120,12 +138,19 @@ def transform(
             tracker.complete(rows_out=total_rows)
             typer.echo(f"  {source}/{ds}: {total_rows} rows transformed")
         except Exception as e:
-            tracker.fail(str(e))
-            typer.echo(f"  {source}/{ds}: FAILED - {e}", err=True)
-            logger.exception(f"Transform failed for {source}/{ds}")
+            error_message = _safe_error_message(str(e))
+            tracker.fail(error_message)
+            failures.append((ds, error_message))
+            typer.echo(f"  {source}/{ds}: FAILED - {error_message}", err=True)
+            logger.error("Transform failed for %s/%s: %s", source, ds, error_message)
             continue
 
     con.close()
+    if failures:
+        typer.echo(f"Transform failed for {len(failures)} dataset(s):", err=True)
+        for ds, error_message in failures:
+            typer.echo(f"  {source}/{ds}: {error_message}", err=True)
+        raise typer.Exit(1)
     typer.echo("Transform complete")
 
 
@@ -145,7 +170,11 @@ def build(
     from gridflow.gold.system_marginal_price import SystemMarginalPriceBuilder
 
     settings = load_settings()
-    setup_logging(settings.pipeline.log_dir, settings.pipeline.log_level)
+    setup_logging(
+        settings.pipeline.log_dir,
+        settings.pipeline.log_level,
+        settings.pipeline.console_log_level,
+    )
 
     start_dt, end_dt = _resolve_dates(
         start, end, last, settings.pipeline.default_lookback_hours
@@ -195,7 +224,7 @@ def backfill(
     dataset: Optional[str] = typer.Argument(default=None, help="Dataset name"),
     start: str = typer.Option(..., help="Start date (YYYY-MM-DD)"),
     end: str = typer.Option(..., help="End date (YYYY-MM-DD)"),
-    chunk_days: int = typer.Option(7, help="Days per chunk"),
+    chunk_days: int = typer.Option(1, help="Days per chunk"),
     all_datasets: bool = typer.Option(False, "--all", help="Backfill all datasets for source"),
 ) -> None:
     """Backfill historical data in chunks."""
@@ -203,7 +232,11 @@ def backfill(
     from gridflow.utils.logging import setup_logging
 
     settings = load_settings()
-    setup_logging(settings.pipeline.log_dir, settings.pipeline.log_level)
+    setup_logging(
+        settings.pipeline.log_dir,
+        settings.pipeline.log_level,
+        settings.pipeline.console_log_level,
+    )
 
     datasets = _resolve_datasets(source, dataset, all_datasets, settings)
 
@@ -232,12 +265,15 @@ def backfill(
                 all_datasets=False,
             )
 
-            # Call transform for this chunk
+            # Call transform for this chunk.  chunk_end is the exclusive API
+            # boundary; transform date iteration is inclusive, so subtract one
+            # day to avoid a spurious "no bronze data" warning for the end date.
+            transform_end = (chunk_end - timedelta(days=1)).date()
             transform(
                 source=source,
                 dataset=ds,
                 start=current.date().isoformat(),
-                end=chunk_end.date().isoformat(),
+                end=transform_end.isoformat(),
                 last=None,
                 all_datasets=False,
             )
@@ -262,7 +298,11 @@ def export_csv(
     from gridflow.utils.logging import setup_logging
 
     settings = load_settings()
-    setup_logging(settings.pipeline.log_dir, settings.pipeline.log_level)
+    setup_logging(
+        settings.pipeline.log_dir,
+        settings.pipeline.log_level,
+        settings.pipeline.console_log_level,
+    )
 
     datasets = _resolve_datasets(source, dataset, all_datasets, settings)
 
@@ -394,7 +434,11 @@ def quality(
     from gridflow.storage.parquet import read_parquet_dir
 
     settings = load_settings()
-    setup_logging(settings.pipeline.log_dir, settings.pipeline.log_level)
+    setup_logging(
+        settings.pipeline.log_dir,
+        settings.pipeline.log_level,
+        settings.pipeline.console_log_level,
+    )
 
     reporter = QualityReporter(settings.pipeline.data_dir, settings.pipeline.duckdb_path)
     silver_dir = settings.pipeline.data_dir / "silver"
@@ -574,7 +618,11 @@ def init() -> None:
     from gridflow.utils.logging import setup_logging
 
     settings = load_settings()
-    setup_logging(settings.pipeline.log_dir, settings.pipeline.log_level)
+    setup_logging(
+        settings.pipeline.log_dir,
+        settings.pipeline.log_level,
+        settings.pipeline.console_log_level,
+    )
 
     settings.pipeline.data_dir.mkdir(parents=True, exist_ok=True)
     init_catalogue(settings.pipeline.duckdb_path, settings.pipeline.data_dir)
@@ -606,6 +654,16 @@ def _resolve_dates(
     return now - timedelta(hours=default_lookback_hours), now
 
 
+def _safe_error_message(message: str) -> str:
+    """Redact sensitive query parameters from user-facing command errors."""
+    return re.sub(
+        r"(securityToken=)[^&\s)]+",
+        r"\1<redacted>",
+        message,
+        flags=re.IGNORECASE,
+    )
+
+
 def _resolve_datasets(
     source: str,
     dataset: str | None,
@@ -618,7 +676,7 @@ def _resolve_datasets(
     if not isinstance(settings, GridflowConfig):
         raise TypeError("Expected GridflowConfig")
 
-    if all_flag:
+    if all_flag or (dataset is not None and dataset.lower() == "all"):
         source_config = settings.get_source_config(source)
         return list(source_config.datasets.keys())
     if dataset:

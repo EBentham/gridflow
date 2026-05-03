@@ -4,6 +4,7 @@ pipeline:
   duckdb_path: "./data/gridflow.duckdb"
   default_lookback_hours: 24
   max_concurrent_requests: 5
+  console_log_level: "WARNING"
 
 quality:
   null_rate_threshold: 0.05

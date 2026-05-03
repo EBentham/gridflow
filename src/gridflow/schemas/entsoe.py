@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime  # noqa: TC003 - Pydantic resolves model annotations at runtime.
 
 from pydantic import Field, field_validator
 
@@ -167,6 +167,27 @@ class EntsoeInstalledCapacity(BaseSchema):
         return v
 
 
+class EntsoeInstalledCapacityUnits(BaseSchema):
+    """Silver-layer schema for ENTSO-E installed capacity per production unit."""
+
+    timestamp_utc: datetime
+    area_code: str
+    production_type: str
+    unit_mrid: str
+    unit_name: str = ""
+    capacity_mw: float
+    resolution: str = ""
+    data_provider: str = Field(default="entsoe")
+    ingested_at: datetime | None = None
+
+    @field_validator("timestamp_utc")
+    @classmethod
+    def must_be_utc(cls, v: datetime) -> datetime:
+        if v.tzinfo is None:
+            raise ValueError("timestamp_utc must be timezone-aware (UTC)")
+        return v
+
+
 class EntsoeGenerationForecast(BaseSchema):
     """Silver-layer schema for ENTSO-E day-ahead generation forecast aggregated (A71/A01).
 
@@ -189,6 +210,64 @@ class EntsoeGenerationForecast(BaseSchema):
         return v
 
 
+class EntsoeActualGenerationUnits(BaseSchema):
+    """Silver-layer schema for ENTSO-E actual generation per generation unit."""
+
+    timestamp_utc: datetime
+    area_code: str
+    production_type: str
+    unit_mrid: str
+    unit_name: str = ""
+    generation_mw: float
+    resolution: str = ""
+    data_provider: str = Field(default="entsoe")
+    ingested_at: datetime | None = None
+
+    @field_validator("timestamp_utc")
+    @classmethod
+    def must_be_utc(cls, v: datetime) -> datetime:
+        if v.tzinfo is None:
+            raise ValueError("timestamp_utc must be timezone-aware (UTC)")
+        return v
+
+
+class EntsoeWaterReservoirs(BaseSchema):
+    """Silver-layer schema for ENTSO-E water reservoirs and hydro storage plants."""
+
+    timestamp_utc: datetime
+    area_code: str
+    reservoir_mwh: float
+    resolution: str = ""
+    data_provider: str = Field(default="entsoe")
+    ingested_at: datetime | None = None
+
+    @field_validator("timestamp_utc")
+    @classmethod
+    def must_be_utc(cls, v: datetime) -> datetime:
+        if v.tzinfo is None:
+            raise ValueError("timestamp_utc must be timezone-aware (UTC)")
+        return v
+
+
+class EntsoeGenerationUnitsMasterData(BaseSchema):
+    """Silver-layer schema for ENTSO-E production/generation unit reference data."""
+
+    area_code: str
+    unit_mrid: str
+    unit_name: str = ""
+    production_type: str = ""
+    implementation_datetime_utc: datetime | None = None
+    data_provider: str = Field(default="entsoe")
+    ingested_at: datetime | None = None
+
+    @field_validator("implementation_datetime_utc")
+    @classmethod
+    def optional_datetime_must_be_utc(cls, v: datetime | None) -> datetime | None:
+        if v is not None and v.tzinfo is None:
+            raise ValueError("implementation_datetime_utc must be timezone-aware (UTC)")
+        return v
+
+
 class EntsoeLoadForecastWeekly(BaseSchema):
     """Silver-layer schema for ENTSO-E week-ahead load forecast (A65/A31)."""
 
@@ -198,6 +277,24 @@ class EntsoeLoadForecastWeekly(BaseSchema):
     resolution: str = ""
     forecast_horizon: str = "week_ahead"
     data_provider: str = Field(default="entsoe")
+
+    @field_validator("timestamp_utc")
+    @classmethod
+    def must_be_utc(cls, v: datetime) -> datetime:
+        if v.tzinfo is None:
+            raise ValueError("timestamp_utc must be timezone-aware (UTC)")
+        return v
+
+
+class EntsoeForecastMargin(BaseSchema):
+    """Silver-layer schema for ENTSO-E year-ahead forecast margin (A70/A33)."""
+
+    timestamp_utc: datetime
+    area_code: str
+    forecast_margin_mw: float
+    resolution: str = ""
+    data_provider: str = Field(default="entsoe")
+    ingested_at: datetime | None = None
 
     @field_validator("timestamp_utc")
     @classmethod

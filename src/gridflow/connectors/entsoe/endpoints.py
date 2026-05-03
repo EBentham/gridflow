@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 
 @dataclass(frozen=True)
@@ -12,31 +12,120 @@ class EntsoeDocType:
     document_type: str  # e.g. "A44"
     process_type: str | None  # e.g. "A01" (day-ahead), "A16" (realised)
     description: str
-    # "zone"  → in_Domain.mRID + out_Domain.mRID query params (default)
-    # "control_area" → controlArea_Domain.mRID query param (balancing datasets)
+    # "zone" -> in_Domain + out_Domain query params (default)
+    # "zone_pair" -> in_Domain + out_Domain query params over flow pairs
+    # "in_domain" -> in_Domain query param only
+    # "out_bidding_zone" -> outBiddingZone_Domain query param
+    # "bidding_zone" -> BiddingZone_Domain query param
+    # "control_area" -> controlArea_Domain query param
     domain_style: str = "zone"
+    extra_params: dict[str, str] = field(default_factory=dict)
+    domain_params: tuple[str, ...] = ()
+    date_param: str | None = None
 
 
 # ENTSO-E document type registry (dataset name -> EntsoeDocType)
 DOC_TYPES: dict[str, EntsoeDocType] = {
     "day_ahead_prices": EntsoeDocType("A44", None, "Day-ahead prices"),
-    "actual_load": EntsoeDocType("A65", "A16", "Actual total load"),
-    "load_forecast": EntsoeDocType("A65", "A01", "Day-ahead load forecast"),
-    "actual_generation": EntsoeDocType("A75", "A16", "Actual generation per production type"),
-    "wind_solar_forecast": EntsoeDocType("A69", "A01", "Day-ahead wind / solar forecast"),
-    "cross_border_flows": EntsoeDocType("A88", None, "Physical cross-border flows"),
-    "outages_generation": EntsoeDocType("A80", None, "Unavailability of generation units"),
-    "installed_capacity": EntsoeDocType("A68", "A33", "Installed generation capacity"),
+    "actual_load": EntsoeDocType(
+        "A65", "A16", "Actual total load", domain_style="out_bidding_zone"
+    ),
+    "load_forecast": EntsoeDocType(
+        "A65", "A01", "Day-ahead load forecast", domain_style="out_bidding_zone"
+    ),
+    "actual_generation": EntsoeDocType(
+        "A75", "A16", "Actual generation per production type", domain_style="in_domain"
+    ),
+    "wind_solar_forecast": EntsoeDocType(
+        "A69", "A01", "Day-ahead wind / solar forecast", domain_style="in_domain"
+    ),
+    "cross_border_flows": EntsoeDocType(
+        "A11", None, "Physical cross-border flows", domain_style="zone_pair"
+    ),
+    "outages_generation": EntsoeDocType(
+        "A80",
+        None,
+        "Unavailability of generation units",
+        domain_style="bidding_zone",
+        extra_params={"BusinessType": "A53"},
+    ),
+    "installed_capacity": EntsoeDocType(
+        "A68", "A33", "Installed generation capacity", domain_style="in_domain"
+    ),
+    "installed_capacity_units": EntsoeDocType(
+        "A71",
+        "A33",
+        "Installed capacity per production unit",
+        domain_style="in_domain",
+    ),
     # Phase 2 additions
-    "generation_forecast": EntsoeDocType("A71", "A01", "Day-ahead generation forecast aggregated"),
-    "load_forecast_weekly": EntsoeDocType("A65", "A31", "Week-ahead load forecast"),
-    "net_transfer_capacity": EntsoeDocType("A61", "A01", "Net transfer capacity day-ahead"),
-    # Phase 3 additions — balancing datasets (controlArea_Domain.mRID)
+    "generation_forecast": EntsoeDocType(
+        "A71", "A01", "Day-ahead generation forecast aggregated", domain_style="in_domain"
+    ),
+    "actual_generation_units": EntsoeDocType(
+        "A73",
+        "A16",
+        "Actual generation per generation unit",
+        domain_style="in_domain",
+    ),
+    "water_reservoirs": EntsoeDocType(
+        "A72",
+        "A16",
+        "Water reservoirs and hydro storage plants",
+        domain_style="in_domain",
+    ),
+    "generation_units_master_data": EntsoeDocType(
+        "A95",
+        None,
+        "Production and generation units master data",
+        domain_style="bidding_zone",
+        extra_params={"BusinessType": "B11"},
+        date_param="Implementation_DateAndOrTime",
+    ),
+    "load_forecast_weekly": EntsoeDocType(
+        "A65", "A31", "Week-ahead load forecast", domain_style="out_bidding_zone"
+    ),
+    "load_forecast_monthly": EntsoeDocType(
+        "A65", "A32", "Month-ahead load forecast", domain_style="out_bidding_zone"
+    ),
+    "load_forecast_yearly": EntsoeDocType(
+        "A65", "A33", "Year-ahead load forecast", domain_style="out_bidding_zone"
+    ),
+    "forecast_margin": EntsoeDocType(
+        "A70", "A33", "Year-ahead forecast margin", domain_style="out_bidding_zone"
+    ),
+    "net_transfer_capacity": EntsoeDocType(
+        "A61",
+        None,
+        "Forecasted transfer capacity",
+        domain_style="zone_pair",
+        extra_params={"contract_MarketAgreement.Type": "A01"},
+    ),
+    # Phase 3 additions - balancing datasets (controlArea_Domain)
     "imbalance_prices": EntsoeDocType("A85", None, "Imbalance prices", domain_style="control_area"),
-    "imbalance_volume": EntsoeDocType("A86", None, "Imbalance volumes", domain_style="control_area"),
-    "activated_balancing_qty": EntsoeDocType("A83", "A16", "Activated balancing energy quantity", domain_style="control_area"),
-    "activated_balancing_prices": EntsoeDocType("A84", "A16", "Activated balancing energy prices", domain_style="control_area"),
-    "contracted_reserves": EntsoeDocType("A81", None, "Contracted reserves", domain_style="control_area"),
+    "imbalance_volume": EntsoeDocType(
+        "A86",
+        None,
+        "Imbalance volumes",
+        domain_style="control_area",
+        extra_params={"businessType": "A19"},
+    ),
+    "activated_balancing_prices": EntsoeDocType(
+        "A84",
+        "A16",
+        "Activated balancing energy prices",
+        domain_style="control_area",
+        extra_params={"businessType": "A96"},
+    ),
+    "contracted_reserves": EntsoeDocType(
+        "A81",
+        "A52",
+        "Contracted reserves",
+        domain_style="control_area",
+        # Type_MarketAgreement.Type is mandatory per ENTSO-E API (despite the
+        # Postman catalog listing it as optional). A01=daily products.
+        extra_params={"businessType": "B95", "Type_MarketAgreement.Type": "A01"},
+    ),
 }
 
 # EIC (Energy Identification Codes) for key bidding zones

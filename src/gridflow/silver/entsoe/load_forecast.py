@@ -20,6 +20,7 @@ class LoadForecastTransformer(BaseSilverTransformer):
 
     source = "entsoe"
     dataset = "load_forecast"
+    forecast_horizon = "day_ahead"
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         bronze_path = (
@@ -52,7 +53,7 @@ class LoadForecastTransformer(BaseSilverTransformer):
         required = ["timestamp_utc", "value", "in_domain"]
         missing = [c for c in required if c not in raw_df.columns]
         if missing:
-            logger.error("Missing required columns in load_forecast: %s", missing)
+            logger.error("Missing required columns in %s: %s", self.dataset, missing)
             return pl.DataFrame()
 
         df = raw_df.rename({"value": "load_forecast_mw", "in_domain": "area_code"})
@@ -70,7 +71,7 @@ class LoadForecastTransformer(BaseSilverTransformer):
         df = df.with_columns([
             pl.lit("entsoe").alias("data_provider"),
             pl.lit(now).cast(pl.Datetime("us", "UTC")).alias("ingested_at"),
-            pl.lit("day_ahead").alias("forecast_horizon"),
+            pl.lit(self.forecast_horizon).alias("forecast_horizon"),
         ])
 
         output_cols = [

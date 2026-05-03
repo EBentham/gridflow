@@ -193,7 +193,7 @@ sources:
         schedule: "daily"
         max_query_days: 1
       cross_border_flows:
-        document_type: "A88"
+        document_type: "A11"
         schedule: "daily"
         max_query_days: 365
       outages_generation:
@@ -205,35 +205,62 @@ sources:
         process_type: "A33"
         schedule: "weekly"
         max_query_days: 365
+      installed_capacity_units:
+        document_type: "A71"
+        process_type: "A33"
+        schedule: "yearly"
+        max_query_days: 365
       # Phase 2 additions
       generation_forecast:
         document_type: "A71"
         process_type: "A01"
         schedule: "daily"
         max_query_days: 1
+      actual_generation_units:
+        document_type: "A73"
+        process_type: "A16"
+        schedule: "daily"
+        max_query_days: 1
+      water_reservoirs:
+        document_type: "A72"
+        process_type: "A16"
+        schedule: "daily"
+        max_query_days: 1
+      generation_units_master_data:
+        document_type: "A95"
+        schedule: "weekly"
+        max_query_days: 365
       load_forecast_weekly:
         document_type: "A65"
         process_type: "A31"
         schedule: "weekly"
         max_query_days: 7
+      load_forecast_monthly:
+        document_type: "A65"
+        process_type: "A32"
+        schedule: "monthly"
+        max_query_days: 31
+      load_forecast_yearly:
+        document_type: "A65"
+        process_type: "A33"
+        schedule: "yearly"
+        max_query_days: 365
+      forecast_margin:
+        document_type: "A70"
+        process_type: "A33"
+        schedule: "yearly"
+        max_query_days: 365
       net_transfer_capacity:
         document_type: "A61"
-        process_type: "A01"
         schedule: "daily"
         max_query_days: 365
-      # Phase 3 — balancing datasets (controlArea_Domain.mRID)
+      # Phase 3 — balancing datasets (controlArea_Domain)
       imbalance_prices:
         document_type: "A85"
         schedule: "daily"
         max_query_days: 1
       imbalance_volume:
         document_type: "A86"
-        process_type: "A16"
-        schedule: "daily"
-        max_query_days: 1
-      activated_balancing_qty:
-        document_type: "A83"
-        process_type: "A16"
         schedule: "daily"
         max_query_days: 1
       activated_balancing_prices:
@@ -243,6 +270,7 @@ sources:
         max_query_days: 1
       contracted_reserves:
         document_type: "A81"
+        process_type: "A52"
         schedule: "daily"
         max_query_days: 1
 
