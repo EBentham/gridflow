@@ -7,6 +7,7 @@ import logging
 import re
 import zipfile
 from datetime import datetime
+from time import monotonic
 from typing import TYPE_CHECKING, Any
 from xml.etree import ElementTree
 
@@ -72,6 +73,8 @@ class EntsoeConnector(BaseConnector):
         import asyncio
 
         self._semaphore = asyncio.Semaphore(self.config.rate_limit_per_second)
+        self._rate_limit_lock = asyncio.Lock()
+        self._last_request_at = 0.0
         self._client = httpx.AsyncClient(
             base_url=self.config.base_url,
             timeout=self.config.timeout,
@@ -257,9 +260,27 @@ class EntsoeConnector(BaseConnector):
             )
 
         async with self._semaphore:
+            await self._throttle_request()
             resp = await self._client.get(path, params=params)
             self._raise_for_status(resp)
             return resp
+
+    async def _throttle_request(self) -> None:
+        """Pace requests; ENTSO-E rejects bursts even when calls are sequential."""
+        import asyncio
+
+        if self.config.rate_limit_per_second <= 0:
+            return
+        lock = getattr(self, "_rate_limit_lock", None)
+        if lock is None:
+            return
+
+        min_interval = 1.0 / self.config.rate_limit_per_second
+        async with lock:
+            elapsed = monotonic() - getattr(self, "_last_request_at", 0.0)
+            if elapsed < min_interval:
+                await asyncio.sleep(min_interval - elapsed)
+            self._last_request_at = monotonic()
 
     def _raise_for_status(self, response: httpx.Response) -> None:
         """Raise an ENTSO-E-aware HTTP error with acknowledgement details."""

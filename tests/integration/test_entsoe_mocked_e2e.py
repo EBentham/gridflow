@@ -102,7 +102,13 @@ LEGACY_DOMAIN_PARAM_KEYS = {
 @pytest.fixture
 def entsoe_source_config() -> SourceConfig:
     source = load_settings().get_source_config("entsoe")
-    return source.model_copy(update={"api_key": "test-token", "timeout": 5})
+    return source.model_copy(
+        update={
+            "api_key": "test-token",
+            "rate_limit_per_second": 1000,
+            "timeout": 5,
+        }
+    )
 
 
 def _silver_path(data_dir: Path, dataset: str, target_date: date) -> Path:

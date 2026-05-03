@@ -164,7 +164,7 @@ sources:
     base_url: "https://web-api.tp.entsoe.eu"
     api_key_env: "ENTSOE_API_KEY"
     api_key_header: ""
-    rate_limit_per_second: 6
+    rate_limit_per_second: 1
     timeout: 60
     max_retries: 5
     datasets:

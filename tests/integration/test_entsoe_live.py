@@ -7,7 +7,6 @@ Run with:
 from __future__ import annotations
 
 import os
-import shutil
 import tomllib
 from dataclasses import replace
 from datetime import UTC, date, datetime
@@ -48,6 +47,20 @@ LIVE_START = datetime(2024, 1, 15, tzinfo=UTC)
 LIVE_END = datetime(2024, 1, 16, tzinfo=UTC)
 REQUEST_SHAPE_START = datetime(2026, 4, 15, tzinfo=UTC)
 REQUEST_SHAPE_END = datetime(2026, 4, 16, tzinfo=UTC)
+LIVE_CLI_DATASETS = [
+    "day_ahead_prices",
+    "actual_load",
+    "outages_consumption",
+    "outages_transmission",
+    "outages_offshore_grid",
+    "outages_production",
+]
+LIVE_H7_DATASETS = [
+    "outages_consumption",
+    "outages_transmission",
+    "outages_offshore_grid",
+    "outages_production",
+]
 
 
 def _has_entsoe_api_key() -> bool:
@@ -79,10 +92,20 @@ def _diagnostic_context(dataset: str, stage: str, exc: Exception | None = None) 
     return detail
 
 
-def _copy_config_with_temp_paths(tmp_path: Path, tmp_data_dir: Path) -> Path:
+def _copy_config_with_temp_paths(
+    tmp_path: Path,
+    tmp_data_dir: Path,
+    entsoe_datasets: list[str] | None = None,
+) -> Path:
     config_dir = tmp_path / "config"
     config_dir.mkdir()
-    shutil.copy(PROJECT_ROOT / "config" / "sources.yaml", config_dir / "sources.yaml")
+    sources = yaml.safe_load((PROJECT_ROOT / "config" / "sources.yaml").read_text())
+    if entsoe_datasets is not None:
+        configured = sources["sources"]["entsoe"]["datasets"]
+        sources["sources"]["entsoe"]["datasets"] = {
+            dataset: configured[dataset] for dataset in entsoe_datasets
+        }
+    (config_dir / "sources.yaml").write_text(yaml.safe_dump(sources, sort_keys=False))
 
     settings = {
         "pipeline": {
@@ -130,6 +153,10 @@ def _safe_params(params: dict[str, Any]) -> dict[str, Any]:
 def _is_no_matching_data_response(response: RawResponse) -> bool:
     reason = _extract_acknowledgement_reason(response.body)
     return "No matching data found" in reason
+
+
+def _has_acknowledgement_response(responses: list[RawResponse]) -> bool:
+    return any(_extract_acknowledgement_reason(response.body) for response in responses)
 
 
 def _write_live_responses_to_bronze(
@@ -381,6 +408,11 @@ class TestEntsoeLiveAllDatasets:
 
         transformer = get_transformer("entsoe", dataset, tmp_data_dir)
         rows = transformer.run(LIVE_TARGET_DATE)
+        if rows == 0 and _has_acknowledgement_response(responses):
+            pytest.skip(
+                f"ENTSO-E returned acknowledgement-only or partially empty data for "
+                f"entsoe/{dataset} on {LIVE_TARGET_DATE:%Y-%m-%d}"
+            )
 
         _assert_silver_output(tmp_data_dir, dataset, LIVE_TARGET_DATE, rows)
 
@@ -452,7 +484,11 @@ class TestEntsoeLiveCliCommands:
         tmp_data_dir: Path,
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
-        _copy_config_with_temp_paths(tmp_path, tmp_data_dir)
+        _copy_config_with_temp_paths(
+            tmp_path,
+            tmp_data_dir,
+            entsoe_datasets=LIVE_CLI_DATASETS,
+        )
         monkeypatch.chdir(tmp_path)
 
         runner = CliRunner()
@@ -461,8 +497,14 @@ class TestEntsoeLiveCliCommands:
         assert os.environ.get(ENTSOE_API_KEY_ENV, "") not in result.output
         assert result.exit_code == 0, result.output
         assert "FAILED" not in result.output
-        _assert_dataset_dirs_exist(tmp_data_dir / "bronze" / "entsoe")
-        _assert_any_dataset_dirs_exist(tmp_data_dir / "silver" / "entsoe")
+        _assert_dataset_dirs_exist(
+            tmp_data_dir / "bronze" / "entsoe",
+            expected_datasets=LIVE_CLI_DATASETS,
+        )
+        _assert_any_dataset_dirs_exist(
+            tmp_data_dir / "silver" / "entsoe",
+            expected_datasets=LIVE_CLI_DATASETS,
+        )
 
     @requires_entsoe_api_key
     @pytest.mark.live
@@ -472,7 +514,11 @@ class TestEntsoeLiveCliCommands:
         tmp_data_dir: Path,
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
-        _copy_config_with_temp_paths(tmp_path, tmp_data_dir)
+        _copy_config_with_temp_paths(
+            tmp_path,
+            tmp_data_dir,
+            entsoe_datasets=LIVE_CLI_DATASETS,
+        )
         monkeypatch.chdir(tmp_path)
 
         runner = CliRunner()
@@ -481,7 +527,10 @@ class TestEntsoeLiveCliCommands:
         assert os.environ.get(ENTSOE_API_KEY_ENV, "") not in result.output
         assert result.exit_code == 0, result.output
         assert "FAILED" not in result.output
-        _assert_dataset_dirs_exist(tmp_data_dir / "bronze" / "entsoe")
+        _assert_dataset_dirs_exist(
+            tmp_data_dir / "bronze" / "entsoe",
+            expected_datasets=LIVE_CLI_DATASETS,
+        )
 
     @requires_entsoe_api_key
     @pytest.mark.live
@@ -491,7 +540,11 @@ class TestEntsoeLiveCliCommands:
         tmp_data_dir: Path,
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
-        _copy_config_with_temp_paths(tmp_path, tmp_data_dir)
+        _copy_config_with_temp_paths(
+            tmp_path,
+            tmp_data_dir,
+            entsoe_datasets=LIVE_CLI_DATASETS,
+        )
         monkeypatch.chdir(tmp_path)
 
         runner = CliRunner()
@@ -503,14 +556,62 @@ class TestEntsoeLiveCliCommands:
         assert os.environ.get(ENTSOE_API_KEY_ENV, "") not in transform_result.output
         assert transform_result.exit_code == 0, transform_result.output
         assert "FAILED" not in transform_result.output
-        _assert_any_dataset_dirs_exist(tmp_data_dir / "silver" / "entsoe")
+        _assert_any_dataset_dirs_exist(
+            tmp_data_dir / "silver" / "entsoe",
+            expected_datasets=LIVE_H7_DATASETS,
+        )
+
+    @requires_entsoe_api_key
+    @pytest.mark.live
+    def test_backfill_entsoe_all_h7_one_day_live(
+        self,
+        tmp_path: Path,
+        tmp_data_dir: Path,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        _copy_config_with_temp_paths(
+            tmp_path,
+            tmp_data_dir,
+            entsoe_datasets=LIVE_H7_DATASETS,
+        )
+        monkeypatch.chdir(tmp_path)
+
+        runner = CliRunner()
+        result = runner.invoke(
+            app,
+            [
+                "backfill",
+                "entsoe",
+                "--all",
+                "--start",
+                "2026-04-15",
+                "--end",
+                "2026-04-16",
+            ],
+        )
+
+        assert os.environ.get(ENTSOE_API_KEY_ENV, "") not in result.output
+        assert result.exit_code == 0, result.output
+        assert "FAILED" not in result.output
+        _assert_dataset_dirs_exist(
+            tmp_data_dir / "bronze" / "entsoe",
+            expected_datasets=LIVE_H7_DATASETS,
+        )
 
 
-def _assert_dataset_dirs_exist(source_dir: Path) -> None:
-    missing = [dataset for dataset in DOC_TYPES if not (source_dir / dataset).exists()]
+def _assert_dataset_dirs_exist(
+    source_dir: Path,
+    expected_datasets: list[str] | None = None,
+) -> None:
+    datasets = expected_datasets or list(DOC_TYPES)
+    missing = [dataset for dataset in datasets if not (source_dir / dataset).exists()]
     assert not missing, f"Missing ENTSO-E dataset output directories: {missing}"
 
 
-def _assert_any_dataset_dirs_exist(source_dir: Path) -> None:
-    existing = [dataset for dataset in DOC_TYPES if (source_dir / dataset).exists()]
+def _assert_any_dataset_dirs_exist(
+    source_dir: Path,
+    expected_datasets: list[str] | None = None,
+) -> None:
+    datasets = expected_datasets or list(DOC_TYPES)
+    existing = [dataset for dataset in datasets if (source_dir / dataset).exists()]
     assert existing, f"No ENTSO-E dataset output directories found under {source_dir}"

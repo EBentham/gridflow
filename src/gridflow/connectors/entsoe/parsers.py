@@ -70,6 +70,14 @@ def _root_document_metadata(root: Any) -> dict[str, str]:
     return metadata
 
 
+def _matches_value_tag(tag: str, value_tag: str) -> bool:
+    if tag == value_tag:
+        return True
+    if value_tag == "price.amount":
+        return tag.endswith("_Price.amount")
+    return False
+
+
 def parse_timeseries_xml(
     xml_bytes: bytes,
     value_tag: str = "price.amount",
@@ -219,7 +227,7 @@ def parse_timeseries_xml(
                     if tag == "position":
                         with contextlib.suppress(ValueError):
                             position = int(child.text or "0")
-                    elif tag == value_tag:
+                    elif _matches_value_tag(tag, value_tag):
                         with contextlib.suppress(ValueError):
                             value = float(child.text or "nan")
                 if position is None or value is None:
