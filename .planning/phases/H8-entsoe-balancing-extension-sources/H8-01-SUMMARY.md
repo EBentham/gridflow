@@ -69,7 +69,7 @@ completed: 2026-05-03
 
 ## Task Commits
 
-1. **H8 implementation** - `6cd5d65` (`feat(H8-01): add ENTSO-E balancing extension sources`)
+1. **H8 implementation** - `464b8e4` (`feat(H8-01): add ENTSO-E balancing extension sources`)
 
 ## Verification
 
