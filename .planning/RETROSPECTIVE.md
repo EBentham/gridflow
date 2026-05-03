@@ -2,6 +2,46 @@
 
 ---
 
+## Milestone: v0.3-entsoe-validation — ENTSO-E Pipeline Validation
+
+**Shipped:** 2026-05-03
+**Phases:** 9 (H1-H8) | **Plans:** 11
+
+### What Was Built
+
+1. Added CLI `all` positional alias handling and ENTSO-E mocked bronze-to-silver E2E coverage.
+2. Built credential-gated live test scaffolding plus request-shape and medallion-path verification for ENTSO-E.
+3. Reworked ENTSO-E request construction around documented endpoint parameter families and an auditable endpoint catalog.
+4. Added generation/reference, transmission/market, outage, and balancing extension source families through metadata, parsers, schemas, transformers, fixtures, and tests.
+5. Cleaned up live payload handling for zip XML responses, live tag variants, fixed-date no-data acknowledgements, and high-volume bid/capacity paging.
+
+### What Worked
+
+- **Endpoint catalog as source of truth** kept a large source expansion reviewable and made every implemented, planned, deferred, or excluded row visible.
+- **Family-batched phases** let parser/schema risk stay isolated across generation, transmission, outage, and balancing domains.
+- **Live cleanup before further expansion** prevented H6-H8 from building on invalid active-source metadata and brittle payload assumptions.
+- **Request-shape live probes** gave useful API compatibility evidence without requiring every full bronze-to-silver live path to run in every phase.
+
+### What Was Inefficient
+
+- **H3 credential dependency remained open** until later phases produced stronger live evidence; the original H3 verification artifact still needed explicit deferral at close.
+- **`gsd-sdk` was unavailable in this runtime**, so several phase and milestone workflows needed inline fallback handling.
+- **Endpoint volume grew quickly**, making hard-coded test assumptions brittle; the final test amendment removed the old fixed ENTSO-E dataset count assertion.
+
+### Patterns Established
+
+- ENTSO-E endpoint metadata owns document type, domain parameter style, optional filters, date parameter variants, and default live paging behavior.
+- New ENTSO-E source batches should include catalog row, parser/schema support, transformer registration, fixture-backed unit coverage, mocked E2E, and live request-shape coverage.
+- Genuine ENTSO-E no-data acknowledgements are test outcomes, not parser failures, when the request shape is valid.
+
+### Key Lessons
+
+- Avoid fixed dataset-count assertions in tests for catalog-driven connectors; assert registry/config alignment instead.
+- Keep deferred official endpoints explicit with owner batch and rationale, especially when the payload family needs separate modelling.
+- Live test records need a single canonical close-out path so later passing live gates can retire earlier human-needed artifacts cleanly.
+
+---
+
 ## Milestone: v0.2-entsoe-gaps — ENTSO-E Extension Gap Closure
 
 **Shipped:** 2026-05-02
@@ -43,12 +83,12 @@
 
 ## Cross-Milestone Trends
 
-| Metric | v0.2-entsoe-gaps |
-|--------|-----------------|
-| Phases | 4 |
-| Plans | 5 |
-| Tests (final) | 551 |
-| Files changed | 43 |
-| Nyquist gaps found | 6 (G3: 4, G4: 2) |
-| Nyquist gaps resolved | 6 |
-| Deferred items | 1 (GAP-03b) |
+| Metric | v0.2-entsoe-gaps | v0.3-entsoe-validation |
+|--------|-----------------|------------------------|
+| Phases | 4 | 9 |
+| Plans | 5 | 11 |
+| Tests (final) | 551 | 378 non-live gate; 97 final focused |
+| Files changed | 43 | 137 |
+| Nyquist gaps found | 6 (G3: 4, G4: 2) | n/a |
+| Nyquist gaps resolved | 6 | n/a |
+| Deferred items | 1 (GAP-03b) | 4 close-out artifacts |

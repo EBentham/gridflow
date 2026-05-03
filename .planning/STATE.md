@@ -1,20 +1,20 @@
 ---
 milestone: v0.3
 milestone_name: ENTSO-E Pipeline Validation
-status: active
+status: shipped
 progress:
   phases_total: 9
-  phases_complete: 8
+  phases_complete: 9
   plans_total: 11
   plans_complete: 11
 ---
 
 ## Current Position
 
-Phase: H8 - ENTSO-E balancing extension data sources
-Plan: H8-01 complete
-Status: H8 complete; v0.3 ready for milestone-level audit with H3 credentialed full-live verification still noted
-Last activity: 2026-05-03 - H8 complete; non-live and live request-shape gates pass
+Phase: v0.3 milestone close
+Plan: H1-H8 complete
+Status: v0.3 shipped; close-out artifacts acknowledged as deferred
+Last activity: 2026-05-03 - v0.3 archived and prepared for next milestone planning
 
 ## Project Reference
 
@@ -22,7 +22,7 @@ See: .planning/PROJECT.md (updated 2026-05-03)
 
 **Core value:** Every connector reliably fetches real data and every silver transformer
 produces schema-valid output — verified end-to-end, not just in unit tests.
-**Current focus:** v0.3 ENTSO-E Pipeline Validation
+**Current focus:** Planning next milestone
 
 ## Accumulated Context
 
@@ -61,10 +61,19 @@ produces schema-valid output — verified end-to-end, not just in unit tests.
 
 ### Blockers
 
-- Full pytest suite currently fails during collection because `src/gridflow/silver/elexon/__init__.py` imports missing Elexon silver modules such as `agpt`; H1 focused tests pass, but milestone-level gates should address this package import mismatch.
-- H3 live verification requires `ENTSOE_API_KEY`; without it, the live suite is implemented but cannot prove real ENTSO-E fetch/bronze/silver/CLI behavior.
-- H4 UAT reported a bronze partition/backfill issue caused by missing `RawResponse.data_date`; H5 added regression coverage for ENTSO-E `data_date` and bronze partitioning.
+- H3 live verification record remains human-needed for the original all-dataset credentialed run; later H5.5/H8 live gates passed and this is acknowledged as deferred at v0.3 close.
 - H5.5 resolved live failures from invalid A83 metadata, zipped outage payloads, live unit/outage tag variants, and fixed-date no-data acknowledgements.
+
+## Deferred Items
+
+Items acknowledged and deferred at milestone close on 2026-05-03:
+
+| Category | Item | Status |
+|----------|------|--------|
+| debug | entsoe-live-suite-h5.5 | unknown |
+| uat | H3-live-entsoe-test-suite/H3-HUMAN-UAT.md | partial; 1 pending scenario |
+| uat | H4-entsoe-endpoint-catalog-request-builder/H4-UAT.md | diagnosed; 0 pending scenarios |
+| verification | H3-live-entsoe-test-suite/H3-VERIFICATION.md | human_needed |
 
 ### Todos
 

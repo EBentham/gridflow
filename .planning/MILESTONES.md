@@ -2,6 +2,36 @@
 
 ---
 
+## v0.3-entsoe-validation — ENTSO-E Pipeline Validation
+
+**Shipped:** 2026-05-03
+**Phases:** H1-H8 (9 phases, 11 plans)
+**Commits:** 19 | **Files:** 137 changed | **Lines:** +17341 / -257
+**Test suite:** 378 passed, 122 deselected (H8 non-live gate); 97 passed, 44 skipped (final amended focused tests)
+
+### Delivered
+
+Expanded and validated the ENTSO-E pipeline from the original 16 datasets to 48 active datasets, with endpoint-specific request construction, an auditable official endpoint catalog, medallion-path mocked coverage, opt-in live request-shape gates, and new generation, transmission, outage, and balancing source families.
+
+### Key Accomplishments
+
+1. **H1-H3 — CLI and E2E validation foundation:** Positional `all` now behaves as `--all`; mocked bronze-to-silver coverage and credential-gated live scaffolding cover the ENTSO-E dataset fleet.
+2. **H4 — Endpoint catalog and request builder:** ENTSO-E requests now use documented area/date/zone-pair parameter families, and `docs/entsoe_endpoint_catalog.yaml` tracks implementation, deferral, and scope decisions.
+3. **H5-H5.5 — Generation/reference data and live cleanup:** Added unit-level generation, reservoir, and master-data sources, then repaired live payload handling for zip XML, tag variants, no-data acknowledgements, and active-source request shapes.
+4. **H6-H8 — Source family expansion:** Added transmission/market, outage, and balancing extension datasets with parser, schema, transformer, fixture, mocked E2E, catalog, and live request-shape coverage.
+5. **Catalog-backed deferrals:** Flow-based allocations, dependent outage variants, balancing archive rows, SO GL, and implementation-framework extensions remain explicit follow-up items rather than silent gaps.
+
+### Known Deferred Items
+
+Four close-out artifacts were acknowledged and deferred at milestone close; see `.planning/STATE.md` Deferred Items.
+
+### Archive
+
+- [v0.3-entsoe-validation-ROADMAP.md](milestones/v0.3-entsoe-validation-ROADMAP.md)
+- [v0.3-entsoe-validation-REQUIREMENTS.md](milestones/v0.3-entsoe-validation-REQUIREMENTS.md)
+
+---
+
 ## v0.2-entsoe-gaps — ENTSO-E Extension Gap Closure
 
 **Shipped:** 2026-05-02

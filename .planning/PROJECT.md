@@ -38,10 +38,12 @@ schema-valid output — verified end-to-end, not just in unit tests.
 - [x] ENTSO-E transmission, commercial schedule, allocation, congestion, and market-position sources added or explicitly reclassified - v0.3-entsoe-validation H6
 - [x] ENTSO-E consumption, transmission, offshore-grid, and production outage sources added or explicitly reclassified - v0.3-entsoe-validation H7
 - [x] ENTSO-E balancing state, bid, capacity, cross-zonal capacity, and financial balancing sources added or explicitly reclassified - v0.3-entsoe-validation H8
+- [x] Live test suite hits real ENTSO-E API and validates active ENTSO-E bronze-to-silver chains, with explicit no-data skips - v0.3-entsoe-validation H5.5/H8
 
 ### Active
 
-- [x] Live test suite hits real ENTSO-E API and validates active ENTSO-E bronze-to-silver chains, with explicit no-data skips (LIVE-01, LIVE-02, LIVE-03)
+- [ ] Extend live and mocked E2E coverage to Elexon, ENTSO-G, and GIE connectors
+- [ ] Decide whether to promote deferred ENTSO-E catalog rows, including B09 flow-based allocations and SO GL / implementation-framework balancing extensions
 
 ### Out of Scope
 
@@ -69,6 +71,8 @@ schema-valid output — verified end-to-end, not just in unit tests.
 - H6 added `optional_params` request metadata plus shared zone-pair quantity/amount transformer families for transmission and market time-series datasets; B09 `flow_based_allocations` remains deferred for dedicated parser/schema review.
 - H7 preserves outage document mRID/status and asset or unit identity metadata in the new outage silver datasets while keeping the existing `outages_generation` unit-level output stable.
 - H8 preserves balancing area, bid identity, market product, direction, agreement, and cross-zonal domain metadata in the new balancing silver datasets.
+- v0.3 shipped with ENTSO-E expanded from 16 original datasets to 48 active datasets, backed by endpoint catalog validation, mocked medallion-path E2E tests, and opt-in live request-shape probes.
+- Four close-out artifacts were acknowledged as deferred at v0.3 completion: one debug session, two UAT records, and one H3 verification record.
 
 ## Constraints
 
@@ -88,12 +92,13 @@ schema-valid output — verified end-to-end, not just in unit tests.
 | `SchemaClass(**sample)` runtime check on all transformers | Catches schema drift before it reaches DuckDB | ✓ Good |
 | Mocked ENTSO-E E2E before live tests | Proves request construction and transformer paths without API credentials | ✓ Good |
 | Endpoint catalog as coverage source | Prevents silent ENTSO-E omissions and gives each gap an owner batch | ✓ Good |
-| H5-H8 split by source family | Keeps remaining ENTSO-E source coverage reviewable and lets parser/schema risk stay isolated by domain | In progress |
+| H5-H8 split by source family | Keeps remaining ENTSO-E source coverage reviewable and lets parser/schema risk stay isolated by domain | ✓ Good |
 | H5.5 live cleanup before H6 | New source batches should build on a live-tested H1-H5 baseline | Adopted |
 | B09 flow-based allocations deferred in H6 | Allocation documents need dedicated parser/schema review rather than generic TimeSeries widening | Adopted |
 | H7 dependent outage variants deferred | Transmission net-position impact, available capacity, and fallback documents need separate interpretation/schema passes beyond primary outage rows | Adopted |
 | H8 high-volume bid/capacity endpoints default to `offset=0` | ENTSO-E rejects unpaged live calls when more than 100 instances are returned; offset keeps request-shape probes live-compatible while allowing caller override | Adopted |
-| Live tests opt-in with `--live` marker | API key not available in CI; live tests are for developer validation | — Pending |
+| Live tests opt-in with `--live` marker | API key not available in CI; live tests are for developer validation | ✓ Good |
+| Close v0.3 with acknowledged H3/live artifacts deferred | H5.5 and H8 live request-shape gates passed, but one H3 credentialed full-live verification record remains human-owned | Deferred |
 
 ## Evolution
 
@@ -113,4 +118,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-03 after Phase H8 balancing extension sources*
+*Last updated: 2026-05-03 after v0.3-entsoe-validation milestone*
