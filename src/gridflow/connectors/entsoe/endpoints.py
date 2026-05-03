@@ -146,7 +146,7 @@ DOC_TYPES: dict[str, EntsoeDocType] = {
         "A92",
         None,
         "Costs of congestion management",
-        domain_style="zone_pair",
+        domain_style="zone",
     ),
     "offered_transfer_capacity_continuous": EntsoeDocType(
         "A31",
@@ -248,7 +248,7 @@ DOC_TYPES: dict[str, EntsoeDocType] = {
         "A25",
         None,
         "Implicit auction - net positions",
-        domain_style="zone_pair",
+        domain_style="zone",
         extra_params={
             "businessType": "B09",
             "contract_MarketAgreement.Type": "A01",

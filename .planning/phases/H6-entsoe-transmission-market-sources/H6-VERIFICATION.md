@@ -26,6 +26,9 @@ H6 passed automated verification.
 - Ruff targeted H6 gate: passed.
 - Non-live pytest gate: 332 passed, 91 deselected, 1 warning.
 - Credentialed live request-shape gate: 11 passed.
+- End-to-end live backfill UAT for `gridflow backfill entsoe --all --start
+  2026-04-15 --end 2026-04-16` exposed and then covered same-area request
+  constraints for A92 congestion-management costs and A25/B09 net positions.
 
 ## Reclassified Rows
 

@@ -33,6 +33,10 @@ completed: 2026-05-03
 - Added metadata defaults for live market endpoints whose Postman filters are
   listed as optional but are mandatory in practice, including contract market
   agreement and auction filters.
+- Set `congestion_management_costs` to the same-zone in/out request style after
+  live backfill showed ENTSO-E rejects cross-border EIC pairs for A92.
+- Set `net_positions` to the same-zone in/out request style after live backfill
+  showed ENTSO-E rejects cross-border EIC pairs for A25/B09.
 - Extended domain parsing to handle mixed-case `In_Domain.mRID` and
   `Out_Domain.mRID` payload tags.
 - Added shared H6 silver transformer families for zone-pair quantity time
@@ -66,6 +70,11 @@ completed: 2026-05-03
 - Live request-shape probing showed some catalog "optional" filters are
   mandatory for market endpoints, so metadata defaults were added before
   verification.
+- End-to-end backfill UAT showed A92 congestion-management costs require
+  matching `in_Domain` and `out_Domain` values, so the dataset now uses the
+  existing same-zone request style.
+- The same UAT showed A25/B09 net positions require matching `in_Domain` and
+  `out_Domain` values, so `net_positions` uses the same-zone request style too.
 
 ## Commit
 
