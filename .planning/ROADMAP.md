@@ -49,11 +49,11 @@ Known deferred close-out items: 4; see [STATE.md](STATE.md).
 
 ### 🔄 v0.4-elexon-validation — Elexon Pipeline Validation
 
-- [ ] **Phase I1**: Elexon inventory, test scaffolding, and request-style baseline
+- [x] **Phase I1**: Elexon inventory, test scaffolding, and request-style baseline - completed 2026-05-03
   - Requirements: ELEXON-INV-01, ELEXON-INV-02, ELEXON-INV-03
   - **Plans:** 1 plan
   - Plans:
-    - [ ] `.planning/phases/I1-elexon-inventory-test-scaffolding/I1-01-PLAN.md` - Elexon inventory contract and live-test scaffolding
+    - [x] `.planning/phases/I1-elexon-inventory-test-scaffolding/I1-01-PLAN.md` - Elexon inventory contract and live-test scaffolding
   - Success: Configured Elexon datasets, `ENDPOINTS`, and silver registry alignment is tested.
   - Success: Decommissioned/duplicate/empty endpoints are documented separately from active datasets.
   - Success: Elexon live-test scaffolding uses opt-in `@pytest.mark.live`, temp config/data helpers, and source/dataset/stage diagnostics.

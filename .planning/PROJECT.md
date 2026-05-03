@@ -49,11 +49,14 @@ schema-valid output — verified end-to-end, not just in unit tests.
 - [x] ENTSO-E consumption, transmission, offshore-grid, and production outage sources added or explicitly reclassified - v0.3-entsoe-validation H7
 - [x] ENTSO-E balancing state, bid, capacity, cross-zonal capacity, and financial balancing sources added or explicitly reclassified - v0.3-entsoe-validation H8
 - [x] Live test suite hits real ENTSO-E API and validates active ENTSO-E bronze-to-silver chains, with explicit no-data skips - v0.3-entsoe-validation H5.5/H8
+- [x] Elexon active dataset inventory matches source config, endpoint definitions, and silver transformer registrations - v0.4-elexon-validation I1
+- [x] Elexon intentionally excluded endpoints are documented separately from active datasets - v0.4-elexon-validation I1
+- [x] Elexon endpoint parameter styles are covered by registry-driven tests - v0.4-elexon-validation I1
 
 ### Active
 
 - [ ] Elexon live E2E tests ping the public Insights API and prove real responses flow into silver parquet
-- [ ] Elexon mocked and fixture-backed tests cover configured endpoint parameter styles and representative transformer families
+- [ ] Elexon mocked and fixture-backed tests cover representative transformer families and bronze-to-silver flows
 - [ ] Elexon CLI/backfill smoke tests run through isolated temp paths and verify bronze/silver outputs
 - [ ] Extend live and mocked E2E coverage to ENTSO-G and GIE connectors
 - [ ] Decide whether to promote deferred ENTSO-E catalog rows, including B09 flow-based allocations and SO GL / implementation-framework balancing extensions
@@ -116,6 +119,8 @@ schema-valid output — verified end-to-end, not just in unit tests.
 | Live tests opt-in with `--live` marker | API key not available in CI; live tests are for developer validation | ✓ Good |
 | Close v0.3 with acknowledged H3/live artifacts deferred | H5.5 and H8 live request-shape gates passed, but one H3 credentialed full-live verification record remains human-owned | Deferred |
 | Elexon v0.4 mirrors ENTSO-E validation shape | The project needs connector-agnostic confidence that live API data reaches silver, but Elexon has JSON/public/no-key semantics and distinct parameter styles | Pending |
+| Elexon inventory tests compare real registries | Avoid duplicating the full active dataset list in tests while still catching config, endpoint, and silver registration drift | Adopted |
+| Elexon excluded endpoints live in `EXCLUDED_ENDPOINTS` | Keeps removed, duplicate, or unstable endpoints visible without treating them as active datasets | Adopted |
 
 ## Evolution
 
@@ -135,4 +140,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-03 after starting v0.4-elexon-validation milestone*
+*Last updated: 2026-05-03 after completing v0.4 Phase I1*

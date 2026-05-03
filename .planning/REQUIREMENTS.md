@@ -7,9 +7,9 @@
 
 ### Elexon Inventory
 
-- [ ] **ELEXON-INV-01**: Developer can compare configured Elexon datasets, `ENDPOINTS`, and silver transformer registrations and see that every active configured dataset has a matching request definition and transformer.
-- [ ] **ELEXON-INV-02**: Developer can see decommissioned, duplicate, empty, or intentionally excluded Elexon endpoints documented separately from active datasets so live tests do not produce false failures.
-- [ ] **ELEXON-INV-03**: Developer can verify every active Elexon endpoint has an explicit parameter style: path-date, publish/from-to datetime, settlementDate+settlementPeriod, or no-param reference data.
+- [x] **ELEXON-INV-01**: Developer can compare configured Elexon datasets, `ENDPOINTS`, and silver transformer registrations and see that every active configured dataset has a matching request definition and transformer.
+- [x] **ELEXON-INV-02**: Developer can see decommissioned, duplicate, empty, or intentionally excluded Elexon endpoints documented separately from active datasets so live tests do not produce false failures.
+- [x] **ELEXON-INV-03**: Developer can verify every active Elexon endpoint has an explicit parameter style: path-date, publish/from-to datetime, settlementDate+settlementPeriod, or no-param reference data.
 
 ### Mocked and Fixture E2E
 
@@ -62,9 +62,9 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| ELEXON-INV-01 | Phase I1 | Pending |
-| ELEXON-INV-02 | Phase I1 | Pending |
-| ELEXON-INV-03 | Phase I1 | Pending |
+| ELEXON-INV-01 | Phase I1 | Complete |
+| ELEXON-INV-02 | Phase I1 | Complete |
+| ELEXON-INV-03 | Phase I1 | Complete |
 | ELEXON-MOCK-01 | Phase I2 | Pending |
 | ELEXON-MOCK-02 | Phase I2 | Pending |
 | ELEXON-MOCK-03 | Phase I2 | Pending |
@@ -86,4 +86,4 @@
 
 ---
 *Requirements defined: 2026-05-03*
-*Last updated: 2026-05-03 after initial v0.4 definition*
+*Last updated: 2026-05-03 after Phase I1 completion*

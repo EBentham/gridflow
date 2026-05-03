@@ -1,20 +1,20 @@
 ---
 milestone: v0.4
 milestone_name: Elexon Pipeline Validation
-status: ready_to_execute
+status: ready_to_plan
 progress:
   phases_total: 4
-  phases_complete: 0
+  phases_complete: 1
   plans_total: 4
-  plans_complete: 0
+  plans_complete: 1
 ---
 
 ## Current Position
 
-Phase: I1 - Elexon inventory, test scaffolding, and request-style baseline
-Plan: .planning/phases/I1-elexon-inventory-test-scaffolding/I1-01-PLAN.md
-Status: Phase I1 planned and ready to execute
-Last activity: 2026-05-03 - Phase I1 plan created
+Phase: I2 - Elexon mocked request-shape and fixture-backed bronze-to-silver tests
+Plan: Not planned
+Status: Phase I1 complete; Phase I2 ready to plan
+Last activity: 2026-05-03 - Phase I1 completed
 
 ## Project Reference
 
@@ -46,6 +46,7 @@ produces schema-valid output - verified end-to-end, not just in unit tests.
 - H8 adds balancing state, bid, aggregated bid, procured capacity, cross-zonal capacity, and financial balancing sources with H8-specific metadata preserved in silver output.
 - H8 keeps balancing archive variants, SO GL, and implementation-framework balancing extensions deferred with H9/backlog reasons.
 - I1 planned: Elexon inventory contract, explicit exclusions, request-style baseline, and live-test diagnostics scope.
+- I1 completed: active Elexon config, endpoint registry, and silver transformer registrations are covered by tests; excluded endpoints have explicit reasons.
 
 ### Roadmap Evolution
 
@@ -61,6 +62,7 @@ produces schema-valid output - verified end-to-end, not just in unit tests.
 - H8 completed: six balancing-extension datasets implemented, endpoint catalog synchronized, and H8 live request-shape probes pass.
 - v0.4 started: Elexon validation will mirror the ENTSO-E testing shape while accounting for Elexon's public JSON API, no-key auth model, and distinct parameter styles.
 - I1 planned: first execution plan created for inventory alignment and live-test scaffolding.
+- I1 completed: inventory contract tests, explicit exclusions, BOALF config alignment, and Elexon live diagnostics are in place.
 
 ### Blockers
 
