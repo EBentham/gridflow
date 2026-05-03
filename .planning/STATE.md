@@ -1,7 +1,7 @@
 ---
 milestone: v0.4
 milestone_name: Elexon Pipeline Validation
-status: ready_to_plan
+status: ready_to_execute
 progress:
   phases_total: 4
   phases_complete: 2
@@ -12,9 +12,9 @@ progress:
 ## Current Position
 
 Phase: I3 - Elexon live API to silver test suite
-Plan: needs planning
-Status: Phase I2 completed; ready to plan I3
-Last activity: 2026-05-04 - Phase I2 completed
+Plan: I3-01 ready to execute
+Status: Phase I3 planned; ready to execute live API-to-silver test suite
+Last activity: 2026-05-04 - Phase I3 planned
 
 ## Project Reference
 
@@ -66,6 +66,7 @@ produces schema-valid output - verified end-to-end, not just in unit tests.
 - I1 completed: inventory contract tests, explicit exclusions, BOALF config alignment, and Elexon live diagnostics are in place.
 - I2 planned: mocked request-shape tests and fixture-backed bronze-to-silver integration tests will cover active Elexon datasets without live network access.
 - I2 completed: non-live mocked Elexon E2E suite passes with bronze metadata, pagination/chunking, no-param, and representative silver output assertions.
+- I3 planned: opt-in live Elexon API-to-silver tests will call representative public no-key Elexon datasets, write live responses to temp bronze, transform to silver, and classify empty/deferred outcomes explicitly.
 
 ### Blockers
 
