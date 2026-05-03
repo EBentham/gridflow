@@ -64,7 +64,6 @@ class TempTransformer(BaseSilverTransformer):
         if rename_map:
             raw_df = raw_df.rename(rename_map)
 
-        required = ["temperature"]
         # Prefer timestamp_utc from publishTime; fall back to measurement_date
         if "timestamp_utc" not in raw_df.columns and "measurement_date" in raw_df.columns:
             raw_df = raw_df.with_columns(

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 import httpx
@@ -49,8 +49,8 @@ async def test_fetch_system_prices(elexon_config: SourceConfig):
     async with ElexonConnector(elexon_config) as connector:
         responses = await connector.fetch(
             dataset="system_prices",
-            start=datetime(2024, 1, 15, tzinfo=timezone.utc),
-            end=datetime(2024, 1, 15, tzinfo=timezone.utc),
+            start=datetime(2024, 1, 15, tzinfo=UTC),
+            end=datetime(2024, 1, 15, tzinfo=UTC),
         )
 
     assert len(responses) == 1
@@ -83,6 +83,6 @@ async def test_fetch_unknown_dataset_raises(elexon_config: SourceConfig):
         with pytest.raises(ValueError, match="Unknown Elexon dataset"):
             await connector.fetch(
                 dataset="nonexistent",
-                start=datetime(2024, 1, 15, tzinfo=timezone.utc),
-                end=datetime(2024, 1, 15, tzinfo=timezone.utc),
+                start=datetime(2024, 1, 15, tzinfo=UTC),
+                end=datetime(2024, 1, 15, tzinfo=UTC),
             )

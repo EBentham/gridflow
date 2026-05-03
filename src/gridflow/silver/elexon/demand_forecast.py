@@ -73,7 +73,7 @@ class DemandForecastTransformer(BaseSilverTransformer):
 
         # national_demand_mw is required
         if "national_demand_mw" not in raw_df.columns:
-            logger.error(f"Missing required columns in NDF: ['national_demand_mw']")
+            logger.error("Missing required columns in NDF: ['national_demand_mw']")
             return pl.DataFrame()
 
         has_sp = "settlement_date" in raw_df.columns and "settlement_period" in raw_df.columns

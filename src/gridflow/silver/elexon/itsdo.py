@@ -62,7 +62,11 @@ class ITSDOTransformer(BaseSilverTransformer):
         if rename_map:
             raw_df = raw_df.rename(rename_map)
 
-        required = ["settlement_date", "settlement_period", "initial_transmission_system_demand_outturn_mw"]
+        required = [
+            "settlement_date",
+            "settlement_period",
+            "initial_transmission_system_demand_outturn_mw",
+        ]
         missing = [c for c in required if c not in raw_df.columns]
         if missing:
             logger.error(f"Missing required columns in ITSDO: {missing}")

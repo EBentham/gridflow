@@ -39,43 +39,30 @@ NESO_BASE = "https://api.carbonintensity.org.uk"
 class TestElexonEndpointDefinitions:
     """Verify every Elexon endpoint is registered with the correct path and param style."""
 
-    def test_all_expected_datasets_registered(self):
+    def test_active_datasets_match_configured_inventory(self):
+        from gridflow.config.settings import load_settings
         from gridflow.connectors.elexon.endpoints import ENDPOINTS
 
-        expected = [
-            "system_prices", "boal", "disbsad", "mid", "netbsad", "pn",
-            "freq", "fuelhh", "fuelinst", "imbalngc", "ndf", "ndfd", "melngc",
-            "fou2t14d", "uou2t14d", "windfor", "temp",
-            "agpt", "agws", "atl",
-            "indo", "itsdo", "indod", "nonbm",
-            "inddem", "indgen", "tsdf", "tsdfd", "lolpdrm",
-            "remit", "soso", "market_depth",
-            "bmunits_reference",
-        ]
-        for ds in expected:
-            assert ds in ENDPOINTS, f"Missing Elexon endpoint: {ds}"
+        configured = set(load_settings().get_source_config("elexon").datasets)
 
-    def test_no_unexpected_datasets(self):
-        from gridflow.connectors.elexon.endpoints import ENDPOINTS
-
-        known = {
-            "system_prices", "boal", "disbsad", "mid", "netbsad", "pn",
-            "freq", "fuelhh", "fuelinst", "imbalngc", "ndf", "ndfd", "melngc",
-            "fou2t14d", "uou2t14d", "windfor", "temp",
-            "agpt", "agws", "atl",
-            "indo", "itsdo", "indod", "nonbm",
-            "inddem", "indgen", "tsdf", "tsdfd", "lolpdrm",
-            "remit", "soso", "market_depth",
-            "bmunits_reference",
-        }
-        for ds in ENDPOINTS:
-            assert ds in known, f"Unexpected Elexon endpoint: {ds}"
+        assert set(ENDPOINTS) == configured
 
     def test_all_paths_start_with_slash(self):
         from gridflow.connectors.elexon.endpoints import ENDPOINTS
 
         for name, ep in ENDPOINTS.items():
             assert ep.path.startswith("/"), f"{name}: path '{ep.path}' must start with /"
+
+    def test_intentionally_excluded_datasets_stay_out_of_active_inventory(self):
+        from gridflow.config.settings import load_settings
+        from gridflow.connectors.elexon.endpoints import ENDPOINTS, EXCLUDED_ENDPOINTS
+
+        configured = set(load_settings().get_source_config("elexon").datasets)
+
+        for dataset, reason in EXCLUDED_ENDPOINTS.items():
+            assert reason, f"{dataset} must include an exclusion reason"
+            assert dataset not in ENDPOINTS
+            assert dataset not in configured
 
 
 class TestElexonNewDatasetParams:
@@ -164,8 +151,9 @@ class TestElexonFromToParams:
         assert params["page"] == 1
 
     def test_pn_uses_settlement_date_period(self):
-        from gridflow.connectors.elexon.endpoints import ENDPOINTS, ParamStyle, build_params
         from datetime import date
+
+        from gridflow.connectors.elexon.endpoints import ENDPOINTS, ParamStyle, build_params
 
         ep = ENDPOINTS["pn"]
         assert ep.param_style == ParamStyle.SETTLEMENT_DATE_PERIOD
@@ -406,7 +394,7 @@ class TestEntsoeFlowPairs:
             ("GB", "FR"), ("GB", "NL"), ("GB", "BE"), ("GB", "IE-SEM"),
             ("FR", "BE"), ("FR", "DE-LU"), ("NL", "DE-LU"), ("NL", "BE"),
         ]
-        assert _FLOW_PAIRS == expected
+        assert expected == _FLOW_PAIRS
 
     def test_all_flow_pair_zones_have_eic(self):
         from gridflow.connectors.entsoe.client import _FLOW_PAIRS
@@ -414,7 +402,9 @@ class TestEntsoeFlowPairs:
 
         for in_zone, out_zone in _FLOW_PAIRS:
             assert in_zone in BIDDING_ZONES, f"Flow pair zone {in_zone} missing from BIDDING_ZONES"
-            assert out_zone in BIDDING_ZONES, f"Flow pair zone {out_zone} missing from BIDDING_ZONES"
+            assert out_zone in BIDDING_ZONES, (
+                f"Flow pair zone {out_zone} missing from BIDDING_ZONES"
+            )
 
 
 # ============================================================================
@@ -472,7 +462,7 @@ class TestEntsogEndpointDefinitions:
         from gridflow.connectors.entsog.endpoints import KEY_POINT_KEYS
 
         expected = ["IUK", "BBL", "FRAN", "IRL", "NIRL", "NORI"]
-        assert KEY_POINT_KEYS == expected
+        assert expected == KEY_POINT_KEYS
 
 
 # ============================================================================
@@ -497,13 +487,13 @@ class TestGieEndpointDefinitions:
         from gridflow.connectors.gie.endpoints import AGSI_COUNTRIES
 
         expected = ["AT", "BE", "DE", "ES", "FR", "GB", "IT", "NL", "PL"]
-        assert AGSI_COUNTRIES == expected
+        assert expected == AGSI_COUNTRIES
 
     def test_alsi_countries(self):
         from gridflow.connectors.gie.endpoints import ALSI_COUNTRIES
 
         expected = ["BE", "ES", "FR", "GB", "IT", "NL", "PL", "PT"]
-        assert ALSI_COUNTRIES == expected
+        assert expected == ALSI_COUNTRIES
 
     def test_query_params_format(self):
         """Verify the exact query params the connector would build."""
@@ -574,7 +564,7 @@ class TestOpenMeteoEndpointDefinitions:
             "relative_humidity_2m", "precipitation", "shortwave_radiation",
             "surface_pressure",
         ]
-        assert HOURLY_VARIABLES == expected
+        assert expected == HOURLY_VARIABLES
 
     def test_historical_url_format(self):
         from gridflow.connectors.openmeteo.endpoints import (

@@ -12,7 +12,7 @@ sources:
         schedule: "hourly"
         max_query_days: 1
       boal:
-        endpoint: "/datasets/BOAL"
+        endpoint: "/datasets/BOALF"
         schedule: "hourly"
         max_query_days: 1
       # bod: removed — endpoint decommissioned by Elexon (404)

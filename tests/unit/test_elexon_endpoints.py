@@ -4,11 +4,15 @@ from __future__ import annotations
 
 from datetime import UTC, date, datetime
 
+import gridflow.silver.elexon  # noqa: F401 - import triggers transformer registration
+from gridflow.config.settings import load_settings
 from gridflow.connectors.elexon.endpoints import (
     ENDPOINTS,
+    EXCLUDED_ENDPOINTS,
     ParamStyle,
     build_params,
 )
+from gridflow.silver.registry import list_transformers
 
 
 class TestParamStyleEnum:
@@ -52,6 +56,58 @@ class TestEndpointRegistry:
             assert ep.path.startswith("/"), f"{name}: path should start with /"
 
 
+class TestElexonInventoryContract:
+    def test_configured_datasets_have_endpoint_definitions(self):
+        datasets = load_settings().get_source_config("elexon").datasets
+
+        missing = set(datasets) - set(ENDPOINTS)
+
+        assert missing == set()
+
+    def test_endpoint_registry_matches_configured_active_datasets(self):
+        datasets = load_settings().get_source_config("elexon").datasets
+
+        unexpected = set(ENDPOINTS) - set(datasets)
+
+        assert unexpected == set()
+
+    def test_configured_paths_match_endpoint_registry(self):
+        datasets = load_settings().get_source_config("elexon").datasets
+
+        mismatches = {
+            name: (config.endpoint, ENDPOINTS[name].path)
+            for name, config in datasets.items()
+            if config.endpoint != ENDPOINTS[name].path
+        }
+
+        assert mismatches == {}
+
+    def test_configured_datasets_have_silver_transformers(self):
+        datasets = load_settings().get_source_config("elexon").datasets
+        registered = {dataset for _, dataset in list_transformers("elexon")}
+
+        missing = set(datasets) - registered
+
+        assert missing == set()
+
+    def test_endpoint_param_styles_are_known(self):
+        invalid = {
+            name: endpoint.param_style
+            for name, endpoint in ENDPOINTS.items()
+            if not isinstance(endpoint.param_style, ParamStyle)
+        }
+
+        assert invalid == {}
+
+    def test_intentional_exclusions_are_documented(self):
+        required = {"bod", "generation_by_fuel", "indicative_imbalance_volumes"}
+
+        assert required <= set(EXCLUDED_ENDPOINTS)
+        for name in required:
+            assert EXCLUDED_ENDPOINTS[name], f"{name} must include an exclusion reason"
+            assert name not in ENDPOINTS, f"{name} should not be active"
+
+
 class TestBuildParamsSettlementDate:
     def test_basic_settlement_date(self):
         # pn uses SETTLEMENT_DATE_PERIOD style (still uses settlementDate param)
@@ -81,7 +137,9 @@ class TestBuildParamsSettlementDate:
         for ds in new_datasets:
             assert ds in ENDPOINTS, f"Missing endpoint: {ds}"
             ep = ENDPOINTS[ds]
-            assert ep.param_style == ParamStyle.PUBLISH_DATETIME, f"{ds} should use PUBLISH_DATETIME"
+            assert ep.param_style == ParamStyle.PUBLISH_DATETIME, (
+                f"{ds} should use PUBLISH_DATETIME"
+            )
 
     def test_market_depth_uses_date_path(self):
         ep = ENDPOINTS["market_depth"]

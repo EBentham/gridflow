@@ -61,6 +61,41 @@ def _has_gie_key() -> bool:
     return bool(os.environ.get("GIE_API_KEY"))
 
 
+def _response_preview(resp: httpx.Response, limit: int = 500) -> str:
+    return resp.text[:limit].replace("\n", " ")
+
+
+def _assert_elexon_status(
+    resp: httpx.Response,
+    *,
+    dataset: str,
+    stage: str,
+    param_style: str,
+    expected: int | tuple[int, ...],
+) -> None:
+    expected_codes = (expected,) if isinstance(expected, int) else expected
+
+    assert resp.status_code in expected_codes, (
+        f"source=elexon dataset={dataset} stage={stage} "
+        f"param_style={param_style} expected_status={expected_codes} "
+        f"actual_status={resp.status_code} url={resp.url} "
+        f"body_preview={_response_preview(resp)}"
+    )
+
+
+def _assert_elexon_data_key(
+    payload: dict,
+    *,
+    dataset: str,
+    stage: str,
+    param_style: str,
+) -> None:
+    assert "data" in payload, (
+        f"source=elexon dataset={dataset} stage={stage} "
+        f"param_style={param_style} expected_key=data keys={list(payload.keys())}"
+    )
+
+
 # ============================================================================
 # ELEXON — public API, no auth required
 #
@@ -86,12 +121,20 @@ class TestElexonLivePathDate:
 
         resp = http_client.get(url)
 
-        assert resp.status_code == 200, (
-            f"system_prices: expected 200, got {resp.status_code}. "
-            f"URL: {resp.url}\nBody: {resp.text[:500]}"
+        _assert_elexon_status(
+            resp,
+            dataset="system_prices",
+            stage="live endpoint ping",
+            param_style="date_path",
+            expected=200,
         )
         data = resp.json()
-        assert "data" in data, f"Expected 'data' key. Keys: {list(data.keys())}"
+        _assert_elexon_data_key(
+            data,
+            dataset="system_prices",
+            stage="live endpoint ping",
+            param_style="date_path",
+        )
 
     def test_system_prices_query_param_fails(self, http_client: httpx.Client):
         """Prove that ?settlementDate= returns 404 (the current connector bug)."""
@@ -100,9 +143,12 @@ class TestElexonLivePathDate:
 
         resp = http_client.get(url, params=params)
 
-        assert resp.status_code == 404, (
-            f"system_prices with ?settlementDate= should return 404 but got {resp.status_code}. "
-            "If this passes with 200, the API has changed back and the connector is correct."
+        _assert_elexon_status(
+            resp,
+            dataset="system_prices",
+            stage="negative request-shape probe",
+            param_style="settlement_date",
+            expected=404,
         )
 
 
@@ -123,12 +169,20 @@ class TestElexonLiveFromTo:
 
         resp = http_client.get(url, params=params)
 
-        assert resp.status_code == 200, (
-            f"Elexon {dataset}: expected 200 with from/to, got {resp.status_code}. "
-            f"URL: {resp.url}\nBody: {resp.text[:500]}"
+        _assert_elexon_status(
+            resp,
+            dataset=dataset,
+            stage="live endpoint ping",
+            param_style="from_to",
+            expected=200,
         )
         data = resp.json()
-        assert "data" in data, f"Expected 'data' key for {dataset}. Keys: {list(data.keys())}"
+        _assert_elexon_data_key(
+            data,
+            dataset=dataset,
+            stage="live endpoint ping",
+            param_style="from_to",
+        )
 
     @pytest.mark.parametrize("dataset,path", [
         ("disbsad", "/datasets/DISBSAD"),
@@ -142,8 +196,12 @@ class TestElexonLiveFromTo:
 
         resp = http_client.get(url, params=params)
 
-        assert resp.status_code == 404, (
-            f"Elexon {dataset} with ?settlementDate= should return 404 but got {resp.status_code}."
+        _assert_elexon_status(
+            resp,
+            dataset=dataset,
+            stage="negative request-shape probe",
+            param_style="settlement_date",
+            expected=404,
         )
 
 
@@ -159,9 +217,12 @@ class TestElexonLiveSettlementDatePeriod:
 
         resp = http_client.get(url, params=params)
 
-        assert resp.status_code == 200, (
-            f"PN: expected 200, got {resp.status_code}. "
-            f"URL: {resp.url}\nBody: {resp.text[:500]}"
+        _assert_elexon_status(
+            resp,
+            dataset="pn",
+            stage="live endpoint ping",
+            param_style="settlement_date_period",
+            expected=200,
         )
 
     def test_pn_without_period_fails(self, http_client: httpx.Client):
@@ -172,8 +233,12 @@ class TestElexonLiveSettlementDatePeriod:
         resp = http_client.get(url, params=params)
 
         # PN without period: either 404 or 400
-        assert resp.status_code in (400, 404), (
-            f"PN without period should fail but got {resp.status_code}."
+        _assert_elexon_status(
+            resp,
+            dataset="pn",
+            stage="negative request-shape probe",
+            param_style="settlement_date",
+            expected=(400, 404),
         )
 
 
@@ -193,16 +258,25 @@ class TestElexonLiveBrokenEndpoints:
             f"{self.ELEXON_BASE}/datasets/BOAL",
             params={"settlementDate": REF_DATE_STR},
         )
-        assert resp.status_code == 404, "BOAL endpoint returned non-404 — may have been restored"
+        _assert_elexon_status(
+            resp,
+            dataset="boal",
+            stage="excluded endpoint probe",
+            param_style="deprecated",
+            expected=404,
+        )
 
         # BOALF works as a replacement
         resp2 = http_client.get(
             f"{self.ELEXON_BASE}/datasets/BOALF",
             params={"from": REF_DATE_STR, "to": REF_DATE_STR},
         )
-        assert resp2.status_code == 200, (
-            f"BOALF: expected 200, got {resp2.status_code}. "
-            f"URL: {resp2.url}\nBody: {resp2.text[:500]}"
+        _assert_elexon_status(
+            resp2,
+            dataset="boal",
+            stage="replacement endpoint probe",
+            param_style="from_to",
+            expected=200,
         )
 
     def test_bod_returns_data(self, http_client: httpx.Client):
@@ -212,8 +286,12 @@ class TestElexonLiveBrokenEndpoints:
             params={"from": REF_DATE_STR, "to": REF_DATE_STR},
         )
         # Accept either 200 (restored) or 404 (still down) — do not fail either way
-        assert resp.status_code in (200, 400, 404), (
-            f"BOD returned unexpected status {resp.status_code}"
+        _assert_elexon_status(
+            resp,
+            dataset="bod",
+            stage="excluded endpoint probe",
+            param_style="excluded",
+            expected=(200, 400, 404),
         )
 
     def test_indicative_imbalance_volumes_is_404(self, http_client: httpx.Client):
@@ -227,9 +305,12 @@ class TestElexonLiveBrokenEndpoints:
             {"settlementDate": REF_DATE_STR, "settlementPeriod": 1},
         ]:
             resp = http_client.get(f"{self.ELEXON_BASE}{base_path}", params=params)
-            assert resp.status_code == 404, (
-                f"indicative-imbalance-volumes with {params} returned {resp.status_code} "
-                f"— may have been restored"
+            _assert_elexon_status(
+                resp,
+                dataset="indicative_imbalance_volumes",
+                stage=f"excluded endpoint probe params={params}",
+                param_style="excluded",
+                expected=404,
             )
 
 
@@ -244,9 +325,12 @@ class TestElexonLiveSettlementDateQuery:
 
         resp = http_client.get(url)
 
-        assert resp.status_code == 200, (
-            f"market_depth: expected 200, got {resp.status_code}. "
-            f"URL: {resp.url}\nBody: {resp.text[:500]}"
+        _assert_elexon_status(
+            resp,
+            dataset="market_depth",
+            stage="live endpoint ping",
+            param_style="date_path",
+            expected=200,
         )
 
 
@@ -278,9 +362,12 @@ class TestElexonLivePublishDatetime:
 
         resp = http_client.get(url, params=params)
 
-        assert resp.status_code == 200, (
-            f"Elexon {dataset}: expected 200, got {resp.status_code}. "
-            f"URL: {resp.url}\nBody: {resp.text[:500]}"
+        _assert_elexon_status(
+            resp,
+            dataset=dataset,
+            stage="live endpoint ping",
+            param_style="publish_datetime",
+            expected=200,
         )
 
     def test_uou2t14d_requires_short_range(self, http_client: httpx.Client):
@@ -293,8 +380,12 @@ class TestElexonLivePublishDatetime:
             "publishDateTimeTo": "2026-02-02T00:00:00Z",
             "page": 1,
         })
-        assert resp_24h.status_code == 400, (
-            f"UOU2T14D 24h range should be 400, got {resp_24h.status_code}"
+        _assert_elexon_status(
+            resp_24h,
+            dataset="uou2t14d",
+            stage="negative range probe",
+            param_style="publish_datetime",
+            expected=400,
         )
 
         # 4h range works
@@ -303,9 +394,12 @@ class TestElexonLivePublishDatetime:
             "publishDateTimeTo": "2026-02-01T04:00:00Z",
             "page": 1,
         })
-        assert resp_4h.status_code == 200, (
-            f"UOU2T14D 4h range: expected 200, got {resp_4h.status_code}. "
-            f"Body: {resp_4h.text[:500]}"
+        _assert_elexon_status(
+            resp_4h,
+            dataset="uou2t14d",
+            stage="live endpoint ping",
+            param_style="publish_datetime",
+            expected=200,
         )
 
 
@@ -320,9 +414,12 @@ class TestElexonLiveNoParams:
 
         resp = http_client.get(url)
 
-        assert resp.status_code == 200, (
-            f"bmunits_reference: expected 200, got {resp.status_code}. "
-            f"URL: {resp.url}\nBody: {resp.text[:500]}"
+        _assert_elexon_status(
+            resp,
+            dataset="bmunits_reference",
+            stage="live endpoint ping",
+            param_style="no_params",
+            expected=200,
         )
 
 
@@ -499,7 +596,10 @@ class TestGieAlsiLive:
 class TestOpenMeteoLive:
     """Ping Open-Meteo endpoints for London."""
 
-    HOURLY = "temperature_2m,wind_speed_10m,wind_direction_10m,relative_humidity_2m,precipitation,shortwave_radiation,surface_pressure"
+    HOURLY = (
+        "temperature_2m,wind_speed_10m,wind_direction_10m,relative_humidity_2m,"
+        "precipitation,shortwave_radiation,surface_pressure"
+    )
 
     def test_historical_london(self, http_client: httpx.Client):
         """Ping Open-Meteo archive API for London, Feb 1 2026."""
@@ -610,4 +710,6 @@ class TestNesoLive:
         if len(entries) > 0:
             entry = entries[0]
             assert "from" in entry, f"Expected 'from' in entry. Keys: {list(entry.keys())}"
-            assert "intensity" in entry, f"Expected 'intensity' in entry. Keys: {list(entry.keys())}"
+            assert "intensity" in entry, (
+                f"Expected 'intensity' in entry. Keys: {list(entry.keys())}"
+            )

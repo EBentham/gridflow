@@ -64,7 +64,12 @@ class LOLPDRMTransformer(BaseSilverTransformer):
         if rename_map:
             raw_df = raw_df.rename(rename_map)
 
-        required = ["settlement_date", "settlement_period", "loss_of_load_probability", "derated_margin_mw"]
+        required = [
+            "settlement_date",
+            "settlement_period",
+            "loss_of_load_probability",
+            "derated_margin_mw",
+        ]
         missing = [c for c in required if c not in raw_df.columns]
         if missing:
             logger.error(f"Missing required columns in LOLPDRM: {missing}")
