@@ -90,13 +90,14 @@ def parse_timeseries_xml(
             tag = _strip_ns(child.tag)
             if tag in (
                 "in_Domain.mRID",
+                "In_Domain.mRID",
                 "inBiddingZone_Domain.mRID",
                 "outBiddingZone_Domain.mRID",
                 "BiddingZone_Domain.mRID",
                 "biddingZone_Domain.mRID",
             ):
                 in_domain = (child.text or "").strip()
-            elif tag == "out_Domain.mRID":
+            elif tag in {"out_Domain.mRID", "Out_Domain.mRID"}:
                 out_domain = (child.text or "").strip()
             elif tag == "controlArea_Domain.mRID":
                 control_area_domain = (child.text or "").strip()

@@ -25,6 +25,24 @@ from gridflow.silver.entsoe.forecast_margin import ForecastMarginTransformer
 from gridflow.silver.entsoe.generation_units_master_data import (
     GenerationUnitsMasterDataTransformer,
 )
+from gridflow.silver.entsoe.h6_market import (
+    AuctionRevenueTransformer,
+    CommercialSchedulesNetPositionsTransformer,
+    CommercialSchedulesTransformer,
+    CongestionIncomeTransformer,
+    CongestionManagementCostsTransformer,
+    CountertradingTransformer,
+    DcLinkIntradayTransferLimitsTransformer,
+    NetPositionsTransformer,
+    OfferedTransferCapacityContinuousTransformer,
+    OfferedTransferCapacityExplicitTransformer,
+    OfferedTransferCapacityImplicitTransformer,
+    RedispatchingCrossBorderTransformer,
+    RedispatchingInternalTransformer,
+    TotalCapacityAllocatedTransformer,
+    TotalNominatedCapacityTransformer,
+    TransferCapacityUseTransformer,
+)
 from gridflow.silver.entsoe.imbalance_prices import ImbalancePricesTransformer
 from gridflow.silver.entsoe.installed_capacity_units import InstalledCapacityUnitsTransformer
 from gridflow.silver.entsoe.load_forecast_monthly import LoadForecastMonthlyTransformer
@@ -36,9 +54,30 @@ ENTSOE_BASE = "https://web-api.tp.entsoe.eu"
 TARGET_DATE = date(2024, 1, 15)
 START = datetime(2024, 1, 15, tzinfo=UTC)
 END = datetime(2024, 1, 16, tzinfo=UTC)
-ZONE_PAIR_DATASETS = {"cross_border_flows", "net_transfer_capacity"}
+ZONE_PAIR_DATASETS = {
+    "auction_revenue",
+    "commercial_schedules",
+    "commercial_schedules_net_positions",
+    "congestion_income",
+    "congestion_management_costs",
+    "countertrading",
+    "cross_border_flows",
+    "dc_link_intraday_transfer_limits",
+    "net_positions",
+    "net_transfer_capacity",
+    "offered_transfer_capacity_continuous",
+    "offered_transfer_capacity_explicit",
+    "offered_transfer_capacity_implicit",
+    "redispatching_cross_border",
+    "redispatching_internal",
+    "total_capacity_allocated",
+    "total_nominated_capacity",
+    "transfer_capacity_use",
+}
 DOMAIN_PARAM_KEYS = {
     "BiddingZone_Domain",
+    "In_Domain",
+    "Out_Domain",
     "controlArea_Domain",
     "in_Domain",
     "outBiddingZone_Domain",
@@ -46,6 +85,8 @@ DOMAIN_PARAM_KEYS = {
 }
 LEGACY_DOMAIN_PARAM_KEYS = {
     "BiddingZone_Domain.mRID",
+    "In_Domain.mRID",
+    "Out_Domain.mRID",
     "controlArea_Domain.mRID",
     "in_Domain.mRID",
     "outBiddingZone_Domain.mRID",
@@ -144,9 +185,17 @@ class TestEntsoeUrlConstructionAllDatasets:
             assert not LEGACY_DOMAIN_PARAM_KEYS.intersection(params)
             assert doc_type.extra_params.items() <= params.items()
 
+            expected_domain_params = (
+                set(doc_type.domain_params)
+                if doc_type.domain_params
+                else set()
+            )
             if doc_type.domain_style == "control_area":
                 assert "controlArea_Domain" in params
                 assert DOMAIN_PARAM_KEYS.intersection(params) == {"controlArea_Domain"}
+            elif expected_domain_params:
+                assert expected_domain_params <= set(params)
+                assert DOMAIN_PARAM_KEYS.intersection(params) == expected_domain_params
             elif doc_type.domain_style in {"zone", "zone_pair"}:
                 assert "in_Domain" in params
                 assert "out_Domain" in params
@@ -164,9 +213,10 @@ class TestEntsoeUrlConstructionAllDatasets:
                 pytest.fail(f"Unhandled ENTSO-E domain style: {doc_type.domain_style}")
 
         if dataset in ZONE_PAIR_DATASETS:
+            in_key, out_key = doc_type.domain_params or ("in_Domain", "out_Domain")
             assert any(
-                dict(call.request.url.params)["in_Domain"]
-                != dict(call.request.url.params)["out_Domain"]
+                dict(call.request.url.params)[in_key]
+                != dict(call.request.url.params)[out_key]
                 for call in route.calls
             )
 
@@ -193,6 +243,42 @@ class TestEntsoeUrlConstructionAllDatasets:
 
         assert responses
         assert {response.data_date for response in responses} == {TARGET_DATE}
+
+    @respx.mock
+    @pytest.mark.asyncio
+    async def test_h6_optional_filters_preserve_documented_casing(
+        self,
+        entsoe_source_config: SourceConfig,
+    ) -> None:
+        route = respx.get(f"{ENTSOE_BASE}/api").mock(
+            return_value=httpx.Response(
+                200,
+                content=b"<root />",
+                headers={"content-type": "text/xml"},
+            )
+        )
+
+        async with EntsoeConnector(entsoe_source_config) as connector:
+            await connector.fetch(
+                dataset="offered_transfer_capacity_continuous",
+                start=START,
+                end=END,
+                **{
+                    "Auction.Type": "A01",
+                    "Contract_MarketAgreement.Type": "A01",
+                    "Update_DateAndOrTime": "2024-01-15T00:00Z",
+                    "auction.Type": "ignored-wrong-case",
+                },
+            )
+
+        params = dict(route.calls[0].request.url.params)
+
+        assert params["In_Domain"] == "10YGB----------A"
+        assert params["Out_Domain"] == "10YFR-RTE------C"
+        assert params["Auction.Type"] == "A01"
+        assert params["Contract_MarketAgreement.Type"] == "A01"
+        assert params["Update_DateAndOrTime"] == "2024-01-15T00:00Z"
+        assert "auction.Type" not in params
 
     @respx.mock
     @pytest.mark.asyncio
@@ -334,6 +420,118 @@ class TestEntsoeBronzeToSilverPipeline:
                 GenerationUnitsMasterDataTransformer,
                 {"area_code", "unit_mrid", "unit_name", "production_type"},
                 id="generation_units_master_data",
+            ),
+            pytest.param(
+                "dc_link_intraday_transfer_limits",
+                "h6_market_quantity_gb_fr.xml",
+                DcLinkIntradayTransferLimitsTransformer,
+                {"timestamp_utc", "in_area_code", "out_area_code", "quantity_mw"},
+                id="dc_link_intraday_transfer_limits",
+            ),
+            pytest.param(
+                "commercial_schedules",
+                "h6_market_quantity_gb_fr.xml",
+                CommercialSchedulesTransformer,
+                {"timestamp_utc", "in_area_code", "out_area_code", "quantity_mw"},
+                id="commercial_schedules",
+            ),
+            pytest.param(
+                "commercial_schedules_net_positions",
+                "h6_market_quantity_gb_fr.xml",
+                CommercialSchedulesNetPositionsTransformer,
+                {"timestamp_utc", "in_area_code", "out_area_code", "quantity_mw"},
+                id="commercial_schedules_net_positions",
+            ),
+            pytest.param(
+                "redispatching_cross_border",
+                "h6_market_quantity_gb_fr.xml",
+                RedispatchingCrossBorderTransformer,
+                {"timestamp_utc", "in_area_code", "out_area_code", "quantity_mw"},
+                id="redispatching_cross_border",
+            ),
+            pytest.param(
+                "redispatching_internal",
+                "h6_market_quantity_gb_fr.xml",
+                RedispatchingInternalTransformer,
+                {"timestamp_utc", "in_area_code", "out_area_code", "quantity_mw"},
+                id="redispatching_internal",
+            ),
+            pytest.param(
+                "countertrading",
+                "h6_market_quantity_gb_fr.xml",
+                CountertradingTransformer,
+                {"timestamp_utc", "in_area_code", "out_area_code", "quantity_mw"},
+                id="countertrading",
+            ),
+            pytest.param(
+                "offered_transfer_capacity_continuous",
+                "h6_market_quantity_gb_fr.xml",
+                OfferedTransferCapacityContinuousTransformer,
+                {"timestamp_utc", "in_area_code", "out_area_code", "quantity_mw"},
+                id="offered_transfer_capacity_continuous",
+            ),
+            pytest.param(
+                "offered_transfer_capacity_implicit",
+                "h6_market_quantity_gb_fr.xml",
+                OfferedTransferCapacityImplicitTransformer,
+                {"timestamp_utc", "in_area_code", "out_area_code", "quantity_mw"},
+                id="offered_transfer_capacity_implicit",
+            ),
+            pytest.param(
+                "offered_transfer_capacity_explicit",
+                "h6_market_quantity_gb_fr.xml",
+                OfferedTransferCapacityExplicitTransformer,
+                {"timestamp_utc", "in_area_code", "out_area_code", "quantity_mw"},
+                id="offered_transfer_capacity_explicit",
+            ),
+            pytest.param(
+                "transfer_capacity_use",
+                "h6_market_quantity_gb_fr.xml",
+                TransferCapacityUseTransformer,
+                {"timestamp_utc", "in_area_code", "out_area_code", "quantity_mw"},
+                id="transfer_capacity_use",
+            ),
+            pytest.param(
+                "total_nominated_capacity",
+                "h6_market_quantity_gb_fr.xml",
+                TotalNominatedCapacityTransformer,
+                {"timestamp_utc", "in_area_code", "out_area_code", "quantity_mw"},
+                id="total_nominated_capacity",
+            ),
+            pytest.param(
+                "total_capacity_allocated",
+                "h6_market_quantity_gb_fr.xml",
+                TotalCapacityAllocatedTransformer,
+                {"timestamp_utc", "in_area_code", "out_area_code", "quantity_mw"},
+                id="total_capacity_allocated",
+            ),
+            pytest.param(
+                "net_positions",
+                "h6_market_quantity_gb_fr.xml",
+                NetPositionsTransformer,
+                {"timestamp_utc", "in_area_code", "out_area_code", "quantity_mw"},
+                id="net_positions",
+            ),
+            pytest.param(
+                "congestion_management_costs",
+                "h6_market_price_gb_fr.xml",
+                CongestionManagementCostsTransformer,
+                {"timestamp_utc", "in_area_code", "out_area_code", "amount_eur"},
+                id="congestion_management_costs",
+            ),
+            pytest.param(
+                "auction_revenue",
+                "h6_market_price_gb_fr.xml",
+                AuctionRevenueTransformer,
+                {"timestamp_utc", "in_area_code", "out_area_code", "amount_eur"},
+                id="auction_revenue",
+            ),
+            pytest.param(
+                "congestion_income",
+                "h6_market_price_gb_fr.xml",
+                CongestionIncomeTransformer,
+                {"timestamp_utc", "in_area_code", "out_area_code", "amount_eur"},
+                id="congestion_income",
             ),
         ],
     )

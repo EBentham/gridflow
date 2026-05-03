@@ -39,6 +39,8 @@ from gridflow.schemas.entsoe import (
     EntsoeLoadForecastWeekly,
     EntsoeNetTransferCapacity,
     EntsoeOutagesGeneration,
+    EntsoeTransmissionMarketAmount,
+    EntsoeTransmissionMarketQuantity,
     EntsoeWaterReservoirs,
     EntsoeWindSolarForecast,
 )
@@ -54,6 +56,13 @@ from gridflow.silver.entsoe.forecast_margin import ForecastMarginTransformer
 from gridflow.silver.entsoe.generation_forecast import GenerationForecastTransformer
 from gridflow.silver.entsoe.generation_units_master_data import (
     GenerationUnitsMasterDataTransformer,
+)
+from gridflow.silver.entsoe.h6_market import (
+    AuctionRevenueTransformer,
+    CommercialSchedulesTransformer,
+    CongestionManagementCostsTransformer,
+    DcLinkIntradayTransferLimitsTransformer,
+    OfferedTransferCapacityContinuousTransformer,
 )
 from gridflow.silver.entsoe.imbalance_prices import ImbalancePricesTransformer
 from gridflow.silver.entsoe.imbalance_volume import ImbalanceVolumeTransformer
@@ -2029,3 +2038,155 @@ class TestEntsoeGenerationUnitsMasterDataSchema:
         )
         assert record.data_provider == "entsoe"
         assert record.production_type == "B02"
+
+
+# ---------------------------------------------------------------------------
+# Phase H6 - transmission and market sources
+# ---------------------------------------------------------------------------
+
+
+class TestPhaseH6Endpoints:
+    def test_h6_doc_types_populated(self):
+        for name in (
+            "dc_link_intraday_transfer_limits",
+            "commercial_schedules",
+            "commercial_schedules_net_positions",
+            "redispatching_cross_border",
+            "redispatching_internal",
+            "countertrading",
+            "congestion_management_costs",
+            "offered_transfer_capacity_continuous",
+            "offered_transfer_capacity_implicit",
+            "offered_transfer_capacity_explicit",
+            "auction_revenue",
+            "transfer_capacity_use",
+            "total_nominated_capacity",
+            "total_capacity_allocated",
+            "congestion_income",
+            "net_positions",
+        ):
+            assert name in DOC_TYPES, f"{name} missing from DOC_TYPES"
+
+    def test_h6_mixed_case_domain_params_preserved_in_metadata(self):
+        doc_type = DOC_TYPES["offered_transfer_capacity_continuous"]
+
+        assert doc_type.domain_params == ("In_Domain", "Out_Domain")
+        assert doc_type.optional_params == (
+            "Auction.Type",
+            "Contract_MarketAgreement.Type",
+            "Update_DateAndOrTime",
+        )
+
+    def test_h6_business_type_variants_are_metadata(self):
+        assert DOC_TYPES["redispatching_cross_border"].extra_params == {
+            "businessType": "A46"
+        }
+        assert DOC_TYPES["redispatching_internal"].extra_params == {
+            "businessType": "A85"
+        }
+        assert DOC_TYPES["auction_revenue"].extra_params == {
+            "businessType": "B07",
+            "contract_MarketAgreement.Type": "A01",
+        }
+
+
+class TestPhaseH6Parser:
+    def test_parser_accepts_mixed_case_domain_tags(self):
+        records = parse_timeseries_xml(
+            (FIXTURES / "h6_market_quantity_gb_fr.xml").read_bytes(),
+            value_tag="quantity",
+        )
+
+        assert len(records) == 3
+        assert records[0]["in_domain"] == "10YGB----------A"
+        assert records[0]["out_domain"] == "10YFR-RTE------C"
+        assert records[0]["business_type"] == "B05"
+
+
+class TestPhaseH6QuantityTransformers:
+    def test_transform_basic(self):
+        raw = _make_df_from_xml("h6_market_quantity_gb_fr.xml", "quantity")
+        transformer = _make_entsoe_transformer(DcLinkIntradayTransferLimitsTransformer)
+
+        result = transformer.transform(raw)
+
+        assert not result.is_empty()
+        assert {"in_area_code", "out_area_code", "quantity_mw"}.issubset(
+            result.columns
+        )
+        assert abs(result["quantity_mw"][0] - 1200) < 0.1
+
+    def test_dedup(self):
+        raw = _make_df_from_xml("h6_market_quantity_gb_fr.xml", "quantity")
+        doubled = pl.concat([raw, raw])
+        transformer = _make_entsoe_transformer(CommercialSchedulesTransformer)
+
+        result = transformer.transform(doubled)
+
+        assert len(result) == 3
+
+    def test_mixed_case_market_transformer(self):
+        raw = _make_df_from_xml("h6_market_quantity_gb_fr.xml", "quantity")
+        transformer = _make_entsoe_transformer(
+            OfferedTransferCapacityContinuousTransformer
+        )
+
+        result = transformer.transform(raw)
+
+        assert result["in_area_code"][0] == "10YGB----------A"
+        assert result["out_area_code"][0] == "10YFR-RTE------C"
+
+
+class TestPhaseH6AmountTransformers:
+    def test_transform_basic(self):
+        raw = _make_df_from_xml("h6_market_price_gb_fr.xml", "price.amount")
+        transformer = _make_entsoe_transformer(CongestionManagementCostsTransformer)
+
+        result = transformer.transform(raw)
+
+        assert not result.is_empty()
+        assert {"in_area_code", "out_area_code", "amount_eur"}.issubset(
+            result.columns
+        )
+        assert abs(result["amount_eur"][0] - 42.50) < 0.01
+
+    def test_price_family_is_separate_from_quantity_family(self):
+        raw = _make_df_from_xml("h6_market_price_gb_fr.xml", "price.amount")
+        transformer = _make_entsoe_transformer(AuctionRevenueTransformer)
+
+        result = transformer.transform(raw)
+
+        assert "amount_eur" in result.columns
+        assert "quantity_mw" not in result.columns
+
+
+class TestEntsoeTransmissionMarketQuantitySchema:
+    _TS = datetime(2024, 1, 15, 0, 0, tzinfo=UTC)
+
+    def test_valid_record(self):
+        record = EntsoeTransmissionMarketQuantity(
+            timestamp_utc=self._TS,
+            in_area_code="10YGB----------A",
+            out_area_code="10YFR-RTE------C",
+            quantity_mw=1200.0,
+            business_type="B05",
+        )
+
+        assert record.data_provider == "entsoe"
+        assert record.quantity_mw == 1200.0
+
+
+class TestEntsoeTransmissionMarketAmountSchema:
+    _TS = datetime(2024, 1, 15, 0, 0, tzinfo=UTC)
+
+    def test_valid_record(self):
+        record = EntsoeTransmissionMarketAmount(
+            timestamp_utc=self._TS,
+            in_area_code="10YGB----------A",
+            out_area_code="10YFR-RTE------C",
+            amount_eur=42.50,
+            business_type="B10",
+        )
+
+        assert record.data_provider == "entsoe"
+        assert record.amount_eur == 42.50

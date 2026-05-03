@@ -11,6 +11,24 @@ from gridflow.silver.entsoe.day_ahead_prices import DayAheadPricesTransformer
 from gridflow.silver.entsoe.forecast_margin import ForecastMarginTransformer
 from gridflow.silver.entsoe.generation_forecast import GenerationForecastTransformer
 from gridflow.silver.entsoe.generation_units_master_data import GenerationUnitsMasterDataTransformer
+from gridflow.silver.entsoe.h6_market import (
+    AuctionRevenueTransformer,
+    CommercialSchedulesNetPositionsTransformer,
+    CommercialSchedulesTransformer,
+    CongestionIncomeTransformer,
+    CongestionManagementCostsTransformer,
+    CountertradingTransformer,
+    DcLinkIntradayTransferLimitsTransformer,
+    NetPositionsTransformer,
+    OfferedTransferCapacityContinuousTransformer,
+    OfferedTransferCapacityExplicitTransformer,
+    OfferedTransferCapacityImplicitTransformer,
+    RedispatchingCrossBorderTransformer,
+    RedispatchingInternalTransformer,
+    TotalCapacityAllocatedTransformer,
+    TotalNominatedCapacityTransformer,
+    TransferCapacityUseTransformer,
+)
 from gridflow.silver.entsoe.imbalance_prices import ImbalancePricesTransformer
 from gridflow.silver.entsoe.imbalance_volume import ImbalanceVolumeTransformer
 from gridflow.silver.entsoe.installed_capacity import InstalledCapacityTransformer
@@ -48,4 +66,20 @@ __all__ = [
     "ContractedReservesTransformer",
     "InstalledCapacityUnitsTransformer",
     "WaterReservoirsTransformer",
+    "DcLinkIntradayTransferLimitsTransformer",
+    "CommercialSchedulesTransformer",
+    "CommercialSchedulesNetPositionsTransformer",
+    "RedispatchingCrossBorderTransformer",
+    "RedispatchingInternalTransformer",
+    "CountertradingTransformer",
+    "OfferedTransferCapacityContinuousTransformer",
+    "OfferedTransferCapacityImplicitTransformer",
+    "OfferedTransferCapacityExplicitTransformer",
+    "TransferCapacityUseTransformer",
+    "TotalNominatedCapacityTransformer",
+    "TotalCapacityAllocatedTransformer",
+    "NetPositionsTransformer",
+    "CongestionManagementCostsTransformer",
+    "AuctionRevenueTransformer",
+    "CongestionIncomeTransformer",
 ]

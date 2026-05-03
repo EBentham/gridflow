@@ -398,6 +398,9 @@ class TestEntsoeLiveAllDatasets:
             "outages_generation",
             "imbalance_prices",
             "generation_units_master_data",
+            "dc_link_intraday_transfer_limits",
+            "offered_transfer_capacity_continuous",
+            "auction_revenue",
         ],
     )
     async def test_live_request_shape_uses_supported_domain_params(
@@ -420,12 +423,16 @@ class TestEntsoeLiveAllDatasets:
             params = response.request_params
             assert "in_Domain.mRID" not in params
             assert "out_Domain.mRID" not in params
+            assert "In_Domain.mRID" not in params
+            assert "Out_Domain.mRID" not in params
             assert "controlArea_Domain.mRID" not in params
             assert "outBiddingZone_Domain.mRID" not in params
             assert "BiddingZone_Domain.mRID" not in params
             assert (
                 "in_Domain" in params
+                or "In_Domain" in params
                 or "out_Domain" in params
+                or "Out_Domain" in params
                 or "outBiddingZone_Domain" in params
                 or "BiddingZone_Domain" in params
                 or "controlArea_Domain" in params

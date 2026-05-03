@@ -123,6 +123,7 @@ class EntsoeConnector(BaseConnector):
                     out_domain=out_mrid,
                     period_start=period_start,
                     period_end=period_end,
+                    fetch_params=params,
                 )
                 responses.extend(resp)
         elif doc_type.domain_style == "control_area":
@@ -138,6 +139,7 @@ class EntsoeConnector(BaseConnector):
                     out_domain=None,
                     period_start=period_start,
                     period_end=period_end,
+                    fetch_params=params,
                 )
                 responses.extend(resp)
         else:
@@ -154,6 +156,7 @@ class EntsoeConnector(BaseConnector):
                     out_domain=mrid if doc_type.domain_style == "zone" else None,
                     period_start=period_start,
                     period_end=period_end,
+                    fetch_params=params,
                 )
                 responses.extend(resp)
 
@@ -179,6 +182,7 @@ class EntsoeConnector(BaseConnector):
         out_domain: str | None,
         period_start: str,
         period_end: str,
+        fetch_params: dict[str, Any] | None = None,
     ) -> list[RawResponse]:
         """Fetch a single ENTSO-E document using the dataset's request style."""
         query_params: dict[str, str] = {"documentType": doc_type.document_type}
@@ -199,6 +203,7 @@ class EntsoeConnector(BaseConnector):
             )
         )
         query_params.update(doc_type.extra_params)
+        query_params.update(_optional_filter_params(doc_type, fetch_params or {}))
         if doc_type.process_type:
             query_params["processType"] = doc_type.process_type
         if self.config.api_key:
@@ -353,6 +358,18 @@ def _domain_params(
     if domain_style == "control_area":
         return {"controlArea_Domain": in_domain}
     raise ValueError(f"Unsupported ENTSO-E domain style: {domain_style!r}")
+
+
+def _optional_filter_params(
+    doc_type: EntsoeDocType,
+    fetch_params: dict[str, Any],
+) -> dict[str, str]:
+    """Forward documented optional filters while preserving ENTSO-E casing."""
+    query_params: dict[str, str] = {}
+    for param_name in doc_type.optional_params:
+        if param_name in fetch_params and fetch_params[param_name] is not None:
+            query_params[param_name] = str(fetch_params[param_name])
+    return query_params
 
 
 def _redact_security_token(url: str) -> str:

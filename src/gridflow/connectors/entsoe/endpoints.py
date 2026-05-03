@@ -20,6 +20,7 @@ class EntsoeDocType:
     # "control_area" -> controlArea_Domain query param
     domain_style: str = "zone"
     extra_params: dict[str, str] = field(default_factory=dict)
+    optional_params: tuple[str, ...] = ()
     domain_params: tuple[str, ...] = ()
     date_param: str | None = None
 
@@ -100,6 +101,159 @@ DOC_TYPES: dict[str, EntsoeDocType] = {
         "Forecasted transfer capacity",
         domain_style="zone_pair",
         extra_params={"contract_MarketAgreement.Type": "A01"},
+    ),
+    "dc_link_intraday_transfer_limits": EntsoeDocType(
+        "A93",
+        None,
+        "Cross-border capacity of DC links - intraday transfer limits",
+        domain_style="zone_pair",
+    ),
+    "commercial_schedules": EntsoeDocType(
+        "A09",
+        None,
+        "Commercial schedules",
+        domain_style="zone_pair",
+        optional_params=("contract_MarketAgreement.Type",),
+    ),
+    "commercial_schedules_net_positions": EntsoeDocType(
+        "A09",
+        None,
+        "Commercial schedules - net positions",
+        domain_style="zone_pair",
+        optional_params=("contract_MarketAgreement.Type",),
+    ),
+    "redispatching_cross_border": EntsoeDocType(
+        "A63",
+        None,
+        "Redispatching cross-border",
+        domain_style="zone_pair",
+        extra_params={"businessType": "A46"},
+    ),
+    "redispatching_internal": EntsoeDocType(
+        "A63",
+        None,
+        "Redispatching internal",
+        domain_style="zone_pair",
+        extra_params={"businessType": "A85"},
+    ),
+    "countertrading": EntsoeDocType(
+        "A91",
+        None,
+        "Countertrading",
+        domain_style="zone_pair",
+    ),
+    "congestion_management_costs": EntsoeDocType(
+        "A92",
+        None,
+        "Costs of congestion management",
+        domain_style="zone_pair",
+    ),
+    "offered_transfer_capacity_continuous": EntsoeDocType(
+        "A31",
+        None,
+        "Continuous allocations - offered transfer capacity",
+        domain_style="zone_pair",
+        extra_params={
+            "Auction.Type": "A01",
+            "Contract_MarketAgreement.Type": "A01",
+        },
+        domain_params=("In_Domain", "Out_Domain"),
+        optional_params=(
+            "Auction.Type",
+            "Contract_MarketAgreement.Type",
+            "Update_DateAndOrTime",
+        ),
+    ),
+    "offered_transfer_capacity_implicit": EntsoeDocType(
+        "A31",
+        None,
+        "Implicit allocations - offered transfer capacity",
+        domain_style="zone_pair",
+        extra_params={
+            "auction.Type": "A01",
+            "contract_MarketAgreement.Type": "A01",
+        },
+        optional_params=("auction.Type", "contract_MarketAgreement.Type"),
+    ),
+    "offered_transfer_capacity_explicit": EntsoeDocType(
+        "A31",
+        None,
+        "Explicit allocations - offered transfer capacity",
+        domain_style="zone_pair",
+        extra_params={
+            "auction.Category": "A01",
+            "auction.Type": "A01",
+            "contract_MarketAgreement.Type": "A01",
+        },
+        optional_params=(
+            "auction.Category",
+            "auction.Type",
+            "contract_MarketAgreement.Type",
+        ),
+    ),
+    "auction_revenue": EntsoeDocType(
+        "A25",
+        None,
+        "Explicit allocations - auction revenue",
+        domain_style="zone_pair",
+        extra_params={
+            "businessType": "B07",
+            "contract_MarketAgreement.Type": "A01",
+        },
+        optional_params=("contract_MarketAgreement.Type",),
+    ),
+    "transfer_capacity_use": EntsoeDocType(
+        "A25",
+        None,
+        "Explicit allocations - use of the transfer capacity",
+        domain_style="zone_pair",
+        extra_params={
+            "businessType": "B05",
+            "Auction.Category": "A01",
+            "contract_MarketAgreement.Type": "A01",
+        },
+        optional_params=("Auction.Category", "contract_MarketAgreement.Type"),
+    ),
+    "total_nominated_capacity": EntsoeDocType(
+        "A26",
+        None,
+        "Total nominated capacity",
+        domain_style="zone_pair",
+        extra_params={"businessType": "B08"},
+    ),
+    "total_capacity_allocated": EntsoeDocType(
+        "A26",
+        None,
+        "Total capacity already allocated",
+        domain_style="zone_pair",
+        extra_params={
+            "businessType": "A29",
+            "auction.Category": "A01",
+            "contract_MarketAgreement.Type": "A01",
+        },
+        optional_params=("auction.Category", "contract_MarketAgreement.Type"),
+    ),
+    "congestion_income": EntsoeDocType(
+        "A25",
+        None,
+        "Implicit and flow-based allocations - congestion income",
+        domain_style="zone_pair",
+        extra_params={
+            "businessType": "B10",
+            "contract_MarketAgreement.Type": "A01",
+        },
+        optional_params=("contract_MarketAgreement.Type",),
+    ),
+    "net_positions": EntsoeDocType(
+        "A25",
+        None,
+        "Implicit auction - net positions",
+        domain_style="zone_pair",
+        extra_params={
+            "businessType": "B09",
+            "contract_MarketAgreement.Type": "A01",
+        },
+        optional_params=("contract_MarketAgreement.Type",),
     ),
     # Phase 3 additions - balancing datasets (controlArea_Domain)
     "imbalance_prices": EntsoeDocType("A85", None, "Imbalance prices", domain_style="control_area"),

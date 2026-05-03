@@ -254,6 +254,70 @@ sources:
         document_type: "A61"
         schedule: "daily"
         max_query_days: 365
+      dc_link_intraday_transfer_limits:
+        document_type: "A93"
+        schedule: "daily"
+        max_query_days: 365
+      commercial_schedules:
+        document_type: "A09"
+        schedule: "daily"
+        max_query_days: 365
+      commercial_schedules_net_positions:
+        document_type: "A09"
+        schedule: "daily"
+        max_query_days: 365
+      redispatching_cross_border:
+        document_type: "A63"
+        schedule: "daily"
+        max_query_days: 365
+      redispatching_internal:
+        document_type: "A63"
+        schedule: "daily"
+        max_query_days: 365
+      countertrading:
+        document_type: "A91"
+        schedule: "daily"
+        max_query_days: 365
+      congestion_management_costs:
+        document_type: "A92"
+        schedule: "daily"
+        max_query_days: 365
+      offered_transfer_capacity_continuous:
+        document_type: "A31"
+        schedule: "daily"
+        max_query_days: 365
+      offered_transfer_capacity_implicit:
+        document_type: "A31"
+        schedule: "daily"
+        max_query_days: 365
+      offered_transfer_capacity_explicit:
+        document_type: "A31"
+        schedule: "daily"
+        max_query_days: 365
+      auction_revenue:
+        document_type: "A25"
+        schedule: "daily"
+        max_query_days: 365
+      transfer_capacity_use:
+        document_type: "A25"
+        schedule: "daily"
+        max_query_days: 365
+      total_nominated_capacity:
+        document_type: "A26"
+        schedule: "daily"
+        max_query_days: 365
+      total_capacity_allocated:
+        document_type: "A26"
+        schedule: "daily"
+        max_query_days: 365
+      congestion_income:
+        document_type: "A25"
+        schedule: "daily"
+        max_query_days: 365
+      net_positions:
+        document_type: "A25"
+        schedule: "daily"
+        max_query_days: 365
       # Phase 3 — balancing datasets (controlArea_Domain)
       imbalance_prices:
         document_type: "A85"

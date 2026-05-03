@@ -442,3 +442,43 @@ class EntsoeContractedReserves(BaseSchema):
         if v.tzinfo is None:
             raise ValueError("timestamp_utc must be timezone-aware (UTC)")
         return v
+
+
+class EntsoeTransmissionMarketQuantity(BaseSchema):
+    """Silver-layer schema for H6 transmission/market quantity time series."""
+
+    timestamp_utc: datetime
+    in_area_code: str
+    out_area_code: str
+    quantity_mw: float
+    business_type: str = ""
+    resolution: str = ""
+    data_provider: str = Field(default="entsoe")
+    ingested_at: datetime | None = None
+
+    @field_validator("timestamp_utc")
+    @classmethod
+    def must_be_utc(cls, v: datetime) -> datetime:
+        if v.tzinfo is None:
+            raise ValueError("timestamp_utc must be timezone-aware (UTC)")
+        return v
+
+
+class EntsoeTransmissionMarketAmount(BaseSchema):
+    """Silver-layer schema for H6 transmission/market monetary time series."""
+
+    timestamp_utc: datetime
+    in_area_code: str
+    out_area_code: str
+    amount_eur: float
+    business_type: str = ""
+    resolution: str = ""
+    data_provider: str = Field(default="entsoe")
+    ingested_at: datetime | None = None
+
+    @field_validator("timestamp_utc")
+    @classmethod
+    def must_be_utc(cls, v: datetime) -> datetime:
+        if v.tzinfo is None:
+            raise ValueError("timestamp_utc must be timezone-aware (UTC)")
+        return v
