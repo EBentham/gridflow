@@ -6,7 +6,7 @@
 
 - ✅ **v0.2-entsoe-gaps** — Gap Closure G1–G4 (shipped 2026-05-02)
 - ✅ **v0.3-entsoe-validation** — ENTSO-E Pipeline Validation H1–H8 (shipped 2026-05-03)
-- 🔄 **v0.4-elexon-validation** — Elexon Pipeline Validation I1–I4 (planning)
+- 🔄 **v0.4-elexon-validation** — Elexon Pipeline Validation I1–I4 (ready for close-out)
 
 ---
 
@@ -79,9 +79,12 @@ Known deferred close-out items: 4; see [STATE.md](STATE.md).
   - Success: Empty/no-data responses and known removed endpoints are classified explicitly as skip/deferred/documented outcomes.
   - Success: Live tests require no API key and remain excluded from normal test runs.
 
-- [ ] **Phase I4**: Elexon CLI/backfill live smoke tests and milestone close-out docs
+- [x] **Phase I4**: Elexon CLI/backfill live smoke tests and milestone close-out docs - completed 2026-05-04
   - Requirements: ELEXON-CLI-01, ELEXON-CLI-02, ELEXON-CLI-03, ELEXON-DOC-01, ELEXON-DOC-02
   - **Plans:** 1 plan
+  - **Wave 1:** live CLI smoke coverage and close-out docs
+  - Plans:
+    - [x] `.planning/phases/I4-elexon-cli-backfill-live-smoke-tests-and-milestone-close-out-docs/I4-01-PLAN.md` - Elexon CLI/backfill live smoke tests and milestone close-out docs
   - Success: Live `pipeline`, `ingest`, `transform`, and `backfill` smoke tests run against isolated temp config/data paths.
   - Success: CLI tests verify bronze and silver outputs for a safe curated dataset subset and fail non-zero on real dataset errors.
   - Success: Phase artifacts document live commands, chosen dataset windows, expected skips, and troubleshooting notes.

@@ -1,20 +1,20 @@
 ---
 milestone: v0.4
 milestone_name: Elexon Pipeline Validation
-status: ready_to_plan
+status: ready_for_milestone_closeout
 progress:
   phases_total: 4
-  phases_complete: 3
+  phases_complete: 4
   plans_total: 4
-  plans_complete: 3
+  plans_complete: 4
 ---
 
 ## Current Position
 
 Phase: I4 - Elexon CLI/backfill live smoke tests and milestone close-out docs
-Plan: needs planning
-Status: Phase I3 completed; ready to plan I4
-Last activity: 2026-05-04 - Phase I3 completed
+Plan: I4-01 complete
+Status: Phase I4 complete; v0.4 ready for milestone close-out
+Last activity: 2026-05-04 - Phase I4 completed
 
 ## Project Reference
 
@@ -48,6 +48,8 @@ produces schema-valid output - verified end-to-end, not just in unit tests.
 - I1 planned: Elexon inventory contract, explicit exclusions, request-style baseline, and live-test diagnostics scope.
 - I1 completed: active Elexon config, endpoint registry, and silver transformer registrations are covered by tests; excluded endpoints have explicit reasons.
 - I2 completed: mocked request-shape coverage now spans every active configured Elexon dataset, while fixture-backed bronze-to-silver tests validate representative transformer families without live network access.
+- I4 completed: live Elexon CLI smoke tests cover `pipeline`, separate `ingest`/`transform`, and `backfill` for curated datasets under temp-root `GRIDFLOW_*` paths.
+- Runtime `GRIDFLOW_DATA_DIR`, `GRIDFLOW_DUCKDB_PATH`, and `GRIDFLOW_LOG_DIR` overrides must take precedence over YAML pipeline paths so live smoke tests and manual checks can isolate local outputs.
 
 ### Roadmap Evolution
 
@@ -68,6 +70,7 @@ produces schema-valid output - verified end-to-end, not just in unit tests.
 - I2 completed: non-live mocked Elexon E2E suite passes with bronze metadata, pagination/chunking, no-param, and representative silver output assertions.
 - I3 planned: opt-in live Elexon API-to-silver tests will call representative public no-key Elexon datasets, write live responses to temp bronze, transform to silver, and classify empty/deferred outcomes explicitly.
 - I3 completed: opt-in live tests now prove `system_prices`, `boal`, `freq`, `pn`, and `bmunits_reference` can flow from the public Elexon API through temp bronze into silver parquet.
+- I4 completed: live CLI/backfill smoke tests now prove `system_prices`, `freq`, and `bmunits_reference` flow through user-facing commands without polluting normal project data on verified runs.
 
 ### Blockers
 

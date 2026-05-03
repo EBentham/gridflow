@@ -27,14 +27,14 @@
 
 ### CLI and Backfill
 
-- [ ] **ELEXON-CLI-01**: Developer can run a live `gridflow pipeline elexon ...` smoke test against a safe curated Elexon dataset subset and see bronze and silver output directories created under a temporary data root.
-- [ ] **ELEXON-CLI-02**: Developer can run live `gridflow ingest elexon ...` followed by `gridflow transform elexon ...` against isolated temp config/data paths and see failures reported per dataset with non-zero exit on real errors.
-- [ ] **ELEXON-CLI-03**: Developer can run a live Elexon backfill smoke test for at least one path-date, one publish-datetime/from-to, and one no-param/reference dataset without polluting the normal project data directory.
+- [x] **ELEXON-CLI-01**: Developer can run a live `gridflow pipeline elexon ...` smoke test against a safe curated Elexon dataset subset and see bronze and silver output directories created under a temporary data root.
+- [x] **ELEXON-CLI-02**: Developer can run live `gridflow ingest elexon ...` followed by `gridflow transform elexon ...` against isolated temp config/data paths and see failures reported per dataset with non-zero exit on real errors.
+- [x] **ELEXON-CLI-03**: Developer can run a live Elexon backfill smoke test for at least one path-date, one publish-datetime/from-to, and one no-param/reference dataset without polluting the normal project data directory.
 
 ### Documentation and Close-Out
 
-- [ ] **ELEXON-DOC-01**: Elexon live test commands, selected live dataset windows, expected skips, and troubleshooting notes are documented in phase artifacts.
-- [ ] **ELEXON-DOC-02**: Requirements and roadmap traceability show which phase owns every Elexon validation requirement.
+- [x] **ELEXON-DOC-01**: Elexon live test commands, selected live dataset windows, expected skips, and troubleshooting notes are documented in phase artifacts.
+- [x] **ELEXON-DOC-02**: Requirements and roadmap traceability show which phase owns every Elexon validation requirement.
 
 ## Future Requirements
 
@@ -73,11 +73,11 @@
 | ELEXON-LIVE-03 | Phase I3 | Complete |
 | ELEXON-LIVE-04 | Phase I3 | Complete |
 | ELEXON-LIVE-05 | Phase I3 | Complete |
-| ELEXON-CLI-01 | Phase I4 | Pending |
-| ELEXON-CLI-02 | Phase I4 | Pending |
-| ELEXON-CLI-03 | Phase I4 | Pending |
-| ELEXON-DOC-01 | Phase I4 | Pending |
-| ELEXON-DOC-02 | Phase I4 | Pending |
+| ELEXON-CLI-01 | Phase I4 | Complete |
+| ELEXON-CLI-02 | Phase I4 | Complete |
+| ELEXON-CLI-03 | Phase I4 | Complete |
+| ELEXON-DOC-01 | Phase I4 | Complete |
+| ELEXON-DOC-02 | Phase I4 | Complete |
 
 **Coverage:**
 - v0.4 requirements: 16 total
@@ -86,4 +86,4 @@
 
 ---
 *Requirements defined: 2026-05-03*
-*Last updated: 2026-05-04 after Phase I3 completion*
+*Last updated: 2026-05-04 after Phase I4 completion*
