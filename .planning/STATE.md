@@ -1,7 +1,7 @@
 ---
 milestone: v0.4
 milestone_name: Elexon Pipeline Validation
-status: planning
+status: ready_to_execute
 progress:
   phases_total: 4
   phases_complete: 0
@@ -11,29 +11,29 @@ progress:
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: v0.4 Elexon Pipeline Validation initialized
-Last activity: 2026-05-03 - Milestone v0.4 started
+Phase: I1 - Elexon inventory, test scaffolding, and request-style baseline
+Plan: .planning/phases/I1-elexon-inventory-test-scaffolding/I1-01-PLAN.md
+Status: Phase I1 planned and ready to execute
+Last activity: 2026-05-03 - Phase I1 plan created
 
 ## Project Reference
 
 See: .planning/PROJECT.md (updated 2026-05-03)
 
 **Core value:** Every connector reliably fetches real data and every silver transformer
-produces schema-valid output — verified end-to-end, not just in unit tests.
+produces schema-valid output - verified end-to-end, not just in unit tests.
 **Current focus:** v0.4 Elexon Pipeline Validation
 
 ## Accumulated Context
 
 ### Decisions
 
-- `all` as a positional dataset argument is a recurring UX confusion — treat it as `--all` rather than erroring
-- Live tests must be opt-in (`@pytest.mark.live`) so they don't run in CI without an API key
-- H1 implemented the `all` positional alias centrally in `_resolve_datasets`; keep future CLI dataset aliases in the shared helper
-- H2 uses mocked `respx` URL-shape tests plus fixture-backed bronze-to-silver runs to validate ENTSO-E without touching the live API
-- H3 added a pytest collection gate so live-marked tests only execute when selected with `-m live`, even if local credentials are present
-- H3 changed ENTSO-E CLI ingest/transform failure handling to finish attempted datasets, report failed dataset names, and exit non-zero
+- `all` as a positional dataset argument is a recurring UX confusion - treat it as `--all` rather than erroring.
+- Live tests must be opt-in (`@pytest.mark.live`) so they do not run in CI without explicit selection.
+- H1 implemented the `all` positional alias centrally in `_resolve_datasets`; keep future CLI dataset aliases in the shared helper.
+- H2 uses mocked `respx` URL-shape tests plus fixture-backed bronze-to-silver runs to validate ENTSO-E without touching the live API.
+- H3 added a pytest collection gate so live-marked tests only execute when selected with `-m live`, even if local credentials are present.
+- H3 changed ENTSO-E CLI ingest/transform failure handling to finish attempted datasets, report failed dataset names, and exit non-zero.
 - H4 treats the official ENTSO-E Postman collection as the endpoint inventory source for URL-shape and missing-source coverage.
 - H4 request construction must be endpoint-metadata-driven; ENTSO-E area parameter names are not interchangeable across load, generation, outage, balancing, and transmission endpoints.
 - H4-02 uses `docs/entsoe_endpoint_catalog.yaml` as the auditable source of truth for implemented/planned/deferred/excluded ENTSO-E endpoint coverage.
@@ -45,6 +45,7 @@ produces schema-valid output — verified end-to-end, not just in unit tests.
 - H7 keeps transmission net-position impact, transmission available capacity, and fallback outage variants deferred because they need separate interpretation/schema passes beyond the primary outage rows.
 - H8 adds balancing state, bid, aggregated bid, procured capacity, cross-zonal capacity, and financial balancing sources with H8-specific metadata preserved in silver output.
 - H8 keeps balancing archive variants, SO GL, and implementation-framework balancing extensions deferred with H9/backlog reasons.
+- I1 planned: Elexon inventory contract, explicit exclusions, request-style baseline, and live-test diagnostics scope.
 
 ### Roadmap Evolution
 
@@ -59,6 +60,7 @@ produces schema-valid output — verified end-to-end, not just in unit tests.
 - H7 completed: primary outage datasets implemented, endpoint catalog synchronized, and H7 live request-shape probes pass.
 - H8 completed: six balancing-extension datasets implemented, endpoint catalog synchronized, and H8 live request-shape probes pass.
 - v0.4 started: Elexon validation will mirror the ENTSO-E testing shape while accounting for Elexon's public JSON API, no-key auth model, and distinct parameter styles.
+- I1 planned: first execution plan created for inventory alignment and live-test scaffolding.
 
 ### Blockers
 
