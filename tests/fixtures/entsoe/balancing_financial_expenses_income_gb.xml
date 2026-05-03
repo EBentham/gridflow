@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Publication_MarketDocument xmlns="urn:iec62325.351:tc57wg16:451-3:publicationdocument:7:3">
+  <mRID>fixture-balancing-financial-expenses-income-gb-20240115</mRID>
+  <revisionNumber>1</revisionNumber>
+  <type>A87</type>
+  <TimeSeries>
+    <mRID>financial-1</mRID>
+    <businessType>B10</businessType>
+    <controlArea_Domain.mRID codingScheme="A01">10YGB----------A</controlArea_Domain.mRID>
+    <Period>
+      <timeInterval>
+        <start>2024-01-15T00:00Z</start>
+        <end>2024-01-15T02:00Z</end>
+      </timeInterval>
+      <resolution>PT60M</resolution>
+      <Point>
+        <position>1</position>
+        <price.amount>35.5</price.amount>
+      </Point>
+      <Point>
+        <position>2</position>
+        <price.amount>37.25</price.amount>
+      </Point>
+    </Period>
+  </TimeSeries>
+</Publication_MarketDocument>

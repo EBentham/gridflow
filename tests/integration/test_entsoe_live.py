@@ -437,6 +437,12 @@ class TestEntsoeLiveAllDatasets:
             "outages_transmission",
             "outages_offshore_grid",
             "outages_production",
+            "current_balancing_state",
+            "balancing_energy_bids",
+            "aggregated_balancing_energy_bids",
+            "procured_balancing_capacity",
+            "cross_zonal_balancing_capacity",
+            "balancing_financial_expenses_income",
         ],
     )
     async def test_live_request_shape_uses_supported_domain_params(
@@ -472,6 +478,10 @@ class TestEntsoeLiveAllDatasets:
                 or "outBiddingZone_Domain" in params
                 or "BiddingZone_Domain" in params
                 or "controlArea_Domain" in params
+                or "area_Domain" in params
+                or "connecting_Domain" in params
+                or "Acquiring_Domain" in params
+                or "Connecting_Domain" in params
             )
 
 

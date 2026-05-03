@@ -353,6 +353,34 @@ sources:
         process_type: "A52"
         schedule: "daily"
         max_query_days: 1
+      current_balancing_state:
+        document_type: "A86"
+        schedule: "daily"
+        max_query_days: 1
+      balancing_energy_bids:
+        document_type: "A37"
+        process_type: "A47"
+        schedule: "daily"
+        max_query_days: 1
+      aggregated_balancing_energy_bids:
+        document_type: "A24"
+        process_type: "A51"
+        schedule: "daily"
+        max_query_days: 1
+      procured_balancing_capacity:
+        document_type: "A15"
+        process_type: "A51"
+        schedule: "daily"
+        max_query_days: 1
+      cross_zonal_balancing_capacity:
+        document_type: "A38"
+        process_type: "A51"
+        schedule: "daily"
+        max_query_days: 1
+      balancing_financial_expenses_income:
+        document_type: "A87"
+        schedule: "daily"
+        max_query_days: 1
 
   gie_agsi:
     base_url: "https://agsi.gie.eu"

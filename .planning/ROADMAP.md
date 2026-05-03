@@ -111,14 +111,15 @@ See full details: [milestones/v0.2-entsoe-gaps-ROADMAP.md](milestones/v0.2-entso
   - Cross-cutting constraints: do not regress the existing `outages_generation` unit-level schema.
   - Status: H7 complete; four primary outage datasets implemented, dependent outage variants remain deferred with updated reasons, and H7 live request-shape probes passed.
 
-- [ ] **Phase H8**: ENTSO-E balancing extension data sources
+- [x] **Phase H8**: ENTSO-E balancing extension data sources - Done 2026-05-03
   - Requirements: SRC-BAL-01, SRC-BAL-02, SRC-BAL-03, SRC-BAL-04, COVER-03, LIVE-05
   - **Plans:** 1 plan
   - Plans:
-    - [ ] H8-01-PLAN.md - Add GL EB balancing state, bid, capacity, cross-zonal capacity, and financial balancing sources
+    - [x] H8-01-PLAN.md - Add GL EB balancing state, bid, capacity, cross-zonal capacity, and financial balancing sources
   - Success: Near-term planned balancing-extension catalog rows are implemented through the medallion path.
   - Success: SO GL and implementation-framework extension rows remain deferred with explicit H9/backlog reasons.
   - Cross-cutting constraints: dedicated bid/capacity parser families are introduced only when the generic time-series parser cannot represent the payload safely.
+  - Status: H8 complete; six balancing-extension datasets implemented, high-volume bid/capacity endpoints use default offset paging for live compatibility, and H8 live request-shape probes passed.
 
 ---
 

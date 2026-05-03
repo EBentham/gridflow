@@ -313,6 +313,55 @@ DOC_TYPES: dict[str, EntsoeDocType] = {
         # Postman catalog listing it as optional). A01=daily products.
         extra_params={"businessType": "B95", "Type_MarketAgreement.Type": "A01"},
     ),
+    # Phase H8 additions - balancing extension datasets
+    "current_balancing_state": EntsoeDocType(
+        "A86",
+        None,
+        "Current balancing state",
+        domain_params=("area_Domain",),
+        extra_params={"businessType": "B33"},
+    ),
+    "balancing_energy_bids": EntsoeDocType(
+        "A37",
+        "A47",
+        "Balancing energy bids",
+        domain_params=("connecting_Domain",),
+        extra_params={"businessType": "B74", "offset": "0"},
+        optional_params=(
+            "Direction",
+            "Original_MarketProduct",
+            "Standard_MarketProduct",
+            "offset",
+        ),
+    ),
+    "aggregated_balancing_energy_bids": EntsoeDocType(
+        "A24",
+        "A51",
+        "Aggregated balancing energy bids",
+        domain_params=("area_Domain",),
+    ),
+    "procured_balancing_capacity": EntsoeDocType(
+        "A15",
+        "A51",
+        "Procured balancing capacity",
+        domain_params=("area_Domain",),
+        extra_params={"offset": "0"},
+        optional_params=("Type_MarketAgreement.Type", "offset"),
+    ),
+    "cross_zonal_balancing_capacity": EntsoeDocType(
+        "A38",
+        "A51",
+        "Allocation and use of cross-zonal balancing capacity",
+        domain_style="zone_pair",
+        domain_params=("Acquiring_Domain", "Connecting_Domain"),
+        optional_params=("Type_MarketAgreement.Type",),
+    ),
+    "balancing_financial_expenses_income": EntsoeDocType(
+        "A87",
+        None,
+        "Financial expenses and income for balancing",
+        domain_style="control_area",
+    ),
 }
 
 # EIC (Energy Identification Codes) for key bidding zones

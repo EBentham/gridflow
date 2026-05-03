@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Balancing_MarketDocument xmlns="urn:iec62325.351:tc57wg16:451-6:balancingdocument:4:0">
+  <mRID>fixture-balancing-energy-bids-gb-20240115</mRID>
+  <revisionNumber>1</revisionNumber>
+  <type>A37</type>
+  <process.processType>A47</process.processType>
+  <TimeSeries>
+    <mRID>bid-1</mRID>
+    <businessType>B74</businessType>
+    <Direction>A01</Direction>
+    <Original_MarketProduct>
+      <marketProductType>A01</marketProductType>
+    </Original_MarketProduct>
+    <Standard_MarketProduct>
+      <marketProductType>A05</marketProductType>
+    </Standard_MarketProduct>
+    <connecting_Domain.mRID codingScheme="A01">10YGB----------A</connecting_Domain.mRID>
+    <Period>
+      <timeInterval>
+        <start>2024-01-15T00:00Z</start>
+        <end>2024-01-15T02:00Z</end>
+      </timeInterval>
+      <resolution>PT60M</resolution>
+      <Point>
+        <position>1</position>
+        <quantity>45</quantity>
+      </Point>
+      <Point>
+        <position>2</position>
+        <quantity>52</quantity>
+      </Point>
+    </Period>
+  </TimeSeries>
+</Balancing_MarketDocument>

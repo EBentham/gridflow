@@ -29,6 +29,14 @@ from gridflow.silver.entsoe.h6_market import (
     TotalNominatedCapacityTransformer,
     TransferCapacityUseTransformer,
 )
+from gridflow.silver.entsoe.h8_balancing import (
+    AggregatedBalancingEnergyBidsTransformer,
+    BalancingEnergyBidsTransformer,
+    BalancingFinancialExpensesIncomeTransformer,
+    CrossZonalBalancingCapacityTransformer,
+    CurrentBalancingStateTransformer,
+    ProcuredBalancingCapacityTransformer,
+)
 from gridflow.silver.entsoe.imbalance_prices import ImbalancePricesTransformer
 from gridflow.silver.entsoe.imbalance_volume import ImbalanceVolumeTransformer
 from gridflow.silver.entsoe.installed_capacity import InstalledCapacityTransformer
@@ -92,4 +100,10 @@ __all__ = [
     "CongestionManagementCostsTransformer",
     "AuctionRevenueTransformer",
     "CongestionIncomeTransformer",
+    "CurrentBalancingStateTransformer",
+    "BalancingEnergyBidsTransformer",
+    "AggregatedBalancingEnergyBidsTransformer",
+    "ProcuredBalancingCapacityTransformer",
+    "CrossZonalBalancingCapacityTransformer",
+    "BalancingFinancialExpensesIncomeTransformer",
 ]

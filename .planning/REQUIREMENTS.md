@@ -32,8 +32,8 @@
 - [x] **DOC-01**: Official ENTSO-E endpoint collection is represented as an auditable catalog or gap matrix in the repo - Phase H4
 - [x] **COVER-01**: Every endpoint in the official collection is classified as implemented, planned, intentionally deferred, or out of scope - Phase H4
 - [x] **COVER-02**: First high-priority missing ENTSO-E source batch is implemented through metadata, parser, schema, transformer, mocked E2E, and live request-shape gates - Phase H4
-- [ ] **COVER-03**: Remaining planned ENTSO-E catalog rows are implemented or intentionally reclassified with a reason and owner batch - Phases H5-H8
-- [ ] **LIVE-05**: Opt-in live request-shape probes cover every newly implemented H5-H8 request family without leaking `ENTSOE_API_KEY`
+- [x] **COVER-03**: Remaining planned ENTSO-E catalog rows are implemented or intentionally reclassified with a reason and owner batch - Phases H5-H8
+- [x] **LIVE-05**: Opt-in live request-shape probes cover every newly implemented H5-H8 request family without leaking `ENTSOE_API_KEY`
 - [x] **SRC-GEN-01**: Installed capacity per production unit is available as `installed_capacity_units` with unit identity fields - Phase H5
 - [x] **SRC-GEN-02**: Actual generation per generation unit is available as `actual_generation_units` with unit identity fields - Phase H5
 - [x] **SRC-GEN-03**: Water reservoirs and hydro storage plants are available as `water_reservoirs` - Phase H5
@@ -45,10 +45,10 @@
 - [x] **SRC-OUT-01**: Aggregated consumption outage data is available as `outages_consumption` - Phase H7
 - [x] **SRC-OUT-02**: Transmission and offshore-grid outage data are available as `outages_transmission` and `outages_offshore_grid` - Phase H7
 - [x] **SRC-OUT-03**: Production-unit outage data is available as `outages_production` - Phase H7
-- [ ] **SRC-BAL-01**: Current balancing state and balancing financial expenses/income are available as silver datasets - Phase H8
-- [ ] **SRC-BAL-02**: Balancing energy bid datasets are implemented or split with explicit parser-backed deferral reasons - Phase H8
-- [ ] **SRC-BAL-03**: Procured balancing capacity and cross-zonal balancing capacity are available as silver datasets - Phase H8
-- [ ] **SRC-BAL-04**: SO GL and implementation-framework balancing extensions remain intentionally deferred unless promoted by updated project scope - Phase H8
+- [x] **SRC-BAL-01**: Current balancing state and balancing financial expenses/income are available as silver datasets - Phase H8
+- [x] **SRC-BAL-02**: Balancing energy bid datasets are implemented or split with explicit parser-backed deferral reasons - Phase H8
+- [x] **SRC-BAL-03**: Procured balancing capacity and cross-zonal balancing capacity are available as silver datasets - Phase H8
+- [x] **SRC-BAL-04**: SO GL and implementation-framework balancing extensions remain intentionally deferred unless promoted by updated project scope - Phase H8
 
 ## Future Requirements
 
@@ -86,8 +86,8 @@
 | DOC-01 | Phase H4 | Complete |
 | COVER-01 | Phase H4 | Complete |
 | COVER-02 | Phase H4 | Complete for first load-domain batch; remaining batches tracked in endpoint catalog |
-| COVER-03 | Phases H5-H8 | Partial - H5-H7 rows implemented or reclassified; H8 remains planned |
-| LIVE-05 | Phases H5-H8 | Partial - H5-H7 request-shape gates passed; H8 remains planned |
+| COVER-03 | Phases H5-H8 | Complete - H5-H8 rows implemented or reclassified with catalog reasons |
+| LIVE-05 | Phases H5-H8 | Complete - H5-H8 request-shape gates passed |
 | SRC-GEN-01 | Phase H5 | Complete |
 | SRC-GEN-02 | Phase H5 | Complete |
 | SRC-GEN-03 | Phase H5 | Complete |
@@ -99,10 +99,10 @@
 | SRC-OUT-01 | Phase H7 | Complete |
 | SRC-OUT-02 | Phase H7 | Complete |
 | SRC-OUT-03 | Phase H7 | Complete |
-| SRC-BAL-01 | Phase H8 | Planned |
-| SRC-BAL-02 | Phase H8 | Planned |
-| SRC-BAL-03 | Phase H8 | Planned |
-| SRC-BAL-04 | Phase H8 | Planned |
+| SRC-BAL-01 | Phase H8 | Complete |
+| SRC-BAL-02 | Phase H8 | Complete |
+| SRC-BAL-03 | Phase H8 | Complete |
+| SRC-BAL-04 | Phase H8 | Complete |
 
 **Coverage:**
 - v0.3 requirements: 33 total
@@ -111,4 +111,4 @@
 
 ---
 *Requirements defined: 2026-05-02*
-*Last updated: 2026-05-03 after Phase H6 transmission/market sources*
+*Last updated: 2026-05-03 after Phase H8 balancing extension sources*

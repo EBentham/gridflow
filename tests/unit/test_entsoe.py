@@ -25,8 +25,13 @@ from gridflow.schemas.entsoe import (
     EntsoeActualGeneration,
     EntsoeActualGenerationUnits,
     EntsoeActualLoad,
+    EntsoeBalancingCapacity,
+    EntsoeBalancingEnergyBid,
+    EntsoeBalancingFinancial,
+    EntsoeBalancingState,
     EntsoeContractedReserves,
     EntsoeCrossborderFlow,
+    EntsoeCrossZonalBalancingCapacity,
     EntsoeDayAheadPrice,
     EntsoeForecastMargin,
     EntsoeGenerationForecast,
@@ -67,6 +72,14 @@ from gridflow.silver.entsoe.h6_market import (
     CongestionManagementCostsTransformer,
     DcLinkIntradayTransferLimitsTransformer,
     OfferedTransferCapacityContinuousTransformer,
+)
+from gridflow.silver.entsoe.h8_balancing import (
+    AggregatedBalancingEnergyBidsTransformer,
+    BalancingEnergyBidsTransformer,
+    BalancingFinancialExpensesIncomeTransformer,
+    CrossZonalBalancingCapacityTransformer,
+    CurrentBalancingStateTransformer,
+    ProcuredBalancingCapacityTransformer,
 )
 from gridflow.silver.entsoe.imbalance_prices import ImbalancePricesTransformer
 from gridflow.silver.entsoe.imbalance_volume import ImbalanceVolumeTransformer
@@ -2369,3 +2382,180 @@ class TestEntsoeTransmissionMarketAmountSchema:
 
         assert record.data_provider == "entsoe"
         assert record.amount_eur == 42.50
+
+
+# ---------------------------------------------------------------------------
+# Phase H8 - balancing extension sources
+# ---------------------------------------------------------------------------
+
+
+class TestPhaseH8Endpoints:
+    def test_h8_doc_types_populated(self):
+        for name in (
+            "current_balancing_state",
+            "balancing_energy_bids",
+            "aggregated_balancing_energy_bids",
+            "procured_balancing_capacity",
+            "cross_zonal_balancing_capacity",
+            "balancing_financial_expenses_income",
+        ):
+            assert name in DOC_TYPES, f"{name} missing from DOC_TYPES"
+
+    def test_h8_metadata_preserves_documented_domain_params(self):
+        assert DOC_TYPES["current_balancing_state"].domain_params == ("area_Domain",)
+        assert DOC_TYPES["balancing_energy_bids"].domain_params == (
+            "connecting_Domain",
+        )
+        assert DOC_TYPES["cross_zonal_balancing_capacity"].domain_params == (
+            "Acquiring_Domain",
+            "Connecting_Domain",
+        )
+
+    def test_h8_optional_filters_preserve_documented_casing(self):
+        assert DOC_TYPES["balancing_energy_bids"].optional_params == (
+            "Direction",
+            "Original_MarketProduct",
+            "Standard_MarketProduct",
+            "offset",
+        )
+        assert DOC_TYPES["procured_balancing_capacity"].optional_params == (
+            "Type_MarketAgreement.Type",
+            "offset",
+        )
+
+
+class TestPhaseH8Parser:
+    def test_parser_extracts_bid_metadata(self):
+        records = parse_timeseries_xml(
+            (FIXTURES / "balancing_energy_bids_gb.xml").read_bytes(),
+            value_tag="quantity",
+        )
+
+        assert len(records) == 2
+        assert records[0]["connecting_domain"] == "10YGB----------A"
+        assert records[0]["flow_direction"] == "A01"
+        assert records[0]["original_market_product"] == "A01"
+        assert records[0]["standard_market_product"] == "A05"
+
+    def test_parser_extracts_cross_zonal_domains(self):
+        records = parse_timeseries_xml(
+            (FIXTURES / "cross_zonal_balancing_capacity_gb_fr.xml").read_bytes(),
+            value_tag="quantity",
+        )
+
+        assert len(records) == 2
+        assert records[0]["acquiring_domain"] == "10YGB----------A"
+        assert records[0]["connecting_domain"] == "10YFR-RTE------C"
+        assert records[0]["market_agreement_type"] == "A01"
+
+
+class TestPhaseH8BalancingTransformers:
+    def test_current_balancing_state_transformer(self):
+        raw = _make_df_from_xml("current_balancing_state_gb.xml", "quantity")
+        transformer = _make_entsoe_transformer(CurrentBalancingStateTransformer)
+
+        result = transformer.transform(raw)
+
+        assert not result.is_empty()
+        assert {"area_code", "quantity_mw", "business_type"}.issubset(result.columns)
+        assert result["area_code"][0] == "10YGB----------A"
+        assert abs(result["quantity_mw"][0] - 125) < 0.1
+
+    def test_balancing_energy_bids_transformer_preserves_bid_fields(self):
+        raw = _make_df_from_xml("balancing_energy_bids_gb.xml", "quantity")
+        transformer = _make_entsoe_transformer(BalancingEnergyBidsTransformer)
+
+        result = transformer.transform(raw)
+
+        assert not result.is_empty()
+        assert result["area_code"][0] == "10YGB----------A"
+        assert result["bid_mrid"][0] == "bid-1"
+        assert result["direction"][0] == "A01"
+        assert result["standard_market_product"][0] == "A05"
+
+    def test_aggregated_bid_transformer_uses_area_domain(self):
+        raw = _make_df_from_xml("aggregated_balancing_energy_bids_gb.xml", "quantity")
+        transformer = _make_entsoe_transformer(
+            AggregatedBalancingEnergyBidsTransformer
+        )
+
+        result = transformer.transform(raw)
+
+        assert not result.is_empty()
+        assert result["area_code"][0] == "10YGB----------A"
+        assert result["bid_mrid"][0] == "aggregated-bid-1"
+
+    def test_procured_capacity_transformer_preserves_market_agreement(self):
+        raw = _make_df_from_xml("procured_balancing_capacity_gb.xml", "quantity")
+        transformer = _make_entsoe_transformer(ProcuredBalancingCapacityTransformer)
+
+        result = transformer.transform(raw)
+
+        assert not result.is_empty()
+        assert result["area_code"][0] == "10YGB----------A"
+        assert result["market_agreement_type"][0] == "A01"
+        assert abs(result["quantity_mw"][0] - 500) < 0.1
+
+    def test_cross_zonal_capacity_transformer_preserves_both_domains(self):
+        raw = _make_df_from_xml("cross_zonal_balancing_capacity_gb_fr.xml", "quantity")
+        transformer = _make_entsoe_transformer(CrossZonalBalancingCapacityTransformer)
+
+        result = transformer.transform(raw)
+
+        assert not result.is_empty()
+        assert result["acquiring_area_code"][0] == "10YGB----------A"
+        assert result["connecting_area_code"][0] == "10YFR-RTE------C"
+
+    def test_financial_transformer_uses_amount_family(self):
+        raw = _make_df_from_xml(
+            "balancing_financial_expenses_income_gb.xml",
+            "price.amount",
+        )
+        transformer = _make_entsoe_transformer(
+            BalancingFinancialExpensesIncomeTransformer
+        )
+
+        result = transformer.transform(raw)
+
+        assert not result.is_empty()
+        assert "amount_eur" in result.columns
+        assert "quantity_mw" not in result.columns
+        assert abs(result["amount_eur"][0] - 35.5) < 0.01
+
+
+class TestPhaseH8Schemas:
+    _TS = datetime(2024, 1, 15, 0, 0, tzinfo=UTC)
+
+    def test_single_area_schemas(self):
+        assert EntsoeBalancingState(
+            timestamp_utc=self._TS,
+            area_code="10YGB----------A",
+            quantity_mw=125.0,
+        ).data_provider == "entsoe"
+        assert EntsoeBalancingEnergyBid(
+            timestamp_utc=self._TS,
+            area_code="10YGB----------A",
+            quantity_mw=45.0,
+            bid_mrid="bid-1",
+        ).bid_mrid == "bid-1"
+        assert EntsoeBalancingCapacity(
+            timestamp_utc=self._TS,
+            area_code="10YGB----------A",
+            quantity_mw=500.0,
+        ).quantity_mw == 500.0
+        assert EntsoeBalancingFinancial(
+            timestamp_utc=self._TS,
+            area_code="10YGB----------A",
+            amount_eur=35.5,
+        ).amount_eur == 35.5
+
+    def test_cross_zonal_capacity_schema(self):
+        record = EntsoeCrossZonalBalancingCapacity(
+            timestamp_utc=self._TS,
+            acquiring_area_code="10YGB----------A",
+            connecting_area_code="10YFR-RTE------C",
+            quantity_mw=210.0,
+        )
+
+        assert record.data_provider == "entsoe"
+        assert record.connecting_area_code == "10YFR-RTE------C"

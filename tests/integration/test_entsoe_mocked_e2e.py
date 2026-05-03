@@ -43,6 +43,14 @@ from gridflow.silver.entsoe.h6_market import (
     TotalNominatedCapacityTransformer,
     TransferCapacityUseTransformer,
 )
+from gridflow.silver.entsoe.h8_balancing import (
+    AggregatedBalancingEnergyBidsTransformer,
+    BalancingEnergyBidsTransformer,
+    BalancingFinancialExpensesIncomeTransformer,
+    CrossZonalBalancingCapacityTransformer,
+    CurrentBalancingStateTransformer,
+    ProcuredBalancingCapacityTransformer,
+)
 from gridflow.silver.entsoe.imbalance_prices import ImbalancePricesTransformer
 from gridflow.silver.entsoe.installed_capacity_units import InstalledCapacityUnitsTransformer
 from gridflow.silver.entsoe.load_forecast_monthly import LoadForecastMonthlyTransformer
@@ -67,6 +75,7 @@ ZONE_PAIR_DATASETS = {
     "congestion_income",
     "countertrading",
     "cross_border_flows",
+    "cross_zonal_balancing_capacity",
     "dc_link_intraday_transfer_limits",
     "net_transfer_capacity",
     "outages_transmission",
@@ -80,9 +89,13 @@ ZONE_PAIR_DATASETS = {
     "transfer_capacity_use",
 }
 DOMAIN_PARAM_KEYS = {
+    "Acquiring_Domain",
     "BiddingZone_Domain",
+    "Connecting_Domain",
     "In_Domain",
     "Out_Domain",
+    "area_Domain",
+    "connecting_Domain",
     "controlArea_Domain",
     "in_Domain",
     "outBiddingZone_Domain",
@@ -221,7 +234,10 @@ class TestEntsoeUrlConstructionAllDatasets:
                 assert "BiddingZone_Domain" in params
                 assert DOMAIN_PARAM_KEYS.intersection(params) == {"BiddingZone_Domain"}
             else:
-                pytest.fail(f"Unhandled ENTSO-E domain style: {doc_type.domain_style}")
+                pytest.fail(
+                    f"Unhandled ENTSO-E domain style for {dataset}: "
+                    f"{doc_type.domain_style}"
+                )
 
         if dataset in ZONE_PAIR_DATASETS:
             in_key, out_key = doc_type.domain_params or ("in_Domain", "out_Domain")
@@ -608,6 +624,53 @@ class TestEntsoeBronzeToSilverPipeline:
                 CongestionIncomeTransformer,
                 {"timestamp_utc", "in_area_code", "out_area_code", "amount_eur"},
                 id="congestion_income",
+            ),
+            pytest.param(
+                "current_balancing_state",
+                "current_balancing_state_gb.xml",
+                CurrentBalancingStateTransformer,
+                {"timestamp_utc", "area_code", "quantity_mw"},
+                id="current_balancing_state",
+            ),
+            pytest.param(
+                "balancing_energy_bids",
+                "balancing_energy_bids_gb.xml",
+                BalancingEnergyBidsTransformer,
+                {"timestamp_utc", "area_code", "bid_mrid", "quantity_mw"},
+                id="balancing_energy_bids",
+            ),
+            pytest.param(
+                "aggregated_balancing_energy_bids",
+                "aggregated_balancing_energy_bids_gb.xml",
+                AggregatedBalancingEnergyBidsTransformer,
+                {"timestamp_utc", "area_code", "bid_mrid", "quantity_mw"},
+                id="aggregated_balancing_energy_bids",
+            ),
+            pytest.param(
+                "procured_balancing_capacity",
+                "procured_balancing_capacity_gb.xml",
+                ProcuredBalancingCapacityTransformer,
+                {"timestamp_utc", "area_code", "market_agreement_type", "quantity_mw"},
+                id="procured_balancing_capacity",
+            ),
+            pytest.param(
+                "cross_zonal_balancing_capacity",
+                "cross_zonal_balancing_capacity_gb_fr.xml",
+                CrossZonalBalancingCapacityTransformer,
+                {
+                    "timestamp_utc",
+                    "acquiring_area_code",
+                    "connecting_area_code",
+                    "quantity_mw",
+                },
+                id="cross_zonal_balancing_capacity",
+            ),
+            pytest.param(
+                "balancing_financial_expenses_income",
+                "balancing_financial_expenses_income_gb.xml",
+                BalancingFinancialExpensesIncomeTransformer,
+                {"timestamp_utc", "area_code", "amount_eur"},
+                id="balancing_financial_expenses_income",
             ),
         ],
     )

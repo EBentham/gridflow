@@ -4,17 +4,17 @@ milestone_name: ENTSO-E Pipeline Validation
 status: active
 progress:
   phases_total: 9
-  phases_complete: 7
+  phases_complete: 8
   plans_total: 11
-  plans_complete: 10
+  plans_complete: 11
 ---
 
 ## Current Position
 
 Phase: H8 - ENTSO-E balancing extension data sources
-Plan: H8-01 next
-Status: Ready to execute H8 after H7 outage source completion
-Last activity: 2026-05-03 - H7 complete; targeted non-live and live request-shape gates pass
+Plan: H8-01 complete
+Status: H8 complete; v0.3 ready for milestone-level audit with H3 credentialed full-live verification still noted
+Last activity: 2026-05-03 - H8 complete; non-live and live request-shape gates pass
 
 ## Project Reference
 
@@ -43,6 +43,8 @@ produces schema-valid output — verified end-to-end, not just in unit tests.
 - H6 defers `flow_based_allocations` because B09 allocation documents need dedicated parser/schema review rather than the generic TimeSeries transformer path.
 - H7 adds primary consumption, transmission, offshore-grid, and production outage sources with document/status/asset metadata preserved in silver output.
 - H7 keeps transmission net-position impact, transmission available capacity, and fallback outage variants deferred because they need separate interpretation/schema passes beyond the primary outage rows.
+- H8 adds balancing state, bid, aggregated bid, procured capacity, cross-zonal capacity, and financial balancing sources with H8-specific metadata preserved in silver output.
+- H8 keeps balancing archive variants, SO GL, and implementation-framework balancing extensions deferred with H9/backlog reasons.
 
 ### Roadmap Evolution
 
@@ -55,6 +57,7 @@ produces schema-valid output — verified end-to-end, not just in unit tests.
 - H5.5 completed: active ENTSO-E live suite passes; A83 activated balancing quantity is deferred for H8/default-control-area strategy.
 - H6 completed: 16 transmission/market datasets implemented and live request-shape probes pass for representative H6 families.
 - H7 completed: primary outage datasets implemented, endpoint catalog synchronized, and H7 live request-shape probes pass.
+- H8 completed: six balancing-extension datasets implemented, endpoint catalog synchronized, and H8 live request-shape probes pass.
 
 ### Blockers
 

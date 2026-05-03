@@ -624,10 +624,10 @@ entries:
     optional_filters: []
     max_window: 1 day
     parser_family: balancing_document
-    status: planned
+    status: implemented
     dataset: current_balancing_state
     batch: H8-balancing-extensions
-    reason: Needs GL EB balancing schema.
+    reason: null
   - domain: Balancing
     name: 12.3.B-C Balancing energy bids
     document_type: A37
@@ -635,12 +635,13 @@ entries:
     business_type: B74
     area_params: [connecting_Domain]
     optional_filters: [Direction, Original_MarketProduct, Standard_MarketProduct, offset]
+    fixed_params: {offset: 0}
     max_window: 1 day
     parser_family: balancing_bid_document
-    status: planned
+    status: implemented
     dataset: balancing_energy_bids
     batch: H8-balancing-extensions
-    reason: Bid payload needs dedicated parser.
+    reason: null
   - domain: Balancing
     name: 12.3.B-C Balancing energy bids archives
     document_type: A37
@@ -663,10 +664,10 @@ entries:
     optional_filters: []
     max_window: 1 day
     parser_family: balancing_bid_document
-    status: planned
+    status: implemented
     dataset: aggregated_balancing_energy_bids
     batch: H8-balancing-extensions
-    reason: Needs GL EB balancing schema.
+    reason: null
   - domain: Balancing
     name: 12.3.F Procured balancing capacity
     document_type: A15
@@ -674,12 +675,13 @@ entries:
     business_type: null
     area_params: [area_Domain]
     optional_filters: [Type_MarketAgreement.Type, offset]
+    fixed_params: {offset: 0}
     max_window: 1 day
     parser_family: balancing_capacity_document
-    status: planned
+    status: implemented
     dataset: procured_balancing_capacity
     batch: H8-balancing-extensions
-    reason: Needs GL EB balancing schema.
+    reason: null
   - domain: Balancing
     name: 12.3.H-I Allocation and use of cross-zonal balancing capacity
     document_type: A38
@@ -689,10 +691,10 @@ entries:
     optional_filters: [Type_MarketAgreement.Type]
     max_window: 1 day
     parser_family: balancing_capacity_document
-    status: planned
+    status: implemented
     dataset: cross_zonal_balancing_capacity
     batch: H8-balancing-extensions
-    reason: Needs cross-zonal balancing schema.
+    reason: null
   - domain: Balancing
     name: 17.1.B-C Volumes and Prices of Contracted Reserves
     document_type: A81
@@ -756,10 +758,10 @@ entries:
     optional_filters: []
     max_window: 1 day
     parser_family: price_timeseries
-    status: planned
+    status: implemented
     dataset: balancing_financial_expenses_income
     batch: H8-balancing-extensions
-    reason: Needs financial balancing schema.
+    reason: null
   - domain: Balancing
     name: 185.4 Results of the Criteria Application Process - Measurements
     document_type: A45

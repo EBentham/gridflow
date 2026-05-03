@@ -582,3 +582,105 @@ class EntsoeTransmissionMarketAmount(BaseSchema):
         if v.tzinfo is None:
             raise ValueError("timestamp_utc must be timezone-aware (UTC)")
         return v
+
+
+class EntsoeBalancingState(BaseSchema):
+    """Silver-layer schema for current balancing state quantities (A86/B33)."""
+
+    timestamp_utc: datetime
+    area_code: str
+    quantity_mw: float
+    business_type: str = "B33"
+    resolution: str = ""
+    data_provider: str = Field(default="entsoe")
+    ingested_at: datetime | None = None
+
+    @field_validator("timestamp_utc")
+    @classmethod
+    def must_be_utc(cls, v: datetime) -> datetime:
+        if v.tzinfo is None:
+            raise ValueError("timestamp_utc must be timezone-aware (UTC)")
+        return v
+
+
+class EntsoeBalancingEnergyBid(BaseSchema):
+    """Silver-layer schema for H8 balancing bid quantity documents."""
+
+    timestamp_utc: datetime
+    area_code: str
+    quantity_mw: float
+    business_type: str = ""
+    bid_mrid: str = ""
+    direction: str = ""
+    original_market_product: str = ""
+    standard_market_product: str = ""
+    resolution: str = ""
+    data_provider: str = Field(default="entsoe")
+    ingested_at: datetime | None = None
+
+    @field_validator("timestamp_utc")
+    @classmethod
+    def must_be_utc(cls, v: datetime) -> datetime:
+        if v.tzinfo is None:
+            raise ValueError("timestamp_utc must be timezone-aware (UTC)")
+        return v
+
+
+class EntsoeBalancingCapacity(BaseSchema):
+    """Silver-layer schema for H8 single-area balancing capacity quantities."""
+
+    timestamp_utc: datetime
+    area_code: str
+    quantity_mw: float
+    market_agreement_type: str = ""
+    business_type: str = ""
+    resolution: str = ""
+    data_provider: str = Field(default="entsoe")
+    ingested_at: datetime | None = None
+
+    @field_validator("timestamp_utc")
+    @classmethod
+    def must_be_utc(cls, v: datetime) -> datetime:
+        if v.tzinfo is None:
+            raise ValueError("timestamp_utc must be timezone-aware (UTC)")
+        return v
+
+
+class EntsoeCrossZonalBalancingCapacity(BaseSchema):
+    """Silver-layer schema for H8 cross-zonal balancing capacity quantities."""
+
+    timestamp_utc: datetime
+    acquiring_area_code: str
+    connecting_area_code: str
+    quantity_mw: float
+    market_agreement_type: str = ""
+    business_type: str = ""
+    resolution: str = ""
+    data_provider: str = Field(default="entsoe")
+    ingested_at: datetime | None = None
+
+    @field_validator("timestamp_utc")
+    @classmethod
+    def must_be_utc(cls, v: datetime) -> datetime:
+        if v.tzinfo is None:
+            raise ValueError("timestamp_utc must be timezone-aware (UTC)")
+        return v
+
+
+class EntsoeBalancingFinancial(BaseSchema):
+    """Silver-layer schema for financial expenses and income for balancing (A87)."""
+
+    timestamp_utc: datetime
+    area_code: str
+    amount_eur: float
+    business_type: str = ""
+    resolution: str = ""
+    data_provider: str = Field(default="entsoe")
+    ingested_at: datetime | None = None
+
+    @field_validator("timestamp_utc")
+    @classmethod
+    def must_be_utc(cls, v: datetime) -> datetime:
+        if v.tzinfo is None:
+            raise ValueError("timestamp_utc must be timezone-aware (UTC)")
+        return v

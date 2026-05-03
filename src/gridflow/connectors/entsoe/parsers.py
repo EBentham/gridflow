@@ -121,12 +121,15 @@ def parse_timeseries_xml(
         # Extract domain codes and metadata fields
         in_domain = out_domain = production_type = ""
         control_area_domain = business_type = flow_direction = ""
+        area_domain = connecting_domain = acquiring_domain = ""
+        market_agreement_type = original_market_product = standard_market_product = ""
         unit_mrid = unit_name = ""
         timeseries_mrid = asset_mrid = asset_name = document_status = ""
         for child in ts_el:
             tag = _strip_ns(child.tag)
+            text = (child.text or "").strip()
             if tag == "mRID":
-                timeseries_mrid = (child.text or "").strip()
+                timeseries_mrid = text
             elif tag in (
                 "in_Domain.mRID",
                 "In_Domain.mRID",
@@ -135,19 +138,50 @@ def parse_timeseries_xml(
                 "BiddingZone_Domain.mRID",
                 "biddingZone_Domain.mRID",
             ):
-                in_domain = (child.text or "").strip()
+                in_domain = text
             elif tag in {"out_Domain.mRID", "Out_Domain.mRID"}:
-                out_domain = (child.text or "").strip()
+                out_domain = text
             elif tag == "controlArea_Domain.mRID":
-                control_area_domain = (child.text or "").strip()
+                control_area_domain = text
+            elif tag in {"area_Domain.mRID", "Area_Domain.mRID", "area_domain.mRID"}:
+                area_domain = text
+            elif tag in {"connecting_Domain.mRID", "Connecting_Domain.mRID"}:
+                connecting_domain = text
+            elif tag in {"acquiring_Domain.mRID", "Acquiring_Domain.mRID"}:
+                acquiring_domain = text
             elif tag == "businessType":
-                business_type = (child.text or "").strip()
+                business_type = text
             elif tag in {"docStatus", "docStatus.value"}:
-                document_status = (child.text or "").strip() or _first_child_text(
-                    child, {"value"}
-                )
+                document_status = text or _first_child_text(child, {"value"})
             elif tag == "flowDirection.direction":
-                flow_direction = (child.text or "").strip()
+                flow_direction = text
+            elif tag in {"Direction", "direction", "flowDirection"}:
+                flow_direction = text or _first_child_text(child, {"direction", "value"})
+            elif tag in {
+                "Type_MarketAgreement.Type",
+                "type_MarketAgreement.Type",
+                "MarketAgreement.Type",
+                "marketAgreement.Type",
+            }:
+                market_agreement_type = text
+            elif tag in {"Type_MarketAgreement", "type_MarketAgreement"}:
+                market_agreement_type = _first_child_text(child, {"type", "Type"})
+            elif tag in {
+                "Original_MarketProduct",
+                "original_MarketProduct",
+                "original_MarketProduct.marketProductType",
+            }:
+                original_market_product = text or _first_child_text(
+                    child, {"marketProductType", "type", "Type"}
+                )
+            elif tag in {
+                "Standard_MarketProduct",
+                "standard_MarketProduct",
+                "standard_MarketProduct.marketProductType",
+            }:
+                standard_market_product = text or _first_child_text(
+                    child, {"marketProductType", "type", "Type"}
+                )
             elif tag == "MktPSRType":
                 for sub in child:
                     if _strip_ns(sub.tag) == "psrType":
@@ -242,8 +276,14 @@ def parse_timeseries_xml(
                     "out_domain": out_domain,
                     "production_type": production_type,
                     "control_area_domain": control_area_domain,
+                    "area_domain": area_domain,
+                    "connecting_domain": connecting_domain,
+                    "acquiring_domain": acquiring_domain,
                     "business_type": business_type,
                     "flow_direction": flow_direction,
+                    "market_agreement_type": market_agreement_type,
+                    "original_market_product": original_market_product,
+                    "standard_market_product": standard_market_product,
                     "resolution": str(resolution),
                     "unit_mrid": unit_mrid,
                     "unit_name": unit_name,
