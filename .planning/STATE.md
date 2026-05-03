@@ -1,20 +1,20 @@
 ---
-milestone: v0.3
-milestone_name: ENTSO-E Pipeline Validation
-status: shipped
+milestone: v0.4
+milestone_name: Elexon Pipeline Validation
+status: planning
 progress:
-  phases_total: 9
-  phases_complete: 9
-  plans_total: 11
-  plans_complete: 11
+  phases_total: 4
+  phases_complete: 0
+  plans_total: 4
+  plans_complete: 0
 ---
 
 ## Current Position
 
-Phase: v0.3 milestone close
-Plan: H1-H8 complete
-Status: v0.3 shipped; close-out artifacts acknowledged as deferred
-Last activity: 2026-05-03 - v0.3 archived and prepared for next milestone planning
+Phase: Not started (defining requirements)
+Plan: —
+Status: v0.4 Elexon Pipeline Validation initialized
+Last activity: 2026-05-03 - Milestone v0.4 started
 
 ## Project Reference
 
@@ -22,7 +22,7 @@ See: .planning/PROJECT.md (updated 2026-05-03)
 
 **Core value:** Every connector reliably fetches real data and every silver transformer
 produces schema-valid output — verified end-to-end, not just in unit tests.
-**Current focus:** Planning next milestone
+**Current focus:** v0.4 Elexon Pipeline Validation
 
 ## Accumulated Context
 
@@ -58,6 +58,7 @@ produces schema-valid output — verified end-to-end, not just in unit tests.
 - H6 completed: 16 transmission/market datasets implemented and live request-shape probes pass for representative H6 families.
 - H7 completed: primary outage datasets implemented, endpoint catalog synchronized, and H7 live request-shape probes pass.
 - H8 completed: six balancing-extension datasets implemented, endpoint catalog synchronized, and H8 live request-shape probes pass.
+- v0.4 started: Elexon validation will mirror the ENTSO-E testing shape while accounting for Elexon's public JSON API, no-key auth model, and distinct parameter styles.
 
 ### Blockers
 

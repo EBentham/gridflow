@@ -13,6 +13,16 @@ who need reliable, normalised time-series data from disparate European market so
 Every connector reliably fetches real data and every silver transformer produces
 schema-valid output — verified end-to-end, not just in unit tests.
 
+## Current Milestone: v0.4-elexon-validation Elexon Pipeline Validation
+
+**Goal:** Build ENTSO-E-style Elexon validation that pings the live public API and proves selected real responses flow through bronze storage into schema-valid silver output.
+
+**Target features:**
+- Elexon endpoint inventory and request-shape tests aligned with configured datasets, endpoint registry, and silver transformer registration.
+- Mocked and fixture-backed Elexon bronze-to-silver tests across the major Elexon parameter styles.
+- Opt-in live tests that call the real Elexon Insights API and validate API response -> RawResponse -> BronzeWriter -> silver transformer -> parquet.
+- CLI and backfill live smoke tests that run against isolated temp config/data paths and prove user-facing commands complete without polluting local data.
+
 ## Requirements
 
 ### Validated
@@ -42,7 +52,10 @@ schema-valid output — verified end-to-end, not just in unit tests.
 
 ### Active
 
-- [ ] Extend live and mocked E2E coverage to Elexon, ENTSO-G, and GIE connectors
+- [ ] Elexon live E2E tests ping the public Insights API and prove real responses flow into silver parquet
+- [ ] Elexon mocked and fixture-backed tests cover configured endpoint parameter styles and representative transformer families
+- [ ] Elexon CLI/backfill smoke tests run through isolated temp paths and verify bronze/silver outputs
+- [ ] Extend live and mocked E2E coverage to ENTSO-G and GIE connectors
 - [ ] Decide whether to promote deferred ENTSO-E catalog rows, including B09 flow-based allocations and SO GL / implementation-framework balancing extensions
 
 ### Out of Scope
@@ -65,6 +78,8 @@ schema-valid output — verified end-to-end, not just in unit tests.
 - Mocked ENTSO-E E2E coverage now validates all implemented URL shapes and representative fixture-backed bronze-to-silver flows
 
 - ENTSO-E URL construction is endpoint-metadata-driven; load, generation, outage, balancing, and zone-pair datasets use distinct documented query parameter families.
+- Elexon Insights APIs are public and currently require no API key, but live tests still need to remain opt-in because they hit production network services.
+- Elexon connector parameter styles include path-date endpoints, publish/from-to datetime endpoints, settlementDate+settlementPeriod endpoints, and no-param reference endpoints.
 - `docs/entsoe_endpoint_catalog.yaml` is the auditable source for official Postman endpoint classification and follow-up implementation batches.
 - H5 added `date_param` request metadata for A95 reference-data endpoints that use `Implementation_DateAndOrTime=YYYY-MM-DD` instead of period windows.
 - H5.5 inserted a cleanup gate before H6 because the full credentialed ENTSO-E live suite exposed unsupported active A83 metadata for the default GB control area, zipped outage payloads, live parser tag variants, and genuine fixed-date no-data acknowledgements.
@@ -80,6 +95,7 @@ schema-valid output — verified end-to-end, not just in unit tests.
 - **Test runner**: pytest -x -q with `respx` for HTTP mocking
 - **Platform**: Windows 11 — `os.replace()` for atomic writes, forward-slash paths in tests
 - **ENTSO-E API**: requires `ENTSOE_API_KEY` env var; live tests must be opt-in (`--live`)
+- **Elexon API**: public Insights API; no key required, but live tests must be opt-in and use narrow request windows/rate limits
 - **Compatibility**: existing ENTSO-E transformers and active H1-H6 datasets must remain passing after source-batch changes
 
 ## Key Decisions
@@ -99,6 +115,7 @@ schema-valid output — verified end-to-end, not just in unit tests.
 | H8 high-volume bid/capacity endpoints default to `offset=0` | ENTSO-E rejects unpaged live calls when more than 100 instances are returned; offset keeps request-shape probes live-compatible while allowing caller override | Adopted |
 | Live tests opt-in with `--live` marker | API key not available in CI; live tests are for developer validation | ✓ Good |
 | Close v0.3 with acknowledged H3/live artifacts deferred | H5.5 and H8 live request-shape gates passed, but one H3 credentialed full-live verification record remains human-owned | Deferred |
+| Elexon v0.4 mirrors ENTSO-E validation shape | The project needs connector-agnostic confidence that live API data reaches silver, but Elexon has JSON/public/no-key semantics and distinct parameter styles | Pending |
 
 ## Evolution
 
@@ -118,4 +135,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-03 after v0.3-entsoe-validation milestone*
+*Last updated: 2026-05-03 after starting v0.4-elexon-validation milestone*
