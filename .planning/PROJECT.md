@@ -36,11 +36,11 @@ schema-valid output — verified end-to-end, not just in unit tests.
 - [x] ENTSO-E generation unit, water reservoir, and generation-unit master data sources added through the medallion path - v0.3-entsoe-validation H5
 - [x] ENTSO-E live cleanup verifies implemented H1-H5 sources against real API availability and payload formats - v0.3-entsoe-validation H5.5
 - [x] ENTSO-E transmission, commercial schedule, allocation, congestion, and market-position sources added or explicitly reclassified - v0.3-entsoe-validation H6
+- [x] ENTSO-E consumption, transmission, offshore-grid, and production outage sources added or explicitly reclassified - v0.3-entsoe-validation H7
 
 ### Active
 
-- [ ] Remaining ENTSO-E endpoint catalog batches H7-H8 are implemented as follow-up source-family batches
-  - H7: consumption, transmission, offshore-grid, and production outage sources
+- [ ] Remaining ENTSO-E endpoint catalog batch H8 is implemented as a follow-up source-family batch
   - H8: balancing state, bid, capacity, cross-zonal capacity, and financial balancing sources
 
 - [x] Live test suite hits real ENTSO-E API and validates active ENTSO-E bronze-to-silver chains, with explicit no-data skips (LIVE-01, LIVE-02, LIVE-03)
@@ -69,6 +69,7 @@ schema-valid output — verified end-to-end, not just in unit tests.
 - H5 added `date_param` request metadata for A95 reference-data endpoints that use `Implementation_DateAndOrTime=YYYY-MM-DD` instead of period windows.
 - H5.5 inserted a cleanup gate before H6 because the full credentialed ENTSO-E live suite exposed unsupported active A83 metadata for the default GB control area, zipped outage payloads, live parser tag variants, and genuine fixed-date no-data acknowledgements.
 - H6 added `optional_params` request metadata plus shared zone-pair quantity/amount transformer families for transmission and market time-series datasets; B09 `flow_based_allocations` remains deferred for dedicated parser/schema review.
+- H7 preserves outage document mRID/status and asset or unit identity metadata in the new outage silver datasets while keeping the existing `outages_generation` unit-level output stable.
 
 ## Constraints
 
@@ -88,9 +89,10 @@ schema-valid output — verified end-to-end, not just in unit tests.
 | `SchemaClass(**sample)` runtime check on all transformers | Catches schema drift before it reaches DuckDB | ✓ Good |
 | Mocked ENTSO-E E2E before live tests | Proves request construction and transformer paths without API credentials | ✓ Good |
 | Endpoint catalog as coverage source | Prevents silent ENTSO-E omissions and gives each gap an owner batch | ✓ Good |
-| H5-H8 split by source family | Keeps remaining ENTSO-E source coverage reviewable and lets parser/schema risk stay isolated by domain | Planned |
+| H5-H8 split by source family | Keeps remaining ENTSO-E source coverage reviewable and lets parser/schema risk stay isolated by domain | In progress |
 | H5.5 live cleanup before H6 | New source batches should build on a live-tested H1-H5 baseline | Adopted |
 | B09 flow-based allocations deferred in H6 | Allocation documents need dedicated parser/schema review rather than generic TimeSeries widening | Adopted |
+| H7 dependent outage variants deferred | Transmission net-position impact, available capacity, and fallback documents need separate interpretation/schema passes beyond primary outage rows | Adopted |
 | Live tests opt-in with `--live` marker | API key not available in CI; live tests are for developer validation | — Pending |
 
 ## Evolution
@@ -111,4 +113,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-03 after Phase H6 transmission/market sources*
+*Last updated: 2026-05-03 after Phase H7 outage sources*

@@ -42,9 +42,9 @@
 - [x] **SRC-TX-02**: Commercial schedule and net-position variants are implemented for H6 planned catalog rows - Phase H6
 - [x] **SRC-TX-03**: Market allocation, auction revenue, transfer-capacity use, and capacity allocated/nominated datasets are implemented for H6 planned catalog rows - Phase H6
 - [x] **SRC-TX-04**: Congestion management datasets are implemented for H6 planned catalog rows - Phase H6
-- [ ] **SRC-OUT-01**: Aggregated consumption outage data is available as `outages_consumption` - Phase H7
-- [ ] **SRC-OUT-02**: Transmission and offshore-grid outage data are available as `outages_transmission` and `outages_offshore_grid` - Phase H7
-- [ ] **SRC-OUT-03**: Production-unit outage data is available as `outages_production` - Phase H7
+- [x] **SRC-OUT-01**: Aggregated consumption outage data is available as `outages_consumption` - Phase H7
+- [x] **SRC-OUT-02**: Transmission and offshore-grid outage data are available as `outages_transmission` and `outages_offshore_grid` - Phase H7
+- [x] **SRC-OUT-03**: Production-unit outage data is available as `outages_production` - Phase H7
 - [ ] **SRC-BAL-01**: Current balancing state and balancing financial expenses/income are available as silver datasets - Phase H8
 - [ ] **SRC-BAL-02**: Balancing energy bid datasets are implemented or split with explicit parser-backed deferral reasons - Phase H8
 - [ ] **SRC-BAL-03**: Procured balancing capacity and cross-zonal balancing capacity are available as silver datasets - Phase H8
@@ -86,8 +86,8 @@
 | DOC-01 | Phase H4 | Complete |
 | COVER-01 | Phase H4 | Complete |
 | COVER-02 | Phase H4 | Complete for first load-domain batch; remaining batches tracked in endpoint catalog |
-| COVER-03 | Phases H5-H8 | Partial - H5-H6 rows implemented or reclassified; H7-H8 remain planned |
-| LIVE-05 | Phases H5-H8 | Partial - H5-H6 request-shape gates passed; H7-H8 remain planned |
+| COVER-03 | Phases H5-H8 | Partial - H5-H7 rows implemented or reclassified; H8 remains planned |
+| LIVE-05 | Phases H5-H8 | Partial - H5-H7 request-shape gates passed; H8 remains planned |
 | SRC-GEN-01 | Phase H5 | Complete |
 | SRC-GEN-02 | Phase H5 | Complete |
 | SRC-GEN-03 | Phase H5 | Complete |
@@ -96,9 +96,9 @@
 | SRC-TX-02 | Phase H6 | Complete |
 | SRC-TX-03 | Phase H6 | Complete |
 | SRC-TX-04 | Phase H6 | Complete |
-| SRC-OUT-01 | Phase H7 | Planned |
-| SRC-OUT-02 | Phase H7 | Planned |
-| SRC-OUT-03 | Phase H7 | Planned |
+| SRC-OUT-01 | Phase H7 | Complete |
+| SRC-OUT-02 | Phase H7 | Complete |
+| SRC-OUT-03 | Phase H7 | Complete |
 | SRC-BAL-01 | Phase H8 | Planned |
 | SRC-BAL-02 | Phase H8 | Planned |
 | SRC-BAL-03 | Phase H8 | Planned |

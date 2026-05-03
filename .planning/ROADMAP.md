@@ -101,14 +101,15 @@ See full details: [milestones/v0.2-entsoe-gaps-ROADMAP.md](milestones/v0.2-entso
   - Cross-cutting constraints: batch by parser family, keep large schema additions reviewable, and preserve existing 19 ENTSO-E datasets.
   - Status: H6 complete; 16 transmission/market datasets added, `flow_based_allocations` explicitly deferred for dedicated allocation-document schema review, and H6 live request-shape probes passed.
 
-- [ ] **Phase H7**: ENTSO-E outage extension data sources
+- [x] **Phase H7**: ENTSO-E outage extension data sources - Done 2026-05-03
   - Requirements: SRC-OUT-01, SRC-OUT-02, SRC-OUT-03, COVER-03, LIVE-05
   - **Plans:** 1 plan
   - Plans:
-    - [ ] H7-01-PLAN.md - Add consumption, transmission, offshore-grid, and production outage sources
+    - [x] H7-01-PLAN.md - Add consumption, transmission, offshore-grid, and production outage sources
   - Success: New outage datasets share the established outage-document parser path where possible and expose asset/status fields needed by silver schemas.
   - Success: Deferred outage variants remain documented with dependency reasons.
   - Cross-cutting constraints: do not regress the existing `outages_generation` unit-level schema.
+  - Status: H7 complete; four primary outage datasets implemented, dependent outage variants remain deferred with updated reasons, and H7 live request-shape probes passed.
 
 - [ ] **Phase H8**: ENTSO-E balancing extension data sources
   - Requirements: SRC-BAL-01, SRC-BAL-02, SRC-BAL-03, SRC-BAL-04, COVER-03, LIVE-05

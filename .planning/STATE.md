@@ -4,17 +4,17 @@ milestone_name: ENTSO-E Pipeline Validation
 status: active
 progress:
   phases_total: 9
-  phases_complete: 6
+  phases_complete: 7
   plans_total: 11
-  plans_complete: 9
+  plans_complete: 10
 ---
 
 ## Current Position
 
-Phase: H7 - ENTSO-E outage extension data sources
-Plan: H7-01 next
-Status: Ready to plan/execute H7 after H6 transmission and market source completion
-Last activity: 2026-05-03 - H6 complete; targeted non-live and live request-shape gates pass
+Phase: H8 - ENTSO-E balancing extension data sources
+Plan: H8-01 next
+Status: Ready to execute H8 after H7 outage source completion
+Last activity: 2026-05-03 - H7 complete; targeted non-live and live request-shape gates pass
 
 ## Project Reference
 
@@ -41,6 +41,8 @@ produces schema-valid output — verified end-to-end, not just in unit tests.
 - H5 adds generation-unit, reservoir, and generation-unit master-data sources, including an A95 reference-date request style.
 - H6 adds transmission/market source rows through metadata-driven request construction, shared zone-pair quantity/amount transformers, and exact-cased optional filter forwarding.
 - H6 defers `flow_based_allocations` because B09 allocation documents need dedicated parser/schema review rather than the generic TimeSeries transformer path.
+- H7 adds primary consumption, transmission, offshore-grid, and production outage sources with document/status/asset metadata preserved in silver output.
+- H7 keeps transmission net-position impact, transmission available capacity, and fallback outage variants deferred because they need separate interpretation/schema passes beyond the primary outage rows.
 
 ### Roadmap Evolution
 
@@ -52,6 +54,7 @@ produces schema-valid output — verified end-to-end, not just in unit tests.
 - H5.5 inserted before H6 to clean up live all-dataset behavior for sources implemented through H5.
 - H5.5 completed: active ENTSO-E live suite passes; A83 activated balancing quantity is deferred for H8/default-control-area strategy.
 - H6 completed: 16 transmission/market datasets implemented and live request-shape probes pass for representative H6 families.
+- H7 completed: primary outage datasets implemented, endpoint catalog synchronized, and H7 live request-shape probes pass.
 
 ### Blockers
 
