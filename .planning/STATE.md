@@ -1,20 +1,20 @@
 ---
 milestone: v0.4
 milestone_name: Elexon Pipeline Validation
-status: ready_to_execute
+status: ready_to_plan
 progress:
   phases_total: 4
-  phases_complete: 1
+  phases_complete: 2
   plans_total: 4
-  plans_complete: 1
+  plans_complete: 2
 ---
 
 ## Current Position
 
-Phase: I2 - Elexon mocked request-shape and fixture-backed bronze-to-silver tests
-Plan: I2-01 planned
-Status: Phase I2 planned; ready to execute
-Last activity: 2026-05-03 - Phase I2 planned
+Phase: I3 - Elexon live API to silver test suite
+Plan: needs planning
+Status: Phase I2 completed; ready to plan I3
+Last activity: 2026-05-04 - Phase I2 completed
 
 ## Project Reference
 
@@ -47,6 +47,7 @@ produces schema-valid output - verified end-to-end, not just in unit tests.
 - H8 keeps balancing archive variants, SO GL, and implementation-framework balancing extensions deferred with H9/backlog reasons.
 - I1 planned: Elexon inventory contract, explicit exclusions, request-style baseline, and live-test diagnostics scope.
 - I1 completed: active Elexon config, endpoint registry, and silver transformer registrations are covered by tests; excluded endpoints have explicit reasons.
+- I2 completed: mocked request-shape coverage now spans every active configured Elexon dataset, while fixture-backed bronze-to-silver tests validate representative transformer families without live network access.
 
 ### Roadmap Evolution
 
@@ -64,6 +65,7 @@ produces schema-valid output - verified end-to-end, not just in unit tests.
 - I1 planned: first execution plan created for inventory alignment and live-test scaffolding.
 - I1 completed: inventory contract tests, explicit exclusions, BOALF config alignment, and Elexon live diagnostics are in place.
 - I2 planned: mocked request-shape tests and fixture-backed bronze-to-silver integration tests will cover active Elexon datasets without live network access.
+- I2 completed: non-live mocked Elexon E2E suite passes with bronze metadata, pagination/chunking, no-param, and representative silver output assertions.
 
 ### Blockers
 

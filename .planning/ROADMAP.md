@@ -58,12 +58,12 @@ Known deferred close-out items: 4; see [STATE.md](STATE.md).
   - Success: Decommissioned/duplicate/empty endpoints are documented separately from active datasets.
   - Success: Elexon live-test scaffolding uses opt-in `@pytest.mark.live`, temp config/data helpers, and source/dataset/stage diagnostics.
 
-- [ ] **Phase I2**: Elexon mocked request-shape and fixture-backed bronze-to-silver tests
+- [x] **Phase I2**: Elexon mocked request-shape and fixture-backed bronze-to-silver tests - completed 2026-05-04
   - Requirements: ELEXON-MOCK-01, ELEXON-MOCK-02, ELEXON-MOCK-03
   - **Plans:** 1 plan
   - **Wave 1:** mocked request-shape and fixture-backed bronze-to-silver coverage
   - Plans:
-    - [ ] `.planning/phases/I2-elexon-mocked-request-shape-and-fixture-backed-bronze-to-silver-tests/I2-01-PLAN.md` - Elexon mocked request shape and fixture-backed bronze-to-silver coverage
+    - [x] `.planning/phases/I2-elexon-mocked-request-shape-and-fixture-backed-bronze-to-silver-tests/I2-01-PLAN.md` - Elexon mocked request shape and fixture-backed bronze-to-silver coverage
   - Success: Mocked tests validate request URL/parameter shape for every active configured Elexon dataset without network access.
   - Success: Realistic Elexon JSON fixtures write to bronze and run representative silver transformers across the main data families.
   - Success: Tests assert bronze metadata, `data_date` partitioning, pagination/chunk behavior, and expected silver columns.

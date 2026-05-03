@@ -13,9 +13,9 @@
 
 ### Mocked and Fixture E2E
 
-- [ ] **ELEXON-MOCK-01**: Mocked Elexon tests validate request URL and query parameter shape for every active configured Elexon dataset without hitting the live API.
-- [ ] **ELEXON-MOCK-02**: Fixture-backed tests write realistic Elexon JSON responses through `BronzeWriter` and run representative silver transformers across generation, demand, balancing, notices, reference, and REMIT families.
-- [ ] **ELEXON-MOCK-03**: Mocked/fixture tests assert bronze metadata, `data_date` partitioning, pagination/chunk handling, and expected silver columns for representative datasets.
+- [x] **ELEXON-MOCK-01**: Mocked Elexon tests validate request URL and query parameter shape for every active configured Elexon dataset without hitting the live API.
+- [x] **ELEXON-MOCK-02**: Fixture-backed tests write realistic Elexon JSON responses through `BronzeWriter` and run representative silver transformers across generation, demand, balancing, notices, reference, and REMIT families.
+- [x] **ELEXON-MOCK-03**: Mocked/fixture tests assert bronze metadata, `data_date` partitioning, pagination/chunk handling, and expected silver columns for representative datasets.
 
 ### Live API to Silver
 
@@ -65,9 +65,9 @@
 | ELEXON-INV-01 | Phase I1 | Complete |
 | ELEXON-INV-02 | Phase I1 | Complete |
 | ELEXON-INV-03 | Phase I1 | Complete |
-| ELEXON-MOCK-01 | Phase I2 | Pending |
-| ELEXON-MOCK-02 | Phase I2 | Pending |
-| ELEXON-MOCK-03 | Phase I2 | Pending |
+| ELEXON-MOCK-01 | Phase I2 | Complete |
+| ELEXON-MOCK-02 | Phase I2 | Complete |
+| ELEXON-MOCK-03 | Phase I2 | Complete |
 | ELEXON-LIVE-01 | Phase I3 | Pending |
 | ELEXON-LIVE-02 | Phase I3 | Pending |
 | ELEXON-LIVE-03 | Phase I3 | Pending |
@@ -86,4 +86,4 @@
 
 ---
 *Requirements defined: 2026-05-03*
-*Last updated: 2026-05-03 after Phase I1 completion*
+*Last updated: 2026-05-04 after Phase I2 completion*
