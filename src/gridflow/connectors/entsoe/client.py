@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 import re
+from datetime import datetime
 from typing import TYPE_CHECKING, Any
 from xml.etree import ElementTree
 
@@ -16,6 +17,7 @@ from gridflow.connectors.entsoe.endpoints import (
     DEFAULT_ZONES,
     DOC_TYPES,
     ENTSOE_DT_FORMAT,
+    EntsoeDocType,
 )
 from gridflow.connectors.registry import register_connector
 from gridflow.utils.retry import RETRY_POLICY
@@ -23,14 +25,7 @@ from gridflow.utils.retry import RETRY_POLICY
 logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
-    from datetime import datetime
-
     from gridflow.config.settings import SourceConfig
-
-# Datasets that are fetched per zone-pair rather than per zone
-_ZONE_PAIR_DATASETS: frozenset[str] = frozenset(
-    {"cross_border_flows", "net_transfer_capacity"}
-)
 
 # Cross-border zone pairs (in_zone, out_zone)
 # Only GB interconnectors and adjacent European pairs are included by default
@@ -112,17 +107,16 @@ class EntsoeConnector(BaseConnector):
 
         responses: list[RawResponse] = []
 
-        if dataset in _ZONE_PAIR_DATASETS:
+        if doc_type.domain_style == "zone_pair":
             # Fetch one response per (in, out) zone pair
             for in_zone, out_zone in _FLOW_PAIRS:
                 in_mrid = BIDDING_ZONES.get(in_zone)
                 out_mrid = BIDDING_ZONES.get(out_zone)
                 if not in_mrid or not out_mrid:
                     continue
-                resp = await self._fetch_zone(
+                resp = await self._fetch_document(
                     dataset=dataset,
-                    doc_type_code=doc_type.document_type,
-                    process_type=doc_type.process_type,
+                    doc_type=doc_type,
                     in_domain=in_mrid,
                     out_domain=out_mrid,
                     period_start=period_start,
@@ -135,27 +129,27 @@ class EntsoeConnector(BaseConnector):
                 mrid = BIDDING_ZONES.get(area)
                 if not mrid:
                     continue
-                resp = await self._fetch_control_area(
+                resp = await self._fetch_document(
                     dataset=dataset,
-                    doc_type_code=doc_type.document_type,
-                    process_type=doc_type.process_type,
-                    control_area_domain=mrid,
+                    doc_type=doc_type,
+                    in_domain=mrid,
+                    out_domain=None,
                     period_start=period_start,
                     period_end=period_end,
                 )
                 responses.append(resp)
         else:
-            # Fetch one response per bidding zone
+            # Fetch one response per bidding zone using the dataset's documented
+            # domain parameter style.
             for zone in DEFAULT_ZONES:
                 mrid = BIDDING_ZONES.get(zone)
                 if not mrid:
                     continue
-                resp = await self._fetch_zone(
+                resp = await self._fetch_document(
                     dataset=dataset,
-                    doc_type_code=doc_type.document_type,
-                    process_type=doc_type.process_type,
+                    doc_type=doc_type,
                     in_domain=mrid,
-                    out_domain=mrid,
+                    out_domain=mrid if doc_type.domain_style == "zone" else None,
                     period_start=period_start,
                     period_end=period_end,
                 )
@@ -174,69 +168,42 @@ class EntsoeConnector(BaseConnector):
     # Internal helpers
     # ------------------------------------------------------------------
 
-    async def _fetch_zone(
+    async def _fetch_document(
         self,
         *,
         dataset: str,
-        doc_type_code: str,
-        process_type: str | None,
+        doc_type: EntsoeDocType,
         in_domain: str,
-        out_domain: str,
+        out_domain: str | None,
         period_start: str,
         period_end: str,
     ) -> RawResponse:
-        """Fetch a single zone (or zone pair) response from the ENTSO-E API."""
-        query_params: dict[str, str] = {
-            "documentType": doc_type_code,
-            "in_Domain": in_domain,
-            "out_Domain": out_domain,
-            "periodStart": period_start,
-            "periodEnd": period_end,
-        }
-        if process_type:
-            query_params["processType"] = process_type
-        if self.config.api_key:
-            query_params["securityToken"] = self.config.api_key
-
-        raw = await self._request(_ENTSOE_API_PATH, query_params)
-        return RawResponse(
-            body=raw.content,
-            content_type=raw.headers.get("content-type", "text/xml"),
-            source="entsoe",
-            dataset=dataset,
-            request_url=str(raw.url),
-            request_params=dict(query_params),
-            api_version="v1",
-            http_status=raw.status_code,
+        """Fetch a single ENTSO-E document using the dataset's request style."""
+        query_params: dict[str, str] = {"documentType": doc_type.document_type}
+        if doc_type.date_param:
+            data_date = datetime.strptime(period_start, ENTSOE_DT_FORMAT).date()
+            query_params[doc_type.date_param] = data_date.isoformat()
+        else:
+            query_params.update({
+                "periodStart": period_start,
+                "periodEnd": period_end,
+            })
+        query_params.update(
+            _domain_params(
+                doc_type.domain_style,
+                in_domain,
+                out_domain,
+                doc_type.domain_params,
+            )
         )
-
-    async def _fetch_control_area(
-        self,
-        *,
-        dataset: str,
-        doc_type_code: str,
-        process_type: str | None,
-        control_area_domain: str,
-        period_start: str,
-        period_end: str,
-    ) -> RawResponse:
-        """Fetch a single control-area response from the ENTSO-E API.
-
-        Used for balancing datasets (A83, A84, A85, A86, A81) that require
-        ``controlArea_Domain`` instead of ``in_Domain`` / ``out_Domain``.
-        """
-        query_params: dict[str, str] = {
-            "documentType": doc_type_code,
-            "controlArea_Domain": control_area_domain,
-            "periodStart": period_start,
-            "periodEnd": period_end,
-        }
-        if process_type:
-            query_params["processType"] = process_type
+        query_params.update(doc_type.extra_params)
+        if doc_type.process_type:
+            query_params["processType"] = doc_type.process_type
         if self.config.api_key:
             query_params["securityToken"] = self.config.api_key
 
         raw = await self._request(_ENTSOE_API_PATH, query_params)
+        data_date = datetime.strptime(period_start, ENTSOE_DT_FORMAT).date()
         return RawResponse(
             body=raw.content,
             content_type=raw.headers.get("content-type", "text/xml"),
@@ -246,6 +213,7 @@ class EntsoeConnector(BaseConnector):
             request_params=dict(query_params),
             api_version="v1",
             http_status=raw.status_code,
+            data_date=data_date,
         )
 
     @RETRY_POLICY
@@ -310,6 +278,42 @@ def _extract_acknowledgement_reason(content: bytes) -> str:
     if text is not None and text.text:
         parts.append(text.text.strip())
     return " - ".join(parts)
+
+
+def _domain_params(
+    domain_style: str,
+    in_domain: str,
+    out_domain: str | None,
+    domain_params: tuple[str, ...] = (),
+) -> dict[str, str]:
+    """Build ENTSO-E's endpoint-specific area query parameters."""
+    if domain_params:
+        if len(domain_params) == 1:
+            return {domain_params[0]: in_domain}
+        if len(domain_params) == 2:
+            if out_domain is None:
+                raise ValueError(
+                    f"{domain_params!r} domain params require out_domain"
+                )
+            return {domain_params[0]: in_domain, domain_params[1]: out_domain}
+        raise ValueError(f"Unsupported ENTSO-E domain params: {domain_params!r}")
+    if domain_style == "zone":
+        if out_domain is None:
+            raise ValueError("zone domain style requires out_domain")
+        return {"in_Domain": in_domain, "out_Domain": out_domain}
+    if domain_style == "zone_pair":
+        if out_domain is None:
+            raise ValueError("zone_pair domain style requires out_domain")
+        return {"in_Domain": in_domain, "out_Domain": out_domain}
+    if domain_style == "in_domain":
+        return {"in_Domain": in_domain}
+    if domain_style == "out_bidding_zone":
+        return {"outBiddingZone_Domain": in_domain}
+    if domain_style == "bidding_zone":
+        return {"BiddingZone_Domain": in_domain}
+    if domain_style == "control_area":
+        return {"controlArea_Domain": in_domain}
+    raise ValueError(f"Unsupported ENTSO-E domain style: {domain_style!r}")
 
 
 def _redact_security_token(url: str) -> str:

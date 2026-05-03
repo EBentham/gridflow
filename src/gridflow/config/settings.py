@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 import yaml
+from dotenv import load_dotenv
 from pydantic import BaseModel, Field
 from pydantic_settings import BaseSettings
 
@@ -104,6 +105,7 @@ def load_settings() -> GridflowConfig:
     Merges settings.yaml, sources.yaml, environment variables, and .env file.
     """
     config_dir = _find_config_dir()
+    load_dotenv(config_dir.parent / ".env", override=False)
 
     # Load YAML configs
     settings_data = _load_yaml(config_dir / "settings.yaml")

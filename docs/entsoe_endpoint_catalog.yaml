@@ -1,0 +1,1033 @@
+# ENTSO-E Transparency Platform endpoint catalog.
+# Source: https://documenter.getpostman.com/view/7009892/2s93JtP3F6
+# Generated/reviewed during H4 on 2026-05-03.
+#
+# status values:
+# - implemented: active in DOC_TYPES and config/sources.yaml
+# - planned: classified for future implementation
+# - deferred: intentionally not active yet, with reason
+# - excluded: duplicate/example-only collection item
+
+entries:
+  - domain: Load
+    name: 6.1.A Actual Total Load
+    document_type: A65
+    process_type: A16
+    business_type: null
+    area_params: [outBiddingZone_Domain]
+    optional_filters: []
+    max_window: 1 year
+    parser_family: quantity_timeseries
+    status: implemented
+    dataset: actual_load
+    batch: existing
+    reason: null
+  - domain: Load
+    name: 6.1.A Actual Total Load - SECURITY_TOKEN in header
+    document_type: A65
+    process_type: A16
+    business_type: null
+    area_params: [outBiddingZone_Domain]
+    optional_filters: []
+    max_window: 1 year
+    parser_family: quantity_timeseries
+    status: excluded
+    dataset: null
+    batch: duplicate
+    reason: Duplicate auth-style example; connector uses query parameter auth.
+  - domain: Load
+    name: 6.1.A Actual Total Load Post
+    document_type: null
+    process_type: null
+    business_type: null
+    area_params: []
+    optional_filters: []
+    max_window: null
+    parser_family: none
+    status: excluded
+    dataset: null
+    batch: example
+    reason: Collection example has no query shape to implement.
+  - domain: Load
+    name: 6.1.B Day-ahead Total Load Forecast
+    document_type: A65
+    process_type: A01
+    business_type: null
+    area_params: [outBiddingZone_Domain]
+    optional_filters: []
+    max_window: 1 year
+    parser_family: quantity_timeseries
+    status: implemented
+    dataset: load_forecast
+    batch: existing
+    reason: null
+  - domain: Load
+    name: 6.1.C Week-ahead Total Load Forecast
+    document_type: A65
+    process_type: A31
+    business_type: null
+    area_params: [outBiddingZone_Domain]
+    optional_filters: []
+    max_window: 1 year
+    parser_family: quantity_timeseries
+    status: implemented
+    dataset: load_forecast_weekly
+    batch: existing
+    reason: null
+  - domain: Load
+    name: 6.1.D Month-ahead Total Load Forecast
+    document_type: A65
+    process_type: A32
+    business_type: null
+    area_params: [outBiddingZone_Domain]
+    optional_filters: []
+    max_window: 1 year
+    parser_family: quantity_timeseries
+    status: implemented
+    dataset: load_forecast_monthly
+    batch: H4-load
+    reason: null
+  - domain: Load
+    name: 6.1.E Year-ahead Total Load Forecast
+    document_type: A65
+    process_type: A33
+    business_type: null
+    area_params: [outBiddingZone_Domain]
+    optional_filters: []
+    max_window: 1 year
+    parser_family: quantity_timeseries
+    status: implemented
+    dataset: load_forecast_yearly
+    batch: H4-load
+    reason: null
+  - domain: Load
+    name: 8.1 Year-ahead Forecast Margin
+    document_type: A70
+    process_type: A33
+    business_type: null
+    area_params: [outBiddingZone_Domain]
+    optional_filters: []
+    max_window: 1 year
+    parser_family: quantity_timeseries
+    status: implemented
+    dataset: forecast_margin
+    batch: H4-load
+    reason: null
+
+  - domain: Generation
+    name: 14.1.A Installed Capacity per Production Type
+    document_type: A68
+    process_type: A33
+    business_type: null
+    area_params: [in_Domain]
+    optional_filters: [PsrType]
+    max_window: 1 year
+    parser_family: quantity_timeseries
+    status: implemented
+    dataset: installed_capacity
+    batch: existing
+    reason: null
+  - domain: Generation
+    name: 14.1.B Installed Capacity Per Production Unit
+    document_type: A71
+    process_type: A33
+    business_type: null
+    area_params: [in_Domain]
+    optional_filters: [PsrType]
+    max_window: 1 year
+    parser_family: unit_timeseries
+    status: implemented
+    dataset: installed_capacity_units
+    batch: H5-generation-units
+    reason: null
+  - domain: Generation
+    name: 14.1.C Generation Forecast - Day ahead
+    document_type: A71
+    process_type: A01
+    business_type: null
+    area_params: [in_Domain]
+    optional_filters: []
+    max_window: 1 day
+    parser_family: quantity_timeseries
+    status: implemented
+    dataset: generation_forecast
+    batch: existing
+    reason: null
+  - domain: Generation
+    name: 14.1.D Generation Forecasts for Wind and Solar
+    document_type: A69
+    process_type: A01
+    business_type: null
+    area_params: [in_Domain]
+    optional_filters: [PsrType]
+    max_window: 1 day
+    parser_family: quantity_timeseries
+    status: implemented
+    dataset: wind_solar_forecast
+    batch: existing
+    reason: null
+  - domain: Generation
+    name: 16.1.A Actual Generation per Generation Unit
+    document_type: A73
+    process_type: A16
+    business_type: null
+    area_params: [in_Domain]
+    optional_filters: [PsrType, RegisteredResource]
+    max_window: 1 day
+    parser_family: unit_timeseries
+    status: implemented
+    dataset: actual_generation_units
+    batch: H5-generation-units
+    reason: null
+  - domain: Generation
+    name: 16.1.B-C Actual Generation per Production Type
+    document_type: A75
+    process_type: A16
+    business_type: null
+    area_params: [in_Domain]
+    optional_filters: [psrType]
+    max_window: 1 day
+    parser_family: quantity_timeseries
+    status: implemented
+    dataset: actual_generation
+    batch: existing
+    reason: null
+  - domain: Generation
+    name: 16.1.D Water Reservoirs and Hydro Storage Plants
+    document_type: A72
+    process_type: A16
+    business_type: null
+    area_params: [in_Domain]
+    optional_filters: []
+    max_window: 1 day
+    parser_family: quantity_timeseries
+    status: implemented
+    dataset: water_reservoirs
+    batch: H5-generation-units
+    reason: null
+
+  - domain: Transmission
+    name: 11.1.A Forecasted Transfer Capacities
+    document_type: A61
+    process_type: null
+    business_type: null
+    area_params: [in_Domain, out_Domain]
+    optional_filters: [contract_MarketAgreement.Type]
+    max_window: 1 year
+    parser_family: quantity_timeseries
+    status: implemented
+    dataset: net_transfer_capacity
+    batch: existing
+    reason: null
+  - domain: Transmission
+    name: 11.3 Cross Border Capacity of DC Links - Intraday Transfer Limits
+    document_type: A93
+    process_type: null
+    business_type: null
+    area_params: [in_Domain, out_Domain]
+    optional_filters: []
+    max_window: 1 year
+    parser_family: quantity_timeseries
+    status: planned
+    dataset: dc_link_intraday_transfer_limits
+    batch: H6-transmission-market
+    reason: Needs transmission batch fixture coverage.
+  - domain: Transmission
+    name: 12.1.F Commercial Schedules
+    document_type: A09
+    process_type: null
+    business_type: null
+    area_params: [in_Domain, out_Domain]
+    optional_filters: [contract_MarketAgreement.Type]
+    max_window: 1 year
+    parser_family: quantity_timeseries
+    status: planned
+    dataset: commercial_schedules
+    batch: H6-transmission-market
+    reason: Needs schedule-specific schema.
+  - domain: Transmission
+    name: 12.1.F Commercial Schedules - Net Positions
+    document_type: A09
+    process_type: null
+    business_type: null
+    area_params: [in_Domain, out_Domain]
+    optional_filters: [contract_MarketAgreement.Type]
+    max_window: 1 year
+    parser_family: quantity_timeseries
+    status: planned
+    dataset: commercial_schedules_net_positions
+    batch: H6-transmission-market
+    reason: Needs net-position interpretation.
+  - domain: Transmission
+    name: 12.1.G Cross-Border Physical Flows
+    document_type: A11
+    process_type: null
+    business_type: null
+    area_params: [in_Domain, out_Domain]
+    optional_filters: []
+    max_window: 1 year
+    parser_family: quantity_timeseries
+    status: implemented
+    dataset: cross_border_flows
+    batch: existing
+    reason: null
+  - domain: Transmission
+    name: 13.1.A Redispatching Cross Border
+    document_type: A63
+    process_type: null
+    business_type: A46
+    area_params: [in_Domain, out_Domain]
+    optional_filters: []
+    max_window: 1 year
+    parser_family: quantity_timeseries
+    status: planned
+    dataset: redispatching_cross_border
+    batch: H6-transmission-market
+    reason: Needs congestion-management schema.
+  - domain: Transmission
+    name: 13.1.A Redispatching Internal
+    document_type: A63
+    process_type: null
+    business_type: A85
+    area_params: [in_Domain, out_Domain]
+    optional_filters: []
+    max_window: 1 year
+    parser_family: quantity_timeseries
+    status: planned
+    dataset: redispatching_internal
+    batch: H6-transmission-market
+    reason: Needs congestion-management schema.
+  - domain: Transmission
+    name: 13.1.B Countertrading
+    document_type: A91
+    process_type: null
+    business_type: null
+    area_params: [in_Domain, out_Domain]
+    optional_filters: []
+    max_window: 1 year
+    parser_family: quantity_timeseries
+    status: planned
+    dataset: countertrading
+    batch: H6-transmission-market
+    reason: Needs congestion-management schema.
+  - domain: Transmission
+    name: 13.1.C Costs of Congestion Management
+    document_type: A92
+    process_type: null
+    business_type: null
+    area_params: [in_Domain, out_Domain]
+    optional_filters: []
+    max_window: 1 year
+    parser_family: price_timeseries
+    status: planned
+    dataset: congestion_management_costs
+    batch: H6-transmission-market
+    reason: Needs cost/currency schema.
+  - domain: Transmission
+    name: 9.1 Expansion and Dismantling Project
+    document_type: A90
+    process_type: null
+    business_type: B01
+    area_params: [in_Domain, out_Domain]
+    optional_filters: [DocStatus]
+    max_window: 1 year
+    parser_family: project_document
+    status: deferred
+    dataset: transmission_projects
+    batch: H8-reference-documents
+    reason: Project lifecycle document, not core time-series ingestion.
+
+  - domain: Market
+    name: 11.1 Continuous Allocations - Offered Transfer Capacity
+    document_type: A31
+    process_type: null
+    business_type: null
+    area_params: [In_Domain, Out_Domain]
+    optional_filters: [Auction.Type, Contract_MarketAgreement.Type, Update_DateAndOrTime]
+    max_window: 1 year
+    parser_family: quantity_timeseries
+    status: planned
+    dataset: offered_transfer_capacity_continuous
+    batch: H6-transmission-market
+    reason: Needs allocation-market schema.
+  - domain: Market
+    name: 11.1 Implicit Allocations - Offered Transfer Capacity
+    document_type: A31
+    process_type: null
+    business_type: null
+    area_params: [in_Domain, out_Domain]
+    optional_filters: [auction.Type, contract_MarketAgreement.Type]
+    max_window: 1 year
+    parser_family: quantity_timeseries
+    status: planned
+    dataset: offered_transfer_capacity_implicit
+    batch: H6-transmission-market
+    reason: Needs allocation-market schema.
+  - domain: Market
+    name: 11.1.A Explicit Allocations - Offered Transfer Capacity
+    document_type: A31
+    process_type: null
+    business_type: null
+    area_params: [in_Domain, out_Domain]
+    optional_filters: [auction.Category, auction.Type, contract_MarketAgreement.Type]
+    max_window: 1 year
+    parser_family: quantity_timeseries
+    status: planned
+    dataset: offered_transfer_capacity_explicit
+    batch: H6-transmission-market
+    reason: Needs allocation-market schema.
+  - domain: Market
+    name: 11.1.B Flow Based Allocations
+    document_type: B09
+    process_type: A44
+    business_type: null
+    area_params: [in_Domain, out_Domain]
+    optional_filters: []
+    max_window: 1 year
+    parser_family: allocation_document
+    status: planned
+    dataset: flow_based_allocations
+    batch: H6-transmission-market
+    reason: Non-standard document type requires fixture review.
+  - domain: Market
+    name: 11.1.B Flow Based Allocations Archives
+    document_type: B09
+    process_type: A32
+    business_type: null
+    area_params: [in_Domain, out_Domain]
+    optional_filters: [StorageType]
+    max_window: 1 year
+    parser_family: allocation_document
+    status: deferred
+    dataset: flow_based_allocations_archives
+    batch: archive
+    reason: Archive variant deferred until primary endpoint is implemented.
+  - domain: Market
+    name: 12.1.A Explicit Allocations - Auction Revenue
+    document_type: A25
+    process_type: null
+    business_type: B07
+    area_params: [in_Domain, out_Domain]
+    optional_filters: [contract_MarketAgreement.Type]
+    max_window: 1 year
+    parser_family: price_timeseries
+    status: planned
+    dataset: auction_revenue
+    batch: H6-transmission-market
+    reason: Needs allocation-market schema.
+  - domain: Market
+    name: 12.1.A Explicit Allocations - Use of the Transfer Capacity
+    document_type: A25
+    process_type: null
+    business_type: B05
+    area_params: [in_Domain, out_Domain]
+    optional_filters: [Auction.Category, contract_MarketAgreement.Type]
+    max_window: 1 year
+    parser_family: quantity_timeseries
+    status: planned
+    dataset: transfer_capacity_use
+    batch: H6-transmission-market
+    reason: Needs allocation-market schema.
+  - domain: Market
+    name: 12.1.B Total Nominated Capacity
+    document_type: A26
+    process_type: null
+    business_type: B08
+    area_params: [in_Domain, out_Domain]
+    optional_filters: []
+    max_window: 1 year
+    parser_family: quantity_timeseries
+    status: planned
+    dataset: total_nominated_capacity
+    batch: H6-transmission-market
+    reason: Needs allocation-market schema.
+  - domain: Market
+    name: 12.1.C Total Capacity Already Allocated
+    document_type: A26
+    process_type: null
+    business_type: A29
+    area_params: [in_Domain, out_Domain]
+    optional_filters: [auction.Category, contract_MarketAgreement.Type]
+    max_window: 1 year
+    parser_family: quantity_timeseries
+    status: planned
+    dataset: total_capacity_allocated
+    batch: H6-transmission-market
+    reason: Needs allocation-market schema.
+  - domain: Market
+    name: 12.1.D Energy Prices
+    document_type: A44
+    process_type: null
+    business_type: null
+    area_params: [in_Domain, out_Domain]
+    optional_filters: [contract_MarketAgreement.type, offset]
+    max_window: 1 year
+    parser_family: price_timeseries
+    status: implemented
+    dataset: day_ahead_prices
+    batch: existing
+    reason: null
+  - domain: Market
+    name: 12.1.E Implicit and Flow-based Allocations - Congestion Income
+    document_type: A25
+    process_type: null
+    business_type: B10
+    area_params: [in_Domain, out_Domain]
+    optional_filters: [contract_MarketAgreement.Type]
+    max_window: 1 year
+    parser_family: price_timeseries
+    status: planned
+    dataset: congestion_income
+    batch: H6-transmission-market
+    reason: Needs allocation-market schema.
+  - domain: Market
+    name: 12.1.E Implicit Auction - Net Positions
+    document_type: A25
+    process_type: null
+    business_type: B09
+    area_params: [in_Domain, out_Domain]
+    optional_filters: [contract_MarketAgreement.Type]
+    max_window: 1 year
+    parser_family: quantity_timeseries
+    status: planned
+    dataset: net_positions
+    batch: H6-transmission-market
+    reason: Needs allocation-market schema.
+  - domain: Market
+    name: 12.1.H Transfer Capacities Allocated with Third Countries
+    document_type: A94
+    process_type: null
+    business_type: null
+    area_params: [in_Domain, out_Domain]
+    optional_filters: [auction.Category, auction.Type, contract_MarketAgreement.Type]
+    max_window: 1 year
+    parser_family: quantity_timeseries
+    status: deferred
+    dataset: third_country_transfer_capacity
+    batch: H6-transmission-market
+    reason: Lower priority than core bidding-zone and GB interconnector datasets.
+
+  - domain: Outages
+    name: 7.1.A-B Aggregated Unavailability of Consumption Units
+    document_type: A76
+    process_type: null
+    business_type: A53
+    area_params: [BiddingZone_Domain]
+    optional_filters: []
+    max_window: 1 year
+    parser_family: quantity_timeseries
+    status: planned
+    dataset: outages_consumption
+    batch: H7-outages
+    reason: Needs outage schema extension.
+  - domain: Outages
+    name: 10.1.A-B Unavailability of Transmission Infrastructure
+    document_type: A78
+    process_type: null
+    business_type: A53
+    area_params: [In_Domain, Out_Domain]
+    optional_filters: [DocStatus, mRID, PeriodStartUpdate, PeriodEndUpdate]
+    max_window: 1 year
+    parser_family: outage_document
+    status: planned
+    dataset: outages_transmission
+    batch: H7-outages
+    reason: Needs asset-level transmission outage schema.
+  - domain: Outages
+    name: 10.1.A-B Transmission Infrastructure - Net Position Impact
+    document_type: A78
+    process_type: null
+    business_type: A53
+    area_params: [pTDF_Domain.mRID]
+    optional_filters: [Asset_RegisteredResource.mRID, DocStatus, mRID]
+    max_window: 1 year
+    parser_family: outage_document
+    status: deferred
+    dataset: outages_transmission_net_position_impact
+    batch: H7-outages
+    reason: Depends on primary transmission outage schema.
+  - domain: Outages
+    name: 10.1.A-B Transmission Infrastructure - Available Capacity
+    document_type: A78
+    process_type: null
+    business_type: A53
+    area_params: [ControlArea_Domain]
+    optional_filters: [Asset_RegisteredResource.mRID, DocStatus, mRID]
+    max_window: 1 year
+    parser_family: outage_document
+    status: deferred
+    dataset: outages_transmission_available_capacity
+    batch: H7-outages
+    reason: Depends on primary transmission outage schema.
+  - domain: Outages
+    name: 10.1.C Unavailability of Offshore Grid Infrastructure
+    document_type: A79
+    process_type: null
+    business_type: null
+    area_params: [BiddingZone_Domain]
+    optional_filters: [DocStatus, mRID]
+    max_window: 1 year
+    parser_family: outage_document
+    status: planned
+    dataset: outages_offshore_grid
+    batch: H7-outages
+    reason: Needs offshore-grid outage schema.
+  - domain: Outages
+    name: 15.1.A-B Unavailability of Generation Units
+    document_type: A80
+    process_type: null
+    business_type: A53
+    area_params: [BiddingZone_Domain]
+    optional_filters: [DocStatus, mRID, RegisteredResource]
+    max_window: 1 year
+    parser_family: outage_document
+    status: implemented
+    dataset: outages_generation
+    batch: existing
+    reason: null
+  - domain: Outages
+    name: 15.1.C-D Unavailability of Production Units
+    document_type: A77
+    process_type: null
+    business_type: A53
+    area_params: [BiddingZone_Domain]
+    optional_filters: [DocStatus, mRID, RegisteredResource]
+    max_window: 1 year
+    parser_family: outage_document
+    status: planned
+    dataset: outages_production
+    batch: H7-outages
+    reason: Needs production-unit outage schema.
+  - domain: Outages
+    name: Fall-backs
+    document_type: A53
+    process_type: A51
+    business_type: C47
+    area_params: [BiddingZone_Domain]
+    optional_filters: [DocStatus, mRID]
+    max_window: 1 year
+    parser_family: fallback_document
+    status: deferred
+    dataset: outages_fallbacks
+    batch: H7-outages
+    reason: Low priority until primary outage datasets are complete.
+
+  - domain: Balancing
+    name: 12.3.A Current balancing state
+    document_type: A86
+    process_type: null
+    business_type: B33
+    area_params: [area_Domain]
+    optional_filters: []
+    max_window: 1 day
+    parser_family: balancing_document
+    status: planned
+    dataset: current_balancing_state
+    batch: H8-balancing-extensions
+    reason: Needs GL EB balancing schema.
+  - domain: Balancing
+    name: 12.3.B-C Balancing energy bids
+    document_type: A37
+    process_type: A47
+    business_type: B74
+    area_params: [connecting_Domain]
+    optional_filters: [Direction, Original_MarketProduct, Standard_MarketProduct, offset]
+    max_window: 1 day
+    parser_family: balancing_bid_document
+    status: planned
+    dataset: balancing_energy_bids
+    batch: H8-balancing-extensions
+    reason: Bid payload needs dedicated parser.
+  - domain: Balancing
+    name: 12.3.B-C Balancing energy bids archives
+    document_type: A37
+    process_type: A47
+    business_type: B74
+    area_params: [connecting_Domain]
+    optional_filters: [storageType, offset]
+    max_window: 1 day
+    parser_family: balancing_bid_document
+    status: deferred
+    dataset: balancing_energy_bids_archives
+    batch: archive
+    reason: Archive variant deferred until live bid parser is proven.
+  - domain: Balancing
+    name: 12.3.E Aggregated Balancing Energy Bids
+    document_type: A24
+    process_type: A51
+    business_type: null
+    area_params: [area_Domain]
+    optional_filters: []
+    max_window: 1 day
+    parser_family: balancing_bid_document
+    status: planned
+    dataset: aggregated_balancing_energy_bids
+    batch: H8-balancing-extensions
+    reason: Needs GL EB balancing schema.
+  - domain: Balancing
+    name: 12.3.F Procured balancing capacity
+    document_type: A15
+    process_type: A51
+    business_type: null
+    area_params: [area_Domain]
+    optional_filters: [Type_MarketAgreement.Type, offset]
+    max_window: 1 day
+    parser_family: balancing_capacity_document
+    status: planned
+    dataset: procured_balancing_capacity
+    batch: H8-balancing-extensions
+    reason: Needs GL EB balancing schema.
+  - domain: Balancing
+    name: 12.3.H-I Allocation and use of cross-zonal balancing capacity
+    document_type: A38
+    process_type: A51
+    business_type: null
+    area_params: [Acquiring_Domain, Connecting_Domain]
+    optional_filters: [Type_MarketAgreement.Type]
+    max_window: 1 day
+    parser_family: balancing_capacity_document
+    status: planned
+    dataset: cross_zonal_balancing_capacity
+    batch: H8-balancing-extensions
+    reason: Needs cross-zonal balancing schema.
+  - domain: Balancing
+    name: 17.1.B-C Volumes and Prices of Contracted Reserves
+    document_type: A81
+    process_type: A52
+    business_type: B95
+    area_params: [controlArea_Domain]
+    required_params: [Type_MarketAgreement.Type]
+    optional_filters: [psrType, offset]
+    fixed_params: {Type_MarketAgreement.Type: A01}
+    max_window: 1 day
+    parser_family: quantity_timeseries
+    status: implemented
+    dataset: contracted_reserves
+    batch: existing
+    reason: null
+  - domain: Balancing
+    name: 17.1.F Prices of Activated Balancing Energy
+    document_type: A84
+    process_type: A16
+    business_type: A96
+    area_params: [controlArea_Domain]
+    optional_filters: [ExportType, Original_MarketProduct, Standard_MarketProduct, PsrType]
+    max_window: 1 day
+    parser_family: price_timeseries
+    status: implemented
+    dataset: activated_balancing_prices
+    batch: existing
+    reason: null
+  - domain: Balancing
+    name: 17.1.G Imbalance prices
+    document_type: A85
+    process_type: null
+    business_type: null
+    area_params: [controlArea_Domain]
+    optional_filters: [PsrType]
+    max_window: 1 day
+    parser_family: price_timeseries
+    status: implemented
+    dataset: imbalance_prices
+    batch: existing
+    reason: null
+  - domain: Balancing
+    name: 17.1.H Total Imbalance Volumes
+    document_type: A86
+    process_type: null
+    business_type: A19
+    area_params: [controlArea_Domain]
+    optional_filters: []
+    max_window: 1 day
+    parser_family: quantity_timeseries
+    status: implemented
+    dataset: imbalance_volume
+    batch: existing
+    reason: null
+  - domain: Balancing
+    name: 17.1.I Financial Expenses and Income for Balancing
+    document_type: A87
+    process_type: null
+    business_type: null
+    area_params: [controlArea_Domain]
+    optional_filters: []
+    max_window: 1 day
+    parser_family: price_timeseries
+    status: planned
+    dataset: balancing_financial_expenses_income
+    batch: H8-balancing-extensions
+    reason: Needs financial balancing schema.
+  - domain: Balancing
+    name: 185.4 Results of the Criteria Application Process - Measurements
+    document_type: A45
+    process_type: A65
+    business_type: null
+    area_params: [area_domain]
+    optional_filters: []
+    max_window: 1 day
+    parser_family: balancing_document
+    status: deferred
+    dataset: criteria_application_measurements
+    batch: H9-so-gl
+    reason: SO GL dataset outside near-term GB/EU modelling needs.
+  - domain: Balancing
+    name: 187.2 FCR Total capacity
+    document_type: A26
+    process_type: null
+    business_type: A25
+    area_params: [area_Domain]
+    optional_filters: []
+    max_window: 1 day
+    parser_family: quantity_timeseries
+    status: deferred
+    dataset: fcr_total_capacity
+    batch: H9-so-gl
+    reason: SO GL capacity extensions deferred.
+  - domain: Balancing
+    name: 187.2 Shares of FCR capacity
+    document_type: A26
+    process_type: null
+    business_type: C23
+    area_params: [area_Domain]
+    optional_filters: []
+    max_window: 1 day
+    parser_family: quantity_timeseries
+    status: deferred
+    dataset: fcr_capacity_shares
+    batch: H9-so-gl
+    reason: SO GL capacity extensions deferred.
+  - domain: Balancing
+    name: 188.3 and 189.2 FRR and RR Capacity Outlook
+    document_type: A26
+    process_type: A56
+    business_type: C76
+    area_params: [area_Domain]
+    optional_filters: []
+    max_window: 1 day
+    parser_family: quantity_timeseries
+    status: deferred
+    dataset: frr_rr_capacity_outlook
+    batch: H9-so-gl
+    reason: SO GL capacity extensions deferred.
+  - domain: Balancing
+    name: 188.4 and 189.3 FRR and RR Actual Capacity
+    document_type: A26
+    process_type: A56
+    business_type: C77
+    area_params: [area_Domain]
+    optional_filters: []
+    max_window: 1 day
+    parser_family: quantity_timeseries
+    status: deferred
+    dataset: frr_rr_actual_capacity
+    batch: H9-so-gl
+    reason: SO GL capacity extensions deferred.
+  - domain: Balancing
+    name: 189.2 Outlook of Reserve Capacities on RR
+    document_type: A26
+    process_type: A46
+    business_type: C76
+    area_params: [area_Domain]
+    optional_filters: [offset]
+    max_window: 1 day
+    parser_family: quantity_timeseries
+    status: deferred
+    dataset: rr_capacity_outlook
+    batch: H9-so-gl
+    reason: SO GL capacity extensions deferred.
+  - domain: Balancing
+    name: 189.3 RR Actual Capacity
+    document_type: A26
+    process_type: A46
+    business_type: C77
+    area_params: [area_Domain]
+    optional_filters: [offset]
+    max_window: 1 day
+    parser_family: quantity_timeseries
+    status: deferred
+    dataset: rr_actual_capacity
+    batch: H9-so-gl
+    reason: SO GL capacity extensions deferred.
+  - domain: Balancing
+    name: 190.1 Sharing of RR and FRR
+    document_type: A26
+    process_type: A56
+    business_type: C22
+    area_params: [Acquiring_Domain, Connecting_Domain]
+    optional_filters: [offset]
+    max_window: 1 day
+    parser_family: quantity_timeseries
+    status: deferred
+    dataset: rr_frr_sharing
+    batch: H9-so-gl
+    reason: SO GL capacity extensions deferred.
+  - domain: Balancing
+    name: 190.2 Sharing of FCR between SAs
+    document_type: A26
+    process_type: A52
+    business_type: C22
+    area_params: [area_Domain]
+    optional_filters: [offset]
+    max_window: 1 day
+    parser_family: quantity_timeseries
+    status: deferred
+    dataset: fcr_sharing
+    batch: H9-so-gl
+    reason: SO GL capacity extensions deferred.
+  - domain: Balancing
+    name: 190.3 Exchanged Reserve Capacity
+    document_type: A26
+    process_type: A46
+    business_type: C21
+    area_params: [Acquiring_Domain, Connecting_Domain]
+    optional_filters: [Offset]
+    max_window: 1 day
+    parser_family: quantity_timeseries
+    status: deferred
+    dataset: exchanged_reserve_capacity
+    batch: H9-so-gl
+    reason: SO GL capacity extensions deferred.
+  - domain: Balancing
+    name: IF aFRR 3.16 Cross Border Marginal Prices
+    document_type: A84
+    process_type: A67
+    business_type: A96
+    area_params: [controlArea_Domain]
+    optional_filters: [Standard_MarketProduct]
+    max_window: 1 day
+    parser_family: price_timeseries
+    status: deferred
+    dataset: afrr_cross_border_marginal_prices
+    batch: H9-so-gl
+    reason: Implementation-framework extension deferred.
+  - domain: Balancing
+    name: IFs Netted and Exchanged Volumes
+    document_type: B17
+    process_type: A63
+    business_type: null
+    area_params: [Acquiring_Domain, Connecting_Domain]
+    optional_filters: []
+    max_window: 1 day
+    parser_family: quantity_timeseries
+    status: deferred
+    dataset: netted_exchanged_volumes
+    batch: H9-so-gl
+    reason: Implementation-framework extension deferred.
+  - domain: Balancing
+    name: IFs Netted and Exchanged Volumes per Border
+    document_type: A30
+    process_type: A60
+    business_type: null
+    area_params: [Acquiring_Domain, Connecting_Domain]
+    optional_filters: []
+    max_window: 1 day
+    parser_family: quantity_timeseries
+    status: deferred
+    dataset: netted_exchanged_volumes_border
+    batch: H9-so-gl
+    reason: Implementation-framework extension deferred.
+  - domain: Balancing
+    name: IFs Balancing Border Capacity Limitations
+    document_type: A31
+    process_type: A47
+    business_type: A26
+    area_params: [In_Domain, Out_Domain]
+    optional_filters: [registeredResource]
+    max_window: 1 day
+    parser_family: balancing_capacity_document
+    status: deferred
+    dataset: balancing_border_capacity_limitations
+    batch: H9-so-gl
+    reason: Implementation-framework extension deferred.
+  - domain: Balancing
+    name: IFs Permanent Allocation Limitations to HVDC Lines
+    document_type: A99
+    process_type: A63
+    business_type: B06
+    area_params: [In_Domain, Out_Domain]
+    optional_filters: [registeredResource]
+    max_window: 1 day
+    parser_family: balancing_capacity_document
+    status: deferred
+    dataset: hvdc_permanent_allocation_limitations
+    batch: H9-so-gl
+    reason: Implementation-framework extension deferred.
+  - domain: Balancing
+    name: IFs Elastic Demands
+    document_type: A37
+    process_type: A47
+    business_type: B75
+    area_params: [Acquiring_Domain]
+    optional_filters: [offset]
+    max_window: 1 day
+    parser_family: balancing_bid_document
+    status: deferred
+    dataset: balancing_elastic_demands
+    batch: H9-so-gl
+    reason: Implementation-framework extension deferred.
+  - domain: Balancing
+    name: IFs Changes to Bid Availability
+    document_type: B45
+    process_type: A47
+    business_type: C46
+    area_params: [Domain]
+    optional_filters: [offset]
+    max_window: 1 day
+    parser_family: balancing_bid_document
+    status: deferred
+    dataset: balancing_bid_availability_changes
+    batch: H9-so-gl
+    reason: Implementation-framework extension deferred.
+  - domain: Balancing
+    name: IFs Changes to Bid Availability Archives
+    document_type: B45
+    process_type: A47
+    business_type: C46
+    area_params: [Domain]
+    optional_filters: [storageType, offset]
+    max_window: 1 day
+    parser_family: balancing_bid_document
+    status: deferred
+    dataset: balancing_bid_availability_changes_archives
+    batch: archive
+    reason: Archive variant deferred until primary endpoint is implemented.
+  - domain: Balancing
+    name: 17.1 Activated Balancing Energy Quantity
+    document_type: A83
+    process_type: A16
+    business_type: A95
+    area_params: [controlArea_Domain]
+    optional_filters: []
+    max_window: 1 day
+    parser_family: quantity_timeseries
+    status: implemented
+    dataset: activated_balancing_qty
+    batch: existing
+    reason: null
+
+  - domain: Master Data
+    name: Production and Generation Units
+    document_type: A95
+    process_type: null
+    business_type: B11
+    area_params: [BiddingZone_Domain]
+    optional_filters: [Implementation_DateAndOrTime, psrType]
+    max_window: reference
+    parser_family: master_data_document
+    status: implemented
+    dataset: generation_units_master_data
+    batch: H5-generation-units
+    reason: null
+  - domain: OMI
+    name: Other Market Information
+    document_type: B47
+    process_type: null
+    business_type: null
+    area_params: [ControlArea_Domain]
+    optional_filters: [DocStatus, mRID, PeriodStartUpdate, PeriodEndUpdate]
+    max_window: 1 year
+    parser_family: document_metadata
+    status: deferred
+    dataset: other_market_information
+    batch: H8-reference-documents
+    reason: Free-form market document; lower priority than numeric time-series sources.

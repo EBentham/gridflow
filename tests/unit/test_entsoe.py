@@ -15,42 +15,57 @@ from gridflow.connectors.entsoe.endpoints import (
     DOC_TYPES,
     EntsoeDocType,
 )
-from gridflow.connectors.entsoe.parsers import parse_timeseries_xml
-from gridflow.schemas.entsoe import (
-    EntsoeActualGeneration,
-    EntsoeActualLoad,
-    EntsoeCrossborderFlow,
-    EntsoeDayAheadPrice,
+from gridflow.connectors.entsoe.parsers import (
+    parse_generation_units_master_data_xml,
+    parse_timeseries_xml,
 )
 from gridflow.schemas.entsoe import (
     EntsoeActivatedBalancingPrices,
     EntsoeActivatedBalancingQty,
+    EntsoeActualGeneration,
+    EntsoeActualGenerationUnits,
+    EntsoeActualLoad,
     EntsoeContractedReserves,
+    EntsoeCrossborderFlow,
+    EntsoeDayAheadPrice,
+    EntsoeForecastMargin,
     EntsoeGenerationForecast,
+    EntsoeGenerationUnitsMasterData,
     EntsoeImbalancePrices,
     EntsoeImbalanceVolume,
     EntsoeInstalledCapacity,
+    EntsoeInstalledCapacityUnits,
     EntsoeLoadForecast,
     EntsoeLoadForecastWeekly,
     EntsoeNetTransferCapacity,
     EntsoeOutagesGeneration,
+    EntsoeWaterReservoirs,
     EntsoeWindSolarForecast,
 )
 from gridflow.silver.entsoe.activated_balancing_prices import ActivatedBalancingPricesTransformer
 from gridflow.silver.entsoe.activated_balancing_qty import ActivatedBalancingQtyTransformer
 from gridflow.silver.entsoe.actual_generation import ActualGenerationTransformer
+from gridflow.silver.entsoe.actual_generation_units import ActualGenerationUnitsTransformer
 from gridflow.silver.entsoe.actual_load import ActualLoadTransformer
 from gridflow.silver.entsoe.contracted_reserves import ContractedReservesTransformer
 from gridflow.silver.entsoe.cross_border_flows import CrossBorderFlowsTransformer
 from gridflow.silver.entsoe.day_ahead_prices import DayAheadPricesTransformer
+from gridflow.silver.entsoe.forecast_margin import ForecastMarginTransformer
 from gridflow.silver.entsoe.generation_forecast import GenerationForecastTransformer
+from gridflow.silver.entsoe.generation_units_master_data import (
+    GenerationUnitsMasterDataTransformer,
+)
 from gridflow.silver.entsoe.imbalance_prices import ImbalancePricesTransformer
 from gridflow.silver.entsoe.imbalance_volume import ImbalanceVolumeTransformer
 from gridflow.silver.entsoe.installed_capacity import InstalledCapacityTransformer
+from gridflow.silver.entsoe.installed_capacity_units import InstalledCapacityUnitsTransformer
 from gridflow.silver.entsoe.load_forecast import LoadForecastTransformer
+from gridflow.silver.entsoe.load_forecast_monthly import LoadForecastMonthlyTransformer
 from gridflow.silver.entsoe.load_forecast_weekly import LoadForecastWeeklyTransformer
+from gridflow.silver.entsoe.load_forecast_yearly import LoadForecastYearlyTransformer
 from gridflow.silver.entsoe.net_transfer_capacity import NetTransferCapacityTransformer
 from gridflow.silver.entsoe.outages_generation import OutagesGenerationTransformer
+from gridflow.silver.entsoe.water_reservoirs import WaterReservoirsTransformer
 from gridflow.silver.entsoe.wind_solar_forecast import WindSolarForecastTransformer
 
 FIXTURES = Path(__file__).parent.parent / "fixtures" / "entsoe"
@@ -71,6 +86,9 @@ class TestEntsoeEndpoints:
     def test_phase2_doc_types_populated(self):
         assert "generation_forecast" in DOC_TYPES
         assert "load_forecast_weekly" in DOC_TYPES
+        assert "load_forecast_monthly" in DOC_TYPES
+        assert "load_forecast_yearly" in DOC_TYPES
+        assert "forecast_margin" in DOC_TYPES
         assert "net_transfer_capacity" in DOC_TYPES
 
     def test_generation_forecast_doc_type(self):
@@ -83,10 +101,30 @@ class TestEntsoeEndpoints:
         assert lfw.document_type == "A65"
         assert lfw.process_type == "A31"
 
+    def test_load_forecast_monthly_doc_type(self):
+        lfm = DOC_TYPES["load_forecast_monthly"]
+        assert lfm.document_type == "A65"
+        assert lfm.process_type == "A32"
+        assert lfm.domain_style == "out_bidding_zone"
+
+    def test_load_forecast_yearly_doc_type(self):
+        lfy = DOC_TYPES["load_forecast_yearly"]
+        assert lfy.document_type == "A65"
+        assert lfy.process_type == "A33"
+        assert lfy.domain_style == "out_bidding_zone"
+
+    def test_forecast_margin_doc_type(self):
+        fm = DOC_TYPES["forecast_margin"]
+        assert fm.document_type == "A70"
+        assert fm.process_type == "A33"
+        assert fm.domain_style == "out_bidding_zone"
+
     def test_net_transfer_capacity_doc_type(self):
         ntc = DOC_TYPES["net_transfer_capacity"]
         assert ntc.document_type == "A61"
-        assert ntc.process_type == "A01"
+        assert ntc.process_type is None
+        assert ntc.domain_style == "zone_pair"
+        assert ntc.extra_params == {"contract_MarketAgreement.Type": "A01"}
 
     def test_doc_type_fields(self):
         dap = DOC_TYPES["day_ahead_prices"]
@@ -139,13 +177,17 @@ class TestParseTimeseriesXml:
         assert "unit_name" in record
 
     def test_unit_mrid_unit_name_empty_for_non_a80(self):
-        """Non-A80 fixtures have no RegisteredResource elements — both fields must be empty strings."""
+        """Non-A80 fixtures have no RegisteredResource elements."""
         xml = self._load("load_forecast_gb.xml")
         records = parse_timeseries_xml(xml, value_tag="quantity")
         assert len(records) > 0, "fixture must produce at least one record"
         for record in records:
-            assert record["unit_mrid"] == "", f"expected unit_mrid=='' but got {record['unit_mrid']!r}"
-            assert record["unit_name"] == "", f"expected unit_name=='' but got {record['unit_name']!r}"
+            assert record["unit_mrid"] == "", (
+                f"expected unit_mrid=='' but got {record['unit_mrid']!r}"
+            )
+            assert record["unit_name"] == "", (
+                f"expected unit_name=='' but got {record['unit_name']!r}"
+            )
 
     def test_timestamps_are_utc_datetimes(self):
         xml = self._load("day_ahead_prices_gb.xml")
@@ -946,6 +988,102 @@ class TestLoadForecastWeeklyTransformer:
 
 
 # ---------------------------------------------------------------------------
+# LoadForecastMonthlyTransformer
+# ---------------------------------------------------------------------------
+
+
+class TestLoadForecastMonthlyTransformer:
+    def setup_method(self):
+        self.t = _make_entsoe_transformer(LoadForecastMonthlyTransformer)
+
+    def test_transform_basic(self):
+        raw = _make_df_from_xml("load_forecast_monthly_gb.xml", "quantity")
+        result = self.t.transform(raw)
+        assert not result.is_empty()
+        assert "load_forecast_mw" in result.columns
+        assert "forecast_horizon" in result.columns
+        assert "area_code" in result.columns
+
+    def test_forecast_horizon_month_ahead(self):
+        raw = _make_df_from_xml("load_forecast_monthly_gb.xml", "quantity")
+        result = self.t.transform(raw)
+        assert result["forecast_horizon"][0] == "month_ahead"
+
+    def test_forecast_values(self):
+        raw = _make_df_from_xml("load_forecast_monthly_gb.xml", "quantity")
+        result = self.t.transform(raw).sort("timestamp_utc")
+        assert abs(result["load_forecast_mw"][0] - 30200) < 0.1
+
+    def test_empty_input(self):
+        assert self.t.transform(pl.DataFrame()).is_empty()
+
+
+# ---------------------------------------------------------------------------
+# LoadForecastYearlyTransformer
+# ---------------------------------------------------------------------------
+
+
+class TestLoadForecastYearlyTransformer:
+    def setup_method(self):
+        self.t = _make_entsoe_transformer(LoadForecastYearlyTransformer)
+
+    def test_transform_basic(self):
+        raw = _make_df_from_xml("load_forecast_yearly_gb.xml", "quantity")
+        result = self.t.transform(raw)
+        assert not result.is_empty()
+        assert "load_forecast_mw" in result.columns
+        assert "forecast_horizon" in result.columns
+        assert "area_code" in result.columns
+
+    def test_forecast_horizon_year_ahead(self):
+        raw = _make_df_from_xml("load_forecast_yearly_gb.xml", "quantity")
+        result = self.t.transform(raw)
+        assert result["forecast_horizon"][0] == "year_ahead"
+
+    def test_forecast_values(self):
+        raw = _make_df_from_xml("load_forecast_yearly_gb.xml", "quantity")
+        result = self.t.transform(raw).sort("timestamp_utc")
+        assert abs(result["load_forecast_mw"][0] - 31500) < 0.1
+
+    def test_empty_input(self):
+        assert self.t.transform(pl.DataFrame()).is_empty()
+
+
+# ---------------------------------------------------------------------------
+# ForecastMarginTransformer
+# ---------------------------------------------------------------------------
+
+
+class TestForecastMarginTransformer:
+    def setup_method(self):
+        self.t = _make_entsoe_transformer(ForecastMarginTransformer)
+
+    def test_transform_basic(self):
+        raw = _make_df_from_xml("forecast_margin_gb.xml", "quantity")
+        result = self.t.transform(raw)
+        assert not result.is_empty()
+        assert "forecast_margin_mw" in result.columns
+        assert "area_code" in result.columns
+
+    def test_forecast_margin_values(self):
+        raw = _make_df_from_xml("forecast_margin_gb.xml", "quantity")
+        result = self.t.transform(raw).sort("timestamp_utc")
+        assert abs(result["forecast_margin_mw"][0] - 4200) < 0.1
+
+    def test_timestamp_dtype(self):
+        raw = _make_df_from_xml("forecast_margin_gb.xml", "quantity")
+        result = self.t.transform(raw)
+        assert result["timestamp_utc"].dtype == pl.Datetime("us", "UTC")
+
+    def test_empty_input(self):
+        assert self.t.transform(pl.DataFrame()).is_empty()
+
+    def test_missing_columns_returns_empty(self):
+        raw = pl.DataFrame([{"foo": "bar"}])
+        assert self.t.transform(raw).is_empty()
+
+
+# ---------------------------------------------------------------------------
 # NetTransferCapacityTransformer
 # ---------------------------------------------------------------------------
 
@@ -1045,6 +1183,28 @@ class TestEntsoeLoadForecastWeeklySchema:
                 timestamp_utc=datetime(2024, 1, 15),
                 area_code="10YGB----------A",
                 load_forecast_mw=31500.0,
+            )
+
+
+class TestEntsoeForecastMarginSchema:
+    _TS = datetime(2024, 1, 15, 0, 0, tzinfo=UTC)
+
+    def test_valid_record(self):
+        r = EntsoeForecastMargin(
+            timestamp_utc=self._TS,
+            area_code="10YGB----------A",
+            forecast_margin_mw=4200.0,
+        )
+        assert r.data_provider == "entsoe"
+        assert r.forecast_margin_mw == 4200.0
+
+    def test_naive_timestamp_rejected(self):
+        from pydantic import ValidationError
+        with pytest.raises(ValidationError):
+            EntsoeForecastMargin(
+                timestamp_utc=datetime(2024, 1, 15),
+                area_code="10YGB----------A",
+                forecast_margin_mw=4200.0,
             )
 
 
@@ -1193,25 +1353,46 @@ class TestPhase3Endpoints:
         assert iv.document_type == "A86"
         assert iv.process_type is None
         assert iv.domain_style == "control_area"
+        assert iv.extra_params == {"businessType": "A19"}
 
     def test_activated_balancing_qty_doc_type(self):
         ab = DOC_TYPES["activated_balancing_qty"]
         assert ab.document_type == "A83"
         assert ab.domain_style == "control_area"
+        assert ab.extra_params == {"businessType": "A95"}
 
     def test_activated_balancing_prices_doc_type(self):
         ab = DOC_TYPES["activated_balancing_prices"]
         assert ab.document_type == "A84"
         assert ab.domain_style == "control_area"
+        assert ab.extra_params == {"businessType": "A96"}
 
     def test_contracted_reserves_doc_type(self):
         cr = DOC_TYPES["contracted_reserves"]
         assert cr.document_type == "A81"
+        assert cr.process_type == "A52"
         assert cr.domain_style == "control_area"
+        assert cr.extra_params == {"businessType": "B95", "Type_MarketAgreement.Type": "A01"}
 
-    def test_zone_datasets_have_zone_style(self):
-        for name in ("day_ahead_prices", "actual_load", "actual_generation", "load_forecast"):
-            assert DOC_TYPES[name].domain_style == "zone"
+    def test_endpoint_domain_styles_match_documented_params(self):
+        expected = {
+            "day_ahead_prices": "zone",
+            "actual_load": "out_bidding_zone",
+            "load_forecast": "out_bidding_zone",
+            "load_forecast_weekly": "out_bidding_zone",
+            "load_forecast_monthly": "out_bidding_zone",
+            "load_forecast_yearly": "out_bidding_zone",
+            "forecast_margin": "out_bidding_zone",
+            "actual_generation": "in_domain",
+            "wind_solar_forecast": "in_domain",
+            "installed_capacity": "in_domain",
+            "generation_forecast": "in_domain",
+            "cross_border_flows": "zone_pair",
+            "net_transfer_capacity": "zone_pair",
+            "outages_generation": "bidding_zone",
+        }
+        for name, domain_style in expected.items():
+            assert DOC_TYPES[name].domain_style == domain_style
 
     def test_default_control_areas_has_gb(self):
         assert "GB" in DEFAULT_CONTROL_AREAS
@@ -1662,3 +1843,193 @@ class TestEntsoeContractedReservesSchema:
                 reserve_type="fcr",
                 quantity_mw=500.0,
             )
+
+
+# ---------------------------------------------------------------------------
+# Phase H5 - generation unit sources
+# ---------------------------------------------------------------------------
+
+
+class TestPhaseH5Endpoints:
+    def test_h5_doc_types_populated(self):
+        for name in (
+            "installed_capacity_units",
+            "actual_generation_units",
+            "water_reservoirs",
+            "generation_units_master_data",
+        ):
+            assert name in DOC_TYPES, f"{name} missing from DOC_TYPES"
+
+    def test_installed_capacity_units_doc_type(self):
+        doc_type = DOC_TYPES["installed_capacity_units"]
+        assert doc_type.document_type == "A71"
+        assert doc_type.process_type == "A33"
+        assert doc_type.domain_style == "in_domain"
+
+    def test_actual_generation_units_doc_type(self):
+        doc_type = DOC_TYPES["actual_generation_units"]
+        assert doc_type.document_type == "A73"
+        assert doc_type.process_type == "A16"
+        assert doc_type.domain_style == "in_domain"
+
+    def test_water_reservoirs_doc_type(self):
+        doc_type = DOC_TYPES["water_reservoirs"]
+        assert doc_type.document_type == "A72"
+        assert doc_type.process_type == "A16"
+        assert doc_type.domain_style == "in_domain"
+
+    def test_generation_units_master_data_doc_type(self):
+        doc_type = DOC_TYPES["generation_units_master_data"]
+        assert doc_type.document_type == "A95"
+        assert doc_type.process_type is None
+        assert doc_type.domain_style == "bidding_zone"
+        assert doc_type.extra_params == {"BusinessType": "B11"}
+        assert doc_type.date_param == "Implementation_DateAndOrTime"
+
+
+class TestGenerationUnitsMasterDataParser:
+    def test_parse_generation_units_master_data(self):
+        xml = (FIXTURES / "generation_units_master_data_gb.xml").read_bytes()
+        records = parse_generation_units_master_data_xml(xml)
+
+        assert len(records) == 2
+        assert records[0]["area_code"] == "10YGB----------A"
+        assert records[0]["unit_mrid"] == "UNIT-DRAX-3"
+        assert records[0]["unit_name"] == "Drax Unit 3"
+        assert records[0]["production_type"] == "B02"
+        assert records[0]["implementation_datetime_utc"] == datetime(
+            2024, 1, 1, tzinfo=UTC
+        )
+
+
+class TestInstalledCapacityUnitsTransformer:
+    def setup_method(self):
+        self.t = _make_entsoe_transformer(InstalledCapacityUnitsTransformer)
+
+    def test_transform_basic(self):
+        raw = _make_df_from_xml("installed_capacity_units_gb.xml", "quantity")
+        result = self.t.transform(raw)
+        assert not result.is_empty()
+        assert "capacity_mw" in result.columns
+        assert "unit_mrid" in result.columns
+        assert "unit_name" in result.columns
+
+    def test_unit_identity_preserved(self):
+        raw = _make_df_from_xml("installed_capacity_units_gb.xml", "quantity")
+        result = self.t.transform(raw)
+        assert set(result["unit_mrid"].to_list()) == {"UNIT-DRAX-3", "UNIT-HEYSHAM-2"}
+        assert "Drax Unit 3" in set(result["unit_name"].to_list())
+
+
+class TestActualGenerationUnitsTransformer:
+    def setup_method(self):
+        self.t = _make_entsoe_transformer(ActualGenerationUnitsTransformer)
+
+    def test_transform_basic(self):
+        raw = _make_df_from_xml("actual_generation_units_gb.xml", "quantity")
+        result = self.t.transform(raw)
+        assert not result.is_empty()
+        assert "generation_mw" in result.columns
+        assert "unit_mrid" in result.columns
+        assert "production_type" in result.columns
+
+    def test_four_records(self):
+        raw = _make_df_from_xml("actual_generation_units_gb.xml", "quantity")
+        result = self.t.transform(raw)
+        assert len(result) == 4
+
+
+class TestWaterReservoirsTransformer:
+    def setup_method(self):
+        self.t = _make_entsoe_transformer(WaterReservoirsTransformer)
+
+    def test_transform_basic(self):
+        raw = _make_df_from_xml("water_reservoirs_gb.xml", "quantity")
+        result = self.t.transform(raw)
+        assert not result.is_empty()
+        assert "reservoir_mwh" in result.columns
+        assert "area_code" in result.columns
+
+    def test_reservoir_values(self):
+        raw = _make_df_from_xml("water_reservoirs_gb.xml", "quantity")
+        result = self.t.transform(raw).sort("timestamp_utc")
+        assert abs(result["reservoir_mwh"][0] - 18000) < 0.1
+
+
+class TestGenerationUnitsMasterDataTransformer:
+    def setup_method(self):
+        self.t = _make_entsoe_transformer(GenerationUnitsMasterDataTransformer)
+
+    def test_transform_basic(self):
+        records = parse_generation_units_master_data_xml(
+            (FIXTURES / "generation_units_master_data_gb.xml").read_bytes()
+        )
+        result = self.t.transform(pl.DataFrame(records))
+        assert not result.is_empty()
+        assert "unit_mrid" in result.columns
+        assert "unit_name" in result.columns
+        assert "production_type" in result.columns
+
+    def test_two_units(self):
+        records = parse_generation_units_master_data_xml(
+            (FIXTURES / "generation_units_master_data_gb.xml").read_bytes()
+        )
+        result = self.t.transform(pl.DataFrame(records))
+        assert set(result["unit_mrid"].to_list()) == {"UNIT-DRAX-3", "UNIT-HEYSHAM-2"}
+
+
+class TestEntsoeInstalledCapacityUnitsSchema:
+    _TS = datetime(2024, 1, 1, 0, 0, tzinfo=UTC)
+
+    def test_valid_record(self):
+        record = EntsoeInstalledCapacityUnits(
+            timestamp_utc=self._TS,
+            area_code="10YGB----------A",
+            production_type="B02",
+            unit_mrid="UNIT-DRAX-3",
+            unit_name="Drax Unit 3",
+            capacity_mw=660.0,
+        )
+        assert record.data_provider == "entsoe"
+        assert record.unit_mrid == "UNIT-DRAX-3"
+
+
+class TestEntsoeActualGenerationUnitsSchema:
+    _TS = datetime(2024, 1, 15, 0, 0, tzinfo=UTC)
+
+    def test_valid_record(self):
+        record = EntsoeActualGenerationUnits(
+            timestamp_utc=self._TS,
+            area_code="10YGB----------A",
+            production_type="B02",
+            unit_mrid="UNIT-DRAX-3",
+            generation_mw=610.0,
+        )
+        assert record.data_provider == "entsoe"
+        assert record.generation_mw == 610.0
+
+
+class TestEntsoeWaterReservoirsSchema:
+    _TS = datetime(2024, 1, 15, 0, 0, tzinfo=UTC)
+
+    def test_valid_record(self):
+        record = EntsoeWaterReservoirs(
+            timestamp_utc=self._TS,
+            area_code="10YGB----------A",
+            reservoir_mwh=18000.0,
+        )
+        assert record.data_provider == "entsoe"
+        assert record.reservoir_mwh == 18000.0
+
+
+class TestEntsoeGenerationUnitsMasterDataSchema:
+    def test_valid_record(self):
+        record = EntsoeGenerationUnitsMasterData(
+            area_code="10YGB----------A",
+            unit_mrid="UNIT-DRAX-3",
+            unit_name="Drax Unit 3",
+            production_type="B02",
+            implementation_datetime_utc=datetime(2024, 1, 1, tzinfo=UTC),
+        )
+        assert record.data_provider == "entsoe"
+        assert record.production_type == "B02"

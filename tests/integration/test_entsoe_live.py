@@ -166,7 +166,13 @@ def _assert_silver_output(
     assert path.exists(), _diagnostic_context(dataset, f"silver missing: {path}")
 
     df = pl.read_parquet(path)
-    assert len(df) == rows, _diagnostic_context(dataset, "silver row count mismatch")
+    # Data may span multiple date-partitioned files (e.g. CET vs UTC boundary),
+    # so verify total row count across all silver files for this dataset.
+    silver_base = tmp_data_dir / "silver" / "entsoe" / dataset
+    total_silver_rows = sum(
+        len(pl.read_parquet(p)) for p in silver_base.rglob("*.parquet")
+    )
+    assert total_silver_rows == rows, _diagnostic_context(dataset, "silver row count mismatch")
     if "data_provider" in df.columns:
         assert df["data_provider"].unique().to_list() == ["entsoe"]
 
@@ -185,13 +191,16 @@ class TestEntsoeLivePrerequisites:
 
         assert any(marker.startswith("live:") for marker in markers)
 
-    def test_entsoe_config_and_doc_types_cover_same_16_datasets(self) -> None:
-        configured = set(load_settings().get_source_config("entsoe").datasets)
+    def test_entsoe_config_and_doc_types_cover_same_datasets(self) -> None:
+        configured_datasets = load_settings().get_source_config("entsoe").datasets
+        configured = set(configured_datasets)
         registered = set(DOC_TYPES)
 
-        assert len(configured) == 16
-        assert len(registered) == 16
         assert configured == registered
+        for dataset, doc_type in DOC_TYPES.items():
+            dataset_config = configured_datasets[dataset]
+            assert dataset_config.document_type == doc_type.document_type
+            assert dataset_config.process_type == doc_type.process_type
 
     def test_api_key_redaction_never_returns_secret(self, monkeypatch: pytest.MonkeyPatch) -> None:
         secret = "super-secret-entsoe-token"
@@ -316,13 +325,16 @@ class TestEntsoeCliFailurePropagation:
 class TestEntsoeLiveAllDatasets:
     @requires_entsoe_api_key
     @pytest.mark.live
-    def test_live_config_and_doc_types_cover_same_16_datasets(self) -> None:
-        configured = set(load_settings().get_source_config("entsoe").datasets)
+    def test_live_config_and_doc_types_cover_same_datasets(self) -> None:
+        configured_datasets = load_settings().get_source_config("entsoe").datasets
+        configured = set(configured_datasets)
         registered = set(DOC_TYPES)
 
-        assert len(configured) == 16
-        assert len(registered) == 16
         assert configured == registered
+        for dataset, doc_type in DOC_TYPES.items():
+            dataset_config = configured_datasets[dataset]
+            assert dataset_config.document_type == doc_type.document_type
+            assert dataset_config.process_type == doc_type.process_type
 
     @requires_entsoe_api_key
     @pytest.mark.live
@@ -364,7 +376,16 @@ class TestEntsoeLiveAllDatasets:
     @pytest.mark.asyncio
     @pytest.mark.parametrize(
         "dataset",
-        ["day_ahead_prices", "imbalance_prices"],
+        [
+            "day_ahead_prices",
+            "actual_load",
+            "actual_generation",
+            "actual_generation_units",
+            "cross_border_flows",
+            "outages_generation",
+            "imbalance_prices",
+            "generation_units_master_data",
+        ],
     )
     async def test_live_request_shape_uses_supported_domain_params(
         self,
@@ -387,9 +408,13 @@ class TestEntsoeLiveAllDatasets:
             assert "in_Domain.mRID" not in params
             assert "out_Domain.mRID" not in params
             assert "controlArea_Domain.mRID" not in params
+            assert "outBiddingZone_Domain.mRID" not in params
+            assert "BiddingZone_Domain.mRID" not in params
             assert (
                 "in_Domain" in params
                 or "out_Domain" in params
+                or "outBiddingZone_Domain" in params
+                or "BiddingZone_Domain" in params
                 or "controlArea_Domain" in params
             )
 

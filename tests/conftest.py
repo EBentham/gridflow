@@ -4,9 +4,10 @@ from __future__ import annotations
 
 import json
 from datetime import UTC, datetime
-from typing import TYPE_CHECKING
+from pathlib import Path
 
 import pytest
+from dotenv import load_dotenv
 
 from gridflow.config.settings import (
     DatasetConfig,
@@ -17,9 +18,8 @@ from gridflow.config.settings import (
 )
 from gridflow.connectors.base import RawResponse
 
-if TYPE_CHECKING:
-    from pathlib import Path
-
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+load_dotenv(PROJECT_ROOT / ".env", override=False)
 
 def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item]) -> None:
     """Keep live API tests opt-in even when local credentials are present."""

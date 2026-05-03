@@ -120,9 +120,10 @@ async def test_fetch_imbalance_volume_omits_process_type(
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_fetch_zone_style_uses_in_domain(entsoe_config: SourceConfig) -> None:
-    """Zone-style datasets must use canonical in/out domain params."""
-    # Extend config with a zone-style dataset
+async def test_fetch_actual_load_uses_out_bidding_zone_domain(
+    entsoe_config: SourceConfig,
+) -> None:
+    """Load datasets must use ENTSO-E's documented outBiddingZone_Domain param."""
     config = entsoe_config.model_copy(
         update={"datasets": {**entsoe_config.datasets, "actual_load": DatasetConfig()}}
     )
@@ -139,14 +140,15 @@ async def test_fetch_zone_style_uses_in_domain(entsoe_config: SourceConfig) -> N
         )
 
     assert len(responses) > 0
-    # Verify first call used in_Domain/out_Domain, not legacy .mRID params.
+    # Verify first call used outBiddingZone_Domain, not legacy .mRID or in/out params.
     import respx as _respx  # noqa: PLC0415
     for call in _respx.calls:
         params = dict(call.request.url.params)
         assert "controlArea_Domain" not in params
         assert "controlArea_Domain.mRID" not in params
-        assert "in_Domain" in params
-        assert "out_Domain" in params
+        assert "outBiddingZone_Domain" in params
+        assert "in_Domain" not in params
+        assert "out_Domain" not in params
         assert "in_Domain.mRID" not in params
         assert "out_Domain.mRID" not in params
         break  # just check one call

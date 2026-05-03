@@ -59,6 +59,55 @@ See full details: [milestones/v0.2-entsoe-gaps-ROADMAP.md](milestones/v0.2-entso
   - Cross-cutting constraints: H3 remains ENTSO-E-only; live tests cover all 16 datasets; command failures hard-fail with diagnostics.
   - Status: Implementation complete; credentialed live verification pending because `ENTSOE_API_KEY` is absent in the execution environment.
 
+- [x] **Phase H4**: ENTSO-E endpoint catalog + request builder correction - Done 2026-05-03
+    - Requirements: URL-01, DOC-01, COVER-01, COVER-02, LIVE-04
+    - **Plans:** 2 plans
+    - Plans:
+    - [x] H4-01-PLAN.md - Repair existing ENTSO-E request construction against documented parameter styles
+    - [x] H4-02-PLAN.md - Build endpoint catalog workflow and promote the first missing source batch
+  - Success: Existing ENTSO-E datasets use documented request parameter families, not one broad zone-style URL.
+  - Success: Official endpoint inventory is represented in `docs/entsoe_endpoint_catalog.yaml` with every row classified.
+  - Success: Load month/year forecasts and forecast margin added through metadata, parser, schema, transformer, fixtures, mocked E2E, and live request-shape gates.
+  - Success: New ENTSO-E endpoints can be added in repeatable batches: metadata, parser, schema, transformer, fixture, mocked E2E, live shape gate.
+  - Status: H4 complete; remaining planned endpoint families are cataloged for H5-H8 batches.
+
+- [x] **Phase H5**: ENTSO-E generation unit and reference data sources - Done 2026-05-03
+  - Requirements: SRC-GEN-01, SRC-GEN-02, SRC-GEN-03, SRC-GEN-04, COVER-03, LIVE-05
+  - **Plans:** 1 plan
+  - Plans:
+    - [x] H5-01-PLAN.md - Add generation unit, reservoir, and generation-unit master-data sources
+  - Success: `installed_capacity_units`, `actual_generation_units`, `water_reservoirs`, and `generation_units_master_data` are implemented through metadata, parser, schema, transformer, fixtures, mocked E2E, catalog validation, and live request-shape gates.
+  - Success: Unit-level identifiers and names are preserved without weakening existing aggregate generation schemas.
+  - Cross-cutting constraints: first re-verify the H4 bronze `data_date`/backfill partition regression; keep catalog status synchronized with DOC_TYPES.
+  - Status: H5 complete; H4 bronze partition regression covered and H5 live request-shape probe passed.
+
+- [ ] **Phase H6**: ENTSO-E transmission and market data sources
+  - Requirements: SRC-TX-01, SRC-TX-02, SRC-TX-03, SRC-TX-04, COVER-03, LIVE-05
+  - **Plans:** 1 plan
+  - Plans:
+    - [ ] H6-01-PLAN.md - Add transmission, commercial schedule, capacity allocation, congestion, and market-position sources
+  - Success: H6 catalog rows are implemented or explicitly reclassified with reasons.
+  - Success: Zone-pair request styles support documented optional market filters without ad hoc connector branches.
+  - Cross-cutting constraints: batch by parser family, keep large schema additions reviewable, and preserve existing 19 ENTSO-E datasets.
+
+- [ ] **Phase H7**: ENTSO-E outage extension data sources
+  - Requirements: SRC-OUT-01, SRC-OUT-02, SRC-OUT-03, COVER-03, LIVE-05
+  - **Plans:** 1 plan
+  - Plans:
+    - [ ] H7-01-PLAN.md - Add consumption, transmission, offshore-grid, and production outage sources
+  - Success: New outage datasets share the established outage-document parser path where possible and expose asset/status fields needed by silver schemas.
+  - Success: Deferred outage variants remain documented with dependency reasons.
+  - Cross-cutting constraints: do not regress the existing `outages_generation` unit-level schema.
+
+- [ ] **Phase H8**: ENTSO-E balancing extension data sources
+  - Requirements: SRC-BAL-01, SRC-BAL-02, SRC-BAL-03, SRC-BAL-04, COVER-03, LIVE-05
+  - **Plans:** 1 plan
+  - Plans:
+    - [ ] H8-01-PLAN.md - Add GL EB balancing state, bid, capacity, cross-zonal capacity, and financial balancing sources
+  - Success: Near-term planned balancing-extension catalog rows are implemented through the medallion path.
+  - Success: SO GL and implementation-framework extension rows remain deferred with explicit H9/backlog reasons.
+  - Cross-cutting constraints: dedicated bid/capacity parser families are introduced only when the generic time-series parser cannot represent the payload safely.
+
 ---
 
 ## Backlog

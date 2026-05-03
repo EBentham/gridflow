@@ -224,7 +224,7 @@ def backfill(
     dataset: Optional[str] = typer.Argument(default=None, help="Dataset name"),
     start: str = typer.Option(..., help="Start date (YYYY-MM-DD)"),
     end: str = typer.Option(..., help="End date (YYYY-MM-DD)"),
-    chunk_days: int = typer.Option(7, help="Days per chunk"),
+    chunk_days: int = typer.Option(1, help="Days per chunk"),
     all_datasets: bool = typer.Option(False, "--all", help="Backfill all datasets for source"),
 ) -> None:
     """Backfill historical data in chunks."""
@@ -265,12 +265,15 @@ def backfill(
                 all_datasets=False,
             )
 
-            # Call transform for this chunk
+            # Call transform for this chunk.  chunk_end is the exclusive API
+            # boundary; transform date iteration is inclusive, so subtract one
+            # day to avoid a spurious "no bronze data" warning for the end date.
+            transform_end = (chunk_end - timedelta(days=1)).date()
             transform(
                 source=source,
                 dataset=ds,
                 start=current.date().isoformat(),
-                end=chunk_end.date().isoformat(),
+                end=transform_end.isoformat(),
                 last=None,
                 all_datasets=False,
             )
