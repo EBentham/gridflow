@@ -22,9 +22,23 @@ registry-driven inventory checks, mocked request-shape coverage, fixture-backed
 bronze-to-silver tests, opt-in live API validation, and isolated CLI/backfill
 smoke tests.
 
-**Next focus:** plan the next connector-confidence milestone. GIE AGSI/ALSI is
-the leading candidate because ENTSOG is now validated through bronze, silver,
-mocked E2E, live API-to-silver, and CLI smoke coverage.
+**Current focus:** v0.6 NESO Carbon Intensity Platform. The next connector
+confidence milestone brings the full NESO Carbon Intensity API surface into the
+medallion pipeline with endpoint catalog, silver transforms, mocked E2E tests,
+opt-in live API-to-silver checks, and CLI smoke coverage.
+
+## Current Milestone: v0.6 NESO Carbon Intensity Platform
+
+**Goal:** Promote NESO Carbon Intensity from a single national intensity route
+to a fully catalogued and tested source covering all documented API datasets.
+
+**Target features:**
+- Research and document every official NESO Carbon Intensity API route.
+- Register all national intensity, statistics, generation mix, regional, and
+  emission-factor datasets in source config and connector endpoint metadata.
+- Transform every NESO response family into deterministic silver parquet.
+- Add inventory, mocked request-shape, fixture-backed bronze-to-silver, opt-in
+  live API-to-silver, and CLI smoke tests.
 
 ## Last Milestone: v0.5 ENTSOG Pipeline Validation
 
@@ -84,6 +98,10 @@ confidence tests.
 
 ### Active
 
+- [x] NESO endpoint catalog covers all documented Carbon Intensity API routes
+- [x] NESO connector fetches every registered dataset via path-template metadata
+- [x] NESO silver transformers preserve all national, stats, factors, generation, and regional payload data
+- [x] NESO mocked and live E2E tests prove API responses flow through bronze into silver
 - [ ] Extend live and mocked E2E coverage to GIE AGSI/ALSI connectors
 - [ ] Decide whether to promote deferred ENTSO-E catalog rows, including B09 flow-based allocations and SO GL / implementation-framework balancing extensions
 - [ ] Decide whether scheduled live smoke monitoring should exist outside the normal test suite
@@ -181,4 +199,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-04 after shipping v0.5 ENTSOG Pipeline Validation*
+*Last updated: 2026-05-04 while implementing v0.6 NESO Carbon Intensity Platform*

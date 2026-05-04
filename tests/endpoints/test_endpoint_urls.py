@@ -453,6 +453,9 @@ class TestEntsogEndpointDefinitions:
         assert params["periodType"] == "day"
         assert params["timeZone"] == "UCT"
         assert params["limit"] == -1
+        assert "pointDirection" not in params
+
+        params = build_params(ENDPOINTS["nominations"], start=REF_START, end=REF_END)
         assert params["pointDirection"] == ",".join(DEFAULT_POINT_DIRECTIONS)
 
     def test_key_point_keys(self):

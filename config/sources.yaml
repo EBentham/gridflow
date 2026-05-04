@@ -557,7 +557,135 @@ sources:
     timeout: 30
     max_retries: 3
     datasets:
+      intensity_current:
+        endpoint: "/intensity"
+        schedule: "hourly"
+        max_query_days: 0
+      intensity_today:
+        endpoint: "/intensity/date"
+        schedule: "daily"
+        max_query_days: 0
+      intensity_date:
+        endpoint: "/intensity/date/{date}"
+        schedule: "daily"
+        max_query_days: 1
+      intensity_period:
+        endpoint: "/intensity/date/{date}/{period}"
+        schedule: "hourly"
+        max_query_days: 1
+      intensity_factors:
+        endpoint: "/intensity/factors"
+        schedule: "weekly"
+        max_query_days: 0
+      intensity_at:
+        endpoint: "/intensity/{from}"
+        schedule: "hourly"
+        max_query_days: 1
+      intensity_fw24h:
+        endpoint: "/intensity/{from}/fw24h"
+        schedule: "hourly"
+        max_query_days: 1
+      intensity_fw48h:
+        endpoint: "/intensity/{from}/fw48h"
+        schedule: "hourly"
+        max_query_days: 1
+      intensity_pt24h:
+        endpoint: "/intensity/{from}/pt24h"
+        schedule: "hourly"
+        max_query_days: 1
       carbon_intensity:
         endpoint: "/intensity"
+        schedule: "hourly"
+        max_query_days: 14
+      intensity_stats:
+        endpoint: "/intensity/stats/{from}/{to}"
+        schedule: "daily"
+        max_query_days: 14
+      intensity_stats_block:
+        endpoint: "/intensity/stats/{from}/{to}/{block}"
+        schedule: "daily"
+        max_query_days: 14
+      generation_current:
+        endpoint: "/generation"
+        schedule: "hourly"
+        max_query_days: 0
+      generation_pt24h:
+        endpoint: "/generation/{from}/pt24h"
+        schedule: "hourly"
+        max_query_days: 1
+      generation:
+        endpoint: "/generation/{from}/{to}"
+        schedule: "hourly"
+        max_query_days: 14
+      regional_current:
+        endpoint: "/regional"
+        schedule: "hourly"
+        max_query_days: 0
+      regional_england:
+        endpoint: "/regional/england"
+        schedule: "hourly"
+        max_query_days: 0
+      regional_scotland:
+        endpoint: "/regional/scotland"
+        schedule: "hourly"
+        max_query_days: 0
+      regional_wales:
+        endpoint: "/regional/wales"
+        schedule: "hourly"
+        max_query_days: 0
+      regional_postcode:
+        endpoint: "/regional/postcode/{postcode}"
+        schedule: "hourly"
+        max_query_days: 0
+      regional_regionid:
+        endpoint: "/regional/regionid/{regionid}"
+        schedule: "hourly"
+        max_query_days: 0
+      regional_intensity_fw24h:
+        endpoint: "/regional/intensity/{from}/fw24h"
+        schedule: "hourly"
+        max_query_days: 1
+      regional_intensity_fw24h_postcode:
+        endpoint: "/regional/intensity/{from}/fw24h/postcode/{postcode}"
+        schedule: "hourly"
+        max_query_days: 1
+      regional_intensity_fw24h_regionid:
+        endpoint: "/regional/intensity/{from}/fw24h/regionid/{regionid}"
+        schedule: "hourly"
+        max_query_days: 1
+      regional_intensity_fw48h:
+        endpoint: "/regional/intensity/{from}/fw48h"
+        schedule: "hourly"
+        max_query_days: 1
+      regional_intensity_fw48h_postcode:
+        endpoint: "/regional/intensity/{from}/fw48h/postcode/{postcode}"
+        schedule: "hourly"
+        max_query_days: 1
+      regional_intensity_fw48h_regionid:
+        endpoint: "/regional/intensity/{from}/fw48h/regionid/{regionid}"
+        schedule: "hourly"
+        max_query_days: 1
+      regional_intensity_pt24h:
+        endpoint: "/regional/intensity/{from}/pt24h"
+        schedule: "hourly"
+        max_query_days: 1
+      regional_intensity_pt24h_postcode:
+        endpoint: "/regional/intensity/{from}/pt24h/postcode/{postcode}"
+        schedule: "hourly"
+        max_query_days: 1
+      regional_intensity_pt24h_regionid:
+        endpoint: "/regional/intensity/{from}/pt24h/regionid/{regionid}"
+        schedule: "hourly"
+        max_query_days: 1
+      regional_intensity:
+        endpoint: "/regional/intensity/{from}/{to}"
+        schedule: "hourly"
+        max_query_days: 14
+      regional_intensity_postcode:
+        endpoint: "/regional/intensity/{from}/{to}/postcode/{postcode}"
+        schedule: "hourly"
+        max_query_days: 14
+      regional_intensity_regionid:
+        endpoint: "/regional/intensity/{from}/{to}/regionid/{regionid}"
         schedule: "hourly"
         max_query_days: 14

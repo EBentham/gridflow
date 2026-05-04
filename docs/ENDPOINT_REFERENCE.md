@@ -423,31 +423,55 @@ https://archive-api.open-meteo.com/v1/archive?latitude=51.5074&longitude=-0.1278
 **Auth:** None (public API)
 **Response format:** JSON
 
-### URL Pattern
+### Registered API Families
 
-```
-GET https://api.carbonintensity.org.uk/intensity/{from_datetime}/{to_datetime}
-```
+Gridflow now registers every documented route variant from the official Carbon
+Intensity API v2 definition:
 
-- **from:** `%Y-%m-%dT%H:%MZ` format -- e.g. `2026-02-01T00:00Z`
-- **to:** `%Y-%m-%dT%H:%MZ` format -- e.g. `2026-02-02T00:00Z`
-- No query parameters -- dates are in the URL path
+| Family | Examples | Silver output |
+|--------|----------|---------------|
+| National intensity | `/intensity`, `/intensity/date/{date}`, `/intensity/{from}/{to}` | Half-hour intensity rows with forecast, actual, and index. |
+| National statistics | `/intensity/stats/{from}/{to}`, `/intensity/stats/{from}/{to}/{block}` | Max, average, min, and index over a range/block. |
+| Emission factors | `/intensity/factors` | Reference rows by fuel. |
+| Generation mix | `/generation`, `/generation/{from}/pt24h`, `/generation/{from}/{to}` | Long rows by timestamp and fuel. |
+| Regional intensity | `/regional`, `/regional/{country}`, `/regional/intensity/{from}/{to}/regionid/{regionid}` | Long rows by timestamp, region, and fuel. |
 
-### Verified Example URL
+### Path Variables
+
+| Variable | Format/default |
+|----------|----------------|
+| `from`, `to` | `%Y-%m-%dT%H:%MZ`, e.g. `2026-02-01T00:00Z` |
+| `date` | `%Y-%m-%d`, e.g. `2026-02-01` |
+| `period` | Defaults to `1` for direct path construction; `intensity_period` pipeline fetches iterate every GB settlement period for each requested date |
+| `block` | Defaults to `24` |
+| `postcode` | Defaults to `RG10` |
+| `regionid` | Defaults to `13` |
+
+No NESO routes use query parameters; all dynamic values are path segments.
+The `/intensity/date/{date}/{period}` route is requested once per settlement
+period rather than once per day. Normal GB settlement days have 48 periods,
+spring clock-change days have 46, and autumn clock-change days have 50.
+See `docs/neso_endpoint_catalog.yaml` and `docs/endpoints/neso.md` for the full
+33-route inventory.
+
+### Verified Example URLs
 
 ```
 https://api.carbonintensity.org.uk/intensity/2026-02-01T00:00Z/2026-02-02T00:00Z
+https://api.carbonintensity.org.uk/intensity/date/2026-04-22/1
+https://api.carbonintensity.org.uk/intensity/date/2026-04-22/2
+https://api.carbonintensity.org.uk/intensity/stats/2026-02-01T00:00Z/2026-02-02T00:00Z/24
+https://api.carbonintensity.org.uk/generation/2026-02-01T00:00Z/2026-02-02T00:00Z
+https://api.carbonintensity.org.uk/regional/intensity/2026-02-01T00:00Z/2026-02-02T00:00Z/postcode/RG10
 ```
 
 ### Chunking
 
-- Maximum 14 days per request
-- Ranges > 14 days are split into 14-day chunks automatically
-
-### Notes
-
-- Returns half-hourly carbon intensity data
-- No pagination needed
+- Windowed endpoints are split into 14-day chunks.
+- Daily date endpoints iterate each requested date. The settlement-period
+  endpoint additionally iterates every valid GB settlement period for that date.
+- Current/reference endpoints are one request.
+- No pagination is required.
 
 ---
 

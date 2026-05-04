@@ -3,7 +3,10 @@
 from __future__ import annotations
 
 from datetime import UTC, date, datetime, time
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
 
 import polars as pl
 
@@ -46,6 +49,20 @@ def parse_entsog_datetime_expr(column: str) -> pl.Expr:
     )
 
 
+def filter_records_to_target_date(
+    records: Iterable[dict[str, Any]],
+    target_date: date,
+    timestamp_fields: Iterable[str],
+) -> list[dict[str, Any]]:
+    """Keep records whose first parseable timestamp falls on ``target_date``."""
+    filtered: list[dict[str, Any]] = []
+    for record in records:
+        record_date = _record_date(record, timestamp_fields)
+        if record_date is None or record_date == target_date:
+            filtered.append(record)
+    return filtered
+
+
 def _parse_datetime_text(text: str) -> datetime | None:
     candidates = [text.replace("Z", "+00:00")]
     if " " in text and "T" not in text:
@@ -62,4 +79,17 @@ def _parse_datetime_text(text: str) -> datetime | None:
             return datetime.strptime(text, fmt)
         except ValueError:
             pass
+    return None
+
+
+def _record_date(
+    record: dict[str, Any],
+    timestamp_fields: Iterable[str],
+) -> date | None:
+    for field in timestamp_fields:
+        if field not in record:
+            continue
+        parsed = parse_entsog_datetime(record[field])
+        if parsed is not None:
+            return parsed.date()
     return None

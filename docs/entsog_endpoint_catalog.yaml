@@ -13,13 +13,13 @@ entries:
     endpoint: /operationalData
     response_key: operationalData
     parser_family: operational_data
-    request_style: date_window_indicator_point_direction
-    mandatory_params: [from, to, indicator, periodType, pointDirection]
-    optional_params: [timeZone, limit, includeExemptions, isNA, sorting]
+    request_style: date_window_indicator
+    mandatory_params: [from, to, indicator, periodType]
+    optional_params: [pointDirection, timeZone, limit, includeExemptions, isNA, sorting]
     dataset: physical_flows
     indicator: Physical Flow
     status: implemented
-    notes: Specialised silver transformer normalises value to GWh/day.
+    notes: Specialised silver transformer normalises value to GWh/day; no default pointDirection filter is applied.
   - category: Point Operational Data
     endpoint: /operationalData
     response_key: operationalData

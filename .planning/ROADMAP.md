@@ -8,6 +8,7 @@
 - Complete **v0.3-entsoe-validation** - ENTSO-E Pipeline Validation H1-H8 (shipped 2026-05-03)
 - Complete **v0.4-elexon-validation** - Elexon Pipeline Validation I1-I4 (shipped 2026-05-04)
 - Complete **v0.5-entsog-pipeline-validation** - ENTSOG Pipeline Validation J1-J4 (shipped 2026-05-04)
+- Current **v0.6-neso-carbon-intensity-platform** - NESO Carbon Intensity Platform K1-K4
 
 ---
 
@@ -71,6 +72,20 @@ See full details: [milestones/v0.4-elexon-validation-ROADMAP.md](milestones/v0.4
 - [x] Phase J4: ENTSOG opt-in live API-to-silver tests, CLI smoke tests, and close-out docs - completed 2026-05-04
 
 See full details: [milestones/v0.5-entsog-pipeline-validation-ROADMAP.md](milestones/v0.5-entsog-pipeline-validation-ROADMAP.md)
+
+</details>
+
+---
+
+<details open>
+<summary>Current v0.6-neso-carbon-intensity-platform - NESO Carbon Intensity Platform (K1-K4)</summary>
+
+- [x] Phase K1: NESO endpoint research, catalog, source config, and inventory contract
+- [x] Phase K2: NESO connector path-template request builder and mocked request-shape tests
+- [x] Phase K3: NESO family-aware silver transformers and fixture-backed bronze-to-silver tests
+- [x] Phase K4: NESO opt-in live API-to-silver tests, CLI smoke test, and close-out verification
+
+Research: [NESO-CARBON-INTENSITY-RESEARCH.md](research/NESO-CARBON-INTENSITY-RESEARCH.md)
 
 </details>
 

@@ -281,3 +281,56 @@ def test_fixture_response_writes_bronze_and_transforms_to_silver(
         assert "isCAMRelevant" not in df.columns
         assert "isCamRelevant" not in df.columns
         assert df["is_cam_relevant"].to_list() == [True]
+
+
+def test_date_window_transform_filters_bronze_records_to_target_date(
+    tmp_data_dir: Path,
+) -> None:
+    dataset = "nominations"
+    endpoint = ENDPOINTS[dataset]
+    records = [
+        {
+            **_records_for(dataset)[0],
+            "id": "nominations-20260417",
+            "periodFrom": "2026-04-17T05:00:00+02:00",
+            "periodTo": "2026-04-18T05:00:00+02:00",
+        },
+        {
+            **_records_for(dataset)[0],
+            "id": "nominations-20260418",
+            "periodFrom": "2026-04-18T05:00:00+02:00",
+            "periodTo": "2026-04-19T05:00:00+02:00",
+        },
+    ]
+    body = json.dumps({
+        "meta": {"count": 2, "total": 2},
+        endpoint.response_key: records,
+    }).encode()
+    response = RawResponse(
+        body=body,
+        content_type="application/json",
+        source="entsog",
+        dataset=dataset,
+        request_url=f"{BASE_URL}{endpoint.path}",
+        request_params={"limit": -1},
+        fetched_at=datetime(2026, 4, 17, 12, 0, tzinfo=UTC),
+        http_status=200,
+        api_version="v1",
+        data_date=date(2026, 4, 17),
+    )
+    BronzeWriter(tmp_data_dir).write(response)
+
+    transformer = get_transformer("entsog", dataset, tmp_data_dir)
+    rows_written = transformer.run(date(2026, 4, 17))
+
+    assert rows_written == 1
+    df = pl.read_parquet(
+        tmp_data_dir
+        / "silver"
+        / "entsog"
+        / dataset
+        / "year=2026"
+        / "month=04"
+        / "nominations_20260417.parquet"
+    )
+    assert df["id"].to_list() == ["nominations-20260417"]

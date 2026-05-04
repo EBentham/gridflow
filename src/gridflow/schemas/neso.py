@@ -1,30 +1,73 @@
-"""Pydantic v2 schemas for NESO / Carbon Intensity silver-layer data contracts."""
+"""Pydantic v2 schemas for NESO Carbon Intensity silver data contracts."""
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime  # noqa: TC003 - Pydantic needs this at runtime.
 from typing import Literal
 
 from pydantic import Field, field_validator
 
 from gridflow.schemas.common import BaseSchema
 
-# Carbon intensity index values from the API
 IntensityIndex = Literal["very low", "low", "moderate", "high", "very high"]
 
 
-class CarbonIntensity(BaseSchema):
-    """Silver-layer schema for NESO/National Grid carbon intensity data."""
-
-    timestamp_utc: datetime          # Start of the half-hour period
-    forecast_gco2_kwh: float | None = None   # Forecast intensity (gCO2/kWh)
-    actual_gco2_kwh: float | None = None     # Actual intensity (gCO2/kWh)
-    intensity_index: str = ""                # "very low" … "very high"
+class _NesoBase(BaseSchema):
     data_provider: str = Field(default="neso")
 
-    @field_validator("timestamp_utc")
+
+class _TimestampedNesoBase(_NesoBase):
+    timestamp_utc: datetime
+    period_end_utc: datetime | None = None
+
+    @field_validator("timestamp_utc", "period_end_utc")
     @classmethod
-    def must_be_utc(cls, v: datetime) -> datetime:
-        if v.tzinfo is None:
-            raise ValueError("timestamp_utc must be timezone-aware (UTC)")
-        return v
+    def must_be_utc(cls, value: datetime | None) -> datetime | None:
+        if value is not None and value.tzinfo is None:
+            raise ValueError("NESO timestamps must be timezone-aware (UTC)")
+        return value
+
+
+class CarbonIntensity(_TimestampedNesoBase):
+    """Silver schema for national Carbon Intensity records."""
+
+    forecast_gco2_kwh: float | None = None
+    actual_gco2_kwh: float | None = None
+    intensity_index: str = ""
+
+
+class CarbonIntensityStats(_TimestampedNesoBase):
+    """Silver schema for national Carbon Intensity statistics."""
+
+    max_gco2_kwh: float | None = None
+    average_gco2_kwh: float | None = None
+    min_gco2_kwh: float | None = None
+    intensity_index: str = ""
+
+
+class CarbonIntensityFactor(_NesoBase):
+    """Silver schema for generation fuel emission factors."""
+
+    fuel: str
+    factor_gco2_kwh: float | None = None
+
+
+class GenerationMix(_TimestampedNesoBase):
+    """Silver schema for national generation mix rows."""
+
+    fuel: str
+    generation_percentage: float | None = None
+
+
+class RegionalIntensity(_TimestampedNesoBase):
+    """Silver schema for regional intensity and generation mix rows."""
+
+    regionid: int | None = None
+    dnoregion: str = ""
+    shortname: str = ""
+    postcode: str = ""
+    forecast_gco2_kwh: float | None = None
+    actual_gco2_kwh: float | None = None
+    intensity_index: str = ""
+    fuel: str = ""
+    generation_percentage: float | None = None
