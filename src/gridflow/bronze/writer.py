@@ -5,9 +5,12 @@ from __future__ import annotations
 import hashlib
 import json
 import logging
-from pathlib import Path
+from typing import TYPE_CHECKING
 
-from gridflow.connectors.base import RawResponse
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    from gridflow.connectors.base import RawResponse
 
 logger = logging.getLogger(__name__)
 
@@ -52,6 +55,9 @@ class BronzeWriter:
             "source": response.source,
             "dataset": response.dataset,
             "fetched_at": response.fetched_at.isoformat(),
+            "data_date": response.data_date.isoformat()
+            if response.data_date is not None
+            else None,
             "request_url": response.request_url,
             "request_params": response.request_params,
             "api_version": response.api_version,

@@ -113,6 +113,14 @@ class GieQueryRequest:
         return len(self.expected_gas_days)
 
 
+@dataclass(frozen=True)
+class _StorageTarget:
+    scope: QueryScope
+    entity_key: str
+    country: str | None = None
+    company: str | None = None
+
+
 ENDPOINTS: dict[str, GieEndpoint] = {
     "storage_reports": GieEndpoint(
         path=GIE_API_PATH,
@@ -190,11 +198,18 @@ def storage_params_for_date(
     target_date: date | datetime | str,
     scope: QueryScope | str,
     entity_key: str,
+    country: str | None = None,
+    company: str | None = None,
     page: int = 1,
     size: int = DEFAULT_PAGE_SIZE,
 ) -> dict[str, Any]:
     """Build AGSI storage params for one exact gas day and query scope."""
-    params = _storage_scope_params(scope=scope, entity_key=entity_key)
+    params = _storage_scope_params(
+        scope=scope,
+        entity_key=entity_key,
+        country=country,
+        company=company,
+    )
     params.update({
         "date": _coerce_date(target_date).isoformat(),
         "page": page,
@@ -209,6 +224,8 @@ def storage_params_for_range(
     end: date | datetime | str,
     scope: QueryScope | str,
     entity_key: str,
+    country: str | None = None,
+    company: str | None = None,
     page: int = 1,
     size: int = DEFAULT_PAGE_SIZE,
 ) -> dict[str, Any]:
@@ -218,7 +235,12 @@ def storage_params_for_range(
     if end_date < start_date:
         raise ValueError("end date must be on or after start date")
 
-    params = _storage_scope_params(scope=scope, entity_key=entity_key)
+    params = _storage_scope_params(
+        scope=scope,
+        entity_key=entity_key,
+        country=country,
+        company=company,
+    )
     params.update({
         "from": start_date.isoformat(),
         "to": end_date.isoformat(),
@@ -299,18 +321,20 @@ def build_storage_query_plan(
 
     if date_mode == "exact":
         requests: list[GieQueryRequest] = []
-        for entity_key in targets:
+        for target in targets:
             for gas_day in gas_days:
                 requests.append(
                     GieQueryRequest(
                         dataset="storage_reports",
                         path=GIE_API_PATH,
                         scope=normalised_scope,
-                        entity_key=entity_key,
+                        entity_key=target.entity_key,
                         params=storage_params_for_date(
                             target_date=gas_day,
                             scope=normalised_scope,
-                            entity_key=entity_key,
+                            entity_key=target.entity_key,
+                            country=target.country,
+                            company=target.company,
                             page=page,
                             size=normalised_size,
                         ),
@@ -327,12 +351,14 @@ def build_storage_query_plan(
                 dataset="storage_reports",
                 path=GIE_API_PATH,
                 scope=normalised_scope,
-                entity_key=entity_key,
+                entity_key=target.entity_key,
                 params=storage_params_for_range(
                     start=gas_days[0],
                     end=gas_days[-1],
                     scope=normalised_scope,
-                    entity_key=entity_key,
+                    entity_key=target.entity_key,
+                    country=target.country,
+                    company=target.company,
                     page=page,
                     size=normalised_size,
                 ),
@@ -340,7 +366,7 @@ def build_storage_query_plan(
                 page=page,
                 size=normalised_size,
             )
-            for entity_key in targets
+            for target in targets
         )
 
     raise ValueError("date_mode must be 'exact' or 'range'")
@@ -365,16 +391,30 @@ def _normalise_page_size(size: int) -> int:
     return min(size, MAX_PAGE_SIZE)
 
 
-def _storage_scope_params(*, scope: QueryScope | str, entity_key: str) -> dict[str, str]:
+def _storage_scope_params(
+    *,
+    scope: QueryScope | str,
+    entity_key: str,
+    country: str | None = None,
+    company: str | None = None,
+) -> dict[str, str]:
     normalised_scope = QueryScope(scope)
     if normalised_scope == QueryScope.AGGREGATE_TYPE:
         return {"type": entity_key}
     if normalised_scope == QueryScope.COUNTRY:
         return {"country": entity_key}
     if normalised_scope == QueryScope.COMPANY:
-        return {"company": entity_key}
+        params = {"company": entity_key}
+        if country:
+            params = {"country": country, **params}
+        return params
     if normalised_scope == QueryScope.FACILITY:
-        return {"facility": entity_key}
+        params = {"facility": entity_key}
+        if company:
+            params = {"company": company, **params}
+        if country:
+            params = {"country": country, **params}
+        return params
     raise ValueError(f"{normalised_scope.value} is not a storage query scope")
 
 
@@ -384,16 +424,30 @@ def _scope_targets(
     aggregate_types: tuple[str, ...],
     countries: tuple[str, ...] | None,
     listing_payload: dict[str, Any] | list[dict[str, Any]] | None,
-) -> tuple[str, ...]:
+) -> tuple[_StorageTarget, ...]:
     if scope == QueryScope.AGGREGATE_TYPE:
-        return aggregate_types
+        return tuple(
+            _StorageTarget(scope=scope, entity_key=aggregate_type)
+            for aggregate_type in aggregate_types
+        )
     if scope == QueryScope.COUNTRY:
-        return countries or tuple(AGSI_COUNTRIES)
+        return tuple(
+            _StorageTarget(scope=scope, entity_key=country)
+            for country in (countries or tuple(AGSI_COUNTRIES))
+        )
     if scope in (QueryScope.COMPANY, QueryScope.FACILITY):
         if listing_payload is None:
             raise ValueError(f"{scope.value} planning requires a listing payload")
         inventory = parse_listing_inventory(listing_payload)
-        return tuple(entity.eic for entity in inventory.entities_for_scope(scope))
+        return tuple(
+            _StorageTarget(
+                scope=scope,
+                entity_key=entity.eic,
+                country=entity.country or None,
+                company=entity.company_eic if scope == QueryScope.FACILITY else None,
+            )
+            for entity in inventory.entities_for_scope(scope)
+        )
     raise ValueError(f"{scope.value} is not a storage query scope")
 
 

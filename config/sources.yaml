@@ -386,12 +386,36 @@ sources:
     base_url: "https://agsi.gie.eu"
     api_key_env: "GIE_API_KEY"
     api_key_header: "x-key"
-    rate_limit_per_second: 5
+    rate_limit_per_second: 1
     timeout: 30
     max_retries: 3
     datasets:
+      storage_reports:
+        endpoint: "/api"
+        schedule: "daily"
+        max_query_days: 30
       storage:
         endpoint: "/api"
+        schedule: "daily"
+        max_query_days: 30
+      about_summary:
+        endpoint: "/api/about"
+        schedule: "weekly"
+        max_query_days: 0
+      about_listing:
+        endpoint: "/api/about"
+        schedule: "weekly"
+        max_query_days: 0
+      news:
+        endpoint: "/api/news"
+        schedule: "daily"
+        max_query_days: 0
+      news_item:
+        endpoint: "/api/news"
+        schedule: "daily"
+        max_query_days: 0
+      unavailability:
+        endpoint: "/api/unavailability"
         schedule: "daily"
         max_query_days: 30
 

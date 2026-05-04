@@ -9,6 +9,7 @@ from typing import Any
 
 import yaml
 
+from gridflow.config.settings import load_settings
 from gridflow.connectors.gie.endpoints import (
     DEFAULT_PAGE_SIZE,
     ENDPOINTS,
@@ -83,6 +84,17 @@ def test_active_catalog_rows_have_matching_endpoint_metadata() -> None:
         assert endpoint.response_key == row["response_key"]
         assert endpoint.path == _base_path(row["path"])
         assert {scope.value for scope in endpoint.query_scopes} == set(row["query_scopes"])
+
+
+def test_active_catalog_rows_are_exposed_by_source_config() -> None:
+    catalog = _load_catalog()
+    active_catalog_ids = {
+        row["id"] for row in catalog["endpoints"] if row["status"] == "active"
+    }
+    config_datasets = set(load_settings().get_source_config("gie_agsi").datasets)
+
+    assert active_catalog_ids <= config_datasets
+    assert "storage" in config_datasets
 
 
 def test_catalog_documents_last_page_as_pagination_authority() -> None:
@@ -166,11 +178,20 @@ def test_expected_plan_for_listing_companies_and_facilities() -> None:
         "21X-DEMO-BETA",
         "21X-DEMO-GAMMA",
     ]
+    assert [request.params["country"] for request in company_plan] == [
+        "DE",
+        "FR",
+        "GB",
+    ]
 
     assert len(facility_plan) == 4
     assert expected_records_for_plan(facility_plan) == 4
     assert facility_plan[0].params["facility"] == "21W-DEMO-ALPHA-1"
+    assert facility_plan[0].params["company"] == "21X-DEMO-ALPHA"
+    assert facility_plan[0].params["country"] == "DE"
     assert facility_plan[-1].params["facility"] == "21W-DEMO-GAMMA-1"
+    assert facility_plan[-1].params["company"] == "21X-DEMO-GAMMA"
+    assert facility_plan[-1].params["country"] == "GB"
 
 
 def test_date_range_planning_exposes_every_gas_day_target() -> None:

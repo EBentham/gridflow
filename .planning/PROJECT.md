@@ -22,9 +22,11 @@ and NESO: registry-driven inventory checks, mocked request-shape coverage,
 fixture-backed bronze-to-silver tests, opt-in live API validation, and isolated
 CLI/backfill smoke tests.
 
-**Current focus:** v0.7 GIE AGSI Gas Storage Validation. The next connector
-confidence milestone upgrades GIE AGSI gas storage from a minimal country-level
-connector to a catalogued, count-checked, live-tested medallion pipeline source.
+**Current focus:** v0.7 GIE AGSI Gas Storage Validation is complete and ready
+for milestone close-out. AGSI is catalogued, count-checked through bronze
+request provenance, covered by registered silver transformers plus fixture-backed
+mocked E2E tests, and verified with credentialed opt-in live API-to-silver plus
+isolated CLI smoke coverage.
 
 ## Current Milestone: v0.7 GIE AGSI Gas Storage Validation
 
@@ -100,14 +102,16 @@ to a fully catalogued and tested source covering all documented API datasets.
 - [x] NESO connector fetches every registered dataset via path-template metadata - v0.6-neso-carbon-intensity-platform K2
 - [x] NESO silver transformers preserve all national, stats, factors, generation, and regional payload data - v0.6-neso-carbon-intensity-platform K3
 - [x] NESO mocked and live E2E tests prove API responses flow through bronze into silver - v0.6-neso-carbon-intensity-platform K4
+- [x] GIE AGSI silver transformers preserve storage, listing, news, and unavailability payload data where active - v0.7-gie-agsi-gas-storage-validation L3
+- [x] GIE AGSI mocked E2E tests prove fixture API responses flow through bronze into silver - v0.7-gie-agsi-gas-storage-validation L3
+- [x] GIE AGSI live E2E tests prove representative real API responses flow through bronze into silver - v0.7-gie-agsi-gas-storage-validation L4
+- [x] GIE AGSI CLI smoke tests prove pipeline, ingest/transform, and backfill run under isolated output paths - v0.7-gie-agsi-gas-storage-validation L4
 
 ### Active
 
 - [x] GIE AGSI endpoint catalog covers documented storage report, EIC listing, news, and unavailability endpoint families
-- [ ] GIE AGSI source config and connector endpoint metadata expose the same active dataset families and query scopes
-- [ ] GIE AGSI bronze ingestion fetches every expected request/page for exact-date and range query plans
-- [ ] GIE AGSI silver transformers preserve storage, listing, news, and unavailability payload data where active
-- [ ] GIE AGSI mocked and live E2E tests prove real API responses flow through bronze into silver
+- [x] GIE AGSI source config and connector endpoint metadata expose the same active dataset families and query scopes
+- [x] GIE AGSI bronze ingestion fetches every expected request/page for exact-date and range query plans
 - [ ] Decide whether to promote deferred ENTSO-E catalog rows, including B09 flow-based allocations and SO GL / implementation-framework balancing extensions
 - [ ] Decide whether scheduled live smoke monitoring should exist outside the normal test suite
 - [ ] Review whether additional official Elexon datasets should be promoted after endpoint availability and silver modelling are assessed
@@ -153,6 +157,10 @@ to a fully catalogued and tested source covering all documented API datasets.
 - GIE AGSI storage responses use `last_page` for pagination; `total` is the number of rows on the current page, not the global total.
 - GIE AGSI exact-day and range requests must be count-checked so a query for 2026-05-01 writes all expected rows/pages for that day and no out-of-window gas days.
 - GIE API documentation v007 supersedes the user-supplied v006 for planning purposes; v007 applies API v2 to ALSI and adds filtering detail, but v0.7 implementation scope remains AGSI gas storage.
+- GIE AGSI storage bronze fetching is now query-plan driven for aggregate, country, company, and facility scopes; company/facility params include listing-derived EIC context.
+- GIE AGSI bronze provenance records `page`, `total_pages`, request params, and `data_date`, with pagination driven by `last_page` rather than `total`.
+- GIE AGSI live tests now prove representative aggregate, country, company, and facility storage reports can flow from the live API through bronze into silver parquet.
+- GIE AGSI CLI smoke tests now prove `pipeline`, separate `ingest`/`transform`, and `backfill` run under isolated `GRIDFLOW_*` output paths.
 
 ## Constraints
 
@@ -196,6 +204,10 @@ to a fully catalogued and tested source covering all documented API datasets.
 | GIE AGSI pagination must use `last_page` | Live API behavior and documentation make `total` a per-page row count, so using it as global total silently truncates pages | Adopted |
 | AGSI entity coverage derives from `/api/about?show=listing` | The listing endpoint is the only reliable way to know company/facility EIC query inventory and expected request counts | Adopted |
 | Full AGSI live inventory tests are explicit and slow | GIE documents 60 calls/minute; representative live tests should stay fast, while full inventory gates can run deliberately when requested | Adopted |
+| Keep AGSI `storage` as a compatibility alias in L2 | Existing silver registration still targets `gie_agsi/storage`; L3 can decide whether to migrate silver to `storage_reports` | Adopted |
+| Register AGSI `storage_reports` while preserving `storage` | L3 needs catalog-aligned silver output without breaking the legacy transformer alias | Adopted |
+| Transform active AGSI listing/news/unavailability families in L3 | Compact fixture coverage is enough to preserve documented payload fields without catalog-deferring active families | Adopted |
+| Use exclusive end boundary for AGSI backfill smoke | The current backfill loop runs while `current < end`, so a one-day smoke uses 2026-05-01 to 2026-05-02 | Adopted |
 
 ## Evolution
 
@@ -215,4 +227,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-04 after completing L1 for v0.7 GIE AGSI Gas Storage Validation*
+*Last updated: 2026-05-04 after completing L4 for v0.7 GIE AGSI Gas Storage Validation*

@@ -93,12 +93,12 @@ Research: [NESO-CARBON-INTENSITY-RESEARCH.md](research/NESO-CARBON-INTENSITY-RES
 ---
 
 <details open>
-<summary>Current v0.7-gie-agsi-gas-storage-validation - GIE AGSI Gas Storage Validation (L1-L4)</summary>
+<summary>Current v0.7-gie-agsi-gas-storage-validation - GIE AGSI Gas Storage Validation (L1-L4) - COMPLETED 2026-05-04</summary>
 
 - [x] Phase L1: GIE AGSI endpoint research, catalog, inventory contract, and expected-count model - completed 2026-05-04
-- [ ] Phase L2: AGSI query-scope request builder, `last_page` pagination, and bronze completeness tests
-- [ ] Phase L3: AGSI silver transformers, fixtures, mocked E2E, and count-preserving bronze-to-silver tests
-- [ ] Phase L4: AGSI opt-in live API-to-silver tests, CLI smoke tests, and close-out verification
+- [x] Phase L2: AGSI query-scope request builder, `last_page` pagination, and bronze completeness tests - completed 2026-05-04
+- [x] Phase L3: AGSI silver transformers, fixtures, mocked E2E, and count-preserving bronze-to-silver tests - completed 2026-05-04
+- [x] Phase L4: AGSI opt-in live API-to-silver tests, CLI smoke tests, and close-out verification - completed 2026-05-04
 
 Research: [GIE-AGSI-API-RESEARCH.md](research/GIE-AGSI-API-RESEARCH.md)
 
@@ -151,6 +151,14 @@ Success criteria:
 2. A slower explicit full-inventory live gate can verify listing-derived expected request counts while respecting the documented 60 calls/minute limit.
 3. Live CLI smoke tests run under isolated `GRIDFLOW_DATA_DIR`, `GRIDFLOW_DUCKDB_PATH`, and `GRIDFLOW_LOG_DIR` paths.
 4. Close-out docs record live pass/skip classifications, API doc ambiguity around unavailability, and any ALSI follow-up.
+
+Plans:
+- [x] `L4-01-PLAN.md` - Added opt-in live API-to-silver tests, isolated AGSI CLI smoke tests, and close-out verification artifacts.
+
+Live close-out: `tests/integration/test_gie_agsi_live_e2e.py` and
+`tests/integration/test_gie_agsi_cli_live_smoke.py` passed representative
+credentialed AGSI live gates. The slow full-inventory gate remains explicit via
+`GRIDFLOW_AGSI_FULL_INVENTORY_LIVE=1`. ALSI LNG remains a backlog follow-up.
 
 </details>
 

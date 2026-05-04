@@ -1,20 +1,20 @@
 ---
 milestone: v0.7
 milestone_name: GIE AGSI Gas Storage Validation
-status: active
+status: ready_for_milestone_close
 progress:
   phases_total: 4
-  phases_complete: 1
-  plans_total: 1
-  plans_complete: 1
+  phases_complete: 4
+  plans_total: 4
+  plans_complete: 4
 ---
 
 ## Current Position
 
-Phase: L2 ready for planning
-Plan: AGSI query-scope request builder, `last_page` pagination, and bronze completeness tests
-Status: L1 complete; GIE AGSI Gas Storage Validation in progress
-Last activity: 2026-05-04 - Completed L1 endpoint catalog and listing-derived query inventory contract; focused GIE gate and full non-live suite passed
+Phase: L4 complete
+Plan: L4-01 AGSI opt-in live API-to-silver tests, CLI smoke tests, and close-out verification
+Status: v0.7 GIE AGSI Gas Storage Validation complete; ready for milestone close-out
+Last activity: 2026-05-04 - Completed L4 AGSI live API-to-silver and isolated CLI smoke verification
 
 ## Project Reference
 
@@ -68,6 +68,9 @@ produces schema-valid output - verified end-to-end, not just in unit tests.
 - GIE AGSI live tests must respect 60 calls/minute and keep full-inventory checks opt-in.
 - L1 exposes exact-date and range storage query planning helpers so bronze completeness tests can know the expected gas-day rows before L2 changes runtime fetching.
 - GIE AGSI news and unavailability are active catalog endpoint families, but storage pipeline implementation remains phased: storage bronze in L2, silver/mocked E2E in L3, live/CLI in L4.
+- L2 completed: AGSI source config now exposes active catalog families, storage fetching is query-plan driven for aggregate/country/company/facility scopes, pagination uses `last_page`, and mocked bronze completeness tests prove exact-day request/page/file counts.
+- L3 completed: AGSI storage silver now preserves live-shaped fields across entity scopes, active listing/news/unavailability families have registered deterministic transformers, and fixture-backed non-live E2E proves bronze payloads reach silver parquet.
+- L4 completed: credentialed AGSI live tests prove representative aggregate, country, company, and facility storage responses flow through bronze into silver; isolated CLI smoke tests prove pipeline, ingest/transform, and backfill paths.
 
 ### Quick Tasks Completed
 
@@ -104,6 +107,8 @@ produces schema-valid output - verified end-to-end, not just in unit tests.
 - v0.7 started: GIE AGSI Gas Storage Validation will add endpoint catalog, query-scope metadata, `last_page` pagination, expected-count bronze tests, silver preservation, opt-in live API-to-silver tests, and CLI smoke coverage.
 - L1-L4 planned: research/inventory, bronze request semantics, silver/mocked E2E, and live/CLI close-out.
 - L1 completed: `docs/gie_agsi_endpoint_catalog.yaml`, GIE endpoint metadata, listing inventory fixture, and query planning tests now cover AGSI endpoint families and listing-derived expected counts.
+- L3 completed: one non-live plan expanded AGSI storage silver preservation, added listing/news/unavailability fixture-backed silver coverage, and kept L2 mocked bronze request/count guarantees green.
+- L4 completed: opt-in live API-to-silver and CLI smoke tests passed, with full-inventory AGSI validation remaining an explicit slow gate and ALSI LNG deferred to backlog.
 
 ### Blockers
 

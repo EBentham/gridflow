@@ -1,0 +1,20 @@
+{
+  "last_page": 1,
+  "total": 1,
+  "data": [
+    {
+      "id": "unav-demo-1",
+      "status": "planned",
+      "country": "DE",
+      "company": "21X-DEMO-ALPHA",
+      "facility": "21W-DEMO-ALPHA-1",
+      "eventStart": "2026-05-01T06:00:00Z",
+      "eventEnd": "2026-05-02T06:00:00Z",
+      "updatedAt": "2026-04-30T12:00:00Z",
+      "unavailableCapacity": "12.5",
+      "workingGasVolume": "100.0",
+      "reason": "planned maintenance",
+      "info": {"classification": "demo"}
+    }
+  ]
+}
