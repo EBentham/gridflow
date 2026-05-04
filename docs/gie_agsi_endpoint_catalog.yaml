@@ -1,0 +1,193 @@
+source: gie_agsi
+name: GIE AGSI Gas Storage Transparency Platform
+base_url: https://agsi.gie.eu
+auth:
+  required: true
+  header: x-key
+rate_limit:
+  calls_per_minute: 60
+pagination:
+  default_size: 30
+  max_size: 300
+  authoritative_total_pages: last_page
+  per_page_count: total
+allowed_statuses:
+  - active
+  - deferred
+  - out_of_scope
+documentation:
+  primary: https://www.gie.eu/transparency-platform/GIE_API_documentation_v006.pdf
+  reviewed_cross_check: https://www.gie.eu/transparency-platform/GIE_API_documentation_v007.pdf
+notes:
+  - "AGSI gas storage is active for v0.7; ALSI LNG is deliberately deferred."
+  - "The API returns total as the current page row count; last_page is the pagination source of truth."
+  - "Company and facility query inventory is derived from /api/about?show=listing."
+endpoints:
+  - id: storage_reports
+    dataset: storage_reports
+    path: /api
+    method: GET
+    status: active
+    family: storage
+    query_scopes:
+      - aggregate_type
+      - country
+      - company
+      - facility
+    date_params:
+      exact:
+        - date
+      range:
+        - from
+        - to
+    pagination:
+      params:
+        - page
+        - size
+      default_size: 30
+      max_size: 300
+      authoritative_total_pages: last_page
+      per_page_count: total
+    response_key: data
+    source_doc: GIE_API_documentation_v006.pdf
+    implementation_phase: L2
+    notes: "Primary AGSI storage time-series endpoint. Expected bronze counts must be planned per gas day and query scope."
+  - id: about_summary
+    dataset: about_summary
+    path: /api/about
+    method: GET
+    status: active
+    family: listing
+    query_scopes:
+      - listing
+    date_params:
+      exact: []
+      range: []
+    pagination:
+      params: []
+      default_size: null
+      max_size: null
+      authoritative_total_pages: null
+      per_page_count: null
+    response_key: data
+    source_doc: GIE_API_documentation_v006.pdf
+    implementation_phase: L1
+    notes: "Reference and discovery information. Used as API-shape evidence rather than a bronze time series."
+  - id: about_listing
+    dataset: about_listing
+    path: /api/about?show=listing
+    method: GET
+    status: active
+    family: listing
+    query_scopes:
+      - listing
+    date_params:
+      exact: []
+      range: []
+    pagination:
+      params: []
+      default_size: null
+      max_size: null
+      authoritative_total_pages: null
+      per_page_count: null
+    response_key: data
+    source_doc: GIE_API_documentation_v006.pdf
+    implementation_phase: L1
+    notes: "Call with show=listing. Supplies company and facility inventory for expected-count planning."
+  - id: news
+    dataset: news
+    path: /api/news
+    method: GET
+    status: active
+    family: news
+    query_scopes:
+      - news
+    date_params:
+      exact: []
+      range: []
+    pagination:
+      params:
+        - page
+        - size
+      default_size: 30
+      max_size: 300
+      authoritative_total_pages: last_page
+      per_page_count: total
+    response_key: data
+    source_doc: GIE_API_documentation_v006.pdf
+    implementation_phase: deferred
+    notes: "Documented AGSI endpoint family and live-served, but not part of v0.7 storage bronze/silver delivery."
+  - id: news_item
+    dataset: news_item
+    path: /api/news?turl={id}
+    method: GET
+    status: active
+    family: news
+    query_scopes:
+      - news
+    date_params:
+      exact: []
+      range: []
+    pagination:
+      params: []
+      default_size: null
+      max_size: null
+      authoritative_total_pages: null
+      per_page_count: null
+    response_key: data
+    source_doc: GIE_API_documentation_v006.pdf
+    implementation_phase: deferred
+    notes: "Call with turl={id}. Kept in the active endpoint catalog but deferred from storage implementation."
+  - id: unavailability
+    dataset: unavailability
+    path: /api/unavailability
+    method: GET
+    status: active
+    family: unavailability
+    query_scopes:
+      - unavailability
+    date_params:
+      exact: []
+      range:
+        - start
+        - end
+    pagination:
+      params:
+        - page
+        - size
+      default_size: 30
+      max_size: 300
+      authoritative_total_pages: last_page
+      per_page_count: total
+    response_key: data
+    source_doc: GIE_API_documentation_v006.pdf
+    implementation_phase: L3
+    notes: "Marked active because the endpoint is documented and live-served, though documentation wording is ambiguous about unavailability API coverage."
+  - id: alsi_lng_reports
+    dataset: lng_reports
+    path: /api
+    method: GET
+    status: deferred
+    family: lng
+    query_scopes:
+      - country
+      - company
+      - facility
+    date_params:
+      exact:
+        - date
+      range:
+        - from
+        - to
+    pagination:
+      params:
+        - page
+        - size
+      default_size: 30
+      max_size: 300
+      authoritative_total_pages: last_page
+      per_page_count: total
+    response_key: data
+    source_doc: GIE_API_documentation_v006.pdf
+    implementation_phase: deferred
+    notes: "ALSI LNG uses a similar path style on the ALSI host, but v0.7 is scoped to AGSI gas storage."

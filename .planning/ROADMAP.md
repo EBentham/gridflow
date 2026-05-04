@@ -95,7 +95,7 @@ Research: [NESO-CARBON-INTENSITY-RESEARCH.md](research/NESO-CARBON-INTENSITY-RES
 <details open>
 <summary>Current v0.7-gie-agsi-gas-storage-validation - GIE AGSI Gas Storage Validation (L1-L4)</summary>
 
-- [ ] Phase L1: GIE AGSI endpoint research, catalog, inventory contract, and expected-count model
+- [x] Phase L1: GIE AGSI endpoint research, catalog, inventory contract, and expected-count model - completed 2026-05-04
 - [ ] Phase L2: AGSI query-scope request builder, `last_page` pagination, and bronze completeness tests
 - [ ] Phase L3: AGSI silver transformers, fixtures, mocked E2E, and count-preserving bronze-to-silver tests
 - [ ] Phase L4: AGSI opt-in live API-to-silver tests, CLI smoke tests, and close-out verification

@@ -4,9 +4,9 @@
 
 ### Endpoint Inventory
 
-- [ ] **AGSI-01**: Developer can see every official GIE AGSI API endpoint family, query parameter, response family, and active/deferred decision in an auditable endpoint catalog.
+- [x] **AGSI-01**: Developer can see every official GIE AGSI API endpoint family, query parameter, response family, and active/deferred decision in an auditable endpoint catalog.
 - [ ] **AGSI-02**: Gridflow source config and connector endpoint metadata expose the same active AGSI dataset inventory for storage, EIC listing, news, and unavailability families.
-- [ ] **AGSI-03**: AGSI company and facility query planning is driven by `/api/about?show=listing` so expected bronze entries can be derived from live or fixture inventory.
+- [x] **AGSI-03**: AGSI company and facility query planning is driven by `/api/about?show=listing` so expected bronze entries can be derived from live or fixture inventory.
 
 ### Bronze Completeness
 
@@ -30,9 +30,9 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| AGSI-01 | L1 | Pending |
+| AGSI-01 | L1 | Completed |
 | AGSI-02 | L2 | Pending |
-| AGSI-03 | L1 | Pending |
+| AGSI-03 | L1 | Completed |
 | AGSI-04 | L2 | Pending |
 | AGSI-05 | L2 | Pending |
 | AGSI-06 | L2 | Pending |

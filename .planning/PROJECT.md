@@ -103,7 +103,7 @@ to a fully catalogued and tested source covering all documented API datasets.
 
 ### Active
 
-- [ ] GIE AGSI endpoint catalog covers documented storage report, EIC listing, news, and unavailability endpoint families
+- [x] GIE AGSI endpoint catalog covers documented storage report, EIC listing, news, and unavailability endpoint families
 - [ ] GIE AGSI source config and connector endpoint metadata expose the same active dataset families and query scopes
 - [ ] GIE AGSI bronze ingestion fetches every expected request/page for exact-date and range query plans
 - [ ] GIE AGSI silver transformers preserve storage, listing, news, and unavailability payload data where active
@@ -215,4 +215,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-04 while planning v0.7 GIE AGSI Gas Storage Validation*
+*Last updated: 2026-05-04 after completing L1 for v0.7 GIE AGSI Gas Storage Validation*

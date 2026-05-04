@@ -1,0 +1,70 @@
+{
+  "data": [
+    {
+      "name": "Alpha Storage Operator",
+      "short_name": "Alpha Storage",
+      "type": "SSO",
+      "eic": "21X-DEMO-ALPHA",
+      "country": "DE",
+      "url": "https://agsi.gie.eu/api?country=DE&company=21X-DEMO-ALPHA",
+      "facilities": [
+        {
+          "name": "Alpha Cavern One",
+          "short_name": "Alpha One",
+          "type": "DSR",
+          "eic": "21W-DEMO-ALPHA-1",
+          "country": "DE",
+          "company": "21X-DEMO-ALPHA",
+          "url": "https://agsi.gie.eu/api?country=DE&company=21X-DEMO-ALPHA&facility=21W-DEMO-ALPHA-1"
+        },
+        {
+          "name": "Alpha Salt Two",
+          "short_name": "Alpha Two",
+          "type": "DSR",
+          "eic": "21W-DEMO-ALPHA-2",
+          "country": "DE",
+          "company": "21X-DEMO-ALPHA",
+          "url": "https://agsi.gie.eu/api?country=DE&company=21X-DEMO-ALPHA&facility=21W-DEMO-ALPHA-2"
+        }
+      ]
+    },
+    {
+      "name": "Beta Storage Company",
+      "short_name": "Beta Storage",
+      "type": "SSO",
+      "eic": "21X-DEMO-BETA",
+      "country": "FR",
+      "url": "https://agsi.gie.eu/api?country=FR&company=21X-DEMO-BETA",
+      "facilities": [
+        {
+          "name": "Beta Facility",
+          "short_name": "Beta Facility",
+          "type": "DSR",
+          "eic": "21W-DEMO-BETA-1",
+          "country": "FR",
+          "company": "21X-DEMO-BETA",
+          "url": "https://agsi.gie.eu/api?country=FR&company=21X-DEMO-BETA&facility=21W-DEMO-BETA-1"
+        }
+      ]
+    },
+    {
+      "name": "Gamma Storage Limited",
+      "short_name": "Gamma Storage",
+      "type": "SSO",
+      "eic": "21X-DEMO-GAMMA",
+      "country": "GB",
+      "url": "https://agsi.gie.eu/api?country=GB&company=21X-DEMO-GAMMA",
+      "facilities": [
+        {
+          "name": "Gamma Rough Demo",
+          "short_name": "Gamma Rough",
+          "type": "DSR",
+          "eic": "21W-DEMO-GAMMA-1",
+          "country": "GB",
+          "company": "21X-DEMO-GAMMA",
+          "url": "https://agsi.gie.eu/api?country=GB&company=21X-DEMO-GAMMA&facility=21W-DEMO-GAMMA-1"
+        }
+      ]
+    }
+  ]
+}
