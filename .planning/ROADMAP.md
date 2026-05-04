@@ -108,19 +108,19 @@ Research: [GIE-AGSI-API-RESEARCH.md](research/GIE-AGSI-API-RESEARCH.md)
 
 Goal: Make the AGSI API surface auditable before changing runtime behavior.
 
-Requirements: AGSI-01, AGSI-02, AGSI-03
+Requirements: AGSI-01, AGSI-03
 
 Success criteria:
 1. `docs/gie_agsi_endpoint_catalog.yaml` classifies `/api`, `/api/about`, `/api/about?show=listing`, `/api/news`, `/api/news?turl`, and `/api/unavailability`.
-2. `src/gridflow/connectors/gie/endpoints.py`, `config/sources.yaml`, and silver registrations expose the same active AGSI dataset families.
-3. A deterministic query-plan helper can derive expected request/page/entity counts for aggregate, country, company, and facility scopes.
-4. Inventory tests fail on catalog/config/connector drift before implementation can silently omit a GIE endpoint family.
+2. `docs/gie_agsi_endpoint_catalog.yaml` and `src/gridflow/connectors/gie/endpoints.py` agree on active, planned, and deferred AGSI endpoint families.
+3. A deterministic query-plan helper can derive expected request/page/entity counts for aggregate, country, company, and facility scopes from listing fixtures.
+4. Inventory tests fail on catalog/connector drift before implementation can silently omit a GIE endpoint family.
 
 **Phase L2: AGSI query-scope request builder, `last_page` pagination, and bronze completeness tests**
 
 Goal: Fetch AGSI bronze data exactly for the requested query scope and gas-day window.
 
-Requirements: AGSI-04, AGSI-05, AGSI-06
+Requirements: AGSI-02, AGSI-04, AGSI-05, AGSI-06
 
 Success criteria:
 1. AGSI requests use documented `date`, `from`, `to`, `type`, `country`, `company`, `facility`, `start`, `end`, `end_flag`, `page`, and `size` parameters as appropriate.

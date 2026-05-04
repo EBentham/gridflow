@@ -61,6 +61,11 @@ produces schema-valid output - verified end-to-end, not just in unit tests.
   dates, and 50 on autumn DST transition dates.
 - NESO `{from}/{to}` range endpoints must expand same-day CLI/API requests to a
   one-day API window; zero-length range URLs return 400 and produce empty bronze.
+- GIE AGSI v0.7 is scoped to gas storage at `https://agsi.gie.eu`; ALSI LNG is deferred.
+- GIE AGSI requires `GIE_API_KEY` sent as lowercase `x-key` header.
+- GIE AGSI `last_page` is the pagination source of truth; `total` is per-page row count and must not be used as global total.
+- GIE AGSI company/facility expected-count planning must derive from `/api/about?show=listing`.
+- GIE AGSI live tests must respect 60 calls/minute and keep full-inventory checks opt-in.
 
 ### Quick Tasks Completed
 
@@ -94,6 +99,8 @@ produces schema-valid output - verified end-to-end, not just in unit tests.
 - v0.5 completed: ENTSOG Pipeline Validation shipped and archived on 2026-05-04.
 - v0.6 shipped: NESO Carbon Intensity Platform extends the existing single national intensity route to all documented national, statistics, generation, factors, and regional endpoints.
 - K1-K4 shipped: 33 NESO route variants implemented with endpoint catalog, source config, metadata-driven connector paths, family-aware silver transforms, mocked all-dataset E2E tests, opt-in live API-to-silver tests, and CLI smoke coverage.
+- v0.7 started: GIE AGSI Gas Storage Validation will add endpoint catalog, query-scope metadata, `last_page` pagination, expected-count bronze tests, silver preservation, opt-in live API-to-silver tests, and CLI smoke coverage.
+- L1-L4 planned: research/inventory, bronze request semantics, silver/mocked E2E, and live/CLI close-out.
 
 ### Blockers
 
@@ -121,7 +128,7 @@ Items acknowledged and deferred at milestone close on 2026-05-04:
 |----------|------|--------|
 | follow_up | ENTSOG domain-specific typed silver schemas | deferred until downstream gas gold consumers need them |
 | follow_up | Scheduled live endpoint monitoring | future cross-source decision |
-| follow_up | GIE AGSI/ALSI connector validation | next connector-confidence candidate |
+| follow_up | GIE ALSI LNG connector validation | deferred while v0.7 focuses AGSI gas storage |
 
 ### Todos
 

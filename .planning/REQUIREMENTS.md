@@ -31,7 +31,7 @@
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | AGSI-01 | L1 | Pending |
-| AGSI-02 | L1 | Pending |
+| AGSI-02 | L2 | Pending |
 | AGSI-03 | L1 | Pending |
 | AGSI-04 | L2 | Pending |
 | AGSI-05 | L2 | Pending |
