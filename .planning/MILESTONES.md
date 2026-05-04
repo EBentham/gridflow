@@ -1,4 +1,37 @@
-# gridflow — Milestone History
+# gridflow - Milestone History
+
+---
+
+## v0.4-elexon-validation - Elexon Pipeline Validation
+
+**Shipped:** 2026-05-04
+**Phases:** I1-I4 (4 phases, 4 plans)
+**Commits:** 10 | **Files:** 39 changed | **Lines:** +3767 / -161
+**Test suite:** 81 non-live regression tests passed; 5 live CLI smoke tests passed; 5 live API-to-silver tests passed in I3
+
+### Delivered
+
+Built Elexon validation from inventory through live CLI smoke coverage: active
+dataset alignment, mocked request-shape tests, fixture-backed bronze-to-silver
+tests, opt-in live API-to-silver tests, and isolated user-facing CLI/backfill
+smoke tests.
+
+### Key Accomplishments
+
+1. **I1 - Inventory and scaffolding:** Active Elexon config, endpoint registry, and silver transformer registration are tested with explicit excluded endpoint documentation.
+2. **I2 - Mocked and fixture E2E:** Every active configured Elexon dataset has mocked request-shape coverage, while representative fixtures prove bronze-to-silver transformer paths.
+3. **I3 - Live API to silver:** Public no-key Elexon responses for `system_prices`, `boal`, `freq`, `pn`, and `bmunits_reference` flow through temp bronze into silver parquet.
+4. **I4 - CLI and backfill smoke:** `pipeline`, separate `ingest`/`transform`, and `backfill` run live against temp-root `GRIDFLOW_*` paths for curated Elexon datasets.
+5. **Config isolation fix:** Runtime `GRIDFLOW_DATA_DIR`, `GRIDFLOW_DUCKDB_PATH`, and `GRIDFLOW_LOG_DIR` overrides now beat YAML defaults.
+
+### Known Deferred Items
+
+No new v0.4 deferred items. Existing v0.3 deferred close-out artifacts remain recorded in `.planning/STATE.md`.
+
+### Archive
+
+- [v0.4-elexon-validation-ROADMAP.md](milestones/v0.4-elexon-validation-ROADMAP.md)
+- [v0.4-elexon-validation-REQUIREMENTS.md](milestones/v0.4-elexon-validation-REQUIREMENTS.md)
 
 ---
 

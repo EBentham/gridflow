@@ -13,15 +13,18 @@ who need reliable, normalised time-series data from disparate European market so
 Every connector reliably fetches real data and every silver transformer produces
 schema-valid output — verified end-to-end, not just in unit tests.
 
-## Current Milestone: v0.4-elexon-validation Elexon Pipeline Validation
+## Current State
 
-**Goal:** Build ENTSO-E-style Elexon validation that pings the live public API and proves selected real responses flow through bronze storage into schema-valid silver output.
+**Shipped:** v0.4-elexon-validation on 2026-05-04.
 
-**Target features:**
-- Elexon endpoint inventory and request-shape tests aligned with configured datasets, endpoint registry, and silver transformer registration.
-- Mocked and fixture-backed Elexon bronze-to-silver tests across the major Elexon parameter styles.
-- Opt-in live tests that call the real Elexon Insights API and validate API response -> RawResponse -> BronzeWriter -> silver transformer -> parquet.
-- CLI and backfill live smoke tests that run against isolated temp config/data paths and prove user-facing commands complete without polluting local data.
+gridflow now has connector validation patterns for both ENTSO-E and Elexon:
+registry-driven inventory checks, mocked request-shape coverage, fixture-backed
+bronze-to-silver tests, opt-in live API validation, and isolated CLI/backfill
+smoke tests.
+
+**Next focus:** Plan the next connector-confidence milestone, likely extending the
+same pattern to ENTSO-G and GIE or scheduling live smoke monitoring outside the
+normal unit-test suite.
 
 ## Requirements
 
@@ -60,11 +63,13 @@ schema-valid output — verified end-to-end, not just in unit tests.
 
 - [ ] Extend live and mocked E2E coverage to ENTSO-G and GIE connectors
 - [ ] Decide whether to promote deferred ENTSO-E catalog rows, including B09 flow-based allocations and SO GL / implementation-framework balancing extensions
+- [ ] Decide whether scheduled live smoke monitoring should exist outside the normal test suite
+- [ ] Review whether additional official Elexon datasets should be promoted after endpoint availability and silver modelling are assessed
 
 ### Out of Scope
 
 - Live tests running in CI — no ENTSO-E API key in CI environment
-- E2E tests for non-ENTSO-E connectors — focus is ENTSO-E for this milestone
+- E2E tests for remaining connectors - ENTSO-E and Elexon are now validated; ENTSO-G and GIE are next-milestone candidates
 - Gold layer validation — no gold consumers of ENTSO-E data yet
 - GAP-03b psrType semantic mapping — backlog, no gold consumers of wind_solar_forecast
 
@@ -91,6 +96,7 @@ schema-valid output — verified end-to-end, not just in unit tests.
 - H8 preserves balancing area, bid identity, market product, direction, agreement, and cross-zonal domain metadata in the new balancing silver datasets.
 - v0.3 shipped with ENTSO-E expanded from 16 original datasets to 48 active datasets, backed by endpoint catalog validation, mocked medallion-path E2E tests, and opt-in live request-shape probes.
 - Four close-out artifacts were acknowledged as deferred at v0.3 completion: one debug session, two UAT records, and one H3 verification record.
+- v0.4 shipped Elexon validation from inventory through mocked request-shape tests, fixture-backed bronze-to-silver checks, opt-in public API-to-silver tests, and isolated live CLI/backfill smoke tests.
 
 ## Constraints
 
@@ -118,10 +124,12 @@ schema-valid output — verified end-to-end, not just in unit tests.
 | H8 high-volume bid/capacity endpoints default to `offset=0` | ENTSO-E rejects unpaged live calls when more than 100 instances are returned; offset keeps request-shape probes live-compatible while allowing caller override | Adopted |
 | Live tests opt-in with `--live` marker | API key not available in CI; live tests are for developer validation | ✓ Good |
 | Close v0.3 with acknowledged H3/live artifacts deferred | H5.5 and H8 live request-shape gates passed, but one H3 credentialed full-live verification record remains human-owned | Deferred |
-| Elexon v0.4 mirrors ENTSO-E validation shape | The project needs connector-agnostic confidence that live API data reaches silver, but Elexon has JSON/public/no-key semantics and distinct parameter styles | Pending |
+| Elexon v0.4 mirrors ENTSO-E validation shape | The project needs connector-agnostic confidence that live API data reaches silver, but Elexon has JSON/public/no-key semantics and distinct parameter styles | Good |
 | Elexon inventory tests compare real registries | Avoid duplicating the full active dataset list in tests while still catching config, endpoint, and silver registration drift | Adopted |
 | Elexon excluded endpoints live in `EXCLUDED_ENDPOINTS` | Keeps removed, duplicate, or unstable endpoints visible without treating them as active datasets | Adopted |
 | `GRIDFLOW_*` environment overrides beat YAML paths | Live CLI smoke tests and manual checks must be able to isolate data, DuckDB, and logs from normal project directories | Adopted |
+| Elexon live tests use representative no-key public responses | Keeps live coverage fast while proving RawResponse, BronzeWriter, transformer, and parquet paths | Good |
+| Elexon CLI smoke tests use curated datasets | Covers path-date, publish/from-to, and reference-data command paths without broad live API blast radius | Good |
 
 ## Evolution
 
@@ -141,4 +149,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-04 after completing v0.4 Phase I4*
+*Last updated: 2026-05-04 after completing v0.4 milestone*

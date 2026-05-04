@@ -1,7 +1,7 @@
 ---
 milestone: v0.4
 milestone_name: Elexon Pipeline Validation
-status: ready_for_milestone_closeout
+status: milestone_complete
 progress:
   phases_total: 4
   phases_complete: 4
@@ -11,18 +11,18 @@ progress:
 
 ## Current Position
 
-Phase: I4 - Elexon CLI/backfill live smoke tests and milestone close-out docs
-Plan: I4-01 complete
-Status: Phase I4 complete; v0.4 ready for milestone close-out
-Last activity: 2026-05-04 - Phase I4 completed
+Phase: v0.4 milestone close-out
+Plan: All I1-I4 plans complete
+Status: v0.4 shipped and archived; planning next milestone
+Last activity: 2026-05-04 - v0.4 milestone completed
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-05-03)
+See: .planning/PROJECT.md (updated 2026-05-04)
 
 **Core value:** Every connector reliably fetches real data and every silver transformer
 produces schema-valid output - verified end-to-end, not just in unit tests.
-**Current focus:** v0.4 Elexon Pipeline Validation
+**Current focus:** Planning the next connector-confidence milestone
 
 ## Accumulated Context
 
@@ -71,11 +71,13 @@ produces schema-valid output - verified end-to-end, not just in unit tests.
 - I3 planned: opt-in live Elexon API-to-silver tests will call representative public no-key Elexon datasets, write live responses to temp bronze, transform to silver, and classify empty/deferred outcomes explicitly.
 - I3 completed: opt-in live tests now prove `system_prices`, `boal`, `freq`, `pn`, and `bmunits_reference` can flow from the public Elexon API through temp bronze into silver parquet.
 - I4 completed: live CLI/backfill smoke tests now prove `system_prices`, `freq`, and `bmunits_reference` flow through user-facing commands without polluting normal project data on verified runs.
+- v0.4 completed: Elexon validation is archived with 4 phases, 4 plans, and 16/16 requirements complete.
 
 ### Blockers
 
 - H3 live verification record remains human-needed for the original all-dataset credentialed run; later H5.5/H8 live gates passed and this is acknowledged as deferred at v0.3 close.
 - H5.5 resolved live failures from invalid A83 metadata, zipped outage payloads, live unit/outage tag variants, and fixed-date no-data acknowledgements.
+- No new v0.4 blockers remain open at milestone close.
 
 ## Deferred Items
 

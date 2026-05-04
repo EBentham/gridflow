@@ -2,6 +2,46 @@
 
 ---
 
+## Milestone: v0.4-elexon-validation - Elexon Pipeline Validation
+
+**Shipped:** 2026-05-04
+**Phases:** 4 (I1-I4) | **Plans:** 4
+
+### What Was Built
+
+1. Added Elexon inventory contract tests across source config, endpoint definitions, explicit exclusions, and silver transformer registration.
+2. Built mocked request-shape coverage for every active configured Elexon dataset plus fixture-backed bronze-to-silver tests for representative transformer families.
+3. Added opt-in live API-to-silver tests using public no-key Elexon responses for `system_prices`, `boal`, `freq`, `pn`, and `bmunits_reference`.
+4. Added live CLI smoke tests for `pipeline`, separate `ingest`/`transform`, and `backfill` under isolated temp-root `GRIDFLOW_*` paths.
+5. Fixed runtime config precedence so environment overrides beat YAML pipeline paths during CLI runs.
+
+### What Worked
+
+- **Registry-driven inventory checks** avoided another hard-coded dataset list and made config, endpoint, and transformer drift visible.
+- **Representative live coverage** kept the live suite fast while proving each major request style reaches silver parquet.
+- **Non-live sentinels** made live-only test files still produce useful assertions in normal `-m "not live"` runs.
+- **CLI temp-root isolation** turned a smoke-test discovery into a production config precedence fix.
+
+### What Was Inefficient
+
+- **The first I4 smoke run wrote ignored local `data/` artifacts** before the `GRIDFLOW_*` precedence bug was fixed.
+- **`gsd-sdk` remained unavailable in this runtime**, so the milestone audit and archive steps needed direct `.planning/` handling.
+- **Validation matrix status rows were not mechanically updated** even though phase summaries and verification artifacts record the checks as passed.
+
+### Patterns Established
+
+- For public no-key connectors, pair mocked request-shape coverage with a small opt-in live matrix that proves RawResponse, BronzeWriter, transformer, and parquet paths.
+- Use environment overrides as the highest-precedence path isolation mechanism for CLI smoke tests.
+- Keep removed, duplicate, empty, or intentionally excluded endpoints visible in source-owned manifests rather than hidden in tests.
+
+### Key Lessons
+
+- Live CLI smoke tests are valuable because they exercise config loading, command parsing, connector fetches, bronze writes, and silver transforms together.
+- Mark only network-touching tests as `live`; keep documentation and exclusion assertions non-live so normal test selection stays meaningful.
+- A connector-validation milestone should finish with archive-ready requirements before deleting the milestone-scoped `REQUIREMENTS.md`.
+
+---
+
 ## Milestone: v0.3-entsoe-validation — ENTSO-E Pipeline Validation
 
 **Shipped:** 2026-05-03
@@ -83,12 +123,12 @@
 
 ## Cross-Milestone Trends
 
-| Metric | v0.2-entsoe-gaps | v0.3-entsoe-validation |
-|--------|-----------------|------------------------|
-| Phases | 4 | 9 |
-| Plans | 5 | 11 |
-| Tests (final) | 551 | 378 non-live gate; 97 final focused |
-| Files changed | 43 | 137 |
-| Nyquist gaps found | 6 (G3: 4, G4: 2) | n/a |
-| Nyquist gaps resolved | 6 | n/a |
-| Deferred items | 1 (GAP-03b) | 4 close-out artifacts |
+| Metric | v0.2-entsoe-gaps | v0.3-entsoe-validation | v0.4-elexon-validation |
+|--------|-----------------|------------------------|------------------------|
+| Phases | 4 | 9 | 4 |
+| Plans | 5 | 11 | 4 |
+| Tests (final) | 551 | 378 non-live gate; 97 final focused | 81 non-live; 5 live CLI; 5 live API-to-silver |
+| Files changed | 43 | 137 | 39 |
+| Nyquist gaps found | 6 (G3: 4, G4: 2) | n/a | n/a |
+| Nyquist gaps resolved | 6 | n/a | n/a |
+| Deferred items | 1 (GAP-03b) | 4 close-out artifacts | 0 new |

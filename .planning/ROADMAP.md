@@ -6,7 +6,7 @@
 
 - ✅ **v0.2-entsoe-gaps** — Gap Closure G1–G4 (shipped 2026-05-02)
 - ✅ **v0.3-entsoe-validation** — ENTSO-E Pipeline Validation H1–H8 (shipped 2026-05-03)
-- 🔄 **v0.4-elexon-validation** — Elexon Pipeline Validation I1–I4 (ready for close-out)
+- [x] **v0.4-elexon-validation** - Elexon Pipeline Validation I1-I4 (shipped 2026-05-04)
 
 ---
 
@@ -47,48 +47,17 @@ Known deferred close-out items: 4; see [STATE.md](STATE.md).
 
 ---
 
-### 🔄 v0.4-elexon-validation — Elexon Pipeline Validation
+<details>
+<summary>[x] v0.4-elexon-validation - Elexon Pipeline Validation (I1-I4) - SHIPPED 2026-05-04</summary>
 
-- [x] **Phase I1**: Elexon inventory, test scaffolding, and request-style baseline - completed 2026-05-03
-  - Requirements: ELEXON-INV-01, ELEXON-INV-02, ELEXON-INV-03
-  - **Plans:** 1 plan
-  - Plans:
-    - [x] `.planning/phases/I1-elexon-inventory-test-scaffolding/I1-01-PLAN.md` - Elexon inventory contract and live-test scaffolding
-  - Success: Configured Elexon datasets, `ENDPOINTS`, and silver registry alignment is tested.
-  - Success: Decommissioned/duplicate/empty endpoints are documented separately from active datasets.
-  - Success: Elexon live-test scaffolding uses opt-in `@pytest.mark.live`, temp config/data helpers, and source/dataset/stage diagnostics.
+- [x] Phase I1: Elexon inventory, test scaffolding, and request-style baseline - completed 2026-05-03
+- [x] Phase I2: Elexon mocked request-shape and fixture-backed bronze-to-silver tests - completed 2026-05-04
+- [x] Phase I3: Elexon live API to silver test suite - completed 2026-05-04
+- [x] Phase I4: Elexon CLI/backfill live smoke tests and milestone close-out docs - completed 2026-05-04
 
-- [x] **Phase I2**: Elexon mocked request-shape and fixture-backed bronze-to-silver tests - completed 2026-05-04
-  - Requirements: ELEXON-MOCK-01, ELEXON-MOCK-02, ELEXON-MOCK-03
-  - **Plans:** 1 plan
-  - **Wave 1:** mocked request-shape and fixture-backed bronze-to-silver coverage
-  - Plans:
-    - [x] `.planning/phases/I2-elexon-mocked-request-shape-and-fixture-backed-bronze-to-silver-tests/I2-01-PLAN.md` - Elexon mocked request shape and fixture-backed bronze-to-silver coverage
-  - Success: Mocked tests validate request URL/parameter shape for every active configured Elexon dataset without network access.
-  - Success: Realistic Elexon JSON fixtures write to bronze and run representative silver transformers across the main data families.
-  - Success: Tests assert bronze metadata, `data_date` partitioning, pagination/chunk behavior, and expected silver columns.
+See full details: [milestones/v0.4-elexon-validation-ROADMAP.md](milestones/v0.4-elexon-validation-ROADMAP.md)
 
-- [x] **Phase I3**: Elexon live API to silver test suite - completed 2026-05-04
-  - Requirements: ELEXON-LIVE-01, ELEXON-LIVE-02, ELEXON-LIVE-03, ELEXON-LIVE-04, ELEXON-LIVE-05
-  - **Plans:** 1 plan
-  - **Wave 1:** opt-in live API-to-bronze-to-silver coverage
-  - Plans:
-    - [x] `.planning/phases/I3-elexon-live-api-to-silver-test-suite/I3-01-PLAN.md` - Elexon live API-to-silver integration suite
-  - Success: Opt-in live tests call the public Elexon Insights API for active configured datasets with narrow deterministic windows.
-  - Success: Representative live responses are written through `BronzeWriter`, transformed to silver parquet, and checked for rows, columns, data provider, and schema validity.
-  - Success: Empty/no-data responses and known removed endpoints are classified explicitly as skip/deferred/documented outcomes.
-  - Success: Live tests require no API key and remain excluded from normal test runs.
-
-- [x] **Phase I4**: Elexon CLI/backfill live smoke tests and milestone close-out docs - completed 2026-05-04
-  - Requirements: ELEXON-CLI-01, ELEXON-CLI-02, ELEXON-CLI-03, ELEXON-DOC-01, ELEXON-DOC-02
-  - **Plans:** 1 plan
-  - **Wave 1:** live CLI smoke coverage and close-out docs
-  - Plans:
-    - [x] `.planning/phases/I4-elexon-cli-backfill-live-smoke-tests-and-milestone-close-out-docs/I4-01-PLAN.md` - Elexon CLI/backfill live smoke tests and milestone close-out docs
-  - Success: Live `pipeline`, `ingest`, `transform`, and `backfill` smoke tests run against isolated temp config/data paths.
-  - Success: CLI tests verify bronze and silver outputs for a safe curated dataset subset and fail non-zero on real dataset errors.
-  - Success: Phase artifacts document live commands, chosen dataset windows, expected skips, and troubleshooting notes.
-  - Success: Requirements traceability remains 100% mapped.
+</details>
 
 ---
 
@@ -97,4 +66,4 @@ Known deferred close-out items: 4; see [STATE.md](STATE.md).
 | Item | Source | Notes |
 |------|--------|-------|
 | GAP-03b: wind_solar_forecast psrType mapping (B16→solar, B18→wind_onshore, B19→wind_offshore) | v0.2 gap closure audit | Deferred — no gold consumers yet |
-| Extend E2E coverage to Elexon, ENTSO-G, GIE connectors | v0.3 scope decision | ENTSO-E first; other connectors deferred |
+| Extend E2E coverage to ENTSO-G and GIE connectors | v0.4 close-out | Elexon validated in v0.4; remaining connector families deferred |
