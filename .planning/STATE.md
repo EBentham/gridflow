@@ -14,7 +14,7 @@ progress:
 Phase: K1-K4 complete
 Plan: NESO endpoint catalog, connector, silver transforms, and E2E/live tests
 Status: NESO Carbon Intensity Platform implementation verified
-Last activity: 2026-05-04 - Fixed NESO settlement-period iteration so `intensity_period` captures every GB settlement period per requested date
+Last activity: 2026-05-04 - Reviewed NESO endpoint iteration semantics and fixed same-day `{from}/{to}` range windows
 
 ## Project Reference
 
@@ -59,6 +59,8 @@ produces schema-valid output - verified end-to-end, not just in unit tests.
 - NESO `intensity_period` must fan out each requested settlement date across
   all valid GB settlement periods: 48 on normal days, 46 on spring DST transition
   dates, and 50 on autumn DST transition dates.
+- NESO `{from}/{to}` range endpoints must expand same-day CLI/API requests to a
+  one-day API window; zero-length range URLs return 400 and produce empty bronze.
 
 ### Quick Tasks Completed
 

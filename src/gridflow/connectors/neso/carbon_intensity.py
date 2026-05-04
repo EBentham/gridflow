@@ -135,16 +135,21 @@ def _request_specs(
             current = window_end
         return windows
 
-    if end <= start:
-        return [(start, start, base_overrides)]
+    effective_end = (
+        start + timedelta(days=1)
+        if end <= start and "{to_dt}" in endpoint.path_template
+        else end
+    )
 
     windows: list[tuple[datetime, datetime, dict[str, Any]]] = []
     chunk_start = start
     chunk_delta = timedelta(days=_MAX_DAYS_PER_REQUEST)
-    while chunk_start < end:
-        chunk_end = min(chunk_start + chunk_delta, end)
+    while chunk_start < effective_end:
+        chunk_end = min(chunk_start + chunk_delta, effective_end)
         windows.append((chunk_start, chunk_end, base_overrides))
         chunk_start = chunk_end
+    if not windows:
+        windows.append((start, start, base_overrides))
     return windows
 
 
