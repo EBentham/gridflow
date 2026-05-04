@@ -3,18 +3,17 @@
 from __future__ import annotations
 
 import logging
-from datetime import datetime
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-import httpx
+if TYPE_CHECKING:
+    from datetime import datetime
+
+    import httpx
 
 from gridflow.connectors.base import BaseConnector, RawResponse
 from gridflow.connectors.entsog.endpoints import (
-    DEFAULT_PERIOD_TYPE,
-    ENTSOG_ALL_RECORDS_LIMIT,
-    ENTSOG_API_PATH,
-    ENTSOG_TIMEZONE,
-    PHYSICAL_FLOW_INDICATOR,
+    ENDPOINTS,
+    build_params,
 )
 from gridflow.connectors.registry import register_connector
 from gridflow.utils.retry import RETRY_POLICY
@@ -25,15 +24,15 @@ logger = logging.getLogger(__name__)
 class EntsogConnector(BaseConnector):
     """Connector for the ENTSO-G Transparency Platform API.
 
-    ENTSO-G is a fully public API (no authentication required).
-    Physical flow data is fetched as daily aggregates using ``limit=-1``
-    to retrieve all interconnection points in a single request.
+    ENTSO-G is a fully public API (no authentication required). Dataset-specific
+    endpoint metadata controls paths, required date filters, operational
+    indicators, and default point-direction filters.
     """
 
     source_name = "entsog"
 
     def list_datasets(self) -> list[str]:
-        return list(self.config.datasets.keys())
+        return list(ENDPOINTS)
 
     async def fetch(
         self,
@@ -42,21 +41,16 @@ class EntsogConnector(BaseConnector):
         end: datetime,
         **params: Any,
     ) -> list[RawResponse]:
-        """Fetch ENTSO-G physical flow data for a date range.
+        """Fetch ENTSO-G JSON data for a date range or reference endpoint."""
+        if dataset not in ENDPOINTS:
+            raise ValueError(
+                f"Unknown ENTSO-G dataset: {dataset!r}. "
+                f"Available: {list(ENDPOINTS)}"
+            )
 
-        Returns one ``RawResponse`` per request (ENTSO-G returns all records
-        in a single paginated response when ``limit=-1``).
-        """
-        query_params: dict[str, Any] = {
-            "from": start.strftime("%Y-%m-%d"),
-            "to": end.strftime("%Y-%m-%d"),
-            "indicator": PHYSICAL_FLOW_INDICATOR,
-            "periodType": DEFAULT_PERIOD_TYPE,
-            "timezone": ENTSOG_TIMEZONE,
-            "limit": ENTSOG_ALL_RECORDS_LIMIT,
-        }
-
-        raw = await self._request(ENTSOG_API_PATH, query_params)
+        endpoint = ENDPOINTS[dataset]
+        query_params = build_params(endpoint, start=start, end=end, **params)
+        raw = await self._request(endpoint.path, query_params)
 
         response = RawResponse(
             body=raw.content,
@@ -67,13 +61,15 @@ class EntsogConnector(BaseConnector):
             request_params=dict(query_params),
             api_version="v1",
             http_status=raw.status_code,
+            data_date=start.date() if endpoint.requires_dates else None,
         )
 
         logger.info(
-            "Fetched ENTSO-G %s from %s to %s (%d bytes)",
+            "Fetched ENTSO-G %s from %s to %s via %s (%d bytes)",
             dataset,
             start.date(),
             end.date(),
+            endpoint.path,
             len(raw.content),
         )
         return [response]

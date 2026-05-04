@@ -2,6 +2,43 @@
 
 ---
 
+## v0.5-entsog-pipeline-validation - ENTSOG Pipeline Validation
+
+**Shipped:** 2026-05-04
+**Phases:** J1-J4 (4 phases, inline implementation)
+**Commits:** 1 archive close-out commit planned
+**Test suite:** 857 non-live tests passed; 26 ENTSOG live API-to-silver tests passed with 7 expected no-data skips; 1 live ENTSOG CLI smoke test passed
+
+### Delivered
+
+Built ENTSOG validation from endpoint research through live CLI confidence:
+33 active ENTSOG datasets, metadata-driven bronze requests, specialised and
+generic silver transforms, mocked request-shape tests, fixture-backed
+bronze-to-silver checks, opt-in live API-to-silver validation, and a real
+backfill regression fix for CMP auction premiums.
+
+### Key Accomplishments
+
+1. **J1 - Research and inventory:** ENTSOG TP API endpoint research, endpoint catalog, source config, endpoint registry, and silver transformer registration now form one auditable contract.
+2. **J2 - Bronze request builder:** ENTSOG fetches now use endpoint metadata with exact-case `/operationalData`, `timeZone=UCT`, exact-case indicators, and mandatory `pointDirection` defaults.
+3. **J3 - Silver transforms:** Physical flows retain GWh/day normalisation while generic ENTSOG transformers cover operational, CMP/event, tariff/UMM, aggregated, and reference datasets.
+4. **J4 - Live and CLI confidence:** Opt-in live tests prove public ENTSOG responses can flow through bronze into silver, while live no-data outcomes are explicitly classified.
+5. **Close-out regression:** The generic transformer now coalesces duplicate snake_case column collisions such as `isCAMRelevant`/`isCamRelevant`, and the real `cmp_auction_premiums` backfill succeeds.
+
+### Known Deferred Items
+
+- Domain-specific ENTSOG silver schemas remain deferred until downstream gas gold consumers need typed models beyond generic normalised records.
+- Scheduled live endpoint monitoring remains a future cross-source decision.
+- GIE AGSI/ALSI validation remains the next connector-confidence candidate.
+- No v0.5 milestone audit file exists because `gsd-sdk` is unavailable in this runtime; close-out proceeded from passing regression, live, CLI, and targeted backfill verification.
+
+### Archive
+
+- [v0.5-entsog-pipeline-validation-ROADMAP.md](milestones/v0.5-entsog-pipeline-validation-ROADMAP.md)
+- [v0.5-entsog-pipeline-validation-REQUIREMENTS.md](milestones/v0.5-entsog-pipeline-validation-REQUIREMENTS.md)
+
+---
+
 ## v0.4-elexon-validation - Elexon Pipeline Validation
 
 **Shipped:** 2026-05-04

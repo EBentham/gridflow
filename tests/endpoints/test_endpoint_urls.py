@@ -418,51 +418,55 @@ class TestEntsogEndpointDefinitions:
     def test_api_path(self):
         from gridflow.connectors.entsog.endpoints import ENTSOG_API_PATH
 
-        assert ENTSOG_API_PATH == "/operationaldata"
+        assert ENTSOG_API_PATH == "/operationalData"
 
     def test_constants(self):
         from gridflow.connectors.entsog.endpoints import (
             DEFAULT_PERIOD_TYPE,
+            DEFAULT_POINT_DIRECTIONS,
             ENTSOG_ALL_RECORDS_LIMIT,
             ENTSOG_TIMEZONE,
+            ENTSOG_TIMEZONE_PARAM,
             PHYSICAL_FLOW_INDICATOR,
         )
 
         assert PHYSICAL_FLOW_INDICATOR == "Physical Flow"
         assert DEFAULT_PERIOD_TYPE == "day"
-        assert ENTSOG_TIMEZONE == "UCT"  # Not "UTC" — ENTSO-G convention
+        assert ENTSOG_TIMEZONE == "UCT"  # ENTSO-G convention
+        assert ENTSOG_TIMEZONE_PARAM == "timeZone"
         assert ENTSOG_ALL_RECORDS_LIMIT == -1
+        assert DEFAULT_POINT_DIRECTIONS
 
     def test_query_params_format(self):
         """Verify the exact query params the connector would build."""
         from gridflow.connectors.entsog.endpoints import (
-            DEFAULT_PERIOD_TYPE,
-            ENTSOG_ALL_RECORDS_LIMIT,
-            ENTSOG_TIMEZONE,
-            PHYSICAL_FLOW_INDICATOR,
+            DEFAULT_POINT_DIRECTIONS,
+            ENDPOINTS,
+            build_params,
         )
 
-        params = {
-            "from": REF_START.strftime("%Y-%m-%d"),
-            "to": REF_END.strftime("%Y-%m-%d"),
-            "indicator": PHYSICAL_FLOW_INDICATOR,
-            "periodType": DEFAULT_PERIOD_TYPE,
-            "timezone": ENTSOG_TIMEZONE,
-            "limit": ENTSOG_ALL_RECORDS_LIMIT,
-        }
+        params = build_params(ENDPOINTS["physical_flows"], start=REF_START, end=REF_END)
 
         assert params["from"] == "2026-02-01"
         assert params["to"] == "2026-02-02"
         assert params["indicator"] == "Physical Flow"
         assert params["periodType"] == "day"
-        assert params["timezone"] == "UCT"
+        assert params["timeZone"] == "UCT"
         assert params["limit"] == -1
+        assert params["pointDirection"] == ",".join(DEFAULT_POINT_DIRECTIONS)
 
     def test_key_point_keys(self):
         from gridflow.connectors.entsog.endpoints import KEY_POINT_KEYS
 
         expected = ["IUK", "BBL", "FRAN", "IRL", "NIRL", "NORI"]
         assert expected == KEY_POINT_KEYS
+
+    def test_active_entsog_datasets_match_configured_inventory(self):
+        from gridflow.config.settings import load_settings
+        from gridflow.connectors.entsog.endpoints import ENDPOINTS
+
+        configured = set(load_settings().get_source_config("entsog").datasets)
+        assert set(ENDPOINTS) == configured
 
 
 # ============================================================================

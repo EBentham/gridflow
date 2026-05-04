@@ -417,9 +417,137 @@ sources:
     max_retries: 5
     datasets:
       physical_flows:
-        endpoint: "/operationaldata"
+        endpoint: "/operationalData"
         schedule: "daily"
         max_query_days: 30
+      nominations:
+        endpoint: "/operationalData"
+        schedule: "daily"
+        max_query_days: 30
+      allocations:
+        endpoint: "/operationalData"
+        schedule: "daily"
+        max_query_days: 30
+      renominations:
+        endpoint: "/operationalData"
+        schedule: "daily"
+        max_query_days: 30
+      firm_available:
+        endpoint: "/operationalData"
+        schedule: "daily"
+        max_query_days: 30
+      firm_booked:
+        endpoint: "/operationalData"
+        schedule: "daily"
+        max_query_days: 30
+      firm_technical:
+        endpoint: "/operationalData"
+        schedule: "daily"
+        max_query_days: 30
+      interruptible_available:
+        endpoint: "/operationalData"
+        schedule: "daily"
+        max_query_days: 30
+      interruptible_booked:
+        endpoint: "/operationalData"
+        schedule: "daily"
+        max_query_days: 30
+      interruptible_total:
+        endpoint: "/operationalData"
+        schedule: "daily"
+        max_query_days: 30
+      gcv:
+        endpoint: "/operationalData"
+        schedule: "daily"
+        max_query_days: 30
+      wobbe_index:
+        endpoint: "/operationalData"
+        schedule: "daily"
+        max_query_days: 30
+      methane_content:
+        endpoint: "/operationalData"
+        schedule: "daily"
+        max_query_days: 30
+      hydrogen_content:
+        endpoint: "/operationalData"
+        schedule: "daily"
+        max_query_days: 30
+      oxygen_content:
+        endpoint: "/operationalData"
+        schedule: "daily"
+        max_query_days: 30
+      available_through_oversubscription:
+        endpoint: "/operationalData"
+        schedule: "daily"
+        max_query_days: 30
+      available_through_surrender:
+        endpoint: "/operationalData"
+        schedule: "daily"
+        max_query_days: 30
+      available_through_uioli_long_term:
+        endpoint: "/operationalData"
+        schedule: "daily"
+        max_query_days: 30
+      available_through_uioli_short_term:
+        endpoint: "/operationalData"
+        schedule: "daily"
+        max_query_days: 30
+      cmp_unsuccessful_requests:
+        endpoint: "/cmpUnsuccessfulRequests"
+        schedule: "daily"
+        max_query_days: 30
+      cmp_unavailable_firm_capacity:
+        endpoint: "/cmpUnavailables"
+        schedule: "daily"
+        max_query_days: 30
+      cmp_auction_premiums:
+        endpoint: "/cmpAuctions"
+        schedule: "daily"
+        max_query_days: 30
+      interruptions:
+        endpoint: "/interruptions"
+        schedule: "daily"
+        max_query_days: 30
+      aggregated_physical_flows:
+        endpoint: "/aggregatedData"
+        schedule: "daily"
+        max_query_days: 30
+      tariffs:
+        endpoint: "/tariffsFulls"
+        schedule: "monthly"
+        max_query_days: 30
+      tariff_simulations:
+        endpoint: "/tariffsSimulations"
+        schedule: "monthly"
+        max_query_days: 30
+      urgent_market_messages:
+        endpoint: "/urgentMarketMessages"
+        schedule: "daily"
+        max_query_days: 0
+      connection_points:
+        endpoint: "/connectionPoints"
+        schedule: "weekly"
+        max_query_days: 0
+      operators:
+        endpoint: "/operators"
+        schedule: "weekly"
+        max_query_days: 0
+      balancing_zones:
+        endpoint: "/balancingZones"
+        schedule: "weekly"
+        max_query_days: 0
+      operator_point_directions:
+        endpoint: "/operatorPointDirections"
+        schedule: "weekly"
+        max_query_days: 0
+      interconnections:
+        endpoint: "/interconnections"
+        schedule: "weekly"
+        max_query_days: 0
+      aggregate_interconnections:
+        endpoint: "/aggregateInterconnections"
+        schedule: "weekly"
+        max_query_days: 0
 
   neso:
     base_url: "https://api.carbonintensity.org.uk"

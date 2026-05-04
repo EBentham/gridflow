@@ -15,16 +15,34 @@ schema-valid output — verified end-to-end, not just in unit tests.
 
 ## Current State
 
-**Shipped:** v0.4-elexon-validation on 2026-05-04.
+**Shipped:** v0.5-entsog-pipeline-validation on 2026-05-04.
 
-gridflow now has connector validation patterns for both ENTSO-E and Elexon:
+gridflow now has connector validation patterns for ENTSO-E, Elexon, and ENTSOG:
 registry-driven inventory checks, mocked request-shape coverage, fixture-backed
 bronze-to-silver tests, opt-in live API validation, and isolated CLI/backfill
 smoke tests.
 
-**Next focus:** Plan the next connector-confidence milestone, likely extending the
-same pattern to ENTSO-G and GIE or scheduling live smoke monitoring outside the
-normal unit-test suite.
+**Next focus:** plan the next connector-confidence milestone. GIE AGSI/ALSI is
+the leading candidate because ENTSOG is now validated through bronze, silver,
+mocked E2E, live API-to-silver, and CLI smoke coverage.
+
+## Last Milestone: v0.5 ENTSOG Pipeline Validation
+
+**Goal:** Add ENTSOG as a fully validated pipeline source, from documented API
+endpoint inventory through bronze ingestion, silver output, and opt-in live
+confidence tests.
+
+**Status:** Shipped 2026-05-04.
+
+**Target features:**
+- Document every ENTSOG TP API endpoint and operational indicator dataset used by
+  gridflow.
+- Implement endpoint metadata-driven ENTSOG bronze requests, including required
+  point-direction filters for operational data.
+- Add ENTSOG silver transformers for operational, CMP/event, tariff/UMM, and
+  reference endpoint families.
+- Add inventory, mocked request-shape, fixture-backed bronze-to-silver, opt-in
+  live API-to-silver, and isolated CLI smoke tests.
 
 ## Requirements
 
@@ -58,18 +76,24 @@ normal unit-test suite.
 - [x] Elexon mocked and fixture-backed tests cover representative transformer families and bronze-to-silver flows - v0.4-elexon-validation I2
 - [x] Elexon live E2E tests ping the public Insights API and prove real responses flow into silver parquet - v0.4-elexon-validation I3
 - [x] Elexon CLI and backfill live smoke tests run through isolated temp paths and verify bronze/silver outputs - v0.4-elexon-validation I4
+- [x] ENTSOG endpoint catalog and inventory contract cover configured datasets, endpoint definitions, and silver transformer registrations - v0.5-entsog-pipeline-validation J1
+- [x] ENTSOG bronze connector uses endpoint metadata for operational, CMP, interruption, aggregated, tariff, UMM, and reference endpoints - v0.5-entsog-pipeline-validation J2
+- [x] ENTSOG physical-flow and generic silver transformers write deterministic silver parquet for active endpoint families - v0.5-entsog-pipeline-validation J3
+- [x] ENTSOG mocked request-shape, fixture-backed bronze-to-silver, opt-in live API-to-silver, and isolated CLI smoke tests are in place - v0.5-entsog-pipeline-validation J4
+- [x] ENTSOG generic transformer handles live duplicate snake_case column collisions such as `isCAMRelevant`/`isCamRelevant` - v0.5-entsog-pipeline-validation J4 close-out
 
 ### Active
 
-- [ ] Extend live and mocked E2E coverage to ENTSO-G and GIE connectors
+- [ ] Extend live and mocked E2E coverage to GIE AGSI/ALSI connectors
 - [ ] Decide whether to promote deferred ENTSO-E catalog rows, including B09 flow-based allocations and SO GL / implementation-framework balancing extensions
 - [ ] Decide whether scheduled live smoke monitoring should exist outside the normal test suite
 - [ ] Review whether additional official Elexon datasets should be promoted after endpoint availability and silver modelling are assessed
+- [ ] Decide when ENTSOG needs domain-specific typed silver schemas beyond generic normalised records
 
 ### Out of Scope
 
 - Live tests running in CI — no ENTSO-E API key in CI environment
-- E2E tests for remaining connectors - ENTSO-E and Elexon are now validated; ENTSO-G and GIE are next-milestone candidates
+- E2E tests for remaining connectors - ENTSO-E, Elexon, and ENTSOG are now validated; GIE remains the next connector candidate
 - Gold layer validation — no gold consumers of ENTSO-E data yet
 - GAP-03b psrType semantic mapping — backlog, no gold consumers of wind_solar_forecast
 
@@ -97,6 +121,9 @@ normal unit-test suite.
 - v0.3 shipped with ENTSO-E expanded from 16 original datasets to 48 active datasets, backed by endpoint catalog validation, mocked medallion-path E2E tests, and opt-in live request-shape probes.
 - Four close-out artifacts were acknowledged as deferred at v0.3 completion: one debug session, two UAT records, and one H3 verification record.
 - v0.4 shipped Elexon validation from inventory through mocked request-shape tests, fixture-backed bronze-to-silver checks, opt-in public API-to-silver tests, and isolated live CLI/backfill smoke tests.
+- v0.5 implements ENTSOG endpoint metadata across 33 active datasets, including operational indicators, CMP/event, aggregated, tariff, UMM, and reference endpoint families.
+- ENTSOG live validation treats `404 No result found` and empty arrays as explicit no-data skips for narrow smoke windows, while successful responses must write bronze and silver parquet under temporary roots.
+- ENTSOG `cmp_auction_premiums` live payloads can include both `isCAMRelevant` and `isCamRelevant`; the generic transformer coalesces same-normalized-name columns into one snake_case output column.
 
 ## Constraints
 
@@ -105,6 +132,7 @@ normal unit-test suite.
 - **Platform**: Windows 11 — `os.replace()` for atomic writes, forward-slash paths in tests
 - **ENTSO-E API**: requires `ENTSOE_API_KEY` env var; live tests must be opt-in (`--live`)
 - **Elexon API**: public Insights API; no key required, but live tests must be opt-in and use narrow request windows/rate limits
+- **ENTSO-G API**: public JSON API; no key required, but live tests must be opt-in and use narrow windows, `pointDirection`, exact-case indicators, and small `limit` overrides
 - **Compatibility**: existing ENTSO-E transformers and active H1-H6 datasets must remain passing after source-batch changes
 
 ## Key Decisions
@@ -130,6 +158,10 @@ normal unit-test suite.
 | `GRIDFLOW_*` environment overrides beat YAML paths | Live CLI smoke tests and manual checks must be able to isolate data, DuckDB, and logs from normal project directories | Adopted |
 | Elexon live tests use representative no-key public responses | Keeps live coverage fast while proving RawResponse, BronzeWriter, transformer, and parquet paths | Good |
 | Elexon CLI smoke tests use curated datasets | Covers path-date, publish/from-to, and reference-data command paths without broad live API blast radius | Good |
+| ENTSOG v0.5 mirrors ENTSO-E/Elexon validation shape | The next connector-confidence gap is ENTSOG, but gas TP has public JSON, mandatory point-direction filters, exact-case indicators, and noisy no-data responses | Adopted |
+| ENTSOG endpoint registry is the source of truth | Operational indicators and non-operational endpoint paths differ enough that source config, connector requests, and tests must derive from shared metadata | Adopted |
+| ENTSOG generic silver transformer tolerates placeholder dates | Live ENTSOG payloads include empty strings, `N/A`, and human-formatted timestamps; placeholders should become nulls instead of blocking endpoint coverage | Adopted |
+| ENTSOG generic silver transformer coalesces column-name collisions | Live payloads can vary field casing within one endpoint; same-normalized-name columns should become one canonical snake_case column | Adopted |
 
 ## Evolution
 
@@ -149,4 +181,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-04 after completing v0.4 milestone*
+*Last updated: 2026-05-04 after shipping v0.5 ENTSOG Pipeline Validation*

@@ -1,20 +1,20 @@
 ---
-milestone: v0.4
-milestone_name: Elexon Pipeline Validation
-status: milestone_complete
+milestone: v0.5
+milestone_name: ENTSOG Pipeline Validation
+status: shipped
 progress:
   phases_total: 4
   phases_complete: 4
-  plans_total: 4
-  plans_complete: 4
+  plans_total: 0
+  plans_complete: 0
 ---
 
 ## Current Position
 
-Phase: v0.4 milestone close-out
-Plan: All I1-I4 plans complete
-Status: v0.4 shipped and archived; planning next milestone
-Last activity: 2026-05-04 - v0.4 milestone completed
+Phase: J1-J4 complete
+Plan: Inline v0.5 implementation and verification
+Status: ENTSOG Pipeline Validation shipped and archived
+Last activity: 2026-05-04 - Milestone v0.5 shipped and archived
 
 ## Project Reference
 
@@ -22,7 +22,7 @@ See: .planning/PROJECT.md (updated 2026-05-04)
 
 **Core value:** Every connector reliably fetches real data and every silver transformer
 produces schema-valid output - verified end-to-end, not just in unit tests.
-**Current focus:** Planning the next connector-confidence milestone
+**Current focus:** Planning next milestone
 
 ## Accumulated Context
 
@@ -50,6 +50,9 @@ produces schema-valid output - verified end-to-end, not just in unit tests.
 - I2 completed: mocked request-shape coverage now spans every active configured Elexon dataset, while fixture-backed bronze-to-silver tests validate representative transformer families without live network access.
 - I4 completed: live Elexon CLI smoke tests cover `pipeline`, separate `ingest`/`transform`, and `backfill` for curated datasets under temp-root `GRIDFLOW_*` paths.
 - Runtime `GRIDFLOW_DATA_DIR`, `GRIDFLOW_DUCKDB_PATH`, and `GRIDFLOW_LOG_DIR` overrides must take precedence over YAML pipeline paths so live smoke tests and manual checks can isolate local outputs.
+- ENTSOG operational requests must use exact-case `/operationalData`, `timeZone=UCT`, exact-case indicators, and `pointDirection` filters built from operator key + point key + direction key.
+- ENTSOG generic silver parsing must tolerate API placeholders such as empty strings, `N/A`, and human-formatted last-update timestamps by producing null datetimes rather than failing the whole transform.
+- ENTSOG generic silver parsing must coalesce same-normalized-name fields such as `isCAMRelevant` and `isCamRelevant` into one canonical snake_case column.
 
 ### Roadmap Evolution
 
@@ -72,12 +75,18 @@ produces schema-valid output - verified end-to-end, not just in unit tests.
 - I3 completed: opt-in live tests now prove `system_prices`, `boal`, `freq`, `pn`, and `bmunits_reference` can flow from the public Elexon API through temp bronze into silver parquet.
 - I4 completed: live CLI/backfill smoke tests now prove `system_prices`, `freq`, and `bmunits_reference` flow through user-facing commands without polluting normal project data on verified runs.
 - v0.4 completed: Elexon validation is archived with 4 phases, 4 plans, and 16/16 requirements complete.
+- v0.5 started: ENTSOG validation will mirror the ENTSO-E/Elexon confidence pattern while accounting for the gas Transparency Platform's public JSON API, exact-case indicators, mandatory point-direction filters, and no-data responses.
+- J1-J4 completed: ENTSOG endpoint research/catalog, metadata-driven bronze requests, generic and specialised silver transformers, mocked E2E tests, opt-in live API-to-silver tests, and isolated CLI smoke tests are implemented.
+- v0.5 completed: ENTSOG Pipeline Validation shipped and archived on 2026-05-04.
 
 ### Blockers
 
 - H3 live verification record remains human-needed for the original all-dataset credentialed run; later H5.5/H8 live gates passed and this is acknowledged as deferred at v0.3 close.
 - H5.5 resolved live failures from invalid A83 metadata, zipped outage payloads, live unit/outage tag variants, and fixed-date no-data acknowledgements.
 - No new v0.4 blockers remain open at milestone close.
+- v0.5 has no open implementation blockers. `gsd-sdk` is unavailable in this runtime, so STATE.md was updated directly rather than through `state.milestone-switch`.
+- ENTSOG live tests classify seven documented no-data/empty API outcomes as skips for the 2024-01-15 test window; this is expected source behavior rather than an implementation blocker.
+- No v0.5 milestone audit file exists because `gsd-sdk` is unavailable in this runtime; milestone close proceeded based on passing non-live, live, CLI smoke, and targeted backfill verification.
 
 ## Deferred Items
 
@@ -89,6 +98,14 @@ Items acknowledged and deferred at milestone close on 2026-05-03:
 | uat | H3-live-entsoe-test-suite/H3-HUMAN-UAT.md | partial; 1 pending scenario |
 | uat | H4-entsoe-endpoint-catalog-request-builder/H4-UAT.md | diagnosed; 0 pending scenarios |
 | verification | H3-live-entsoe-test-suite/H3-VERIFICATION.md | human_needed |
+
+Items acknowledged and deferred at milestone close on 2026-05-04:
+
+| Category | Item | Status |
+|----------|------|--------|
+| follow_up | ENTSOG domain-specific typed silver schemas | deferred until downstream gas gold consumers need them |
+| follow_up | Scheduled live endpoint monitoring | future cross-source decision |
+| follow_up | GIE AGSI/ALSI connector validation | next connector-confidence candidate |
 
 ### Todos
 

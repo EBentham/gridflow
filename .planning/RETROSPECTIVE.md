@@ -2,6 +2,46 @@
 
 ---
 
+## Milestone: v0.5-entsog-pipeline-validation - ENTSOG Pipeline Validation
+
+**Shipped:** 2026-05-04
+**Phases:** 4 (J1-J4) | **Plans:** Inline implementation
+
+### What Was Built
+
+1. Added ENTSOG endpoint research and an auditable endpoint catalog covering 33 active datasets.
+2. Replaced one-off physical-flow request logic with metadata-driven bronze requests across operational, CMP/event, aggregated, tariff, UMM, and reference endpoint families.
+3. Added generic ENTSOG JSON silver transformers while preserving the specialised physical-flow GWh/day normalisation.
+4. Added mocked request-shape tests, fixture-backed bronze-to-silver tests, opt-in live API-to-silver tests, and isolated live CLI smoke coverage.
+5. Fixed a live CMP auction premium regression where `isCAMRelevant` and `isCamRelevant` normalized to the same snake_case column.
+
+### What Worked
+
+- **Live API probing early** exposed ENTSOG's case-sensitive `/operationalData`, `timeZone`, exact indicator values, and mandatory `pointDirection` semantics before the connector hardened around old assumptions.
+- **Endpoint metadata as source of truth** kept source config, connector request construction, docs, and tests aligned across a wide JSON API surface.
+- **Generic silver with targeted hardening** gave broad endpoint coverage quickly while still allowing specialised physical-flow modelling where it already mattered.
+- **Real user backfill validation** caught a sparse live payload collision that mocked fixtures did not initially cover.
+
+### What Was Inefficient
+
+- **No `gsd-sdk` in this runtime** meant milestone audit and archival had to be completed manually.
+- **Inline implementation skipped normal per-phase SUMMARY artifacts**, so close-out relied on requirements, research, tests, and milestone archive notes.
+- **The initial mocked CMP fixture was too tidy** and missed mixed field casing that appeared in live `cmp_auction_premiums` data.
+
+### Patterns Established
+
+- Public JSON connector milestones should include live payload shape probes for sparse fields, not only first-row examples.
+- Generic transformer column normalization should be collision-aware whenever API fields vary by casing or punctuation.
+- ENTSOG no-data outcomes should be explicit skips in live tests when request construction is valid and the API returns `404 No result found` or empty arrays.
+
+### Key Lessons
+
+- Exact casing matters for ENTSOG paths, parameters, and indicators; docs and tests should enforce casing rather than relying on API tolerance.
+- A broad generic silver layer is useful for coverage, but live regressions should immediately become offline fixture regressions.
+- Connector validation milestones are strongest when they end with one real CLI/backfill command that mirrors how the user will actually run the source.
+
+---
+
 ## Milestone: v0.4-elexon-validation - Elexon Pipeline Validation
 
 **Shipped:** 2026-05-04
@@ -123,12 +163,12 @@
 
 ## Cross-Milestone Trends
 
-| Metric | v0.2-entsoe-gaps | v0.3-entsoe-validation | v0.4-elexon-validation |
-|--------|-----------------|------------------------|------------------------|
-| Phases | 4 | 9 | 4 |
-| Plans | 5 | 11 | 4 |
-| Tests (final) | 551 | 378 non-live gate; 97 final focused | 81 non-live; 5 live CLI; 5 live API-to-silver |
-| Files changed | 43 | 137 | 39 |
-| Nyquist gaps found | 6 (G3: 4, G4: 2) | n/a | n/a |
-| Nyquist gaps resolved | 6 | n/a | n/a |
-| Deferred items | 1 (GAP-03b) | 4 close-out artifacts | 0 new |
+| Metric | v0.2-entsoe-gaps | v0.3-entsoe-validation | v0.4-elexon-validation | v0.5-entsog-pipeline-validation |
+|--------|-----------------|------------------------|------------------------|----------------------------------|
+| Phases | 4 | 9 | 4 | 4 |
+| Plans | 5 | 11 | 4 | Inline |
+| Tests (final) | 551 | 378 non-live gate; 97 final focused | 81 non-live; 5 live CLI; 5 live API-to-silver | 857 non-live; 26 live API-to-silver; 1 live CLI; targeted backfill passed |
+| Files changed | 43 | 137 | 39 | 20+ |
+| Nyquist gaps found | 6 (G3: 4, G4: 2) | n/a | n/a | n/a |
+| Nyquist gaps resolved | 6 | n/a | n/a | n/a |
+| Deferred items | 1 (GAP-03b) | 4 close-out artifacts | 0 new | 3 future follow-ups |

@@ -242,14 +242,14 @@ For cross-border flows, `in_Domain.mRID` = from-zone EIC, `out_Domain.mRID` = to
 ## 3. ENTSO-G (Gas Transparency Platform)
 
 **Base URL:** `https://transparency.entsog.eu/api/v1`
-**API path:** `/operationaldata`
+**Primary API path:** `/operationalData`
 **Auth:** None (public API)
 **Response format:** JSON
 
 ### URL Pattern
 
 ```
-GET https://transparency.entsog.eu/api/v1/operationaldata?from=2026-02-01&to=2026-02-01&indicator=Physical+Flow&periodType=day&timezone=UCT&limit=-1
+GET https://transparency.entsog.eu/api/v1/operationalData?from=2026-02-01&to=2026-02-02&indicator=Physical+Flow&periodType=day&pointDirection=UK-TSO-0001ITP-00005exit&timeZone=UCT&limit=-1
 ```
 
 ### Query Parameters
@@ -257,23 +257,24 @@ GET https://transparency.entsog.eu/api/v1/operationaldata?from=2026-02-01&to=202
 | Parameter | Value | Notes |
 |-----------|-------|-------|
 | `from` | `2026-02-01` | YYYY-MM-DD format |
-| `to` | `2026-02-01` | YYYY-MM-DD format |
+| `to` | `2026-02-02` | YYYY-MM-DD format |
 | `indicator` | `Physical Flow` | Fixed string (URL-encoded as `Physical+Flow`) |
 | `periodType` | `day` | Fixed -- daily aggregates |
-| `timezone` | `UCT` | Must be `UCT` not `UTC` (ENTSO-G convention) |
+| `pointDirection` | `UK-TSO-0001ITP-00005exit` | Operator key + point key + direction key |
+| `timeZone` | `UCT` | Case-sensitive parameter name; value is ENTSO-G convention |
 | `limit` | `-1` | Return all records in a single response |
 
 ### Verified Example URL
 
 ```
-https://transparency.entsog.eu/api/v1/operationaldata?from=2026-02-01&to=2026-02-01&indicator=Physical+Flow&periodType=day&timezone=UCT&limit=-1
+https://transparency.entsog.eu/api/v1/operationalData?from=2026-02-01&to=2026-02-02&indicator=Physical+Flow&periodType=day&pointDirection=UK-TSO-0001ITP-00005exit&timeZone=UCT&limit=-1
 ```
 
 ### Notes
 
-- Single request returns all interconnection points in one response
-- No per-zone iteration -- data for all points is returned at once
-- No pagination needed (`limit=-1`)
+- `/operationalData` is case-sensitive and requires `pointDirection` for point-level data.
+- Gridflow keeps an expanded endpoint catalog in `docs/entsog_endpoint_catalog.yaml`.
+- No pagination needed for curated calls (`limit=-1`).
 
 ---
 
