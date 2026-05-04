@@ -2,6 +2,40 @@
 
 ---
 
+## v0.6-neso-carbon-intensity-platform - NESO Carbon Intensity Platform
+
+**Completed:** 2026-05-04
+**Phases:** K1-K4 (4 phases, inline implementation)
+**Test suite:** NESO mocked and live E2E suites added; exact-day and settlement-period iteration semantics verified
+
+### Delivered
+
+Expanded NESO Carbon Intensity from a single national route to all documented
+national intensity, statistics, factors, generation, and regional route
+families with endpoint catalog, path-template request construction,
+family-aware silver transforms, mocked all-dataset E2E tests, opt-in live
+API-to-silver tests, and CLI smoke coverage.
+
+### Key Accomplishments
+
+1. **K1 - Research and catalog:** All documented Carbon Intensity routes are represented in the endpoint catalog and source config.
+2. **K2 - Connector path templates:** NESO connector requests are built from endpoint metadata and preserve path values in bronze provenance.
+3. **K3 - Silver transforms:** National, stats, factors, generation, and regional payload families write deterministic silver parquet.
+4. **K4 - Live and CLI confidence:** Live API responses and user-facing CLI paths create isolated bronze and silver outputs.
+5. **Close-out fix:** Same-day range windows and `intensity_period` settlement-period iteration now fetch complete target dates instead of empty or partial windows.
+
+### Known Deferred Items
+
+- Scheduled live endpoint monitoring remains a future cross-source decision.
+- GIE AGSI gas storage validation is the next connector-confidence milestone.
+
+### Archive
+
+- [v0.6-neso-carbon-intensity-platform-ROADMAP.md](milestones/v0.6-neso-carbon-intensity-platform-ROADMAP.md)
+- [v0.6-neso-carbon-intensity-platform-REQUIREMENTS.md](milestones/v0.6-neso-carbon-intensity-platform-REQUIREMENTS.md)
+
+---
+
 ## v0.5-entsog-pipeline-validation - ENTSOG Pipeline Validation
 
 **Shipped:** 2026-05-04

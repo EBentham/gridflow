@@ -15,22 +15,41 @@ schema-valid output — verified end-to-end, not just in unit tests.
 
 ## Current State
 
-**Shipped:** v0.5-entsog-pipeline-validation on 2026-05-04.
+**Shipped:** v0.6-neso-carbon-intensity-platform on 2026-05-04.
 
-gridflow now has connector validation patterns for ENTSO-E, Elexon, and ENTSOG:
-registry-driven inventory checks, mocked request-shape coverage, fixture-backed
-bronze-to-silver tests, opt-in live API validation, and isolated CLI/backfill
-smoke tests.
+gridflow now has connector validation patterns for ENTSO-E, Elexon, ENTSOG,
+and NESO: registry-driven inventory checks, mocked request-shape coverage,
+fixture-backed bronze-to-silver tests, opt-in live API validation, and isolated
+CLI/backfill smoke tests.
 
-**Current focus:** v0.6 NESO Carbon Intensity Platform. The next connector
-confidence milestone brings the full NESO Carbon Intensity API surface into the
-medallion pipeline with endpoint catalog, silver transforms, mocked E2E tests,
-opt-in live API-to-silver checks, and CLI smoke coverage.
+**Current focus:** v0.7 GIE AGSI Gas Storage Validation. The next connector
+confidence milestone upgrades GIE AGSI gas storage from a minimal country-level
+connector to a catalogued, count-checked, live-tested medallion pipeline source.
 
-## Current Milestone: v0.6 NESO Carbon Intensity Platform
+## Current Milestone: v0.7 GIE AGSI Gas Storage Validation
+
+**Goal:** Make GIE AGSI gas storage a fully validated pipeline source, from
+API endpoint inventory through count-complete bronze ingestion, silver output,
+and opt-in live confidence tests.
+
+**Target features:**
+- Research and document the official GIE AGSI endpoint families and query
+  scopes: storage reports, EIC listings, news, and unavailability.
+- Build AGSI endpoint/source metadata for aggregate, country, company, and
+  facility query scopes, including listing-derived expected-count planning.
+- Fix bronze request semantics for exact gas-day/range queries, `last_page`
+  pagination, provenance, and the documented 60 calls/minute limit.
+- Preserve live AGSI storage, reference, news, and unavailability payload data
+  through deterministic silver parquet where active.
+- Add inventory, mocked request-shape, count-completeness, fixture-backed
+  bronze-to-silver, opt-in live API-to-silver, and CLI smoke tests.
+
+## Last Milestone: v0.6 NESO Carbon Intensity Platform
 
 **Goal:** Promote NESO Carbon Intensity from a single national intensity route
 to a fully catalogued and tested source covering all documented API datasets.
+
+**Status:** Completed 2026-05-04.
 
 **Target features:**
 - Research and document every official NESO Carbon Intensity API route.
@@ -39,24 +58,6 @@ to a fully catalogued and tested source covering all documented API datasets.
 - Transform every NESO response family into deterministic silver parquet.
 - Add inventory, mocked request-shape, fixture-backed bronze-to-silver, opt-in
   live API-to-silver, and CLI smoke tests.
-
-## Last Milestone: v0.5 ENTSOG Pipeline Validation
-
-**Goal:** Add ENTSOG as a fully validated pipeline source, from documented API
-endpoint inventory through bronze ingestion, silver output, and opt-in live
-confidence tests.
-
-**Status:** Shipped 2026-05-04.
-
-**Target features:**
-- Document every ENTSOG TP API endpoint and operational indicator dataset used by
-  gridflow.
-- Implement endpoint metadata-driven ENTSOG bronze requests, including required
-  point-direction filters for operational data.
-- Add ENTSOG silver transformers for operational, CMP/event, tariff/UMM, and
-  reference endpoint families.
-- Add inventory, mocked request-shape, fixture-backed bronze-to-silver, opt-in
-  live API-to-silver, and isolated CLI smoke tests.
 
 ## Requirements
 
@@ -95,14 +96,18 @@ confidence tests.
 - [x] ENTSOG physical-flow and generic silver transformers write deterministic silver parquet for active endpoint families - v0.5-entsog-pipeline-validation J3
 - [x] ENTSOG mocked request-shape, fixture-backed bronze-to-silver, opt-in live API-to-silver, and isolated CLI smoke tests are in place - v0.5-entsog-pipeline-validation J4
 - [x] ENTSOG generic transformer handles live duplicate snake_case column collisions such as `isCAMRelevant`/`isCamRelevant` - v0.5-entsog-pipeline-validation J4 close-out
+- [x] NESO endpoint catalog covers all documented Carbon Intensity API routes - v0.6-neso-carbon-intensity-platform K1
+- [x] NESO connector fetches every registered dataset via path-template metadata - v0.6-neso-carbon-intensity-platform K2
+- [x] NESO silver transformers preserve all national, stats, factors, generation, and regional payload data - v0.6-neso-carbon-intensity-platform K3
+- [x] NESO mocked and live E2E tests prove API responses flow through bronze into silver - v0.6-neso-carbon-intensity-platform K4
 
 ### Active
 
-- [x] NESO endpoint catalog covers all documented Carbon Intensity API routes
-- [x] NESO connector fetches every registered dataset via path-template metadata
-- [x] NESO silver transformers preserve all national, stats, factors, generation, and regional payload data
-- [x] NESO mocked and live E2E tests prove API responses flow through bronze into silver
-- [ ] Extend live and mocked E2E coverage to GIE AGSI/ALSI connectors
+- [ ] GIE AGSI endpoint catalog covers documented storage report, EIC listing, news, and unavailability endpoint families
+- [ ] GIE AGSI source config and connector endpoint metadata expose the same active dataset families and query scopes
+- [ ] GIE AGSI bronze ingestion fetches every expected request/page for exact-date and range query plans
+- [ ] GIE AGSI silver transformers preserve storage, listing, news, and unavailability payload data where active
+- [ ] GIE AGSI mocked and live E2E tests prove real API responses flow through bronze into silver
 - [ ] Decide whether to promote deferred ENTSO-E catalog rows, including B09 flow-based allocations and SO GL / implementation-framework balancing extensions
 - [ ] Decide whether scheduled live smoke monitoring should exist outside the normal test suite
 - [ ] Review whether additional official Elexon datasets should be promoted after endpoint availability and silver modelling are assessed
@@ -111,7 +116,7 @@ confidence tests.
 ### Out of Scope
 
 - Live tests running in CI — no ENTSO-E API key in CI environment
-- E2E tests for remaining connectors - ENTSO-E, Elexon, and ENTSOG are now validated; GIE remains the next connector candidate
+- GIE ALSI LNG validation - v0.7 focuses on AGSI gas storage; ALSI remains a follow-up connector-confidence candidate
 - Gold layer validation — no gold consumers of ENTSO-E data yet
 - GAP-03b psrType semantic mapping — backlog, no gold consumers of wind_solar_forecast
 
@@ -142,6 +147,12 @@ confidence tests.
 - v0.5 implements ENTSOG endpoint metadata across 33 active datasets, including operational indicators, CMP/event, aggregated, tariff, UMM, and reference endpoint families.
 - ENTSOG live validation treats `404 No result found` and empty arrays as explicit no-data skips for narrow smoke windows, while successful responses must write bronze and silver parquet under temporary roots.
 - ENTSOG `cmp_auction_premiums` live payloads can include both `isCAMRelevant` and `isCamRelevant`; the generic transformer coalesces same-normalized-name columns into one snake_case output column.
+- v0.6 implements 33 NESO Carbon Intensity route variants with endpoint catalog, path-template connector metadata, family-aware silver transforms, mocked all-dataset E2E tests, opt-in live API-to-silver checks, and CLI smoke coverage.
+- GIE AGSI API requires an `x-key` header and publishes daily gas storage data at `https://agsi.gie.eu`.
+- GIE AGSI `/api/about?show=listing` returns the company/facility EIC inventory needed to derive expected company and facility request counts.
+- GIE AGSI storage responses use `last_page` for pagination; `total` is the number of rows on the current page, not the global total.
+- GIE AGSI exact-day and range requests must be count-checked so a query for 2026-05-01 writes all expected rows/pages for that day and no out-of-window gas days.
+- GIE API documentation v007 supersedes the user-supplied v006 for planning purposes; v007 applies API v2 to ALSI and adds filtering detail, but v0.7 implementation scope remains AGSI gas storage.
 
 ## Constraints
 
@@ -151,6 +162,7 @@ confidence tests.
 - **ENTSO-E API**: requires `ENTSOE_API_KEY` env var; live tests must be opt-in (`--live`)
 - **Elexon API**: public Insights API; no key required, but live tests must be opt-in and use narrow request windows/rate limits
 - **ENTSO-G API**: public JSON API; no key required, but live tests must be opt-in and use narrow windows, `pointDirection`, exact-case indicators, and small `limit` overrides
+- **GIE AGSI API**: requires `GIE_API_KEY` via `x-key` header; live tests must be opt-in, use exact gas-day windows, and respect the documented 60 calls/minute limit
 - **Compatibility**: existing ENTSO-E transformers and active H1-H6 datasets must remain passing after source-batch changes
 
 ## Key Decisions
@@ -180,6 +192,10 @@ confidence tests.
 | ENTSOG endpoint registry is the source of truth | Operational indicators and non-operational endpoint paths differ enough that source config, connector requests, and tests must derive from shared metadata | Adopted |
 | ENTSOG generic silver transformer tolerates placeholder dates | Live ENTSOG payloads include empty strings, `N/A`, and human-formatted timestamps; placeholders should become nulls instead of blocking endpoint coverage | Adopted |
 | ENTSOG generic silver transformer coalesces column-name collisions | Live payloads can vary field casing within one endpoint; same-normalized-name columns should become one canonical snake_case column | Adopted |
+| GIE AGSI v0.7 focuses on gas storage only | The user requested AGSI gas storage; ALSI LNG has the same documentation family but is a separate datasource confidence problem | Adopted |
+| GIE AGSI pagination must use `last_page` | Live API behavior and documentation make `total` a per-page row count, so using it as global total silently truncates pages | Adopted |
+| AGSI entity coverage derives from `/api/about?show=listing` | The listing endpoint is the only reliable way to know company/facility EIC query inventory and expected request counts | Adopted |
+| Full AGSI live inventory tests are explicit and slow | GIE documents 60 calls/minute; representative live tests should stay fast, while full inventory gates can run deliberately when requested | Adopted |
 
 ## Evolution
 
@@ -199,4 +215,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-04 while implementing v0.6 NESO Carbon Intensity Platform*
+*Last updated: 2026-05-04 while planning v0.7 GIE AGSI Gas Storage Validation*

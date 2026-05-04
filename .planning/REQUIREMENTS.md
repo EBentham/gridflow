@@ -1,37 +1,45 @@
 # gridflow - Current Milestone Requirements
 
-## Milestone v0.6 NESO Carbon Intensity Platform
+## Milestone v0.7 GIE AGSI Gas Storage Validation
 
 ### Endpoint Inventory
 
-- [x] **NESO-01**: Developer can see every documented NESO Carbon Intensity API route in an auditable endpoint catalog.
-- [x] **NESO-02**: Gridflow source config and connector endpoint metadata include the same active NESO dataset inventory.
-- [x] **NESO-03**: NESO endpoint path construction records path variables in bronze provenance metadata.
+- [ ] **AGSI-01**: Developer can see every official GIE AGSI API endpoint family, query parameter, response family, and active/deferred decision in an auditable endpoint catalog.
+- [ ] **AGSI-02**: Gridflow source config and connector endpoint metadata expose the same active AGSI dataset inventory for storage, EIC listing, news, and unavailability families.
+- [ ] **AGSI-03**: AGSI company and facility query planning is driven by `/api/about?show=listing` so expected bronze entries can be derived from live or fixture inventory.
 
-### Bronze And Silver Pipeline
+### Bronze Completeness
 
-- [x] **NESO-04**: User can ingest every NESO dataset through the connector registry without authentication.
-- [x] **NESO-05**: User can transform national intensity, statistics, factors, generation, and regional responses into deterministic silver parquet.
-- [x] **NESO-06**: Regional silver output preserves region metadata, intensity values, and all nested generation-mix entries for an API query.
-- [x] **NESO-07**: Generation silver output preserves every nested fuel percentage entry for an API query.
+- [ ] **AGSI-04**: User can query AGSI storage by aggregate type, country, company, facility, exact gas day, and gas-day range with documented `x-key`, date, filter, pagination, and rate-limit semantics.
+- [ ] **AGSI-05**: AGSI connector paginates with `last_page`, writes one bronze response per expected page/request, records query scope in provenance, and partitions bronze by the gas day being requested.
+- [ ] **AGSI-06**: For exact-day queries such as 2026-05-01, bronze completeness tests prove every expected response/page for the selected AGSI query plan was fetched and no out-of-window gas days leaked into bronze.
+
+### Silver Pipeline
+
+- [ ] **AGSI-07**: AGSI storage silver output preserves all storage inventory, flow, capacity, fullness, status, update, service-announcement, and entity metadata needed from live API payloads.
+- [ ] **AGSI-08**: AGSI reference/news/unavailability silver outputs either preserve documented payload fields through deterministic silver parquet or are explicitly classified as deferred with a catalog reason.
+- [ ] **AGSI-09**: Fixture-backed bronze-to-silver tests prove AGSI bronze payloads for aggregate, country, company, facility, listing, news, and unavailability families successfully transform into schema-valid silver outputs.
 
 ### Verification
 
-- [x] **NESO-08**: Non-live tests prove endpoint inventory, path construction, mocked fetches, bronze writes, and silver transforms for every active NESO dataset.
-- [x] **NESO-09**: Opt-in live tests prove every active NESO API route can flow from real API response through bronze into silver.
-- [x] **NESO-10**: Opt-in live CLI smoke test proves the user-facing `pipeline` command path creates NESO bronze and silver outputs in isolated directories.
+- [ ] **AGSI-10**: Non-live tests prove endpoint inventory alignment, mocked request shapes, pagination by `last_page`, expected-count accounting, and representative bronze-to-silver flows for every active AGSI dataset family.
+- [ ] **AGSI-11**: Opt-in live API tests use `GIE_API_KEY` to prove live AGSI responses flow through bronze into silver, including representative aggregate/country/company/facility scopes and explicit no-data/error classification.
+- [ ] **AGSI-12**: Opt-in live CLI smoke tests run AGSI pipeline/backfill commands under isolated `GRIDFLOW_*` paths and verify bronze and silver outputs for curated AGSI datasets.
 
 ## Traceability
 
-| Requirement | Phase |
-|-------------|-------|
-| NESO-01 | K1 |
-| NESO-02 | K1 |
-| NESO-03 | K2 |
-| NESO-04 | K2 |
-| NESO-05 | K3 |
-| NESO-06 | K3 |
-| NESO-07 | K3 |
-| NESO-08 | K3 |
-| NESO-09 | K4 |
-| NESO-10 | K4 |
+| Requirement | Phase | Status |
+|-------------|-------|--------|
+| AGSI-01 | L1 | Pending |
+| AGSI-02 | L1 | Pending |
+| AGSI-03 | L1 | Pending |
+| AGSI-04 | L2 | Pending |
+| AGSI-05 | L2 | Pending |
+| AGSI-06 | L2 | Pending |
+| AGSI-07 | L3 | Pending |
+| AGSI-08 | L3 | Pending |
+| AGSI-09 | L3 | Pending |
+| AGSI-10 | L3 | Pending |
+| AGSI-11 | L4 | Pending |
+| AGSI-12 | L4 | Pending |
+

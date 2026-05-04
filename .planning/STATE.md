@@ -1,7 +1,7 @@
 ---
 milestone: v0.6
 milestone_name: NESO Carbon Intensity Platform
-status: verification
+status: shipped
 progress:
   phases_total: 4
   phases_complete: 4
@@ -13,8 +13,8 @@ progress:
 
 Phase: K1-K4 complete
 Plan: NESO endpoint catalog, connector, silver transforms, and E2E/live tests
-Status: NESO Carbon Intensity Platform implementation verified
-Last activity: 2026-05-04 - Reviewed NESO endpoint iteration semantics and fixed same-day `{from}/{to}` range windows
+Status: NESO Carbon Intensity Platform shipped to master
+Last activity: 2026-05-04 - Completed and shipped v0.6 NESO Carbon Intensity Platform; v0.7 GIE AGSI Gas Storage Validation is next
 
 ## Project Reference
 
@@ -22,7 +22,7 @@ See: .planning/PROJECT.md (updated 2026-05-04)
 
 **Core value:** Every connector reliably fetches real data and every silver transformer
 produces schema-valid output - verified end-to-end, not just in unit tests.
-**Current focus:** v0.6 NESO Carbon Intensity Platform
+**Current focus:** v0.7 GIE AGSI Gas Storage Validation
 
 ## Accumulated Context
 
@@ -92,8 +92,8 @@ produces schema-valid output - verified end-to-end, not just in unit tests.
 - v0.5 started: ENTSOG validation will mirror the ENTSO-E/Elexon confidence pattern while accounting for the gas Transparency Platform's public JSON API, exact-case indicators, mandatory point-direction filters, and no-data responses.
 - J1-J4 completed: ENTSOG endpoint research/catalog, metadata-driven bronze requests, generic and specialised silver transformers, mocked E2E tests, opt-in live API-to-silver tests, and isolated CLI smoke tests are implemented.
 - v0.5 completed: ENTSOG Pipeline Validation shipped and archived on 2026-05-04.
-- v0.6 started: NESO Carbon Intensity Platform extends the existing single national intensity route to all documented national, statistics, generation, factors, and regional endpoints.
-- K1-K4 completed: 33 NESO route variants implemented with endpoint catalog, source config, metadata-driven connector paths, family-aware silver transforms, mocked all-dataset E2E tests, opt-in live API-to-silver tests, and CLI smoke coverage.
+- v0.6 shipped: NESO Carbon Intensity Platform extends the existing single national intensity route to all documented national, statistics, generation, factors, and regional endpoints.
+- K1-K4 shipped: 33 NESO route variants implemented with endpoint catalog, source config, metadata-driven connector paths, family-aware silver transforms, mocked all-dataset E2E tests, opt-in live API-to-silver tests, and CLI smoke coverage.
 
 ### Blockers
 
