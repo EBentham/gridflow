@@ -1,20 +1,20 @@
 ---
-milestone: v0.6
-milestone_name: NESO Carbon Intensity Platform
-status: shipped
+milestone: v0.7
+milestone_name: GIE AGSI Gas Storage Validation
+status: planning
 progress:
   phases_total: 4
-  phases_complete: 4
+  phases_complete: 0
   plans_total: 1
-  plans_complete: 1
+  plans_complete: 0
 ---
 
 ## Current Position
 
-Phase: K1-K4 complete
-Plan: NESO endpoint catalog, connector, silver transforms, and E2E/live tests
-Status: NESO Carbon Intensity Platform shipped to master
-Last activity: 2026-05-04 - Completed and shipped v0.6 NESO Carbon Intensity Platform; v0.7 GIE AGSI Gas Storage Validation is next
+Phase: L1 ready for planning
+Plan: GIE AGSI endpoint research, catalog, inventory contract, and expected-count model
+Status: Planning GIE AGSI Gas Storage Validation
+Last activity: 2026-05-04 - Started v0.7 GIE AGSI gas storage planning from official API docs and live API probes
 
 ## Project Reference
 
