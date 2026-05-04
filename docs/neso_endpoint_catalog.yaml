@@ -1,0 +1,149 @@
+# NESO Carbon Intensity Platform endpoint catalog.
+# Source: https://carbon-intensity.github.io/api-definitions/
+
+source: neso
+base_url: https://api.carbonintensity.org.uk
+auth: none
+license: CC BY 4.0
+defaults:
+  period: 1
+  block: 24
+  postcode: RG10
+  regionid: 13
+notes:
+  period: Direct path default only; intensity_period pipeline fetches iterate all GB settlement periods per requested date.
+endpoints:
+  - dataset: intensity_current
+    category: Carbon Intensity - National
+    path: /intensity
+    parser_family: intensity
+  - dataset: intensity_today
+    category: Carbon Intensity - National
+    path: /intensity/date
+    parser_family: intensity
+  - dataset: intensity_date
+    category: Carbon Intensity - National
+    path: /intensity/date/{date}
+    parser_family: intensity
+  - dataset: intensity_period
+    category: Carbon Intensity - National
+    path: /intensity/date/{date}/{period}
+    parser_family: intensity
+    settlement_period_iteration: true
+  - dataset: intensity_factors
+    category: Carbon Intensity - National
+    path: /intensity/factors
+    parser_family: factors
+    reference: true
+  - dataset: intensity_at
+    category: Carbon Intensity - National
+    path: /intensity/{from}
+    parser_family: intensity
+  - dataset: intensity_fw24h
+    category: Carbon Intensity - National
+    path: /intensity/{from}/fw24h
+    parser_family: intensity
+  - dataset: intensity_fw48h
+    category: Carbon Intensity - National
+    path: /intensity/{from}/fw48h
+    parser_family: intensity
+  - dataset: intensity_pt24h
+    category: Carbon Intensity - National
+    path: /intensity/{from}/pt24h
+    parser_family: intensity
+  - dataset: carbon_intensity
+    category: Carbon Intensity - National
+    path: /intensity/{from}/{to}
+    parser_family: intensity
+  - dataset: intensity_stats
+    category: Statistics - National
+    path: /intensity/stats/{from}/{to}
+    parser_family: stats
+  - dataset: intensity_stats_block
+    category: Statistics - National
+    path: /intensity/stats/{from}/{to}/{block}
+    parser_family: stats
+  - dataset: generation_current
+    category: Generation Mix - National beta
+    path: /generation
+    parser_family: generation
+  - dataset: generation_pt24h
+    category: Generation Mix - National beta
+    path: /generation/{from}/pt24h
+    parser_family: generation
+  - dataset: generation
+    category: Generation Mix - National beta
+    path: /generation/{from}/{to}
+    parser_family: generation
+  - dataset: regional_current
+    category: Carbon Intensity - Regional beta
+    path: /regional
+    parser_family: regional
+  - dataset: regional_england
+    category: Carbon Intensity - Regional beta
+    path: /regional/england
+    parser_family: regional
+  - dataset: regional_scotland
+    category: Carbon Intensity - Regional beta
+    path: /regional/scotland
+    parser_family: regional
+  - dataset: regional_wales
+    category: Carbon Intensity - Regional beta
+    path: /regional/wales
+    parser_family: regional
+  - dataset: regional_postcode
+    category: Carbon Intensity - Regional beta
+    path: /regional/postcode/{postcode}
+    parser_family: regional
+  - dataset: regional_regionid
+    category: Carbon Intensity - Regional beta
+    path: /regional/regionid/{regionid}
+    parser_family: regional
+  - dataset: regional_intensity_fw24h
+    category: Carbon Intensity - Regional beta
+    path: /regional/intensity/{from}/fw24h
+    parser_family: regional
+  - dataset: regional_intensity_fw24h_postcode
+    category: Carbon Intensity - Regional beta
+    path: /regional/intensity/{from}/fw24h/postcode/{postcode}
+    parser_family: regional
+  - dataset: regional_intensity_fw24h_regionid
+    category: Carbon Intensity - Regional beta
+    path: /regional/intensity/{from}/fw24h/regionid/{regionid}
+    parser_family: regional
+  - dataset: regional_intensity_fw48h
+    category: Carbon Intensity - Regional beta
+    path: /regional/intensity/{from}/fw48h
+    parser_family: regional
+  - dataset: regional_intensity_fw48h_postcode
+    category: Carbon Intensity - Regional beta
+    path: /regional/intensity/{from}/fw48h/postcode/{postcode}
+    parser_family: regional
+  - dataset: regional_intensity_fw48h_regionid
+    category: Carbon Intensity - Regional beta
+    path: /regional/intensity/{from}/fw48h/regionid/{regionid}
+    parser_family: regional
+  - dataset: regional_intensity_pt24h
+    category: Carbon Intensity - Regional beta
+    path: /regional/intensity/{from}/pt24h
+    parser_family: regional
+  - dataset: regional_intensity_pt24h_postcode
+    category: Carbon Intensity - Regional beta
+    path: /regional/intensity/{from}/pt24h/postcode/{postcode}
+    parser_family: regional
+  - dataset: regional_intensity_pt24h_regionid
+    category: Carbon Intensity - Regional beta
+    path: /regional/intensity/{from}/pt24h/regionid/{regionid}
+    parser_family: regional
+  - dataset: regional_intensity
+    category: Carbon Intensity - Regional beta
+    path: /regional/intensity/{from}/{to}
+    parser_family: regional
+  - dataset: regional_intensity_postcode
+    category: Carbon Intensity - Regional beta
+    path: /regional/intensity/{from}/{to}/postcode/{postcode}
+    parser_family: regional
+  - dataset: regional_intensity_regionid
+    category: Carbon Intensity - Regional beta
+    path: /regional/intensity/{from}/{to}/regionid/{regionid}
+    parser_family: regional

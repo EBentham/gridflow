@@ -16,7 +16,10 @@ import polars as pl
 
 from gridflow.connectors.entsog.endpoints import ENDPOINTS, EntsogEndpoint
 from gridflow.silver.base import BaseSilverTransformer
-from gridflow.silver.entsog.datetime import parse_entsog_datetime_expr
+from gridflow.silver.entsog.datetime import (
+    filter_records_to_target_date,
+    parse_entsog_datetime_expr,
+)
 from gridflow.silver.registry import register_transformer
 from gridflow.storage.parquet import write_parquet
 
@@ -81,6 +84,7 @@ class GenericEntsogJsonTransformer(BaseSilverTransformer):
     dataset: str
     response_key: str
     reference_dataset: bool = False
+    date_window_dataset: bool = False
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         files = self._bronze_files(target_date)
@@ -95,6 +99,10 @@ class GenericEntsogJsonTransformer(BaseSilverTransformer):
 
         if not rows:
             return pl.DataFrame()
+        if self.date_window_dataset:
+            rows = filter_records_to_target_date(rows, target_date, _RAW_TIMESTAMP_PRIORITY)
+            if not rows:
+                return pl.DataFrame()
         return pl.DataFrame(rows, infer_schema_length=None)
 
     def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
@@ -219,6 +227,7 @@ def _make_transformer_class(
             "dataset": dataset,
             "response_key": endpoint.response_key,
             "reference_dataset": endpoint.reference,
+            "date_window_dataset": endpoint.requires_dates,
             "__module__": __name__,
         },
     )
@@ -280,3 +289,14 @@ def _looks_numeric(column: str) -> bool:
     if column in _NUMERIC_NAMES:
         return True
     return column.endswith(_NUMERIC_SUFFIXES)
+
+
+_RAW_TIMESTAMP_PRIORITY = (
+    "periodFrom",
+    "publicationDateTime",
+    "eventStart",
+    "auctionFrom",
+    "capacityFrom",
+    "validFrom",
+    "lastUpdateDateTime",
+)

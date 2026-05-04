@@ -10,7 +10,10 @@ from typing import Any
 import polars as pl
 
 from gridflow.silver.base import BaseSilverTransformer
-from gridflow.silver.entsog.datetime import parse_entsog_datetime_expr
+from gridflow.silver.entsog.datetime import (
+    filter_records_to_target_date,
+    parse_entsog_datetime_expr,
+)
 from gridflow.silver.registry import register_transformer
 
 logger = logging.getLogger(__name__)
@@ -61,6 +64,9 @@ class PhysicalFlowsTransformer(BaseSilverTransformer):
             except (json.JSONDecodeError, AttributeError) as exc:
                 logger.warning("Failed to parse ENTSO-G bronze file %s: %s", f, exc)
 
+        if not rows:
+            return pl.DataFrame()
+        rows = filter_records_to_target_date(rows, target_date, ("periodFrom",))
         if not rows:
             return pl.DataFrame()
         return pl.DataFrame(rows)

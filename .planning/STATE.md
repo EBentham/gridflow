@@ -1,20 +1,20 @@
 ---
-milestone: v0.5
-milestone_name: ENTSOG Pipeline Validation
+milestone: v0.6
+milestone_name: NESO Carbon Intensity Platform
 status: shipped
 progress:
   phases_total: 4
   phases_complete: 4
-  plans_total: 0
-  plans_complete: 0
+  plans_total: 1
+  plans_complete: 1
 ---
 
 ## Current Position
 
-Phase: J1-J4 complete
-Plan: Inline v0.5 implementation and verification
-Status: ENTSOG Pipeline Validation shipped and archived
-Last activity: 2026-05-04 - Milestone v0.5 shipped and archived
+Phase: K1-K4 complete
+Plan: NESO endpoint catalog, connector, silver transforms, and E2E/live tests
+Status: NESO Carbon Intensity Platform shipped to master
+Last activity: 2026-05-04 - Completed and shipped v0.6 NESO Carbon Intensity Platform; v0.7 GIE AGSI Gas Storage Validation is next
 
 ## Project Reference
 
@@ -22,7 +22,7 @@ See: .planning/PROJECT.md (updated 2026-05-04)
 
 **Core value:** Every connector reliably fetches real data and every silver transformer
 produces schema-valid output - verified end-to-end, not just in unit tests.
-**Current focus:** Planning next milestone
+**Current focus:** v0.7 GIE AGSI Gas Storage Validation
 
 ## Accumulated Context
 
@@ -53,6 +53,20 @@ produces schema-valid output - verified end-to-end, not just in unit tests.
 - ENTSOG operational requests must use exact-case `/operationalData`, `timeZone=UCT`, exact-case indicators, and `pointDirection` filters built from operator key + point key + direction key.
 - ENTSOG generic silver parsing must tolerate API placeholders such as empty strings, `N/A`, and human-formatted last-update timestamps by producing null datetimes rather than failing the whole transform.
 - ENTSOG generic silver parsing must coalesce same-normalized-name fields such as `isCAMRelevant` and `isCamRelevant` into one canonical snake_case column.
+- NESO Carbon Intensity API is public, JSON-only, and path-parameter based; all 33 documented route variants are active v0.6 datasets.
+- NESO regional payloads appear in both period-with-`regions` and region-with-`data` shapes; silver parsing must preserve intensity and nested generation mix in long rows.
+- NESO `/generation` returns a single `data` object while generation range routes return `data` arrays; both are normalised to the same long generation-mix schema.
+- NESO `intensity_period` must fan out each requested settlement date across
+  all valid GB settlement periods: 48 on normal days, 46 on spring DST transition
+  dates, and 50 on autumn DST transition dates.
+- NESO `{from}/{to}` range endpoints must expand same-day CLI/API requests to a
+  one-day API window; zero-length range URLs return 400 and produce empty bronze.
+
+### Quick Tasks Completed
+
+| Date | Task | Result |
+|------|------|--------|
+| 2026-05-04 | NESO settlement-period iteration | `intensity_period` now requests every valid GB settlement period per requested date and writes the full response set through bronze and silver. |
 
 ### Roadmap Evolution
 
@@ -78,6 +92,8 @@ produces schema-valid output - verified end-to-end, not just in unit tests.
 - v0.5 started: ENTSOG validation will mirror the ENTSO-E/Elexon confidence pattern while accounting for the gas Transparency Platform's public JSON API, exact-case indicators, mandatory point-direction filters, and no-data responses.
 - J1-J4 completed: ENTSOG endpoint research/catalog, metadata-driven bronze requests, generic and specialised silver transformers, mocked E2E tests, opt-in live API-to-silver tests, and isolated CLI smoke tests are implemented.
 - v0.5 completed: ENTSOG Pipeline Validation shipped and archived on 2026-05-04.
+- v0.6 shipped: NESO Carbon Intensity Platform extends the existing single national intensity route to all documented national, statistics, generation, factors, and regional endpoints.
+- K1-K4 shipped: 33 NESO route variants implemented with endpoint catalog, source config, metadata-driven connector paths, family-aware silver transforms, mocked all-dataset E2E tests, opt-in live API-to-silver tests, and CLI smoke coverage.
 
 ### Blockers
 

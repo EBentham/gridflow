@@ -68,18 +68,26 @@ class EntsogEndpoint:
     description: str = ""
 
 
-def _operational_endpoint(indicator: str, description: str) -> EntsogEndpoint:
+def _operational_endpoint(
+    indicator: str,
+    description: str,
+    *,
+    point_directions: tuple[str, ...] | None = DEFAULT_POINT_DIRECTIONS,
+) -> EntsogEndpoint:
+    default_params: dict[str, Any] = {
+        "indicator": indicator,
+        "periodType": DEFAULT_PERIOD_TYPE,
+    }
+    if point_directions is not None:
+        default_params["pointDirection"] = point_directions
+
     return EntsogEndpoint(
         path=ENTSOG_OPERATIONAL_PATH,
         response_key="operationalData",
         category="Point Operational Data",
         parser_family="operational_data",
         requires_dates=True,
-        default_params={
-            "indicator": indicator,
-            "periodType": DEFAULT_PERIOD_TYPE,
-            "pointDirection": DEFAULT_POINT_DIRECTIONS,
-        },
+        default_params=default_params,
         description=description,
     )
 
@@ -108,7 +116,11 @@ OPERATIONAL_INDICATORS: dict[str, str] = {
 
 
 ENDPOINTS: dict[str, EntsogEndpoint] = {
-    dataset: _operational_endpoint(indicator, f"Operational data: {indicator}")
+    dataset: _operational_endpoint(
+        indicator,
+        f"Operational data: {indicator}",
+        point_directions=None if dataset == "physical_flows" else DEFAULT_POINT_DIRECTIONS,
+    )
     for dataset, indicator in OPERATIONAL_INDICATORS.items()
 }
 

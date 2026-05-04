@@ -1,5 +1,8 @@
-"""NESO silver transformers — import all modules to trigger registration."""
+"""NESO silver transformers: import all modules to trigger registration."""
 
-from gridflow.silver.neso.carbon_intensity import CarbonIntensityTransformer
+from gridflow.silver.neso.carbon_intensity import (
+    CarbonIntensityTransformer,
+    GenericNesoJsonTransformer,
+)
 
-__all__ = ["CarbonIntensityTransformer"]
+__all__ = ["CarbonIntensityTransformer", "GenericNesoJsonTransformer"]
