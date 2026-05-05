@@ -8,6 +8,7 @@ from pathlib import Path
 
 import polars as pl
 
+from gridflow.silver.base import BaseSilverTransformer
 from gridflow.silver.elexon.demand_forecast import DemandForecastTransformer
 from gridflow.silver.elexon.fuelhh import FuelHHTransformer
 from gridflow.silver.elexon.indo import INDOTransformer
@@ -18,6 +19,19 @@ from gridflow.storage.parquet import read_parquet
 FIXTURES = Path(__file__).parent.parent / "fixtures"
 TARGET_DATE = date(2024, 1, 15)
 RUN_ID = "test-run-id"
+
+
+class StaticTransformer(BaseSilverTransformer):
+    """Minimal transformer for static/reference datasets without timestamps."""
+
+    source = "test"
+    dataset = "static"
+
+    def read_bronze(self, target_date: date) -> pl.DataFrame:
+        return pl.DataFrame([{"name": "reference-row"}])
+
+    def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
+        return raw_df
 
 
 def _date_dir(root: Path, source: str, dataset: str, target_date: date) -> Path:
@@ -146,6 +160,13 @@ def test_run_without_context_uses_synthetic_source_run_id(tmp_data_dir: Path) ->
     df = _read_single_silver(tmp_data_dir, "elexon", "fuelhh")
 
     assert df["source_run_id"].str.starts_with("adhoc-").all()
+
+
+def test_static_dataset_falls_back_to_target_date_event_time(tmp_data_dir: Path) -> None:
+    StaticTransformer(tmp_data_dir).run(TARGET_DATE, run_id=RUN_ID)
+    df = _read_single_silver(tmp_data_dir, "test", "static")
+
+    assert df["event_time"][0] == datetime(2024, 1, 15, tzinfo=UTC)
 
 
 def test_reingest_available_at_uses_bronze_sidecar_timestamp(tmp_data_dir: Path) -> None:
