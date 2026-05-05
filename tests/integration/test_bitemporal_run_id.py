@@ -10,7 +10,7 @@ from pathlib import Path
 from typer.testing import CliRunner
 
 from gridflow.cli import app
-from gridflow.storage.duckdb import get_connection
+from gridflow.storage.duckdb import get_connection, init_catalogue
 from gridflow.storage.parquet import read_parquet
 
 FIXTURES = Path(__file__).parent.parent / "fixtures" / "elexon"
@@ -91,3 +91,22 @@ def test_cli_transform_stamps_source_run_id_matching_pipeline_run(
         con.close()
 
     assert runs == [(next(iter(run_ids)), "elexon", "fuelhh", "transform", "success")]
+
+    init_catalogue(paths.duckdb_path, paths.data_dir)
+    con = get_connection(paths.duckdb_path, read_only=True)
+    try:
+        duckdb_rows = con.execute(
+            """
+            SELECT event_time, available_at, source_run_id, dataset_version
+            FROM silver_fuelhh
+            LIMIT 5
+            """
+        ).fetchall()
+    finally:
+        con.close()
+
+    assert duckdb_rows
+    assert all(row[0] is not None for row in duckdb_rows)
+    assert all(row[1] is not None for row in duckdb_rows)
+    assert {row[2] for row in duckdb_rows} == run_ids
+    assert {row[3] for row in duckdb_rows} == {"1.0.0"}
