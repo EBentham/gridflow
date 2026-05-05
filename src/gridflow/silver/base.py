@@ -117,7 +117,6 @@ class BaseSilverTransformer(ABC):
 
     def _event_time_expr(self, df: pl.DataFrame, target_date: date) -> pl.Expr:
         """Return the expression used for the row's semantic event time."""
-        del target_date  # Reserved for future dataset-specific fallbacks.
         column = self._event_time_column()
         if column in df.columns:
             return pl.col(column).cast(pl.Datetime("us", "UTC")).alias("event_time")
@@ -135,9 +134,16 @@ class BaseSilverTransformer(ABC):
                 .alias("event_time")
             )
 
-        raise ValueError(
-            f"Cannot derive event_time for {self.source}/{self.dataset}: "
-            f"expected '{column}' or settlement_date/settlement_period columns"
+        logger.debug(
+            "Falling back to target-date event_time for %s/%s on %s",
+            self.source,
+            self.dataset,
+            target_date,
+        )
+        return (
+            pl.lit(datetime(target_date.year, target_date.month, target_date.day, tzinfo=UTC))
+            .cast(pl.Datetime("us", "UTC"))
+            .alias("event_time")
         )
 
     def _event_time_column(self) -> str:
