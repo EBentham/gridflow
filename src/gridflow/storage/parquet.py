@@ -36,22 +36,31 @@ def read_parquet(path: Path | str) -> pl.DataFrame:
     path_str = str(path)
 
     if "*" in path_str:
-        # Glob pattern — read multiple files
-        return pl.read_parquet(path_str, hive_partitioning=True)
+        return pl.read_parquet(
+            path_str, hive_partitioning=True, missing_columns="insert"
+        )
 
     path_obj = Path(path_str)
     if not path_obj.exists():
         logger.warning(f"Parquet file not found: {path}")
         return pl.DataFrame()
 
-    return pl.read_parquet(path_obj, hive_partitioning=True)
+    return pl.read_parquet(
+        path_obj, hive_partitioning=True, missing_columns="insert"
+    )
 
 
 def read_parquet_dir(directory: Path) -> pl.DataFrame:
-    """Read all Parquet files in a directory tree."""
-    pattern = str(directory / "**" / "*.parquet")
-    try:
-        return pl.read_parquet(pattern, hive_partitioning=True)
-    except Exception:
+    """Read all Parquet files in a directory tree.
+
+    Tolerates mixed schemas across files (e.g. pre/post-F0 bitemporal columns)
+    by inserting nulls for columns missing from individual files. Schema errors
+    propagate so regressions surface instead of returning silently empty data.
+    """
+    if not directory.exists() or not any(directory.rglob("*.parquet")):
         logger.warning(f"No Parquet files found in {directory}")
         return pl.DataFrame()
+    pattern = str(directory / "**" / "*.parquet")
+    return pl.read_parquet(
+        pattern, hive_partitioning=True, missing_columns="insert"
+    )
