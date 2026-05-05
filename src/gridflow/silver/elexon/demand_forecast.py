@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 import logging
 from datetime import UTC, date, datetime
-from typing import Any
+from typing import Any, ClassVar
 
 import polars as pl
 
@@ -25,6 +25,7 @@ class DemandForecastTransformer(BaseSilverTransformer):
 
     source = "elexon"
     dataset = "ndf"
+    DATASET_VERSION: ClassVar[str] = "1.0.0"
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         bronze_path = (
@@ -105,6 +106,14 @@ class DemandForecastTransformer(BaseSilverTransformer):
         if "transmission_demand_mw" in df.columns:
             df = df.with_columns(pl.col("transmission_demand_mw").cast(pl.Float64))
 
+        if "published_at" in df.columns:
+            df = df.with_columns(
+                pl.col("published_at")
+                .str.to_datetime(format="%Y-%m-%dT%H:%M:%SZ", time_unit="us", strict=False)
+                .dt.replace_time_zone("UTC")
+                .alias("issue_time")
+            )
+
         # Derive timestamp from settlement date/period or start_time
         if has_sp:
             df = df.with_columns(
@@ -142,7 +151,7 @@ class DemandForecastTransformer(BaseSilverTransformer):
         output_cols = [
             "settlement_date", "settlement_period", "timestamp_utc",
             "forecast_type", "national_demand_mw", "transmission_demand_mw",
-            "data_provider", "ingested_at",
+            "issue_time", "data_provider", "ingested_at",
         ]
         available = [c for c in output_cols if c in df.columns]
         return df.select(available).sort("timestamp_utc")

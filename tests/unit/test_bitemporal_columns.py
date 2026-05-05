@@ -15,7 +15,6 @@ from gridflow.silver.elexon.wind_forecast import WindForecastTransformer
 from gridflow.silver.openmeteo.historical import HistoricalWeatherTransformer
 from gridflow.storage.parquet import read_parquet
 
-
 FIXTURES = Path(__file__).parent.parent / "fixtures"
 TARGET_DATE = date(2024, 1, 15)
 RUN_ID = "test-run-id"
