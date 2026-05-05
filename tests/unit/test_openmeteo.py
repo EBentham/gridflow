@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import json
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from pathlib import Path
 
 import polars as pl
@@ -12,14 +12,14 @@ import pytest
 from gridflow.connectors.openmeteo.endpoints import (
     HOURLY_VARIABLES,
     LOCATIONS,
-    WeatherLocation,
 )
 from gridflow.schemas.weather import WeatherObservation
+from gridflow.silver.openmeteo.forecast import ForecastWeatherTransformer
 from gridflow.silver.openmeteo.historical import (
     HistoricalWeatherTransformer,
     _pivot_openmeteo_json,
 )
-from gridflow.silver.openmeteo.forecast import ForecastWeatherTransformer
+from gridflow.storage.parquet import read_parquet
 
 FIXTURES = Path(__file__).parent.parent / "fixtures" / "openmeteo"
 
@@ -164,7 +164,6 @@ class TestForecastWeatherTransformer:
 
     def test_transform_reuses_historical_logic(self):
         """ForecastWeatherTransformer should use the same transform logic."""
-        from gridflow.connectors.openmeteo.endpoints import HOURLY_VARIABLES
         data = json.loads((FIXTURES / "historical_london_response.json").read_text())
         rows = _pivot_openmeteo_json(data, "london")
         raw = pl.DataFrame(rows)
@@ -174,6 +173,47 @@ class TestForecastWeatherTransformer:
 
     def test_dataset_attribute(self):
         assert ForecastWeatherTransformer.dataset == "forecast"
+
+    def test_reingest_uses_forecast_location_sidecar(self, tmp_path: Path):
+        target_date = date(2024, 1, 15)
+        forecast_time = datetime(2024, 1, 16, 9, 30, tzinfo=UTC)
+        historical_time = datetime(2024, 1, 17, 9, 30, tzinfo=UTC)
+        payload = json.loads((FIXTURES / "historical_london_response.json").read_text())
+
+        for dataset, fetched_at in [
+            ("forecast_london", forecast_time),
+            ("historical_london", historical_time),
+        ]:
+            bronze_dir = (
+                tmp_path
+                / "bronze"
+                / "open_meteo"
+                / dataset
+                / str(target_date.year)
+                / f"{target_date.month:02d}"
+                / f"{target_date.day:02d}"
+            )
+            bronze_dir.mkdir(parents=True, exist_ok=True)
+            (bronze_dir / "raw_test.json").write_text(json.dumps(payload))
+            (bronze_dir / "raw_test.meta.json").write_text(
+                json.dumps(
+                    {
+                        "source": "open_meteo",
+                        "dataset": dataset,
+                        "fetched_at": fetched_at.isoformat(),
+                        "data_date": target_date.isoformat(),
+                    }
+                )
+            )
+
+        ForecastWeatherTransformer(tmp_path).run(
+            target_date,
+            run_id="test-run-id",
+            reingest=True,
+        )
+        df = read_parquet(tmp_path / "silver" / "open_meteo" / "forecast" / "**" / "*.parquet")
+
+        assert set(df["available_at"].to_list()) == {forecast_time}
 
     def test_empty_input(self):
         assert self.t.transform(pl.DataFrame()).is_empty()

@@ -118,6 +118,8 @@ class WindForecastTransformer(BaseSilverTransformer):
         dedup_cols = ["timestamp_utc"]
         if "settlement_date" in df.columns and "settlement_period" in df.columns:
             dedup_cols = ["settlement_date", "settlement_period"]
+        if "issue_time" in df.columns:
+            dedup_cols.append("issue_time")
         df = df.unique(subset=dedup_cols, keep="last")
 
         now = datetime.now(UTC)

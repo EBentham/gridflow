@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from datetime import UTC, datetime
 from pathlib import Path
 
 import polars as pl
@@ -14,8 +15,8 @@ from gridflow.silver.elexon.demand_forecast import DemandForecastTransformer, ND
 from gridflow.silver.elexon.disbsad import DISBSADTransformer
 from gridflow.silver.elexon.fou2t14d import FOU2T14DTransformer
 from gridflow.silver.elexon.freq import FreqTransformer
-from gridflow.silver.elexon.fuelinst import FuelInstTransformer
 from gridflow.silver.elexon.fuelhh import FuelHHTransformer
+from gridflow.silver.elexon.fuelinst import FuelInstTransformer
 from gridflow.silver.elexon.imbalngc import ImbalNGCTransformer
 from gridflow.silver.elexon.melngc import MelNGCTransformer
 from gridflow.silver.elexon.mid import MIDTransformer
@@ -365,6 +366,30 @@ class TestDemandForecastTransformer:
         raw = pl.DataFrame([{"foo": "bar"}])
         assert self.t.transform(raw).is_empty()
 
+    def test_preserves_multiple_issue_time_vintages_per_period(self):
+        raw = pl.DataFrame([
+            {
+                "settlementDate": "2024-01-15",
+                "settlementPeriod": 1,
+                "nationalDemand": 28500.0,
+                "publishDateTime": "2024-01-14T09:30:00Z",
+            },
+            {
+                "settlementDate": "2024-01-15",
+                "settlementPeriod": 1,
+                "nationalDemand": 28600.0,
+                "publishDateTime": "2024-01-14T10:00:00Z",
+            },
+        ])
+
+        result = self.t.transform(raw)
+
+        assert len(result) == 2
+        assert sorted(result["issue_time"].to_list()) == [
+            datetime(2024, 1, 14, 9, 30, tzinfo=UTC),
+            datetime(2024, 1, 14, 10, 0, tzinfo=UTC),
+        ]
+
 
 # ---------------------------------------------------------------------------
 # WindForecast
@@ -393,6 +418,32 @@ class TestWindForecastTransformer:
         ])
         result = self.t.transform(raw)
         assert len(result) == 1
+
+    def test_preserves_multiple_issue_time_vintages_per_period(self):
+        raw = pl.DataFrame([
+            {
+                "settlementDate": "2024-01-15",
+                "settlementPeriod": 1,
+                "initialForecast": 4500.0,
+                "latestForecast": 4300.0,
+                "publishDateTime": "2024-01-14T08:00:00Z",
+            },
+            {
+                "settlementDate": "2024-01-15",
+                "settlementPeriod": 1,
+                "initialForecast": 4550.0,
+                "latestForecast": 4350.0,
+                "publishDateTime": "2024-01-14T09:00:00Z",
+            },
+        ])
+
+        result = self.t.transform(raw)
+
+        assert len(result) == 2
+        assert sorted(result["issue_time"].to_list()) == [
+            datetime(2024, 1, 14, 8, 0, tzinfo=UTC),
+            datetime(2024, 1, 14, 9, 0, tzinfo=UTC),
+        ]
 
     def test_empty_input(self):
         assert self.t.transform(pl.DataFrame()).is_empty()

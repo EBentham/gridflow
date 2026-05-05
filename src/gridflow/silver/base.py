@@ -31,6 +31,7 @@ class BaseSilverTransformer(ABC):
     source: str
     dataset: str
     DATASET_VERSION: ClassVar[str] = "1.0.0"
+    BRONZE_SIBLING_DATASETS: ClassVar[tuple[str, ...]] = ()
 
     def __init__(self, data_dir: Path):
         self.data_dir = data_dir
@@ -181,12 +182,12 @@ class BaseSilverTransformer(ABC):
         )
         candidates = [self.bronze_dir / suffix]
 
-        # Some aggregate transformers read from sibling dataset partitions, e.g.
+        # Some aggregate transformers read from explicit sibling partitions, e.g.
         # open_meteo/historical reads bronze/open_meteo/historical_london.
         parent = self.bronze_dir.parent
         if parent.exists():
-            for sibling in sorted(parent.glob(f"{self.dataset}_*")):
-                candidates.append(sibling / suffix)
+            for sibling_dataset in self.BRONZE_SIBLING_DATASETS:
+                candidates.append(parent / sibling_dataset / suffix)
 
         return [path for path in candidates if path.exists()]
 
@@ -202,7 +203,9 @@ class BaseSilverTransformer(ABC):
         for key in ("available_at", "response_received_at", "fetched_at", "written_at"):
             raw_value = meta.get(key)
             if raw_value:
-                return BaseSilverTransformer._parse_timestamp(raw_value)
+                timestamp = BaseSilverTransformer._parse_timestamp(raw_value)
+                if timestamp is not None:
+                    return timestamp
         return None
 
     @staticmethod

@@ -4,8 +4,7 @@ from __future__ import annotations
 
 import json
 import logging
-from datetime import date
-from typing import Any
+from typing import TYPE_CHECKING, Any, ClassVar
 
 import polars as pl
 
@@ -15,6 +14,9 @@ from gridflow.silver.openmeteo.historical import (
     _pivot_openmeteo_json,
 )
 from gridflow.silver.registry import register_transformer
+
+if TYPE_CHECKING:
+    from datetime import date
 
 logger = logging.getLogger(__name__)
 
@@ -27,6 +29,9 @@ class ForecastWeatherTransformer(HistoricalWeatherTransformer):
     """
 
     dataset = "forecast"
+    BRONZE_SIBLING_DATASETS: ClassVar[tuple[str, ...]] = tuple(
+        f"forecast_{loc.name}" for loc in LOCATIONS
+    )
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         parent_dir = self.bronze_dir.parent  # bronze/open_meteo/

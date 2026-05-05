@@ -54,6 +54,9 @@ class HistoricalWeatherTransformer(BaseSilverTransformer):
     source = "open_meteo"
     dataset = "historical"
     DATASET_VERSION: ClassVar[str] = "1.0.0"
+    BRONZE_SIBLING_DATASETS: ClassVar[tuple[str, ...]] = tuple(
+        f"historical_{loc.name}" for loc in LOCATIONS
+    )
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         # Bronze lives under: bronze/open_meteo/historical_{loc}/YYYY/MM/DD/

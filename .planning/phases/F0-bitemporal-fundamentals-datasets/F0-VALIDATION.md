@@ -84,6 +84,21 @@ Resolved gaps:
   script runner threads `PipelineRunTracker.run_id` and `reingest=True` into
   `BaseSilverTransformer.run()`.
 
+## External Audit Follow-Up 2026-05-05
+
+| Finding | Requirement | Resolution | Automated Coverage |
+|---------|-------------|------------|--------------------|
+| DuckDB views failed on mixed pre/post-F0 Parquet schemas | F0-VERIFY-02 | `read_parquet(..., union_by_name=true)` now backs silver and gold views. | `tests/unit/test_duckdb_views.py` |
+| Reingest sidecar discovery could include unrelated sibling datasets | F0-REINGEST-01 | Base discovery now uses explicit `BRONZE_SIBLING_DATASETS`; Open-Meteo historical opts into location siblings. | `tests/unit/test_bitemporal_columns.py` |
+| Forecast transforms collapsed multiple `issue_time` vintages per delivery period | F0-ISSUE-01 | NDF and WINDFOR include `issue_time` in dedup keys when present. | `tests/unit/test_silver_transforms.py` |
+| Malformed higher-priority sidecar timestamp could block valid fallback keys | F0-REINGEST-01 | Sidecar parsing now continues to later timestamp keys when one value is malformed. | `tests/unit/test_bitemporal_columns.py` |
+
+Follow-up verification:
+
+- `uv run --extra dev pytest tests/unit/test_duckdb_views.py tests/unit/test_bitemporal_columns.py tests/unit/test_silver_transforms.py tests/unit/test_openmeteo.py tests/integration/test_bitemporal_run_id.py -q --tb=short` - 117 passed, 1 warning.
+- `uv run --extra dev ruff check src/gridflow/storage/duckdb.py src/gridflow/silver/base.py src/gridflow/silver/openmeteo/historical.py src/gridflow/silver/openmeteo/forecast.py src/gridflow/silver/elexon/wind_forecast.py src/gridflow/silver/elexon/demand_forecast.py tests/unit/test_duckdb_views.py tests/unit/test_bitemporal_columns.py tests/unit/test_silver_transforms.py tests/unit/test_openmeteo.py tests/integration/test_bitemporal_run_id.py` - passed.
+- `uv run --extra dev pytest -q --tb=short` - 1010 passed, 253 skipped, 1 warning.
+
 ## Validation Sign-Off
 
 - [x] All tasks have automated verification.

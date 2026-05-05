@@ -34,6 +34,19 @@ class StaticTransformer(BaseSilverTransformer):
         return raw_df
 
 
+class SiblingCollisionTransformer(BaseSilverTransformer):
+    """Transformer whose dataset name has real-world sibling-prefix collisions."""
+
+    source = "test"
+    dataset = "storage"
+
+    def read_bronze(self, target_date: date) -> pl.DataFrame:
+        return pl.DataFrame([{"name": "storage-row"}])
+
+    def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
+        return raw_df
+
+
 def _date_dir(root: Path, source: str, dataset: str, target_date: date) -> Path:
     return (
         root
@@ -185,6 +198,60 @@ def test_reingest_available_at_uses_bronze_sidecar_timestamp(tmp_data_dir: Path)
     df = _read_single_silver(tmp_data_dir, "elexon", "fuelhh")
 
     assert set(df["available_at"].to_list()) == {sidecar_time}
+
+
+def test_reingest_ignores_unconfigured_sibling_sidecars(tmp_data_dir: Path) -> None:
+    own_time = datetime(2024, 1, 16, 9, 30, 0, tzinfo=UTC)
+    sibling_time = datetime(2024, 1, 17, 9, 30, 0, tzinfo=UTC)
+    _write_bronze_json(
+        tmp_data_dir,
+        "test",
+        "storage",
+        TARGET_DATE,
+        {"data": []},
+        fetched_at=own_time,
+    )
+    _write_bronze_json(
+        tmp_data_dir,
+        "test",
+        "storage_reports",
+        TARGET_DATE,
+        {"data": []},
+        fetched_at=sibling_time,
+    )
+
+    SiblingCollisionTransformer(tmp_data_dir).run(
+        TARGET_DATE,
+        run_id=RUN_ID,
+        reingest=True,
+    )
+    df = _read_single_silver(tmp_data_dir, "test", "storage")
+
+    assert set(df["available_at"].to_list()) == {own_time}
+
+
+def test_sidecar_timestamp_parse_falls_through_to_next_key(tmp_data_dir: Path) -> None:
+    valid_time = datetime(2024, 1, 16, 9, 30, 0, tzinfo=UTC)
+    payload = json.loads((FIXTURES / "elexon" / "fuelhh_response.json").read_text())
+    bronze_dir = _date_dir(tmp_data_dir, "elexon", "fuelhh", TARGET_DATE)
+    bronze_dir.mkdir(parents=True, exist_ok=True)
+    (bronze_dir / "raw_test.json").write_text(json.dumps(payload))
+    (bronze_dir / "raw_test.meta.json").write_text(
+        json.dumps(
+            {
+                "source": "elexon",
+                "dataset": "fuelhh",
+                "available_at": "not-a-timestamp",
+                "fetched_at": valid_time.isoformat(),
+                "data_date": TARGET_DATE.isoformat(),
+            }
+        )
+    )
+
+    FuelHHTransformer(tmp_data_dir).run(TARGET_DATE, run_id=RUN_ID, reingest=True)
+    df = _read_single_silver(tmp_data_dir, "elexon", "fuelhh")
+
+    assert set(df["available_at"].to_list()) == {valid_time}
 
 
 def test_openmeteo_reingest_uses_location_sidecar_timestamp(tmp_data_dir: Path) -> None:

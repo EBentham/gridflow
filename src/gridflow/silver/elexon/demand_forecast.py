@@ -137,10 +137,10 @@ class DemandForecastTransformer(BaseSilverTransformer):
         forecast_type = "day_ahead" if self.dataset == "ndf" else "2_14_day"
         df = df.with_columns(pl.lit(forecast_type).alias("forecast_type"))
 
-        df = df.unique(
-            subset=["settlement_date", "settlement_period", "forecast_type"],
-            keep="last",
-        )
+        dedup_cols = ["settlement_date", "settlement_period", "forecast_type"]
+        if "issue_time" in df.columns:
+            dedup_cols.append("issue_time")
+        df = df.unique(subset=dedup_cols, keep="last")
 
         now = datetime.now(UTC)
         df = df.with_columns([
