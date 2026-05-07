@@ -12,12 +12,15 @@ from __future__ import annotations
 import json
 from datetime import UTC, date, datetime
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import polars as pl
-import pytest
 
 from gridflow.silver.elexon.remit import REMITTransformer
 from gridflow.storage.parquet import read_parquet
+
+if TYPE_CHECKING:
+    import pytest
 
 TARGET_DATE = date(2024, 2, 1)
 

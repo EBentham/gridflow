@@ -9,7 +9,7 @@ declares an explicit `DATASET_VERSION` class attribute.
 from __future__ import annotations
 
 import json
-from datetime import UTC, date, datetime
+from datetime import date
 from pathlib import Path
 
 import polars as pl
