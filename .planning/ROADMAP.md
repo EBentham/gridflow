@@ -9,7 +9,8 @@
 - Complete **v0.4-elexon-validation** - Elexon Pipeline Validation I1-I4 (shipped 2026-05-04)
 - Complete **v0.5-entsog-pipeline-validation** - ENTSOG Pipeline Validation J1-J4 (shipped 2026-05-04)
 - Complete **v0.6-neso-carbon-intensity-platform** - NESO Carbon Intensity Platform K1-K4 (completed 2026-05-04)
-- Current **v0.7-gie-agsi-gas-storage-validation** - GIE AGSI Gas Storage Validation L1-L4
+- Complete **v0.7-gie-agsi-gas-storage-validation** - GIE AGSI Gas Storage Validation L1-L4 (completed 2026-05-04)
+- Complete **v0.8-fundamentals-model-silver-foundations** - Fundamentals Model Silver Foundations F0 (completed 2026-05-05)
 
 ---
 
@@ -92,7 +93,7 @@ Research: [NESO-CARBON-INTENSITY-RESEARCH.md](research/NESO-CARBON-INTENSITY-RES
 
 ---
 
-<details open>
+<details>
 <summary>Current v0.7-gie-agsi-gas-storage-validation - GIE AGSI Gas Storage Validation (L1-L4) - COMPLETED 2026-05-04</summary>
 
 - [x] Phase L1: GIE AGSI endpoint research, catalog, inventory contract, and expected-count model - completed 2026-05-04
@@ -164,6 +165,45 @@ credentialed AGSI live gates. The slow full-inventory gate remains explicit via
 
 ---
 
+<details open>
+<summary>Complete v0.8-fundamentals-model-silver-foundations - Fundamentals Model Silver Foundations (F0) - COMPLETED 2026-05-05</summary>
+
+- [x] Phase F0: Bitemporal fundamentals datasets and silver run lineage - completed 2026-05-05
+
+Artifacts:
+- [F0-CONTEXT.md](phases/F0-bitemporal-fundamentals-datasets/F0-CONTEXT.md)
+- [F0-PLAN.md](phases/F0-bitemporal-fundamentals-datasets/F0-PLAN.md)
+- [F0-RESULTS.md](phases/F0-bitemporal-fundamentals-datasets/F0-RESULTS.md)
+- [F0-VERIFICATION.md](phases/F0-bitemporal-fundamentals-datasets/F0-VERIFICATION.md)
+
+### Phase Details
+
+**Phase F0: Bitemporal fundamentals datasets and silver run lineage**
+
+Goal: Add point-in-time lineage to gridflow silver outputs for the first demand-forecast model datasets, without starting the separate `gridflow_models` project yet.
+
+Requirements: F0-BITEMP-01, F0-BITEMP-02, F0-BITEMP-03, F0-BITEMP-04, F0-ISSUE-01, F0-RUN-01, F0-RUN-02, F0-REINGEST-01, F0-REINGEST-02, F0-VERIFY-01, F0-VERIFY-02, F0-VERIFY-03
+
+Success criteria:
+1. `BaseSilverTransformer.run()` accepts run context, injects `event_time`, `available_at`, `source_run_id`, and `dataset_version`, and keeps direct test usage working with an ad hoc run id.
+2. Forecast-like in-scope datasets (`elexon/ndf`, `elexon/windfor`) either populate `issue_time` from publish-time metadata or document a specific source limitation in `F0-RESULTS.md`.
+3. `gridflow transform`, `gridflow pipeline`, `gridflow backfill`, and `scripts/run_pipeline.py` pass the active transform run id into silver transformers.
+4. A re-ingest path uses bronze sidecar timestamps to reconstruct historical `available_at` for `elexon/indo`, `elexon/fuelhh`, `elexon/windfor`, `elexon/ndf`, and `open_meteo/historical`.
+5. Tests and DuckDB checks prove bitemporal columns are present, UTC-aware, run-traceable, queryable, and documented for `gridflow_models` handoff.
+
+Plans:
+- [x] `F0-PLAN.md` - Executed with bitemporal silver lineage, run-id propagation, reingest support, DuckDB verification, and close-out docs.
+
+Close-out notes:
+1. The supplied F0 spec names `openmeteo/historical`; the implementation uses the repo source name `open_meteo/historical`.
+2. `elexon/ndf` and `elexon/windfor` now preserve `issue_time` from publish-time metadata where present.
+3. The implementation stayed dependency-neutral with parametrized pytest coverage rather than adding Hypothesis.
+4. Historical broad re-transform is documented but not run locally because this workspace has no `data/bronze/` partitions.
+
+</details>
+
+---
+
 ## Backlog
 
 | Item | Source | Notes |
@@ -172,3 +212,4 @@ credentialed AGSI live gates. The slow full-inventory gate remains explicit via
 | Extend E2E coverage to GIE ALSI LNG | v0.7 scoping | v0.7 focuses AGSI gas storage; ALSI LNG remains a follow-up connector-confidence candidate |
 | Domain-specific ENTSOG silver schemas | v0.5 close-out | Add when downstream gas gold consumers require typed models beyond generic normalised records |
 | Scheduled live endpoint monitoring | v0.5 close-out | Consider outside the normal unit-test suite for ENTSOG and other public APIs |
+| Append-only revision storage for revising modelling datasets | gridflow_models architecture v3.1 | Deferred until stack, imbalance, or carbon model scope needs it |

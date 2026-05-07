@@ -15,51 +15,59 @@ schema-valid output — verified end-to-end, not just in unit tests.
 
 ## Current State
 
-**Shipped:** v0.6-neso-carbon-intensity-platform on 2026-05-04.
+**Shipped:** v0.8-fundamentals-model-silver-foundations F0 on 2026-05-05.
 
 gridflow now has connector validation patterns for ENTSO-E, Elexon, ENTSOG,
-and NESO: registry-driven inventory checks, mocked request-shape coverage,
+NESO, and GIE AGSI: registry-driven inventory checks, mocked request-shape coverage,
 fixture-backed bronze-to-silver tests, opt-in live API validation, and isolated
 CLI/backfill smoke tests.
 
-**Current focus:** v0.7 GIE AGSI Gas Storage Validation is complete and ready
-for milestone close-out. AGSI is catalogued, count-checked through bronze
-request provenance, covered by registered silver transformers plus fixture-backed
-mocked E2E tests, and verified with credentialed opt-in live API-to-silver plus
-isolated CLI smoke coverage.
+**Current focus:** F0 is implemented and verified. The next decision is whether
+to begin `gridflow_models` F1 planning or first run the documented historical
+reingest commands when bronze partitions are available locally.
 
-## Current Milestone: v0.7 GIE AGSI Gas Storage Validation
+## Current Milestone: v0.8 Fundamentals Model Silver Foundations
 
-**Goal:** Make GIE AGSI gas storage a fully validated pipeline source, from
-API endpoint inventory through count-complete bronze ingestion, silver output,
-and opt-in live confidence tests.
+**Goal:** Add bitemporal-lite lineage to gridflow silver outputs for the first
+demand-forecast model datasets, while keeping the scope inside `gridflow` before
+the separate `gridflow_models` project begins.
 
-**Target features:**
-- Research and document the official GIE AGSI endpoint families and query
-  scopes: storage reports, EIC listings, news, and unavailability.
-- Build AGSI endpoint/source metadata for aggregate, country, company, and
-  facility query scopes, including listing-derived expected-count planning.
-- Fix bronze request semantics for exact gas-day/range queries, `last_page`
-  pagination, provenance, and the documented 60 calls/minute limit.
-- Preserve live AGSI storage, reference, news, and unavailability payload data
-  through deterministic silver parquet where active.
-- Add inventory, mocked request-shape, count-completeness, fixture-backed
-  bronze-to-silver, opt-in live API-to-silver, and CLI smoke tests.
+**Status:** Completed 2026-05-05.
 
-## Last Milestone: v0.6 NESO Carbon Intensity Platform
+**Delivered features:**
+- Injected `event_time`, `available_at`, `source_run_id`, and `dataset_version`
+  into silver outputs through `BaseSilverTransformer`.
+- Threaded `PipelineRunTracker.run_id` from CLI/script transform paths into
+  transformer runs.
+- Added a re-ingest mode that reconstructs historical `available_at` from bronze
+  sidecar metadata.
+- Preserved `issue_time` for `elexon/ndf` and `elexon/windfor` where publish
+  metadata exists.
+- Verified DuckDB compatibility, tests, and handoff documentation for
+  `gridflow_models`.
 
-**Goal:** Promote NESO Carbon Intensity from a single national intensity route
-to a fully catalogued and tested source covering all documented API datasets.
+Historical broad re-transform for `elexon/indo`, `elexon/fuelhh`,
+`elexon/windfor`, `elexon/ndf`, and `open_meteo/historical` is documented but
+not run locally because this workspace has no `data/bronze/` partitions.
+
+## Last Milestone: v0.7 GIE AGSI Gas Storage Validation
+
+**Goal:** Make GIE AGSI gas storage a fully validated pipeline source, from API
+endpoint inventory through count-complete bronze ingestion, silver output, and
+opt-in live confidence tests.
 
 **Status:** Completed 2026-05-04.
 
 **Target features:**
-- Research and document every official NESO Carbon Intensity API route.
-- Register all national intensity, statistics, generation mix, regional, and
-  emission-factor datasets in source config and connector endpoint metadata.
-- Transform every NESO response family into deterministic silver parquet.
-- Add inventory, mocked request-shape, fixture-backed bronze-to-silver, opt-in
-  live API-to-silver, and CLI smoke tests.
+- Research and document official GIE AGSI endpoint families and query scopes.
+- Build AGSI endpoint/source metadata for aggregate, country, company, and
+  facility query scopes.
+- Fix bronze exact gas-day/range requests, pagination by `last_page`, provenance,
+  and rate-limit-aware expected-count planning.
+- Preserve storage, listing, news, and unavailability payloads through silver
+  where active.
+- Add inventory, mocked request-shape, count-completeness, fixture-backed
+  bronze-to-silver, opt-in live API-to-silver, and CLI smoke tests.
 
 ## Requirements
 
@@ -102,20 +110,22 @@ to a fully catalogued and tested source covering all documented API datasets.
 - [x] NESO connector fetches every registered dataset via path-template metadata - v0.6-neso-carbon-intensity-platform K2
 - [x] NESO silver transformers preserve all national, stats, factors, generation, and regional payload data - v0.6-neso-carbon-intensity-platform K3
 - [x] NESO mocked and live E2E tests prove API responses flow through bronze into silver - v0.6-neso-carbon-intensity-platform K4
+- [x] GIE AGSI endpoint catalog/source metadata/query planning cover storage, EIC listing, news, unavailability, and listing-derived expected counts - v0.7-gie-agsi-gas-storage-validation L1
+- [x] GIE AGSI bronze ingestion uses exact-date/range query plans, `last_page` pagination, request provenance, and expected-count completeness checks - v0.7-gie-agsi-gas-storage-validation L2
 - [x] GIE AGSI silver transformers preserve storage, listing, news, and unavailability payload data where active - v0.7-gie-agsi-gas-storage-validation L3
 - [x] GIE AGSI mocked E2E tests prove fixture API responses flow through bronze into silver - v0.7-gie-agsi-gas-storage-validation L3
 - [x] GIE AGSI live E2E tests prove representative real API responses flow through bronze into silver - v0.7-gie-agsi-gas-storage-validation L4
 - [x] GIE AGSI CLI smoke tests prove pipeline, ingest/transform, and backfill run under isolated output paths - v0.7-gie-agsi-gas-storage-validation L4
+- [x] Every successful silver transformer run writes `event_time`, `available_at`, `source_run_id`, and `dataset_version` - v0.8-fundamentals-model-silver-foundations F0
+- [x] CLI and script transform paths pass `PipelineRunTracker.run_id` into silver transformer runs - v0.8-fundamentals-model-silver-foundations F0
+- [x] Re-ingest mode reconstructs historical `available_at` from bronze sidecar metadata when available - v0.8-fundamentals-model-silver-foundations F0
+- [x] `elexon/ndf` and `elexon/windfor` preserve `issue_time` from publish metadata where present - v0.8-fundamentals-model-silver-foundations F0
+- [x] DuckDB views, focused tests, and `F0-RESULTS.md` prove the handoff contract for `gridflow_models` - v0.8-fundamentals-model-silver-foundations F0
 
 ### Active
 
-- [x] GIE AGSI endpoint catalog covers documented storage report, EIC listing, news, and unavailability endpoint families
-- [x] GIE AGSI source config and connector endpoint metadata expose the same active dataset families and query scopes
-- [x] GIE AGSI bronze ingestion fetches every expected request/page for exact-date and range query plans
-- [ ] Decide whether to promote deferred ENTSO-E catalog rows, including B09 flow-based allocations and SO GL / implementation-framework balancing extensions
-- [ ] Decide whether scheduled live smoke monitoring should exist outside the normal test suite
-- [ ] Review whether additional official Elexon datasets should be promoted after endpoint availability and silver modelling are assessed
-- [ ] Decide when ENTSOG needs domain-specific typed silver schemas beyond generic normalised records
+- [ ] Decide whether to start `gridflow_models` F1 next or run historical reingest once bronze partitions are available.
+- [ ] Run the documented F0 `--reingest` commands when local historical bronze exists.
 
 ### Out of Scope
 
@@ -123,6 +133,12 @@ to a fully catalogued and tested source covering all documented API datasets.
 - GIE ALSI LNG validation - v0.7 focuses on AGSI gas storage; ALSI remains a follow-up connector-confidence candidate
 - Gold layer validation — no gold consumers of ENTSO-E data yet
 - GAP-03b psrType semantic mapping — backlog, no gold consumers of wind_solar_forecast
+
+- Creating the `gridflow_models` repository - v0.8 prepares silver data first; model project scaffolding begins after F0.
+- Append-only revision storage - deferred until stack, imbalance, or carbon model datasets need revision history.
+- Re-ingesting every silver dataset - F0 is limited to the first demand-forecast foundation datasets.
+- Scheduled live smoke monitoring - remains a cross-source follow-up outside this silver lineage milestone.
+- Deferred ENTSO-E/Elexon/ENTSOG promotion decisions - tracked as backlog unless a model phase consumes them.
 
 ## Context
 
@@ -161,6 +177,10 @@ to a fully catalogued and tested source covering all documented API datasets.
 - GIE AGSI bronze provenance records `page`, `total_pages`, request params, and `data_date`, with pagination driven by `last_page` rather than `total`.
 - GIE AGSI live tests now prove representative aggregate, country, company, and facility storage reports can flow from the live API through bronze into silver parquet.
 - GIE AGSI CLI smoke tests now prove `pipeline`, separate `ingest`/`transform`, and `backfill` run under isolated `GRIDFLOW_*` output paths.
+- The `gridflow_models` architecture v3.1 requires bitemporal silver data so `TrainingSet` can reject feature rows where `available_at > as_of` and target rows where `target_available_at > as_of`.
+- The first modelling foundation scope uses existing gridflow datasets only: `elexon/indo`, `elexon/fuelhh`, `elexon/windfor`, `elexon/ndf`, and `open_meteo/historical`.
+- The supplied F0 spec used `openmeteo/historical`; the repo's actual source key is `open_meteo`.
+- `elexon/ndf` and `elexon/windfor` are forecast-style datasets, so `issue_time` needs an explicit F0 decision even though the supplied F0 plan mostly describes four base bitemporal columns.
 
 ## Constraints
 
@@ -208,6 +228,11 @@ to a fully catalogued and tested source covering all documented API datasets.
 | Register AGSI `storage_reports` while preserving `storage` | L3 needs catalog-aligned silver output without breaking the legacy transformer alias | Adopted |
 | Transform active AGSI listing/news/unavailability families in L3 | Compact fixture coverage is enough to preserve documented payload fields without catalog-deferring active families | Adopted |
 | Use exclusive end boundary for AGSI backfill smoke | The current backfill loop runs while `current < end`, so a one-day smoke uses 2026-05-01 to 2026-05-02 | Adopted |
+| Capture `available_at` in the silver writer | `pipeline_runs.completed_at` is recorded after `transformer.run()` returns, so the row timestamp must be generated before atomic writes | Adopted |
+| Pass `PipelineRunTracker.run_id` into transformer runs | `gridflow_models` needs row-level lineage back to a specific transform run | Adopted |
+| Use `open_meteo/historical` in F0 | This is the actual registered source/dataset pair in `config/sources.yaml` and the Open-Meteo transformer | Adopted |
+| Keep F0 dependency-neutral unless agreed otherwise | The supplied F0 spec asks for Hypothesis while also saying no new dependencies; pytest-based property-style checks fit the current stack | Adopted |
+| Preserve forecast `issue_time` for F0 forecast datasets | Architecture v3.1 requires forecast vintages, and F0 includes `elexon/ndf` and `elexon/windfor` | Adopted |
 
 ## Evolution
 
@@ -227,4 +252,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-04 after completing L4 for v0.7 GIE AGSI Gas Storage Validation*
+*Last updated: 2026-05-05 after completing F0 Fundamentals Model Silver Foundations*

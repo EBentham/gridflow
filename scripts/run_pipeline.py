@@ -218,7 +218,15 @@ def run_bronze(source: str, datasets: list[str], start_dt: datetime, end_dt: dat
             logging.getLogger(__name__).exception(f"Bronze ingest failed for {source}/{ds}")
 
 
-def run_silver(source: str, datasets: list[str], start_dt: datetime, end_dt: datetime, settings, con) -> None:
+def run_silver(
+    source: str,
+    datasets: list[str],
+    start_dt: datetime,
+    end_dt: datetime,
+    settings,
+    con,
+    reingest: bool = False,
+) -> None:
     """Transform bronze data to silver (normalised, validated, deduplicated)."""
     from gridflow.silver.registry import get_transformer
     from gridflow.observability import PipelineRunTracker
@@ -235,7 +243,7 @@ def run_silver(source: str, datasets: list[str], start_dt: datetime, end_dt: dat
         try:
             transformer = get_transformer(source, ds, settings.pipeline.data_dir)
             for target_date in dates:
-                rows = transformer.run(target_date)
+                rows = transformer.run(target_date, run_id=tracker.run_id, reingest=reingest)
                 total_rows += rows
             tracker.complete(rows_out=total_rows)
             print(f"           ->{total_rows} rows transformed")
@@ -303,6 +311,11 @@ def main() -> None:
     parser.add_argument("--start", help="Start date (YYYY-MM-DD)")
     parser.add_argument("--end", help="End date (YYYY-MM-DD)")
     parser.add_argument("--last", help="Relative lookback (e.g. 24h, 7d, 30d)")
+    parser.add_argument(
+        "--reingest",
+        action="store_true",
+        help="Use bronze sidecar timestamps for historical available_at values",
+    )
 
     args = parser.parse_args()
     step = args.step
@@ -327,7 +340,15 @@ def main() -> None:
 
         if step in ("silver", "all"):
             datasets = resolve_datasets(args.source, args.dataset, args.all_datasets, settings)
-            run_silver(args.source, datasets, start_dt, end_dt, settings, con)
+            run_silver(
+                args.source,
+                datasets,
+                start_dt,
+                end_dt,
+                settings,
+                con,
+                reingest=args.reingest,
+            )
             print()
 
         if step in ("gold", "all"):

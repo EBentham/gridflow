@@ -96,6 +96,11 @@ def transform(
     end: Optional[str] = typer.Option(None, help="End date (YYYY-MM-DD)"),
     last: Optional[str] = typer.Option(None, help="Relative lookback (e.g. 24h, 7d)"),
     all_datasets: bool = typer.Option(False, "--all", help="Transform all datasets for source"),
+    reingest: bool = typer.Option(
+        False,
+        "--reingest",
+        help="Use bronze sidecar timestamps for historical available_at values",
+    ),
 ) -> None:
     """Transform bronze data to silver (normalised, validated, deduplicated)."""
     from gridflow.config.settings import load_settings
@@ -133,7 +138,11 @@ def transform(
         try:
             transformer = get_transformer(source, ds, settings.pipeline.data_dir)
             for target_date in dates:
-                rows = transformer.run(target_date)
+                rows = transformer.run(
+                    target_date,
+                    run_id=tracker.run_id,
+                    reingest=reingest,
+                )
                 total_rows += rows
             tracker.complete(rows_out=total_rows)
             typer.echo(f"  {source}/{ds}: {total_rows} rows transformed")
@@ -276,6 +285,7 @@ def backfill(
                 end=transform_end.isoformat(),
                 last=None,
                 all_datasets=False,
+                reingest=False,
             )
 
             current = chunk_end
@@ -365,6 +375,7 @@ def pipeline(
         end=end,
         last=last,
         all_datasets=all_datasets,
+        reingest=False,
     )
 
     # Gold (optional)

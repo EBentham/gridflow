@@ -1,28 +1,28 @@
 ---
-milestone: v0.7
-milestone_name: GIE AGSI Gas Storage Validation
-status: ready_for_milestone_close
+milestone: v0.8
+milestone_name: Fundamentals Model Silver Foundations
+status: complete
 progress:
-  phases_total: 4
-  phases_complete: 4
-  plans_total: 4
-  plans_complete: 4
+  phases_total: 1
+  phases_complete: 1
+  plans_total: 1
+  plans_complete: 1
 ---
 
 ## Current Position
 
-Phase: L4 complete
-Plan: L4-01 AGSI opt-in live API-to-silver tests, CLI smoke tests, and close-out verification
-Status: v0.7 GIE AGSI Gas Storage Validation complete; ready for milestone close-out
-Last activity: 2026-05-04 - Completed L4 AGSI live API-to-silver and isolated CLI smoke verification
+Phase: F0 complete
+Plan: F0-PLAN Bitemporal Upgrade for Fundamentals Datasets
+Status: v0.8 F0 implemented and verified; ready to start `gridflow_models` planning or run historical reingest when bronze partitions are available
+Last activity: 2026-05-05 - Completed F0 bitemporal silver lineage, run-id propagation, reingest support, DuckDB verification, and close-out docs
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-05-04)
+See: .planning/PROJECT.md (updated 2026-05-05)
 
 **Core value:** Every connector reliably fetches real data and every silver transformer
 produces schema-valid output - verified end-to-end, not just in unit tests.
-**Current focus:** v0.7 GIE AGSI Gas Storage Validation
+**Current focus:** F0 complete; next decision is whether to begin `gridflow_models` F1 or first run historical reingest with available bronze
 
 ## Accumulated Context
 
@@ -71,6 +71,11 @@ produces schema-valid output - verified end-to-end, not just in unit tests.
 - L2 completed: AGSI source config now exposes active catalog families, storage fetching is query-plan driven for aggregate/country/company/facility scopes, pagination uses `last_page`, and mocked bronze completeness tests prove exact-day request/page/file counts.
 - L3 completed: AGSI storage silver now preserves live-shaped fields across entity scopes, active listing/news/unavailability families have registered deterministic transformers, and fixture-backed non-live E2E proves bronze payloads reach silver parquet.
 - L4 completed: credentialed AGSI live tests prove representative aggregate, country, company, and facility storage responses flow through bronze into silver; isolated CLI smoke tests prove pipeline, ingest/transform, and backfill paths.
+- v0.8 planning started: `gridflow_models` needs point-in-time silver data before model scaffolding begins.
+- F0 should use repo-actual source/dataset names, especially `open_meteo/historical`.
+- F0 has an explicit issue-time discussion because `elexon/ndf` and `elexon/windfor` are forecast-style datasets even though the supplied F0 text mostly describes four base bitemporal columns.
+- F0 completed: silver outputs now stamp `event_time`, `available_at`, `source_run_id`, and `dataset_version`; `elexon/ndf` and `elexon/windfor` preserve `issue_time`.
+- F0 reingest support is implemented and tested, but this workspace has no `data/bronze/` partitions for the historical broad re-transform.
 
 ### Quick Tasks Completed
 
@@ -109,6 +114,9 @@ produces schema-valid output - verified end-to-end, not just in unit tests.
 - L1 completed: `docs/gie_agsi_endpoint_catalog.yaml`, GIE endpoint metadata, listing inventory fixture, and query planning tests now cover AGSI endpoint families and listing-derived expected counts.
 - L3 completed: one non-live plan expanded AGSI storage silver preservation, added listing/news/unavailability fixture-backed silver coverage, and kept L2 mocked bronze request/count guarantees green.
 - L4 completed: opt-in live API-to-silver and CLI smoke tests passed, with full-inventory AGSI validation remaining an explicit slow gate and ALSI LNG deferred to backlog.
+- v0.8 started: Fundamentals Model Silver Foundations will add bitemporal-lite silver lineage for first demand-forecast modelling datasets.
+- F0 planned: one phase covers BaseSilverTransformer bitemporal injection, run-id propagation, re-ingest sidecar timestamps, five-dataset re-transform, tests, DuckDB sanity checks, and `F0-RESULTS.md`.
+- F0 completed: bitemporal injection, run-id propagation, reingest sidecar lookup, issue-time preservation, static/reference event-time fallback, DuckDB verification, and close-out docs are complete.
 
 ### Blockers
 
@@ -118,6 +126,7 @@ produces schema-valid output - verified end-to-end, not just in unit tests.
 - v0.5 has no open implementation blockers. `gsd-sdk` is unavailable in this runtime, so STATE.md was updated directly rather than through `state.milestone-switch`.
 - ENTSOG live tests classify seven documented no-data/empty API outcomes as skips for the 2024-01-15 test window; this is expected source behavior rather than an implementation blocker.
 - No v0.5 milestone audit file exists because `gsd-sdk` is unavailable in this runtime; milestone close proceeded based on passing non-live, live, CLI smoke, and targeted backfill verification.
+- F0 has no open implementation blockers. Historical broad re-transform remains blocked in this workspace by absent `data/bronze/` partitions and is documented as a caveat rather than an implementation failure.
 
 ## Deferred Items
 
@@ -137,6 +146,7 @@ Items acknowledged and deferred at milestone close on 2026-05-04:
 | follow_up | ENTSOG domain-specific typed silver schemas | deferred until downstream gas gold consumers need them |
 | follow_up | Scheduled live endpoint monitoring | future cross-source decision |
 | follow_up | GIE ALSI LNG connector validation | deferred while v0.7 focuses AGSI gas storage |
+| follow_up | F0 historical broad re-transform | run documented `--reingest` commands when bronze partitions are available |
 
 ### Todos
 
