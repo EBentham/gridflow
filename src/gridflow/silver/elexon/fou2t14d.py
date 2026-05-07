@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 import logging
 from datetime import UTC, date, datetime
-from typing import Any
+from typing import Any, ClassVar
 
 import polars as pl
 
@@ -17,10 +17,23 @@ logger = logging.getLogger(__name__)
 
 
 class FOU2T14DTransformer(BaseSilverTransformer):
-    """Transform Elexon FOU2T14D data from bronze to silver."""
+    """Transform Elexon FOU2T14D data from bronze to silver.
+
+    F7 makes the dataset append-only: each daily run writes a run-suffixed
+    file so revised forward availability forecasts coexist with prior runs.
+    Latest-revision selection per ``(event_time, fuel_type)`` is a read-time
+    concern (see ADR-019 in the gridflow_models repo).
+
+    Note on timestamps: ``available_at`` is the authoritative bitemporal
+    publication timestamp added by ``BaseSilverTransformer``; ``ingested_at``
+    is retained for backward compatibility as the local processing
+    timestamp. Under ``--reingest`` the two diverge.
+    """
 
     source = "elexon"
     dataset = "fou2t14d"
+    APPEND_ONLY: ClassVar[bool] = True
+    DATASET_VERSION: ClassVar[str] = "1.0.0"
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         bronze_path = (

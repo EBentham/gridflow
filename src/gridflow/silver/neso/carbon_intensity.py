@@ -83,9 +83,14 @@ class GenericNesoJsonTransformer(BaseSilverTransformer):
             if not path.name.endswith(".meta.json")
         ]
 
-    def _write_silver(self, df: pl.DataFrame, target_date: date) -> None:
+    def _write_silver(
+        self,
+        df: pl.DataFrame,
+        target_date: date,
+        available_at: datetime,
+    ) -> None:
         if not self.reference_dataset:
-            super()._write_silver(df, target_date)
+            super()._write_silver(df, target_date, available_at=available_at)
             return
         write_parquet(df, self.silver_dir / f"{self.dataset}.parquet")
 

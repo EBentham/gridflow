@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 import logging
 from datetime import UTC, date, datetime
-from typing import Any
+from typing import Any, ClassVar
 
 import polars as pl
 
@@ -16,10 +16,27 @@ logger = logging.getLogger(__name__)
 
 
 class REMITTransformer(BaseSilverTransformer):
-    """Transform Elexon REMIT data from bronze to silver."""
+    """Transform Elexon REMIT data from bronze to silver.
+
+    F7 changes the silver semantics: every revision of an outage message is
+    preserved instead of collapsing to the latest revision per ``mrid``.
+    Latest-revision selection is now a read-time concern handled by
+    ``GridflowDataSource.fetch(latest_only=True, partition_columns=["mrid"])``.
+    See ``.planning/phases/F7-stack-model-data-infrastructure/F7-PLAN.md``
+    for the broader F7 phase summary.
+
+    Note on timestamps: ``available_at`` is the authoritative bitemporal
+    publication timestamp added by ``BaseSilverTransformer``; ``ingested_at``
+    is retained for backward compatibility as the local processing
+    timestamp. Under ``--reingest`` the two diverge — ``available_at``
+    is reconstructed from bronze sidecars while ``ingested_at`` stamps
+    the current run.
+    """
 
     source = "elexon"
     dataset = "remit"
+    APPEND_ONLY: ClassVar[bool] = True
+    DATASET_VERSION: ClassVar[str] = "2.0.0"
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         bronze_path = (
@@ -109,9 +126,6 @@ class REMITTransformer(BaseSilverTransformer):
 
         if "revision_number" in df.columns:
             df = df.with_columns(pl.col("revision_number").cast(pl.Int32))
-
-        # Keep latest revision per mrid
-        df = df.unique(subset=["mrid"], keep="last")
 
         now = datetime.now(UTC)
         df = df.with_columns([

@@ -11,10 +11,21 @@ progress:
 
 ## Current Position
 
-Phase: F0 complete
-Plan: F0-PLAN Bitemporal Upgrade for Fundamentals Datasets
-Status: v0.8 F0 implemented and verified; ready to start `gridflow_models` planning or run historical reingest when bronze partitions are available
-Last activity: 2026-05-05 - Completed F0 bitemporal silver lineage, run-id propagation, reingest support, DuckDB verification, and close-out docs
+Phase: F0 complete; F7 Workstream A complete on `feat/f7-stack-and-bitemporal`
+Plan: F7-PLAN Stack Model Data Infrastructure (Workstream A — gridflow side)
+Status: F7-A delivers `APPEND_ONLY` flag on `BaseSilverTransformer`, run-suffixed
+filenames keyed off `available_at` (idempotent re-ingest), REMIT revision
+preservation (`DATASET_VERSION` 2.0.0), `DATASET_VERSION` / `APPEND_ONLY`
+attributes on REMIT/FOU2T14D/BMUnits/InstalledCapacityUnits, plus
+ADR-017 / ADR-018 in `docs/DECISION_LOG/`. The eleven new F7 tests pass
+under `uv run pytest`; the wider repo suite is green (1025 passed,
+253 pre-existing skips).
+F7-REINGEST-01 deferred to the user — bronze tree empty locally, the four
+re-ingest commands are documented in
+`.planning/phases/F7-stack-model-data-infrastructure/F7-A-RESULTS.md`.
+Once F0 merges to master, this branch should rebase before merge.
+Last activity: 2026-05-07 - F7-A implemented; gridflow_models Workstream B
+also complete; verifier returned PASS_WITH_DEFERRALS.
 
 ## Project Reference
 
