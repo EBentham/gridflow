@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 import logging
 from datetime import UTC, date, datetime
-from typing import Any
+from typing import Any, ClassVar
 
 import polars as pl
 
@@ -21,10 +21,16 @@ class BMUnitsTransformer(BaseSilverTransformer):
 
     This is reference data (no date dimension), so it writes a single
     file rather than date-partitioned Parquet.
+
+    Note on timestamps: ``available_at`` is the authoritative bitemporal
+    publication timestamp added by ``BaseSilverTransformer``; ``ingested_at``
+    is retained for backward compatibility as the local processing
+    timestamp. Under ``--reingest`` the two diverge.
     """
 
     source = "elexon"
     dataset = "bmunits_reference"
+    DATASET_VERSION: ClassVar[str] = "1.0.0"
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         # Reference data has no date partitioning; read latest file from any date dir

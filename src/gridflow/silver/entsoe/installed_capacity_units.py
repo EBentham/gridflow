@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from datetime import UTC, date, datetime
-from typing import Any
+from typing import Any, ClassVar
 
 import polars as pl
 
@@ -16,10 +16,17 @@ logger = logging.getLogger(__name__)
 
 
 class InstalledCapacityUnitsTransformer(BaseSilverTransformer):
-    """Transform ENTSO-E installed capacity per production unit XML to silver."""
+    """Transform ENTSO-E installed capacity per production unit XML to silver.
+
+    Note on timestamps: ``available_at`` is the authoritative bitemporal
+    publication timestamp added by ``BaseSilverTransformer``; ``ingested_at``
+    is retained for backward compatibility as the local processing
+    timestamp. Under ``--reingest`` the two diverge.
+    """
 
     source = "entsoe"
     dataset = "installed_capacity_units"
+    DATASET_VERSION: ClassVar[str] = "1.0.0"
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         bronze_path = (
