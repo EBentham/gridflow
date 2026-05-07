@@ -96,7 +96,12 @@ class BMUnitsTransformer(BaseSilverTransformer):
         available = [c for c in output_cols if c in df.columns]
         return df.select(available).sort("bm_unit_id")
 
-    def _write_silver(self, df: pl.DataFrame, target_date: date) -> None:
+    def _write_silver(
+        self,
+        df: pl.DataFrame,
+        target_date: date,
+        available_at: datetime,
+    ) -> None:
         """Override: write a single reference file (not date-partitioned)."""
         final_path = self.silver_dir / "bmunits_reference.parquet"
         write_parquet(df, final_path)

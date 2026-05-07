@@ -32,6 +32,18 @@ class BaseSilverTransformer(ABC):
     dataset: str
     DATASET_VERSION: ClassVar[str] = "1.0.0"
     BRONZE_SIBLING_DATASETS: ClassVar[tuple[str, ...]] = ()
+    APPEND_ONLY: ClassVar[bool] = False
+    """Per-dataset opt-in for revision-preserving silver writes.
+
+    Default ``False`` keeps the F0 atomic-replace behaviour: each
+    ``(dataset, target_date)`` pair maps to a single Parquet file that is
+    overwritten on each run. When ``True`` the writer emits a run-suffixed
+    filename derived from ``available_at`` so successive runs coexist in the
+    partition directory and downstream readers apply ``QUALIFY``-style
+    selection at read time. See ``docs/DECISION_LOG/ADR-018-append-only-
+    run-suffixed-files.md`` for the trade-off discussion. Only datasets that
+    publish meaningful revisions (REMIT, FOU2T14D) should opt in.
+    """
 
     def __init__(self, data_dir: Path):
         self.data_dir = data_dir
@@ -86,7 +98,7 @@ class BaseSilverTransformer(ABC):
         )
 
         # Write silver (atomic: write to temp, then rename)
-        self._write_silver(clean_df, target_date)
+        self._write_silver(clean_df, target_date, available_at=available_at)
         self._write_csv(clean_df, target_date)
 
         logger.info(
@@ -226,10 +238,38 @@ class BaseSilverTransformer(ABC):
             return value.replace(tzinfo=UTC)
         return value.astimezone(UTC)
 
-    def _write_silver(self, df: pl.DataFrame, target_date: date) -> None:
-        """Write DataFrame to partitioned Parquet, replacing existing file."""
-        out_dir = self.silver_dir / f"year={target_date.year}" / f"month={target_date.month:02d}"
-        filename = f"{self.dataset}_{target_date.strftime('%Y%m%d')}.parquet"
+    def _write_silver(
+        self,
+        df: pl.DataFrame,
+        target_date: date,
+        available_at: datetime,
+    ) -> None:
+        """Write DataFrame to partitioned Parquet.
+
+        Default branch (``APPEND_ONLY = False``) writes a single file per
+        ``(dataset, target_date)`` and overwrites it on each run via
+        :func:`write_parquet`'s atomic temp-then-rename. The ``APPEND_ONLY =
+        True`` branch suffixes the filename with the ISO ``available_at``
+        timestamp so re-ingest with a sidecar-derived ``available_at`` is
+        idempotent (two reingest passes produce the same path and the second
+        cleanly replaces the first), while distinct live runs produce
+        distinct files. See ``docs/DECISION_LOG/ADR-018``.
+        """
+        out_dir = (
+            self.silver_dir
+            / f"year={target_date.year}"
+            / f"month={target_date.month:02d}"
+        )
+        if self.APPEND_ONLY:
+            run_stamp = (
+                available_at.isoformat().replace(":", "-").replace("+", "-")
+            )
+            filename = (
+                f"{self.dataset}_{target_date.strftime('%Y%m%d')}"
+                f"_run{run_stamp}.parquet"
+            )
+        else:
+            filename = f"{self.dataset}_{target_date.strftime('%Y%m%d')}.parquet"
         final_path = out_dir / filename
         write_parquet(df, final_path)
 
