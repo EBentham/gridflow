@@ -6,7 +6,8 @@
       "Bash(done)",
       "Bash(pip install:*)",
       "Bash(python -m pytest:*)",
-      "Bash(python -m gridflow:*)"
+      "Bash(python -m gridflow:*)",
+      "Bash(uv run *)"
     ]
   }
 }
