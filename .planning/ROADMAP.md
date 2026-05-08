@@ -11,7 +11,7 @@
 - Complete **v0.6-neso-carbon-intensity-platform** - NESO Carbon Intensity Platform K1-K4 (completed 2026-05-04)
 - Complete **v0.7-gie-agsi-gas-storage-validation** - GIE AGSI Gas Storage Validation L1-L4 (completed 2026-05-04)
 - Complete **v0.8-fundamentals-model-silver-foundations** - Fundamentals Model Silver Foundations F0 (completed 2026-05-05)
-- Current **v0.9-vault-vendor-validation-and-docs** - Live-validate every active gridflow endpoint and populate `quant-vault/30-vendors/` (V1)
+- Complete **v0.9-vault-vendor-validation-and-docs** - Live-validate every active gridflow endpoint and populate `quant-vault/30-vendors/` V1 (completed 2026-05-08)
 
 ---
 
@@ -205,10 +205,10 @@ Close-out notes:
 
 ---
 
-<details open>
-<summary>Current v0.9-vault-vendor-validation-and-docs - Live-validate every active gridflow endpoint and populate the vault (V1) - IN PROGRESS</summary>
+<details>
+<summary>Complete v0.9-vault-vendor-validation-and-docs - Live-validate every active gridflow endpoint and populate the vault (V1) - COMPLETED 2026-05-08</summary>
 
-- [ ] Phase V1: Vault vendor validation and docs - planning
+- [x] Phase V1: Vault vendor validation and docs - completed 2026-05-08
 
 ### Phase Details
 
@@ -227,16 +227,16 @@ Success criteria:
 6. Authority hierarchy honoured: official docs > test fixtures > codebase. Doc/code conflicts logged as deltas, never silently resolved.
 
 Plans (9 in wave 1 + 1 aggregation in wave 2):
-- [ ] `V1-PLAN-A-elexon.md` - Elexon (33 datasets, 2 req/s) — wave 1
-- [ ] `V1-PLAN-B1-entsoe-load-prices.md` - ENTSOE load + prices + imbalance (11) — wave 1
-- [ ] `V1-PLAN-B2-entsoe-generation-outages.md` - ENTSOE generation + outages (13) — wave 1
-- [ ] `V1-PLAN-B3-entsoe-transmission-capacity.md` - ENTSOE transmission + capacity (18) — wave 1
-- [ ] `V1-PLAN-B4-entsoe-balancing.md` - ENTSOE balancing (6) — wave 1
-- [ ] `V1-PLAN-B5-entsoe-aggregate.md` - ENTSOE endpoints.md + README + consolidated VALIDATION — wave 2 (depends on B1-B4)
-- [ ] `V1-PLAN-C-entsog.md` - ENTSOG (33 datasets, public) — wave 1
-- [ ] `V1-PLAN-D-gie.md` - GIE AGSI (7 endpoints, 60 calls/min, x-key header) — wave 1
-- [ ] `V1-PLAN-E-neso.md` - NESO (33 datasets, validate-and-refresh-in-place) — wave 1
-- [ ] `V1-PLAN-F-openmeteo.md` - Open-Meteo (2 datasets, two hosts) — wave 1
+- [x] `V1-PLAN-A-elexon.md` - Elexon (33 datasets, 2 req/s) — wave 1 — 33 PASS / 0 EMPTY / 0 FAIL
+- [x] `V1-PLAN-B1-entsoe-load-prices.md` - ENTSOE load + prices + imbalance (11) — 0 PASS / 11 EMPTY / 0 FAIL (GB post-Brexit; tuples verified via DE-LU/FR/NL fallback)
+- [x] `V1-PLAN-B2-entsoe-generation-outages.md` - ENTSOE generation + outages (13) — 4 PASS / 9 EMPTY / 0 FAIL
+- [x] `V1-PLAN-B3-entsoe-transmission-capacity.md` - ENTSOE transmission + capacity (18) — 5 PASS / 13 EMPTY / 0 FAIL
+- [x] `V1-PLAN-B4-entsoe-balancing.md` - ENTSOE balancing (6) — 0 PASS / 6 EMPTY / 0 FAIL
+- [x] `V1-PLAN-B5-entsoe-aggregate.md` - ENTSOE endpoints.md + README + consolidated VALIDATION — wave 2 — done
+- [x] `V1-PLAN-C-entsog.md` - ENTSOG (33 datasets, public) — 29 PASS / 4 EMPTY / 0 FAIL
+- [x] `V1-PLAN-D-gie.md` - GIE AGSI (7 endpoints, 60 calls/min, x-key header) — 7 PASS / 0 EMPTY / 0 FAIL
+- [x] `V1-PLAN-E-neso.md` - NESO (33 datasets, validate-and-refresh-in-place) — 33 PASS / 0 EMPTY / 0 FAIL
+- [x] `V1-PLAN-F-openmeteo.md` - Open-Meteo (2 datasets, two hosts verified) — 2 PASS / 0 EMPTY / 0 FAIL
 
 </details>
 

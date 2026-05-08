@@ -1,15 +1,53 @@
 ---
-milestone: v0.8
-milestone_name: Fundamentals Model Silver Foundations
+milestone: v0.9
+milestone_name: Vault Vendor Validation And Docs
 status: complete
 progress:
   phases_total: 1
   phases_complete: 1
-  plans_total: 1
-  plans_complete: 1
+  plans_total: 10
+  plans_complete: 10
 ---
 
 ## Current Position
+
+Phase V1 complete on `claude/lucid-mccarthy-9ed3e0` (worktree).
+
+V1 validated 156 active gridflow datasets across 6 vendors. All vendors
+have full vault documentation (`quant-vault/30-vendors/<vendor>/`):
+per-dataset pages, endpoints.md quick-summary, refreshed README, plus
+per-vendor VALIDATION reports under
+`.planning/phases/V1-vault-vendor-validation-and-docs/`.
+
+Aggregate live-call results:
+- **113 PASS / 43 EMPTY / 0 FAIL** across 156 datasets
+- Elexon 33/0/0, ENTSOE 9/39/0, ENTSOG 29/4/0, GIE 7/0/0, NESO 33/0/0,
+  Open-Meteo 2/0/0
+- All 39 ENTSOE EMPTY results stem from GB post-Brexit data drop;
+  request shapes verified correct via DE-LU/FR/NL fallback calls
+- 4 ENTSOG EMPTY are sparse-at-test-point only — all indicators
+  verified correct via 30-day or no-filter retry
+
+Production code bugs surfaced (NOT fixed in V1 — out of scope, recorded
+in vault Implementation deltas + per-vendor VALIDATION reports for
+follow-up phases):
+- Elexon `freq` connector parameter-name mismatch (HIGH — silently
+  ignored by API, returns wrong window)
+- NESO silver `_rows_from_region_period` reads carbon/mix from wrong
+  level — affects 5 period-keyed regional datasets
+- Elexon REMIT/SOSO 1-day vendor cap not honoured by connector default
+- Elexon `system_prices.priceDerivationCode` Pydantic regex too narrow
+- ENTSOE `commercial_schedules` and `commercial_schedules_net_positions`
+  use IDENTICAL EntsoeDocType (registry duplication)
+
+Worktree-machine-specific workaround: Avast antivirus TLS interception
+breaks Python httpx with cert verify failures; `curl --ssl-no-revoke`
+is the live-call mechanism (locked in V1-CONTEXT.md, used by all V1
+agents). Documented for future runs.
+
+Last activity: 2026-05-08 — V1 phase shipped.
+
+## Prior milestone
 
 Phase: F0 complete; F7 Workstream A complete on `feat/f7-stack-and-bitemporal`
 Plan: F7-PLAN Stack Model Data Infrastructure (Workstream A — gridflow side)
