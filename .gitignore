@@ -1,6 +1,7 @@
 # Data directories
 data/
 logs/
+.tmp/
 
 # Environment
 .env
