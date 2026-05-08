@@ -40,15 +40,15 @@ Total: **33 datasets**.
 
 ## must_haves (goal-backward verification)
 
-1. `quant-vault/30-vendors/elexon/datasets/<key>.md` exists for each of the
+1. `C:\Users\Bobbo\OneDrive\Desktop\Learning\AI\quant-vault\30-vendors\elexon\datasets\<key>.md` exists for each of the
    33 datasets, each following the `gridflow-dataset-spec` template
    verbatim (frontmatter with `source: elexon`, Overview, API endpoint,
    Working curl example, Bronze layer with sample, Silver layer with full
    schema table, Implementation delta).
-2. `quant-vault/30-vendors/elexon/endpoints.md` lists all 33 datasets in a
+2. `C:\Users\Bobbo\OneDrive\Desktop\Learning\AI\quant-vault\30-vendors\elexon\endpoints.md` lists all 33 datasets in a
    quick-summary table grouped by parameter style (settlement-date,
    publish-datetime, no-params reference).
-3. `quant-vault/30-vendors/elexon/README.md` has no remaining `TODO`
+3. `C:\Users\Bobbo\OneDrive\Desktop\Learning\AI\quant-vault\30-vendors\elexon\README.md` has no remaining `TODO`
    markers — auth, rate limit, status URL, gotchas all confirmed.
 4. `.planning/phases/V1-vault-vendor-validation-and-docs/elexon-VALIDATION.md`
    has one row per dataset with PASS / FAIL / EMPTY status, cause, raw
@@ -59,22 +59,33 @@ Total: **33 datasets**.
 ### Task 1 — Pre-flight smoke test
 
 <read_first>
-- .env (verify `ELEXON_API_KEY` is set; created via worktree-local copy)
+- C:\Users\Bobbo\OneDrive\Desktop\Python\gridflow\.env  (source of API keys)
 - C:\Users\Bobbo\OneDrive\Desktop\Python\gridflow\.claude\worktrees\lucid-mccarthy-9ed3e0\.planning\phases\V1-vault-vendor-validation-and-docs\V1-CONTEXT.md
 </read_first>
 
 <action>
-1. Run: `curl --ssl-no-revoke -fsS -o /dev/null -w "%{http_code}\n" https://api.carbonintensity.org.uk/intensity`
-2. Verify exit 0 and output `200`. If not, halt and write a single-line
+1. **Copy .env into worktree (if not already present):**
+   `[ -f .env ] || cp "C:/Users/Bobbo/OneDrive/Desktop/Python/gridflow/.env" .env`
+   Do NOT modify the main repo's .env. Do NOT commit the worktree-local
+   .env (it's already in .gitignore).
+2. Make tmp dir: `mkdir -p .tmp`
+3. Run: `curl --ssl-no-revoke -fsS -o /dev/null -w "%{http_code}\n" https://api.carbonintensity.org.uk/intensity`
+   Verify exit 0 and output `200`. If not, halt and write a single-line
    error to `elexon-VALIDATION.md` then stop.
-3. Run: `grep -E "^ELEXON_API_KEY=." .env` and verify the key is non-empty.
-4. Hit Elexon health: `curl --ssl-no-revoke -fsS -o /dev/null -w "%{http_code}\n" "https://data.elexon.co.uk/bmrs/api/v1/datasets/FUELHH?settlementDate=2026-05-06&format=json"`. Expect 200.
+4. Load and verify the key:
+   `ELEXON_API_KEY=$(grep -E "^ELEXON_API_KEY=" .env | cut -d= -f2- | tr -d '"' | tr -d "'")`
+   `[ -n "$ELEXON_API_KEY" ] || { echo "missing ELEXON_API_KEY"; exit 1; }`
+5. Hit Elexon health (try FUELHH first, fall back to FUELINST):
+   `curl --ssl-no-revoke -fsS -H "apikey: $ELEXON_API_KEY" -o .tmp/elexon-smoke.json -w "%{http_code}\n" "https://data.elexon.co.uk/bmrs/api/v1/datasets/FUELHH?settlementDate=2026-05-06&format=json"`
+   If non-200, retry with `/datasets/FUELINST?format=json` (no settlement date — instantaneous).
+   If both fail, write FAIL with HTTP code to `elexon-VALIDATION.md` Task 1 row, then continue with the remaining datasets where possible.
 </action>
 
 <acceptance_criteria>
-- `.env` contains `ELEXON_API_KEY=` followed by a non-empty value.
+- `.env` exists in worktree, contains `ELEXON_API_KEY=` followed by a non-empty value.
+- `.tmp/` directory exists.
 - The carbonintensity smoke-test curl exits 0 and prints `200`.
-- The FUELHH baseline curl exits 0 and prints `200`.
+- Either the FUELHH or FUELINST baseline curl exits 0 with HTTP 200; if both fail, an explicit Task 1 FAIL row exists in `elexon-VALIDATION.md`.
 </acceptance_criteria>
 
 ### Task 2 — Read official docs and source files
@@ -130,7 +141,7 @@ For each dataset key in the active list:
    - `publish_datetime`: `?publishDateTimeFrom=2026-05-06T00:00Z&publishDateTimeTo=2026-05-07T00:00Z&format=json`
    - `date_in_path`: substitute today-2 as ISO date.
    - `no_params`: just `?format=json`.
-2. Run: `curl --ssl-no-revoke -fsS -H "Accept: application/json" -H "apikey: $ELEXON_API_KEY" "<URL>" -o "/tmp/elexon-<key>.json" -w "HTTP %{http_code} | %{size_download}B | %{time_total}s\n"`
+2. Run: `curl --ssl-no-revoke -fsS -H "Accept: application/json" -H "apikey: $ELEXON_API_KEY" "<URL>" -o ".tmp/elexon-<key>.json" -w "HTTP %{http_code} | %{size_download}B | %{time_total}s\n"`
 3. Throttle: `sleep 0.6` between calls (Elexon limit 2 req/s).
 4. Capture: HTTP status, body size, first 200 bytes of response.
 5. Classify:
@@ -158,7 +169,7 @@ For each dataset key in the active list:
 - ~/.claude/skills/gridflow-dataset-spec/references/spec-template.md
 - The template MUST be used verbatim — no section additions, removals, or
   reorderings.
-- The captured live response body (`/tmp/elexon-<key>.json`).
+- The captured live response body (`.tmp/elexon-<key>.json`).
 - `src/gridflow/silver/elexon/<dataset>.py` for each dataset's silver
   transformer (field mapping, dedup logic).
 - `src/gridflow/schemas/elexon.py` for Pydantic field definitions.
@@ -191,7 +202,7 @@ Required sections (in this order, per template):
    returned the captured PASS/EMPTY response (replace `$ELEXON_API_KEY`
    with `<your-elexon-api-key>` placeholder for safety).
 6. `## Bronze layer` — path pattern, format, granularity, sample (first
-   ~200 bytes from `/tmp/elexon-<key>.json`).
+   ~200 bytes from `.tmp/elexon-<key>.json`).
 7. `## Silver layer` — path pattern, transformer class, Pydantic schema,
    dedup key (include `run_type` for settlement datasets per CLAUDE.md),
    point-in-time field. Full schema table (Field, Type, Nullable,

@@ -64,17 +64,19 @@ unavailability
 ### Task 1 — Pre-flight smoke test
 
 <action>
-1. Run carbonintensity smoke-test (must print 200).
-2. Verify `GIE_API_KEY` is set: `grep -E "^GIE_API_KEY=." .env`.
-3. Hit AGSI about endpoint:
-   `curl --ssl-no-revoke -fsS -H "x-key: $GIE_API_KEY" "https://agsi.gie.eu/api/about" -o /tmp/gie-about-smoke.json -w "%{http_code}\n"`
+1. `[ -f .env ] || cp "C:/Users/Bobbo/OneDrive/Desktop/Python/gridflow/.env" .env`
+2. `mkdir -p .tmp`
+3. Run carbonintensity smoke-test (must print 200).
+4. Load key: `GIE_API_KEY=$(grep -E "^GIE_API_KEY=" .env | cut -d= -f2- | tr -d '"' | tr -d "'")`; `[ -n "$GIE_API_KEY" ] || { echo "missing GIE_API_KEY"; exit 1; }`
+5. Hit AGSI about endpoint:
+   `curl --ssl-no-revoke -fsS -H "x-key: $GIE_API_KEY" "https://agsi.gie.eu/api/about" -o .tmp/gie-about-smoke.json -w "%{http_code}\n"`
    Expect 200 and a JSON body.
 </action>
 
 <acceptance_criteria>
 - carbonintensity prints 200.
 - `.env` has non-empty `GIE_API_KEY`.
-- `/tmp/gie-about-smoke.json` is non-empty JSON.
+- `.tmp/gie-about-smoke.json` is non-empty JSON.
 </acceptance_criteria>
 
 ### Task 2 — Read official docs and source files
@@ -108,20 +110,37 @@ the connector's path templates.
 ### Task 3 — Live-validate (7 calls)
 
 <action>
-For each:
+**Build each URL from `src/gridflow/connectors/gie/endpoints.py`'s
+ENDPOINTS registry** — read the path template per dataset key, do not
+hardcode `/api` patterns from this plan. The registry is the
+implementation source of truth for V1 cross-checking.
 
-- `storage_reports`:
-  `curl --ssl-no-revoke -fsS -H "x-key: $GIE_API_KEY" "https://agsi.gie.eu/api?country=GB&from=2026-05-01&to=2026-05-07" -o /tmp/gie-storage_reports.json -w "%{http_code}\n"`
-- `storage`: same path with `country=GB&date=2026-05-06`.
-- `about_summary`: `https://agsi.gie.eu/api/about` (no params).
+Reference URLs to verify against (substitute actual paths from registry
+if these differ):
+
+- `storage_reports`: `https://agsi.gie.eu/api?country=GB&from=2026-05-01&to=2026-05-07`
+  (per registry: usually `/api` with `country` + `from`/`to`).
+- `storage`: `https://agsi.gie.eu/api?country=GB&date=2026-05-06`.
+- `about_summary`: `https://agsi.gie.eu/api/about`.
 - `about_listing`: `https://agsi.gie.eu/api/about?show=listing`.
 - `news`: `https://agsi.gie.eu/api/news`.
-- `news_item`: pick first news ID from `/api/news` and fetch
-  `/api/news?id=<id>`.
-- `unavailability`:
-  `https://agsi.gie.eu/api/unavailability?country=GB&from=2026-04-01&to=2026-05-07`.
+- `news_item`: fetch `/api/news` first, pick first `id`, then
+  `https://agsi.gie.eu/api/news?id=<id>`.
+- `unavailability`: `https://agsi.gie.eu/api/unavailability?country=GB&from=2026-04-01&to=2026-05-07`.
 
-Throttle 1 req/s. Capture `/tmp/gie-<key>.json`.
+If the registry path for any key differs from the URL above, USE the
+registry's path (it is what the connector actually hits). Record the
+difference in the dataset page's `## Implementation delta`.
+
+Live call template:
+```
+curl --ssl-no-revoke -fsS -H "x-key: $GIE_API_KEY" \
+  "<URL>" -o ".tmp/gie-<key>.json" \
+  -w "HTTP %{http_code} | %{size_download}B | %{time_total}s\n"
+sleep 1.0
+```
+
+Throttle 1 req/s. Capture `.tmp/gie-<key>.json`.
 
 Classification:
 - **PASS** = HTTP 200, JSON body parses, expected top-level key exists
@@ -129,7 +148,8 @@ Classification:
 - **EMPTY** = HTTP 200, expected top-level key empty. Investigate
   cause (dates wrong, country has no storage in window, news has no
   recent items).
-- **FAIL** = non-2xx, missing key.
+- **FAIL** = non-2xx, missing key, or registry path differs from
+  upstream live behaviour.
 </action>
 
 <acceptance_criteria>
@@ -175,7 +195,7 @@ documentation ambiguity.
 ### Task 5 — Update endpoints.md
 
 <action>
-Rewrite `quant-vault/30-vendors/gie/endpoints.md`. Document AGSI's 7
+Rewrite `C:\Users\Bobbo\OneDrive\Desktop\Learning\AI\quant-vault\30-vendors\gie/endpoints.md`. Document AGSI's 7
 active endpoints in a single table. Add a footer note that ALSI LNG is
 deferred (`gie_alsi.lng` excluded from V1 scope per project decision).
 Update `updated:` to 2026-05-08.
@@ -191,7 +211,7 @@ Update `updated:` to 2026-05-08.
 
 <action>
 Resolve `TODO` markers in
-`quant-vault/30-vendors/gie/README.md`. Confirm:
+`C:\Users\Bobbo\OneDrive\Desktop\Learning\AI\quant-vault\30-vendors\gie/README.md`. Confirm:
 - Auth: `x-key` header, key from environment, registration at
   https://agsi.gie.eu/.
 - Rate limit: 60 calls/minute.

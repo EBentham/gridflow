@@ -43,7 +43,7 @@ net_positions (A25)
 
 ## must_haves
 
-1. 18 dataset pages under `quant-vault/30-vendors/entsoe/datasets/`.
+1. 18 dataset pages under `C:\Users\Bobbo\OneDrive\Desktop\Learning\AI\quant-vault\30-vendors\entsoe/datasets/`.
 2. Each page records the tuple AND the contract market agreement type
    (`contract_MarketAgreement.Type`) where applicable (A25, A26, A31).
 3. `entsoe-B3-VALIDATION.md` written with 18 rows.
@@ -69,7 +69,20 @@ net_positions (A25)
 ## Tasks
 
 ### Task 1 — Pre-flight smoke test
-(Same as B1 Task 1.)
+
+<action>
+1. `[ -f .env ] || cp "C:/Users/Bobbo/OneDrive/Desktop/Python/gridflow/.env" .env`
+2. `mkdir -p .tmp`
+3. carbonintensity smoke-test must print 200.
+4. Load `ENTSOE_API_KEY` from `.env`; verify non-empty.
+5. ENTSOE A44 health smoke-test (same as B1).
+</action>
+
+<acceptance_criteria>
+- `.env` exists in worktree, `.tmp/` exists.
+- carbonintensity prints 200.
+- A44 smoke-test response contains `Publication_MarketDocument`.
+</acceptance_criteria>
 
 ### Task 2 — Read official docs and source files
 (Same files as B1 Task 2. Focus PDF on cross-zonal flow, transfer
@@ -89,7 +102,7 @@ For each dataset:
 - A25/A26: use GB→FR border, daily window for daily-resolution variants,
   yearly window for yearly-resolution variants.
 
-Throttle 1 req/s. Capture `/tmp/entsoe-<key>.xml`.
+Throttle 1 req/s. Capture `.tmp/entsoe-<key>.xml`.
 
 PASS/EMPTY/FAIL same as B1. EMPTY is more common in this batch — record
 cause as one of: "border has zero allocation in window",

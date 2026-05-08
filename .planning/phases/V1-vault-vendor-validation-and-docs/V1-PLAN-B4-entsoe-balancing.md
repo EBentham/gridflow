@@ -41,7 +41,7 @@ balancing extensions documented in `STATE.md` are these six.)
 
 ## must_haves
 
-1. 6 dataset pages under `quant-vault/30-vendors/entsoe/datasets/`.
+1. 6 dataset pages under `C:\Users\Bobbo\OneDrive\Desktop\Learning\AI\quant-vault\30-vendors\entsoe/datasets/`.
 2. Each page records the tuple AND the
    `(BusinessType, type_MarketAgreement.Type)` where applicable.
 3. `entsoe-B4-VALIDATION.md` written with 6 rows.
@@ -61,7 +61,20 @@ balancing extensions documented in `STATE.md` are these six.)
 ## Tasks
 
 ### Task 1 — Pre-flight smoke test
-(Same as B1 Task 1.)
+
+<action>
+1. `[ -f .env ] || cp "C:/Users/Bobbo/OneDrive/Desktop/Python/gridflow/.env" .env`
+2. `mkdir -p .tmp`
+3. carbonintensity smoke-test must print 200.
+4. Load `ENTSOE_API_KEY` from `.env`; verify non-empty.
+5. ENTSOE A44 health smoke-test (same as B1).
+</action>
+
+<acceptance_criteria>
+- `.env` exists in worktree, `.tmp/` exists.
+- carbonintensity prints 200.
+- A44 smoke-test response contains `Publication_MarketDocument`.
+</acceptance_criteria>
 
 ### Task 2 — Read official docs and source files
 (Same files as B1 Task 2. Focus PDF on Section 17 — Balancing.)
@@ -76,7 +89,7 @@ For each dataset, build URL with the per-dataset tuple, GB control area
 periodEnd=202605071400` (intra-day window) since this dataset is current
 state, not historical.
 
-Throttle 1 req/s. Capture `/tmp/entsoe-<key>.xml`. PASS/EMPTY/FAIL as B1.
+Throttle 1 req/s. Capture `.tmp/entsoe-<key>.xml`. PASS/EMPTY/FAIL as B1.
 </action>
 
 <acceptance_criteria>
@@ -101,6 +114,12 @@ the docType but mean different things.)
 (Same format as B1 Task 5 with `batch: B4-balancing` and
 `total_datasets: 6`.)
 
+ENTSOE consolidation (endpoints.md, README.md, entsoe-VALIDATION.md
+across all 4 batches) is **owned by V1-PLAN-B5-entsoe-aggregate.md**
+which runs in wave 2 after B1/B2/B3/B4 complete.
+
+### Task 6 — (REMOVED — see V1-PLAN-B5-entsoe-aggregate.md)
+
 ## Verification
 
 | Check | Pass condition |
@@ -111,4 +130,5 @@ the docType but mean different things.)
 
 ## Deferred
 
-- README and endpoints.md updates handled by orchestrator post-batch.
+- ENTSOE-wide README.md, endpoints.md, and consolidated VALIDATION.md
+  handled by V1-PLAN-B5-entsoe-aggregate.md (wave 2).

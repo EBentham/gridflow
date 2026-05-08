@@ -226,16 +226,17 @@ Success criteria:
 5. Every endpoint URL in `src/gridflow/connectors/<vendor>/endpoints.py` matches the official-docs URL pattern verbatim (or the discrepancy is recorded in the dataset page's `## Implementation delta`).
 6. Authority hierarchy honoured: official docs > test fixtures > codebase. Doc/code conflicts logged as deltas, never silently resolved.
 
-Plans (9 parallel, single wave):
-- [ ] `V1-PLAN-A-elexon.md` - Elexon (33 datasets, 2 req/s)
-- [ ] `V1-PLAN-B1-entsoe-load-prices.md` - ENTSOE load + prices + imbalance (~11)
-- [ ] `V1-PLAN-B2-entsoe-generation-outages.md` - ENTSOE generation + outages (~13)
-- [ ] `V1-PLAN-B3-entsoe-transmission-capacity.md` - ENTSOE transmission + capacity (~18)
-- [ ] `V1-PLAN-B4-entsoe-balancing.md` - ENTSOE balancing (~8)
-- [ ] `V1-PLAN-C-entsog.md` - ENTSOG (33 datasets, public)
-- [ ] `V1-PLAN-D-gie.md` - GIE AGSI (7 endpoints, 60 calls/min, x-key header)
-- [ ] `V1-PLAN-E-neso.md` - NESO (33 datasets, validate-and-refresh-in-place)
-- [ ] `V1-PLAN-F-openmeteo.md` - Open-Meteo (2 datasets, two hosts)
+Plans (9 in wave 1 + 1 aggregation in wave 2):
+- [ ] `V1-PLAN-A-elexon.md` - Elexon (33 datasets, 2 req/s) — wave 1
+- [ ] `V1-PLAN-B1-entsoe-load-prices.md` - ENTSOE load + prices + imbalance (11) — wave 1
+- [ ] `V1-PLAN-B2-entsoe-generation-outages.md` - ENTSOE generation + outages (13) — wave 1
+- [ ] `V1-PLAN-B3-entsoe-transmission-capacity.md` - ENTSOE transmission + capacity (18) — wave 1
+- [ ] `V1-PLAN-B4-entsoe-balancing.md` - ENTSOE balancing (6) — wave 1
+- [ ] `V1-PLAN-B5-entsoe-aggregate.md` - ENTSOE endpoints.md + README + consolidated VALIDATION — wave 2 (depends on B1-B4)
+- [ ] `V1-PLAN-C-entsog.md` - ENTSOG (33 datasets, public) — wave 1
+- [ ] `V1-PLAN-D-gie.md` - GIE AGSI (7 endpoints, 60 calls/min, x-key header) — wave 1
+- [ ] `V1-PLAN-E-neso.md` - NESO (33 datasets, validate-and-refresh-in-place) — wave 1
+- [ ] `V1-PLAN-F-openmeteo.md` - Open-Meteo (2 datasets, two hosts) — wave 1
 
 </details>
 

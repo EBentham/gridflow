@@ -9,7 +9,7 @@ depends_on: []
 autonomous: true
 files_modified:
   - C:\Users\Bobbo\OneDrive\Desktop\Learning\AI\quant-vault\30-vendors\entsoe\datasets\*.md  # 11 new files
-  - .planning/phases/V1-vault-vendor-validation-and-docs/entsoe-B1-VALIDATION.md  # appended (shared with B2/B3/B4)
+  - .planning/phases/V1-vault-vendor-validation-and-docs/entsoe-B1-VALIDATION.md  # batch-specific, no shared writes
 requirements:
   - V1-VAULT-01
   - V1-VAULT-02
@@ -68,21 +68,26 @@ included here rather than B4 to balance load.)
 ### Task 1 — Pre-flight smoke test
 
 <read_first>
-- .env (`ENTSOE_API_KEY` non-empty)
+- C:\Users\Bobbo\OneDrive\Desktop\Python\gridflow\.env  (source of API keys)
 - V1-CONTEXT.md
 - src/gridflow/connectors/entsoe/endpoints.py
 </read_first>
 
 <action>
-1. Run the carbonintensity smoke-test: `curl --ssl-no-revoke -fsS -o /dev/null -w "%{http_code}\n" https://api.carbonintensity.org.uk/intensity` (must print 200).
-2. Verify `ENTSOE_API_KEY` is set: `grep -E "^ENTSOE_API_KEY=." .env`.
-3. Hit ENTSOE health: `curl --ssl-no-revoke -fsS "https://web-api.tp.entsoe.eu/api?securityToken=$ENTSOE_API_KEY&documentType=A44&in_Domain=10YGB----------A&out_Domain=10YGB----------A&periodStart=202605060000&periodEnd=202605070000" -o /tmp/entsoe-smoke.xml -w "%{http_code}\n"`. Expect 200 and `<Publication_MarketDocument` in the response.
+1. **Copy .env into worktree (if not already present):**
+   `[ -f .env ] || cp "C:/Users/Bobbo/OneDrive/Desktop/Python/gridflow/.env" .env`
+2. Make tmp dir: `mkdir -p .tmp`
+3. Run carbonintensity smoke-test: `curl --ssl-no-revoke -fsS -o /dev/null -w "%{http_code}\n" https://api.carbonintensity.org.uk/intensity` (must print 200).
+4. Load key: `ENTSOE_API_KEY=$(grep -E "^ENTSOE_API_KEY=" .env | cut -d= -f2- | tr -d '"' | tr -d "'")`; `[ -n "$ENTSOE_API_KEY" ] || { echo "missing ENTSOE_API_KEY"; exit 1; }`
+5. Hit ENTSOE health: `curl --ssl-no-revoke -fsS "https://web-api.tp.entsoe.eu/api?securityToken=$ENTSOE_API_KEY&documentType=A44&in_Domain=10YGB----------A&out_Domain=10YGB----------A&periodStart=202605060000&periodEnd=202605070000" -o .tmp/entsoe-smoke.xml -w "%{http_code}\n"`. Expect 200 and `<Publication_MarketDocument` in the response.
 </action>
 
 <acceptance_criteria>
+- `.env` exists in worktree.
+- `.tmp/` exists.
 - carbonintensity smoke-test prints `200`.
 - `.env` has non-empty `ENTSOE_API_KEY`.
-- `/tmp/entsoe-smoke.xml` contains the literal string `Publication_MarketDocument`.
+- `.tmp/entsoe-smoke.xml` contains the literal string `Publication_MarketDocument`.
 </acceptance_criteria>
 
 ### Task 2 — Read official docs and source files
@@ -126,7 +131,7 @@ window, then:
 ```
 curl --ssl-no-revoke -fsS -H "Accept: application/xml" \
   "https://web-api.tp.entsoe.eu/api?securityToken=$ENTSOE_API_KEY&<params>" \
-  -o "/tmp/entsoe-<key>.xml" \
+  -o ".tmp/entsoe-<key>.xml" \
   -w "HTTP %{http_code} | %{size_download}B | %{time_total}s\n"
 sleep 1.0
 ```

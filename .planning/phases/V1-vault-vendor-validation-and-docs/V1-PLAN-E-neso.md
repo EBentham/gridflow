@@ -73,12 +73,15 @@ regional_intensity_regionid
 ### Task 1 — Pre-flight smoke test
 
 <action>
-Run carbonintensity smoke-test (must print 200) — this IS the NESO
-endpoint, so confirms the entire vendor is reachable.
+1. `mkdir -p .tmp` (no .env copy needed — NESO is public).
+2. Run carbonintensity smoke-test:
+   `curl --ssl-no-revoke -fsS -H "Accept: application/json" -o .tmp/neso-smoke.json -w "HTTP %{http_code}\n" "https://api.carbonintensity.org.uk/intensity"`
+   Expect `HTTP 200` and `/.tmp/neso-smoke.json` non-empty.
 </action>
 
 <acceptance_criteria>
-- Smoke-test prints `200`.
+- Smoke-test prints `HTTP 200`.
+- `.tmp/neso-smoke.json` is non-empty.
 </acceptance_criteria>
 
 ### Task 2 — Read source files and existing vault pages
@@ -115,8 +118,8 @@ endpoint, so confirms the entire vendor is reachable.
 ### Task 3 — Live-validate (33 calls)
 
 <action>
-For each dataset, build URL using path templates from
-`connectors/neso/endpoints.py`. Substitute date params:
+For each of the 33 datasets, build URL using path templates from
+`src/gridflow/connectors/neso/endpoints.py`. Substitute date params:
 - `{from}` → `2026-05-06T00:00Z`, `{to}` → `2026-05-06T23:30Z` for
   same-day; for ranges, use a 1-day window so URLs aren't zero-length
   (zero-length range returns 400 per STATE.md).
@@ -126,7 +129,24 @@ For each dataset, build URL using path templates from
 - `{regionid}` → `13` (London).
 - `{block}` → `1` (1-hour stats block).
 
-Run with throttle 0.2s (5 req/s).
+For each dataset, run a literal:
+```
+curl --ssl-no-revoke -fsS -H "Accept: application/json" \
+  "https://api.carbonintensity.org.uk<path>" \
+  -o ".tmp/neso-<key>.json" \
+  -w "HTTP %{http_code} | %{size_download}B | %{time_total}s\n" \
+  2> ".tmp/neso-<key>.err"
+sleep 0.2
+```
+
+Examples:
+- `intensity_current` → `curl --ssl-no-revoke -fsS -H "Accept: application/json" "https://api.carbonintensity.org.uk/intensity" -o .tmp/neso-intensity_current.json -w "..."`
+- `intensity_date` → `curl --ssl-no-revoke -fsS -H "Accept: application/json" "https://api.carbonintensity.org.uk/intensity/date/2026-05-06" -o .tmp/neso-intensity_date.json -w "..."`
+- `intensity_period` → `.../intensity/date/2026-05-06/1`
+- `regional_postcode` → `.../regional/postcode/RG41`
+- `regional_intensity` → `.../regional/intensity/2026-05-06T00:00Z/2026-05-06T23:30Z`
+
+Throttle 0.2s between calls (5 req/s).
 
 Classification:
 - **PASS** = HTTP 200 AND `data` array (or object) populated AND fields
@@ -166,7 +186,9 @@ aliases, the resolution becomes "one canonical page +
 
 <acceptance_criteria>
 - All 33 pages have `last_verified: 2026-05-08`.
-- Pages classified `accurate` are byte-identical aside from frontmatter.
+- Pages classified `accurate` have only the frontmatter `last_verified`
+  field modified — body content unchanged when compared with
+  `diff -B -w` (ignoring blank lines and whitespace).
 - Pages classified `needs_minor_patch` have a single `## Implementation
   delta` row added.
 - `intensity_current.md` and `carbon_intensity.md` cross-link each
@@ -176,7 +198,7 @@ aliases, the resolution becomes "one canonical page +
 ### Task 5 — Update endpoints.md
 
 <action>
-Refresh `quant-vault/30-vendors/neso/endpoints.md` to reflect all 33
+Refresh `C:\Users\Bobbo\OneDrive\Desktop\Learning\AI\quant-vault\30-vendors\neso/endpoints.md` to reflect all 33
 active routes grouped by family (intensity, generation, regional). Add
 the duplication finding from Task 2 as a footnote. Update `updated:` to
 2026-05-08.
@@ -191,7 +213,7 @@ the duplication finding from Task 2 as a footnote. Update `updated:` to
 
 <action>
 Resolve any `TODO` markers in
-`quant-vault/30-vendors/neso/README.md`. Add `## Last validation`
+`C:\Users\Bobbo\OneDrive\Desktop\Learning\AI\quant-vault\30-vendors\neso/README.md`. Add `## Last validation`
 section linking to `neso-VALIDATION.md`. Bump `updated: 2026-05-08`.
 </action>
 

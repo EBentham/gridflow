@@ -63,9 +63,10 @@ record a FAIL in `## Implementation delta` if missing.
 ### Task 1 — Pre-flight smoke test
 
 <action>
-1. Run carbonintensity smoke-test (must print 200).
-2. Hit Open-Meteo forecast: `curl --ssl-no-revoke -fsS -o /dev/null -w "%{http_code}\n" "https://api.open-meteo.com/v1/forecast?latitude=51.5&longitude=-0.1&hourly=temperature_2m"` → expect 200.
-3. Hit Open-Meteo archive: `curl --ssl-no-revoke -fsS -o /dev/null -w "%{http_code}\n" "https://archive-api.open-meteo.com/v1/archive?latitude=51.5&longitude=-0.1&start_date=2025-05-01&end_date=2025-05-07&hourly=temperature_2m"` → expect 200.
+1. `mkdir -p .tmp` (no .env copy needed — Open-Meteo is public).
+2. Run carbonintensity smoke-test (must print 200).
+3. Hit Open-Meteo forecast: `curl --ssl-no-revoke -fsS -o /dev/null -w "%{http_code}\n" "https://api.open-meteo.com/v1/forecast?latitude=51.5&longitude=-0.1&hourly=temperature_2m"` → expect 200.
+4. Hit Open-Meteo archive: `curl --ssl-no-revoke -fsS -o /dev/null -w "%{http_code}\n" "https://archive-api.open-meteo.com/v1/archive?latitude=51.5&longitude=-0.1&start_date=2025-05-01&end_date=2025-05-07&hourly=temperature_2m"` → expect 200.
 </action>
 
 <acceptance_criteria>
@@ -109,9 +110,9 @@ record a FAIL in `## Implementation delta` if missing.
 
 <action>
 1. `forecast`:
-   `curl --ssl-no-revoke -fsS "https://api.open-meteo.com/v1/forecast?latitude=51.5&longitude=-0.1&hourly=temperature_2m,wind_speed_10m,shortwave_radiation&forecast_days=2" -o /tmp/openmeteo-forecast.json -w "HTTP %{http_code} | %{size_download}B\n"`
+   `curl --ssl-no-revoke -fsS "https://api.open-meteo.com/v1/forecast?latitude=51.5&longitude=-0.1&hourly=temperature_2m,wind_speed_10m,shortwave_radiation&forecast_days=2" -o .tmp/openmeteo-forecast.json -w "HTTP %{http_code} | %{size_download}B\n"`
 2. `historical`:
-   `curl --ssl-no-revoke -fsS "https://archive-api.open-meteo.com/v1/archive?latitude=51.5&longitude=-0.1&start_date=2025-05-01&end_date=2025-05-07&hourly=temperature_2m,wind_speed_10m,shortwave_radiation" -o /tmp/openmeteo-historical.json -w "HTTP %{http_code} | %{size_download}B\n"`
+   `curl --ssl-no-revoke -fsS "https://archive-api.open-meteo.com/v1/archive?latitude=51.5&longitude=-0.1&start_date=2025-05-01&end_date=2025-05-07&hourly=temperature_2m,wind_speed_10m,shortwave_radiation" -o .tmp/openmeteo-historical.json -w "HTTP %{http_code} | %{size_download}B\n"`
 3. Verify each `hourly.time` array length matches expected
    (`2 days * 24 hours = 48` for forecast, `7 days * 24 hours = 168`
    for historical).
@@ -170,7 +171,7 @@ two-host override mechanism (or its absence — see Task 2).
 ### Task 5 — Update endpoints.md
 
 <action>
-Rewrite `quant-vault/30-vendors/open-meteo/endpoints.md` listing the
+Rewrite `C:\Users\Bobbo\OneDrive\Desktop\Learning\AI\quant-vault\30-vendors\open-meteo/endpoints.md` listing the
 two datasets with their respective hosts, paths, and parameter
 references. Update `updated: 2026-05-08`.
 </action>
@@ -184,7 +185,7 @@ references. Update `updated: 2026-05-08`.
 
 <action>
 Resolve `TODO` markers in
-`quant-vault/30-vendors/open-meteo/README.md`. Add `## Last validation`
+`C:\Users\Bobbo\OneDrive\Desktop\Learning\AI\quant-vault\30-vendors\open-meteo/README.md`. Add `## Last validation`
 section. Add a `## Naming` section explicitly documenting the
 vault/code/config name divergence. Bump `updated: 2026-05-08`.
 </action>

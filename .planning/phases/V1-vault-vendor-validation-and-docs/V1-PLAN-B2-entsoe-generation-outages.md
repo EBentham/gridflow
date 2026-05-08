@@ -39,7 +39,7 @@ outages_production (A77)
 
 ## must_haves
 
-1. 13 dataset pages under `quant-vault/30-vendors/entsoe/datasets/`.
+1. 13 dataset pages under `C:\Users\Bobbo\OneDrive\Desktop\Learning\AI\quant-vault\30-vendors\entsoe/datasets/`.
 2. Each page records the `(documentType, processType, businessType,
    area-param-name)` tuple.
 3. `entsoe-B2-VALIDATION.md` written with 13 rows.
@@ -47,7 +47,28 @@ outages_production (A77)
 ## Tasks
 
 ### Task 1 — Pre-flight smoke test
-(Identical to B1 Task 1 — see V1-PLAN-B1-entsoe-load-prices.md.)
+
+<read_first>
+- C:\Users\Bobbo\OneDrive\Desktop\Python\gridflow\.env  (source of API keys)
+- V1-CONTEXT.md
+- src/gridflow/connectors/entsoe/endpoints.py
+- V1-PLAN-B1-entsoe-load-prices.md (Task 1 reference for sanity)
+</read_first>
+
+<action>
+1. `[ -f .env ] || cp "C:/Users/Bobbo/OneDrive/Desktop/Python/gridflow/.env" .env`
+2. `mkdir -p .tmp`
+3. carbonintensity smoke-test (must print 200).
+4. Load `ENTSOE_API_KEY` from `.env`; verify non-empty.
+5. ENTSOE health: smoke-test the A44 day-ahead query (same as B1) to
+   confirm `securityToken` works. Expect 200 + `<Publication_MarketDocument>`.
+</action>
+
+<acceptance_criteria>
+- `.env` exists in worktree, `.tmp/` exists.
+- carbonintensity prints 200.
+- A44 smoke-test response contains `Publication_MarketDocument`.
+</acceptance_criteria>
 
 ### Task 2 — Read official docs and source files
 (Same files-to-read as B1 Task 2. Focus the API guide PDF read on
@@ -67,7 +88,7 @@ are sparse and a 1-day window often returns zero rows even in PASS state.
 For weekly/yearly types (A95 master data, A68/A71 installed capacity):
 use a yearly window (`periodStart=202601010000&periodEnd=202612310000`).
 
-Run each curl with `sleep 1.0` between, capture `/tmp/entsoe-<key>.xml`.
+Run each curl with `sleep 1.0` between, capture `.tmp/entsoe-<key>.xml`.
 Same PASS/EMPTY/FAIL classification as B1 Task 3.
 </action>
 
@@ -84,7 +105,7 @@ ENTSOE outage status code semantics for outage datasets, and the
 requires `psrType` filter for production-unit-level data).)
 
 <acceptance_criteria>
-- 13 files exist at `quant-vault/30-vendors/entsoe/datasets/<key>.md`.
+- 13 files exist at `C:\Users\Bobbo\OneDrive\Desktop\Learning\AI\quant-vault\30-vendors\entsoe/datasets/<key>.md`.
 - Each page contains `Document type` row and `Process type` row.
 - For outage datasets, page mentions `BusinessType` and outage status
   codes (Active, Cancelled, Withdrawn).
@@ -104,7 +125,7 @@ requires `psrType` filter for production-unit-level data).)
 
 | Check | Pass condition |
 |-------|----------------|
-| 13 dataset pages | `find quant-vault/30-vendors/entsoe/datasets -name "*.md" -newer V1-CONTEXT.md \| wc -l` ≥ 13 in this batch |
+| 13 dataset pages | `find C:\Users\Bobbo\OneDrive\Desktop\Learning\AI\quant-vault\30-vendors\entsoe/datasets -name "*.md" -newer V1-CONTEXT.md \| wc -l` ≥ 13 in this batch |
 | VALIDATION rows | 13 rows + header in B2 file |
 
 ## Deferred

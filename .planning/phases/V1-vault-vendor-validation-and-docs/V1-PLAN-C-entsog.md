@@ -73,14 +73,11 @@ aggregate_interconnections
 ### Task 1 — Pre-flight smoke test
 
 <action>
-1. Run carbonintensity smoke-test (must print 200).
-2. Hit ENTSOG public root: `curl --ssl-no-revoke -fsS -o /dev/null -w "%{http_code}\n" "https://transparency.entsog.eu/api/v1/operators?limit=5"` → expect 200.
-3. Capture one valid `pointDirection` from the operators+points response
-   for use in operationalData calls — pick a high-volume GB entry point
-   (e.g. operator `21X-GB-A-A0A0A-Z` National Grid Gas, point
-   `BACTON IUK 21Z000000000038N`, direction `entry`). If GB entry point
-   not present in response, fall back to the largest by `flowRate` from
-   the first 100 results.
+1. `mkdir -p .tmp` (no .env copy needed — ENTSOG is public).
+2. Run carbonintensity smoke-test: `curl --ssl-no-revoke -fsS -o /dev/null -w "%{http_code}\n" https://api.carbonintensity.org.uk/intensity` (must print 200).
+3. Hit ENTSOG public root: `curl --ssl-no-revoke -fsS -o /dev/null -w "%{http_code}\n" "https://transparency.entsog.eu/api/v1/operators?limit=5"` → expect 200.
+4. Capture one valid `pointDirection` from the operators+points response
+   (`curl --ssl-no-revoke -fsS "https://transparency.entsog.eu/api/v1/operatorPointDirections?limit=200" -o .tmp/entsog-opd.json -w "%{http_code}\n"`) — pick a high-volume GB entry point (e.g. operator `21X-GB-A-A0A0A-Z` National Grid Gas, point `BACTON IUK 21Z000000000038N`, direction `entry`). If GB entry point not present, fall back to the largest by `flowRate` from the first 200 results.
 </action>
 
 <acceptance_criteria>
@@ -138,7 +135,7 @@ For non-operational routes (interruptions, aggregated_physical_flows,
 tariffs, tariff_simulations, urgent_market_messages, cmp_*): use
 single-day window where time-bound.
 
-Capture `/tmp/entsog-<key>.json`. Classification:
+Capture `.tmp/entsog-<key>.json`. Classification:
 - **PASS** = HTTP 200 AND `data` array non-empty.
 - **EMPTY** = HTTP 200 AND `data` empty. Investigate by widening:
   - operationalData → expand to 30-day window once.
@@ -196,7 +193,7 @@ field-coalescing for `isCAMRelevant`/`isCamRelevant`, null-tolerant
 ### Task 5 — Update endpoints.md
 
 <action>
-Rewrite `quant-vault/30-vendors/entsog/endpoints.md` grouped by route
+Rewrite `C:\Users\Bobbo\OneDrive\Desktop\Learning\AI\quant-vault\30-vendors\entsog/endpoints.md` grouped by route
 family:
 - `### Operational data (/operationalData)` — all 19 datasets with
   Indicator column.
@@ -221,7 +218,7 @@ Each row links the dataset key to `./datasets/<key>.md`. Update
 
 <action>
 Resolve any remaining `TODO` markers in
-`quant-vault/30-vendors/entsog/README.md`:
+`C:\Users\Bobbo\OneDrive\Desktop\Learning\AI\quant-vault\30-vendors\entsog/README.md`:
 - Confirm rate limit (vendor-published or "not stated; project default").
 - Confirm status URL or note that ENTSOG does not publish a status page.
 - Confirm auth (public, no key).
