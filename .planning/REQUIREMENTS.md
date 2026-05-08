@@ -1,5 +1,20 @@
 # gridflow - Current Milestone Requirements
 
+## Milestone v0.9 Vault Vendor Validation And Docs
+
+### Vault Documentation
+
+- [ ] **V1-VAULT-01**: Each of the six active vendors has a per-dataset page at `quant-vault/30-vendors/<vendor>/datasets/<dataset_key>.md` for every active dataset in `config/sources.yaml`, using the `gridflow-dataset-spec` skill template verbatim (frontmatter, Overview, API endpoint, Working curl example, Bronze layer, Silver layer with full schema table, Implementation delta, Known gotchas).
+- [ ] **V1-VAULT-02**: Each vendor's `quant-vault/30-vendors/<vendor>/endpoints.md` is a complete quick-summary table covering every active dataset with dataset key, path, parameter style, and one-line description, grouped by parameter style or family.
+- [ ] **V1-VAULT-03**: Each vendor's `quant-vault/30-vendors/<vendor>/README.md` resolves all existing `TODO` markers (auth method, rate limit confirmation, status URL, known gotchas) against vendor docs and live API behaviour.
+- [ ] **V1-VAULT-04**: NESO existing 33 dataset pages are validated in place against live API and source code. Drift is patched, accurate content is preserved.
+
+### Live Validation
+
+- [ ] **V1-VALID-01**: Every active endpoint is hit via a live GET (or vendor-equivalent) request with reasonable parameters. Each gets PASS / FAIL / EMPTY status in `<vendor>-VALIDATION.md`.
+- [ ] **V1-VALID-02**: For every FAIL or EMPTY result, the `<vendor>-VALIDATION.md` records cause (deprecated path, wrong param name, wrong base URL, no data for window, requires filter, etc.) plus the raw curl command and HTTP status used.
+- [ ] **V1-VALID-03**: Every endpoint URL pattern in `src/gridflow/connectors/<vendor>/endpoints.py` matches the official-docs URL pattern verbatim, OR the discrepancy is recorded in the dataset page's `## Implementation delta` section. Authority hierarchy (docs > fixtures > code) is honoured — code is never silently treated as ground truth.
+
 ## Milestone v0.8 Fundamentals Model Silver Foundations
 
 ### Silver Bitemporal Contract

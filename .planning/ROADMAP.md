@@ -11,6 +11,7 @@
 - Complete **v0.6-neso-carbon-intensity-platform** - NESO Carbon Intensity Platform K1-K4 (completed 2026-05-04)
 - Complete **v0.7-gie-agsi-gas-storage-validation** - GIE AGSI Gas Storage Validation L1-L4 (completed 2026-05-04)
 - Complete **v0.8-fundamentals-model-silver-foundations** - Fundamentals Model Silver Foundations F0 (completed 2026-05-05)
+- Current **v0.9-vault-vendor-validation-and-docs** - Live-validate every active gridflow endpoint and populate `quant-vault/30-vendors/` (V1)
 
 ---
 
@@ -199,6 +200,42 @@ Close-out notes:
 2. `elexon/ndf` and `elexon/windfor` now preserve `issue_time` from publish-time metadata where present.
 3. The implementation stayed dependency-neutral with parametrized pytest coverage rather than adding Hypothesis.
 4. Historical broad re-transform is documented but not run locally because this workspace has no `data/bronze/` partitions.
+
+</details>
+
+---
+
+<details open>
+<summary>Current v0.9-vault-vendor-validation-and-docs - Live-validate every active gridflow endpoint and populate the vault (V1) - IN PROGRESS</summary>
+
+- [ ] Phase V1: Vault vendor validation and docs - planning
+
+### Phase Details
+
+**Phase V1: Vault vendor validation and docs**
+
+Goal: Live-validate every active gridflow endpoint against vendor official documentation and populate `quant-vault/30-vendors/<vendor>/` with authoritative dataset pages, endpoint summaries, README updates, and per-vendor validation reports for all six active vendors (Elexon, ENTSOE, ENTSOG, GIE AGSI, NESO, Open-Meteo).
+
+Requirements: V1-VAULT-01, V1-VAULT-02, V1-VAULT-03, V1-VAULT-04, V1-VALID-01, V1-VALID-02, V1-VALID-03
+
+Success criteria:
+1. Every active dataset in `config/sources.yaml` (Elexon 33, ENTSOE 48, ENTSOG 33, GIE AGSI 7, NESO 33, Open-Meteo 2 = 156 datasets) has a `quant-vault/30-vendors/<vendor>/datasets/<key>.md` page following the `gridflow-dataset-spec` skill template.
+2. Each vendor's `endpoints.md` is a complete quick-summary table covering all active datasets with path, param style, and one-line description.
+3. Each vendor's `README.md` has confirmed (no remaining `TODO`) values for auth method, rate limit, and known gotchas, all cross-checked against vendor docs and live API behaviour.
+4. Each vendor has a `<vendor>-VALIDATION.md` report classifying every active endpoint as PASS / FAIL / EMPTY, with cause and curl-or-respx evidence for every non-PASS case.
+5. Every endpoint URL in `src/gridflow/connectors/<vendor>/endpoints.py` matches the official-docs URL pattern verbatim (or the discrepancy is recorded in the dataset page's `## Implementation delta`).
+6. Authority hierarchy honoured: official docs > test fixtures > codebase. Doc/code conflicts logged as deltas, never silently resolved.
+
+Plans (9 parallel, single wave):
+- [ ] `V1-PLAN-A-elexon.md` - Elexon (33 datasets, 2 req/s)
+- [ ] `V1-PLAN-B1-entsoe-load-prices.md` - ENTSOE load + prices + imbalance (~11)
+- [ ] `V1-PLAN-B2-entsoe-generation-outages.md` - ENTSOE generation + outages (~13)
+- [ ] `V1-PLAN-B3-entsoe-transmission-capacity.md` - ENTSOE transmission + capacity (~18)
+- [ ] `V1-PLAN-B4-entsoe-balancing.md` - ENTSOE balancing (~8)
+- [ ] `V1-PLAN-C-entsog.md` - ENTSOG (33 datasets, public)
+- [ ] `V1-PLAN-D-gie.md` - GIE AGSI (7 endpoints, 60 calls/min, x-key header)
+- [ ] `V1-PLAN-E-neso.md` - NESO (33 datasets, validate-and-refresh-in-place)
+- [ ] `V1-PLAN-F-openmeteo.md` - Open-Meteo (2 datasets, two hosts)
 
 </details>
 
