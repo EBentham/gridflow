@@ -261,3 +261,53 @@ These apply to multiple dataset pages and are recorded once here.
 ## Blockers
 
 None.
+
+---
+
+## V2 re-validation (2026-05-09)
+
+**Fix commit:** `fix(V2-E): ENTSOG short-circuits 404+empty body; ngeso deleted`
+(SHA recorded by V2-PLAN-F aggregate close-out).
+
+### V2-FIX-07 — `@RETRY_POLICY` 404 short-circuit
+
+V1 entsog-VALIDATION Findings §1 confirmed ENTSOG returns HTTP 404
+with body `{"message":"No result found"}` as the documented empty
+convention. The pre-V2 connector decorated `_request` with
+`@RETRY_POLICY` (5 attempts on `httpx.HTTPStatusError`) and would
+retry that response 5 times before reraising — wasted budget for an
+expected vendor outcome.
+
+V2-FIX-07: `EntsogConnector._request` now inspects 404 responses; if
+the body matches the empty convention, it returns the response
+immediately without retries. Other 404s (genuine errors with a
+different body) preserve the existing `raise_for_status()` + retry
+path.
+
+**Regression tests** in
+`tests/integration/test_entsog_mocked_e2e.py::TestV2ENTSOG404ShortCircuit`:
+
+- `test_404_no_result_found_short_circuits_no_retry` — RED before
+  fix (5 requests captured); GREEN after (1 request,
+  `response.http_status == 404`).
+- `test_genuine_404_preserves_retry` — GREEN before AND after;
+  counts > 1 requests on a non-empty 404 body and confirms
+  `HTTPStatusError` is raised. Locks the no-regression contract for
+  genuine errors.
+
+### V2-TRIAGE-01 — `connectors/ngeso/` deleted
+
+V1 close-out flagged the empty placeholder package
+(`src/gridflow/connectors/ngeso/__init__.py` only). Verified
+pre-deletion: 0 imports of `gridflow.connectors.ngeso` across
+`src/`, `tests/`, `config/`. Deleted via `git rm` + `rmdir`.
+
+NGESO operational endpoints are out of current gridflow scope; if
+they become in-scope post-v0.10, a fresh package can be created
+without the now-stale placeholder ambiguity.
+
+### Vault changes
+
+- `30-vendors/entsog/README.md` "Known gotchas" — 404 short-circuit
+  bullet expanded with V2 commit reference, mechanism, and
+  pre-V2-vs-post-V2 contrast. `updated: 2026-05-09`.

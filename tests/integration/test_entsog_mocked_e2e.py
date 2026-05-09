@@ -334,3 +334,68 @@ def test_date_window_transform_filters_bronze_records_to_target_date(
         / "nominations_20260417.parquet"
     )
     assert df["id"].to_list() == ["nominations-20260417"]
+
+
+class TestV2ENTSOG404ShortCircuit:
+    """V2-FIX-07: ENTSOG vendor empty convention is HTTP 404 + body
+    `{"message":"No result found"}`. Pre-V2 the @RETRY_POLICY-decorated
+    `_request` retried 404 up to 5 times before reraising — wasted
+    budget for an expected response. Short-circuit so the call returns
+    the empty response immediately. Genuine non-empty 404s preserve
+    the existing retry path."""
+
+    @respx.mock
+    @pytest.mark.asyncio
+    async def test_404_no_result_found_short_circuits_no_retry(self) -> None:
+        requests: list[httpx.Request] = []
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            requests.append(request)
+            return httpx.Response(
+                404,
+                json={"message": "No result found"},
+                headers={"content-type": "application/json"},
+            )
+
+        respx.get(re.compile(rf"^{re.escape(BASE_URL)}/.*")).mock(
+            side_effect=handler
+        )
+
+        async with EntsogConnector(_entsog_config()) as connector:
+            responses = await connector.fetch(
+                "methane_content", START, END, limit=1
+            )
+
+        assert len(requests) == 1, (
+            f"expected exactly 1 request for vendor empty convention; "
+            f"got {len(requests)} — RETRY_POLICY did not short-circuit"
+        )
+        assert len(responses) == 1
+        assert responses[0].http_status == 404
+
+    @respx.mock
+    @pytest.mark.asyncio
+    async def test_genuine_404_preserves_retry(self) -> None:
+        """A 404 with a different message is treated as a real error
+        and goes through the existing retry+raise path."""
+        requests: list[httpx.Request] = []
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            requests.append(request)
+            return httpx.Response(
+                404,
+                json={"message": "Endpoint not found"},
+                headers={"content-type": "application/json"},
+            )
+
+        respx.get(re.compile(rf"^{re.escape(BASE_URL)}/.*")).mock(
+            side_effect=handler
+        )
+
+        async with EntsogConnector(_entsog_config()) as connector:
+            with pytest.raises(httpx.HTTPStatusError):
+                await connector.fetch("methane_content", START, END, limit=1)
+
+        assert len(requests) > 1, (
+            f"expected retries for non-empty 404; got {len(requests)}"
+        )
