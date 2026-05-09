@@ -12,6 +12,7 @@
 - Complete **v0.7-gie-agsi-gas-storage-validation** - GIE AGSI Gas Storage Validation L1-L4 (completed 2026-05-04)
 - Complete **v0.8-fundamentals-model-silver-foundations** - Fundamentals Model Silver Foundations F0 (completed 2026-05-05)
 - Complete **v0.9-vault-vendor-validation-and-docs** - Live-validate every active gridflow endpoint and populate `quant-vault/30-vendors/` V1 (completed 2026-05-08)
+- Current **v0.10-v1-vendor-bugfix-followups** - Fix the production bugs surfaced (but not patched) by V1 across Elexon, NESO, ENTSOE, ENTSOG (V2)
 
 ---
 
@@ -237,6 +238,40 @@ Plans (9 in wave 1 + 1 aggregation in wave 2):
 - [x] `V1-PLAN-D-gie.md` - GIE AGSI (7 endpoints, 60 calls/min, x-key header) — 7 PASS / 0 EMPTY / 0 FAIL
 - [x] `V1-PLAN-E-neso.md` - NESO (33 datasets, validate-and-refresh-in-place) — 33 PASS / 0 EMPTY / 0 FAIL
 - [x] `V1-PLAN-F-openmeteo.md` - Open-Meteo (2 datasets, two hosts verified) — 2 PASS / 0 EMPTY / 0 FAIL
+
+</details>
+
+---
+
+<details open>
+<summary>Current v0.10-v1-vendor-bugfix-followups - Fix V1-surfaced production bugs (V2) - IN PLANNING 2026-05-09</summary>
+
+- [ ] Phase V2: V1 vendor bug-fix follow-ups - in planning 2026-05-09
+
+### Phase Details
+
+**Phase V2: V1 vendor bug-fix follow-ups**
+
+Goal: Fix the production code bugs surfaced (but explicitly out of scope) by Phase V1 — Elexon `freq` parameter-name mismatch, NESO `_rows_from_region_period` field-level bug for period-keyed regional payloads, plus medium and low-severity follow-ups across Elexon, ENTSOE, and ENTSOG. Re-validate every fixed dataset live against the same vendor APIs V1 used. Update vault dataset pages, V1 VALIDATION reports, and silver fixtures only where a fix invalidates them.
+
+Requirements: V2-FIX-01 (Elexon `freq` window), V2-FIX-02 (NESO regional carbon/mix), V2-FIX-03 (Elexon REMIT/SOSO 1-day cap), V2-FIX-04 (Elexon `system_prices.run_type` accepts `N`), V2-FIX-05 (ENTSOE A09 commercial_schedules registry dedup), V2-FIX-06 (ENTSOE B2 cleanup batch — A37/A15 pagination, A87 schedule + silver Reason.code, area_name + psrType + DEFAULT_ZONES hygiene), V2-FIX-07 (ENTSOG `@RETRY_POLICY` 404 short-circuit), V2-TRIAGE-01 (`connectors/ngeso/` empty placeholder)
+
+Success criteria:
+1. Every HIGH-severity bug from the V1 cross-vendor recommendations has a code fix on `master` (or an explicit `wontfix` ADR), with at least one regression test that would have caught the bug.
+2. Every MEDIUM-severity bug from the V1 recommendations has a code fix or an explicit `defer` decision recorded in `docs/DECISION_LOG/`.
+3. Every LOW-severity bug from the V1 recommendations has a code fix or a backlog row in `.planning/ROADMAP.md` Backlog section.
+4. Each fixed dataset is re-validated live against the same vendor API V1 used, with curl evidence and PASS/EMPTY/FAIL classification appended to the relevant V1 `<vendor>-VALIDATION.md` report under a `## V2 re-validation` section.
+5. The Avast `curl --ssl-no-revoke` workaround documented in V1-CONTEXT.md continues to be used verbatim for all live calls — no Python `httpx` direct calls.
+6. `uv run pytest -x -q` passes locally on the worktree before V2 is closed.
+
+Plans (2 in wave 1 — HIGH bugs, parallel · 3 in wave 2 — MED/LOW bundles, parallel · 1 in wave 3 — close-out aggregator):
+
+- [ ] `V2-PLAN-A-elexon-freq-fix.md` - Wave 1 - Override `from_param` / `to_param` on `ENDPOINTS["freq"]` to `measurementDateTimeFrom` / `measurementDateTimeTo`; add regression test that sends a known-narrow window and asserts response time-window matches the request, not "latest 5761 samples".
+- [ ] `V2-PLAN-B-neso-region-period-fields.md` - Wave 1 - Patch `silver/neso/carbon_intensity.py::_rows_from_region_period` to read `intensity` and `generationmix` from whichever level (region or period) holds the data. Affects 5 period-keyed datasets — `regional_current`, `regional_intensity_fw24h`, `regional_intensity_fw48h`, `regional_intensity_pt24h`, `regional_intensity`.
+- [ ] `V2-PLAN-C-elexon-misc.md` - Wave 2 - Cap `remit` and `soso` `max_chunk_hours = 23` to honour the undocumented vendor 1-day cap; expand the `system_prices.run_type` regex (and `SettlementRunType` enum) to accept the live-observed `N` derivation code, after live-confirming what `N` denotes.
+- [ ] `V2-PLAN-D-entsoe-cleanup.md` - Wave 2 - Resolve A09 `commercial_schedules` / `commercial_schedules_net_positions` registry duplication (drop one key, or rewrite the net-positions transformer to derive a real signed `net_position_mw`); B2 cleanup batch — A37/A15 pagination iteration, A87 schedule cadence, A87 silver `Reason.code` exposure, `area_name` field population, `psrType` in `optional_params`, `DEFAULT_ZONES` GB/EU bias review.
+- [ ] `V2-PLAN-E-entsog-and-ngeso.md` - Wave 2 - Short-circuit HTTP 404 + body `{"message":"No result found"}` in `EntsogConnector._request` so `@RETRY_POLICY` does not waste retry budget on the documented empty convention. Triage `connectors/ngeso/` (empty placeholder besides `__init__.py`) — either delete or open a tracking ADR; flagged in V1 close-out.
+- [ ] `V2-PLAN-F-aggregate.md` - Wave 3 - Author consolidated `V2-VALIDATION.md`, append re-validation rows to V1's per-vendor VALIDATION reports, update `.planning/STATE.md`, update `.planning/ROADMAP.md` Backlog section to remove items absorbed into V2 fixes.
 
 </details>
 

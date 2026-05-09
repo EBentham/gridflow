@@ -1,15 +1,67 @@
 ---
-milestone: v0.9
-milestone_name: Vault Vendor Validation And Docs
-status: complete
+milestone: v0.10
+milestone_name: V1 Vendor Bug-fix Follow-ups
+status: in_planning
 progress:
   phases_total: 1
-  phases_complete: 1
-  plans_total: 10
-  plans_complete: 10
+  phases_complete: 0
+  plans_total: 6
+  plans_complete: 0
 ---
 
 ## Current Position
+
+Phase V2 plans authored on `claude/lucid-mccarthy-9ed3e0` (worktree),
+2026-05-09. V2 is the bug-fix follow-up to V1: production code fixes
+for the Implementation deltas surfaced (but explicitly out of scope)
+during V1 live validation.
+
+V2 ships 6 plans across 3 waves:
+
+- **Wave 1 (HIGH severity, parallel):**
+  - `V2-PLAN-A-elexon-freq-fix` — override `from_param` /
+    `to_param` on `ENDPOINTS["freq"]` to `measurementDateTimeFrom` /
+    `measurementDateTimeTo`. Without the fix, the API silently
+    ignores the wrong-named params and returns latest 5761 samples
+    regardless of window.
+  - `V2-PLAN-B-neso-region-period-fields` — patch
+    `silver/neso/carbon_intensity.py::_rows_from_region_period` to
+    read `intensity` and `generationmix` from whichever of `region`
+    or `period` holds the data. Affects 5 datasets:
+    `regional_current`, `regional_intensity_fw24h`,
+    `regional_intensity_fw48h`, `regional_intensity_pt24h`,
+    `regional_intensity`.
+
+- **Wave 2 (MED + LOW severity, parallel):**
+  - `V2-PLAN-C-elexon-misc` — set `max_chunk_hours=23` on
+    `remit` / `soso` to honour the undocumented vendor 1-day cap;
+    expand `ElexonSystemPrice.run_type` regex (and enum) to admit the
+    live-observed `priceDerivationCode = "N"` after live-confirming
+    the value list.
+  - `V2-PLAN-D-entsoe-cleanup` — ADR-019 to drop
+    `commercial_schedules_net_positions` (registry duplicate of
+    `commercial_schedules`); B2 cleanup batch (A37/A15 pagination,
+    A87 schedule cadence + silver `Reason.code`, `area_name`,
+    `psrType`, `DEFAULT_ZONES`).
+  - `V2-PLAN-E-entsog-and-ngeso` — short-circuit
+    HTTP 404 + body `{"message":"No result found"}` in
+    `EntsogConnector._request` so `@RETRY_POLICY` does not waste
+    retry budget on the documented empty convention; triage
+    (default: delete) the empty `connectors/ngeso/` placeholder.
+
+- **Wave 3 (close-out aggregator):**
+  - `V2-PLAN-F-aggregate` — `V2-VALIDATION.md`,
+    re-validation-row sanity checks against V1 per-vendor reports,
+    STATE + ROADMAP updates, backlog absorption.
+
+V1 already shipped 5 commits ahead of master on this worktree
+branch and has not been merged. V2 commits build on top with
+`fix(V2-X):` prefixes.
+
+The Avast `curl --ssl-no-revoke` workaround locked in V1-CONTEXT.md
+applies to every V2 live re-validation curl.
+
+## Prior milestone
 
 Phase V1 complete on `claude/lucid-mccarthy-9ed3e0` (worktree).
 
