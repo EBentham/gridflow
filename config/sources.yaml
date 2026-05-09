@@ -278,10 +278,9 @@ sources:
         document_type: "A09"
         schedule: "daily"
         max_query_days: 365
-      commercial_schedules_net_positions:
-        document_type: "A09"
-        schedule: "daily"
-        max_query_days: 365
+      # commercial_schedules_net_positions removed in V2 (ADR-019):
+      # registry-duplicate of commercial_schedules. See
+      # docs/DECISION_LOG/ADR-019-entsoe-a09-dedup.md.
       redispatching_cross_border:
         document_type: "A63"
         schedule: "daily"
@@ -378,9 +377,11 @@ sources:
         schedule: "daily"
         max_query_days: 1
       balancing_financial_expenses_income:
+        # Real publication cadence is monthly (per V1 entsoe-VALIDATION
+        # Recommendation §7); daily/1d wasted live calls before V2.
         document_type: "A87"
-        schedule: "daily"
-        max_query_days: 1
+        schedule: "monthly"
+        max_query_days: 31
 
   gie_agsi:
     base_url: "https://agsi.gie.eu"

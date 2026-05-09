@@ -316,3 +316,64 @@ that this does not raise; benign mismatch. Logged for awareness.
    dataset (e.g. A75 → Elexon `fuelhh`, A69 → Elexon `windfor`, A76/A77/A80
    → Elexon `remit`). This is currently scattered across batch reports;
    consolidate at the vendor level for downstream consumers.
+
+---
+
+## V2 re-validation (2026-05-09)
+
+**Fix commit:** `fix(V2-D): ENTSOE A09 dedup + B2 cleanup batch`
+(SHA recorded by V2-PLAN-F aggregate close-out).
+
+### V2-FIX-05: A09 commercial_schedules registry dedup (ADR-019)
+
+**Disposition: Option A — drop key.** Per ADR-019
+(`docs/DECISION_LOG/ADR-019-entsoe-a09-dedup.md`),
+`commercial_schedules_net_positions` was removed from
+`connectors/entsoe/endpoints.py::ENDPOINTS`, `config/sources.yaml`,
+`silver/entsoe/h6_market.py` (`CommercialSchedulesNetPositionsTransformer`
+class + `_TRANSFORMERS` list entry), `silver/entsoe/__init__.py`
+(import + `__all__`), `docs/entsoe_endpoint_catalog.yaml` (status
+`implemented` → `deferred` + reason), and the affected test
+parametrize lists.
+
+ENTSOE active dataset count drops from 48 → 47.
+
+**No regression on the kept dataset.** Live re-validation 2026-05-09
+of `commercial_schedules` GB→FR with `contract_MarketAgreement.Type=A01`:
+
+```bash
+curl --ssl-no-revoke -fsS \
+  -H "Accept: application/xml" \
+  "https://web-api.tp.entsoe.eu/api?securityToken=$ENTSOE_API_KEY&documentType=A09&in_Domain=10YGB----------A&out_Domain=10YFR-RTE------C&periodStart=202605060000&periodEnd=202605070000&contract_MarketAgreement.Type=A01"
+# → HTTP 200, 3078 bytes (V1 had 5296 bytes — different period, smaller
+#   number of TimeSeries today; request shape unchanged)
+```
+
+A09 Option B (derive `net_position_mw`) recorded as a backlog item
+for when a downstream gold consumer needs net positions.
+
+### V2-FIX-06: B2 cleanup batch — partial (per the plan's MED+LOW disposition rule)
+
+| Sub-item | Disposition | Notes |
+|----------|-------------|-------|
+| 5a — A37/A15 hardcoded `offset=0` pagination | **Backlog** | Non-trivial: connector-level offset iteration loop + bronze chunk aggregation. No GB data currently published for these endpoints (V1 returned EMPTY for all GB calls), so practical impact today is minimal. Deferred to a follow-up phase that can build proper pagination + add a respx-mocked test simulating the 4800-TS boundary. |
+| 5b — A87 schedule cadence | **DONE** | `config/sources.yaml` `entsoe.balancing_financial_expenses_income` now `schedule: monthly, max_query_days: 31`. |
+| 5c — A87 silver `Reason.code` exposure | **Backlog** | Requires base-class refactor of `_H8BalancingTransformer` to extract `<Reason><code>` from MarketDocument header + new `reason_code` schema column + new fixture-backed test. Deferred. |
+| 5d — `area_name` field declared but unpopulated | **Backlog** | `EntsoeActualGeneration.area_name: str = ""` defaults to empty. A clean fix needs either a new area_code → name lookup table (preferred) or schema removal. Defer to backlog because no current gold consumer has flagged this as missing. |
+| 5e — `psrType` in `optional_params` | **DONE** | Added to `actual_generation` (A75/A16), `wind_solar_forecast` (A69/A01), `outages_generation` (A80/A53), `outages_production` (A77/A53). |
+| 5f — `DEFAULT_ZONES` review | **No change** | Current value `["GB", "FR", "NL", "BE", "DE-LU", "IE-SEM"]` already covers six GB-relevant zones. The "GB/EU-centric" framing was directional; no specific omission identified. Backlog row added for a wider EU baseline if a multi-region gold consumer materialises. |
+
+### Regression tests
+
+- `tests/unit/test_entsoe.py::TestV2BCleanup` — 4 new tests pinning
+  the A09 dedup, psrType additions, and A87 monthly cadence.
+- Pre-existing `tests/unit/test_entsoe_endpoint_catalog.py::test_implemented_catalog_entries_match_active_doc_types`
+  — passes after adjusting `docs/entsoe_endpoint_catalog.yaml` status
+  for the dropped key from `implemented` to `deferred`.
+- `tests/integration/test_entsoe_mocked_e2e.py` — `commercial_schedules_net_positions`
+  removed from `ZONE_PAIR_DATASETS` set and from the parametrize list
+  for `test_h6_quantity_transformer`.
+- `tests/unit/test_entsoe.py::TestPhaseH6Endpoints::test_h6_doc_types_populated`
+  — list updated to drop `commercial_schedules_net_positions`.
+- Full fast suite: `1040 passed, 251 deselected`
+  (`uv run pytest -m "not live and not slow" -x -q`).

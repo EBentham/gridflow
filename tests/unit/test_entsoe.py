@@ -2242,7 +2242,7 @@ class TestPhaseH6Endpoints:
         for name in (
             "dc_link_intraday_transfer_limits",
             "commercial_schedules",
-            "commercial_schedules_net_positions",
+            # commercial_schedules_net_positions removed in V2 (ADR-019)
             "redispatching_cross_border",
             "redispatching_internal",
             "countertrading",
@@ -2280,6 +2280,43 @@ class TestPhaseH6Endpoints:
             "businessType": "B07",
             "contract_MarketAgreement.Type": "A01",
         }
+
+
+class TestV2BCleanup:
+    """V2-FIX-06 — partial B2 cleanup batch.
+
+    These tests pin the changes that landed in V2-PLAN-D. Other items
+    (A37/A15 pagination iteration, A87 silver Reason.code exposure,
+    area_name field population, DEFAULT_ZONES expansion) were
+    explicitly deferred to backlog with rationale recorded in
+    V2-VALIDATION.md and ROADMAP.md."""
+
+    def test_a09_commercial_schedules_net_positions_dropped(self):
+        """ADR-019: registry-duplicate of commercial_schedules removed."""
+        assert "commercial_schedules_net_positions" not in DOC_TYPES
+        assert "commercial_schedules" in DOC_TYPES
+
+    def test_psrType_optional_for_actual_generation_and_wind_solar(self):
+        """V2-FIX-06 / 5e: psrType is a per-fuel filter widely accepted
+        on generation endpoints; was missing from optional_params."""
+        assert "psrType" in DOC_TYPES["actual_generation"].optional_params
+        assert "psrType" in DOC_TYPES["wind_solar_forecast"].optional_params
+
+    def test_psrType_optional_for_outages_generation_and_production(self):
+        """psrType also accepted on outage endpoints."""
+        assert "psrType" in DOC_TYPES["outages_generation"].optional_params
+        assert "psrType" in DOC_TYPES["outages_production"].optional_params
+
+    def test_a87_balancing_financial_schedule_monthly(self):
+        """V2-FIX-06 / 5b: real publication cadence is monthly; pre-V2
+        was 'daily, max_query_days: 1' which wasted live calls."""
+        from gridflow.config.settings import load_settings
+
+        cfg = load_settings().get_source_config("entsoe").datasets[
+            "balancing_financial_expenses_income"
+        ]
+        assert cfg.schedule == "monthly"
+        assert cfg.max_query_days == 31
 
 
 class TestPhaseH6Parser:

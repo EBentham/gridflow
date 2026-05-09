@@ -35,10 +35,14 @@ DOC_TYPES: dict[str, EntsoeDocType] = {
         "A65", "A01", "Day-ahead load forecast", domain_style="out_bidding_zone"
     ),
     "actual_generation": EntsoeDocType(
-        "A75", "A16", "Actual generation per production type", domain_style="in_domain"
+        "A75", "A16", "Actual generation per production type",
+        domain_style="in_domain",
+        optional_params=("psrType",),
     ),
     "wind_solar_forecast": EntsoeDocType(
-        "A69", "A01", "Day-ahead wind / solar forecast", domain_style="in_domain"
+        "A69", "A01", "Day-ahead wind / solar forecast",
+        domain_style="in_domain",
+        optional_params=("psrType",),
     ),
     "cross_border_flows": EntsoeDocType(
         "A11", None, "Physical cross-border flows", domain_style="zone_pair"
@@ -49,7 +53,7 @@ DOC_TYPES: dict[str, EntsoeDocType] = {
         "Unavailability of generation units",
         domain_style="bidding_zone",
         extra_params={"BusinessType": "A53"},
-        optional_params=("DocStatus", "mRID", "RegisteredResource"),
+        optional_params=("DocStatus", "mRID", "RegisteredResource", "psrType"),
     ),
     "outages_consumption": EntsoeDocType(
         "A76",
@@ -81,7 +85,7 @@ DOC_TYPES: dict[str, EntsoeDocType] = {
         "Unavailability of production units",
         domain_style="bidding_zone",
         extra_params={"BusinessType": "A53"},
-        optional_params=("DocStatus", "mRID", "RegisteredResource"),
+        optional_params=("DocStatus", "mRID", "RegisteredResource", "psrType"),
     ),
     "installed_capacity": EntsoeDocType(
         "A68", "A33", "Installed generation capacity", domain_style="in_domain"
@@ -148,13 +152,11 @@ DOC_TYPES: dict[str, EntsoeDocType] = {
         domain_style="zone_pair",
         optional_params=("contract_MarketAgreement.Type",),
     ),
-    "commercial_schedules_net_positions": EntsoeDocType(
-        "A09",
-        None,
-        "Commercial schedules - net positions",
-        domain_style="zone_pair",
-        optional_params=("contract_MarketAgreement.Type",),
-    ),
+    # `commercial_schedules_net_positions` was removed in V2 (ADR-019):
+    # registry-duplicate of commercial_schedules — identical EntsoeDocType,
+    # identical XML at request time. A future signed `net_position_mw`
+    # dataset could be derived by pairing zone-pair directions, but no
+    # current consumer needs it.
     "redispatching_cross_border": EntsoeDocType(
         "A63",
         None,

@@ -27,7 +27,6 @@ from gridflow.silver.entsoe.generation_units_master_data import (
 )
 from gridflow.silver.entsoe.h6_market import (
     AuctionRevenueTransformer,
-    CommercialSchedulesNetPositionsTransformer,
     CommercialSchedulesTransformer,
     CongestionIncomeTransformer,
     CongestionManagementCostsTransformer,
@@ -71,7 +70,7 @@ END = datetime(2024, 1, 16, tzinfo=UTC)
 ZONE_PAIR_DATASETS = {
     "auction_revenue",
     "commercial_schedules",
-    "commercial_schedules_net_positions",
+    # commercial_schedules_net_positions removed in V2 (ADR-019)
     "congestion_income",
     "countertrading",
     "cross_border_flows",
@@ -527,13 +526,7 @@ class TestEntsoeBronzeToSilverPipeline:
                 {"timestamp_utc", "in_area_code", "out_area_code", "quantity_mw"},
                 id="commercial_schedules",
             ),
-            pytest.param(
-                "commercial_schedules_net_positions",
-                "h6_market_quantity_gb_fr.xml",
-                CommercialSchedulesNetPositionsTransformer,
-                {"timestamp_utc", "in_area_code", "out_area_code", "quantity_mw"},
-                id="commercial_schedules_net_positions",
-            ),
+            # commercial_schedules_net_positions removed in V2 (ADR-019)
             pytest.param(
                 "redispatching_cross_border",
                 "h6_market_quantity_gb_fr.xml",
