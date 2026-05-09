@@ -13,6 +13,7 @@
 - Complete **v0.8-fundamentals-model-silver-foundations** - Fundamentals Model Silver Foundations F0 (completed 2026-05-05)
 - Complete **v0.9-vault-vendor-validation-and-docs** - Live-validate every active gridflow endpoint and populate `quant-vault/30-vendors/` V1 (completed 2026-05-08)
 - Complete **v0.10-v1-vendor-bugfix-followups** - Fix the production bugs surfaced (but not patched) by V1 across Elexon, NESO, ENTSOE, ENTSOG (V2) (completed 2026-05-09)
+- Current **v0.11-open-meteo-renewable-extension** - Extend Open-Meteo connector for wind/solar forecasting (F7.5)
 
 ---
 
@@ -277,6 +278,41 @@ Plans (2 in wave 1 — HIGH bugs, parallel · 3 in wave 2 — MED/LOW bundles, p
 
 ---
 
+<details open>
+<summary>Current v0.11-open-meteo-renewable-extension - Open-Meteo Connector Extension for Renewable Forecasting (F7.5) - PLANNED 2026-05-09</summary>
+
+- [ ] Phase F7.5: Open-Meteo connector extension for wind/solar forecasting
+
+### Phase Details
+
+**Phase F7.5: Open-Meteo Connector Extension for Renewable Forecasting**
+
+Depends on: F0 (bitemporal pattern in `BaseSilverTransformer` — already on master)
+
+Goal: Extend the Open-Meteo bronze and silver layers to provide the variable set and spatial coverage required for production-grade UK wind and solar forecasting downstream. After F7.5, silver carries hub-height wind (10m + 100m, archive-verified), full irradiance components (GHI/DNI/DHI/GTI), cloud-cover decomposition, and snow variables; locations split into capacity-weighted wind (12 sites) and solar (6 sites) lists alongside the existing 7 demand population centres. Workstream C (15-min/AROME forecast resolution) is deferred to backlog pending AROME 2026 boundary verification.
+
+Requirements:
+- F7.5-VARS-01: Hub-height wind (`wind_speed_100m`, `wind_direction_100m`) added to wind dataset; archive limited to 10m+100m (verified 2026-05-09 against ERA5: 80/120/180m return all-null undefined units); forecast variable list permits wider hub heights and lets the API null-degrade fields the underlying model lacks.
+- F7.5-VARS-02: Wind gusts at 10m (`wind_gusts_10m`) added to wind dataset.
+- F7.5-VARS-03: Solar dataset adds `direct_radiation`, `direct_normal_irradiance`, `diffuse_radiation`, `global_tilted_irradiance` alongside existing `shortwave_radiation` (GHI). GTI request includes `tilt=35&azimuth=180` query params (UK fixed-tilt rep geometry).
+- F7.5-VARS-04: Wind and solar datasets include `cloud_cover` plus `cloud_cover_low`, `cloud_cover_mid`, `cloud_cover_high`.
+- F7.5-VARS-05: Demand and solar datasets gain `snowfall`, `snow_depth`. Wind dataset gains `dew_point_2m` (icing risk).
+- F7.5-VARS-06: Silver transformers derive `air_density_kg_m3` from ideal-gas law (`ρ = P / (287.05 * T_K)`) for any dataset that fetches `surface_pressure` and `temperature_2m`.
+- F7.5-LOC-01: `WIND_LOCATIONS` covers 12 capacity-weighted GB wind sites: Dogger Bank, Hornsea, East Anglia, Triton Knoll, Walney, Gwynt y Môr, Beatrice, Seagreen, Highland Central, Borders Crystal Rig, Whitelee, Pen y Cymoedd.
+- F7.5-LOC-02: `SOLAR_LOCATIONS` covers 6 capacity-weighted GB solar sites: East Anglia (Norfolk), Wiltshire/Somerset, Kent, Cornwall, Sussex, Oxfordshire.
+- F7.5-LOC-03: `DEMAND_LOCATIONS` preserves the existing 7 UK population centres unchanged (London, Birmingham, Manchester, Leeds, Glasgow, Cardiff, Belfast).
+- F7.5-LOC-04: Per-location bronze dataset names use `f"{dataset}__{loc.name}"` (double underscore) to disambiguate parsing of multi-word location names.
+- F7.5-MIG-01: `DATASET_VERSION` bumps from 1.0.0 → 2.0.0 on all openmeteo silver transformers; existing dataset names `historical` and `forecast` are renamed to `historical_demand` and `forecast_demand` (hard rename — no on-disk silver to migrate per STATE.md). Re-ingest commands documented in F7.5-RESULTS.md.
+- F7.5-COMPAT-01: Existing tests `tests/unit/test_openmeteo.py`, `tests/unit/test_bitemporal_columns.py`, and `tests/endpoints/test_endpoint_urls.py` are updated to the new dataset naming and continue to pass; the `historical_london` bronze fixture is renamed/copied as `historical_demand__london`.
+- F7.5-VAULT-01: `quant-vault/30-vendors/open-meteo/README.md`, `endpoints.md`, and the dataset pages reflect the six new datasets, the three location lists, and the archive 10m+100m limitation.
+
+Plans (1 wave, sequential within wave):
+- [ ] `F7.5-01-PLAN.md` - Connector + endpoints refactor + silver schema split + transformer split + config + tests + vault docs
+
+</details>
+
+---
+
 ## Backlog
 
 | Item | Source | Notes |
@@ -300,3 +336,6 @@ Plans (2 in wave 1 — HIGH bugs, parallel · 3 in wave 2 — MED/LOW bundles, p
 | ENTSOE GB pre-Brexit window re-validation | V1 entsoe-VALIDATION Recommendations §2 | Distinguish "permanently not published" from "publication-lag" via 2019/2020 GB window |
 | Vault directory rename `open-meteo` → `openmeteo` | V1 V0.7 deferred | Backlog, unchanged |
 | Project-wide ruff baseline cleanup | v0.10 V2 observation | ~83 pre-existing warnings (TC003, UP042, UP017) tolerated today; would clean up on a focused chore branch |
+| Open-Meteo `minutely_15` forecast resolution (Workstream C) | v0.11 F7.5 scoping | Deferred at F7.5 plan stage — gated on AROME 2026 northern-boundary verification from Open-Meteo model coverage docs. Useful only for AROME-covered locations (broadly south of ~53°N); outside that footprint Open-Meteo interpolates from hourly so the 15-min file would mislead consumers. Revisit when conformal-prediction-grade features are needed. |
+| Open-Meteo ensemble endpoint (`/v1/ensemble`) | F7.5 follow-up plan section | ~30 perturbed forecast members per call as direct-conditional features for conformal prediction (per-issuance ensemble spread = calibrated uncertainty proxy MAPIE can consume). Out of scope at F7.5; consider once F7.5 silver is producing residuals downstream. |
+| Open-Meteo wind/solar bronze backfill 2018-2025 | v0.11 F7.5 execution | F7.5 sets up the schema and request shapes but the historical backfill (~52K location-days for wind+solar) requires explicit user-confirmed live ingestion. Re-ingest commands are documented in F7.5-RESULTS.md and only run on user request. |
