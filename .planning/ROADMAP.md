@@ -12,7 +12,7 @@
 - Complete **v0.7-gie-agsi-gas-storage-validation** - GIE AGSI Gas Storage Validation L1-L4 (completed 2026-05-04)
 - Complete **v0.8-fundamentals-model-silver-foundations** - Fundamentals Model Silver Foundations F0 (completed 2026-05-05)
 - Complete **v0.9-vault-vendor-validation-and-docs** - Live-validate every active gridflow endpoint and populate `quant-vault/30-vendors/` V1 (completed 2026-05-08)
-- Current **v0.10-v1-vendor-bugfix-followups** - Fix the production bugs surfaced (but not patched) by V1 across Elexon, NESO, ENTSOE, ENTSOG (V2)
+- Complete **v0.10-v1-vendor-bugfix-followups** - Fix the production bugs surfaced (but not patched) by V1 across Elexon, NESO, ENTSOE, ENTSOG (V2) (completed 2026-05-09)
 
 ---
 
@@ -243,10 +243,10 @@ Plans (9 in wave 1 + 1 aggregation in wave 2):
 
 ---
 
-<details open>
-<summary>Current v0.10-v1-vendor-bugfix-followups - Fix V1-surfaced production bugs (V2) - IN PLANNING 2026-05-09</summary>
+<details>
+<summary>Complete v0.10-v1-vendor-bugfix-followups - Fix V1-surfaced production bugs (V2) - COMPLETED 2026-05-09</summary>
 
-- [ ] Phase V2: V1 vendor bug-fix follow-ups - in planning 2026-05-09
+- [x] Phase V2: V1 vendor bug-fix follow-ups - completed 2026-05-09
 
 ### Phase Details
 
@@ -266,12 +266,12 @@ Success criteria:
 
 Plans (2 in wave 1 — HIGH bugs, parallel · 3 in wave 2 — MED/LOW bundles, parallel · 1 in wave 3 — close-out aggregator):
 
-- [ ] `V2-PLAN-A-elexon-freq-fix.md` - Wave 1 - Override `from_param` / `to_param` on `ENDPOINTS["freq"]` to `measurementDateTimeFrom` / `measurementDateTimeTo`; add regression test that sends a known-narrow window and asserts response time-window matches the request, not "latest 5761 samples".
-- [ ] `V2-PLAN-B-neso-region-period-fields.md` - Wave 1 - Patch `silver/neso/carbon_intensity.py::_rows_from_region_period` to read `intensity` and `generationmix` from whichever level (region or period) holds the data. Affects 5 period-keyed datasets — `regional_current`, `regional_intensity_fw24h`, `regional_intensity_fw48h`, `regional_intensity_pt24h`, `regional_intensity`.
-- [ ] `V2-PLAN-C-elexon-misc.md` - Wave 2 - Cap `remit` and `soso` `max_chunk_hours = 23` to honour the undocumented vendor 1-day cap; expand the `system_prices.run_type` regex (and `SettlementRunType` enum) to accept the live-observed `N` derivation code, after live-confirming what `N` denotes.
-- [ ] `V2-PLAN-D-entsoe-cleanup.md` - Wave 2 - Resolve A09 `commercial_schedules` / `commercial_schedules_net_positions` registry duplication (drop one key, or rewrite the net-positions transformer to derive a real signed `net_position_mw`); B2 cleanup batch — A37/A15 pagination iteration, A87 schedule cadence, A87 silver `Reason.code` exposure, `area_name` field population, `psrType` in `optional_params`, `DEFAULT_ZONES` GB/EU bias review.
-- [ ] `V2-PLAN-E-entsog-and-ngeso.md` - Wave 2 - Short-circuit HTTP 404 + body `{"message":"No result found"}` in `EntsogConnector._request` so `@RETRY_POLICY` does not waste retry budget on the documented empty convention. Triage `connectors/ngeso/` (empty placeholder besides `__init__.py`) — either delete or open a tracking ADR; flagged in V1 close-out.
-- [ ] `V2-PLAN-F-aggregate.md` - Wave 3 - Author consolidated `V2-VALIDATION.md`, append re-validation rows to V1's per-vendor VALIDATION reports, update `.planning/STATE.md`, update `.planning/ROADMAP.md` Backlog section to remove items absorbed into V2 fixes.
+- [x] `V2-PLAN-A-elexon-freq-fix.md` - Wave 1 - Override `from_param` / `to_param` on `ENDPOINTS["freq"]` to `measurementDateTimeFrom` / `measurementDateTimeTo`; add regression test that sends a known-narrow window and asserts response time-window matches the request, not "latest 5761 samples".
+- [x] `V2-PLAN-B-neso-region-period-fields.md` - Wave 1 - Patch `silver/neso/carbon_intensity.py::_rows_from_region_period` to read `intensity` and `generationmix` from whichever level (region or period) holds the data. Affects 5 period-keyed datasets — `regional_current`, `regional_intensity_fw24h`, `regional_intensity_fw48h`, `regional_intensity_pt24h`, `regional_intensity`.
+- [x] `V2-PLAN-C-elexon-misc.md` - Wave 2 - Cap `remit` and `soso` `max_chunk_hours = 23` to honour the undocumented vendor 1-day cap; expand the `system_prices.run_type` regex (and `SettlementRunType` enum) to accept the live-observed `N` derivation code, after live-confirming what `N` denotes.
+- [x] `V2-PLAN-D-entsoe-cleanup.md` - Wave 2 - Resolve A09 `commercial_schedules` / `commercial_schedules_net_positions` registry duplication (drop one key, or rewrite the net-positions transformer to derive a real signed `net_position_mw`); B2 cleanup batch — A37/A15 pagination iteration, A87 schedule cadence, A87 silver `Reason.code` exposure, `area_name` field population, `psrType` in `optional_params`, `DEFAULT_ZONES` GB/EU bias review.
+- [x] `V2-PLAN-E-entsog-and-ngeso.md` - Wave 2 - Short-circuit HTTP 404 + body `{"message":"No result found"}` in `EntsogConnector._request` so `@RETRY_POLICY` does not waste retry budget on the documented empty convention. Triage `connectors/ngeso/` (empty placeholder besides `__init__.py`) — either delete or open a tracking ADR; flagged in V1 close-out.
+- [x] `V2-PLAN-F-aggregate.md` - Wave 3 - Author consolidated `V2-VALIDATION.md`, append re-validation rows to V1's per-vendor VALIDATION reports, update `.planning/STATE.md`, update `.planning/ROADMAP.md` Backlog section to remove items absorbed into V2 fixes.
 
 </details>
 
@@ -286,3 +286,17 @@ Plans (2 in wave 1 — HIGH bugs, parallel · 3 in wave 2 — MED/LOW bundles, p
 | Domain-specific ENTSOG silver schemas | v0.5 close-out | Add when downstream gas gold consumers require typed models beyond generic normalised records |
 | Scheduled live endpoint monitoring | v0.5 close-out | Consider outside the normal unit-test suite for ENTSOG and other public APIs |
 | Append-only revision storage for revising modelling datasets | gridflow_models architecture v3.1 | Deferred until stack, imbalance, or carbon model scope needs it |
+| Historical `freq` bronze re-ingest after V2-A param fix | v0.10 V2-A | Existing bronze captured "latest 5761 samples" not the requested window; re-ingest needed for correct historical data |
+| Historical NESO regional silver re-ingest for 5 affected datasets | v0.10 V2-B | `regional_current`, `regional_intensity`, `regional_intensity_fw24h`, `regional_intensity_fw48h`, `regional_intensity_pt24h` — existing silver carries null carbon/mix; re-run silver from existing bronze |
+| ENTSOE A09 derive `net_position_mw` (Option B not taken in V2) | v0.10 V2-D / ADR-019 | Keep both keys, pair zone-pair directions, emit signed net position. Useful for cross-border net flow analysis when a consumer materialises |
+| ENTSOE A37 / A15 pagination iteration (offset > 0) | v0.10 V2-D / 5a | Currently silently truncates at 4800 TS for high-cardinality areas |
+| ENTSOE A87 silver `Reason.code` exposure | v0.10 V2-D / 5c | `_H8BalancingTransformer` refactor + new `reason_code` schema field |
+| ENTSOE `area_name` field population | v0.10 V2-D / 5d | New `area_code → name` lookup table OR schema removal |
+| ENTSOE `DEFAULT_ZONES` wider EU baseline | v0.10 V2-D / 5f | If a multi-region gold consumer materialises |
+| ENTSOE `_RESOLUTION_MAP` calendar-correct `P1M`/`P1Y` | V1 entsoe-VALIDATION Recommendations §5 | Approximating month=30d, year=365d affects load_forecast_monthly, load_forecast_yearly |
+| ENTSOE `activated_balancing_prices` reserve-type widening | V1 entsoe-VALIDATION Recommendations §6 | Connector currently fixes businessType=A96 (aFRR); silver schema supports FCR/aFRR/mFRR/RR |
+| ENTSOE Pydantic schema vs silver Parquet column drift (B3) | V1 entsoe-VALIDATION §13 | `EntsoeCrossborderFlow` / `EntsoeNetTransferCapacity` declare narrower fields than transformer outputs |
+| Manual ENTSOE Guide.pdf download | V1 entsoe-VALIDATION Recommendations §1 | CDN protection blocks programmatic fetch; human download into vault recommended |
+| ENTSOE GB pre-Brexit window re-validation | V1 entsoe-VALIDATION Recommendations §2 | Distinguish "permanently not published" from "publication-lag" via 2019/2020 GB window |
+| Vault directory rename `open-meteo` → `openmeteo` | V1 V0.7 deferred | Backlog, unchanged |
+| Project-wide ruff baseline cleanup | v0.10 V2 observation | ~83 pre-existing warnings (TC003, UP042, UP017) tolerated today; would clean up on a focused chore branch |

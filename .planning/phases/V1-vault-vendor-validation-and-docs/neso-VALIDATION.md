@@ -268,8 +268,7 @@ All 33 invocations completed without error; no 4xx/5xx.
 
 ## V2 re-validation (2026-05-09)
 
-**Fix commit:** `fix(V2-B): NESO _rows_from_region_period reads carbon/mix from whichever level holds it`
-(SHA recorded by V2-PLAN-F aggregate close-out).
+**Fix commit:** `8f9db07` — `fix(V2-B): NESO _rows_from_region_period reads carbon/mix from whichever level holds it`.
 
 The 5 period-keyed regional datasets now populate carbon and mix
 columns from `region`-level fields, falling back to `period`-level.

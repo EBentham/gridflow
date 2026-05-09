@@ -266,8 +266,7 @@ None.
 
 ## V2 re-validation (2026-05-09)
 
-**Fix commit:** `fix(V2-E): ENTSOG short-circuits 404+empty body; ngeso deleted`
-(SHA recorded by V2-PLAN-F aggregate close-out).
+**Fix commit:** `8c8da2d` — `fix(V2-E): ENTSOG short-circuits 404+empty body; ngeso deleted`.
 
 ### V2-FIX-07 — `@RETRY_POLICY` 404 short-circuit
 

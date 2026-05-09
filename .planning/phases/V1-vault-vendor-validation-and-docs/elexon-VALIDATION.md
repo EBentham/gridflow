@@ -384,8 +384,8 @@ Prioritised follow-up backlog items the executor would create:
 
 ## V2 re-validation (2026-05-09)
 
-**Fix commit:** `fix(V2-A): elexon freq sends measurementDateTimeFrom/To not publishDateTimeFrom/To`
-(SHA recorded by V2-PLAN-F aggregate close-out).
+**Fix commit:** `8069201` — `fix(V2-A): elexon freq sends measurementDateTimeFrom/To not publishDateTimeFrom/To`.
+(PLAN-C edits in commit `dc0ce83`.)
 
 | Dataset | V1 status | V2 status | Window respected? |
 |---------|-----------|-----------|-------------------|

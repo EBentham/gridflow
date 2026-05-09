@@ -321,8 +321,7 @@ that this does not raise; benign mismatch. Logged for awareness.
 
 ## V2 re-validation (2026-05-09)
 
-**Fix commit:** `fix(V2-D): ENTSOE A09 dedup + B2 cleanup batch`
-(SHA recorded by V2-PLAN-F aggregate close-out).
+**Fix commit:** `5c29a68` — `fix(V2-D): ENTSOE A09 dedup (ADR-019) + B2 cleanup batch (partial)`.
 
 ### V2-FIX-05: A09 commercial_schedules registry dedup (ADR-019)
 

@@ -1,20 +1,73 @@
 ---
 milestone: v0.10
 milestone_name: V1 Vendor Bug-fix Follow-ups
-status: in_planning
+status: complete
 progress:
   phases_total: 1
-  phases_complete: 0
+  phases_complete: 1
   plans_total: 6
-  plans_complete: 0
+  plans_complete: 6
 ---
 
 ## Current Position
 
-Phase V2 plans authored on `claude/lucid-mccarthy-9ed3e0` (worktree),
-2026-05-09. V2 is the bug-fix follow-up to V1: production code fixes
+Phase V2 complete on `claude/lucid-mccarthy-9ed3e0` (worktree),
+2026-05-09. V2 was the bug-fix follow-up to V1: production code fixes
 for the Implementation deltas surfaced (but explicitly out of scope)
 during V1 live validation.
+
+V2 fix commits (top to bottom):
+
+```
+8c8da2d fix(V2-E): ENTSOG short-circuits 404+empty body; ngeso deleted
+5c29a68 fix(V2-D): ENTSOE A09 dedup (ADR-019) + B2 cleanup batch (partial)
+dc0ce83 fix(V2-C): elexon REMIT/SOSO honour 1-day cap; system_prices accepts live priceDerivationCode
+8f9db07 fix(V2-B): NESO _rows_from_region_period reads carbon/mix from whichever level holds it
+8069201 fix(V2-A): elexon freq sends measurementDateTimeFrom/To not publishDateTimeFrom/To
+```
+
+Outcomes by severity:
+
+- **HIGH (Wave 1, 2 commits):**
+  - `freq` ingest now honours the requested window (Swagger-correct
+    `measurementDateTimeFrom/To`).
+  - 5 NESO period-keyed regional datasets now populate
+    forecast/index/fuel/generation_percentage instead of all-null.
+
+- **MED (Wave 2, 1 commit + part of D):**
+  - REMIT/SOSO `max_chunk_hours=23` (vendor 1-day cap honoured).
+  - `system_prices.priceDerivationCode` mapped to its own column
+    (`run_type` made optional; pre-V2 conflation fixed).
+  - ENTSOE A09 `commercial_schedules_net_positions` deprecated
+    (ADR-019, Option A).
+
+- **LOW (Wave 2, part of D + 1 commit):**
+  - A87 schedule `monthly` (`max_query_days: 31`).
+  - `psrType` added to `optional_params` for 4 generation/outage
+    endpoints.
+  - ENTSOG `@RETRY_POLICY` short-circuits documented 404 empty body.
+  - Empty `connectors/ngeso/` placeholder deleted.
+  - 4 sub-items deferred to backlog with rationale (A37/A15
+    pagination iteration, A87 silver `Reason.code`, `area_name`
+    field, wider `DEFAULT_ZONES`).
+
+Test status at close: **1042 passed, 251 deselected**
+(`uv run --offline pytest -m "not live and not slow" -x -q`).
+Pre-V2 baseline was 1026 passed; net + 16 (mostly TDD regression
+tests for V2 fixes). All ENTSOE active dataset count drops 48 → 47
+after A09 dedup.
+
+The Avast `curl --ssl-no-revoke` workaround locked in V1-CONTEXT.md
+applies to every V2 live re-validation curl. `uv run --offline` is
+also required because Avast TLS interception breaks PyPI fetch.
+
+ADRs added:
+- `docs/DECISION_LOG/ADR-019-entsoe-a09-dedup.md` (V2-FIX-05).
+
+Backlog items added by V2 — see V2-VALIDATION.md "Backlog items
+added by V2" section.
+
+Last activity: 2026-05-09 — V2 phase shipped.
 
 V2 ships 6 plans across 3 waves:
 
