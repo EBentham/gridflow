@@ -151,11 +151,35 @@ sources:
     timeout: 30
     max_retries: 3
     datasets:
-      historical:
+      # Demand role: 7 UK population centres, F0 variable set + snow.
+      historical_demand:
         endpoint: "archive"
         schedule: "daily"
         max_query_days: 30
-      forecast:
+      forecast_demand:
+        endpoint: "forecast"
+        schedule: "hourly"
+        max_query_days: 7
+      # Wind role: 12 capacity-weighted GB wind sites. Archive variable
+      # list scoped to {10m, 100m} only — heights {80,120,180}m return
+      # all-null on ERA5 archive (verified 2026-05-09 against Hornsea
+      # and Whitelee).
+      historical_wind:
+        endpoint: "archive"
+        schedule: "daily"
+        max_query_days: 30
+      forecast_wind:
+        endpoint: "forecast"
+        schedule: "hourly"
+        max_query_days: 7
+      # Solar role: 6 capacity-weighted GB solar sites. GTI request adds
+      # tilt=35&azimuth=180 query params via DATASET_SPECS.extra_params
+      # (UK fixed-tilt representative geometry).
+      historical_solar:
+        endpoint: "archive"
+        schedule: "daily"
+        max_query_days: 30
+      forecast_solar:
         endpoint: "forecast"
         schedule: "hourly"
         max_query_days: 7
