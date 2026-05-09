@@ -379,3 +379,57 @@ Prioritised follow-up backlog items the executor would create:
   diagnostic calls including the FREQ param-name verification).
 - **Pre-flight smoke test (carbonintensity.org.uk/intensity):** PASSED.
 - **Pre-flight Elexon smoke test (FUELHH 2026-05-06):** PASSED with 137891 bytes / 740 rows.
+
+---
+
+## V2 re-validation (2026-05-09)
+
+**Fix commit:** `fix(V2-A): elexon freq sends measurementDateTimeFrom/To not publishDateTimeFrom/To`
+(SHA recorded by V2-PLAN-F aggregate close-out).
+
+| Dataset | V1 status | V2 status | Window respected? |
+|---------|-----------|-----------|-------------------|
+| `freq` | PASS (5761 rows of *latest*, **wrong window**) | PASS (241 rows in 1h window, correct dates) | YES |
+
+### `freq` re-validation evidence
+
+**A/B comparison (proves V1 bug + V2 fix):**
+
+```bash
+# Wrong-name (current default before V2-A fix): API silently ignores
+curl --ssl-no-revoke -fsS \
+  -H "Accept: application/json" \
+  "https://data.elexon.co.uk/bmrs/api/v1/datasets/FREQ?publishDateTimeFrom=2024-01-01T00:00Z&publishDateTimeTo=2024-01-01T03:00Z&format=json"
+# → HTTP 200, 5761 rows, all dated 2026-05-08/09 (NOT 2024-01-01)
+
+# Correct-name (Swagger): API honours the window
+curl --ssl-no-revoke -fsS \
+  -H "Accept: application/json" \
+  "https://data.elexon.co.uk/bmrs/api/v1/datasets/FREQ?measurementDateTimeFrom=2024-01-01T00:00Z&measurementDateTimeTo=2024-01-01T03:00Z&format=json"
+# → HTTP 200, 721 rows, all dated 2024-01-01
+```
+
+**V2 narrow-window confirmation (post-fix):**
+
+```bash
+curl --ssl-no-revoke -fsS \
+  -H "Accept: application/json" \
+  "https://data.elexon.co.uk/bmrs/api/v1/datasets/FREQ?measurementDateTimeFrom=2026-05-09T00:00Z&measurementDateTimeTo=2026-05-09T01:00Z&format=json"
+```
+
+- HTTP: `200`
+- Bytes: `19028`
+- Rows: `241`
+- All `measurementTime` values within `[2026-05-09T00:00Z, 2026-05-09T01:00Z]`: **yes** (241 / 241)
+- Time: `0.093 s`
+
+**Regression tests:**
+
+- `tests/unit/test_elexon_endpoints.py::TestBuildParamsPublishDatetime::test_freq_uses_measurement_datetime_param_names` — RED before fix, GREEN after.
+- `tests/unit/test_elexon_endpoints.py::TestBuildParamsPublishDatetime::test_freq_endpoint_overrides_param_names` — asserts the explicit override on the dataclass.
+- `tests/endpoints/test_endpoint_urls.py::TestElexonPublishDatetimeParams` — parametrize updated to carry per-dataset `from_param`/`to_param`; freq row now expects `measurementDateTime*`.
+- Full fast suite: `1026 passed, 253 deselected` (`uv run pytest -m "not live and not slow" -x -q`).
+
+**Out-of-V2-scope follow-up (queued for V2-PLAN-F backlog):**
+
+Existing bronze files for `freq` were captured with the wrong param names — they hold "latest 5761 samples" instead of the requested window. Historical re-ingest is required to get correct windowed data on disk.

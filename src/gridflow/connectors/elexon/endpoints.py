@@ -101,10 +101,15 @@ ENDPOINTS: dict[str, ElexonEndpoint] = {
     ),
 
     # --- Publish datetime style (standard publishDateTimeFrom/To params) ---
+    # FREQ is the exception: Swagger declares measurementDateTimeFrom/To
+    # for /datasets/FREQ. Sending publishDateTimeFrom/To causes the API to
+    # silently ignore the window and return the latest ~5761 samples.
     "freq": ElexonEndpoint(
         path="/datasets/FREQ",
         description="System Frequency",
         param_style=ParamStyle.PUBLISH_DATETIME,
+        from_param="measurementDateTimeFrom",
+        to_param="measurementDateTimeTo",
         supports_pagination=True,
     ),
     "fuelhh": ElexonEndpoint(
