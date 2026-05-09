@@ -258,6 +258,11 @@ def _rows_from_region_period(
     region: dict[str, Any],
     period: dict[str, Any],
 ) -> list[dict[str, Any]]:
+    # Live API places `intensity` and `generationmix` on the *region* dict
+    # for the period-keyed branch (/regional, /regional/intensity/.../{fw24h
+    # |fw48h|pt24h|to}) and on the *period* dict for the region-keyed branch
+    # (/regional/{name}, /regional/{postcode|regionid}/X). Read from
+    # whichever level holds the data so both shapes stay correct.
     base = {
         "regionid": region.get("regionid"),
         "dnoregion": region.get("dnoregion"),
@@ -266,14 +271,14 @@ def _rows_from_region_period(
         "from": period.get("from"),
         "to": period.get("to"),
     }
-    intensity = period.get("intensity", {}) or {}
+    intensity = region.get("intensity") or period.get("intensity") or {}
     base.update({
         "forecast": intensity.get("forecast"),
         "actual": intensity.get("actual"),
         "index": intensity.get("index", ""),
     })
 
-    mixes = _generation_mix_rows(period)
+    mixes = _generation_mix_rows(region) or _generation_mix_rows(period)
     if not mixes:
         return [base]
     return [

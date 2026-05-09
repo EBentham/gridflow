@@ -168,22 +168,29 @@ class TestElexonFromToParams:
 
 
 class TestElexonPublishDatetimeParams:
-    """Verify PUBLISH_DATETIME endpoints produce correct query params."""
+    """Verify PUBLISH_DATETIME endpoints produce correct query params.
 
-    @pytest.mark.parametrize("dataset,expected_path", [
-        ("freq", "/datasets/FREQ"),
-        ("fuelhh", "/datasets/FUELHH"),
-        ("fuelinst", "/datasets/FUELINST"),
-        ("imbalngc", "/datasets/IMBALNGC"),
-        ("ndf", "/datasets/NDF"),
-        ("ndfd", "/datasets/NDFD"),
-        ("melngc", "/datasets/MELNGC"),
-        ("fou2t14d", "/datasets/FOU2T14D"),
-        ("uou2t14d", "/datasets/UOU2T14D"),
-        ("windfor", "/datasets/WINDFOR"),
-        ("temp", "/datasets/TEMP"),
+    Most PUBLISH_DATETIME endpoints use the default
+    publishDateTimeFrom/To names. `freq` is the documented exception:
+    Swagger declares measurementDateTimeFrom/To for /datasets/FREQ.
+    The connector overrides from_param/to_param accordingly (V2-FIX-01)."""
+
+    @pytest.mark.parametrize("dataset,expected_path,from_param,to_param", [
+        ("freq", "/datasets/FREQ", "measurementDateTimeFrom", "measurementDateTimeTo"),
+        ("fuelhh", "/datasets/FUELHH", "publishDateTimeFrom", "publishDateTimeTo"),
+        ("fuelinst", "/datasets/FUELINST", "publishDateTimeFrom", "publishDateTimeTo"),
+        ("imbalngc", "/datasets/IMBALNGC", "publishDateTimeFrom", "publishDateTimeTo"),
+        ("ndf", "/datasets/NDF", "publishDateTimeFrom", "publishDateTimeTo"),
+        ("ndfd", "/datasets/NDFD", "publishDateTimeFrom", "publishDateTimeTo"),
+        ("melngc", "/datasets/MELNGC", "publishDateTimeFrom", "publishDateTimeTo"),
+        ("fou2t14d", "/datasets/FOU2T14D", "publishDateTimeFrom", "publishDateTimeTo"),
+        ("uou2t14d", "/datasets/UOU2T14D", "publishDateTimeFrom", "publishDateTimeTo"),
+        ("windfor", "/datasets/WINDFOR", "publishDateTimeFrom", "publishDateTimeTo"),
+        ("temp", "/datasets/TEMP", "publishDateTimeFrom", "publishDateTimeTo"),
     ])
-    def test_publish_datetime_url(self, dataset: str, expected_path: str):
+    def test_publish_datetime_url(
+        self, dataset: str, expected_path: str, from_param: str, to_param: str
+    ):
         from gridflow.connectors.elexon.endpoints import ENDPOINTS, ParamStyle, build_params
 
         ep = ENDPOINTS[dataset]
@@ -191,24 +198,26 @@ class TestElexonPublishDatetimeParams:
         assert ep.path == expected_path
 
         params = build_params(ep, start=REF_START, end=REF_END, page=1)
-        assert params["publishDateTimeFrom"] == "2026-02-01T00:00:00Z"
-        assert params["publishDateTimeTo"] == "2026-02-02T00:00:00Z"
+        assert params[from_param] == "2026-02-01T00:00:00Z"
+        assert params[to_param] == "2026-02-02T00:00:00Z"
         assert params["page"] == 1
 
-    @pytest.mark.parametrize("dataset,expected_path", [
-        ("freq", "/datasets/FREQ"),
-        ("fuelhh", "/datasets/FUELHH"),
-        ("fuelinst", "/datasets/FUELINST"),
-        ("imbalngc", "/datasets/IMBALNGC"),
-        ("ndf", "/datasets/NDF"),
-        ("ndfd", "/datasets/NDFD"),
-        ("melngc", "/datasets/MELNGC"),
-        ("fou2t14d", "/datasets/FOU2T14D"),
-        ("uou2t14d", "/datasets/UOU2T14D"),
-        ("windfor", "/datasets/WINDFOR"),
-        ("temp", "/datasets/TEMP"),
+    @pytest.mark.parametrize("dataset,expected_path,from_param,to_param", [
+        ("freq", "/datasets/FREQ", "measurementDateTimeFrom", "measurementDateTimeTo"),
+        ("fuelhh", "/datasets/FUELHH", "publishDateTimeFrom", "publishDateTimeTo"),
+        ("fuelinst", "/datasets/FUELINST", "publishDateTimeFrom", "publishDateTimeTo"),
+        ("imbalngc", "/datasets/IMBALNGC", "publishDateTimeFrom", "publishDateTimeTo"),
+        ("ndf", "/datasets/NDF", "publishDateTimeFrom", "publishDateTimeTo"),
+        ("ndfd", "/datasets/NDFD", "publishDateTimeFrom", "publishDateTimeTo"),
+        ("melngc", "/datasets/MELNGC", "publishDateTimeFrom", "publishDateTimeTo"),
+        ("fou2t14d", "/datasets/FOU2T14D", "publishDateTimeFrom", "publishDateTimeTo"),
+        ("uou2t14d", "/datasets/UOU2T14D", "publishDateTimeFrom", "publishDateTimeTo"),
+        ("windfor", "/datasets/WINDFOR", "publishDateTimeFrom", "publishDateTimeTo"),
+        ("temp", "/datasets/TEMP", "publishDateTimeFrom", "publishDateTimeTo"),
     ])
-    def test_publish_datetime_full_url_string(self, dataset: str, expected_path: str):
+    def test_publish_datetime_full_url_string(
+        self, dataset: str, expected_path: str, from_param: str, to_param: str
+    ):
         from gridflow.connectors.elexon.endpoints import ENDPOINTS, build_params
 
         ep = ENDPOINTS[dataset]
@@ -216,8 +225,8 @@ class TestElexonPublishDatetimeParams:
 
         expected_url = (
             f"{ELEXON_BASE}{expected_path}"
-            f"?publishDateTimeFrom=2026-02-01T00:00:00Z"
-            f"&publishDateTimeTo=2026-02-02T00:00:00Z"
+            f"?{from_param}=2026-02-01T00:00:00Z"
+            f"&{to_param}=2026-02-02T00:00:00Z"
             f"&page=1"
         )
         actual_url = f"{ELEXON_BASE}{ep.path}?" + "&".join(f"{k}={v}" for k, v in params.items())

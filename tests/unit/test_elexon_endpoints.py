@@ -160,15 +160,33 @@ class TestBuildParamsSettlementDate:
 
 
 class TestBuildParamsPublishDatetime:
-    def test_freq_publish_datetime(self):
+    def test_freq_uses_measurement_datetime_param_names(self):
+        """V2-FIX-01 regression: Elexon Swagger declares /datasets/FREQ
+        accepts measurementDateTimeFrom/To. The connector previously
+        sent the default publishDateTimeFrom/To names; the API silently
+        ignored them and returned latest 5761 samples regardless of
+        window. Override must keep the corrected names."""
         ep = ENDPOINTS["freq"]
         start = datetime(2024, 1, 15, 0, 0, tzinfo=UTC)
         end = datetime(2024, 1, 15, 23, 59, tzinfo=UTC)
         params = build_params(ep, start=start, end=end)
-        assert "publishDateTimeFrom" in params
-        assert "publishDateTimeTo" in params
-        assert params["publishDateTimeFrom"] == "2024-01-15T00:00:00Z"
-        assert params["publishDateTimeTo"] == "2024-01-15T23:59:00Z"
+        assert "measurementDateTimeFrom" in params, (
+            "freq must send measurementDateTimeFrom (Swagger param name); "
+            "publishDateTimeFrom is silently ignored by the API"
+        )
+        assert "measurementDateTimeTo" in params
+        assert "publishDateTimeFrom" not in params
+        assert "publishDateTimeTo" not in params
+        assert params["measurementDateTimeFrom"] == "2024-01-15T00:00:00Z"
+        assert params["measurementDateTimeTo"] == "2024-01-15T23:59:00Z"
+
+    def test_freq_endpoint_overrides_param_names(self):
+        """V2-FIX-01: ENDPOINTS["freq"] must explicitly set the
+        Swagger-correct param names rather than relying on the
+        PUBLISH_DATETIME defaults."""
+        ep = ENDPOINTS["freq"]
+        assert ep.from_param == "measurementDateTimeFrom"
+        assert ep.to_param == "measurementDateTimeTo"
 
     def test_fuelhh_publish_datetime(self):
         ep = ENDPOINTS["fuelhh"]
@@ -189,6 +207,27 @@ class TestBuildParamsPublishDatetime:
             end=start,
         )
         assert "settlementDate" not in params
+
+
+class TestRemitSosoMaxChunkHours:
+    """V2-FIX-03: Elexon enforces an undocumented max-1-day window on
+    /datasets/REMIT and /datasets/SOSO. The default `max_chunk_hours=24`
+    sits exactly at the boundary and crosses it on DST shifts. Use 23
+    to leave a margin."""
+
+    def test_remit_max_chunk_hours_23(self):
+        ep = ENDPOINTS["remit"]
+        assert ep.max_chunk_hours == 23, (
+            "REMIT must declare max_chunk_hours=23; vendor enforces an "
+            "undocumented max-1-day query window (HTTP 400 otherwise)."
+        )
+
+    def test_soso_max_chunk_hours_23(self):
+        ep = ENDPOINTS["soso"]
+        assert ep.max_chunk_hours == 23, (
+            "SOSO must declare max_chunk_hours=23; same vendor 1-day cap "
+            "as REMIT."
+        )
 
 
 class TestBuildParamsNoParams:

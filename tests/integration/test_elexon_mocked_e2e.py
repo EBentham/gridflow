@@ -254,6 +254,12 @@ async def test_active_datasets_fetch_with_expected_mocked_request_shape(
             assert first_response.request_params[endpoint.to_param].startswith(
                 "2024-01-15T04:00:00"
             )
+        elif dataset in {"remit", "soso"}:
+            # V2-FIX-03: vendor enforces undocumented max-1-day cap;
+            # connector chunks at 23h to leave a margin (boundary value).
+            assert first_response.request_params[endpoint.to_param].startswith(
+                "2024-01-15T23:00:00"
+            )
         else:
             assert first_response.request_params[endpoint.to_param].startswith(
                 "2024-01-16T00:00:00"

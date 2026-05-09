@@ -115,6 +115,52 @@ class TestElexonSystemPrice:
         )
         assert not hasattr(record, "extra_field")
 
+    def test_run_type_optional(self):
+        """V2-FIX-04: /balancing/settlement/system-prices/{date} does not
+        expose any field that maps to BSC run-type semantics. The schema
+        must accept run_type=None (the default) so live silver rows from
+        that endpoint validate cleanly."""
+        record = ElexonSystemPrice(
+            settlement_date=date(2026, 5, 6),
+            settlement_period=1,
+            timestamp_utc=datetime(2026, 5, 6, 0, 0, tzinfo=UTC),
+            system_sell_price=96.79,
+            system_buy_price=96.79,
+            net_imbalance_volume=-37.99,
+        )
+        assert record.run_type is None
+
+    def test_price_derivation_code_accepts_live_values(self):
+        """V2-FIX-04: live API returns priceDerivationCode in {'N','P'}.
+        These are unrelated to BSC run types — they describe how the
+        SBP/SSP was derived for the period. Surfaced as a separate
+        silver column with no regex constraint."""
+        for code in ("N", "P"):
+            record = ElexonSystemPrice(
+                settlement_date=date(2026, 5, 6),
+                settlement_period=1,
+                timestamp_utc=datetime(2026, 5, 6, 0, 0, tzinfo=UTC),
+                system_sell_price=96.79,
+                system_buy_price=96.79,
+                net_imbalance_volume=-37.99,
+                price_derivation_code=code,
+            )
+            assert record.price_derivation_code == code
+
+    def test_price_derivation_code_optional(self):
+        """price_derivation_code defaults to None when the endpoint
+        (or fixture) does not surface it."""
+        record = ElexonSystemPrice(
+            settlement_date=date(2024, 1, 15),
+            settlement_period=1,
+            timestamp_utc=datetime(2024, 1, 15, 0, 0, tzinfo=UTC),
+            system_sell_price=45.50,
+            system_buy_price=55.00,
+            net_imbalance_volume=0,
+            run_type="SF",
+        )
+        assert record.price_derivation_code is None
+
 
 _TS = datetime(2024, 1, 15, 0, 0, tzinfo=UTC)
 _DT = date(2024, 1, 15)

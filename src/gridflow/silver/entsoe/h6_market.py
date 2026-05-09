@@ -139,9 +139,7 @@ class CommercialSchedulesTransformer(_H6QuantityTransformer):
     source = "entsoe"
 
 
-class CommercialSchedulesNetPositionsTransformer(_H6QuantityTransformer):
-    dataset = "commercial_schedules_net_positions"
-    source = "entsoe"
+# CommercialSchedulesNetPositionsTransformer removed in V2 (ADR-019).
 
 
 class RedispatchingCrossBorderTransformer(_H6QuantityTransformer):
@@ -212,7 +210,6 @@ class CongestionIncomeTransformer(_H6AmountTransformer):
 _TRANSFORMERS = [
     DcLinkIntradayTransferLimitsTransformer,
     CommercialSchedulesTransformer,
-    CommercialSchedulesNetPositionsTransformer,
     RedispatchingCrossBorderTransformer,
     RedispatchingInternalTransformer,
     CountertradingTransformer,

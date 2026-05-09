@@ -55,16 +55,23 @@ class SystemPriceTransformer(BaseSilverTransformer):
 
     def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
         """Normalise, validate, and deduplicate system price data."""
-        # Rename API fields to snake_case
+        # Rename API fields to snake_case.
+        #
+        # `settlementRunType` (legacy field, when present) → `run_type`.
+        # `priceDerivationCode` is a SEPARATE concept — it describes how
+        # the SBP/SSP was derived for the period (live values include
+        # 'N' and 'P'), not the BSC settlement run. V2-FIX-04 fixed the
+        # earlier conflation that fed `priceDerivationCode` into
+        # `run_type`, then failed downstream Pydantic validation
+        # (regex `^(II|SF|R[1-3]|RF|DF)$`).
         column_mapping = {
             "settlementDate": "settlement_date",
             "settlementPeriod": "settlement_period",
             "systemSellPrice": "system_sell_price",
             "systemBuyPrice": "system_buy_price",
             "netImbalanceVolume": "net_imbalance_volume",
-            # API may return either of these (schema evolved over time)
             "settlementRunType": "run_type",
-            "priceDerivationCode": "run_type",
+            "priceDerivationCode": "price_derivation_code",
         }
 
         # Only rename columns that exist
@@ -72,7 +79,9 @@ class SystemPriceTransformer(BaseSilverTransformer):
         if rename_map:
             raw_df = raw_df.rename(rename_map)
 
-        # Ensure required columns exist (run_type is optional — not always in API)
+        # Ensure required columns exist (run_type and price_derivation_code
+        # are both optional — depend on which Elexon endpoint produced
+        # the bronze).
         required = [
             "settlement_date", "settlement_period",
             "system_sell_price", "system_buy_price",
@@ -93,6 +102,8 @@ class SystemPriceTransformer(BaseSilverTransformer):
         ]
         if "run_type" in raw_df.columns:
             casts.append(pl.col("run_type").cast(pl.Utf8))
+        if "price_derivation_code" in raw_df.columns:
+            casts.append(pl.col("price_derivation_code").cast(pl.Utf8))
         df = raw_df.with_columns(casts)
 
         # Derive UTC timestamp from settlement date + period
@@ -124,7 +135,7 @@ class SystemPriceTransformer(BaseSilverTransformer):
         output_cols = [
             "settlement_date", "settlement_period", "timestamp_utc",
             "system_sell_price", "system_buy_price", "net_imbalance_volume",
-            "run_type", "data_provider", "ingested_at",
+            "run_type", "price_derivation_code", "data_provider", "ingested_at",
         ]
         available_cols = [c for c in output_cols if c in df.columns]
 

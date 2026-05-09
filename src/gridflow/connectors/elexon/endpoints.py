@@ -101,10 +101,15 @@ ENDPOINTS: dict[str, ElexonEndpoint] = {
     ),
 
     # --- Publish datetime style (standard publishDateTimeFrom/To params) ---
+    # FREQ is the exception: Swagger declares measurementDateTimeFrom/To
+    # for /datasets/FREQ. Sending publishDateTimeFrom/To causes the API to
+    # silently ignore the window and return the latest ~5761 samples.
     "freq": ElexonEndpoint(
         path="/datasets/FREQ",
         description="System Frequency",
         param_style=ParamStyle.PUBLISH_DATETIME,
+        from_param="measurementDateTimeFrom",
+        to_param="measurementDateTimeTo",
         supports_pagination=True,
     ),
     "fuelhh": ElexonEndpoint(
@@ -228,17 +233,23 @@ ENDPOINTS: dict[str, ElexonEndpoint] = {
     ),
 
     # --- REMIT outage messages ---
+    # Vendor enforces an undocumented max-1-day query window: requests
+    # spanning > 1 day return HTTP 400. Cap chunks at 23h to leave a
+    # margin against DST shifts (boundary value).
     "remit": ElexonEndpoint(
         path="/datasets/REMIT",
         description="REMIT Outage and Unavailability Messages",
         param_style=ParamStyle.PUBLISH_DATETIME,
+        max_chunk_hours=23,
     ),
 
     # --- SO-SO prices ---
+    # Same undocumented max-1-day cap as REMIT.
     "soso": ElexonEndpoint(
         path="/datasets/SOSO",
         description="SO-SO Prices (Cross-Border Interconnector Trading)",
         param_style=ParamStyle.PUBLISH_DATETIME,
+        max_chunk_hours=23,
     ),
 
     # --- Settlement Market Depth (DATE_PATH) ---

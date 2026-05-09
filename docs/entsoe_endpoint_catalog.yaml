@@ -254,10 +254,10 @@ entries:
     optional_filters: [contract_MarketAgreement.Type]
     max_window: 1 year
     parser_family: quantity_timeseries
-    status: implemented
+    status: deferred
     dataset: commercial_schedules_net_positions
     batch: H6-transmission-market
-    reason: null
+    reason: "V2 ADR-019: registry-duplicate of commercial_schedules (identical EntsoeDocType, identical XML payload). A real signed net_position_mw dataset would require pairing zone-pair directions; deferred until a downstream consumer materialises."
   - domain: Transmission
     name: 12.1.G Cross-Border Physical Flows
     document_type: A11

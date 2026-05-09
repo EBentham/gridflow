@@ -13,7 +13,6 @@ from gridflow.silver.entsoe.generation_forecast import GenerationForecastTransfo
 from gridflow.silver.entsoe.generation_units_master_data import GenerationUnitsMasterDataTransformer
 from gridflow.silver.entsoe.h6_market import (
     AuctionRevenueTransformer,
-    CommercialSchedulesNetPositionsTransformer,
     CommercialSchedulesTransformer,
     CongestionIncomeTransformer,
     CongestionManagementCostsTransformer,
@@ -86,7 +85,6 @@ __all__ = [
     "WaterReservoirsTransformer",
     "DcLinkIntradayTransferLimitsTransformer",
     "CommercialSchedulesTransformer",
-    "CommercialSchedulesNetPositionsTransformer",
     "RedispatchingCrossBorderTransformer",
     "RedispatchingInternalTransformer",
     "CountertradingTransformer",

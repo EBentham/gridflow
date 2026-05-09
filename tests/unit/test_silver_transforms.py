@@ -112,6 +112,45 @@ class TestSystemPriceTransformer:
         result = self.transformer.transform(raw)
         assert result.is_empty()
 
+    def test_price_derivation_code_maps_to_own_column(self):
+        """V2-FIX-04: live `/balancing/settlement/system-prices/{date}`
+        returns priceDerivationCode in {'N','P'}. Pre-V2 the silver
+        renamed it to `run_type` and the Pydantic regex
+        `^(II|SF|R[1-3]|RF|DF)$` rejected it. Post-V2 it lands in a
+        dedicated `price_derivation_code` column with no constraint;
+        `run_type` stays absent because this endpoint exposes no
+        run-type field."""
+        raw = self._make_raw_df([
+            {
+                "settlementDate": "2026-05-06",
+                "settlementPeriod": 1,
+                "systemSellPrice": 96.79,
+                "systemBuyPrice": 96.79,
+                "netImbalanceVolume": -37.99,
+                "priceDerivationCode": "N",
+            },
+            {
+                "settlementDate": "2026-05-06",
+                "settlementPeriod": 2,
+                "systemSellPrice": 92.10,
+                "systemBuyPrice": 92.10,
+                "netImbalanceVolume": 12.5,
+                "priceDerivationCode": "P",
+            },
+        ])
+        result = self.transformer.transform(raw)
+
+        assert "price_derivation_code" in result.columns, (
+            "priceDerivationCode must map to a dedicated "
+            "`price_derivation_code` column, not `run_type`"
+        )
+        assert "run_type" not in result.columns, (
+            "this endpoint exposes no run-type field — "
+            "`run_type` must not be populated from priceDerivationCode"
+        )
+        codes = sorted(result["price_derivation_code"].to_list())
+        assert codes == ["N", "P"]
+
     def test_missing_columns_returns_empty(self):
         """Missing required columns should return empty DataFrame."""
         raw = self._make_raw_df([{"foo": "bar"}])

@@ -1,15 +1,158 @@
 ---
-milestone: v0.8
-milestone_name: Fundamentals Model Silver Foundations
+milestone: v0.10
+milestone_name: V1 Vendor Bug-fix Follow-ups
 status: complete
 progress:
   phases_total: 1
   phases_complete: 1
-  plans_total: 1
-  plans_complete: 1
+  plans_total: 6
+  plans_complete: 6
 ---
 
 ## Current Position
+
+Phase V2 complete on `claude/lucid-mccarthy-9ed3e0` (worktree),
+2026-05-09. V2 was the bug-fix follow-up to V1: production code fixes
+for the Implementation deltas surfaced (but explicitly out of scope)
+during V1 live validation.
+
+V2 fix commits (top to bottom):
+
+```
+8c8da2d fix(V2-E): ENTSOG short-circuits 404+empty body; ngeso deleted
+5c29a68 fix(V2-D): ENTSOE A09 dedup (ADR-019) + B2 cleanup batch (partial)
+dc0ce83 fix(V2-C): elexon REMIT/SOSO honour 1-day cap; system_prices accepts live priceDerivationCode
+8f9db07 fix(V2-B): NESO _rows_from_region_period reads carbon/mix from whichever level holds it
+8069201 fix(V2-A): elexon freq sends measurementDateTimeFrom/To not publishDateTimeFrom/To
+```
+
+Outcomes by severity:
+
+- **HIGH (Wave 1, 2 commits):**
+  - `freq` ingest now honours the requested window (Swagger-correct
+    `measurementDateTimeFrom/To`).
+  - 5 NESO period-keyed regional datasets now populate
+    forecast/index/fuel/generation_percentage instead of all-null.
+
+- **MED (Wave 2, 1 commit + part of D):**
+  - REMIT/SOSO `max_chunk_hours=23` (vendor 1-day cap honoured).
+  - `system_prices.priceDerivationCode` mapped to its own column
+    (`run_type` made optional; pre-V2 conflation fixed).
+  - ENTSOE A09 `commercial_schedules_net_positions` deprecated
+    (ADR-019, Option A).
+
+- **LOW (Wave 2, part of D + 1 commit):**
+  - A87 schedule `monthly` (`max_query_days: 31`).
+  - `psrType` added to `optional_params` for 4 generation/outage
+    endpoints.
+  - ENTSOG `@RETRY_POLICY` short-circuits documented 404 empty body.
+  - Empty `connectors/ngeso/` placeholder deleted.
+  - 4 sub-items deferred to backlog with rationale (A37/A15
+    pagination iteration, A87 silver `Reason.code`, `area_name`
+    field, wider `DEFAULT_ZONES`).
+
+Test status at close: **1042 passed, 251 deselected**
+(`uv run --offline pytest -m "not live and not slow" -x -q`).
+Pre-V2 baseline was 1026 passed; net + 16 (mostly TDD regression
+tests for V2 fixes). All ENTSOE active dataset count drops 48 → 47
+after A09 dedup.
+
+The Avast `curl --ssl-no-revoke` workaround locked in V1-CONTEXT.md
+applies to every V2 live re-validation curl. `uv run --offline` is
+also required because Avast TLS interception breaks PyPI fetch.
+
+ADRs added:
+- `docs/DECISION_LOG/ADR-019-entsoe-a09-dedup.md` (V2-FIX-05).
+
+Backlog items added by V2 — see V2-VALIDATION.md "Backlog items
+added by V2" section.
+
+Last activity: 2026-05-09 — V2 phase shipped.
+
+V2 ships 6 plans across 3 waves:
+
+- **Wave 1 (HIGH severity, parallel):**
+  - `V2-PLAN-A-elexon-freq-fix` — override `from_param` /
+    `to_param` on `ENDPOINTS["freq"]` to `measurementDateTimeFrom` /
+    `measurementDateTimeTo`. Without the fix, the API silently
+    ignores the wrong-named params and returns latest 5761 samples
+    regardless of window.
+  - `V2-PLAN-B-neso-region-period-fields` — patch
+    `silver/neso/carbon_intensity.py::_rows_from_region_period` to
+    read `intensity` and `generationmix` from whichever of `region`
+    or `period` holds the data. Affects 5 datasets:
+    `regional_current`, `regional_intensity_fw24h`,
+    `regional_intensity_fw48h`, `regional_intensity_pt24h`,
+    `regional_intensity`.
+
+- **Wave 2 (MED + LOW severity, parallel):**
+  - `V2-PLAN-C-elexon-misc` — set `max_chunk_hours=23` on
+    `remit` / `soso` to honour the undocumented vendor 1-day cap;
+    expand `ElexonSystemPrice.run_type` regex (and enum) to admit the
+    live-observed `priceDerivationCode = "N"` after live-confirming
+    the value list.
+  - `V2-PLAN-D-entsoe-cleanup` — ADR-019 to drop
+    `commercial_schedules_net_positions` (registry duplicate of
+    `commercial_schedules`); B2 cleanup batch (A37/A15 pagination,
+    A87 schedule cadence + silver `Reason.code`, `area_name`,
+    `psrType`, `DEFAULT_ZONES`).
+  - `V2-PLAN-E-entsog-and-ngeso` — short-circuit
+    HTTP 404 + body `{"message":"No result found"}` in
+    `EntsogConnector._request` so `@RETRY_POLICY` does not waste
+    retry budget on the documented empty convention; triage
+    (default: delete) the empty `connectors/ngeso/` placeholder.
+
+- **Wave 3 (close-out aggregator):**
+  - `V2-PLAN-F-aggregate` — `V2-VALIDATION.md`,
+    re-validation-row sanity checks against V1 per-vendor reports,
+    STATE + ROADMAP updates, backlog absorption.
+
+V1 already shipped 5 commits ahead of master on this worktree
+branch and has not been merged. V2 commits build on top with
+`fix(V2-X):` prefixes.
+
+The Avast `curl --ssl-no-revoke` workaround locked in V1-CONTEXT.md
+applies to every V2 live re-validation curl.
+
+## Prior milestone
+
+Phase V1 complete on `claude/lucid-mccarthy-9ed3e0` (worktree).
+
+V1 validated 156 active gridflow datasets across 6 vendors. All vendors
+have full vault documentation (`quant-vault/30-vendors/<vendor>/`):
+per-dataset pages, endpoints.md quick-summary, refreshed README, plus
+per-vendor VALIDATION reports under
+`.planning/phases/V1-vault-vendor-validation-and-docs/`.
+
+Aggregate live-call results:
+- **113 PASS / 43 EMPTY / 0 FAIL** across 156 datasets
+- Elexon 33/0/0, ENTSOE 9/39/0, ENTSOG 29/4/0, GIE 7/0/0, NESO 33/0/0,
+  Open-Meteo 2/0/0
+- All 39 ENTSOE EMPTY results stem from GB post-Brexit data drop;
+  request shapes verified correct via DE-LU/FR/NL fallback calls
+- 4 ENTSOG EMPTY are sparse-at-test-point only — all indicators
+  verified correct via 30-day or no-filter retry
+
+Production code bugs surfaced (NOT fixed in V1 — out of scope, recorded
+in vault Implementation deltas + per-vendor VALIDATION reports for
+follow-up phases):
+- Elexon `freq` connector parameter-name mismatch (HIGH — silently
+  ignored by API, returns wrong window)
+- NESO silver `_rows_from_region_period` reads carbon/mix from wrong
+  level — affects 5 period-keyed regional datasets
+- Elexon REMIT/SOSO 1-day vendor cap not honoured by connector default
+- Elexon `system_prices.priceDerivationCode` Pydantic regex too narrow
+- ENTSOE `commercial_schedules` and `commercial_schedules_net_positions`
+  use IDENTICAL EntsoeDocType (registry duplication)
+
+Worktree-machine-specific workaround: Avast antivirus TLS interception
+breaks Python httpx with cert verify failures; `curl --ssl-no-revoke`
+is the live-call mechanism (locked in V1-CONTEXT.md, used by all V1
+agents). Documented for future runs.
+
+Last activity: 2026-05-08 — V1 phase shipped.
+
+## Earlier milestones — F0 / F7 (v0.8 and earlier)
 
 Phase: F0 complete; F7 Workstream A complete on `feat/f7-stack-and-bitemporal`
 Plan: F7-PLAN Stack Model Data Infrastructure (Workstream A — gridflow side)
