@@ -1,4 +1,9 @@
-# gridflow - Current Milestone Requirements
+# gridflow - Requirements History
+
+> v0.11 requirements archived to `.planning/milestones/v0.11-open-meteo-renewable-extension-REQUIREMENTS.md`
+> Next milestone requirements will be defined by `/gsd-new-milestone`.
+
+---
 
 ## Milestone v0.9 Vault Vendor Validation And Docs
 

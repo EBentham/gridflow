@@ -118,11 +118,15 @@ class GridflowClient:
         end: str | date,
         location: str | None = None,
     ) -> pl.DataFrame:
-        """Get historical weather observations from Open-Meteo.
+        """Get historical weather observations from Open-Meteo (demand role).
 
         Returns DataFrame with columns:
             timestamp_utc, location, latitude, longitude,
             temperature_2m, wind_speed_10m, precipitation, hdd, cdd
+
+        Reads from `silver_historical_demand` (renamed from `silver_historical`
+        at F7.5; the wind and solar role-split datasets carry different
+        schemas and are queried via separate view names).
         """
         where_clauses = [f"timestamp_utc::DATE BETWEEN '{start}' AND '{end}'"]
         if location:
@@ -131,7 +135,7 @@ class GridflowClient:
         return self.query(f"""
             SELECT timestamp_utc, location, latitude, longitude,
                    temperature_2m, wind_speed_10m, precipitation, hdd, cdd
-            FROM silver_historical
+            FROM silver_historical_demand
             WHERE {where}
             ORDER BY timestamp_utc, location
         """)

@@ -1,15 +1,95 @@
 ---
-milestone: v0.10
-milestone_name: V1 Vendor Bug-fix Follow-ups
+milestone: v0.11
+milestone_name: Open-Meteo Renewable Extension
 status: complete
 progress:
   phases_total: 1
   phases_complete: 1
-  plans_total: 6
-  plans_complete: 6
+  plans_total: 1
+  plans_complete: 1
 ---
 
 ## Current Position
+
+Phase F7.5 complete on `claude/interesting-banach-edb71f` (worktree),
+2026-05-09. F7.5 extends the Open-Meteo connector and silver layers to
+support production-grade UK wind and solar forecasting downstream — three
+role-specific datasets (demand, wind, solar) at three role-specific
+location lists (7 demand, 12 wind, 6 solar), with hub-height wind,
+irradiance components (GHI/DNI/DHI/GTI), cloud-cover decomposition,
+snow, and derived air density.
+
+Pre-plan verifications resolved three open questions from the proposed
+plan:
+
+1. **Hub-height availability on ERA5 archive**: live probes at Hornsea
+   (53.88, 1.79, offshore) and Whitelee (55.69, -4.27, onshore) confirm
+   only `wind_speed_10m` and `wind_speed_100m` carry data on the archive
+   endpoint; 80m / 120m / 180m return `units: "undefined"` and all-null.
+   Correlation 10m vs 100m is 0.95 offshore, 0.98 onshore — high but
+   non-redundant (the ratio is the implied wind shear, itself a feature).
+   Decision: archive variable list is `{10m, 100m}` only; forecast
+   variable list permits the wider hub-height set.
+2. **F6 `cloud_cover_pct` latent bug**: zero matches in this repo.
+   `gridflow_models` is an external project not present in `src/`.
+   F7.5-COMPAT-01 rewritten as internal-only (existing
+   `tests/unit/test_openmeteo.py`, `test_bitemporal_columns.py`,
+   `tests/endpoints/test_endpoint_urls.py` continue to pass after
+   rename). F6 dropped from `depends_on:`.
+3. **AROME 2026 northern boundary**: Workstream C (`minutely_15` 15-min
+   forecast resolution) deferred to backlog. AROME boundary verification
+   stays with the backlog item.
+
+Plans (1 wave):
+
+- [x] `F7.5-01-PLAN.md` — Connector + endpoints refactor + silver schema
+  split + transformer split + config + tests + vault docs. Shipped in
+  four commits (three planned + one review-fix sweep):
+  - `7369f15 feat(F7.5): role-split openmeteo connector, schemas, transformers, tests`
+  - `698db64 feat(F7.5): six openmeteo dataset blocks in config/sources.yaml`
+  - `0aa85a6 docs(F7.5): in-repo open-meteo docs + ADR-020 + RESULTS close-out`
+  - `ec914e1 fix(F7.5): sweep migration stragglers caught by code review`
+    (1 HIGH `serving/client.py::get_weather()` queried deleted view +
+     2 MEDIUM `scripts/run_all_sources.py` and `tests/.../test_openmeteo_air_density.py`
+     dead assert + 1 docstring `scripts/export_to_csv.py` help text)
+
+Test status at close: **1116 passed, 251 deselected**
+(`PYTHONPATH=src python -m pytest -m "not live and not slow" -x -q`).
+Pre-F7.5 baseline (post-V2 close) was 1042 passed; net +74 (new
+location-list, variable-list, schema, dataset-spec, air-density, and
+irradiance-component tests).
+
+12/13 requirements complete. F7.5-VAULT-01 marked partial: in-repo
+`docs/endpoints/open_meteo.md` and `docs/ENDPOINT_REFERENCE.md` fully
+updated; the Obsidian vault at `quant-vault/30-vendors/open-meteo/`
+(symlinked content per `.gitignore`) needs a follow-up sync from a
+session with `obsidian-vault` MCP server access.
+
+ADRs added:
+- `docs/DECISION_LOG/ADR-020-openmeteo-location-approximation.md`
+  (records the decision to use approximate site centroids for the 18
+  capacity-weighted wind/solar locations rather than per-turbine NRO
+  coordinates).
+
+Out of scope, recorded in backlog:
+
+- Workstream C `minutely_15` forecast resolution (gated on AROME
+  verification).
+- Open-Meteo `/v1/ensemble` endpoint.
+- Wind/solar bronze backfill 2018-2025 (~52K location-days; user-
+  confirmed live operation).
+- `gridflow_models` integration / F6 wind+solar feature pipeline (out
+  of repo).
+- Vault directory rename `open-meteo` → `openmeteo` (existing backlog
+  item).
+
+The Avast `curl --ssl-no-revoke` workaround locked in V1-CONTEXT.md
+applies to any verification curl. F7.5 itself does not require live
+ingest; it is a refactor + schema split + docs phase.
+
+Last activity: 2026-05-09 — v0.11 milestone archived (tag v0.11); branch `claude/interesting-banach-edb71f` pushed to origin; PR ready for creation at https://github.com/EBentham/gridflow/pull/new/claude/interesting-banach-edb71f.
+
+## Prior milestone
 
 Phase V2 complete on `claude/lucid-mccarthy-9ed3e0` (worktree),
 2026-05-09. V2 was the bug-fix follow-up to V1: production code fixes

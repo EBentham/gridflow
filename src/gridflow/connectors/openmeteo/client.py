@@ -12,9 +12,8 @@ import httpx
 from gridflow.connectors.base import BaseConnector, RawResponse
 from gridflow.connectors.openmeteo.endpoints import (
     ARCHIVE_BASE_URL,
+    DATASET_SPECS,
     FORECAST_BASE_URL,
-    HOURLY_VARIABLES,
-    LOCATIONS,
     WeatherLocation,
 )
 from gridflow.connectors.registry import register_connector
@@ -29,9 +28,12 @@ class OpenMeteoConnector(BaseConnector):
     base URLs for historical (archive) vs forecast data, so we override
     ``__aenter__`` to create a client without a fixed base_url.
 
-    One ``RawResponse`` is produced per location per call.
-    The ``dataset`` field on each response is ``f"{prefix}_{location.name}"``
-    (e.g. ``"historical_london"``).
+    Datasets are role-split into six keys
+    (``historical_demand``/``historical_wind``/``historical_solar`` and the
+    three matching forecast keys); each looks up its locations + variables
+    + extra params from ``DATASET_SPECS``. One ``RawResponse`` is produced
+    per location per call; its ``dataset`` field is
+    ``f"{dataset}__{location.name}"`` (double-underscore separator).
     """
 
     source_name = "open_meteo"
@@ -52,12 +54,18 @@ class OpenMeteoConnector(BaseConnector):
         end: datetime,
         **params: Any,
     ) -> list[RawResponse]:
-        """Fetch weather data for all locations for the given date range.
+        """Fetch weather data for all locations of the dataset's role.
 
-        ``dataset`` is ``"historical"`` or ``"forecast"``.
+        ``dataset`` is one of the six role keys in ``DATASET_SPECS``.
         """
+        if dataset not in DATASET_SPECS:
+            raise ValueError(
+                f"Unknown open_meteo dataset {dataset!r}; expected one of "
+                f"{sorted(DATASET_SPECS.keys())}"
+            )
+        spec = DATASET_SPECS[dataset]
         responses: list[RawResponse] = []
-        for location in LOCATIONS:
+        for location in spec.locations:
             try:
                 resp = await self._fetch_location(dataset, location, start, end)
                 responses.append(resp)
@@ -78,7 +86,9 @@ class OpenMeteoConnector(BaseConnector):
         end: datetime,
     ) -> RawResponse:
         """Fetch one location's data and return a RawResponse."""
-        if dataset == "historical":
+        spec = DATASET_SPECS[dataset]
+        is_historical = dataset.startswith("historical")
+        if is_historical:
             url = f"{ARCHIVE_BASE_URL}/archive"
         else:
             url = f"{FORECAST_BASE_URL}/forecast"
@@ -86,18 +96,20 @@ class OpenMeteoConnector(BaseConnector):
         request_params: dict[str, Any] = {
             "latitude": location.latitude,
             "longitude": location.longitude,
-            "hourly": ",".join(HOURLY_VARIABLES),
+            "hourly": ",".join(spec.hourly),
             "start_date": start.strftime("%Y-%m-%d"),
             "end_date": end.strftime("%Y-%m-%d"),
             "timezone": "UTC",
         }
+        if spec.extra_params:
+            request_params.update(dict(spec.extra_params))
 
         assert self._client is not None
         async with self._semaphore:
             response = await self._client.get(url, params=request_params)
             response.raise_for_status()
 
-        location_dataset = f"{dataset}_{location.name}"
+        location_dataset = f"{dataset}__{location.name}"
         return RawResponse(
             body=response.content,
             content_type="application/json",

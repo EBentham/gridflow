@@ -2,6 +2,56 @@
 
 ---
 
+## Milestone: v0.11-open-meteo-renewable-extension - Open-Meteo Renewable Extension
+
+**Shipped:** 2026-05-09
+**Phases:** 1 (F7.5) | **Plans:** 1 (4 commits)
+
+### What Was Built
+
+1. Role-split the Open-Meteo connector into 6 dataset families (demand/wind/solar × archive/forecast) via a `WeatherDatasetSpec` frozen dataclass lookup table.
+2. Three new Pydantic schemas (`DemandWeather`, `WindWeather`, `SolarWeather`) replaced the monolithic `WeatherObservation`.
+3. 25-site location coverage: 12 capacity-weighted wind sites, 6 solar sites, 7 existing demand population centres.
+4. Archive wind variable list restricted to 10m + 100m after live ERA5 probe confirmed 80/120/180m return all-null.
+5. Solar GTI parameters (`tilt=35, azimuth=180`) injected via `extra_params` tuple on the spec.
+6. Air density derived via ideal-gas law for demand + wind; property-tested over 18 (T, P) combinations.
+7. 74 net new tests; 1116 total passing after code-review fix sweep.
+
+### What Worked
+
+- **Live API probe before coding** (two curl calls to ERA5) directly shaped the archive variable list and saved a full backfill of null-filled data.
+- **Advisor pre-execution review** caught that wave 1 alone couldn't stay green (test imports of deleted symbols) before any code was written, avoiding a broken intermediate commit.
+- **Plan-time formula verification** at joint extremes widened the air density test band from [0.95, 1.40] to [0.95, 1.55] — would have been a test suite bug otherwise.
+- **Code review** found two migration-sweep misses (`serving/client.py` and `scripts/run_all_sources.py`) that tests couldn't catch (string-literal references outside the grep scope).
+- **Property tests + contract tests** gave structural guarantees (spec invariants, formula identity, irradiance decomposition) that example-based tests would have missed.
+
+### What Was Inefficient
+
+- **Migration grep scope too narrow:** Scoped to `connectors/openmeteo/`, `silver/openmeteo/`, and `cli.py`. Missed `serving/` and `scripts/` which carry dataset names as string literals. A repo-wide grep sweep after any hard rename would have caught both stragglers before code review.
+- **Dead assert slipped through:** `test_openmeteo_air_density.py:107` had `assert ... if False else True` — always `True`. No linter caught it; code review did. A ruff rule for constant-condition assertions would close this gap.
+- **Vault sync not possible in-session:** F7.5-VAULT-01 required `obsidian-vault` MCP access which wasn't available in this session. Vault requirements should be flagged as MCP-gated at phase start, not discovered at DoD time.
+
+### Patterns Established
+
+- `WeatherDatasetSpec` frozen dataclass as single source of truth for all per-dataset variation (locations, variables, request params). Applicable to any connector with N role-differentiated datasets sharing the same fetch/transform logic.
+- `DERIVE_*` class variable pattern (e.g. `DERIVE_AIR_DENSITY`) for optional silver derivations. More declarative than branching on role name in base class.
+- Live API verification at plan time as a first-class verification step, not an afterthought.
+- Repo-wide string grep after any hard rename (`grep -r "'old_name'" src/ scripts/ tests/`).
+
+### Key Lessons
+
+- Pre-execution advisor review pays off most on refactors touching many test files simultaneously.
+- Physical formula property tests should always be written after verifying bounds at joint extremes, not at typical values.
+- Vault requirements that depend on external MCP servers must be flagged as conditional at phase-planning time.
+- String-literal dataset names in serving code and scripts are invisible to import-graph analysis — only a repo-wide string grep catches migration stragglers.
+
+### Cost Observations
+
+- Sessions: 1 (extended worktree session spanning plan → execute → verify → review → fix → learnings → milestone)
+- Notable: F7.5 was planned, executed, verified, code-reviewed, and closed in a single session using parallel agent spawning for verification and review.
+
+---
+
 ## Milestone: v0.5-entsog-pipeline-validation - ENTSOG Pipeline Validation
 
 **Shipped:** 2026-05-04

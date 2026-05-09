@@ -15,48 +15,36 @@ schema-valid output — verified end-to-end, not just in unit tests.
 
 ## Current State
 
-**Shipped:** v0.8-fundamentals-model-silver-foundations F0 on 2026-05-05.
+**Shipped:** v0.11-open-meteo-renewable-extension F7.5 on 2026-05-09.
 
-gridflow now has connector validation patterns for ENTSO-E, Elexon, ENTSOG,
-NESO, and GIE AGSI: registry-driven inventory checks, mocked request-shape coverage,
-fixture-backed bronze-to-silver tests, opt-in live API validation, and isolated
-CLI/backfill smoke tests.
+gridflow now carries 6 Open-Meteo dataset families (demand, wind, solar × archive/forecast) with role-specific location lists (25 sites), hub-height wind (10m + 100m, archive-verified), full irradiance components (GHI/DNI/DHI/GTI), cloud-cover decomposition, snow, and derived air density. All active endpoints across 6 vendors are live-validated; V1 production bugs fixed by V2. Silver is bitemporal-ready for `gridflow_models` consumption.
 
-**Current focus:** F0 is implemented and verified. The next decision is whether
-to begin `gridflow_models` F1 planning or first run the documented historical
-reingest commands when bronze partitions are available locally.
+**Current focus:** Wind/solar silver schema is production-ready. Next decisions:
+1. Run wind/solar bronze backfill 2018-2025 (commands in F7.5-RESULTS.md) — requires live API confirmation.
+2. Begin `gridflow_models` F1 planning — can now use the new 25-site silver for wind/solar features.
+3. Vault sync for open-meteo when `obsidian-vault` MCP is available (closes F7.5-VAULT-01).
 
-## Current Milestone: v0.8 Fundamentals Model Silver Foundations
+## Last Milestone: v0.11 Open-Meteo Renewable Extension
 
-**Goal:** Add bitemporal-lite lineage to gridflow silver outputs for the first
-demand-forecast model datasets, while keeping the scope inside `gridflow` before
-the separate `gridflow_models` project begins.
+**Goal:** Extend the Open-Meteo connector and silver layers for production-grade UK wind and solar forecasting.
 
-**Status:** Completed 2026-05-05.
+**Status:** Completed 2026-05-09.
 
 **Delivered features:**
-- Injected `event_time`, `available_at`, `source_run_id`, and `dataset_version`
-  into silver outputs through `BaseSilverTransformer`.
-- Threaded `PipelineRunTracker.run_id` from CLI/script transform paths into
-  transformer runs.
-- Added a re-ingest mode that reconstructs historical `available_at` from bronze
-  sidecar metadata.
-- Preserved `issue_time` for `elexon/ndf` and `elexon/windfor` where publish
-  metadata exists.
-- Verified DuckDB compatibility, tests, and handoff documentation for
-  `gridflow_models`.
+- Role-split connector: 6 dataset-specific `WeatherDatasetSpec` entries replace monolithic location/variable pattern.
+- Three Pydantic schemas: `DemandWeather`, `WindWeather`, `SolarWeather` (replaces `WeatherObservation`).
+- Hub-height wind: ERA5 archive limited to 10m + 100m (live-verified 2026-05-09); forecast carries wider set.
+- Derived air density: `ρ = P / (287.05 × T_K)` for demand + wind; property-tested over 18 (T, P) combinations.
+- GTI solar via `extra_params=(("tilt","35"),("azimuth","180"))` on spec.
+- `DATASET_VERSION` 1.0.0 → 2.0.0 across all 6 transformers.
+- 74 new tests; 1116 total passing (net +74 over pre-F7.5 baseline).
+- ADR-020 for location approximation decision.
 
-Historical broad re-transform for `elexon/indo`, `elexon/fuelhh`,
-`elexon/windfor`, `elexon/ndf`, and `open_meteo/historical` is documented but
-not run locally because this workspace has no `data/bronze/` partitions.
+## Previous Milestone: v0.8 Fundamentals Model Silver Foundations
 
-## Last Milestone: v0.7 GIE AGSI Gas Storage Validation
+**Goal:** Add bitemporal-lite lineage to gridflow silver outputs.
 
-**Goal:** Make GIE AGSI gas storage a fully validated pipeline source, from API
-endpoint inventory through count-complete bronze ingestion, silver output, and
-opt-in live confidence tests.
-
-**Status:** Completed 2026-05-04.
+**Status:** Completed 2026-05-05.
 
 **Target features:**
 - Research and document official GIE AGSI endpoint families and query scopes.
@@ -121,24 +109,29 @@ opt-in live confidence tests.
 - [x] Re-ingest mode reconstructs historical `available_at` from bronze sidecar metadata when available - v0.8-fundamentals-model-silver-foundations F0
 - [x] `elexon/ndf` and `elexon/windfor` preserve `issue_time` from publish metadata where present - v0.8-fundamentals-model-silver-foundations F0
 - [x] DuckDB views, focused tests, and `F0-RESULTS.md` prove the handoff contract for `gridflow_models` - v0.8-fundamentals-model-silver-foundations F0
+- [x] Open-Meteo role-split: 6 datasets (demand/wind/solar × archive/forecast) with role-specific location lists (25 sites), hub-height wind (10m+100m archive-verified), irradiance components, cloud-cover decomposition, snow, derived air density - v0.11-open-meteo-renewable-extension F7.5
+- [x] Hard rename `historical`→`historical_demand`, `forecast`→`forecast_demand`; `DATASET_VERSION` 1.0.0→2.0.0; ADR-020 for location approximation — v0.11 F7.5
+- [x] All active V1 production bugs fixed (Elexon freq, NESO regional, REMIT/SOSO cap, system_prices run_type, ENTSOE A09 dedup, ENTSOG 404 short-circuit) — v0.10 V2
+- [x] All 156 active gridflow endpoints live-validated; vault documentation populated — v0.9 V1
 
 ### Active
 
-- [ ] Decide whether to start `gridflow_models` F1 next or run historical reingest once bronze partitions are available.
-- [ ] Run the documented F0 `--reingest` commands when local historical bronze exists.
+- [ ] Run Open-Meteo wind/solar bronze backfill 2018-2025 — ~52K location-days; commands in F7.5-RESULTS.md. Requires explicit live API confirmation.
+- [ ] Run F0 `--reingest` commands when local historical bronze exists.
+- [ ] Decide: start `gridflow_models` F1 next or prioritise backfill first.
+- [ ] Vault sync for open-meteo when `obsidian-vault` MCP is available (closes F7.5-VAULT-01).
 
 ### Out of Scope
 
 - Live tests running in CI — no ENTSO-E API key in CI environment
-- GIE ALSI LNG validation - v0.7 focuses on AGSI gas storage; ALSI remains a follow-up connector-confidence candidate
+- GIE ALSI LNG validation — backlog, AGSI gas storage validated in v0.7
 - Gold layer validation — no gold consumers of ENTSO-E data yet
 - GAP-03b psrType semantic mapping — backlog, no gold consumers of wind_solar_forecast
-
-- Creating the `gridflow_models` repository - v0.8 prepares silver data first; model project scaffolding begins after F0.
-- Append-only revision storage - deferred until stack, imbalance, or carbon model datasets need revision history.
-- Re-ingesting every silver dataset - F0 is limited to the first demand-forecast foundation datasets.
-- Scheduled live smoke monitoring - remains a cross-source follow-up outside this silver lineage milestone.
-- Deferred ENTSO-E/Elexon/ENTSOG promotion decisions - tracked as backlog unless a model phase consumes them.
+- Creating the `gridflow_models` repository — v0.8/v0.11 prepare silver data first
+- Append-only revision storage — deferred until stack/imbalance datasets need revision history
+- Open-Meteo `minutely_15` (Workstream C) — gated on AROME 2026 boundary verification
+- Open-Meteo `/v1/ensemble` — deferred until F7.5 silver produces residuals downstream
+- Scheduled live smoke monitoring — cross-source follow-up, not yet scoped
 
 ## Context
 
@@ -233,6 +226,14 @@ opt-in live confidence tests.
 | Use `open_meteo/historical` in F0 | This is the actual registered source/dataset pair in `config/sources.yaml` and the Open-Meteo transformer | Adopted |
 | Keep F0 dependency-neutral unless agreed otherwise | The supplied F0 spec asks for Hypothesis while also saying no new dependencies; pytest-based property-style checks fit the current stack | Adopted |
 | Preserve forecast `issue_time` for F0 forecast datasets | Architecture v3.1 requires forecast vintages, and F0 includes `elexon/ndf` and `elexon/windfor` | Adopted |
+| Hard rename openmeteo datasets (no aliases) | Clean break per CLAUDE.md no-compat-shim rule; all callers in one local repo | ✓ Good |
+| WeatherDatasetSpec frozen dataclass as single source of truth | Eliminates drift between connector, transformer, config, and tests for 6 dataset variants | ✓ Good |
+| Archive wind heights limited to 10m + 100m | ERA5 archive confirmed via live probe: 80/120/180m return all-null; live validation before building prevents silent null-fill silver | ✓ Good |
+| Wave isolation abandoned; atomic commit for refactor + tests | Tests imported symbols being deleted; wave 1 alone couldn't stay green — pre-exec advisor review caught this | ✓ Good |
+| Air density band `[0.95, 1.55]` not `[0.95, 1.40]` | Formula verification at joint extreme (T=-30°C, P=1050 hPa) → 1.504 kg/m³ before writing property tests | ✓ Good |
+| DERIVE_* class variables for optional silver derivations | More declarative than string comparisons in base class; each subclass self-documents what it derives | Adopted |
+| Double-underscore separator in bronze compound keys | Avoids ambiguous parsing when dataset prefix is multi-word; contract test enforces no `__` in location names | Adopted |
+| Location centroids over per-turbine NRO coordinates (ADR-020) | Per-turbine NRO coordinates not freely available; centroid precision is acceptable for boosted feature inputs | Adopted |
 
 ## Evolution
 
@@ -252,4 +253,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-05 after completing F0 Fundamentals Model Silver Foundations*
+*Last updated: 2026-05-09 after completing v0.11 Open-Meteo Renewable Extension*
