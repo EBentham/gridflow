@@ -433,3 +433,53 @@ curl --ssl-no-revoke -fsS \
 **Out-of-V2-scope follow-up (queued for V2-PLAN-F backlog):**
 
 Existing bronze files for `freq` were captured with the wrong param names — they hold "latest 5761 samples" instead of the requested window. Historical re-ingest is required to get correct windowed data on disk.
+
+### V2-PLAN-C re-validation rows (2026-05-09)
+
+| Dataset | V1 issue | V2 outcome |
+|---------|----------|------------|
+| `remit` | HTTP 400 on >1-day window with default `max_chunk_hours=24` | 23h window 200 (182 KB); 25h window 400 ("date range ... must not exceed 1 day"). Boundary confirmed; connector cap = 23h. |
+| `soso` | Same 1-day cap as REMIT | 23h window 200 (913 KB); 25h window 400. Same boundary. |
+| `system_prices` | Pydantic regex `^(II\|SF\|R[1-3]\|RF\|DF)$` rejected live `priceDerivationCode = "N"` | Field renamed `price_derivation_code` (no regex constraint). `run_type` made `Optional[str] = None` because `/balancing/settlement/system-prices/{date}` exposes no run-type field. 48-row 2026-05-06 round-trip → 0 Pydantic errors. Distinct `price_derivation_code` values observed: `['N', 'P']`. |
+
+#### REMIT 23h pass / 25h fail evidence
+
+```bash
+# 23h — passes
+curl --ssl-no-revoke -fsS \
+  "https://data.elexon.co.uk/bmrs/api/v1/datasets/REMIT?publishDateTimeFrom=2026-05-06T00:00Z&publishDateTimeTo=2026-05-06T23:00Z&format=json"
+# → HTTP 200, 182 693 bytes
+
+# 25h — fails (vendor cap)
+curl --ssl-no-revoke -sS \
+  "https://data.elexon.co.uk/bmrs/api/v1/datasets/REMIT?publishDateTimeFrom=2026-05-06T00:00Z&publishDateTimeTo=2026-05-07T01:00Z&format=json"
+# → HTTP 400, body: {"errors":{"":["The date range between PublishDateTimeFrom and PublishDateTimeTo inclusive must not exceed 1 day"]}}
+```
+
+#### system_prices Pydantic round-trip
+
+Three live `/system-prices/{date}` payloads (2025-11-01, 2026-04-15,
+2026-05-06) all carry `priceDerivationCode` ∈ `{N, P}`. After V2-FIX-04
+the silver transformer maps the field to `price_derivation_code` and
+the Pydantic schema accepts both values without a regex constraint;
+`run_type` stays absent in the silver output (because the endpoint
+exposes no run-type field) and the schema's
+`run_type: str | None = Field(default=None, ...)` allows that.
+
+#### Regression tests
+
+- `tests/unit/test_elexon_endpoints.py::TestRemitSosoMaxChunkHours` —
+  parametric assertions on `ENDPOINTS["remit"].max_chunk_hours == 23`
+  and `ENDPOINTS["soso"].max_chunk_hours == 23`. RED before V2-C, GREEN
+  after.
+- `tests/unit/test_silver_transforms.py::TestSystemPriceTransformer::test_price_derivation_code_maps_to_own_column`
+  — RED before fix; after fix asserts the silver output carries
+  `price_derivation_code` and not `run_type` for live-shape rows.
+- `tests/unit/test_schemas.py::TestElexonSystemPrice::test_run_type_optional`,
+  `test_price_derivation_code_accepts_live_values`,
+  `test_price_derivation_code_optional` — schema-level checks for the
+  three new contracts.
+- `tests/integration/test_elexon_mocked_e2e.py` — `remit` and `soso`
+  PUBLISH_DATETIME assertions updated to expect the 23h chunk
+  boundary.
+- Full fast suite: `1038 passed, 253 deselected`.

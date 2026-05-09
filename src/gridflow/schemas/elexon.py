@@ -23,7 +23,21 @@ class SettlementRunType(str, Enum):
 
 
 class ElexonSystemPrice(BaseSchema):
-    """Silver-layer schema for Elexon System Buy/Sell Prices."""
+    """Silver-layer schema for Elexon System Buy/Sell Prices.
+
+    `run_type` is the BSC settlement run identifier (II/SF/R1-R3/RF/DF)
+    used for bitemporal precedence in `_resolve_runs`. The current
+    `/balancing/settlement/system-prices/{date}` endpoint does not
+    expose any field that maps to this concept, so live silver from
+    that endpoint has `run_type=None`. Older fixtures and any future
+    endpoint that surfaces `settlementRunType` will populate it.
+
+    `price_derivation_code` is the live API's `priceDerivationCode`
+    field — describes how the SBP/SSP was derived for the period.
+    Observed values include 'N' (normal) and 'P' (provisional). No
+    regex constraint because the value list is vendor-managed and
+    open-ended (V2-FIX-04).
+    """
 
     settlement_date: date
     settlement_period: int = Field(ge=1, le=50)
@@ -31,7 +45,8 @@ class ElexonSystemPrice(BaseSchema):
     system_sell_price: float = Field(ge=-500, le=10000)  # GBP/MWh
     system_buy_price: float = Field(ge=-500, le=10000)
     net_imbalance_volume: float  # MWh
-    run_type: str = Field(pattern=r"^(II|SF|R[1-3]|RF|DF)$")
+    run_type: str | None = Field(default=None, pattern=r"^(II|SF|R[1-3]|RF|DF)$")
+    price_derivation_code: str | None = None
     data_provider: str = Field(default="elexon")
     ingested_at: datetime | None = None
 

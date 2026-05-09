@@ -209,6 +209,27 @@ class TestBuildParamsPublishDatetime:
         assert "settlementDate" not in params
 
 
+class TestRemitSosoMaxChunkHours:
+    """V2-FIX-03: Elexon enforces an undocumented max-1-day window on
+    /datasets/REMIT and /datasets/SOSO. The default `max_chunk_hours=24`
+    sits exactly at the boundary and crosses it on DST shifts. Use 23
+    to leave a margin."""
+
+    def test_remit_max_chunk_hours_23(self):
+        ep = ENDPOINTS["remit"]
+        assert ep.max_chunk_hours == 23, (
+            "REMIT must declare max_chunk_hours=23; vendor enforces an "
+            "undocumented max-1-day query window (HTTP 400 otherwise)."
+        )
+
+    def test_soso_max_chunk_hours_23(self):
+        ep = ENDPOINTS["soso"]
+        assert ep.max_chunk_hours == 23, (
+            "SOSO must declare max_chunk_hours=23; same vendor 1-day cap "
+            "as REMIT."
+        )
+
+
 class TestBuildParamsNoParams:
     def test_bmunits_no_query_params(self):
         ep = ENDPOINTS["bmunits_reference"]

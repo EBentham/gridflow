@@ -233,17 +233,23 @@ ENDPOINTS: dict[str, ElexonEndpoint] = {
     ),
 
     # --- REMIT outage messages ---
+    # Vendor enforces an undocumented max-1-day query window: requests
+    # spanning > 1 day return HTTP 400. Cap chunks at 23h to leave a
+    # margin against DST shifts (boundary value).
     "remit": ElexonEndpoint(
         path="/datasets/REMIT",
         description="REMIT Outage and Unavailability Messages",
         param_style=ParamStyle.PUBLISH_DATETIME,
+        max_chunk_hours=23,
     ),
 
     # --- SO-SO prices ---
+    # Same undocumented max-1-day cap as REMIT.
     "soso": ElexonEndpoint(
         path="/datasets/SOSO",
         description="SO-SO Prices (Cross-Border Interconnector Trading)",
         param_style=ParamStyle.PUBLISH_DATETIME,
+        max_chunk_hours=23,
     ),
 
     # --- Settlement Market Depth (DATE_PATH) ---
