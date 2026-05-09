@@ -104,12 +104,12 @@ def test_air_density_not_derived_for_solar() -> None:
     # so the transformer's DERIVE_AIR_DENSITY is False — silver carries no
     # air_density_kg_m3 column.
     assert HistoricalSolarWeather.DERIVE_AIR_DENSITY is False
-    assert "air_density_kg_m3" not in HistoricalSolarWeather()._output_columns() if False else True  # noqa: E501
 
     t = HistoricalSolarWeather.__new__(HistoricalSolarWeather)
     t.data_dir = Path("/tmp/test")
     t.bronze_dir = Path("/tmp/test/bronze/open_meteo/historical_solar")
     t.silver_dir = Path("/tmp/test/silver/open_meteo/historical_solar")
+    assert "air_density_kg_m3" not in t._output_columns()
     df = pl.DataFrame(
         [{
             "time": "2024-06-15T12:00",

@@ -67,7 +67,7 @@ PUBLIC_SOURCES: dict[str, list[str]] = {
         "generation_by_fuel",
         "bmunits_reference",
     ],
-    "open_meteo": ["historical", "forecast"],
+    "open_meteo": ["historical_demand", "forecast_demand"],
     "entsog": ["physical_flows"],
     "neso": ["carbon_intensity"],
 }
