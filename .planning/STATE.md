@@ -87,7 +87,7 @@ The Avast `curl --ssl-no-revoke` workaround locked in V1-CONTEXT.md
 applies to any verification curl. F7.5 itself does not require live
 ingest; it is a refactor + schema split + docs phase.
 
-Last activity: 2026-05-09 — F7.5 learnings extracted (24 items: 8 decisions, 5 lessons, 6 patterns, 5 surprises) to `F7.5-LEARNINGS.md`.
+Last activity: 2026-05-09 — v0.11 milestone archived (tag v0.11); branch `claude/interesting-banach-edb71f` pushed to origin; PR ready for creation at https://github.com/EBentham/gridflow/pull/new/claude/interesting-banach-edb71f.
 
 ## Prior milestone
 
