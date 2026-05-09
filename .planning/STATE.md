@@ -1,17 +1,17 @@
 ---
 milestone: v0.11
 milestone_name: Open-Meteo Renewable Extension
-status: planned
+status: complete
 progress:
   phases_total: 1
-  phases_complete: 0
+  phases_complete: 1
   plans_total: 1
-  plans_complete: 0
+  plans_complete: 1
 ---
 
 ## Current Position
 
-Phase F7.5 planned on `claude/interesting-banach-edb71f` (worktree),
+Phase F7.5 complete on `claude/interesting-banach-edb71f` (worktree),
 2026-05-09. F7.5 extends the Open-Meteo connector and silver layers to
 support production-grade UK wind and solar forecasting downstream — three
 role-specific datasets (demand, wind, solar) at three role-specific
@@ -42,10 +42,30 @@ plan:
 
 Plans (1 wave):
 
-- [ ] `F7.5-01-PLAN.md` — Connector + endpoints refactor + silver schema
-  split + transformer split + config + tests + vault docs (commits in
-  this order: (1) endpoints/connector refactor, (2) schemas+transformers
-  +tests, (3) config, (4) vault+ADR-020).
+- [x] `F7.5-01-PLAN.md` — Connector + endpoints refactor + silver schema
+  split + transformer split + config + tests + vault docs. Shipped in
+  three commits:
+  - `7369f15 feat(F7.5): role-split openmeteo connector, schemas, transformers, tests`
+  - `698db64 feat(F7.5): six openmeteo dataset blocks in config/sources.yaml`
+  - `(this commit) docs(F7.5): in-repo open-meteo docs + ADR-020 + RESULTS`
+
+Test status at close: **1116 passed, 251 deselected**
+(`PYTHONPATH=src python -m pytest -m "not live and not slow" -x -q`).
+Pre-F7.5 baseline (post-V2 close) was 1042 passed; net +74 (new
+location-list, variable-list, schema, dataset-spec, air-density, and
+irradiance-component tests).
+
+12/13 requirements complete. F7.5-VAULT-01 marked partial: in-repo
+`docs/endpoints/open_meteo.md` and `docs/ENDPOINT_REFERENCE.md` fully
+updated; the Obsidian vault at `quant-vault/30-vendors/open-meteo/`
+(symlinked content per `.gitignore`) needs a follow-up sync from a
+session with `obsidian-vault` MCP server access.
+
+ADRs added:
+- `docs/DECISION_LOG/ADR-020-openmeteo-location-approximation.md`
+  (records the decision to use approximate site centroids for the 18
+  capacity-weighted wind/solar locations rather than per-turbine NRO
+  coordinates).
 
 Out of scope, recorded in backlog:
 
@@ -63,7 +83,7 @@ The Avast `curl --ssl-no-revoke` workaround locked in V1-CONTEXT.md
 applies to any verification curl. F7.5 itself does not require live
 ingest; it is a refactor + schema split + docs phase.
 
-Last activity: 2026-05-09 — F7.5 planned; execution next.
+Last activity: 2026-05-09 — F7.5 phase shipped.
 
 ## Prior milestone
 

@@ -13,7 +13,7 @@
 - Complete **v0.8-fundamentals-model-silver-foundations** - Fundamentals Model Silver Foundations F0 (completed 2026-05-05)
 - Complete **v0.9-vault-vendor-validation-and-docs** - Live-validate every active gridflow endpoint and populate `quant-vault/30-vendors/` V1 (completed 2026-05-08)
 - Complete **v0.10-v1-vendor-bugfix-followups** - Fix the production bugs surfaced (but not patched) by V1 across Elexon, NESO, ENTSOE, ENTSOG (V2) (completed 2026-05-09)
-- Current **v0.11-open-meteo-renewable-extension** - Extend Open-Meteo connector for wind/solar forecasting (F7.5)
+- Complete **v0.11-open-meteo-renewable-extension** - Extend Open-Meteo connector for wind/solar forecasting (F7.5) (completed 2026-05-09)
 
 ---
 
@@ -279,9 +279,9 @@ Plans (2 in wave 1 — HIGH bugs, parallel · 3 in wave 2 — MED/LOW bundles, p
 ---
 
 <details open>
-<summary>Current v0.11-open-meteo-renewable-extension - Open-Meteo Connector Extension for Renewable Forecasting (F7.5) - PLANNED 2026-05-09</summary>
+<summary>Complete v0.11-open-meteo-renewable-extension - Open-Meteo Connector Extension for Renewable Forecasting (F7.5) - COMPLETED 2026-05-09</summary>
 
-- [ ] Phase F7.5: Open-Meteo connector extension for wind/solar forecasting
+- [x] Phase F7.5: Open-Meteo connector extension for wind/solar forecasting - completed 2026-05-09
 
 ### Phase Details
 
@@ -307,7 +307,16 @@ Requirements:
 - F7.5-VAULT-01: `quant-vault/30-vendors/open-meteo/README.md`, `endpoints.md`, and the dataset pages reflect the six new datasets, the three location lists, and the archive 10m+100m limitation.
 
 Plans (1 wave, sequential within wave):
-- [ ] `F7.5-01-PLAN.md` - Connector + endpoints refactor + silver schema split + transformer split + config + tests + vault docs
+- [x] `F7.5-01-PLAN.md` - Connector + endpoints refactor + silver schema split + transformer split + config + tests + vault docs - completed 2026-05-09
+
+Outcomes (3 commits):
+- `7369f15 feat(F7.5): role-split openmeteo connector, schemas, transformers, tests`
+- `698db64 feat(F7.5): six openmeteo dataset blocks in config/sources.yaml`
+- `(this commit) docs(F7.5): vault docs + ADR-020 + RESULTS`
+
+12/13 requirements complete; F7.5-VAULT-01 partial (in-repo docs/endpoints/open_meteo.md and docs/ENDPOINT_REFERENCE.md fully updated; Obsidian vault sync deferred to a session with `obsidian-vault` MCP server access).
+
+Test results: **1116 passed, 251 deselected** (`pytest -m "not live and not slow"`). Net +74 over pre-F7.5 baseline.
 
 </details>
 
