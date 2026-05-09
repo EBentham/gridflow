@@ -309,12 +309,15 @@ Requirements:
 Plans (1 wave, sequential within wave):
 - [x] `F7.5-01-PLAN.md` - Connector + endpoints refactor + silver schema split + transformer split + config + tests + vault docs - completed 2026-05-09
 
-Outcomes (3 commits):
+Outcomes (4 commits):
 - `7369f15 feat(F7.5): role-split openmeteo connector, schemas, transformers, tests`
 - `698db64 feat(F7.5): six openmeteo dataset blocks in config/sources.yaml`
-- `(this commit) docs(F7.5): vault docs + ADR-020 + RESULTS`
+- `0aa85a6 docs(F7.5): in-repo open-meteo docs + ADR-020 + RESULTS close-out`
+- `ec914e1 fix(F7.5): sweep migration stragglers caught by code review`
 
-12/13 requirements complete; F7.5-VAULT-01 partial (in-repo docs/endpoints/open_meteo.md and docs/ENDPOINT_REFERENCE.md fully updated; Obsidian vault sync deferred to a session with `obsidian-vault` MCP server access).
+Verification: PASS_WITH_DEFERRALS — 12/13 requirements verified, all 6 threat-model mitigations have explicit tests; F7.5-VAULT-01 partial (in-repo `docs/endpoints/open_meteo.md` and `docs/ENDPOINT_REFERENCE.md` are updated; Obsidian vault sync deferred to a session with `obsidian-vault` MCP server access).
+
+Code review: 1 HIGH (`serving/client.py::get_weather()` queried deleted `silver_historical` view) + 2 MEDIUM (`scripts/run_all_sources.py` mapped `["historical","forecast"]`; `tests/.../test_openmeteo_air_density.py` dead assert) — all fixed in `ec914e1`.
 
 Test results: **1116 passed, 251 deselected** (`pytest -m "not live and not slow"`). Net +74 over pre-F7.5 baseline.
 

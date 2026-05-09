@@ -44,10 +44,14 @@ Plans (1 wave):
 
 - [x] `F7.5-01-PLAN.md` — Connector + endpoints refactor + silver schema
   split + transformer split + config + tests + vault docs. Shipped in
-  three commits:
+  four commits (three planned + one review-fix sweep):
   - `7369f15 feat(F7.5): role-split openmeteo connector, schemas, transformers, tests`
   - `698db64 feat(F7.5): six openmeteo dataset blocks in config/sources.yaml`
-  - `(this commit) docs(F7.5): in-repo open-meteo docs + ADR-020 + RESULTS`
+  - `0aa85a6 docs(F7.5): in-repo open-meteo docs + ADR-020 + RESULTS close-out`
+  - `ec914e1 fix(F7.5): sweep migration stragglers caught by code review`
+    (1 HIGH `serving/client.py::get_weather()` queried deleted view +
+     2 MEDIUM `scripts/run_all_sources.py` and `tests/.../test_openmeteo_air_density.py`
+     dead assert + 1 docstring `scripts/export_to_csv.py` help text)
 
 Test status at close: **1116 passed, 251 deselected**
 (`PYTHONPATH=src python -m pytest -m "not live and not slow" -x -q`).
