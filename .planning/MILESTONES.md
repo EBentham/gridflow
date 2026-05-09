@@ -2,6 +2,38 @@
 
 ---
 
+## v0.11-open-meteo-renewable-extension - Open-Meteo Renewable Extension
+
+**Completed:** 2026-05-09
+**Phases:** F7.5 (1 phase, 1 plan, 4 commits)
+**Test suite:** 1116 passed, 251 deselected (net +74 over pre-F7.5 baseline)
+
+### Delivered
+
+Extended the Open-Meteo connector and silver layer into three role-specific dataset families (demand, wind, solar) with role-specific location lists (7 + 12 + 6 = 25 sites) and variable sets. Silver now carries hub-height wind (10m + 100m, ERA5 archive-verified), full irradiance components (GHI/DNI/DHI/GTI), cloud-cover decomposition, snow variables, and derived air density, all at `DATASET_VERSION = "2.0.0"`.
+
+### Key Accomplishments
+
+1. **Role-split connector:** `WeatherDatasetSpec` dataclass + `DATASET_SPECS` lookup table replaces the single `LOCATIONS`/`HOURLY_VARIABLES` pattern with 6 dataset-specific specs.
+2. **Hub-height verification:** Live ERA5 archive probe confirmed only 10m + 100m are reliably served; archive variable list restricted accordingly. Wind shear (100m/10m ratio) is preserved as an implicit signal.
+3. **Three schema families:** `DemandWeather`, `WindWeather`, `SolarWeather` replace monolithic `WeatherObservation`, each with appropriate field sets.
+4. **Air density derivation:** `ρ = P / (287.05 × T_K)` implemented with property tests over 18 (T, P) combinations; band `[0.95, 1.55]` widened from original `[0.95, 1.40]` after plan-time formula verification.
+5. **Migration sweep:** Hard rename `historical` → `historical_demand` / `forecast` → `forecast_demand` + code review caught two stale string-literal references (`serving/client.py` and `scripts/run_all_sources.py`).
+6. **74 new tests:** location-list, variable-list, schema, dataset-spec contract, air-density property, and irradiance-component invariant tests.
+
+### Known Deferred Items at Close
+
+- **F7.5-VAULT-01**: Obsidian vault sync (`quant-vault/30-vendors/open-meteo/`) — requires `obsidian-vault` MCP server session. In-repo docs are the version-controlled substitute.
+- Open-Meteo `minutely_15` forecast resolution (Workstream C) — gated on AROME 2026 boundary verification.
+- Wind/solar bronze backfill 2018-2025 (~52K location-days) — commands documented in F7.5-RESULTS.md.
+
+### Archive
+
+- [v0.11-open-meteo-renewable-extension-ROADMAP.md](milestones/v0.11-open-meteo-renewable-extension-ROADMAP.md)
+- [v0.11-open-meteo-renewable-extension-REQUIREMENTS.md](milestones/v0.11-open-meteo-renewable-extension-REQUIREMENTS.md)
+
+---
+
 ## v0.6-neso-carbon-intensity-platform - NESO Carbon Intensity Platform
 
 **Completed:** 2026-05-04

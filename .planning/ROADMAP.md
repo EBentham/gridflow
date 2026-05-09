@@ -278,7 +278,7 @@ Plans (2 in wave 1 — HIGH bugs, parallel · 3 in wave 2 — MED/LOW bundles, p
 
 ---
 
-<details open>
+<details>
 <summary>Complete v0.11-open-meteo-renewable-extension - Open-Meteo Connector Extension for Renewable Forecasting (F7.5) - COMPLETED 2026-05-09</summary>
 
 - [x] Phase F7.5: Open-Meteo connector extension for wind/solar forecasting - completed 2026-05-09
@@ -320,6 +320,8 @@ Verification: PASS_WITH_DEFERRALS — 12/13 requirements verified, all 6 threat-
 Code review: 1 HIGH (`serving/client.py::get_weather()` queried deleted `silver_historical` view) + 2 MEDIUM (`scripts/run_all_sources.py` mapped `["historical","forecast"]`; `tests/.../test_openmeteo_air_density.py` dead assert) — all fixed in `ec914e1`.
 
 Test results: **1116 passed, 251 deselected** (`pytest -m "not live and not slow"`). Net +74 over pre-F7.5 baseline.
+
+See full details: [milestones/v0.11-open-meteo-renewable-extension-ROADMAP.md](milestones/v0.11-open-meteo-renewable-extension-ROADMAP.md)
 
 </details>
 
