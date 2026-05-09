@@ -144,7 +144,67 @@ fix.
   `.tmp/elexon-freq-correct-name.json`.
 </acceptance_criteria>
 
-### Task 3 — Apply the fix in `endpoints.py`
+### Task 3 — Add failing regression test (RED)
+
+> TDD ordering: write the test against the unfixed code first; confirm
+> it fails for the reason we expect (wrong param names emitted). Then
+> Task 4 applies the fix and the same test goes green. Avoids any
+> stash-and-replay choreography.
+
+<read_first>
+- tests/integration/test_elexon_e2e.py (or wherever existing Elexon
+  endpoint-shape tests live — search with
+  `grep -rn "publishDateTimeFrom\|build_params" tests/`)
+- src/gridflow/connectors/elexon/endpoints.py::build_params
+- src/gridflow/connectors/elexon/client.py (for how params are folded
+  into the request URL)
+</read_first>
+
+<action>
+Add a new test to the most appropriate file (prefer
+`tests/unit/connectors/test_elexon_endpoints.py` if it exists; create
+under `tests/integration/test_elexon_e2e.py` otherwise — match the
+project's existing test placement pattern). The test must:
+
+1. Call `build_params(ENDPOINTS["freq"], start=datetime(2024,1,1,0,0,tzinfo=UTC), end=datetime(2024,1,1,3,0,tzinfo=UTC))`.
+2. Assert `"measurementDateTimeFrom" in params and "measurementDateTimeTo" in params`.
+3. Assert `"publishDateTimeFrom" not in params and "publishDateTimeTo" not in params`.
+
+Add a second test using `respx` (if Elexon E2E tests use respx; otherwise
+skip and do this in a follow-up):
+1. Mock `https://data.elexon.co.uk/bmrs/api/v1/datasets/FREQ` with a
+   2-row JSON payload.
+2. Call the connector's freq fetch with a 3-hour window.
+3. Assert the recorded request URL contains `measurementDateTimeFrom`
+   and does NOT contain `publishDateTimeFrom`.
+
+Run the new tests against the unfixed code:
+```bash
+uv run pytest -m "not live and not slow" -x -q -k freq tests/
+```
+
+Confirm at least one new test FAILS with an assertion error pointing
+at `publishDateTimeFrom` being present (or `measurementDateTimeFrom`
+being absent). This proves the test would have caught the V1 bug.
+
+Do NOT commit the test on its own — keep it in the working tree;
+Task 4 applies the fix and Task 7 commits the test + fix together
+under one `fix(V2-A):` commit (regression test alongside the fix it
+covers).
+</action>
+
+<acceptance_criteria>
+- New test(s) exist with `freq` and `measurementDateTime` in name or
+  body.
+- Running the new tests against the unfixed `endpoints.py` produces
+  at least one FAILED test with an assertion mentioning
+  `publishDateTime` or `measurementDateTime`.
+- The previously-green portion of the test suite still passes — the
+  new failures are limited to the `freq` regression tests.
+- No commit is made yet; the test file is staged-pending.
+</acceptance_criteria>
+
+### Task 4 — Apply the fix (GREEN)
 
 <read_first>
 - src/gridflow/connectors/elexon/endpoints.py (full file, focus on the
@@ -181,60 +241,28 @@ with:
 Do not change `ParamStyle.PUBLISH_DATETIME` itself or the
 `build_params()` logic — the dataclass already supports per-endpoint
 override of `from_param`/`to_param`.
+
+Re-run the freq tests:
+```bash
+uv run pytest -m "not live and not slow" -x -q -k freq tests/
+```
+
+Confirm all the previously-failing tests now pass.
 </action>
 
 <acceptance_criteria>
 - `grep "freq" src/gridflow/connectors/elexon/endpoints.py` shows
   `from_param="measurementDateTimeFrom"` and
   `to_param="measurementDateTimeTo"` on the `freq` entry.
+- `uv run pytest -m "not live and not slow" -x -q -k freq tests/`
+  exits `0` — all freq tests pass.
+- `uv run pytest -m "not live and not slow" -x -q` (full fast suite)
+  exits `0` — no other tests broke.
 - `uv run mypy --strict src/gridflow/connectors/elexon/endpoints.py`
   exits `0`.
 - `uv run ruff check src/gridflow/connectors/elexon/endpoints.py` exits
   `0`.
 - No other endpoint entry's `from_param`/`to_param` changes.
-</acceptance_criteria>
-
-### Task 4 — Add regression test
-
-<read_first>
-- tests/integration/test_elexon_e2e.py (or wherever existing Elexon
-  endpoint-shape tests live — search with
-  `grep -rn "publishDateTimeFrom\|build_params" tests/`)
-- src/gridflow/connectors/elexon/endpoints.py::build_params
-- src/gridflow/connectors/elexon/client.py (for how params are folded
-  into the request URL)
-</read_first>
-
-<action>
-Add a new test to the most appropriate file (prefer
-`tests/unit/connectors/test_elexon_endpoints.py` if it exists; create
-under `tests/integration/test_elexon_e2e.py` otherwise — match the
-project's existing test placement pattern). The test must:
-
-1. Call `build_params(ENDPOINTS["freq"], start=datetime(2024,1,1,0,0,tzinfo=UTC), end=datetime(2024,1,1,3,0,tzinfo=UTC))`.
-2. Assert `"measurementDateTimeFrom" in params and "measurementDateTimeTo" in params`.
-3. Assert `"publishDateTimeFrom" not in params and "publishDateTimeTo" not in params`.
-
-Add a second test using `respx` (if Elexon E2E tests use respx; otherwise
-skip and do this in a follow-up):
-1. Mock `https://data.elexon.co.uk/bmrs/api/v1/datasets/FREQ` with a
-   2-row JSON payload.
-2. Call the connector's freq fetch with a 3-hour window.
-3. Assert the recorded request URL contains `measurementDateTimeFrom`
-   and does NOT contain `publishDateTimeFrom`.
-
-Both tests must fail before the fix in Task 3 and pass after.
-</action>
-
-<acceptance_criteria>
-- New test(s) exist with `freq` and `measurementDateTime` in name or
-  body.
-- `uv run pytest -m "not live and not slow" -x -q -k freq tests/` passes.
-- `git stash && uv run pytest -m "not live and not slow" -x -q -k freq tests/`
-  — at least one new test FAILS (proves the test would have caught the
-  bug). `git stash pop` restores the fix.
-- The full fast suite remains green:
-  `uv run pytest -m "not live and not slow" -x -q`.
 </acceptance_criteria>
 
 ### Task 5 — Live re-validation evidence

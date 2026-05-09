@@ -99,7 +99,7 @@ agents). Documented for future runs.
 
 Last activity: 2026-05-08 — V1 phase shipped.
 
-## Prior milestone
+## Earlier milestones — F0 / F7 (v0.8 and earlier)
 
 Phase: F0 complete; F7 Workstream A complete on `feat/f7-stack-and-bitemporal`
 Plan: F7-PLAN Stack Model Data Infrastructure (Workstream A — gridflow side)
