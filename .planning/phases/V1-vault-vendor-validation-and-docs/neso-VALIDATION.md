@@ -263,3 +263,74 @@ curl --ssl-no-revoke -sS -H "Accept: application/json" \
 ```
 
 All 33 invocations completed without error; no 4xx/5xx.
+
+---
+
+## V2 re-validation (2026-05-09)
+
+**Fix commit:** `fix(V2-B): NESO _rows_from_region_period reads carbon/mix from whichever level holds it`
+(SHA recorded by V2-PLAN-F aggregate close-out).
+
+The 5 period-keyed regional datasets now populate carbon and mix
+columns from `region`-level fields, falling back to `period`-level.
+Region-keyed routes unchanged.
+
+| Dataset | V1 carbon/mix populated? | V2 carbon/mix populated? |
+|---------|-------------------------|--------------------------|
+| `regional_current` | NO | YES |
+| `regional_intensity_fw24h` | NO | YES |
+| `regional_intensity_fw48h` | NO | YES |
+| `regional_intensity_pt24h` | NO | YES |
+| `regional_intensity` | NO | YES |
+
+### Re-validation evidence (representative — `regional_intensity_fw24h`)
+
+```bash
+curl --ssl-no-revoke -fsS -H "Accept: application/json" \
+  "https://api.carbonintensity.org.uk/regional/intensity/2026-05-09T00:00Z/fw24h" \
+  -o .tmp/neso-regional_intensity_fw24h-revalidation.json
+# → HTTP 200, 341 007 bytes
+```
+
+```python
+# Pipe through patched silver
+import json, polars as pl
+from gridflow.silver.neso.carbon_intensity import (
+    _extract_regional_rows, _transform_regional,
+)
+payload = json.load(open(".tmp/neso-regional_intensity_fw24h-revalidation.json"))
+df = _transform_regional(pl.DataFrame(_extract_regional_rows(payload), infer_schema_length=None))
+
+# rows: 7938  (= 18 regions × 49 periods × 9 fuels)
+# forecast_null_pct: 0.0000
+# fuel_null_pct: 0.0000
+# generation_percentage_null_pct: 0.0000
+# distinct regionids: [1..18]
+# distinct fuels: ['biomass', 'coal', 'gas', 'hydro', 'imports', 'nuclear', 'other', 'solar', 'wind']
+```
+
+### Regression tests
+
+- `tests/unit/test_neso_regional_silver.py::TestPeriodKeyedRegionalLivePayload`
+  — three tests using the trimmed live period-keyed fixture
+  (`tests/fixtures/neso/regional_intensity_fw24h_period_keyed.json`).
+  All three RED before the fix (every forecast / fuel / genpct value
+  null); GREEN after.
+- `tests/unit/test_neso_regional_silver.py::TestRegionKeyedRegionalLivePayload`
+  — three tests using the live region-keyed-object fixture
+  (`tests/fixtures/neso/regional_intensity_fw24h_region_keyed.json`).
+  GREEN both before and after the fix; protects the working branch
+  from regression.
+- Existing `tests/integration/test_neso_mocked_e2e.py` continues to
+  pass because its synthetic mocked period-keyed payloads put the
+  data on `period`; the new `region.get(...) or period.get(...)`
+  fallback handles that path identically to before.
+- Full fast suite: `1032 passed, 253 deselected`
+  (`uv run pytest -m "not live and not slow" -x -q`).
+
+### Out-of-V2-scope follow-up (queued for V2-PLAN-F backlog)
+
+Existing silver tables for the 5 affected datasets were written
+with null carbon/mix for every row. Re-running silver from existing
+bronze (or re-ingesting if bronze missing the carbon/mix fields)
+will fill them. This is data-side cleanup, separate phase.
