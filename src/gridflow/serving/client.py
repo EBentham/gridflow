@@ -38,12 +38,20 @@ class GridflowClient:
         """Get system sell/buy prices for a date range.
 
         Returns DataFrame with columns:
-            timestamp_utc, system_sell_price, system_buy_price,
-            net_imbalance_volume, run_type
+            settlement_date, settlement_period, timestamp_utc,
+            system_sell_price, system_buy_price, net_imbalance_volume,
+            price_derivation_code (when present in silver)
+
+        Note: `run_type` (BSC settlement run) is omitted — the Elexon
+        Insights API does not expose `settlementRunType` on the
+        system-prices endpoint, so the silver parquet never carries it.
+        Use `price_derivation_code` instead (describes how SSP/SBP was
+        derived for the period, e.g. 'N', 'P').
         """
         return self.query(f"""
-            SELECT timestamp_utc, system_sell_price, system_buy_price,
-                   net_imbalance_volume, run_type
+            SELECT settlement_date, settlement_period, timestamp_utc,
+                   system_sell_price, system_buy_price, net_imbalance_volume,
+                   price_derivation_code
             FROM silver_system_prices
             WHERE settlement_date BETWEEN '{start}' AND '{end}'
             ORDER BY timestamp_utc
