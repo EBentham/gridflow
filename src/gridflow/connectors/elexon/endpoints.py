@@ -209,6 +209,7 @@ ENDPOINTS: dict[str, ElexonEndpoint] = {
         path="/datasets/LOLPDRM",
         description="Loss of Load Probability and De-rated Margin",
         param_style=ParamStyle.PUBLISH_DATETIME,
+        max_chunk_hours=1,
     ),
 
     # --- REMIT outage messages ---
