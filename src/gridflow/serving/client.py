@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import warnings
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -11,6 +12,22 @@ if TYPE_CHECKING:
     from datetime import date
 
     import polars as pl
+
+# WHY: the F0 silver-layer convention adds these bitemporal / partitioning
+# columns to every silver and gold view. The user-facing get_* helpers hide
+# them via SELECT * EXCLUDE so callers see only the public surface.
+# A schema drift on the silver side (column added to public surface, or
+# bitemporal column removed) surfaces loudly: a column added flows through
+# automatically; a column removed from EXCLUDE raises BinderException.
+_BITEMPORAL_EXCLUDE = (
+    "event_time",
+    "available_at",
+    "source_run_id",
+    "dataset_version",
+    "month",
+    "year",
+)
+_BITEMPORAL_EXCLUDE_SQL = ", ".join(_BITEMPORAL_EXCLUDE)
 
 
 class GridflowClient:
@@ -25,8 +42,9 @@ class GridflowClient:
         self._db_path = Path(db_path)
         if not self._db_path.exists():
             raise FileNotFoundError(
-                f"DuckDB catalogue not found at {self._db_path}. "
-                f"Run 'gridflow init' to create it."
+                "DuckDB catalogue not found at "
+                + str(self._db_path)
+                + ". Run 'gridflow init' to create it."
             )
         self._con: duckdb.DuckDBPyConnection | None = duckdb.connect(
             str(self._db_path), read_only=True
@@ -54,17 +72,18 @@ class GridflowClient:
     ) -> pl.DataFrame:
         """Get system sell/buy prices for a date range.
 
-        Returns DataFrame with columns:
-            timestamp_utc, system_sell_price, system_buy_price,
-            net_imbalance_volume, run_type
+        Returns a Polars DataFrame with the live silver_system_prices
+        public schema (bitemporal / partitioning columns excluded). The
+        column set is what the silver transformer publishes today; new
+        columns added to the silver layer surface here automatically.
         """
-        return self.query(f"""
-            SELECT timestamp_utc, system_sell_price, system_buy_price,
-                   net_imbalance_volume, run_type
-            FROM silver_system_prices
-            WHERE settlement_date BETWEEN '{start}' AND '{end}'
-            ORDER BY timestamp_utc
-        """)
+        sql = (
+            "SELECT * EXCLUDE (" + _BITEMPORAL_EXCLUDE_SQL + ") "
+            "FROM silver_system_prices "
+            "WHERE settlement_date BETWEEN ? AND ? "
+            "ORDER BY timestamp_utc"
+        )
+        return self._require_con().execute(sql, [str(start), str(end)]).pl()
 
     def get_generation_by_fuel(
         self,
@@ -74,15 +93,29 @@ class GridflowClient:
     ) -> pl.DataFrame:
         """Get generation by fuel type for a date range.
 
-        Returns DataFrame with columns:
-            timestamp_utc, fuel_type, generation_mw
+        .. deprecated::
+            ``silver_generation_by_fuel`` was a duplicate of
+            ``silver_fuelhh`` and was removed from the silver registry
+            (see ``gridflow/silver/elexon/__init__.py``). This method
+            now queries ``silver_fuelhh`` and emits a DeprecationWarning.
+            Call :meth:`get_fuel_generation` instead, which returns the
+            full silver_fuelhh public schema.
         """
-        return self.query(f"""
-            SELECT timestamp_utc, fuel_type, generation_mw
-            FROM silver_generation_by_fuel
-            WHERE settlement_date BETWEEN '{start}' AND '{end}'
-            ORDER BY timestamp_utc, fuel_type
-        """)
+        warnings.warn(
+            "GridflowClient.get_generation_by_fuel() is deprecated; "
+            "the underlying silver_generation_by_fuel view was removed "
+            "(it duplicated silver_fuelhh). Call get_fuel_generation() "
+            "instead. This shim queries silver_fuelhh under the hood.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        sql = (
+            "SELECT timestamp_utc, fuel_type, generation_mw "
+            "FROM silver_fuelhh "
+            "WHERE settlement_date BETWEEN ? AND ? "
+            "ORDER BY timestamp_utc, fuel_type"
+        )
+        return self._require_con().execute(sql, [str(start), str(end)]).pl()
 
     def get_fuel_generation(
         self,
@@ -91,17 +124,16 @@ class GridflowClient:
     ) -> pl.DataFrame:
         """Get half-hourly fuel generation mix for the GB grid.
 
-        Returns DataFrame with columns:
-            timestamp_utc, settlement_date, settlement_period,
-            fuel_type, generation_mw, data_provider
+        Returns a Polars DataFrame with the live silver_fuelhh public
+        schema (bitemporal / partitioning columns excluded).
         """
-        return self.query(f"""
-            SELECT timestamp_utc, settlement_date, settlement_period,
-                   fuel_type, generation_mw, data_provider
-            FROM silver_fuelhh
-            WHERE settlement_date BETWEEN '{start}' AND '{end}'
-            ORDER BY timestamp_utc, fuel_type
-        """)
+        sql = (
+            "SELECT * EXCLUDE (" + _BITEMPORAL_EXCLUDE_SQL + ") "
+            "FROM silver_fuelhh "
+            "WHERE settlement_date BETWEEN ? AND ? "
+            "ORDER BY timestamp_utc, fuel_type"
+        )
+        return self._require_con().execute(sql, [str(start), str(end)]).pl()
 
     def get_gas_storage(
         self,
@@ -111,23 +143,22 @@ class GridflowClient:
     ) -> pl.DataFrame:
         """Get EU gas storage levels from GIE AGSI+.
 
-        Returns DataFrame with columns:
-            gas_day, country_code, country_name, gas_in_storage_gwh,
-            withdrawal_gwh, injection_gwh, working_gas_volume_gwh,
-            storage_pct_full, trend
+        Returns a Polars DataFrame with the gold_eu_gas_storage public
+        schema (bitemporal / partitioning columns excluded).
         """
-        where_clauses = [f"gas_day BETWEEN '{start}' AND '{end}'"]
+        params: list[str] = [str(start), str(end)]
+        country_filter = ""
         if country_code:
-            where_clauses.append(f"country_code = '{country_code}'")
-        where = " AND ".join(where_clauses)
-        return self.query(f"""
-            SELECT gas_day, country_code, country_name,
-                   gas_in_storage_gwh, withdrawal_gwh, injection_gwh,
-                   working_gas_volume_gwh, storage_pct_full, trend
-            FROM gold_eu_gas_storage
-            WHERE {where}
-            ORDER BY gas_day DESC, country_code
-        """)
+            country_filter = " AND country_code = ?"
+            params.append(country_code)
+        sql = (
+            "SELECT * EXCLUDE (" + _BITEMPORAL_EXCLUDE_SQL + ") "
+            "FROM gold_eu_gas_storage "
+            "WHERE gas_day BETWEEN ? AND ?"
+            + country_filter + " "
+            "ORDER BY gas_day DESC, country_code"
+        )
+        return self._require_con().execute(sql, params).pl()
 
     def get_weather(
         self,
@@ -137,21 +168,22 @@ class GridflowClient:
     ) -> pl.DataFrame:
         """Get historical weather observations from Open-Meteo.
 
-        Returns DataFrame with columns:
-            timestamp_utc, location, latitude, longitude,
-            temperature_2m, wind_speed_10m, precipitation, hdd, cdd
+        Returns a Polars DataFrame with the live silver_historical
+        public schema (bitemporal / partitioning columns excluded).
         """
-        where_clauses = [f"timestamp_utc::DATE BETWEEN '{start}' AND '{end}'"]
+        params: list[str] = [str(start), str(end)]
+        location_filter = ""
         if location:
-            where_clauses.append(f"location = '{location}'")
-        where = " AND ".join(where_clauses)
-        return self.query(f"""
-            SELECT timestamp_utc, location, latitude, longitude,
-                   temperature_2m, wind_speed_10m, precipitation, hdd, cdd
-            FROM silver_historical
-            WHERE {where}
-            ORDER BY timestamp_utc, location
-        """)
+            location_filter = " AND location = ?"
+            params.append(location)
+        sql = (
+            "SELECT * EXCLUDE (" + _BITEMPORAL_EXCLUDE_SQL + ") "
+            "FROM silver_historical "
+            "WHERE timestamp_utc::DATE BETWEEN ? AND ?"
+            + location_filter + " "
+            "ORDER BY timestamp_utc, location"
+        )
+        return self._require_con().execute(sql, params).pl()
 
     def get_imbalance_context(
         self,
@@ -160,23 +192,18 @@ class GridflowClient:
     ) -> pl.DataFrame:
         """Get UK imbalance context combining prices and carbon intensity.
 
-        Returns DataFrame with columns:
-            timestamp_utc, settlement_date, settlement_period,
-            system_sell_price, system_buy_price, net_imbalance_volume,
-            run_type, carbon_intensity_forecast_gco2_kwh,
-            carbon_intensity_actual_gco2_kwh, intensity_index
+        Returns a Polars DataFrame with the gold_uk_imbalance_context
+        public schema (bitemporal / partitioning columns excluded). The
+        view joins silver_system_prices and silver_carbon_intensity; new
+        columns on either side surface here automatically.
         """
-        return self.query(f"""
-            SELECT timestamp_utc, settlement_date, settlement_period,
-                   system_sell_price, system_buy_price, net_imbalance_volume,
-                   run_type,
-                   carbon_intensity_forecast_gco2_kwh,
-                   carbon_intensity_actual_gco2_kwh,
-                   intensity_index
-            FROM gold_uk_imbalance_context
-            WHERE settlement_date BETWEEN '{start}' AND '{end}'
-            ORDER BY timestamp_utc, run_type
-        """)
+        sql = (
+            "SELECT * EXCLUDE (" + _BITEMPORAL_EXCLUDE_SQL + ") "
+            "FROM gold_uk_imbalance_context "
+            "WHERE settlement_date BETWEEN ? AND ? "
+            "ORDER BY timestamp_utc"
+        )
+        return self._require_con().execute(sql, [str(start), str(end)]).pl()
 
     def get_tables(self) -> list[str]:
         """List all available tables and views."""
@@ -219,4 +246,4 @@ class GridflowClient:
         self.close()
 
     def __repr__(self) -> str:
-        return f"GridflowClient(db_path='{self._db_path}')"
+        return "GridflowClient(db_path='" + str(self._db_path) + "')"
