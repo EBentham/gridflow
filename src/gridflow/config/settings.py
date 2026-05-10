@@ -1,14 +1,54 @@
-"""Pydantic Settings model and configuration loading for gridflow."""
+"""Pydantic Settings model and configuration loading for gridflow.
+
+Path resolution: relative `data_dir`, `duckdb_path`, and `log_dir` values
+are anchored to the project root (the main git worktree), not to CWD.
+This means running a gridflow CLI from a Jupyter kernel whose CWD is
+`notebooks/` writes data to `<gridflow_root>/data/`, not
+`notebooks/data/`. See ADR-001 (project-root resolution) — ported
+verbatim from gridflow_models D-WORKTREE-PATH (commit 3e9b7e8).
+"""
 
 from __future__ import annotations
 
 import os
+import subprocess
+from functools import cache
 from pathlib import Path
 from typing import Any
 
 import yaml
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 from pydantic_settings import BaseSettings
+
+
+@cache
+def _project_root() -> Path:
+    """Resolve the project root via `git rev-parse --git-common-dir`.
+
+    Worktree-safe: from a worktree, `--git-common-dir` returns the
+    canonical .git directory; the project root is its parent.
+
+    Falls back to walk-up-for-pyproject.toml then Path.cwd() if git
+    is unavailable (CI minimal containers, sdist installs).
+
+    Ported verbatim from gridflow_models D-WORKTREE-PATH (commit 3e9b7e8).
+    """
+    here = Path(__file__).resolve().parent
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "--path-format=absolute", "--git-common-dir"],
+            cwd=here,
+            capture_output=True,
+            text=True,
+            check=True,
+            timeout=2,
+        )
+        return Path(result.stdout.strip()).parent
+    except (subprocess.SubprocessError, FileNotFoundError, OSError):
+        for parent in [here, *here.parents]:
+            if (parent / "pyproject.toml").exists():
+                return parent
+        return Path.cwd()
 
 
 class DatasetConfig(BaseModel):
@@ -42,7 +82,12 @@ class QualityConfig(BaseModel):
 
 
 class PipelineSettings(BaseSettings):
-    """Main pipeline settings, loaded from env vars and .env file."""
+    """Main pipeline settings, loaded from env vars and .env file.
+
+    Relative `data_dir`, `duckdb_path`, and `log_dir` are anchored to the
+    project root (the main git worktree) by `_resolve_paths`, not to CWD.
+    See ADR-001.
+    """
 
     model_config = {"env_prefix": "GRIDFLOW_", "env_file": ".env", "extra": "ignore"}
 
@@ -57,6 +102,22 @@ class PipelineSettings(BaseSettings):
     elexon_api_key: str = Field(default="")
     entsoe_api_key: str = Field(default="")
     entsog_api_key: str = Field(default="")
+
+    @model_validator(mode="after")
+    def _resolve_paths(self) -> PipelineSettings:
+        if not self.data_dir.is_absolute():
+            object.__setattr__(
+                self, "data_dir", (_project_root() / self.data_dir).resolve()
+            )
+        if not self.duckdb_path.is_absolute():
+            object.__setattr__(
+                self, "duckdb_path", (_project_root() / self.duckdb_path).resolve()
+            )
+        if not self.log_dir.is_absolute():
+            object.__setattr__(
+                self, "log_dir", (_project_root() / self.log_dir).resolve()
+            )
+        return self
 
 
 class GridflowConfig(BaseModel):
