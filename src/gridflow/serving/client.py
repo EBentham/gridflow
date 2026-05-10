@@ -2,11 +2,15 @@
 
 from __future__ import annotations
 
-from datetime import date
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import duckdb
-import polars as pl
+
+if TYPE_CHECKING:
+    from datetime import date
+
+    import polars as pl
 
 
 class GridflowClient:
@@ -24,11 +28,24 @@ class GridflowClient:
                 f"DuckDB catalogue not found at {self._db_path}. "
                 f"Run 'gridflow init' to create it."
             )
-        self._con = duckdb.connect(str(self._db_path), read_only=True)
+        self._con: duckdb.DuckDBPyConnection | None = duckdb.connect(
+            str(self._db_path), read_only=True
+        )
+
+    def _require_con(self) -> duckdb.DuckDBPyConnection:
+        # WHY: close() can leave _con as None; every query path must
+        # surface a clear error rather than an opaque AttributeError if
+        # callers reach for the connection after closing it.
+        if self._con is None:
+            raise RuntimeError(
+                "GridflowClient connection is closed. "
+                "Call reopen_readonly() before issuing queries."
+            )
+        return self._con
 
     def query(self, sql: str) -> pl.DataFrame:
         """Execute a SQL query and return results as a Polars DataFrame."""
-        return self._con.sql(sql).pl()
+        return self._require_con().sql(sql).pl()
 
     def get_system_prices(
         self,
@@ -163,7 +180,7 @@ class GridflowClient:
 
     def get_tables(self) -> list[str]:
         """List all available tables and views."""
-        result = self._con.sql(
+        result = self._require_con().sql(
             "SELECT table_name FROM information_schema.tables "
             "WHERE table_schema = 'main' "
             "ORDER BY table_name"
@@ -171,8 +188,29 @@ class GridflowClient:
         return [row[0] for row in result]
 
     def close(self) -> None:
-        """Close the DuckDB connection."""
-        self._con.close()
+        """Close the underlying DuckDB connection. Idempotent.
+
+        Safe to call repeatedly — second and subsequent calls are no-ops.
+        Used by gridflow_models.control.refresh's writeable_pipeline_session
+        context manager (D-F11-02): the broker calls close() before a
+        write phase and reopen_readonly() after.
+        """
+        if self._con is not None:
+            self._con.close()
+            self._con = None
+
+    def reopen_readonly(self) -> None:
+        """Reopen the read-only DuckDB handle on the same db_path.
+
+        Used by gridflow_models.control.refresh's writeable_pipeline_session
+        context manager (D-F11-02): the broker calls close() before the
+        write phase and reopen_readonly() after, so the user's bound
+        client variable continues to work after the broker hands control
+        back. Idempotent: closes any existing connection first.
+        """
+        if self._con is not None:
+            self._con.close()
+        self._con = duckdb.connect(str(self._db_path), read_only=True)
 
     def __enter__(self) -> GridflowClient:
         return self
