@@ -69,13 +69,8 @@ class GenericNesoJsonTransformer(BaseSilverTransformer):
                 if not path.name.endswith(".meta.json")
             ][:1]
 
-        bronze_path = (
-            self.bronze_dir
-            / str(target_date.year)
-            / f"{target_date.month:02d}"
-            / f"{target_date.day:02d}"
-        )
-        if not bronze_path.exists():
+        bronze_path = self._bronze_path_for_date(target_date)
+        if bronze_path is None:
             return []
         return [
             path

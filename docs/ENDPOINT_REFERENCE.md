@@ -340,11 +340,35 @@ https://alsi.gie.eu/api?country=GB&from=2026-02-01&till=2026-02-01&page=1&size=3
 **Auth:** None (public API)
 **Response format:** JSON
 
-### Hourly Variables
+### Datasets (F7.5)
 
-`temperature_2m,wind_speed_10m,wind_direction_10m,relative_humidity_2m,precipitation,shortwave_radiation,surface_pressure`
+Six role-specific datasets:
+
+| Dataset             | Locations          | Variables | Endpoint  |
+|---------------------|--------------------|-----------|-----------|
+| `historical_demand` | 7 demand           | 9         | `/archive` |
+| `forecast_demand`   | 7 demand           | 9         | `/forecast` |
+| `historical_wind`   | 12 wind            | 13        | `/archive` |
+| `forecast_wind`     | 12 wind            | 19        | `/forecast` |
+| `historical_solar`  | 6 solar            | 12        | `/archive` (+ `tilt=35&azimuth=180`) |
+| `forecast_solar`    | 6 solar            | 12        | `/forecast` (+ `tilt=35&azimuth=180`) |
+
+Per-location bronze identifiers use double-underscore separator:
+`f"{dataset}__{location_name}"` — e.g. `historical_wind__hornsea`.
+
+### Variable lists
+
+**Demand (9):** `temperature_2m, wind_speed_10m, wind_direction_10m, relative_humidity_2m, precipitation, shortwave_radiation, surface_pressure, snowfall, snow_depth`
+
+**Wind archive (13):** `temperature_2m, surface_pressure, wind_speed_10m, wind_speed_100m, wind_direction_10m, wind_direction_100m, wind_gusts_10m, cloud_cover, cloud_cover_low, cloud_cover_mid, cloud_cover_high, dew_point_2m, precipitation`. Heights `{80,120,180}m` are NOT in the archive list — they return `units: "undefined"` and all-null on ERA5 (verified 2026-05-09).
+
+**Wind forecast (19):** archive list ∪ `{wind_speed_80m, wind_speed_120m, wind_speed_180m, wind_direction_80m, wind_direction_120m, wind_direction_180m}`. UKMO UKV / ECMWF / GFS carry hub heights; Open-Meteo nulls fields the underlying model lacks.
+
+**Solar (12):** `temperature_2m, shortwave_radiation, direct_radiation, direct_normal_irradiance, diffuse_radiation, global_tilted_irradiance, cloud_cover, cloud_cover_low, cloud_cover_mid, cloud_cover_high, snowfall, snow_depth`. GTI request adds `tilt=35&azimuth=180` (UK fixed-tilt representative geometry).
 
 ### Locations
+
+**Demand (7):**
 
 | Location | Latitude | Longitude |
 |----------|----------|-----------|
@@ -355,6 +379,10 @@ https://alsi.gie.eu/api?country=GB&from=2026-02-01&till=2026-02-01&page=1&size=3
 | glasgow | 55.8642 | -4.2518 |
 | cardiff | 51.4816 | -3.1791 |
 | belfast | 54.5973 | -5.9301 |
+
+**Wind (12, capacity-weighted, see ADR-020):** `dogger_bank` (54.95, 1.95), `hornsea` (53.88, 1.79), `east_anglia` (52.50, 2.50), `triton_knoll` (53.45, 0.42), `walney` (54.04, -3.52), `gwynt_y_mor` (53.46, -3.59), `beatrice` (58.26, -2.89), `seagreen` (56.59, -1.93), `highland_central` (57.20, -4.40), `borders_crystalrig` (55.85, -2.50), `whitelee` (55.69, -4.27), `pen_y_cymoedd` (51.69, -3.61).
+
+**Solar (6, capacity-weighted, see ADR-020):** `east_anglia_norfolk` (52.62, 1.05), `wiltshire_somerset` (51.20, -2.50), `kent` (51.20, 0.70), `cornwall` (50.30, -5.00), `sussex` (50.95, -0.10), `oxfordshire` (51.75, -1.25).
 
 ### Verified Example URLs
 
@@ -404,16 +432,18 @@ https://archive-api.open-meteo.com/v1/archive?latitude=51.5074&longitude=-0.1278
 |-----------|-------|-------|
 | `latitude` | e.g. `51.5074` | Location-specific |
 | `longitude` | e.g. `-0.1278` | Location-specific |
-| `hourly` | Comma-separated variable list | Always all 7 variables |
+| `hourly` | Comma-separated variable list | Per-dataset; see "Variable lists" above |
 | `start_date` | `2026-02-01` | YYYY-MM-DD |
 | `end_date` | `2026-02-01` | YYYY-MM-DD |
 | `timezone` | `UTC` | Fixed |
+| `tilt` | `35` | Solar datasets only (GTI request) |
+| `azimuth` | `180` | Solar datasets only (GTI request) |
 
 ### Iteration
 
-- One request per location (7 requests per dataset)
-- No pagination
-- Historical vs forecast uses different base URL but identical query parameters
+- One request per location per dataset (7 demand + 12 wind + 6 solar = 25 requests per archive call across all datasets, doubled across forecast endpoint).
+- No pagination.
+- Historical vs forecast uses different base URL but identical query parameters (modulo per-dataset variable list and the solar tilt/azimuth).
 
 ---
 

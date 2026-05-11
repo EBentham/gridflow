@@ -38,12 +38,20 @@ class GridflowClient:
         """Get system sell/buy prices for a date range.
 
         Returns DataFrame with columns:
-            timestamp_utc, system_sell_price, system_buy_price,
-            net_imbalance_volume, run_type
+            settlement_date, settlement_period, timestamp_utc,
+            system_sell_price, system_buy_price, net_imbalance_volume,
+            price_derivation_code (when present in silver)
+
+        Note: `run_type` (BSC settlement run) is omitted — the Elexon
+        Insights API does not expose `settlementRunType` on the
+        system-prices endpoint, so the silver parquet never carries it.
+        Use `price_derivation_code` instead (describes how SSP/SBP was
+        derived for the period, e.g. 'N', 'P').
         """
         return self.query(f"""
-            SELECT timestamp_utc, system_sell_price, system_buy_price,
-                   net_imbalance_volume, run_type
+            SELECT settlement_date, settlement_period, timestamp_utc,
+                   system_sell_price, system_buy_price, net_imbalance_volume,
+                   price_derivation_code
             FROM silver_system_prices
             WHERE settlement_date BETWEEN '{start}' AND '{end}'
             ORDER BY timestamp_utc
@@ -118,11 +126,15 @@ class GridflowClient:
         end: str | date,
         location: str | None = None,
     ) -> pl.DataFrame:
-        """Get historical weather observations from Open-Meteo.
+        """Get historical weather observations from Open-Meteo (demand role).
 
         Returns DataFrame with columns:
             timestamp_utc, location, latitude, longitude,
             temperature_2m, wind_speed_10m, precipitation, hdd, cdd
+
+        Reads from `silver_historical_demand` (renamed from `silver_historical`
+        at F7.5; the wind and solar role-split datasets carry different
+        schemas and are queried via separate view names).
         """
         where_clauses = [f"timestamp_utc::DATE BETWEEN '{start}' AND '{end}'"]
         if location:
@@ -131,7 +143,7 @@ class GridflowClient:
         return self.query(f"""
             SELECT timestamp_utc, location, latitude, longitude,
                    temperature_2m, wind_speed_10m, precipitation, hdd, cdd
-            FROM silver_historical
+            FROM silver_historical_demand
             WHERE {where}
             ORDER BY timestamp_utc, location
         """)

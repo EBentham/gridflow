@@ -26,14 +26,8 @@ class ImbalanceVolumeTransformer(BaseSilverTransformer):
     dataset = "imbalance_volume"
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
-        bronze_path = (
-            self.bronze_dir
-            / str(target_date.year)
-            / f"{target_date.month:02d}"
-            / f"{target_date.day:02d}"
-        )
-        if not bronze_path.exists():
-            logger.warning("No bronze directory: %s", bronze_path)
+        bronze_path = self._bronze_path_for_date(target_date)
+        if bronze_path is None:
             return pl.DataFrame()
 
         records: list[dict] = []

@@ -29,13 +29,8 @@ class InstalledCapacityUnitsTransformer(BaseSilverTransformer):
     DATASET_VERSION: ClassVar[str] = "1.0.0"
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
-        bronze_path = (
-            self.bronze_dir
-            / str(target_date.year)
-            / f"{target_date.month:02d}"
-            / f"{target_date.day:02d}"
-        )
-        if not bronze_path.exists():
+        bronze_path = self._bronze_path_for_date(target_date)
+        if bronze_path is None:
             return pl.DataFrame()
 
         rows: list[dict[str, Any]] = []

@@ -13,7 +13,7 @@ from gridflow.silver.elexon.demand_forecast import DemandForecastTransformer
 from gridflow.silver.elexon.fuelhh import FuelHHTransformer
 from gridflow.silver.elexon.indo import INDOTransformer
 from gridflow.silver.elexon.wind_forecast import WindForecastTransformer
-from gridflow.silver.openmeteo.historical import HistoricalWeatherTransformer
+from gridflow.silver.openmeteo.historical import HistoricalDemandWeather
 from gridflow.storage.parquet import read_parquet
 
 FIXTURES = Path(__file__).parent.parent / "fixtures"
@@ -91,7 +91,10 @@ def _write_openmeteo_historical_bronze(
     payload = json.loads(
         (FIXTURES / "openmeteo" / "historical_london_response.json").read_text()
     )
-    bronze_dir = _date_dir(data_dir, "open_meteo", "historical_london", target_date)
+    # F7.5: per-location bronze uses double-underscore separator.
+    bronze_dir = _date_dir(
+        data_dir, "open_meteo", "historical_demand__london", target_date
+    )
     bronze_dir.mkdir(parents=True, exist_ok=True)
     (bronze_dir / "raw_test.json").write_text(json.dumps(payload))
     if fetched_at is not None:
@@ -99,7 +102,7 @@ def _write_openmeteo_historical_bronze(
             json.dumps(
                 {
                     "source": "open_meteo",
-                    "dataset": "historical_london",
+                    "dataset": "historical_demand__london",
                     "fetched_at": fetched_at.isoformat(),
                     "data_date": target_date.isoformat(),
                 }
@@ -112,14 +115,16 @@ def _read_single_silver(data_dir: Path, source: str, dataset: str) -> pl.DataFra
     return read_parquet(pattern)
 
 
-def _assert_base_bitemporal_columns(df: pl.DataFrame) -> None:
+def _assert_base_bitemporal_columns(
+    df: pl.DataFrame, expected_version: str = "1.0.0"
+) -> None:
     for column in ["event_time", "available_at", "source_run_id", "dataset_version"]:
         assert column in df.columns
         assert df[column].null_count() == 0
     assert df["event_time"].dtype == pl.Datetime("us", "UTC")
     assert df["available_at"].dtype == pl.Datetime("us", "UTC")
     assert df["source_run_id"].to_list() == [RUN_ID] * len(df)
-    assert set(df["dataset_version"].to_list()) == {"1.0.0"}
+    assert set(df["dataset_version"].to_list()) == {expected_version}
 
 
 def test_indo_run_writes_bitemporal_columns(tmp_data_dir: Path) -> None:
@@ -156,11 +161,12 @@ def test_fuelhh_run_writes_bitemporal_columns(tmp_data_dir: Path) -> None:
 def test_openmeteo_historical_run_writes_bitemporal_columns(tmp_data_dir: Path) -> None:
     _write_openmeteo_historical_bronze(tmp_data_dir, TARGET_DATE)
 
-    rows = HistoricalWeatherTransformer(tmp_data_dir).run(TARGET_DATE, run_id=RUN_ID)
-    df = _read_single_silver(tmp_data_dir, "open_meteo", "historical")
+    rows = HistoricalDemandWeather(tmp_data_dir).run(TARGET_DATE, run_id=RUN_ID)
+    df = _read_single_silver(tmp_data_dir, "open_meteo", "historical_demand")
 
     assert rows == len(df)
-    _assert_base_bitemporal_columns(df)
+    # F7.5 bumps DATASET_VERSION 1.0.0 -> 2.0.0 on all openmeteo transformers.
+    _assert_base_bitemporal_columns(df, expected_version="2.0.0")
     assert df["event_time"].to_list() == df["timestamp_utc"].to_list()
     assert (df["event_time"] <= df["available_at"]).all()
 
@@ -262,12 +268,12 @@ def test_openmeteo_reingest_uses_location_sidecar_timestamp(tmp_data_dir: Path) 
         fetched_at=sidecar_time,
     )
 
-    HistoricalWeatherTransformer(tmp_data_dir).run(
+    HistoricalDemandWeather(tmp_data_dir).run(
         TARGET_DATE,
         run_id=RUN_ID,
         reingest=True,
     )
-    df = _read_single_silver(tmp_data_dir, "open_meteo", "historical")
+    df = _read_single_silver(tmp_data_dir, "open_meteo", "historical_demand")
 
     assert set(df["available_at"].to_list()) == {sidecar_time}
 

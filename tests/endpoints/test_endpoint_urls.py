@@ -556,45 +556,95 @@ class TestOpenMeteoEndpointDefinitions:
         assert ARCHIVE_BASE_URL == "https://archive-api.open-meteo.com/v1"
         assert FORECAST_BASE_URL == "https://api.open-meteo.com/v1"
 
-    def test_locations(self):
-        from gridflow.connectors.openmeteo.endpoints import LOCATIONS
+    def test_demand_locations(self):
+        from gridflow.connectors.openmeteo.endpoints import DEMAND_LOCATIONS
 
-        assert len(LOCATIONS) == 7
-        names = [loc.name for loc in LOCATIONS]
+        assert len(DEMAND_LOCATIONS) == 7
+        names = [loc.name for loc in DEMAND_LOCATIONS]
         expected = ["london", "birmingham", "manchester", "leeds", "glasgow", "cardiff", "belfast"]
         assert names == expected
 
-    def test_location_coordinates(self):
-        from gridflow.connectors.openmeteo.endpoints import LOCATIONS
+    def test_wind_locations(self):
+        from gridflow.connectors.openmeteo.endpoints import WIND_LOCATIONS
 
-        london = LOCATIONS[0]
+        assert len(WIND_LOCATIONS) == 12
+        names = {loc.name for loc in WIND_LOCATIONS}
+        # Spot-check a representative offshore site and an onshore site.
+        assert "hornsea" in names
+        assert "whitelee" in names
+
+    def test_solar_locations(self):
+        from gridflow.connectors.openmeteo.endpoints import SOLAR_LOCATIONS
+
+        assert len(SOLAR_LOCATIONS) == 6
+        names = {loc.name for loc in SOLAR_LOCATIONS}
+        assert "cornwall" in names
+        assert "kent" in names
+
+    def test_location_coordinates(self):
+        from gridflow.connectors.openmeteo.endpoints import DEMAND_LOCATIONS
+
+        london = DEMAND_LOCATIONS[0]
         assert london.name == "london"
         assert london.latitude == pytest.approx(51.5074)
         assert london.longitude == pytest.approx(-0.1278)
 
-    def test_hourly_variables(self):
-        from gridflow.connectors.openmeteo.endpoints import HOURLY_VARIABLES
+    def test_demand_hourly_vars(self):
+        from gridflow.connectors.openmeteo.endpoints import DEMAND_HOURLY_VARS
 
-        expected = [
+        # F7.5-VARS-05: snow vars added to demand for winter peak.
+        expected = (
             "temperature_2m", "wind_speed_10m", "wind_direction_10m",
             "relative_humidity_2m", "precipitation", "shortwave_radiation",
-            "surface_pressure",
-        ]
-        assert expected == HOURLY_VARIABLES
+            "surface_pressure", "snowfall", "snow_depth",
+        )
+        assert expected == DEMAND_HOURLY_VARS
 
-    def test_historical_url_format(self):
+    def test_archive_wind_excludes_uninterpolated_heights(self):
+        from gridflow.connectors.openmeteo.endpoints import WIND_ARCHIVE_VARS
+
+        # Verified 2026-05-09 against ERA5 archive at Hornsea (53.88, 1.79)
+        # and Whitelee (55.69, -4.27): wind_speed_{80,120,180}m return
+        # `units: "undefined"` and all-null. Archive variable list omits
+        # them so silver doesn't carry empty columns.
+        assert "wind_speed_80m" not in WIND_ARCHIVE_VARS
+        assert "wind_speed_120m" not in WIND_ARCHIVE_VARS
+        assert "wind_speed_180m" not in WIND_ARCHIVE_VARS
+        # 10m and 100m do work on archive — both must be requested.
+        assert "wind_speed_10m" in WIND_ARCHIVE_VARS
+        assert "wind_speed_100m" in WIND_ARCHIVE_VARS
+
+    def test_forecast_wind_includes_full_height_set(self):
+        from gridflow.connectors.openmeteo.endpoints import WIND_FORECAST_VARS
+
+        for height in ("10m", "80m", "100m", "120m", "180m"):
+            assert f"wind_speed_{height}" in WIND_FORECAST_VARS, height
+
+    def test_solar_extra_params(self):
+        from gridflow.connectors.openmeteo.endpoints import DATASET_SPECS
+
+        for ds in ("historical_solar", "forecast_solar"):
+            assert DATASET_SPECS[ds].extra_params == (
+                ("tilt", "35"),
+                ("azimuth", "180"),
+            )
+        for ds in ("historical_demand", "forecast_demand",
+                   "historical_wind", "forecast_wind"):
+            assert DATASET_SPECS[ds].extra_params == ()
+
+    def test_historical_demand_url_format(self):
         from gridflow.connectors.openmeteo.endpoints import (
             ARCHIVE_BASE_URL,
-            HOURLY_VARIABLES,
-            LOCATIONS,
+            DEMAND_HOURLY_VARS,
+            DEMAND_LOCATIONS,
         )
 
-        location = LOCATIONS[0]  # London
+        location = DEMAND_LOCATIONS[0]  # London
         url = f"{ARCHIVE_BASE_URL}/archive"
         params = {
             "latitude": location.latitude,
             "longitude": location.longitude,
-            "hourly": ",".join(HOURLY_VARIABLES),
+            "hourly": ",".join(DEMAND_HOURLY_VARS),
             "start_date": REF_START.strftime("%Y-%m-%d"),
             "end_date": REF_END.strftime("%Y-%m-%d"),
             "timezone": "UTC",
@@ -607,6 +657,7 @@ class TestOpenMeteoEndpointDefinitions:
         assert params["end_date"] == "2026-02-02"
         assert params["timezone"] == "UTC"
         assert "temperature_2m" in params["hourly"]
+        assert "snowfall" in params["hourly"]
 
     def test_forecast_url_format(self):
         from gridflow.connectors.openmeteo.endpoints import FORECAST_BASE_URL
