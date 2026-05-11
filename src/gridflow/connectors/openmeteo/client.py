@@ -118,6 +118,7 @@ class OpenMeteoConnector(BaseConnector):
             fetched_at=datetime.now(UTC),
             request_url=str(response.url),
             request_params=request_params,
+            data_date=start.date(),
         )
 
 

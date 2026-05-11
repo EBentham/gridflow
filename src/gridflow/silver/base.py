@@ -6,7 +6,7 @@ import json
 import logging
 import os
 from abc import ABC, abstractmethod
-from datetime import UTC, date, datetime
+from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from typing import ClassVar
 
@@ -201,7 +201,65 @@ class BaseSilverTransformer(ABC):
             for sibling_dataset in self.BRONZE_SIBLING_DATASETS:
                 candidates.append(parent / sibling_dataset / suffix)
 
+        existing = [p for p in candidates if p.exists()]
+        if not existing:
+            # No exact-date partition found; fall back to the nearest covering
+            # partition so that transformers that iterate _bronze_date_dirs()
+            # also benefit from the Variant A/B fix.
+            fallback = self._find_covering_bronze_partition(target_date)
+            if fallback is not None:
+                return [fallback]
         return [path for path in candidates if path.exists()]
+
+    def _find_covering_bronze_partition(
+        self,
+        target_date: date,
+        max_lookback_days: int = 35,
+        *,
+        bronze_dir: Path | None = None,
+    ) -> Path | None:
+        """Return the nearest prior bronze partition likely to contain data for target_date.
+
+        Used when the connector batched multiple days into one fetch and stored
+        all files under the window-start date rather than the target date.
+        Scans back up to max_lookback_days looking for any partition that has raw files.
+        Returns None if nothing found within the window.
+
+        Pass ``bronze_dir`` to search a location-specific directory instead of
+        ``self.bronze_dir`` (used by multi-location transformers such as openmeteo).
+        """
+        base = bronze_dir if bronze_dir is not None else self.bronze_dir
+        for delta in range(1, max_lookback_days + 1):
+            candidate_date = target_date - timedelta(days=delta)
+            candidate_path = (
+                base
+                / str(candidate_date.year)
+                / f"{candidate_date.month:02d}"
+                / f"{candidate_date.day:02d}"
+            )
+            if candidate_path.exists() and any(candidate_path.glob("raw_*")):
+                return candidate_path
+        return None
+
+    def _bronze_path_for_date(
+        self,
+        target_date: date,
+        max_lookback_days: int = 35,
+    ) -> Path | None:
+        """Return the bronze partition path to read for target_date.
+
+        Returns exact partition if it exists and has raw files, falls back to
+        the nearest covering partition, or None if nothing found.
+        """
+        exact = (
+            self.bronze_dir
+            / str(target_date.year)
+            / f"{target_date.month:02d}"
+            / f"{target_date.day:02d}"
+        )
+        if exact.exists() and any(exact.glob("raw_*")):
+            return exact
+        return self._find_covering_bronze_partition(target_date, max_lookback_days)
 
     @staticmethod
     def _timestamp_from_sidecar(meta_path: Path) -> datetime | None:

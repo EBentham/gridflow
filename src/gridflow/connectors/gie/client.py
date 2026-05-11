@@ -340,6 +340,7 @@ class GieConnector(BaseConnector):
                     api_version="v1",
                     page=page,
                     http_status=raw.status_code,
+                    data_date=start.date(),
                 )
             )
 

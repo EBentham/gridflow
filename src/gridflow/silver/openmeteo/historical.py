@@ -102,13 +102,19 @@ class BaseOpenMeteoTransformer(BaseSilverTransformer):
 
         for loc in self.LOCATIONS:
             loc_dir = parent_dir / f"{self.BRONZE_DATASET_PREFIX}__{loc.name}"
-            date_path = (
+            exact_path = (
                 loc_dir
                 / str(target_date.year)
                 / f"{target_date.month:02d}"
                 / f"{target_date.day:02d}"
             )
-            if not date_path.exists():
+            if exact_path.exists() and any(exact_path.glob("raw_*")):
+                date_path = exact_path
+            else:
+                date_path = self._find_covering_bronze_partition(
+                    target_date, bronze_dir=loc_dir
+                )
+            if date_path is None:
                 continue
 
             for f in sorted(date_path.glob("raw_*.json")):
