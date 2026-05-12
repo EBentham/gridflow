@@ -3,12 +3,25 @@
 from __future__ import annotations
 
 import logging
+import os
 import time
 from pathlib import Path
 
 import duckdb
 
 logger = logging.getLogger(__name__)
+
+
+def _is_strict_mode() -> bool:
+    """True when broken view registration should raise instead of debug-log.
+
+    F15-D / PBI-05: gates _try_create_view and _register_gold_views exception
+    handling. Activated automatically by pytest (PYTEST_CURRENT_TEST) or
+    explicitly via GRIDFLOW_ENV=dev/test.
+    """
+    if os.environ.get("PYTEST_CURRENT_TEST"):
+        return True
+    return os.environ.get("GRIDFLOW_ENV", "").strip().lower() in {"dev", "test"}
 
 
 def get_connection(
@@ -142,6 +155,8 @@ def _try_create_view(
         )
         logger.info(f"Registered view: {view_name}")
     except Exception as e:
+        if _is_strict_mode():
+            raise
         logger.debug(f"Could not create view {view_name}: {e}")
 
 
@@ -157,7 +172,8 @@ def _register_gold_views(con: duckdb.DuckDBPyConnection) -> None:
             con.execute(sql)
             logger.info("Registered gold view from: %s", sql_file.name)
         except Exception as exc:
-            # Views may reference silver tables that don't exist yet; log and continue
+            if _is_strict_mode():
+                raise
             logger.debug("Could not register gold view %s: %s", sql_file.name, exc)
 
 

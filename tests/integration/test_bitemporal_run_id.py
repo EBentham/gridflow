@@ -35,6 +35,9 @@ def _isolated_env(tmp_path: Path, monkeypatch) -> IsolatedPaths:
     monkeypatch.setenv("GRIDFLOW_DATA_DIR", str(paths.data_dir))
     monkeypatch.setenv("GRIDFLOW_DUCKDB_PATH", str(paths.duckdb_path))
     monkeypatch.setenv("GRIDFLOW_LOG_DIR", str(paths.log_dir))
+    # F15-D: gold SQL views reference silver views that don't exist in test
+    # tmpdirs; mock out to avoid CatalogException propagating under strict mode.
+    monkeypatch.setattr("gridflow.storage.duckdb._register_gold_views", lambda con: None)
     return paths
 
 

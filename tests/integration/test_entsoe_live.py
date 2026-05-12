@@ -339,6 +339,8 @@ class TestEntsoeCliFailurePropagation:
             "gridflow.connectors.registry.get_connector",
             lambda source, source_config: FakeConnector(),
         )
+        # F15-D: gold SQL views reference silver views absent from test tmpdir.
+        monkeypatch.setattr("gridflow.storage.duckdb._register_gold_views", lambda con: None)
 
         with pytest.raises(typer.Exit) as exc_info:
             ingest(
