@@ -22,7 +22,7 @@ def ingest(
     start: Optional[str] = typer.Option(None, help="Start date (YYYY-MM-DD)"),
     end: Optional[str] = typer.Option(None, help="End date (YYYY-MM-DD)"),
     last: Optional[str] = typer.Option(None, help="Relative lookback (e.g. 24h, 7d)"),
-    all_datasets: bool = typer.Option(False, "--all", help="Ingest all datasets for source"),
+    all_datasets: bool = typer.Option(False, "--all", "-all", help="Ingest all datasets for source"),
 ) -> None:
     """Ingest raw data from an API source into the bronze layer."""
     from gridflow.config.settings import load_settings
@@ -171,7 +171,7 @@ def build(
     start: Optional[str] = typer.Option(None, help="Start date (YYYY-MM-DD)"),
     end: Optional[str] = typer.Option(None, help="End date (YYYY-MM-DD)"),
     last: Optional[str] = typer.Option(None, help="Relative lookback (e.g. 24h, 7d)"),
-    all_datasets: bool = typer.Option(False, "--all", help="Build all gold datasets"),
+    all_datasets: bool = typer.Option(False, "--all", "-all", help="Build all gold datasets"),
 ) -> None:
     """Build gold-layer modelling-ready datasets from silver."""
     from gridflow.config.settings import load_settings
@@ -300,7 +300,7 @@ def export_csv(
     source: str = typer.Argument(help="Data source"),
     dataset: Optional[str] = typer.Argument(default=None, help="Dataset name"),
     output_dir: Optional[str] = typer.Option(None, "--output", "-o", help="Output directory (default: data/exports/)"),
-    all_datasets: bool = typer.Option(False, "--all", help="Export all datasets for source"),
+    all_datasets: bool = typer.Option(False, "--all", "-all", help="Export all datasets for source"),
 ) -> None:
     """Export silver Parquet data to CSV files."""
     from gridflow.config.settings import load_settings
@@ -345,7 +345,7 @@ def pipeline(
     start: Optional[str] = typer.Option(None, help="Start date (YYYY-MM-DD)"),
     end: Optional[str] = typer.Option(None, help="End date (YYYY-MM-DD)"),
     last: Optional[str] = typer.Option(None, help="Relative lookback (e.g. 24h, 7d)"),
-    all_datasets: bool = typer.Option(False, "--all", help="Run all datasets for source"),
+    all_datasets: bool = typer.Option(False, "--all", "-all", help="Run all datasets for source"),
     gold_dataset: Optional[str] = typer.Option(None, "--gold", help="Gold dataset to build after silver"),
 ) -> None:
     """Run the full pipeline: ingest (bronze) -> transform (silver) -> build (gold).

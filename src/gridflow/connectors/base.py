@@ -5,6 +5,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import date, datetime, timezone
+import ssl
 from typing import Any
 
 import httpx
@@ -67,6 +68,7 @@ class BaseConnector(ABC):
             base_url=self.config.base_url,
             timeout=self.config.timeout,
             headers=self._auth_headers(),
+            verify=ssl.create_default_context(),
         )
         return self
 
