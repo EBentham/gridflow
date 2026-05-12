@@ -260,7 +260,7 @@ class TestHistoricalDemandWeather:
         assert not result.is_empty()
         assert "timestamp_utc" in result.columns
         assert "location" in result.columns
-        assert "temperature_2m" in result.columns
+        assert "temperature_2m_c" in result.columns  # F15-B: canonical rename
         assert result["data_provider"][0] == "open_meteo"
 
     def test_timestamp_is_utc_datetime(self):
@@ -270,17 +270,18 @@ class TestHistoricalDemandWeather:
 
     def test_hdd_derived_from_temperature(self):
         # temperature_2m = 5.2, so HDD = max(0, 15.5 - 5.2) = 10.3
+        # F15-B: derived column renamed hdd -> hdd_k
         raw = self._make_raw_df()
         result = self.t.transform(raw).sort("timestamp_utc")
-        assert "hdd" in result.columns
+        assert "hdd_k" in result.columns
         expected_hdd = max(0.0, 15.5 - 5.2)
-        assert abs(result["hdd"][0] - expected_hdd) < 0.01
+        assert abs(result["hdd_k"][0] - expected_hdd) < 0.01
 
     def test_cdd_zero_in_winter(self):
         raw = self._make_raw_df()
         result = self.t.transform(raw)
-        assert "cdd" in result.columns
-        assert all(v == 0.0 for v in result["cdd"].to_list())
+        assert "cdd_k" in result.columns  # F15-B: renamed cdd -> cdd_k
+        assert all(v == 0.0 for v in result["cdd_k"].to_list())
 
     def test_air_density_derived_from_pressure_and_temperature(self):
         # Fixture row 0: T=5.2°C, P=1015.2 hPa
@@ -332,8 +333,8 @@ class TestForecastDemandWeather:
         rows = _pivot_openmeteo_json(data, "london", DEMAND_HOURLY_VARS)
         raw = pl.DataFrame(rows)
         result = self.t.transform(raw)
-        assert "temperature_2m" in result.columns
-        assert "hdd" in result.columns
+        assert "temperature_2m_c" in result.columns  # F15-B: canonical rename
+        assert "hdd_k" in result.columns  # F15-B: renamed hdd -> hdd_k
 
     def test_reingest_uses_forecast_location_sidecar(self, tmp_path: Path):
         target_date = date(2024, 1, 15)

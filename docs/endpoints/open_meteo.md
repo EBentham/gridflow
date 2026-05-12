@@ -185,6 +185,55 @@ and `tilt`/`azimuth` extra params as `historical_solar`.
 
 ---
 
+## Silver canonical names (F15-B)
+
+F15-B (2026-05-12) applied a column rename at the silver emission boundary
+(`BaseOpenMeteoTransformer.transform()`). Bronze files preserve the
+connector-native Open-Meteo names; silver emits canonical names with
+explicit unit suffixes:
+
+**Unit conversions (km/h → m/s, factor 1/3.6):**
+
+| Bronze column       | Silver column        |
+|---------------------|----------------------|
+| `wind_speed_10m`    | `wind_speed_10m_mps` |
+| `wind_speed_100m`   | `wind_speed_100m_mps`|
+| `wind_speed_80m`    | `wind_speed_80m_mps` |
+| `wind_speed_120m`   | `wind_speed_120m_mps`|
+| `wind_speed_180m`   | `wind_speed_180m_mps`|
+| `wind_gusts_10m`    | `wind_gusts_10m_mps` |
+
+Wind speeds are **km/h in bronze** (Open-Meteo default when no `windspeed_unit`
+param is sent). Silver divides by 3.6 to produce m/s. Verification:
+`36.0 km/h → 10.0 m/s`.
+
+**Pure renames (no value change):**
+
+| Bronze column              | Silver column                   |
+|----------------------------|---------------------------------|
+| `temperature_2m`           | `temperature_2m_c`              |
+| `dew_point_2m`             | `dew_point_2m_c`                |
+| `surface_pressure`         | `surface_pressure_hpa`          |
+| `relative_humidity_2m`     | `relative_humidity_2m_pct`      |
+| `cloud_cover`              | `cloud_cover_pct`               |
+| `cloud_cover_low/mid/high` | `cloud_cover_low/mid/high_pct`  |
+| `shortwave_radiation`      | `shortwave_radiation_wm2`       |
+| `direct_radiation`         | `direct_radiation_wm2`          |
+| `direct_normal_irradiance` | `direct_normal_irradiance_wm2`  |
+| `diffuse_radiation`        | `diffuse_radiation_wm2`         |
+| `global_tilted_irradiance` | `global_tilted_irradiance_wm2`  |
+| `precipitation`            | `precipitation_mm`              |
+| `snowfall`                 | `snowfall_cm`                   |
+| `snow_depth`               | `snow_depth_m`                  |
+| `wind_direction_*`         | `wind_direction_*_deg`          |
+| `hdd` (derived)            | `hdd_k`                         |
+| `cdd` (derived)            | `cdd_k`                         |
+
+The rename runs **after** `_add_derived()` so HDD/CDD and air-density
+derivations read the connector-native names before renaming.
+
+---
+
 ## Migration history
 
 - F7.5 (2026-05-09): role split from `{historical, forecast}` to six
@@ -192,3 +241,5 @@ and `tilt`/`azimuth` extra params as `historical_solar`.
   with no alias layer (no on-disk silver to migrate locally). Workstream
   C (15-min `minutely_15` forecast) deferred to backlog pending AROME
   2026 northern-boundary verification.
+- F15-B (2026-05-12): canonical column renames applied at silver emission
+  boundary. Wind speeds now m/s in silver. See table above.

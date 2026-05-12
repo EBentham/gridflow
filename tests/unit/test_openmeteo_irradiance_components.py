@@ -1,9 +1,10 @@
 """Property-style tests for the irradiance-component invariants in solar silver.
 
-F7.5-VARS-03 contract: ``direct_radiation + diffuse_radiation`` is within
-~5% of ``shortwave_radiation`` (GHI) for daylight rows. The 5% tolerance
-accommodates Open-Meteo's separation-model rounding when the underlying
-weather model does not natively carry DNI/DHI.
+F7.5-VARS-03 contract: ``direct_radiation_wm2 + diffuse_radiation_wm2`` is
+within ~5% of ``shortwave_radiation_wm2`` (GHI) for daylight rows.
+
+F15-B: canonical column rename applied — all irradiance columns now carry the
+``_wm2`` suffix in silver output. Values are unchanged (units were already W/m²).
 
 For night rows (zero GHI) all three components are zero.
 """
@@ -69,32 +70,35 @@ def test_direct_plus_diffuse_within_5pct_of_ghi(
     out = _solar_transformer().transform(df)
 
     row = out.row(0, named=True)
-    assert row["shortwave_radiation"] is not None
-    assert row["direct_radiation"] is not None
-    assert row["diffuse_radiation"] is not None
-    sum_components = row["direct_radiation"] + row["diffuse_radiation"]
-    rel_err = abs(sum_components - row["shortwave_radiation"]) / row["shortwave_radiation"]
-    assert rel_err <= 0.05, (sum_components, row["shortwave_radiation"], rel_err)
+    # F15-B: canonical column names with _wm2 suffix
+    assert row["shortwave_radiation_wm2"] is not None
+    assert row["direct_radiation_wm2"] is not None
+    assert row["diffuse_radiation_wm2"] is not None
+    sum_components = row["direct_radiation_wm2"] + row["diffuse_radiation_wm2"]
+    rel_err = abs(sum_components - row["shortwave_radiation_wm2"]) / row["shortwave_radiation_wm2"]
+    assert rel_err <= 0.05, (sum_components, row["shortwave_radiation_wm2"], rel_err)
 
 
 def test_night_rows_all_zero() -> None:
     df = pl.DataFrame([_solar_row(ghi=0.0, direct=0.0, diffuse=0.0, hour=2)])
     out = _solar_transformer().transform(df)
     row = out.row(0, named=True)
-    assert row["shortwave_radiation"] == 0.0
-    assert row["direct_radiation"] == 0.0
-    assert row["diffuse_radiation"] == 0.0
-    assert row["direct_normal_irradiance"] == 0.0
+    # F15-B: canonical column names with _wm2 suffix
+    assert row["shortwave_radiation_wm2"] == 0.0
+    assert row["direct_radiation_wm2"] == 0.0
+    assert row["diffuse_radiation_wm2"] == 0.0
+    assert row["direct_normal_irradiance_wm2"] == 0.0
 
 
 def test_solar_silver_carries_all_irradiance_columns() -> None:
     df = pl.DataFrame([_solar_row(ghi=500.0, direct=400.0, diffuse=110.0, hour=12)])
     out = _solar_transformer().transform(df)
+    # F15-B: canonical column names with _wm2 suffix
     for col in (
-        "shortwave_radiation",
-        "direct_radiation",
-        "direct_normal_irradiance",
-        "diffuse_radiation",
-        "global_tilted_irradiance",
+        "shortwave_radiation_wm2",
+        "direct_radiation_wm2",
+        "direct_normal_irradiance_wm2",
+        "diffuse_radiation_wm2",
+        "global_tilted_irradiance_wm2",
     ):
         assert col in out.columns, col
