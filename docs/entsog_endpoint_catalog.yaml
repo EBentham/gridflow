@@ -1,0 +1,208 @@
+# ENTSOG Transparency Platform endpoint catalog.
+# Sources:
+# - ENTSOG TP API User Manual v2.1
+# - ENTSOG TP API User Manual v3.0
+# - https://github.com/nhcb/entsog-py
+#
+# status values:
+# - implemented: active in config/sources.yaml, endpoint registry, and silver registry
+# - deferred: intentionally not active yet, with reason
+
+entries:
+  - category: Point Operational Data
+    endpoint: /operationalData
+    response_key: operationalData
+    parser_family: operational_data
+    request_style: date_window_indicator
+    mandatory_params: [from, to, indicator, periodType]
+    optional_params: [pointDirection, timeZone, limit, includeExemptions, isNA, sorting]
+    dataset: physical_flows
+    indicator: Physical Flow
+    status: implemented
+    notes: Specialised silver transformer normalises value to GWh/day; no default pointDirection filter is applied.
+  - category: Point Operational Data
+    endpoint: /operationalData
+    response_key: operationalData
+    parser_family: operational_data
+    request_style: date_window_indicator_point_direction
+    mandatory_params: [from, to, indicator, periodType, pointDirection]
+    dataset: nominations
+    indicator: Nomination
+    status: implemented
+    notes: v3.0 clarifies singular Nomination is the live-compatible exact-case value.
+  - category: Point Operational Data
+    endpoint: /operationalData
+    response_key: operationalData
+    parser_family: operational_data
+    request_style: date_window_indicator_point_direction
+    mandatory_params: [from, to, indicator, periodType, pointDirection]
+    dataset: allocations
+    indicator: Allocation
+    status: implemented
+    notes: Generic ENTSOG silver record.
+  - category: Point Operational Data
+    endpoint: /operationalData
+    response_key: operationalData
+    parser_family: operational_data
+    request_style: date_window_indicator_point_direction
+    mandatory_params: [from, to, indicator, periodType, pointDirection]
+    dataset: renominations
+    indicator: Renomination
+    status: implemented
+    notes: Generic ENTSOG silver record.
+  - category: Point Operational Data
+    endpoint: /operationalData
+    response_key: operationalData
+    parser_family: operational_data
+    request_style: date_window_indicator_point_direction
+    mandatory_params: [from, to, indicator, periodType, pointDirection]
+    dataset_group: capacity_and_quality_indicators
+    datasets:
+      - firm_available
+      - firm_booked
+      - firm_technical
+      - interruptible_available
+      - interruptible_booked
+      - interruptible_total
+      - gcv
+      - wobbe_index
+      - methane_content
+      - hydrogen_content
+      - oxygen_content
+      - available_through_oversubscription
+      - available_through_surrender
+      - available_through_uioli_long_term
+      - available_through_uioli_short_term
+    status: implemented
+    notes: Exact-case indicator values live in `OPERATIONAL_INDICATORS`.
+  - category: CMP Data
+    endpoint: /cmpUnsuccessfulRequests
+    response_key: cmpUnsuccessfulRequests
+    parser_family: cmp_unsuccessful_requests
+    request_style: date_window_period_type
+    mandatory_params: [from, to, periodType]
+    dataset: cmp_unsuccessful_requests
+    status: implemented
+    notes: Generic ENTSOG silver record.
+  - category: CMP Data
+    endpoint: /cmpUnavailables
+    response_key: cmpUnavailables
+    parser_family: cmp_unavailable_firm_capacity
+    request_style: date_window_period_type
+    mandatory_params: [from, to, periodType]
+    dataset: cmp_unavailable_firm_capacity
+    status: implemented
+    notes: Generic ENTSOG silver record.
+  - category: CMP Data
+    endpoint: /cmpAuctions
+    response_key: cmpAuctions
+    parser_family: cmp_auction_premiums
+    request_style: date_window_period_type
+    mandatory_params: [from, to, periodType]
+    dataset: cmp_auction_premiums
+    status: implemented
+    notes: Generic ENTSOG silver record.
+  - category: Interruptions
+    endpoint: /interruptions
+    response_key: interruptions
+    parser_family: interruptions
+    request_style: date_window_point_direction
+    mandatory_params: [from, to, periodType, pointDirection]
+    dataset: interruptions
+    status: implemented
+    notes: Live API may return 404 No result found for quiet windows; live tests classify this explicitly.
+  - category: Zone Data
+    endpoint: /aggregatedData
+    response_key: aggregatedData
+    parser_family: aggregated_data
+    request_style: date_window_indicator_zone_direction
+    mandatory_params: [from, to, indicator, periodType, pointDirection]
+    dataset: aggregated_physical_flows
+    indicator: Physical Flow
+    status: implemented
+    notes: Uses aggregate interconnection direction keys.
+  - category: Tariff Data
+    endpoint: /tariffsFulls
+    response_key: tariffsFulls
+    parser_family: tariffs
+    request_style: date_window_country
+    mandatory_params: [from, to, countryKey]
+    dataset: tariffs
+    status: implemented
+    notes: Default countryKey is UK.
+  - category: Tariff Data
+    endpoint: /tariffsSimulations
+    response_key: tariffsSimulations
+    parser_family: tariff_simulations
+    request_style: date_window_country
+    mandatory_params: [from, to, countryKey]
+    dataset: tariff_simulations
+    status: implemented
+    notes: Default countryKey is UK.
+  - category: UMM Data
+    endpoint: /urgentMarketMessages
+    response_key: urgentMarketMessages
+    parser_family: urgent_market_messages
+    request_style: reference_or_filter
+    mandatory_params: []
+    dataset: urgent_market_messages
+    status: implemented
+    notes: Stored as reference-style latest sample unless callers provide filters.
+  - category: Referential Data
+    endpoint: /connectionPoints
+    response_key: connectionPoints
+    parser_family: connection_points
+    request_style: reference
+    mandatory_params: []
+    dataset: connection_points
+    status: implemented
+    notes: Main visible connection points.
+  - category: Referential Data
+    endpoint: /operators
+    response_key: operators
+    parser_family: operators
+    request_style: reference
+    mandatory_params: []
+    default_params: {hasData: 1}
+    dataset: operators
+    status: implemented
+    notes: Filters to operators publishing data by default.
+  - category: Referential Data
+    endpoint: /balancingZones
+    response_key: balancingZones
+    parser_family: balancing_zones
+    request_style: reference
+    mandatory_params: []
+    dataset: balancing_zones
+    status: implemented
+    notes: Supports bzLabel/extended filters for search.
+  - category: Referential Data
+    endpoint: /operatorPointDirections
+    response_key: operatorPointDirections
+    parser_family: operator_point_directions
+    request_style: reference
+    mandatory_params: []
+    default_params: {hasData: 1}
+    dataset: operator_point_directions
+    status: implemented
+    notes: Source for operational pointDirection keys.
+  - category: Referential Data
+    endpoint: /interconnections
+    response_key: interconnections
+    parser_family: interconnections
+    request_style: reference
+    mandatory_params: []
+    default_params: {fromCountryKey: UK}
+    dataset: interconnections
+    status: implemented
+    notes: Default scope is UK interconnections.
+  - category: Referential Data
+    endpoint: /aggregateInterconnections
+    response_key: aggregateInterconnections
+    parser_family: aggregate_interconnections
+    request_style: reference
+    mandatory_params: []
+    default_params: {countryKey: UK}
+    dataset: aggregate_interconnections
+    status: implemented
+    notes: Source for aggregatedData zone direction keys.

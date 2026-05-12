@@ -1,0 +1,25 @@
+{
+  "data": [
+    {
+      "publishDateTime": "2024-01-15T00:00:00Z",
+      "temperature": 5.2,
+      "normal": 6.0,
+      "low": 3.0,
+      "high": 8.0
+    },
+    {
+      "publishDateTime": "2024-01-15T06:00:00Z",
+      "temperature": 3.8,
+      "normal": 5.5,
+      "low": 2.0,
+      "high": 7.5
+    },
+    {
+      "publishDateTime": "2024-01-15T12:00:00Z",
+      "temperature": 7.1,
+      "normal": 7.0,
+      "low": 4.0,
+      "high": 10.0
+    }
+  ]
+}

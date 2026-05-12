@@ -7,12 +7,19 @@ from datetime import date
 from pathlib import Path
 
 import polars as pl
-import pytest
 
 from gridflow.connectors.gie.endpoints import AGSI_COUNTRIES, ALSI_COUNTRIES
 from gridflow.schemas.gie import GasStorage, LNGTerminal
-from gridflow.silver.gie.agsi import GasStorageTransformer
+from gridflow.silver.gie.agsi import (
+    AboutListingTransformer,
+    AboutSummaryTransformer,
+    GasStorageTransformer,
+    NewsItemTransformer,
+    NewsTransformer,
+    UnavailabilityTransformer,
+)
 from gridflow.silver.gie.alsi import LNGTerminalTransformer
+from gridflow.silver.registry import list_transformers
 
 FIXTURES = Path(__file__).parent.parent / "fixtures" / "gie"
 
@@ -126,6 +133,166 @@ class TestGasStorageTransformer:
         result = self.t.transform(raw)
         days = result["gas_day"].to_list()
         assert days == sorted(days)
+
+    def test_storage_reports_transformer_registered(self):
+        assert ("gie_agsi", "storage") in list_transformers("gie_agsi")
+        assert ("gie_agsi", "storage_reports") in list_transformers("gie_agsi")
+
+    def test_transform_preserves_live_storage_fields(self):
+        raw = pl.DataFrame([
+            {
+                "name": "EU",
+                "code": "EU",
+                "url": "https://agsi.gie.eu/api?type=EU",
+                "updatedAt": "2026-05-01T10:30:00Z",
+                "gasDayStart": "2026-05-01T06:00:00Z",
+                "gasDayEnd": "2026-05-02T06:00:00Z",
+                "gasInStorage": "754.1",
+                "consumption": "501.2",
+                "consumptionFull": "34.5",
+                "injection": "12.3",
+                "withdrawal": "4.5",
+                "netWithdrawal": "-7.8",
+                "workingGasVolume": "1000.0",
+                "injectionCapacity": "55.1",
+                "withdrawalCapacity": "66.2",
+                "contractedCapacity": "77.3",
+                "availableCapacity": "88.4",
+                "coveredCapacity": "99.5",
+                "full": "75.4",
+                "trend": "1",
+                "status": "confirmed",
+                "info": {"service": "maintenance"},
+                "__request_type": "EU",
+            }
+        ])
+
+        result = self.t.transform(raw)
+
+        assert len(result) == 1
+        assert result["entity_level"].to_list() == ["aggregate_type"]
+        assert result["entity_code"].to_list() == ["EU"]
+        assert result["updated_at"].dtype == pl.Datetime("us", "UTC")
+        assert result["gas_day_end"].dtype == pl.Datetime("us", "UTC")
+        assert result["net_withdrawal_gwh"].to_list() == [-7.8]
+        assert result["available_capacity_gwh_per_day"].to_list() == [88.4]
+        assert result["status"].to_list() == ["confirmed"]
+        assert "maintenance" in result["info"].to_list()[0]
+
+    def test_transform_preserves_same_day_query_scopes(self):
+        raw = pl.DataFrame([
+            {
+                "name": "EU",
+                "code": "EU",
+                "gasDayStart": "2026-05-01T06:00:00Z",
+                "gasInStorage": "100",
+                "__request_type": "EU",
+            },
+            {
+                "name": "Germany",
+                "code": "DE",
+                "gasDayStart": "2026-05-01T06:00:00Z",
+                "gasInStorage": "90",
+                "__request_country": "DE",
+            },
+            {
+                "name": "Alpha Storage",
+                "code": "21X-DEMO-ALPHA",
+                "gasDayStart": "2026-05-01T06:00:00Z",
+                "gasInStorage": "80",
+                "__request_country": "DE",
+                "__request_company": "21X-DEMO-ALPHA",
+            },
+            {
+                "name": "Alpha One",
+                "code": "21W-DEMO-ALPHA-1",
+                "gasDayStart": "2026-05-01T06:00:00Z",
+                "gasInStorage": "70",
+                "__request_country": "DE",
+                "__request_company": "21X-DEMO-ALPHA",
+                "__request_facility": "21W-DEMO-ALPHA-1",
+            },
+        ])
+
+        result = self.t.transform(raw)
+
+        assert len(result) == 4
+        assert set(result["entity_level"].to_list()) == {
+            "aggregate_type",
+            "country",
+            "company",
+            "facility",
+        }
+
+
+class TestAgsiReferenceTransformers:
+    def test_about_listing_flattens_companies_and_facilities(self):
+        transformer = _make_transformer(AboutListingTransformer)
+        payload = json.loads((FIXTURES / "agsi_listing_response.json").read_text())
+        raw = pl.DataFrame(transformer._records_from_payload(payload))
+
+        result = transformer.transform(raw)
+
+        assert len(result) == 7
+        assert set(result["entity_level"].to_list()) == {"company", "facility"}
+        assert "company_code" in result.columns
+        assert result["data_provider"].unique().to_list() == ["gie_agsi"]
+
+    def test_about_summary_transform_basic(self):
+        transformer = _make_transformer(AboutSummaryTransformer)
+        raw = pl.DataFrame([{
+            "platform": "AGSI",
+            "dataset": "storage",
+            "updatedAt": "2026-05-01T10:00:00Z",
+            "totalCompanies": "3",
+        }])
+
+        result = transformer.transform(raw)
+
+        assert len(result) == 1
+        assert result["updated_at"].dtype == pl.Datetime("us", "UTC")
+        assert result["total_companies"].to_list() == [3.0]
+
+    def test_news_transform_preserves_nested_entities(self):
+        transformer = _make_transformer(NewsTransformer)
+        raw = pl.DataFrame([{
+            "url": "demo-news",
+            "title": "Maintenance",
+            "summary": "Demo announcement",
+            "start_at": "2026-05-01T00:00:00Z",
+            "entities": [{"code": "DE"}],
+        }])
+
+        result = transformer.transform(raw)
+
+        assert len(result) == 1
+        assert result["start_at"].dtype == pl.Datetime("us", "UTC")
+        assert "DE" in result["entities"].to_list()[0]
+
+    def test_news_item_transform_accepts_detail_payload(self):
+        transformer = _make_transformer(NewsItemTransformer)
+        result = transformer.transform(pl.DataFrame([{
+            "turl": "demo-news",
+            "title": "Maintenance detail",
+            "details": "Detailed text",
+        }]))
+
+        assert len(result) == 1
+        assert result["turl"].to_list() == ["demo-news"]
+
+    def test_unavailability_transform_basic(self):
+        transformer = _make_transformer(UnavailabilityTransformer)
+        result = transformer.transform(pl.DataFrame([{
+            "id": "unav-1",
+            "status": "planned",
+            "eventStart": "2026-05-01T06:00:00Z",
+            "eventEnd": "2026-05-02T06:00:00Z",
+            "unavailableCapacity": "12.5",
+        }]))
+
+        assert len(result) == 1
+        assert result["event_start"].dtype == pl.Datetime("us", "UTC")
+        assert result["unavailable_capacity"].to_list() == [12.5]
 
 
 # ---------------------------------------------------------------------------

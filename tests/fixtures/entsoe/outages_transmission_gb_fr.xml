@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Unavailability_MarketDocument xmlns="urn:iec62325.351:tc57wg16:451-6:unavailabilitydocument:3:0">
+  <mRID>fixture-transmission-outage-gb-fr-20240115</mRID>
+  <revisionNumber>2</revisionNumber>
+  <type>A78</type>
+  <docStatus>
+    <value>A05</value>
+  </docStatus>
+  <TimeSeries>
+    <mRID>transmission-ts-1</mRID>
+    <businessType>A53</businessType>
+    <In_Domain.mRID codingScheme="A01">10YGB----------A</In_Domain.mRID>
+    <Out_Domain.mRID codingScheme="A01">10YFR-RTE------C</Out_Domain.mRID>
+    <Asset_RegisteredResource>
+      <mRID codingScheme="A01">ASSET-IFA-1</mRID>
+      <name>IFA Interconnector Circuit 1</name>
+    </Asset_RegisteredResource>
+    <Period>
+      <timeInterval>
+        <start>2024-01-15T00:00Z</start>
+        <end>2024-01-15T02:00Z</end>
+      </timeInterval>
+      <resolution>PT60M</resolution>
+      <Point>
+        <position>1</position>
+        <quantity>500</quantity>
+      </Point>
+      <Point>
+        <position>2</position>
+        <quantity>450</quantity>
+      </Point>
+    </Period>
+  </TimeSeries>
+</Unavailability_MarketDocument>

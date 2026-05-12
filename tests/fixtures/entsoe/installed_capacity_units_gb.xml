@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<GL_MarketDocument xmlns="urn:iec62325.351:tc57wg16:451-6:generationloaddocument:3:0">
+  <mRID>fixture-ic-units-gb-20240101</mRID>
+  <revisionNumber>1</revisionNumber>
+  <type>A71</type>
+  <process.processType>A33</process.processType>
+  <createdDateTime>2024-01-01T00:00:00Z</createdDateTime>
+  <TimeSeries>
+    <mRID>1</mRID>
+    <businessType>A29</businessType>
+    <in_Domain.mRID codingScheme="A01">10YGB----------A</in_Domain.mRID>
+    <quantity_Measure_Unit.name>MAW</quantity_Measure_Unit.name>
+    <MktPSRType>
+      <psrType>B02</psrType>
+    </MktPSRType>
+    <RegisteredResource>
+      <mRID codingScheme="A01">UNIT-DRAX-3</mRID>
+      <name>Drax Unit 3</name>
+    </RegisteredResource>
+    <Period>
+      <timeInterval>
+        <start>2024-01-01T00:00Z</start>
+        <end>2025-01-01T00:00Z</end>
+      </timeInterval>
+      <resolution>P1Y</resolution>
+      <Point>
+        <position>1</position>
+        <quantity>660</quantity>
+      </Point>
+    </Period>
+  </TimeSeries>
+  <TimeSeries>
+    <mRID>2</mRID>
+    <businessType>A29</businessType>
+    <in_Domain.mRID codingScheme="A01">10YGB----------A</in_Domain.mRID>
+    <quantity_Measure_Unit.name>MAW</quantity_Measure_Unit.name>
+    <MktPSRType>
+      <psrType>B14</psrType>
+    </MktPSRType>
+    <RegisteredResource>
+      <mRID codingScheme="A01">UNIT-HEYSHAM-2</mRID>
+      <name>Heysham 2</name>
+    </RegisteredResource>
+    <Period>
+      <timeInterval>
+        <start>2024-01-01T00:00Z</start>
+        <end>2025-01-01T00:00Z</end>
+      </timeInterval>
+      <resolution>P1Y</resolution>
+      <Point>
+        <position>1</position>
+        <quantity>1240</quantity>
+      </Point>
+    </Period>
+  </TimeSeries>
+</GL_MarketDocument>

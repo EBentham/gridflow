@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<GL_MarketDocument xmlns="urn:iec62325.351:tc57wg16:451-6:generationloaddocument:3:0">
+  <mRID>fixture-water-reservoirs-gb-20240115</mRID>
+  <revisionNumber>1</revisionNumber>
+  <type>A72</type>
+  <process.processType>A16</process.processType>
+  <createdDateTime>2024-01-15T01:00:00Z</createdDateTime>
+  <TimeSeries>
+    <mRID>1</mRID>
+    <businessType>A01</businessType>
+    <in_Domain.mRID codingScheme="A01">10YGB----------A</in_Domain.mRID>
+    <quantity_Measure_Unit.name>MWH</quantity_Measure_Unit.name>
+    <Period>
+      <timeInterval>
+        <start>2024-01-15T00:00Z</start>
+        <end>2024-01-15T02:00Z</end>
+      </timeInterval>
+      <resolution>PT60M</resolution>
+      <Point>
+        <position>1</position>
+        <quantity>18000</quantity>
+      </Point>
+      <Point>
+        <position>2</position>
+        <quantity>17950</quantity>
+      </Point>
+    </Period>
+  </TimeSeries>
+</GL_MarketDocument>

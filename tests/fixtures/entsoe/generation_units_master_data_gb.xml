@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<GenerationUnits_MarketDocument xmlns="urn:iec62325.351:tc57wg16:451-6:generationunitdocument:3:0">
+  <mRID>fixture-generation-units-gb</mRID>
+  <revisionNumber>1</revisionNumber>
+  <type>A95</type>
+  <businessType>B11</businessType>
+  <BiddingZone_Domain.mRID codingScheme="A01">10YGB----------A</BiddingZone_Domain.mRID>
+  <Implementation_DateAndOrTime>2024-01-01T00:00Z</Implementation_DateAndOrTime>
+  <MktGeneratingUnit>
+    <mRID codingScheme="A01">UNIT-DRAX-3</mRID>
+    <name>Drax Unit 3</name>
+    <MktPSRType>
+      <psrType>B02</psrType>
+    </MktPSRType>
+  </MktGeneratingUnit>
+  <MktGeneratingUnit>
+    <mRID codingScheme="A01">UNIT-HEYSHAM-2</mRID>
+    <name>Heysham 2</name>
+    <MktPSRType>
+      <psrType>B14</psrType>
+    </MktPSRType>
+  </MktGeneratingUnit>
+</GenerationUnits_MarketDocument>

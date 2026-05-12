@@ -10,13 +10,17 @@ from typing import Any
 import polars as pl
 
 from gridflow.silver.base import BaseSilverTransformer
+from gridflow.silver.entsog.datetime import (
+    filter_records_to_target_date,
+    parse_entsog_datetime_expr,
+)
 from gridflow.silver.registry import register_transformer
 
 logger = logging.getLogger(__name__)
 
-# Unit normalisation to GWh/day
-# ENTSO-G commonly returns kWh/d; divide by 1e6 → GWh/d
-# Some endpoints return kWh/h; multiply by 24 then divide by 1e6
+# Unit normalisation to GWh/day.
+# ENTSO-G commonly returns kWh/d; divide by 1e6 to get GWh/d.
+# Some endpoints return kWh/h; multiply by 24 then divide by 1e6.
 _KWH_D_TO_GWH_D = 1e-6
 _KWH_H_TO_GWH_D = 24.0 * 1e-6
 
@@ -26,7 +30,6 @@ def _normalise_to_gwh_day(value: float, unit: str) -> float:
     unit_lower = unit.lower().strip()
     if "kwh/h" in unit_lower or "kwh/hr" in unit_lower:
         return value * _KWH_H_TO_GWH_D
-    # Default: assume kWh/d
     return value * _KWH_D_TO_GWH_D
 
 
@@ -37,13 +40,8 @@ class PhysicalFlowsTransformer(BaseSilverTransformer):
     dataset = "physical_flows"
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
-        bronze_path = (
-            self.bronze_dir
-            / str(target_date.year)
-            / f"{target_date.month:02d}"
-            / f"{target_date.day:02d}"
-        )
-        if not bronze_path.exists():
+        bronze_path = self._bronze_path_for_date(target_date)
+        if bronze_path is None:
             return pl.DataFrame()
 
         rows: list[dict[str, Any]] = []
@@ -52,7 +50,6 @@ class PhysicalFlowsTransformer(BaseSilverTransformer):
                 continue
             try:
                 payload = json.loads(f.read_text())
-                # ENTSO-G wraps records in "operationalData" array
                 records = (
                     payload.get("operationalData", [])
                     if isinstance(payload, dict)
@@ -60,10 +57,11 @@ class PhysicalFlowsTransformer(BaseSilverTransformer):
                 )
                 rows.extend(records)
             except (json.JSONDecodeError, AttributeError) as exc:
-                logger.warning(
-                    "Failed to parse ENTSO-G bronze file %s: %s", f, exc
-                )
+                logger.warning("Failed to parse ENTSO-G bronze file %s: %s", f, exc)
 
+        if not rows:
+            return pl.DataFrame()
+        rows = filter_records_to_target_date(rows, target_date, ("periodFrom",))
         if not rows:
             return pl.DataFrame()
         return pl.DataFrame(rows)
@@ -73,35 +71,23 @@ class PhysicalFlowsTransformer(BaseSilverTransformer):
             return pl.DataFrame()
 
         required = ["periodFrom", "pointKey"]
-        missing = [c for c in required if c not in raw_df.columns]
+        missing = [column for column in required if column not in raw_df.columns]
         if missing:
-            logger.error(
-                "Missing required columns in ENTSO-G physical flows: %s", missing
-            )
+            logger.error("Missing required columns in ENTSO-G physical flows: %s", missing)
             return pl.DataFrame()
 
         df = raw_df
 
-        # Filter to Physical Flow indicator only (if indicator column present)
         if "indicator" in df.columns:
             df = df.filter(pl.col("indicator") == "Physical Flow")
 
         if df.is_empty():
             return pl.DataFrame()
 
-        # Parse periodFrom as UTC timestamp
         df = df.with_columns(
-            pl.col("periodFrom")
-            .str.to_datetime(
-                format="%Y-%m-%d %H:%M:%S",
-                time_unit="us",
-                strict=False,
-            )
-            .dt.replace_time_zone("UTC")
-            .alias("timestamp_utc")
+            parse_entsog_datetime_expr("periodFrom").alias("timestamp_utc")
         )
 
-        # Rename API camelCase columns
         rename_map: dict[str, str] = {}
         col_map = {
             "pointKey": "point_key",
@@ -117,10 +103,10 @@ class PhysicalFlowsTransformer(BaseSilverTransformer):
         if rename_map:
             df = df.rename(rename_map)
 
-        # Normalise flow value to GWh/day
         if "value" in df.columns and "unit" in df.columns:
-            df = df.with_columns(pl.col("value").cast(pl.Float64).alias("value"))
-            # Apply unit normalisation row-by-row
+            df = df.with_columns(
+                pl.col("value").cast(pl.Float64, strict=False).alias("value")
+            )
             df = df.with_columns(
                 pl.struct(["value", "unit"])
                 .map_elements(
@@ -133,14 +119,17 @@ class PhysicalFlowsTransformer(BaseSilverTransformer):
             )
         elif "value" in df.columns:
             df = df.with_columns(
-                (pl.col("value").cast(pl.Float64) * _KWH_D_TO_GWH_D).alias(
-                    "flow_gwh_per_day"
-                )
+                (
+                    pl.col("value").cast(pl.Float64, strict=False).fill_null(0.0)
+                    * _KWH_D_TO_GWH_D
+                ).alias("flow_gwh_per_day")
             )
         else:
             df = df.with_columns(pl.lit(0.0).alias("flow_gwh_per_day"))
 
         dedup_cols = ["timestamp_utc", "point_key"]
+        if "operator_key" in df.columns:
+            dedup_cols.append("operator_key")
         if "direction_key" in df.columns:
             dedup_cols.append("direction_key")
         df = df.unique(subset=dedup_cols, keep="last")
@@ -152,12 +141,18 @@ class PhysicalFlowsTransformer(BaseSilverTransformer):
         ])
 
         output_cols = [
-            "timestamp_utc", "point_key", "point_label",
-            "operator_key", "operator_label", "direction_key",
-            "flow_gwh_per_day", "unit",
-            "data_provider", "ingested_at",
+            "timestamp_utc",
+            "point_key",
+            "point_label",
+            "operator_key",
+            "operator_label",
+            "direction_key",
+            "flow_gwh_per_day",
+            "unit",
+            "data_provider",
+            "ingested_at",
         ]
-        available = [c for c in output_cols if c in df.columns]
+        available = [column for column in output_cols if column in df.columns]
         sort_cols = ["timestamp_utc", "point_key"]
         if "direction_key" in df.columns:
             sort_cols.append("direction_key")

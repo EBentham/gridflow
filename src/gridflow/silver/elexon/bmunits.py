@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 import logging
 from datetime import UTC, date, datetime
-from typing import Any
+from typing import Any, ClassVar
 
 import polars as pl
 
@@ -21,10 +21,16 @@ class BMUnitsTransformer(BaseSilverTransformer):
 
     This is reference data (no date dimension), so it writes a single
     file rather than date-partitioned Parquet.
+
+    Note on timestamps: ``available_at`` is the authoritative bitemporal
+    publication timestamp added by ``BaseSilverTransformer``; ``ingested_at``
+    is retained for backward compatibility as the local processing
+    timestamp. Under ``--reingest`` the two diverge.
     """
 
     source = "elexon"
     dataset = "bmunits_reference"
+    DATASET_VERSION: ClassVar[str] = "1.0.0"
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         # Reference data has no date partitioning; read latest file from any date dir
@@ -96,7 +102,12 @@ class BMUnitsTransformer(BaseSilverTransformer):
         available = [c for c in output_cols if c in df.columns]
         return df.select(available).sort("bm_unit_id")
 
-    def _write_silver(self, df: pl.DataFrame, target_date: date) -> None:
+    def _write_silver(
+        self,
+        df: pl.DataFrame,
+        target_date: date,
+        available_at: datetime,
+    ) -> None:
         """Override: write a single reference file (not date-partitioned)."""
         final_path = self.silver_dir / "bmunits_reference.parquet"
         write_parquet(df, final_path)

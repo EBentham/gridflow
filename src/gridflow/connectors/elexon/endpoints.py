@@ -2,16 +2,19 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from datetime import date, datetime
+from dataclasses import dataclass
 from enum import Enum
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from datetime import date, datetime
 
 
 class ParamStyle(Enum):
     """Elexon API parameter styles."""
 
     SETTLEMENT_DATE = "settlement_date"  # ?settlementDate=2024-01-15
-    SETTLEMENT_DATE_PERIOD = "settlement_date_period"  # ?settlementDate=...&settlementPeriod=N (iterate 1..50)
+    SETTLEMENT_DATE_PERIOD = "settlement_date_period"
     PUBLISH_DATETIME = "publish_datetime"  # ?publishDateTimeFrom=...&publishDateTimeTo=...
     DATE_PATH = "date_path"  # /endpoint/{date}  (e.g. system-prices)
     NO_PARAMS = "no_params"  # Static endpoint (e.g., BM unit reference)
@@ -36,6 +39,19 @@ class ElexonEndpoint:
     max_chunk_hours: int = 24
 
 
+# Datasets that are intentionally absent from ENDPOINTS.
+EXCLUDED_ENDPOINTS: dict[str, str] = {
+    "bod": (
+        "Excluded from active inventory because BOD availability has been unstable; "
+        "requires a dedicated schema pass before activation."
+    ),
+    "generation_by_fuel": "Duplicate of fuelhh; both use /datasets/FUELHH.",
+    "indicative_imbalance_volumes": (
+        "Removed by Elexon; use active imbalance datasets instead."
+    ),
+}
+
+
 # === COMPLETE ENDPOINT REGISTRY ===
 
 ENDPOINTS: dict[str, ElexonEndpoint] = {
@@ -55,7 +71,7 @@ ENDPOINTS: dict[str, ElexonEndpoint] = {
         from_param="from",
         to_param="to",
     ),
-    # BOD — endpoint decommissioned by Elexon (returns 404 for all param styles)
+    # BOD is intentionally excluded; see EXCLUDED_ENDPOINTS.
 
     "disbsad": ElexonEndpoint(
         path="/datasets/DISBSAD",
@@ -85,10 +101,15 @@ ENDPOINTS: dict[str, ElexonEndpoint] = {
     ),
 
     # --- Publish datetime style (standard publishDateTimeFrom/To params) ---
+    # FREQ is the exception: Swagger declares measurementDateTimeFrom/To
+    # for /datasets/FREQ. Sending publishDateTimeFrom/To causes the API to
+    # silently ignore the window and return the latest ~5761 samples.
     "freq": ElexonEndpoint(
         path="/datasets/FREQ",
         description="System Frequency",
         param_style=ParamStyle.PUBLISH_DATETIME,
+        from_param="measurementDateTimeFrom",
+        to_param="measurementDateTimeTo",
         supports_pagination=True,
     ),
     "fuelhh": ElexonEndpoint(
@@ -213,17 +234,23 @@ ENDPOINTS: dict[str, ElexonEndpoint] = {
     ),
 
     # --- REMIT outage messages ---
+    # Vendor enforces an undocumented max-1-day query window: requests
+    # spanning > 1 day return HTTP 400. Cap chunks at 23h to leave a
+    # margin against DST shifts (boundary value).
     "remit": ElexonEndpoint(
         path="/datasets/REMIT",
         description="REMIT Outage and Unavailability Messages",
         param_style=ParamStyle.PUBLISH_DATETIME,
+        max_chunk_hours=23,
     ),
 
     # --- SO-SO prices ---
+    # Same undocumented max-1-day cap as REMIT.
     "soso": ElexonEndpoint(
         path="/datasets/SOSO",
         description="SO-SO Prices (Cross-Border Interconnector Trading)",
         param_style=ParamStyle.PUBLISH_DATETIME,
+        max_chunk_hours=23,
     ),
 
     # --- Settlement Market Depth (DATE_PATH) ---
@@ -233,8 +260,7 @@ ENDPOINTS: dict[str, ElexonEndpoint] = {
         param_style=ParamStyle.DATE_PATH,
     ),
 
-    # NOTE: generation_by_fuel removed — duplicate of fuelhh.
-    # Both used /datasets/FUELHH; use fuelhh instead.
+    # generation_by_fuel is intentionally excluded; see EXCLUDED_ENDPOINTS.
 
     # --- Reference data (static, no date params) ---
     "bmunits_reference": ElexonEndpoint(
@@ -244,8 +270,7 @@ ENDPOINTS: dict[str, ElexonEndpoint] = {
         supports_pagination=False,
     ),
 
-    # REMOVED endpoints (kept as comments for reference):
-    # "indicative_imbalance_volumes" — endpoint removed by Elexon, returns 404
+    # indicative_imbalance_volumes is intentionally excluded; see EXCLUDED_ENDPOINTS.
 }
 
 
@@ -260,13 +285,10 @@ def build_params(
     """Build query parameters based on endpoint parameter style."""
     params: dict[str, str | int] = {}
 
-    if endpoint.param_style == ParamStyle.SETTLEMENT_DATE:
-        if settlement_date:
-            params[endpoint.date_param] = settlement_date.isoformat()
-        if settlement_period is not None and endpoint.period_param:
-            params[endpoint.period_param] = settlement_period
-
-    elif endpoint.param_style == ParamStyle.SETTLEMENT_DATE_PERIOD:
+    if endpoint.param_style in (
+        ParamStyle.SETTLEMENT_DATE,
+        ParamStyle.SETTLEMENT_DATE_PERIOD,
+    ):
         if settlement_date:
             params[endpoint.date_param] = settlement_date.isoformat()
         if settlement_period is not None and endpoint.period_param:

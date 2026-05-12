@@ -1,0 +1,70 @@
+{
+  "last_page": 1,
+  "total": 4,
+  "gas_day": "2026-05-01",
+  "data": [
+    {
+      "name": "EU",
+      "code": "EU",
+      "url": "https://agsi.gie.eu/api?type=EU",
+      "updatedAt": "2026-05-01T10:30:00Z",
+      "gasDayStart": "2026-05-01T06:00:00Z",
+      "gasDayEnd": "2026-05-02T06:00:00Z",
+      "gasInStorage": "754.1",
+      "consumption": "501.2",
+      "consumptionFull": "34.5",
+      "injection": "12.3",
+      "withdrawal": "4.5",
+      "netWithdrawal": "-7.8",
+      "workingGasVolume": "1000.0",
+      "injectionCapacity": "55.1",
+      "withdrawalCapacity": "66.2",
+      "contractedCapacity": "77.3",
+      "availableCapacity": "88.4",
+      "coveredCapacity": "99.5",
+      "full": "75.4",
+      "trend": "1",
+      "status": "confirmed",
+      "info": {"service": "maintenance"}
+    },
+    {
+      "name": "Germany",
+      "code": "DE",
+      "url": "https://agsi.gie.eu/api?country=DE",
+      "updatedAt": "2026-05-01T10:30:00Z",
+      "gasDayStart": "2026-05-01T06:00:00Z",
+      "gasDayEnd": "2026-05-02T06:00:00Z",
+      "gasInStorage": "245.0",
+      "withdrawal": "2.0",
+      "injection": "9.0",
+      "netWithdrawal": "-7.0",
+      "workingGasVolume": "400.0",
+      "full": "61.2",
+      "status": "confirmed"
+    },
+    {
+      "name": "Alpha Storage",
+      "code": "21X-DEMO-ALPHA",
+      "url": "https://agsi.gie.eu/api?country=DE&company=21X-DEMO-ALPHA",
+      "updatedAt": "2026-05-01T10:30:00Z",
+      "gasDayStart": "2026-05-01T06:00:00Z",
+      "gasDayEnd": "2026-05-02T06:00:00Z",
+      "gasInStorage": "120.0",
+      "workingGasVolume": "200.0",
+      "full": "60.0",
+      "status": "confirmed"
+    },
+    {
+      "name": "Alpha One",
+      "code": "21W-DEMO-ALPHA-1",
+      "url": "https://agsi.gie.eu/api?country=DE&company=21X-DEMO-ALPHA&facility=21W-DEMO-ALPHA-1",
+      "updatedAt": "2026-05-01T10:30:00Z",
+      "gasDayStart": "2026-05-01T06:00:00Z",
+      "gasDayEnd": "2026-05-02T06:00:00Z",
+      "gasInStorage": "70.0",
+      "workingGasVolume": "100.0",
+      "full": "70.0",
+      "status": "confirmed"
+    }
+  ]
+}

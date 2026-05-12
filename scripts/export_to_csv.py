@@ -42,8 +42,12 @@ Silver views (one per source/dataset):
   silver_pn                  Elexon physical notifications
   silver_disbsad             Elexon disaggregated BSAD
   silver_bmunits             Elexon BM unit reference data
-  silver_historical          Open-Meteo historical weather
-  silver_forecast            Open-Meteo weather forecasts
+  silver_historical_demand   Open-Meteo historical weather (7 demand sites)
+  silver_historical_wind     Open-Meteo historical weather (12 wind sites)
+  silver_historical_solar    Open-Meteo historical weather (6 solar sites)
+  silver_forecast_demand     Open-Meteo weather forecasts (7 demand sites)
+  silver_forecast_wind       Open-Meteo weather forecasts (12 wind sites)
+  silver_forecast_solar      Open-Meteo weather forecasts (6 solar sites)
   silver_day_ahead_prices    ENTSO-E day-ahead electricity prices
   silver_actual_load         ENTSO-E actual total load
   silver_actual_generation   ENTSO-E actual generation by type

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Balancing_MarketDocument xmlns="urn:iec62325.351:tc57wg16:451-6:balancingdocument:4:0">
+  <mRID>fixture-current-balancing-state-gb-20240115</mRID>
+  <revisionNumber>1</revisionNumber>
+  <type>A86</type>
+  <createdDateTime>2024-01-14T12:00:00Z</createdDateTime>
+  <TimeSeries>
+    <mRID>state-1</mRID>
+    <businessType>B33</businessType>
+    <area_Domain.mRID codingScheme="A01">10YGB----------A</area_Domain.mRID>
+    <Period>
+      <timeInterval>
+        <start>2024-01-15T00:00Z</start>
+        <end>2024-01-15T02:00Z</end>
+      </timeInterval>
+      <resolution>PT60M</resolution>
+      <Point>
+        <position>1</position>
+        <quantity>125</quantity>
+      </Point>
+      <Point>
+        <position>2</position>
+        <quantity>-75</quantity>
+      </Point>
+    </Period>
+  </TimeSeries>
+</Balancing_MarketDocument>

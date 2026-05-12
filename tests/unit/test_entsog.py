@@ -3,24 +3,35 @@
 from __future__ import annotations
 
 import json
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from pathlib import Path
 
 import polars as pl
 import pytest
 
+import gridflow.silver.entsog  # noqa: F401
+from gridflow.config.settings import load_settings
 from gridflow.connectors.entsog.endpoints import (
+    DEFAULT_POINT_DIRECTIONS,
+    ENDPOINTS,
     ENTSOG_ALL_RECORDS_LIMIT,
+    ENTSOG_API_PATH,
     ENTSOG_TIMEZONE,
+    ENTSOG_TIMEZONE_PARAM,
+    OPERATIONAL_INDICATORS,
     PHYSICAL_FLOW_INDICATOR,
+    build_params,
 )
 from gridflow.schemas.entsog import EntsogPhysicalFlow
 from gridflow.silver.entsog.physical_flows import (
     PhysicalFlowsTransformer,
     _normalise_to_gwh_day,
 )
+from gridflow.silver.registry import list_transformers
 
 FIXTURES = Path(__file__).parent.parent / "fixtures" / "entsog"
+START = datetime(2024, 1, 15, 0, 0, tzinfo=UTC)
+END = datetime(2024, 1, 16, 0, 0, tzinfo=UTC)
 
 
 # ---------------------------------------------------------------------------
@@ -29,14 +40,59 @@ FIXTURES = Path(__file__).parent.parent / "fixtures" / "entsog"
 
 
 class TestEntsogEndpoints:
+    def test_api_path_is_operational_data(self):
+        assert ENTSOG_API_PATH == "/operationalData"
+
     def test_timezone_is_uct(self):
         assert ENTSOG_TIMEZONE == "UCT"
+        assert ENTSOG_TIMEZONE_PARAM == "timeZone"
 
     def test_limit_is_minus_one(self):
         assert ENTSOG_ALL_RECORDS_LIMIT == -1
 
     def test_physical_flow_indicator(self):
         assert PHYSICAL_FLOW_INDICATOR == "Physical Flow"
+
+    def test_active_inventory_matches_config_and_silver_registry(self):
+        configured = set(load_settings().get_source_config("entsog").datasets)
+        endpoint_datasets = set(ENDPOINTS)
+        transformers = {dataset for _, dataset in list_transformers("entsog")}
+
+        assert endpoint_datasets == configured
+        assert endpoint_datasets <= transformers
+
+    def test_operational_indicator_values_are_exact_case(self):
+        assert OPERATIONAL_INDICATORS["nominations"] == "Nomination"
+        assert OPERATIONAL_INDICATORS["methane_content"] == "Methane Content"
+        assert OPERATIONAL_INDICATORS["hydrogen_content"] == "Hydrogen Content"
+        assert OPERATIONAL_INDICATORS["oxygen_content"] == "Oxygen Content"
+
+    def test_build_params_for_operational_dataset(self):
+        endpoint = ENDPOINTS["physical_flows"]
+        params = build_params(endpoint, start=START, end=END)
+
+        assert params["from"] == "2024-01-15"
+        assert params["to"] == "2024-01-16"
+        assert params["indicator"] == "Physical Flow"
+        assert params["periodType"] == "day"
+        assert params["timeZone"] == "UCT"
+        assert params["limit"] == -1
+        assert "pointDirection" not in params
+
+    def test_build_params_keeps_point_direction_for_other_operational_datasets(self):
+        endpoint = ENDPOINTS["nominations"]
+        params = build_params(endpoint, start=START, end=END)
+
+        assert params["pointDirection"] == ",".join(DEFAULT_POINT_DIRECTIONS)
+
+    def test_build_params_allows_live_limit_override(self):
+        endpoint = ENDPOINTS["operators"]
+        params = build_params(endpoint, start=START, end=END, limit=1)
+
+        assert "from" not in params
+        assert "to" not in params
+        assert params["hasData"] == 1
+        assert params["limit"] == 1
 
 
 # ---------------------------------------------------------------------------
@@ -121,7 +177,7 @@ class TestPhysicalFlowsTransformer:
         assert result["timestamp_utc"][0] == expected
 
     def test_kwh_d_normalised_to_gwh_d(self):
-        """15_000_000_000 kWh/d → 15,000 GWh/d for IUK entry."""
+        """15_000_000_000 kWh/d becomes 15,000 GWh/d for IUK entry."""
         raw = _load_fixture_df()
         result = self.t.transform(raw)
         iuk_entry = result.filter(
@@ -168,6 +224,34 @@ class TestPhysicalFlowsTransformer:
         result = self.t.transform(raw)
         ts_list = result["timestamp_utc"].to_list()
         assert ts_list == sorted(ts_list)
+
+    def test_read_bronze_filters_records_to_target_date(self, tmp_path):
+        target = date(2026, 4, 17)
+        bronze_path = tmp_path / "2026" / "04" / "17"
+        bronze_path.mkdir(parents=True)
+        payload = {
+            "operationalData": [
+                {
+                    "indicator": "Physical Flow",
+                    "periodFrom": "2026-04-17T05:00:00+02:00",
+                    "pointKey": "ITP-00005",
+                },
+                {
+                    "indicator": "Physical Flow",
+                    "periodFrom": "2026-04-18T05:00:00+02:00",
+                    "pointKey": "ITP-00005",
+                },
+            ]
+        }
+        (bronze_path / "raw_20260417T000000Z_abcd1234.json").write_text(
+            json.dumps(payload)
+        )
+        self.t.bronze_dir = tmp_path
+
+        result = self.t.read_bronze(target)
+
+        assert len(result) == 1
+        assert result["periodFrom"].to_list() == ["2026-04-17T05:00:00+02:00"]
 
 
 # ---------------------------------------------------------------------------

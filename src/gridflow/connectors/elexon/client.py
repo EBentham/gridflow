@@ -5,16 +5,19 @@ from __future__ import annotations
 import json
 import logging
 from datetime import date, datetime, timedelta
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-import httpx
-
-from gridflow.config.settings import SourceConfig
 from gridflow.connectors.base import BaseConnector, RawResponse
-from gridflow.connectors.elexon.endpoints import ENDPOINTS, ElexonEndpoint, ParamStyle, build_params
+from gridflow.connectors.elexon.endpoints import ENDPOINTS, ParamStyle, build_params
 from gridflow.connectors.elexon.parsers import get_pagination_info
 from gridflow.connectors.registry import register_connector
 from gridflow.utils.retry import RETRY_POLICY
+
+if TYPE_CHECKING:
+    import httpx
+
+    from gridflow.config.settings import SourceConfig
+    from gridflow.connectors.elexon.endpoints import ElexonEndpoint
 
 logger = logging.getLogger(__name__)
 

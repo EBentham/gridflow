@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Unavailability_MarketDocument xmlns="urn:iec62325.351:tc57wg16:451-6:unavailabilitydocument:3:0">
+  <mRID>fixture-consumption-outage-gb-20240115</mRID>
+  <revisionNumber>1</revisionNumber>
+  <type>A76</type>
+  <docStatus>
+    <value>A05</value>
+  </docStatus>
+  <createdDateTime>2024-01-15T01:00:00Z</createdDateTime>
+  <TimeSeries>
+    <mRID>consumption-ts-1</mRID>
+    <businessType>A53</businessType>
+    <BiddingZone_Domain.mRID codingScheme="A01">10YGB----------A</BiddingZone_Domain.mRID>
+    <quantity_Measure_Unit.name>MAW</quantity_Measure_Unit.name>
+    <Period>
+      <timeInterval>
+        <start>2024-01-15T00:00Z</start>
+        <end>2024-01-15T02:00Z</end>
+      </timeInterval>
+      <resolution>PT60M</resolution>
+      <Point>
+        <position>1</position>
+        <quantity>150</quantity>
+      </Point>
+      <Point>
+        <position>2</position>
+        <quantity>125</quantity>
+      </Point>
+    </Period>
+  </TimeSeries>
+</Unavailability_MarketDocument>

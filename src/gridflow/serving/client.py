@@ -166,10 +166,12 @@ class GridflowClient:
         end: str | date,
         location: str | None = None,
     ) -> pl.DataFrame:
-        """Get historical weather observations from Open-Meteo.
+        """Get historical weather observations from Open-Meteo (demand role).
 
-        Returns a Polars DataFrame with the live silver_historical
-        public schema (bitemporal / partitioning columns excluded).
+        Returns a Polars DataFrame with the live silver_itsdo public
+        schema (demand-role weather; bitemporal / partitioning columns
+        excluded). Renamed from silver_historical at F7.5 during the
+        wind/solar role-split; new columns surface here automatically.
         """
         params: list[str] = [str(start), str(end)]
         location_filter = ""
@@ -178,7 +180,7 @@ class GridflowClient:
             params.append(location)
         sql = (
             "SELECT * EXCLUDE (" + _BITEMPORAL_EXCLUDE_SQL + ") "
-            "FROM silver_historical "
+            "FROM silver_itsdo "
             "WHERE timestamp_utc::DATE BETWEEN ? AND ?"
             + location_filter + " "
             "ORDER BY timestamp_utc, location"

@@ -138,7 +138,7 @@ def _try_create_view(
     try:
         con.execute(
             f"CREATE OR REPLACE VIEW {view_name} AS "
-            f"SELECT * FROM read_parquet('{pattern}', hive_partitioning=true)"
+            f"SELECT * FROM read_parquet('{pattern}', hive_partitioning=true, union_by_name=true)"
         )
         logger.info(f"Registered view: {view_name}")
     except Exception as e:

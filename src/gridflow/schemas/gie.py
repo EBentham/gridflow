@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, datetime
 
 from pydantic import Field, field_validator
 
@@ -10,17 +10,33 @@ from gridflow.schemas.common import BaseSchema
 
 
 class GasStorage(BaseSchema):
-    """Silver-layer schema for GIE AGSI+ gas storage data (country level)."""
+    """Silver-layer schema for GIE AGSI+ gas storage data."""
 
     gas_day: date
-    country_code: str
+    country_code: str = ""
     country_name: str = ""
+    gas_day_end: datetime | None = None
+    updated_at: datetime | None = None
+    entity_level: str = "country"
+    entity_code: str = ""
+    entity_name: str = ""
+    entity_url: str | None = None
     gas_in_storage_gwh: float | None = None
+    consumption_gwh: float | None = None
+    consumption_full_pct: float | None = None
     withdrawal_gwh: float | None = None
     injection_gwh: float | None = None
+    net_withdrawal_gwh: float | None = None
     working_gas_volume_gwh: float | None = None
+    injection_capacity_gwh_per_day: float | None = None
+    withdrawal_capacity_gwh_per_day: float | None = None
+    contracted_capacity_gwh_per_day: float | None = None
+    available_capacity_gwh_per_day: float | None = None
+    covered_capacity_gwh_per_day: float | None = None
     storage_pct_full: float | None = None  # 0-100
     trend: float | None = None
+    status: str | None = None
+    info: str | None = None
     data_provider: str = Field(default="gie_agsi")
 
     @field_validator("storage_pct_full")

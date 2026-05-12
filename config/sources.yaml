@@ -12,7 +12,7 @@ sources:
         schedule: "hourly"
         max_query_days: 1
       boal:
-        endpoint: "/datasets/BOAL"
+        endpoint: "/datasets/BOALF"
         schedule: "hourly"
         max_query_days: 1
       # bod: removed — endpoint decommissioned by Elexon (404)
@@ -151,11 +151,35 @@ sources:
     timeout: 30
     max_retries: 3
     datasets:
-      historical:
+      # Demand role: 7 UK population centres, F0 variable set + snow.
+      historical_demand:
         endpoint: "archive"
         schedule: "daily"
         max_query_days: 30
-      forecast:
+      forecast_demand:
+        endpoint: "forecast"
+        schedule: "hourly"
+        max_query_days: 7
+      # Wind role: 12 capacity-weighted GB wind sites. Archive variable
+      # list scoped to {10m, 100m} only — heights {80,120,180}m return
+      # all-null on ERA5 archive (verified 2026-05-09 against Hornsea
+      # and Whitelee).
+      historical_wind:
+        endpoint: "archive"
+        schedule: "daily"
+        max_query_days: 30
+      forecast_wind:
+        endpoint: "forecast"
+        schedule: "hourly"
+        max_query_days: 7
+      # Solar role: 6 capacity-weighted GB solar sites. GTI request adds
+      # tilt=35&azimuth=180 query params via DATASET_SPECS.extra_params
+      # (UK fixed-tilt representative geometry).
+      historical_solar:
+        endpoint: "archive"
+        schedule: "daily"
+        max_query_days: 30
+      forecast_solar:
         endpoint: "forecast"
         schedule: "hourly"
         max_query_days: 7
@@ -164,7 +188,7 @@ sources:
     base_url: "https://web-api.tp.entsoe.eu"
     api_key_env: "ENTSOE_API_KEY"
     api_key_header: ""
-    rate_limit_per_second: 6
+    rate_limit_per_second: 1
     timeout: 60
     max_retries: 5
     datasets:
@@ -193,11 +217,27 @@ sources:
         schedule: "daily"
         max_query_days: 1
       cross_border_flows:
-        document_type: "A88"
+        document_type: "A11"
         schedule: "daily"
         max_query_days: 365
       outages_generation:
         document_type: "A80"
+        schedule: "daily"
+        max_query_days: 365
+      outages_consumption:
+        document_type: "A76"
+        schedule: "daily"
+        max_query_days: 365
+      outages_transmission:
+        document_type: "A78"
+        schedule: "daily"
+        max_query_days: 365
+      outages_offshore_grid:
+        document_type: "A79"
+        schedule: "daily"
+        max_query_days: 365
+      outages_production:
+        document_type: "A77"
         schedule: "daily"
         max_query_days: 365
       installed_capacity:
@@ -205,17 +245,202 @@ sources:
         process_type: "A33"
         schedule: "weekly"
         max_query_days: 365
+      installed_capacity_units:
+        document_type: "A71"
+        process_type: "A33"
+        schedule: "yearly"
+        max_query_days: 365
+      # Phase 2 additions
+      generation_forecast:
+        document_type: "A71"
+        process_type: "A01"
+        schedule: "daily"
+        max_query_days: 1
+      actual_generation_units:
+        document_type: "A73"
+        process_type: "A16"
+        schedule: "daily"
+        max_query_days: 1
+      water_reservoirs:
+        document_type: "A72"
+        process_type: "A16"
+        schedule: "daily"
+        max_query_days: 1
+      generation_units_master_data:
+        document_type: "A95"
+        schedule: "weekly"
+        max_query_days: 365
+      load_forecast_weekly:
+        document_type: "A65"
+        process_type: "A31"
+        schedule: "weekly"
+        max_query_days: 7
+      load_forecast_monthly:
+        document_type: "A65"
+        process_type: "A32"
+        schedule: "monthly"
+        max_query_days: 31
+      load_forecast_yearly:
+        document_type: "A65"
+        process_type: "A33"
+        schedule: "yearly"
+        max_query_days: 365
+      forecast_margin:
+        document_type: "A70"
+        process_type: "A33"
+        schedule: "yearly"
+        max_query_days: 365
+      net_transfer_capacity:
+        document_type: "A61"
+        schedule: "daily"
+        max_query_days: 365
+      dc_link_intraday_transfer_limits:
+        document_type: "A93"
+        schedule: "daily"
+        max_query_days: 365
+      commercial_schedules:
+        document_type: "A09"
+        schedule: "daily"
+        max_query_days: 365
+      # commercial_schedules_net_positions removed in V2 (ADR-019):
+      # registry-duplicate of commercial_schedules. See
+      # docs/DECISION_LOG/ADR-019-entsoe-a09-dedup.md.
+      redispatching_cross_border:
+        document_type: "A63"
+        schedule: "daily"
+        max_query_days: 365
+      redispatching_internal:
+        document_type: "A63"
+        schedule: "daily"
+        max_query_days: 365
+      countertrading:
+        document_type: "A91"
+        schedule: "daily"
+        max_query_days: 365
+      congestion_management_costs:
+        document_type: "A92"
+        schedule: "daily"
+        max_query_days: 365
+      offered_transfer_capacity_continuous:
+        document_type: "A31"
+        schedule: "daily"
+        max_query_days: 365
+      offered_transfer_capacity_implicit:
+        document_type: "A31"
+        schedule: "daily"
+        max_query_days: 365
+      offered_transfer_capacity_explicit:
+        document_type: "A31"
+        schedule: "daily"
+        max_query_days: 365
+      auction_revenue:
+        document_type: "A25"
+        schedule: "daily"
+        max_query_days: 365
+      transfer_capacity_use:
+        document_type: "A25"
+        schedule: "daily"
+        max_query_days: 365
+      total_nominated_capacity:
+        document_type: "A26"
+        schedule: "daily"
+        max_query_days: 365
+      total_capacity_allocated:
+        document_type: "A26"
+        schedule: "daily"
+        max_query_days: 365
+      congestion_income:
+        document_type: "A25"
+        schedule: "daily"
+        max_query_days: 365
+      net_positions:
+        document_type: "A25"
+        schedule: "daily"
+        max_query_days: 365
+      # Phase 3 — balancing datasets (controlArea_Domain)
+      imbalance_prices:
+        document_type: "A85"
+        schedule: "daily"
+        max_query_days: 1
+      imbalance_volume:
+        document_type: "A86"
+        schedule: "daily"
+        max_query_days: 1
+      activated_balancing_prices:
+        document_type: "A84"
+        process_type: "A16"
+        schedule: "daily"
+        max_query_days: 1
+      contracted_reserves:
+        document_type: "A81"
+        process_type: "A52"
+        schedule: "daily"
+        max_query_days: 1
+      current_balancing_state:
+        document_type: "A86"
+        schedule: "daily"
+        max_query_days: 1
+      balancing_energy_bids:
+        document_type: "A37"
+        process_type: "A47"
+        schedule: "daily"
+        max_query_days: 1
+      aggregated_balancing_energy_bids:
+        document_type: "A24"
+        process_type: "A51"
+        schedule: "daily"
+        max_query_days: 1
+      procured_balancing_capacity:
+        document_type: "A15"
+        process_type: "A51"
+        schedule: "daily"
+        max_query_days: 1
+      cross_zonal_balancing_capacity:
+        document_type: "A38"
+        process_type: "A51"
+        schedule: "daily"
+        max_query_days: 1
+      balancing_financial_expenses_income:
+        # Real publication cadence is monthly (per V1 entsoe-VALIDATION
+        # Recommendation §7); daily/1d wasted live calls before V2.
+        document_type: "A87"
+        schedule: "monthly"
+        max_query_days: 31
 
   gie_agsi:
     base_url: "https://agsi.gie.eu"
     api_key_env: "GIE_API_KEY"
     api_key_header: "x-key"
-    rate_limit_per_second: 5
+    rate_limit_per_second: 1
     timeout: 30
     max_retries: 3
     datasets:
+      storage_reports:
+        endpoint: "/api"
+        schedule: "daily"
+        max_query_days: 30
       storage:
         endpoint: "/api"
+        schedule: "daily"
+        max_query_days: 30
+      about_summary:
+        endpoint: "/api/about"
+        schedule: "weekly"
+        max_query_days: 0
+      about_listing:
+        endpoint: "/api/about"
+        schedule: "weekly"
+        max_query_days: 0
+      news:
+        endpoint: "/api/news"
+        schedule: "daily"
+        max_query_days: 0
+      news_item:
+        endpoint: "/api/news"
+        schedule: "daily"
+        max_query_days: 0
+      unavailability:
+        endpoint: "/api/unavailability"
         schedule: "daily"
         max_query_days: 30
 
@@ -241,9 +466,137 @@ sources:
     max_retries: 5
     datasets:
       physical_flows:
-        endpoint: "/operationaldata"
+        endpoint: "/operationalData"
         schedule: "daily"
         max_query_days: 30
+      nominations:
+        endpoint: "/operationalData"
+        schedule: "daily"
+        max_query_days: 30
+      allocations:
+        endpoint: "/operationalData"
+        schedule: "daily"
+        max_query_days: 30
+      renominations:
+        endpoint: "/operationalData"
+        schedule: "daily"
+        max_query_days: 30
+      firm_available:
+        endpoint: "/operationalData"
+        schedule: "daily"
+        max_query_days: 30
+      firm_booked:
+        endpoint: "/operationalData"
+        schedule: "daily"
+        max_query_days: 30
+      firm_technical:
+        endpoint: "/operationalData"
+        schedule: "daily"
+        max_query_days: 30
+      interruptible_available:
+        endpoint: "/operationalData"
+        schedule: "daily"
+        max_query_days: 30
+      interruptible_booked:
+        endpoint: "/operationalData"
+        schedule: "daily"
+        max_query_days: 30
+      interruptible_total:
+        endpoint: "/operationalData"
+        schedule: "daily"
+        max_query_days: 30
+      gcv:
+        endpoint: "/operationalData"
+        schedule: "daily"
+        max_query_days: 30
+      wobbe_index:
+        endpoint: "/operationalData"
+        schedule: "daily"
+        max_query_days: 30
+      methane_content:
+        endpoint: "/operationalData"
+        schedule: "daily"
+        max_query_days: 30
+      hydrogen_content:
+        endpoint: "/operationalData"
+        schedule: "daily"
+        max_query_days: 30
+      oxygen_content:
+        endpoint: "/operationalData"
+        schedule: "daily"
+        max_query_days: 30
+      available_through_oversubscription:
+        endpoint: "/operationalData"
+        schedule: "daily"
+        max_query_days: 30
+      available_through_surrender:
+        endpoint: "/operationalData"
+        schedule: "daily"
+        max_query_days: 30
+      available_through_uioli_long_term:
+        endpoint: "/operationalData"
+        schedule: "daily"
+        max_query_days: 30
+      available_through_uioli_short_term:
+        endpoint: "/operationalData"
+        schedule: "daily"
+        max_query_days: 30
+      cmp_unsuccessful_requests:
+        endpoint: "/cmpUnsuccessfulRequests"
+        schedule: "daily"
+        max_query_days: 30
+      cmp_unavailable_firm_capacity:
+        endpoint: "/cmpUnavailables"
+        schedule: "daily"
+        max_query_days: 30
+      cmp_auction_premiums:
+        endpoint: "/cmpAuctions"
+        schedule: "daily"
+        max_query_days: 30
+      interruptions:
+        endpoint: "/interruptions"
+        schedule: "daily"
+        max_query_days: 30
+      aggregated_physical_flows:
+        endpoint: "/aggregatedData"
+        schedule: "daily"
+        max_query_days: 30
+      tariffs:
+        endpoint: "/tariffsFulls"
+        schedule: "monthly"
+        max_query_days: 30
+      tariff_simulations:
+        endpoint: "/tariffsSimulations"
+        schedule: "monthly"
+        max_query_days: 30
+      urgent_market_messages:
+        endpoint: "/urgentMarketMessages"
+        schedule: "daily"
+        max_query_days: 0
+      connection_points:
+        endpoint: "/connectionPoints"
+        schedule: "weekly"
+        max_query_days: 0
+      operators:
+        endpoint: "/operators"
+        schedule: "weekly"
+        max_query_days: 0
+      balancing_zones:
+        endpoint: "/balancingZones"
+        schedule: "weekly"
+        max_query_days: 0
+      operator_point_directions:
+        endpoint: "/operatorPointDirections"
+        schedule: "weekly"
+        max_query_days: 0
+      interconnections:
+        endpoint: "/interconnections"
+        schedule: "weekly"
+        max_query_days: 0
+      aggregate_interconnections:
+        endpoint: "/aggregateInterconnections"
+        schedule: "weekly"
+        max_query_days: 0
 
   neso:
     base_url: "https://api.carbonintensity.org.uk"
@@ -253,7 +606,135 @@ sources:
     timeout: 30
     max_retries: 3
     datasets:
+      intensity_current:
+        endpoint: "/intensity"
+        schedule: "hourly"
+        max_query_days: 0
+      intensity_today:
+        endpoint: "/intensity/date"
+        schedule: "daily"
+        max_query_days: 0
+      intensity_date:
+        endpoint: "/intensity/date/{date}"
+        schedule: "daily"
+        max_query_days: 1
+      intensity_period:
+        endpoint: "/intensity/date/{date}/{period}"
+        schedule: "hourly"
+        max_query_days: 1
+      intensity_factors:
+        endpoint: "/intensity/factors"
+        schedule: "weekly"
+        max_query_days: 0
+      intensity_at:
+        endpoint: "/intensity/{from}"
+        schedule: "hourly"
+        max_query_days: 1
+      intensity_fw24h:
+        endpoint: "/intensity/{from}/fw24h"
+        schedule: "hourly"
+        max_query_days: 1
+      intensity_fw48h:
+        endpoint: "/intensity/{from}/fw48h"
+        schedule: "hourly"
+        max_query_days: 1
+      intensity_pt24h:
+        endpoint: "/intensity/{from}/pt24h"
+        schedule: "hourly"
+        max_query_days: 1
       carbon_intensity:
         endpoint: "/intensity"
+        schedule: "hourly"
+        max_query_days: 14
+      intensity_stats:
+        endpoint: "/intensity/stats/{from}/{to}"
+        schedule: "daily"
+        max_query_days: 14
+      intensity_stats_block:
+        endpoint: "/intensity/stats/{from}/{to}/{block}"
+        schedule: "daily"
+        max_query_days: 14
+      generation_current:
+        endpoint: "/generation"
+        schedule: "hourly"
+        max_query_days: 0
+      generation_pt24h:
+        endpoint: "/generation/{from}/pt24h"
+        schedule: "hourly"
+        max_query_days: 1
+      generation:
+        endpoint: "/generation/{from}/{to}"
+        schedule: "hourly"
+        max_query_days: 14
+      regional_current:
+        endpoint: "/regional"
+        schedule: "hourly"
+        max_query_days: 0
+      regional_england:
+        endpoint: "/regional/england"
+        schedule: "hourly"
+        max_query_days: 0
+      regional_scotland:
+        endpoint: "/regional/scotland"
+        schedule: "hourly"
+        max_query_days: 0
+      regional_wales:
+        endpoint: "/regional/wales"
+        schedule: "hourly"
+        max_query_days: 0
+      regional_postcode:
+        endpoint: "/regional/postcode/{postcode}"
+        schedule: "hourly"
+        max_query_days: 0
+      regional_regionid:
+        endpoint: "/regional/regionid/{regionid}"
+        schedule: "hourly"
+        max_query_days: 0
+      regional_intensity_fw24h:
+        endpoint: "/regional/intensity/{from}/fw24h"
+        schedule: "hourly"
+        max_query_days: 1
+      regional_intensity_fw24h_postcode:
+        endpoint: "/regional/intensity/{from}/fw24h/postcode/{postcode}"
+        schedule: "hourly"
+        max_query_days: 1
+      regional_intensity_fw24h_regionid:
+        endpoint: "/regional/intensity/{from}/fw24h/regionid/{regionid}"
+        schedule: "hourly"
+        max_query_days: 1
+      regional_intensity_fw48h:
+        endpoint: "/regional/intensity/{from}/fw48h"
+        schedule: "hourly"
+        max_query_days: 1
+      regional_intensity_fw48h_postcode:
+        endpoint: "/regional/intensity/{from}/fw48h/postcode/{postcode}"
+        schedule: "hourly"
+        max_query_days: 1
+      regional_intensity_fw48h_regionid:
+        endpoint: "/regional/intensity/{from}/fw48h/regionid/{regionid}"
+        schedule: "hourly"
+        max_query_days: 1
+      regional_intensity_pt24h:
+        endpoint: "/regional/intensity/{from}/pt24h"
+        schedule: "hourly"
+        max_query_days: 1
+      regional_intensity_pt24h_postcode:
+        endpoint: "/regional/intensity/{from}/pt24h/postcode/{postcode}"
+        schedule: "hourly"
+        max_query_days: 1
+      regional_intensity_pt24h_regionid:
+        endpoint: "/regional/intensity/{from}/pt24h/regionid/{regionid}"
+        schedule: "hourly"
+        max_query_days: 1
+      regional_intensity:
+        endpoint: "/regional/intensity/{from}/{to}"
+        schedule: "hourly"
+        max_query_days: 14
+      regional_intensity_postcode:
+        endpoint: "/regional/intensity/{from}/{to}/postcode/{postcode}"
+        schedule: "hourly"
+        max_query_days: 14
+      regional_intensity_regionid:
+        endpoint: "/regional/intensity/{from}/{to}/regionid/{regionid}"
         schedule: "hourly"
         max_query_days: 14

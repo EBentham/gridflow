@@ -17,6 +17,7 @@ from pathlib import Path
 from typing import Any
 
 import yaml
+from dotenv import load_dotenv
 from pydantic import BaseModel, Field, model_validator
 from pydantic_settings import BaseSettings
 
@@ -97,6 +98,7 @@ class PipelineSettings(BaseSettings):
     default_lookback_hours: int = 24
     max_concurrent_requests: int = 5
     log_level: str = "INFO"
+    console_log_level: str = "WARNING"
 
     # Secrets (loaded from .env)
     elexon_api_key: str = Field(default="")
@@ -164,6 +166,7 @@ def load_settings() -> GridflowConfig:
     Merges settings.yaml, sources.yaml, environment variables, and .env file.
     """
     config_dir = _find_config_dir()
+    load_dotenv(config_dir.parent / ".env", override=False)
 
     # Load YAML configs
     settings_data = _load_yaml(config_dir / "settings.yaml")
@@ -171,7 +174,13 @@ def load_settings() -> GridflowConfig:
 
     # Build pipeline settings (env vars override YAML)
     pipeline_yaml = settings_data.get("pipeline", {})
-    pipeline = PipelineSettings(**pipeline_yaml)
+    pipeline_values = dict(pipeline_yaml)
+    env_prefix = PipelineSettings.model_config.get("env_prefix", "")
+    for field_name in PipelineSettings.model_fields:
+        env_name = f"{env_prefix}{field_name}".upper()
+        if env_name in os.environ:
+            pipeline_values[field_name] = os.environ[env_name]
+    pipeline = PipelineSettings(**pipeline_values)
 
     # Build quality config
     quality_yaml = settings_data.get("quality", {})

@@ -22,13 +22,8 @@ class DayAheadPricesTransformer(BaseSilverTransformer):
     dataset = "day_ahead_prices"
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
-        bronze_path = (
-            self.bronze_dir
-            / str(target_date.year)
-            / f"{target_date.month:02d}"
-            / f"{target_date.day:02d}"
-        )
-        if not bronze_path.exists():
+        bronze_path = self._bronze_path_for_date(target_date)
+        if bronze_path is None:
             return pl.DataFrame()
 
         rows: list[dict[str, Any]] = []

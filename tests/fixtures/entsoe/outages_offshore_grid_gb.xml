@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Unavailability_MarketDocument xmlns="urn:iec62325.351:tc57wg16:451-6:unavailabilitydocument:3:0">
+  <mRID>fixture-offshore-grid-outage-gb-20240115</mRID>
+  <revisionNumber>1</revisionNumber>
+  <type>A79</type>
+  <docStatus>
+    <value>A05</value>
+  </docStatus>
+  <TimeSeries>
+    <mRID>offshore-ts-1</mRID>
+    <BiddingZone_Domain.mRID codingScheme="A01">10YGB----------A</BiddingZone_Domain.mRID>
+    <Asset_RegisteredResource>
+      <mRID codingScheme="A01">ASSET-OFFSHORE-HUB-1</mRID>
+      <name>Offshore Hub 1</name>
+    </Asset_RegisteredResource>
+    <Period>
+      <timeInterval>
+        <start>2024-01-15T00:00Z</start>
+        <end>2024-01-15T02:00Z</end>
+      </timeInterval>
+      <resolution>PT60M</resolution>
+      <Point>
+        <position>1</position>
+        <quantity>300</quantity>
+      </Point>
+      <Point>
+        <position>2</position>
+        <quantity>275</quantity>
+      </Point>
+    </Period>
+  </TimeSeries>
+</Unavailability_MarketDocument>
