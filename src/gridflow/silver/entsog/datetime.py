@@ -89,7 +89,19 @@ def _record_date(
     for field in timestamp_fields:
         if field not in record:
             continue
-        parsed = parse_entsog_datetime(record[field])
+        value = record[field]
+        # Use the LOCAL date from the original string to avoid midnight-UTC boundary
+        # shifts. E.g. "2026-05-01T00:00:00+02:00" → local date 2026-05-01, not
+        # the UTC equivalent 2026-04-30.
+        if isinstance(value, str):
+            text = value.strip()
+            if text:
+                try:
+                    return datetime.fromisoformat(text.replace("Z", "+00:00")).date()
+                except ValueError:
+                    pass
+        # Fallback for non-string types (pre-parsed datetimes, dates).
+        parsed = parse_entsog_datetime(value)
         if parsed is not None:
             return parsed.date()
     return None
