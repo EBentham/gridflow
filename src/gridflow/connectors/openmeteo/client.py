@@ -9,7 +9,7 @@ from typing import Any
 
 import httpx
 
-from gridflow.connectors.base import BaseConnector, RawResponse
+from gridflow.connectors.base import BaseConnector, RawResponse, _make_ssl_context
 from gridflow.connectors.openmeteo.endpoints import (
     ARCHIVE_BASE_URL,
     DATASET_SPECS,
@@ -41,7 +41,7 @@ class OpenMeteoConnector(BaseConnector):
     async def __aenter__(self) -> OpenMeteoConnector:
         """Create an httpx client without a fixed base_url (uses absolute URLs)."""
         self._semaphore = asyncio.Semaphore(self.config.rate_limit_per_second)
-        self._client = httpx.AsyncClient(timeout=self.config.timeout)
+        self._client = httpx.AsyncClient(timeout=self.config.timeout, verify=_make_ssl_context())
         return self
 
     def list_datasets(self) -> list[str]:

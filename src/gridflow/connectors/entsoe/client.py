@@ -13,6 +13,8 @@ from xml.etree import ElementTree
 
 import httpx
 
+from gridflow.connectors.base import _make_ssl_context
+
 from gridflow.connectors.base import BaseConnector, RawResponse
 from gridflow.connectors.entsoe.endpoints import (
     BIDDING_ZONES,
@@ -78,6 +80,7 @@ class EntsoeConnector(BaseConnector):
         self._client = httpx.AsyncClient(
             base_url=self.config.base_url,
             timeout=self.config.timeout,
+            verify=_make_ssl_context(),
             # No auth headers — token goes in query params
         )
         return self

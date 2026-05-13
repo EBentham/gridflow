@@ -8,9 +8,24 @@ from datetime import date, datetime, timezone
 import ssl
 from typing import Any
 
+import certifi
 import httpx
 
 from gridflow.config.settings import SourceConfig
+
+
+def _make_ssl_context() -> ssl.SSLContext:
+    """Return an SSL context compatible with Python 3.12 and 3.13.
+
+    Python 3.13 enables ssl.VERIFY_X509_STRICT by default, which rejects CA
+    certificates that don't mark Basic Constraints as critical. Several public
+    CA chains (ENTSO-E, GIE) pre-date this requirement. Load the certifi CA
+    bundle and clear the strict flag so TLS handshakes succeed on both versions.
+    """
+    ctx = ssl.create_default_context()
+    ctx.load_verify_locations(certifi.where())
+    ctx.verify_flags &= ~ssl.VERIFY_X509_STRICT
+    return ctx
 
 
 @dataclass(frozen=True)
@@ -68,7 +83,7 @@ class BaseConnector(ABC):
             base_url=self.config.base_url,
             timeout=self.config.timeout,
             headers=self._auth_headers(),
-            verify=ssl.create_default_context(),
+            verify=_make_ssl_context(),
         )
         return self
 
