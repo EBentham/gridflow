@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import polars as pl
+import pytest
 
 from gridflow.storage.duckdb import get_connection, init_catalogue
 
@@ -17,7 +18,12 @@ def _write_parquet(df: pl.DataFrame, path: Path) -> None:
     df.write_parquet(path)
 
 
-def test_silver_view_reads_mixed_pre_and_post_f0_schemas(tmp_path: Path) -> None:
+def test_silver_view_reads_mixed_pre_and_post_f0_schemas(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # F15-D: gold SQL views reference silver tables absent from test tmpdir.
+    monkeypatch.setattr("gridflow.storage.duckdb._register_gold_views", lambda con: None)
+
     data_dir = tmp_path / "data"
     db_path = tmp_path / "gridflow.duckdb"
     dataset_dir = data_dir / "silver" / "elexon" / "mixed" / "year=2024" / "month=01"
@@ -44,7 +50,12 @@ def test_silver_view_reads_mixed_pre_and_post_f0_schemas(tmp_path: Path) -> None
     assert rows == [(1, True), (2, False)]
 
 
-def test_gold_view_reads_mixed_schemas(tmp_path: Path) -> None:
+def test_gold_view_reads_mixed_schemas(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # F15-D: gold SQL views reference silver tables absent from test tmpdir.
+    monkeypatch.setattr("gridflow.storage.duckdb._register_gold_views", lambda con: None)
+
     data_dir = tmp_path / "data"
     db_path = tmp_path / "gridflow.duckdb"
     dataset_dir = data_dir / "gold" / "model_features" / "year=2024" / "month=01"

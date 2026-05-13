@@ -95,6 +95,44 @@ class BaseOpenMeteoTransformer(BaseSilverTransformer):
     # Subclasses set the per-role bronze prefix (e.g. ``historical_demand``).
     BRONZE_DATASET_PREFIX: ClassVar[str] = ""
 
+    # F15-B: canonical-schema rename + unit conversion map.
+    # Wind speeds: km/h -> m/s (Open-Meteo default when no windspeed_unit param sent).
+    # Applied AFTER _add_derived() so HDD/CDD/air_density derivation reads pre-rename names.
+    _UNIT_CONVERSIONS: ClassVar[dict[str, tuple[str, float]]] = {
+        "wind_speed_10m":  ("wind_speed_10m_mps",  1.0 / 3.6),
+        "wind_speed_100m": ("wind_speed_100m_mps", 1.0 / 3.6),
+        "wind_speed_80m":  ("wind_speed_80m_mps",  1.0 / 3.6),
+        "wind_speed_120m": ("wind_speed_120m_mps", 1.0 / 3.6),
+        "wind_speed_180m": ("wind_speed_180m_mps", 1.0 / 3.6),
+        "wind_gusts_10m":  ("wind_gusts_10m_mps",  1.0 / 3.6),
+    }
+    # Pure renames: unit already correct; column gets an explicit unit suffix.
+    _PURE_RENAMES: ClassVar[dict[str, str]] = {
+        "temperature_2m":           "temperature_2m_c",
+        "dew_point_2m":             "dew_point_2m_c",
+        "surface_pressure":         "surface_pressure_hpa",
+        "relative_humidity_2m":     "relative_humidity_2m_pct",
+        "cloud_cover":              "cloud_cover_pct",
+        "cloud_cover_low":          "cloud_cover_low_pct",
+        "cloud_cover_mid":          "cloud_cover_mid_pct",
+        "cloud_cover_high":         "cloud_cover_high_pct",
+        "shortwave_radiation":      "shortwave_radiation_wm2",
+        "direct_radiation":         "direct_radiation_wm2",
+        "direct_normal_irradiance": "direct_normal_irradiance_wm2",
+        "diffuse_radiation":        "diffuse_radiation_wm2",
+        "global_tilted_irradiance": "global_tilted_irradiance_wm2",
+        "precipitation":            "precipitation_mm",
+        "snowfall":                 "snowfall_cm",
+        "snow_depth":               "snow_depth_m",
+        "wind_direction_10m":       "wind_direction_10m_deg",
+        "wind_direction_100m":      "wind_direction_100m_deg",
+        "wind_direction_80m":       "wind_direction_80m_deg",
+        "wind_direction_120m":      "wind_direction_120m_deg",
+        "wind_direction_180m":      "wind_direction_180m_deg",
+        "hdd":                      "hdd_k",
+        "cdd":                      "cdd_k",
+    }
+
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         # Bronze lives under: bronze/open_meteo/{prefix}__{loc}/YYYY/MM/DD/
         parent_dir = self.bronze_dir.parent  # bronze/open_meteo/
@@ -161,6 +199,21 @@ class BaseOpenMeteoTransformer(BaseSilverTransformer):
 
         df = self._add_derived(df)
 
+        # F15-B: apply unit conversions then pure renames (AFTER _add_derived so
+        # HDD/CDD/air_density derivations read connector-native column names).
+        conversion_exprs = [
+            (pl.col(src_col) * factor).alias(target_col)
+            for src_col, (target_col, factor) in self._UNIT_CONVERSIONS.items()
+            if src_col in df.columns
+        ]
+        if conversion_exprs:
+            df = df.with_columns(conversion_exprs).drop(
+                [c for c in self._UNIT_CONVERSIONS if c in df.columns]
+            )
+        rename_map = {k: v for k, v in self._PURE_RENAMES.items() if k in df.columns}
+        if rename_map:
+            df = df.rename(rename_map)
+
         df = df.unique(subset=["timestamp_utc", "location"], keep="last")
 
         now = datetime.now(UTC)
@@ -201,14 +254,21 @@ class BaseOpenMeteoTransformer(BaseSilverTransformer):
 
     def _output_columns(self) -> list[str]:
         """The columns to keep, in stable order, for this role's silver."""
+        def _canonical(col: str) -> str:
+            if col in self._UNIT_CONVERSIONS:
+                return self._UNIT_CONVERSIONS[col][0]
+            return self._PURE_RENAMES.get(col, col)
+
         base = ["timestamp_utc", "location", "latitude", "longitude"]
+        canonical_vars = [_canonical(c) for c in self.HOURLY_VARS]
         derived: list[str] = []
         if self.DERIVE_HDD_CDD:
-            derived.extend(["hdd", "cdd"])
+            # hdd/cdd are renamed to hdd_k/cdd_k by _PURE_RENAMES
+            derived.extend([_canonical("hdd"), _canonical("cdd")])
         if self.DERIVE_AIR_DENSITY:
             derived.append("air_density_kg_m3")
         tail = ["data_provider", "ingested_at"]
-        return base + list(self.HOURLY_VARS) + derived + tail
+        return base + canonical_vars + derived + tail
 
 
 class HistoricalDemandWeather(BaseOpenMeteoTransformer):

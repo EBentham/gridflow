@@ -123,7 +123,7 @@ def transform(
     _import_transformers()
 
     from gridflow.silver.registry import get_transformer
-    from gridflow.storage.duckdb import get_connection, init_catalogue
+    from gridflow.storage.duckdb import get_connection, init_catalogue, refresh_views
     from gridflow.observability import PipelineRunTracker
 
     init_catalogue(settings.pipeline.duckdb_path, settings.pipeline.data_dir)
@@ -155,6 +155,7 @@ def transform(
             continue
 
     con.close()
+    refresh_views(settings.pipeline.duckdb_path, settings.pipeline.data_dir)
     if failures:
         typer.echo(f"Transform failed for {len(failures)} dataset(s):", err=True)
         for ds, error_message in failures:
@@ -201,7 +202,7 @@ def build(
     else:
         raise typer.BadParameter("Specify a gold dataset name or use --all")
 
-    from gridflow.storage.duckdb import get_connection, init_catalogue
+    from gridflow.storage.duckdb import get_connection, init_catalogue, refresh_views
     from gridflow.observability import PipelineRunTracker
 
     init_catalogue(settings.pipeline.duckdb_path, settings.pipeline.data_dir)
@@ -224,6 +225,7 @@ def build(
             logger.exception(f"Build failed for {name}")
 
     con.close()
+    refresh_views(settings.pipeline.duckdb_path, settings.pipeline.data_dir)
     typer.echo("Build complete")
 
 

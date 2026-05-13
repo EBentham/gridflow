@@ -228,8 +228,10 @@ def parse_timeseries_xml(
                 production_type = (child.text or "").strip()
 
         # Parse each Period
+        # WindPowerFeedin_Period appears in Unavailability_MarketDocument (H7 outages);
+        # it has the same timeInterval/resolution/Point structure as Period.
         for period_el in ts_el.iter():
-            if _strip_ns(period_el.tag) not in {"Period", "Available_Period"}:
+            if _strip_ns(period_el.tag) not in {"Period", "Available_Period", "WindPowerFeedin_Period"}:
                 continue
 
             start_dt: datetime | None = None
