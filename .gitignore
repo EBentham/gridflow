@@ -43,5 +43,11 @@ htmlcov/
 # Symlinked vault content (source of truth lives in Obsidian vault)
 docs/specs
 
-# Local agent scratch worktrees
-.claude/worktrees/
+# Local agent scratch worktrees and settings
+.claude/
+
+# GSD workflow / AI planning state
+.planning/
+
+# Knowledge graph output
+graphify-out/

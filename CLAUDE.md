@@ -7,32 +7,6 @@ Medallion architecture: **bronze** (immutable raw API bytes) → **silver**
 (validated Polars/Parquet) → **gold** (modelling-ready DuckDB views + Parquet).
 No cloud. DuckDB + Parquet on local filesystem.
 
-## Session-start protocol
-
-Read before doing anything else:
-
-1. `quant-vault/00-active/now.md` — current focus and active GSD workstream
-2. `quant-vault/10-projects/energy-pipeline/README.md` — project status
-3. `quant-vault/30-vendors/<vendor>/README.md` — before any vendor work
-
-Access via the `obsidian-vault` MCP server. Don't ask the user to paste context.
-
-## GSD workflow
-
-Tasks run via GSD workstreams. Check `now.md` for the active workstream and
-phase before starting. Use `/gsd-plan-phase` before implementation, not after.
-Specs land in `quant-vault/10-projects/energy-pipeline/specs/<slug>.md` —
-write the spec, wait for approval, then implement.
-
-## Codebase navigation
-
-This repo has a graphify knowledge graph at `graphify-out/`.
-
-- Architecture and cross-module questions → `graphify query "<question>"` or
-  `graphify path "<A>" "<B>"` — do not grep
-- After modifying source files → `graphify update .` to keep the graph current
-- `graphify-out/GRAPH_REPORT.md` for god-node and community structure overview
-
 ## Commands
 
 ```bash
@@ -48,7 +22,7 @@ uv run gridflow status
 uv run gridflow quality --all
 ```
 
-## Hard rules — check these reflexively, not on lookup
+## Hard rules
 
 **Data correctness (silent-bug class):**
 - All timestamps tz-aware UTC. `TimestampMixin` rejects naive input. Convert at
@@ -78,11 +52,10 @@ uv run gridflow quality --all
   user confirmation.
 - No new top-level packages under `src/gridflow/` without discussion.
 - No cloud dependencies. Local-only is a hard constraint.
-- Do not invent rate limits, endpoints, or schemas. If it's not in the vault,
+- Do not invent rate limits, endpoints, or schemas. If it's not documented,
   write a `TODO:` and stop.
 
 ## Adding a new data source
 
-Full implementation sequence in SKILL.md pointer table and
-`quant-vault/40-techniques/async-connector-pattern.md`.
 Order: spec → config → schema → connector → transformer → wire imports → tests → run.
+See `CONTRIBUTING.md` for the connector pattern reference.
