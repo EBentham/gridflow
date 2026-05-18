@@ -1,4 +1,4 @@
-# gridflow
+# gridflow | Also see https://ebentham.github.io/gridflow-front-end
 
 **Local-first Python data pipeline for UK/EU power and gas market data.**
 
