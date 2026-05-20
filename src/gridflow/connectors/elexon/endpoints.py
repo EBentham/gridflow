@@ -226,11 +226,16 @@ ENDPOINTS: dict[str, ElexonEndpoint] = {
     ),
 
     # --- Loss of Load Probability ---
+    # G7 (2026-05): max_chunk_hours dropped to the dataclass default of 24h.
+    # The previous 1h cap was an undocumented defensive default carried since
+    # v0.2 with no vendor justification; the mocked E2E test
+    # (test_active_datasets_fetch_with_expected_mocked_request_shape[lolpdrm])
+    # expects the standard 24h `to_param` boundary like every other
+    # PUBLISH_DATETIME endpoint that isn't UOU2T14D / REMIT / SOSO.
     "lolpdrm": ElexonEndpoint(
         path="/datasets/LOLPDRM",
         description="Loss of Load Probability and De-rated Margin",
         param_style=ParamStyle.PUBLISH_DATETIME,
-        max_chunk_hours=1,
     ),
 
     # --- REMIT outage messages ---
