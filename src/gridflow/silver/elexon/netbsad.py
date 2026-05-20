@@ -52,13 +52,32 @@ class NETBSADTransformer(BaseSilverTransformer):
         if raw_df.is_empty():
             return pl.DataFrame()
 
+        # G5-W1.1 (2026-05): the NETBSAD live API (verified 2026-05-08)
+        # replaced 4 coarse adjustment fields with 8 finer-grained ones —
+        # cost vs volume × energy vs system × buy vs sell. These are NOT
+        # aggregations of the old 4; they're a different decomposition.
+        # Legacy bronze (pre-2026) populates the 4 old columns; current
+        # bronze populates the 8 new columns. We emit both column sets
+        # when present and rely on bronze era to determine which is
+        # populated.
         column_mapping = {
             "settlementDate": "settlement_date",
             "settlementPeriod": "settlement_period",
+            # Legacy 4 (pre-2026) — historical bronze only
             "netBuyPriceAdjustment": "net_buy_price_adjustment",
             "netSellPriceAdjustment": "net_sell_price_adjustment",
             "netBuyVolumeAdjustment": "net_buy_volume_adjustment",
             "netSellVolumeAdjustment": "net_sell_volume_adjustment",
+            # Current 8 (2026+) — buy side
+            "netBuyPriceCostAdjustmentEnergy": "net_buy_price_cost_adjustment_energy",
+            "netBuyPriceVolumeAdjustmentEnergy": "net_buy_price_volume_adjustment_energy",
+            "netBuyPriceVolumeAdjustmentSystem": "net_buy_price_volume_adjustment_system",
+            "buyPricePriceAdjustment": "buy_price_price_adjustment",
+            # Current 8 (2026+) — sell side
+            "netSellPriceCostAdjustmentEnergy": "net_sell_price_cost_adjustment_energy",
+            "netSellPriceVolumeAdjustmentEnergy": "net_sell_price_volume_adjustment_energy",
+            "netSellPriceVolumeAdjustmentSystem": "net_sell_price_volume_adjustment_system",
+            "sellPricePriceAdjustment": "sell_price_price_adjustment",
         }
         rename_map = {k: v for k, v in column_mapping.items() if k in raw_df.columns}
         if rename_map:
@@ -76,8 +95,19 @@ class NETBSADTransformer(BaseSilverTransformer):
         ])
 
         for col in [
+            # Legacy 4
             "net_buy_price_adjustment", "net_sell_price_adjustment",
             "net_buy_volume_adjustment", "net_sell_volume_adjustment",
+            # Current 8 — buy side
+            "net_buy_price_cost_adjustment_energy",
+            "net_buy_price_volume_adjustment_energy",
+            "net_buy_price_volume_adjustment_system",
+            "buy_price_price_adjustment",
+            # Current 8 — sell side
+            "net_sell_price_cost_adjustment_energy",
+            "net_sell_price_volume_adjustment_energy",
+            "net_sell_price_volume_adjustment_system",
+            "sell_price_price_adjustment",
         ]:
             if col in df.columns:
                 df = df.with_columns(pl.col(col).cast(pl.Float64))
@@ -103,8 +133,18 @@ class NETBSADTransformer(BaseSilverTransformer):
 
         output_cols = [
             "settlement_date", "settlement_period", "timestamp_utc",
+            # Legacy 4 — present in pre-2026 bronze
             "net_buy_price_adjustment", "net_sell_price_adjustment",
             "net_buy_volume_adjustment", "net_sell_volume_adjustment",
+            # Current 8 — present in 2026+ bronze
+            "net_buy_price_cost_adjustment_energy",
+            "net_buy_price_volume_adjustment_energy",
+            "net_buy_price_volume_adjustment_system",
+            "buy_price_price_adjustment",
+            "net_sell_price_cost_adjustment_energy",
+            "net_sell_price_volume_adjustment_energy",
+            "net_sell_price_volume_adjustment_system",
+            "sell_price_price_adjustment",
             "data_provider", "ingested_at",
         ]
         available = [c for c in output_cols if c in df.columns]

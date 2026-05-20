@@ -681,6 +681,49 @@ class TestNETBSADTransformer:
         raw = pl.DataFrame([{"netBuyPriceAdjustment": 2.50}])
         assert self.t.transform(raw).is_empty()
 
+    def test_current_api_8_field_decomposition_populates(self):
+        """G5-W1.1: the 2026+ NETBSAD API replaced 4 coarse adjustment fields
+        with 8 finer-grained ones (cost vs volume × energy vs system × buy
+        vs sell). The transformer must emit all 8 silver columns when
+        current-API bronze is present, with no silent nulls."""
+        data = json.loads((FIXTURES / "netbsad_response_v2.json").read_text())
+        raw = pl.DataFrame(data["data"])
+        result = self.t.transform(raw)
+
+        assert not result.is_empty()
+        new_cols = [
+            "net_buy_price_cost_adjustment_energy",
+            "net_buy_price_volume_adjustment_energy",
+            "net_buy_price_volume_adjustment_system",
+            "buy_price_price_adjustment",
+            "net_sell_price_cost_adjustment_energy",
+            "net_sell_price_volume_adjustment_energy",
+            "net_sell_price_volume_adjustment_system",
+            "sell_price_price_adjustment",
+        ]
+        for col in new_cols:
+            assert col in result.columns, f"G5-W1.1 regression: {col} missing"
+            assert result[col].null_count() == 0, (
+                f"G5-W1.1 regression: {col} silent-null from current-API bronze"
+            )
+
+    def test_legacy_4_field_bronze_still_ingests(self):
+        """G5-W1.1: legacy pre-2026 bronze (4 adjustment fields) must still
+        round-trip cleanly through the transformer so historical re-ingest
+        is not broken by the schema expansion."""
+        data = json.loads((FIXTURES / "netbsad_response.json").read_text())
+        raw = pl.DataFrame(data["data"])
+        result = self.t.transform(raw)
+
+        assert not result.is_empty()
+        legacy_cols = [
+            "net_buy_price_adjustment", "net_sell_price_adjustment",
+            "net_buy_volume_adjustment", "net_sell_volume_adjustment",
+        ]
+        for col in legacy_cols:
+            assert col in result.columns
+            assert result[col].null_count() == 0
+
 
 class TestFuelInstTransformer:
     def setup_method(self):
