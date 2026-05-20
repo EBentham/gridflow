@@ -224,6 +224,23 @@ class TestFuelHHTransformer:
         assert ts.hour == 0
         assert ts.minute == 0
 
+    def test_published_at_emitted_when_bronze_carries_it(self):
+        """G5-W2.2: ElexonFuelHH.published_at is declared in the schema and
+        is the documented PIT field. Before G5 the rename map produced it
+        from publishDateTime but output_cols dropped it before write — schema
+        and silver disagreed. With the fix, published_at survives as a
+        UTC-aware datetime when bronze carries publishDateTime."""
+        data = json.loads((FIXTURES / "fuelhh_response_v2.json").read_text())
+        raw = pl.DataFrame(data["data"])
+        result = self.t.transform(raw)
+
+        assert not result.is_empty()
+        assert "published_at" in result.columns, (
+            "G5-W2.2 regression: published_at dropped before write"
+        )
+        assert result["published_at"].null_count() == 0
+        assert result["published_at"].dtype == pl.Datetime("us", "UTC")
+
 
 # ---------------------------------------------------------------------------
 # BOAL

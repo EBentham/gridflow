@@ -89,6 +89,18 @@ class FuelHHTransformer(BaseSilverTransformer):
             .alias("timestamp_utc")
         )
 
+        # G5-W2.2 (2026-05): the rename map above already produces
+        # `published_at` from `publishDateTime`. Cast it to UTC datetime so
+        # it's well-typed when it survives to silver. ElexonFuelHH schema
+        # declares `published_at: datetime | None`; without this cast it
+        # was being silently dropped from output_cols.
+        if "published_at" in df.columns:
+            df = df.with_columns(
+                pl.col("published_at")
+                .str.to_datetime(format="%Y-%m-%dT%H:%M:%SZ", time_unit="us", strict=False)
+                .dt.replace_time_zone("UTC")
+            )
+
         df = df.unique(
             subset=["settlement_date", "settlement_period", "fuel_type"],
             keep="last",
@@ -102,7 +114,8 @@ class FuelHHTransformer(BaseSilverTransformer):
 
         output_cols = [
             "settlement_date", "settlement_period", "timestamp_utc",
-            "fuel_type", "generation_mw", "data_provider", "ingested_at",
+            "fuel_type", "generation_mw", "published_at",
+            "data_provider", "ingested_at",
         ]
         available = [c for c in output_cols if c in df.columns]
         return df.select(available).sort("timestamp_utc", "fuel_type")
