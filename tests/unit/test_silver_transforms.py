@@ -7,7 +7,11 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 import polars as pl
+import pytest
 
+from gridflow.silver.elexon.agpt import AGPTTransformer
+from gridflow.silver.elexon.agws import AGWSTransformer
+from gridflow.silver.elexon.atl import ATLTransformer
 from gridflow.silver.elexon.bmunits import BMUnitsTransformer
 from gridflow.silver.elexon.boal import BOALTransformer
 from gridflow.silver.elexon.bod import BODTransformer
@@ -18,9 +22,15 @@ from gridflow.silver.elexon.freq import FreqTransformer
 from gridflow.silver.elexon.fuelhh import FuelHHTransformer
 from gridflow.silver.elexon.fuelinst import FuelInstTransformer
 from gridflow.silver.elexon.imbalngc import ImbalNGCTransformer
+from gridflow.silver.elexon.inddem import INDDEMTransformer
+from gridflow.silver.elexon.indgen import INDGENTransformer
+from gridflow.silver.elexon.indo import INDOTransformer
+from gridflow.silver.elexon.itsdo import ITSDOTransformer
+from gridflow.silver.elexon.lolpdrm import LOLPDRMTransformer
 from gridflow.silver.elexon.melngc import MelNGCTransformer
 from gridflow.silver.elexon.mid import MIDTransformer
 from gridflow.silver.elexon.netbsad import NETBSADTransformer
+from gridflow.silver.elexon.nonbm import NONBMTransformer
 from gridflow.silver.elexon.pn import PNTransformer
 from gridflow.silver.elexon.system_prices import SystemPriceTransformer
 from gridflow.silver.elexon.temp import TempTransformer
@@ -982,3 +992,102 @@ class TestTempTransformer:
 
 # TestGenerationByFuelTransformer removed — generation_by_fuel was a duplicate of fuelhh.
 # Both used /datasets/FUELHH; use fuelhh tests instead.
+
+
+# ---------------------------------------------------------------------------
+# G6 — published_at survives to silver on the 12 W2.2-pattern transformers
+# ---------------------------------------------------------------------------
+# Each entry: (transformer_cls, publish_field_name, minimal_record_excluding_publish_field).
+# The publish field maps to `published_at` via the transformer's rename map.
+# The record contains the minimum required-field set that produces a non-empty
+# silver row; the publish field is injected by the parametrised test below.
+_G6_TRANSFORMER_CASES: list[tuple[type, str, dict[str, object]]] = [
+    (
+        ImbalNGCTransformer, "publishDateTime",
+        {"settlementDate": "2024-01-15", "settlementPeriod": 1, "indicatedImbalance": -250.0},
+    ),
+    (
+        MelNGCTransformer, "publishDateTime",
+        {"settlementDate": "2024-01-15", "settlementPeriod": 1, "indicatedMargin": 3500.0},
+    ),
+    (
+        INDDEMTransformer, "publishTime",
+        {"settlementDate": "2024-01-15", "settlementPeriod": 1, "demand": 28000.0},
+    ),
+    (
+        INDOTransformer, "publishTime",
+        {"settlementDate": "2024-01-15", "settlementPeriod": 1, "demand": 28500.0},
+    ),
+    (
+        ITSDOTransformer, "publishTime",
+        {"settlementDate": "2024-01-15", "settlementPeriod": 1, "demand": 28100.0},
+    ),
+    (
+        INDGENTransformer, "publishTime",
+        {"settlementDate": "2024-01-15", "settlementPeriod": 1, "generation": 30000.0},
+    ),
+    (
+        AGPTTransformer, "publishTime",
+        {"settlementDate": "2024-01-15", "settlementPeriod": 1, "psrType": "B16", "quantity": 1200.0},
+    ),
+    (
+        AGWSTransformer, "publishTime",
+        {"settlementDate": "2024-01-15", "settlementPeriod": 1, "psrType": "B16", "quantity": 1100.0},
+    ),
+    (
+        ATLTransformer, "publishTime",
+        {"settlementDate": "2024-01-15", "settlementPeriod": 1, "quantity": 31000.0},
+    ),
+    (
+        NONBMTransformer, "publishTime",
+        {"settlementDate": "2024-01-15", "settlementPeriod": 1, "generation": 50.0},
+    ),
+    (
+        FOU2T14DTransformer, "publishDateTime",
+        {"settlementDate": "2024-01-17", "settlementPeriod": 1, "fuelType": "CCGT", "outputUsable": 22000.0},
+    ),
+    (
+        LOLPDRMTransformer, "publishTime",
+        {"settlementDate": "2024-01-15", "settlementPeriod": 1, "lossOfLoadProbability": 0.001, "deratedMargin": 5000.0},
+    ),
+]
+
+
+@pytest.mark.parametrize(
+    "transformer_cls, publish_field, base_record",
+    _G6_TRANSFORMER_CASES,
+    ids=[c[0].__name__ for c in _G6_TRANSFORMER_CASES],
+)
+def test_g6_published_at_emitted_when_bronze_carries_it(
+    transformer_cls: type, publish_field: str, base_record: dict[str, object]
+):
+    """G6 (W2.2 pattern): each of the 12 affected Elexon transformers must
+    emit `published_at` to silver as a UTC-aware datetime when bronze
+    carries the corresponding publishDateTime / publishTime field.
+
+    Before G6 the rename map produced `published_at` but output_cols
+    dropped it before write, so silver Parquet was missing the column
+    even though the Pydantic schema declared it. This regression test
+    pins the W2.2 fix shape across all 12 transformers.
+    """
+    record = {**base_record, publish_field: "2024-01-15T00:15:00Z"}
+    raw = pl.DataFrame([record])
+    t = _make_transformer(transformer_cls)
+    result = t.transform(raw)
+
+    assert not result.is_empty(), (
+        f"{transformer_cls.__name__} produced empty silver for minimal record"
+    )
+    assert "published_at" in result.columns, (
+        f"G6 regression: {transformer_cls.__name__} dropped published_at "
+        f"before write (W2.2 pattern). Rename map produced it but "
+        f"output_cols omitted it."
+    )
+    assert result["published_at"].null_count() == 0, (
+        f"{transformer_cls.__name__}: published_at survived to silver "
+        f"but is null — cast or rename failed"
+    )
+    assert result["published_at"].dtype == pl.Datetime("us", "UTC"), (
+        f"{transformer_cls.__name__}: published_at dtype is "
+        f"{result['published_at'].dtype}, expected pl.Datetime('us', 'UTC')"
+    )
