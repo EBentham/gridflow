@@ -903,6 +903,26 @@ class TestUOU2T14DTransformer:
         raw = pl.DataFrame([{"settlementDate": "2024-01-17"}])
         assert self.t.transform(raw).is_empty()
 
+    def test_self_describing_fuel_and_grid_unit(self):
+        """G5-W2.3: UOU2T14D is self-describing — when bronze carries
+        nationalGridBmUnit and fuelType, the rename map snake-cases both
+        but output_cols previously dropped them, forcing a bmunits join
+        for fuel context. With the fix both survive to silver."""
+        data = json.loads((FIXTURES / "uou2t14d_response_v2.json").read_text())
+        raw = pl.DataFrame(data["data"])
+        result = self.t.transform(raw)
+
+        assert not result.is_empty()
+        assert "fuel_type" in result.columns, (
+            "G5-W2.3 regression: fuel_type dropped before write"
+        )
+        assert "national_grid_bm_unit" in result.columns, (
+            "G5-W2.3 regression: national_grid_bm_unit dropped before write"
+        )
+        assert result["fuel_type"].null_count() == 0
+        assert result["national_grid_bm_unit"].null_count() == 0
+        assert "BIOMASS" in result["fuel_type"].to_list()
+
 
 class TestTempTransformer:
     def setup_method(self):
