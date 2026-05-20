@@ -883,6 +883,22 @@ class TestTempTransformer:
         raw = pl.DataFrame([{"normal": 6.0}])
         assert self.t.transform(raw).is_empty()
 
+    def test_measurement_date_survives_to_silver(self):
+        """G5-W1.4: when bronze includes `measurementDate`, the silver row
+        must carry the original vendor measurement date as `measurement_date`.
+        Previously it was renamed then dropped by output_cols, so vault docs
+        and code disagreed."""
+        data = json.loads((FIXTURES / "temp_response_v2.json").read_text())
+        raw = pl.DataFrame(data["data"])
+        result = self.t.transform(raw)
+
+        assert not result.is_empty()
+        assert "measurement_date" in result.columns, (
+            "G5-W1.4 regression: measurement_date dropped before write"
+        )
+        assert result["measurement_date"].null_count() == 0
+        assert result["measurement_date"].dtype == pl.Date
+
 
 # TestGenerationByFuelTransformer removed — generation_by_fuel was a duplicate of fuelhh.
 # Both used /datasets/FUELHH; use fuelhh tests instead.

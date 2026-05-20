@@ -84,6 +84,12 @@ class TempTransformer(BaseSilverTransformer):
             if col in df.columns:
                 df = df.with_columns(pl.col(col).cast(pl.Float64))
 
+        # G5-W1.4 (2026-05): when `measurementDate` is present in bronze we
+        # rename to `measurement_date` above, but it was previously dropped
+        # before write. Cast to Date so it survives the select() below.
+        if "measurement_date" in df.columns:
+            df = df.with_columns(pl.col("measurement_date").cast(pl.Date, strict=False))
+
         df = df.unique(subset=["timestamp_utc"], keep="last")
 
         now = datetime.now(UTC)
@@ -93,7 +99,8 @@ class TempTransformer(BaseSilverTransformer):
         ])
 
         output_cols = [
-            "timestamp_utc", "temperature", "normal_temperature",
+            "timestamp_utc", "measurement_date",
+            "temperature", "normal_temperature",
             "low_temperature", "high_temperature",
             "data_provider", "ingested_at",
         ]
