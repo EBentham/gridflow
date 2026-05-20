@@ -470,6 +470,25 @@ class TestCrossBorderFlowsTransformer:
         raw = pl.DataFrame([{"timestamp_utc": datetime(2024, 1, 15, tzinfo=UTC), "value": 100.0}])
         assert self.t.transform(raw).is_empty()
 
+    def test_silver_output_validates_against_schema(self):
+        """G5-W3: every column emitted by the transformer must be declared
+        in EntsoeCrossborderFlow. Pre-G5 the schema omitted `resolution` and
+        `ingested_at` while the transformer always emitted both (V1 §13 drift).
+        Pydantic's `extra='ignore'` masked the drift; this test asserts every
+        emitted column appears in the declared model_fields."""
+        raw = _make_df_from_xml("cross_border_flows_gb_fr.xml", "quantity")
+        result = self.t.transform(raw)
+        emitted = set(result.columns)
+        declared = set(EntsoeCrossborderFlow.model_fields.keys())
+        # bitemporal columns are stamped by BaseSilverTransformer.run(); they
+        # don't appear from transform() alone, so don't require their presence
+        # in the result here.
+        missing_in_schema = emitted - declared
+        assert not missing_in_schema, (
+            f"G5-W3 regression: EntsoeCrossborderFlow missing fields the "
+            f"transformer emits: {missing_in_schema}"
+        )
+
 
 # ---------------------------------------------------------------------------
 # Schema validation
@@ -1329,6 +1348,20 @@ class TestNetTransferCapacityTransformer:
             "resolution": "1:00:00",
         }])
         assert self.t.transform(raw).is_empty()
+
+    def test_silver_output_validates_against_schema(self):
+        """G5-W3: every column emitted by the transformer must be declared
+        in EntsoeNetTransferCapacity. Pre-G5 the schema omitted `ingested_at`
+        while the transformer always emitted it (V1 §13 drift)."""
+        raw = _make_df_from_xml("net_transfer_capacity_gb_fr.xml", "quantity")
+        result = self.t.transform(raw)
+        emitted = set(result.columns)
+        declared = set(EntsoeNetTransferCapacity.model_fields.keys())
+        missing_in_schema = emitted - declared
+        assert not missing_in_schema, (
+            f"G5-W3 regression: EntsoeNetTransferCapacity missing fields the "
+            f"transformer emits: {missing_in_schema}"
+        )
 
 
 # ---------------------------------------------------------------------------
