@@ -324,6 +324,23 @@ class TestMIDTransformer:
     def test_empty_input(self):
         assert self.t.transform(pl.DataFrame()).is_empty()
 
+    def test_current_api_field_names_populate(self):
+        """G5-W1.2: live API (verified 2026-05-08) renamed dataProviderId→dataProvider
+        and midPrice→price. The transformer must populate data_provider_id and
+        market_index_price from current field names — silent-null was the bug."""
+        data = json.loads((FIXTURES / "mid_response_v2.json").read_text())
+        raw = pl.DataFrame(data["data"])
+        result = self.t.transform(raw)
+
+        assert not result.is_empty()
+        assert result["data_provider_id"].null_count() == 0, (
+            "G5-W1.2 regression: data_provider_id silent-null from current-API bronze"
+        )
+        assert result["market_index_price"].null_count() == 0, (
+            "G5-W1.2 regression: market_index_price silent-null from current-API bronze"
+        )
+        assert "N2EXMIP" in result["data_provider_id"].to_list()
+
 
 # ---------------------------------------------------------------------------
 # FREQ

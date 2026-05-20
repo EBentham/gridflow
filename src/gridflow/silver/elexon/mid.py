@@ -52,11 +52,17 @@ class MIDTransformer(BaseSilverTransformer):
         if raw_df.is_empty():
             return pl.DataFrame()
 
+        # G5-W1.2 (2026-05): live API renamed two fields. Keep legacy keys
+        # so historical bronze still ingests cleanly.
+        # - dataProviderId  → dataProvider  (current)
+        # - midPrice        → price         (current)
         column_mapping = {
             "settlementDate": "settlement_date",
             "settlementPeriod": "settlement_period",
-            "dataProviderId": "data_provider_id",
-            "midPrice": "market_index_price",
+            "dataProviderId": "data_provider_id",  # legacy (pre-2026)
+            "dataProvider": "data_provider_id",  # current API
+            "midPrice": "market_index_price",  # legacy (pre-2026)
+            "price": "market_index_price",  # current API
             "volume": "market_index_volume",
         }
         rename_map = {k: v for k, v in column_mapping.items() if k in raw_df.columns}
