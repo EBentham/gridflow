@@ -97,7 +97,14 @@ class ElexonFuelHH(BaseSchema):
 
 
 class ElexonBOAL(BaseSchema):
-    """Silver schema: Bid/Offer Acceptance Levels."""
+    """Silver schema: Bid/Offer Acceptance Levels.
+
+    G5-W2.1 (2026-05): `bid_offer_acceptance_number` removed. It was
+    declared as a future per-pair link column but the Elexon BOAL API
+    does not surface a corresponding field, so the column was always
+    None — schema and silver disagreed (declared but never emitted).
+    Re-add this field if/when the API provides a source key for it.
+    """
 
     settlement_date: date
     settlement_period: int = Field(ge=1, le=50)
@@ -111,7 +118,6 @@ class ElexonBOAL(BaseSchema):
     rr_flag: bool = False
     bid_offer_level_from: float | None = None
     bid_offer_level_to: float | None = None
-    bid_offer_acceptance_number: int | None = None
     data_provider: str = Field(default="elexon")
     ingested_at: datetime | None = None
 
