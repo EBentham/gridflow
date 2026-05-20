@@ -87,6 +87,17 @@ class MelNGCTransformer(BaseSilverTransformer):
             .alias("timestamp_utc")
         )
 
+        # G6 (W2.2 pattern): cast `published_at` to UTC datetime so the
+        # column survives to silver. ElexonMelNGC declares
+        # `published_at: datetime | None`; without this cast and the
+        # output_cols entry it was being silently dropped.
+        if "published_at" in df.columns:
+            df = df.with_columns(
+                pl.col("published_at")
+                .str.to_datetime(format="%Y-%m-%dT%H:%M:%SZ", time_unit="us", strict=False)
+                .dt.replace_time_zone("UTC")
+            )
+
         df = df.unique(subset=["settlement_date", "settlement_period"], keep="last")
 
         now = datetime.now(UTC)
@@ -97,7 +108,8 @@ class MelNGCTransformer(BaseSilverTransformer):
 
         output_cols = [
             "settlement_date", "settlement_period", "timestamp_utc",
-            "indicated_margin", "data_provider", "ingested_at",
+            "indicated_margin", "published_at",
+            "data_provider", "ingested_at",
         ]
         available = [c for c in output_cols if c in df.columns]
         return df.select(available).sort("timestamp_utc")
