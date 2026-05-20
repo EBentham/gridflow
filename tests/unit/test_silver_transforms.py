@@ -578,6 +578,20 @@ class TestDISBSADTransformer:
         raw = pl.DataFrame([{"foo": "bar"}])
         assert self.t.transform(raw).is_empty()
 
+    def test_current_api_service_field_populates_component(self):
+        """G5-W1.3: live API (verified 2026-05-08) renamed `component` to
+        `service`. The silver column stays `component` (downstream contract);
+        the transformer must map the current `service` key to it."""
+        data = json.loads((FIXTURES / "disbsad_response_v2.json").read_text())
+        raw = pl.DataFrame(data["data"])
+        result = self.t.transform(raw)
+
+        assert not result.is_empty()
+        assert result["component"].null_count() == 0, (
+            "G5-W1.3 regression: component silent-null from current-API bronze"
+        )
+        assert "ENERGY" in result["component"].to_list()
+
 
 # ---------------------------------------------------------------------------
 # BMUnits (reference data)
