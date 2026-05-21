@@ -2757,6 +2757,74 @@ class TestPhaseH8BalancingTransformers:
         assert "quantity_mw" not in result.columns
         assert abs(result["amount_eur"][0] - 35.5) < 0.01
 
+    def test_financial_transformer_surfaces_reason_code_when_present(self):
+        """G9 ENTSOE-02: A87 financial documents carry per-series
+        Reason.code blocks (e.g. A98 = "Balancing energy"). The parser
+        must extract Reason.code and the silver transformer must surface
+        it as a column non-empty for rows where the source XML carries
+        a Reason block.
+        """
+        synthetic_xml = b"""<?xml version='1.0'?>
+<Balancing_MarketDocument>
+  <TimeSeries>
+    <mRID>1</mRID>
+    <businessType>B10</businessType>
+    <controlArea_Domain.mRID>10YGB----------A</controlArea_Domain.mRID>
+    <Reason>
+      <code>A98</code>
+      <text>Balancing energy</text>
+    </Reason>
+    <Period>
+      <timeInterval>
+        <start>2024-01-15T00:00Z</start>
+        <end>2024-01-15T01:00Z</end>
+      </timeInterval>
+      <resolution>PT60M</resolution>
+      <Point>
+        <position>1</position>
+        <price.amount>1234.56</price.amount>
+      </Point>
+    </Period>
+  </TimeSeries>
+</Balancing_MarketDocument>"""
+        records = parse_timeseries_xml(synthetic_xml, value_tag="price.amount")
+        assert len(records) == 1
+        assert records[0]["reason_code"] == "A98", (
+            "G9 ENTSOE-02 regression: parser must extract Reason.code "
+            "from A87 TimeSeries elements"
+        )
+
+        raw = pl.DataFrame(records).with_columns(
+            pl.col("timestamp_utc").cast(pl.Datetime("us", "UTC"))
+        )
+        transformer = _make_entsoe_transformer(
+            BalancingFinancialExpensesIncomeTransformer
+        )
+        result = transformer.transform(raw)
+
+        assert not result.is_empty()
+        assert "reason_code" in result.columns, (
+            "G9 ENTSOE-02 regression: BalancingFinancialExpensesIncome "
+            "transformer must surface reason_code in output_cols"
+        )
+        assert result["reason_code"][0] == "A98"
+
+    def test_financial_transformer_reason_code_empty_when_absent(self):
+        """When the source XML has no Reason block the column must still
+        exist and carry an empty string — consistent with the schema's
+        `reason_code: str = ""` default."""
+        raw = _make_df_from_xml(
+            "balancing_financial_expenses_income_gb.xml",
+            "price.amount",
+        )
+        transformer = _make_entsoe_transformer(
+            BalancingFinancialExpensesIncomeTransformer
+        )
+        result = transformer.transform(raw)
+
+        assert "reason_code" in result.columns
+        assert all(rc == "" for rc in result["reason_code"].to_list())
+
 
 class TestPhaseH8Schemas:
     _TS = datetime(2024, 1, 15, 0, 0, tzinfo=UTC)

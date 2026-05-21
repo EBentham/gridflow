@@ -175,6 +175,10 @@ def parse_timeseries_xml(
         market_agreement_type = original_market_product = standard_market_product = ""
         unit_mrid = unit_name = ""
         timeseries_mrid = asset_mrid = asset_name = document_status = ""
+        # G9 ENTSOE-02: TimeSeries-level Reason.code (e.g. A87 financial
+        # documents carry per-series reason classifiers). Extracted below
+        # via a dedicated walk so this loop's elif chain stays linear.
+        reason_code = ""
         for child in ts_el:
             tag = _strip_ns(child.tag)
             text = (child.text or "").strip()
@@ -277,6 +281,21 @@ def parse_timeseries_xml(
             elif tag == "production_RegisteredResource.pSRType.psrType":
                 production_type = (child.text or "").strip()
 
+        # G9 ENTSOE-02: capture the first Reason.code descendant of the
+        # TimeSeries (A87 financial documents carry per-series Reason
+        # blocks; other doc types may or may not). Done as a second walk
+        # to keep the main elif chain readable.
+        if not reason_code:
+            for descendant in ts_el.iter():
+                if _strip_ns(descendant.tag) != "Reason":
+                    continue
+                for sub in descendant:
+                    if _strip_ns(sub.tag) == "code":
+                        reason_code = (sub.text or "").strip()
+                        break
+                if reason_code:
+                    break
+
         # Parse each Period
         # WindPowerFeedin_Period appears in Unavailability_MarketDocument (H7 outages);
         # it has the same timeInterval/resolution/Point structure as Period.
@@ -353,6 +372,9 @@ def parse_timeseries_xml(
                     "asset_name": asset_name,
                     "document_status": document_status
                     or document_metadata["document_status"],
+                    # G9 ENTSOE-02: TimeSeries-level Reason.code
+                    # (populated for A87 financial documents).
+                    "reason_code": reason_code,
                 })
 
     return records

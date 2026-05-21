@@ -684,6 +684,9 @@ class EntsoeBalancingFinancial(BaseSchema):
     area_code: str
     amount_eur: float
     business_type: str = ""
+    # G9 ENTSOE-02: A87 TimeSeries carry per-series Reason.code blocks
+    # classifying the financial category. Empty string when absent.
+    reason_code: str = ""
     resolution: str = ""
     data_provider: str = Field(default="entsoe")
     ingested_at: datetime | None = None
