@@ -304,7 +304,12 @@ DOC_TYPES: dict[str, EntsoeDocType] = {
         "A16",
         "Activated balancing energy prices",
         domain_style="control_area",
+        # G9 ENTSOE-05: `businessType` defaults to A96 (aFRR) but is also in
+        # optional_params so callers can override to A95 (FCR), A97 (mFRR),
+        # or A98 (RR). The silver transformer already maps all four codes
+        # via replace_strict to fcr/afrr/mfrr/rr reserve_type strings.
         extra_params={"businessType": "A96"},
+        optional_params=("businessType",),
     ),
     "contracted_reserves": EntsoeDocType(
         "A81",

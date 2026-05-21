@@ -1593,6 +1593,17 @@ class TestPhase3Endpoints:
         assert ab.domain_style == "control_area"
         assert ab.extra_params == {"businessType": "A96"}
 
+    def test_activated_balancing_prices_business_type_is_overridable(self):
+        """G9 ENTSOE-05: connector must accept businessType override so
+        callers can request A95 (FCR) / A97 (mFRR) / A98 (RR) in addition
+        to the default A96 (aFRR). The silver layer already maps all
+        four codes — the connector previously hardcoded A96 only."""
+        ab = DOC_TYPES["activated_balancing_prices"]
+        assert "businessType" in ab.optional_params, (
+            "G9 ENTSOE-05 regression: businessType must be in optional_params "
+            "so callers can override the A96 default to FCR/mFRR/RR"
+        )
+
     def test_contracted_reserves_doc_type(self):
         cr = DOC_TYPES["contracted_reserves"]
         assert cr.document_type == "A81"
