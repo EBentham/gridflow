@@ -434,6 +434,40 @@ class TestActualGenerationTransformer:
     def test_empty_input(self):
         assert self.t.transform(pl.DataFrame()).is_empty()
 
+    def test_area_name_populated_for_known_eic_code(self):
+        """G9 ENTSOE-03: silver schemas declaring `area_name` must carry
+        the friendly name resolved from the EIC mRID, not an empty string.
+        The GB fixture (10YGB----------A) should resolve to 'Great Britain'.
+        """
+        raw = _make_df_from_xml("actual_generation_gb.xml", "quantity")
+        result = self.t.transform(raw)
+        assert "area_name" in result.columns, (
+            "G9 ENTSOE-03 regression: area_name dropped before silver write"
+        )
+        area_names = set(result["area_name"].to_list())
+        assert area_names == {"Great Britain"}, (
+            f"G9 ENTSOE-03: expected 'Great Britain' for "
+            f"10YGB----------A, got {area_names}"
+        )
+
+    def test_area_name_empty_for_unknown_eic_code(self):
+        """Unknown EIC codes must resolve to empty string so the column
+        type stays consistent — schemas declare `area_name: str = ""`."""
+        # Construct a synthetic raw row with an unknown EIC code
+        raw = pl.DataFrame([
+            {
+                "timestamp_utc": datetime(2024, 1, 15, 0, 0, tzinfo=UTC),
+                "value": 1500.0,
+                "in_domain": "10Y9999-UNKNOWN-X",
+                "production_type": "B01",
+                "resolution": "PT60M",
+            }
+        ])
+        result = self.t.transform(raw)
+        assert not result.is_empty()
+        assert "area_name" in result.columns
+        assert result["area_name"][0] == ""
+
 
 # ---------------------------------------------------------------------------
 # CrossBorderFlowsTransformer
