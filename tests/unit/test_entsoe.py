@@ -1557,6 +1557,126 @@ class TestParserPhase3Fields:
 
 
 # ---------------------------------------------------------------------------
+# G9 ENTSOE-04 — _RESOLUTION_MAP calendar-correct P1M / P1Y
+# ---------------------------------------------------------------------------
+
+
+class TestParserCalendarResolution:
+    """G9 ENTSOE-04: P1M / P1Y resolutions need calendar-correct timestamps,
+    not approximate timedelta(days=30) / timedelta(days=365) arithmetic."""
+
+    @staticmethod
+    def _monthly_xml() -> bytes:
+        return b"""<?xml version='1.0'?>
+<GL_MarketDocument>
+  <TimeSeries>
+    <mRID>1</mRID>
+    <businessType>A60</businessType>
+    <outBiddingZone_Domain.mRID>10YGB----------A</outBiddingZone_Domain.mRID>
+    <Period>
+      <timeInterval>
+        <start>2024-01-01T00:00Z</start>
+        <end>2024-06-01T00:00Z</end>
+      </timeInterval>
+      <resolution>P1M</resolution>
+      <Point><position>1</position><quantity>1000</quantity></Point>
+      <Point><position>2</position><quantity>1100</quantity></Point>
+      <Point><position>3</position><quantity>1200</quantity></Point>
+      <Point><position>4</position><quantity>1300</quantity></Point>
+      <Point><position>5</position><quantity>1400</quantity></Point>
+    </Period>
+  </TimeSeries>
+</GL_MarketDocument>"""
+
+    @staticmethod
+    def _yearly_xml() -> bytes:
+        return b"""<?xml version='1.0'?>
+<GL_MarketDocument>
+  <TimeSeries>
+    <mRID>1</mRID>
+    <businessType>A60</businessType>
+    <outBiddingZone_Domain.mRID>10YGB----------A</outBiddingZone_Domain.mRID>
+    <Period>
+      <timeInterval>
+        <start>2020-01-01T00:00Z</start>
+        <end>2024-01-01T00:00Z</end>
+      </timeInterval>
+      <resolution>P1Y</resolution>
+      <Point><position>1</position><quantity>1000</quantity></Point>
+      <Point><position>2</position><quantity>1100</quantity></Point>
+      <Point><position>3</position><quantity>1200</quantity></Point>
+      <Point><position>4</position><quantity>1300</quantity></Point>
+    </Period>
+  </TimeSeries>
+</GL_MarketDocument>"""
+
+    def test_p1m_uses_calendar_months_not_30_day_approximation(self):
+        records = parse_timeseries_xml(self._monthly_xml(), value_tag="quantity")
+        assert len(records) == 5
+
+        timestamps = [r["timestamp_utc"] for r in records]
+        # Calendar-correct: positions 1..5 → Jan, Feb, Mar, Apr, May (day 1 of each)
+        assert timestamps[0].month == 1 and timestamps[0].day == 1
+        assert timestamps[1].month == 2 and timestamps[1].day == 1
+        assert timestamps[2].month == 3 and timestamps[2].day == 1
+        assert timestamps[3].month == 4 and timestamps[3].day == 1
+        assert timestamps[4].month == 5 and timestamps[4].day == 1
+
+        # 30-day approximation would have drifted: Jan 31, Mar 1, Mar 31,
+        # Apr 30 — failing the day=1 invariant on every point past pos 1.
+        assert all(t.day == 1 for t in timestamps), (
+            "G9 ENTSOE-04 regression: P1M points should land on day=1 of "
+            "each calendar month, not on shifted dates from "
+            "timedelta(days=30) multiplication"
+        )
+
+    def test_p1y_uses_calendar_years_not_365_day_approximation(self):
+        records = parse_timeseries_xml(self._yearly_xml(), value_tag="quantity")
+        assert len(records) == 4
+
+        timestamps = [r["timestamp_utc"] for r in records]
+        # Calendar-correct: 2020 (leap), 2021, 2022, 2023 — all on Jan 1
+        assert timestamps[0].year == 2020 and timestamps[0].month == 1 and timestamps[0].day == 1
+        assert timestamps[1].year == 2021 and timestamps[1].month == 1 and timestamps[1].day == 1
+        assert timestamps[2].year == 2022 and timestamps[2].month == 1 and timestamps[2].day == 1
+        assert timestamps[3].year == 2023 and timestamps[3].month == 1 and timestamps[3].day == 1
+
+        # A 365-day approximation across the 2020 leap year drifts by 1 day
+        # by the time it reaches 2021. The calendar-correct path holds Jan 1.
+        assert all(t.month == 1 and t.day == 1 for t in timestamps), (
+            "G9 ENTSOE-04 regression: P1Y points should land on Jan 1 of "
+            "each calendar year, not drift past leap years via "
+            "timedelta(days=365) multiplication"
+        )
+
+    def test_pt60m_still_uses_timedelta_arithmetic(self):
+        """Sub-day resolutions must not regress — only P1M / P1Y get the
+        calendar-correct path."""
+        xml = b"""<?xml version='1.0'?>
+<GL_MarketDocument>
+  <TimeSeries>
+    <mRID>1</mRID>
+    <Period>
+      <timeInterval>
+        <start>2024-01-15T00:00Z</start>
+        <end>2024-01-15T03:00Z</end>
+      </timeInterval>
+      <resolution>PT60M</resolution>
+      <Point><position>1</position><quantity>100</quantity></Point>
+      <Point><position>2</position><quantity>110</quantity></Point>
+      <Point><position>3</position><quantity>120</quantity></Point>
+    </Period>
+  </TimeSeries>
+</GL_MarketDocument>"""
+        records = parse_timeseries_xml(xml, value_tag="quantity")
+        assert len(records) == 3
+        timestamps = [r["timestamp_utc"] for r in records]
+        assert timestamps[0].hour == 0
+        assert timestamps[1].hour == 1
+        assert timestamps[2].hour == 2
+
+
+# ---------------------------------------------------------------------------
 # Phase 3 — endpoints
 # ---------------------------------------------------------------------------
 
