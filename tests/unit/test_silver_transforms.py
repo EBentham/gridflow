@@ -224,6 +224,23 @@ class TestFuelHHTransformer:
         assert ts.hour == 0
         assert ts.minute == 0
 
+    def test_published_at_emitted_when_bronze_carries_it(self):
+        """G5-W2.2: ElexonFuelHH.published_at is declared in the schema and
+        is the documented PIT field. Before G5 the rename map produced it
+        from publishDateTime but output_cols dropped it before write — schema
+        and silver disagreed. With the fix, published_at survives as a
+        UTC-aware datetime when bronze carries publishDateTime."""
+        data = json.loads((FIXTURES / "fuelhh_response_v2.json").read_text())
+        raw = pl.DataFrame(data["data"])
+        result = self.t.transform(raw)
+
+        assert not result.is_empty()
+        assert "published_at" in result.columns, (
+            "G5-W2.2 regression: published_at dropped before write"
+        )
+        assert result["published_at"].null_count() == 0
+        assert result["published_at"].dtype == pl.Datetime("us", "UTC")
+
 
 # ---------------------------------------------------------------------------
 # BOAL
@@ -323,6 +340,23 @@ class TestMIDTransformer:
 
     def test_empty_input(self):
         assert self.t.transform(pl.DataFrame()).is_empty()
+
+    def test_current_api_field_names_populate(self):
+        """G5-W1.2: live API (verified 2026-05-08) renamed dataProviderId→dataProvider
+        and midPrice→price. The transformer must populate data_provider_id and
+        market_index_price from current field names — silent-null was the bug."""
+        data = json.loads((FIXTURES / "mid_response_v2.json").read_text())
+        raw = pl.DataFrame(data["data"])
+        result = self.t.transform(raw)
+
+        assert not result.is_empty()
+        assert result["data_provider_id"].null_count() == 0, (
+            "G5-W1.2 regression: data_provider_id silent-null from current-API bronze"
+        )
+        assert result["market_index_price"].null_count() == 0, (
+            "G5-W1.2 regression: market_index_price silent-null from current-API bronze"
+        )
+        assert "N2EXMIP" in result["data_provider_id"].to_list()
 
 
 # ---------------------------------------------------------------------------
@@ -561,6 +595,20 @@ class TestDISBSADTransformer:
         raw = pl.DataFrame([{"foo": "bar"}])
         assert self.t.transform(raw).is_empty()
 
+    def test_current_api_service_field_populates_component(self):
+        """G5-W1.3: live API (verified 2026-05-08) renamed `component` to
+        `service`. The silver column stays `component` (downstream contract);
+        the transformer must map the current `service` key to it."""
+        data = json.loads((FIXTURES / "disbsad_response_v2.json").read_text())
+        raw = pl.DataFrame(data["data"])
+        result = self.t.transform(raw)
+
+        assert not result.is_empty()
+        assert result["component"].null_count() == 0, (
+            "G5-W1.3 regression: component silent-null from current-API bronze"
+        )
+        assert "ENERGY" in result["component"].to_list()
+
 
 # ---------------------------------------------------------------------------
 # BMUnits (reference data)
@@ -649,6 +697,49 @@ class TestNETBSADTransformer:
     def test_missing_required_returns_empty(self):
         raw = pl.DataFrame([{"netBuyPriceAdjustment": 2.50}])
         assert self.t.transform(raw).is_empty()
+
+    def test_current_api_8_field_decomposition_populates(self):
+        """G5-W1.1: the 2026+ NETBSAD API replaced 4 coarse adjustment fields
+        with 8 finer-grained ones (cost vs volume × energy vs system × buy
+        vs sell). The transformer must emit all 8 silver columns when
+        current-API bronze is present, with no silent nulls."""
+        data = json.loads((FIXTURES / "netbsad_response_v2.json").read_text())
+        raw = pl.DataFrame(data["data"])
+        result = self.t.transform(raw)
+
+        assert not result.is_empty()
+        new_cols = [
+            "net_buy_price_cost_adjustment_energy",
+            "net_buy_price_volume_adjustment_energy",
+            "net_buy_price_volume_adjustment_system",
+            "buy_price_price_adjustment",
+            "net_sell_price_cost_adjustment_energy",
+            "net_sell_price_volume_adjustment_energy",
+            "net_sell_price_volume_adjustment_system",
+            "sell_price_price_adjustment",
+        ]
+        for col in new_cols:
+            assert col in result.columns, f"G5-W1.1 regression: {col} missing"
+            assert result[col].null_count() == 0, (
+                f"G5-W1.1 regression: {col} silent-null from current-API bronze"
+            )
+
+    def test_legacy_4_field_bronze_still_ingests(self):
+        """G5-W1.1: legacy pre-2026 bronze (4 adjustment fields) must still
+        round-trip cleanly through the transformer so historical re-ingest
+        is not broken by the schema expansion."""
+        data = json.loads((FIXTURES / "netbsad_response.json").read_text())
+        raw = pl.DataFrame(data["data"])
+        result = self.t.transform(raw)
+
+        assert not result.is_empty()
+        legacy_cols = [
+            "net_buy_price_adjustment", "net_sell_price_adjustment",
+            "net_buy_volume_adjustment", "net_sell_volume_adjustment",
+        ]
+        for col in legacy_cols:
+            assert col in result.columns
+            assert result[col].null_count() == 0
 
 
 class TestFuelInstTransformer:
@@ -812,6 +903,26 @@ class TestUOU2T14DTransformer:
         raw = pl.DataFrame([{"settlementDate": "2024-01-17"}])
         assert self.t.transform(raw).is_empty()
 
+    def test_self_describing_fuel_and_grid_unit(self):
+        """G5-W2.3: UOU2T14D is self-describing — when bronze carries
+        nationalGridBmUnit and fuelType, the rename map snake-cases both
+        but output_cols previously dropped them, forcing a bmunits join
+        for fuel context. With the fix both survive to silver."""
+        data = json.loads((FIXTURES / "uou2t14d_response_v2.json").read_text())
+        raw = pl.DataFrame(data["data"])
+        result = self.t.transform(raw)
+
+        assert not result.is_empty()
+        assert "fuel_type" in result.columns, (
+            "G5-W2.3 regression: fuel_type dropped before write"
+        )
+        assert "national_grid_bm_unit" in result.columns, (
+            "G5-W2.3 regression: national_grid_bm_unit dropped before write"
+        )
+        assert result["fuel_type"].null_count() == 0
+        assert result["national_grid_bm_unit"].null_count() == 0
+        assert "BIOMASS" in result["fuel_type"].to_list()
+
 
 class TestTempTransformer:
     def setup_method(self):
@@ -851,6 +962,22 @@ class TestTempTransformer:
     def test_missing_required_returns_empty(self):
         raw = pl.DataFrame([{"normal": 6.0}])
         assert self.t.transform(raw).is_empty()
+
+    def test_measurement_date_survives_to_silver(self):
+        """G5-W1.4: when bronze includes `measurementDate`, the silver row
+        must carry the original vendor measurement date as `measurement_date`.
+        Previously it was renamed then dropped by output_cols, so vault docs
+        and code disagreed."""
+        data = json.loads((FIXTURES / "temp_response_v2.json").read_text())
+        raw = pl.DataFrame(data["data"])
+        result = self.t.transform(raw)
+
+        assert not result.is_empty()
+        assert "measurement_date" in result.columns, (
+            "G5-W1.4 regression: measurement_date dropped before write"
+        )
+        assert result["measurement_date"].null_count() == 0
+        assert result["measurement_date"].dtype == pl.Date
 
 
 # TestGenerationByFuelTransformer removed — generation_by_fuel was a duplicate of fuelhh.

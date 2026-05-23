@@ -1,0 +1,31 @@
+{
+  "data": [
+    {
+      "settlementDate": "2026-05-10",
+      "settlementPeriod": 1,
+      "publishDateTime": "2026-05-08T12:00:00Z",
+      "bmUnit": "T_DRAXX-1",
+      "nationalGridBmUnit": "DRAXX-1",
+      "fuelType": "BIOMASS",
+      "outputUsable": 645.0
+    },
+    {
+      "settlementDate": "2026-05-10",
+      "settlementPeriod": 1,
+      "publishDateTime": "2026-05-08T12:00:00Z",
+      "bmUnit": "T_COTPS-1",
+      "nationalGridBmUnit": "COTPS-1",
+      "fuelType": "CCGT",
+      "outputUsable": 500.0
+    },
+    {
+      "settlementDate": "2026-05-10",
+      "settlementPeriod": 2,
+      "publishDateTime": "2026-05-08T12:00:00Z",
+      "bmUnit": "T_DRAXX-1",
+      "nationalGridBmUnit": "DRAXX-1",
+      "fuelType": "BIOMASS",
+      "outputUsable": 640.0
+    }
+  ]
+}

@@ -62,13 +62,19 @@ class EntsoeActualGeneration(BaseSchema):
 
 
 class EntsoeCrossborderFlow(BaseSchema):
-    """Silver-layer schema for ENTSO-E cross-border physical flows."""
+    """Silver-layer schema for ENTSO-E cross-border physical flows.
+
+    G5-W3 (2026-05): `resolution` and `ingested_at` added — the transformer
+    always emits both, but the schema previously omitted them (V1 §13 drift).
+    """
 
     timestamp_utc: datetime
     in_area_code: str
     out_area_code: str
     flow_mw: float
+    resolution: str = ""
     data_provider: str = Field(default="entsoe")
+    ingested_at: datetime | None = None
 
     @field_validator("timestamp_utc")
     @classmethod
@@ -308,6 +314,9 @@ class EntsoeNetTransferCapacity(BaseSchema):
     """Silver-layer schema for ENTSO-E net transfer capacity day-ahead (A61/A01).
 
     ntc_mw: Net transfer capacity in MW between the two zones.
+
+    G5-W3 (2026-05): `ingested_at` added — the transformer always emits it,
+    but the schema previously omitted it (V1 §13 drift).
     """
 
     timestamp_utc: datetime
@@ -316,6 +325,7 @@ class EntsoeNetTransferCapacity(BaseSchema):
     ntc_mw: float
     resolution: str = ""
     data_provider: str = Field(default="entsoe")
+    ingested_at: datetime | None = None
 
     @field_validator("timestamp_utc")
     @classmethod

@@ -88,6 +88,18 @@ class BOALTransformer(BaseSilverTransformer):
             pl.col("bm_unit_id").cast(pl.Utf8),
         ])
 
+        # G5 (2026-05): cast acceptance_time from ISO string to UTC datetime
+        # so it matches the ElexonBOAL schema declaration (datetime | None).
+        # The acceptance test caught this drift — string emitted, datetime
+        # declared. Pydantic's coerce-on-construction would also have caught
+        # it once contract tests added per-class coverage.
+        if "acceptance_time" in df.columns:
+            df = df.with_columns(
+                pl.col("acceptance_time")
+                .str.to_datetime(format="%Y-%m-%dT%H:%M:%SZ", time_unit="us", strict=False)
+                .dt.replace_time_zone("UTC")
+            )
+
         df = df.with_columns(
             pl.struct(["settlement_date", "settlement_period"])
             .map_elements(

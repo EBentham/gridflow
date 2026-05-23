@@ -1,0 +1,28 @@
+{
+  "data": [
+    {
+      "settlementDate": "2026-05-08",
+      "settlementPeriod": 1,
+      "netBuyPriceCostAdjustmentEnergy": 1.20,
+      "netBuyPriceVolumeAdjustmentEnergy": 0.85,
+      "netBuyPriceVolumeAdjustmentSystem": 0.45,
+      "buyPricePriceAdjustment": 2.50,
+      "netSellPriceCostAdjustmentEnergy": 0.90,
+      "netSellPriceVolumeAdjustmentEnergy": 0.65,
+      "netSellPriceVolumeAdjustmentSystem": 0.25,
+      "sellPricePriceAdjustment": 1.80
+    },
+    {
+      "settlementDate": "2026-05-08",
+      "settlementPeriod": 2,
+      "netBuyPriceCostAdjustmentEnergy": 1.50,
+      "netBuyPriceVolumeAdjustmentEnergy": 1.05,
+      "netBuyPriceVolumeAdjustmentSystem": 0.55,
+      "buyPricePriceAdjustment": 3.10,
+      "netSellPriceCostAdjustmentEnergy": 1.10,
+      "netSellPriceVolumeAdjustmentEnergy": 0.80,
+      "netSellPriceVolumeAdjustmentSystem": 0.30,
+      "sellPricePriceAdjustment": 2.20
+    }
+  ]
+}

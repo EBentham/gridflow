@@ -52,13 +52,17 @@ class DISBSADTransformer(BaseSilverTransformer):
         if raw_df.is_empty():
             return pl.DataFrame()
 
+        # G5-W1.3 (2026-05): live API renamed `component` to `service`. The
+        # silver column stays `component` (downstream contract); we map both
+        # source keys to it so historical bronze still ingests cleanly.
         column_mapping = {
             "settlementDate": "settlement_date",
             "settlementPeriod": "settlement_period",
             "id": "adjustment_action_id",
             "soFlag": "so_flag",
             "storProviderFlag": "stor_flag",
-            "component": "component",
+            "component": "component",  # legacy (pre-2026)
+            "service": "component",  # current API
             "cost": "cost",
             "volume": "volume",
         }
