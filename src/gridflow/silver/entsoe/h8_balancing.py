@@ -203,6 +203,9 @@ class BalancingFinancialExpensesIncomeTransformer(_H8BalancingTransformer):
         "area_code",
         "amount_eur",
         "business_type",
+        # G9 ENTSOE-02: surface per-series Reason.code (extracted by
+        # parse_timeseries_xml). Empty string when source has no Reason.
+        "reason_code",
         "resolution",
         "data_provider",
         "ingested_at",
@@ -217,6 +220,9 @@ def _with_optional_columns(df: pl.DataFrame) -> pl.DataFrame:
         "original_market_product",
         "standard_market_product",
         "timeseries_mrid",
+        # G9 ENTSOE-02: ensures `reason_code` always exists as a column
+        # in transformer output even when the source XML omits Reason.
+        "reason_code",
     }
     missing_exprs = [
         pl.lit("").alias(column)

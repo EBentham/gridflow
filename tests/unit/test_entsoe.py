@@ -434,6 +434,40 @@ class TestActualGenerationTransformer:
     def test_empty_input(self):
         assert self.t.transform(pl.DataFrame()).is_empty()
 
+    def test_area_name_populated_for_known_eic_code(self):
+        """G9 ENTSOE-03: silver schemas declaring `area_name` must carry
+        the friendly name resolved from the EIC mRID, not an empty string.
+        The GB fixture (10YGB----------A) should resolve to 'Great Britain'.
+        """
+        raw = _make_df_from_xml("actual_generation_gb.xml", "quantity")
+        result = self.t.transform(raw)
+        assert "area_name" in result.columns, (
+            "G9 ENTSOE-03 regression: area_name dropped before silver write"
+        )
+        area_names = set(result["area_name"].to_list())
+        assert area_names == {"Great Britain"}, (
+            f"G9 ENTSOE-03: expected 'Great Britain' for "
+            f"10YGB----------A, got {area_names}"
+        )
+
+    def test_area_name_empty_for_unknown_eic_code(self):
+        """Unknown EIC codes must resolve to empty string so the column
+        type stays consistent — schemas declare `area_name: str = ""`."""
+        # Construct a synthetic raw row with an unknown EIC code
+        raw = pl.DataFrame([
+            {
+                "timestamp_utc": datetime(2024, 1, 15, 0, 0, tzinfo=UTC),
+                "value": 1500.0,
+                "in_domain": "10Y9999-UNKNOWN-X",
+                "production_type": "B01",
+                "resolution": "PT60M",
+            }
+        ])
+        result = self.t.transform(raw)
+        assert not result.is_empty()
+        assert "area_name" in result.columns
+        assert result["area_name"][0] == ""
+
 
 # ---------------------------------------------------------------------------
 # CrossBorderFlowsTransformer
@@ -1557,6 +1591,126 @@ class TestParserPhase3Fields:
 
 
 # ---------------------------------------------------------------------------
+# G9 ENTSOE-04 — _RESOLUTION_MAP calendar-correct P1M / P1Y
+# ---------------------------------------------------------------------------
+
+
+class TestParserCalendarResolution:
+    """G9 ENTSOE-04: P1M / P1Y resolutions need calendar-correct timestamps,
+    not approximate timedelta(days=30) / timedelta(days=365) arithmetic."""
+
+    @staticmethod
+    def _monthly_xml() -> bytes:
+        return b"""<?xml version='1.0'?>
+<GL_MarketDocument>
+  <TimeSeries>
+    <mRID>1</mRID>
+    <businessType>A60</businessType>
+    <outBiddingZone_Domain.mRID>10YGB----------A</outBiddingZone_Domain.mRID>
+    <Period>
+      <timeInterval>
+        <start>2024-01-01T00:00Z</start>
+        <end>2024-06-01T00:00Z</end>
+      </timeInterval>
+      <resolution>P1M</resolution>
+      <Point><position>1</position><quantity>1000</quantity></Point>
+      <Point><position>2</position><quantity>1100</quantity></Point>
+      <Point><position>3</position><quantity>1200</quantity></Point>
+      <Point><position>4</position><quantity>1300</quantity></Point>
+      <Point><position>5</position><quantity>1400</quantity></Point>
+    </Period>
+  </TimeSeries>
+</GL_MarketDocument>"""
+
+    @staticmethod
+    def _yearly_xml() -> bytes:
+        return b"""<?xml version='1.0'?>
+<GL_MarketDocument>
+  <TimeSeries>
+    <mRID>1</mRID>
+    <businessType>A60</businessType>
+    <outBiddingZone_Domain.mRID>10YGB----------A</outBiddingZone_Domain.mRID>
+    <Period>
+      <timeInterval>
+        <start>2020-01-01T00:00Z</start>
+        <end>2024-01-01T00:00Z</end>
+      </timeInterval>
+      <resolution>P1Y</resolution>
+      <Point><position>1</position><quantity>1000</quantity></Point>
+      <Point><position>2</position><quantity>1100</quantity></Point>
+      <Point><position>3</position><quantity>1200</quantity></Point>
+      <Point><position>4</position><quantity>1300</quantity></Point>
+    </Period>
+  </TimeSeries>
+</GL_MarketDocument>"""
+
+    def test_p1m_uses_calendar_months_not_30_day_approximation(self):
+        records = parse_timeseries_xml(self._monthly_xml(), value_tag="quantity")
+        assert len(records) == 5
+
+        timestamps = [r["timestamp_utc"] for r in records]
+        # Calendar-correct: positions 1..5 → Jan, Feb, Mar, Apr, May (day 1 of each)
+        assert timestamps[0].month == 1 and timestamps[0].day == 1
+        assert timestamps[1].month == 2 and timestamps[1].day == 1
+        assert timestamps[2].month == 3 and timestamps[2].day == 1
+        assert timestamps[3].month == 4 and timestamps[3].day == 1
+        assert timestamps[4].month == 5 and timestamps[4].day == 1
+
+        # 30-day approximation would have drifted: Jan 31, Mar 1, Mar 31,
+        # Apr 30 — failing the day=1 invariant on every point past pos 1.
+        assert all(t.day == 1 for t in timestamps), (
+            "G9 ENTSOE-04 regression: P1M points should land on day=1 of "
+            "each calendar month, not on shifted dates from "
+            "timedelta(days=30) multiplication"
+        )
+
+    def test_p1y_uses_calendar_years_not_365_day_approximation(self):
+        records = parse_timeseries_xml(self._yearly_xml(), value_tag="quantity")
+        assert len(records) == 4
+
+        timestamps = [r["timestamp_utc"] for r in records]
+        # Calendar-correct: 2020 (leap), 2021, 2022, 2023 — all on Jan 1
+        assert timestamps[0].year == 2020 and timestamps[0].month == 1 and timestamps[0].day == 1
+        assert timestamps[1].year == 2021 and timestamps[1].month == 1 and timestamps[1].day == 1
+        assert timestamps[2].year == 2022 and timestamps[2].month == 1 and timestamps[2].day == 1
+        assert timestamps[3].year == 2023 and timestamps[3].month == 1 and timestamps[3].day == 1
+
+        # A 365-day approximation across the 2020 leap year drifts by 1 day
+        # by the time it reaches 2021. The calendar-correct path holds Jan 1.
+        assert all(t.month == 1 and t.day == 1 for t in timestamps), (
+            "G9 ENTSOE-04 regression: P1Y points should land on Jan 1 of "
+            "each calendar year, not drift past leap years via "
+            "timedelta(days=365) multiplication"
+        )
+
+    def test_pt60m_still_uses_timedelta_arithmetic(self):
+        """Sub-day resolutions must not regress — only P1M / P1Y get the
+        calendar-correct path."""
+        xml = b"""<?xml version='1.0'?>
+<GL_MarketDocument>
+  <TimeSeries>
+    <mRID>1</mRID>
+    <Period>
+      <timeInterval>
+        <start>2024-01-15T00:00Z</start>
+        <end>2024-01-15T03:00Z</end>
+      </timeInterval>
+      <resolution>PT60M</resolution>
+      <Point><position>1</position><quantity>100</quantity></Point>
+      <Point><position>2</position><quantity>110</quantity></Point>
+      <Point><position>3</position><quantity>120</quantity></Point>
+    </Period>
+  </TimeSeries>
+</GL_MarketDocument>"""
+        records = parse_timeseries_xml(xml, value_tag="quantity")
+        assert len(records) == 3
+        timestamps = [r["timestamp_utc"] for r in records]
+        assert timestamps[0].hour == 0
+        assert timestamps[1].hour == 1
+        assert timestamps[2].hour == 2
+
+
+# ---------------------------------------------------------------------------
 # Phase 3 — endpoints
 # ---------------------------------------------------------------------------
 
@@ -1592,6 +1746,17 @@ class TestPhase3Endpoints:
         assert ab.document_type == "A84"
         assert ab.domain_style == "control_area"
         assert ab.extra_params == {"businessType": "A96"}
+
+    def test_activated_balancing_prices_business_type_is_overridable(self):
+        """G9 ENTSOE-05: connector must accept businessType override so
+        callers can request A95 (FCR) / A97 (mFRR) / A98 (RR) in addition
+        to the default A96 (aFRR). The silver layer already maps all
+        four codes — the connector previously hardcoded A96 only."""
+        ab = DOC_TYPES["activated_balancing_prices"]
+        assert "businessType" in ab.optional_params, (
+            "G9 ENTSOE-05 regression: businessType must be in optional_params "
+            "so callers can override the A96 default to FCR/mFRR/RR"
+        )
 
     def test_contracted_reserves_doc_type(self):
         cr = DOC_TYPES["contracted_reserves"]
@@ -2591,6 +2756,74 @@ class TestPhaseH8BalancingTransformers:
         assert "amount_eur" in result.columns
         assert "quantity_mw" not in result.columns
         assert abs(result["amount_eur"][0] - 35.5) < 0.01
+
+    def test_financial_transformer_surfaces_reason_code_when_present(self):
+        """G9 ENTSOE-02: A87 financial documents carry per-series
+        Reason.code blocks (e.g. A98 = "Balancing energy"). The parser
+        must extract Reason.code and the silver transformer must surface
+        it as a column non-empty for rows where the source XML carries
+        a Reason block.
+        """
+        synthetic_xml = b"""<?xml version='1.0'?>
+<Balancing_MarketDocument>
+  <TimeSeries>
+    <mRID>1</mRID>
+    <businessType>B10</businessType>
+    <controlArea_Domain.mRID>10YGB----------A</controlArea_Domain.mRID>
+    <Reason>
+      <code>A98</code>
+      <text>Balancing energy</text>
+    </Reason>
+    <Period>
+      <timeInterval>
+        <start>2024-01-15T00:00Z</start>
+        <end>2024-01-15T01:00Z</end>
+      </timeInterval>
+      <resolution>PT60M</resolution>
+      <Point>
+        <position>1</position>
+        <price.amount>1234.56</price.amount>
+      </Point>
+    </Period>
+  </TimeSeries>
+</Balancing_MarketDocument>"""
+        records = parse_timeseries_xml(synthetic_xml, value_tag="price.amount")
+        assert len(records) == 1
+        assert records[0]["reason_code"] == "A98", (
+            "G9 ENTSOE-02 regression: parser must extract Reason.code "
+            "from A87 TimeSeries elements"
+        )
+
+        raw = pl.DataFrame(records).with_columns(
+            pl.col("timestamp_utc").cast(pl.Datetime("us", "UTC"))
+        )
+        transformer = _make_entsoe_transformer(
+            BalancingFinancialExpensesIncomeTransformer
+        )
+        result = transformer.transform(raw)
+
+        assert not result.is_empty()
+        assert "reason_code" in result.columns, (
+            "G9 ENTSOE-02 regression: BalancingFinancialExpensesIncome "
+            "transformer must surface reason_code in output_cols"
+        )
+        assert result["reason_code"][0] == "A98"
+
+    def test_financial_transformer_reason_code_empty_when_absent(self):
+        """When the source XML has no Reason block the column must still
+        exist and carry an empty string — consistent with the schema's
+        `reason_code: str = ""` default."""
+        raw = _make_df_from_xml(
+            "balancing_financial_expenses_income_gb.xml",
+            "price.amount",
+        )
+        transformer = _make_entsoe_transformer(
+            BalancingFinancialExpensesIncomeTransformer
+        )
+        result = transformer.transform(raw)
+
+        assert "reason_code" in result.columns
+        assert all(rc == "" for rc in result["reason_code"].to_list())
 
 
 class TestPhaseH8Schemas:

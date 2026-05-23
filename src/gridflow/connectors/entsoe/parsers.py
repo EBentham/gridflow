@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import calendar
 import contextlib
 import logging
 from datetime import UTC, datetime, timedelta
@@ -9,7 +10,10 @@ from typing import Any
 
 logger = logging.getLogger(__name__)
 
-# Resolution code -> timedelta
+# Resolution code -> timedelta. Used as a fallback / human-readable string in
+# silver `resolution` columns. For P1M and P1Y the timedelta is an approximation
+# only (30d / 365d); the actual point timestamps for those codes are computed
+# via _advance_calendar() which uses real calendar arithmetic.
 _RESOLUTION_MAP: dict[str, timedelta] = {
     "PT15M": timedelta(minutes=15),
     "PT30M": timedelta(minutes=30),
@@ -20,9 +24,55 @@ _RESOLUTION_MAP: dict[str, timedelta] = {
     "P1Y": timedelta(days=365),
 }
 
+# Resolution codes that need calendar-correct advancement (variable-length
+# units). PT/P1D/P7D are fixed-length and use plain timedelta multiplication.
+_CALENDAR_RESOLUTIONS: frozenset[str] = frozenset({"P1M", "P1Y"})
+
 
 def _resolve_resolution(code: str) -> timedelta:
     return _RESOLUTION_MAP.get(code, timedelta(hours=1))
+
+
+def _add_months(dt: datetime, n: int) -> datetime:
+    """Add n calendar months to dt. Clamps day to end-of-month when needed."""
+    if n == 0:
+        return dt
+    month_index = dt.month - 1 + n
+    year = dt.year + month_index // 12
+    month = month_index % 12 + 1
+    last_day = calendar.monthrange(year, month)[1]
+    day = min(dt.day, last_day)
+    return dt.replace(year=year, month=month, day=day)
+
+
+def _add_years(dt: datetime, n: int) -> datetime:
+    """Add n calendar years to dt. Handles Feb 29 by clamping to Feb 28."""
+    if n == 0:
+        return dt
+    year = dt.year + n
+    last_day = calendar.monthrange(year, dt.month)[1]
+    day = min(dt.day, last_day)
+    return dt.replace(year=year, day=day)
+
+
+def _advance_calendar(start: datetime, position: int, code: str) -> datetime:
+    """Compute the timestamp of the Nth point under a calendar resolution.
+
+    G9 ENTSOE-04: ENTSO-E TimeSeries with `<resolution>P1M</resolution>` or
+    `P1Y` use calendar units. Treating them as fixed 30d / 365d timedeltas
+    drifts by up to 11 days per year (or 1+ day per leap year), making
+    `load_forecast_monthly` and `load_forecast_yearly` point timestamps
+    misaligned with the vendor's documented monthly/yearly buckets.
+
+    Position is the 1-based ENTSO-E Point/position value.
+    """
+    n = position - 1
+    if code == "P1M":
+        return _add_months(start, n)
+    if code == "P1Y":
+        return _add_years(start, n)
+    # Should not reach here when called only with calendar codes
+    return start + n * _resolve_resolution(code)
 
 
 def _parse_utc(dt_str: str) -> datetime:
@@ -125,6 +175,10 @@ def parse_timeseries_xml(
         market_agreement_type = original_market_product = standard_market_product = ""
         unit_mrid = unit_name = ""
         timeseries_mrid = asset_mrid = asset_name = document_status = ""
+        # G9 ENTSOE-02: TimeSeries-level Reason.code (e.g. A87 financial
+        # documents carry per-series reason classifiers). Extracted below
+        # via a dedicated walk so this loop's elif chain stays linear.
+        reason_code = ""
         for child in ts_el:
             tag = _strip_ns(child.tag)
             text = (child.text or "").strip()
@@ -227,6 +281,21 @@ def parse_timeseries_xml(
             elif tag == "production_RegisteredResource.pSRType.psrType":
                 production_type = (child.text or "").strip()
 
+        # G9 ENTSOE-02: capture the first Reason.code descendant of the
+        # TimeSeries (A87 financial documents carry per-series Reason
+        # blocks; other doc types may or may not). Done as a second walk
+        # to keep the main elif chain readable.
+        if not reason_code:
+            for descendant in ts_el.iter():
+                if _strip_ns(descendant.tag) != "Reason":
+                    continue
+                for sub in descendant:
+                    if _strip_ns(sub.tag) == "code":
+                        reason_code = (sub.text or "").strip()
+                        break
+                if reason_code:
+                    break
+
         # Parse each Period
         # WindPowerFeedin_Period appears in Unavailability_MarketDocument (H7 outages);
         # it has the same timeInterval/resolution/Point structure as Period.
@@ -236,6 +305,7 @@ def parse_timeseries_xml(
 
             start_dt: datetime | None = None
             resolution: timedelta = timedelta(hours=1)
+            resolution_code: str = ""
 
             for child in period_el:
                 tag = _strip_ns(child.tag)
@@ -248,7 +318,8 @@ def parse_timeseries_xml(
                     with contextlib.suppress(ValueError):
                         start_dt = _parse_utc(child.text or "")
                 elif tag == "resolution":
-                    resolution = _resolve_resolution((child.text or "").strip())
+                    resolution_code = (child.text or "").strip()
+                    resolution = _resolve_resolution(resolution_code)
 
             if start_dt is None:
                 continue
@@ -269,7 +340,14 @@ def parse_timeseries_xml(
                 if position is None or value is None:
                     continue
 
-                timestamp = start_dt + (position - 1) * resolution
+                # G9 ENTSOE-04: P1M / P1Y are calendar units (variable days
+                # per month, leap years for years). Use calendar arithmetic
+                # rather than timedelta multiplication so monthly/yearly
+                # bucket alignment matches the vendor's documented buckets.
+                if resolution_code in _CALENDAR_RESOLUTIONS:
+                    timestamp = _advance_calendar(start_dt, position, resolution_code)
+                else:
+                    timestamp = start_dt + (position - 1) * resolution
                 records.append({
                     **document_metadata,
                     "timestamp_utc": timestamp,
@@ -294,6 +372,9 @@ def parse_timeseries_xml(
                     "asset_name": asset_name,
                     "document_status": document_status
                     or document_metadata["document_status"],
+                    # G9 ENTSOE-02: TimeSeries-level Reason.code
+                    # (populated for A87 financial documents).
+                    "reason_code": reason_code,
                 })
 
     return records

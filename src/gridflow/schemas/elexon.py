@@ -308,6 +308,7 @@ class ElexonImbalNGC(BaseSchema):
     settlement_period: int = Field(ge=1, le=50)
     timestamp_utc: datetime
     indicated_imbalance: float
+    published_at: datetime | None = None
     data_provider: str = Field(default="elexon")
     ingested_at: datetime | None = None
 
@@ -330,6 +331,7 @@ class ElexonMelNGC(BaseSchema):
     settlement_period: int = Field(ge=1, le=50)
     timestamp_utc: datetime
     indicated_margin: float
+    published_at: datetime | None = None
     data_provider: str = Field(default="elexon")
     ingested_at: datetime | None = None
 
@@ -349,6 +351,7 @@ class ElexonIndDem(BaseSchema):
     timestamp_utc: datetime
     indicated_demand_mw: float
     boundary: str | None = None
+    published_at: datetime | None = None
     data_provider: str = Field(default="elexon")
     ingested_at: datetime | None = None
 
@@ -393,6 +396,7 @@ class ElexonINDO(BaseSchema):
     settlement_period: int = Field(ge=1, le=50)
     timestamp_utc: datetime
     initial_demand_outturn_mw: float
+    published_at: datetime | None = None
     data_provider: str = Field(default="elexon")
     ingested_at: datetime | None = None
 
@@ -432,6 +436,7 @@ class ElexonITSDO(BaseSchema):
     settlement_period: int = Field(ge=1, le=50)
     timestamp_utc: datetime
     initial_transmission_system_demand_outturn_mw: float
+    published_at: datetime | None = None
     data_provider: str = Field(default="elexon")
     ingested_at: datetime | None = None
 
@@ -451,6 +456,7 @@ class ElexonIndGen(BaseSchema):
     timestamp_utc: datetime
     indicated_generation_mw: float
     boundary: str | None = None
+    published_at: datetime | None = None
     data_provider: str = Field(default="elexon")
     ingested_at: datetime | None = None
 
@@ -501,6 +507,7 @@ class ElexonAGPT(BaseSchema):
     business_type: str | None = None
     document_id: str | None = None
     document_revision: int | None = None
+    published_at: datetime | None = None
     data_provider: str = Field(default="elexon")
     ingested_at: datetime | None = None
 
@@ -526,6 +533,7 @@ class ElexonAGWS(BaseSchema):
     business_type: str | None = None
     document_id: str | None = None
     document_revision: int | None = None
+    published_at: datetime | None = None
     data_provider: str = Field(default="elexon")
     ingested_at: datetime | None = None
 
@@ -547,6 +555,7 @@ class ElexonATL(BaseSchema):
     business_type: str | None = None
     document_id: str | None = None
     document_revision: int | None = None
+    published_at: datetime | None = None
     data_provider: str = Field(default="elexon")
     ingested_at: datetime | None = None
 
@@ -597,6 +606,7 @@ class ElexonNonBM(BaseSchema):
     settlement_period: int = Field(ge=1, le=50)
     timestamp_utc: datetime
     generation_mw: float
+    published_at: datetime | None = None
     data_provider: str = Field(default="elexon")
     ingested_at: datetime | None = None
 
@@ -621,6 +631,7 @@ class ElexonFOU2T14D(BaseSchema):
     timestamp_utc: datetime
     fuel_type: str
     output_usable_mw: float
+    published_at: datetime | None = None
     data_provider: str = Field(default="elexon")
     ingested_at: datetime | None = None
 
@@ -673,6 +684,7 @@ class ElexonLOLPDRM(BaseSchema):
     timestamp_utc: datetime
     loss_of_load_probability: float = Field(ge=0.0, le=1.0)
     derated_margin_mw: float
+    published_at: datetime | None = None
     data_provider: str = Field(default="elexon")
     ingested_at: datetime | None = None
 

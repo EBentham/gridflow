@@ -86,6 +86,15 @@ class INDGENTransformer(BaseSilverTransformer):
             .alias("timestamp_utc")
         )
 
+        # G6 (W2.2 pattern): cast `published_at` to UTC datetime so the
+        # column survives to silver well-typed.
+        if "published_at" in df.columns:
+            df = df.with_columns(
+                pl.col("published_at")
+                .str.to_datetime(format="%Y-%m-%dT%H:%M:%SZ", time_unit="us", strict=False)
+                .dt.replace_time_zone("UTC")
+            )
+
         dedup_cols = ["settlement_date", "settlement_period"]
         if "boundary" in df.columns:
             dedup_cols.append("boundary")
@@ -99,7 +108,8 @@ class INDGENTransformer(BaseSilverTransformer):
 
         output_cols = [
             "settlement_date", "settlement_period", "timestamp_utc",
-            "indicated_generation_mw", "boundary", "data_provider", "ingested_at",
+            "indicated_generation_mw", "boundary", "published_at",
+            "data_provider", "ingested_at",
         ]
         available = [c for c in output_cols if c in df.columns]
         return df.select(available).sort("timestamp_utc")

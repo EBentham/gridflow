@@ -8,6 +8,7 @@ from typing import Any
 
 import polars as pl
 
+from gridflow.connectors.entsoe.area_codes import area_name_for
 from gridflow.connectors.entsoe.parsers import parse_timeseries_xml
 from gridflow.silver.base import BaseSilverTransformer
 from gridflow.silver.registry import register_transformer
@@ -61,6 +62,16 @@ class ActualGenerationTransformer(BaseSilverTransformer):
 
         df = df.with_columns(pl.col("generation_mw").cast(pl.Float64))
 
+        # G9 ENTSOE-03: populate `area_name` from the EIC mRID via the
+        # canonical lookup in connectors/entsoe/area_codes.py. Codes
+        # outside the canonical set resolve to an empty string so the
+        # column type stays consistent (`area_name: str = ""` per schema).
+        df = df.with_columns(
+            pl.col("area_code")
+            .map_elements(area_name_for, return_dtype=pl.Utf8)
+            .alias("area_name")
+        )
+
         # production_type comes from parser; fill empty with "unknown"
         if "production_type" in df.columns:
             df = df.with_columns(
@@ -80,7 +91,7 @@ class ActualGenerationTransformer(BaseSilverTransformer):
         ])
 
         output_cols = [
-            "timestamp_utc", "area_code", "production_type",
+            "timestamp_utc", "area_code", "area_name", "production_type",
             "generation_mw", "resolution", "data_provider", "ingested_at",
         ]
         available = [c for c in output_cols if c in df.columns]

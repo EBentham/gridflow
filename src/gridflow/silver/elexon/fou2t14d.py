@@ -112,6 +112,15 @@ class FOU2T14DTransformer(BaseSilverTransformer):
                 .alias("timestamp_utc")
             )
 
+        # G6 (W2.2 pattern): cast `published_at` to UTC datetime so the
+        # column survives to silver well-typed.
+        if "published_at" in df.columns:
+            df = df.with_columns(
+                pl.col("published_at")
+                .str.to_datetime(format="%Y-%m-%dT%H:%M:%SZ", time_unit="us", strict=False)
+                .dt.replace_time_zone("UTC")
+            )
+
         dedup_cols = ["settlement_date", "fuel_type"]
         if "settlement_period" in df.columns:
             dedup_cols.insert(1, "settlement_period")
@@ -125,7 +134,8 @@ class FOU2T14DTransformer(BaseSilverTransformer):
 
         output_cols = [
             "settlement_date", "settlement_period", "timestamp_utc",
-            "fuel_type", "output_usable_mw", "data_provider", "ingested_at",
+            "fuel_type", "output_usable_mw", "published_at",
+            "data_provider", "ingested_at",
         ]
         available = [c for c in output_cols if c in df.columns]
         return df.select(available).sort("timestamp_utc", "fuel_type")

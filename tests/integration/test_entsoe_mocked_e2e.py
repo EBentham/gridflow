@@ -377,6 +377,114 @@ class TestEntsoeUrlConstructionAllDatasets:
             for response in responses
         )
 
+    @respx.mock
+    @pytest.mark.asyncio
+    async def test_paginated_doc_type_loops_until_page_under_size(
+        self,
+        entsoe_source_config: SourceConfig,
+    ) -> None:
+        """G9 ENTSOE-01: doc types with `offset` in optional_params (A37,
+        A15, A38, etc.) must page through results — fetch offset=0,
+        offset=4800, ... until a page returns fewer than 4800 TimeSeries
+        elements. Previously the connector made a single request and
+        silently dropped any data past 4800 series.
+
+        Handler is keyed off the `offset` query param: offset=0 returns a
+        full page (4800 TimeSeries) → connector continues; offset=4800
+        returns a partial page (100 TimeSeries) → connector stops.
+        Per-zone (the connector iterates DEFAULT_ZONES for the default
+        "zone" domain style), so we expect 2 calls × N zones total.
+        """
+        from gridflow.connectors.entsoe.endpoints import DEFAULT_ZONES
+
+        full_page_xml = (
+            b"<root>" + (b"<TimeSeries/>" * 4800) + b"</root>"
+        )
+        partial_page_xml = (
+            b"<root>" + (b"<TimeSeries/>" * 100) + b"</root>"
+        )
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            params = dict(request.url.params)
+            offset = int(params.get("offset", "0"))
+            body = full_page_xml if offset == 0 else partial_page_xml
+            return httpx.Response(
+                200,
+                content=body,
+                headers={"content-type": "text/xml"},
+            )
+
+        route = respx.get(f"{ENTSOE_BASE}/api").mock(side_effect=handler)
+
+        async with EntsoeConnector(entsoe_source_config) as connector:
+            responses = await connector.fetch(
+                dataset="balancing_energy_bids",
+                start=START,
+                end=END,
+            )
+
+        # Each zone goes: offset=0 (full → loop) → offset=4800 (partial → stop).
+        expected_calls = 2 * len(DEFAULT_ZONES)
+        assert len(route.calls) == expected_calls, (
+            f"G9 ENTSOE-01 regression: expected {expected_calls} paginated "
+            f"calls (2 per zone × {len(DEFAULT_ZONES)} zones), got "
+            f"{len(route.calls)}"
+        )
+
+        offsets_seen = {
+            dict(call.request.url.params).get("offset", "")
+            for call in route.calls
+        }
+        assert offsets_seen == {"0", "4800"}, (
+            f"G9 ENTSOE-01 regression: expected offset values 0 and 4800, "
+            f"got {offsets_seen}"
+        )
+
+        # Both pages collected per zone: 2 RawResponses × N zones.
+        assert len(responses) == expected_calls
+
+    @respx.mock
+    @pytest.mark.asyncio
+    async def test_non_paginated_doc_type_makes_single_request(
+        self,
+        entsoe_source_config: SourceConfig,
+    ) -> None:
+        """G9 ENTSOE-01 negative case: doc types without `offset` in
+        optional_params must keep the single-request shape. Most
+        datasets (actual_load, day_ahead_prices, etc.) are not paginated.
+        """
+        call_count = [0]
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            call_count[0] += 1
+            return httpx.Response(
+                200,
+                # 4800+ TimeSeries; pagination should NOT kick in
+                # because actual_load doesn't declare offset.
+                content=b"<root>" + (b"<TimeSeries/>" * 5000) + b"</root>",
+                headers={"content-type": "text/xml"},
+            )
+
+        respx.get(f"{ENTSOE_BASE}/api").mock(side_effect=handler)
+
+        async with EntsoeConnector(entsoe_source_config) as connector:
+            await connector.fetch(
+                dataset="actual_load",
+                start=START,
+                end=END,
+            )
+
+        # actual_load uses out_bidding_zone domain style; the connector
+        # iterates DEFAULT_ZONES, one call per zone. The count therefore
+        # equals the number of default zones — not 2× as it would under
+        # accidental pagination.
+        from gridflow.connectors.entsoe.endpoints import DEFAULT_ZONES
+        assert call_count[0] == len(DEFAULT_ZONES), (
+            f"G9 ENTSOE-01 negative regression: non-paginated dataset "
+            f"made {call_count[0]} calls, expected one per zone "
+            f"({len(DEFAULT_ZONES)})"
+        )
+
     def test_bronze_writer_partitions_by_data_date_not_fetched_at(
         self,
         tmp_data_dir: Path,

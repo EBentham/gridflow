@@ -87,6 +87,18 @@ class ImbalNGCTransformer(BaseSilverTransformer):
             .alias("timestamp_utc")
         )
 
+        # G6: cast `published_at` (rename map already produced it from
+        # publishDateTime / publishTime) to UTC datetime so it survives
+        # to silver well-typed. ElexonImbalNGC declares
+        # `published_at: datetime | None` — without this cast + output_cols
+        # entry below, the column was silently dropped (W2.2 pattern).
+        if "published_at" in df.columns:
+            df = df.with_columns(
+                pl.col("published_at")
+                .str.to_datetime(format="%Y-%m-%dT%H:%M:%SZ", time_unit="us", strict=False)
+                .dt.replace_time_zone("UTC")
+            )
+
         df = df.unique(subset=["settlement_date", "settlement_period"], keep="last")
 
         now = datetime.now(UTC)
@@ -97,7 +109,8 @@ class ImbalNGCTransformer(BaseSilverTransformer):
 
         output_cols = [
             "settlement_date", "settlement_period", "timestamp_utc",
-            "indicated_imbalance", "data_provider", "ingested_at",
+            "indicated_imbalance", "published_at",
+            "data_provider", "ingested_at",
         ]
         available = [c for c in output_cols if c in df.columns]
         return df.select(available).sort("timestamp_utc")

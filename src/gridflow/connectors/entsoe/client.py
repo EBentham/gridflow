@@ -50,6 +50,15 @@ _ACK_REASON_NS = {
     "ack": "urn:iec62325.351:tc57wg16:451-1:acknowledgementdocument:7:0",
 }
 
+# G9 ENTSOE-01: ENTSO-E caps high-cardinality endpoints (A37 balancing
+# energy bids, A15 procured balancing capacity, A38 cross-zonal capacity,
+# etc.) at 4800 TimeSeries elements per response and requires the caller
+# to page through results via the `offset` query parameter (0, 4800,
+# 9600, ...). Doc types that support pagination declare `"offset"` in
+# their optional_params. Below this constant the connector terminates
+# the paging loop.
+_ENTSOE_PAGE_SIZE = 4800
+
 
 class EntsoeConnector(BaseConnector):
     """Connector for the ENTSO-E Transparency Platform API.
@@ -190,7 +199,15 @@ class EntsoeConnector(BaseConnector):
         period_end: str,
         fetch_params: dict[str, Any] | None = None,
     ) -> list[RawResponse]:
-        """Fetch a single ENTSO-E document using the dataset's request style."""
+        """Fetch a single ENTSO-E document using the dataset's request style.
+
+        For doc types that declare ``"offset"`` in ``optional_params``
+        (G9 ENTSOE-01 — A37 balancing energy bids, A15 procured balancing
+        capacity, etc.), the function pages through results: starting at
+        the doc type's default offset and incrementing by
+        ``_ENTSOE_PAGE_SIZE`` (4800) until a page returns fewer
+        TimeSeries elements than the page size.
+        """
         query_params: dict[str, str] = {"documentType": doc_type.document_type}
         if doc_type.date_param:
             data_date = datetime.strptime(period_start, ENTSOE_DT_FORMAT).date()
@@ -215,8 +232,51 @@ class EntsoeConnector(BaseConnector):
         if self.config.api_key:
             query_params["securityToken"] = self.config.api_key
 
-        raw = await self._request(_ENTSOE_API_PATH, query_params)
         data_date = datetime.strptime(period_start, ENTSOE_DT_FORMAT).date()
+        supports_pagination = "offset" in doc_type.optional_params
+
+        if not supports_pagination:
+            raw = await self._request(_ENTSOE_API_PATH, query_params)
+            return self._raw_response_to_records(
+                raw, dataset, query_params, data_date
+            )
+
+        # G9 ENTSOE-01: page until a response carries < page-size TimeSeries.
+        all_responses: list[RawResponse] = []
+        try:
+            offset = int(query_params.get("offset", "0"))
+        except ValueError:
+            offset = 0
+        while True:
+            query_params["offset"] = str(offset)
+            raw = await self._request(_ENTSOE_API_PATH, query_params)
+            page_responses = self._raw_response_to_records(
+                raw, dataset, query_params, data_date
+            )
+            all_responses.extend(page_responses)
+
+            ts_count = sum(
+                _count_timeseries(resp.body) for resp in page_responses
+            )
+            if ts_count < _ENTSOE_PAGE_SIZE:
+                break
+            offset += _ENTSOE_PAGE_SIZE
+        return all_responses
+
+    @staticmethod
+    def _raw_response_to_records(
+        raw: httpx.Response,
+        dataset: str,
+        query_params: dict[str, str],
+        data_date: Any,
+    ) -> list[RawResponse]:
+        """Materialise an httpx response into ``RawResponse`` records.
+
+        Handles ZIP responses (one record per .xml entry) and plain XML
+        responses (one record). Extracted from ``_fetch_document`` so the
+        pagination loop can call it per page without duplicating shape
+        logic.
+        """
         content_type = raw.headers.get("content-type", "text/xml")
         if _is_zip_response(content_type, raw.content):
             return [
@@ -328,6 +388,35 @@ def _extract_acknowledgement_reason(content: bytes) -> str:
     if text is not None and text.text:
         parts.append(text.text.strip())
     return " - ".join(parts)
+
+
+def _count_timeseries(xml_bytes: bytes) -> int:
+    """Count `<TimeSeries>` elements in an ENTSO-E XML response.
+
+    G9 ENTSOE-01: used by the pagination loop in ``_fetch_document`` to
+    decide whether to request another page. Namespace-agnostic — checks
+    the local-name part of each tag. Returns 0 on parse failure so a
+    malformed page does not spin the loop indefinitely.
+    """
+    if not xml_bytes:
+        return 0
+    try:
+        from lxml import etree  # type: ignore[import-untyped]
+    except ImportError:
+        return 0
+    try:
+        root = etree.fromstring(xml_bytes)  # noqa: S320 (trusted internal data)
+    except etree.XMLSyntaxError:
+        return 0
+
+    count = 0
+    for el in root.iter():
+        tag = el.tag
+        if isinstance(tag, str):
+            local = tag.split("}", 1)[1] if "}" in tag else tag
+            if local == "TimeSeries":
+                count += 1
+    return count
 
 
 def _is_zip_response(content_type: str, content: bytes) -> bool:
