@@ -85,6 +85,15 @@ class TSDFDTransformer(BaseSilverTransformer):
                 .dt.replace_time_zone("UTC")
                 .alias("published_at")
             )
+        else:
+            # WHY: the silver schema declares published_at as a nullable contract
+            # column. Emit it as typed-null when bronze lacks the publish field so the
+            # silver schema is deterministic and partition globs don't drift across
+            # history (a missing column breaks SELECT * reads spanning files that do
+            # carry it).
+            df = df.with_columns(
+                pl.lit(None).cast(pl.Datetime("us", "UTC")).alias("published_at")
+            )
 
         df = df.unique(subset=["forecast_date"], keep="last")
 

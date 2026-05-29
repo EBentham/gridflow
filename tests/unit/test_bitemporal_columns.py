@@ -278,7 +278,7 @@ def test_openmeteo_reingest_uses_location_sidecar_timestamp(tmp_data_dir: Path) 
     assert set(df["available_at"].to_list()) == {sidecar_time}
 
 
-def test_demand_forecast_preserves_publish_time_as_issue_time() -> None:
+def test_demand_forecast_preserves_publish_time_as_published_at() -> None:
     raw = pl.DataFrame(
         [
             {
@@ -292,12 +292,12 @@ def test_demand_forecast_preserves_publish_time_as_issue_time() -> None:
 
     result = DemandForecastTransformer(Path("/tmp/test")).transform(raw)
 
-    assert "issue_time" in result.columns
-    assert result["issue_time"].dtype == pl.Datetime("us", "UTC")
-    assert result["issue_time"][0] == datetime(2024, 1, 14, 9, 30, tzinfo=UTC)
+    assert "published_at" in result.columns
+    assert result["published_at"].dtype == pl.Datetime("us", "UTC")
+    assert result["published_at"][0] == datetime(2024, 1, 14, 9, 30, tzinfo=UTC)
 
 
-def test_wind_forecast_preserves_publish_time_as_issue_time() -> None:
+def test_wind_forecast_preserves_publish_time_as_published_at() -> None:
     raw = pl.DataFrame(
         [
             {
@@ -312,6 +312,6 @@ def test_wind_forecast_preserves_publish_time_as_issue_time() -> None:
 
     result = WindForecastTransformer(Path("/tmp/test")).transform(raw)
 
-    assert "issue_time" in result.columns
-    assert result["issue_time"].dtype == pl.Datetime("us", "UTC")
-    assert result["issue_time"][0] == datetime(2024, 1, 14, 8, 0, tzinfo=UTC)
+    assert "published_at" in result.columns
+    assert result["published_at"].dtype == pl.Datetime("us", "UTC")
+    assert result["published_at"][0] == datetime(2024, 1, 14, 8, 0, tzinfo=UTC)
