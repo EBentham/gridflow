@@ -34,6 +34,7 @@ from gridflow.silver.elexon.nonbm import NONBMTransformer
 from gridflow.silver.elexon.pn import PNTransformer
 from gridflow.silver.elexon.system_prices import SystemPriceTransformer
 from gridflow.silver.elexon.temp import TempTransformer
+from gridflow.silver.elexon.tsdfd import TSDFDTransformer
 from gridflow.silver.elexon.uou2t14d import UOU2T14DTransformer
 from gridflow.silver.elexon.wind_forecast import WindForecastTransformer
 
@@ -1117,3 +1118,65 @@ def test_indo_published_at_typed_null_when_bronze_lacks_publish_time():
         "published_at must be all-null when bronze carries no publishTime"
     )
     assert result["published_at"].dtype == pl.Datetime("us", "UTC")
+
+
+# ---------------------------------------------------------------------------
+# F24 cohort: published_at emitted typed-null when bronze lacks the publish
+# field, across every Elexon transformer that publishes it as a contract
+# column. Reuses the G6 present-case records (publish field dropped) plus the
+# three transformers outside the G6 list that also output published_at.
+# ---------------------------------------------------------------------------
+_PUBLISHED_AT_ABSENT_CASES: list[tuple[type, dict[str, object]]] = [
+    (cls, base_record) for cls, _publish_field, base_record in _G6_TRANSFORMER_CASES
+] + [
+    (
+        FuelHHTransformer,
+        {"settlementDate": "2024-01-15", "settlementPeriod": 1,
+         "fuelType": "CCGT", "generation": 12000.0},
+    ),
+    (
+        UOU2T14DTransformer,
+        {"settlementDate": "2024-01-17", "settlementPeriod": 1,
+         "bmUnit": "T_DRAXX-1", "outputUsable": 645.0},
+    ),
+    (
+        TSDFDTransformer,
+        {"forecastDate": "2024-01-17", "demand": 35000.0},
+    ),
+]
+
+
+@pytest.mark.parametrize(
+    "transformer_cls, base_record",
+    _PUBLISHED_AT_ABSENT_CASES,
+    ids=[c[0].__name__ for c in _PUBLISHED_AT_ABSENT_CASES],
+)
+def test_published_at_typed_null_when_bronze_lacks_publish_field(
+    transformer_cls: type, base_record: dict[str, object]
+):
+    """F24 drift fix (inverse of G6): every published_at-emitting Elexon
+    transformer must emit `published_at` as a typed-null column when bronze
+    lacks the publish field — not drop it.
+
+    A dropped column makes the silver schema non-deterministic and breaks
+    `SELECT *` partition globs spanning files that do carry it (the
+    elexon/indo 2024<->2026 break). The G6 cohort above pins the present
+    case; this pins the absent case across the whole cohort.
+    """
+    result = _make_transformer(transformer_cls).transform(pl.DataFrame([base_record]))
+
+    assert not result.is_empty(), (
+        f"{transformer_cls.__name__} produced empty silver for minimal record"
+    )
+    assert "published_at" in result.columns, (
+        f"drift regression: {transformer_cls.__name__} dropped published_at "
+        f"when bronze lacked the publish field"
+    )
+    assert result["published_at"].null_count() == result.height, (
+        f"{transformer_cls.__name__}: published_at must be all-null when bronze "
+        f"carries no publish field"
+    )
+    assert result["published_at"].dtype == pl.Datetime("us", "UTC"), (
+        f"{transformer_cls.__name__}: published_at dtype is "
+        f"{result['published_at'].dtype}, expected pl.Datetime('us', 'UTC')"
+    )
