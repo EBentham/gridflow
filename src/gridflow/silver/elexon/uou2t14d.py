@@ -95,6 +95,15 @@ class UOU2T14DTransformer(BaseSilverTransformer):
                 .str.to_datetime(format="%Y-%m-%dT%H:%M:%SZ", time_unit="us", strict=False)
                 .dt.replace_time_zone("UTC")
             )
+        else:
+            # WHY: the silver schema declares published_at as a nullable contract
+            # column. Emit it as typed-null when bronze lacks the publish field so the
+            # silver schema is deterministic and partition globs don't drift across
+            # history (a missing column breaks SELECT * reads spanning files that do
+            # carry it).
+            df = df.with_columns(
+                pl.lit(None).cast(pl.Datetime("us", "UTC")).alias("published_at")
+            )
 
         # settlement_period may not exist for forecast data (forecastDate only)
         if "settlement_period" in df.columns:
