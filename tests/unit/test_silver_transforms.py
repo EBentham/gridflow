@@ -1091,3 +1091,29 @@ def test_g6_published_at_emitted_when_bronze_carries_it(
         f"{transformer_cls.__name__}: published_at dtype is "
         f"{result['published_at'].dtype}, expected pl.Datetime('us', 'UTC')"
     )
+
+
+def test_indo_published_at_typed_null_when_bronze_lacks_publish_time():
+    """F24 drift fix (inverse of G6): INDO must emit `published_at` even when
+    bronze carries no `publishTime` — as a typed-null column, not a dropped one.
+
+    The G6 cohort above pins the *present* case. The *absent* case is the one
+    that drifted: when bronze lacked publishTime the column was omitted from
+    silver entirely (ElexonINDO declares it always-present-nullable), so a
+    `SELECT *` partition glob spanning publishTime-present files (2024) and
+    publishTime-absent files (2026) raised a DuckDB schema mismatch. With the
+    fix the silver schema is deterministic regardless of bronze.
+    """
+    raw = pl.DataFrame([
+        {"settlementDate": "2026-04-14", "settlementPeriod": 1, "demand": 28500.0},
+    ])
+    result = _make_transformer(INDOTransformer).transform(raw)
+
+    assert not result.is_empty()
+    assert "published_at" in result.columns, (
+        "drift regression: INDO dropped published_at when bronze lacked publishTime"
+    )
+    assert result["published_at"].null_count() == result.height, (
+        "published_at must be all-null when bronze carries no publishTime"
+    )
+    assert result["published_at"].dtype == pl.Datetime("us", "UTC")
