@@ -24,6 +24,8 @@ uv run gridflow quality --all
 
 ## Hard rules
 
+<!-- Python style (no-bare-except, no-comments-restating-code) and the tests-before-done gate are inherited from ~/.claude/CLAUDE.md; ruff enforces the style rules. -->
+
 **Data correctness (silent-bug class):**
 - All timestamps tz-aware UTC. `TimestampMixin` rejects naive input. Convert at
   the silver-transformer boundary, never at query time.
@@ -37,17 +39,14 @@ uv run gridflow quality --all
 
 **Code conventions:**
 - No pandas. Polars only. `.to_pandas()` only at presentation boundaries.
-- No bare `except:`. Catch the narrowest exception that makes sense.
 - No manual path construction. Use `PathBuilder` from `storage/paths.py`.
 - No `Path.rename()` for atomic writes on Windows. Use `os.replace()` —
   already encapsulated in `storage/parquet.write_parquet`.
-- No comments that restate what the code does. WHY only, when non-obvious.
 - Bronze is immutable. Never edit bronze in place.
 
 **Process:**
 - Never commit to `main`. Feature branches only.
 - Conventional commits: `feat:`, `fix:`, `test:`, `refactor:`, `chore:`, `docs:`.
-- `uv run pytest -x -q` must pass before declaring a task complete.
 - No live API ingestion (`gridflow ingest` against a real key) without explicit
   user confirmation.
 - No new top-level packages under `src/gridflow/` without discussion.
