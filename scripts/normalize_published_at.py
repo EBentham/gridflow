@@ -38,8 +38,10 @@ _PUBLISHED_AT = "published_at"
 _PUBLISHED_AT_DTYPE = pl.Datetime("us", "UTC")
 
 # Elexon datasets whose transformer emits published_at as a nullable contract column.
-# (Excludes demand_forecast / wind_forecast / fuelinst, which route the publish time
-# into issue_time / timestamp_utc and do not output published_at.)
+# (Excludes fuelinst, which routes the publish time into timestamp_utc. wind_forecast
+# and demand_forecast now emit published_at too, but their historical partitions carry
+# a legacy issue_time column needing an issue_time->published_at rename migration —
+# tracked separately, not handled by this typed-null back-fill pass.)
 _DATASETS = (
     "indo", "imbalngc", "melngc", "inddem", "itsdo", "indgen", "agpt", "agws",
     "atl", "nonbm", "fou2t14d", "lolpdrm", "fuelhh", "uou2t14d", "tsdfd",

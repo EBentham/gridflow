@@ -112,14 +112,22 @@ class WindForecastTransformer(BaseSilverTransformer):
                 pl.col("published_at")
                 .str.to_datetime(format="%Y-%m-%dT%H:%M:%SZ", time_unit="us", strict=False)
                 .dt.replace_time_zone("UTC")
-                .alias("issue_time")
+            )
+        else:
+            # WHY: the silver schema declares published_at as a nullable contract
+            # column. Emit it as typed-null when bronze lacks the publish field so the
+            # silver schema is deterministic and partition globs don't drift across
+            # history (a missing column breaks SELECT * reads spanning files that do
+            # carry it).
+            df = df.with_columns(
+                pl.lit(None).cast(pl.Datetime("us", "UTC")).alias("published_at")
             )
 
         dedup_cols = ["timestamp_utc"]
         if "settlement_date" in df.columns and "settlement_period" in df.columns:
             dedup_cols = ["settlement_date", "settlement_period"]
-        if "issue_time" in df.columns:
-            dedup_cols.append("issue_time")
+        if "published_at" in df.columns:
+            dedup_cols.append("published_at")
         df = df.unique(subset=dedup_cols, keep="last")
 
         now = datetime.now(UTC)
@@ -131,7 +139,7 @@ class WindForecastTransformer(BaseSilverTransformer):
         output_cols = [
             "settlement_date", "settlement_period", "timestamp_utc",
             "initial_forecast_mw", "latest_forecast_mw",
-            "issue_time", "data_provider", "ingested_at",
+            "published_at", "data_provider", "ingested_at",
         ]
         available = [c for c in output_cols if c in df.columns]
         return df.select(available).sort("timestamp_utc")
