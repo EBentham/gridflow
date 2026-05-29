@@ -450,7 +450,7 @@ class TestDemandForecastTransformer:
         raw = pl.DataFrame([{"foo": "bar"}])
         assert self.t.transform(raw).is_empty()
 
-    def test_preserves_multiple_issue_time_vintages_per_period(self):
+    def test_preserves_multiple_published_at_vintages_per_period(self):
         raw = pl.DataFrame([
             {
                 "settlementDate": "2024-01-15",
@@ -469,7 +469,7 @@ class TestDemandForecastTransformer:
         result = self.t.transform(raw)
 
         assert len(result) == 2
-        assert sorted(result["issue_time"].to_list()) == [
+        assert sorted(result["published_at"].to_list()) == [
             datetime(2024, 1, 14, 9, 30, tzinfo=UTC),
             datetime(2024, 1, 14, 10, 0, tzinfo=UTC),
         ]
@@ -503,7 +503,7 @@ class TestWindForecastTransformer:
         result = self.t.transform(raw)
         assert len(result) == 1
 
-    def test_preserves_multiple_issue_time_vintages_per_period(self):
+    def test_preserves_multiple_published_at_vintages_per_period(self):
         raw = pl.DataFrame([
             {
                 "settlementDate": "2024-01-15",
@@ -524,7 +524,7 @@ class TestWindForecastTransformer:
         result = self.t.transform(raw)
 
         assert len(result) == 2
-        assert sorted(result["issue_time"].to_list()) == [
+        assert sorted(result["published_at"].to_list()) == [
             datetime(2024, 1, 14, 8, 0, tzinfo=UTC),
             datetime(2024, 1, 14, 9, 0, tzinfo=UTC),
         ]
@@ -1124,7 +1124,9 @@ def test_indo_published_at_typed_null_when_bronze_lacks_publish_time():
 # F24 cohort: published_at emitted typed-null when bronze lacks the publish
 # field, across every Elexon transformer that publishes it as a contract
 # column. Reuses the G6 present-case records (publish field dropped) plus the
-# three transformers outside the G6 list that also output published_at.
+# five transformers outside the G6 list that also output published_at —
+# FuelHH, UOU2T14D, TSDFD, and the WindForecast/DemandForecast forecast
+# transformers (switched from emitting issue_time to published_at).
 # ---------------------------------------------------------------------------
 _PUBLISHED_AT_ABSENT_CASES: list[tuple[type, dict[str, object]]] = [
     (cls, base_record) for cls, _publish_field, base_record in _G6_TRANSFORMER_CASES
@@ -1142,6 +1144,16 @@ _PUBLISHED_AT_ABSENT_CASES: list[tuple[type, dict[str, object]]] = [
     (
         TSDFDTransformer,
         {"forecastDate": "2024-01-17", "demand": 35000.0},
+    ),
+    (
+        WindForecastTransformer,
+        {"settlementDate": "2024-01-15", "settlementPeriod": 1,
+         "initialForecast": 4500.0, "latestForecast": 4300.0},
+    ),
+    (
+        DemandForecastTransformer,
+        {"settlementDate": "2024-01-15", "settlementPeriod": 1,
+         "nationalDemand": 28500.0},
     ),
 ]
 
