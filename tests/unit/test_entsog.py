@@ -109,9 +109,27 @@ class TestNormaliseToGwhDay:
         # 1e6 kWh/h * 24 = 24 GWh/d
         assert abs(_normalise_to_gwh_day(1_000_000.0, "kWh/h") - 24.0) < 1e-9
 
-    def test_default_assumed_kwh_d(self):
-        # Unknown unit falls back to kWh/d
-        assert abs(_normalise_to_gwh_day(1_000_000.0, "unknown") - 1.0) < 1e-9
+    def test_gwh_d_is_identity_not_mis_scaled(self):
+        """Issue 05 #3: GWh/d is already the target unit — it must pass through
+        unchanged, NOT be divided by 1e6.
+
+        FAILS on pre-fix code: the else-branch multiplied any non-kWh/h unit
+        by 1e-6, turning 15_000 GWh/d into 0.015.
+        """
+        assert abs(_normalise_to_gwh_day(15_000.0, "GWh/d") - 15_000.0) < 1e-9
+
+    def test_mwh_d_scaled_by_thousand_not_mis_scaled(self):
+        """MWh/d -> GWh/d divides by 1e3 (1000 MWh/d = 1 GWh/d), not 1e6."""
+        assert abs(_normalise_to_gwh_day(1_000.0, "MWh/d") - 1.0) < 1e-9
+
+    def test_unknown_unit_rejected_not_assumed_kwh_d(self):
+        """Issue 05 #3: an unrecognised unit must be rejected, not silently
+        assumed to be kWh/d.
+
+        FAILS on pre-fix code: 'unknown' fell through to the kWh/d branch.
+        """
+        with pytest.raises(ValueError):
+            _normalise_to_gwh_day(1_000_000.0, "unknown")
 
     def test_zero_value(self):
         assert _normalise_to_gwh_day(0.0, "kWh/d") == 0.0
@@ -224,6 +242,61 @@ class TestPhysicalFlowsTransformer:
         result = self.t.transform(raw)
         ts_list = result["timestamp_utc"].to_list()
         assert ts_list == sorted(ts_list)
+
+    def test_gwh_d_input_not_mis_scaled_in_transform(self):
+        """Issue 05 #3 (transform level): a GWh/d-denominated flow must reach
+        silver unchanged, not divided by 1e6."""
+        raw = pl.DataFrame([
+            {
+                "indicator": "Physical Flow",
+                "periodFrom": "2024-01-15T06:00:00Z",
+                "pointKey": "IUK",
+                "directionKey": "entry",
+                "value": 15_000.0,
+                "unit": "GWh/d",
+            }
+        ])
+        result = self.t.transform(raw)
+        assert len(result) == 1
+        assert abs(result["flow_gwh_per_day"][0] - 15_000.0) < 0.01
+
+    def test_unknown_unit_row_dropped_not_mis_scaled(self, caplog):
+        """Issue 05 #3 (transform level): a row with an unrecognised unit must
+        NOT be emitted with a silently mis-scaled value. It is dropped with a
+        logged count (CLAUDE.md: never silently dropped)."""
+        import logging
+
+        raw = pl.DataFrame([
+            {
+                "indicator": "Physical Flow",
+                "periodFrom": "2024-01-15T06:00:00Z",
+                "pointKey": "GOOD",
+                "directionKey": "entry",
+                "value": 1_000_000.0,
+                "unit": "kWh/d",
+            },
+            {
+                "indicator": "Physical Flow",
+                "periodFrom": "2024-01-15T06:00:00Z",
+                "pointKey": "BAD",
+                "directionKey": "entry",
+                "value": 1_000_000.0,
+                "unit": "mystery-unit",
+            },
+        ])
+        with caplog.at_level(logging.WARNING):
+            result = self.t.transform(raw)
+        point_keys = set(result["point_key"].to_list())
+        # The good row survives, correctly scaled; the unknown-unit row is gone.
+        assert "GOOD" in point_keys
+        assert "BAD" not in point_keys, (
+            "unknown-unit row must be dropped, not emitted with a mis-scaled value"
+        )
+        good = result.filter(pl.col("point_key") == "GOOD")
+        assert abs(good["flow_gwh_per_day"][0] - 1.0) < 1e-9
+        assert "mystery-unit" in caplog.text, (
+            "unknown unit drop must be logged, not silent"
+        )
 
     def test_read_bronze_filters_records_to_target_date(self, tmp_path):
         target = date(2026, 4, 17)

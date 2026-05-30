@@ -24,13 +24,40 @@ logger = logging.getLogger(__name__)
 _KWH_D_TO_GWH_D = 1e-6
 _KWH_H_TO_GWH_D = 24.0 * 1e-6
 
+# Issue 05 #3 (code-review-2026-05): explicit unit -> GWh/day factor table.
+# The previous `else` fallthrough multiplied EVERY non-kWh/h unit by 1e-6,
+# silently mis-scaling already-GWh/d values by 1e6 and MWh/d by 1e3. An
+# unrecognised unit must be rejected, never assumed kWh/d. Keys are
+# lower-cased and stripped; daily and hourly spellings both covered.
+_UNIT_TO_GWH_DAY: dict[str, float] = {
+    "kwh/d": _KWH_D_TO_GWH_D,
+    "kwh/day": _KWH_D_TO_GWH_D,
+    "kwh/h": _KWH_H_TO_GWH_D,
+    "kwh/hr": _KWH_H_TO_GWH_D,
+    "mwh/d": 1e-3,
+    "mwh/day": 1e-3,
+    "mwh/h": 24.0 * 1e-3,
+    "mwh/hr": 24.0 * 1e-3,
+    "gwh/d": 1.0,
+    "gwh/day": 1.0,
+    "gwh/h": 24.0,
+    "gwh/hr": 24.0,
+}
+
 
 def _normalise_to_gwh_day(value: float, unit: str) -> float:
-    """Normalise a gas flow value to GWh/day."""
-    unit_lower = unit.lower().strip()
-    if "kwh/h" in unit_lower or "kwh/hr" in unit_lower:
-        return value * _KWH_H_TO_GWH_D
-    return value * _KWH_D_TO_GWH_D
+    """Normalise a gas flow value to GWh/day.
+
+    Raises:
+        ValueError: if ``unit`` is not in the explicit factor table. Callers
+            must handle this (the transformer log-and-drops the row) rather
+            than letting an unknown unit be silently mis-scaled.
+    """
+    unit_key = unit.lower().strip()
+    factor = _UNIT_TO_GWH_DAY.get(unit_key)
+    if factor is None:
+        raise ValueError(f"Unrecognised ENTSO-G flow unit: {unit!r}")
+    return value * factor
 
 
 class PhysicalFlowsTransformer(BaseSilverTransformer):
@@ -107,6 +134,26 @@ class PhysicalFlowsTransformer(BaseSilverTransformer):
             df = df.with_columns(
                 pl.col("value").cast(pl.Float64, strict=False).alias("value")
             )
+            # Issue 05 #3: drop rows whose unit is not in the explicit factor
+            # table BEFORE normalising, with a logged count, rather than
+            # silently mis-scaling them by assuming kWh/d. "Never silently
+            # dropped" (CLAUDE.md): the drop is surfaced via a WARNING.
+            recognised = pl.col("unit").cast(pl.Utf8).str.strip_chars().str.to_lowercase()
+            is_known = recognised.is_in(list(_UNIT_TO_GWH_DAY.keys()))
+            unknown = df.filter(~is_known)
+            if not unknown.is_empty():
+                bad_units = sorted(
+                    {u for u in unknown["unit"].to_list() if u is not None}
+                )
+                logger.warning(
+                    "Dropping %d ENTSO-G physical-flow row(s) with unrecognised "
+                    "unit(s) %s (not mis-scaling as kWh/d)",
+                    unknown.height,
+                    bad_units,
+                )
+                df = df.filter(is_known)
+            if df.is_empty():
+                return pl.DataFrame()
             df = df.with_columns(
                 pl.struct(["value", "unit"])
                 .map_elements(
