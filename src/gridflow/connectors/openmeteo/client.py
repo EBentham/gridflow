@@ -17,6 +17,7 @@ from gridflow.connectors.openmeteo.endpoints import (
     WeatherLocation,
 )
 from gridflow.connectors.registry import register_connector
+from gridflow.utils.retry import RETRY_POLICY
 
 logger = logging.getLogger(__name__)
 
@@ -104,10 +105,7 @@ class OpenMeteoConnector(BaseConnector):
         if spec.extra_params:
             request_params.update(dict(spec.extra_params))
 
-        assert self._client is not None
-        async with self._semaphore:
-            response = await self._client.get(url, params=request_params)
-            response.raise_for_status()
+        response = await self._request(url, request_params)
 
         location_dataset = f"{dataset}__{location.name}"
         return RawResponse(
@@ -120,6 +118,25 @@ class OpenMeteoConnector(BaseConnector):
             request_params=request_params,
             data_date=start.date(),
         )
+
+    @RETRY_POLICY
+    async def _request(
+        self, url: str, params: dict[str, Any]
+    ) -> httpx.Response:
+        """Rate-limited, retried HTTP GET.
+
+        Carries @RETRY_POLICY so a transient 429 / archive-host timeout is
+        retried rather than silently dropping a capacity-weighted location —
+        parity with the Elexon and GIE connectors, which already decorate their
+        request path. The per-location failure policy after retries are
+        exhausted is unchanged (the caller's warning-only swallow); only
+        transient recovery is added here.
+        """
+        assert self._client is not None
+        async with self._semaphore:
+            response = await self._client.get(url, params=params)
+            response.raise_for_status()
+            return response
 
 
 register_connector("open_meteo", OpenMeteoConnector)
