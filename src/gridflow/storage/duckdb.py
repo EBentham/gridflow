@@ -133,6 +133,12 @@ def init_catalogue(db_path: Path, data_dir: Path) -> None:
             detail          VARCHAR
         )
     """)
+    # Reconcile a legacy quality_reports created before run_id existed:
+    # CREATE TABLE IF NOT EXISTS no-ops on an old 8-column table, which would
+    # then break the reporter's explicit-column run_id INSERT. Idempotent.
+    con.execute(
+        "ALTER TABLE quality_reports ADD COLUMN IF NOT EXISTS run_id VARCHAR"
+    )
 
     # Register views for silver and gold Parquet files
     _register_views(con, data_dir)

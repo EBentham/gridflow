@@ -204,3 +204,60 @@ def test_quality_report_ids_unique_across_runs(tmp_path: Path) -> None:
 
     assert total == 4
     assert distinct == 4
+
+
+def test_write_report_reconciles_legacy_quality_reports_schema(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A pre-existing legacy quality_reports (no run_id) must not break writes.
+
+    Before the gap-check TypeError fix, `gridflow quality` crashed before
+    write_report() ran, so a legacy 8-column table was never exercised by the
+    explicit-column INSERT. Now that the command completes, init_catalogue must
+    reconcile the schema so the run_id INSERT succeeds against an old table.
+    """
+    import duckdb
+
+    from gridflow.quality.checks import QualityResult
+    from gridflow.storage import duckdb as duckdb_mod
+    from gridflow.storage.duckdb import init_catalogue
+
+    # Gold SQL views reference silver tables absent from this tmpdir; under
+    # strict mode (pytest) their registration would raise. The legacy-schema
+    # migration is independent of view registration.
+    monkeypatch.setattr(duckdb_mod, "_register_gold_views", lambda con: None)
+
+    duckdb_path = tmp_path / "legacy.duckdb"
+    data_dir = tmp_path / "data"
+    data_dir.mkdir()
+
+    # Simulate a legacy DB: 8-column quality_reports without run_id.
+    con = duckdb.connect(str(duckdb_path))
+    con.execute(
+        """
+        CREATE TABLE quality_reports (
+            id INTEGER, run_date TIMESTAMP WITH TIME ZONE, check_name VARCHAR,
+            dataset VARCHAR, source VARCHAR, passed BOOLEAN, metric DOUBLE,
+            detail VARCHAR
+        )
+        """
+    )
+    con.close()
+
+    # init_catalogue must migrate the legacy table (add run_id).
+    init_catalogue(duckdb_path, data_dir)
+
+    reporter = QualityReporter(data_dir, duckdb_path)
+    reporter.add_result(QualityResult("c", "ds", "src", True, 0.0, "ok"))
+    written = reporter.write_report()
+
+    assert written == 1, "write_report must succeed against a migrated legacy table"
+
+    con = duckdb.connect(str(duckdb_path), read_only=True)
+    try:
+        cols = [c[0] for c in con.execute("DESCRIBE quality_reports").fetchall()]
+        n = con.execute("SELECT count(*) FROM quality_reports").fetchone()[0]
+    finally:
+        con.close()
+    assert "run_id" in cols
+    assert n == 1
