@@ -10,11 +10,20 @@ from gridflow.schemas.common import BaseSchema
 
 
 class EntsoeDayAheadPrice(BaseSchema):
-    """Silver-layer schema for ENTSO-E day-ahead market prices."""
+    """Silver-layer schema for ENTSO-E day-ahead market prices.
+
+    Issue 05 #1 (code-review-2026-05): `currency` carries the explicit source
+    denomination parsed from `<currency_Unit.name>` (e.g. "EUR" for continental
+    zones, "GBP" for GB). The `price_eur_mwh` column name is retained for
+    backward compatibility but `currency` is the authoritative denomination —
+    a GB price is labelled "GBP" here even though the value column keeps the
+    legacy `_eur_` name.
+    """
 
     timestamp_utc: datetime
     area_code: str  # EIC bidding zone mRID
     price_eur_mwh: float
+    currency: str = "EUR"
     resolution: str = ""
     data_provider: str = Field(default="entsoe")
 
@@ -85,13 +94,19 @@ class EntsoeCrossborderFlow(BaseSchema):
 
 
 class EntsoeLoadForecast(BaseSchema):
-    """Silver-layer schema for ENTSO-E day-ahead load forecast (A65/A01)."""
+    """Silver-layer schema for ENTSO-E day-ahead load forecast (A65/A01).
+
+    Issue 04 (code-review-2026-05): `published_at` carries the document
+    `<createdDateTime>` publication vintage (leak-proof forecast issue time);
+    typed-null when the source document lacks it.
+    """
 
     timestamp_utc: datetime
     area_code: str
     load_forecast_mw: float
     resolution: str = ""
     forecast_horizon: str = "day_ahead"
+    published_at: datetime | None = None
     data_provider: str = Field(default="entsoe")
 
     @field_validator("timestamp_utc")
@@ -113,6 +128,7 @@ class EntsoeWindSolarForecast(BaseSchema):
     production_type: str  # B16=Wind offshore, B18=Wind onshore, B19=Solar
     generation_forecast_mw: float
     resolution: str = ""
+    published_at: datetime | None = None
     data_provider: str = Field(default="entsoe")
 
     @field_validator("timestamp_utc")
@@ -206,6 +222,7 @@ class EntsoeGenerationForecast(BaseSchema):
     production_type: str
     generation_forecast_mw: float
     resolution: str = ""
+    published_at: datetime | None = None
     data_provider: str = Field(default="entsoe")
 
     @field_validator("timestamp_utc")
@@ -282,6 +299,7 @@ class EntsoeLoadForecastWeekly(BaseSchema):
     load_forecast_mw: float
     resolution: str = ""
     forecast_horizon: str = "week_ahead"
+    published_at: datetime | None = None
     data_provider: str = Field(default="entsoe")
 
     @field_validator("timestamp_utc")

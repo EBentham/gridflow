@@ -22,6 +22,7 @@ from gridflow.silver.entsoe.actual_load import ActualLoadTransformer
 from gridflow.silver.entsoe.cross_border_flows import CrossBorderFlowsTransformer
 from gridflow.silver.entsoe.day_ahead_prices import DayAheadPricesTransformer
 from gridflow.silver.entsoe.forecast_margin import ForecastMarginTransformer
+from gridflow.silver.entsoe.generation_forecast import GenerationForecastTransformer
 from gridflow.silver.entsoe.generation_units_master_data import (
     GenerationUnitsMasterDataTransformer,
 )
@@ -52,6 +53,7 @@ from gridflow.silver.entsoe.h8_balancing import (
 )
 from gridflow.silver.entsoe.imbalance_prices import ImbalancePricesTransformer
 from gridflow.silver.entsoe.installed_capacity_units import InstalledCapacityUnitsTransformer
+from gridflow.silver.entsoe.load_forecast import LoadForecastTransformer
 from gridflow.silver.entsoe.load_forecast_monthly import LoadForecastMonthlyTransformer
 from gridflow.silver.entsoe.load_forecast_yearly import LoadForecastYearlyTransformer
 from gridflow.silver.entsoe.outages_h7 import (
@@ -61,6 +63,7 @@ from gridflow.silver.entsoe.outages_h7 import (
     OutagesTransmissionTransformer,
 )
 from gridflow.silver.entsoe.water_reservoirs import WaterReservoirsTransformer
+from gridflow.silver.entsoe.wind_solar_forecast import WindSolarForecastTransformer
 
 FIXTURES = Path(__file__).parent.parent / "fixtures" / "entsoe"
 ENTSOE_BASE = "https://web-api.tp.entsoe.eu"
@@ -803,3 +806,70 @@ class TestEntsoeBronzeToSilverPipeline:
         assert required_columns.issubset(df.columns)
         if "data_provider" in df.columns:
             assert df["data_provider"].unique().to_list() == ["entsoe"]
+
+
+# ---------------------------------------------------------------------------
+# Issue 04: forecast publication vintage (published_at) — full bronze->silver
+# VALUE assertions, including the acceptance criterion that available_at is
+# NOT repointed to the vintage.
+# ---------------------------------------------------------------------------
+
+_FORECAST_VINTAGE = datetime(2024, 1, 14, 12, 0, tzinfo=UTC)
+
+
+@pytest.mark.parametrize(
+    "dataset, fixture_name, transformer_cls",
+    [
+        ("generation_forecast", "generation_forecast_gb.xml", GenerationForecastTransformer),
+        ("load_forecast", "load_forecast_gb.xml", LoadForecastTransformer),
+        ("wind_solar_forecast", "wind_solar_forecast_gb.xml", WindSolarForecastTransformer),
+    ],
+    ids=["generation_forecast", "load_forecast", "wind_solar_forecast"],
+)
+def test_forecast_published_at_survives_bronze_to_silver(
+    tmp_data_dir: Path,
+    dataset: str,
+    fixture_name: str,
+    transformer_cls: type,
+) -> None:
+    """Issue 04: the document createdDateTime vintage must reach silver Parquet
+    as `published_at`, equal to the vintage and distinct from the delivery time
+    and ingest clock — the value-level assertion absent from the shape-only
+    e2e suite."""
+    _write_fixture_to_bronze(tmp_data_dir, dataset, fixture_name)
+    transformer = transformer_cls(tmp_data_dir)
+    rows = transformer.run(TARGET_DATE)
+    assert rows > 0
+
+    df = pl.read_parquet(_silver_path(tmp_data_dir, dataset, TARGET_DATE))
+    assert "published_at" in df.columns
+    assert df["published_at"].dtype == pl.Datetime("us", "UTC")
+    assert set(df["published_at"].to_list()) == {_FORECAST_VINTAGE}
+    # Delivery date is 2024-01-15 — distinct from the 2024-01-14 vintage.
+    assert _FORECAST_VINTAGE not in df["timestamp_utc"].to_list()
+
+
+def test_forecast_available_at_is_not_repointed_to_vintage(
+    tmp_data_dir: Path,
+) -> None:
+    """Issue 04 acceptance criterion: the fix must NOT repoint `available_at`
+    to the createdDateTime vintage. `available_at` stays the ingest clock
+    (now() on the live path), preserving the ORDER BY available_at DESC
+    revision contract.
+
+    FAILS if a future change feeds the vintage into available_at.
+    """
+    _write_fixture_to_bronze(tmp_data_dir, "generation_forecast", "generation_forecast_gb.xml")
+    transformer = GenerationForecastTransformer(tmp_data_dir)
+    transformer.run(TARGET_DATE)
+
+    df = pl.read_parquet(_silver_path(tmp_data_dir, "generation_forecast", TARGET_DATE))
+    available = set(df["available_at"].to_list())
+    # available_at must NOT equal the document vintage.
+    assert available != {_FORECAST_VINTAGE}
+    assert all(ts != _FORECAST_VINTAGE for ts in available), (
+        "available_at was repointed to the createdDateTime vintage — forbidden"
+    )
+    # published_at carries the vintage; available_at must differ from it.
+    assert set(df["published_at"].to_list()) == {_FORECAST_VINTAGE}
+    assert available != set(df["published_at"].to_list())

@@ -10,6 +10,7 @@ import polars as pl
 
 from gridflow.connectors.entsoe.parsers import parse_timeseries_xml
 from gridflow.silver.base import BaseSilverTransformer
+from gridflow.silver.entsoe._published_at import with_published_at
 from gridflow.silver.registry import register_transformer
 
 logger = logging.getLogger(__name__)
@@ -77,6 +78,10 @@ class GenerationForecastTransformer(BaseSilverTransformer):
             subset=["timestamp_utc", "area_code", "production_type"], keep="last"
         )
 
+        # Issue 04: carry the document publication vintage (createdDateTime)
+        # as published_at; typed-null when the source lacks it.
+        df = with_published_at(df)
+
         now = datetime.now(UTC)
         df = df.with_columns([
             pl.lit("entsoe").alias("data_provider"),
@@ -85,7 +90,8 @@ class GenerationForecastTransformer(BaseSilverTransformer):
 
         output_cols = [
             "timestamp_utc", "area_code", "production_type",
-            "generation_forecast_mw", "resolution", "data_provider", "ingested_at",
+            "generation_forecast_mw", "resolution", "published_at",
+            "data_provider", "ingested_at",
         ]
         available = [c for c in output_cols if c in df.columns]
         return df.select(available).sort("timestamp_utc", "area_code", "production_type")

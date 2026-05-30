@@ -105,6 +105,13 @@ def _root_document_metadata(root: Any) -> dict[str, str]:
         "document_mrid": "",
         "revision_number": "",
         "document_status": "",
+        # Issue 04 / ENTSOE: the document-level <createdDateTime> is the
+        # vendor's genuine, leak-proof forecast issue time (publication
+        # vintage). Kept as string-or-empty at the parser boundary (matching
+        # the existing metadata style); the silver forecast transformers cast
+        # it to a tz-aware `published_at` datetime. Empty string when absent so
+        # downstream emits a deterministic typed-null.
+        "document_created_at": "",
     }
     for child in root:
         tag = _strip_ns(child.tag)
@@ -113,6 +120,8 @@ def _root_document_metadata(root: Any) -> dict[str, str]:
             metadata["document_mrid"] = text
         elif tag == "revisionNumber":
             metadata["revision_number"] = text
+        elif tag == "createdDateTime":
+            metadata["document_created_at"] = text
         elif tag in {"docStatus", "docStatus.value"}:
             metadata["document_status"] = text or _first_child_text(
                 child, {"value"}
@@ -144,8 +153,11 @@ def parse_timeseries_xml(
         List of dicts with keys: ``timestamp_utc``, ``value``,
         ``in_domain``, ``out_domain``, ``production_type``,
         ``control_area_domain``, ``business_type``, ``flow_direction``,
-        ``resolution``, ``unit_mrid``, ``unit_name``. Fields absent from a
-        given TimeSeries element are returned as empty strings
+        ``resolution`` (the ENTSO-E ISO code, e.g. ``"PT60M"``),
+        ``currency_unit`` (e.g. ``"EUR"``/``"GBP"`` for price documents),
+        ``document_created_at`` (the document ``<createdDateTime>`` publication
+        vintage, string-or-empty), ``unit_mrid``, ``unit_name``. Fields absent
+        from a given TimeSeries element are returned as empty strings
         (backward-compatible).
     """
     try:
@@ -174,6 +186,10 @@ def parse_timeseries_xml(
         area_domain = connecting_domain = acquiring_domain = ""
         market_agreement_type = original_market_product = standard_market_product = ""
         unit_mrid = unit_name = ""
+        # Issue 05 #1: ENTSO-E carries the price currency in
+        # <currency_Unit.name> (e.g. EUR for continental zones, GBP for GB).
+        # Capture it so a GBP price is never silently labelled EUR downstream.
+        currency_unit = ""
         timeseries_mrid = asset_mrid = asset_name = document_status = ""
         # G9 ENTSOE-02: TimeSeries-level Reason.code (e.g. A87 financial
         # documents carry per-series reason classifiers). Extracted below
@@ -205,6 +221,8 @@ def parse_timeseries_xml(
                 acquiring_domain = text
             elif tag == "businessType":
                 business_type = text
+            elif tag in {"currency_Unit.name", "Currency_Unit.name"}:
+                currency_unit = text
             elif tag in {"docStatus", "docStatus.value"}:
                 document_status = text or _first_child_text(child, {"value"})
             elif tag == "flowDirection.direction":
@@ -364,7 +382,13 @@ def parse_timeseries_xml(
                     "market_agreement_type": market_agreement_type,
                     "original_market_product": original_market_product,
                     "standard_market_product": standard_market_product,
-                    "resolution": str(resolution),
+                    # Issue 05 #1: carry the parsed currency through to silver.
+                    "currency_unit": currency_unit,
+                    # Issue 05 #4: emit the ENTSO-E ISO resolution code
+                    # (PT60M / PT15M / P1M / P1Y) verbatim, not str(timedelta)
+                    # ("1:00:00"). Empty string when the Period had no
+                    # <resolution> element (honest absence, not a fake code).
+                    "resolution": resolution_code,
                     "unit_mrid": unit_mrid,
                     "unit_name": unit_name,
                     "timeseries_mrid": timeseries_mrid,

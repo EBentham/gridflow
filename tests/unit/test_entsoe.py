@@ -297,10 +297,156 @@ class TestParseTimeseriesXml:
         records = parse_timeseries_xml(b"not xml at all <<<", value_tag="price.amount")
         assert records == []
 
+    # -- Issue 04: forecast publication vintage (createdDateTime) -------------
+
+    def test_created_date_time_parsed_from_document(self):
+        """Issue 04: the document-level <createdDateTime> (the leak-proof
+        forecast issue time / vintage) must survive the parse, distinct from
+        each point's delivery timestamp_utc.
+
+        FAILS on pre-fix code: the parser allow-listed only
+        mRID/revisionNumber/docStatus and dropped createdDateTime.
+        """
+        xml = self._load("generation_forecast_gb.xml")
+        records = parse_timeseries_xml(xml, value_tag="quantity")
+        assert len(records) > 0
+        for record in records:
+            assert "document_created_at" in record, (
+                "parser dropped createdDateTime; expected key 'document_created_at'"
+            )
+            # Vintage is the document createdDateTime (2024-01-14T12:00:00Z),
+            # one day BEFORE the delivery date (2024-01-15).
+            assert record["document_created_at"] == "2024-01-14T12:00:00Z" or (
+                isinstance(record["document_created_at"], datetime)
+                and record["document_created_at"]
+                == datetime(2024, 1, 14, 12, 0, tzinfo=UTC)
+            ), f"unexpected vintage: {record['document_created_at']!r}"
+            assert record["timestamp_utc"] != record["document_created_at"]
+
+    def test_created_date_time_empty_when_absent(self):
+        """When the document carries no <createdDateTime>, the parser must
+        still emit the key as an empty string (string-or-empty boundary
+        convention), never raise or omit it."""
+        xml = b"""<?xml version="1.0" encoding="UTF-8"?>
+<GL_MarketDocument xmlns="urn:iec62325.351:tc57wg16:451-6:generationloaddocument:3:0">
+  <mRID>no-vintage</mRID>
+  <revisionNumber>1</revisionNumber>
+  <TimeSeries>
+    <mRID>1</mRID>
+    <in_Domain.mRID>10YGB----------A</in_Domain.mRID>
+    <MktPSRType><psrType>B01</psrType></MktPSRType>
+    <Period>
+      <timeInterval><start>2024-01-15T00:00Z</start><end>2024-01-16T00:00Z</end></timeInterval>
+      <resolution>PT60M</resolution>
+      <Point><position>1</position><quantity>1100</quantity></Point>
+    </Period>
+  </TimeSeries>
+</GL_MarketDocument>"""
+        records = parse_timeseries_xml(xml, value_tag="quantity")
+        assert len(records) == 1
+        assert records[0]["document_created_at"] == ""
+
+    # -- Issue 05 #1: currency_Unit must survive parse -----------------------
+
+    def test_currency_unit_parsed_from_day_ahead_prices(self):
+        """Issue 05 #1: the parser must extract <currency_Unit.name> so a
+        GBP-denominated price is not silently labelled EUR downstream.
+
+        FAILS on pre-fix code: the per-Point record dict had no currency key.
+        """
+        xml = self._load("day_ahead_prices_gb.xml")
+        records = parse_timeseries_xml(xml, value_tag="price.amount")
+        assert len(records) > 0
+        for record in records:
+            assert "currency_unit" in record, (
+                "parser dropped currency_Unit; expected key 'currency_unit'"
+            )
+            assert record["currency_unit"] == "EUR"
+
+    def test_currency_unit_carries_gbp_when_source_is_gbp(self):
+        """A GBP source must carry GBP through the parser — proving the
+        currency is read from the document, not hardcoded."""
+        xml = b"""<?xml version="1.0" encoding="UTF-8"?>
+<Publication_MarketDocument xmlns="urn:iec62325.351:tc57wg16:451-3:publicationdocument:7:3">
+  <mRID>gbp-doc</mRID>
+  <createdDateTime>2024-01-14T13:00:00Z</createdDateTime>
+  <TimeSeries>
+    <mRID>1</mRID>
+    <in_Domain.mRID>10YGB----------A</in_Domain.mRID>
+    <currency_Unit.name>GBP</currency_Unit.name>
+    <price_Measure_Unit.name>MWH</price_Measure_Unit.name>
+    <Period>
+      <timeInterval><start>2024-01-15T00:00Z</start><end>2024-01-16T00:00Z</end></timeInterval>
+      <resolution>PT60M</resolution>
+      <Point><position>1</position><price.amount>85.50</price.amount></Point>
+    </Period>
+  </TimeSeries>
+</Publication_MarketDocument>"""
+        records = parse_timeseries_xml(xml, value_tag="price.amount")
+        assert len(records) == 1
+        assert records[0]["currency_unit"] == "GBP"
+
+    # -- Issue 05 #4: resolution emitted as ENTSO-E ISO code -----------------
+
+    def test_resolution_is_iso_code_not_timedelta_string(self):
+        """Issue 05 #4: silver `resolution` must be the ENTSO-E ISO code
+        (PT60M), not str(timedelta) ('1:00:00').
+
+        FAILS on pre-fix code: parser emitted str(resolution) == '1:00:00'.
+        """
+        xml = self._load("day_ahead_prices_gb.xml")
+        records = parse_timeseries_xml(xml, value_tag="price.amount")
+        assert len(records) > 0
+        for record in records:
+            assert record["resolution"] == "PT60M", (
+                f"expected ISO code 'PT60M', got {record['resolution']!r}"
+            )
+
+    def test_resolution_iso_code_for_monthly(self):
+        """P1M must be emitted verbatim, not collapsed to '30 days'."""
+        xml = b"""<?xml version="1.0" encoding="UTF-8"?>
+<GL_MarketDocument xmlns="urn:iec62325.351:tc57wg16:451-6:generationloaddocument:3:0">
+  <mRID>monthly</mRID>
+  <TimeSeries>
+    <mRID>1</mRID>
+    <outBiddingZone_Domain.mRID>10YGB----------A</outBiddingZone_Domain.mRID>
+    <Period>
+      <timeInterval><start>2024-01-01T00:00Z</start><end>2024-03-01T00:00Z</end></timeInterval>
+      <resolution>P1M</resolution>
+      <Point><position>1</position><quantity>30200</quantity></Point>
+      <Point><position>2</position><quantity>29800</quantity></Point>
+    </Period>
+  </TimeSeries>
+</GL_MarketDocument>"""
+        records = parse_timeseries_xml(xml, value_tag="quantity")
+        assert len(records) == 2
+        for record in records:
+            assert record["resolution"] == "P1M", (
+                f"expected ISO code 'P1M', got {record['resolution']!r}"
+            )
+
 
 # ---------------------------------------------------------------------------
 # Helper to build transformer instances bypassing __init__
 # ---------------------------------------------------------------------------
+
+
+_GBP_DAY_AHEAD_XML = b"""<?xml version="1.0" encoding="UTF-8"?>
+<Publication_MarketDocument xmlns="urn:iec62325.351:tc57wg16:451-3:publicationdocument:7:3">
+  <mRID>gbp-doc</mRID>
+  <createdDateTime>2024-01-14T13:00:00Z</createdDateTime>
+  <TimeSeries>
+    <mRID>1</mRID>
+    <in_Domain.mRID>10YGB----------A</in_Domain.mRID>
+    <currency_Unit.name>GBP</currency_Unit.name>
+    <price_Measure_Unit.name>MWH</price_Measure_Unit.name>
+    <Period>
+      <timeInterval><start>2024-01-15T00:00Z</start><end>2024-01-16T00:00Z</end></timeInterval>
+      <resolution>PT60M</resolution>
+      <Point><position>1</position><price.amount>85.50</price.amount></Point>
+    </Period>
+  </TimeSeries>
+</Publication_MarketDocument>"""
 
 
 def _make_entsoe_transformer(cls, dataset: str | None = None):
@@ -316,6 +462,130 @@ def _make_df_from_xml(filename: str, value_tag: str) -> pl.DataFrame:
     xml = (FIXTURES / filename).read_bytes()
     records = parse_timeseries_xml(xml, value_tag=value_tag)
     return pl.DataFrame(records)
+
+
+# ---------------------------------------------------------------------------
+# Value-correctness: forecast publication vintage (published_at) and currency
+# Issues 04 (vintage) and 05 #1/#4 (currency + resolution ISO code).
+# These are VALUE-level assertions, distinct from the shape tests elsewhere.
+# ---------------------------------------------------------------------------
+
+_VINTAGE = datetime(2024, 1, 14, 12, 0, tzinfo=UTC)  # createdDateTime in fixtures
+_DELIVERY = datetime(2024, 1, 15, 0, 0, tzinfo=UTC)  # first point timestamp_utc
+
+
+class TestForecastPublishedAtVintage:
+    """Issue 04: ENTSO-E forecasts must emit `published_at` == the document
+    createdDateTime vintage, typed `pl.Datetime('us','UTC')`, distinct from
+    delivery time and the ingest clock."""
+
+    @pytest.mark.parametrize(
+        "transformer_cls, fixture",
+        [
+            (GenerationForecastTransformer, "generation_forecast_gb.xml"),
+            (LoadForecastTransformer, "load_forecast_gb.xml"),
+            (WindSolarForecastTransformer, "wind_solar_forecast_gb.xml"),
+            (LoadForecastWeeklyTransformer, "load_forecast_weekly_gb.xml"),
+        ],
+        ids=["generation_forecast", "load_forecast", "wind_solar", "load_weekly"],
+    )
+    def test_published_at_equals_document_vintage(self, transformer_cls, fixture):
+        t = _make_entsoe_transformer(transformer_cls)
+        raw = _make_df_from_xml(fixture, "quantity")
+        result = t.transform(raw)
+        assert not result.is_empty()
+        assert "published_at" in result.columns, (
+            f"{transformer_cls.__name__} dropped published_at (vintage)"
+        )
+        assert result["published_at"].dtype == pl.Datetime("us", "UTC")
+        # Value: the publication vintage, NOT delivery, NOT now().
+        assert result["published_at"].null_count() == 0
+        assert set(result["published_at"].to_list()) == {_VINTAGE}, (
+            f"{transformer_cls.__name__}: published_at != document vintage"
+        )
+        # Distinct from delivery time (timestamp_utc).
+        assert _DELIVERY in result["timestamp_utc"].to_list()
+        assert _VINTAGE not in result["timestamp_utc"].to_list()
+        # Distinct from the ingest clock.
+        assert result["published_at"].to_list() != result["ingested_at"].to_list()
+
+    def test_published_at_tz_aware_not_naive(self):
+        t = _make_entsoe_transformer(GenerationForecastTransformer)
+        raw = _make_df_from_xml("generation_forecast_gb.xml", "quantity")
+        result = t.transform(raw)
+        # A naive datetime column would have dtype Datetime("us", None).
+        assert result["published_at"].dtype == pl.Datetime("us", "UTC")
+
+    def test_published_at_typed_null_when_vintage_absent(self):
+        """Mirror the Elexon INDO typed-null contract: when the source document
+        carries no createdDateTime, published_at must be a typed-null
+        pl.Datetime('us','UTC') column — present, not dropped, not object-null."""
+        no_vintage_xml = b"""<?xml version="1.0" encoding="UTF-8"?>
+<GL_MarketDocument xmlns="urn:iec62325.351:tc57wg16:451-6:generationloaddocument:3:0">
+  <mRID>no-vintage</mRID>
+  <TimeSeries>
+    <mRID>1</mRID>
+    <in_Domain.mRID>10YGB----------A</in_Domain.mRID>
+    <MktPSRType><psrType>B01</psrType></MktPSRType>
+    <Period>
+      <timeInterval><start>2024-01-15T00:00Z</start><end>2024-01-16T00:00Z</end></timeInterval>
+      <resolution>PT60M</resolution>
+      <Point><position>1</position><quantity>1100</quantity></Point>
+    </Period>
+  </TimeSeries>
+</GL_MarketDocument>"""
+        records = parse_timeseries_xml(no_vintage_xml, value_tag="quantity")
+        raw = pl.DataFrame(records)
+        t = _make_entsoe_transformer(GenerationForecastTransformer)
+        result = t.transform(raw)
+        assert not result.is_empty()
+        assert "published_at" in result.columns, (
+            "published_at must be present (typed-null) even without createdDateTime"
+        )
+        assert result["published_at"].dtype == pl.Datetime("us", "UTC")
+        assert result["published_at"].null_count() == result.height
+
+
+class TestDayAheadPriceCurrency:
+    """Issue 05 #1: currency_Unit must reach silver so a GBP price is not
+    silently labelled EUR."""
+
+    def test_currency_column_emitted_with_eur(self):
+        t = _make_entsoe_transformer(DayAheadPricesTransformer)
+        raw = _make_df_from_xml("day_ahead_prices_gb.xml", "price.amount")
+        result = t.transform(raw)
+        assert "currency" in result.columns, (
+            "day_ahead_prices dropped currency; a GBP price would be mislabelled EUR"
+        )
+        assert set(result["currency"].to_list()) == {"EUR"}
+
+    def test_currency_carries_gbp_not_hardcoded_eur(self):
+        """The bug: price_eur_mwh is hardcoded regardless of source currency.
+        Feed a GBP document and prove the currency column says GBP."""
+        records = parse_timeseries_xml(_GBP_DAY_AHEAD_XML, value_tag="price.amount")
+        raw = pl.DataFrame(records)
+        t = _make_entsoe_transformer(DayAheadPricesTransformer)
+        result = t.transform(raw)
+        assert "currency" in result.columns
+        assert set(result["currency"].to_list()) == {"GBP"}, (
+            "GBP price silently labelled non-GBP — currency not carried to silver"
+        )
+
+
+class TestForecastResolutionIsoCode:
+    """Issue 05 #4: silver `resolution` is the ENTSO-E ISO code, not str(timedelta)."""
+
+    def test_day_ahead_resolution_is_pt60m(self):
+        t = _make_entsoe_transformer(DayAheadPricesTransformer)
+        raw = _make_df_from_xml("day_ahead_prices_gb.xml", "price.amount")
+        result = t.transform(raw)
+        assert set(result["resolution"].to_list()) == {"PT60M"}
+
+    def test_generation_forecast_resolution_is_pt60m(self):
+        t = _make_entsoe_transformer(GenerationForecastTransformer)
+        raw = _make_df_from_xml("generation_forecast_gb.xml", "quantity")
+        result = t.transform(raw)
+        assert set(result["resolution"].to_list()) == {"PT60M"}
 
 
 # ---------------------------------------------------------------------------

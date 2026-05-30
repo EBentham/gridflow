@@ -61,6 +61,22 @@ class DayAheadPricesTransformer(BaseSilverTransformer):
 
         df = df.with_columns(pl.col("price_eur_mwh").cast(pl.Float64))
 
+        # Issue 05 #1: carry the explicit source currency (parsed from
+        # <currency_Unit.name>) so a GBP price is never silently trusted as
+        # EUR on the strength of the `price_eur_mwh` column name alone. The
+        # value column name is retained for backward compatibility; `currency`
+        # is the authoritative denomination. Empty -> "EUR" fallback only when
+        # the source omitted currency_Unit (continental default).
+        if "currency_unit" in df.columns:
+            df = df.with_columns(
+                pl.when(pl.col("currency_unit").cast(pl.Utf8).str.strip_chars() != "")
+                .then(pl.col("currency_unit").cast(pl.Utf8).str.strip_chars())
+                .otherwise(pl.lit("EUR"))
+                .alias("currency")
+            )
+        else:
+            df = df.with_columns(pl.lit("EUR").alias("currency"))
+
         df = df.unique(subset=["timestamp_utc", "area_code"], keep="last")
 
         now = datetime.now(UTC)
@@ -70,7 +86,7 @@ class DayAheadPricesTransformer(BaseSilverTransformer):
         ])
 
         output_cols = [
-            "timestamp_utc", "area_code", "price_eur_mwh",
+            "timestamp_utc", "area_code", "price_eur_mwh", "currency",
             "resolution", "data_provider", "ingested_at",
         ]
         available = [c for c in output_cols if c in df.columns]
