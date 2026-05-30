@@ -96,6 +96,7 @@ def init_catalogue(db_path: Path, data_dir: Path) -> None:
 
     con.execute("""
         CREATE TABLE IF NOT EXISTS quality_reports (
+            run_id          VARCHAR,
             id              INTEGER,
             run_date        TIMESTAMP WITH TIME ZONE,
             check_name      VARCHAR,

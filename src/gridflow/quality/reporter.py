@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -48,9 +49,14 @@ class QualityReporter:
             return 0
 
         now = datetime.now(timezone.utc)
+        # One id per write_report() call; (run_id, id) is unique across runs.
+        # `id` alone is only a within-run ordinal — the bare enumerate index
+        # restarted at 0 every run and collided across the appended table.
+        run_id = str(uuid.uuid4())
         rows = []
         for i, r in enumerate(self._results):
             rows.append({
+                "run_id": run_id,
                 "id": i,
                 "run_date": now,
                 "check_name": r.check_name,
@@ -68,6 +74,7 @@ class QualityReporter:
             con = duckdb.connect(str(self.duckdb_path))
             con.execute("""
                 CREATE TABLE IF NOT EXISTS quality_reports (
+                    run_id          VARCHAR,
                     id              INTEGER,
                     run_date        TIMESTAMP WITH TIME ZONE,
                     check_name      VARCHAR,
@@ -78,7 +85,12 @@ class QualityReporter:
                     detail          VARCHAR
                 )
             """)
-            con.execute("INSERT INTO quality_reports SELECT * FROM df")
+            con.execute(
+                "INSERT INTO quality_reports "
+                "(run_id, id, run_date, check_name, dataset, source, passed, metric, detail) "
+                "SELECT run_id, id, run_date, check_name, dataset, source, passed, metric, detail "
+                "FROM df"
+            )
             con.close()
         except Exception as e:
             logger.error(f"Failed to write quality report to DuckDB: {e}")

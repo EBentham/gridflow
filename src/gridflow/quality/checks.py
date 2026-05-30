@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import timedelta
 
 import polars as pl
 
@@ -47,14 +48,19 @@ def check_null_rate(
             detail=f"{column}: empty DataFrame",
         )
 
-    null_rate = df[column].null_count() / len(df)
+    missing = df[column].null_count()
+    # null_count() does NOT count float NaN. An upstream API emitting an
+    # all-NaN numeric column would otherwise be reported as 0% null and pass.
+    if df[column].dtype.is_float():
+        missing += int(df[column].is_nan().sum())
+    null_rate = missing / len(df)
     return QualityResult(
         check_name="null_rate",
         dataset=dataset,
         source=source,
         passed=null_rate <= max_rate,
         metric=null_rate,
-        detail=f"{column}: {null_rate:.2%} nulls (threshold: {max_rate:.2%})",
+        detail=f"{column}: {null_rate:.2%} null/NaN (threshold: {max_rate:.2%})",
     )
 
 
@@ -65,7 +71,19 @@ def check_time_series_gaps(
     source: str = "",
     dataset: str = "",
 ) -> QualityResult:
-    """Detect gaps in time series by expected frequency."""
+    """Detect cadence anomalies in a time series against an expected frequency.
+
+    Flags any interval that deviates from ``expected_freq_minutes`` by more than
+    the tolerance in *either* direction:
+
+    - intervals larger than expected (a true gap / missing period), and
+    - intervals smaller than expected, including zero intervals from duplicate
+      timestamps and a switch to a too-frequent cadence.
+
+    The frame is sorted first, so negative intervals cannot occur and are not
+    checked. (Duplicate-key detection beyond the time column is the job of
+    :func:`check_duplicates`.)
+    """
     if time_col not in df.columns or len(df) < 2:
         return QualityResult(
             check_name="time_series_gaps",
@@ -79,18 +97,25 @@ def check_time_series_gaps(
     sorted_df = df.sort(time_col)
     diffs = sorted_df[time_col].diff().drop_nulls()
 
-    expected = pl.duration(minutes=expected_freq_minutes)
-    # Allow a small tolerance (1 minute)
-    tolerance = pl.duration(minutes=1)
-    gaps = diffs.filter(diffs > expected + tolerance)
+    # Use stdlib timedelta values so the comparison stays in Series space.
+    # pl.duration(...) returns an Expr, which Series.filter cannot consume
+    # (raises TypeError under Polars 1.40.1).
+    expected = timedelta(minutes=expected_freq_minutes)
+    tolerance = timedelta(minutes=1)
+    anomalies = diffs.filter(
+        (diffs > expected + tolerance) | (diffs < expected - tolerance)
+    )
 
     return QualityResult(
         check_name="time_series_gaps",
         dataset=dataset,
         source=source,
-        passed=len(gaps) == 0,
-        metric=float(len(gaps)),
-        detail=f"Found {len(gaps)} gaps exceeding {expected_freq_minutes}min",
+        passed=len(anomalies) == 0,
+        metric=float(len(anomalies)),
+        detail=(
+            f"Found {len(anomalies)} intervals deviating from "
+            f"{expected_freq_minutes}min (gaps or too-frequent/duplicate rows)"
+        ),
     )
 
 
@@ -112,8 +137,13 @@ def check_range(
             detail=f"Column '{column}' not found",
         )
 
+    # Genuine nulls compare as null (filtered out by < / >), so they must be
+    # caught explicitly — otherwise a column of nulls passes the range check.
+    # Float NaN is caught by the comparison (NaN > max_val is True in Polars).
     out_of_range = df.filter(
-        (pl.col(column) < min_val) | (pl.col(column) > max_val)
+        (pl.col(column) < min_val)
+        | (pl.col(column) > max_val)
+        | pl.col(column).is_null()
     )
     return QualityResult(
         check_name="range_check",
@@ -121,7 +151,7 @@ def check_range(
         source=source,
         passed=len(out_of_range) == 0,
         metric=float(len(out_of_range)),
-        detail=f"{len(out_of_range)} values outside [{min_val}, {max_val}]",
+        detail=f"{len(out_of_range)} values outside [{min_val}, {max_val}] or null",
     )
 
 
