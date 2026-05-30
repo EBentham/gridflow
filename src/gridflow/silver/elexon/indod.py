@@ -11,6 +11,7 @@ import polars as pl
 
 from gridflow.silver.base import BaseSilverTransformer
 from gridflow.silver.registry import register_transformer
+from gridflow.utils.time import settlement_period_to_utc
 
 logger = logging.getLogger(__name__)
 
@@ -71,10 +72,15 @@ class INDODTransformer(BaseSilverTransformer):
             pl.col("initial_demand_outturn_mw").cast(pl.Float64),
         ])
 
-        # Daily dataset — timestamp is midnight UTC on settlement date
+        # Daily dataset — timestamp_utc is the settlement-day START (SP1, i.e.
+        # 00:00 UK local), so the daily roll-up aligns with its own half-hourly
+        # INDO series. A plain UTC-midnight cast would sit 1h off during BST.
         df = df.with_columns(
             pl.col("settlement_date")
-            .cast(pl.Datetime("us", "UTC"))
+            .map_elements(
+                lambda d: settlement_period_to_utc(d, 1),
+                return_dtype=pl.Datetime("us", "UTC"),
+            )
             .alias("timestamp_utc")
         )
 

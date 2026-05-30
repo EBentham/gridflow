@@ -25,12 +25,16 @@ class REMITTransformer(BaseSilverTransformer):
     See ``.planning/phases/F7-stack-model-data-infrastructure/F7-PLAN.md``
     for the broader F7 phase summary.
 
-    Note on timestamps: ``available_at`` is the authoritative bitemporal
-    publication timestamp added by ``BaseSilverTransformer``; ``ingested_at``
-    is retained for backward compatibility as the local processing
-    timestamp. Under ``--reingest`` the two diverge — ``available_at``
-    is reconstructed from bronze sidecars while ``ingested_at`` stamps
-    the current run.
+    Note on timestamps: ``available_at`` is the bitemporal processing/write
+    timestamp added by ``BaseSilverTransformer`` (``datetime.now`` on a live
+    run, or the bronze ``written_at`` sidecar value under ``--reingest``). It
+    is the leakage-barrier key, not a publication timestamp. Publication time
+    is carried separately by ``published_at`` (from ``publishTime``) and the
+    semantic ``event_time``; reason about what a model could see at delivery
+    on those columns, not on ``available_at``. ``ingested_at`` is retained for
+    backward compatibility as the local processing timestamp. Under
+    ``--reingest`` the two diverge — ``available_at`` is reconstructed from
+    bronze sidecars while ``ingested_at`` stamps the current run.
     """
 
     source = "elexon"

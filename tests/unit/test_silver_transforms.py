@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 import json
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from pathlib import Path
 
 import polars as pl
 import pytest
+
+from gridflow.utils.time import settlement_period_to_utc
 
 from gridflow.silver.elexon.agpt import AGPTTransformer
 from gridflow.silver.elexon.agws import AGWSTransformer
@@ -25,6 +27,7 @@ from gridflow.silver.elexon.imbalngc import ImbalNGCTransformer
 from gridflow.silver.elexon.inddem import INDDEMTransformer
 from gridflow.silver.elexon.indgen import INDGENTransformer
 from gridflow.silver.elexon.indo import INDOTransformer
+from gridflow.silver.elexon.indod import INDODTransformer
 from gridflow.silver.elexon.itsdo import ITSDOTransformer
 from gridflow.silver.elexon.lolpdrm import LOLPDRMTransformer
 from gridflow.silver.elexon.melngc import MelNGCTransformer
@@ -1192,3 +1195,81 @@ def test_published_at_typed_null_when_bronze_lacks_publish_field(
         f"{transformer_cls.__name__}: published_at dtype is "
         f"{result['published_at'].dtype}, expected pl.Datetime('us', 'UTC')"
     )
+
+
+# ---------------------------------------------------------------------------
+# INDOD (daily) timestamp_utc convention
+# ---------------------------------------------------------------------------
+
+class TestINDODTimestampConvention:
+    """INDOD is a *daily* dataset. Its `timestamp_utc` must mark the
+    settlement-day START (SP1 = 00:00 UK local), so it aligns with its own
+    half-hourly INDO series rather than sitting 1h off during BST.
+    """
+
+    def setup_method(self):
+        self.t = _make_transformer(INDODTransformer)
+
+    def _transform(self, settlement_date: str):
+        raw = pl.DataFrame(
+            [{"settlementDate": settlement_date, "demand": 30000.0}]
+        )
+        return self.t.transform(raw)
+
+    def test_daily_timestamp_is_settlement_day_start_winter(self):
+        """Winter (GMT) day start is 00:00 UTC -- unchanged from before."""
+        result = self._transform("2024-01-15")
+        ts = result["timestamp_utc"][0]
+        assert ts == datetime(2024, 1, 15, 0, 0, tzinfo=UTC)
+
+    def test_daily_timestamp_is_settlement_day_start_bst(self):
+        """BST day start is 23:00 UTC the previous calendar day.
+
+        FAILS under the old UTC-midnight cast, which stamped 2024-07-15T00:00Z
+        (1h after the real local-midnight start) and so disagreed with the
+        half-hourly INDO series for the same date.
+        """
+        result = self._transform("2024-07-15")
+        ts = result["timestamp_utc"][0]
+        assert ts == datetime(2024, 7, 14, 23, 0, tzinfo=UTC)
+
+    def test_daily_timestamp_matches_halfhourly_sp1(self):
+        """The daily roll-up's timestamp equals INDO's SP1 for the same date."""
+        for d in ["2024-01-15", "2024-07-15", "2024-10-27", "2024-03-31"]:
+            daily_ts = self._transform(d)["timestamp_utc"][0]
+            sp1_ts = settlement_period_to_utc(date.fromisoformat(d), 1)
+            assert daily_ts == sp1_ts, f"INDOD daily vs INDO SP1 mismatch on {d}"
+
+
+# ---------------------------------------------------------------------------
+# Gold day_of_week convention
+# ---------------------------------------------------------------------------
+
+class TestDayOfWeekConvention:
+    """Pin the gold `day_of_week` index so the cross-repo seam is explicit.
+
+    Gold uses Polars `dt.weekday()` (ISO: 1=Mon..7=Sun). The gridflow_models
+    calendar feature uses Python `weekday()` (0=Mon..6=Sun). They differ by one
+    and the mismatch must be reconciled at the seam, not silently. This test
+    fails if gold's convention drifts.
+    """
+
+    def test_day_of_week_convention_iso(self):
+        # 2024-01-15 is a Monday; 2024-01-21 is a Sunday.
+        df = pl.DataFrame(
+            {
+                "timestamp_utc": [
+                    datetime(2024, 1, 15, 12, 0, tzinfo=UTC),  # Monday
+                    datetime(2024, 1, 21, 12, 0, tzinfo=UTC),  # Sunday
+                ]
+            }
+        )
+        result = df.with_columns(
+            pl.col("timestamp_utc").dt.weekday().alias("day_of_week")
+        )
+        dow = result["day_of_week"].to_list()
+        assert dow == [1, 7], (
+            "gold day_of_week must be ISO (Mon=1..Sun=7); the gridflow_models "
+            "calendar consumer is Python weekday() (Mon=0..Sun=6) -- reconcile "
+            "at the seam"
+        )

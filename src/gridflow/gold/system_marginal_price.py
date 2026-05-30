@@ -48,7 +48,12 @@ class SystemMarginalPriceBuilder(BaseGoldBuilder):
             pl.col("net_imbalance_volume").abs().alias("abs_imbalance"),
         ])
 
-        # Add time-based features if timestamp_utc exists
+        # Add time-based features if timestamp_utc exists.
+        # `day_of_week` convention: Polars `dt.weekday()` is ISO, 1=Mon..7=Sun.
+        # NOTE: the gridflow_models calendar feature uses Python `weekday()`
+        # (0=Mon..6=Sun); these two indices differ by one and must be
+        # reconciled at the cross-repo seam (tracked against the calendar-
+        # feature remediation). Pinned here by test_day_of_week_convention_iso.
         if "timestamp_utc" in df.columns:
             df = df.with_columns([
                 pl.col("timestamp_utc").dt.hour().alias("hour_of_day"),

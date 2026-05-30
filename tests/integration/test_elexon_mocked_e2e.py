@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import re
 from datetime import UTC, date, datetime
@@ -167,7 +168,14 @@ def _assert_bronze_metadata(
     assert metadata["api_version"] == "v1"
     assert metadata["http_status"] == 200
     assert metadata["content_type"] == "application/json"
-    assert metadata["body_sha256"]
+    # Recompute the integrity hash from the bytes on disk — the only integrity
+    # field for the irreproducible bronze layer must match the stored body, not
+    # merely be non-empty.
+    assert (
+        metadata["body_sha256"]
+        == hashlib.sha256(bronze_path.read_bytes()).hexdigest()
+    )
+    assert metadata["written_at"]
     assert metadata["body_size_bytes"] == bronze_path.stat().st_size
     assert metadata["page"] == page
     assert metadata["total_pages"] == total_pages

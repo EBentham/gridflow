@@ -11,10 +11,15 @@ import json
 from datetime import UTC, date, datetime
 from pathlib import Path
 
+import httpx
 import polars as pl
 import pytest
+import respx
 
+from gridflow.config.settings import DatasetConfig, SourceConfig
+from gridflow.connectors.openmeteo.client import OpenMeteoConnector
 from gridflow.connectors.openmeteo.endpoints import (
+    ARCHIVE_BASE_URL,
     DATASET_SPECS,
     DEMAND_HOURLY_VARS,
     DEMAND_LOCATIONS,
@@ -147,6 +152,61 @@ class TestVariableLists:
 # ---------------------------------------------------------------------------
 # DATASET_SPECS contract
 # ---------------------------------------------------------------------------
+
+class TestOpenMeteoLocationRetry:
+    """_fetch_location must retry a transient error, matching every other
+    connector's @RETRY_POLICY-decorated request path (issue 13).
+
+    Pre-fix: _fetch_location issued its GET with no retry, so a single 429 /
+    archive-host timeout silently dropped a capacity-weighted location from the
+    run. Post-fix: a 429 followed by a 200 recovers and the location's
+    RawResponse is present.
+    """
+
+    @pytest.fixture(autouse=True)
+    def _instant_retry(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        # Keep the exponential-backoff retry fast in the test.
+        import tenacity
+
+        monkeypatch.setattr(
+            "gridflow.utils.retry.RETRY_POLICY.wait",
+            tenacity.wait_none(),
+            raising=False,
+        )
+
+    def _config(self) -> SourceConfig:
+        return SourceConfig(
+            base_url="",
+            rate_limit_per_second=100,
+            timeout=5,
+            datasets={"historical_demand": DatasetConfig(endpoint="/archive")},
+        )
+
+    @respx.mock
+    @pytest.mark.asyncio
+    async def test_fetch_location_retries_429_then_succeeds(self) -> None:
+        body = json.dumps({"hourly": {"time": [], "temperature_2m": []}})
+        route = respx.get(url__startswith=ARCHIVE_BASE_URL).mock(
+            side_effect=[
+                httpx.Response(429, text="rate limited"),
+                httpx.Response(200, text=body),
+            ]
+        )
+
+        location = DATASET_SPECS["historical_demand"].locations[0]
+        async with OpenMeteoConnector(self._config()) as connector:
+            resp = await connector._fetch_location(
+                "historical_demand",
+                location,
+                datetime(2024, 1, 15, tzinfo=UTC),
+                datetime(2024, 1, 15, tzinfo=UTC),
+            )
+
+        assert route.call_count == 2, "expected one retry after the 429"
+        assert resp.http_status == 200
+        assert resp.dataset == f"historical_demand__{location.name}"
+        assert resp.source == "open_meteo"
+
 
 class TestDatasetSpecs:
     def test_six_dataset_keys(self):
