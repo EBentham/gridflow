@@ -270,7 +270,15 @@ class BaseSilverTransformer(ABC):
             logger.warning("Failed to parse bronze sidecar %s: %s", meta_path, exc)
             return None
 
-        for key in ("available_at", "response_received_at", "fetched_at", "written_at"):
+        # Preference order, most-to-least authoritative as the historical
+        # availability anchor. `written_at` (durable bronze write completion)
+        # is preferred over `fetched_at` (stamped at RawResponse construction,
+        # before any paging/retries) so reingest reconstructs availability from
+        # the true write time rather than a pre-write proxy. The direction is
+        # conservative (written_at >= fetched_at), so this never makes a row
+        # look available earlier than it truly was. `response_received_at` is
+        # an as-yet-unwritten reserved key kept for forward compatibility.
+        for key in ("available_at", "written_at", "response_received_at", "fetched_at"):
             raw_value = meta.get(key)
             if raw_value:
                 timestamp = BaseSilverTransformer._parse_timestamp(raw_value)

@@ -12,6 +12,7 @@ from gridflow.silver.base import BaseSilverTransformer
 from gridflow.silver.elexon.demand_forecast import DemandForecastTransformer
 from gridflow.silver.elexon.fuelhh import FuelHHTransformer
 from gridflow.silver.elexon.indo import INDOTransformer
+from gridflow.silver.elexon.remit import REMITTransformer
 from gridflow.silver.elexon.wind_forecast import WindForecastTransformer
 from gridflow.silver.openmeteo.historical import HistoricalDemandWeather
 from gridflow.storage.parquet import read_parquet
@@ -276,6 +277,165 @@ def test_openmeteo_reingest_uses_location_sidecar_timestamp(tmp_data_dir: Path) 
     df = _read_single_silver(tmp_data_dir, "open_meteo", "historical_demand")
 
     assert set(df["available_at"].to_list()) == {sidecar_time}
+
+
+def test_reingest_prefers_written_at_over_fetched_at(tmp_data_dir: Path) -> None:
+    """A sidecar carrying both fetched_at (earlier) and written_at (later)
+    must anchor reingest availability to written_at.
+
+    Pre-fix: the key-preference list put written_at LAST, so the earlier
+    fetched_at won and availability was reconstructed from a pre-write proxy.
+    """
+    fetched_at = datetime(2024, 1, 16, 9, 30, 0, tzinfo=UTC)
+    written_at = datetime(2024, 1, 16, 9, 45, 0, tzinfo=UTC)  # later
+    payload = json.loads((FIXTURES / "elexon" / "fuelhh_response.json").read_text())
+    bronze_dir = _date_dir(tmp_data_dir, "elexon", "fuelhh", TARGET_DATE)
+    bronze_dir.mkdir(parents=True, exist_ok=True)
+    (bronze_dir / "raw_test.json").write_text(json.dumps(payload))
+    (bronze_dir / "raw_test.meta.json").write_text(
+        json.dumps(
+            {
+                "source": "elexon",
+                "dataset": "fuelhh",
+                "fetched_at": fetched_at.isoformat(),
+                "written_at": written_at.isoformat(),
+                "data_date": TARGET_DATE.isoformat(),
+            }
+        )
+    )
+
+    FuelHHTransformer(tmp_data_dir).run(TARGET_DATE, run_id=RUN_ID, reingest=True)
+    df = _read_single_silver(tmp_data_dir, "elexon", "fuelhh")
+
+    assert set(df["available_at"].to_list()) == {written_at}
+
+
+def test_causality_assertion_has_teeth(tmp_data_dir: Path) -> None:
+    """Demonstrate the event_time <= available_at invariant CAN fail.
+
+    The existing causality assertions run with available_at = now() against
+    2024 fixtures, so the inequality is structurally always true and guards
+    nothing. Here we force availability EARLIER than the event via a sidecar,
+    and assert the invariant is violated — proving the assertion is not vacuous.
+    """
+    # publishTime (event_time) is 2024-01-15T...; pin availability BEFORE it.
+    early_available = datetime(2024, 1, 14, 0, 0, 0, tzinfo=UTC)
+    payload = json.loads((FIXTURES / "elexon" / "fuelhh_response.json").read_text())
+    bronze_dir = _date_dir(tmp_data_dir, "elexon", "fuelhh", TARGET_DATE)
+    bronze_dir.mkdir(parents=True, exist_ok=True)
+    (bronze_dir / "raw_test.json").write_text(json.dumps(payload))
+    (bronze_dir / "raw_test.meta.json").write_text(
+        json.dumps(
+            {
+                "source": "elexon",
+                "dataset": "fuelhh",
+                "written_at": early_available.isoformat(),
+                "data_date": TARGET_DATE.isoformat(),
+            }
+        )
+    )
+
+    FuelHHTransformer(tmp_data_dir).run(TARGET_DATE, run_id=RUN_ID, reingest=True)
+    df = _read_single_silver(tmp_data_dir, "elexon", "fuelhh")
+
+    # event_time is the half-hourly settlement time on 2024-01-15, which is
+    # AFTER the forced 2024-01-14 availability -> the causality invariant is
+    # violated. If this assertion's premise were vacuous, this would not hold.
+    assert (df["event_time"] > df["available_at"]).all()
+
+
+def _write_remit_revision(
+    data_dir: Path,
+    target_date: date,
+    revision: int,
+    publish_time: str,
+    written_at: datetime,
+) -> None:
+    """Write a single REMIT revision to its own bronze partition + sidecar."""
+    bronze_dir = _date_dir(data_dir, "elexon", "remit", target_date)
+    bronze_dir.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "data": [
+            {
+                "mrid": "MSG-A",
+                "revisionNumber": revision,
+                "publishTime": publish_time,
+                "messageType": "Production unavailability",
+                "messageHeading": f"Outage notice rev {revision}",
+                "eventType": "Planned",
+                "unavailabilityType": "Planned",
+                "participantId": "PART-A",
+                "registrationCode": "REG-A",
+                "assetId": "ASSET-1",
+                "assetType": "Generation",
+                "affectedUnit": "UNIT-1",
+                "affectedUnitEIC": "EIC-1",
+                "biddingZone": "GB",
+                "fuelType": "Gas",
+                "normalCapacity": 500.0,
+                "availableCapacity": 0.0,
+                "unavailableCapacity": 500.0,
+                "eventStatus": "Active",
+                "eventStartTime": "2024-02-02T00:00:00Z",
+                "eventEndTime": "2024-02-05T00:00:00Z",
+                "cause": "Maintenance",
+                "relatedInformation": "",
+            }
+        ]
+    }
+    (bronze_dir / f"raw_rev{revision}.json").write_text(json.dumps(payload))
+    (bronze_dir / f"raw_rev{revision}.meta.json").write_text(
+        json.dumps(
+            {
+                "source": "elexon",
+                "dataset": "remit",
+                "written_at": written_at.isoformat(),
+                "data_date": target_date.isoformat(),
+            }
+        )
+    )
+
+
+def test_per_revision_availability_does_not_collapse(tmp_data_dir: Path) -> None:
+    """Two revisions fetched at distinct write times must carry distinct
+    availability, and an ``available_at <= as_of`` cut between them must admit
+    exactly the earlier revision.
+
+    Models the real bitemporal case: revision 1 published+written at 08:00,
+    revision 2 at 12:00, ingested in separate reingest passes (distinct bronze
+    partitions). A model asking "what was visible at 10:00?" must see only
+    revision 1.
+    """
+    date_rev1 = date(2024, 2, 1)
+    date_rev2 = date(2024, 2, 2)
+    written_rev1 = datetime(2024, 2, 1, 8, 0, 0, tzinfo=UTC)
+    written_rev2 = datetime(2024, 2, 1, 12, 0, 0, tzinfo=UTC)
+
+    _write_remit_revision(
+        tmp_data_dir, date_rev1, 1, "2024-02-01T08:00:00Z", written_rev1
+    )
+    _write_remit_revision(
+        tmp_data_dir, date_rev2, 2, "2024-02-01T12:00:00Z", written_rev2
+    )
+
+    REMITTransformer(tmp_data_dir).run(date_rev1, run_id="run-1", reingest=True)
+    REMITTransformer(tmp_data_dir).run(date_rev2, run_id="run-2", reingest=True)
+
+    union = _read_single_silver(tmp_data_dir, "elexon", "remit")
+
+    # Distinct availability per revision (not collapsed to a single value).
+    avail_by_rev = {
+        row["revision_number"]: row["available_at"]
+        for row in union.select(["revision_number", "available_at"]).to_dicts()
+    }
+    assert avail_by_rev[1] == written_rev1
+    assert avail_by_rev[2] == written_rev2
+    assert avail_by_rev[1] != avail_by_rev[2]
+
+    # An as-of cut at 10:00 admits exactly the earlier revision.
+    as_of = datetime(2024, 2, 1, 10, 0, 0, tzinfo=UTC)
+    visible = union.filter(pl.col("available_at") <= as_of)
+    assert visible["revision_number"].to_list() == [1]
 
 
 def test_demand_forecast_preserves_publish_time_as_published_at() -> None:
