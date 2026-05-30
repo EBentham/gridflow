@@ -16,4 +16,14 @@ SELECT
 FROM silver_system_prices sp
 LEFT JOIN silver_carbon_intensity ci
     ON sp.timestamp_utc = ci.timestamp_utc
-ORDER BY sp.timestamp_utc, sp.run_type
+ORDER BY sp.timestamp_utc, sp.run_type;
+
+-- Leakage foot-gun warning: carbon_intensity_actual_gco2_kwh is the REALISED
+-- carbon intensity, published AFTER the settlement period it describes. It is
+-- joined here on delivery time only, so it is NOT available at delivery time.
+-- A model predicting the same period must NOT use it as a feature (use the
+-- forecast column instead). The downstream leakage barrier (TrainingSet,
+-- available_at <= as_of) lives in gridflow_models; this view does not carry a
+-- per-column available_at, so treat the actual as future-realised.
+COMMENT ON COLUMN gold_uk_imbalance_context.carbon_intensity_actual_gco2_kwh IS
+    'REALISED carbon intensity, published after the period — NOT available at delivery time; do not use as a same-period model feature (use the forecast column).';
