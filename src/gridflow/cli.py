@@ -645,6 +645,28 @@ def init() -> None:
 # --- Helper Functions ---
 
 
+def _parse_window_bound(value: str) -> datetime:
+    """Parse a CLI ``--start``/``--end`` bound to a tz-aware UTC datetime.
+
+    Offset-bearing strings are CONVERTED (``astimezone``), not relabelled; a
+    bare calendar date (no time component) is taken as midnight UTC
+    (unambiguous); a naive datetime (wall-clock time, no offset) is REJECTED.
+    Silently relabelling a naive datetime as UTC — what ``.replace(tzinfo=...)``
+    did — shifts the ingest window by up to ±1h under BST, the same
+    tz-aware-UTC-contract hazard the leakage barrier guards downstream
+    (issue-19 site A).
+    """
+    parsed = datetime.fromisoformat(value)
+    if parsed.tzinfo is None:
+        if "T" not in value and ":" not in value:
+            return parsed.replace(tzinfo=timezone.utc)
+        raise typer.BadParameter(
+            f"Naive datetime {value!r} has no timezone; pass an explicit offset "
+            f"(e.g. '2026-02-01T00:00:00Z' or '...+01:00') or a bare date."
+        )
+    return parsed.astimezone(timezone.utc)
+
+
 def _resolve_dates(
     start: str | None,
     end: str | None,
@@ -659,10 +681,8 @@ def _resolve_dates(
         delta = parse_lookback(last)
         return now - delta, now
     if start:
-        start_dt = datetime.fromisoformat(start).replace(tzinfo=timezone.utc)
-        end_dt = (
-            datetime.fromisoformat(end).replace(tzinfo=timezone.utc) if end else now
-        )
+        start_dt = _parse_window_bound(start)
+        end_dt = _parse_window_bound(end) if end else now
         return start_dt, end_dt
     return now - timedelta(hours=default_lookback_hours), now
 

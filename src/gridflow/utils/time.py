@@ -62,7 +62,12 @@ def utc_to_settlement_period(ts: datetime) -> tuple[date, int]:
 
 def parse_lookback(lookback: str) -> timedelta:
     """Parse a lookback string like '24h' or '7d' into a timedelta."""
-    value = int(lookback[:-1])
+    try:
+        value = int(lookback[:-1])
+    except ValueError:
+        raise ValueError(
+            f"Malformed lookback {lookback!r}; expected e.g. '24h', '7d', '30m'."
+        ) from None
     unit = lookback[-1].lower()
     if unit == "h":
         return timedelta(hours=value)

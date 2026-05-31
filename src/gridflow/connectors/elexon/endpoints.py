@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import timezone
 from enum import Enum
 from typing import TYPE_CHECKING
 
@@ -279,6 +280,19 @@ ENDPOINTS: dict[str, ElexonEndpoint] = {
 }
 
 
+def _to_utc_z(value: datetime) -> str:
+    """Format a datetime as an Elexon ``...Z`` string at its UTC instant.
+
+    A tz-aware non-UTC value is CONVERTED to UTC before formatting — the literal
+    ``Z`` previously stamped the local wall clock with a false ``Z`` (issue-19
+    site D). A naive value is treated as already-UTC (current behaviour
+    preserved; the connector's sole caller passes tz-aware UTC).
+    """
+    if value.tzinfo is not None:
+        value = value.astimezone(timezone.utc)
+    return value.strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
 def build_params(
     endpoint: ElexonEndpoint,
     settlement_date: date | None = None,
@@ -301,9 +315,9 @@ def build_params(
 
     elif endpoint.param_style == ParamStyle.PUBLISH_DATETIME:
         if start:
-            params[endpoint.from_param] = start.strftime("%Y-%m-%dT%H:%M:%SZ")
+            params[endpoint.from_param] = _to_utc_z(start)
         if end:
-            params[endpoint.to_param] = end.strftime("%Y-%m-%dT%H:%M:%SZ")
+            params[endpoint.to_param] = _to_utc_z(end)
 
     elif endpoint.param_style == ParamStyle.DATE_PATH:
         pass  # Path parameter appended by the connector in _fetch_date_path()
