@@ -168,6 +168,11 @@ def test_live_backfill_elexon_curated_dataset_creates_outputs(
 
 
 def test_i4_live_command_documentation_covers_cli_closeout_requirements() -> None:
+    if not PHASE_DOC.exists():
+        pytest.skip(
+            "I4 planning doc absent — dev-only .planning/ artifact, not in the repo "
+            "(so this doc-coverage check runs locally but is skipped in CI)."
+        )
     content = PHASE_DOC.read_text(encoding="utf-8")
     required_terms = {
         "pipeline",

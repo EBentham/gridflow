@@ -170,6 +170,11 @@ def test_live_backfill_gie_agsi_storage_reports_creates_outputs(
 
 
 def test_l4_live_command_documentation_covers_closeout_requirements() -> None:
+    if not PHASE_DOC.exists():
+        pytest.skip(
+            "L4 planning doc absent — dev-only .planning/ artifact, not in the repo "
+            "(so this doc-coverage check runs locally but is skipped in CI)."
+        )
     content = PHASE_DOC.read_text(encoding="utf-8")
     required_terms = {
         "pipeline",
