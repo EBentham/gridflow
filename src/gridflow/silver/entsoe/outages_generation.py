@@ -108,15 +108,12 @@ class OutagesGenerationTransformer(BaseSilverTransformer):
         available = [c for c in output_cols if c in df.columns]
         df = df.select(available).sort("timestamp_utc", "unit_mrid")
 
-        self.last_unmapped_count = int(
-            df.filter(pl.col("outage_type") == UNMAPPED_SENTINEL).height
-        )
+        self.last_unmapped_count = int(df.filter(pl.col("outage_type") == UNMAPPED_SENTINEL).height)
         if self.last_unmapped_count > 0:
             raw_codes = raw_df.get_column("business_type").unique().to_list()
             unmapped_codes = sorted(c for c in raw_codes if c not in {"A53", "A54"})
             logger.warning(
-                "%s/%s: %d unmapped business_type row(s) labelled %r; "
-                "unmapped raw codes: %s",
+                "%s/%s: %d unmapped business_type row(s) labelled %r; unmapped raw codes: %s",
                 self.source,
                 self.dataset,
                 self.last_unmapped_count,

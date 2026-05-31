@@ -102,15 +102,12 @@ class ImbalanceVolumeTransformer(BaseSilverTransformer):
         available_cols = [c for c in output_cols if c in df.columns]
         df = df.select(available_cols)
 
-        self.last_unmapped_count = int(
-            df.filter(pl.col("direction") == UNMAPPED_SENTINEL).height
-        )
+        self.last_unmapped_count = int(df.filter(pl.col("direction") == UNMAPPED_SENTINEL).height)
         if self.last_unmapped_count > 0:
             raw_codes = raw_df.get_column("flow_direction").unique().to_list()
             unmapped_codes = sorted(c for c in raw_codes if c not in {"A01", "A02"})
             logger.warning(
-                "%s/%s: %d unmapped flow_direction row(s) labelled %r; "
-                "unmapped raw codes: %s",
+                "%s/%s: %d unmapped flow_direction row(s) labelled %r; unmapped raw codes: %s",
                 self.source,
                 self.dataset,
                 self.last_unmapped_count,

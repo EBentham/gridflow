@@ -148,9 +148,7 @@ def transform(
                 # loop never double-counts an empty/missing date.
                 total_unmapped += transformer.last_unmapped_count
             if total_unmapped > 0:
-                tracker.complete_with_warnings(
-                    rows_out=total_rows, rows_skipped=total_unmapped
-                )
+                tracker.complete_with_warnings(rows_out=total_rows, rows_skipped=total_unmapped)
                 typer.echo(
                     f"  {source}/{ds}: {total_rows} rows transformed, "
                     f"{total_unmapped} unmapped (completed_with_warnings)"

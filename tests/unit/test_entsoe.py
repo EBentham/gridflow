@@ -3239,7 +3239,7 @@ _A03_IMBALANCE_VOLUME_XML = b"""<?xml version="1.0" encoding="UTF-8"?>
 </Balancing_MarketDocument>"""
 
 
-def test_F32_cli_transform_unmapped_is_completed_with_warnings(
+def test_F32_cli_transform_unmapped_is_completed_with_warnings(  # noqa: N802
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """Drive the real `transform` CLI over a date whose bronze contains an
@@ -3305,7 +3305,7 @@ def test_F32_cli_transform_unmapped_is_completed_with_warnings(
     assert rows_skipped > 0, "the unmapped row should be counted in rows_skipped"
 
 
-def test_F32_cli_transform_unmapped_rerun_does_not_fail_or_zero(
+def test_F32_cli_transform_unmapped_rerun_does_not_fail_or_zero(  # noqa: N802
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """A date that completed_with_warnings must NOT re-zero / Exit(1) on a second

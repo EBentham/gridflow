@@ -130,9 +130,7 @@ class ActivatedBalancingPricesTransformer(BaseSilverTransformer):
         if self.last_unmapped_count > 0:
             bt_codes = raw_df.get_column("business_type").unique().to_list()
             fd_codes = raw_df.get_column("flow_direction").unique().to_list()
-            unmapped_bt = sorted(
-                c for c in bt_codes if c not in {"A95", "A96", "A97", "A98"}
-            )
+            unmapped_bt = sorted(c for c in bt_codes if c not in {"A95", "A96", "A97", "A98"})
             unmapped_fd = sorted(c for c in fd_codes if c not in {"A01", "A02"})
             logger.warning(
                 "%s/%s: %d unmapped row(s) labelled %r; unmapped business_type: %s; "
