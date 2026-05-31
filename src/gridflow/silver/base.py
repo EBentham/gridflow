@@ -30,6 +30,16 @@ class BaseSilverTransformer(ABC):
 
     source: str
     dataset: str
+    last_unmapped_count: int = 0
+    """Count of rows whose enum code was unmapped in the most recent ``run()``.
+
+    Reset to 0 at the start of every ``run()`` and set by ``transform()`` when a
+    transformer maps an enum with an unmapped-code sentinel (ADR-022). The CLI
+    reads it after each per-date ``run()`` to thread the unmapped total into
+    ``PipelineRunTracker.complete_with_warnings``. Resetting in ``run()`` (not
+    only on ``transform()``'s happy path) keeps a date with no bronze or missing
+    columns from being charged the previous date's count.
+    """
     DATASET_VERSION: ClassVar[str] = "1.0.0"
     BRONZE_SIBLING_DATASETS: ClassVar[tuple[str, ...]] = ()
     APPEND_ONLY: ClassVar[bool] = False
@@ -72,6 +82,11 @@ class BaseSilverTransformer(ABC):
 
         Returns the number of rows written.
         """
+        # Reset the per-run unmapped count before either early-return path so a
+        # date with no bronze / missing columns is never charged a prior date's
+        # count (ADR-022; the CLI accumulates this after each per-date run).
+        self.last_unmapped_count = 0
+
         # Read bronze
         raw_df = self.read_bronze(target_date)
         if raw_df.is_empty():

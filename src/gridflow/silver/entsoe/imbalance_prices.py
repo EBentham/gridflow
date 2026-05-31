@@ -10,6 +10,7 @@ import polars as pl
 from gridflow.connectors.entsoe.parsers import parse_timeseries_xml
 from gridflow.schemas.entsoe import EntsoeImbalancePrices
 from gridflow.silver.base import BaseSilverTransformer
+from gridflow.silver.entsoe._enum_maps import UNMAPPED_SENTINEL
 from gridflow.silver.registry import register_transformer
 
 logger = logging.getLogger(__name__)
@@ -62,7 +63,11 @@ class ImbalancePricesTransformer(BaseSilverTransformer):
             )
             .with_columns(
                 pl.col("business_type")
-                .replace_strict({"A19": "long", "A20": "short"})
+                .replace_strict(
+                    {"A19": "long", "A20": "short"},
+                    default=UNMAPPED_SENTINEL,
+                    return_dtype=pl.Utf8,
+                )
                 .alias("direction")
             )
             .select(
@@ -96,6 +101,22 @@ class ImbalancePricesTransformer(BaseSilverTransformer):
         ]
         available_cols = [c for c in output_cols if c in df.columns]
         df = df.select(available_cols)
+
+        self.last_unmapped_count = int(
+            df.filter(pl.col("direction") == UNMAPPED_SENTINEL).height
+        )
+        if self.last_unmapped_count > 0:
+            raw_codes = raw_df.get_column("business_type").unique().to_list()
+            unmapped_codes = sorted(c for c in raw_codes if c not in {"A19", "A20"})
+            logger.warning(
+                "%s/%s: %d unmapped business_type row(s) labelled %r; "
+                "unmapped raw codes: %s",
+                self.source,
+                self.dataset,
+                self.last_unmapped_count,
+                UNMAPPED_SENTINEL,
+                unmapped_codes,
+            )
 
         if not df.is_empty():
             sample = df.row(0, named=True)

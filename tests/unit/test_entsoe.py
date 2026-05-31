@@ -3131,3 +3131,234 @@ class TestPhaseH8Schemas:
 
         assert record.data_provider == "entsoe"
         assert record.connecting_area_code == "10YFR-RTE------C"
+
+
+# ---------------------------------------------------------------------------
+# F32 / ADR-022 — unmapped ENTSO-E enum codes survive with a sentinel label
+# (issue-05 #2). RED before B1 (replace_strict without default= raises
+# InvalidOperationError and the date zeroes); GREEN after.
+# ---------------------------------------------------------------------------
+
+
+class TestUnmappedEnumSentinel:
+    """An unmapped enum code must NOT zero the date; the row survives labelled
+    ``"unmapped"`` and the mapped rows still map. The falsifier for H2 / issue-05
+    #2 — pre-B1 the transform raises ``InvalidOperationError`` on ``""``/``"A03"``."""
+
+    _TS_A = datetime(2024, 1, 15, 0, 0, tzinfo=UTC)
+    _TS_B = datetime(2024, 1, 15, 0, 30, tzinfo=UTC)
+    _GB = "10YGB----------A"
+    _FR = "10YFR-RTE------C"
+
+    def test_imbalance_volume_unmapped_flow_direction_not_zeroed(self):
+        """Feed BOTH the parser's empty-string default ``""`` AND the legitimate
+        balancing code ``"A03"`` alongside normal A01/A02 rows. The two unmapped
+        rows are DISTINCT on (timestamp_utc, area_code) so the
+        unique(['timestamp_utc','area_code','direction']) dedup at
+        imbalance_volume.py does not collapse them (C3)."""
+        raw = pl.DataFrame(
+            {
+                # Mapped rows (A01 -> long, A02 -> short).
+                "timestamp_utc": [self._TS_A, self._TS_A, self._TS_A, self._TS_B],
+                "value": [100.0, 200.0, 300.0, 400.0],
+                "control_area_domain": [self._GB, self._GB, self._GB, self._FR],
+                # Two unmapped rows: "" (common parser default) and "A03"
+                # ("up and down"), distinct on (timestamp_utc, area_code).
+                "flow_direction": ["A01", "A02", "", "A03"],
+                "resolution": ["PT30M", "PT30M", "PT30M", "PT30M"],
+            }
+        ).with_columns(pl.col("timestamp_utc").cast(pl.Datetime("us", "UTC")))
+
+        t = _make_entsoe_transformer(ImbalanceVolumeTransformer)
+        result = t.transform(raw)
+
+        # The date is NOT zeroed: every input row survives.
+        assert not result.is_empty()
+        assert result.height == raw.height, "rows dropped — the date was (partly) zeroed"
+
+        directions = set(result["direction"].to_list())
+        assert "unmapped" in directions, "unmapped row did not survive with the sentinel"
+        assert "long" in directions, "A01 no longer maps to long"
+        assert "short" in directions, "A02 no longer maps to short"
+
+        # Exactly the two unmapped rows ("" and "A03") carry the sentinel.
+        n_unmapped = result.filter(pl.col("direction") == "unmapped").height
+        assert n_unmapped == 2, f"expected 2 sentinel rows, got {n_unmapped}"
+
+        # The transformer surfaces the count for the CLI (R3 seam).
+        assert t.last_unmapped_count == 2
+
+    def test_imbalance_prices_unmapped_business_type_not_zeroed(self):
+        """Sibling cross-transformer case: an unmapped ``business_type`` through
+        imbalance_prices survives with the same sentinel (strengthens the
+        cross-transformer claim)."""
+        raw = pl.DataFrame(
+            {
+                "timestamp_utc": [self._TS_A, self._TS_A, self._TS_B],
+                "value": [50.0, 60.0, 70.0],
+                "control_area_domain": [self._GB, self._GB, self._GB],
+                # A19 -> long, A20 -> short, A99 unmapped.
+                "business_type": ["A19", "A20", "A99"],
+                "resolution": ["PT30M", "PT30M", "PT30M"],
+            }
+        ).with_columns(pl.col("timestamp_utc").cast(pl.Datetime("us", "UTC")))
+
+        t = _make_entsoe_transformer(ImbalancePricesTransformer)
+        result = t.transform(raw)
+
+        assert not result.is_empty()
+        assert result.height == raw.height
+        assert "unmapped" in set(result["direction"].to_list())
+        assert t.last_unmapped_count == 1
+
+
+# ---------------------------------------------------------------------------
+# F32 / ADR-022 (C4) — CLI-DRIVEN: a transform run over a date containing an
+# unmapped code finishes 'completed_with_warnings', NOT failed, and does NOT
+# raise Exit(1). Unmarked so it runs in gridflow CI's default `-m "not live"`
+# lane (no network).
+# ---------------------------------------------------------------------------
+
+
+# A86 imbalance-volume document whose TimeSeries carries flowDirection.direction
+# = A03 (a legitimate-but-unmapped balancing code) so the silver transform hits
+# the unmapped-enum sentinel path on a real bronze read.
+_A03_IMBALANCE_VOLUME_XML = b"""<?xml version="1.0" encoding="UTF-8"?>
+<Balancing_MarketDocument xmlns="urn:iec62325.351:tc57wg16:451-6:balancingdocument:4:0">
+  <mRID>a03-imbalance-volume</mRID>
+  <TimeSeries>
+    <mRID>1</mRID>
+    <controlArea_Domain.mRID>10YGB----------A</controlArea_Domain.mRID>
+    <flowDirection.direction>A03</flowDirection.direction>
+    <Period>
+      <timeInterval><start>2024-01-15T00:00Z</start><end>2024-01-15T01:00Z</end></timeInterval>
+      <resolution>PT60M</resolution>
+      <Point><position>1</position><quantity>123.0</quantity></Point>
+    </Period>
+  </TimeSeries>
+</Balancing_MarketDocument>"""
+
+
+def test_F32_cli_transform_unmapped_is_completed_with_warnings(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Drive the real `transform` CLI over a date whose bronze contains an
+    unmapped flow_direction (A03). The run must finish
+    'completed_with_warnings' (NOT 'failed'), write rows, record rows_skipped>0,
+    and NOT raise Exit(1) — closing AC#2 ("CLI distinguishes partial/unmapped
+    from FAILED"). RED before B1+B2: pre-B1 the transform raised, the CLI hit
+    its except -> fail -> Exit(1) path (exit_code 1, status 'failed')."""
+    import duckdb
+    from typer.testing import CliRunner
+
+    from gridflow.cli import app
+
+    data_dir = tmp_path / "data"
+    db_path = tmp_path / "gridflow.duckdb"
+    monkeypatch.setenv("GRIDFLOW_DATA_DIR", str(data_dir))
+    monkeypatch.setenv("GRIDFLOW_DUCKDB_PATH", str(db_path))
+    monkeypatch.setenv("GRIDFLOW_LOG_DIR", str(tmp_path / "logs"))
+    # Gold SQL views reference silver tables absent from this tmpdir.
+    monkeypatch.setattr("gridflow.storage.duckdb._register_gold_views", lambda con: None)
+
+    bronze_dir = data_dir / "bronze" / "entsoe" / "imbalance_volume" / "2024" / "01" / "15"
+    bronze_dir.mkdir(parents=True, exist_ok=True)
+    (bronze_dir / "raw_a03.xml").write_bytes(_A03_IMBALANCE_VOLUME_XML)
+
+    runner = CliRunner()
+    result = runner.invoke(
+        app,
+        [
+            "transform",
+            "entsoe",
+            "imbalance_volume",
+            "--start",
+            "2024-01-15",
+            "--end",
+            "2024-01-15",
+        ],
+    )
+
+    # The unmapped code must NOT make the CLI exit non-zero.
+    assert result.exit_code == 0, result.output
+    assert "completed_with_warnings" in result.output
+
+    con = duckdb.connect(str(db_path), read_only=True)
+    try:
+        row = con.execute(
+            """
+            SELECT status, rows_out, rows_skipped
+            FROM pipeline_runs
+            WHERE source = 'entsoe' AND dataset = 'imbalance_volume'
+              AND operation = 'transform'
+            ORDER BY started_at DESC
+            LIMIT 1
+            """
+        ).fetchone()
+    finally:
+        con.close()
+
+    assert row is not None, "no pipeline_runs row recorded for the transform"
+    status, rows_out, rows_skipped = row
+    assert status == "completed_with_warnings", f"status was {status!r}, not the warnings status"
+    assert rows_out > 0, "rows should have been written (the date is not zeroed)"
+    assert rows_skipped > 0, "the unmapped row should be counted in rows_skipped"
+
+
+def test_F32_cli_transform_unmapped_rerun_does_not_fail_or_zero(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A date that completed_with_warnings must NOT re-zero / Exit(1) on a second
+    transform over the same range (B1 removed the raise, so the rerun reaches
+    completion again — not the perpetual-refail loop). Per ADR-022 part 3 we
+    assert only that the rerun does NOT fail/zero, NOT that it skips the date."""
+    import duckdb
+    from typer.testing import CliRunner
+
+    from gridflow.cli import app
+
+    data_dir = tmp_path / "data"
+    db_path = tmp_path / "gridflow.duckdb"
+    monkeypatch.setenv("GRIDFLOW_DATA_DIR", str(data_dir))
+    monkeypatch.setenv("GRIDFLOW_DUCKDB_PATH", str(db_path))
+    monkeypatch.setenv("GRIDFLOW_LOG_DIR", str(tmp_path / "logs"))
+    monkeypatch.setattr("gridflow.storage.duckdb._register_gold_views", lambda con: None)
+
+    bronze_dir = data_dir / "bronze" / "entsoe" / "imbalance_volume" / "2024" / "01" / "15"
+    bronze_dir.mkdir(parents=True, exist_ok=True)
+    (bronze_dir / "raw_a03.xml").write_bytes(_A03_IMBALANCE_VOLUME_XML)
+
+    runner = CliRunner()
+    args = [
+        "transform",
+        "entsoe",
+        "imbalance_volume",
+        "--start",
+        "2024-01-15",
+        "--end",
+        "2024-01-15",
+    ]
+    first = runner.invoke(app, args)
+    assert first.exit_code == 0, first.output
+
+    second = runner.invoke(app, args)
+    assert second.exit_code == 0, second.output
+    assert "completed_with_warnings" in second.output
+
+    con = duckdb.connect(str(db_path), read_only=True)
+    try:
+        statuses = con.execute(
+            """
+            SELECT status FROM pipeline_runs
+            WHERE source = 'entsoe' AND dataset = 'imbalance_volume'
+              AND operation = 'transform'
+            """
+        ).fetchall()
+    finally:
+        con.close()
+
+    # No run failed; the rerun did not re-zero / Exit(1).
+    assert statuses, "expected pipeline_runs rows for both runs"
+    assert all(s[0] == "completed_with_warnings" for s in statuses), (
+        f"a rerun did not stay completed_with_warnings: {statuses}"
+    )

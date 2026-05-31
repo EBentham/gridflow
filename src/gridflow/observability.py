@@ -73,6 +73,37 @@ class PipelineRunTracker:
         except Exception as e:
             logger.warning(f"Failed to record pipeline completion: {e}")
 
+    def complete_with_warnings(
+        self,
+        rows_in: int = 0,
+        rows_out: int = 0,
+        rows_skipped: int = 0,
+    ) -> None:
+        """Record completion of a run that wrote rows but hit recoverable warnings.
+
+        Identical to :meth:`complete` except the terminal ``status`` is
+        ``'completed_with_warnings'`` rather than ``'success'``. Used when a
+        transform finished and wrote rows but encountered >=1 unmapped enum code
+        (ADR-022): the rows survive with a sentinel label, ``rows_skipped`` carries
+        the unmapped count, and the run is distinguished from both a clean
+        ``'success'`` and a hard ``'failed'``. ``pipeline_runs.status`` is an
+        unconstrained VARCHAR, so this needs no schema change.
+        """
+        now = datetime.now(UTC)
+        duration = (now - self.started_at).total_seconds()
+        try:
+            self.con.execute(
+                """
+                UPDATE pipeline_runs
+                SET status='completed_with_warnings', completed_at=?, rows_in=?,
+                    rows_out=?, rows_skipped=?, duration_seconds=?
+                WHERE run_id = ?
+                """,
+                [now, rows_in, rows_out, rows_skipped, duration, self.run_id],
+            )
+        except Exception as e:
+            logger.warning(f"Failed to record pipeline completion-with-warnings: {e}")
+
     def fail(self, error: str) -> None:
         """Record pipeline run failure."""
         now = datetime.now(UTC)
