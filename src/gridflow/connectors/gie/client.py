@@ -344,15 +344,18 @@ class GieConnector(BaseConnector):
                 )
             )
 
-            # Determine if there are more pages from JSON response
-            try:
-                import json
-                data = json.loads(body)
-                total = int(data.get("total", 0))
-                page_size = int(data.get("pageSize", DEFAULT_PAGE_SIZE))
-                if page * page_size >= total:
-                    break
-            except Exception:  # noqa: BLE001
+            # Pagination terminator: ALSI/AGSI echo the authoritative total page
+            # count under ``last_page`` (live-probed 2026-05-31 for ALSI lng —
+            # envelope keys data/dataset/gas_day/last_page/total, where ``total``
+            # is the per-page row count (== size), NOT the grand total, and
+            # ``pageSize`` is absent). The old ``total``/``pageSize`` terminator
+            # broke after page 1 — int(total)=5 (per-page) with a defaulted
+            # pageSize=300 made ``1*300 >= 5`` immediately true — silently
+            # truncating a multi-page country. Reuse the ``_last_page`` helper the
+            # AGSI path already uses (it fails closed to 1 page on a malformed or
+            # ``last_page``-less body).
+            total_pages = _last_page(body)
+            if page >= total_pages:
                 break
 
             page += 1

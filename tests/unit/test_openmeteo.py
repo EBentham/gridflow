@@ -161,18 +161,24 @@ class TestOpenMeteoLocationRetry:
     archive-host timeout silently dropped a capacity-weighted location from the
     run. Post-fix: a 429 followed by a 200 recovers and the location's
     RawResponse is present.
+
+    The companion test (criterion 4) proves the opposite edge: a location that
+    fails *after* retries are exhausted surfaces as a raised error from
+    ``fetch`` rather than being silently dropped to a warning.
     """
 
     @pytest.fixture(autouse=True)
     def _instant_retry(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        # Keep the exponential-backoff retry fast in the test.
-        import tenacity
+        # Neutralise tenacity's exponential backoff so the 5-attempt retry path
+        # runs instantly. NB: patching ``RETRY_POLICY.wait`` does not work —
+        # ``RETRY_POLICY`` is the decorator closure, not the ``AsyncRetrying``
+        # controller (the wait lives on the per-function ``_request.retry``
+        # instance), so that ``raising=False`` setattr was a silent no-op.
+        # Patching the actual sleep is the reliable, decorator-agnostic route.
+        async def _no_sleep(*_args: object, **_kwargs: object) -> None:
+            return None
 
-        monkeypatch.setattr(
-            "gridflow.utils.retry.RETRY_POLICY.wait",
-            tenacity.wait_none(),
-            raising=False,
-        )
+        monkeypatch.setattr("asyncio.sleep", _no_sleep)
 
     def _config(self) -> SourceConfig:
         return SourceConfig(
@@ -206,6 +212,37 @@ class TestOpenMeteoLocationRetry:
         assert resp.http_status == 200
         assert resp.dataset == f"historical_demand__{location.name}"
         assert resp.source == "open_meteo"
+
+    @respx.mock
+    @pytest.mark.asyncio
+    async def test_fetch_surfaces_location_failure_after_retries(self) -> None:
+        """A location that fails persistently (retries exhausted) must surface
+        as a raised error from ``fetch``, not be silently dropped to a warning.
+
+        Open-Meteo locations are capacity-weighted; silently dropping one
+        re-weights the run's aggregate with no error. FAILS against the pre-fix
+        ``except Exception: logger.warning`` swallow, which returned the
+        surviving locations and raised nothing.
+        """
+        spec = DATASET_SPECS["historical_demand"]
+        failing = spec.locations[0]
+        ok_body = json.dumps({"hourly": {"time": [], "temperature_2m": []}})
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            lat = request.url.params.get("latitude")
+            if lat is not None and abs(float(lat) - failing.latitude) < 1e-9:
+                return httpx.Response(500, text="persistent upstream error")
+            return httpx.Response(200, text=ok_body)
+
+        respx.get(url__startswith=ARCHIVE_BASE_URL).mock(side_effect=handler)
+
+        async with OpenMeteoConnector(self._config()) as connector:
+            with pytest.raises(httpx.HTTPStatusError):
+                await connector.fetch(
+                    "historical_demand",
+                    datetime(2024, 1, 15, tzinfo=UTC),
+                    datetime(2024, 1, 15, tzinfo=UTC),
+                )
 
 
 class TestDatasetSpecs:

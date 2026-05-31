@@ -399,3 +399,114 @@ def test_bronze_metadata_preserves_pagination_fields(tmp_path: Path) -> None:
         page=2,
         total_pages=2,
     )
+
+
+class TestElexonPeriodTransientVsAbsent:
+    """Issue 13 (finding 183): ``_fetch_date_period`` must surface a post-retry
+    transient (5xx / timeout) rather than swallow it as a clean period stop,
+    while still stopping cleanly on a *definitive* absent signal (HTTP 200 with
+    empty ``data``, or a 4xx). The pre-fix ``except Exception: break`` conflated
+    the two, so a real upstream blip mid-period was recorded as success with
+    partial bronze for that date's earlier pages.
+    """
+
+
+async def _no_sleep(*_args: Any, **_kwargs: Any) -> None:
+    """Neutralise tenacity's exponential backoff (5 attempts, min 2s) in tests."""
+    return None
+
+
+@respx.mock
+@pytest.mark.asyncio
+async def test_pn_period_surfaces_post_retry_5xx_transient(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A 5xx surviving the retry policy mid-period must RAISE, not be recorded
+    as a complete success.
+
+    FAILS against the pre-fix ``except Exception: break``, which swallows the
+    re-raised ``HTTPStatusError`` and returns page-1-only as a clean stop.
+    """
+    monkeypatch.setattr("asyncio.sleep", _no_sleep)
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        params = request.url.params
+        period = int(params["settlementPeriod"])
+        page = int(params.get("page", "1"))
+        if period == 1 and page == 1:
+            # Populated page 1 advertising a second page.
+            return httpx.Response(
+                200, content=_synthetic_body("pn", page=1, total_pages=2)
+            )
+        if period == 1 and page == 2:
+            # Persistent upstream transient on page 2 — survives all 5 retries.
+            return httpx.Response(500, content=b'{"error": "upstream"}')
+        # Must never be reached: the 500 has to surface before later periods.
+        return httpx.Response(200, content=_synthetic_body("pn", data=[]))
+
+    _mock_all_elexon_gets(handler)
+
+    async with ElexonConnector(_active_elexon_config()) as connector:
+        with pytest.raises(httpx.HTTPStatusError):
+            await connector.fetch("pn", START, START)
+
+
+@respx.mock
+@pytest.mark.asyncio
+async def test_pn_absent_period_200_empty_stops_clean() -> None:
+    """A genuinely-absent period (HTTP 200, empty ``data``) stops iteration
+    cleanly with no error and contributes no empty bronze for that period."""
+    populated = 3
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        period = int(request.url.params["settlementPeriod"])
+        if period <= populated:
+            return httpx.Response(
+                200,
+                content=_synthetic_body(
+                    "pn", data=[{"dataset": "pn", "settlementPeriod": period}]
+                ),
+            )
+        return httpx.Response(200, content=_synthetic_body("pn", data=[]))
+
+    _mock_all_elexon_gets(handler)
+
+    async with ElexonConnector(_active_elexon_config()) as connector:
+        responses = await connector.fetch("pn", START, START)
+
+    assert len(responses) == populated
+    assert all(r.dataset == "pn" for r in responses)
+    assert all(r.http_status == 200 for r in responses)
+
+
+@respx.mock
+@pytest.mark.asyncio
+async def test_pn_out_of_range_period_4xx_stops_clean(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A definitive 4xx for a period (out-of-range / 404) stops iteration
+    cleanly — distinct from the 5xx transient, which must raise.
+
+    FAILS if the 4xx-break regresses into a raised error.
+    """
+    monkeypatch.setattr("asyncio.sleep", _no_sleep)
+    populated = 2
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        period = int(request.url.params["settlementPeriod"])
+        if period <= populated:
+            return httpx.Response(
+                200,
+                content=_synthetic_body(
+                    "pn", data=[{"dataset": "pn", "settlementPeriod": period}]
+                ),
+            )
+        return httpx.Response(404, content=b'{"error": "not found"}')
+
+    _mock_all_elexon_gets(handler)
+
+    async with ElexonConnector(_active_elexon_config()) as connector:
+        responses = await connector.fetch("pn", START, START)
+
+    assert len(responses) == populated
+    assert all(r.dataset == "pn" for r in responses)

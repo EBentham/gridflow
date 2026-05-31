@@ -7,6 +7,8 @@ import logging
 from datetime import date, datetime, timedelta
 from typing import TYPE_CHECKING, Any
 
+import httpx
+
 from gridflow.connectors.base import BaseConnector, RawResponse
 from gridflow.connectors.elexon.endpoints import ENDPOINTS, ParamStyle, build_params
 from gridflow.connectors.elexon.parsers import get_pagination_info
@@ -14,8 +16,6 @@ from gridflow.connectors.registry import register_connector
 from gridflow.utils.retry import RETRY_POLICY
 
 if TYPE_CHECKING:
-    import httpx
-
     from gridflow.config.settings import SourceConfig
     from gridflow.connectors.elexon.endpoints import ElexonEndpoint
 
@@ -159,9 +159,17 @@ class ElexonConnector(BaseConnector):
                 )
                 try:
                     raw = await self._request(endpoint.path, query_params)
-                except Exception:
-                    # Period doesn't exist — HTTP error (e.g. 404)
-                    break
+                except httpx.HTTPStatusError as exc:
+                    # Probed live (2026-05-31): a genuinely-absent period returns
+                    # HTTP 200 with an empty data array (handled below), and an
+                    # out-of-range period returns 4xx. So a 4xx here is a
+                    # definitive "this period cannot exist" -> stop cleanly; a 5xx
+                    # that survived the 5-attempt retry policy is a real upstream
+                    # transient and MUST surface (not be recorded as a clean stop
+                    # with the partial bronze of this date's earlier pages).
+                    if exc.response.status_code < 500:
+                        break
+                    raise
 
                 # HTTP 200 with empty data array means this period doesn't exist
                 # (e.g. periods 49–50 on non-DST days). Stop without writing bronze.

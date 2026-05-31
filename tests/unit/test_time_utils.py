@@ -257,6 +257,17 @@ class TestParseLookback:
         with pytest.raises(ValueError):
             parse_lookback("10x")
 
+    def test_empty_string_raises_clear_error(self):
+        # issue-19 site E: an empty lookback must name the expected format, not
+        # raise the opaque ``int('')`` ValueError.
+        with pytest.raises(ValueError, match="Malformed lookback"):
+            parse_lookback("")
+
+    def test_unit_only_raises_clear_error(self):
+        # "h" -> lookback[:-1] == "" -> same opaque int('') path, now guarded.
+        with pytest.raises(ValueError, match="Malformed lookback"):
+            parse_lookback("h")
+
 
 class TestDateRange:
     def test_single_day(self):
