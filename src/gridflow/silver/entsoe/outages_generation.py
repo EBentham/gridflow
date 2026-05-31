@@ -11,6 +11,7 @@ import polars as pl
 from gridflow.connectors.entsoe.parsers import parse_timeseries_xml
 from gridflow.schemas.entsoe import EntsoeOutagesGeneration
 from gridflow.silver.base import BaseSilverTransformer
+from gridflow.silver.entsoe._enum_maps import UNMAPPED_SENTINEL
 from gridflow.silver.registry import register_transformer
 
 logger = logging.getLogger(__name__)
@@ -68,7 +69,11 @@ class OutagesGenerationTransformer(BaseSilverTransformer):
         # Map businessType A53 -> "planned", A54 -> "unplanned"
         df = df.with_columns(
             pl.col("business_type")
-            .replace_strict({"A53": "planned", "A54": "unplanned"})
+            .replace_strict(
+                {"A53": "planned", "A54": "unplanned"},
+                default=UNMAPPED_SENTINEL,
+                return_dtype=pl.Utf8,
+            )
             .alias("outage_type")
         )
 
@@ -102,6 +107,19 @@ class OutagesGenerationTransformer(BaseSilverTransformer):
         ]
         available = [c for c in output_cols if c in df.columns]
         df = df.select(available).sort("timestamp_utc", "unit_mrid")
+
+        self.last_unmapped_count = int(df.filter(pl.col("outage_type") == UNMAPPED_SENTINEL).height)
+        if self.last_unmapped_count > 0:
+            raw_codes = raw_df.get_column("business_type").unique().to_list()
+            unmapped_codes = sorted(c for c in raw_codes if c not in {"A53", "A54"})
+            logger.warning(
+                "%s/%s: %d unmapped business_type row(s) labelled %r; unmapped raw codes: %s",
+                self.source,
+                self.dataset,
+                self.last_unmapped_count,
+                UNMAPPED_SENTINEL,
+                unmapped_codes,
+            )
 
         if not df.is_empty():
             sample = df.row(0, named=True)

@@ -10,6 +10,7 @@ import polars as pl
 from gridflow.connectors.entsoe.parsers import parse_timeseries_xml
 from gridflow.schemas.entsoe import EntsoeActivatedBalancingQty
 from gridflow.silver.base import BaseSilverTransformer
+from gridflow.silver.entsoe._enum_maps import UNMAPPED_SENTINEL
 from gridflow.silver.registry import register_transformer
 
 logger = logging.getLogger(__name__)
@@ -71,10 +72,18 @@ class ActivatedBalancingQtyTransformer(BaseSilverTransformer):
             .with_columns(
                 [
                     pl.col("business_type")
-                    .replace_strict({"A95": "fcr", "A96": "afrr", "A97": "mfrr", "A98": "rr"})
+                    .replace_strict(
+                        {"A95": "fcr", "A96": "afrr", "A97": "mfrr", "A98": "rr"},
+                        default=UNMAPPED_SENTINEL,
+                        return_dtype=pl.Utf8,
+                    )
                     .alias("reserve_type"),
                     pl.col("flow_direction")
-                    .replace_strict({"A01": "up", "A02": "down"})
+                    .replace_strict(
+                        {"A01": "up", "A02": "down"},
+                        default=UNMAPPED_SENTINEL,
+                        return_dtype=pl.Utf8,
+                    )
                     .alias("direction"),
                 ]
             )
@@ -111,6 +120,28 @@ class ActivatedBalancingQtyTransformer(BaseSilverTransformer):
         ]
         available_cols = [c for c in output_cols if c in df.columns]
         df = df.select(available_cols)
+
+        self.last_unmapped_count = int(
+            df.filter(
+                (pl.col("reserve_type") == UNMAPPED_SENTINEL)
+                | (pl.col("direction") == UNMAPPED_SENTINEL)
+            ).height
+        )
+        if self.last_unmapped_count > 0:
+            bt_codes = raw_df.get_column("business_type").unique().to_list()
+            fd_codes = raw_df.get_column("flow_direction").unique().to_list()
+            unmapped_bt = sorted(c for c in bt_codes if c not in {"A95", "A96", "A97", "A98"})
+            unmapped_fd = sorted(c for c in fd_codes if c not in {"A01", "A02"})
+            logger.warning(
+                "%s/%s: %d unmapped row(s) labelled %r; unmapped business_type: %s; "
+                "unmapped flow_direction: %s",
+                self.source,
+                self.dataset,
+                self.last_unmapped_count,
+                UNMAPPED_SENTINEL,
+                unmapped_bt,
+                unmapped_fd,
+            )
 
         if not df.is_empty():
             sample = df.row(0, named=True)

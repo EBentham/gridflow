@@ -133,6 +133,7 @@ def transform(
     for ds in datasets:
         tracker = PipelineRunTracker(con, source, ds, "transform")
         total_rows = 0
+        total_unmapped = 0
         try:
             transformer = get_transformer(source, ds, settings.pipeline.data_dir)
             for target_date in dates:
@@ -142,8 +143,19 @@ def transform(
                     reingest=reingest,
                 )
                 total_rows += rows
-            tracker.complete(rows_out=total_rows)
-            typer.echo(f"  {source}/{ds}: {total_rows} rows transformed")
+                # Per-date unmapped-enum count surfaced by the transformer
+                # (ADR-022). run() resets it each call, so accumulating inside the
+                # loop never double-counts an empty/missing date.
+                total_unmapped += transformer.last_unmapped_count
+            if total_unmapped > 0:
+                tracker.complete_with_warnings(rows_out=total_rows, rows_skipped=total_unmapped)
+                typer.echo(
+                    f"  {source}/{ds}: {total_rows} rows transformed, "
+                    f"{total_unmapped} unmapped (completed_with_warnings)"
+                )
+            else:
+                tracker.complete(rows_out=total_rows)
+                typer.echo(f"  {source}/{ds}: {total_rows} rows transformed")
         except Exception as e:
             error_message = _safe_error_message(str(e))
             tracker.fail(error_message)
