@@ -12,7 +12,11 @@ from __future__ import annotations
 
 from datetime import UTC, date, datetime
 
+import httpx
 import pytest
+import respx
+
+from gridflow.config.settings import SourceConfig, load_settings
 
 # ---------------------------------------------------------------------------
 # Reference dates used throughout
@@ -29,6 +33,19 @@ ALSI_BASE = "https://alsi.gie.eu"
 OPENMETEO_ARCHIVE_BASE = "https://archive-api.open-meteo.com/v1"
 OPENMETEO_FORECAST_BASE = "https://api.open-meteo.com/v1"
 NESO_BASE = "https://api.carbonintensity.org.uk"
+
+
+def _connector_config(source: str) -> SourceConfig:
+    """Load a real source config with test-friendly auth/rate-limit/timeout.
+
+    Behavioural endpoint tests drive the connector's *real* request builder
+    via respx capture rather than re-deriving the query dict in the test
+    body, so they need a live ``SourceConfig`` (correct base_url + datasets)
+    with a stub API key and an effectively-unthrottled rate limit.
+    """
+    return load_settings().get_source_config(source).model_copy(
+        update={"api_key": "test-key", "rate_limit_per_second": 1000, "timeout": 5}
+    )
 
 
 # ============================================================================
@@ -310,29 +327,48 @@ class TestEntsoeEndpointDefinitions:
 class TestEntsoeUrlConstruction:
     """Verify the exact query params that would be sent for ENTSO-E requests."""
 
-    def test_day_ahead_prices_gb_params(self):
-        from gridflow.connectors.entsoe.endpoints import BIDDING_ZONES, DOC_TYPES, ENTSOE_DT_FORMAT
+    @respx.mock
+    @pytest.mark.asyncio
+    async def test_day_ahead_prices_gb_params(self):
+        """Drive the REAL ENTSO-E request builder and assert on the captured
+        outgoing request, not a dict re-derived in the test body.
 
-        doc = DOC_TYPES["day_ahead_prices"]
-        zone_eic = BIDDING_ZONES["GB"]
-        period_start = REF_START.strftime(ENTSOE_DT_FORMAT)
-        period_end = REF_END.strftime(ENTSOE_DT_FORMAT)
+        ``EntsoeConnector.fetch`` iterates ``DEFAULT_ZONES`` GB-first and
+        sequentially, so ``requests[0]`` is the GB request (the
+        ``in_Domain == '10YGB----------A'`` assertion self-confirms this).
 
-        params = {
-            "documentType": doc.document_type,
-            "in_Domain.mRID": zone_eic,
-            "out_Domain.mRID": zone_eic,
-            "periodStart": period_start,
-            "periodEnd": period_end,
-        }
-        if doc.process_type:
-            params["processType"] = doc.process_type
+        Regression guard: FAILS if the domain params are renamed/mis-cased
+        (e.g. ``in_Domain`` -> ``In_Domain``), if ``documentType`` drifts
+        from ``A44``, or if the ``securityToken`` auth param is dropped.
+        Note the real query param is ``in_Domain`` (NOT ``in_Domain.mRID`` —
+        that was the XML field name the deleted fiction asserted on).
+        """
+        from gridflow.connectors.entsoe.client import EntsoeConnector
+
+        requests: list[httpx.Request] = []
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            requests.append(request)
+            return httpx.Response(
+                200, content=b"<root/>", headers={"content-type": "text/xml"}
+            )
+
+        respx.get(url__startswith=ENTSOE_BASE).mock(side_effect=handler)
+
+        async with EntsoeConnector(_connector_config("entsoe")) as connector:
+            await connector.fetch("day_ahead_prices", REF_START, REF_END)
+
+        assert requests, "connector issued no request"
+        params = dict(requests[0].url.params)
 
         assert params["documentType"] == "A44"
-        assert params["in_Domain.mRID"] == "10YGB----------A"
-        assert params["out_Domain.mRID"] == "10YGB----------A"
+        assert params["in_Domain"] == "10YGB----------A"
+        assert params["out_Domain"] == "10YGB----------A"
         assert params["periodStart"] == "202602010000"
         assert params["periodEnd"] == "202602020000"
+        # ENTSO-E authenticates via a query-param token, not a header.
+        assert params["securityToken"] == "test-key"
+        # day_ahead_prices (A44) carries no processType.
         assert "processType" not in params
 
     def test_actual_generation_gb_params(self):
@@ -511,23 +547,48 @@ class TestGieEndpointDefinitions:
         expected = ["BE", "ES", "FR", "GB", "IT", "NL", "PL", "PT"]
         assert expected == ALSI_COUNTRIES
 
-    def test_query_params_format(self):
-        """Verify the exact query params the connector would build."""
+    @respx.mock
+    @pytest.mark.asyncio
+    async def test_query_params_format(self):
+        """Drive the REAL GIE request builder and assert on the captured
+        outgoing request, not a dict re-derived in the test body.
+
+        Uses the ALSI (``gie_alsi``) connector — its ``lng`` fetch takes the
+        legacy country-scoped path that builds the ``from``/``till`` date
+        params directly. ALSI iterates countries BE-first, so ``requests[0]``
+        is country ``BE`` (any single capture proves the param shape).
+
+        Regression guard: FAILS if the date-window param reverts ``till`` ->
+        ``to`` (the GIE-specific naming that distinguishes it from every
+        other connector), or if ``from``/``country`` drift.
+        """
+        from gridflow.connectors.gie.client import AlsiConnector
         from gridflow.connectors.gie.endpoints import DEFAULT_PAGE_SIZE
 
-        params = {
-            "country": "GB",
-            "from": REF_START.strftime("%Y-%m-%d"),
-            "till": REF_END.strftime("%Y-%m-%d"),
-            "page": 1,
-            "size": DEFAULT_PAGE_SIZE,
-        }
+        requests: list[httpx.Request] = []
 
-        assert params["country"] == "GB"
+        def handler(request: httpx.Request) -> httpx.Response:
+            requests.append(request)
+            return httpx.Response(
+                200,
+                content=b'{"data": []}',
+                headers={"content-type": "application/json"},
+            )
+
+        respx.get(url__startswith=ALSI_BASE).mock(side_effect=handler)
+
+        async with AlsiConnector(_connector_config("gie_alsi")) as connector:
+            await connector.fetch("lng", REF_START, REF_END)
+
+        assert requests, "connector issued no request"
+        params = dict(requests[0].url.params)
+
+        assert params["country"] == "BE"
         assert params["from"] == "2026-02-01"
+        # GIE uses 'till', not 'to' — the critical naming difference.
         assert params["till"] == "2026-02-02"
-        assert params["page"] == 1
-        assert params["size"] == 300
+        assert "to" not in params
+        assert params["size"] == str(DEFAULT_PAGE_SIZE)
 
     def test_uses_till_not_to(self):
         """GIE uses 'till' not 'to' — critical difference."""
@@ -632,32 +693,82 @@ class TestOpenMeteoEndpointDefinitions:
                    "historical_wind", "forecast_wind"):
             assert DATASET_SPECS[ds].extra_params == ()
 
-    def test_historical_demand_url_format(self):
-        from gridflow.connectors.openmeteo.endpoints import (
-            ARCHIVE_BASE_URL,
-            DEMAND_HOURLY_VARS,
-            DEMAND_LOCATIONS,
+    @respx.mock
+    @pytest.mark.asyncio
+    async def test_historical_demand_url_format(self):
+        """Drive the REAL Open-Meteo request builder and assert on the host +
+        path of each fetch's captured outgoing request, not a URL re-derived
+        in the test body.
+
+        Each fetch is captured in isolation and its *own* produced URL is
+        asserted (keyed by which fetch made the call, NOT by which host the
+        request happened to land on): a ``historical_*`` fetch must hit the
+        archive endpoint, a ``forecast_*`` fetch the forecast endpoint. This
+        is what makes an archive<->forecast base-URL swap detectable — bucket
+        by receiving host instead and a swap stays invisible.
+
+        Regression guard: FAILS if either base URL regresses (archive and
+        forecast hosts swapped, or the ``/archive`` vs ``/forecast`` path
+        suffix flipped). Also pins the query-param shape (lat/lon/dates/
+        timezone/hourly) built by ``_fetch_location``.
+        """
+        from gridflow.connectors.openmeteo.client import OpenMeteoConnector
+
+        def _capture() -> list[httpx.Request]:
+            """Register host-matched capture routes; return the capture list.
+
+            Both Open-Meteo hosts are mocked so that — whatever URL the
+            connector builds — the request is captured rather than escaping
+            to the network. The caller asserts the captured URL is the one
+            the fetch *should* have produced.
+            """
+            captured: list[httpx.Request] = []
+
+            def handler(request: httpx.Request) -> httpx.Response:
+                captured.append(request)
+                return httpx.Response(
+                    200, content=b"{}", headers={"content-type": "application/json"}
+                )
+
+            respx.get(url__startswith=OPENMETEO_ARCHIVE_BASE).mock(side_effect=handler)
+            respx.get(url__startswith=OPENMETEO_FORECAST_BASE).mock(side_effect=handler)
+            return captured
+
+        config = _connector_config("open_meteo")
+
+        # Historical fetch — its produced URL must be the archive endpoint.
+        historical_requests = _capture()
+        async with OpenMeteoConnector(config) as connector:
+            await connector.fetch("historical_demand", REF_START, REF_END)
+
+        assert historical_requests, "historical fetch issued no request"
+        historical_url = historical_requests[0].url
+        assert (
+            f"{historical_url.scheme}://{historical_url.host}{historical_url.path}"
+            == "https://archive-api.open-meteo.com/v1/archive"
         )
 
-        location = DEMAND_LOCATIONS[0]  # London
-        url = f"{ARCHIVE_BASE_URL}/archive"
-        params = {
-            "latitude": location.latitude,
-            "longitude": location.longitude,
-            "hourly": ",".join(DEMAND_HOURLY_VARS),
-            "start_date": REF_START.strftime("%Y-%m-%d"),
-            "end_date": REF_END.strftime("%Y-%m-%d"),
-            "timezone": "UTC",
-        }
-
-        assert url == "https://archive-api.open-meteo.com/v1/archive"
-        assert params["latitude"] == 51.5074
-        assert params["longitude"] == -0.1278
+        params = dict(historical_url.params)
+        # DEMAND_LOCATIONS[0] is London (51.5074, -0.1278).
+        assert params["latitude"] == "51.5074"
+        assert params["longitude"] == "-0.1278"
         assert params["start_date"] == "2026-02-01"
         assert params["end_date"] == "2026-02-02"
         assert params["timezone"] == "UTC"
         assert "temperature_2m" in params["hourly"]
         assert "snowfall" in params["hourly"]
+
+        # Forecast fetch — its produced URL must be the forecast endpoint.
+        forecast_requests = _capture()
+        async with OpenMeteoConnector(config) as connector:
+            await connector.fetch("forecast_demand", REF_START, REF_END)
+
+        assert forecast_requests, "forecast fetch issued no request"
+        forecast_url = forecast_requests[0].url
+        assert (
+            f"{forecast_url.scheme}://{forecast_url.host}{forecast_url.path}"
+            == "https://api.open-meteo.com/v1/forecast"
+        )
 
     def test_forecast_url_format(self):
         from gridflow.connectors.openmeteo.endpoints import FORECAST_BASE_URL
