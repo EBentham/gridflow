@@ -50,12 +50,14 @@ class GenerationUnitsMasterDataTransformer(BaseSilverTransformer):
             )
             return pl.DataFrame()
 
-        df = raw_df.with_columns([
-            pl.col("area_code").fill_null("").alias("area_code"),
-            pl.col("unit_mrid").fill_null("").alias("unit_mrid"),
-            pl.col("unit_name").fill_null("").alias("unit_name"),
-            pl.col("production_type").fill_null("").alias("production_type"),
-        ])
+        df = raw_df.with_columns(
+            [
+                pl.col("area_code").fill_null("").alias("area_code"),
+                pl.col("unit_mrid").fill_null("").alias("unit_mrid"),
+                pl.col("unit_name").fill_null("").alias("unit_name"),
+                pl.col("production_type").fill_null("").alias("production_type"),
+            ]
+        )
         if "implementation_datetime_utc" in df.columns:
             df = df.with_columns(
                 pl.col("implementation_datetime_utc").cast(pl.Datetime("us", "UTC"))
@@ -65,10 +67,12 @@ class GenerationUnitsMasterDataTransformer(BaseSilverTransformer):
         df = df.unique(subset=["area_code", "unit_mrid"], keep="last")
 
         now = datetime.now(UTC)
-        df = df.with_columns([
-            pl.lit("entsoe").alias("data_provider"),
-            pl.lit(now).cast(pl.Datetime("us", "UTC")).alias("ingested_at"),
-        ])
+        df = df.with_columns(
+            [
+                pl.lit("entsoe").alias("data_provider"),
+                pl.lit(now).cast(pl.Datetime("us", "UTC")).alias("ingested_at"),
+            ]
+        )
 
         output_cols = [
             "area_code",

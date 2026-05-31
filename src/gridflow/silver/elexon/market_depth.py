@@ -73,15 +73,21 @@ class MarketDepthTransformer(BaseSilverTransformer):
             logger.error(f"Missing required columns in market_depth: {missing}")
             return pl.DataFrame()
 
-        df = raw_df.with_columns([
-            pl.col("settlement_date").cast(pl.Date),
-            pl.col("settlement_period").cast(pl.Int32),
-        ])
+        df = raw_df.with_columns(
+            [
+                pl.col("settlement_date").cast(pl.Date),
+                pl.col("settlement_period").cast(pl.Int32),
+            ]
+        )
 
         numeric_cols = [
-            "indicated_imbalance_mwh", "offer_volume_mwh", "bid_volume_mwh",
-            "total_accepted_offer_volume_mwh", "total_accepted_bid_volume_mwh",
-            "total_adjustment_sell_volume_mwh", "total_adjustment_buy_volume_mwh",
+            "indicated_imbalance_mwh",
+            "offer_volume_mwh",
+            "bid_volume_mwh",
+            "total_accepted_offer_volume_mwh",
+            "total_accepted_bid_volume_mwh",
+            "total_adjustment_sell_volume_mwh",
+            "total_adjustment_buy_volume_mwh",
         ]
         for col in numeric_cols:
             if col in df.columns:
@@ -101,17 +107,26 @@ class MarketDepthTransformer(BaseSilverTransformer):
         df = df.unique(subset=["settlement_date", "settlement_period"], keep="last")
 
         now = datetime.now(UTC)
-        df = df.with_columns([
-            pl.lit("elexon").alias("data_provider"),
-            pl.lit(now).cast(pl.Datetime("us", "UTC")).alias("ingested_at"),
-        ])
+        df = df.with_columns(
+            [
+                pl.lit("elexon").alias("data_provider"),
+                pl.lit(now).cast(pl.Datetime("us", "UTC")).alias("ingested_at"),
+            ]
+        )
 
         output_cols = [
-            "settlement_date", "settlement_period", "timestamp_utc",
-            "indicated_imbalance_mwh", "offer_volume_mwh", "bid_volume_mwh",
-            "total_accepted_offer_volume_mwh", "total_accepted_bid_volume_mwh",
-            "total_adjustment_sell_volume_mwh", "total_adjustment_buy_volume_mwh",
-            "data_provider", "ingested_at",
+            "settlement_date",
+            "settlement_period",
+            "timestamp_utc",
+            "indicated_imbalance_mwh",
+            "offer_volume_mwh",
+            "bid_volume_mwh",
+            "total_accepted_offer_volume_mwh",
+            "total_accepted_bid_volume_mwh",
+            "total_adjustment_sell_volume_mwh",
+            "total_adjustment_buy_volume_mwh",
+            "data_provider",
+            "ingested_at",
         ]
         available = [c for c in output_cols if c in df.columns]
         return df.select(available).sort("timestamp_utc")

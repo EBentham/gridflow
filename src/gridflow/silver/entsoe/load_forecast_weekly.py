@@ -59,9 +59,7 @@ class LoadForecastWeeklyTransformer(BaseSilverTransformer):
         df = raw_df.rename({"value": "load_forecast_mw", "in_domain": "area_code"})
 
         if df["timestamp_utc"].dtype != pl.Datetime("us", "UTC"):
-            df = df.with_columns(
-                pl.col("timestamp_utc").cast(pl.Datetime("us", "UTC"))
-            )
+            df = df.with_columns(pl.col("timestamp_utc").cast(pl.Datetime("us", "UTC")))
 
         df = df.with_columns(pl.col("load_forecast_mw").cast(pl.Float64))
 
@@ -72,16 +70,23 @@ class LoadForecastWeeklyTransformer(BaseSilverTransformer):
         df = with_published_at(df)
 
         now = datetime.now(UTC)
-        df = df.with_columns([
-            pl.lit("entsoe").alias("data_provider"),
-            pl.lit(now).cast(pl.Datetime("us", "UTC")).alias("ingested_at"),
-            pl.lit("week_ahead").alias("forecast_horizon"),
-        ])
+        df = df.with_columns(
+            [
+                pl.lit("entsoe").alias("data_provider"),
+                pl.lit(now).cast(pl.Datetime("us", "UTC")).alias("ingested_at"),
+                pl.lit("week_ahead").alias("forecast_horizon"),
+            ]
+        )
 
         output_cols = [
-            "timestamp_utc", "area_code", "load_forecast_mw",
-            "resolution", "forecast_horizon", "published_at",
-            "data_provider", "ingested_at",
+            "timestamp_utc",
+            "area_code",
+            "load_forecast_mw",
+            "resolution",
+            "forecast_horizon",
+            "published_at",
+            "data_provider",
+            "ingested_at",
         ]
         available = [c for c in output_cols if c in df.columns]
         return df.select(available).sort("timestamp_utc", "area_code")

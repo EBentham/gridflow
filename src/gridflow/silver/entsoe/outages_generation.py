@@ -58,47 +58,47 @@ class OutagesGenerationTransformer(BaseSilverTransformer):
             logger.error("Missing required columns in outages_generation: %s", missing)
             return pl.DataFrame()
 
-        df = raw_df.rename(
-            {"value": "unavailable_mw", "in_domain": "area_code"}
-        )
+        df = raw_df.rename({"value": "unavailable_mw", "in_domain": "area_code"})
 
         if df["timestamp_utc"].dtype != pl.Datetime("us", "UTC"):
-            df = df.with_columns(
-                pl.col("timestamp_utc").cast(pl.Datetime("us", "UTC"))
-            )
+            df = df.with_columns(pl.col("timestamp_utc").cast(pl.Datetime("us", "UTC")))
 
         df = df.with_columns(pl.col("unavailable_mw").cast(pl.Float64))
 
         # Map businessType A53 -> "planned", A54 -> "unplanned"
         df = df.with_columns(
-            pl.col("business_type").replace_strict(
-                {"A53": "planned", "A54": "unplanned"}
-            ).alias("outage_type")
+            pl.col("business_type")
+            .replace_strict({"A53": "planned", "A54": "unplanned"})
+            .alias("outage_type")
         )
 
         # unit_name may be absent; ensure it is a string column with empty default
         if "unit_name" in df.columns:
-            df = df.with_columns(
-                pl.col("unit_name").fill_null("").alias("unit_name")
-            )
+            df = df.with_columns(pl.col("unit_name").fill_null("").alias("unit_name"))
         else:
             df = df.with_columns(pl.lit("").alias("unit_name"))
 
         # Dedup on (timestamp_utc, unit_mrid) — one row per unit per timestamp
-        df = df.unique(
-            subset=["timestamp_utc", "unit_mrid"], keep="last"
-        )
+        df = df.unique(subset=["timestamp_utc", "unit_mrid"], keep="last")
 
         now = datetime.now(UTC)
-        df = df.with_columns([
-            pl.lit("entsoe").alias("data_provider"),
-            pl.lit(now).cast(pl.Datetime("us", "UTC")).alias("ingested_at"),
-        ])
+        df = df.with_columns(
+            [
+                pl.lit("entsoe").alias("data_provider"),
+                pl.lit(now).cast(pl.Datetime("us", "UTC")).alias("ingested_at"),
+            ]
+        )
 
         output_cols = [
-            "timestamp_utc", "area_code", "unit_mrid", "unit_name",
-            "outage_type", "unavailable_mw", "resolution",
-            "data_provider", "ingested_at",
+            "timestamp_utc",
+            "area_code",
+            "unit_mrid",
+            "unit_name",
+            "outage_type",
+            "unavailable_mw",
+            "resolution",
+            "data_provider",
+            "ingested_at",
         ]
         available = [c for c in output_cols if c in df.columns]
         df = df.select(available).sort("timestamp_utc", "unit_mrid")

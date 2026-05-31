@@ -43,8 +43,13 @@ def _isolated_env(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> tuple[Path
 def _write_fuelhh_bronze(data_dir: Path) -> None:
     target = date(2024, 1, 15)
     bronze_dir = (
-        data_dir / "bronze" / "elexon" / "fuelhh"
-        / str(target.year) / f"{target.month:02d}" / f"{target.day:02d}"
+        data_dir
+        / "bronze"
+        / "elexon"
+        / "fuelhh"
+        / str(target.year)
+        / f"{target.month:02d}"
+        / f"{target.day:02d}"
     )
     bronze_dir.mkdir(parents=True, exist_ok=True)
     payload = json.loads((FIXTURES / "fuelhh_response.json").read_text())
@@ -70,9 +75,13 @@ def test_transform_makes_silver_view_queryable_immediately(
     result = runner.invoke(
         app,
         [
-            "transform", "elexon", "fuelhh",
-            "--start", "2024-01-15",
-            "--end", "2024-01-15",
+            "transform",
+            "elexon",
+            "fuelhh",
+            "--start",
+            "2024-01-15",
+            "--end",
+            "2024-01-15",
         ],
     )
     assert result.exit_code == 0, result.output
@@ -86,9 +95,7 @@ def test_transform_makes_silver_view_queryable_immediately(
 
 
 @pytest.mark.integration
-def test_build_refreshes_gold_views(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_build_refreshes_gold_views(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """F15-C / PBI-04: gold parquet written by build is queryable immediately.
 
     The fake builder writes one gold parquet row; post-F15-C, build calls
@@ -118,9 +125,12 @@ def test_build_refreshes_gold_views(
     result = runner.invoke(
         app,
         [
-            "build", "system_marginal_price",
-            "--start", "2026-05-01",
-            "--end", "2026-05-01",
+            "build",
+            "system_marginal_price",
+            "--start",
+            "2026-05-01",
+            "--end",
+            "2026-05-01",
         ],
     )
     assert result.exit_code == 0, result.output
@@ -133,9 +143,7 @@ def test_build_refreshes_gold_views(
     assert rows[0] > 0, "gold_system_marginal_price view should be queryable post-build"
 
 
-def test_refresh_views_is_idempotent(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_refresh_views_is_idempotent(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """refresh_views can be called twice without error (CREATE OR REPLACE VIEW)."""
     _, db_path = _isolated_env(tmp_path, monkeypatch)
     data = tmp_path / "data"

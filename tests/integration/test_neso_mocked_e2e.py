@@ -30,8 +30,10 @@ END = datetime(2024, 1, 16, 0, 0, tzinfo=UTC)
 
 
 def _neso_config() -> SourceConfig:
-    return load_settings().get_source_config("neso").model_copy(
-        update={"rate_limit_per_second": 1000, "timeout": 5}
+    return (
+        load_settings()
+        .get_source_config("neso")
+        .model_copy(update={"rate_limit_per_second": 1000, "timeout": 5})
     )
 
 
@@ -175,9 +177,7 @@ async def test_active_datasets_fetch_with_expected_mocked_request_shape(
             headers={"content-type": "application/json"},
         )
 
-    route = respx.get(re.compile(rf"^{re.escape(BASE_URL)}/.*")).mock(
-        side_effect=handler
-    )
+    route = respx.get(re.compile(rf"^{re.escape(BASE_URL)}/.*")).mock(side_effect=handler)
 
     async with CarbonIntensityConnector(_neso_config()) as connector:
         responses = await connector.fetch(dataset, START, END)
@@ -194,9 +194,7 @@ async def test_active_datasets_fetch_with_expected_mocked_request_shape(
     assert response.source == "neso"
     assert response.dataset == dataset
     assert response.request_params == path_values
-    assert response.data_date == (
-        None if ENDPOINTS[dataset].reference else TARGET_DATE
-    )
+    assert response.data_date == (None if ENDPOINTS[dataset].reference else TARGET_DATE)
 
 
 @respx.mock

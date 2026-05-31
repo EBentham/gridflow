@@ -50,8 +50,8 @@ def _write_indo_bronze(bronze_root: Path, day: date, *, with_publish_time: bool)
 
 def test_indo_glob_read_across_publish_time_gap(tmp_data_dir: Path) -> None:
     bronze_root = tmp_data_dir / "bronze" / "elexon" / "indo"
-    present_day = date(2024, 1, 1)   # bronze carries publishTime
-    absent_day = date(2026, 4, 14)   # bronze lacks publishTime (the drift trigger)
+    present_day = date(2024, 1, 1)  # bronze carries publishTime
+    absent_day = date(2026, 4, 14)  # bronze lacks publishTime (the drift trigger)
     _write_indo_bronze(bronze_root, present_day, with_publish_time=True)
     _write_indo_bronze(bronze_root, absent_day, with_publish_time=False)
 

@@ -69,10 +69,12 @@ class FuelInstTransformer(BaseSilverTransformer):
             logger.error(f"Missing required columns in FUELINST: {missing}")
             return pl.DataFrame()
 
-        df = raw_df.with_columns([
-            pl.col("fuel_type").cast(pl.Utf8),
-            pl.col("generation_mw").cast(pl.Float64),
-        ])
+        df = raw_df.with_columns(
+            [
+                pl.col("fuel_type").cast(pl.Utf8),
+                pl.col("generation_mw").cast(pl.Float64),
+            ]
+        )
 
         # Derive timestamp from published_at or period_start
         if "published_at" in df.columns:
@@ -96,14 +98,19 @@ class FuelInstTransformer(BaseSilverTransformer):
         df = df.unique(subset=["timestamp_utc", "fuel_type"], keep="last")
 
         now = datetime.now(UTC)
-        df = df.with_columns([
-            pl.lit("elexon").alias("data_provider"),
-            pl.lit(now).cast(pl.Datetime("us", "UTC")).alias("ingested_at"),
-        ])
+        df = df.with_columns(
+            [
+                pl.lit("elexon").alias("data_provider"),
+                pl.lit(now).cast(pl.Datetime("us", "UTC")).alias("ingested_at"),
+            ]
+        )
 
         output_cols = [
-            "timestamp_utc", "fuel_type", "generation_mw",
-            "data_provider", "ingested_at",
+            "timestamp_utc",
+            "fuel_type",
+            "generation_mw",
+            "data_provider",
+            "ingested_at",
         ]
         available = [c for c in output_cols if c in df.columns]
         return df.select(available).sort("timestamp_utc", "fuel_type")

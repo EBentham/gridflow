@@ -159,9 +159,7 @@ async def test_live_neso_endpoint_fetches_and_transforms_or_classifies_empty(
     target_date = _target_date(selected_responses[0])
     transformer = get_transformer("neso", dataset, tmp_data_dir)
     rows_written = transformer.run(target_date)
-    assert rows_written > 0, (
-        f"source=neso dataset={dataset} stage=silver target_date={target_date}"
-    )
+    assert rows_written > 0, f"source=neso dataset={dataset} stage=silver target_date={target_date}"
 
     parquet_path = _silver_path(tmp_data_dir, dataset, target_date)
     assert parquet_path.exists()

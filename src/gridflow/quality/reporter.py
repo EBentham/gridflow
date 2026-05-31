@@ -55,17 +55,19 @@ class QualityReporter:
         run_id = str(uuid.uuid4())
         rows = []
         for i, r in enumerate(self._results):
-            rows.append({
-                "run_id": run_id,
-                "id": i,
-                "run_date": now,
-                "check_name": r.check_name,
-                "dataset": r.dataset,
-                "source": r.source,
-                "passed": r.passed,
-                "metric": r.metric,
-                "detail": r.detail,
-            })
+            rows.append(
+                {
+                    "run_id": run_id,
+                    "id": i,
+                    "run_date": now,
+                    "check_name": r.check_name,
+                    "dataset": r.dataset,
+                    "source": r.source,
+                    "passed": r.passed,
+                    "metric": r.metric,
+                    "detail": r.detail,
+                }
+            )
 
         df = pl.DataFrame(rows)
 

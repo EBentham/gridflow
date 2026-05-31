@@ -56,42 +56,41 @@ class GenerationForecastTransformer(BaseSilverTransformer):
             logger.error("Missing required columns in generation_forecast: %s", missing)
             return pl.DataFrame()
 
-        df = raw_df.rename(
-            {"value": "generation_forecast_mw", "in_domain": "area_code"}
-        )
+        df = raw_df.rename({"value": "generation_forecast_mw", "in_domain": "area_code"})
 
         if df["timestamp_utc"].dtype != pl.Datetime("us", "UTC"):
-            df = df.with_columns(
-                pl.col("timestamp_utc").cast(pl.Datetime("us", "UTC"))
-            )
+            df = df.with_columns(pl.col("timestamp_utc").cast(pl.Datetime("us", "UTC")))
 
         df = df.with_columns(pl.col("generation_forecast_mw").cast(pl.Float64))
 
         if "production_type" in df.columns:
             df = df.with_columns(
-                pl.col("production_type")
-                .fill_null("unknown")
-                .alias("production_type")
+                pl.col("production_type").fill_null("unknown").alias("production_type")
             )
 
-        df = df.unique(
-            subset=["timestamp_utc", "area_code", "production_type"], keep="last"
-        )
+        df = df.unique(subset=["timestamp_utc", "area_code", "production_type"], keep="last")
 
         # Issue 04: carry the document publication vintage (createdDateTime)
         # as published_at; typed-null when the source lacks it.
         df = with_published_at(df)
 
         now = datetime.now(UTC)
-        df = df.with_columns([
-            pl.lit("entsoe").alias("data_provider"),
-            pl.lit(now).cast(pl.Datetime("us", "UTC")).alias("ingested_at"),
-        ])
+        df = df.with_columns(
+            [
+                pl.lit("entsoe").alias("data_provider"),
+                pl.lit(now).cast(pl.Datetime("us", "UTC")).alias("ingested_at"),
+            ]
+        )
 
         output_cols = [
-            "timestamp_utc", "area_code", "production_type",
-            "generation_forecast_mw", "resolution", "published_at",
-            "data_provider", "ingested_at",
+            "timestamp_utc",
+            "area_code",
+            "production_type",
+            "generation_forecast_mw",
+            "resolution",
+            "published_at",
+            "data_provider",
+            "ingested_at",
         ]
         available = [c for c in output_cols if c in df.columns]
         return df.select(available).sort("timestamp_utc", "area_code", "production_type")

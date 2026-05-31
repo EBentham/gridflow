@@ -71,9 +71,7 @@ def test_active_catalog_rows_have_matching_endpoint_metadata() -> None:
     catalog = _load_catalog()
     active_rows = [row for row in catalog["endpoints"] if row["status"] == "active"]
     active_metadata_ids = {
-        endpoint_id
-        for endpoint_id, endpoint in ENDPOINTS.items()
-        if endpoint.status == "active"
+        endpoint_id for endpoint_id, endpoint in ENDPOINTS.items() if endpoint.status == "active"
     }
 
     assert {row["id"] for row in active_rows} == active_metadata_ids
@@ -88,9 +86,7 @@ def test_active_catalog_rows_have_matching_endpoint_metadata() -> None:
 
 def test_active_catalog_rows_are_exposed_by_source_config() -> None:
     catalog = _load_catalog()
-    active_catalog_ids = {
-        row["id"] for row in catalog["endpoints"] if row["status"] == "active"
-    }
+    active_catalog_ids = {row["id"] for row in catalog["endpoints"] if row["status"] == "active"}
     config_datasets = set(load_settings().get_source_config("gie_agsi").datasets)
 
     assert active_catalog_ids <= config_datasets

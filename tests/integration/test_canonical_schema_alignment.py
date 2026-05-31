@@ -113,9 +113,7 @@ def _run_transform_and_add_bitemporal(
 
 @pytest.mark.integration
 @pytest.mark.parametrize("source,dataset", sorted(list_transformers()))
-def test_silver_schema_matches_canonical(
-    tmp_path: Path, source: str, dataset: str
-) -> None:
+def test_silver_schema_matches_canonical(tmp_path: Path, source: str, dataset: str) -> None:
     """Each registered transformer's emitted silver schema matches CANONICAL_SCHEMA.yaml.
 
     Entries with TODO_HUMAN_FILL_COLUMNS: true are skipped (curation pass pending).

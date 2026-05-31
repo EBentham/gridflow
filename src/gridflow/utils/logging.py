@@ -35,9 +35,7 @@ def setup_logging(
         fmt="%(asctime)s %(name)s %(levelname)s %(message)s",
         rename_fields={"asctime": "timestamp", "levelname": "level"},
     )
-    console_formatter = logging.Formatter(
-        "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
-    )
+    console_formatter = logging.Formatter("%(asctime)s [%(levelname)s] %(name)s: %(message)s")
 
     today = datetime.now(UTC).strftime("%Y-%m-%d")
     file_handler = logging.FileHandler(log_dir / f"gridflow_{today}.log")

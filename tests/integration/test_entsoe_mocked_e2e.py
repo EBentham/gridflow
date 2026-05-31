@@ -212,9 +212,7 @@ class TestEntsoeUrlConstructionAllDatasets:
             assert doc_type.extra_params.items() <= params.items()
 
             expected_domain_params = (
-                set(doc_type.domain_params)
-                if doc_type.domain_params
-                else set()
+                set(doc_type.domain_params) if doc_type.domain_params else set()
             )
             if doc_type.domain_style == "control_area":
                 assert "controlArea_Domain" in params
@@ -237,15 +235,13 @@ class TestEntsoeUrlConstructionAllDatasets:
                 assert DOMAIN_PARAM_KEYS.intersection(params) == {"BiddingZone_Domain"}
             else:
                 pytest.fail(
-                    f"Unhandled ENTSO-E domain style for {dataset}: "
-                    f"{doc_type.domain_style}"
+                    f"Unhandled ENTSO-E domain style for {dataset}: {doc_type.domain_style}"
                 )
 
         if dataset in ZONE_PAIR_DATASETS:
             in_key, out_key = doc_type.domain_params or ("in_Domain", "out_Domain")
             assert any(
-                dict(call.request.url.params)[in_key]
-                != dict(call.request.url.params)[out_key]
+                dict(call.request.url.params)[in_key] != dict(call.request.url.params)[out_key]
                 for call in route.calls
             )
 
@@ -376,8 +372,7 @@ class TestEntsoeUrlConstructionAllDatasets:
         assert {response.content_type for response in responses} == {"text/xml"}
         assert {response.data_date for response in responses} == {TARGET_DATE}
         assert all(
-            response.request_params["zip_entry"] == "001-outage.xml"
-            for response in responses
+            response.request_params["zip_entry"] == "001-outage.xml" for response in responses
         )
 
     @respx.mock
@@ -400,12 +395,8 @@ class TestEntsoeUrlConstructionAllDatasets:
         """
         from gridflow.connectors.entsoe.endpoints import DEFAULT_ZONES
 
-        full_page_xml = (
-            b"<root>" + (b"<TimeSeries/>" * 4800) + b"</root>"
-        )
-        partial_page_xml = (
-            b"<root>" + (b"<TimeSeries/>" * 100) + b"</root>"
-        )
+        full_page_xml = b"<root>" + (b"<TimeSeries/>" * 4800) + b"</root>"
+        partial_page_xml = b"<root>" + (b"<TimeSeries/>" * 100) + b"</root>"
 
         def handler(request: httpx.Request) -> httpx.Response:
             params = dict(request.url.params)
@@ -434,13 +425,9 @@ class TestEntsoeUrlConstructionAllDatasets:
             f"{len(route.calls)}"
         )
 
-        offsets_seen = {
-            dict(call.request.url.params).get("offset", "")
-            for call in route.calls
-        }
+        offsets_seen = {dict(call.request.url.params).get("offset", "") for call in route.calls}
         assert offsets_seen == {"0", "4800"}, (
-            f"G9 ENTSOE-01 regression: expected offset values 0 and 4800, "
-            f"got {offsets_seen}"
+            f"G9 ENTSOE-01 regression: expected offset values 0 and 4800, got {offsets_seen}"
         )
 
         # Both pages collected per zone: 2 RawResponses × N zones.
@@ -482,6 +469,7 @@ class TestEntsoeUrlConstructionAllDatasets:
         # equals the number of default zones — not 2× as it would under
         # accidental pagination.
         from gridflow.connectors.entsoe.endpoints import DEFAULT_ZONES
+
         assert call_count[0] == len(DEFAULT_ZONES), (
             f"G9 ENTSOE-01 negative regression: non-paginated dataset "
             f"made {call_count[0]} calls, expected one per zone "

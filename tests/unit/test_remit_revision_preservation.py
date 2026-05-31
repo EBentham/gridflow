@@ -83,9 +83,7 @@ def test_remit_transform_does_not_collapse_duplicate_mrid() -> None:
 
     # Same mrid across multiple revisions is a feature now, not a duplicate.
     mrid_counts = out.group_by("mrid").len().sort("mrid")
-    counts = {
-        row["mrid"]: row["len"] for row in mrid_counts.iter_rows(named=True)
-    }
+    counts = {row["mrid"]: row["len"] for row in mrid_counts.iter_rows(named=True)}
     assert counts["MSG-001"] == 2
     assert counts["MSG-002"] == 1
 

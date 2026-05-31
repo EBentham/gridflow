@@ -35,12 +35,16 @@ DOC_TYPES: dict[str, EntsoeDocType] = {
         "A65", "A01", "Day-ahead load forecast", domain_style="out_bidding_zone"
     ),
     "actual_generation": EntsoeDocType(
-        "A75", "A16", "Actual generation per production type",
+        "A75",
+        "A16",
+        "Actual generation per production type",
         domain_style="in_domain",
         optional_params=("psrType",),
     ),
     "wind_solar_forecast": EntsoeDocType(
-        "A69", "A01", "Day-ahead wind / solar forecast",
+        "A69",
+        "A01",
+        "Day-ahead wind / solar forecast",
         domain_style="in_domain",
         optional_params=("psrType",),
     ),

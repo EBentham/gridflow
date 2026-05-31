@@ -81,9 +81,7 @@ class DemandForecastTransformer(BaseSilverTransformer):
 
         # For NDFD: use forecast_date as settlement_date if no settlement columns
         if not has_sp and "forecast_date" in raw_df.columns:
-            raw_df = raw_df.with_columns(
-                pl.col("forecast_date").alias("settlement_date")
-            )
+            raw_df = raw_df.with_columns(pl.col("forecast_date").alias("settlement_date"))
             # NDFD has no settlement period — set to 1 as placeholder
             raw_df = raw_df.with_columns(pl.lit(1).alias("settlement_period"))
             has_sp = True
@@ -97,11 +95,13 @@ class DemandForecastTransformer(BaseSilverTransformer):
             logger.error(f"Missing required columns in NDF: {missing}")
             return pl.DataFrame()
 
-        df = raw_df.with_columns([
-            pl.col("settlement_date").cast(pl.Date),
-            pl.col("settlement_period").cast(pl.Int32),
-            pl.col("national_demand_mw").cast(pl.Float64),
-        ])
+        df = raw_df.with_columns(
+            [
+                pl.col("settlement_date").cast(pl.Date),
+                pl.col("settlement_period").cast(pl.Int32),
+                pl.col("national_demand_mw").cast(pl.Float64),
+            ]
+        )
 
         if "transmission_demand_mw" in df.columns:
             df = df.with_columns(pl.col("transmission_demand_mw").cast(pl.Float64))
@@ -118,9 +118,7 @@ class DemandForecastTransformer(BaseSilverTransformer):
             # silver schema is deterministic and partition globs don't drift across
             # history (a missing column breaks SELECT * reads spanning files that do
             # carry it).
-            df = df.with_columns(
-                pl.lit(None).cast(pl.Datetime("us", "UTC")).alias("published_at")
-            )
+            df = df.with_columns(pl.lit(None).cast(pl.Datetime("us", "UTC")).alias("published_at"))
 
         # Derive timestamp from settlement date/period or start_time
         if has_sp:
@@ -151,15 +149,23 @@ class DemandForecastTransformer(BaseSilverTransformer):
         df = df.unique(subset=dedup_cols, keep="last")
 
         now = datetime.now(UTC)
-        df = df.with_columns([
-            pl.lit("elexon").alias("data_provider"),
-            pl.lit(now).cast(pl.Datetime("us", "UTC")).alias("ingested_at"),
-        ])
+        df = df.with_columns(
+            [
+                pl.lit("elexon").alias("data_provider"),
+                pl.lit(now).cast(pl.Datetime("us", "UTC")).alias("ingested_at"),
+            ]
+        )
 
         output_cols = [
-            "settlement_date", "settlement_period", "timestamp_utc",
-            "forecast_type", "national_demand_mw", "transmission_demand_mw",
-            "published_at", "data_provider", "ingested_at",
+            "settlement_date",
+            "settlement_period",
+            "timestamp_utc",
+            "forecast_type",
+            "national_demand_mw",
+            "transmission_demand_mw",
+            "published_at",
+            "data_provider",
+            "ingested_at",
         ]
         available = [c for c in output_cols if c in df.columns]
         return df.select(available).sort("timestamp_utc")

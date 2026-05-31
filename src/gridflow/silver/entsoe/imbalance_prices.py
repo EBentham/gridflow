@@ -32,9 +32,7 @@ class ImbalancePricesTransformer(BaseSilverTransformer):
 
         records: list[dict] = []
         for xml_file in sorted(bronze_path.glob("raw_*.xml")):
-            records.extend(
-                parse_timeseries_xml(xml_file.read_bytes(), value_tag="price.amount")
-            )
+            records.extend(parse_timeseries_xml(xml_file.read_bytes(), value_tag="price.amount"))
 
         if not records:
             return pl.DataFrame()
@@ -56,34 +54,45 @@ class ImbalancePricesTransformer(BaseSilverTransformer):
 
         now = datetime.now(UTC)
         df = (
-            raw_df.rename({
-                "value": "price_eur_mwh",
-                "control_area_domain": "area_code",
-            })
-            .with_columns(
-                pl.col("business_type").replace_strict(
-                    {"A19": "long", "A20": "short"}
-                ).alias("direction")
+            raw_df.rename(
+                {
+                    "value": "price_eur_mwh",
+                    "control_area_domain": "area_code",
+                }
             )
-            .select([
-                "timestamp_utc",
-                "area_code",
-                "direction",
-                "price_eur_mwh",
-                "resolution",
-            ])
+            .with_columns(
+                pl.col("business_type")
+                .replace_strict({"A19": "long", "A20": "short"})
+                .alias("direction")
+            )
+            .select(
+                [
+                    "timestamp_utc",
+                    "area_code",
+                    "direction",
+                    "price_eur_mwh",
+                    "resolution",
+                ]
+            )
             .unique(subset=["timestamp_utc", "area_code", "direction"], keep="last")
             .sort(["timestamp_utc", "area_code", "direction"])
-            .with_columns([
-                pl.lit("entsoe").alias("data_provider"),
-                pl.lit(now).cast(pl.Datetime("us", "UTC")).alias("ingested_at"),
-                pl.col("timestamp_utc").dt.replace_time_zone("UTC"),
-            ])
+            .with_columns(
+                [
+                    pl.lit("entsoe").alias("data_provider"),
+                    pl.lit(now).cast(pl.Datetime("us", "UTC")).alias("ingested_at"),
+                    pl.col("timestamp_utc").dt.replace_time_zone("UTC"),
+                ]
+            )
         )
 
         output_cols = [
-            "timestamp_utc", "area_code", "direction",
-            "price_eur_mwh", "resolution", "data_provider", "ingested_at",
+            "timestamp_utc",
+            "area_code",
+            "direction",
+            "price_eur_mwh",
+            "resolution",
+            "data_provider",
+            "ingested_at",
         ]
         available_cols = [c for c in output_cols if c in df.columns]
         df = df.select(available_cols)

@@ -180,35 +180,45 @@ class GasStorageTransformer(BaseSilverTransformer):
                 entity_name if country_code == entity_code else _first(row, "country_name")
             )
 
-            output.append({
-                "gas_day": gas_day,
-                "gas_day_end": _safe_datetime(_first(row, "gas_day_end")),
-                "updated_at": _safe_datetime(_first(row, "updated_at")),
-                "entity_level": entity_level,
-                "entity_code": entity_code,
-                "entity_name": entity_name,
-                "entity_url": _first(row, "url", "entity_url"),
-                "country_code": country_code,
-                "country_name": country_name,
-                "gas_in_storage_gwh": _safe_float(_first(row, "gas_in_storage")),
-                "consumption_gwh": _safe_float(_first(row, "consumption")),
-                "consumption_full_pct": _safe_float(_first(row, "consumption_full")),
-                "injection_gwh": _safe_float(_first(row, "injection")),
-                "withdrawal_gwh": _safe_float(_first(row, "withdrawal")),
-                "net_withdrawal_gwh": _safe_float(_first(row, "net_withdrawal")),
-                "working_gas_volume_gwh": _safe_float(_first(row, "working_gas_volume")),
-                "injection_capacity_gwh_per_day": _safe_float(_first(row, "injection_capacity")),
-                "withdrawal_capacity_gwh_per_day": _safe_float(_first(row, "withdrawal_capacity")),
-                "contracted_capacity_gwh_per_day": _safe_float(_first(row, "contracted_capacity")),
-                "available_capacity_gwh_per_day": _safe_float(_first(row, "available_capacity")),
-                "covered_capacity_gwh_per_day": _safe_float(_first(row, "covered_capacity")),
-                "storage_pct_full": _safe_float(_first(row, "full", "storage_pct_full")),
-                "trend": _safe_float(_first(row, "trend")),
-                "status": _first(row, "status"),
-                "info": _json_string(_first(row, "info")),
-                "data_provider": "gie_agsi",
-                "ingested_at": now,
-            })
+            output.append(
+                {
+                    "gas_day": gas_day,
+                    "gas_day_end": _safe_datetime(_first(row, "gas_day_end")),
+                    "updated_at": _safe_datetime(_first(row, "updated_at")),
+                    "entity_level": entity_level,
+                    "entity_code": entity_code,
+                    "entity_name": entity_name,
+                    "entity_url": _first(row, "url", "entity_url"),
+                    "country_code": country_code,
+                    "country_name": country_name,
+                    "gas_in_storage_gwh": _safe_float(_first(row, "gas_in_storage")),
+                    "consumption_gwh": _safe_float(_first(row, "consumption")),
+                    "consumption_full_pct": _safe_float(_first(row, "consumption_full")),
+                    "injection_gwh": _safe_float(_first(row, "injection")),
+                    "withdrawal_gwh": _safe_float(_first(row, "withdrawal")),
+                    "net_withdrawal_gwh": _safe_float(_first(row, "net_withdrawal")),
+                    "working_gas_volume_gwh": _safe_float(_first(row, "working_gas_volume")),
+                    "injection_capacity_gwh_per_day": _safe_float(
+                        _first(row, "injection_capacity")
+                    ),
+                    "withdrawal_capacity_gwh_per_day": _safe_float(
+                        _first(row, "withdrawal_capacity")
+                    ),
+                    "contracted_capacity_gwh_per_day": _safe_float(
+                        _first(row, "contracted_capacity")
+                    ),
+                    "available_capacity_gwh_per_day": _safe_float(
+                        _first(row, "available_capacity")
+                    ),
+                    "covered_capacity_gwh_per_day": _safe_float(_first(row, "covered_capacity")),
+                    "storage_pct_full": _safe_float(_first(row, "full", "storage_pct_full")),
+                    "trend": _safe_float(_first(row, "trend")),
+                    "status": _first(row, "status"),
+                    "info": _json_string(_first(row, "info")),
+                    "data_provider": "gie_agsi",
+                    "ingested_at": now,
+                }
+            )
 
         if not output:
             return pl.DataFrame()
@@ -420,25 +430,29 @@ class AboutListingTransformer(AgsiJsonTransformer):
         inventory = parse_listing_inventory(payload)
         rows: list[dict[str, Any]] = []
         for company in inventory.companies:
-            rows.append({
-                "entity_level": "company",
-                "entity_code": company.eic,
-                "entity_name": company.name,
-                "country_code": company.country,
-                "entity_type": company.entity_type,
-                "entity_url": company.url,
-            })
+            rows.append(
+                {
+                    "entity_level": "company",
+                    "entity_code": company.eic,
+                    "entity_name": company.name,
+                    "country_code": company.country,
+                    "entity_type": company.entity_type,
+                    "entity_url": company.url,
+                }
+            )
         for facility in inventory.facilities:
-            rows.append({
-                "entity_level": "facility",
-                "entity_code": facility.eic,
-                "entity_name": facility.name,
-                "country_code": facility.country,
-                "entity_type": facility.entity_type,
-                "entity_url": facility.url,
-                "company_code": facility.company_eic,
-                "company_name": facility.company_name,
-            })
+            rows.append(
+                {
+                    "entity_level": "facility",
+                    "entity_code": facility.eic,
+                    "entity_name": facility.name,
+                    "country_code": facility.country,
+                    "entity_type": facility.entity_type,
+                    "entity_url": facility.url,
+                    "company_code": facility.company_eic,
+                    "company_name": facility.company_name,
+                }
+            )
         return rows
 
 
@@ -519,43 +533,49 @@ def _about_summary_records(payload: Any) -> list[dict[str, Any]]:
         company_code = str(company.get("eic") or company.get("code") or "")
         company_name = str(company.get("name") or company.get("short_name") or company_code)
 
-        rows.append({
-            "entity_level": "company",
-            "entity_code": company_code,
-            "entity_name": company_name,
-            "short_name": company.get("short_name"),
-            "country_code": _nested_text(country, "code"),
-            "country_name": _nested_text(country, "name"),
-            "entity_type": company_data.get("type") or company.get("type"),
-            "aggregate_code": company_data.get("code"),
-            "aggregate_name": company_data.get("name"),
-            "publication_link": company.get("publication_link"),
-            "transparency_template": company.get("transparency_template"),
-            "operational_information": company.get("operational_information"),
-            "available_capacities": company.get("available_capacities"),
-            "tariffs": company.get("tariffs"),
-            "has_image": bool(company.get("image")),
-        })
+        rows.append(
+            {
+                "entity_level": "company",
+                "entity_code": company_code,
+                "entity_name": company_name,
+                "short_name": company.get("short_name"),
+                "country_code": _nested_text(country, "code"),
+                "country_name": _nested_text(country, "name"),
+                "entity_type": company_data.get("type") or company.get("type"),
+                "aggregate_code": company_data.get("code"),
+                "aggregate_name": company_data.get("name"),
+                "publication_link": company.get("publication_link"),
+                "transparency_template": company.get("transparency_template"),
+                "operational_information": company.get("operational_information"),
+                "available_capacities": company.get("available_capacities"),
+                "tariffs": company.get("tariffs"),
+                "has_image": bool(company.get("image")),
+            }
+        )
 
         for facility in company.get("facilities") or []:
             if not isinstance(facility, dict):
                 continue
             facility_country = facility.get("country") or country
             facility_code = str(facility.get("eic") or facility.get("code") or "")
-            rows.append({
-                "entity_level": "facility",
-                "entity_code": facility_code,
-                "entity_name": facility.get("name") or facility.get("short_name") or facility_code,
-                "country_code": _nested_text(facility_country, "code"),
-                "country_name": _nested_text(facility_country, "name"),
-                "entity_type": facility.get("type"),
-                "operational_start_date": facility.get("operational_start_date"),
-                "operational_end_date": facility.get("operational_end_date"),
-                "company_code": company_code,
-                "company_name": company_name,
-                "aggregate_code": company_data.get("code"),
-                "aggregate_name": company_data.get("name"),
-            })
+            rows.append(
+                {
+                    "entity_level": "facility",
+                    "entity_code": facility_code,
+                    "entity_name": facility.get("name")
+                    or facility.get("short_name")
+                    or facility_code,
+                    "country_code": _nested_text(facility_country, "code"),
+                    "country_name": _nested_text(facility_country, "name"),
+                    "entity_type": facility.get("type"),
+                    "operational_start_date": facility.get("operational_start_date"),
+                    "operational_end_date": facility.get("operational_end_date"),
+                    "company_code": company_code,
+                    "company_name": company_name,
+                    "aggregate_code": company_data.get("code"),
+                    "aggregate_name": company_data.get("name"),
+                }
+            )
 
     return rows
 

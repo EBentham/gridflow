@@ -82,11 +82,13 @@ class BOALTransformer(BaseSilverTransformer):
             logger.error(f"Missing required columns in BOAL: {missing}")
             return pl.DataFrame()
 
-        df = raw_df.with_columns([
-            pl.col("settlement_date").cast(pl.Date),
-            pl.col("settlement_period").cast(pl.Int32),
-            pl.col("bm_unit_id").cast(pl.Utf8),
-        ])
+        df = raw_df.with_columns(
+            [
+                pl.col("settlement_date").cast(pl.Date),
+                pl.col("settlement_period").cast(pl.Int32),
+                pl.col("bm_unit_id").cast(pl.Utf8),
+            ]
+        )
 
         # G5 (2026-05): cast acceptance_time from ISO string to UTC datetime
         # so it matches the ElexonBOAL schema declaration (datetime | None).
@@ -117,17 +119,28 @@ class BOALTransformer(BaseSilverTransformer):
         df = df.unique(subset=dedup_cols, keep="last")
 
         now = datetime.now(UTC)
-        df = df.with_columns([
-            pl.lit("elexon").alias("data_provider"),
-            pl.lit(now).cast(pl.Datetime("us", "UTC")).alias("ingested_at"),
-        ])
+        df = df.with_columns(
+            [
+                pl.lit("elexon").alias("data_provider"),
+                pl.lit(now).cast(pl.Datetime("us", "UTC")).alias("ingested_at"),
+            ]
+        )
 
         output_cols = [
-            "settlement_date", "settlement_period", "timestamp_utc",
-            "bm_unit_id", "acceptance_number", "acceptance_time",
-            "deem_flag", "so_flag", "stor_flag", "rr_flag",
-            "bid_offer_level_from", "bid_offer_level_to",
-            "data_provider", "ingested_at",
+            "settlement_date",
+            "settlement_period",
+            "timestamp_utc",
+            "bm_unit_id",
+            "acceptance_number",
+            "acceptance_time",
+            "deem_flag",
+            "so_flag",
+            "stor_flag",
+            "rr_flag",
+            "bid_offer_level_from",
+            "bid_offer_level_to",
+            "data_provider",
+            "ingested_at",
         ]
         available = [c for c in output_cols if c in df.columns]
         return df.select(available).sort("timestamp_utc", "bm_unit_id")

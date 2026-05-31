@@ -210,11 +210,13 @@ def storage_params_for_date(
         country=country,
         company=company,
     )
-    params.update({
-        "date": _coerce_date(target_date).isoformat(),
-        "page": page,
-        "size": _normalise_page_size(size),
-    })
+    params.update(
+        {
+            "date": _coerce_date(target_date).isoformat(),
+            "page": page,
+            "size": _normalise_page_size(size),
+        }
+    )
     return params
 
 
@@ -241,12 +243,14 @@ def storage_params_for_range(
         country=country,
         company=company,
     )
-    params.update({
-        "from": start_date.isoformat(),
-        "to": end_date.isoformat(),
-        "page": page,
-        "size": _normalise_page_size(size),
-    })
+    params.update(
+        {
+            "from": start_date.isoformat(),
+            "to": end_date.isoformat(),
+            "page": page,
+            "size": _normalise_page_size(size),
+        }
+    )
     return params
 
 

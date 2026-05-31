@@ -43,8 +43,10 @@ def _connector_config(source: str) -> SourceConfig:
     body, so they need a live ``SourceConfig`` (correct base_url + datasets)
     with a stub API key and an effectively-unthrottled rate limit.
     """
-    return load_settings().get_source_config(source).model_copy(
-        update={"api_key": "test-key", "rate_limit_per_second": 1000, "timeout": 5}
+    return (
+        load_settings()
+        .get_source_config(source)
+        .model_copy(update={"api_key": "test-key", "rate_limit_per_second": 1000, "timeout": 5})
     )
 
 
@@ -85,22 +87,25 @@ class TestElexonEndpointDefinitions:
 class TestElexonNewDatasetParams:
     """Verify new Tier-1 datasets are registered with correct paths and param styles."""
 
-    @pytest.mark.parametrize("dataset,expected_path", [
-        ("agpt", "/datasets/AGPT"),
-        ("agws", "/datasets/AGWS"),
-        ("atl", "/datasets/ATL"),
-        ("indo", "/datasets/INDO"),
-        ("itsdo", "/datasets/ITSDO"),
-        ("indod", "/datasets/INDOD"),
-        ("nonbm", "/datasets/NONBM"),
-        ("inddem", "/datasets/INDDEM"),
-        ("indgen", "/datasets/INDGEN"),
-        ("tsdf", "/datasets/TSDF"),
-        ("tsdfd", "/datasets/TSDFD"),
-        ("lolpdrm", "/datasets/LOLPDRM"),
-        ("remit", "/datasets/REMIT"),
-        ("soso", "/datasets/SOSO"),
-    ])
+    @pytest.mark.parametrize(
+        "dataset,expected_path",
+        [
+            ("agpt", "/datasets/AGPT"),
+            ("agws", "/datasets/AGWS"),
+            ("atl", "/datasets/ATL"),
+            ("indo", "/datasets/INDO"),
+            ("itsdo", "/datasets/ITSDO"),
+            ("indod", "/datasets/INDOD"),
+            ("nonbm", "/datasets/NONBM"),
+            ("inddem", "/datasets/INDDEM"),
+            ("indgen", "/datasets/INDGEN"),
+            ("tsdf", "/datasets/TSDF"),
+            ("tsdfd", "/datasets/TSDFD"),
+            ("lolpdrm", "/datasets/LOLPDRM"),
+            ("remit", "/datasets/REMIT"),
+            ("soso", "/datasets/SOSO"),
+        ],
+    )
     def test_new_publish_datetime_datasets(self, dataset: str, expected_path: str):
         from gridflow.connectors.elexon.endpoints import ENDPOINTS, ParamStyle, build_params
 
@@ -147,12 +152,15 @@ class TestElexonDatePathParams:
 class TestElexonFromToParams:
     """Verify from/to style PUBLISH_DATETIME endpoints (boal, disbsad, mid, netbsad)."""
 
-    @pytest.mark.parametrize("dataset,expected_path", [
-        ("boal", "/datasets/BOALF"),
-        ("disbsad", "/datasets/DISBSAD"),
-        ("mid", "/datasets/MID"),
-        ("netbsad", "/datasets/NETBSAD"),
-    ])
+    @pytest.mark.parametrize(
+        "dataset,expected_path",
+        [
+            ("boal", "/datasets/BOALF"),
+            ("disbsad", "/datasets/DISBSAD"),
+            ("mid", "/datasets/MID"),
+            ("netbsad", "/datasets/NETBSAD"),
+        ],
+    )
     def test_from_to_param_style(self, dataset: str, expected_path: str):
         from gridflow.connectors.elexon.endpoints import ENDPOINTS, ParamStyle, build_params
 
@@ -176,9 +184,7 @@ class TestElexonFromToParams:
         assert ep.param_style == ParamStyle.SETTLEMENT_DATE_PERIOD
         assert ep.path == "/datasets/PN"
 
-        params = build_params(
-            ep, settlement_date=date(2026, 2, 1), settlement_period=1, page=1
-        )
+        params = build_params(ep, settlement_date=date(2026, 2, 1), settlement_period=1, page=1)
         assert params["settlementDate"] == "2026-02-01"
         assert params["settlementPeriod"] == 1
         assert params["page"] == 1
@@ -192,19 +198,22 @@ class TestElexonPublishDatetimeParams:
     Swagger declares measurementDateTimeFrom/To for /datasets/FREQ.
     The connector overrides from_param/to_param accordingly (V2-FIX-01)."""
 
-    @pytest.mark.parametrize("dataset,expected_path,from_param,to_param", [
-        ("freq", "/datasets/FREQ", "measurementDateTimeFrom", "measurementDateTimeTo"),
-        ("fuelhh", "/datasets/FUELHH", "publishDateTimeFrom", "publishDateTimeTo"),
-        ("fuelinst", "/datasets/FUELINST", "publishDateTimeFrom", "publishDateTimeTo"),
-        ("imbalngc", "/datasets/IMBALNGC", "publishDateTimeFrom", "publishDateTimeTo"),
-        ("ndf", "/datasets/NDF", "publishDateTimeFrom", "publishDateTimeTo"),
-        ("ndfd", "/datasets/NDFD", "publishDateTimeFrom", "publishDateTimeTo"),
-        ("melngc", "/datasets/MELNGC", "publishDateTimeFrom", "publishDateTimeTo"),
-        ("fou2t14d", "/datasets/FOU2T14D", "publishDateTimeFrom", "publishDateTimeTo"),
-        ("uou2t14d", "/datasets/UOU2T14D", "publishDateTimeFrom", "publishDateTimeTo"),
-        ("windfor", "/datasets/WINDFOR", "publishDateTimeFrom", "publishDateTimeTo"),
-        ("temp", "/datasets/TEMP", "publishDateTimeFrom", "publishDateTimeTo"),
-    ])
+    @pytest.mark.parametrize(
+        "dataset,expected_path,from_param,to_param",
+        [
+            ("freq", "/datasets/FREQ", "measurementDateTimeFrom", "measurementDateTimeTo"),
+            ("fuelhh", "/datasets/FUELHH", "publishDateTimeFrom", "publishDateTimeTo"),
+            ("fuelinst", "/datasets/FUELINST", "publishDateTimeFrom", "publishDateTimeTo"),
+            ("imbalngc", "/datasets/IMBALNGC", "publishDateTimeFrom", "publishDateTimeTo"),
+            ("ndf", "/datasets/NDF", "publishDateTimeFrom", "publishDateTimeTo"),
+            ("ndfd", "/datasets/NDFD", "publishDateTimeFrom", "publishDateTimeTo"),
+            ("melngc", "/datasets/MELNGC", "publishDateTimeFrom", "publishDateTimeTo"),
+            ("fou2t14d", "/datasets/FOU2T14D", "publishDateTimeFrom", "publishDateTimeTo"),
+            ("uou2t14d", "/datasets/UOU2T14D", "publishDateTimeFrom", "publishDateTimeTo"),
+            ("windfor", "/datasets/WINDFOR", "publishDateTimeFrom", "publishDateTimeTo"),
+            ("temp", "/datasets/TEMP", "publishDateTimeFrom", "publishDateTimeTo"),
+        ],
+    )
     def test_publish_datetime_url(
         self, dataset: str, expected_path: str, from_param: str, to_param: str
     ):
@@ -219,19 +228,22 @@ class TestElexonPublishDatetimeParams:
         assert params[to_param] == "2026-02-02T00:00:00Z"
         assert params["page"] == 1
 
-    @pytest.mark.parametrize("dataset,expected_path,from_param,to_param", [
-        ("freq", "/datasets/FREQ", "measurementDateTimeFrom", "measurementDateTimeTo"),
-        ("fuelhh", "/datasets/FUELHH", "publishDateTimeFrom", "publishDateTimeTo"),
-        ("fuelinst", "/datasets/FUELINST", "publishDateTimeFrom", "publishDateTimeTo"),
-        ("imbalngc", "/datasets/IMBALNGC", "publishDateTimeFrom", "publishDateTimeTo"),
-        ("ndf", "/datasets/NDF", "publishDateTimeFrom", "publishDateTimeTo"),
-        ("ndfd", "/datasets/NDFD", "publishDateTimeFrom", "publishDateTimeTo"),
-        ("melngc", "/datasets/MELNGC", "publishDateTimeFrom", "publishDateTimeTo"),
-        ("fou2t14d", "/datasets/FOU2T14D", "publishDateTimeFrom", "publishDateTimeTo"),
-        ("uou2t14d", "/datasets/UOU2T14D", "publishDateTimeFrom", "publishDateTimeTo"),
-        ("windfor", "/datasets/WINDFOR", "publishDateTimeFrom", "publishDateTimeTo"),
-        ("temp", "/datasets/TEMP", "publishDateTimeFrom", "publishDateTimeTo"),
-    ])
+    @pytest.mark.parametrize(
+        "dataset,expected_path,from_param,to_param",
+        [
+            ("freq", "/datasets/FREQ", "measurementDateTimeFrom", "measurementDateTimeTo"),
+            ("fuelhh", "/datasets/FUELHH", "publishDateTimeFrom", "publishDateTimeTo"),
+            ("fuelinst", "/datasets/FUELINST", "publishDateTimeFrom", "publishDateTimeTo"),
+            ("imbalngc", "/datasets/IMBALNGC", "publishDateTimeFrom", "publishDateTimeTo"),
+            ("ndf", "/datasets/NDF", "publishDateTimeFrom", "publishDateTimeTo"),
+            ("ndfd", "/datasets/NDFD", "publishDateTimeFrom", "publishDateTimeTo"),
+            ("melngc", "/datasets/MELNGC", "publishDateTimeFrom", "publishDateTimeTo"),
+            ("fou2t14d", "/datasets/FOU2T14D", "publishDateTimeFrom", "publishDateTimeTo"),
+            ("uou2t14d", "/datasets/UOU2T14D", "publishDateTimeFrom", "publishDateTimeTo"),
+            ("windfor", "/datasets/WINDFOR", "publishDateTimeFrom", "publishDateTimeTo"),
+            ("temp", "/datasets/TEMP", "publishDateTimeFrom", "publishDateTimeTo"),
+        ],
+    )
     def test_publish_datetime_full_url_string(
         self, dataset: str, expected_path: str, from_param: str, to_param: str
     ):
@@ -280,9 +292,14 @@ class TestEntsoeEndpointDefinitions:
         from gridflow.connectors.entsoe.endpoints import DOC_TYPES
 
         expected = [
-            "day_ahead_prices", "actual_load", "load_forecast",
-            "actual_generation", "wind_solar_forecast",
-            "cross_border_flows", "outages_generation", "installed_capacity",
+            "day_ahead_prices",
+            "actual_load",
+            "load_forecast",
+            "actual_generation",
+            "wind_solar_forecast",
+            "cross_border_flows",
+            "outages_generation",
+            "installed_capacity",
         ]
         for ds in expected:
             assert ds in DOC_TYPES, f"Missing ENTSO-E dataset: {ds}"
@@ -306,16 +323,19 @@ class TestEntsoeEndpointDefinitions:
         formatted = REF_START.strftime(ENTSOE_DT_FORMAT)
         assert formatted == "202602010000"
 
-    @pytest.mark.parametrize("dataset,doc_type,process_type", [
-        ("day_ahead_prices", "A44", None),
-        ("actual_load", "A65", "A16"),
-        ("load_forecast", "A65", "A01"),
-        ("actual_generation", "A75", "A16"),
-        ("wind_solar_forecast", "A69", "A01"),
-        ("cross_border_flows", "A11", None),
-        ("outages_generation", "A80", None),
-        ("installed_capacity", "A68", "A33"),
-    ])
+    @pytest.mark.parametrize(
+        "dataset,doc_type,process_type",
+        [
+            ("day_ahead_prices", "A44", None),
+            ("actual_load", "A65", "A16"),
+            ("load_forecast", "A65", "A01"),
+            ("actual_generation", "A75", "A16"),
+            ("wind_solar_forecast", "A69", "A01"),
+            ("cross_border_flows", "A11", None),
+            ("outages_generation", "A80", None),
+            ("installed_capacity", "A68", "A33"),
+        ],
+    )
     def test_document_type_mapping(self, dataset: str, doc_type: str, process_type: str | None):
         from gridflow.connectors.entsoe.endpoints import DOC_TYPES
 
@@ -349,9 +369,7 @@ class TestEntsoeUrlConstruction:
 
         def handler(request: httpx.Request) -> httpx.Response:
             requests.append(request)
-            return httpx.Response(
-                200, content=b"<root/>", headers={"content-type": "text/xml"}
-            )
+            return httpx.Response(200, content=b"<root/>", headers={"content-type": "text/xml"})
 
         respx.get(url__startswith=ENTSOE_BASE).mock(side_effect=handler)
 
@@ -436,8 +454,14 @@ class TestEntsoeFlowPairs:
         from gridflow.connectors.entsoe.client import _FLOW_PAIRS
 
         expected = [
-            ("GB", "FR"), ("GB", "NL"), ("GB", "BE"), ("GB", "IE-SEM"),
-            ("FR", "BE"), ("FR", "DE-LU"), ("NL", "DE-LU"), ("NL", "BE"),
+            ("GB", "FR"),
+            ("GB", "NL"),
+            ("GB", "BE"),
+            ("GB", "IE-SEM"),
+            ("FR", "BE"),
+            ("FR", "DE-LU"),
+            ("NL", "DE-LU"),
+            ("NL", "BE"),
         ]
         assert expected == _FLOW_PAIRS
 
@@ -655,9 +679,15 @@ class TestOpenMeteoEndpointDefinitions:
 
         # F7.5-VARS-05: snow vars added to demand for winter peak.
         expected = (
-            "temperature_2m", "wind_speed_10m", "wind_direction_10m",
-            "relative_humidity_2m", "precipitation", "shortwave_radiation",
-            "surface_pressure", "snowfall", "snow_depth",
+            "temperature_2m",
+            "wind_speed_10m",
+            "wind_direction_10m",
+            "relative_humidity_2m",
+            "precipitation",
+            "shortwave_radiation",
+            "surface_pressure",
+            "snowfall",
+            "snow_depth",
         )
         assert expected == DEMAND_HOURLY_VARS
 
@@ -689,8 +719,7 @@ class TestOpenMeteoEndpointDefinitions:
                 ("tilt", "35"),
                 ("azimuth", "180"),
             )
-        for ds in ("historical_demand", "forecast_demand",
-                   "historical_wind", "forecast_wind"):
+        for ds in ("historical_demand", "forecast_demand", "historical_wind", "forecast_wind"):
             assert DATASET_SPECS[ds].extra_params == ()
 
     @respx.mock
@@ -798,7 +827,10 @@ class TestNesoEndpointDefinitions:
         to_str = REF_END.strftime("%Y-%m-%dT%H:%MZ")
         full_url = f"{NESO_BASE}/intensity/{from_str}/{to_str}"
 
-        assert full_url == "https://api.carbonintensity.org.uk/intensity/2026-02-01T00:00Z/2026-02-02T00:00Z"
+        assert (
+            full_url
+            == "https://api.carbonintensity.org.uk/intensity/2026-02-01T00:00Z/2026-02-02T00:00Z"
+        )
 
     def test_14_day_chunking_logic(self):
         """Verify the chunking would produce correct paths for ranges > 14 days."""

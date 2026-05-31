@@ -22,7 +22,9 @@ def ingest(
     start: Optional[str] = typer.Option(None, help="Start date (YYYY-MM-DD)"),
     end: Optional[str] = typer.Option(None, help="End date (YYYY-MM-DD)"),
     last: Optional[str] = typer.Option(None, help="Relative lookback (e.g. 24h, 7d)"),
-    all_datasets: bool = typer.Option(False, "--all", "-all", help="Ingest all datasets for source"),
+    all_datasets: bool = typer.Option(
+        False, "--all", "-all", help="Ingest all datasets for source"
+    ),
 ) -> None:
     """Ingest raw data from an API source into the bronze layer."""
     from gridflow.config.settings import load_settings
@@ -35,9 +37,7 @@ def ingest(
         settings.pipeline.console_log_level,
     )
 
-    start_dt, end_dt = _resolve_dates(
-        start, end, last, settings.pipeline.default_lookback_hours
-    )
+    start_dt, end_dt = _resolve_dates(start, end, last, settings.pipeline.default_lookback_hours)
     datasets = _resolve_datasets(source, dataset, all_datasets, settings)
 
     # Import connector registrations
@@ -114,9 +114,7 @@ def transform(
         settings.pipeline.console_log_level,
     )
 
-    start_dt, end_dt = _resolve_dates(
-        start, end, last, settings.pipeline.default_lookback_hours
-    )
+    start_dt, end_dt = _resolve_dates(start, end, last, settings.pipeline.default_lookback_hours)
     datasets = _resolve_datasets(source, dataset, all_datasets, settings)
 
     # Import transformer registrations
@@ -166,9 +164,7 @@ def transform(
 
 @app.command()
 def build(
-    gold_dataset: Optional[str] = typer.Argument(
-        default=None, help="Gold dataset name"
-    ),
+    gold_dataset: Optional[str] = typer.Argument(default=None, help="Gold dataset name"),
     start: Optional[str] = typer.Option(None, help="Start date (YYYY-MM-DD)"),
     end: Optional[str] = typer.Option(None, help="End date (YYYY-MM-DD)"),
     last: Optional[str] = typer.Option(None, help="Relative lookback (e.g. 24h, 7d)"),
@@ -186,9 +182,7 @@ def build(
         settings.pipeline.console_log_level,
     )
 
-    start_dt, end_dt = _resolve_dates(
-        start, end, last, settings.pipeline.default_lookback_hours
-    )
+    start_dt, end_dt = _resolve_dates(start, end, last, settings.pipeline.default_lookback_hours)
 
     # Gold dataset registry
     gold_builders = {
@@ -261,9 +255,7 @@ def backfill(
         while current < end_dt:
             chunk_end = min(current + timedelta(days=chunk_days), end_dt)
             chunk_num += 1
-            typer.echo(
-                f"  Chunk {chunk_num}: {current.date()} to {chunk_end.date()}"
-            )
+            typer.echo(f"  Chunk {chunk_num}: {current.date()} to {chunk_end.date()}")
 
             # Call ingest for this chunk (pass all Optional params explicitly to
             # avoid typer OptionInfo objects leaking in as default values)
@@ -301,8 +293,12 @@ def backfill(
 def export_csv(
     source: str = typer.Argument(help="Data source"),
     dataset: Optional[str] = typer.Argument(default=None, help="Dataset name"),
-    output_dir: Optional[str] = typer.Option(None, "--output", "-o", help="Output directory (default: data/exports/)"),
-    all_datasets: bool = typer.Option(False, "--all", "-all", help="Export all datasets for source"),
+    output_dir: Optional[str] = typer.Option(
+        None, "--output", "-o", help="Output directory (default: data/exports/)"
+    ),
+    all_datasets: bool = typer.Option(
+        False, "--all", "-all", help="Export all datasets for source"
+    ),
 ) -> None:
     """Export silver Parquet data to CSV files."""
     from gridflow.config.settings import load_settings
@@ -348,7 +344,9 @@ def pipeline(
     end: Optional[str] = typer.Option(None, help="End date (YYYY-MM-DD)"),
     last: Optional[str] = typer.Option(None, help="Relative lookback (e.g. 24h, 7d)"),
     all_datasets: bool = typer.Option(False, "--all", "-all", help="Run all datasets for source"),
-    gold_dataset: Optional[str] = typer.Option(None, "--gold", help="Gold dataset to build after silver"),
+    gold_dataset: Optional[str] = typer.Option(
+        None, "--gold", help="Gold dataset to build after silver"
+    ),
 ) -> None:
     """Run the full pipeline: ingest (bronze) -> transform (silver) -> build (gold).
 
@@ -507,7 +505,9 @@ def quality(
 
 @app.command()
 def reset(
-    source: Optional[str] = typer.Argument(default=None, help="Limit reset to this source (e.g. elexon)"),
+    source: Optional[str] = typer.Argument(
+        default=None, help="Limit reset to this source (e.g. elexon)"
+    ),
     dataset: Optional[str] = typer.Argument(default=None, help="Limit reset to this dataset"),
     bronze: bool = typer.Option(False, "--bronze", help="Wipe bronze layer only"),
     silver: bool = typer.Option(False, "--silver", help="Wipe silver layer only"),
@@ -538,7 +538,7 @@ def reset(
     wipe_all_layers = not any([bronze, silver, gold, duckdb])
     wipe_bronze = bronze or wipe_all_layers
     wipe_silver = silver or wipe_all_layers
-    wipe_gold   = gold   or wipe_all_layers
+    wipe_gold = gold or wipe_all_layers
     wipe_duckdb = duckdb or wipe_all_layers
 
     # Build human-readable scope description
@@ -551,10 +551,14 @@ def reset(
         scope_parts.append("ALL sources")
 
     layer_parts = []
-    if wipe_bronze: layer_parts.append("bronze")
-    if wipe_silver: layer_parts.append("silver")
-    if wipe_gold:   layer_parts.append("gold")
-    if wipe_duckdb: layer_parts.append("DuckDB")
+    if wipe_bronze:
+        layer_parts.append("bronze")
+    if wipe_silver:
+        layer_parts.append("silver")
+    if wipe_gold:
+        layer_parts.append("gold")
+    if wipe_duckdb:
+        layer_parts.append("DuckDB")
 
     description = f"{'/'.join(scope_parts)} [{', '.join(layer_parts)}]"
 
@@ -563,7 +567,7 @@ def reset(
         typer.confirm("Are you sure?", abort=True)
 
     deleted_files = 0
-    deleted_dirs  = 0
+    deleted_dirs = 0
 
     def _wipe_dir(root: Path) -> None:
         nonlocal deleted_files, deleted_dirs

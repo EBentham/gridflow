@@ -22,7 +22,7 @@ def entsoe_config() -> SourceConfig:
     return SourceConfig(
         base_url=_ENTSOE_BASE,
         api_key="test-token",
-        api_key_header="",          # ENTSO-E uses query-param auth, not a header
+        api_key_header="",  # ENTSO-E uses query-param auth, not a header
         rate_limit_per_second=10,
         timeout=5,
         datasets={
@@ -142,6 +142,7 @@ async def test_fetch_actual_load_uses_out_bidding_zone_domain(
     assert len(responses) > 0
     # Verify first call used outBiddingZone_Domain, not legacy .mRID or in/out params.
     import respx as _respx  # noqa: PLC0415
+
     for call in _respx.calls:
         params = dict(call.request.url.params)
         assert "controlArea_Domain" not in params
@@ -162,7 +163,7 @@ async def test_acknowledgement_error_includes_reason_and_redacts_token(
     """ENTSO-E acknowledgement XML should surface reason text without leaking token."""
     acknowledgement = (
         b'<?xml version="1.0" encoding="UTF-8"?>'
-        b'<Acknowledgement_MarketDocument '
+        b"<Acknowledgement_MarketDocument "
         b'xmlns="urn:iec62325.351:tc57wg16:451-1:acknowledgementdocument:7:0">'
         b"""
       <Reason>

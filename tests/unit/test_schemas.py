@@ -169,8 +169,11 @@ _DT = date(2024, 1, 15)
 class TestElexonFuelHH:
     def test_valid_record(self):
         r = ElexonFuelHH(
-            settlement_date=_DT, settlement_period=1, timestamp_utc=_TS,
-            fuel_type="CCGT", generation_mw=12500.0,
+            settlement_date=_DT,
+            settlement_period=1,
+            timestamp_utc=_TS,
+            fuel_type="CCGT",
+            generation_mw=12500.0,
         )
         assert r.fuel_type == "CCGT"
         assert r.data_provider == "elexon"
@@ -178,23 +181,30 @@ class TestElexonFuelHH:
     def test_invalid_settlement_period(self):
         with pytest.raises(ValidationError):
             ElexonFuelHH(
-                settlement_date=_DT, settlement_period=0, timestamp_utc=_TS,
-                fuel_type="CCGT", generation_mw=12500.0,
+                settlement_date=_DT,
+                settlement_period=0,
+                timestamp_utc=_TS,
+                fuel_type="CCGT",
+                generation_mw=12500.0,
             )
 
     def test_naive_timestamp_rejected(self):
         with pytest.raises(ValidationError):
             ElexonFuelHH(
-                settlement_date=_DT, settlement_period=1,
+                settlement_date=_DT,
+                settlement_period=1,
                 timestamp_utc=datetime(2024, 1, 15, 0, 0),  # naive
-                fuel_type="CCGT", generation_mw=12500.0,
+                fuel_type="CCGT",
+                generation_mw=12500.0,
             )
 
 
 class TestElexonBOAL:
     def test_valid_record(self):
         r = ElexonBOAL(
-            settlement_date=_DT, settlement_period=10, timestamp_utc=_TS,
+            settlement_date=_DT,
+            settlement_period=10,
+            timestamp_utc=_TS,
             bm_unit_id="T_DRAXX-1",
         )
         assert r.bm_unit_id == "T_DRAXX-1"
@@ -202,7 +212,9 @@ class TestElexonBOAL:
 
     def test_optional_fields_default_false(self):
         r = ElexonBOAL(
-            settlement_date=_DT, settlement_period=10, timestamp_utc=_TS,
+            settlement_date=_DT,
+            settlement_period=10,
+            timestamp_utc=_TS,
             bm_unit_id="T_DRAXX-1",
         )
         assert r.deem_flag is False
@@ -212,7 +224,8 @@ class TestElexonBOAL:
     def test_naive_timestamp_rejected(self):
         with pytest.raises(ValidationError):
             ElexonBOAL(
-                settlement_date=_DT, settlement_period=10,
+                settlement_date=_DT,
+                settlement_period=10,
                 timestamp_utc=datetime(2024, 1, 15, 4, 30),
                 bm_unit_id="T_DRAXX-1",
             )
@@ -221,14 +234,20 @@ class TestElexonBOAL:
 class TestElexonBOD:
     def test_valid_record(self):
         r = ElexonBOD(
-            settlement_date=_DT, settlement_period=10, timestamp_utc=_TS,
-            bm_unit_id="T_DRAXX-1", bid_price=-50.0, offer_price=75.0,
+            settlement_date=_DT,
+            settlement_period=10,
+            timestamp_utc=_TS,
+            bm_unit_id="T_DRAXX-1",
+            bid_price=-50.0,
+            offer_price=75.0,
         )
         assert r.bid_price == -50.0
 
     def test_optional_prices(self):
         r = ElexonBOD(
-            settlement_date=_DT, settlement_period=1, timestamp_utc=_TS,
+            settlement_date=_DT,
+            settlement_period=1,
+            timestamp_utc=_TS,
             bm_unit_id="T_DRAXX-1",
         )
         assert r.bid_price is None
@@ -238,15 +257,20 @@ class TestElexonBOD:
 class TestElexonMID:
     def test_valid_record(self):
         r = ElexonMID(
-            settlement_date=_DT, settlement_period=1, timestamp_utc=_TS,
-            data_provider_id="N2EXMIP", market_index_price=65.32,
+            settlement_date=_DT,
+            settlement_period=1,
+            timestamp_utc=_TS,
+            data_provider_id="N2EXMIP",
+            market_index_price=65.32,
         )
         assert r.data_provider_id == "N2EXMIP"
 
     def test_all_optional(self):
         # Only required fields are date, period, timestamp
         r = ElexonMID(
-            settlement_date=_DT, settlement_period=1, timestamp_utc=_TS,
+            settlement_date=_DT,
+            settlement_period=1,
+            timestamp_utc=_TS,
         )
         assert r.market_index_price is None
 
@@ -273,32 +297,43 @@ class TestElexonFrequency:
 class TestElexonDemandForecast:
     def test_valid_ndf(self):
         r = ElexonDemandForecast(
-            settlement_date=_DT, settlement_period=1, timestamp_utc=_TS,
-            forecast_type="day_ahead", national_demand_mw=28500.0,
+            settlement_date=_DT,
+            settlement_period=1,
+            timestamp_utc=_TS,
+            forecast_type="day_ahead",
+            national_demand_mw=28500.0,
         )
         assert r.forecast_type == "day_ahead"
 
     def test_valid_ndfd(self):
         r = ElexonDemandForecast(
-            settlement_date=_DT, settlement_period=1, timestamp_utc=_TS,
-            forecast_type="2_14_day", national_demand_mw=29000.0,
+            settlement_date=_DT,
+            settlement_period=1,
+            timestamp_utc=_TS,
+            forecast_type="2_14_day",
+            national_demand_mw=29000.0,
         )
         assert r.forecast_type == "2_14_day"
 
     def test_naive_timestamp_rejected(self):
         with pytest.raises(ValidationError):
             ElexonDemandForecast(
-                settlement_date=_DT, settlement_period=1,
+                settlement_date=_DT,
+                settlement_period=1,
                 timestamp_utc=datetime(2024, 1, 15, 0, 0),
-                forecast_type="day_ahead", national_demand_mw=28500.0,
+                forecast_type="day_ahead",
+                national_demand_mw=28500.0,
             )
 
 
 class TestElexonWindForecast:
     def test_valid_with_settlement(self):
         r = ElexonWindForecast(
-            settlement_date=_DT, settlement_period=1, timestamp_utc=_TS,
-            initial_forecast_mw=4500.0, latest_forecast_mw=4320.0,
+            settlement_date=_DT,
+            settlement_period=1,
+            timestamp_utc=_TS,
+            initial_forecast_mw=4500.0,
+            latest_forecast_mw=4320.0,
         )
         assert r.initial_forecast_mw == 4500.0
 
@@ -316,14 +351,20 @@ class TestElexonWindForecast:
 class TestElexonPN:
     def test_valid_record(self):
         r = ElexonPN(
-            settlement_date=_DT, settlement_period=10, timestamp_utc=_TS,
-            bm_unit_id="T_DRAXX-1", level_from=380.0, level_to=400.0,
+            settlement_date=_DT,
+            settlement_period=10,
+            timestamp_utc=_TS,
+            bm_unit_id="T_DRAXX-1",
+            level_from=380.0,
+            level_to=400.0,
         )
         assert r.level_from == 380.0
 
     def test_optional_levels(self):
         r = ElexonPN(
-            settlement_date=_DT, settlement_period=1, timestamp_utc=_TS,
+            settlement_date=_DT,
+            settlement_period=1,
+            timestamp_utc=_TS,
             bm_unit_id="T_DRAXX-1",
         )
         assert r.level_from is None
@@ -331,7 +372,8 @@ class TestElexonPN:
     def test_naive_timestamp_rejected(self):
         with pytest.raises(ValidationError):
             ElexonPN(
-                settlement_date=_DT, settlement_period=1,
+                settlement_date=_DT,
+                settlement_period=1,
                 timestamp_utc=datetime(2024, 1, 15, 5, 0),
                 bm_unit_id="T_DRAXX-1",
             )
@@ -340,15 +382,21 @@ class TestElexonPN:
 class TestElexonDISBSAD:
     def test_valid_record(self):
         r = ElexonDISBSAD(
-            settlement_date=_DT, settlement_period=1, timestamp_utc=_TS,
-            adjustment_action_id="DISBSAD-001", component="ENERGY",
-            cost=1250.50, volume=15.0,
+            settlement_date=_DT,
+            settlement_period=1,
+            timestamp_utc=_TS,
+            adjustment_action_id="DISBSAD-001",
+            component="ENERGY",
+            cost=1250.50,
+            volume=15.0,
         )
         assert r.cost == 1250.50
 
     def test_optional_flags_default_false(self):
         r = ElexonDISBSAD(
-            settlement_date=_DT, settlement_period=1, timestamp_utc=_TS,
+            settlement_date=_DT,
+            settlement_period=1,
+            timestamp_utc=_TS,
         )
         assert r.so_flag is False
         assert r.stor_flag is False
@@ -356,7 +404,8 @@ class TestElexonDISBSAD:
     def test_naive_timestamp_rejected(self):
         with pytest.raises(ValidationError):
             ElexonDISBSAD(
-                settlement_date=_DT, settlement_period=1,
+                settlement_date=_DT,
+                settlement_period=1,
                 timestamp_utc=datetime(2024, 1, 15, 0, 0),
             )
 

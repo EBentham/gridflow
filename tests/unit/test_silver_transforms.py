@@ -67,24 +67,26 @@ class TestSystemPriceTransformer:
 
     def test_transform_basic(self):
         """Basic transform with standard field names."""
-        raw = self._make_raw_df([
-            {
-                "settlementDate": "2024-01-15",
-                "settlementPeriod": 1,
-                "systemSellPrice": 45.50,
-                "systemBuyPrice": 55.00,
-                "netImbalanceVolume": -120.5,
-                "settlementRunType": "SF",
-            },
-            {
-                "settlementDate": "2024-01-15",
-                "settlementPeriod": 2,
-                "systemSellPrice": 46.75,
-                "systemBuyPrice": 56.25,
-                "netImbalanceVolume": 80.3,
-                "settlementRunType": "SF",
-            },
-        ])
+        raw = self._make_raw_df(
+            [
+                {
+                    "settlementDate": "2024-01-15",
+                    "settlementPeriod": 1,
+                    "systemSellPrice": 45.50,
+                    "systemBuyPrice": 55.00,
+                    "netImbalanceVolume": -120.5,
+                    "settlementRunType": "SF",
+                },
+                {
+                    "settlementDate": "2024-01-15",
+                    "settlementPeriod": 2,
+                    "systemSellPrice": 46.75,
+                    "systemBuyPrice": 56.25,
+                    "netImbalanceVolume": 80.3,
+                    "settlementRunType": "SF",
+                },
+            ]
+        )
         result = self.transformer.transform(raw)
 
         assert len(result) == 2
@@ -95,24 +97,26 @@ class TestSystemPriceTransformer:
 
     def test_run_type_resolution(self):
         """Later run types should supersede earlier ones."""
-        raw = self._make_raw_df([
-            {
-                "settlementDate": "2024-01-15",
-                "settlementPeriod": 1,
-                "systemSellPrice": 44.00,
-                "systemBuyPrice": 54.00,
-                "netImbalanceVolume": -115.0,
-                "settlementRunType": "II",
-            },
-            {
-                "settlementDate": "2024-01-15",
-                "settlementPeriod": 1,
-                "systemSellPrice": 45.50,
-                "systemBuyPrice": 55.00,
-                "netImbalanceVolume": -120.5,
-                "settlementRunType": "SF",
-            },
-        ])
+        raw = self._make_raw_df(
+            [
+                {
+                    "settlementDate": "2024-01-15",
+                    "settlementPeriod": 1,
+                    "systemSellPrice": 44.00,
+                    "systemBuyPrice": 54.00,
+                    "netImbalanceVolume": -115.0,
+                    "settlementRunType": "II",
+                },
+                {
+                    "settlementDate": "2024-01-15",
+                    "settlementPeriod": 1,
+                    "systemSellPrice": 45.50,
+                    "systemBuyPrice": 55.00,
+                    "netImbalanceVolume": -120.5,
+                    "settlementRunType": "SF",
+                },
+            ]
+        )
         result = self.transformer.transform(raw)
 
         # Should keep SF (precedence 2) over II (precedence 1)
@@ -134,24 +138,26 @@ class TestSystemPriceTransformer:
         dedicated `price_derivation_code` column with no constraint;
         `run_type` stays absent because this endpoint exposes no
         run-type field."""
-        raw = self._make_raw_df([
-            {
-                "settlementDate": "2026-05-06",
-                "settlementPeriod": 1,
-                "systemSellPrice": 96.79,
-                "systemBuyPrice": 96.79,
-                "netImbalanceVolume": -37.99,
-                "priceDerivationCode": "N",
-            },
-            {
-                "settlementDate": "2026-05-06",
-                "settlementPeriod": 2,
-                "systemSellPrice": 92.10,
-                "systemBuyPrice": 92.10,
-                "netImbalanceVolume": 12.5,
-                "priceDerivationCode": "P",
-            },
-        ])
+        raw = self._make_raw_df(
+            [
+                {
+                    "settlementDate": "2026-05-06",
+                    "settlementPeriod": 1,
+                    "systemSellPrice": 96.79,
+                    "systemBuyPrice": 96.79,
+                    "netImbalanceVolume": -37.99,
+                    "priceDerivationCode": "N",
+                },
+                {
+                    "settlementDate": "2026-05-06",
+                    "settlementPeriod": 2,
+                    "systemSellPrice": 92.10,
+                    "systemBuyPrice": 92.10,
+                    "netImbalanceVolume": 12.5,
+                    "priceDerivationCode": "P",
+                },
+            ]
+        )
         result = self.transformer.transform(raw)
 
         assert "price_derivation_code" in result.columns, (
@@ -173,16 +179,18 @@ class TestSystemPriceTransformer:
 
     def test_timestamp_utc_winter(self):
         """SP1 on a winter date should be 00:00 UTC."""
-        raw = self._make_raw_df([
-            {
-                "settlementDate": "2024-01-15",
-                "settlementPeriod": 1,
-                "systemSellPrice": 45.50,
-                "systemBuyPrice": 55.00,
-                "netImbalanceVolume": 0.0,
-                "settlementRunType": "SF",
-            },
-        ])
+        raw = self._make_raw_df(
+            [
+                {
+                    "settlementDate": "2024-01-15",
+                    "settlementPeriod": 1,
+                    "systemSellPrice": 45.50,
+                    "systemBuyPrice": 55.00,
+                    "netImbalanceVolume": 0.0,
+                    "settlementRunType": "SF",
+                },
+            ]
+        )
         result = self.transformer.transform(raw)
         ts = result["timestamp_utc"][0]
         # SP1 on winter day = 00:00 UTC
@@ -193,6 +201,7 @@ class TestSystemPriceTransformer:
 # ---------------------------------------------------------------------------
 # FuelHH
 # ---------------------------------------------------------------------------
+
 
 class TestFuelHHTransformer:
     def setup_method(self):
@@ -211,12 +220,22 @@ class TestFuelHHTransformer:
 
     def test_dedup_on_fuel_type(self):
         """Duplicate (date, period, fuel_type) rows should be deduplicated."""
-        raw = pl.DataFrame([
-            {"settlementDate": "2024-01-15", "settlementPeriod": 1,
-             "fuelType": "CCGT", "generation": 12000.0},
-            {"settlementDate": "2024-01-15", "settlementPeriod": 1,
-             "fuelType": "CCGT", "generation": 12500.0},  # duplicate
-        ])
+        raw = pl.DataFrame(
+            [
+                {
+                    "settlementDate": "2024-01-15",
+                    "settlementPeriod": 1,
+                    "fuelType": "CCGT",
+                    "generation": 12000.0,
+                },
+                {
+                    "settlementDate": "2024-01-15",
+                    "settlementPeriod": 1,
+                    "fuelType": "CCGT",
+                    "generation": 12500.0,
+                },  # duplicate
+            ]
+        )
         result = self.t.transform(raw)
         assert len(result) == 1
 
@@ -229,10 +248,16 @@ class TestFuelHHTransformer:
 
     def test_timestamp_sp1_winter(self):
         """SP1 on winter date maps to 00:00 UTC."""
-        raw = pl.DataFrame([
-            {"settlementDate": "2024-01-15", "settlementPeriod": 1,
-             "fuelType": "WIND", "generation": 3000.0},
-        ])
+        raw = pl.DataFrame(
+            [
+                {
+                    "settlementDate": "2024-01-15",
+                    "settlementPeriod": 1,
+                    "fuelType": "WIND",
+                    "generation": 3000.0,
+                },
+            ]
+        )
         result = self.t.transform(raw)
         ts = result["timestamp_utc"][0]
         assert ts.hour == 0
@@ -259,6 +284,7 @@ class TestFuelHHTransformer:
 # ---------------------------------------------------------------------------
 # BOAL
 # ---------------------------------------------------------------------------
+
 
 class TestBOALTransformer:
     def setup_method(self):
@@ -294,6 +320,7 @@ class TestBOALTransformer:
 # BOD
 # ---------------------------------------------------------------------------
 
+
 class TestBODTransformer:
     def setup_method(self):
         self.t = _make_transformer(BODTransformer)
@@ -311,14 +338,26 @@ class TestBODTransformer:
 
     def test_dedup_on_pair_number(self):
         """Same (date, period, bm_unit, pair_number) rows are deduplicated."""
-        raw = pl.DataFrame([
-            {"settlementDate": "2024-01-15", "settlementPeriod": 1,
-             "bmUnit": "T_DRAXX-1", "bidOfferPairNumber": 1,
-             "bidPrice": -50.0, "offerPrice": 75.0},
-            {"settlementDate": "2024-01-15", "settlementPeriod": 1,
-             "bmUnit": "T_DRAXX-1", "bidOfferPairNumber": 1,
-             "bidPrice": -55.0, "offerPrice": 80.0},  # duplicate
-        ])
+        raw = pl.DataFrame(
+            [
+                {
+                    "settlementDate": "2024-01-15",
+                    "settlementPeriod": 1,
+                    "bmUnit": "T_DRAXX-1",
+                    "bidOfferPairNumber": 1,
+                    "bidPrice": -50.0,
+                    "offerPrice": 75.0,
+                },
+                {
+                    "settlementDate": "2024-01-15",
+                    "settlementPeriod": 1,
+                    "bmUnit": "T_DRAXX-1",
+                    "bidOfferPairNumber": 1,
+                    "bidPrice": -55.0,
+                    "offerPrice": 80.0,
+                },  # duplicate
+            ]
+        )
         result = self.t.transform(raw)
         assert len(result) == 1
 
@@ -329,6 +368,7 @@ class TestBODTransformer:
 # ---------------------------------------------------------------------------
 # MID
 # ---------------------------------------------------------------------------
+
 
 class TestMIDTransformer:
     def setup_method(self):
@@ -345,10 +385,17 @@ class TestMIDTransformer:
         assert "timestamp_utc" in result.columns
 
     def test_price_cast_to_float(self):
-        raw = pl.DataFrame([
-            {"settlementDate": "2024-01-15", "settlementPeriod": 1,
-             "dataProviderId": "N2EX", "midPrice": "65.32", "volume": "12000"},
-        ])
+        raw = pl.DataFrame(
+            [
+                {
+                    "settlementDate": "2024-01-15",
+                    "settlementPeriod": 1,
+                    "dataProviderId": "N2EX",
+                    "midPrice": "65.32",
+                    "volume": "12000",
+                },
+            ]
+        )
         result = self.t.transform(raw)
         assert result["market_index_price"].dtype == pl.Float64
 
@@ -377,6 +424,7 @@ class TestMIDTransformer:
 # FREQ
 # ---------------------------------------------------------------------------
 
+
 class TestFreqTransformer:
     def setup_method(self):
         self.t = _make_transformer(FreqTransformer)
@@ -392,17 +440,21 @@ class TestFreqTransformer:
         assert result["data_provider"][0] == "elexon"
 
     def test_parses_iso_datetime(self):
-        raw = pl.DataFrame([
-            {"reportDateTime": "2024-01-15T00:00:00Z", "frequency": 50.01},
-        ])
+        raw = pl.DataFrame(
+            [
+                {"reportDateTime": "2024-01-15T00:00:00Z", "frequency": 50.01},
+            ]
+        )
         result = self.t.transform(raw)
         assert result["timestamp_utc"].dtype == pl.Datetime("us", "UTC")
 
     def test_dedup_on_timestamp(self):
-        raw = pl.DataFrame([
-            {"reportDateTime": "2024-01-15T00:00:00Z", "frequency": 50.01},
-            {"reportDateTime": "2024-01-15T00:00:00Z", "frequency": 50.02},  # dup
-        ])
+        raw = pl.DataFrame(
+            [
+                {"reportDateTime": "2024-01-15T00:00:00Z", "frequency": 50.01},
+                {"reportDateTime": "2024-01-15T00:00:00Z", "frequency": 50.02},  # dup
+            ]
+        )
         result = self.t.transform(raw)
         assert len(result) == 1
 
@@ -417,6 +469,7 @@ class TestFreqTransformer:
 # ---------------------------------------------------------------------------
 # DemandForecast (NDF / NDFD)
 # ---------------------------------------------------------------------------
+
 
 class TestDemandForecastTransformer:
     def setup_method(self):
@@ -439,10 +492,11 @@ class TestDemandForecastTransformer:
         t.bronze_dir = Path("/tmp/test/bronze/elexon/ndfd")
         t.silver_dir = Path("/tmp/test/silver/elexon/ndfd")
 
-        raw = pl.DataFrame([
-            {"settlementDate": "2024-01-15", "settlementPeriod": 1,
-             "nationalDemand": 29000.0},
-        ])
+        raw = pl.DataFrame(
+            [
+                {"settlementDate": "2024-01-15", "settlementPeriod": 1, "nationalDemand": 29000.0},
+            ]
+        )
         result = t.transform(raw)
         assert result["forecast_type"][0] == "2_14_day"
 
@@ -454,20 +508,22 @@ class TestDemandForecastTransformer:
         assert self.t.transform(raw).is_empty()
 
     def test_preserves_multiple_published_at_vintages_per_period(self):
-        raw = pl.DataFrame([
-            {
-                "settlementDate": "2024-01-15",
-                "settlementPeriod": 1,
-                "nationalDemand": 28500.0,
-                "publishDateTime": "2024-01-14T09:30:00Z",
-            },
-            {
-                "settlementDate": "2024-01-15",
-                "settlementPeriod": 1,
-                "nationalDemand": 28600.0,
-                "publishDateTime": "2024-01-14T10:00:00Z",
-            },
-        ])
+        raw = pl.DataFrame(
+            [
+                {
+                    "settlementDate": "2024-01-15",
+                    "settlementPeriod": 1,
+                    "nationalDemand": 28500.0,
+                    "publishDateTime": "2024-01-14T09:30:00Z",
+                },
+                {
+                    "settlementDate": "2024-01-15",
+                    "settlementPeriod": 1,
+                    "nationalDemand": 28600.0,
+                    "publishDateTime": "2024-01-14T10:00:00Z",
+                },
+            ]
+        )
 
         result = self.t.transform(raw)
 
@@ -481,6 +537,7 @@ class TestDemandForecastTransformer:
 # ---------------------------------------------------------------------------
 # WindForecast
 # ---------------------------------------------------------------------------
+
 
 class TestWindForecastTransformer:
     def setup_method(self):
@@ -497,32 +554,44 @@ class TestWindForecastTransformer:
         assert "timestamp_utc" in result.columns
 
     def test_dedup_on_settlement_date_period(self):
-        raw = pl.DataFrame([
-            {"settlementDate": "2024-01-15", "settlementPeriod": 1,
-             "initialForecast": 4500.0, "latestForecast": 4300.0},
-            {"settlementDate": "2024-01-15", "settlementPeriod": 1,
-             "initialForecast": 4550.0, "latestForecast": 4350.0},  # dup
-        ])
+        raw = pl.DataFrame(
+            [
+                {
+                    "settlementDate": "2024-01-15",
+                    "settlementPeriod": 1,
+                    "initialForecast": 4500.0,
+                    "latestForecast": 4300.0,
+                },
+                {
+                    "settlementDate": "2024-01-15",
+                    "settlementPeriod": 1,
+                    "initialForecast": 4550.0,
+                    "latestForecast": 4350.0,
+                },  # dup
+            ]
+        )
         result = self.t.transform(raw)
         assert len(result) == 1
 
     def test_preserves_multiple_published_at_vintages_per_period(self):
-        raw = pl.DataFrame([
-            {
-                "settlementDate": "2024-01-15",
-                "settlementPeriod": 1,
-                "initialForecast": 4500.0,
-                "latestForecast": 4300.0,
-                "publishDateTime": "2024-01-14T08:00:00Z",
-            },
-            {
-                "settlementDate": "2024-01-15",
-                "settlementPeriod": 1,
-                "initialForecast": 4550.0,
-                "latestForecast": 4350.0,
-                "publishDateTime": "2024-01-14T09:00:00Z",
-            },
-        ])
+        raw = pl.DataFrame(
+            [
+                {
+                    "settlementDate": "2024-01-15",
+                    "settlementPeriod": 1,
+                    "initialForecast": 4500.0,
+                    "latestForecast": 4300.0,
+                    "publishDateTime": "2024-01-14T08:00:00Z",
+                },
+                {
+                    "settlementDate": "2024-01-15",
+                    "settlementPeriod": 1,
+                    "initialForecast": 4550.0,
+                    "latestForecast": 4350.0,
+                    "publishDateTime": "2024-01-14T09:00:00Z",
+                },
+            ]
+        )
 
         result = self.t.transform(raw)
 
@@ -540,6 +609,7 @@ class TestWindForecastTransformer:
 # PN
 # ---------------------------------------------------------------------------
 
+
 class TestPNTransformer:
     def setup_method(self):
         self.t = _make_transformer(PNTransformer)
@@ -556,12 +626,24 @@ class TestPNTransformer:
         assert "timestamp_utc" in result.columns
 
     def test_dedup_on_date_period_bm_unit(self):
-        raw = pl.DataFrame([
-            {"settlementDate": "2024-01-15", "settlementPeriod": 1,
-             "bmUnit": "T_DRAXX-1", "levelFrom": 0.0, "levelTo": 400.0},
-            {"settlementDate": "2024-01-15", "settlementPeriod": 1,
-             "bmUnit": "T_DRAXX-1", "levelFrom": 10.0, "levelTo": 410.0},  # dup
-        ])
+        raw = pl.DataFrame(
+            [
+                {
+                    "settlementDate": "2024-01-15",
+                    "settlementPeriod": 1,
+                    "bmUnit": "T_DRAXX-1",
+                    "levelFrom": 0.0,
+                    "levelTo": 400.0,
+                },
+                {
+                    "settlementDate": "2024-01-15",
+                    "settlementPeriod": 1,
+                    "bmUnit": "T_DRAXX-1",
+                    "levelFrom": 10.0,
+                    "levelTo": 410.0,
+                },  # dup
+            ]
+        )
         result = self.t.transform(raw)
         assert len(result) == 1
 
@@ -576,6 +658,7 @@ class TestPNTransformer:
 # ---------------------------------------------------------------------------
 # DISBSAD
 # ---------------------------------------------------------------------------
+
 
 class TestDISBSADTransformer:
     def setup_method(self):
@@ -593,11 +676,20 @@ class TestDISBSADTransformer:
         assert "timestamp_utc" in result.columns
 
     def test_cost_volume_cast_to_float(self):
-        raw = pl.DataFrame([
-            {"settlementDate": "2024-01-15", "settlementPeriod": 1,
-             "id": "X1", "soFlag": True, "storProviderFlag": False,
-             "component": "ENERGY", "cost": "1250.5", "volume": "15.0"},
-        ])
+        raw = pl.DataFrame(
+            [
+                {
+                    "settlementDate": "2024-01-15",
+                    "settlementPeriod": 1,
+                    "id": "X1",
+                    "soFlag": True,
+                    "storProviderFlag": False,
+                    "component": "ENERGY",
+                    "cost": "1250.5",
+                    "volume": "15.0",
+                },
+            ]
+        )
         result = self.t.transform(raw)
         assert result["cost"].dtype == pl.Float64
         assert result["volume"].dtype == pl.Float64
@@ -628,6 +720,7 @@ class TestDISBSADTransformer:
 # BMUnits (reference data)
 # ---------------------------------------------------------------------------
 
+
 class TestBMUnitsTransformer:
     def setup_method(self):
         self.t = _make_transformer(BMUnitsTransformer)
@@ -645,10 +738,12 @@ class TestBMUnitsTransformer:
 
     def test_dedup_on_bm_unit_id(self):
         """Duplicate bm_unit_id rows should be deduplicated."""
-        raw = pl.DataFrame([
-            {"bmUnit": "T_DRAXX-1", "name": "Drax 1 v1", "fuelType": "COAL"},
-            {"bmUnit": "T_DRAXX-1", "name": "Drax 1 v2", "fuelType": "BIOMASS"},  # dup
-        ])
+        raw = pl.DataFrame(
+            [
+                {"bmUnit": "T_DRAXX-1", "name": "Drax 1 v1", "fuelType": "COAL"},
+                {"bmUnit": "T_DRAXX-1", "name": "Drax 1 v2", "fuelType": "BIOMASS"},  # dup
+            ]
+        )
         result = self.t.transform(raw)
         assert len(result) == 1
 
@@ -660,9 +755,11 @@ class TestBMUnitsTransformer:
         assert ids == sorted(ids)
 
     def test_capacity_cast_to_float(self):
-        raw = pl.DataFrame([
-            {"bmUnit": "T_TEST-1", "fuelType": "GAS", "registeredCapacity": "300.0"},
-        ])
+        raw = pl.DataFrame(
+            [
+                {"bmUnit": "T_TEST-1", "fuelType": "GAS", "registeredCapacity": "300.0"},
+            ]
+        )
         result = self.t.transform(raw)
         assert result["registered_capacity_mw"].dtype == pl.Float64
 
@@ -694,14 +791,26 @@ class TestNETBSADTransformer:
 
     def test_dedup_on_settlement_period(self):
         """Duplicate (date, period) rows should keep last."""
-        raw = pl.DataFrame([
-            {"settlementDate": "2024-01-15", "settlementPeriod": 1,
-             "netBuyPriceAdjustment": 2.50, "netSellPriceAdjustment": 1.80,
-             "netBuyVolumeAdjustment": 150.0, "netSellVolumeAdjustment": -75.0},
-            {"settlementDate": "2024-01-15", "settlementPeriod": 1,
-             "netBuyPriceAdjustment": 2.55, "netSellPriceAdjustment": 1.85,
-             "netBuyVolumeAdjustment": 155.0, "netSellVolumeAdjustment": -70.0},
-        ])
+        raw = pl.DataFrame(
+            [
+                {
+                    "settlementDate": "2024-01-15",
+                    "settlementPeriod": 1,
+                    "netBuyPriceAdjustment": 2.50,
+                    "netSellPriceAdjustment": 1.80,
+                    "netBuyVolumeAdjustment": 150.0,
+                    "netSellVolumeAdjustment": -75.0,
+                },
+                {
+                    "settlementDate": "2024-01-15",
+                    "settlementPeriod": 1,
+                    "netBuyPriceAdjustment": 2.55,
+                    "netSellPriceAdjustment": 1.85,
+                    "netBuyVolumeAdjustment": 155.0,
+                    "netSellVolumeAdjustment": -70.0,
+                },
+            ]
+        )
         result = self.t.transform(raw)
         assert len(result) == 1
 
@@ -748,8 +857,10 @@ class TestNETBSADTransformer:
 
         assert not result.is_empty()
         legacy_cols = [
-            "net_buy_price_adjustment", "net_sell_price_adjustment",
-            "net_buy_volume_adjustment", "net_sell_volume_adjustment",
+            "net_buy_price_adjustment",
+            "net_sell_price_adjustment",
+            "net_buy_volume_adjustment",
+            "net_sell_volume_adjustment",
         ]
         for col in legacy_cols:
             assert col in result.columns
@@ -773,10 +884,20 @@ class TestFuelInstTransformer:
 
     def test_dedup_on_timestamp_fuel(self):
         """Duplicate (timestamp, fuel_type) should keep last."""
-        raw = pl.DataFrame([
-            {"publishDateTime": "2024-01-15T00:00:00Z", "fuelType": "CCGT", "generation": 100.0},
-            {"publishDateTime": "2024-01-15T00:00:00Z", "fuelType": "CCGT", "generation": 110.0},
-        ])
+        raw = pl.DataFrame(
+            [
+                {
+                    "publishDateTime": "2024-01-15T00:00:00Z",
+                    "fuelType": "CCGT",
+                    "generation": 100.0,
+                },
+                {
+                    "publishDateTime": "2024-01-15T00:00:00Z",
+                    "fuelType": "CCGT",
+                    "generation": 110.0,
+                },
+            ]
+        )
         result = self.t.transform(raw)
         assert len(result) == 1
 
@@ -803,12 +924,22 @@ class TestImbalNGCTransformer:
         assert result["data_provider"][0] == "elexon"
 
     def test_dedup_on_settlement_period(self):
-        raw = pl.DataFrame([
-            {"settlementDate": "2024-01-15", "settlementPeriod": 1,
-             "publishDateTime": "2024-01-15T00:15:00Z", "indicatedImbalance": -250.0},
-            {"settlementDate": "2024-01-15", "settlementPeriod": 1,
-             "publishDateTime": "2024-01-15T00:20:00Z", "indicatedImbalance": -240.0},
-        ])
+        raw = pl.DataFrame(
+            [
+                {
+                    "settlementDate": "2024-01-15",
+                    "settlementPeriod": 1,
+                    "publishDateTime": "2024-01-15T00:15:00Z",
+                    "indicatedImbalance": -250.0,
+                },
+                {
+                    "settlementDate": "2024-01-15",
+                    "settlementPeriod": 1,
+                    "publishDateTime": "2024-01-15T00:20:00Z",
+                    "indicatedImbalance": -240.0,
+                },
+            ]
+        )
         result = self.t.transform(raw)
         assert len(result) == 1
 
@@ -835,12 +966,12 @@ class TestMelNGCTransformer:
         assert result["data_provider"][0] == "elexon"
 
     def test_dedup_on_settlement_period(self):
-        raw = pl.DataFrame([
-            {"settlementDate": "2024-01-15", "settlementPeriod": 1,
-             "indicatedMargin": 3500.0},
-            {"settlementDate": "2024-01-15", "settlementPeriod": 1,
-             "indicatedMargin": 3600.0},
-        ])
+        raw = pl.DataFrame(
+            [
+                {"settlementDate": "2024-01-15", "settlementPeriod": 1, "indicatedMargin": 3500.0},
+                {"settlementDate": "2024-01-15", "settlementPeriod": 1, "indicatedMargin": 3600.0},
+            ]
+        )
         result = self.t.transform(raw)
         assert len(result) == 1
 
@@ -868,12 +999,22 @@ class TestFOU2T14DTransformer:
         assert result["data_provider"][0] == "elexon"
 
     def test_dedup_on_period_fuel(self):
-        raw = pl.DataFrame([
-            {"settlementDate": "2024-01-17", "settlementPeriod": 1,
-             "fuelType": "CCGT", "outputUsable": 22000.0},
-            {"settlementDate": "2024-01-17", "settlementPeriod": 1,
-             "fuelType": "CCGT", "outputUsable": 22100.0},
-        ])
+        raw = pl.DataFrame(
+            [
+                {
+                    "settlementDate": "2024-01-17",
+                    "settlementPeriod": 1,
+                    "fuelType": "CCGT",
+                    "outputUsable": 22000.0,
+                },
+                {
+                    "settlementDate": "2024-01-17",
+                    "settlementPeriod": 1,
+                    "fuelType": "CCGT",
+                    "outputUsable": 22100.0,
+                },
+            ]
+        )
         result = self.t.transform(raw)
         assert len(result) == 1
 
@@ -901,12 +1042,22 @@ class TestUOU2T14DTransformer:
         assert result["data_provider"][0] == "elexon"
 
     def test_dedup_on_period_unit(self):
-        raw = pl.DataFrame([
-            {"settlementDate": "2024-01-17", "settlementPeriod": 1,
-             "bmUnit": "T_DRAXX-1", "outputUsable": 645.0},
-            {"settlementDate": "2024-01-17", "settlementPeriod": 1,
-             "bmUnit": "T_DRAXX-1", "outputUsable": 640.0},
-        ])
+        raw = pl.DataFrame(
+            [
+                {
+                    "settlementDate": "2024-01-17",
+                    "settlementPeriod": 1,
+                    "bmUnit": "T_DRAXX-1",
+                    "outputUsable": 645.0,
+                },
+                {
+                    "settlementDate": "2024-01-17",
+                    "settlementPeriod": 1,
+                    "bmUnit": "T_DRAXX-1",
+                    "outputUsable": 640.0,
+                },
+            ]
+        )
         result = self.t.transform(raw)
         assert len(result) == 1
 
@@ -927,9 +1078,7 @@ class TestUOU2T14DTransformer:
         result = self.t.transform(raw)
 
         assert not result.is_empty()
-        assert "fuel_type" in result.columns, (
-            "G5-W2.3 regression: fuel_type dropped before write"
-        )
+        assert "fuel_type" in result.columns, "G5-W2.3 regression: fuel_type dropped before write"
         assert "national_grid_bm_unit" in result.columns, (
             "G5-W2.3 regression: national_grid_bm_unit dropped before write"
         )
@@ -963,10 +1112,12 @@ class TestTempTransformer:
         assert ts == sorted(ts)
 
     def test_dedup_on_timestamp(self):
-        raw = pl.DataFrame([
-            {"publishDateTime": "2024-01-15T00:00:00Z", "temperature": 5.0},
-            {"publishDateTime": "2024-01-15T00:00:00Z", "temperature": 5.5},
-        ])
+        raw = pl.DataFrame(
+            [
+                {"publishDateTime": "2024-01-15T00:00:00Z", "temperature": 5.0},
+                {"publishDateTime": "2024-01-15T00:00:00Z", "temperature": 5.5},
+            ]
+        )
         result = self.t.transform(raw)
         assert len(result) == 1
 
@@ -1007,52 +1158,84 @@ class TestTempTransformer:
 # silver row; the publish field is injected by the parametrised test below.
 _G6_TRANSFORMER_CASES: list[tuple[type, str, dict[str, object]]] = [
     (
-        ImbalNGCTransformer, "publishDateTime",
+        ImbalNGCTransformer,
+        "publishDateTime",
         {"settlementDate": "2024-01-15", "settlementPeriod": 1, "indicatedImbalance": -250.0},
     ),
     (
-        MelNGCTransformer, "publishDateTime",
+        MelNGCTransformer,
+        "publishDateTime",
         {"settlementDate": "2024-01-15", "settlementPeriod": 1, "indicatedMargin": 3500.0},
     ),
     (
-        INDDEMTransformer, "publishTime",
+        INDDEMTransformer,
+        "publishTime",
         {"settlementDate": "2024-01-15", "settlementPeriod": 1, "demand": 28000.0},
     ),
     (
-        INDOTransformer, "publishTime",
+        INDOTransformer,
+        "publishTime",
         {"settlementDate": "2024-01-15", "settlementPeriod": 1, "demand": 28500.0},
     ),
     (
-        ITSDOTransformer, "publishTime",
+        ITSDOTransformer,
+        "publishTime",
         {"settlementDate": "2024-01-15", "settlementPeriod": 1, "demand": 28100.0},
     ),
     (
-        INDGENTransformer, "publishTime",
+        INDGENTransformer,
+        "publishTime",
         {"settlementDate": "2024-01-15", "settlementPeriod": 1, "generation": 30000.0},
     ),
     (
-        AGPTTransformer, "publishTime",
-        {"settlementDate": "2024-01-15", "settlementPeriod": 1, "psrType": "B16", "quantity": 1200.0},
+        AGPTTransformer,
+        "publishTime",
+        {
+            "settlementDate": "2024-01-15",
+            "settlementPeriod": 1,
+            "psrType": "B16",
+            "quantity": 1200.0,
+        },
     ),
     (
-        AGWSTransformer, "publishTime",
-        {"settlementDate": "2024-01-15", "settlementPeriod": 1, "psrType": "B16", "quantity": 1100.0},
+        AGWSTransformer,
+        "publishTime",
+        {
+            "settlementDate": "2024-01-15",
+            "settlementPeriod": 1,
+            "psrType": "B16",
+            "quantity": 1100.0,
+        },
     ),
     (
-        ATLTransformer, "publishTime",
+        ATLTransformer,
+        "publishTime",
         {"settlementDate": "2024-01-15", "settlementPeriod": 1, "quantity": 31000.0},
     ),
     (
-        NONBMTransformer, "publishTime",
+        NONBMTransformer,
+        "publishTime",
         {"settlementDate": "2024-01-15", "settlementPeriod": 1, "generation": 50.0},
     ),
     (
-        FOU2T14DTransformer, "publishDateTime",
-        {"settlementDate": "2024-01-17", "settlementPeriod": 1, "fuelType": "CCGT", "outputUsable": 22000.0},
+        FOU2T14DTransformer,
+        "publishDateTime",
+        {
+            "settlementDate": "2024-01-17",
+            "settlementPeriod": 1,
+            "fuelType": "CCGT",
+            "outputUsable": 22000.0,
+        },
     ),
     (
-        LOLPDRMTransformer, "publishTime",
-        {"settlementDate": "2024-01-15", "settlementPeriod": 1, "lossOfLoadProbability": 0.001, "deratedMargin": 5000.0},
+        LOLPDRMTransformer,
+        "publishTime",
+        {
+            "settlementDate": "2024-01-15",
+            "settlementPeriod": 1,
+            "lossOfLoadProbability": 0.001,
+            "deratedMargin": 5000.0,
+        },
     ),
 ]
 
@@ -1108,9 +1291,11 @@ def test_indo_published_at_typed_null_when_bronze_lacks_publish_time():
     publishTime-absent files (2026) raised a DuckDB schema mismatch. With the
     fix the silver schema is deterministic regardless of bronze.
     """
-    raw = pl.DataFrame([
-        {"settlementDate": "2026-04-14", "settlementPeriod": 1, "demand": 28500.0},
-    ])
+    raw = pl.DataFrame(
+        [
+            {"settlementDate": "2026-04-14", "settlementPeriod": 1, "demand": 28500.0},
+        ]
+    )
     result = _make_transformer(INDOTransformer).transform(raw)
 
     assert not result.is_empty()
@@ -1136,13 +1321,21 @@ _PUBLISHED_AT_ABSENT_CASES: list[tuple[type, dict[str, object]]] = [
 ] + [
     (
         FuelHHTransformer,
-        {"settlementDate": "2024-01-15", "settlementPeriod": 1,
-         "fuelType": "CCGT", "generation": 12000.0},
+        {
+            "settlementDate": "2024-01-15",
+            "settlementPeriod": 1,
+            "fuelType": "CCGT",
+            "generation": 12000.0,
+        },
     ),
     (
         UOU2T14DTransformer,
-        {"settlementDate": "2024-01-17", "settlementPeriod": 1,
-         "bmUnit": "T_DRAXX-1", "outputUsable": 645.0},
+        {
+            "settlementDate": "2024-01-17",
+            "settlementPeriod": 1,
+            "bmUnit": "T_DRAXX-1",
+            "outputUsable": 645.0,
+        },
     ),
     (
         TSDFDTransformer,
@@ -1150,13 +1343,16 @@ _PUBLISHED_AT_ABSENT_CASES: list[tuple[type, dict[str, object]]] = [
     ),
     (
         WindForecastTransformer,
-        {"settlementDate": "2024-01-15", "settlementPeriod": 1,
-         "initialForecast": 4500.0, "latestForecast": 4300.0},
+        {
+            "settlementDate": "2024-01-15",
+            "settlementPeriod": 1,
+            "initialForecast": 4500.0,
+            "latestForecast": 4300.0,
+        },
     ),
     (
         DemandForecastTransformer,
-        {"settlementDate": "2024-01-15", "settlementPeriod": 1,
-         "nationalDemand": 28500.0},
+        {"settlementDate": "2024-01-15", "settlementPeriod": 1, "nationalDemand": 28500.0},
     ),
 ]
 
@@ -1201,6 +1397,7 @@ def test_published_at_typed_null_when_bronze_lacks_publish_field(
 # INDOD (daily) timestamp_utc convention
 # ---------------------------------------------------------------------------
 
+
 class TestINDODTimestampConvention:
     """INDOD is a *daily* dataset. Its `timestamp_utc` must mark the
     settlement-day START (SP1 = 00:00 UK local), so it aligns with its own
@@ -1211,9 +1408,7 @@ class TestINDODTimestampConvention:
         self.t = _make_transformer(INDODTransformer)
 
     def _transform(self, settlement_date: str):
-        raw = pl.DataFrame(
-            [{"settlementDate": settlement_date, "demand": 30000.0}]
-        )
+        raw = pl.DataFrame([{"settlementDate": settlement_date, "demand": 30000.0}])
         return self.t.transform(raw)
 
     def test_daily_timestamp_is_settlement_day_start_winter(self):
@@ -1245,6 +1440,7 @@ class TestINDODTimestampConvention:
 # Gold day_of_week convention
 # ---------------------------------------------------------------------------
 
+
 class TestDayOfWeekConvention:
     """Pin the gold `day_of_week` index so the cross-repo seam is explicit.
 
@@ -1264,9 +1460,7 @@ class TestDayOfWeekConvention:
                 ]
             }
         )
-        result = df.with_columns(
-            pl.col("timestamp_utc").dt.weekday().alias("day_of_week")
-        )
+        result = df.with_columns(pl.col("timestamp_utc").dt.weekday().alias("day_of_week"))
         dow = result["day_of_week"].to_list()
         assert dow == [1, 7], (
             "gold day_of_week must be ISO (Mon=1..Sun=7); the gridflow_models "

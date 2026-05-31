@@ -50,10 +50,7 @@ class EntsogConnector(BaseConnector):
     ) -> list[RawResponse]:
         """Fetch ENTSO-G JSON data for a date range or reference endpoint."""
         if dataset not in ENDPOINTS:
-            raise ValueError(
-                f"Unknown ENTSO-G dataset: {dataset!r}. "
-                f"Available: {list(ENDPOINTS)}"
-            )
+            raise ValueError(f"Unknown ENTSO-G dataset: {dataset!r}. Available: {list(ENDPOINTS)}")
 
         endpoint = ENDPOINTS[dataset]
         query_params = build_params(endpoint, start=start, end=end, **params)
@@ -82,9 +79,7 @@ class EntsogConnector(BaseConnector):
         return [response]
 
     @RETRY_POLICY
-    async def _request(
-        self, path: str, params: dict[str, Any]
-    ) -> httpx.Response:
+    async def _request(self, path: str, params: dict[str, Any]) -> httpx.Response:
         """Rate-limited, retried HTTP GET request.
 
         ENTSO-G empty convention is HTTP 404 + body
@@ -96,13 +91,9 @@ class EntsogConnector(BaseConnector):
         the surrounding RETRY_POLICY.
         """
         if self._client is None:
-            raise RuntimeError(
-                "Connector not initialized. Use 'async with' context manager."
-            )
+            raise RuntimeError("Connector not initialized. Use 'async with' context manager.")
         if self._semaphore is None:
-            raise RuntimeError(
-                "Semaphore not initialized. Use 'async with' context manager."
-            )
+            raise RuntimeError("Semaphore not initialized. Use 'async with' context manager.")
 
         async with self._semaphore:
             resp = await self._client.get(path, params=params)

@@ -36,9 +36,7 @@ FULL_INVENTORY = os.environ.get("GRIDFLOW_AGSI_FULL_INVENTORY_LIVE") == "1"
 
 
 def _gie_config() -> SourceConfig:
-    config = load_settings().get_source_config("gie_agsi").model_copy(
-        update={"timeout": 30}
-    )
+    config = load_settings().get_source_config("gie_agsi").model_copy(update={"timeout": 30})
     if not config.api_key and not os.environ.get("GIE_API_KEY"):
         pytest.skip("source=gie_agsi stage=setup outcome=missing GIE_API_KEY")
     return config
@@ -69,12 +67,10 @@ def _silver_path(data_dir: Path, dataset: str, target_date: date) -> Path:
 def _assert_live_response(response: RawResponse, *, dataset: str, stage: str) -> None:
     content_type = response.content_type.lower()
     assert response.source == "gie_agsi", (
-        f"source=gie_agsi dataset={dataset} stage={stage} "
-        f"actual_source={response.source}"
+        f"source=gie_agsi dataset={dataset} stage={stage} actual_source={response.source}"
     )
     assert response.dataset == dataset, (
-        f"source=gie_agsi dataset={dataset} stage={stage} "
-        f"actual_dataset={response.dataset}"
+        f"source=gie_agsi dataset={dataset} stage={stage} actual_dataset={response.dataset}"
     )
     assert response.http_status == 200, (
         f"source=gie_agsi dataset={dataset} stage={stage} "
@@ -86,18 +82,14 @@ def _assert_live_response(response: RawResponse, *, dataset: str, stage: str) ->
         f"content_type={response.content_type} url={response.request_url}"
     )
     assert response.request_url.startswith(BASE_URL), (
-        f"source=gie_agsi dataset={dataset} stage={stage} "
-        f"url={response.request_url}"
+        f"source=gie_agsi dataset={dataset} stage={stage} url={response.request_url}"
     )
-    assert response.body, (
-        f"source=gie_agsi dataset={dataset} stage={stage} empty_body=true"
-    )
+    assert response.body, f"source=gie_agsi dataset={dataset} stage={stage} empty_body=true"
     assert response.page >= 1, (
         f"source=gie_agsi dataset={dataset} stage={stage} page={response.page}"
     )
     assert response.total_pages >= 1, (
-        f"source=gie_agsi dataset={dataset} stage={stage} "
-        f"total_pages={response.total_pages}"
+        f"source=gie_agsi dataset={dataset} stage={stage} total_pages={response.total_pages}"
     )
 
 
@@ -144,8 +136,7 @@ def _trim_listing_payload(payload: dict[str, Any] | list[dict[str, Any]]) -> dic
             return {"data": [trimmed]}
 
     pytest.skip(
-        "source=gie_agsi dataset=about_listing stage=listing "
-        "outcome=no-company-with-facility"
+        "source=gie_agsi dataset=about_listing stage=listing outcome=no-company-with-facility"
     )
 
 
@@ -209,8 +200,7 @@ async def test_live_agsi_storage_scopes_fetch_transform_or_classify_empty(
         )
 
     assert responses, (
-        f"source=gie_agsi dataset=storage_reports scope={scope.value} "
-        "stage=live fetch no responses"
+        f"source=gie_agsi dataset=storage_reports scope={scope.value} stage=live fetch no responses"
     )
 
     selected_responses: list[RawResponse] = []
@@ -233,9 +223,7 @@ async def test_live_agsi_storage_scopes_fetch_transform_or_classify_empty(
         _assert_bronze_sidecar(bronze_path, dataset="storage_reports")
 
     target_date = selected_responses[0].data_date or LIVE_DATE
-    rows_written = get_transformer("gie_agsi", "storage_reports", tmp_data_dir).run(
-        target_date
-    )
+    rows_written = get_transformer("gie_agsi", "storage_reports", tmp_data_dir).run(target_date)
     assert rows_written > 0, (
         f"source=gie_agsi dataset=storage_reports scope={scope.value} "
         f"stage=silver target_date={target_date}"
@@ -282,9 +270,7 @@ async def test_live_agsi_unavailability_fetches_or_classifies_documented_ambigui
         _assert_bronze_sidecar(bronze_path, dataset="unavailability")
 
     target_date = selected_responses[0].data_date or LIVE_DATE
-    rows_written = get_transformer("gie_agsi", "unavailability", tmp_data_dir).run(
-        target_date
-    )
+    rows_written = get_transformer("gie_agsi", "unavailability", tmp_data_dir).run(target_date)
     assert rows_written > 0
     df = pl.read_parquet(_silver_path(tmp_data_dir, "unavailability", target_date))
     assert len(df) == rows_written

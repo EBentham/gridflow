@@ -103,7 +103,9 @@ def test_cmp_schema_is_dynamic_but_tolerant_readers_unify(
     archived = _archived_record()
     # Same window stored under each day; the archived record appears in both, but its
     # capacityFrom only matches _ENRICHED_DAY.
-    _write_cmp_bronze(bronze_root, _ENRICHED_DAY, response_key, [_plain_record(_ENRICHED_DAY), archived])
+    _write_cmp_bronze(
+        bronze_root, _ENRICHED_DAY, response_key, [_plain_record(_ENRICHED_DAY), archived]
+    )
     _write_cmp_bronze(bronze_root, _PLAIN_DAY, response_key, [_plain_record(_PLAIN_DAY), archived])
 
     transformer = get_transformer("entsog", dataset, tmp_data_dir)
@@ -143,8 +145,7 @@ def test_cmp_schema_is_dynamic_but_tolerant_readers_unify(
     con = duckdb.connect()
     try:
         unified = con.execute(
-            "SELECT * FROM read_parquet(?, hive_partitioning=true, union_by_name=true) "
-            "ORDER BY id",
+            "SELECT * FROM read_parquet(?, hive_partitioning=true, union_by_name=true) ORDER BY id",
             [glob],
         ).pl()
     finally:

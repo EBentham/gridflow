@@ -119,9 +119,7 @@ class OpenMeteoConnector(BaseConnector):
         )
 
     @RETRY_POLICY
-    async def _request(
-        self, url: str, params: dict[str, Any]
-    ) -> httpx.Response:
+    async def _request(self, url: str, params: dict[str, Any]) -> httpx.Response:
         """Rate-limited, retried HTTP GET.
 
         Carries @RETRY_POLICY so a transient 429 / archive-host timeout is

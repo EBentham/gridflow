@@ -83,10 +83,12 @@ def _records_for(dataset: str) -> list[dict[str, Any]]:
             "value": "1000",
         }
         if dataset == "cmp_auction_premiums":
-            record.update({
-                "isCAMRelevant": None,
-                "isCamRelevant": True,
-            })
+            record.update(
+                {
+                    "isCAMRelevant": None,
+                    "isCamRelevant": True,
+                }
+            )
         return [
             {
                 **record,
@@ -217,9 +219,7 @@ async def test_active_datasets_fetch_with_expected_mocked_request_shape(
             headers={"content-type": "application/json"},
         )
 
-    route = respx.get(re.compile(rf"^{re.escape(BASE_URL)}/.*")).mock(
-        side_effect=handler
-    )
+    route = respx.get(re.compile(rf"^{re.escape(BASE_URL)}/.*")).mock(side_effect=handler)
 
     async with EntsogConnector(_entsog_config()) as connector:
         responses = await connector.fetch(dataset, START, END, limit=1)
@@ -302,10 +302,12 @@ def test_date_window_transform_filters_bronze_records_to_target_date(
             "periodTo": "2026-04-19T05:00:00+02:00",
         },
     ]
-    body = json.dumps({
-        "meta": {"count": 2, "total": 2},
-        endpoint.response_key: records,
-    }).encode()
+    body = json.dumps(
+        {
+            "meta": {"count": 2, "total": 2},
+            endpoint.response_key: records,
+        }
+    ).encode()
     response = RawResponse(
         body=body,
         content_type="application/json",
@@ -357,14 +359,10 @@ class TestV2ENTSOG404ShortCircuit:
                 headers={"content-type": "application/json"},
             )
 
-        respx.get(re.compile(rf"^{re.escape(BASE_URL)}/.*")).mock(
-            side_effect=handler
-        )
+        respx.get(re.compile(rf"^{re.escape(BASE_URL)}/.*")).mock(side_effect=handler)
 
         async with EntsogConnector(_entsog_config()) as connector:
-            responses = await connector.fetch(
-                "methane_content", START, END, limit=1
-            )
+            responses = await connector.fetch("methane_content", START, END, limit=1)
 
         assert len(requests) == 1, (
             f"expected exactly 1 request for vendor empty convention; "
@@ -388,14 +386,10 @@ class TestV2ENTSOG404ShortCircuit:
                 headers={"content-type": "application/json"},
             )
 
-        respx.get(re.compile(rf"^{re.escape(BASE_URL)}/.*")).mock(
-            side_effect=handler
-        )
+        respx.get(re.compile(rf"^{re.escape(BASE_URL)}/.*")).mock(side_effect=handler)
 
         async with EntsogConnector(_entsog_config()) as connector:
             with pytest.raises(httpx.HTTPStatusError):
                 await connector.fetch("methane_content", START, END, limit=1)
 
-        assert len(requests) > 1, (
-            f"expected retries for non-empty 404; got {len(requests)}"
-        )
+        assert len(requests) > 1, f"expected retries for non-empty 404; got {len(requests)}"

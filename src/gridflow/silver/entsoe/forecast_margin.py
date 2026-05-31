@@ -54,18 +54,18 @@ class ForecastMarginTransformer(BaseSilverTransformer):
         df = raw_df.rename({"value": "forecast_margin_mw", "in_domain": "area_code"})
 
         if df["timestamp_utc"].dtype != pl.Datetime("us", "UTC"):
-            df = df.with_columns(
-                pl.col("timestamp_utc").cast(pl.Datetime("us", "UTC"))
-            )
+            df = df.with_columns(pl.col("timestamp_utc").cast(pl.Datetime("us", "UTC")))
 
         df = df.with_columns(pl.col("forecast_margin_mw").cast(pl.Float64))
         df = df.unique(subset=["timestamp_utc", "area_code"], keep="last")
 
         now = datetime.now(UTC)
-        df = df.with_columns([
-            pl.lit("entsoe").alias("data_provider"),
-            pl.lit(now).cast(pl.Datetime("us", "UTC")).alias("ingested_at"),
-        ])
+        df = df.with_columns(
+            [
+                pl.lit("entsoe").alias("data_provider"),
+                pl.lit(now).cast(pl.Datetime("us", "UTC")).alias("ingested_at"),
+            ]
+        )
 
         output_cols = [
             "timestamp_utc",
@@ -86,4 +86,3 @@ class ForecastMarginTransformer(BaseSilverTransformer):
 
 
 register_transformer("entsoe", "forecast_margin", ForecastMarginTransformer)
-

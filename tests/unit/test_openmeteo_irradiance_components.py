@@ -63,9 +63,7 @@ def _solar_row(
         (800.0, 700.0, 120.0),  # 820 vs 800 — within ~3%
     ],
 )
-def test_direct_plus_diffuse_within_5pct_of_ghi(
-    ghi: float, direct: float, diffuse: float
-) -> None:
+def test_direct_plus_diffuse_within_5pct_of_ghi(ghi: float, direct: float, diffuse: float) -> None:
     df = pl.DataFrame([_solar_row(ghi=ghi, direct=direct, diffuse=diffuse, hour=12)])
     out = _solar_transformer().transform(df)
 

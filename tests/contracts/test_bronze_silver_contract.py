@@ -50,9 +50,7 @@ class TestBronzeSilverContract:
 
         assert not errors, f"Schema validation failures:\n" + "\n".join(errors)
 
-    def test_required_columns_present(
-        self, tmp_data_dir: Path, sample_raw_response: RawResponse
-    ):
+    def test_required_columns_present(self, tmp_data_dir: Path, sample_raw_response: RawResponse):
         """Silver output must contain all columns defined in the schema."""
         writer = BronzeWriter(tmp_data_dir)
         writer.write(sample_raw_response)

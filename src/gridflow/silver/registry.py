@@ -23,8 +23,7 @@ def get_transformer(source: str, dataset: str, data_dir: Path) -> BaseSilverTran
     key = (source, dataset)
     if key not in _REGISTRY:
         raise ValueError(
-            f"No transformer registered for {source}/{dataset}. "
-            f"Available: {list(_REGISTRY.keys())}"
+            f"No transformer registered for {source}/{dataset}. Available: {list(_REGISTRY.keys())}"
         )
     return _REGISTRY[key](data_dir)
 

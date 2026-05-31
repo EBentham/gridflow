@@ -47,9 +47,7 @@ EXCLUDED_ENDPOINTS: dict[str, str] = {
         "requires a dedicated schema pass before activation."
     ),
     "generation_by_fuel": "Duplicate of fuelhh; both use /datasets/FUELHH.",
-    "indicative_imbalance_volumes": (
-        "Removed by Elexon; use active imbalance datasets instead."
-    ),
+    "indicative_imbalance_volumes": ("Removed by Elexon; use active imbalance datasets instead."),
 }
 
 
@@ -62,7 +60,6 @@ ENDPOINTS: dict[str, ElexonEndpoint] = {
         description="System Sell Price and System Buy Price per settlement period",
         param_style=ParamStyle.DATE_PATH,
     ),
-
     # --- FROM/TO style (dataset endpoints that use ?from=ISO&to=ISO) ---
     # NOTE: boal uses BOALF path — BOAL was removed by Elexon, BOALF is the replacement.
     "boal": ElexonEndpoint(
@@ -73,7 +70,6 @@ ENDPOINTS: dict[str, ElexonEndpoint] = {
         to_param="to",
     ),
     # BOD is intentionally excluded; see EXCLUDED_ENDPOINTS.
-
     "disbsad": ElexonEndpoint(
         path="/datasets/DISBSAD",
         description="Disaggregated Balancing Services Adjustment Data",
@@ -100,7 +96,6 @@ ENDPOINTS: dict[str, ElexonEndpoint] = {
         description="Physical Notifications",
         param_style=ParamStyle.SETTLEMENT_DATE_PERIOD,
     ),
-
     # --- Publish datetime style (standard publishDateTimeFrom/To params) ---
     # FREQ is the exception: Swagger declares measurementDateTimeFrom/To
     # for /datasets/FREQ. Sending publishDateTimeFrom/To causes the API to
@@ -164,7 +159,6 @@ ENDPOINTS: dict[str, ElexonEndpoint] = {
         description="Temperature Data",
         param_style=ParamStyle.PUBLISH_DATETIME,
     ),
-
     # --- ENTSO-E / B-series datasets (AGPT, AGWS, ATL) ---
     "agpt": ElexonEndpoint(
         path="/datasets/AGPT",
@@ -181,7 +175,6 @@ ENDPOINTS: dict[str, ElexonEndpoint] = {
         description="Actual Total Load Per Bidding Zone (B0610)",
         param_style=ParamStyle.PUBLISH_DATETIME,
     ),
-
     # --- Initial demand/generation outturn ---
     "indo": ElexonEndpoint(
         path="/datasets/INDO",
@@ -203,7 +196,6 @@ ENDPOINTS: dict[str, ElexonEndpoint] = {
         description="Non-BM STOR Generation",
         param_style=ParamStyle.PUBLISH_DATETIME,
     ),
-
     # --- Indicated / day-ahead datasets ---
     "inddem": ElexonEndpoint(
         path="/datasets/INDDEM",
@@ -225,7 +217,6 @@ ENDPOINTS: dict[str, ElexonEndpoint] = {
         description="2-14 Day Ahead Transmission System Demand Forecast",
         param_style=ParamStyle.PUBLISH_DATETIME,
     ),
-
     # --- Loss of Load Probability ---
     # G7 (2026-05): max_chunk_hours dropped to the dataclass default of 24h.
     # The previous 1h cap was an undocumented defensive default carried since
@@ -238,7 +229,6 @@ ENDPOINTS: dict[str, ElexonEndpoint] = {
         description="Loss of Load Probability and De-rated Margin",
         param_style=ParamStyle.PUBLISH_DATETIME,
     ),
-
     # --- REMIT outage messages ---
     # Vendor enforces an undocumented max-1-day query window: requests
     # spanning > 1 day return HTTP 400. Cap chunks at 23h to leave a
@@ -249,7 +239,6 @@ ENDPOINTS: dict[str, ElexonEndpoint] = {
         param_style=ParamStyle.PUBLISH_DATETIME,
         max_chunk_hours=23,
     ),
-
     # --- SO-SO prices ---
     # Same undocumented max-1-day cap as REMIT.
     "soso": ElexonEndpoint(
@@ -258,16 +247,13 @@ ENDPOINTS: dict[str, ElexonEndpoint] = {
         param_style=ParamStyle.PUBLISH_DATETIME,
         max_chunk_hours=23,
     ),
-
     # --- Settlement Market Depth (DATE_PATH) ---
     "market_depth": ElexonEndpoint(
         path="/balancing/settlement/market-depth",
         description="Settlement Market Depth per Settlement Period",
         param_style=ParamStyle.DATE_PATH,
     ),
-
     # generation_by_fuel is intentionally excluded; see EXCLUDED_ENDPOINTS.
-
     # --- Reference data (static, no date params) ---
     "bmunits_reference": ElexonEndpoint(
         path="/reference/bmunits/all",
@@ -275,7 +261,6 @@ ENDPOINTS: dict[str, ElexonEndpoint] = {
         param_style=ParamStyle.NO_PARAMS,
         supports_pagination=False,
     ),
-
     # indicative_imbalance_volumes is intentionally excluded; see EXCLUDED_ENDPOINTS.
 }
 

@@ -34,22 +34,24 @@ def _formula(t_c: float, p_hpa: float) -> float:
 )
 def test_air_density_in_atmospheric_band(t_c: float, p_hpa: float) -> None:
     df = pl.DataFrame(
-        [{
-            "time": "2024-01-15T00:00",
-            "location": "test",
-            "latitude": 50.0,
-            "longitude": 0.0,
-            "temperature_2m": float(t_c),
-            "surface_pressure": float(p_hpa),
-            # other variables present for completeness
-            "wind_speed_10m": 0.0,
-            "wind_direction_10m": 0.0,
-            "relative_humidity_2m": 50.0,
-            "precipitation": 0.0,
-            "shortwave_radiation": 0.0,
-            "snowfall": 0.0,
-            "snow_depth": 0.0,
-        }]
+        [
+            {
+                "time": "2024-01-15T00:00",
+                "location": "test",
+                "latitude": 50.0,
+                "longitude": 0.0,
+                "temperature_2m": float(t_c),
+                "surface_pressure": float(p_hpa),
+                # other variables present for completeness
+                "wind_speed_10m": 0.0,
+                "wind_direction_10m": 0.0,
+                "relative_humidity_2m": 50.0,
+                "precipitation": 0.0,
+                "shortwave_radiation": 0.0,
+                "snowfall": 0.0,
+                "snow_depth": 0.0,
+            }
+        ]
     )
 
     t = HistoricalDemandWeather.__new__(HistoricalDemandWeather)
@@ -71,25 +73,27 @@ def test_air_density_omitted_when_pressure_missing() -> None:
     # WindWeather wraps surface_pressure in its variable list, but if a
     # row's surface_pressure is null the derived column should be null too.
     df = pl.DataFrame(
-        [{
-            "time": "2024-01-15T00:00",
-            "location": "hornsea",
-            "latitude": 53.88,
-            "longitude": 1.79,
-            "temperature_2m": 5.0,
-            "surface_pressure": None,
-            "wind_speed_10m": 8.0,
-            "wind_speed_100m": 14.0,
-            "wind_direction_10m": 200.0,
-            "wind_direction_100m": 200.0,
-            "wind_gusts_10m": 12.0,
-            "cloud_cover": 50.0,
-            "cloud_cover_low": 30.0,
-            "cloud_cover_mid": 10.0,
-            "cloud_cover_high": 10.0,
-            "dew_point_2m": 1.0,
-            "precipitation": 0.0,
-        }]
+        [
+            {
+                "time": "2024-01-15T00:00",
+                "location": "hornsea",
+                "latitude": 53.88,
+                "longitude": 1.79,
+                "temperature_2m": 5.0,
+                "surface_pressure": None,
+                "wind_speed_10m": 8.0,
+                "wind_speed_100m": 14.0,
+                "wind_direction_10m": 200.0,
+                "wind_direction_100m": 200.0,
+                "wind_gusts_10m": 12.0,
+                "cloud_cover": 50.0,
+                "cloud_cover_low": 30.0,
+                "cloud_cover_mid": 10.0,
+                "cloud_cover_high": 10.0,
+                "dew_point_2m": 1.0,
+                "precipitation": 0.0,
+            }
+        ]
     )
     t = HistoricalWindWeather.__new__(HistoricalWindWeather)
     t.data_dir = Path("/tmp/test")
@@ -111,24 +115,26 @@ def test_air_density_not_derived_for_solar() -> None:
     t.silver_dir = Path("/tmp/test/silver/open_meteo/historical_solar")
     assert "air_density_kg_m3" not in t._output_columns()
     df = pl.DataFrame(
-        [{
-            "time": "2024-06-15T12:00",
-            "location": "kent",
-            "latitude": 51.2,
-            "longitude": 0.7,
-            "temperature_2m": 22.0,
-            "shortwave_radiation": 600.0,
-            "direct_radiation": 450.0,
-            "direct_normal_irradiance": 750.0,
-            "diffuse_radiation": 150.0,
-            "global_tilted_irradiance": 720.0,
-            "cloud_cover": 20.0,
-            "cloud_cover_low": 10.0,
-            "cloud_cover_mid": 5.0,
-            "cloud_cover_high": 5.0,
-            "snowfall": 0.0,
-            "snow_depth": 0.0,
-        }]
+        [
+            {
+                "time": "2024-06-15T12:00",
+                "location": "kent",
+                "latitude": 51.2,
+                "longitude": 0.7,
+                "temperature_2m": 22.0,
+                "shortwave_radiation": 600.0,
+                "direct_radiation": 450.0,
+                "direct_normal_irradiance": 750.0,
+                "diffuse_radiation": 150.0,
+                "global_tilted_irradiance": 720.0,
+                "cloud_cover": 20.0,
+                "cloud_cover_low": 10.0,
+                "cloud_cover_mid": 5.0,
+                "cloud_cover_high": 5.0,
+                "snowfall": 0.0,
+                "snow_depth": 0.0,
+            }
+        ]
     )
     out = t.transform(df)
     assert "air_density_kg_m3" not in out.columns

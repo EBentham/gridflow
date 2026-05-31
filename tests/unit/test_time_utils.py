@@ -89,24 +89,17 @@ class TestDSTSpringTransition:
         FAILS on the buggy converter: SP5/SP6 collide with SP3/SP4 on 01:00Z/
         01:30Z, giving 44 unique values and a non-monotonic sequence.
         """
-        instants = [
-            settlement_period_to_utc(self.DATE, sp)
-            for sp in range(1, self.N_PERIODS + 1)
-        ]
+        instants = [settlement_period_to_utc(self.DATE, sp) for sp in range(1, self.N_PERIODS + 1)]
         assert len(set(instants)) == self.N_PERIODS, "duplicate timestamp_utc across SPs"
-        assert all(
-            instants[i] < instants[i + 1] for i in range(len(instants) - 1)
-        ), "timestamp_utc not strictly increasing across SPs"
+        assert all(instants[i] < instants[i + 1] for i in range(len(instants) - 1)), (
+            "timestamp_utc not strictly increasing across SPs"
+        )
 
     def test_consecutive_periods_are_30_min_of_real_time(self):
         """Each consecutive SP pair is exactly 1800s of real elapsed UTC time."""
-        instants = [
-            settlement_period_to_utc(self.DATE, sp)
-            for sp in range(1, self.N_PERIODS + 1)
-        ]
+        instants = [settlement_period_to_utc(self.DATE, sp) for sp in range(1, self.N_PERIODS + 1)]
         gaps = {
-            int((instants[i + 1] - instants[i]).total_seconds())
-            for i in range(len(instants) - 1)
+            int((instants[i + 1] - instants[i]).total_seconds()) for i in range(len(instants) - 1)
         }
         assert gaps == {1800}, f"non-uniform 30-min steps: {sorted(gaps)}"
 
@@ -141,10 +134,7 @@ class TestDSTAutumnTransition:
 
     def test_all_periods_strictly_monotonic_and_unique(self):
         """50 distinct increasing instants (regression guard, not the red test)."""
-        instants = [
-            settlement_period_to_utc(self.DATE, sp)
-            for sp in range(1, self.N_PERIODS + 1)
-        ]
+        instants = [settlement_period_to_utc(self.DATE, sp) for sp in range(1, self.N_PERIODS + 1)]
         assert len(set(instants)) == self.N_PERIODS
         assert all(instants[i] < instants[i + 1] for i in range(len(instants) - 1))
 
@@ -154,13 +144,9 @@ class TestDSTAutumnTransition:
         FAILS on the buggy converter: SP4->SP5 is a 5400s jump (00:30Z->02:00Z),
         aliasing away the repeated 01:00-02:00 local hour.
         """
-        instants = [
-            settlement_period_to_utc(self.DATE, sp)
-            for sp in range(1, self.N_PERIODS + 1)
-        ]
+        instants = [settlement_period_to_utc(self.DATE, sp) for sp in range(1, self.N_PERIODS + 1)]
         gaps = {
-            int((instants[i + 1] - instants[i]).total_seconds())
-            for i in range(len(instants) - 1)
+            int((instants[i + 1] - instants[i]).total_seconds()) for i in range(len(instants) - 1)
         }
         assert gaps == {1800}, f"a real half-hour was skipped/aliased: {sorted(gaps)}"
 
@@ -190,12 +176,8 @@ class TestDSTAutumnTransition:
 
         FAILS on the buggy inverse: both collapse to (2024-10-27, SP3).
         """
-        sd0, sp0 = utc_to_settlement_period(
-            datetime(2024, 10, 27, 0, 0, tzinfo=timezone.utc)
-        )
-        sd1, sp1 = utc_to_settlement_period(
-            datetime(2024, 10, 27, 1, 0, tzinfo=timezone.utc)
-        )
+        sd0, sp0 = utc_to_settlement_period(datetime(2024, 10, 27, 0, 0, tzinfo=timezone.utc))
+        sd1, sp1 = utc_to_settlement_period(datetime(2024, 10, 27, 1, 0, tzinfo=timezone.utc))
         assert (sd0, sp0) == (date(2024, 10, 27), 3)
         assert (sd1, sp1) == (date(2024, 10, 27), 5)
         assert sp0 != sp1
@@ -209,10 +191,10 @@ class TestDSTRoundTrip:
     @pytest.mark.parametrize(
         "settlement_date,n_periods",
         [
-            (date(2024, 3, 31), 46),   # spring short day
+            (date(2024, 3, 31), 46),  # spring short day
             (date(2024, 10, 27), 50),  # autumn long day
-            (date(2024, 1, 15), 48),   # winter regression guard
-            (date(2024, 7, 15), 48),   # summer regression guard
+            (date(2024, 1, 15), 48),  # winter regression guard
+            (date(2024, 7, 15), 48),  # summer regression guard
         ],
     )
     def test_forward_inverse_roundtrip_every_period(self, settlement_date, n_periods):
@@ -220,8 +202,7 @@ class TestDSTRoundTrip:
             ts = settlement_period_to_utc(settlement_date, sp)
             recovered_date, recovered_sp = utc_to_settlement_period(ts)
             assert (recovered_date, recovered_sp) == (settlement_date, sp), (
-                f"SP{sp} on {settlement_date} round-tripped to "
-                f"({recovered_date}, SP{recovered_sp})"
+                f"SP{sp} on {settlement_date} round-tripped to ({recovered_date}, SP{recovered_sp})"
             )
 
     @pytest.mark.parametrize(
@@ -231,9 +212,7 @@ class TestDSTRoundTrip:
             (datetime(2024, 10, 26, 23, 0, tzinfo=timezone.utc), 50),
         ],
     )
-    def test_inverse_forward_roundtrip_every_real_half_hour(
-        self, first_instant, n_periods
-    ):
+    def test_inverse_forward_roundtrip_every_real_half_hour(self, first_instant, n_periods):
         """UTC -> SP -> UTC is lossless for every real half-hour of the day."""
         for i in range(n_periods):
             ts = first_instant + timedelta(minutes=30 * i)

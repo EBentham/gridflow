@@ -18,4 +18,3 @@ register_transformer(
     "load_forecast_yearly",
     LoadForecastYearlyTransformer,
 )
-

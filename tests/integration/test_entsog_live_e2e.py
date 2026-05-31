@@ -29,9 +29,7 @@ BASE_URL = "https://transparency.entsog.eu/api/v1"
 
 
 def _entsog_config() -> SourceConfig:
-    return load_settings().get_source_config("entsog").model_copy(
-        update={"timeout": 20}
-    )
+    return load_settings().get_source_config("entsog").model_copy(update={"timeout": 20})
 
 
 def _response_preview(body: bytes, limit: int = 500) -> str:

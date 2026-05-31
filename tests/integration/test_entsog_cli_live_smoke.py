@@ -65,15 +65,17 @@ def test_live_pipeline_entsog_reference_dataset_creates_bronze_and_silver(
 ) -> None:
     paths = _isolated_env(tmp_path, monkeypatch)
 
-    result = _invoke_cli([
-        "pipeline",
-        "entsog",
-        CURATED_DATASET,
-        "--start",
-        START,
-        "--end",
-        END,
-    ])
+    result = _invoke_cli(
+        [
+            "pipeline",
+            "entsog",
+            CURATED_DATASET,
+            "--start",
+            START,
+            "--end",
+            END,
+        ]
+    )
 
     assert "Pipeline: entsog" in result.output
     assert "Bronze (ingest)" in result.output

@@ -21,6 +21,7 @@ from gridflow.connectors.base import RawResponse
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 load_dotenv(PROJECT_ROOT / ".env", override=False)
 
+
 def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item]) -> None:
     """Keep live API tests opt-in even when local credentials are present."""
     markexpr = config.option.markexpr or ""

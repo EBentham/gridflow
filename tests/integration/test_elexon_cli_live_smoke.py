@@ -100,27 +100,31 @@ def test_live_ingest_then_transform_elexon_freq_creates_outputs(
 ) -> None:
     paths = _isolated_env(tmp_path, monkeypatch)
 
-    ingest_result = _invoke_cli([
-        "ingest",
-        "elexon",
-        PUBLISH_DATASET,
-        "--start",
-        START,
-        "--end",
-        END,
-    ])
+    ingest_result = _invoke_cli(
+        [
+            "ingest",
+            "elexon",
+            PUBLISH_DATASET,
+            "--start",
+            START,
+            "--end",
+            END,
+        ]
+    )
     assert f"elexon/{PUBLISH_DATASET}" in ingest_result.output
     _assert_bronze_created(paths, PUBLISH_DATASET, tmp_path)
 
-    transform_result = _invoke_cli([
-        "transform",
-        "elexon",
-        PUBLISH_DATASET,
-        "--start",
-        START,
-        "--end",
-        END,
-    ])
+    transform_result = _invoke_cli(
+        [
+            "transform",
+            "elexon",
+            PUBLISH_DATASET,
+            "--start",
+            START,
+            "--end",
+            END,
+        ]
+    )
     assert f"elexon/{PUBLISH_DATASET}" in transform_result.output
     _assert_silver_created(paths, PUBLISH_DATASET, tmp_path)
 
@@ -142,17 +146,19 @@ def test_live_backfill_elexon_curated_dataset_creates_outputs(
 ) -> None:
     paths = _isolated_env(tmp_path, monkeypatch)
 
-    result = _invoke_cli([
-        "backfill",
-        "elexon",
-        dataset,
-        "--start",
-        START,
-        "--end",
-        END,
-        "--chunk-days",
-        "1",
-    ])
+    result = _invoke_cli(
+        [
+            "backfill",
+            "elexon",
+            dataset,
+            "--start",
+            START,
+            "--end",
+            END,
+            "--chunk-days",
+            "1",
+        ]
+    )
 
     assert purpose
     assert f"Backfilling elexon/{dataset}" in result.output

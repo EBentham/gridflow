@@ -246,16 +246,18 @@ class TestPhysicalFlowsTransformer:
     def test_gwh_d_input_not_mis_scaled_in_transform(self):
         """Issue 05 #3 (transform level): a GWh/d-denominated flow must reach
         silver unchanged, not divided by 1e6."""
-        raw = pl.DataFrame([
-            {
-                "indicator": "Physical Flow",
-                "periodFrom": "2024-01-15T06:00:00Z",
-                "pointKey": "IUK",
-                "directionKey": "entry",
-                "value": 15_000.0,
-                "unit": "GWh/d",
-            }
-        ])
+        raw = pl.DataFrame(
+            [
+                {
+                    "indicator": "Physical Flow",
+                    "periodFrom": "2024-01-15T06:00:00Z",
+                    "pointKey": "IUK",
+                    "directionKey": "entry",
+                    "value": 15_000.0,
+                    "unit": "GWh/d",
+                }
+            ]
+        )
         result = self.t.transform(raw)
         assert len(result) == 1
         assert abs(result["flow_gwh_per_day"][0] - 15_000.0) < 0.01
@@ -266,24 +268,26 @@ class TestPhysicalFlowsTransformer:
         logged count (CLAUDE.md: never silently dropped)."""
         import logging
 
-        raw = pl.DataFrame([
-            {
-                "indicator": "Physical Flow",
-                "periodFrom": "2024-01-15T06:00:00Z",
-                "pointKey": "GOOD",
-                "directionKey": "entry",
-                "value": 1_000_000.0,
-                "unit": "kWh/d",
-            },
-            {
-                "indicator": "Physical Flow",
-                "periodFrom": "2024-01-15T06:00:00Z",
-                "pointKey": "BAD",
-                "directionKey": "entry",
-                "value": 1_000_000.0,
-                "unit": "mystery-unit",
-            },
-        ])
+        raw = pl.DataFrame(
+            [
+                {
+                    "indicator": "Physical Flow",
+                    "periodFrom": "2024-01-15T06:00:00Z",
+                    "pointKey": "GOOD",
+                    "directionKey": "entry",
+                    "value": 1_000_000.0,
+                    "unit": "kWh/d",
+                },
+                {
+                    "indicator": "Physical Flow",
+                    "periodFrom": "2024-01-15T06:00:00Z",
+                    "pointKey": "BAD",
+                    "directionKey": "entry",
+                    "value": 1_000_000.0,
+                    "unit": "mystery-unit",
+                },
+            ]
+        )
         with caplog.at_level(logging.WARNING):
             result = self.t.transform(raw)
         point_keys = set(result["point_key"].to_list())
@@ -294,9 +298,7 @@ class TestPhysicalFlowsTransformer:
         )
         good = result.filter(pl.col("point_key") == "GOOD")
         assert abs(good["flow_gwh_per_day"][0] - 1.0) < 1e-9
-        assert "mystery-unit" in caplog.text, (
-            "unknown unit drop must be logged, not silent"
-        )
+        assert "mystery-unit" in caplog.text, "unknown unit drop must be logged, not silent"
 
     def test_read_bronze_filters_records_to_target_date(self, tmp_path):
         target = date(2026, 4, 17)
@@ -316,9 +318,7 @@ class TestPhysicalFlowsTransformer:
                 },
             ]
         }
-        (bronze_path / "raw_20260417T000000Z_abcd1234.json").write_text(
-            json.dumps(payload)
-        )
+        (bronze_path / "raw_20260417T000000Z_abcd1234.json").write_text(json.dumps(payload))
         self.t.bronze_dir = tmp_path
 
         result = self.t.read_bronze(target)
@@ -354,6 +354,7 @@ class TestEntsogPhysicalFlowSchema:
 
     def test_naive_timestamp_rejected(self):
         from pydantic import ValidationError
+
         with pytest.raises(ValidationError):
             EntsogPhysicalFlow(
                 timestamp_utc=datetime(2024, 1, 15, 6, 0, 0),  # naive

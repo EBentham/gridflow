@@ -308,7 +308,5 @@ def build_path(
 
     path = endpoint.path_template.format(**values)
     return path, {
-        key: value
-        for key, value in values.items()
-        if "{" + key + "}" in endpoint.path_template
+        key: value for key, value in values.items() if "{" + key + "}" in endpoint.path_template
     }

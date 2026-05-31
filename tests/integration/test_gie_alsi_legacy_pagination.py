@@ -32,8 +32,10 @@ END = datetime(2024, 1, 15, 0, 0, tzinfo=UTC)
 
 
 def _alsi_config() -> SourceConfig:
-    return load_settings().get_source_config("gie_alsi").model_copy(
-        update={"api_key": "test-key", "rate_limit_per_second": 1000, "timeout": 5}
+    return (
+        load_settings()
+        .get_source_config("gie_alsi")
+        .model_copy(update={"api_key": "test-key", "rate_limit_per_second": 1000, "timeout": 5})
     )
 
 
@@ -46,10 +48,7 @@ def _alsi_lng_body(*, last_page: int, page: int, rows: int = 5) -> bytes:
             "total": rows,
             "gas_day": "2024-01-15",
             "dataset": "lng",
-            "data": [
-                {"name": "ZEE", "lngInventory": "1.0", "page": page}
-                for _ in range(rows)
-            ],
+            "data": [{"name": "ZEE", "lngInventory": "1.0", "page": page} for _ in range(rows)],
         }
     ).encode()
 

@@ -36,18 +36,14 @@ def read_parquet(path: Path | str) -> pl.DataFrame:
     path_str = str(path)
 
     if "*" in path_str:
-        return pl.read_parquet(
-            path_str, hive_partitioning=True, missing_columns="insert"
-        )
+        return pl.read_parquet(path_str, hive_partitioning=True, missing_columns="insert")
 
     path_obj = Path(path_str)
     if not path_obj.exists():
         logger.warning(f"Parquet file not found: {path}")
         return pl.DataFrame()
 
-    return pl.read_parquet(
-        path_obj, hive_partitioning=True, missing_columns="insert"
-    )
+    return pl.read_parquet(path_obj, hive_partitioning=True, missing_columns="insert")
 
 
 def read_parquet_dir(directory: Path) -> pl.DataFrame:
@@ -61,6 +57,4 @@ def read_parquet_dir(directory: Path) -> pl.DataFrame:
         logger.warning(f"No Parquet files found in {directory}")
         return pl.DataFrame()
     pattern = str(directory / "**" / "*.parquet")
-    return pl.read_parquet(
-        pattern, hive_partitioning=True, missing_columns="insert"
-    )
+    return pl.read_parquet(pattern, hive_partitioning=True, missing_columns="insert")

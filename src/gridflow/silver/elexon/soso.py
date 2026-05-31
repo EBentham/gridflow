@@ -77,9 +77,11 @@ class SOSOTransformer(BaseSilverTransformer):
             logger.error(f"Missing required columns in SOSO: {missing}")
             return pl.DataFrame()
 
-        df = raw_df.with_columns([
-            pl.col("settlement_date").cast(pl.Date),
-        ])
+        df = raw_df.with_columns(
+            [
+                pl.col("settlement_date").cast(pl.Date),
+            ]
+        )
 
         if "settlement_period" in df.columns:
             df = df.with_columns(pl.col("settlement_period").cast(pl.Int32))
@@ -124,17 +126,29 @@ class SOSOTransformer(BaseSilverTransformer):
         df = df.unique(subset=dedup_cols, keep="last")
 
         now = datetime.now(UTC)
-        df = df.with_columns([
-            pl.lit("elexon").alias("data_provider"),
-            pl.lit(now).cast(pl.Datetime("us", "UTC")).alias("ingested_at"),
-        ])
+        df = df.with_columns(
+            [
+                pl.lit("elexon").alias("data_provider"),
+                pl.lit(now).cast(pl.Datetime("us", "UTC")).alias("ingested_at"),
+            ]
+        )
 
         output_cols = [
-            "settlement_date", "settlement_period", "timestamp_utc",
-            "contract_identification", "sender_identification", "receiver_identification",
-            "resource_provider", "trade_direction", "trade_quantity_mw", "trade_price",
-            "trader_unit", "start_time", "end_time",
-            "data_provider", "ingested_at",
+            "settlement_date",
+            "settlement_period",
+            "timestamp_utc",
+            "contract_identification",
+            "sender_identification",
+            "receiver_identification",
+            "resource_provider",
+            "trade_direction",
+            "trade_quantity_mw",
+            "trade_price",
+            "trader_unit",
+            "start_time",
+            "end_time",
+            "data_provider",
+            "ingested_at",
         ]
         available = [c for c in output_cols if c in df.columns]
         return df.select(available).sort("timestamp_utc")

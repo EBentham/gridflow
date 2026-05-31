@@ -89,13 +89,9 @@ def _write_openmeteo_historical_bronze(
     target_date: date,
     fetched_at: datetime | None = None,
 ) -> None:
-    payload = json.loads(
-        (FIXTURES / "openmeteo" / "historical_london_response.json").read_text()
-    )
+    payload = json.loads((FIXTURES / "openmeteo" / "historical_london_response.json").read_text())
     # F7.5: per-location bronze uses double-underscore separator.
-    bronze_dir = _date_dir(
-        data_dir, "open_meteo", "historical_demand__london", target_date
-    )
+    bronze_dir = _date_dir(data_dir, "open_meteo", "historical_demand__london", target_date)
     bronze_dir.mkdir(parents=True, exist_ok=True)
     (bronze_dir / "raw_test.json").write_text(json.dumps(payload))
     if fetched_at is not None:
@@ -116,9 +112,7 @@ def _read_single_silver(data_dir: Path, source: str, dataset: str) -> pl.DataFra
     return read_parquet(pattern)
 
 
-def _assert_base_bitemporal_columns(
-    df: pl.DataFrame, expected_version: str = "1.0.0"
-) -> None:
+def _assert_base_bitemporal_columns(df: pl.DataFrame, expected_version: str = "1.0.0") -> None:
     for column in ["event_time", "available_at", "source_run_id", "dataset_version"]:
         assert column in df.columns
         assert df[column].null_count() == 0
@@ -411,12 +405,8 @@ def test_per_revision_availability_does_not_collapse(tmp_data_dir: Path) -> None
     written_rev1 = datetime(2024, 2, 1, 8, 0, 0, tzinfo=UTC)
     written_rev2 = datetime(2024, 2, 1, 12, 0, 0, tzinfo=UTC)
 
-    _write_remit_revision(
-        tmp_data_dir, date_rev1, 1, "2024-02-01T08:00:00Z", written_rev1
-    )
-    _write_remit_revision(
-        tmp_data_dir, date_rev2, 2, "2024-02-01T12:00:00Z", written_rev2
-    )
+    _write_remit_revision(tmp_data_dir, date_rev1, 1, "2024-02-01T08:00:00Z", written_rev1)
+    _write_remit_revision(tmp_data_dir, date_rev2, 2, "2024-02-01T12:00:00Z", written_rev2)
 
     REMITTransformer(tmp_data_dir).run(date_rev1, run_id="run-1", reingest=True)
     REMITTransformer(tmp_data_dir).run(date_rev2, run_id="run-2", reingest=True)

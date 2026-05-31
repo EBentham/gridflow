@@ -58,9 +58,7 @@ def test_try_create_view_raises_under_pytest(tmp_path: Path) -> None:
 
 
 @pytest.mark.integration
-def test_production_mode_swallows(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_production_mode_swallows(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """F15-D / PBI-05: legacy swallow behaviour preserved in production mode.
 
     When neither PYTEST_CURRENT_TEST nor GRIDFLOW_ENV=dev/test is set,

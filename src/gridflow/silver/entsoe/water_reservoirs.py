@@ -56,10 +56,12 @@ class WaterReservoirsTransformer(BaseSilverTransformer):
         df = df.unique(subset=["timestamp_utc", "area_code"], keep="last")
 
         now = datetime.now(UTC)
-        df = df.with_columns([
-            pl.lit("entsoe").alias("data_provider"),
-            pl.lit(now).cast(pl.Datetime("us", "UTC")).alias("ingested_at"),
-        ])
+        df = df.with_columns(
+            [
+                pl.lit("entsoe").alias("data_provider"),
+                pl.lit(now).cast(pl.Datetime("us", "UTC")).alias("ingested_at"),
+            ]
+        )
 
         output_cols = [
             "timestamp_utc",

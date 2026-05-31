@@ -158,9 +158,7 @@ def test_remit_append_only_preserves_revisions_across_runs(
     union = pl.concat(frames, how="diagonal_relaxed")
 
     revisions = union.filter(pl.col("mrid") == "MSG-A")["revision_number"].to_list()
-    assert set(revisions) >= {1, 2}, (
-        f"expected both revisions across runs, got {revisions}"
-    )
+    assert set(revisions) >= {1, 2}, f"expected both revisions across runs, got {revisions}"
 
 
 def test_default_atomic_replace_overwrites_single_file(tmp_data_dir: Path) -> None:

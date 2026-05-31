@@ -52,12 +52,14 @@ class ActualGenerationUnitsTransformer(BaseSilverTransformer):
         if df["timestamp_utc"].dtype != pl.Datetime("us", "UTC"):
             df = df.with_columns(pl.col("timestamp_utc").cast(pl.Datetime("us", "UTC")))
 
-        df = df.with_columns([
-            pl.col("generation_mw").cast(pl.Float64),
-            pl.col("unit_mrid").fill_null("").alias("unit_mrid"),
-            pl.col("unit_name").fill_null("").alias("unit_name"),
-            pl.col("production_type").fill_null("unknown").alias("production_type"),
-        ])
+        df = df.with_columns(
+            [
+                pl.col("generation_mw").cast(pl.Float64),
+                pl.col("unit_mrid").fill_null("").alias("unit_mrid"),
+                pl.col("unit_name").fill_null("").alias("unit_name"),
+                pl.col("production_type").fill_null("unknown").alias("production_type"),
+            ]
+        )
         df = df.filter(pl.col("unit_mrid") != "")
         df = df.unique(
             subset=["timestamp_utc", "area_code", "unit_mrid"],
@@ -65,10 +67,12 @@ class ActualGenerationUnitsTransformer(BaseSilverTransformer):
         )
 
         now = datetime.now(UTC)
-        df = df.with_columns([
-            pl.lit("entsoe").alias("data_provider"),
-            pl.lit(now).cast(pl.Datetime("us", "UTC")).alias("ingested_at"),
-        ])
+        df = df.with_columns(
+            [
+                pl.lit("entsoe").alias("data_provider"),
+                pl.lit(now).cast(pl.Datetime("us", "UTC")).alias("ingested_at"),
+            ]
+        )
 
         output_cols = [
             "timestamp_utc",
