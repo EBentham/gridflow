@@ -2766,13 +2766,13 @@ class TestV2BCleanup:
         assert "commercial_schedules_net_positions" not in DOC_TYPES
         assert "commercial_schedules" in DOC_TYPES
 
-    def test_psrType_optional_for_actual_generation_and_wind_solar(self):
+    def test_psrType_optional_for_actual_generation_and_wind_solar(self):  # noqa: N802
         """V2-FIX-06 / 5e: psrType is a per-fuel filter widely accepted
         on generation endpoints; was missing from optional_params."""
         assert "psrType" in DOC_TYPES["actual_generation"].optional_params
         assert "psrType" in DOC_TYPES["wind_solar_forecast"].optional_params
 
-    def test_psrType_optional_for_outages_generation_and_production(self):
+    def test_psrType_optional_for_outages_generation_and_production(self):  # noqa: N802
         """psrType also accepted on outage endpoints."""
         assert "psrType" in DOC_TYPES["outages_generation"].optional_params
         assert "psrType" in DOC_TYPES["outages_production"].optional_params

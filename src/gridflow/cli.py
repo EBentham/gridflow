@@ -3,11 +3,11 @@
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import logging
 import re
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from typing import Optional
 
 import typer
 
@@ -18,10 +18,10 @@ logger = logging.getLogger(__name__)
 @app.command()
 def ingest(
     source: str = typer.Argument(help="Data source (elexon, entsoe, entsog)"),
-    dataset: Optional[str] = typer.Argument(default=None, help="Dataset name, or omit for --all"),
-    start: Optional[str] = typer.Option(None, help="Start date (YYYY-MM-DD)"),
-    end: Optional[str] = typer.Option(None, help="End date (YYYY-MM-DD)"),
-    last: Optional[str] = typer.Option(None, help="Relative lookback (e.g. 24h, 7d)"),
+    dataset: str | None = typer.Argument(default=None, help="Dataset name, or omit for --all"),
+    start: str | None = typer.Option(None, help="Start date (YYYY-MM-DD)"),
+    end: str | None = typer.Option(None, help="End date (YYYY-MM-DD)"),
+    last: str | None = typer.Option(None, help="Relative lookback (e.g. 24h, 7d)"),
     all_datasets: bool = typer.Option(
         False, "--all", "-all", help="Ingest all datasets for source"
     ),
@@ -91,10 +91,10 @@ def ingest(
 @app.command()
 def transform(
     source: str = typer.Argument(help="Data source"),
-    dataset: Optional[str] = typer.Argument(default=None, help="Dataset name"),
-    start: Optional[str] = typer.Option(None, help="Start date (YYYY-MM-DD)"),
-    end: Optional[str] = typer.Option(None, help="End date (YYYY-MM-DD)"),
-    last: Optional[str] = typer.Option(None, help="Relative lookback (e.g. 24h, 7d)"),
+    dataset: str | None = typer.Argument(default=None, help="Dataset name"),
+    start: str | None = typer.Option(None, help="Start date (YYYY-MM-DD)"),
+    end: str | None = typer.Option(None, help="End date (YYYY-MM-DD)"),
+    last: str | None = typer.Option(None, help="Relative lookback (e.g. 24h, 7d)"),
     all_datasets: bool = typer.Option(False, "--all", help="Transform all datasets for source"),
     reingest: bool = typer.Option(
         False,
@@ -120,9 +120,9 @@ def transform(
     # Import transformer registrations
     _import_transformers()
 
+    from gridflow.observability import PipelineRunTracker
     from gridflow.silver.registry import get_transformer
     from gridflow.storage.duckdb import get_connection, init_catalogue, refresh_views
-    from gridflow.observability import PipelineRunTracker
 
     init_catalogue(settings.pipeline.duckdb_path, settings.pipeline.data_dir)
     con = get_connection(settings.pipeline.duckdb_path)
@@ -164,16 +164,16 @@ def transform(
 
 @app.command()
 def build(
-    gold_dataset: Optional[str] = typer.Argument(default=None, help="Gold dataset name"),
-    start: Optional[str] = typer.Option(None, help="Start date (YYYY-MM-DD)"),
-    end: Optional[str] = typer.Option(None, help="End date (YYYY-MM-DD)"),
-    last: Optional[str] = typer.Option(None, help="Relative lookback (e.g. 24h, 7d)"),
+    gold_dataset: str | None = typer.Argument(default=None, help="Gold dataset name"),
+    start: str | None = typer.Option(None, help="Start date (YYYY-MM-DD)"),
+    end: str | None = typer.Option(None, help="End date (YYYY-MM-DD)"),
+    last: str | None = typer.Option(None, help="Relative lookback (e.g. 24h, 7d)"),
     all_datasets: bool = typer.Option(False, "--all", "-all", help="Build all gold datasets"),
 ) -> None:
     """Build gold-layer modelling-ready datasets from silver."""
     from gridflow.config.settings import load_settings
-    from gridflow.utils.logging import setup_logging
     from gridflow.gold.system_marginal_price import SystemMarginalPriceBuilder
+    from gridflow.utils.logging import setup_logging
 
     settings = load_settings()
     setup_logging(
@@ -196,8 +196,8 @@ def build(
     else:
         raise typer.BadParameter("Specify a gold dataset name or use --all")
 
-    from gridflow.storage.duckdb import get_connection, init_catalogue, refresh_views
     from gridflow.observability import PipelineRunTracker
+    from gridflow.storage.duckdb import get_connection, init_catalogue, refresh_views
 
     init_catalogue(settings.pipeline.duckdb_path, settings.pipeline.data_dir)
     con = get_connection(settings.pipeline.duckdb_path)
@@ -226,7 +226,7 @@ def build(
 @app.command()
 def backfill(
     source: str = typer.Argument(help="Data source"),
-    dataset: Optional[str] = typer.Argument(default=None, help="Dataset name"),
+    dataset: str | None = typer.Argument(default=None, help="Dataset name"),
     start: str = typer.Option(..., help="Start date (YYYY-MM-DD)"),
     end: str = typer.Option(..., help="End date (YYYY-MM-DD)"),
     chunk_days: int = typer.Option(1, help="Days per chunk"),
@@ -245,8 +245,8 @@ def backfill(
 
     datasets = _resolve_datasets(source, dataset, all_datasets, settings)
 
-    start_dt = datetime.fromisoformat(start).replace(tzinfo=timezone.utc)
-    end_dt = datetime.fromisoformat(end).replace(tzinfo=timezone.utc)
+    start_dt = datetime.fromisoformat(start).replace(tzinfo=UTC)
+    end_dt = datetime.fromisoformat(end).replace(tzinfo=UTC)
 
     for ds in datasets:
         typer.echo(f"\n--- Backfilling {source}/{ds} ---")
@@ -292,8 +292,8 @@ def backfill(
 @app.command()
 def export_csv(
     source: str = typer.Argument(help="Data source"),
-    dataset: Optional[str] = typer.Argument(default=None, help="Dataset name"),
-    output_dir: Optional[str] = typer.Option(
+    dataset: str | None = typer.Argument(default=None, help="Dataset name"),
+    output_dir: str | None = typer.Option(
         None, "--output", "-o", help="Output directory (default: data/exports/)"
     ),
     all_datasets: bool = typer.Option(
@@ -339,12 +339,12 @@ def export_csv(
 @app.command()
 def pipeline(
     source: str = typer.Argument(help="Data source"),
-    dataset: Optional[str] = typer.Argument(default=None, help="Dataset name"),
-    start: Optional[str] = typer.Option(None, help="Start date (YYYY-MM-DD)"),
-    end: Optional[str] = typer.Option(None, help="End date (YYYY-MM-DD)"),
-    last: Optional[str] = typer.Option(None, help="Relative lookback (e.g. 24h, 7d)"),
+    dataset: str | None = typer.Argument(default=None, help="Dataset name"),
+    start: str | None = typer.Option(None, help="Start date (YYYY-MM-DD)"),
+    end: str | None = typer.Option(None, help="End date (YYYY-MM-DD)"),
+    last: str | None = typer.Option(None, help="Relative lookback (e.g. 24h, 7d)"),
     all_datasets: bool = typer.Option(False, "--all", "-all", help="Run all datasets for source"),
-    gold_dataset: Optional[str] = typer.Option(
+    gold_dataset: str | None = typer.Option(
         None, "--gold", help="Gold dataset to build after silver"
     ),
 ) -> None:
@@ -428,21 +428,20 @@ def status() -> None:
 
 @app.command()
 def quality(
-    source: Optional[str] = typer.Option(None, help="Filter by source"),
+    source: str | None = typer.Option(None, help="Filter by source"),
     all_sources: bool = typer.Option(False, "--all", help="Run for all sources"),
 ) -> None:
     """Run quality checks and write report."""
     from gridflow.config.settings import load_settings
-    from gridflow.utils.logging import setup_logging
     from gridflow.quality.checks import (
         check_duplicates,
         check_null_rate,
-        check_range,
         check_row_count,
         check_time_series_gaps,
     )
     from gridflow.quality.reporter import QualityReporter
     from gridflow.storage.parquet import read_parquet_dir
+    from gridflow.utils.logging import setup_logging
 
     settings = load_settings()
     setup_logging(
@@ -505,10 +504,10 @@ def quality(
 
 @app.command()
 def reset(
-    source: Optional[str] = typer.Argument(
+    source: str | None = typer.Argument(
         default=None, help="Limit reset to this source (e.g. elexon)"
     ),
-    dataset: Optional[str] = typer.Argument(default=None, help="Limit reset to this dataset"),
+    dataset: str | None = typer.Argument(default=None, help="Limit reset to this dataset"),
     bronze: bool = typer.Option(False, "--bronze", help="Wipe bronze layer only"),
     silver: bool = typer.Option(False, "--silver", help="Wipe silver layer only"),
     gold: bool = typer.Option(False, "--gold", help="Wipe gold layer only"),
@@ -526,7 +525,6 @@ def reset(
       gridflow reset elexon system_prices --yes     # wipe one dataset\n
       gridflow reset elexon system_prices --silver  # silver layer only\n
     """
-    import shutil
 
     from gridflow.config.settings import load_settings
     from gridflow.storage.duckdb import init_catalogue
@@ -663,12 +661,12 @@ def _parse_window_bound(value: str) -> datetime:
     parsed = datetime.fromisoformat(value)
     if parsed.tzinfo is None:
         if "T" not in value and ":" not in value:
-            return parsed.replace(tzinfo=timezone.utc)
+            return parsed.replace(tzinfo=UTC)
         raise typer.BadParameter(
             f"Naive datetime {value!r} has no timezone; pass an explicit offset "
             f"(e.g. '2026-02-01T00:00:00Z' or '...+01:00') or a bare date."
         )
-    return parsed.astimezone(timezone.utc)
+    return parsed.astimezone(UTC)
 
 
 def _resolve_dates(
@@ -678,7 +676,7 @@ def _resolve_dates(
     default_lookback_hours: int,
 ) -> tuple[datetime, datetime]:
     """Parse date arguments into (start_dt, end_dt) UTC datetimes."""
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     if last:
         from gridflow.utils.time import parse_lookback
 
@@ -731,10 +729,8 @@ def _import_connectors() -> None:
         "gridflow.connectors.entsog",
         "gridflow.connectors.neso",
     ]:
-        try:
+        with contextlib.suppress(ImportError):
             __import__(module)
-        except ImportError:
-            pass
 
 
 def _import_transformers() -> None:
@@ -747,7 +743,5 @@ def _import_transformers() -> None:
         "gridflow.silver.entsog",
         "gridflow.silver.neso",
     ]:
-        try:
+        with contextlib.suppress(ImportError):
             __import__(module)
-        except ImportError:
-            pass

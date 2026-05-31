@@ -5,12 +5,13 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import polars as pl
-import pytest
 
 from gridflow.storage.duckdb import get_connection, init_catalogue
 
 if TYPE_CHECKING:
     from pathlib import Path
+
+    import pytest
 
 
 def _write_parquet(df: pl.DataFrame, path: Path) -> None:

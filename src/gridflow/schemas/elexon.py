@@ -3,14 +3,14 @@
 from __future__ import annotations
 
 from datetime import date, datetime
-from enum import Enum
+from enum import StrEnum
 
 from pydantic import Field, field_validator
 
 from gridflow.schemas.common import BaseSchema
 
 
-class SettlementRunType(str, Enum):
+class SettlementRunType(StrEnum):
     """Elexon settlement run type precedence (higher = more final)."""
 
     II = "II"  # Interim Initial

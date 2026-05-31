@@ -29,7 +29,6 @@ import gridflow.silver.entsog  # noqa: F401
 import gridflow.silver.gie  # noqa: F401
 import gridflow.silver.neso  # noqa: F401
 import gridflow.silver.openmeteo  # noqa: F401
-
 from gridflow.silver.registry import get_transformer, list_transformers
 
 _CANONICAL_PATH = Path(__file__).resolve().parent.parent.parent / "docs" / "CANONICAL_SCHEMA.yaml"

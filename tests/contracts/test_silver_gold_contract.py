@@ -3,16 +3,20 @@
 from __future__ import annotations
 
 from datetime import date
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pytest
 
 from gridflow.bronze.writer import BronzeWriter
-from gridflow.connectors.base import RawResponse
 from gridflow.gold.demand_features import DemandFeaturesBuilder
 from gridflow.gold.merit_order import MeritOrderBuilder
 from gridflow.gold.system_marginal_price import SystemMarginalPriceBuilder
 from gridflow.silver.elexon.system_prices import SystemPriceTransformer
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    from gridflow.connectors.base import RawResponse
 
 
 class TestSilverGoldContract:

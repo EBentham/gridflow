@@ -20,7 +20,6 @@ from gridflow.silver.openmeteo.historical import (
     HistoricalWindWeather,
 )
 
-
 _R = 287.05
 
 

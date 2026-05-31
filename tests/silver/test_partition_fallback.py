@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 from datetime import date
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 import polars as pl
-import pytest
 
 from gridflow.silver.base import BaseSilverTransformer
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 class _StubTransformer(BaseSilverTransformer):

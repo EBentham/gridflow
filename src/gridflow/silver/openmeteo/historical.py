@@ -19,7 +19,7 @@ from __future__ import annotations
 import json
 import logging
 from datetime import UTC, date, datetime
-from typing import Any, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 import polars as pl
 
@@ -33,10 +33,12 @@ from gridflow.connectors.openmeteo.endpoints import (
     WIND_LOCATIONS,
     WeatherLocation,
 )
-from gridflow.schemas.common import BaseSchema
 from gridflow.schemas.weather import DemandWeather, SolarWeather, WindWeather
 from gridflow.silver.base import BaseSilverTransformer
 from gridflow.silver.registry import register_transformer
+
+if TYPE_CHECKING:
+    from gridflow.schemas.common import BaseSchema
 
 logger = logging.getLogger(__name__)
 
@@ -324,9 +326,9 @@ class HistoricalSolarWeather(BaseOpenMeteoTransformer):
 
 # Sanity-check the variable list / dataset spec wiring at import time so the
 # refactor catches drift between endpoints.py and the transformers.
-assert HistoricalDemandWeather.HOURLY_VARS == DATASET_SPECS["historical_demand"].hourly
-assert HistoricalWindWeather.HOURLY_VARS == DATASET_SPECS["historical_wind"].hourly
-assert HistoricalSolarWeather.HOURLY_VARS == DATASET_SPECS["historical_solar"].hourly
+assert DATASET_SPECS["historical_demand"].hourly == HistoricalDemandWeather.HOURLY_VARS
+assert DATASET_SPECS["historical_wind"].hourly == HistoricalWindWeather.HOURLY_VARS
+assert DATASET_SPECS["historical_solar"].hourly == HistoricalSolarWeather.HOURLY_VARS
 
 
 register_transformer("open_meteo", "historical_demand", HistoricalDemandWeather)

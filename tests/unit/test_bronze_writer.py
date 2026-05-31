@@ -13,12 +13,15 @@ from __future__ import annotations
 import hashlib
 import json
 from datetime import UTC, datetime
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pytest
 
 from gridflow.bronze.writer import BronzeWriter
 from gridflow.connectors.base import RawResponse
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 def _response(body: bytes = b'{"data": [1, 2, 3]}') -> RawResponse:

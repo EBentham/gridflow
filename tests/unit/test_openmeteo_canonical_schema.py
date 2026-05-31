@@ -11,9 +11,8 @@ from __future__ import annotations
 
 import json
 from datetime import date
-from pathlib import Path
+from typing import TYPE_CHECKING
 
-import polars as pl
 import pytest
 
 from gridflow.connectors.openmeteo.endpoints import (
@@ -27,6 +26,11 @@ from gridflow.silver.openmeteo.historical import (
     HistoricalWindWeather,
 )
 from gridflow.storage.parquet import read_parquet
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    import polars as pl
 
 
 def _make_open_meteo_json(

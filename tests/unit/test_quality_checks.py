@@ -11,7 +11,7 @@ These tests assert *behaviour and values*, not shapes:
 from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 import polars as pl
 import pytest
@@ -22,6 +22,9 @@ from gridflow.quality.checks import (
     check_time_series_gaps,
 )
 from gridflow.quality.reporter import QualityReporter
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 def _half_hourly(n: int, start: datetime | None = None) -> pl.DataFrame:

@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import logging
 import time
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 import duckdb
 import polars as pl
@@ -22,6 +22,9 @@ from gridflow.storage.duckdb import (
     _try_create_view,
     get_connection,
 )
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 def _write_parquet(df: pl.DataFrame, path: Path) -> None:

@@ -13,9 +13,7 @@ from xml.etree import ElementTree
 
 import httpx
 
-from gridflow.connectors.base import _make_ssl_context
-
-from gridflow.connectors.base import BaseConnector, RawResponse
+from gridflow.connectors.base import BaseConnector, RawResponse, _make_ssl_context
 from gridflow.connectors.entsoe.endpoints import (
     BIDDING_ZONES,
     DEFAULT_CONTROL_AREAS,

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import timezone
+from datetime import UTC
 from enum import Enum
 from typing import TYPE_CHECKING
 
@@ -274,7 +274,7 @@ def _to_utc_z(value: datetime) -> str:
     preserved; the connector's sole caller passes tz-aware UTC).
     """
     if value.tzinfo is not None:
-        value = value.astimezone(timezone.utc)
+        value = value.astimezone(UTC)
     return value.strftime("%Y-%m-%dT%H:%M:%SZ")
 
 

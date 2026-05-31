@@ -5,8 +5,11 @@ Encapsulates all filesystem path logic. Transforms never construct paths directl
 
 from __future__ import annotations
 
-from datetime import date
 from pathlib import Path
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from datetime import date
 
 
 class PathBuilder:

@@ -131,7 +131,7 @@ def test_cmp_schema_is_dynamic_but_tolerant_readers_unify(
     enriched_cols, plain_cols = set(enriched.columns), set(plain.columns)
     assert plain_cols < enriched_cols, "enriched partition must be a strict superset"
     drift = enriched_cols - plain_cols
-    assert _TYPED_ENVELOPE <= drift
+    assert drift >= _TYPED_ENVELOPE
     assert _TYPELESS_ENVELOPE in drift
     # The typeless field is all-null and carries no concrete type, exactly as on disk.
     assert enriched.schema[_TYPELESS_ENVELOPE] == pl.Null
@@ -151,11 +151,11 @@ def test_cmp_schema_is_dynamic_but_tolerant_readers_unify(
     finally:
         con.close()
     assert unified.height == 3  # 2 enriched-day rows + 1 plain-day row
-    assert _TYPED_ENVELOPE <= set(unified.columns)
+    assert set(unified.columns) >= _TYPED_ENVELOPE
     # Only the single archived row carries point_type; the other two are null-filled.
     assert unified["point_type"].null_count() == 2
 
     # 2b. gridflow's Polars read path (missing_columns="insert") unifies it too.
     via_polars = pl.read_parquet(glob, hive_partitioning=True, missing_columns="insert")
     assert via_polars.height == 3
-    assert _TYPED_ENVELOPE <= set(via_polars.columns)
+    assert set(via_polars.columns) >= _TYPED_ENVELOPE

@@ -4,10 +4,11 @@ from __future__ import annotations
 
 import logging
 import uuid
-from datetime import datetime, timezone
-from pathlib import Path
+from datetime import UTC, datetime
+from typing import TYPE_CHECKING
 
-import duckdb
+if TYPE_CHECKING:
+    import duckdb
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +28,7 @@ class PipelineRunTracker:
         self.source = source
         self.dataset = dataset
         self.operation = operation
-        self.started_at = datetime.now(timezone.utc)
+        self.started_at = datetime.now(UTC)
         self._record_start()
 
     def _record_start(self) -> None:
@@ -57,7 +58,7 @@ class PipelineRunTracker:
         rows_skipped: int = 0,
     ) -> None:
         """Record successful completion of a pipeline run."""
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         duration = (now - self.started_at).total_seconds()
         try:
             self.con.execute(
@@ -74,7 +75,7 @@ class PipelineRunTracker:
 
     def fail(self, error: str) -> None:
         """Record pipeline run failure."""
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         duration = (now - self.started_at).total_seconds()
         try:
             self.con.execute(
@@ -96,7 +97,7 @@ def update_watermark(
     last_end: datetime,
 ) -> None:
     """Update the pipeline watermark for incremental ingestion."""
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     try:
         # Upsert watermark
         con.execute(

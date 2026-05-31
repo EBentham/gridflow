@@ -9,8 +9,6 @@ from pathlib import Path
 import polars as pl
 import pytest
 
-from gridflow.utils.time import settlement_period_to_utc
-
 from gridflow.silver.elexon.agpt import AGPTTransformer
 from gridflow.silver.elexon.agws import AGWSTransformer
 from gridflow.silver.elexon.atl import ATLTransformer
@@ -40,6 +38,7 @@ from gridflow.silver.elexon.temp import TempTransformer
 from gridflow.silver.elexon.tsdfd import TSDFDTransformer
 from gridflow.silver.elexon.uou2t14d import UOU2T14DTransformer
 from gridflow.silver.elexon.wind_forecast import WindForecastTransformer
+from gridflow.utils.time import settlement_period_to_utc
 
 FIXTURES = Path(__file__).parent.parent / "fixtures" / "elexon"
 

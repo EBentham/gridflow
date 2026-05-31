@@ -47,6 +47,19 @@ line-length = 100
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "UP", "B", "A", "SIM", "TCH"]
 
+[tool.ruff.lint.flake8-type-checking]
+# pydantic v2 evaluates field annotations at runtime, so imports used only in
+# model annotations must NOT be relocated into a TYPE_CHECKING block by the
+# TC00x rules — doing so makes pydantic fail to resolve the forward refs at
+# runtime (F29: an unguarded --fix broke 82 schema tests). List BaseModel plus
+# the first-party schema bases that subclass it.
+runtime-evaluated-base-classes = [
+    "pydantic.BaseModel",
+    "gridflow.schemas.common.BaseSchema",
+    "gridflow.schemas.common.TimestampMixin",
+    "gridflow.schemas.common.SettlementPeriodMixin",
+]
+
 [tool.mypy]
 python_version = "3.11"
 strict = true

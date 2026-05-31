@@ -6,13 +6,15 @@ Combines system prices with contextual data for modelling.
 from __future__ import annotations
 
 import logging
-from datetime import date
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 import polars as pl
 
 from gridflow.gold.base import BaseGoldBuilder
 from gridflow.storage.parquet import read_parquet_dir
+
+if TYPE_CHECKING:
+    from datetime import date
 
 logger = logging.getLogger(__name__)
 

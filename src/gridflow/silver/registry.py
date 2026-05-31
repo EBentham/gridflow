@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
-from pathlib import Path
 from typing import TYPE_CHECKING
 
-from gridflow.silver.base import BaseSilverTransformer
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    from gridflow.silver.base import BaseSilverTransformer
 
 # Registry of (source, dataset) -> transformer class
 _REGISTRY: dict[tuple[str, str], type[BaseSilverTransformer]] = {}

@@ -10,7 +10,7 @@ note).
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import pytest
 import typer
@@ -26,7 +26,7 @@ def test_resolve_dates_converts_offset_not_relabels() -> None:
     offset and mis-anchored the ingest window by 5 hours.
     """
     start_dt, _ = _resolve_dates("2026-02-01T00:00:00+05:00", None, None, 24)
-    assert start_dt == datetime(2026, 1, 31, 19, 0, 0, tzinfo=timezone.utc)
+    assert start_dt == datetime(2026, 1, 31, 19, 0, 0, tzinfo=UTC)
 
 
 def test_resolve_dates_rejects_naive_datetime() -> None:
@@ -40,4 +40,4 @@ def test_resolve_dates_bare_date_is_midnight_utc() -> None:
     """A bare calendar date is unambiguous -> midnight UTC (ergonomic, no BST
     hazard) — preserves common ``--start 2026-02-01`` usage."""
     start_dt, _ = _resolve_dates("2026-02-01", None, None, 24)
-    assert start_dt == datetime(2026, 2, 1, 0, 0, 0, tzinfo=timezone.utc)
+    assert start_dt == datetime(2026, 2, 1, 0, 0, 0, tzinfo=UTC)
