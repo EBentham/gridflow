@@ -123,9 +123,7 @@ def _root_document_metadata(root: Any) -> dict[str, str]:
         elif tag == "createdDateTime":
             metadata["document_created_at"] = text
         elif tag in {"docStatus", "docStatus.value"}:
-            metadata["document_status"] = text or _first_child_text(
-                child, {"value"}
-            )
+            metadata["document_status"] = text or _first_child_text(child, {"value"})
     return metadata
 
 
@@ -318,7 +316,11 @@ def parse_timeseries_xml(
         # WindPowerFeedin_Period appears in Unavailability_MarketDocument (H7 outages);
         # it has the same timeInterval/resolution/Point structure as Period.
         for period_el in ts_el.iter():
-            if _strip_ns(period_el.tag) not in {"Period", "Available_Period", "WindPowerFeedin_Period"}:
+            if _strip_ns(period_el.tag) not in {
+                "Period",
+                "Available_Period",
+                "WindPowerFeedin_Period",
+            }:
                 continue
 
             start_dt: datetime | None = None
@@ -366,40 +368,41 @@ def parse_timeseries_xml(
                     timestamp = _advance_calendar(start_dt, position, resolution_code)
                 else:
                     timestamp = start_dt + (position - 1) * resolution
-                records.append({
-                    **document_metadata,
-                    "timestamp_utc": timestamp,
-                    "value": value,
-                    "in_domain": in_domain,
-                    "out_domain": out_domain,
-                    "production_type": production_type,
-                    "control_area_domain": control_area_domain,
-                    "area_domain": area_domain,
-                    "connecting_domain": connecting_domain,
-                    "acquiring_domain": acquiring_domain,
-                    "business_type": business_type,
-                    "flow_direction": flow_direction,
-                    "market_agreement_type": market_agreement_type,
-                    "original_market_product": original_market_product,
-                    "standard_market_product": standard_market_product,
-                    # Issue 05 #1: carry the parsed currency through to silver.
-                    "currency_unit": currency_unit,
-                    # Issue 05 #4: emit the ENTSO-E ISO resolution code
-                    # (PT60M / PT15M / P1M / P1Y) verbatim, not str(timedelta)
-                    # ("1:00:00"). Empty string when the Period had no
-                    # <resolution> element (honest absence, not a fake code).
-                    "resolution": resolution_code,
-                    "unit_mrid": unit_mrid,
-                    "unit_name": unit_name,
-                    "timeseries_mrid": timeseries_mrid,
-                    "asset_mrid": asset_mrid,
-                    "asset_name": asset_name,
-                    "document_status": document_status
-                    or document_metadata["document_status"],
-                    # G9 ENTSOE-02: TimeSeries-level Reason.code
-                    # (populated for A87 financial documents).
-                    "reason_code": reason_code,
-                })
+                records.append(
+                    {
+                        **document_metadata,
+                        "timestamp_utc": timestamp,
+                        "value": value,
+                        "in_domain": in_domain,
+                        "out_domain": out_domain,
+                        "production_type": production_type,
+                        "control_area_domain": control_area_domain,
+                        "area_domain": area_domain,
+                        "connecting_domain": connecting_domain,
+                        "acquiring_domain": acquiring_domain,
+                        "business_type": business_type,
+                        "flow_direction": flow_direction,
+                        "market_agreement_type": market_agreement_type,
+                        "original_market_product": original_market_product,
+                        "standard_market_product": standard_market_product,
+                        # Issue 05 #1: carry the parsed currency through to silver.
+                        "currency_unit": currency_unit,
+                        # Issue 05 #4: emit the ENTSO-E ISO resolution code
+                        # (PT60M / PT15M / P1M / P1Y) verbatim, not str(timedelta)
+                        # ("1:00:00"). Empty string when the Period had no
+                        # <resolution> element (honest absence, not a fake code).
+                        "resolution": resolution_code,
+                        "unit_mrid": unit_mrid,
+                        "unit_name": unit_name,
+                        "timeseries_mrid": timeseries_mrid,
+                        "asset_mrid": asset_mrid,
+                        "asset_name": asset_name,
+                        "document_status": document_status or document_metadata["document_status"],
+                        # G9 ENTSOE-02: TimeSeries-level Reason.code
+                        # (populated for A87 financial documents).
+                        "reason_code": reason_code,
+                    }
+                )
 
     return records
 
@@ -430,11 +433,15 @@ def parse_generation_units_master_data_xml(xml_bytes: bytes) -> list[dict[str, A
         text = (el.text or "").strip()
         if tag in {"BiddingZone_Domain.mRID", "biddingZone_Domain.mRID"} and text:
             area_code = text
-        elif tag in {
-            "Implementation_DateAndOrTime",
-            "implementation_DateAndOrTime",
-            "implementation_DateAndOrTime.date",
-        } and text:
+        elif (
+            tag
+            in {
+                "Implementation_DateAndOrTime",
+                "implementation_DateAndOrTime",
+                "implementation_DateAndOrTime.date",
+            }
+            and text
+        ):
             with contextlib.suppress(ValueError):
                 implementation_datetime = _parse_utc(text)
 
@@ -471,13 +478,15 @@ def parse_generation_units_master_data_xml(xml_bytes: bytes) -> list[dict[str, A
         if unit_mrid:
             key = (ts_area_code, unit_mrid)
             seen.add(key)
-            records.append({
-                "area_code": ts_area_code,
-                "unit_mrid": unit_mrid,
-                "unit_name": unit_name,
-                "production_type": production_type,
-                "implementation_datetime_utc": ts_implementation_datetime,
-            })
+            records.append(
+                {
+                    "area_code": ts_area_code,
+                    "unit_mrid": unit_mrid,
+                    "unit_name": unit_name,
+                    "production_type": production_type,
+                    "implementation_datetime_utc": ts_implementation_datetime,
+                }
+            )
 
     unit_tags = {
         "MktGeneratingUnit",
@@ -509,12 +518,14 @@ def parse_generation_units_master_data_xml(xml_bytes: bytes) -> list[dict[str, A
             continue
         seen.add(key)
 
-        records.append({
-            "area_code": area_code,
-            "unit_mrid": unit_mrid,
-            "unit_name": unit_name,
-            "production_type": production_type,
-            "implementation_datetime_utc": implementation_datetime,
-        })
+        records.append(
+            {
+                "area_code": area_code,
+                "unit_mrid": unit_mrid,
+                "unit_name": unit_name,
+                "production_type": production_type,
+                "implementation_datetime_utc": implementation_datetime,
+            }
+        )
 
     return records

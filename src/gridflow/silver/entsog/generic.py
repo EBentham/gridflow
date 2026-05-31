@@ -123,17 +123,21 @@ class GenericEntsogJsonTransformer(BaseSilverTransformer):
             if _looks_numeric(column):
                 df = df.with_columns(pl.col(column).cast(pl.Float64, strict=False))
 
-        dedup_subset = ["id"] if "id" in df.columns else [
-            column for column in df.columns if column not in {"timestamp_utc"}
-        ]
+        dedup_subset = (
+            ["id"]
+            if "id" in df.columns
+            else [column for column in df.columns if column not in {"timestamp_utc"}]
+        )
         if dedup_subset:
             df = df.unique(subset=dedup_subset, keep="last")
 
         now = datetime.now(UTC)
-        df = df.with_columns([
-            pl.lit("entsog").alias("data_provider"),
-            pl.lit(now).cast(pl.Datetime("us", "UTC")).alias("ingested_at"),
-        ])
+        df = df.with_columns(
+            [
+                pl.lit("entsog").alias("data_provider"),
+                pl.lit(now).cast(pl.Datetime("us", "UTC")).alias("ingested_at"),
+            ]
+        )
 
         preferred = [
             "timestamp_utc",
@@ -159,9 +163,7 @@ class GenericEntsogJsonTransformer(BaseSilverTransformer):
         ordered.extend(col for col in df.columns if col not in ordered)
 
         sort_cols = [
-            col
-            for col in ["timestamp_utc", "point_key", "operator_key", "id"]
-            if col in df.columns
+            col for col in ["timestamp_utc", "point_key", "operator_key", "id"] if col in df.columns
         ]
         result = df.select(ordered)
         return result.sort(sort_cols) if sort_cols else result
@@ -267,20 +269,14 @@ def _normalise_column_names(df: pl.DataFrame) -> pl.DataFrame:
         normalised.setdefault(_camel_to_snake(column), []).append(column)
 
     result = df
-    collisions = {
-        target: columns
-        for target, columns in normalised.items()
-        if len(columns) > 1
-    }
+    collisions = {target: columns for target, columns in normalised.items() if len(columns) > 1}
     for target, columns in collisions.items():
         result = result.with_columns(
             pl.coalesce([pl.col(column) for column in columns]).alias(target)
         )
-        result = result.drop([
-            column
-            for column in columns
-            if column != target and column in result.columns
-        ])
+        result = result.drop(
+            [column for column in columns if column != target and column in result.columns]
+        )
 
     rename_map = {
         columns[0]: target

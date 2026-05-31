@@ -46,11 +46,7 @@ def test_catalog_classifies_official_collection_entries() -> None:
 
 def test_implemented_catalog_entries_match_active_doc_types() -> None:
     entries = _catalog_entries()
-    implemented = {
-        str(entry["dataset"])
-        for entry in entries
-        if entry["status"] == "implemented"
-    }
+    implemented = {str(entry["dataset"]) for entry in entries if entry["status"] == "implemented"}
 
     assert implemented == set(DOC_TYPES)
 
@@ -58,13 +54,10 @@ def test_implemented_catalog_entries_match_active_doc_types() -> None:
 def test_active_doc_types_have_catalog_metadata() -> None:
     entries = _catalog_entries()
     by_dataset = {
-        str(entry["dataset"]): entry
-        for entry in entries
-        if entry["status"] == "implemented"
+        str(entry["dataset"]): entry for entry in entries if entry["status"] == "implemented"
     }
 
     for dataset, doc_type in DOC_TYPES.items():
         entry = by_dataset[dataset]
         assert entry["document_type"] == doc_type.document_type
         assert entry["process_type"] == doc_type.process_type
-

@@ -81,21 +81,21 @@ class _H7OutageTransformer(BaseSilverTransformer):
                 df = df.with_columns(pl.lit("").alias(column))
 
         if df["timestamp_utc"].dtype != pl.Datetime("us", "UTC"):
-            df = df.with_columns(
-                pl.col("timestamp_utc").cast(pl.Datetime("us", "UTC"))
-            )
+            df = df.with_columns(pl.col("timestamp_utc").cast(pl.Datetime("us", "UTC")))
 
-        df = df.with_columns([
-            pl.col("unavailable_mw").cast(pl.Float64),
-            pl.when(pl.col("business_type") == "A53")
-            .then(pl.lit("planned"))
-            .when(pl.col("business_type") == "A54")
-            .then(pl.lit("unplanned"))
-            .otherwise(pl.col("business_type"))
-            .alias("outage_type"),
-            pl.lit("entsoe").alias("data_provider"),
-            pl.lit(datetime.now(UTC)).cast(pl.Datetime("us", "UTC")).alias("ingested_at"),
-        ])
+        df = df.with_columns(
+            [
+                pl.col("unavailable_mw").cast(pl.Float64),
+                pl.when(pl.col("business_type") == "A53")
+                .then(pl.lit("planned"))
+                .when(pl.col("business_type") == "A54")
+                .then(pl.lit("unplanned"))
+                .otherwise(pl.col("business_type"))
+                .alias("outage_type"),
+                pl.lit("entsoe").alias("data_provider"),
+                pl.lit(datetime.now(UTC)).cast(pl.Datetime("us", "UTC")).alias("ingested_at"),
+            ]
+        )
 
         df = df.unique(subset=self.dedup_subset, keep="last").sort(self.dedup_subset)
         df = df.select(self.output_cols)

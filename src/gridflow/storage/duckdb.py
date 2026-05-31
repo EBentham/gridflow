@@ -69,7 +69,7 @@ def get_connection(
                 # Non-transient: do not blind-retry. Surface the real cause now.
                 raise
             last_exc = exc
-            wait = base_delay * (2 ** attempt)
+            wait = base_delay * (2**attempt)
             logger.warning(
                 "DuckDB connection attempt %d/%d failed on a lock (%s); retrying in %.1fs",
                 attempt + 1,
@@ -136,9 +136,7 @@ def init_catalogue(db_path: Path, data_dir: Path) -> None:
     # Reconcile a legacy quality_reports created before run_id existed:
     # CREATE TABLE IF NOT EXISTS no-ops on an old 8-column table, which would
     # then break the reporter's explicit-column run_id INSERT. Idempotent.
-    con.execute(
-        "ALTER TABLE quality_reports ADD COLUMN IF NOT EXISTS run_id VARCHAR"
-    )
+    con.execute("ALTER TABLE quality_reports ADD COLUMN IF NOT EXISTS run_id VARCHAR")
 
     # Register views for silver and gold Parquet files
     _register_views(con, data_dir)
@@ -212,9 +210,7 @@ def _is_benign_absent_parquet(exc: Exception) -> bool:
     return "no files found" in msg or "no files that match" in msg
 
 
-def _try_create_view(
-    con: duckdb.DuckDBPyConnection, view_name: str, pattern: str
-) -> None:
+def _try_create_view(con: duckdb.DuckDBPyConnection, view_name: str, pattern: str) -> None:
     """Create a view over the Parquet files, if any have been written.
 
     The view name is quoted as an identifier and the glob is escaped as a

@@ -96,10 +96,7 @@ def test_load_settings_resolves_yaml_paths_to_project_root(
     cfg_root = tmp_path / "config"
     cfg_root.mkdir()
     (cfg_root / "settings.yaml").write_text(
-        "pipeline:\n"
-        "  data_dir: ./data\n"
-        "  log_dir: ./logs\n"
-        "  duckdb_path: ./data/gridflow.duckdb\n"
+        "pipeline:\n  data_dir: ./data\n  log_dir: ./logs\n  duckdb_path: ./data/gridflow.duckdb\n"
     )
     (cfg_root / "sources.yaml").write_text("sources: {}\n")
 

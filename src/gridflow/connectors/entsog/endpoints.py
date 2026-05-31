@@ -22,14 +22,14 @@ PHYSICAL_FLOW_INDICATOR = "Physical Flow"
 # Key GB-relevant operator-point-direction keys. ENTSOG operational data expects
 # operatorKey + pointKey + directionKey, not pointKey alone.
 DEFAULT_POINT_DIRECTIONS: tuple[str, ...] = (
-    "UK-TSO-0001ITP-00005exit",   # Bacton (IUK)
+    "UK-TSO-0001ITP-00005exit",  # Bacton (IUK)
     "UK-TSO-0003ITP-00005entry",  # Bacton (IUK)
-    "UK-TSO-0003ITP-00005exit",   # Bacton (IUK)
-    "UK-TSO-0001ITP-00207exit",   # Bacton (BBL)
+    "UK-TSO-0003ITP-00005exit",  # Bacton (IUK)
+    "UK-TSO-0001ITP-00207exit",  # Bacton (BBL)
     "UK-TSO-0004ITP-00063entry",  # Julianadorp/Balgzand (BBL)
-    "UK-TSO-0004ITP-00063exit",   # Julianadorp/Balgzand (BBL)
+    "UK-TSO-0004ITP-00063exit",  # Julianadorp/Balgzand (BBL)
     "IE-TSO-0002ITP-00495entry",  # Moffat (IE)
-    "IE-TSO-0002ITP-00495exit",   # Moffat (IE)
+    "IE-TSO-0002ITP-00495exit",  # Moffat (IE)
     "UK-TSO-0001ITP-00090entry",  # Moffat
 )
 
@@ -124,138 +124,140 @@ ENDPOINTS: dict[str, EntsogEndpoint] = {
     for dataset, indicator in OPERATIONAL_INDICATORS.items()
 }
 
-ENDPOINTS.update({
-    "cmp_unsuccessful_requests": EntsogEndpoint(
-        path="/cmpUnsuccessfulRequests",
-        response_key="cmpUnsuccessfulRequests",
-        category="CMP Data",
-        parser_family="cmp_unsuccessful_requests",
-        requires_dates=True,
-        default_params={"periodType": DEFAULT_PERIOD_TYPE},
-        description="CMP unsuccessful requests.",
-    ),
-    "cmp_unavailable_firm_capacity": EntsogEndpoint(
-        path="/cmpUnavailables",
-        response_key="cmpUnavailables",
-        category="CMP Data",
-        parser_family="cmp_unavailable_firm_capacity",
-        requires_dates=True,
-        default_params={"periodType": DEFAULT_PERIOD_TYPE},
-        description="CMP unavailable firm capacity.",
-    ),
-    "cmp_auction_premiums": EntsogEndpoint(
-        path="/cmpAuctions",
-        response_key="cmpAuctions",
-        category="CMP Data",
-        parser_family="cmp_auction_premiums",
-        requires_dates=True,
-        default_params={"periodType": DEFAULT_PERIOD_TYPE},
-        description="CMP auction premiums.",
-    ),
-    "interruptions": EntsogEndpoint(
-        path="/interruptions",
-        response_key="interruptions",
-        category="Interruptions",
-        parser_family="interruptions",
-        requires_dates=True,
-        default_params={
-            "periodType": DEFAULT_PERIOD_TYPE,
-            "pointDirection": DEFAULT_POINT_DIRECTIONS,
-        },
-        description="Planned and unplanned interruptions.",
-    ),
-    "aggregated_physical_flows": EntsogEndpoint(
-        path="/aggregatedData",
-        response_key="aggregatedData",
-        category="Zone Data",
-        parser_family="aggregated_data",
-        requires_dates=True,
-        default_params={
-            "indicator": PHYSICAL_FLOW_INDICATOR,
-            "periodType": DEFAULT_PERIOD_TYPE,
-            "pointDirection": DEFAULT_AGGREGATED_POINT_DIRECTIONS,
-        },
-        description="Aggregated zone-level physical flows.",
-    ),
-    "tariffs": EntsogEndpoint(
-        path="/tariffsFulls",
-        response_key="tariffsFulls",
-        category="Tariff Data",
-        parser_family="tariffs",
-        requires_dates=True,
-        default_params={"countryKey": "UK"},
-        description="Tariff types and components.",
-    ),
-    "tariff_simulations": EntsogEndpoint(
-        path="/tariffsSimulations",
-        response_key="tariffsSimulations",
-        category="Tariff Data",
-        parser_family="tariff_simulations",
-        requires_dates=True,
-        default_params={"countryKey": "UK"},
-        description="Tariff simulation costs.",
-    ),
-    "urgent_market_messages": EntsogEndpoint(
-        path="/urgentMarketMessages",
-        response_key="urgentMarketMessages",
-        category="UMM Data",
-        parser_family="urgent_market_messages",
-        reference=True,
-        description="Urgent market messages.",
-    ),
-    "connection_points": EntsogEndpoint(
-        path="/connectionPoints",
-        response_key="connectionPoints",
-        category="Referential Data",
-        parser_family="connection_points",
-        reference=True,
-        description="Interconnection points visible on the map.",
-    ),
-    "operators": EntsogEndpoint(
-        path="/operators",
-        response_key="operators",
-        category="Referential Data",
-        parser_family="operators",
-        reference=True,
-        default_params={"hasData": 1},
-        description="Transmission system operators.",
-    ),
-    "balancing_zones": EntsogEndpoint(
-        path="/balancingZones",
-        response_key="balancingZones",
-        category="Referential Data",
-        parser_family="balancing_zones",
-        reference=True,
-        description="European balancing zones.",
-    ),
-    "operator_point_directions": EntsogEndpoint(
-        path="/operatorPointDirections",
-        response_key="operatorPointDirections",
-        category="Referential Data",
-        parser_family="operator_point_directions",
-        reference=True,
-        default_params={"hasData": 1},
-        description="Operator, point, and flow-direction combinations.",
-    ),
-    "interconnections": EntsogEndpoint(
-        path="/interconnections",
-        response_key="interconnections",
-        category="Referential Data",
-        parser_family="interconnections",
-        reference=True,
-        default_params={"fromCountryKey": "UK"},
-        description="Interconnections between systems.",
-    ),
-    "aggregate_interconnections": EntsogEndpoint(
-        path="/aggregateInterconnections",
-        response_key="aggregateInterconnections",
-        category="Referential Data",
-        parser_family="aggregate_interconnections",
-        reference=True,
-        default_params={"countryKey": "UK"},
-        description="Connections between TSOs and balancing zones.",
-    ),
-})
+ENDPOINTS.update(
+    {
+        "cmp_unsuccessful_requests": EntsogEndpoint(
+            path="/cmpUnsuccessfulRequests",
+            response_key="cmpUnsuccessfulRequests",
+            category="CMP Data",
+            parser_family="cmp_unsuccessful_requests",
+            requires_dates=True,
+            default_params={"periodType": DEFAULT_PERIOD_TYPE},
+            description="CMP unsuccessful requests.",
+        ),
+        "cmp_unavailable_firm_capacity": EntsogEndpoint(
+            path="/cmpUnavailables",
+            response_key="cmpUnavailables",
+            category="CMP Data",
+            parser_family="cmp_unavailable_firm_capacity",
+            requires_dates=True,
+            default_params={"periodType": DEFAULT_PERIOD_TYPE},
+            description="CMP unavailable firm capacity.",
+        ),
+        "cmp_auction_premiums": EntsogEndpoint(
+            path="/cmpAuctions",
+            response_key="cmpAuctions",
+            category="CMP Data",
+            parser_family="cmp_auction_premiums",
+            requires_dates=True,
+            default_params={"periodType": DEFAULT_PERIOD_TYPE},
+            description="CMP auction premiums.",
+        ),
+        "interruptions": EntsogEndpoint(
+            path="/interruptions",
+            response_key="interruptions",
+            category="Interruptions",
+            parser_family="interruptions",
+            requires_dates=True,
+            default_params={
+                "periodType": DEFAULT_PERIOD_TYPE,
+                "pointDirection": DEFAULT_POINT_DIRECTIONS,
+            },
+            description="Planned and unplanned interruptions.",
+        ),
+        "aggregated_physical_flows": EntsogEndpoint(
+            path="/aggregatedData",
+            response_key="aggregatedData",
+            category="Zone Data",
+            parser_family="aggregated_data",
+            requires_dates=True,
+            default_params={
+                "indicator": PHYSICAL_FLOW_INDICATOR,
+                "periodType": DEFAULT_PERIOD_TYPE,
+                "pointDirection": DEFAULT_AGGREGATED_POINT_DIRECTIONS,
+            },
+            description="Aggregated zone-level physical flows.",
+        ),
+        "tariffs": EntsogEndpoint(
+            path="/tariffsFulls",
+            response_key="tariffsFulls",
+            category="Tariff Data",
+            parser_family="tariffs",
+            requires_dates=True,
+            default_params={"countryKey": "UK"},
+            description="Tariff types and components.",
+        ),
+        "tariff_simulations": EntsogEndpoint(
+            path="/tariffsSimulations",
+            response_key="tariffsSimulations",
+            category="Tariff Data",
+            parser_family="tariff_simulations",
+            requires_dates=True,
+            default_params={"countryKey": "UK"},
+            description="Tariff simulation costs.",
+        ),
+        "urgent_market_messages": EntsogEndpoint(
+            path="/urgentMarketMessages",
+            response_key="urgentMarketMessages",
+            category="UMM Data",
+            parser_family="urgent_market_messages",
+            reference=True,
+            description="Urgent market messages.",
+        ),
+        "connection_points": EntsogEndpoint(
+            path="/connectionPoints",
+            response_key="connectionPoints",
+            category="Referential Data",
+            parser_family="connection_points",
+            reference=True,
+            description="Interconnection points visible on the map.",
+        ),
+        "operators": EntsogEndpoint(
+            path="/operators",
+            response_key="operators",
+            category="Referential Data",
+            parser_family="operators",
+            reference=True,
+            default_params={"hasData": 1},
+            description="Transmission system operators.",
+        ),
+        "balancing_zones": EntsogEndpoint(
+            path="/balancingZones",
+            response_key="balancingZones",
+            category="Referential Data",
+            parser_family="balancing_zones",
+            reference=True,
+            description="European balancing zones.",
+        ),
+        "operator_point_directions": EntsogEndpoint(
+            path="/operatorPointDirections",
+            response_key="operatorPointDirections",
+            category="Referential Data",
+            parser_family="operator_point_directions",
+            reference=True,
+            default_params={"hasData": 1},
+            description="Operator, point, and flow-direction combinations.",
+        ),
+        "interconnections": EntsogEndpoint(
+            path="/interconnections",
+            response_key="interconnections",
+            category="Referential Data",
+            parser_family="interconnections",
+            reference=True,
+            default_params={"fromCountryKey": "UK"},
+            description="Interconnections between systems.",
+        ),
+        "aggregate_interconnections": EntsogEndpoint(
+            path="/aggregateInterconnections",
+            response_key="aggregateInterconnections",
+            category="Referential Data",
+            parser_family="aggregate_interconnections",
+            reference=True,
+            default_params={"countryKey": "UK"},
+            description="Connections between TSOs and balancing zones.",
+        ),
+    }
+)
 
 
 def build_params(
@@ -276,11 +278,7 @@ def build_params(
 
     params.update(endpoint.default_params)
     params.update({key: value for key, value in overrides.items() if value is not None})
-    return {
-        key: _encode_multi_value(value)
-        for key, value in params.items()
-        if value is not None
-    }
+    return {key: _encode_multi_value(value) for key, value in params.items() if value is not None}
 
 
 def _encode_multi_value(value: Any) -> Any:

@@ -162,23 +162,29 @@ _SOLAR_GTI_PARAMS: tuple[tuple[str, str], ...] = (
 
 DATASET_SPECS: dict[str, WeatherDatasetSpec] = {
     "historical_demand": WeatherDatasetSpec(
-        DEMAND_LOCATIONS, DEMAND_HOURLY_VARS,
+        DEMAND_LOCATIONS,
+        DEMAND_HOURLY_VARS,
     ),
     "forecast_demand": WeatherDatasetSpec(
-        DEMAND_LOCATIONS, DEMAND_HOURLY_VARS,
+        DEMAND_LOCATIONS,
+        DEMAND_HOURLY_VARS,
     ),
     "historical_wind": WeatherDatasetSpec(
-        WIND_LOCATIONS, WIND_ARCHIVE_VARS,
+        WIND_LOCATIONS,
+        WIND_ARCHIVE_VARS,
     ),
     "forecast_wind": WeatherDatasetSpec(
-        WIND_LOCATIONS, WIND_FORECAST_VARS,
+        WIND_LOCATIONS,
+        WIND_FORECAST_VARS,
     ),
     "historical_solar": WeatherDatasetSpec(
-        SOLAR_LOCATIONS, SOLAR_HOURLY_VARS,
+        SOLAR_LOCATIONS,
+        SOLAR_HOURLY_VARS,
         extra_params=_SOLAR_GTI_PARAMS,
     ),
     "forecast_solar": WeatherDatasetSpec(
-        SOLAR_LOCATIONS, SOLAR_HOURLY_VARS,
+        SOLAR_LOCATIONS,
+        SOLAR_HOURLY_VARS,
         extra_params=_SOLAR_GTI_PARAMS,
     ),
 }

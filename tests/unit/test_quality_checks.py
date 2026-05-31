@@ -11,7 +11,7 @@ These tests assert *behaviour and values*, not shapes:
 from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 import polars as pl
 import pytest
@@ -23,12 +23,13 @@ from gridflow.quality.checks import (
 )
 from gridflow.quality.reporter import QualityReporter
 
+if TYPE_CHECKING:
+    from pathlib import Path
+
 
 def _half_hourly(n: int, start: datetime | None = None) -> pl.DataFrame:
     start = start or datetime(2024, 1, 1, 0, 0, tzinfo=UTC)
-    return pl.DataFrame(
-        {"timestamp_utc": [start + timedelta(minutes=30 * i) for i in range(n)]}
-    )
+    return pl.DataFrame({"timestamp_utc": [start + timedelta(minutes=30 * i) for i in range(n)]})
 
 
 # --- check_time_series_gaps --------------------------------------------------
@@ -64,9 +65,7 @@ def test_gap_check_flags_true_gap() -> None:
 def test_gap_check_flags_duplicate_timestamps() -> None:
     """Two identical (zero-interval) timestamps must not pass."""
     ts = datetime(2024, 1, 1, 0, 0, tzinfo=UTC)
-    df = pl.DataFrame(
-        {"timestamp_utc": [ts, ts, ts + timedelta(minutes=30)]}
-    )
+    df = pl.DataFrame({"timestamp_utc": [ts, ts, ts + timedelta(minutes=30)]})
     result = check_time_series_gaps(df, expected_freq_minutes=30)
     assert result.passed is False
 
@@ -74,9 +73,7 @@ def test_gap_check_flags_duplicate_timestamps() -> None:
 def test_gap_check_flags_too_frequent_cadence() -> None:
     """A 15-minute cadence against an expected 30-minute cadence must not pass."""
     start = datetime(2024, 1, 1, 0, 0, tzinfo=UTC)
-    df = pl.DataFrame(
-        {"timestamp_utc": [start + timedelta(minutes=15 * i) for i in range(4)]}
-    )
+    df = pl.DataFrame({"timestamp_utc": [start + timedelta(minutes=15 * i) for i in range(4)]})
     result = check_time_series_gaps(df, expected_freq_minutes=30)
     assert result.passed is False
 

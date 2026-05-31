@@ -86,9 +86,7 @@ class BaseSilverTransformer(ABC):
 
         resolved_run_id = run_id or f"adhoc-{datetime.now(UTC).isoformat()}"
         available_at = (
-            self._available_at_from_bronze(target_date)
-            if reingest
-            else datetime.now(UTC)
+            self._available_at_from_bronze(target_date) if reingest else datetime.now(UTC)
         )
         clean_df = self._add_bitemporal_columns(
             clean_df,
@@ -187,11 +185,7 @@ class BaseSilverTransformer(ABC):
 
     def _bronze_date_dirs(self, target_date: date) -> list[Path]:
         """Candidate bronze date directories for this dataset/date."""
-        suffix = (
-            Path(str(target_date.year))
-            / f"{target_date.month:02d}"
-            / f"{target_date.day:02d}"
-        )
+        suffix = Path(str(target_date.year)) / f"{target_date.month:02d}" / f"{target_date.day:02d}"
         candidates = [self.bronze_dir / suffix]
 
         # Some aggregate transformers read from explicit sibling partitions, e.g.
@@ -321,19 +315,10 @@ class BaseSilverTransformer(ABC):
         cleanly replaces the first), while distinct live runs produce
         distinct files. See ``docs/DECISION_LOG/ADR-018``.
         """
-        out_dir = (
-            self.silver_dir
-            / f"year={target_date.year}"
-            / f"month={target_date.month:02d}"
-        )
+        out_dir = self.silver_dir / f"year={target_date.year}" / f"month={target_date.month:02d}"
         if self.APPEND_ONLY:
-            run_stamp = (
-                available_at.isoformat().replace(":", "-").replace("+", "-")
-            )
-            filename = (
-                f"{self.dataset}_{target_date.strftime('%Y%m%d')}"
-                f"_run{run_stamp}.parquet"
-            )
+            run_stamp = available_at.isoformat().replace(":", "-").replace("+", "-")
+            filename = f"{self.dataset}_{target_date.strftime('%Y%m%d')}_run{run_stamp}.parquet"
         else:
             filename = f"{self.dataset}_{target_date.strftime('%Y%m%d')}.parquet"
         final_path = out_dir / filename

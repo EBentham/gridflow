@@ -34,8 +34,7 @@ class BronzeWriter:
 
         # Build directory path — partition by data date when known, else ingestion date
         partition = (
-            response.data_date if response.data_date is not None
-            else response.fetched_at.date()
+            response.data_date if response.data_date is not None else response.fetched_at.date()
         )
         dir_path = (
             self.bronze_dir
@@ -68,9 +67,7 @@ class BronzeWriter:
             "dataset": response.dataset,
             "fetched_at": response.fetched_at.isoformat(),
             "written_at": written_at.isoformat(),
-            "data_date": response.data_date.isoformat()
-            if response.data_date is not None
-            else None,
+            "data_date": response.data_date.isoformat() if response.data_date is not None else None,
             "request_url": response.request_url,
             "request_params": response.request_params,
             "api_version": response.api_version,
@@ -82,9 +79,7 @@ class BronzeWriter:
             "total_pages": response.total_pages,
         }
         meta_path = dir_path / f"raw_{ts}_{body_hash}.meta.json"
-        self._atomic_write_text(
-            meta_path, json.dumps(meta, indent=2, default=str)
-        )
+        self._atomic_write_text(meta_path, json.dumps(meta, indent=2, default=str))
 
         logger.info(
             f"Bronze write: {response.source}/{response.dataset} "

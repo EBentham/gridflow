@@ -9,7 +9,7 @@ note). These pin the conversion behaviour under non-UTC input.
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta, timezone
 
 from gridflow.connectors.elexon.endpoints import (
     ENDPOINTS,
@@ -46,7 +46,7 @@ def test_build_params_converts_non_utc_offset_to_utc_z() -> None:
 def test_build_params_utc_input_unchanged() -> None:
     """A tz-aware UTC start is emitted unchanged (regression guard)."""
     endpoint = _publish_datetime_endpoint()
-    start = datetime(2024, 1, 15, 9, 30, 0, tzinfo=timezone.utc)
+    start = datetime(2024, 1, 15, 9, 30, 0, tzinfo=UTC)
 
     params = build_params(endpoint, start=start)
 

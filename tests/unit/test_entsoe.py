@@ -318,8 +318,7 @@ class TestParseTimeseriesXml:
             # one day BEFORE the delivery date (2024-01-15).
             assert record["document_created_at"] == "2024-01-14T12:00:00Z" or (
                 isinstance(record["document_created_at"], datetime)
-                and record["document_created_at"]
-                == datetime(2024, 1, 14, 12, 0, tzinfo=UTC)
+                and record["document_created_at"] == datetime(2024, 1, 14, 12, 0, tzinfo=UTC)
             ), f"unexpected vintage: {record['document_created_at']!r}"
             assert record["timestamp_utc"] != record["document_created_at"]
 
@@ -716,23 +715,24 @@ class TestActualGenerationTransformer:
         )
         area_names = set(result["area_name"].to_list())
         assert area_names == {"Great Britain"}, (
-            f"G9 ENTSOE-03: expected 'Great Britain' for "
-            f"10YGB----------A, got {area_names}"
+            f"G9 ENTSOE-03: expected 'Great Britain' for 10YGB----------A, got {area_names}"
         )
 
     def test_area_name_empty_for_unknown_eic_code(self):
         """Unknown EIC codes must resolve to empty string so the column
         type stays consistent — schemas declare `area_name: str = ""`."""
         # Construct a synthetic raw row with an unknown EIC code
-        raw = pl.DataFrame([
-            {
-                "timestamp_utc": datetime(2024, 1, 15, 0, 0, tzinfo=UTC),
-                "value": 1500.0,
-                "in_domain": "10Y9999-UNKNOWN-X",
-                "production_type": "B01",
-                "resolution": "PT60M",
-            }
-        ])
+        raw = pl.DataFrame(
+            [
+                {
+                    "timestamp_utc": datetime(2024, 1, 15, 0, 0, tzinfo=UTC),
+                    "value": 1500.0,
+                    "in_domain": "10Y9999-UNKNOWN-X",
+                    "production_type": "B01",
+                    "resolution": "PT60M",
+                }
+            ]
+        )
         result = self.t.transform(raw)
         assert not result.is_empty()
         assert "area_name" in result.columns
@@ -813,6 +813,7 @@ class TestEntsoeDayAheadPriceSchema:
 
     def test_naive_timestamp_rejected(self):
         from pydantic import ValidationError
+
         with pytest.raises(ValidationError):
             EntsoeDayAheadPrice(
                 timestamp_utc=datetime(2024, 1, 15),
@@ -835,6 +836,7 @@ class TestEntsoeActualLoadSchema:
 
     def test_naive_timestamp_rejected(self):
         from pydantic import ValidationError
+
         with pytest.raises(ValidationError):
             EntsoeActualLoad(
                 timestamp_utc=datetime(2024, 1, 15),
@@ -872,6 +874,7 @@ class TestEntsoeCrossborderFlowSchema:
 
     def test_naive_timestamp_rejected(self):
         from pydantic import ValidationError
+
         with pytest.raises(ValidationError):
             EntsoeCrossborderFlow(
                 timestamp_utc=datetime(2024, 1, 15),
@@ -968,9 +971,9 @@ class TestWindSolarForecastTransformer:
 
     def test_forecast_values(self):
         raw = _make_df_from_xml("wind_solar_forecast_gb.xml", "quantity")
-        result = self.t.transform(raw).filter(
-            pl.col("production_type") == "B19"
-        ).sort("timestamp_utc")
+        result = (
+            self.t.transform(raw).filter(pl.col("production_type") == "B19").sort("timestamp_utc")
+        )
         assert abs(result["generation_forecast_mw"][0] - 3200) < 0.1
 
     def test_timestamp_dtype(self):
@@ -1124,9 +1127,7 @@ class TestPhaseH7OutageTransformers:
         result = transformer.transform(raw)
 
         assert not result.is_empty()
-        assert {"area_code", "unavailable_mw", "document_mrid"}.issubset(
-            result.columns
-        )
+        assert {"area_code", "unavailable_mw", "document_mrid"}.issubset(result.columns)
         assert result["area_code"][0] == "10YGB----------A"
         assert result["outage_type"][0] == "planned"
         assert result["document_status"][0] == "A05"
@@ -1207,9 +1208,7 @@ class TestInstalledCapacityTransformer:
 
     def test_capacity_values(self):
         raw = _make_df_from_xml("installed_capacity_gb.xml", "quantity")
-        result = self.t.transform(raw).filter(
-            pl.col("production_type") == "B19"
-        )
+        result = self.t.transform(raw).filter(pl.col("production_type") == "B19")
         assert abs(result["capacity_mw"][0] - 15200) < 0.1
 
     def test_timestamp_dtype(self):
@@ -1258,6 +1257,7 @@ class TestEntsoeLoadForecastSchema:
 
     def test_naive_timestamp_rejected(self):
         from pydantic import ValidationError
+
         with pytest.raises(ValidationError):
             EntsoeLoadForecast(
                 timestamp_utc=datetime(2024, 1, 15),
@@ -1282,6 +1282,7 @@ class TestEntsoeWindSolarForecastSchema:
 
     def test_naive_timestamp_rejected(self):
         from pydantic import ValidationError
+
         with pytest.raises(ValidationError):
             EntsoeWindSolarForecast(
                 timestamp_utc=datetime(2024, 1, 15),
@@ -1321,6 +1322,7 @@ class TestEntsoeOutagesGenerationSchema:
 
     def test_naive_timestamp_rejected(self):
         from pydantic import ValidationError
+
         with pytest.raises(ValidationError):
             EntsoeOutagesGeneration(
                 timestamp_utc=datetime(2024, 1, 15),
@@ -1402,6 +1404,7 @@ class TestEntsoeInstalledCapacitySchema:
 
     def test_naive_timestamp_rejected(self):
         from pydantic import ValidationError
+
         with pytest.raises(ValidationError):
             EntsoeInstalledCapacity(
                 timestamp_utc=datetime(2024, 1, 1),
@@ -1442,9 +1445,9 @@ class TestGenerationForecastTransformer:
 
     def test_forecast_values(self):
         raw = _make_df_from_xml("generation_forecast_gb.xml", "quantity")
-        result = self.t.transform(raw).filter(
-            pl.col("production_type") == "B01"
-        ).sort("timestamp_utc")
+        result = (
+            self.t.transform(raw).filter(pl.col("production_type") == "B01").sort("timestamp_utc")
+        )
         assert abs(result["generation_forecast_mw"][0] - 1100) < 0.1
 
     def test_timestamp_dtype(self):
@@ -1645,12 +1648,16 @@ class TestNetTransferCapacityTransformer:
         assert self.t.transform(pl.DataFrame()).is_empty()
 
     def test_missing_out_domain_returns_empty(self):
-        raw = pl.DataFrame([{
-            "timestamp_utc": datetime(2024, 1, 15, tzinfo=UTC),
-            "value": 2000.0,
-            "in_domain": "10YGB----------A",
-            "resolution": "1:00:00",
-        }])
+        raw = pl.DataFrame(
+            [
+                {
+                    "timestamp_utc": datetime(2024, 1, 15, tzinfo=UTC),
+                    "value": 2000.0,
+                    "in_domain": "10YGB----------A",
+                    "resolution": "1:00:00",
+                }
+            ]
+        )
         assert self.t.transform(raw).is_empty()
 
     def test_silver_output_validates_against_schema(self):
@@ -1688,6 +1695,7 @@ class TestEntsoeGenerationForecastSchema:
 
     def test_naive_timestamp_rejected(self):
         from pydantic import ValidationError
+
         with pytest.raises(ValidationError):
             EntsoeGenerationForecast(
                 timestamp_utc=datetime(2024, 1, 15),
@@ -1712,6 +1720,7 @@ class TestEntsoeLoadForecastWeeklySchema:
 
     def test_naive_timestamp_rejected(self):
         from pydantic import ValidationError
+
         with pytest.raises(ValidationError):
             EntsoeLoadForecastWeekly(
                 timestamp_utc=datetime(2024, 1, 15),
@@ -1734,6 +1743,7 @@ class TestEntsoeForecastMarginSchema:
 
     def test_naive_timestamp_rejected(self):
         from pydantic import ValidationError
+
         with pytest.raises(ValidationError):
             EntsoeForecastMargin(
                 timestamp_utc=datetime(2024, 1, 15),
@@ -1757,6 +1767,7 @@ class TestEntsoeNetTransferCapacitySchema:
 
     def test_naive_timestamp_rejected(self):
         from pydantic import ValidationError
+
         with pytest.raises(ValidationError):
             EntsoeNetTransferCapacity(
                 timestamp_utc=datetime(2024, 1, 15),
@@ -1790,16 +1801,12 @@ class TestParserPhase3Fields:
 
     def test_existing_fixture_control_area_empty(self):
         """Zone-domain fixtures have no controlArea_Domain.mRID → empty string."""
-        records = parse_timeseries_xml(
-            self._load("actual_load_gb.xml"), value_tag="quantity"
-        )
+        records = parse_timeseries_xml(self._load("actual_load_gb.xml"), value_tag="quantity")
         assert records[0]["control_area_domain"] == ""
 
     def test_existing_fixture_flow_direction_empty(self):
         """Zone-domain fixtures have no flowDirection.direction → empty string."""
-        records = parse_timeseries_xml(
-            self._load("actual_load_gb.xml"), value_tag="quantity"
-        )
+        records = parse_timeseries_xml(self._load("actual_load_gb.xml"), value_tag="quantity")
         assert records[0]["flow_direction"] == ""
 
     def test_imbalance_prices_control_area_populated(self):
@@ -1838,9 +1845,7 @@ class TestParserPhase3Fields:
         assert abs(a19_records[0]["value"] - 95.50) < 0.01
 
     def test_imbalance_volume_flow_direction(self):
-        records = parse_timeseries_xml(
-            self._load("imbalance_volume_gb.xml"), value_tag="quantity"
-        )
+        records = parse_timeseries_xml(self._load("imbalance_volume_gb.xml"), value_tag="quantity")
         directions = {r["flow_direction"] for r in records}
         assert "A01" in directions
         assert "A02" in directions
@@ -2104,9 +2109,7 @@ class TestImbalancePricesTransformer:
 
     def test_price_values(self):
         raw = _make_df_from_xml("imbalance_prices_gb.xml", "price.amount")
-        result = self.t.transform(raw).filter(
-            pl.col("direction") == "long"
-        ).sort("timestamp_utc")
+        result = self.t.transform(raw).filter(pl.col("direction") == "long").sort("timestamp_utc")
         assert abs(result["price_eur_mwh"][0] - 95.50) < 0.01
 
     def test_timestamp_dtype(self):
@@ -2165,9 +2168,7 @@ class TestImbalanceVolumeTransformer:
 
     def test_volume_values(self):
         raw = _make_df_from_xml("imbalance_volume_gb.xml", "quantity")
-        result = self.t.transform(raw).filter(
-            pl.col("direction") == "long"
-        ).sort("timestamp_utc")
+        result = self.t.transform(raw).filter(pl.col("direction") == "long").sort("timestamp_utc")
         assert abs(result["volume_mwh"][0] - 150) < 0.1
 
     def test_timestamp_dtype(self):
@@ -2228,9 +2229,11 @@ class TestActivatedBalancingQtyTransformer:
 
     def test_fcr_up_qty_values(self):
         raw = _make_df_from_xml("activated_balancing_qty_gb.xml", "quantity")
-        result = self.t.transform(raw).filter(
-            (pl.col("reserve_type") == "fcr") & (pl.col("direction") == "up")
-        ).sort("timestamp_utc")
+        result = (
+            self.t.transform(raw)
+            .filter((pl.col("reserve_type") == "fcr") & (pl.col("direction") == "up"))
+            .sort("timestamp_utc")
+        )
         assert abs(result["quantity_mwh"][0] - 320) < 0.1
 
     def test_timestamp_dtype(self):
@@ -2291,9 +2294,11 @@ class TestActivatedBalancingPricesTransformer:
 
     def test_fcr_up_price_values(self):
         raw = _make_df_from_xml("activated_balancing_prices_gb.xml", "price.amount")
-        result = self.t.transform(raw).filter(
-            (pl.col("reserve_type") == "fcr") & (pl.col("direction") == "up")
-        ).sort("timestamp_utc")
+        result = (
+            self.t.transform(raw)
+            .filter((pl.col("reserve_type") == "fcr") & (pl.col("direction") == "up"))
+            .sort("timestamp_utc")
+        )
         assert abs(result["price_eur_mwh"][0] - 110.00) < 0.01
 
     def test_timestamp_dtype(self):
@@ -2346,9 +2351,7 @@ class TestContractedReservesTransformer:
 
     def test_quantity_values(self):
         raw = _make_df_from_xml("contracted_reserves_gb.xml", "quantity")
-        result = self.t.transform(raw).filter(
-            pl.col("reserve_type") == "fcr"
-        ).sort("timestamp_utc")
+        result = self.t.transform(raw).filter(pl.col("reserve_type") == "fcr").sort("timestamp_utc")
         assert abs(result["quantity_mw"][0] - 500) < 0.1
 
     def test_timestamp_dtype(self):
@@ -2397,6 +2400,7 @@ class TestEntsoeImbalancePricesSchema:
 
     def test_naive_timestamp_rejected(self):
         from pydantic import ValidationError
+
         with pytest.raises(ValidationError):
             EntsoeImbalancePrices(
                 timestamp_utc=datetime(2024, 1, 15),
@@ -2422,6 +2426,7 @@ class TestEntsoeImbalanceVolumeSchema:
 
     def test_naive_timestamp_rejected(self):
         from pydantic import ValidationError
+
         with pytest.raises(ValidationError):
             EntsoeImbalanceVolume(
                 timestamp_utc=datetime(2024, 1, 15),
@@ -2448,6 +2453,7 @@ class TestEntsoeActivatedBalancingQtySchema:
 
     def test_naive_timestamp_rejected(self):
         from pydantic import ValidationError
+
         with pytest.raises(ValidationError):
             EntsoeActivatedBalancingQty(
                 timestamp_utc=datetime(2024, 1, 15),
@@ -2475,6 +2481,7 @@ class TestEntsoeActivatedBalancingPricesSchema:
 
     def test_naive_timestamp_rejected(self):
         from pydantic import ValidationError
+
         with pytest.raises(ValidationError):
             EntsoeActivatedBalancingPrices(
                 timestamp_utc=datetime(2024, 1, 15),
@@ -2501,6 +2508,7 @@ class TestEntsoeContractedReservesSchema:
 
     def test_naive_timestamp_rejected(self):
         from pydantic import ValidationError
+
         with pytest.raises(ValidationError):
             EntsoeContractedReserves(
                 timestamp_utc=datetime(2024, 1, 15),
@@ -2562,9 +2570,7 @@ class TestGenerationUnitsMasterDataParser:
         assert records[0]["unit_mrid"] == "UNIT-DRAX-3"
         assert records[0]["unit_name"] == "Drax Unit 3"
         assert records[0]["production_type"] == "B02"
-        assert records[0]["implementation_datetime_utc"] == datetime(
-            2024, 1, 1, tzinfo=UTC
-        )
+        assert records[0]["implementation_datetime_utc"] == datetime(2024, 1, 1, tzinfo=UTC)
 
 
 class TestInstalledCapacityUnitsTransformer:
@@ -2738,12 +2744,8 @@ class TestPhaseH6Endpoints:
         )
 
     def test_h6_business_type_variants_are_metadata(self):
-        assert DOC_TYPES["redispatching_cross_border"].extra_params == {
-            "businessType": "A46"
-        }
-        assert DOC_TYPES["redispatching_internal"].extra_params == {
-            "businessType": "A85"
-        }
+        assert DOC_TYPES["redispatching_cross_border"].extra_params == {"businessType": "A46"}
+        assert DOC_TYPES["redispatching_internal"].extra_params == {"businessType": "A85"}
         assert DOC_TYPES["auction_revenue"].extra_params == {
             "businessType": "B07",
             "contract_MarketAgreement.Type": "A01",
@@ -2764,13 +2766,13 @@ class TestV2BCleanup:
         assert "commercial_schedules_net_positions" not in DOC_TYPES
         assert "commercial_schedules" in DOC_TYPES
 
-    def test_psrType_optional_for_actual_generation_and_wind_solar(self):
+    def test_psrType_optional_for_actual_generation_and_wind_solar(self):  # noqa: N802
         """V2-FIX-06 / 5e: psrType is a per-fuel filter widely accepted
         on generation endpoints; was missing from optional_params."""
         assert "psrType" in DOC_TYPES["actual_generation"].optional_params
         assert "psrType" in DOC_TYPES["wind_solar_forecast"].optional_params
 
-    def test_psrType_optional_for_outages_generation_and_production(self):
+    def test_psrType_optional_for_outages_generation_and_production(self):  # noqa: N802
         """psrType also accepted on outage endpoints."""
         assert "psrType" in DOC_TYPES["outages_generation"].optional_params
         assert "psrType" in DOC_TYPES["outages_production"].optional_params
@@ -2780,9 +2782,11 @@ class TestV2BCleanup:
         was 'daily, max_query_days: 1' which wasted live calls."""
         from gridflow.config.settings import load_settings
 
-        cfg = load_settings().get_source_config("entsoe").datasets[
-            "balancing_financial_expenses_income"
-        ]
+        cfg = (
+            load_settings()
+            .get_source_config("entsoe")
+            .datasets["balancing_financial_expenses_income"]
+        )
         assert cfg.schedule == "monthly"
         assert cfg.max_query_days == 31
 
@@ -2808,9 +2812,7 @@ class TestPhaseH6QuantityTransformers:
         result = transformer.transform(raw)
 
         assert not result.is_empty()
-        assert {"in_area_code", "out_area_code", "quantity_mw"}.issubset(
-            result.columns
-        )
+        assert {"in_area_code", "out_area_code", "quantity_mw"}.issubset(result.columns)
         assert abs(result["quantity_mw"][0] - 1200) < 0.1
 
     def test_dedup(self):
@@ -2824,9 +2826,7 @@ class TestPhaseH6QuantityTransformers:
 
     def test_mixed_case_market_transformer(self):
         raw = _make_df_from_xml("h6_market_quantity_gb_fr.xml", "quantity")
-        transformer = _make_entsoe_transformer(
-            OfferedTransferCapacityContinuousTransformer
-        )
+        transformer = _make_entsoe_transformer(OfferedTransferCapacityContinuousTransformer)
 
         result = transformer.transform(raw)
 
@@ -2842,9 +2842,7 @@ class TestPhaseH6AmountTransformers:
         result = transformer.transform(raw)
 
         assert not result.is_empty()
-        assert {"in_area_code", "out_area_code", "amount_eur"}.issubset(
-            result.columns
-        )
+        assert {"in_area_code", "out_area_code", "amount_eur"}.issubset(result.columns)
         assert abs(result["amount_eur"][0] - 42.50) < 0.01
 
     def test_price_family_is_separate_from_quantity_family(self):
@@ -2908,9 +2906,7 @@ class TestPhaseH8Endpoints:
 
     def test_h8_metadata_preserves_documented_domain_params(self):
         assert DOC_TYPES["current_balancing_state"].domain_params == ("area_Domain",)
-        assert DOC_TYPES["balancing_energy_bids"].domain_params == (
-            "connecting_Domain",
-        )
+        assert DOC_TYPES["balancing_energy_bids"].domain_params == ("connecting_Domain",)
         assert DOC_TYPES["cross_zonal_balancing_capacity"].domain_params == (
             "Acquiring_Domain",
             "Connecting_Domain",
@@ -2980,9 +2976,7 @@ class TestPhaseH8BalancingTransformers:
 
     def test_aggregated_bid_transformer_uses_area_domain(self):
         raw = _make_df_from_xml("aggregated_balancing_energy_bids_gb.xml", "quantity")
-        transformer = _make_entsoe_transformer(
-            AggregatedBalancingEnergyBidsTransformer
-        )
+        transformer = _make_entsoe_transformer(AggregatedBalancingEnergyBidsTransformer)
 
         result = transformer.transform(raw)
 
@@ -3016,9 +3010,7 @@ class TestPhaseH8BalancingTransformers:
             "balancing_financial_expenses_income_gb.xml",
             "price.amount",
         )
-        transformer = _make_entsoe_transformer(
-            BalancingFinancialExpensesIncomeTransformer
-        )
+        transformer = _make_entsoe_transformer(BalancingFinancialExpensesIncomeTransformer)
 
         result = transformer.transform(raw)
 
@@ -3060,16 +3052,13 @@ class TestPhaseH8BalancingTransformers:
         records = parse_timeseries_xml(synthetic_xml, value_tag="price.amount")
         assert len(records) == 1
         assert records[0]["reason_code"] == "A98", (
-            "G9 ENTSOE-02 regression: parser must extract Reason.code "
-            "from A87 TimeSeries elements"
+            "G9 ENTSOE-02 regression: parser must extract Reason.code from A87 TimeSeries elements"
         )
 
         raw = pl.DataFrame(records).with_columns(
             pl.col("timestamp_utc").cast(pl.Datetime("us", "UTC"))
         )
-        transformer = _make_entsoe_transformer(
-            BalancingFinancialExpensesIncomeTransformer
-        )
+        transformer = _make_entsoe_transformer(BalancingFinancialExpensesIncomeTransformer)
         result = transformer.transform(raw)
 
         assert not result.is_empty()
@@ -3087,9 +3076,7 @@ class TestPhaseH8BalancingTransformers:
             "balancing_financial_expenses_income_gb.xml",
             "price.amount",
         )
-        transformer = _make_entsoe_transformer(
-            BalancingFinancialExpensesIncomeTransformer
-        )
+        transformer = _make_entsoe_transformer(BalancingFinancialExpensesIncomeTransformer)
         result = transformer.transform(raw)
 
         assert "reason_code" in result.columns
@@ -3100,27 +3087,39 @@ class TestPhaseH8Schemas:
     _TS = datetime(2024, 1, 15, 0, 0, tzinfo=UTC)
 
     def test_single_area_schemas(self):
-        assert EntsoeBalancingState(
-            timestamp_utc=self._TS,
-            area_code="10YGB----------A",
-            quantity_mw=125.0,
-        ).data_provider == "entsoe"
-        assert EntsoeBalancingEnergyBid(
-            timestamp_utc=self._TS,
-            area_code="10YGB----------A",
-            quantity_mw=45.0,
-            bid_mrid="bid-1",
-        ).bid_mrid == "bid-1"
-        assert EntsoeBalancingCapacity(
-            timestamp_utc=self._TS,
-            area_code="10YGB----------A",
-            quantity_mw=500.0,
-        ).quantity_mw == 500.0
-        assert EntsoeBalancingFinancial(
-            timestamp_utc=self._TS,
-            area_code="10YGB----------A",
-            amount_eur=35.5,
-        ).amount_eur == 35.5
+        assert (
+            EntsoeBalancingState(
+                timestamp_utc=self._TS,
+                area_code="10YGB----------A",
+                quantity_mw=125.0,
+            ).data_provider
+            == "entsoe"
+        )
+        assert (
+            EntsoeBalancingEnergyBid(
+                timestamp_utc=self._TS,
+                area_code="10YGB----------A",
+                quantity_mw=45.0,
+                bid_mrid="bid-1",
+            ).bid_mrid
+            == "bid-1"
+        )
+        assert (
+            EntsoeBalancingCapacity(
+                timestamp_utc=self._TS,
+                area_code="10YGB----------A",
+                quantity_mw=500.0,
+            ).quantity_mw
+            == 500.0
+        )
+        assert (
+            EntsoeBalancingFinancial(
+                timestamp_utc=self._TS,
+                area_code="10YGB----------A",
+                amount_eur=35.5,
+            ).amount_eur
+            == 35.5
+        )
 
     def test_cross_zonal_capacity_schema(self):
         record = EntsoeCrossZonalBalancingCapacity(

@@ -77,11 +77,7 @@ class PhysicalFlowsTransformer(BaseSilverTransformer):
                 continue
             try:
                 payload = json.loads(f.read_text())
-                records = (
-                    payload.get("operationalData", [])
-                    if isinstance(payload, dict)
-                    else []
-                )
+                records = payload.get("operationalData", []) if isinstance(payload, dict) else []
                 rows.extend(records)
             except (json.JSONDecodeError, AttributeError) as exc:
                 logger.warning("Failed to parse ENTSO-G bronze file %s: %s", f, exc)
@@ -111,9 +107,7 @@ class PhysicalFlowsTransformer(BaseSilverTransformer):
         if df.is_empty():
             return pl.DataFrame()
 
-        df = df.with_columns(
-            parse_entsog_datetime_expr("periodFrom").alias("timestamp_utc")
-        )
+        df = df.with_columns(parse_entsog_datetime_expr("periodFrom").alias("timestamp_utc"))
 
         rename_map: dict[str, str] = {}
         col_map = {
@@ -131,9 +125,7 @@ class PhysicalFlowsTransformer(BaseSilverTransformer):
             df = df.rename(rename_map)
 
         if "value" in df.columns and "unit" in df.columns:
-            df = df.with_columns(
-                pl.col("value").cast(pl.Float64, strict=False).alias("value")
-            )
+            df = df.with_columns(pl.col("value").cast(pl.Float64, strict=False).alias("value"))
             # Issue 05 #3: drop rows whose unit is not in the explicit factor
             # table BEFORE normalising, with a logged count, rather than
             # silently mis-scaling them by assuming kWh/d. "Never silently
@@ -142,9 +134,7 @@ class PhysicalFlowsTransformer(BaseSilverTransformer):
             is_known = recognised.is_in(list(_UNIT_TO_GWH_DAY.keys()))
             unknown = df.filter(~is_known)
             if not unknown.is_empty():
-                bad_units = sorted(
-                    {u for u in unknown["unit"].to_list() if u is not None}
-                )
+                bad_units = sorted({u for u in unknown["unit"].to_list() if u is not None})
                 logger.warning(
                     "Dropping %d ENTSO-G physical-flow row(s) with unrecognised "
                     "unit(s) %s (not mis-scaling as kWh/d)",
@@ -157,9 +147,7 @@ class PhysicalFlowsTransformer(BaseSilverTransformer):
             df = df.with_columns(
                 pl.struct(["value", "unit"])
                 .map_elements(
-                    lambda row: _normalise_to_gwh_day(
-                        row["value"] or 0.0, row["unit"] or ""
-                    ),
+                    lambda row: _normalise_to_gwh_day(row["value"] or 0.0, row["unit"] or ""),
                     return_dtype=pl.Float64,
                 )
                 .alias("flow_gwh_per_day")
@@ -167,8 +155,7 @@ class PhysicalFlowsTransformer(BaseSilverTransformer):
         elif "value" in df.columns:
             df = df.with_columns(
                 (
-                    pl.col("value").cast(pl.Float64, strict=False).fill_null(0.0)
-                    * _KWH_D_TO_GWH_D
+                    pl.col("value").cast(pl.Float64, strict=False).fill_null(0.0) * _KWH_D_TO_GWH_D
                 ).alias("flow_gwh_per_day")
             )
         else:
@@ -182,10 +169,12 @@ class PhysicalFlowsTransformer(BaseSilverTransformer):
         df = df.unique(subset=dedup_cols, keep="last")
 
         now = datetime.now(UTC)
-        df = df.with_columns([
-            pl.lit("entsog").alias("data_provider"),
-            pl.lit(now).cast(pl.Datetime("us", "UTC")).alias("ingested_at"),
-        ])
+        df = df.with_columns(
+            [
+                pl.lit("entsog").alias("data_provider"),
+                pl.lit(now).cast(pl.Datetime("us", "UTC")).alias("ingested_at"),
+            ]
+        )
 
         output_cols = [
             "timestamp_utc",

@@ -67,9 +67,9 @@ class ForecastSolarWeather(HistoricalSolarWeather):
 
 
 # Sanity-check the variable list / dataset spec wiring at import time.
-assert ForecastDemandWeather.HOURLY_VARS == DATASET_SPECS["forecast_demand"].hourly
-assert ForecastWindWeather.HOURLY_VARS == DATASET_SPECS["forecast_wind"].hourly
-assert ForecastSolarWeather.HOURLY_VARS == DATASET_SPECS["forecast_solar"].hourly
+assert DATASET_SPECS["forecast_demand"].hourly == ForecastDemandWeather.HOURLY_VARS
+assert DATASET_SPECS["forecast_wind"].hourly == ForecastWindWeather.HOURLY_VARS
+assert DATASET_SPECS["forecast_solar"].hourly == ForecastSolarWeather.HOURLY_VARS
 
 
 register_transformer("open_meteo", "forecast_demand", ForecastDemandWeather)

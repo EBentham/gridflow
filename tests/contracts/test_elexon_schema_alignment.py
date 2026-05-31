@@ -19,12 +19,11 @@ were the W2 pattern. This test catches both.
 from __future__ import annotations
 
 import json
-from datetime import UTC, datetime
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import polars as pl
 import pytest
-from pydantic import BaseModel
 
 from gridflow.schemas.elexon import (
     ElexonAGPT,
@@ -33,22 +32,22 @@ from gridflow.schemas.elexon import (
     ElexonBMUnit,
     ElexonBOAL,
     ElexonBOD,
-    ElexonDISBSAD,
     ElexonDemandForecast,
+    ElexonDISBSAD,
     ElexonFOU2T14D,
     ElexonFrequency,
     ElexonFuelHH,
     ElexonGenerationByFuel,
     ElexonImbalNGC,
+    ElexonIndDem,
+    ElexonIndGen,
     ElexonINDO,
     ElexonINDOD,
     ElexonITSDO,
-    ElexonIndDem,
-    ElexonIndGen,
     ElexonLOLPDRM,
-    ElexonMID,
     ElexonMarketDepth,
     ElexonMelNGC,
+    ElexonMID,
     ElexonNETBSAD,
     ElexonNonBM,
     ElexonPN,
@@ -94,6 +93,9 @@ from gridflow.silver.elexon.tsdf import TSDFTransformer
 from gridflow.silver.elexon.tsdfd import TSDFDTransformer
 from gridflow.silver.elexon.uou2t14d import UOU2T14DTransformer
 from gridflow.silver.elexon.wind_forecast import WindForecastTransformer
+
+if TYPE_CHECKING:
+    from pydantic import BaseModel
 
 FIXTURES = Path(__file__).parent.parent / "fixtures" / "elexon"
 

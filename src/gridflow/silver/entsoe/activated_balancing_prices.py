@@ -33,9 +33,7 @@ class ActivatedBalancingPricesTransformer(BaseSilverTransformer):
 
         records: list[dict] = []
         for xml_file in sorted(bronze_path.glob("raw_*.xml")):
-            records.extend(
-                parse_timeseries_xml(xml_file.read_bytes(), value_tag="price.amount")
-            )
+            records.extend(parse_timeseries_xml(xml_file.read_bytes(), value_tag="price.amount"))
 
         if not records:
             return pl.DataFrame()
@@ -50,8 +48,12 @@ class ActivatedBalancingPricesTransformer(BaseSilverTransformer):
 
         available = set(raw_df.columns)
         required = {
-            "timestamp_utc", "value", "control_area_domain",
-            "business_type", "flow_direction", "resolution",
+            "timestamp_utc",
+            "value",
+            "control_area_domain",
+            "business_type",
+            "flow_direction",
+            "resolution",
         }
         if not required.issubset(available):
             missing = required - available
@@ -60,38 +62,52 @@ class ActivatedBalancingPricesTransformer(BaseSilverTransformer):
 
         now = datetime.now(UTC)
         df = (
-            raw_df.rename({
-                "value": "price_eur_mwh",
-                "control_area_domain": "area_code",
-            })
-            .with_columns([
-                pl.col("business_type").replace_strict(
-                    {"A95": "fcr", "A96": "afrr", "A97": "mfrr", "A98": "rr"}
-                ).alias("reserve_type"),
-                pl.col("flow_direction").replace_strict(
-                    {"A01": "up", "A02": "down"}
-                ).alias("direction"),
-            ])
-            .select([
-                "timestamp_utc",
-                "area_code",
-                "reserve_type",
-                "direction",
-                "price_eur_mwh",
-                "resolution",
-            ])
+            raw_df.rename(
+                {
+                    "value": "price_eur_mwh",
+                    "control_area_domain": "area_code",
+                }
+            )
+            .with_columns(
+                [
+                    pl.col("business_type")
+                    .replace_strict({"A95": "fcr", "A96": "afrr", "A97": "mfrr", "A98": "rr"})
+                    .alias("reserve_type"),
+                    pl.col("flow_direction")
+                    .replace_strict({"A01": "up", "A02": "down"})
+                    .alias("direction"),
+                ]
+            )
+            .select(
+                [
+                    "timestamp_utc",
+                    "area_code",
+                    "reserve_type",
+                    "direction",
+                    "price_eur_mwh",
+                    "resolution",
+                ]
+            )
             .unique(subset=["timestamp_utc", "area_code", "reserve_type", "direction"], keep="last")
             .sort(["timestamp_utc", "area_code", "reserve_type", "direction"])
-            .with_columns([
-                pl.lit("entsoe").alias("data_provider"),
-                pl.lit(now).cast(pl.Datetime("us", "UTC")).alias("ingested_at"),
-                pl.col("timestamp_utc").dt.replace_time_zone("UTC"),
-            ])
+            .with_columns(
+                [
+                    pl.lit("entsoe").alias("data_provider"),
+                    pl.lit(now).cast(pl.Datetime("us", "UTC")).alias("ingested_at"),
+                    pl.col("timestamp_utc").dt.replace_time_zone("UTC"),
+                ]
+            )
         )
 
         output_cols = [
-            "timestamp_utc", "area_code", "reserve_type", "direction",
-            "price_eur_mwh", "resolution", "data_provider", "ingested_at",
+            "timestamp_utc",
+            "area_code",
+            "reserve_type",
+            "direction",
+            "price_eur_mwh",
+            "resolution",
+            "data_provider",
+            "ingested_at",
         ]
         available_cols = [c for c in output_cols if c in df.columns]
         df = df.select(available_cols)

@@ -93,16 +93,22 @@ class TempTransformer(BaseSilverTransformer):
         df = df.unique(subset=["timestamp_utc"], keep="last")
 
         now = datetime.now(UTC)
-        df = df.with_columns([
-            pl.lit("elexon").alias("data_provider"),
-            pl.lit(now).cast(pl.Datetime("us", "UTC")).alias("ingested_at"),
-        ])
+        df = df.with_columns(
+            [
+                pl.lit("elexon").alias("data_provider"),
+                pl.lit(now).cast(pl.Datetime("us", "UTC")).alias("ingested_at"),
+            ]
+        )
 
         output_cols = [
-            "timestamp_utc", "measurement_date",
-            "temperature", "normal_temperature",
-            "low_temperature", "high_temperature",
-            "data_provider", "ingested_at",
+            "timestamp_utc",
+            "measurement_date",
+            "temperature",
+            "normal_temperature",
+            "low_temperature",
+            "high_temperature",
+            "data_provider",
+            "ingested_at",
         ]
         available = [c for c in output_cols if c in df.columns]
         return df.select(available).sort("timestamp_utc")

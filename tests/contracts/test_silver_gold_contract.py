@@ -3,22 +3,24 @@
 from __future__ import annotations
 
 from datetime import date
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pytest
 
 from gridflow.bronze.writer import BronzeWriter
-from gridflow.connectors.base import RawResponse
 from gridflow.gold.demand_features import DemandFeaturesBuilder
 from gridflow.gold.merit_order import MeritOrderBuilder
 from gridflow.gold.system_marginal_price import SystemMarginalPriceBuilder
 from gridflow.silver.elexon.system_prices import SystemPriceTransformer
 
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    from gridflow.connectors.base import RawResponse
+
 
 class TestSilverGoldContract:
-    def test_gold_built_from_silver(
-        self, tmp_data_dir: Path, sample_raw_response: RawResponse
-    ):
+    def test_gold_built_from_silver(self, tmp_data_dir: Path, sample_raw_response: RawResponse):
         """Gold dataset should contain enriched silver data."""
         # Build silver first
         writer = BronzeWriter(tmp_data_dir)
@@ -33,9 +35,7 @@ class TestSilverGoldContract:
 
         assert rows > 0
 
-    def test_gold_has_derived_features(
-        self, tmp_data_dir: Path, sample_raw_response: RawResponse
-    ):
+    def test_gold_has_derived_features(self, tmp_data_dir: Path, sample_raw_response: RawResponse):
         """Gold dataset should contain derived features like spread."""
         writer = BronzeWriter(tmp_data_dir)
         writer.write(sample_raw_response)
@@ -49,9 +49,7 @@ class TestSilverGoldContract:
         assert "spread" in df.columns
         assert "abs_imbalance" in df.columns
 
-    def test_spread_sign_convention(
-        self, tmp_data_dir: Path, sample_raw_response: RawResponse
-    ):
+    def test_spread_sign_convention(self, tmp_data_dir: Path, sample_raw_response: RawResponse):
         """spread MUST equal buy - sell (not sell - buy).
 
         The sample fixture has buy > sell on every row, so a flipped
@@ -62,18 +60,14 @@ class TestSilverGoldContract:
         writer.write(sample_raw_response)
         SystemPriceTransformer(tmp_data_dir).run(date(2024, 1, 15))
 
-        df = SystemMarginalPriceBuilder(tmp_data_dir).build(
-            date(2024, 1, 15), date(2024, 1, 15)
-        )
+        df = SystemMarginalPriceBuilder(tmp_data_dir).build(date(2024, 1, 15), date(2024, 1, 15))
 
         expected = df["system_buy_price"] - df["system_sell_price"]
         assert df["spread"].to_list() == expected.to_list()
         # Fixture: buy strictly above sell -> every spread strictly positive.
         assert (df["spread"] > 0).all()
 
-    def test_abs_imbalance_value(
-        self, tmp_data_dir: Path, sample_raw_response: RawResponse
-    ):
+    def test_abs_imbalance_value(self, tmp_data_dir: Path, sample_raw_response: RawResponse):
         """abs_imbalance MUST equal |net_imbalance_volume|, incl. negative NIV.
 
         The fixture's SP1 has NIV = -120.5; abs_imbalance must be +120.5.
@@ -82,9 +76,7 @@ class TestSilverGoldContract:
         writer.write(sample_raw_response)
         SystemPriceTransformer(tmp_data_dir).run(date(2024, 1, 15))
 
-        df = SystemMarginalPriceBuilder(tmp_data_dir).build(
-            date(2024, 1, 15), date(2024, 1, 15)
-        )
+        df = SystemMarginalPriceBuilder(tmp_data_dir).build(date(2024, 1, 15), date(2024, 1, 15))
 
         expected = df["net_imbalance_volume"].abs()
         assert df["abs_imbalance"].to_list() == expected.to_list()
@@ -101,9 +93,7 @@ class TestSilverGoldContract:
         writer.write(sample_raw_response)
         silver_rows = SystemPriceTransformer(tmp_data_dir).run(date(2024, 1, 15))
 
-        df = SystemMarginalPriceBuilder(tmp_data_dir).build(
-            date(2024, 1, 15), date(2024, 1, 15)
-        )
+        df = SystemMarginalPriceBuilder(tmp_data_dir).build(date(2024, 1, 15), date(2024, 1, 15))
         assert len(df) == silver_rows
 
 
@@ -150,9 +140,7 @@ class TestGoldBuilderEmptyOutGuard:
         "rows, forcing a real value-level contract test to be written.",
     )
     def test_demand_features_placeholder_is_unimplemented(self, tmp_data_dir: Path):
-        df = DemandFeaturesBuilder(tmp_data_dir).build(
-            date(2024, 1, 15), date(2024, 1, 15)
-        )
+        df = DemandFeaturesBuilder(tmp_data_dir).build(date(2024, 1, 15), date(2024, 1, 15))
         # While a placeholder, build() returns empty -> this assertion fails ->
         # xfail. Once implemented to return rows, the assertion passes ->
         # xpass -> strict xfail turns the suite RED, demanding a real test.
@@ -164,7 +152,5 @@ class TestGoldBuilderEmptyOutGuard:
         "xfail flips to a failure the moment it is implemented and emits rows.",
     )
     def test_merit_order_placeholder_is_unimplemented(self, tmp_data_dir: Path):
-        df = MeritOrderBuilder(tmp_data_dir).build(
-            date(2024, 1, 15), date(2024, 1, 15)
-        )
+        df = MeritOrderBuilder(tmp_data_dir).build(date(2024, 1, 15), date(2024, 1, 15))
         assert not df.is_empty()

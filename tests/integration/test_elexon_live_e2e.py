@@ -101,8 +101,7 @@ def _assert_live_response(
         f"expected_source=elexon actual_source={response.source}"
     )
     assert response.dataset == dataset, (
-        f"source=elexon dataset={dataset} stage={stage} "
-        f"actual_dataset={response.dataset}"
+        f"source=elexon dataset={dataset} stage={stage} actual_dataset={response.dataset}"
     )
     assert response.http_status == 200, (
         f"source=elexon dataset={dataset} stage={stage} "
@@ -114,16 +113,12 @@ def _assert_live_response(
         f"content_type={response.content_type} url={response.request_url}"
     )
     assert response.request_url.startswith(BASE_URL), (
-        f"source=elexon dataset={dataset} stage={stage} "
-        f"url={response.request_url}"
+        f"source=elexon dataset={dataset} stage={stage} url={response.request_url}"
     )
     assert response.body, (
-        f"source=elexon dataset={dataset} stage={stage} "
-        f"url={response.request_url} empty_body=true"
+        f"source=elexon dataset={dataset} stage={stage} url={response.request_url} empty_body=true"
     )
-    assert response.page >= 1, (
-        f"source=elexon dataset={dataset} stage={stage} page={response.page}"
-    )
+    assert response.page >= 1, f"source=elexon dataset={dataset} stage={stage} page={response.page}"
     assert response.total_pages >= 1, (
         f"source=elexon dataset={dataset} stage={stage} total_pages={response.total_pages}"
     )
@@ -186,8 +181,7 @@ def _assert_silver_output(
 ) -> None:
     parquet_path = _silver_parquet_path(data_dir, dataset, target_date)
     assert parquet_path.exists(), (
-        f"source=elexon dataset={dataset} stage=silver "
-        f"expected_path={parquet_path}"
+        f"source=elexon dataset={dataset} stage=silver expected_path={parquet_path}"
     )
 
     df = pl.read_parquet(parquet_path)
@@ -265,8 +259,6 @@ async def test_live_representative_datasets_fetch_successfully_or_classify_empty
 
 
 def test_live_known_excluded_endpoints_are_documented() -> None:
-    assert {"bod", "generation_by_fuel", "indicative_imbalance_volumes"} <= set(
-        EXCLUDED_ENDPOINTS
-    )
+    assert {"bod", "generation_by_fuel", "indicative_imbalance_volumes"} <= set(EXCLUDED_ENDPOINTS)
     for dataset in ("bod", "generation_by_fuel", "indicative_imbalance_volumes"):
         assert EXCLUDED_ENDPOINTS[dataset]

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import httpx
 from tenacity import (
@@ -51,7 +51,7 @@ class CircuitBreaker:
         self._failures += 1
         if self._failures >= self.failure_threshold:
             self._state = "open"
-            self._opened_at = datetime.now(timezone.utc)
+            self._opened_at = datetime.now(UTC)
 
     def can_execute(self) -> bool:
         if self._state == "closed":
@@ -59,7 +59,7 @@ class CircuitBreaker:
         if self._state == "open":
             if self._opened_at is None:
                 return True
-            elapsed = (datetime.now(timezone.utc) - self._opened_at).total_seconds()
+            elapsed = (datetime.now(UTC) - self._opened_at).total_seconds()
             if elapsed >= self.cooldown_seconds:
                 self._state = "half_open"
                 return True

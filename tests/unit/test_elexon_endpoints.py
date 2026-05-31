@@ -27,8 +27,16 @@ class TestParamStyleEnum:
 class TestEndpointRegistry:
     def test_expected_datasets_registered(self):
         expected = {
-            "system_prices", "boal", "disbsad", "mid", "pn",
-            "freq", "fuelhh", "windfor", "ndf", "ndfd",
+            "system_prices",
+            "boal",
+            "disbsad",
+            "mid",
+            "pn",
+            "freq",
+            "fuelhh",
+            "windfor",
+            "ndf",
+            "ndfd",
             "bmunits_reference",
         }
         for ds in expected:
@@ -123,16 +131,26 @@ class TestBuildParamsSettlementDate:
 
     def test_settlement_date_with_period(self):
         ep = ENDPOINTS["pn"]
-        params = build_params(
-            ep, settlement_date=date(2024, 1, 15), settlement_period=10
-        )
+        params = build_params(ep, settlement_date=date(2024, 1, 15), settlement_period=10)
         assert params["settlementPeriod"] == 10
 
     def test_new_tier1_datasets_use_publish_datetime(self):
         """All new Tier-1 datasets use PUBLISH_DATETIME style."""
         new_datasets = [
-            "agpt", "agws", "atl", "indo", "itsdo", "indod", "nonbm",
-            "inddem", "indgen", "tsdf", "tsdfd", "lolpdrm", "remit", "soso",
+            "agpt",
+            "agws",
+            "atl",
+            "indo",
+            "itsdo",
+            "indod",
+            "nonbm",
+            "inddem",
+            "indgen",
+            "tsdf",
+            "tsdfd",
+            "lolpdrm",
+            "remit",
+            "soso",
         ]
         for ds in new_datasets:
             assert ds in ENDPOINTS, f"Missing endpoint: {ds}"
@@ -225,8 +243,7 @@ class TestRemitSosoMaxChunkHours:
     def test_soso_max_chunk_hours_23(self):
         ep = ENDPOINTS["soso"]
         assert ep.max_chunk_hours == 23, (
-            "SOSO must declare max_chunk_hours=23; same vendor 1-day cap "
-            "as REMIT."
+            "SOSO must declare max_chunk_hours=23; same vendor 1-day cap as REMIT."
         )
 
 

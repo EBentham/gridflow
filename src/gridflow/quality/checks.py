@@ -102,9 +102,7 @@ def check_time_series_gaps(
     # (raises TypeError under Polars 1.40.1).
     expected = timedelta(minutes=expected_freq_minutes)
     tolerance = timedelta(minutes=1)
-    anomalies = diffs.filter(
-        (diffs > expected + tolerance) | (diffs < expected - tolerance)
-    )
+    anomalies = diffs.filter((diffs > expected + tolerance) | (diffs < expected - tolerance))
 
     return QualityResult(
         check_name="time_series_gaps",
@@ -141,9 +139,7 @@ def check_range(
     # caught explicitly — otherwise a column of nulls passes the range check.
     # Float NaN is caught by the comparison (NaN > max_val is True in Polars).
     out_of_range = df.filter(
-        (pl.col(column) < min_val)
-        | (pl.col(column) > max_val)
-        | pl.col(column).is_null()
+        (pl.col(column) < min_val) | (pl.col(column) > max_val) | pl.col(column).is_null()
     )
     return QualityResult(
         check_name="range_check",

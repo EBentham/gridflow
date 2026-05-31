@@ -3,15 +3,18 @@
 from __future__ import annotations
 
 import json
-from datetime import date, datetime, timezone
-from pathlib import Path
+from datetime import date
+from typing import TYPE_CHECKING
 
 import polars as pl
-import pytest
 
 from gridflow.bronze.writer import BronzeWriter
-from gridflow.connectors.base import RawResponse
 from gridflow.silver.elexon.system_prices import SystemPriceTransformer
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    from gridflow.connectors.base import RawResponse
 
 
 class TestBronzeToSilver:

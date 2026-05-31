@@ -29,7 +29,6 @@ import gridflow.silver.entsog  # noqa: F401
 import gridflow.silver.gie  # noqa: F401
 import gridflow.silver.neso  # noqa: F401
 import gridflow.silver.openmeteo  # noqa: F401
-
 from gridflow.silver.registry import get_transformer, list_transformers
 
 _CANONICAL_PATH = Path(__file__).resolve().parent.parent.parent / "docs" / "CANONICAL_SCHEMA.yaml"
@@ -113,9 +112,7 @@ def _run_transform_and_add_bitemporal(
 
 @pytest.mark.integration
 @pytest.mark.parametrize("source,dataset", sorted(list_transformers()))
-def test_silver_schema_matches_canonical(
-    tmp_path: Path, source: str, dataset: str
-) -> None:
+def test_silver_schema_matches_canonical(tmp_path: Path, source: str, dataset: str) -> None:
     """Each registered transformer's emitted silver schema matches CANONICAL_SCHEMA.yaml.
 
     Entries with TODO_HUMAN_FILL_COLUMNS: true are skipped (curation pass pending).

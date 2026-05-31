@@ -154,8 +154,7 @@ class GridflowClient:
         sql = (
             "SELECT * EXCLUDE (" + _BITEMPORAL_EXCLUDE_SQL + ") "
             "FROM gold_eu_gas_storage "
-            "WHERE gas_day BETWEEN ? AND ?"
-            + country_filter + " "
+            "WHERE gas_day BETWEEN ? AND ?" + country_filter + " "
             "ORDER BY gas_day DESC, country_code"
         )
         return self._require_con().execute(sql, params).pl()
@@ -181,8 +180,7 @@ class GridflowClient:
         sql = (
             "SELECT * EXCLUDE (" + _BITEMPORAL_EXCLUDE_SQL + ") "
             "FROM silver_itsdo "
-            "WHERE timestamp_utc::DATE BETWEEN ? AND ?"
-            + location_filter + " "
+            "WHERE timestamp_utc::DATE BETWEEN ? AND ?" + location_filter + " "
             "ORDER BY timestamp_utc, location"
         )
         return self._require_con().execute(sql, params).pl()
@@ -209,11 +207,15 @@ class GridflowClient:
 
     def get_tables(self) -> list[str]:
         """List all available tables and views."""
-        result = self._require_con().sql(
-            "SELECT table_name FROM information_schema.tables "
-            "WHERE table_schema = 'main' "
-            "ORDER BY table_name"
-        ).fetchall()
+        result = (
+            self._require_con()
+            .sql(
+                "SELECT table_name FROM information_schema.tables "
+                "WHERE table_schema = 'main' "
+                "ORDER BY table_name"
+            )
+            .fetchall()
+        )
         return [row[0] for row in result]
 
     def close(self) -> None:

@@ -108,9 +108,7 @@ def test_defaulted_path_variables_have_explicit_iteration_semantics() -> None:
         "regional_intensity_regionid": {"regionid": DEFAULT_REGION_ID},
     }
     assert [
-        dataset
-        for dataset, endpoint in ENDPOINTS.items()
-        if endpoint.settlement_period_iteration
+        dataset for dataset, endpoint in ENDPOINTS.items() if endpoint.settlement_period_iteration
     ] == ["intensity_period"]
 
 

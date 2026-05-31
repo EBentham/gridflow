@@ -19,7 +19,7 @@ from __future__ import annotations
 import json
 import logging
 from datetime import UTC, date, datetime
-from typing import Any, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 import polars as pl
 
@@ -33,10 +33,12 @@ from gridflow.connectors.openmeteo.endpoints import (
     WIND_LOCATIONS,
     WeatherLocation,
 )
-from gridflow.schemas.common import BaseSchema
 from gridflow.schemas.weather import DemandWeather, SolarWeather, WindWeather
 from gridflow.silver.base import BaseSilverTransformer
 from gridflow.silver.registry import register_transformer
+
+if TYPE_CHECKING:
+    from gridflow.schemas.common import BaseSchema
 
 logger = logging.getLogger(__name__)
 
@@ -99,38 +101,38 @@ class BaseOpenMeteoTransformer(BaseSilverTransformer):
     # Wind speeds: km/h -> m/s (Open-Meteo default when no windspeed_unit param sent).
     # Applied AFTER _add_derived() so HDD/CDD/air_density derivation reads pre-rename names.
     _UNIT_CONVERSIONS: ClassVar[dict[str, tuple[str, float]]] = {
-        "wind_speed_10m":  ("wind_speed_10m_mps",  1.0 / 3.6),
+        "wind_speed_10m": ("wind_speed_10m_mps", 1.0 / 3.6),
         "wind_speed_100m": ("wind_speed_100m_mps", 1.0 / 3.6),
-        "wind_speed_80m":  ("wind_speed_80m_mps",  1.0 / 3.6),
+        "wind_speed_80m": ("wind_speed_80m_mps", 1.0 / 3.6),
         "wind_speed_120m": ("wind_speed_120m_mps", 1.0 / 3.6),
         "wind_speed_180m": ("wind_speed_180m_mps", 1.0 / 3.6),
-        "wind_gusts_10m":  ("wind_gusts_10m_mps",  1.0 / 3.6),
+        "wind_gusts_10m": ("wind_gusts_10m_mps", 1.0 / 3.6),
     }
     # Pure renames: unit already correct; column gets an explicit unit suffix.
     _PURE_RENAMES: ClassVar[dict[str, str]] = {
-        "temperature_2m":           "temperature_2m_c",
-        "dew_point_2m":             "dew_point_2m_c",
-        "surface_pressure":         "surface_pressure_hpa",
-        "relative_humidity_2m":     "relative_humidity_2m_pct",
-        "cloud_cover":              "cloud_cover_pct",
-        "cloud_cover_low":          "cloud_cover_low_pct",
-        "cloud_cover_mid":          "cloud_cover_mid_pct",
-        "cloud_cover_high":         "cloud_cover_high_pct",
-        "shortwave_radiation":      "shortwave_radiation_wm2",
-        "direct_radiation":         "direct_radiation_wm2",
+        "temperature_2m": "temperature_2m_c",
+        "dew_point_2m": "dew_point_2m_c",
+        "surface_pressure": "surface_pressure_hpa",
+        "relative_humidity_2m": "relative_humidity_2m_pct",
+        "cloud_cover": "cloud_cover_pct",
+        "cloud_cover_low": "cloud_cover_low_pct",
+        "cloud_cover_mid": "cloud_cover_mid_pct",
+        "cloud_cover_high": "cloud_cover_high_pct",
+        "shortwave_radiation": "shortwave_radiation_wm2",
+        "direct_radiation": "direct_radiation_wm2",
         "direct_normal_irradiance": "direct_normal_irradiance_wm2",
-        "diffuse_radiation":        "diffuse_radiation_wm2",
+        "diffuse_radiation": "diffuse_radiation_wm2",
         "global_tilted_irradiance": "global_tilted_irradiance_wm2",
-        "precipitation":            "precipitation_mm",
-        "snowfall":                 "snowfall_cm",
-        "snow_depth":               "snow_depth_m",
-        "wind_direction_10m":       "wind_direction_10m_deg",
-        "wind_direction_100m":      "wind_direction_100m_deg",
-        "wind_direction_80m":       "wind_direction_80m_deg",
-        "wind_direction_120m":      "wind_direction_120m_deg",
-        "wind_direction_180m":      "wind_direction_180m_deg",
-        "hdd":                      "hdd_k",
-        "cdd":                      "cdd_k",
+        "precipitation": "precipitation_mm",
+        "snowfall": "snowfall_cm",
+        "snow_depth": "snow_depth_m",
+        "wind_direction_10m": "wind_direction_10m_deg",
+        "wind_direction_100m": "wind_direction_100m_deg",
+        "wind_direction_80m": "wind_direction_80m_deg",
+        "wind_direction_120m": "wind_direction_120m_deg",
+        "wind_direction_180m": "wind_direction_180m_deg",
+        "hdd": "hdd_k",
+        "cdd": "cdd_k",
     }
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
@@ -149,9 +151,7 @@ class BaseOpenMeteoTransformer(BaseSilverTransformer):
             if exact_path.exists() and any(exact_path.glob("raw_*")):
                 date_path = exact_path
             else:
-                date_path = self._find_covering_bronze_partition(
-                    target_date, bronze_dir=loc_dir
-                )
+                date_path = self._find_covering_bronze_partition(target_date, bronze_dir=loc_dir)
             if date_path is None:
                 continue
 
@@ -162,9 +162,7 @@ class BaseOpenMeteoTransformer(BaseSilverTransformer):
                     data = json.loads(f.read_text())
                     rows.extend(_pivot_openmeteo_json(data, loc.name, self.HOURLY_VARS))
                 except (json.JSONDecodeError, AttributeError, KeyError) as exc:
-                    logger.warning(
-                        "Failed to parse weather bronze file %s: %s", f, exc
-                    )
+                    logger.warning("Failed to parse weather bronze file %s: %s", f, exc)
 
         if not rows:
             return pl.DataFrame()
@@ -217,10 +215,12 @@ class BaseOpenMeteoTransformer(BaseSilverTransformer):
         df = df.unique(subset=["timestamp_utc", "location"], keep="last")
 
         now = datetime.now(UTC)
-        df = df.with_columns([
-            pl.lit("open_meteo").alias("data_provider"),
-            pl.lit(now).cast(pl.Datetime("us", "UTC")).alias("ingested_at"),
-        ])
+        df = df.with_columns(
+            [
+                pl.lit("open_meteo").alias("data_provider"),
+                pl.lit(now).cast(pl.Datetime("us", "UTC")).alias("ingested_at"),
+            ]
+        )
 
         output_cols = self._output_columns()
         available = [c for c in output_cols if c in df.columns]
@@ -229,14 +229,12 @@ class BaseOpenMeteoTransformer(BaseSilverTransformer):
     def _add_derived(self, df: pl.DataFrame) -> pl.DataFrame:
         """Apply per-role derived columns (HDD/CDD, air density)."""
         if self.DERIVE_HDD_CDD and "temperature_2m" in df.columns:
-            df = df.with_columns([
-                (pl.lit(_HDD_BASE) - pl.col("temperature_2m"))
-                .clip(lower_bound=0)
-                .alias("hdd"),
-                (pl.col("temperature_2m") - pl.lit(_CDD_BASE))
-                .clip(lower_bound=0)
-                .alias("cdd"),
-            ])
+            df = df.with_columns(
+                [
+                    (pl.lit(_HDD_BASE) - pl.col("temperature_2m")).clip(lower_bound=0).alias("hdd"),
+                    (pl.col("temperature_2m") - pl.lit(_CDD_BASE)).clip(lower_bound=0).alias("cdd"),
+                ]
+            )
 
         if (
             self.DERIVE_AIR_DENSITY
@@ -254,6 +252,7 @@ class BaseOpenMeteoTransformer(BaseSilverTransformer):
 
     def _output_columns(self) -> list[str]:
         """The columns to keep, in stable order, for this role's silver."""
+
         def _canonical(col: str) -> str:
             if col in self._UNIT_CONVERSIONS:
                 return self._UNIT_CONVERSIONS[col][0]
@@ -327,9 +326,9 @@ class HistoricalSolarWeather(BaseOpenMeteoTransformer):
 
 # Sanity-check the variable list / dataset spec wiring at import time so the
 # refactor catches drift between endpoints.py and the transformers.
-assert HistoricalDemandWeather.HOURLY_VARS == DATASET_SPECS["historical_demand"].hourly
-assert HistoricalWindWeather.HOURLY_VARS == DATASET_SPECS["historical_wind"].hourly
-assert HistoricalSolarWeather.HOURLY_VARS == DATASET_SPECS["historical_solar"].hourly
+assert DATASET_SPECS["historical_demand"].hourly == HistoricalDemandWeather.HOURLY_VARS
+assert DATASET_SPECS["historical_wind"].hourly == HistoricalWindWeather.HOURLY_VARS
+assert DATASET_SPECS["historical_solar"].hourly == HistoricalSolarWeather.HOURLY_VARS
 
 
 register_transformer("open_meteo", "historical_demand", HistoricalDemandWeather)

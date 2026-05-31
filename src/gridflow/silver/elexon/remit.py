@@ -132,19 +132,39 @@ class REMITTransformer(BaseSilverTransformer):
             df = df.with_columns(pl.col("revision_number").cast(pl.Int32))
 
         now = datetime.now(UTC)
-        df = df.with_columns([
-            pl.lit("elexon").alias("data_provider"),
-            pl.lit(now).cast(pl.Datetime("us", "UTC")).alias("ingested_at"),
-        ])
+        df = df.with_columns(
+            [
+                pl.lit("elexon").alias("data_provider"),
+                pl.lit(now).cast(pl.Datetime("us", "UTC")).alias("ingested_at"),
+            ]
+        )
 
         output_cols = [
-            "mrid", "revision_number", "timestamp_utc",
-            "message_type", "message_heading", "event_type", "unavailability_type",
-            "participant_id", "registration_code", "asset_id", "asset_type",
-            "affected_unit", "affected_unit_eic", "bidding_zone", "fuel_type",
-            "normal_capacity_mw", "available_capacity_mw", "unavailable_capacity_mw",
-            "event_status", "event_start_time", "event_end_time", "cause",
-            "related_information", "data_provider", "ingested_at",
+            "mrid",
+            "revision_number",
+            "timestamp_utc",
+            "message_type",
+            "message_heading",
+            "event_type",
+            "unavailability_type",
+            "participant_id",
+            "registration_code",
+            "asset_id",
+            "asset_type",
+            "affected_unit",
+            "affected_unit_eic",
+            "bidding_zone",
+            "fuel_type",
+            "normal_capacity_mw",
+            "available_capacity_mw",
+            "unavailable_capacity_mw",
+            "event_status",
+            "event_start_time",
+            "event_end_time",
+            "cause",
+            "related_information",
+            "data_provider",
+            "ingested_at",
         ]
         available = [c for c in output_cols if c in df.columns]
         return df.select(available).sort("timestamp_utc")

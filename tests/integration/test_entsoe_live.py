@@ -204,9 +204,7 @@ def _assert_silver_output(
     # Data may span multiple date-partitioned files (e.g. CET vs UTC boundary),
     # so verify total row count across all silver files for this dataset.
     silver_base = tmp_data_dir / "silver" / "entsoe" / dataset
-    total_silver_rows = sum(
-        len(pl.read_parquet(p)) for p in silver_base.rglob("*.parquet")
-    )
+    total_silver_rows = sum(len(pl.read_parquet(p)) for p in silver_base.rglob("*.parquet"))
     assert total_silver_rows == rows, _diagnostic_context(dataset, "silver row count mismatch")
     if "data_provider" in df.columns:
         assert df["data_provider"].unique().to_list() == ["entsoe"]

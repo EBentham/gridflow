@@ -64,9 +64,7 @@ class ElexonConnector(BaseConnector):
             current_date = start.date() if isinstance(start, datetime) else start
             end_date = end.date() if isinstance(end, datetime) else end
             while current_date <= end_date:
-                date_responses = await self._fetch_date_period(
-                    dataset, endpoint, current_date
-                )
+                date_responses = await self._fetch_date_period(dataset, endpoint, current_date)
                 responses.extend(date_responses)
                 current_date += timedelta(days=1)
 
@@ -90,8 +88,7 @@ class ElexonConnector(BaseConnector):
                 current = chunk_end
 
         logger.info(
-            f"Fetched {len(responses)} responses for elexon/{dataset} "
-            f"from {start} to {end}"
+            f"Fetched {len(responses)} responses for elexon/{dataset} from {start} to {end}"
         )
         return responses
 
@@ -246,9 +243,7 @@ class ElexonConnector(BaseConnector):
 
         return responses
 
-    async def _fetch_single(
-        self, dataset: str, endpoint: ElexonEndpoint
-    ) -> list[RawResponse]:
+    async def _fetch_single(self, dataset: str, endpoint: ElexonEndpoint) -> list[RawResponse]:
         """Fetch a single-request endpoint (e.g., reference data)."""
         query_params = build_params(endpoint)
         raw = await self._request(endpoint.path, query_params)
@@ -305,9 +300,7 @@ class ElexonConnector(BaseConnector):
         return responses
 
     @RETRY_POLICY
-    async def _request(
-        self, path: str, params: dict[str, Any]
-    ) -> httpx.Response:
+    async def _request(self, path: str, params: dict[str, Any]) -> httpx.Response:
         """Make a rate-limited, retried HTTP request."""
         if self._client is None:
             raise RuntimeError("Connector not initialized. Use 'async with' context manager.")

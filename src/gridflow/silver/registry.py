@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
-from pathlib import Path
 from typing import TYPE_CHECKING
 
-from gridflow.silver.base import BaseSilverTransformer
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    from gridflow.silver.base import BaseSilverTransformer
 
 # Registry of (source, dataset) -> transformer class
 _REGISTRY: dict[tuple[str, str], type[BaseSilverTransformer]] = {}
@@ -23,8 +25,7 @@ def get_transformer(source: str, dataset: str, data_dir: Path) -> BaseSilverTran
     key = (source, dataset)
     if key not in _REGISTRY:
         raise ValueError(
-            f"No transformer registered for {source}/{dataset}. "
-            f"Available: {list(_REGISTRY.keys())}"
+            f"No transformer registered for {source}/{dataset}. Available: {list(_REGISTRY.keys())}"
         )
     return _REGISTRY[key](data_dir)
 

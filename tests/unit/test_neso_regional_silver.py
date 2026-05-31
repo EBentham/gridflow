@@ -72,9 +72,7 @@ class TestPeriodKeyedRegionalLivePayload:
         rows per period in the period-keyed shape."""
         df = _silver_df("regional_intensity_fw24h_period_keyed.json")
         regionids = sorted(df["regionid"].unique().to_list())
-        assert len(regionids) >= 17, (
-            f"expected ≥17 regionids; got {regionids}"
-        )
+        assert len(regionids) >= 17, f"expected ≥17 regionids; got {regionids}"
 
 
 class TestRegionKeyedRegionalLivePayload:

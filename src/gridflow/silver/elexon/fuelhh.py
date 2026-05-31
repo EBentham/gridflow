@@ -71,12 +71,14 @@ class FuelHHTransformer(BaseSilverTransformer):
             logger.error(f"Missing required columns in FUELHH: {missing}")
             return pl.DataFrame()
 
-        df = raw_df.with_columns([
-            pl.col("settlement_date").cast(pl.Date),
-            pl.col("settlement_period").cast(pl.Int32),
-            pl.col("generation_mw").cast(pl.Float64),
-            pl.col("fuel_type").cast(pl.Utf8),
-        ])
+        df = raw_df.with_columns(
+            [
+                pl.col("settlement_date").cast(pl.Date),
+                pl.col("settlement_period").cast(pl.Int32),
+                pl.col("generation_mw").cast(pl.Float64),
+                pl.col("fuel_type").cast(pl.Utf8),
+            ]
+        )
 
         df = df.with_columns(
             pl.struct(["settlement_date", "settlement_period"])
@@ -106,9 +108,7 @@ class FuelHHTransformer(BaseSilverTransformer):
             # silver schema is deterministic and partition globs don't drift across
             # history (a missing column breaks SELECT * reads spanning files that do
             # carry it).
-            df = df.with_columns(
-                pl.lit(None).cast(pl.Datetime("us", "UTC")).alias("published_at")
-            )
+            df = df.with_columns(pl.lit(None).cast(pl.Datetime("us", "UTC")).alias("published_at"))
 
         df = df.unique(
             subset=["settlement_date", "settlement_period", "fuel_type"],
@@ -116,15 +116,22 @@ class FuelHHTransformer(BaseSilverTransformer):
         )
 
         now = datetime.now(UTC)
-        df = df.with_columns([
-            pl.lit("elexon").alias("data_provider"),
-            pl.lit(now).cast(pl.Datetime("us", "UTC")).alias("ingested_at"),
-        ])
+        df = df.with_columns(
+            [
+                pl.lit("elexon").alias("data_provider"),
+                pl.lit(now).cast(pl.Datetime("us", "UTC")).alias("ingested_at"),
+            ]
+        )
 
         output_cols = [
-            "settlement_date", "settlement_period", "timestamp_utc",
-            "fuel_type", "generation_mw", "published_at",
-            "data_provider", "ingested_at",
+            "settlement_date",
+            "settlement_period",
+            "timestamp_utc",
+            "fuel_type",
+            "generation_mw",
+            "published_at",
+            "data_provider",
+            "ingested_at",
         ]
         available = [c for c in output_cols if c in df.columns]
         return df.select(available).sort("timestamp_utc", "fuel_type")

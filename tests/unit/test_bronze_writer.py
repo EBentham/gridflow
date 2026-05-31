@@ -13,12 +13,15 @@ from __future__ import annotations
 import hashlib
 import json
 from datetime import UTC, datetime
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pytest
 
 from gridflow.bronze.writer import BronzeWriter
 from gridflow.connectors.base import RawResponse
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 def _response(body: bytes = b'{"data": [1, 2, 3]}') -> RawResponse:
@@ -59,9 +62,7 @@ def test_data_file_written_atomically(tmp_path: Path, monkeypatch: pytest.Monkey
     monkeypatch.setattr("os.replace", real_replace)
 
     # No final data file should be visible to a reader, only temp leftovers.
-    final_files = [
-        p for p in tmp_path.rglob("raw_*") if not p.name.startswith(".tmp_")
-    ]
+    final_files = [p for p in tmp_path.rglob("raw_*") if not p.name.startswith(".tmp_")]
     assert final_files == [], f"torn final files visible: {final_files}"
 
 

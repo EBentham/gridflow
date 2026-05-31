@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
-from datetime import date
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 import polars as pl
 
 from gridflow.gold.base import BaseGoldBuilder
+
+if TYPE_CHECKING:
+    from datetime import date
 
 
 class DemandFeaturesBuilder(BaseGoldBuilder):

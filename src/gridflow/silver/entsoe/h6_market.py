@@ -59,11 +59,13 @@ class _H6ZonePairTransformer(BaseSilverTransformer):
             logger.error("Missing required columns in %s: %s", self.dataset, missing)
             return pl.DataFrame()
 
-        df = raw_df.rename({
-            "value": self.value_column,
-            "in_domain": "in_area_code",
-            "out_domain": "out_area_code",
-        })
+        df = raw_df.rename(
+            {
+                "value": self.value_column,
+                "in_domain": "in_area_code",
+                "out_domain": "out_area_code",
+            }
+        )
 
         if "business_type" not in df.columns:
             df = df.with_columns(pl.lit("").alias("business_type"))
@@ -71,17 +73,17 @@ class _H6ZonePairTransformer(BaseSilverTransformer):
             df = df.with_columns(pl.lit("").alias("resolution"))
 
         if df["timestamp_utc"].dtype != pl.Datetime("us", "UTC"):
-            df = df.with_columns(
-                pl.col("timestamp_utc").cast(pl.Datetime("us", "UTC"))
-            )
+            df = df.with_columns(pl.col("timestamp_utc").cast(pl.Datetime("us", "UTC")))
 
         now = datetime.now(UTC)
         df = (
-            df.with_columns([
-                pl.col(self.value_column).cast(pl.Float64),
-                pl.lit("entsoe").alias("data_provider"),
-                pl.lit(now).cast(pl.Datetime("us", "UTC")).alias("ingested_at"),
-            ])
+            df.with_columns(
+                [
+                    pl.col(self.value_column).cast(pl.Float64),
+                    pl.lit("entsoe").alias("data_provider"),
+                    pl.lit(now).cast(pl.Datetime("us", "UTC")).alias("ingested_at"),
+                ]
+            )
             .unique(
                 subset=[
                     "timestamp_utc",
@@ -222,4 +224,3 @@ _TRANSFORMERS = [
 
 for transformer_cls in _TRANSFORMERS:
     register_transformer("entsoe", transformer_cls.dataset, transformer_cls)
-

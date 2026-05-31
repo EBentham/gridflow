@@ -30,8 +30,10 @@ FIXTURES = Path(__file__).resolve().parents[1] / "fixtures" / "gie"
 
 
 def _gie_config() -> SourceConfig:
-    return load_settings().get_source_config("gie_agsi").model_copy(
-        update={"api_key": "test-key", "rate_limit_per_second": 1000, "timeout": 5}
+    return (
+        load_settings()
+        .get_source_config("gie_agsi")
+        .model_copy(update={"api_key": "test-key", "rate_limit_per_second": 1000, "timeout": 5})
     )
 
 
@@ -68,9 +70,7 @@ def _storage_body(
 
 
 def _mock_storage(handler: Any) -> respx.Route:
-    return respx.get(re.compile(rf"^{re.escape(BASE_URL)}/.*")).mock(
-        side_effect=handler
-    )
+    return respx.get(re.compile(rf"^{re.escape(BASE_URL)}/.*")).mock(side_effect=handler)
 
 
 def _request_params(requests: list[httpx.Request]) -> list[dict[str, str]]:

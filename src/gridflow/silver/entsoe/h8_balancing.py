@@ -78,18 +78,18 @@ class _H8BalancingTransformer(BaseSilverTransformer):
         df = self._rename_domain_columns(df)
 
         if "timestamp_utc" in df.columns and df["timestamp_utc"].dtype != pl.Datetime("us", "UTC"):
-            df = df.with_columns(
-                pl.col("timestamp_utc").cast(pl.Datetime("us", "UTC"))
-            )
+            df = df.with_columns(pl.col("timestamp_utc").cast(pl.Datetime("us", "UTC")))
 
         now = datetime.now(UTC)
         df = (
-            df.with_columns([
-                pl.col("value").cast(pl.Float64).alias(self.value_column),
-                pl.lit("entsoe").alias("data_provider"),
-                pl.lit(now).cast(pl.Datetime("us", "UTC")).alias("ingested_at"),
-                pl.col("timestamp_utc").dt.replace_time_zone("UTC"),
-            ])
+            df.with_columns(
+                [
+                    pl.col("value").cast(pl.Float64).alias(self.value_column),
+                    pl.lit("entsoe").alias("data_provider"),
+                    pl.lit(now).cast(pl.Datetime("us", "UTC")).alias("ingested_at"),
+                    pl.col("timestamp_utc").dt.replace_time_zone("UTC"),
+                ]
+            )
             .select(list(self.output_cols))
             .unique(subset=list(self.unique_subset), keep="last")
             .sort(list(self.unique_subset))
@@ -102,12 +102,14 @@ class _H8BalancingTransformer(BaseSilverTransformer):
 
     def _rename_domain_columns(self, df: pl.DataFrame) -> pl.DataFrame:
         area_column = self.area_columns[0]
-        return df.rename({"value": "_value"}).rename({
-            "_value": "value",
-            area_column: "area_code",
-            "flow_direction": "direction",
-            "timeseries_mrid": "bid_mrid",
-        })
+        return df.rename({"value": "_value"}).rename(
+            {
+                "_value": "value",
+                area_column: "area_code",
+                "flow_direction": "direction",
+                "timeseries_mrid": "bid_mrid",
+            }
+        )
 
 
 class CurrentBalancingStateTransformer(_H8BalancingTransformer):
@@ -185,10 +187,12 @@ class CrossZonalBalancingCapacityTransformer(_H8BalancingTransformer):
     )
 
     def _rename_domain_columns(self, df: pl.DataFrame) -> pl.DataFrame:
-        return df.rename({
-            "acquiring_domain": "acquiring_area_code",
-            "connecting_domain": "connecting_area_code",
-        })
+        return df.rename(
+            {
+                "acquiring_domain": "acquiring_area_code",
+                "connecting_domain": "connecting_area_code",
+            }
+        )
 
 
 class BalancingFinancialExpensesIncomeTransformer(_H8BalancingTransformer):
@@ -224,10 +228,7 @@ def _with_optional_columns(df: pl.DataFrame) -> pl.DataFrame:
         # in transformer output even when the source XML omits Reason.
         "reason_code",
     }
-    missing_exprs = [
-        pl.lit("").alias(column)
-        for column in sorted(optional_cols - set(df.columns))
-    ]
+    missing_exprs = [pl.lit("").alias(column) for column in sorted(optional_cols - set(df.columns))]
     if missing_exprs:
         df = df.with_columns(missing_exprs)
     return df

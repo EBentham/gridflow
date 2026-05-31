@@ -6,10 +6,13 @@ instead of silently swallowing view-creation errors.
 
 from __future__ import annotations
 
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 import duckdb
 import pytest
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 @pytest.mark.integration
@@ -29,7 +32,7 @@ def test_register_gold_views_raises_on_broken_sql_under_strict_mode(
 
     con = duckdb.connect(":memory:")
     try:
-        with pytest.raises(Exception):
+        with pytest.raises(duckdb.Error):
             _register_gold_views(con)
     finally:
         con.close()
@@ -47,7 +50,7 @@ def test_try_create_view_raises_under_pytest(tmp_path: Path) -> None:
 
     con = duckdb.connect(":memory:")
     try:
-        with pytest.raises(Exception):
+        with pytest.raises(duckdb.Error):
             _try_create_view(
                 con,
                 "silver_x",
@@ -58,9 +61,7 @@ def test_try_create_view_raises_under_pytest(tmp_path: Path) -> None:
 
 
 @pytest.mark.integration
-def test_production_mode_swallows(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_production_mode_swallows(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """F15-D / PBI-05: legacy swallow behaviour preserved in production mode.
 
     When neither PYTEST_CURRENT_TEST nor GRIDFLOW_ENV=dev/test is set,

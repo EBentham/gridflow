@@ -16,7 +16,6 @@ from gridflow.connectors.openmeteo.endpoints import (
     WIND_LOCATIONS,
 )
 
-
 EXPECTED_DATASET_KEYS = {
     "historical_demand",
     "historical_wind",

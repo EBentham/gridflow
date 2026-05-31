@@ -189,9 +189,7 @@ def test_about_summary_nested_live_shape_reaches_silver(tmp_data_dir: Path) -> N
             }
         }
     }
-    BronzeWriter(tmp_data_dir).write(
-        _raw_response("about_summary", json.dumps(payload).encode())
-    )
+    BronzeWriter(tmp_data_dir).write(_raw_response("about_summary", json.dumps(payload).encode()))
 
     rows = get_transformer("gie_agsi", "about_summary", tmp_data_dir).run(TARGET_DATE)
     df = pl.read_parquet(_silver_path(tmp_data_dir, "about_summary"))
@@ -336,9 +334,7 @@ def test_storage_scope_responses_for_same_day_are_count_preserving(tmp_data_dir:
 
 def test_active_agsi_datasets_have_registered_silver_transformers_or_deferral() -> None:
     catalog = yaml.safe_load(CATALOG.read_text())
-    active_catalog_ids = {
-        row["id"] for row in catalog["endpoints"] if row["status"] == "active"
-    }
+    active_catalog_ids = {row["id"] for row in catalog["endpoints"] if row["status"] == "active"}
     active_config_ids = set(load_settings().get_source_config("gie_agsi").datasets)
     registered = {dataset for _, dataset in list_transformers("gie_agsi")}
 

@@ -44,6 +44,7 @@ FIXTURES = Path(__file__).parent.parent / "fixtures" / "openmeteo"
 # Location lists
 # ---------------------------------------------------------------------------
 
+
 class TestDemandLocations:
     def test_seven_locations_defined(self):
         assert len(DEMAND_LOCATIONS) == 7
@@ -94,6 +95,7 @@ class TestSolarLocations:
 # Variable lists
 # ---------------------------------------------------------------------------
 
+
 class TestVariableLists:
     def test_demand_hourly_vars(self):
         assert "temperature_2m" in DEMAND_HOURLY_VARS
@@ -118,8 +120,7 @@ class TestVariableLists:
 
     def test_wind_archive_includes_gusts_and_cloud_decomp(self):
         assert "wind_gusts_10m" in WIND_ARCHIVE_VARS
-        for cc in ["cloud_cover", "cloud_cover_low",
-                   "cloud_cover_mid", "cloud_cover_high"]:
+        for cc in ["cloud_cover", "cloud_cover_low", "cloud_cover_mid", "cloud_cover_high"]:
             assert cc in WIND_ARCHIVE_VARS
 
     def test_wind_archive_includes_dew_point(self):
@@ -152,6 +153,7 @@ class TestVariableLists:
 # ---------------------------------------------------------------------------
 # DATASET_SPECS contract
 # ---------------------------------------------------------------------------
+
 
 class TestOpenMeteoLocationRetry:
     """_fetch_location must retry a transient error, matching every other
@@ -248,8 +250,12 @@ class TestOpenMeteoLocationRetry:
 class TestDatasetSpecs:
     def test_six_dataset_keys(self):
         assert set(DATASET_SPECS.keys()) == {
-            "historical_demand", "historical_wind", "historical_solar",
-            "forecast_demand", "forecast_wind", "forecast_solar",
+            "historical_demand",
+            "historical_wind",
+            "historical_solar",
+            "forecast_demand",
+            "forecast_wind",
+            "forecast_solar",
         }
 
     def test_demand_specs_use_demand_locations(self):
@@ -272,8 +278,7 @@ class TestDatasetSpecs:
             )
 
     def test_non_solar_specs_have_no_extra_params(self):
-        for ds in ("historical_demand", "forecast_demand",
-                   "historical_wind", "forecast_wind"):
+        for ds in ("historical_demand", "forecast_demand", "historical_wind", "forecast_wind"):
             assert DATASET_SPECS[ds].extra_params == ()
 
     def test_extra_params_iff_gti_in_hourly(self):
@@ -289,6 +294,7 @@ class TestDatasetSpecs:
 # ---------------------------------------------------------------------------
 # Pivot helper
 # ---------------------------------------------------------------------------
+
 
 class TestPivotOpenMeteoJson:
     def _fixture_data(self) -> dict:
@@ -331,6 +337,7 @@ class TestPivotOpenMeteoJson:
 # ---------------------------------------------------------------------------
 # HistoricalDemandWeather
 # ---------------------------------------------------------------------------
+
 
 class TestHistoricalDemandWeather:
     def setup_method(self):
@@ -415,6 +422,7 @@ class TestHistoricalDemandWeather:
 # ForecastDemandWeather
 # ---------------------------------------------------------------------------
 
+
 class TestForecastDemandWeather:
     def setup_method(self):
         self.t = ForecastDemandWeather.__new__(ForecastDemandWeather)
@@ -484,6 +492,7 @@ class TestForecastDemandWeather:
 # Schema tests — DemandWeather / WindWeather / SolarWeather
 # ---------------------------------------------------------------------------
 
+
 class _SchemaTestBase:
     """Shared test cases for the three role schemas."""
 
@@ -504,6 +513,7 @@ class _SchemaTestBase:
 
     def test_naive_timestamp_rejected(self):
         from pydantic import ValidationError
+
         with pytest.raises(ValidationError):
             self.schema_cls(
                 timestamp_utc=datetime(2024, 1, 15, 0, 0),
@@ -530,11 +540,16 @@ class TestDemandWeatherSchema(_SchemaTestBase):
 
     def test_demand_specific_fields(self):
         r = DemandWeather(
-            timestamp_utc=self._TS, location="london",
-            latitude=51.5, longitude=-0.1,
-            temperature_2m=5.2, wind_speed_10m=12.5,
-            hdd=10.3, cdd=0.0,
-            snowfall=0.0, snow_depth=0.0,
+            timestamp_utc=self._TS,
+            location="london",
+            latitude=51.5,
+            longitude=-0.1,
+            temperature_2m=5.2,
+            wind_speed_10m=12.5,
+            hdd=10.3,
+            cdd=0.0,
+            snowfall=0.0,
+            snow_depth=0.0,
             air_density_kg_m3=1.27,
         )
         assert r.snowfall == 0.0
@@ -548,9 +563,12 @@ class TestWindWeatherSchema(_SchemaTestBase):
 
     def test_hub_height_fields_optional(self):
         r = WindWeather(
-            timestamp_utc=self._TS, location="hornsea",
-            latitude=53.88, longitude=1.79,
-            wind_speed_10m=8.5, wind_speed_100m=14.2,
+            timestamp_utc=self._TS,
+            location="hornsea",
+            latitude=53.88,
+            longitude=1.79,
+            wind_speed_10m=8.5,
+            wind_speed_100m=14.2,
         )
         # 80m, 120m, 180m unset — schema permits null.
         assert r.wind_speed_80m is None
@@ -560,10 +578,15 @@ class TestWindWeatherSchema(_SchemaTestBase):
 
     def test_full_hub_height_set(self):
         r = WindWeather(
-            timestamp_utc=self._TS, location="hornsea",
-            latitude=53.88, longitude=1.79,
-            wind_speed_10m=8.5, wind_speed_80m=12.0,
-            wind_speed_100m=14.2, wind_speed_120m=15.3, wind_speed_180m=16.1,
+            timestamp_utc=self._TS,
+            location="hornsea",
+            latitude=53.88,
+            longitude=1.79,
+            wind_speed_10m=8.5,
+            wind_speed_80m=12.0,
+            wind_speed_100m=14.2,
+            wind_speed_120m=15.3,
+            wind_speed_180m=16.1,
         )
         assert r.wind_speed_180m == 16.1
 
@@ -575,8 +598,10 @@ class TestSolarWeatherSchema(_SchemaTestBase):
 
     def test_irradiance_components(self):
         r = SolarWeather(
-            timestamp_utc=self._TS, location="kent",
-            latitude=51.2, longitude=0.7,
+            timestamp_utc=self._TS,
+            location="kent",
+            latitude=51.2,
+            longitude=0.7,
             shortwave_radiation=600.0,
             direct_radiation=450.0,
             direct_normal_irradiance=750.0,

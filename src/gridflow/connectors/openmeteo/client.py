@@ -88,10 +88,7 @@ class OpenMeteoConnector(BaseConnector):
         """Fetch one location's data and return a RawResponse."""
         spec = DATASET_SPECS[dataset]
         is_historical = dataset.startswith("historical")
-        if is_historical:
-            url = f"{ARCHIVE_BASE_URL}/archive"
-        else:
-            url = f"{FORECAST_BASE_URL}/forecast"
+        url = f"{ARCHIVE_BASE_URL}/archive" if is_historical else f"{FORECAST_BASE_URL}/forecast"
 
         request_params: dict[str, Any] = {
             "latitude": location.latitude,
@@ -119,9 +116,7 @@ class OpenMeteoConnector(BaseConnector):
         )
 
     @RETRY_POLICY
-    async def _request(
-        self, url: str, params: dict[str, Any]
-    ) -> httpx.Response:
+    async def _request(self, url: str, params: dict[str, Any]) -> httpx.Response:
         """Rate-limited, retried HTTP GET.
 
         Carries @RETRY_POLICY so a transient 429 / archive-host timeout is

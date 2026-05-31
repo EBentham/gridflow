@@ -89,15 +89,19 @@ class NETBSADTransformer(BaseSilverTransformer):
             logger.error(f"Missing required columns in NETBSAD: {missing}")
             return pl.DataFrame()
 
-        df = raw_df.with_columns([
-            pl.col("settlement_date").cast(pl.Date),
-            pl.col("settlement_period").cast(pl.Int32),
-        ])
+        df = raw_df.with_columns(
+            [
+                pl.col("settlement_date").cast(pl.Date),
+                pl.col("settlement_period").cast(pl.Int32),
+            ]
+        )
 
         for col in [
             # Legacy 4
-            "net_buy_price_adjustment", "net_sell_price_adjustment",
-            "net_buy_volume_adjustment", "net_sell_volume_adjustment",
+            "net_buy_price_adjustment",
+            "net_sell_price_adjustment",
+            "net_buy_volume_adjustment",
+            "net_sell_volume_adjustment",
             # Current 8 — buy side
             "net_buy_price_cost_adjustment_energy",
             "net_buy_price_volume_adjustment_energy",
@@ -126,16 +130,22 @@ class NETBSADTransformer(BaseSilverTransformer):
         df = df.unique(subset=["settlement_date", "settlement_period"], keep="last")
 
         now = datetime.now(UTC)
-        df = df.with_columns([
-            pl.lit("elexon").alias("data_provider"),
-            pl.lit(now).cast(pl.Datetime("us", "UTC")).alias("ingested_at"),
-        ])
+        df = df.with_columns(
+            [
+                pl.lit("elexon").alias("data_provider"),
+                pl.lit(now).cast(pl.Datetime("us", "UTC")).alias("ingested_at"),
+            ]
+        )
 
         output_cols = [
-            "settlement_date", "settlement_period", "timestamp_utc",
+            "settlement_date",
+            "settlement_period",
+            "timestamp_utc",
             # Legacy 4 — present in pre-2026 bronze
-            "net_buy_price_adjustment", "net_sell_price_adjustment",
-            "net_buy_volume_adjustment", "net_sell_volume_adjustment",
+            "net_buy_price_adjustment",
+            "net_sell_price_adjustment",
+            "net_buy_volume_adjustment",
+            "net_sell_volume_adjustment",
             # Current 8 — present in 2026+ bronze
             "net_buy_price_cost_adjustment_energy",
             "net_buy_price_volume_adjustment_energy",
@@ -145,7 +155,8 @@ class NETBSADTransformer(BaseSilverTransformer):
             "net_sell_price_volume_adjustment_energy",
             "net_sell_price_volume_adjustment_system",
             "sell_price_price_adjustment",
-            "data_provider", "ingested_at",
+            "data_provider",
+            "ingested_at",
         ]
         available = [c for c in output_cols if c in df.columns]
         return df.select(available).sort("timestamp_utc")

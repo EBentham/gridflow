@@ -129,10 +129,7 @@ def _write_icu_bronze(data_dir: Path) -> None:
     bronze = _date_dir(data_dir, "entsoe", "installed_capacity_units", TARGET_DATE)
     bronze.mkdir(parents=True, exist_ok=True)
     fixture = (
-        Path(__file__).parent.parent
-        / "fixtures"
-        / "entsoe"
-        / "installed_capacity_units_gb.xml"
+        Path(__file__).parent.parent / "fixtures" / "entsoe" / "installed_capacity_units_gb.xml"
     )
     (bronze / "raw_icu.xml").write_bytes(fixture.read_bytes())
 
@@ -201,9 +198,7 @@ def test_installed_capacity_units_silver_has_bitemporal_columns(
 ) -> None:
     _write_icu_bronze(tmp_data_dir)
 
-    rows = InstalledCapacityUnitsTransformer(tmp_data_dir).run(
-        TARGET_DATE, run_id=RUN_ID
-    )
+    rows = InstalledCapacityUnitsTransformer(tmp_data_dir).run(TARGET_DATE, run_id=RUN_ID)
     assert rows > 0
 
     df = _read_silver(tmp_data_dir, "entsoe", "installed_capacity_units")

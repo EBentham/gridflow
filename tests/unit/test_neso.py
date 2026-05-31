@@ -34,13 +34,15 @@ def _load_fixture_records() -> list[dict]:
     rows = []
     for record in raw_records:
         intensity = record.get("intensity", {}) or {}
-        rows.append({
-            "from": record.get("from"),
-            "to": record.get("to"),
-            "forecast": intensity.get("forecast"),
-            "actual": intensity.get("actual"),
-            "index": intensity.get("index", ""),
-        })
+        rows.append(
+            {
+                "from": record.get("from"),
+                "to": record.get("to"),
+                "forecast": intensity.get("forecast"),
+                "actual": intensity.get("actual"),
+                "index": intensity.get("index", ""),
+            }
+        )
     return rows
 
 
@@ -148,6 +150,7 @@ class TestCarbonIntensitySchema:
 
     def test_naive_timestamp_rejected(self):
         from pydantic import ValidationError
+
         with pytest.raises(ValidationError):
             CarbonIntensity(
                 timestamp_utc=datetime(2024, 1, 15, 0, 0),  # naive

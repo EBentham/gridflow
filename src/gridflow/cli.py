@@ -3,11 +3,11 @@
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import logging
 import re
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from typing import Optional
 
 import typer
 
@@ -18,11 +18,13 @@ logger = logging.getLogger(__name__)
 @app.command()
 def ingest(
     source: str = typer.Argument(help="Data source (elexon, entsoe, entsog)"),
-    dataset: Optional[str] = typer.Argument(default=None, help="Dataset name, or omit for --all"),
-    start: Optional[str] = typer.Option(None, help="Start date (YYYY-MM-DD)"),
-    end: Optional[str] = typer.Option(None, help="End date (YYYY-MM-DD)"),
-    last: Optional[str] = typer.Option(None, help="Relative lookback (e.g. 24h, 7d)"),
-    all_datasets: bool = typer.Option(False, "--all", "-all", help="Ingest all datasets for source"),
+    dataset: str | None = typer.Argument(default=None, help="Dataset name, or omit for --all"),
+    start: str | None = typer.Option(None, help="Start date (YYYY-MM-DD)"),
+    end: str | None = typer.Option(None, help="End date (YYYY-MM-DD)"),
+    last: str | None = typer.Option(None, help="Relative lookback (e.g. 24h, 7d)"),
+    all_datasets: bool = typer.Option(
+        False, "--all", "-all", help="Ingest all datasets for source"
+    ),
 ) -> None:
     """Ingest raw data from an API source into the bronze layer."""
     from gridflow.config.settings import load_settings
@@ -35,9 +37,7 @@ def ingest(
         settings.pipeline.console_log_level,
     )
 
-    start_dt, end_dt = _resolve_dates(
-        start, end, last, settings.pipeline.default_lookback_hours
-    )
+    start_dt, end_dt = _resolve_dates(start, end, last, settings.pipeline.default_lookback_hours)
     datasets = _resolve_datasets(source, dataset, all_datasets, settings)
 
     # Import connector registrations
@@ -91,10 +91,10 @@ def ingest(
 @app.command()
 def transform(
     source: str = typer.Argument(help="Data source"),
-    dataset: Optional[str] = typer.Argument(default=None, help="Dataset name"),
-    start: Optional[str] = typer.Option(None, help="Start date (YYYY-MM-DD)"),
-    end: Optional[str] = typer.Option(None, help="End date (YYYY-MM-DD)"),
-    last: Optional[str] = typer.Option(None, help="Relative lookback (e.g. 24h, 7d)"),
+    dataset: str | None = typer.Argument(default=None, help="Dataset name"),
+    start: str | None = typer.Option(None, help="Start date (YYYY-MM-DD)"),
+    end: str | None = typer.Option(None, help="End date (YYYY-MM-DD)"),
+    last: str | None = typer.Option(None, help="Relative lookback (e.g. 24h, 7d)"),
     all_datasets: bool = typer.Option(False, "--all", help="Transform all datasets for source"),
     reingest: bool = typer.Option(
         False,
@@ -114,17 +114,15 @@ def transform(
         settings.pipeline.console_log_level,
     )
 
-    start_dt, end_dt = _resolve_dates(
-        start, end, last, settings.pipeline.default_lookback_hours
-    )
+    start_dt, end_dt = _resolve_dates(start, end, last, settings.pipeline.default_lookback_hours)
     datasets = _resolve_datasets(source, dataset, all_datasets, settings)
 
     # Import transformer registrations
     _import_transformers()
 
+    from gridflow.observability import PipelineRunTracker
     from gridflow.silver.registry import get_transformer
     from gridflow.storage.duckdb import get_connection, init_catalogue, refresh_views
-    from gridflow.observability import PipelineRunTracker
 
     init_catalogue(settings.pipeline.duckdb_path, settings.pipeline.data_dir)
     con = get_connection(settings.pipeline.duckdb_path)
@@ -166,18 +164,16 @@ def transform(
 
 @app.command()
 def build(
-    gold_dataset: Optional[str] = typer.Argument(
-        default=None, help="Gold dataset name"
-    ),
-    start: Optional[str] = typer.Option(None, help="Start date (YYYY-MM-DD)"),
-    end: Optional[str] = typer.Option(None, help="End date (YYYY-MM-DD)"),
-    last: Optional[str] = typer.Option(None, help="Relative lookback (e.g. 24h, 7d)"),
+    gold_dataset: str | None = typer.Argument(default=None, help="Gold dataset name"),
+    start: str | None = typer.Option(None, help="Start date (YYYY-MM-DD)"),
+    end: str | None = typer.Option(None, help="End date (YYYY-MM-DD)"),
+    last: str | None = typer.Option(None, help="Relative lookback (e.g. 24h, 7d)"),
     all_datasets: bool = typer.Option(False, "--all", "-all", help="Build all gold datasets"),
 ) -> None:
     """Build gold-layer modelling-ready datasets from silver."""
     from gridflow.config.settings import load_settings
-    from gridflow.utils.logging import setup_logging
     from gridflow.gold.system_marginal_price import SystemMarginalPriceBuilder
+    from gridflow.utils.logging import setup_logging
 
     settings = load_settings()
     setup_logging(
@@ -186,9 +182,7 @@ def build(
         settings.pipeline.console_log_level,
     )
 
-    start_dt, end_dt = _resolve_dates(
-        start, end, last, settings.pipeline.default_lookback_hours
-    )
+    start_dt, end_dt = _resolve_dates(start, end, last, settings.pipeline.default_lookback_hours)
 
     # Gold dataset registry
     gold_builders = {
@@ -202,8 +196,8 @@ def build(
     else:
         raise typer.BadParameter("Specify a gold dataset name or use --all")
 
-    from gridflow.storage.duckdb import get_connection, init_catalogue, refresh_views
     from gridflow.observability import PipelineRunTracker
+    from gridflow.storage.duckdb import get_connection, init_catalogue, refresh_views
 
     init_catalogue(settings.pipeline.duckdb_path, settings.pipeline.data_dir)
     con = get_connection(settings.pipeline.duckdb_path)
@@ -232,7 +226,7 @@ def build(
 @app.command()
 def backfill(
     source: str = typer.Argument(help="Data source"),
-    dataset: Optional[str] = typer.Argument(default=None, help="Dataset name"),
+    dataset: str | None = typer.Argument(default=None, help="Dataset name"),
     start: str = typer.Option(..., help="Start date (YYYY-MM-DD)"),
     end: str = typer.Option(..., help="End date (YYYY-MM-DD)"),
     chunk_days: int = typer.Option(1, help="Days per chunk"),
@@ -251,8 +245,8 @@ def backfill(
 
     datasets = _resolve_datasets(source, dataset, all_datasets, settings)
 
-    start_dt = datetime.fromisoformat(start).replace(tzinfo=timezone.utc)
-    end_dt = datetime.fromisoformat(end).replace(tzinfo=timezone.utc)
+    start_dt = datetime.fromisoformat(start).replace(tzinfo=UTC)
+    end_dt = datetime.fromisoformat(end).replace(tzinfo=UTC)
 
     for ds in datasets:
         typer.echo(f"\n--- Backfilling {source}/{ds} ---")
@@ -261,9 +255,7 @@ def backfill(
         while current < end_dt:
             chunk_end = min(current + timedelta(days=chunk_days), end_dt)
             chunk_num += 1
-            typer.echo(
-                f"  Chunk {chunk_num}: {current.date()} to {chunk_end.date()}"
-            )
+            typer.echo(f"  Chunk {chunk_num}: {current.date()} to {chunk_end.date()}")
 
             # Call ingest for this chunk (pass all Optional params explicitly to
             # avoid typer OptionInfo objects leaking in as default values)
@@ -300,9 +292,13 @@ def backfill(
 @app.command()
 def export_csv(
     source: str = typer.Argument(help="Data source"),
-    dataset: Optional[str] = typer.Argument(default=None, help="Dataset name"),
-    output_dir: Optional[str] = typer.Option(None, "--output", "-o", help="Output directory (default: data/exports/)"),
-    all_datasets: bool = typer.Option(False, "--all", "-all", help="Export all datasets for source"),
+    dataset: str | None = typer.Argument(default=None, help="Dataset name"),
+    output_dir: str | None = typer.Option(
+        None, "--output", "-o", help="Output directory (default: data/exports/)"
+    ),
+    all_datasets: bool = typer.Option(
+        False, "--all", "-all", help="Export all datasets for source"
+    ),
 ) -> None:
     """Export silver Parquet data to CSV files."""
     from gridflow.config.settings import load_settings
@@ -343,12 +339,14 @@ def export_csv(
 @app.command()
 def pipeline(
     source: str = typer.Argument(help="Data source"),
-    dataset: Optional[str] = typer.Argument(default=None, help="Dataset name"),
-    start: Optional[str] = typer.Option(None, help="Start date (YYYY-MM-DD)"),
-    end: Optional[str] = typer.Option(None, help="End date (YYYY-MM-DD)"),
-    last: Optional[str] = typer.Option(None, help="Relative lookback (e.g. 24h, 7d)"),
+    dataset: str | None = typer.Argument(default=None, help="Dataset name"),
+    start: str | None = typer.Option(None, help="Start date (YYYY-MM-DD)"),
+    end: str | None = typer.Option(None, help="End date (YYYY-MM-DD)"),
+    last: str | None = typer.Option(None, help="Relative lookback (e.g. 24h, 7d)"),
     all_datasets: bool = typer.Option(False, "--all", "-all", help="Run all datasets for source"),
-    gold_dataset: Optional[str] = typer.Option(None, "--gold", help="Gold dataset to build after silver"),
+    gold_dataset: str | None = typer.Option(
+        None, "--gold", help="Gold dataset to build after silver"
+    ),
 ) -> None:
     """Run the full pipeline: ingest (bronze) -> transform (silver) -> build (gold).
 
@@ -430,21 +428,20 @@ def status() -> None:
 
 @app.command()
 def quality(
-    source: Optional[str] = typer.Option(None, help="Filter by source"),
+    source: str | None = typer.Option(None, help="Filter by source"),
     all_sources: bool = typer.Option(False, "--all", help="Run for all sources"),
 ) -> None:
     """Run quality checks and write report."""
     from gridflow.config.settings import load_settings
-    from gridflow.utils.logging import setup_logging
     from gridflow.quality.checks import (
         check_duplicates,
         check_null_rate,
-        check_range,
         check_row_count,
         check_time_series_gaps,
     )
     from gridflow.quality.reporter import QualityReporter
     from gridflow.storage.parquet import read_parquet_dir
+    from gridflow.utils.logging import setup_logging
 
     settings = load_settings()
     setup_logging(
@@ -507,8 +504,10 @@ def quality(
 
 @app.command()
 def reset(
-    source: Optional[str] = typer.Argument(default=None, help="Limit reset to this source (e.g. elexon)"),
-    dataset: Optional[str] = typer.Argument(default=None, help="Limit reset to this dataset"),
+    source: str | None = typer.Argument(
+        default=None, help="Limit reset to this source (e.g. elexon)"
+    ),
+    dataset: str | None = typer.Argument(default=None, help="Limit reset to this dataset"),
     bronze: bool = typer.Option(False, "--bronze", help="Wipe bronze layer only"),
     silver: bool = typer.Option(False, "--silver", help="Wipe silver layer only"),
     gold: bool = typer.Option(False, "--gold", help="Wipe gold layer only"),
@@ -526,7 +525,6 @@ def reset(
       gridflow reset elexon system_prices --yes     # wipe one dataset\n
       gridflow reset elexon system_prices --silver  # silver layer only\n
     """
-    import shutil
 
     from gridflow.config.settings import load_settings
     from gridflow.storage.duckdb import init_catalogue
@@ -538,7 +536,7 @@ def reset(
     wipe_all_layers = not any([bronze, silver, gold, duckdb])
     wipe_bronze = bronze or wipe_all_layers
     wipe_silver = silver or wipe_all_layers
-    wipe_gold   = gold   or wipe_all_layers
+    wipe_gold = gold or wipe_all_layers
     wipe_duckdb = duckdb or wipe_all_layers
 
     # Build human-readable scope description
@@ -551,10 +549,14 @@ def reset(
         scope_parts.append("ALL sources")
 
     layer_parts = []
-    if wipe_bronze: layer_parts.append("bronze")
-    if wipe_silver: layer_parts.append("silver")
-    if wipe_gold:   layer_parts.append("gold")
-    if wipe_duckdb: layer_parts.append("DuckDB")
+    if wipe_bronze:
+        layer_parts.append("bronze")
+    if wipe_silver:
+        layer_parts.append("silver")
+    if wipe_gold:
+        layer_parts.append("gold")
+    if wipe_duckdb:
+        layer_parts.append("DuckDB")
 
     description = f"{'/'.join(scope_parts)} [{', '.join(layer_parts)}]"
 
@@ -563,7 +565,7 @@ def reset(
         typer.confirm("Are you sure?", abort=True)
 
     deleted_files = 0
-    deleted_dirs  = 0
+    deleted_dirs = 0
 
     def _wipe_dir(root: Path) -> None:
         nonlocal deleted_files, deleted_dirs
@@ -659,12 +661,12 @@ def _parse_window_bound(value: str) -> datetime:
     parsed = datetime.fromisoformat(value)
     if parsed.tzinfo is None:
         if "T" not in value and ":" not in value:
-            return parsed.replace(tzinfo=timezone.utc)
+            return parsed.replace(tzinfo=UTC)
         raise typer.BadParameter(
             f"Naive datetime {value!r} has no timezone; pass an explicit offset "
             f"(e.g. '2026-02-01T00:00:00Z' or '...+01:00') or a bare date."
         )
-    return parsed.astimezone(timezone.utc)
+    return parsed.astimezone(UTC)
 
 
 def _resolve_dates(
@@ -674,7 +676,7 @@ def _resolve_dates(
     default_lookback_hours: int,
 ) -> tuple[datetime, datetime]:
     """Parse date arguments into (start_dt, end_dt) UTC datetimes."""
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     if last:
         from gridflow.utils.time import parse_lookback
 
@@ -727,10 +729,8 @@ def _import_connectors() -> None:
         "gridflow.connectors.entsog",
         "gridflow.connectors.neso",
     ]:
-        try:
+        with contextlib.suppress(ImportError):
             __import__(module)
-        except ImportError:
-            pass
 
 
 def _import_transformers() -> None:
@@ -743,7 +743,5 @@ def _import_transformers() -> None:
         "gridflow.silver.entsog",
         "gridflow.silver.neso",
     ]:
-        try:
+        with contextlib.suppress(ImportError):
             __import__(module)
-        except ImportError:
-            pass

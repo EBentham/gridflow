@@ -117,7 +117,7 @@ def _raw_response(
     request_params: dict[str, Any] | None = None,
     page: int = 1,
     total_pages: int = 1,
-    ) -> RawResponse:
+) -> RawResponse:
     return RawResponse(
         body=body,
         source="elexon",
@@ -171,10 +171,7 @@ def _assert_bronze_metadata(
     # Recompute the integrity hash from the bytes on disk — the only integrity
     # field for the irreproducible bronze layer must match the stored body, not
     # merely be non-empty.
-    assert (
-        metadata["body_sha256"]
-        == hashlib.sha256(bronze_path.read_bytes()).hexdigest()
-    )
+    assert metadata["body_sha256"] == hashlib.sha256(bronze_path.read_bytes()).hexdigest()
     assert metadata["written_at"]
     assert metadata["body_size_bytes"] == bronze_path.stat().st_size
     assert metadata["page"] == page
@@ -184,9 +181,7 @@ def _assert_bronze_metadata(
 def _mock_all_elexon_gets(
     handler: Callable[[httpx.Request], httpx.Response],
 ) -> respx.Route:
-    return respx.get(re.compile(rf"^{re.escape(BASE_URL)}/.*")).mock(
-        side_effect=handler
-    )
+    return respx.get(re.compile(rf"^{re.escape(BASE_URL)}/.*")).mock(side_effect=handler)
 
 
 def _fetch_end_for_style(style: ParamStyle) -> datetime:
@@ -254,9 +249,7 @@ async def test_active_datasets_fetch_with_expected_mocked_request_shape(
         assert endpoint.to_param is not None
         assert endpoint.from_param in first_params
         assert endpoint.to_param in first_params
-        assert first_response.request_params[endpoint.from_param].startswith(
-            "2024-01-15T00:00:00"
-        )
+        assert first_response.request_params[endpoint.from_param].startswith("2024-01-15T00:00:00")
         if dataset == "uou2t14d":
             assert len(responses) == 6
             assert first_response.request_params[endpoint.to_param].startswith(
@@ -435,9 +428,7 @@ async def test_pn_period_surfaces_post_retry_5xx_transient(
         page = int(params.get("page", "1"))
         if period == 1 and page == 1:
             # Populated page 1 advertising a second page.
-            return httpx.Response(
-                200, content=_synthetic_body("pn", page=1, total_pages=2)
-            )
+            return httpx.Response(200, content=_synthetic_body("pn", page=1, total_pages=2))
         if period == 1 and page == 2:
             # Persistent upstream transient on page 2 — survives all 5 retries.
             return httpx.Response(500, content=b'{"error": "upstream"}')
@@ -463,9 +454,7 @@ async def test_pn_absent_period_200_empty_stops_clean() -> None:
         if period <= populated:
             return httpx.Response(
                 200,
-                content=_synthetic_body(
-                    "pn", data=[{"dataset": "pn", "settlementPeriod": period}]
-                ),
+                content=_synthetic_body("pn", data=[{"dataset": "pn", "settlementPeriod": period}]),
             )
         return httpx.Response(200, content=_synthetic_body("pn", data=[]))
 
@@ -497,9 +486,7 @@ async def test_pn_out_of_range_period_4xx_stops_clean(
         if period <= populated:
             return httpx.Response(
                 200,
-                content=_synthetic_body(
-                    "pn", data=[{"dataset": "pn", "settlementPeriod": period}]
-                ),
+                content=_synthetic_body("pn", data=[{"dataset": "pn", "settlementPeriod": period}]),
             )
         return httpx.Response(404, content=b'{"error": "not found"}')
 

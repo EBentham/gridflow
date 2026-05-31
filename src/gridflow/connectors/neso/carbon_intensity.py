@@ -39,9 +39,7 @@ class CarbonIntensityConnector(BaseConnector):
     ) -> list[RawResponse]:
         """Fetch one NESO Carbon Intensity API dataset."""
         if dataset not in ENDPOINTS:
-            raise ValueError(
-                f"Unknown NESO dataset: {dataset!r}. Available: {list(ENDPOINTS)}"
-            )
+            raise ValueError(f"Unknown NESO dataset: {dataset!r}. Available: {list(ENDPOINTS)}")
 
         endpoint = ENDPOINTS[dataset]
         requests = _request_specs(endpoint, start, end, params)
@@ -66,9 +64,7 @@ class CarbonIntensityConnector(BaseConnector):
                         request_params=path_values,
                         api_version="v1",
                         http_status=raw.status_code,
-                        data_date=(
-                            None if endpoint.reference else window_start.date()
-                        ),
+                        data_date=(None if endpoint.reference else window_start.date()),
                     )
                 )
             except Exception as exc:  # noqa: BLE001
@@ -90,18 +86,12 @@ class CarbonIntensityConnector(BaseConnector):
         return responses
 
     @RETRY_POLICY
-    async def _request(
-        self, path: str, params: dict[str, Any]
-    ) -> httpx.Response:
+    async def _request(self, path: str, params: dict[str, Any]) -> httpx.Response:
         """Rate-limited, retried HTTP GET request."""
         if self._client is None:
-            raise RuntimeError(
-                "Connector not initialized. Use 'async with' context manager."
-            )
+            raise RuntimeError("Connector not initialized. Use 'async with' context manager.")
         if self._semaphore is None:
-            raise RuntimeError(
-                "Semaphore not initialized. Use 'async with' context manager."
-            )
+            raise RuntimeError("Semaphore not initialized. Use 'async with' context manager.")
 
         async with self._semaphore:
             resp = await self._client.get(path, params=params)
@@ -127,18 +117,14 @@ def _request_specs(
             window_end = min(current + timedelta(days=1), effective_end)
             if endpoint.settlement_period_iteration:
                 for period in range(1, _settlement_period_count(current.date()) + 1):
-                    windows.append(
-                        (current, window_end, {**base_overrides, "period": period})
-                    )
+                    windows.append((current, window_end, {**base_overrides, "period": period}))
             else:
                 windows.append((current, window_end, base_overrides))
             current = window_end
         return windows
 
     effective_end = (
-        start + timedelta(days=1)
-        if end <= start and "{to_dt}" in endpoint.path_template
-        else end
+        start + timedelta(days=1) if end <= start and "{to_dt}" in endpoint.path_template else end
     )
 
     windows: list[tuple[datetime, datetime, dict[str, Any]]] = []
@@ -162,9 +148,7 @@ def _settlement_period_count(settlement_date: date) -> int:
         tzinfo=_UK_TZ,
     )
     local_end = local_start + timedelta(days=1)
-    seconds = (
-        local_end.astimezone(UTC) - local_start.astimezone(UTC)
-    ).total_seconds()
+    seconds = (local_end.astimezone(UTC) - local_start.astimezone(UTC)).total_seconds()
     return int(seconds // (30 * 60))
 
 

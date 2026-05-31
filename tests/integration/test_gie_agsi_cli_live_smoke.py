@@ -87,15 +87,17 @@ def test_live_pipeline_gie_agsi_storage_reports_creates_bronze_and_silver(
     _require_gie_key()
     paths = _isolated_env(tmp_path, monkeypatch)
 
-    result = _invoke_cli([
-        "pipeline",
-        "gie_agsi",
-        CURATED_DATASET,
-        "--start",
-        START,
-        "--end",
-        END,
-    ])
+    result = _invoke_cli(
+        [
+            "pipeline",
+            "gie_agsi",
+            CURATED_DATASET,
+            "--start",
+            START,
+            "--end",
+            END,
+        ]
+    )
 
     assert "Pipeline: gie_agsi" in result.output
     assert "Bronze (ingest)" in result.output
@@ -112,26 +114,30 @@ def test_live_ingest_then_transform_gie_agsi_storage_reports_creates_outputs(
     _require_gie_key()
     paths = _isolated_env(tmp_path, monkeypatch)
 
-    ingest_result = _invoke_cli([
-        "ingest",
-        "gie_agsi",
-        CURATED_DATASET,
-        "--start",
-        START,
-        "--end",
-        END,
-    ])
+    ingest_result = _invoke_cli(
+        [
+            "ingest",
+            "gie_agsi",
+            CURATED_DATASET,
+            "--start",
+            START,
+            "--end",
+            END,
+        ]
+    )
     assert f"gie_agsi/{CURATED_DATASET}" in ingest_result.output
 
-    transform_result = _invoke_cli([
-        "transform",
-        "gie_agsi",
-        CURATED_DATASET,
-        "--start",
-        START,
-        "--end",
-        END,
-    ])
+    transform_result = _invoke_cli(
+        [
+            "transform",
+            "gie_agsi",
+            CURATED_DATASET,
+            "--start",
+            START,
+            "--end",
+            END,
+        ]
+    )
     assert f"gie_agsi/{CURATED_DATASET}" in transform_result.output
     _assert_outputs(paths, CURATED_DATASET, tmp_path)
 
@@ -144,17 +150,19 @@ def test_live_backfill_gie_agsi_storage_reports_creates_outputs(
     _require_gie_key()
     paths = _isolated_env(tmp_path, monkeypatch)
 
-    result = _invoke_cli([
-        "backfill",
-        "gie_agsi",
-        CURATED_DATASET,
-        "--start",
-        START,
-        "--end",
-        BACKFILL_END,
-        "--chunk-days",
-        "1",
-    ])
+    result = _invoke_cli(
+        [
+            "backfill",
+            "gie_agsi",
+            CURATED_DATASET,
+            "--start",
+            START,
+            "--end",
+            BACKFILL_END,
+            "--chunk-days",
+            "1",
+        ]
+    )
 
     assert f"Backfilling gie_agsi/{CURATED_DATASET}" in result.output
     assert "Backfill complete" in result.output
@@ -162,6 +170,11 @@ def test_live_backfill_gie_agsi_storage_reports_creates_outputs(
 
 
 def test_l4_live_command_documentation_covers_closeout_requirements() -> None:
+    if not PHASE_DOC.exists():
+        pytest.skip(
+            "L4 planning doc absent — dev-only .planning/ artifact, not in the repo "
+            "(so this doc-coverage check runs locally but is skipped in CI)."
+        )
     content = PHASE_DOC.read_text(encoding="utf-8")
     required_terms = {
         "pipeline",

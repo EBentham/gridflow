@@ -13,9 +13,7 @@ from xml.etree import ElementTree
 
 import httpx
 
-from gridflow.connectors.base import _make_ssl_context
-
-from gridflow.connectors.base import BaseConnector, RawResponse
+from gridflow.connectors.base import BaseConnector, RawResponse, _make_ssl_context
 from gridflow.connectors.entsoe.endpoints import (
     BIDDING_ZONES,
     DEFAULT_CONTROL_AREAS,
@@ -114,8 +112,7 @@ class EntsoeConnector(BaseConnector):
         """
         if dataset not in DOC_TYPES:
             raise ValueError(
-                f"Unknown ENTSO-E dataset: {dataset!r}. "
-                f"Available: {list(DOC_TYPES.keys())}"
+                f"Unknown ENTSO-E dataset: {dataset!r}. Available: {list(DOC_TYPES.keys())}"
             )
 
         doc_type = DOC_TYPES[dataset]
@@ -213,10 +210,12 @@ class EntsoeConnector(BaseConnector):
             data_date = datetime.strptime(period_start, ENTSOE_DT_FORMAT).date()
             query_params[doc_type.date_param] = data_date.isoformat()
         else:
-            query_params.update({
-                "periodStart": period_start,
-                "periodEnd": period_end,
-            })
+            query_params.update(
+                {
+                    "periodStart": period_start,
+                    "periodEnd": period_end,
+                }
+            )
         query_params.update(
             _domain_params(
                 doc_type.domain_style,
@@ -237,9 +236,7 @@ class EntsoeConnector(BaseConnector):
 
         if not supports_pagination:
             raw = await self._request(_ENTSOE_API_PATH, query_params)
-            return self._raw_response_to_records(
-                raw, dataset, query_params, data_date
-            )
+            return self._raw_response_to_records(raw, dataset, query_params, data_date)
 
         # G9 ENTSOE-01: page until a response carries < page-size TimeSeries.
         all_responses: list[RawResponse] = []
@@ -250,14 +247,10 @@ class EntsoeConnector(BaseConnector):
         while True:
             query_params["offset"] = str(offset)
             raw = await self._request(_ENTSOE_API_PATH, query_params)
-            page_responses = self._raw_response_to_records(
-                raw, dataset, query_params, data_date
-            )
+            page_responses = self._raw_response_to_records(raw, dataset, query_params, data_date)
             all_responses.extend(page_responses)
 
-            ts_count = sum(
-                _count_timeseries(resp.body) for resp in page_responses
-            )
+            ts_count = sum(_count_timeseries(resp.body) for resp in page_responses)
             if ts_count < _ENTSOE_PAGE_SIZE:
                 break
             offset += _ENTSOE_PAGE_SIZE
@@ -309,18 +302,12 @@ class EntsoeConnector(BaseConnector):
         ]
 
     @RETRY_POLICY
-    async def _request(
-        self, path: str, params: dict[str, Any]
-    ) -> httpx.Response:
+    async def _request(self, path: str, params: dict[str, Any]) -> httpx.Response:
         """Make a rate-limited, retried HTTP GET request."""
         if self._client is None:
-            raise RuntimeError(
-                "Connector not initialized. Use 'async with' context manager."
-            )
+            raise RuntimeError("Connector not initialized. Use 'async with' context manager.")
         if self._semaphore is None:
-            raise RuntimeError(
-                "Semaphore not initialized. Use 'async with' context manager."
-            )
+            raise RuntimeError("Semaphore not initialized. Use 'async with' context manager.")
 
         async with self._semaphore:
             await self._throttle_request()
@@ -449,9 +436,7 @@ def _domain_params(
             return {domain_params[0]: in_domain}
         if len(domain_params) == 2:
             if out_domain is None:
-                raise ValueError(
-                    f"{domain_params!r} domain params require out_domain"
-                )
+                raise ValueError(f"{domain_params!r} domain params require out_domain")
             return {domain_params[0]: in_domain, domain_params[1]: out_domain}
         raise ValueError(f"Unsupported ENTSO-E domain params: {domain_params!r}")
     if domain_style == "zone":

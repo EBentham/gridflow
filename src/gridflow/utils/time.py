@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import date, datetime, timedelta, timezone
+from datetime import UTC, date, datetime, timedelta
 from zoneinfo import ZoneInfo
 
 UK_TZ = ZoneInfo("Europe/London")
@@ -22,7 +22,7 @@ def _settlement_day_start_utc(settlement_date: date) -> datetime:
         settlement_date.day,
         tzinfo=UK_TZ,
     )
-    return local_midnight.astimezone(timezone.utc)
+    return local_midnight.astimezone(UTC)
 
 
 def settlement_period_to_utc(settlement_date: date, period: int) -> datetime:

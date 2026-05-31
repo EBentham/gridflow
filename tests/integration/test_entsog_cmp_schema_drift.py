@@ -103,7 +103,9 @@ def test_cmp_schema_is_dynamic_but_tolerant_readers_unify(
     archived = _archived_record()
     # Same window stored under each day; the archived record appears in both, but its
     # capacityFrom only matches _ENRICHED_DAY.
-    _write_cmp_bronze(bronze_root, _ENRICHED_DAY, response_key, [_plain_record(_ENRICHED_DAY), archived])
+    _write_cmp_bronze(
+        bronze_root, _ENRICHED_DAY, response_key, [_plain_record(_ENRICHED_DAY), archived]
+    )
     _write_cmp_bronze(bronze_root, _PLAIN_DAY, response_key, [_plain_record(_PLAIN_DAY), archived])
 
     transformer = get_transformer("entsog", dataset, tmp_data_dir)
@@ -129,7 +131,7 @@ def test_cmp_schema_is_dynamic_but_tolerant_readers_unify(
     enriched_cols, plain_cols = set(enriched.columns), set(plain.columns)
     assert plain_cols < enriched_cols, "enriched partition must be a strict superset"
     drift = enriched_cols - plain_cols
-    assert _TYPED_ENVELOPE <= drift
+    assert drift >= _TYPED_ENVELOPE
     assert _TYPELESS_ENVELOPE in drift
     # The typeless field is all-null and carries no concrete type, exactly as on disk.
     assert enriched.schema[_TYPELESS_ENVELOPE] == pl.Null
@@ -143,18 +145,17 @@ def test_cmp_schema_is_dynamic_but_tolerant_readers_unify(
     con = duckdb.connect()
     try:
         unified = con.execute(
-            "SELECT * FROM read_parquet(?, hive_partitioning=true, union_by_name=true) "
-            "ORDER BY id",
+            "SELECT * FROM read_parquet(?, hive_partitioning=true, union_by_name=true) ORDER BY id",
             [glob],
         ).pl()
     finally:
         con.close()
     assert unified.height == 3  # 2 enriched-day rows + 1 plain-day row
-    assert _TYPED_ENVELOPE <= set(unified.columns)
+    assert set(unified.columns) >= _TYPED_ENVELOPE
     # Only the single archived row carries point_type; the other two are null-filled.
     assert unified["point_type"].null_count() == 2
 
     # 2b. gridflow's Polars read path (missing_columns="insert") unifies it too.
     via_polars = pl.read_parquet(glob, hive_partitioning=True, missing_columns="insert")
     assert via_polars.height == 3
-    assert _TYPED_ENVELOPE <= set(via_polars.columns)
+    assert set(via_polars.columns) >= _TYPED_ENVELOPE

@@ -83,8 +83,10 @@ class SystemPriceTransformer(BaseSilverTransformer):
         # are both optional — depend on which Elexon endpoint produced
         # the bronze).
         required = [
-            "settlement_date", "settlement_period",
-            "system_sell_price", "system_buy_price",
+            "settlement_date",
+            "settlement_period",
+            "system_sell_price",
+            "system_buy_price",
             "net_imbalance_volume",
         ]
         missing = [c for c in required if c not in raw_df.columns]
@@ -126,16 +128,25 @@ class SystemPriceTransformer(BaseSilverTransformer):
 
         # Add metadata columns
         now = datetime.now(UTC)
-        df = df.with_columns([
-            pl.lit("elexon").alias("data_provider"),
-            pl.lit(now).cast(pl.Datetime("us", "UTC")).alias("ingested_at"),
-        ])
+        df = df.with_columns(
+            [
+                pl.lit("elexon").alias("data_provider"),
+                pl.lit(now).cast(pl.Datetime("us", "UTC")).alias("ingested_at"),
+            ]
+        )
 
         # Select final columns in order
         output_cols = [
-            "settlement_date", "settlement_period", "timestamp_utc",
-            "system_sell_price", "system_buy_price", "net_imbalance_volume",
-            "run_type", "price_derivation_code", "data_provider", "ingested_at",
+            "settlement_date",
+            "settlement_period",
+            "timestamp_utc",
+            "system_sell_price",
+            "system_buy_price",
+            "net_imbalance_volume",
+            "run_type",
+            "price_derivation_code",
+            "data_provider",
+            "ingested_at",
         ]
         available_cols = [c for c in output_cols if c in df.columns]
 
@@ -145,9 +156,7 @@ class SystemPriceTransformer(BaseSilverTransformer):
         """Keep only the latest run type per settlement period."""
         return (
             df.with_columns(
-                pl.col("run_type")
-                .replace_strict(self.RUN_PRECEDENCE, default=0)
-                .alias("_run_rank")
+                pl.col("run_type").replace_strict(self.RUN_PRECEDENCE, default=0).alias("_run_rank")
             )
             .sort("_run_rank", descending=True)
             .group_by(["settlement_date", "settlement_period"])

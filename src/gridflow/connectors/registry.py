@@ -4,10 +4,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from gridflow.connectors.base import BaseConnector
-
 if TYPE_CHECKING:
     from gridflow.config.settings import SourceConfig
+    from gridflow.connectors.base import BaseConnector
 
 # Registry of source name -> connector class
 _REGISTRY: dict[str, type[BaseConnector]] = {}

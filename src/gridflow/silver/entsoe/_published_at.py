@@ -43,9 +43,7 @@ def with_published_at(
         ``df`` with a ``published_at`` column added (or overwritten).
     """
     if source_col not in df.columns:
-        return df.with_columns(
-            pl.lit(None).cast(_PUBLISHED_AT_DTYPE).alias("published_at")
-        )
+        return df.with_columns(pl.lit(None).cast(_PUBLISHED_AT_DTYPE).alias("published_at"))
 
     # ENTSO-E createdDateTime is ISO-8601 with a trailing 'Z'
     # (e.g. "2024-01-14T12:00:00Z"). Empty strings -> typed null via strict=False.

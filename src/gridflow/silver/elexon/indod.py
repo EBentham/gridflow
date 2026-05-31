@@ -67,10 +67,12 @@ class INDODTransformer(BaseSilverTransformer):
             logger.error(f"Missing required columns in INDOD: {missing}")
             return pl.DataFrame()
 
-        df = raw_df.with_columns([
-            pl.col("settlement_date").cast(pl.Date),
-            pl.col("initial_demand_outturn_mw").cast(pl.Float64),
-        ])
+        df = raw_df.with_columns(
+            [
+                pl.col("settlement_date").cast(pl.Date),
+                pl.col("initial_demand_outturn_mw").cast(pl.Float64),
+            ]
+        )
 
         # Daily dataset — timestamp_utc is the settlement-day START (SP1, i.e.
         # 00:00 UK local), so the daily roll-up aligns with its own half-hourly
@@ -87,14 +89,19 @@ class INDODTransformer(BaseSilverTransformer):
         df = df.unique(subset=["settlement_date"], keep="last")
 
         now = datetime.now(UTC)
-        df = df.with_columns([
-            pl.lit("elexon").alias("data_provider"),
-            pl.lit(now).cast(pl.Datetime("us", "UTC")).alias("ingested_at"),
-        ])
+        df = df.with_columns(
+            [
+                pl.lit("elexon").alias("data_provider"),
+                pl.lit(now).cast(pl.Datetime("us", "UTC")).alias("ingested_at"),
+            ]
+        )
 
         output_cols = [
-            "settlement_date", "timestamp_utc",
-            "initial_demand_outturn_mw", "data_provider", "ingested_at",
+            "settlement_date",
+            "timestamp_utc",
+            "initial_demand_outturn_mw",
+            "data_provider",
+            "ingested_at",
         ]
         available = [c for c in output_cols if c in df.columns]
         return df.select(available).sort("timestamp_utc")

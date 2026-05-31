@@ -51,11 +51,11 @@ def get_pagination_info(response_body: bytes) -> tuple[int, int]:
 
 # Settlement run type precedence (higher = more final)
 RUN_PRECEDENCE: dict[str, int] = {
-    "II": 1,   # Initial Indicative
-    "SF": 2,   # System Frequency
-    "R1": 3,   # Reconciliation Run 1
-    "R2": 4,   # Reconciliation Run 2
-    "R3": 5,   # Reconciliation Run 3
-    "RF": 6,   # Final Reconciliation
-    "DF": 7,   # Dispute Final
+    "II": 1,  # Initial Indicative
+    "SF": 2,  # System Frequency
+    "R1": 3,  # Reconciliation Run 1
+    "R2": 4,  # Reconciliation Run 2
+    "R3": 5,  # Reconciliation Run 3
+    "RF": 6,  # Final Reconciliation
+    "DF": 7,  # Dispute Final
 }

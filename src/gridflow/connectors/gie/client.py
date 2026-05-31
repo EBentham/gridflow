@@ -197,10 +197,12 @@ class GieConnector(BaseConnector):
                 )
             query_params["turl"] = turl
         if dataset == "unavailability":
-            query_params.update({
-                "start": start.date().isoformat(),
-                "end": end.date().isoformat(),
-            })
+            query_params.update(
+                {
+                    "start": start.date().isoformat(),
+                    "end": end.date().isoformat(),
+                }
+            )
         query_params.update(params)
 
         responses = await self._fetch_paginated(
@@ -363,18 +365,12 @@ class GieConnector(BaseConnector):
         return responses
 
     @RETRY_POLICY
-    async def _request(
-        self, path: str, params: dict[str, Any]
-    ) -> httpx.Response:
+    async def _request(self, path: str, params: dict[str, Any]) -> httpx.Response:
         """Rate-limited, retried HTTP GET request."""
         if self._client is None:
-            raise RuntimeError(
-                "Connector not initialized. Use 'async with' context manager."
-            )
+            raise RuntimeError("Connector not initialized. Use 'async with' context manager.")
         if self._semaphore is None:
-            raise RuntimeError(
-                "Semaphore not initialized. Use 'async with' context manager."
-            )
+            raise RuntimeError("Semaphore not initialized. Use 'async with' context manager.")
 
         async with self._semaphore:
             resp = await self._client.get(path, params=params)
@@ -449,10 +445,14 @@ def _news_item_turls(
     for record in records:
         if not isinstance(record, dict):
             continue
-        if start is not None and end is not None and not _news_record_in_window(
-            record,
-            start,
-            end,
+        if (
+            start is not None
+            and end is not None
+            and not _news_record_in_window(
+                record,
+                start,
+                end,
+            )
         ):
             continue
         value = record.get("turl") or record.get("url") or record.get("id")

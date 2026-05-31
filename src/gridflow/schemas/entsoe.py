@@ -150,10 +150,10 @@ class EntsoeOutagesGeneration(BaseSchema):
     """
 
     timestamp_utc: datetime
-    area_code: str            # control area / bidding zone EIC mRID
-    unit_mrid: str            # RegisteredResource mRID — unit identity
-    unit_name: str = ""       # human-readable unit name; may be absent
-    outage_type: str          # "planned" (A53) | "unplanned" (A54)
+    area_code: str  # control area / bidding zone EIC mRID
+    unit_mrid: str  # RegisteredResource mRID — unit identity
+    unit_name: str = ""  # human-readable unit name; may be absent
+    outage_type: str  # "planned" (A53) | "unplanned" (A54)
     unavailable_mw: float
     resolution: str = ""
     data_provider: str = Field(default="entsoe")
@@ -410,7 +410,7 @@ class EntsoeActivatedBalancingQty(BaseSchema):
     timestamp_utc: datetime
     area_code: str
     reserve_type: str  # "fcr" | "afrr" | "mfrr" | "rr"
-    direction: str     # "up" | "down"
+    direction: str  # "up" | "down"
     quantity_mwh: float
     resolution: str = ""
     data_provider: str = Field(default="entsoe")
@@ -435,7 +435,7 @@ class EntsoeActivatedBalancingPrices(BaseSchema):
     timestamp_utc: datetime
     area_code: str
     reserve_type: str  # "fcr" | "afrr" | "mfrr" | "rr"
-    direction: str     # "up" | "down"
+    direction: str  # "up" | "down"
     price_eur_mwh: float
     resolution: str = ""
     data_provider: str = Field(default="entsoe")

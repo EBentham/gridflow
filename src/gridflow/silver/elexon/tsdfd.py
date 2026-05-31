@@ -66,16 +66,16 @@ class TSDFDTransformer(BaseSilverTransformer):
             logger.error(f"Missing required columns in TSDFD: {missing}")
             return pl.DataFrame()
 
-        df = raw_df.with_columns([
-            pl.col("forecast_date").cast(pl.Date),
-            pl.col("forecast_demand_mw").cast(pl.Float64),
-        ])
+        df = raw_df.with_columns(
+            [
+                pl.col("forecast_date").cast(pl.Date),
+                pl.col("forecast_demand_mw").cast(pl.Float64),
+            ]
+        )
 
         # Use forecast_date midnight UTC as the timestamp
         df = df.with_columns(
-            pl.col("forecast_date")
-            .cast(pl.Datetime("us", "UTC"))
-            .alias("timestamp_utc")
+            pl.col("forecast_date").cast(pl.Datetime("us", "UTC")).alias("timestamp_utc")
         )
 
         if "published_at" in df.columns:
@@ -91,21 +91,25 @@ class TSDFDTransformer(BaseSilverTransformer):
             # silver schema is deterministic and partition globs don't drift across
             # history (a missing column breaks SELECT * reads spanning files that do
             # carry it).
-            df = df.with_columns(
-                pl.lit(None).cast(pl.Datetime("us", "UTC")).alias("published_at")
-            )
+            df = df.with_columns(pl.lit(None).cast(pl.Datetime("us", "UTC")).alias("published_at"))
 
         df = df.unique(subset=["forecast_date"], keep="last")
 
         now = datetime.now(UTC)
-        df = df.with_columns([
-            pl.lit("elexon").alias("data_provider"),
-            pl.lit(now).cast(pl.Datetime("us", "UTC")).alias("ingested_at"),
-        ])
+        df = df.with_columns(
+            [
+                pl.lit("elexon").alias("data_provider"),
+                pl.lit(now).cast(pl.Datetime("us", "UTC")).alias("ingested_at"),
+            ]
+        )
 
         output_cols = [
-            "forecast_date", "timestamp_utc",
-            "forecast_demand_mw", "published_at", "data_provider", "ingested_at",
+            "forecast_date",
+            "timestamp_utc",
+            "forecast_demand_mw",
+            "published_at",
+            "data_provider",
+            "ingested_at",
         ]
         available = [c for c in output_cols if c in df.columns]
         return df.select(available).sort("forecast_date")

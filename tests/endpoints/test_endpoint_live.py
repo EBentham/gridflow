@@ -157,11 +157,14 @@ class TestElexonLiveFromTo:
 
     ELEXON_BASE = "https://data.elexon.co.uk/bmrs/api/v1"
 
-    @pytest.mark.parametrize("dataset,path", [
-        ("disbsad", "/datasets/DISBSAD"),
-        ("mid", "/datasets/MID"),
-        ("netbsad", "/datasets/NETBSAD"),
-    ])
+    @pytest.mark.parametrize(
+        "dataset,path",
+        [
+            ("disbsad", "/datasets/DISBSAD"),
+            ("mid", "/datasets/MID"),
+            ("netbsad", "/datasets/NETBSAD"),
+        ],
+    )
     def test_from_to_query(self, http_client: httpx.Client, dataset: str, path: str):
         """These endpoints accept ?from=&to= date params."""
         url = f"{self.ELEXON_BASE}{path}"
@@ -184,11 +187,14 @@ class TestElexonLiveFromTo:
             param_style="from_to",
         )
 
-    @pytest.mark.parametrize("dataset,path", [
-        ("disbsad", "/datasets/DISBSAD"),
-        ("mid", "/datasets/MID"),
-        ("netbsad", "/datasets/NETBSAD"),
-    ])
+    @pytest.mark.parametrize(
+        "dataset,path",
+        [
+            ("disbsad", "/datasets/DISBSAD"),
+            ("mid", "/datasets/MID"),
+            ("netbsad", "/datasets/NETBSAD"),
+        ],
+    )
     def test_settlement_date_query_fails(self, http_client: httpx.Client, dataset: str, path: str):
         """Prove that ?settlementDate= returns 404 (the current connector bug)."""
         url = f"{self.ELEXON_BASE}{path}"
@@ -339,18 +345,21 @@ class TestElexonLivePublishDatetime:
 
     ELEXON_BASE = "https://data.elexon.co.uk/bmrs/api/v1"
 
-    @pytest.mark.parametrize("dataset,path", [
-        ("freq", "/datasets/FREQ"),
-        ("fuelhh", "/datasets/FUELHH"),
-        ("fuelinst", "/datasets/FUELINST"),
-        ("imbalngc", "/datasets/IMBALNGC"),
-        ("ndf", "/datasets/NDF"),
-        ("ndfd", "/datasets/NDFD"),
-        ("melngc", "/datasets/MELNGC"),
-        ("fou2t14d", "/datasets/FOU2T14D"),
-        ("windfor", "/datasets/WINDFOR"),
-        ("temp", "/datasets/TEMP"),
-    ])
+    @pytest.mark.parametrize(
+        "dataset,path",
+        [
+            ("freq", "/datasets/FREQ"),
+            ("fuelhh", "/datasets/FUELHH"),
+            ("fuelinst", "/datasets/FUELINST"),
+            ("imbalngc", "/datasets/IMBALNGC"),
+            ("ndf", "/datasets/NDF"),
+            ("ndfd", "/datasets/NDFD"),
+            ("melngc", "/datasets/MELNGC"),
+            ("fou2t14d", "/datasets/FOU2T14D"),
+            ("windfor", "/datasets/WINDFOR"),
+            ("temp", "/datasets/TEMP"),
+        ],
+    )
     def test_publish_datetime_endpoint(self, http_client: httpx.Client, dataset: str, path: str):
         """Ping a PUBLISH_DATETIME endpoint with a 24h range."""
         url = f"{self.ELEXON_BASE}{path}"
@@ -375,11 +384,14 @@ class TestElexonLivePublishDatetime:
         url = f"{self.ELEXON_BASE}/datasets/UOU2T14D"
 
         # 24h range fails
-        resp_24h = http_client.get(url, params={
-            "publishDateTimeFrom": "2026-02-01T00:00:00Z",
-            "publishDateTimeTo": "2026-02-02T00:00:00Z",
-            "page": 1,
-        })
+        resp_24h = http_client.get(
+            url,
+            params={
+                "publishDateTimeFrom": "2026-02-01T00:00:00Z",
+                "publishDateTimeTo": "2026-02-02T00:00:00Z",
+                "page": 1,
+            },
+        )
         _assert_elexon_status(
             resp_24h,
             dataset="uou2t14d",
@@ -389,11 +401,14 @@ class TestElexonLivePublishDatetime:
         )
 
         # 4h range works
-        resp_4h = http_client.get(url, params={
-            "publishDateTimeFrom": "2026-02-01T00:00:00Z",
-            "publishDateTimeTo": "2026-02-01T04:00:00Z",
-            "page": 1,
-        })
+        resp_4h = http_client.get(
+            url,
+            params={
+                "publishDateTimeFrom": "2026-02-01T00:00:00Z",
+                "publishDateTimeTo": "2026-02-01T04:00:00Z",
+                "page": 1,
+            },
+        )
         _assert_elexon_status(
             resp_4h,
             dataset="uou2t14d",
@@ -435,15 +450,18 @@ class TestEntsoeLive:
     GB_EIC = "10YGB----------A"
 
     @pytest.mark.skipif(not _has_entsoe_key(), reason="ENTSOE_API_KEY not set")
-    @pytest.mark.parametrize("dataset,doc_type,process_type", [
-        ("day_ahead_prices", "A44", None),
-        ("actual_load", "A65", "A16"),
-        ("load_forecast", "A65", "A01"),
-        ("actual_generation", "A75", "A16"),
-        ("wind_solar_forecast", "A69", "A01"),
-        ("outages_generation", "A80", None),
-        ("installed_capacity", "A68", "A33"),
-    ])
+    @pytest.mark.parametrize(
+        "dataset,doc_type,process_type",
+        [
+            ("day_ahead_prices", "A44", None),
+            ("actual_load", "A65", "A16"),
+            ("load_forecast", "A65", "A01"),
+            ("actual_generation", "A75", "A16"),
+            ("wind_solar_forecast", "A69", "A01"),
+            ("outages_generation", "A80", None),
+            ("installed_capacity", "A68", "A33"),
+        ],
+    )
     def test_entsoe_per_zone_endpoint(
         self,
         http_client: httpx.Client,
@@ -643,11 +661,14 @@ class TestOpenMeteoLive:
             f"URL: {resp.url}\nBody: {resp.text[:500]}"
         )
 
-    @pytest.mark.parametrize("location_name,lat,lon", [
-        ("birmingham", 52.4862, -1.8904),
-        ("manchester", 53.4808, -2.2426),
-        ("glasgow", 55.8642, -4.2518),
-    ])
+    @pytest.mark.parametrize(
+        "location_name,lat,lon",
+        [
+            ("birmingham", 52.4862, -1.8904),
+            ("manchester", 53.4808, -2.2426),
+            ("glasgow", 55.8642, -4.2518),
+        ],
+    )
     def test_historical_other_locations(
         self,
         http_client: httpx.Client,

@@ -4,13 +4,16 @@ from __future__ import annotations
 
 import logging
 import uuid
-from datetime import datetime, timezone
-from pathlib import Path
+from datetime import UTC, datetime
+from typing import TYPE_CHECKING
 
 import duckdb
 import polars as pl
 
-from gridflow.quality.checks import QualityResult
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    from gridflow.quality.checks import QualityResult
 
 logger = logging.getLogger(__name__)
 
@@ -48,26 +51,32 @@ class QualityReporter:
             logger.info("No quality results to write")
             return 0
 
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         # One id per write_report() call; (run_id, id) is unique across runs.
         # `id` alone is only a within-run ordinal — the bare enumerate index
         # restarted at 0 every run and collided across the appended table.
         run_id = str(uuid.uuid4())
         rows = []
         for i, r in enumerate(self._results):
-            rows.append({
-                "run_id": run_id,
-                "id": i,
-                "run_date": now,
-                "check_name": r.check_name,
-                "dataset": r.dataset,
-                "source": r.source,
-                "passed": r.passed,
-                "metric": r.metric,
-                "detail": r.detail,
-            })
+            rows.append(
+                {
+                    "run_id": run_id,
+                    "id": i,
+                    "run_date": now,
+                    "check_name": r.check_name,
+                    "dataset": r.dataset,
+                    "source": r.source,
+                    "passed": r.passed,
+                    "metric": r.metric,
+                    "detail": r.detail,
+                }
+            )
 
-        df = pl.DataFrame(rows)
+        # `df` is consumed by DuckDB's replacement scan (the "FROM df" query
+        # below) — ruff's F841 can't see the string reference, so the binding
+        # only *looks* unused. Removing it breaks the INSERT (Catalog Error:
+        # Table 'df' does not exist).
+        df = pl.DataFrame(rows)  # noqa: F841
 
         # Write to DuckDB
         try:

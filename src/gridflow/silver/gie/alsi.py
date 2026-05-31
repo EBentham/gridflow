@@ -55,9 +55,7 @@ class LNGTerminalTransformer(BaseSilverTransformer):
 
         # Parse gas_day
         df = df.with_columns(
-            pl.col("gasDayStart")
-            .str.to_date(format="%Y-%m-%d", strict=False)
-            .alias("gas_day")
+            pl.col("gasDayStart").str.to_date(format="%Y-%m-%d", strict=False).alias("gas_day")
         )
 
         # ALSI field names (may differ slightly from AGSI)
@@ -83,14 +81,15 @@ class LNGTerminalTransformer(BaseSilverTransformer):
             df = df.rename(rename_map)
 
         float_cols = [
-            "lng_in_storage_gwh", "send_out_gwh", "injection_gwh",
-            "dtrs_pct_full", "trend",
+            "lng_in_storage_gwh",
+            "send_out_gwh",
+            "injection_gwh",
+            "dtrs_pct_full",
+            "trend",
         ]
         for col in float_cols:
             if col in df.columns:
-                df = df.with_columns(
-                    pl.col(col).cast(pl.Utf8).cast(pl.Float64, strict=False)
-                )
+                df = df.with_columns(pl.col(col).cast(pl.Utf8).cast(pl.Float64, strict=False))
 
         if "country_code" not in df.columns and "countryCode" in df.columns:
             df = df.rename({"countryCode": "country_code"})
@@ -101,16 +100,24 @@ class LNGTerminalTransformer(BaseSilverTransformer):
         df = df.unique(subset=dedup_cols, keep="last")
 
         now = datetime.now(UTC)
-        df = df.with_columns([
-            pl.lit("gie_alsi").alias("data_provider"),
-            pl.lit(now).cast(pl.Datetime("us", "UTC")).alias("ingested_at"),
-        ])
+        df = df.with_columns(
+            [
+                pl.lit("gie_alsi").alias("data_provider"),
+                pl.lit(now).cast(pl.Datetime("us", "UTC")).alias("ingested_at"),
+            ]
+        )
 
         output_cols = [
-            "gas_day", "country_code", "country_name",
-            "lng_in_storage_gwh", "send_out_gwh", "injection_gwh",
-            "dtrs_pct_full", "trend",
-            "data_provider", "ingested_at",
+            "gas_day",
+            "country_code",
+            "country_name",
+            "lng_in_storage_gwh",
+            "send_out_gwh",
+            "injection_gwh",
+            "dtrs_pct_full",
+            "trend",
+            "data_provider",
+            "ingested_at",
         ]
         available = [c for c in output_cols if c in df.columns]
         sort_cols = ["gas_day"]

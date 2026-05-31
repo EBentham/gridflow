@@ -11,9 +11,8 @@ from __future__ import annotations
 
 import json
 from datetime import date
-from pathlib import Path
+from typing import TYPE_CHECKING
 
-import polars as pl
 import pytest
 
 from gridflow.connectors.openmeteo.endpoints import (
@@ -27,6 +26,11 @@ from gridflow.silver.openmeteo.historical import (
     HistoricalWindWeather,
 )
 from gridflow.storage.parquet import read_parquet
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    import polars as pl
 
 
 def _make_open_meteo_json(
@@ -80,7 +84,10 @@ TARGET_DATE = date(2026, 5, 1)
 def test_historical_demand_emits_canonical_names(tmp_path: Path) -> None:
     """Silver must have wind_speed_10m_mps with value 10.0 (= 36 km/h / 3.6)."""
     _write_om_bronze(
-        tmp_path, TARGET_DATE, "historical_demand", "london",
+        tmp_path,
+        TARGET_DATE,
+        "historical_demand",
+        "london",
         DEMAND_HOURLY_VARS,
         values={"wind_speed_10m": 36.0, "temperature_2m": 15.0},
     )
@@ -98,7 +105,10 @@ def test_historical_demand_emits_canonical_names(tmp_path: Path) -> None:
 def test_historical_demand_has_no_connector_native_names(tmp_path: Path) -> None:
     """Connector-native column names must be absent from silver after F15-B."""
     _write_om_bronze(
-        tmp_path, TARGET_DATE, "historical_demand", "london",
+        tmp_path,
+        TARGET_DATE,
+        "historical_demand",
+        "london",
         DEMAND_HOURLY_VARS,
     )
     HistoricalDemandWeather(tmp_path).run(TARGET_DATE, run_id="t2")
@@ -111,7 +121,10 @@ def test_historical_demand_has_no_connector_native_names(tmp_path: Path) -> None
 def test_historical_demand_derived_columns_populated_with_rename(tmp_path: Path) -> None:
     """Pitfall 6 guard: hdd/cdd derivation must read temperature_2m BEFORE rename."""
     _write_om_bronze(
-        tmp_path, TARGET_DATE, "historical_demand", "london",
+        tmp_path,
+        TARGET_DATE,
+        "historical_demand",
+        "london",
         DEMAND_HOURLY_VARS,
         values={"temperature_2m": 8.0},  # below HDD_BASE 15.5°C => hdd = 7.5 > 0
     )
@@ -129,7 +142,10 @@ def test_historical_demand_derived_columns_populated_with_rename(tmp_path: Path)
 def test_historical_wind_emits_mps_for_hub_heights(tmp_path: Path) -> None:
     """HistoricalWindWeather: wind speeds in m/s for both 10m and 100m hub heights."""
     _write_om_bronze(
-        tmp_path, TARGET_DATE, "historical_wind", "dogger_bank",
+        tmp_path,
+        TARGET_DATE,
+        "historical_wind",
+        "dogger_bank",
         WIND_ARCHIVE_VARS,
         values={"wind_speed_10m": 36.0, "wind_speed_100m": 72.0},
     )
@@ -145,7 +161,10 @@ def test_historical_wind_emits_mps_for_hub_heights(tmp_path: Path) -> None:
 def test_historical_solar_emits_canonical_radiation(tmp_path: Path) -> None:
     """HistoricalSolarWeather: radiation columns get _wm2 suffix, cloud_cover gets _pct."""
     _write_om_bronze(
-        tmp_path, TARGET_DATE, "historical_solar", "east_anglia_norfolk",
+        tmp_path,
+        TARGET_DATE,
+        "historical_solar",
+        "east_anglia_norfolk",
         SOLAR_HOURLY_VARS,
         values={"shortwave_radiation": 200.0, "cloud_cover": 50.0},
     )

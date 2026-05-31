@@ -5,12 +5,13 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import polars as pl
-import pytest
 
 from gridflow.storage.duckdb import get_connection, init_catalogue
 
 if TYPE_CHECKING:
     from pathlib import Path
+
+    import pytest
 
 
 def _write_parquet(df: pl.DataFrame, path: Path) -> None:
@@ -50,9 +51,7 @@ def test_silver_view_reads_mixed_pre_and_post_f0_schemas(
     assert rows == [(1, True), (2, False)]
 
 
-def test_gold_view_reads_mixed_schemas(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_gold_view_reads_mixed_schemas(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     # F15-D: gold SQL views reference silver tables absent from test tmpdir.
     monkeypatch.setattr("gridflow.storage.duckdb._register_gold_views", lambda con: None)
 

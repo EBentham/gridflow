@@ -108,17 +108,11 @@ class PipelineSettings(BaseSettings):
     @model_validator(mode="after")
     def _resolve_paths(self) -> PipelineSettings:
         if not self.data_dir.is_absolute():
-            object.__setattr__(
-                self, "data_dir", (_project_root() / self.data_dir).resolve()
-            )
+            object.__setattr__(self, "data_dir", (_project_root() / self.data_dir).resolve())
         if not self.duckdb_path.is_absolute():
-            object.__setattr__(
-                self, "duckdb_path", (_project_root() / self.duckdb_path).resolve()
-            )
+            object.__setattr__(self, "duckdb_path", (_project_root() / self.duckdb_path).resolve())
         if not self.log_dir.is_absolute():
-            object.__setattr__(
-                self, "log_dir", (_project_root() / self.log_dir).resolve()
-            )
+            object.__setattr__(self, "log_dir", (_project_root() / self.log_dir).resolve())
         return self
 
 

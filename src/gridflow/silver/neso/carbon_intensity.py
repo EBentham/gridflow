@@ -167,13 +167,15 @@ def _extract_intensity_rows(payload: Any) -> list[dict[str, Any]]:
         if not isinstance(record, dict):
             continue
         intensity = record.get("intensity", {}) or {}
-        rows.append({
-            "from": record.get("from"),
-            "to": record.get("to"),
-            "forecast": intensity.get("forecast"),
-            "actual": intensity.get("actual"),
-            "index": intensity.get("index", ""),
-        })
+        rows.append(
+            {
+                "from": record.get("from"),
+                "to": record.get("to"),
+                "forecast": intensity.get("forecast"),
+                "actual": intensity.get("actual"),
+                "index": intensity.get("index", ""),
+            }
+        )
     return rows
 
 
@@ -183,14 +185,16 @@ def _extract_stats_rows(payload: Any) -> list[dict[str, Any]]:
         if not isinstance(record, dict):
             continue
         intensity = record.get("intensity", {}) or {}
-        rows.append({
-            "from": record.get("from"),
-            "to": record.get("to"),
-            "max": intensity.get("max"),
-            "average": intensity.get("average"),
-            "min": intensity.get("min"),
-            "index": intensity.get("index", ""),
-        })
+        rows.append(
+            {
+                "from": record.get("from"),
+                "to": record.get("to"),
+                "max": intensity.get("max"),
+                "average": intensity.get("average"),
+                "min": intensity.get("min"),
+                "index": intensity.get("index", ""),
+            }
+        )
     return rows
 
 
@@ -210,12 +214,14 @@ def _extract_generation_rows(payload: Any) -> list[dict[str, Any]]:
         if not isinstance(record, dict):
             continue
         for mix in _generation_mix_rows(record):
-            rows.append({
-                "from": record.get("from"),
-                "to": record.get("to"),
-                "fuel": mix.get("fuel"),
-                "perc": mix.get("perc"),
-            })
+            rows.append(
+                {
+                    "from": record.get("from"),
+                    "to": record.get("to"),
+                    "fuel": mix.get("fuel"),
+                    "perc": mix.get("perc"),
+                }
+            )
     return rows
 
 
@@ -267,11 +273,13 @@ def _rows_from_region_period(
         "to": period.get("to"),
     }
     intensity = region.get("intensity") or period.get("intensity") or {}
-    base.update({
-        "forecast": intensity.get("forecast"),
-        "actual": intensity.get("actual"),
-        "index": intensity.get("index", ""),
-    })
+    base.update(
+        {
+            "forecast": intensity.get("forecast"),
+            "actual": intensity.get("actual"),
+            "index": intensity.get("index", ""),
+        }
+    )
 
     mixes = _generation_mix_rows(region) or _generation_mix_rows(period)
     if not mixes:
@@ -288,11 +296,11 @@ def _rows_from_region_period(
 
 def _generation_mix_rows(record: dict[str, Any]) -> list[dict[str, Any]]:
     generation_mix = record.get("generationmix", [])
-    return [
-        row
-        for row in generation_mix
-        if isinstance(row, dict)
-    ] if isinstance(generation_mix, list) else []
+    return (
+        [row for row in generation_mix if isinstance(row, dict)]
+        if isinstance(generation_mix, list)
+        else []
+    )
 
 
 def _transform_intensity(raw_df: pl.DataFrame) -> pl.DataFrame:
@@ -300,25 +308,29 @@ def _transform_intensity(raw_df: pl.DataFrame) -> pl.DataFrame:
         logger.error("Missing required column in NESO intensity data: from")
         return pl.DataFrame()
 
-    df = raw_df.with_columns([
-        _parse_neso_datetime("from").alias("timestamp_utc"),
-        _parse_neso_datetime("to").alias("period_end_utc"),
-        _float_or_null(raw_df, "forecast").alias("forecast_gco2_kwh"),
-        _float_or_null(raw_df, "actual").alias("actual_gco2_kwh"),
-        _string_or_empty(raw_df, "index").alias("intensity_index"),
-    ])
+    df = raw_df.with_columns(
+        [
+            _parse_neso_datetime("from").alias("timestamp_utc"),
+            _parse_neso_datetime("to").alias("period_end_utc"),
+            _float_or_null(raw_df, "forecast").alias("forecast_gco2_kwh"),
+            _float_or_null(raw_df, "actual").alias("actual_gco2_kwh"),
+            _string_or_empty(raw_df, "index").alias("intensity_index"),
+        ]
+    )
     df = _add_common_columns(df)
     return (
         df.unique(subset=["timestamp_utc"], keep="last")
-        .select([
-            "timestamp_utc",
-            "period_end_utc",
-            "forecast_gco2_kwh",
-            "actual_gco2_kwh",
-            "intensity_index",
-            "data_provider",
-            "ingested_at",
-        ])
+        .select(
+            [
+                "timestamp_utc",
+                "period_end_utc",
+                "forecast_gco2_kwh",
+                "actual_gco2_kwh",
+                "intensity_index",
+                "data_provider",
+                "ingested_at",
+            ]
+        )
         .sort("timestamp_utc")
     )
 
@@ -328,27 +340,31 @@ def _transform_stats(raw_df: pl.DataFrame) -> pl.DataFrame:
         logger.error("Missing required column in NESO stats data: from")
         return pl.DataFrame()
 
-    df = raw_df.with_columns([
-        _parse_neso_datetime("from").alias("timestamp_utc"),
-        _parse_neso_datetime("to").alias("period_end_utc"),
-        _float_or_null(raw_df, "max").alias("max_gco2_kwh"),
-        _float_or_null(raw_df, "average").alias("average_gco2_kwh"),
-        _float_or_null(raw_df, "min").alias("min_gco2_kwh"),
-        _string_or_empty(raw_df, "index").alias("intensity_index"),
-    ])
+    df = raw_df.with_columns(
+        [
+            _parse_neso_datetime("from").alias("timestamp_utc"),
+            _parse_neso_datetime("to").alias("period_end_utc"),
+            _float_or_null(raw_df, "max").alias("max_gco2_kwh"),
+            _float_or_null(raw_df, "average").alias("average_gco2_kwh"),
+            _float_or_null(raw_df, "min").alias("min_gco2_kwh"),
+            _string_or_empty(raw_df, "index").alias("intensity_index"),
+        ]
+    )
     df = _add_common_columns(df)
     return (
         df.unique(subset=["timestamp_utc", "period_end_utc"], keep="last")
-        .select([
-            "timestamp_utc",
-            "period_end_utc",
-            "max_gco2_kwh",
-            "average_gco2_kwh",
-            "min_gco2_kwh",
-            "intensity_index",
-            "data_provider",
-            "ingested_at",
-        ])
+        .select(
+            [
+                "timestamp_utc",
+                "period_end_utc",
+                "max_gco2_kwh",
+                "average_gco2_kwh",
+                "min_gco2_kwh",
+                "intensity_index",
+                "data_provider",
+                "ingested_at",
+            ]
+        )
         .sort("timestamp_utc")
     )
 
@@ -358,11 +374,17 @@ def _transform_factors(raw_df: pl.DataFrame) -> pl.DataFrame:
         logger.error("Missing required column in NESO factors data: fuel")
         return pl.DataFrame()
 
-    df = raw_df.with_columns([
-        pl.col("fuel").cast(pl.Utf8).str.to_lowercase().str.replace_all(r"[^a-z0-9]+", "_")
-        .str.strip_chars("_").alias("fuel"),
-        _float_or_null(raw_df, "factor_gco2_kwh").alias("factor_gco2_kwh"),
-    ])
+    df = raw_df.with_columns(
+        [
+            pl.col("fuel")
+            .cast(pl.Utf8)
+            .str.to_lowercase()
+            .str.replace_all(r"[^a-z0-9]+", "_")
+            .str.strip_chars("_")
+            .alias("fuel"),
+            _float_or_null(raw_df, "factor_gco2_kwh").alias("factor_gco2_kwh"),
+        ]
+    )
     df = _add_common_columns(df)
     return (
         df.unique(subset=["fuel"], keep="last")
@@ -376,23 +398,27 @@ def _transform_generation(raw_df: pl.DataFrame) -> pl.DataFrame:
         logger.error("Missing required column in NESO generation data: from")
         return pl.DataFrame()
 
-    df = raw_df.with_columns([
-        _parse_neso_datetime("from").alias("timestamp_utc"),
-        _parse_neso_datetime("to").alias("period_end_utc"),
-        _string_or_empty(raw_df, "fuel").alias("fuel"),
-        _float_or_null(raw_df, "perc").alias("generation_percentage"),
-    ])
+    df = raw_df.with_columns(
+        [
+            _parse_neso_datetime("from").alias("timestamp_utc"),
+            _parse_neso_datetime("to").alias("period_end_utc"),
+            _string_or_empty(raw_df, "fuel").alias("fuel"),
+            _float_or_null(raw_df, "perc").alias("generation_percentage"),
+        ]
+    )
     df = _add_common_columns(df)
     return (
         df.unique(subset=["timestamp_utc", "fuel"], keep="last")
-        .select([
-            "timestamp_utc",
-            "period_end_utc",
-            "fuel",
-            "generation_percentage",
-            "data_provider",
-            "ingested_at",
-        ])
+        .select(
+            [
+                "timestamp_utc",
+                "period_end_utc",
+                "fuel",
+                "generation_percentage",
+                "data_provider",
+                "ingested_at",
+            ]
+        )
         .sort(["timestamp_utc", "fuel"])
     )
 
@@ -402,15 +428,17 @@ def _transform_regional(raw_df: pl.DataFrame) -> pl.DataFrame:
         logger.error("Missing required column in NESO regional data: from")
         return pl.DataFrame()
 
-    df = raw_df.with_columns([
-        _parse_neso_datetime("from").alias("timestamp_utc"),
-        _parse_neso_datetime("to").alias("period_end_utc"),
-        _float_or_null(raw_df, "forecast").alias("forecast_gco2_kwh"),
-        _float_or_null(raw_df, "actual").alias("actual_gco2_kwh"),
-        _string_or_empty(raw_df, "index").alias("intensity_index"),
-        _string_or_empty(raw_df, "fuel").alias("fuel"),
-        _float_or_null(raw_df, "perc").alias("generation_percentage"),
-    ])
+    df = raw_df.with_columns(
+        [
+            _parse_neso_datetime("from").alias("timestamp_utc"),
+            _parse_neso_datetime("to").alias("period_end_utc"),
+            _float_or_null(raw_df, "forecast").alias("forecast_gco2_kwh"),
+            _float_or_null(raw_df, "actual").alias("actual_gco2_kwh"),
+            _string_or_empty(raw_df, "index").alias("intensity_index"),
+            _string_or_empty(raw_df, "fuel").alias("fuel"),
+            _float_or_null(raw_df, "perc").alias("generation_percentage"),
+        ]
+    )
     if "regionid" in df.columns:
         df = df.with_columns(pl.col("regionid").cast(pl.Int64, strict=False))
     else:
@@ -426,21 +454,23 @@ def _transform_regional(raw_df: pl.DataFrame) -> pl.DataFrame:
             subset=["timestamp_utc", "regionid", "shortname", "postcode", "fuel"],
             keep="last",
         )
-        .select([
-            "timestamp_utc",
-            "period_end_utc",
-            "regionid",
-            "dnoregion",
-            "shortname",
-            "postcode",
-            "forecast_gco2_kwh",
-            "actual_gco2_kwh",
-            "intensity_index",
-            "fuel",
-            "generation_percentage",
-            "data_provider",
-            "ingested_at",
-        ])
+        .select(
+            [
+                "timestamp_utc",
+                "period_end_utc",
+                "regionid",
+                "dnoregion",
+                "shortname",
+                "postcode",
+                "forecast_gco2_kwh",
+                "actual_gco2_kwh",
+                "intensity_index",
+                "fuel",
+                "generation_percentage",
+                "data_provider",
+                "ingested_at",
+            ]
+        )
         .sort(["timestamp_utc", "regionid", "fuel"])
     )
 
@@ -468,10 +498,12 @@ def _string_or_empty(df: pl.DataFrame, column: str) -> pl.Expr:
 
 def _add_common_columns(df: pl.DataFrame) -> pl.DataFrame:
     now = datetime.now(UTC)
-    return df.with_columns([
-        pl.lit("neso").alias("data_provider"),
-        pl.lit(now).cast(pl.Datetime("us", "UTC")).alias("ingested_at"),
-    ])
+    return df.with_columns(
+        [
+            pl.lit("neso").alias("data_provider"),
+            pl.lit(now).cast(pl.Datetime("us", "UTC")).alias("ingested_at"),
+        ]
+    )
 
 
 register_neso_transformers()
