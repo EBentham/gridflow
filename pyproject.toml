@@ -25,7 +25,7 @@ dev = [
     "pytest>=8.0",
     "pytest-asyncio>=0.23",
     "respx>=0.21",
-    "ruff>=0.4",
+    "ruff==0.15.12",  # pinned for reproducible CI lint/format (F29; floating >=0.4 drifts rules across runs)
     "mypy>=1.10",
     "pre-commit>=3.7",
 ]
