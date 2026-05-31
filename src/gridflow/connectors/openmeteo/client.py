@@ -67,16 +67,15 @@ class OpenMeteoConnector(BaseConnector):
         spec = DATASET_SPECS[dataset]
         responses: list[RawResponse] = []
         for location in spec.locations:
-            try:
-                resp = await self._fetch_location(dataset, location, start, end)
-                responses.append(resp)
-            except Exception as exc:
-                logger.warning(
-                    "Failed to fetch open_meteo/%s for %s: %s",
-                    dataset,
-                    location.name,
-                    exc,
-                )
+            # issue-13 (finding 184): a location that fails *after* the retry
+            # policy is exhausted must surface, not be silently downgraded to a
+            # warning. Open-Meteo locations are capacity-weighted (offshore wind
+            # sites, demand population centres); silently dropping one re-weights
+            # that run's aggregate with no error raised. ``_request`` already
+            # retries transients (429 / archive-host timeout), so only a
+            # persistent failure reaches here — and it propagates to the caller.
+            resp = await self._fetch_location(dataset, location, start, end)
+            responses.append(resp)
         return responses
 
     async def _fetch_location(
