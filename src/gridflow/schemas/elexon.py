@@ -494,8 +494,8 @@ class ElexonTSDFD(BaseSchema):
 class ElexonAGPT(BaseSchema):
     """Silver schema: Actual Aggregated Generation Per Type (AGPT / B1620).
 
-    psr_type is the EIC PSR code (e.g. B16=wind offshore, B18=wind onshore,
-    B19=solar, B11=hydro). Multi-row per settlement period — one row per
+    psr_type is the EIC PSR code (e.g. B16=solar, B18=wind offshore,
+    B19=wind onshore, B11=hydro). Multi-row per settlement period — one row per
     psr_type per period.
     """
 
@@ -571,7 +571,7 @@ class ElexonMarketDepth(BaseSchema):
     """Silver schema: Settlement Market Depth.
 
     Per-settlement-period balancing market depth metrics — bid/offer
-    volumes, accepted volumes, and adjustment volumes (all in MWh).
+    volumes, accepted volumes, and priced accepted volumes (all in MWh).
     """
 
     settlement_date: date
@@ -582,8 +582,8 @@ class ElexonMarketDepth(BaseSchema):
     bid_volume_mwh: float | None = None
     total_accepted_offer_volume_mwh: float | None = None
     total_accepted_bid_volume_mwh: float | None = None
-    total_adjustment_sell_volume_mwh: float | None = None
-    total_adjustment_buy_volume_mwh: float | None = None
+    priced_accepted_offers_volume_mwh: float | None = None
+    priced_accepted_bids_volume_mwh: float | None = None
     data_provider: str = Field(default="elexon")
     ingested_at: datetime | None = None
 
