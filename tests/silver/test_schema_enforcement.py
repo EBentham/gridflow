@@ -13,7 +13,7 @@ from datetime import date
 from typing import TYPE_CHECKING
 
 import polars as pl
-from pydantic import Field
+from pydantic import Field, field_validator
 
 from gridflow.schemas.common import BaseSchema
 from gridflow.silver.base import BaseSilverTransformer
@@ -50,6 +50,25 @@ class _NoSchemaTransformer(_ValidatingTransformer):
 
     dataset = "tiny_noschema"
     schema_cls = None
+
+
+class _RaisingSchema(BaseSchema):
+    """Validator raises a NON-ValidationError. Pydantic v2 does not wrap TypeError/KeyError
+    into ValidationError, so such an error would escape an ``except ValidationError`` (M-01)."""
+
+    value: int
+
+    @field_validator("value")
+    @classmethod
+    def _explode_on_sentinel(cls, v: int) -> int:
+        if v == 13:
+            raise TypeError("simulated non-ValidationError raised from a custom validator")
+        return v
+
+
+class _RaisingTransformer(_ValidatingTransformer):
+    dataset = "tiny_raising"
+    schema_cls = _RaisingSchema
 
 
 class TestFailSoftSchemaEnforcement:
@@ -92,6 +111,15 @@ class TestFailSoftSchemaEnforcement:
         rows_written = t.run(date(2026, 1, 1), run_id="test")
         assert rows_written == 2
         assert t.last_validation_failure_count == 0
+
+    def test_non_validationerror_from_validator_is_failsoft(self, tmp_path: Path) -> None:
+        """A validator raising a NON-ValidationError (TypeError) must NOT escape run() (M-01):
+        fail-soft catches it broadly, counts the row, and never crashes the date's transform."""
+        t = _RaisingTransformer(tmp_path)
+        t.rows = (1, 13, 2)  # 13 triggers a TypeError inside the field validator
+        rows_written = t.run(date(2026, 1, 1), run_id="test")
+        assert rows_written == 3  # never raised, nothing dropped
+        assert t.last_validation_failure_count == 1
 
     def test_counter_reset_after_dirty_then_clean_run(self, tmp_path: Path) -> None:
         """run() resets the counter before work, so a clean run after a dirty one reports 0."""

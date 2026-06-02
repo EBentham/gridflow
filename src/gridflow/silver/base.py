@@ -185,6 +185,25 @@ class BaseSilverTransformer(ABC):
                 failures += 1
                 if len(sample) < _VALIDATION_SAMPLE_LIMIT:
                     sample.append(str(exc).replace("\n", " ")[:300])
+            except Exception as exc:  # noqa: BLE001
+                # Fail-soft is an ABSOLUTE guarantee — one row must never crash the
+                # whole date's transform. Pydantic v2 only wraps ValueError/
+                # AssertionError into ValidationError, so a custom field_validator
+                # raising e.g. TypeError/KeyError would otherwise escape this method
+                # and propagate out of run(). Count it like any other invalid row,
+                # but log it LOUDLY with its type so a genuine code bug stays
+                # visible (surfaced, never silently swallowed).
+                failures += 1
+                if len(sample) < _VALIDATION_SAMPLE_LIMIT:
+                    sample.append(f"{type(exc).__name__}: {str(exc)[:280]}")
+                logger.warning(
+                    "Unexpected %s validating %s/%s row against %s: %s",
+                    type(exc).__name__,
+                    self.source,
+                    self.dataset,
+                    schema.__name__,
+                    exc,
+                )
 
         if failures:
             logger.warning(
