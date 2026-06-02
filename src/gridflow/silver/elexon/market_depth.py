@@ -62,8 +62,8 @@ class MarketDepthTransformer(BaseSilverTransformer):
             "bidVolume": "bid_volume_mwh",
             "totalAcceptedOfferVolume": "total_accepted_offer_volume_mwh",
             "totalAcceptedBidVolume": "total_accepted_bid_volume_mwh",
-            "totalAdjustmentSellVolume": "total_adjustment_sell_volume_mwh",
-            "totalAdjustmentBuyVolume": "total_adjustment_buy_volume_mwh",
+            "pricedAcceptedOffersVolume": "priced_accepted_offers_volume_mwh",
+            "pricedAcceptedBidsVolume": "priced_accepted_bids_volume_mwh",
         }
         rename_map = {k: v for k, v in column_mapping.items() if k in raw_df.columns}
         if rename_map:
@@ -88,8 +88,8 @@ class MarketDepthTransformer(BaseSilverTransformer):
             "bid_volume_mwh",
             "total_accepted_offer_volume_mwh",
             "total_accepted_bid_volume_mwh",
-            "total_adjustment_sell_volume_mwh",
-            "total_adjustment_buy_volume_mwh",
+            "priced_accepted_offers_volume_mwh",
+            "priced_accepted_bids_volume_mwh",
         ]
         for col in numeric_cols:
             if col in df.columns:
@@ -125,8 +125,8 @@ class MarketDepthTransformer(BaseSilverTransformer):
             "bid_volume_mwh",
             "total_accepted_offer_volume_mwh",
             "total_accepted_bid_volume_mwh",
-            "total_adjustment_sell_volume_mwh",
-            "total_adjustment_buy_volume_mwh",
+            "priced_accepted_offers_volume_mwh",
+            "priced_accepted_bids_volume_mwh",
             "data_provider",
             "ingested_at",
         ]

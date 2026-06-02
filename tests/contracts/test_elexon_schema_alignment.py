@@ -139,7 +139,7 @@ SCHEMA_FIXTURE_MAP: dict[type[BaseModel], tuple[type, str]] = {
     ElexonAGPT: (AGPTTransformer, None),
     ElexonAGWS: (AGWSTransformer, None),
     ElexonATL: (ATLTransformer, None),
-    ElexonMarketDepth: (MarketDepthTransformer, None),
+    ElexonMarketDepth: (MarketDepthTransformer, "market_depth_response.json"),
     ElexonNonBM: (NONBMTransformer, None),
     ElexonFOU2T14D: (FOU2T14DTransformer, "fou2t14d_response.json"),
     ElexonUOU2T14D: (UOU2T14DTransformer, "uou2t14d_response_v2.json"),
@@ -241,3 +241,21 @@ def test_silver_rows_validate_against_schema(schema_cls: type[BaseModel]):
         f"G5 regression: {schema_cls.__name__} row validation failed:\n"
         + "\n".join(errors[:3])  # truncate to first 3 errors
     )
+
+
+def test_market_depth_maps_priced_volumes_not_adjustment() -> None:
+    """VTA-ELEXON-MKTDEPTH-01: market_depth must carry the real priced
+    accepted volumes the live endpoint returns and must NOT carry the phantom
+    adjustment columns (which belong to the system-prices/DISEBSP endpoint).
+
+    Pre-fix this fails on the first assertion: the un-renamed
+    pricedAccepted* keys are dropped at the output_cols select.
+    """
+    raw = pl.DataFrame(json.loads((FIXTURES / "market_depth_response.json").read_text())["data"])
+    out = _make_transformer(MarketDepthTransformer).transform(raw)
+    assert {
+        "priced_accepted_offers_volume_mwh",
+        "priced_accepted_bids_volume_mwh",
+    } <= set(out.columns)
+    assert "total_adjustment_sell_volume_mwh" not in out.columns
+    assert "total_adjustment_buy_volume_mwh" not in out.columns

@@ -120,12 +120,12 @@ class EntsoeLoadForecast(BaseSchema):
 class EntsoeWindSolarForecast(BaseSchema):
     """Silver-layer schema for ENTSO-E wind and solar generation forecast (A69/A01).
 
-    production_type: EIC PSR type code (B16=Wind offshore, B18=Wind onshore, B19=Solar).
+    production_type: EIC PSR type code (B16=Solar, B18=Wind Offshore, B19=Wind Onshore).
     """
 
     timestamp_utc: datetime
     area_code: str
-    production_type: str  # B16=Wind offshore, B18=Wind onshore, B19=Solar
+    production_type: str  # B16=Solar, B18=Wind Offshore, B19=Wind Onshore
     generation_forecast_mw: float
     resolution: str = ""
     published_at: datetime | None = None

@@ -1,0 +1,26 @@
+{
+  "data": [
+    {
+      "settlementDate": "2024-01-15",
+      "settlementPeriod": 1,
+      "indicatedImbalance": -120.5,
+      "offerVolume": 350.0,
+      "bidVolume": 280.0,
+      "totalAcceptedOfferVolume": 95.0,
+      "totalAcceptedBidVolume": 60.0,
+      "pricedAcceptedOffersVolume": 40.0,
+      "pricedAcceptedBidsVolume": 25.0
+    },
+    {
+      "settlementDate": "2024-01-15",
+      "settlementPeriod": 2,
+      "indicatedImbalance": 88.2,
+      "offerVolume": 410.0,
+      "bidVolume": 300.0,
+      "totalAcceptedOfferVolume": 110.0,
+      "totalAcceptedBidVolume": 70.0,
+      "pricedAcceptedOffersVolume": 55.0,
+      "pricedAcceptedBidsVolume": 30.0
+    }
+  ]
+}

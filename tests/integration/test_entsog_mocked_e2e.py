@@ -109,6 +109,11 @@ def _records_for(dataset: str) -> list[dict[str, Any]]:
             }
         ]
     if endpoint.parser_family == "tariffs":
+        # ENGREF-01: periodFrom is the product VALIDITY-window start (annual
+        # product), NOT the gas day — it does NOT equal the transform target
+        # (TARGET_DATE). A realistic forward window proves the date-window
+        # filter must be skipped for tariffs (else the row is dropped → empty
+        # silver). See VTA-ENTSOG-TARIFF-01.
         return [
             {
                 "id": f"{dataset}-1",
@@ -116,6 +121,9 @@ def _records_for(dataset: str) -> list[dict[str, Any]]:
                 "operatorKey": "UK-TSO-0001",
                 "pointKey": "ITP-00005",
                 "directionKey": "exit",
+                "periodFrom": "2025-10-01T06:00:00+02:00",
+                "periodTo": "2026-10-01T06:00:00+02:00",
+                "productType": "Yearly",
                 "productPeriodFrom": "2024-01-15 00:00:00",
                 "productPeriodTo": "2024-02-15 00:00:00",
                 "applicableTariffCommonUnit": "0.1",
@@ -129,6 +137,9 @@ def _records_for(dataset: str) -> list[dict[str, Any]]:
                 "operatorKey": "UK-TSO-0001",
                 "pointKey": "ITP-00005",
                 "directionKey": "exit",
+                "periodFrom": "2025-10-01T06:00:00+02:00",
+                "periodTo": "2026-10-01T06:00:00+02:00",
+                "productType": "Yearly",
                 "simulationCostEur": "12.5",
             }
         ]
@@ -336,6 +347,29 @@ def test_date_window_transform_filters_bronze_records_to_target_date(
         / "nominations_20260417.parquet"
     )
     assert df["id"].to_list() == ["nominations-20260417"]
+
+
+@pytest.mark.parametrize(
+    ("dataset", "expected_date_window"),
+    [
+        # VTA-ENTSOG-TARIFF-01: scoped OFF for exactly the two tariff datasets.
+        ("tariffs", False),
+        ("tariff_simulations", False),
+        # CMP-scoping proof: all cmp_* keep the shared generic date-window path
+        # (owned by the deferred fix/entsog-cmp-schema-drift, ADR-021) — they MUST
+        # stay True so this fix is provably scoped away from them.
+        ("cmp_unsuccessful_requests", True),
+        ("cmp_unavailable_firm_capacity", True),
+        ("cmp_auction_premiums", True),
+    ],
+)
+def test_tariff_date_window_scoped_off_cmp_untouched(
+    tmp_data_dir: Path,
+    dataset: str,
+    expected_date_window: bool,
+) -> None:
+    transformer = get_transformer("entsog", dataset, tmp_data_dir)
+    assert transformer.date_window_dataset is expected_date_window
 
 
 class TestV2ENTSOG404ShortCircuit:

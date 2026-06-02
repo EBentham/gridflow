@@ -21,7 +21,7 @@ class WindSolarForecastTransformer(BaseSilverTransformer):
     """Transform ENTSO-E wind and solar forecast XML from bronze to silver.
 
     Each TimeSeries carries a MktPSRType / psrType code:
-      B16 = Wind offshore, B18 = Wind onshore, B19 = Solar.
+      B16 = Solar, B18 = Wind Offshore, B19 = Wind Onshore.
     """
 
     source = "entsoe"

@@ -214,12 +214,27 @@ class GenericEntsogJsonTransformer(BaseSilverTransformer):
         os.replace(tmp_path, final_path)
 
 
+# VTA-ENTSOG-TARIFF-01: for these reference-data datasets `periodFrom` is the
+# product VALIDITY-window start (annual/seasonal product), NOT an observation/gas
+# day, so the shared date-window filter drops every row on a normal run. Scope the
+# silver date-window off for exactly these two datasets — the connector already
+# partitions the fetch by request window, so the partition is the right slice.
+# This is deliberately NOT applied to any cmp_* dataset (also requires_dates=True):
+# those share the generic path and are owned by the deferred
+# fix/entsog-cmp-schema-drift (ADR-021). `requires_dates` at the endpoint level is
+# unchanged (it drives the connector's from/to params, not the silver filter).
+_DATE_WINDOW_EXEMPT = frozenset({"tariffs", "tariff_simulations"})
+
+
 def register_generic_entsog_transformers() -> None:
     """Register generic transformers for all non-specialised ENTSOG datasets."""
     for dataset, endpoint in ENDPOINTS.items():
         if dataset == "physical_flows":
             continue
-        register_transformer("entsog", dataset, _make_transformer_class(dataset, endpoint))
+        transformer_cls = _make_transformer_class(dataset, endpoint)
+        if dataset in _DATE_WINDOW_EXEMPT:
+            transformer_cls.date_window_dataset = False
+        register_transformer("entsog", dataset, transformer_cls)
 
 
 def _make_transformer_class(
