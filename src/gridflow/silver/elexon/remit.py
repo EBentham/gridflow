@@ -9,6 +9,7 @@ from typing import Any, ClassVar
 
 import polars as pl
 
+from gridflow.schemas.elexon import ElexonREMIT
 from gridflow.silver.base import BaseSilverTransformer
 from gridflow.silver.registry import register_transformer
 
@@ -39,6 +40,7 @@ class REMITTransformer(BaseSilverTransformer):
 
     source = "elexon"
     dataset = "remit"
+    schema_cls = ElexonREMIT
     APPEND_ONLY: ClassVar[bool] = True
     DATASET_VERSION: ClassVar[str] = "2.0.0"
 

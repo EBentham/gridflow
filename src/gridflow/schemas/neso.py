@@ -65,7 +65,13 @@ class RegionalIntensity(_TimestampedNesoBase):
     regionid: int | None = None
     dnoregion: str = ""
     shortname: str = ""
-    postcode: str = ""
+    # The all-regions endpoints (regional_current, regional_intensity_fw*, …)
+    # emit no postcode — the transformer carries it through as null — while the
+    # postcode-specific endpoints populate it. Nullable to match what the
+    # transformer actually emits (VTA-SCHEMA-01: schema describes real output),
+    # consistent with regionid above. Avoids a 100%-of-rows fail-soft warning on
+    # every all-regions run.
+    postcode: str | None = None
     forecast_gco2_kwh: float | None = None
     actual_gco2_kwh: float | None = None
     intensity_index: str = ""

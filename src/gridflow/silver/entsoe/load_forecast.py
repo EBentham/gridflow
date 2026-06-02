@@ -9,6 +9,7 @@ from typing import Any
 import polars as pl
 
 from gridflow.connectors.entsoe.parsers import parse_timeseries_xml
+from gridflow.schemas.entsoe import EntsoeLoadForecast
 from gridflow.silver.base import BaseSilverTransformer
 from gridflow.silver.entsoe._published_at import with_published_at
 from gridflow.silver.registry import register_transformer
@@ -21,6 +22,7 @@ class LoadForecastTransformer(BaseSilverTransformer):
 
     source = "entsoe"
     dataset = "load_forecast"
+    schema_cls = EntsoeLoadForecast
     forecast_horizon = "day_ahead"
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:

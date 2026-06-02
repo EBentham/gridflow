@@ -134,6 +134,7 @@ def transform(
         tracker = PipelineRunTracker(con, source, ds, "transform")
         total_rows = 0
         total_unmapped = 0
+        total_validation_failures = 0
         try:
             transformer = get_transformer(source, ds, settings.pipeline.data_dir)
             for target_date in dates:
@@ -143,15 +144,21 @@ def transform(
                     reingest=reingest,
                 )
                 total_rows += rows
-                # Per-date unmapped-enum count surfaced by the transformer
-                # (ADR-022). run() resets it each call, so accumulating inside the
-                # loop never double-counts an empty/missing date.
+                # Per-date warning counts surfaced by the transformer. run() resets
+                # both each call, so accumulating inside the loop never double-counts
+                # an empty/missing date. unmapped = ADR-022 enum sentinels;
+                # validation = VTA-SCHEMA-01 full-frame schema failures.
                 total_unmapped += transformer.last_unmapped_count
-            if total_unmapped > 0:
-                tracker.complete_with_warnings(rows_out=total_rows, rows_skipped=total_unmapped)
+                total_validation_failures += transformer.last_validation_failure_count
+            if total_unmapped or total_validation_failures:
+                tracker.complete_with_warnings(
+                    rows_out=total_rows,
+                    rows_skipped=total_unmapped + total_validation_failures,
+                )
                 typer.echo(
                     f"  {source}/{ds}: {total_rows} rows transformed, "
-                    f"{total_unmapped} unmapped (completed_with_warnings)"
+                    f"{total_unmapped} unmapped, {total_validation_failures} schema-invalid "
+                    f"(completed_with_warnings)"
                 )
             else:
                 tracker.complete(rows_out=total_rows)

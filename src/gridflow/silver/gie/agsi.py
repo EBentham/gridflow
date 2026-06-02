@@ -14,6 +14,7 @@ if TYPE_CHECKING:
 import polars as pl
 
 from gridflow.connectors.gie.endpoints import parse_listing_inventory
+from gridflow.schemas.gie import GasStorage
 from gridflow.silver.base import BaseSilverTransformer
 from gridflow.silver.registry import register_transformer
 
@@ -117,6 +118,7 @@ class GasStorageTransformer(BaseSilverTransformer):
 
     source = "gie_agsi"
     dataset = "storage"
+    schema_cls = GasStorage
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         rows: list[dict[str, Any]] = []
@@ -285,6 +287,13 @@ class StorageReportsTransformer(GasStorageTransformer):
     """Catalog-aligned AGSI storage reports transformer."""
 
     dataset = "storage_reports"
+    # Excluded from VT1 schema enforcement: this generic catalog-aligned variant
+    # is under rework on another branch. It subclasses GasStorageTransformer, so
+    # without this explicit override it would inherit ``GasStorage`` — pin to
+    # ``None`` so the central validator skips it (matches the VT1 worklist).
+    # mypy narrows the inherited attr to ``type[GasStorage]`` at the parent, so the
+    # ``None`` override needs a local ignore (the ABC's real type is broader).
+    schema_cls = None  # type: ignore[assignment]
 
 
 class AgsiJsonTransformer(BaseSilverTransformer):

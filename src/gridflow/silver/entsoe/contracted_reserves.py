@@ -25,6 +25,7 @@ class ContractedReservesTransformer(BaseSilverTransformer):
 
     source = "entsoe"
     dataset = "contracted_reserves"
+    schema_cls = EntsoeContractedReserves
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         bronze_path = self._bronze_path_for_date(target_date)
@@ -116,10 +117,6 @@ class ContractedReservesTransformer(BaseSilverTransformer):
                 UNMAPPED_SENTINEL,
                 unmapped_codes,
             )
-
-        if not df.is_empty():
-            sample = df.row(0, named=True)
-            EntsoeContractedReserves(**sample)
 
         return df
 

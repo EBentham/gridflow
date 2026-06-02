@@ -26,6 +26,7 @@ class ActivatedBalancingPricesTransformer(BaseSilverTransformer):
 
     source = "entsoe"
     dataset = "activated_balancing_prices"
+    schema_cls = EntsoeActivatedBalancingPrices
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         bronze_path = self._bronze_path_for_date(target_date)
@@ -142,10 +143,6 @@ class ActivatedBalancingPricesTransformer(BaseSilverTransformer):
                 unmapped_bt,
                 unmapped_fd,
             )
-
-        if not df.is_empty():
-            sample = df.row(0, named=True)
-            EntsoeActivatedBalancingPrices(**sample)
 
         return df
 

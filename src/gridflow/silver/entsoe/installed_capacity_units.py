@@ -9,6 +9,7 @@ from typing import Any, ClassVar
 import polars as pl
 
 from gridflow.connectors.entsoe.parsers import parse_timeseries_xml
+from gridflow.schemas.entsoe import EntsoeInstalledCapacityUnits
 from gridflow.silver.base import BaseSilverTransformer
 from gridflow.silver.registry import register_transformer
 
@@ -26,6 +27,7 @@ class InstalledCapacityUnitsTransformer(BaseSilverTransformer):
 
     source = "entsoe"
     dataset = "installed_capacity_units"
+    schema_cls = EntsoeInstalledCapacityUnits
     DATASET_VERSION: ClassVar[str] = "1.0.0"
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:

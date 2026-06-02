@@ -9,6 +9,7 @@ from typing import Any
 
 import polars as pl
 
+from gridflow.schemas.gie import LNGTerminal
 from gridflow.silver.base import BaseSilverTransformer
 from gridflow.silver.registry import register_transformer
 
@@ -20,6 +21,7 @@ class LNGTerminalTransformer(BaseSilverTransformer):
 
     source = "gie_alsi"
     dataset = "lng"
+    schema_cls = LNGTerminal
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         bronze_path = self._bronze_path_for_date(target_date)

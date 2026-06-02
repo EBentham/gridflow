@@ -9,6 +9,7 @@ from typing import Any
 
 import polars as pl
 
+from gridflow.schemas.entsog import EntsogPhysicalFlow
 from gridflow.silver.base import BaseSilverTransformer
 from gridflow.silver.entsog.datetime import (
     filter_records_to_target_date,
@@ -65,6 +66,7 @@ class PhysicalFlowsTransformer(BaseSilverTransformer):
 
     source = "entsog"
     dataset = "physical_flows"
+    schema_cls = EntsogPhysicalFlow
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         bronze_path = self._bronze_path_for_date(target_date)

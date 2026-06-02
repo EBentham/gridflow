@@ -9,6 +9,7 @@ from typing import Any, ClassVar
 
 import polars as pl
 
+from gridflow.schemas.elexon import ElexonFOU2T14D
 from gridflow.silver.base import BaseSilverTransformer
 from gridflow.silver.registry import register_transformer
 from gridflow.utils.time import settlement_period_to_utc
@@ -32,6 +33,7 @@ class FOU2T14DTransformer(BaseSilverTransformer):
 
     source = "elexon"
     dataset = "fou2t14d"
+    schema_cls = ElexonFOU2T14D
     APPEND_ONLY: ClassVar[bool] = True
     DATASET_VERSION: ClassVar[str] = "1.0.0"
 

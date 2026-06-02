@@ -539,20 +539,22 @@ class TestDemandWeatherSchema(_SchemaTestBase):
     coords = (51.5074, -0.1278)
 
     def test_demand_specific_fields(self):
+        # VTA-SCHEMA-01: schema fields carry the transformer's unit suffix so
+        # full-frame validation covers the measurement columns (not vacuous).
         r = DemandWeather(
             timestamp_utc=self._TS,
             location="london",
             latitude=51.5,
             longitude=-0.1,
-            temperature_2m=5.2,
-            wind_speed_10m=12.5,
-            hdd=10.3,
-            cdd=0.0,
-            snowfall=0.0,
-            snow_depth=0.0,
+            temperature_2m_c=5.2,
+            wind_speed_10m_mps=12.5,
+            hdd_k=10.3,
+            cdd_k=0.0,
+            snowfall_cm=0.0,
+            snow_depth_m=0.0,
             air_density_kg_m3=1.27,
         )
-        assert r.snowfall == 0.0
+        assert r.snowfall_cm == 0.0
         assert r.air_density_kg_m3 == 1.27
 
 
@@ -567,14 +569,14 @@ class TestWindWeatherSchema(_SchemaTestBase):
             location="hornsea",
             latitude=53.88,
             longitude=1.79,
-            wind_speed_10m=8.5,
-            wind_speed_100m=14.2,
+            wind_speed_10m_mps=8.5,
+            wind_speed_100m_mps=14.2,
         )
         # 80m, 120m, 180m unset — schema permits null.
-        assert r.wind_speed_80m is None
-        assert r.wind_speed_120m is None
-        assert r.wind_speed_180m is None
-        assert r.wind_speed_100m == 14.2
+        assert r.wind_speed_80m_mps is None
+        assert r.wind_speed_120m_mps is None
+        assert r.wind_speed_180m_mps is None
+        assert r.wind_speed_100m_mps == 14.2
 
     def test_full_hub_height_set(self):
         r = WindWeather(
@@ -582,13 +584,13 @@ class TestWindWeatherSchema(_SchemaTestBase):
             location="hornsea",
             latitude=53.88,
             longitude=1.79,
-            wind_speed_10m=8.5,
-            wind_speed_80m=12.0,
-            wind_speed_100m=14.2,
-            wind_speed_120m=15.3,
-            wind_speed_180m=16.1,
+            wind_speed_10m_mps=8.5,
+            wind_speed_80m_mps=12.0,
+            wind_speed_100m_mps=14.2,
+            wind_speed_120m_mps=15.3,
+            wind_speed_180m_mps=16.1,
         )
-        assert r.wind_speed_180m == 16.1
+        assert r.wind_speed_180m_mps == 16.1
 
 
 class TestSolarWeatherSchema(_SchemaTestBase):
@@ -602,12 +604,12 @@ class TestSolarWeatherSchema(_SchemaTestBase):
             location="kent",
             latitude=51.2,
             longitude=0.7,
-            shortwave_radiation=600.0,
-            direct_radiation=450.0,
-            direct_normal_irradiance=750.0,
-            diffuse_radiation=150.0,
-            global_tilted_irradiance=720.0,
+            shortwave_radiation_wm2=600.0,
+            direct_radiation_wm2=450.0,
+            direct_normal_irradiance_wm2=750.0,
+            diffuse_radiation_wm2=150.0,
+            global_tilted_irradiance_wm2=720.0,
         )
-        assert r.shortwave_radiation == 600.0
-        assert r.direct_normal_irradiance == 750.0
-        assert r.global_tilted_irradiance == 720.0
+        assert r.shortwave_radiation_wm2 == 600.0
+        assert r.direct_normal_irradiance_wm2 == 750.0
+        assert r.global_tilted_irradiance_wm2 == 720.0

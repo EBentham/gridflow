@@ -21,6 +21,7 @@ class ForecastMarginTransformer(BaseSilverTransformer):
 
     source = "entsoe"
     dataset = "forecast_margin"
+    schema_cls = EntsoeForecastMargin
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         bronze_path = self._bronze_path_for_date(target_date)
@@ -77,10 +78,6 @@ class ForecastMarginTransformer(BaseSilverTransformer):
         ]
         available = [c for c in output_cols if c in df.columns]
         df = df.select(available).sort("timestamp_utc", "area_code")
-
-        if not df.is_empty():
-            sample = df.row(0, named=True)
-            EntsoeForecastMargin(**sample)
 
         return df
 

@@ -9,6 +9,7 @@ from typing import Any
 
 import polars as pl
 
+from gridflow.schemas.elexon import ElexonFrequency
 from gridflow.silver.base import BaseSilverTransformer
 from gridflow.silver.registry import register_transformer
 
@@ -20,6 +21,7 @@ class FreqTransformer(BaseSilverTransformer):
 
     source = "elexon"
     dataset = "freq"
+    schema_cls = ElexonFrequency
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         bronze_path = (

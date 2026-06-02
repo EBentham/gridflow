@@ -9,6 +9,7 @@ from typing import Any, ClassVar
 
 import polars as pl
 
+from gridflow.schemas.elexon import ElexonBMUnit
 from gridflow.silver.base import BaseSilverTransformer
 from gridflow.silver.registry import register_transformer
 from gridflow.storage.parquet import write_parquet
@@ -30,6 +31,7 @@ class BMUnitsTransformer(BaseSilverTransformer):
 
     source = "elexon"
     dataset = "bmunits_reference"
+    schema_cls = ElexonBMUnit
     DATASET_VERSION: ClassVar[str] = "1.0.0"
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:

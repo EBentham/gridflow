@@ -25,6 +25,7 @@ class ImbalanceVolumeTransformer(BaseSilverTransformer):
 
     source = "entsoe"
     dataset = "imbalance_volume"
+    schema_cls = EntsoeImbalanceVolume
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         bronze_path = self._bronze_path_for_date(target_date)
@@ -114,10 +115,6 @@ class ImbalanceVolumeTransformer(BaseSilverTransformer):
                 UNMAPPED_SENTINEL,
                 unmapped_codes,
             )
-
-        if not df.is_empty():
-            sample = df.row(0, named=True)
-            EntsoeImbalanceVolume(**sample)
 
         return df
 
