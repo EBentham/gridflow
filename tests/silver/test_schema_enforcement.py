@@ -132,7 +132,7 @@ class TestFailSoftSchemaEnforcement:
         assert t.last_validation_failure_count == 0
 
     def test_empty_bronze_does_not_carry_prior_count(self, tmp_path: Path) -> None:
-        """A date with no bronze early-returns but must reset the counter (not charge prior date)."""
+        """A no-bronze date early-returns but still resets the counter (not the prior date's)."""
         t = _ValidatingTransformer(tmp_path)
         t.rows = (99,)
         t.run(date(2026, 1, 1), run_id="test")

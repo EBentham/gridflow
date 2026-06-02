@@ -170,33 +170,52 @@ _NESO_FAMILY_DATASET = {
 
 _INTENSITY_PAYLOAD = {
     "data": [
-        {"from": "2024-01-15T00:00Z", "to": "2024-01-15T00:30Z",
-         "intensity": {"forecast": 245, "actual": 250, "index": "moderate"}},
-        {"from": "2024-01-15T00:30Z", "to": "2024-01-15T01:00Z",
-         "intensity": {"forecast": 260, "actual": None, "index": "moderate"}},
+        {
+            "from": "2024-01-15T00:00Z",
+            "to": "2024-01-15T00:30Z",
+            "intensity": {"forecast": 245, "actual": 250, "index": "moderate"},
+        },
+        {
+            "from": "2024-01-15T00:30Z",
+            "to": "2024-01-15T01:00Z",
+            "intensity": {"forecast": 260, "actual": None, "index": "moderate"},
+        },
     ]
 }
 _STATS_PAYLOAD = {
     "data": [
-        {"from": "2024-01-15T00:00Z", "to": "2024-01-16T00:00Z",
-         "intensity": {"max": 300, "average": 250, "min": 200, "index": "moderate"}},
+        {
+            "from": "2024-01-15T00:00Z",
+            "to": "2024-01-16T00:00Z",
+            "intensity": {"max": 300, "average": 250, "min": 200, "index": "moderate"},
+        },
     ]
 }
 _FACTORS_PAYLOAD = {"data": [{"Biomass": 120, "Coal": 937, "Solar": 0}]}
 _GENERATION_PAYLOAD = {
     "data": [
-        {"from": "2024-01-15T00:00Z", "to": "2024-01-15T00:30Z",
-         "generationmix": [{"fuel": "gas", "perc": 40.0}, {"fuel": "wind", "perc": 30.0}]},
+        {
+            "from": "2024-01-15T00:00Z",
+            "to": "2024-01-15T00:30Z",
+            "generationmix": [{"fuel": "gas", "perc": 40.0}, {"fuel": "wind", "perc": 30.0}],
+        },
     ]
 }
 _REGIONAL_PAYLOAD = {
     "data": [
-        {"from": "2024-01-15T00:00Z", "to": "2024-01-15T00:30Z",
-         "regions": [
-             {"regionid": 1, "dnoregion": "Scotland", "shortname": "North Scotland",
-              "intensity": {"forecast": 80, "index": "low"},
-              "generationmix": [{"fuel": "wind", "perc": 70.0}]},
-         ]},
+        {
+            "from": "2024-01-15T00:00Z",
+            "to": "2024-01-15T00:30Z",
+            "regions": [
+                {
+                    "regionid": 1,
+                    "dnoregion": "Scotland",
+                    "shortname": "North Scotland",
+                    "intensity": {"forecast": 80, "index": "low"},
+                    "generationmix": [{"fuel": "wind", "perc": 70.0}],
+                },
+            ],
+        },
     ]
 }
 _NESO_PAYLOADS = {
