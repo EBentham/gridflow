@@ -56,11 +56,20 @@ class LNGTerminal(BaseSchema):
     lng_in_storage_gwh: float | None = None
     send_out_gwh: float | None = None
     injection_gwh: float | None = None
-    dtrs_pct_full: float | None = None  # 0-100
+    # Honest LNG %-full, DERIVED = lng_in_storage_gwh / dtmi_gwh * 100 (clamped 0-100
+    # in the transform; VT1 discards this model so the clamp does not persist here).
+    lng_pct_full: float | None = None  # 0-100
+    # Vendor ``dtrs`` raw — UNCONFIRMED non-percentage metric (live ~724-2132 GWh-ish,
+    # so NOT a percentage); official ALSI units unavailable (docs auth-walled, absent
+    # from GIE v007 PDF). No unit suffix / acronym expansion asserted.
+    dtrs: float | None = None
+    # Vendor ``dtmi.{lng,gwh}`` raw — unconfirmed units (official ALSI docs auth-walled).
+    dtmi_lng: float | None = None
+    dtmi_gwh: float | None = None
     trend: float | None = None
     data_provider: str = Field(default="gie_alsi")
 
-    @field_validator("dtrs_pct_full")
+    @field_validator("lng_pct_full")
     @classmethod
     def clamp_pct(cls, v: float | None) -> float | None:
         if v is not None:

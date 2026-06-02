@@ -36,14 +36,14 @@ Daily LNG terminal inventory and send-out data from the ALSI (Aggregated LNG Sto
 
 **API path:** `https://alsi.gie.eu/api`
 **Param style:** `?country={CC}&from=YYYY-MM-DD&till=YYYY-MM-DD`
-**Silver key columns:** `gas_day`, `country_code`, `country_name`, `lng_in_storage_gwh`, `send_out_gwh`, `injection_gwh`, `dtrs_pct_full`, `trend`
+**Silver key columns:** `gas_day`, `country_code`, `country_name`, `lng_in_storage_gwh`, `send_out_gwh`, `injection_gwh`, `lng_pct_full`, `dtrs`, `dtmi_lng`, `dtmi_gwh`, `trend`
 
-| gas_day    | country_code | country_name   | lng_in_storage_gwh | send_out_gwh | injection_gwh | dtrs_pct_full | trend |
-|------------|--------------|----------------|-------------------:|-------------:|--------------:|--------------:|------:|
-| 2024-06-15 | GB           | United Kingdom |            8450.0 |        420.0 |           0.0 |          58.2 |  -2.1 |
-| 2024-06-15 | FR           | France         |           12800.0 |        680.0 |           0.0 |          62.5 |  -1.8 |
-| 2024-06-15 | ES           | Spain          |           18200.0 |        950.0 |           0.0 |          71.0 |  -2.5 |
-| 2024-06-15 | NL           | Netherlands    |            5600.0 |        310.0 |           0.0 |          48.3 |  -1.4 |
-| 2024-06-15 | IT           | Italy          |            9100.0 |        510.0 |           0.0 |          55.7 |  -1.9 |
+| gas_day    | country_code | country_name   | lng_in_storage_gwh | send_out_gwh | injection_gwh | lng_pct_full |   dtrs | dtmi_gwh | trend |
+|------------|--------------|----------------|-------------------:|-------------:|--------------:|-------------:|-------:|---------:|------:|
+| 2024-06-15 | GB           | United Kingdom |            8450.0 |        420.0 |           0.0 |         58.2 |  724.1 |  14520.0 |  -2.1 |
+| 2024-06-15 | FR           | France         |           12800.0 |        680.0 |           0.0 |         62.5 | 1043.0 |  20480.0 |  -1.8 |
+| 2024-06-15 | ES           | Spain          |           18200.0 |        950.0 |           0.0 |         71.0 | 2132.3 |  25634.0 |  -2.5 |
+| 2024-06-15 | NL           | Netherlands    |            5600.0 |        310.0 |           0.0 |         48.3 |  611.0 |  11594.0 |  -1.4 |
+| 2024-06-15 | IT           | Italy          |            9100.0 |        510.0 |           0.0 |         55.7 |  889.8 |  16338.0 |  -1.9 |
 
-> All volumes in GWh. `dtrs_pct_full` = Day Tank Recirculation Storage percentage full, clamped to [0, 100]. `send_out_gwh` = regasified LNG delivered to the grid. `injection_gwh` = LNG loaded into terminal storage. Deduplicated on `(gas_day, country_code)`.
+> All volumes in GWh. `lng_pct_full` = honest LNG terminal %-full, **derived** as `lng_in_storage_gwh / dtmi_gwh × 100` and clamped to [0, 100]. `dtrs` = raw vendor `dtrs` field — an **unconfirmed, non-percentage** metric (live values ~724–2132, i.e. >100, so it cannot be a percentage); its official meaning/unit is **not in the official ALSI docs** (auth-walled, and absent from the GIE v007 PDF), so no unit suffix or acronym expansion is asserted. `dtmi_lng` / `dtmi_gwh` = raw vendor `dtmi.{lng,gwh}` members, also **unconfirmed units**. `send_out_gwh` = regasified LNG delivered to the grid. `injection_gwh` = LNG loaded into terminal storage. Deduplicated on `(gas_day, country_code)`.
