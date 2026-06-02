@@ -108,9 +108,6 @@ class _H6ZonePairTransformer(BaseSilverTransformer):
         ]
         df = df.select(output_cols)
 
-        if not df.is_empty():
-            self.schema_cls(**df.row(0, named=True))
-
         return df
 
 

@@ -8,6 +8,7 @@ from datetime import UTC, date, datetime
 
 import polars as pl
 
+from gridflow.schemas.elexon import ElexonSystemPrice
 from gridflow.silver.base import BaseSilverTransformer
 from gridflow.silver.registry import register_transformer
 from gridflow.utils.time import settlement_period_to_utc
@@ -20,6 +21,7 @@ class SystemPriceTransformer(BaseSilverTransformer):
 
     source = "elexon"
     dataset = "system_prices"
+    schema_cls = ElexonSystemPrice
 
     # Run type precedence — higher number wins
     RUN_PRECEDENCE = {"II": 1, "SF": 2, "R1": 3, "R2": 4, "R3": 5, "RF": 6, "DF": 7}

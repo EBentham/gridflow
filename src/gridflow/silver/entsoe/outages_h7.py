@@ -100,9 +100,6 @@ class _H7OutageTransformer(BaseSilverTransformer):
         df = df.unique(subset=self.dedup_subset, keep="last").sort(self.dedup_subset)
         df = df.select(self.output_cols)
 
-        if not df.is_empty():
-            self.schema_cls(**df.row(0, named=True))
-
         return df
 
 

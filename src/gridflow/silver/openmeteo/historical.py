@@ -19,7 +19,7 @@ from __future__ import annotations
 import json
 import logging
 from datetime import UTC, date, datetime
-from typing import TYPE_CHECKING, Any, ClassVar
+from typing import Any, ClassVar
 
 import polars as pl
 
@@ -36,9 +36,6 @@ from gridflow.connectors.openmeteo.endpoints import (
 from gridflow.schemas.weather import DemandWeather, SolarWeather, WindWeather
 from gridflow.silver.base import BaseSilverTransformer
 from gridflow.silver.registry import register_transformer
-
-if TYPE_CHECKING:
-    from gridflow.schemas.common import BaseSchema
 
 logger = logging.getLogger(__name__)
 
@@ -89,7 +86,6 @@ class BaseOpenMeteoTransformer(BaseSilverTransformer):
     DATASET_VERSION: ClassVar[str] = "2.0.0"
 
     HOURLY_VARS: ClassVar[tuple[str, ...]] = ()
-    SCHEMA: ClassVar[type[BaseSchema]]
     LOCATIONS: ClassVar[tuple[WeatherLocation, ...]] = ()
     DERIVE_HDD_CDD: ClassVar[bool] = False
     DERIVE_AIR_DENSITY: ClassVar[bool] = False
@@ -277,7 +273,7 @@ class HistoricalDemandWeather(BaseOpenMeteoTransformer):
     BRONZE_DATASET_PREFIX = "historical_demand"
     LOCATIONS = DEMAND_LOCATIONS
     HOURLY_VARS = DEMAND_HOURLY_VARS
-    SCHEMA = DemandWeather
+    schema_cls = DemandWeather
     DERIVE_HDD_CDD = True
     DERIVE_AIR_DENSITY = True
     BRONZE_SIBLING_DATASETS: ClassVar[tuple[str, ...]] = tuple(
@@ -299,7 +295,7 @@ class HistoricalWindWeather(BaseOpenMeteoTransformer):
     BRONZE_DATASET_PREFIX = "historical_wind"
     LOCATIONS = WIND_LOCATIONS
     HOURLY_VARS = WIND_ARCHIVE_VARS
-    SCHEMA = WindWeather
+    schema_cls = WindWeather
     DERIVE_AIR_DENSITY = True
     BRONZE_SIBLING_DATASETS: ClassVar[tuple[str, ...]] = tuple(
         f"historical_wind__{loc.name}" for loc in WIND_LOCATIONS
@@ -318,7 +314,7 @@ class HistoricalSolarWeather(BaseOpenMeteoTransformer):
     BRONZE_DATASET_PREFIX = "historical_solar"
     LOCATIONS = SOLAR_LOCATIONS
     HOURLY_VARS = SOLAR_HOURLY_VARS
-    SCHEMA = SolarWeather
+    schema_cls = SolarWeather
     BRONZE_SIBLING_DATASETS: ClassVar[tuple[str, ...]] = tuple(
         f"historical_solar__{loc.name}" for loc in SOLAR_LOCATIONS
     )

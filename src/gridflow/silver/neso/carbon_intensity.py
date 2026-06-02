@@ -11,14 +11,36 @@ from typing import TYPE_CHECKING, Any
 if TYPE_CHECKING:
     from pathlib import Path
 
+    from gridflow.schemas.common import BaseSchema
+
 import polars as pl
 
 from gridflow.connectors.neso.endpoints import ENDPOINTS, ParserFamily
+from gridflow.schemas.neso import (
+    CarbonIntensity,
+    CarbonIntensityFactor,
+    CarbonIntensityStats,
+    GenerationMix,
+    RegionalIntensity,
+)
 from gridflow.silver.base import BaseSilverTransformer
 from gridflow.silver.registry import register_transformer
 from gridflow.storage.parquet import write_parquet
 
 logger = logging.getLogger(__name__)
+
+# VTA-SCHEMA-01: one class serves all NESO datasets and dispatches by
+# ``parser_family``, so the Pydantic contract is selected per family rather than
+# per dataset. ``schema_cls`` is set as a CLASS attribute (via this map) on each
+# generated transformer subtype and on ``CarbonIntensityTransformer`` — never
+# assigned through ``self`` (that would breach the ClassVar declared on the ABC).
+_FAMILY_SCHEMA: dict[ParserFamily, type[BaseSchema]] = {
+    ParserFamily.INTENSITY: CarbonIntensity,
+    ParserFamily.STATS: CarbonIntensityStats,
+    ParserFamily.FACTORS: CarbonIntensityFactor,
+    ParserFamily.GENERATION: GenerationMix,
+    ParserFamily.REGIONAL: RegionalIntensity,
+}
 
 
 class GenericNesoJsonTransformer(BaseSilverTransformer):
@@ -105,6 +127,7 @@ class CarbonIntensityTransformer(GenericNesoJsonTransformer):
 
     dataset = "carbon_intensity"
     parser_family = ParserFamily.INTENSITY
+    schema_cls = CarbonIntensity
 
 
 def register_neso_transformers() -> None:
@@ -131,6 +154,7 @@ def _make_transformer_class(
             "dataset": dataset,
             "parser_family": parser_family,
             "reference_dataset": reference_dataset,
+            "schema_cls": _FAMILY_SCHEMA[parser_family],
             "__module__": __name__,
         },
     )

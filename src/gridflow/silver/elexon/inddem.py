@@ -9,6 +9,7 @@ from typing import Any
 
 import polars as pl
 
+from gridflow.schemas.elexon import ElexonIndDem
 from gridflow.silver.base import BaseSilverTransformer
 from gridflow.silver.registry import register_transformer
 from gridflow.utils.time import settlement_period_to_utc
@@ -21,6 +22,7 @@ class INDDEMTransformer(BaseSilverTransformer):
 
     source = "elexon"
     dataset = "inddem"
+    schema_cls = ElexonIndDem
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         bronze_path = (

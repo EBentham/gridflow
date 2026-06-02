@@ -9,6 +9,7 @@ from typing import Any, ClassVar
 
 import polars as pl
 
+from gridflow.schemas.elexon import ElexonFuelHH
 from gridflow.silver.base import BaseSilverTransformer
 from gridflow.silver.registry import register_transformer
 from gridflow.utils.time import settlement_period_to_utc
@@ -21,6 +22,7 @@ class FuelHHTransformer(BaseSilverTransformer):
 
     source = "elexon"
     dataset = "fuelhh"
+    schema_cls = ElexonFuelHH
     DATASET_VERSION: ClassVar[str] = "1.0.0"
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:

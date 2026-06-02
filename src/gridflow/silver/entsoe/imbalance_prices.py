@@ -25,6 +25,7 @@ class ImbalancePricesTransformer(BaseSilverTransformer):
 
     source = "entsoe"
     dataset = "imbalance_prices"
+    schema_cls = EntsoeImbalancePrices
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         bronze_path = self._bronze_path_for_date(target_date)
@@ -114,10 +115,6 @@ class ImbalancePricesTransformer(BaseSilverTransformer):
                 UNMAPPED_SENTINEL,
                 unmapped_codes,
             )
-
-        if not df.is_empty():
-            sample = df.row(0, named=True)
-            EntsoeImbalancePrices(**sample)
 
         return df
 

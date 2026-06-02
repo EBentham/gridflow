@@ -95,9 +95,6 @@ class _H8BalancingTransformer(BaseSilverTransformer):
             .sort(list(self.unique_subset))
         )
 
-        if not df.is_empty():
-            self.schema_cls(**df.row(0, named=True))
-
         return df
 
     def _rename_domain_columns(self, df: pl.DataFrame) -> pl.DataFrame:

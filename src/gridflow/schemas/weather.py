@@ -5,6 +5,15 @@ schemas (``DemandWeather``, ``WindWeather``, ``SolarWeather``) so that
 each silver dataset validates against its own field set without leaving
 unrelated nullable columns.
 
+Field names carry the unit suffix the transformer emits (``_c``, ``_mps``,
+``_pct``, ``_hpa``, ``_wm2``, ``_deg``, ``_mm``, ``_cm``, ``_m``, ``_k``)
+so that full-frame ``schema_cls`` validation (VTA-SCHEMA-01) actually
+covers the measurement columns rather than ignoring them under
+``extra="ignore"``. The exact mapping is the transformer's
+``_PURE_RENAMES`` / ``_UNIT_CONVERSIONS`` table
+(``silver/openmeteo/historical.py``); ``hdd``/``cdd`` are renamed to
+``hdd_k``/``cdd_k`` and ``air_density_kg_m3`` is already suffixed.
+
 Bitemporal columns (``event_time``, ``available_at``, ``source_run_id``,
 ``dataset_version``) are NOT declared on these schemas; they are stamped
 onto the silver Polars DataFrame at write time by ``BaseSilverTransformer``
@@ -47,19 +56,19 @@ class DemandWeather(_BaseWeather):
     snow variables and derived air density.
     """
 
-    temperature_2m: float | None = None  # °C at 2m
-    wind_speed_10m: float | None = None  # km/h at 10m
-    wind_direction_10m: float | None = None  # degrees (0–360)
-    relative_humidity_2m: float | None = None  # %
-    precipitation: float | None = None  # mm
-    shortwave_radiation: float | None = None  # W/m²
-    surface_pressure: float | None = None  # hPa
-    snowfall: float | None = None  # cm/h
-    snow_depth: float | None = None  # m
+    temperature_2m_c: float | None = None  # °C at 2m
+    wind_speed_10m_mps: float | None = None  # m/s at 10m
+    wind_direction_10m_deg: float | None = None  # degrees (0–360)
+    relative_humidity_2m_pct: float | None = None  # %
+    precipitation_mm: float | None = None  # mm
+    shortwave_radiation_wm2: float | None = None  # W/m²
+    surface_pressure_hpa: float | None = None  # hPa
+    snowfall_cm: float | None = None  # cm/h
+    snow_depth_m: float | None = None  # m
 
     # Derived energy-demand indicators
-    hdd: float | None = None  # max(0, 15.5 - T)
-    cdd: float | None = None  # max(0, T - 22.0)
+    hdd_k: float | None = None  # max(0, 15.5 - T)
+    cdd_k: float | None = None  # max(0, T - 22.0)
     air_density_kg_m3: float | None = None  # P / (287.05 * T_K)
 
 
@@ -73,30 +82,30 @@ class WindWeather(_BaseWeather):
     The forecast endpoint (UKMO/ECMWF) carries the wider set.
     """
 
-    temperature_2m: float | None = None
-    surface_pressure: float | None = None
-    precipitation: float | None = None
+    temperature_2m_c: float | None = None
+    surface_pressure_hpa: float | None = None
+    precipitation_mm: float | None = None
 
-    wind_speed_10m: float | None = None
-    wind_speed_80m: float | None = None
-    wind_speed_100m: float | None = None
-    wind_speed_120m: float | None = None
-    wind_speed_180m: float | None = None
+    wind_speed_10m_mps: float | None = None
+    wind_speed_80m_mps: float | None = None
+    wind_speed_100m_mps: float | None = None
+    wind_speed_120m_mps: float | None = None
+    wind_speed_180m_mps: float | None = None
 
-    wind_direction_10m: float | None = None
-    wind_direction_80m: float | None = None
-    wind_direction_100m: float | None = None
-    wind_direction_120m: float | None = None
-    wind_direction_180m: float | None = None
+    wind_direction_10m_deg: float | None = None
+    wind_direction_80m_deg: float | None = None
+    wind_direction_100m_deg: float | None = None
+    wind_direction_120m_deg: float | None = None
+    wind_direction_180m_deg: float | None = None
 
-    wind_gusts_10m: float | None = None
+    wind_gusts_10m_mps: float | None = None
 
-    cloud_cover: float | None = None
-    cloud_cover_low: float | None = None
-    cloud_cover_mid: float | None = None
-    cloud_cover_high: float | None = None
+    cloud_cover_pct: float | None = None
+    cloud_cover_low_pct: float | None = None
+    cloud_cover_mid_pct: float | None = None
+    cloud_cover_high_pct: float | None = None
 
-    dew_point_2m: float | None = None  # °C — icing risk
+    dew_point_2m_c: float | None = None  # °C — icing risk
 
     air_density_kg_m3: float | None = None
 
@@ -109,18 +118,18 @@ class SolarWeather(_BaseWeather):
     Tilt/azimuth on the GTI request are documented in vault README.
     """
 
-    temperature_2m: float | None = None
+    temperature_2m_c: float | None = None
 
-    shortwave_radiation: float | None = None  # GHI (W/m²)
-    direct_radiation: float | None = None  # beam on horizontal (W/m²)
-    direct_normal_irradiance: float | None = None  # DNI (W/m²)
-    diffuse_radiation: float | None = None  # DHI (W/m²)
-    global_tilted_irradiance: float | None = None  # GTI on UK fixed tilt (W/m²)
+    shortwave_radiation_wm2: float | None = None  # GHI (W/m²)
+    direct_radiation_wm2: float | None = None  # beam on horizontal (W/m²)
+    direct_normal_irradiance_wm2: float | None = None  # DNI (W/m²)
+    diffuse_radiation_wm2: float | None = None  # DHI (W/m²)
+    global_tilted_irradiance_wm2: float | None = None  # GTI on UK fixed tilt (W/m²)
 
-    cloud_cover: float | None = None
-    cloud_cover_low: float | None = None
-    cloud_cover_mid: float | None = None
-    cloud_cover_high: float | None = None
+    cloud_cover_pct: float | None = None
+    cloud_cover_low_pct: float | None = None
+    cloud_cover_mid_pct: float | None = None
+    cloud_cover_high_pct: float | None = None
 
-    snowfall: float | None = None
-    snow_depth: float | None = None
+    snowfall_cm: float | None = None
+    snow_depth_m: float | None = None
