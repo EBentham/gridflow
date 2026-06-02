@@ -60,7 +60,10 @@ class LNGTerminalTransformer(BaseSilverTransformer):
             pl.col("gasDayStart").str.to_date(format="%Y-%m-%d", strict=False).alias("gas_day")
         )
 
-        # ALSI field names (may differ slightly from AGSI)
+        # ALSI field names (may differ slightly from AGSI).
+        # NB: vendor ``dtrs`` is carried RAW (neutral name) — it is NOT a percentage
+        # (live ~724-2132 GWh-ish, >100). The honest %-full is DERIVED below from
+        # lng_in_storage / dtmi.gwh. See schemas/gie.py:LNGTerminal for unit caveats.
         rename_map: dict[str, str] = {}
         field_map = {
             "lngInventory": "lng_in_storage_gwh",
@@ -68,8 +71,7 @@ class LNGTerminalTransformer(BaseSilverTransformer):
             "sendOut": "send_out_gwh",
             "withdrawal": "send_out_gwh",  # fallback
             "injection": "injection_gwh",
-            "dtrs": "dtrs_pct_full",
-            "full": "dtrs_pct_full",  # fallback
+            "dtrs": "dtrs",  # carry raw — UNCONFIRMED non-percentage metric
             "trend": "trend",
             "code": "country_code",
             "name": "country_name",
@@ -82,16 +84,42 @@ class LNGTerminalTransformer(BaseSilverTransformer):
         if rename_map:
             df = df.rename(rename_map)
 
+        # ``dtmi`` arrives as a Struct({lng, gwh}) when present; extract its members
+        # into flat columns (unconfirmed units) and feed the gwh leg into the
+        # derived %-full below. Tolerate its absence (older/partial responses).
+        if "dtmi" in df.columns:
+            df = df.with_columns(
+                [
+                    pl.col("dtmi").struct.field("lng").alias("dtmi_lng"),
+                    pl.col("dtmi").struct.field("gwh").alias("dtmi_gwh"),
+                ]
+            )
+
         float_cols = [
             "lng_in_storage_gwh",
             "send_out_gwh",
             "injection_gwh",
-            "dtrs_pct_full",
+            "dtrs",
+            "dtmi_lng",
+            "dtmi_gwh",
             "trend",
         ]
         for col in float_cols:
             if col in df.columns:
                 df = df.with_columns(pl.col(col).cast(pl.Utf8).cast(pl.Float64, strict=False))
+
+        # Derive the honest LNG %-full = lng_in_storage / dtmi.gwh * 100, clamped to
+        # [0, 100]. VT1's schema gate discards the validated model, so the clamp must
+        # persist HERE (in-transform) rather than on the Pydantic field. Only when
+        # dtmi.gwh is present and > 0; otherwise leave null.
+        if "dtmi_gwh" in df.columns and "lng_in_storage_gwh" in df.columns:
+            df = df.with_columns(
+                pl.when(pl.col("dtmi_gwh").is_not_null() & (pl.col("dtmi_gwh") > 0))
+                .then(pl.col("lng_in_storage_gwh") / pl.col("dtmi_gwh") * 100)
+                .otherwise(None)
+                .clip(0, 100)
+                .alias("lng_pct_full")
+            )
 
         if "country_code" not in df.columns and "countryCode" in df.columns:
             df = df.rename({"countryCode": "country_code"})
@@ -116,7 +144,10 @@ class LNGTerminalTransformer(BaseSilverTransformer):
             "lng_in_storage_gwh",
             "send_out_gwh",
             "injection_gwh",
-            "dtrs_pct_full",
+            "lng_pct_full",
+            "dtrs",
+            "dtmi_lng",
+            "dtmi_gwh",
             "trend",
             "data_provider",
             "ingested_at",

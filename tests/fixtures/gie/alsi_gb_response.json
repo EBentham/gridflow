@@ -7,10 +7,14 @@
   "data": [
     {
       "gasDayStart": "2024-01-15",
-      "gasInStorage": "5200.40",
-      "withdrawal": "420.10",
+      "lngInventory": "1172.80",
+      "sendOut": "420.10",
       "injection": "0.00",
-      "full": "74.3",
+      "dtrs": "724.1",
+      "dtmi": {
+        "lng": "1.50",
+        "gwh": "2132.30"
+      },
       "trend": "1.20",
       "name": "United Kingdom",
       "code": "GB",
@@ -21,10 +25,14 @@
     },
     {
       "gasDayStart": "2024-01-14",
-      "gasInStorage": "4780.30",
-      "withdrawal": "380.50",
+      "lngInventory": "1020.00",
+      "sendOut": "380.50",
       "injection": "0.00",
-      "full": "68.3",
+      "dtrs": "889.8",
+      "dtmi": {
+        "lng": "1.10",
+        "gwh": "1500.00"
+      },
       "trend": "-0.90",
       "name": "United Kingdom",
       "code": "GB",

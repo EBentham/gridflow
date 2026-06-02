@@ -368,6 +368,42 @@ class TestLNGTerminalTransformer:
         days = result["gas_day"].to_list()
         assert days == sorted(days)
 
+    def test_dtrs_carried_raw_not_relabelled_as_percentage(self):
+        """Regression (VTA-GIE-DTRS-01): vendor ``dtrs`` is NOT a percentage.
+
+        Live ALSI returns ``dtrs`` ~724-2132 (>100), so it must be carried raw under
+        a neutral name and must never land in a ``*pct*``/``*full*`` column. The
+        honest %-full is derived as ``lng_in_storage_gwh / dtmi_gwh * 100`` (0-100).
+        Pre-fix the transformer mapped ``dtrs`` -> ``dtrs_pct_full``, surfacing 724.1
+        under a percent-named column; this asserts that no longer happens.
+        """
+        result = self.t.transform(self._make_raw_df())
+
+        # Honesty property: no column whose name implies a percentage carries >100.
+        pct_like = [c for c in result.columns if "pct" in c or "full" in c]
+        for col in pct_like:
+            vals = [v for v in result[col].to_list() if v is not None]
+            assert all(v <= 100.0 for v in vals), f"{col} holds a value >100: {vals}"
+
+        # dtrs is carried raw under its own neutral name (not a percentage).
+        assert "dtrs" in result.columns
+        assert "dtrs_pct_full" not in result.columns
+        row = result.filter(pl.col("gas_day") == date(2024, 1, 15))
+        assert abs(row["dtrs"][0] - 724.1) < 1e-6
+
+        # dtmi.{lng,gwh} captured as unconfirmed-unit columns.
+        assert "dtmi_lng" in result.columns
+        assert "dtmi_gwh" in result.columns
+        assert abs(row["dtmi_gwh"][0] - 2132.3) < 1e-6
+        assert abs(row["dtmi_lng"][0] - 1.5) < 1e-6
+
+        # Honest derived %-full = lng_in_storage_gwh / dtmi_gwh * 100, clamped 0-100.
+        assert "lng_pct_full" in result.columns
+        expected = row["lng_in_storage_gwh"][0] / row["dtmi_gwh"][0] * 100
+        assert abs(row["lng_pct_full"][0] - expected) < 1e-6
+        all_pct = [v for v in result["lng_pct_full"].to_list() if v is not None]
+        assert all(0.0 <= v <= 100.0 for v in all_pct)
+
 
 # ---------------------------------------------------------------------------
 # GasStorage schema
@@ -415,16 +451,23 @@ class TestLNGTerminalSchema:
             gas_day=self._DATE,
             country_code="GB",
             lng_in_storage_gwh=5200.4,
-            dtrs_pct_full=74.3,
+            lng_pct_full=74.3,
+            dtrs=724.1,
+            dtmi_gwh=2132.3,
         )
         assert r.data_provider == "gie_alsi"
         assert r.country_code == "GB"
+        # dtrs is carried raw (NOT a percentage) — never clamped to 0-100.
+        assert r.dtrs == 724.1
 
     def test_optional_fields_default_none(self):
         r = LNGTerminal(gas_day=self._DATE, country_code="GB")
         assert r.lng_in_storage_gwh is None
-        assert r.dtrs_pct_full is None
+        assert r.lng_pct_full is None
+        assert r.dtrs is None
+        assert r.dtmi_lng is None
+        assert r.dtmi_gwh is None
 
     def test_pct_full_clamped_high(self):
-        r = LNGTerminal(gas_day=self._DATE, country_code="GB", dtrs_pct_full=105.0)
-        assert r.dtrs_pct_full == 100.0
+        r = LNGTerminal(gas_day=self._DATE, country_code="GB", lng_pct_full=105.0)
+        assert r.lng_pct_full == 100.0
