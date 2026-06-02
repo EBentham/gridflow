@@ -11,11 +11,15 @@ from pathlib import Path
 from typing import ClassVar
 
 import polars as pl
+from pydantic import BaseModel, ValidationError
 
 from gridflow.storage.parquet import write_parquet
 from gridflow.utils.time import settlement_period_to_utc
 
 logger = logging.getLogger(__name__)
+
+_VALIDATION_SAMPLE_LIMIT = 5
+"""Max distinct validation-error strings logged per ``run()`` (fail-soft; bounded)."""
 
 
 class BaseSilverTransformer(ABC):
@@ -30,6 +34,18 @@ class BaseSilverTransformer(ABC):
 
     source: str
     dataset: str
+    schema_cls: ClassVar[type[BaseModel] | None] = None
+    """Opt-in Pydantic schema for full-frame silver validation (VTA-SCHEMA-01).
+
+    When set, ``run()`` validates every row of the ``transform()`` output against
+    this model, fail-soft: failures are counted into
+    ``last_validation_failure_count`` and surfaced by the CLI as
+    ``completed_with_warnings`` — never raised, never dropped. ``None`` (the
+    default) skips validation, which cleanly excludes generic/dynamic transformers
+    that have no fixed Pydantic contract (the ENTSO-G generic family incl. CMP, the
+    GIE generic JSON family). Subclasses that serve one dataset set this as a class
+    attribute; one-class-many-schemas transformers (NESO) set it per instance.
+    """
     last_unmapped_count: int = 0
     """Count of rows whose enum code was unmapped in the most recent ``run()``.
 
@@ -39,6 +55,16 @@ class BaseSilverTransformer(ABC):
     ``PipelineRunTracker.complete_with_warnings``. Resetting in ``run()`` (not
     only on ``transform()``'s happy path) keeps a date with no bronze or missing
     columns from being charged the previous date's count.
+    """
+    last_validation_failure_count: int = 0
+    """Count of rows that failed ``schema_cls`` validation in the most recent ``run()``.
+
+    Reset to 0 at the start of every ``run()`` (before any early return) and set by
+    the central ``_validate_against_schema`` step on the ``transform()`` output. The
+    CLI accumulates it across dates and threads the total into
+    ``PipelineRunTracker.complete_with_warnings`` (parallel to
+    ``last_unmapped_count``; VTA-SCHEMA-01). Rows that fail validation are still
+    written — the count is the only signal (fail-soft).
     """
     DATASET_VERSION: ClassVar[str] = "1.0.0"
     BRONZE_SIBLING_DATASETS: ClassVar[tuple[str, ...]] = ()
@@ -82,10 +108,12 @@ class BaseSilverTransformer(ABC):
 
         Returns the number of rows written.
         """
-        # Reset the per-run unmapped count before either early-return path so a
+        # Reset the per-run warning counters before either early-return path so a
         # date with no bronze / missing columns is never charged a prior date's
-        # count (ADR-022; the CLI accumulates this after each per-date run).
+        # count (ADR-022 unmapped + VTA-SCHEMA-01 validation; the CLI accumulates
+        # both after each per-date run).
         self.last_unmapped_count = 0
+        self.last_validation_failure_count = 0
 
         # Read bronze
         raw_df = self.read_bronze(target_date)
@@ -98,6 +126,14 @@ class BaseSilverTransformer(ABC):
         if clean_df.is_empty():
             logger.warning(f"Transform produced 0 rows for {target_date}")
             return 0
+
+        # Enforce the declared Pydantic schema on the FULL frame, fail-soft
+        # (VTA-SCHEMA-01): failures are counted + logged here and surfaced by the
+        # CLI as completed_with_warnings — never raised, never dropped (CLAUDE.md
+        # hard rule). Validated on the transform() output, before bitemporal
+        # columns are stamped (schemas do not declare those). No-op when
+        # schema_cls is None (generic/dynamic transformers, incl. ENTSO-G CMP).
+        self.last_validation_failure_count = self._validate_against_schema(clean_df)
 
         resolved_run_id = run_id or f"adhoc-{datetime.now(UTC).isoformat()}"
         available_at = (
@@ -118,6 +154,50 @@ class BaseSilverTransformer(ABC):
             f"Silver write: {self.source}/{self.dataset} {target_date} -> {len(clean_df)} rows"
         )
         return len(clean_df)
+
+    def _validate_against_schema(self, df: pl.DataFrame) -> int:
+        """Validate every row of the transform output against ``schema_cls``, fail-soft.
+
+        Returns the number of rows that failed Pydantic validation. **Never raises
+        and never drops a row**: invalid rows are still written to silver; the
+        returned count is the only signal, threaded by the CLI into
+        ``PipelineRunTracker.complete_with_warnings`` (the CLAUDE.md hard rule —
+        validation failures are logged, counted, and surfaced, never silently
+        dropped). A no-op returning ``0`` when ``schema_cls`` is ``None`` (generic/
+        dynamic transformers with no fixed contract) or the frame is empty.
+
+        Validates the ``transform()`` output (pre-bitemporal): the schema describes
+        exactly those columns, and ``BaseSchema``'s ``extra="ignore"`` means any
+        additional columns are tolerated. ``strict=True`` schemas will surface real
+        ``Field(ge/le)`` / tz breaches on later (non-first) rows as warnings — that
+        is the intended fail-soft behaviour, not an error.
+        """
+        schema = self.schema_cls
+        if schema is None or df.is_empty():
+            return 0
+
+        failures = 0
+        sample: list[str] = []
+        for row in df.iter_rows(named=True):
+            try:
+                schema.model_validate(row)
+            except ValidationError as exc:
+                failures += 1
+                if len(sample) < _VALIDATION_SAMPLE_LIMIT:
+                    sample.append(str(exc).replace("\n", " ")[:300])
+
+        if failures:
+            logger.warning(
+                "Schema validation: %d/%d row(s) failed %s for %s/%s "
+                "(completed_with_warnings; rows still written). Sample: %s",
+                failures,
+                len(df),
+                schema.__name__,
+                self.source,
+                self.dataset,
+                sample,
+            )
+        return failures
 
     def _add_bitemporal_columns(
         self,
