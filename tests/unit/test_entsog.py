@@ -275,6 +275,33 @@ class TestPhysicalFlowsTransformer:
         assert len(result) == 1
         assert abs(result["flow_gwh_per_day"][0] - 15_000.0) < 0.01
 
+    def test_gas_day_offset_converted_to_utc(self):
+        """ENGOP-04 (VT4): a gas-day periodFrom bearing a real offset (winter CET
+        +01:00) must convert to the equivalent UTC instant — the CLAUDE.md
+        silent-bug class for gas-day -> UTC.
+
+        06:00 at +01:00 is 05:00 UTC. A naive parse (dropping the offset) would
+        wrongly emit 06:00 UTC; a double-applied offset would emit 04:00/07:00.
+        parse_entsog_datetime() does `.astimezone(UTC)`, so the expected value is
+        a single correct conversion.
+        """
+        raw = pl.DataFrame(
+            [
+                {
+                    "indicator": "Physical Flow",
+                    "periodFrom": "2024-01-15T06:00:00+01:00",
+                    "pointKey": "IUK",
+                    "directionKey": "entry",
+                    "value": 15_000.0,
+                    "unit": "GWh/d",
+                }
+            ]
+        )
+        result = self.t.transform(raw)
+        assert len(result) == 1
+        assert result["timestamp_utc"].dtype == pl.Datetime("us", "UTC")
+        assert result["timestamp_utc"][0] == datetime(2024, 1, 15, 5, 0, tzinfo=UTC)
+
     def test_unknown_unit_row_dropped_not_mis_scaled(self, caplog):
         """Issue 05 #3 (transform level): a row with an unrecognised unit must
         NOT be emitted with a silently mis-scaled value. It is dropped with a

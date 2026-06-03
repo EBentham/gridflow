@@ -571,6 +571,95 @@ class TestDayAheadPriceCurrency:
         )
 
 
+# A85/A84 balancing price documents with NO <currency_Unit.name> element: the
+# silver `currency` column must fall back to the continental "EUR" default
+# rather than being dropped. One TimeSeries per doc keeps the assertion tight.
+_NO_CURRENCY_IMBALANCE_XML = b"""<?xml version="1.0" encoding="UTF-8"?>
+<Balancing_MarketDocument xmlns="urn:iec62325.351:tc57wg16:451-6:balancingdocument:4:0">
+  <mRID>imb-no-ccy</mRID>
+  <createdDateTime>2024-01-14T12:00:00Z</createdDateTime>
+  <TimeSeries>
+    <mRID>1</mRID>
+    <businessType>A19</businessType>
+    <controlArea_Domain.mRID>10YGB----------A</controlArea_Domain.mRID>
+    <Period>
+      <timeInterval><start>2024-01-15T00:00Z</start><end>2024-01-16T00:00Z</end></timeInterval>
+      <resolution>PT30M</resolution>
+      <Point><position>1</position><price.amount>95.50</price.amount></Point>
+    </Period>
+  </TimeSeries>
+</Balancing_MarketDocument>"""
+
+_NO_CURRENCY_ACTIVATED_XML = b"""<?xml version="1.0" encoding="UTF-8"?>
+<Balancing_MarketDocument xmlns="urn:iec62325.351:tc57wg16:451-6:balancingdocument:4:0">
+  <mRID>act-no-ccy</mRID>
+  <createdDateTime>2024-01-14T12:00:00Z</createdDateTime>
+  <TimeSeries>
+    <mRID>1</mRID>
+    <businessType>A95</businessType>
+    <flowDirection.direction>A01</flowDirection.direction>
+    <controlArea_Domain.mRID>10YGB----------A</controlArea_Domain.mRID>
+    <Period>
+      <timeInterval><start>2024-01-15T00:00Z</start><end>2024-01-16T00:00Z</end></timeInterval>
+      <resolution>PT30M</resolution>
+      <Point><position>1</position><price.amount>110.00</price.amount></Point>
+    </Period>
+  </TimeSeries>
+</Balancing_MarketDocument>"""
+
+
+class TestImbalanceActivatedBalancingCurrency:
+    """ENPRICE-04 (VT4): imbalance_prices and activated_balancing_prices must
+    carry the explicit `<currency_Unit.name>` denomination into silver, exactly
+    as day_ahead_prices does, so a GBP price is never silently trusted as EUR on
+    the strength of the `price_eur_mwh` column name alone.
+
+    FAILS on pre-fix code: neither transformer emitted a `currency` column.
+    """
+
+    def test_imbalance_prices_currency_carries_gbp(self):
+        """The GB fixture self-reports <currency_Unit.name>GBP; the silver
+        currency column must say GBP, not a hardcoded EUR."""
+        raw = _make_df_from_xml("imbalance_prices_gb.xml", "price.amount")
+        result = _make_entsoe_transformer(ImbalancePricesTransformer).transform(raw)
+        assert "currency" in result.columns, (
+            "imbalance_prices dropped currency; a GBP price would be mislabelled EUR"
+        )
+        assert set(result["currency"].to_list()) == {"GBP"}, (
+            "GBP imbalance price silently labelled non-GBP — currency not carried to silver"
+        )
+
+    def test_imbalance_prices_currency_defaults_to_eur_when_absent(self):
+        """A document with no <currency_Unit.name> defaults to EUR (continental),
+        present and typed, not dropped."""
+        records = parse_timeseries_xml(_NO_CURRENCY_IMBALANCE_XML, value_tag="price.amount")
+        raw = pl.DataFrame(records)
+        result = _make_entsoe_transformer(ImbalancePricesTransformer).transform(raw)
+        assert "currency" in result.columns
+        assert set(result["currency"].to_list()) == {"EUR"}
+
+    def test_activated_balancing_prices_currency_carries_gbp(self):
+        """The GB fixture self-reports <currency_Unit.name>GBP; the silver
+        currency column must say GBP, not a hardcoded EUR."""
+        raw = _make_df_from_xml("activated_balancing_prices_gb.xml", "price.amount")
+        result = _make_entsoe_transformer(ActivatedBalancingPricesTransformer).transform(raw)
+        assert "currency" in result.columns, (
+            "activated_balancing_prices dropped currency; a GBP price would be mislabelled EUR"
+        )
+        assert set(result["currency"].to_list()) == {"GBP"}, (
+            "GBP activation price silently labelled non-GBP — currency not carried to silver"
+        )
+
+    def test_activated_balancing_prices_currency_defaults_to_eur_when_absent(self):
+        """A document with no <currency_Unit.name> defaults to EUR (continental),
+        present and typed, not dropped."""
+        records = parse_timeseries_xml(_NO_CURRENCY_ACTIVATED_XML, value_tag="price.amount")
+        raw = pl.DataFrame(records)
+        result = _make_entsoe_transformer(ActivatedBalancingPricesTransformer).transform(raw)
+        assert "currency" in result.columns
+        assert set(result["currency"].to_list()) == {"EUR"}
+
+
 class TestForecastResolutionIsoCode:
     """Issue 05 #4: silver `resolution` is the ENTSO-E ISO code, not str(timedelta)."""
 

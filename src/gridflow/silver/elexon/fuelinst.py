@@ -9,7 +9,7 @@ from typing import Any
 
 import polars as pl
 
-from gridflow.schemas.elexon import ElexonGenerationByFuel
+from gridflow.schemas.elexon import ElexonFuelInst
 from gridflow.silver.base import BaseSilverTransformer
 from gridflow.silver.registry import register_transformer
 
@@ -21,7 +21,11 @@ class FuelInstTransformer(BaseSilverTransformer):
 
     source = "elexon"
     dataset = "fuelinst"
-    schema_cls = ElexonGenerationByFuel
+    # ELEXB-05 (VT4): FUELINST output is instantaneous (timestamp_utc only, no
+    # settlement coordinates), so its contract is ElexonFuelInst — not
+    # ElexonGenerationByFuel, which requires settlement_date + settlement_period
+    # the transformer never emits.
+    schema_cls = ElexonFuelInst
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         bronze_path = (

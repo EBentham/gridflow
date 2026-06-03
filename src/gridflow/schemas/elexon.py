@@ -76,6 +76,32 @@ class ElexonGenerationByFuel(BaseSchema):
         return v
 
 
+class ElexonFuelInst(BaseSchema):
+    """Silver schema: Instantaneous Generation by Fuel Type (FUELINST).
+
+    ELEXB-05 (VT4): dedicated schema for FUELINST. The transformer emits an
+    instantaneous (publish-time-derived) `timestamp_utc` with no settlement
+    coordinates, so it cannot satisfy `ElexonGenerationByFuel` (which requires
+    settlement_date + settlement_period). Fields mirror the transformer's
+    output_cols exactly: timestamp_utc, fuel_type, generation_mw, data_provider,
+    ingested_at. Settlement-keyed half-hourly outturn lives in FUELHH
+    (`ElexonFuelHH`); aggregate generation-by-fuel in `ElexonGenerationByFuel`.
+    """
+
+    timestamp_utc: datetime
+    fuel_type: str
+    generation_mw: float
+    data_provider: str = Field(default="elexon")
+    ingested_at: datetime | None = None
+
+    @field_validator("timestamp_utc")
+    @classmethod
+    def must_be_utc(cls, v: datetime) -> datetime:
+        if v.tzinfo is None:
+            raise ValueError("timestamp_utc must be timezone-aware (UTC)")
+        return v
+
+
 class ElexonFuelHH(BaseSchema):
     """Silver schema: Half-hourly generation outturn by fuel type (FUELHH)."""
 
