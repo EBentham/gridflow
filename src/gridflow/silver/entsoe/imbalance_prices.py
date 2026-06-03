@@ -10,7 +10,7 @@ import polars as pl
 from gridflow.connectors.entsoe.parsers import parse_timeseries_xml
 from gridflow.schemas.entsoe import EntsoeImbalancePrices
 from gridflow.silver.base import BaseSilverTransformer
-from gridflow.silver.entsoe._enum_maps import UNMAPPED_SENTINEL
+from gridflow.silver.entsoe._enum_maps import UNMAPPED_SENTINEL, currency_expr
 from gridflow.silver.registry import register_transformer
 
 logger = logging.getLogger(__name__)
@@ -63,13 +63,23 @@ class ImbalancePricesTransformer(BaseSilverTransformer):
                 }
             )
             .with_columns(
-                pl.col("business_type")
-                .replace_strict(
-                    {"A19": "long", "A20": "short"},
-                    default=UNMAPPED_SENTINEL,
-                    return_dtype=pl.Utf8,
-                )
-                .alias("direction")
+                [
+                    pl.col("business_type")
+                    .replace_strict(
+                        {"A19": "long", "A20": "short"},
+                        default=UNMAPPED_SENTINEL,
+                        return_dtype=pl.Utf8,
+                    )
+                    .alias("direction"),
+                    # ENPRICE-04 (VT4): carry the explicit source currency
+                    # (parsed from <currency_Unit.name>) so a GBP price is never
+                    # silently trusted as EUR on the strength of the
+                    # `price_eur_mwh` column name alone. Mirrors day_ahead_prices.
+                    # Empty -> "EUR" fallback only when the source omitted
+                    # currency_Unit (continental default). Derived here, while
+                    # `currency_unit` is still in scope before the select() below.
+                    currency_expr(raw_df).alias("currency"),
+                ]
             )
             .select(
                 [
@@ -77,6 +87,7 @@ class ImbalancePricesTransformer(BaseSilverTransformer):
                     "area_code",
                     "direction",
                     "price_eur_mwh",
+                    "currency",
                     "resolution",
                 ]
             )
@@ -96,6 +107,7 @@ class ImbalancePricesTransformer(BaseSilverTransformer):
             "area_code",
             "direction",
             "price_eur_mwh",
+            "currency",
             "resolution",
             "data_provider",
             "ingested_at",

@@ -358,12 +358,20 @@ class EntsoeImbalancePrices(BaseSchema):
 
     direction: "long" = system surplus (A19), "short" = system deficit (A20).
     price_eur_mwh: Imbalance settlement price in EUR/MWh.
+
+    ENPRICE-04 (VT4): `currency` carries the explicit source denomination parsed
+    from `<currency_Unit.name>` (e.g. "EUR" for continental zones, "GBP" for GB).
+    The `price_eur_mwh` column name is retained for backward compatibility but
+    `currency` is the authoritative denomination — a GB price is labelled "GBP"
+    here even though the value column keeps the legacy `_eur_` name. Mirrors
+    `EntsoeDayAheadPrice`.
     """
 
     timestamp_utc: datetime
     area_code: str  # control area EIC mRID
     direction: str  # "long" | "short"
     price_eur_mwh: float
+    currency: str = "EUR"
     resolution: str = ""
     data_provider: str = Field(default="entsoe")
     ingested_at: datetime | None = None
@@ -430,6 +438,11 @@ class EntsoeActivatedBalancingPrices(BaseSchema):
     reserve_type: "fcr"(A95) | "afrr"(A96) | "mfrr"(A97) | "rr"(A98).
     direction: "up"(A01) | "down"(A02).
     price_eur_mwh: Activation price in EUR/MWh.
+
+    ENPRICE-04 (VT4): `currency` carries the explicit source denomination parsed
+    from `<currency_Unit.name>` (e.g. "EUR" for continental zones, "GBP" for GB).
+    The `price_eur_mwh` column name is retained for backward compatibility but
+    `currency` is the authoritative denomination. Mirrors `EntsoeDayAheadPrice`.
     """
 
     timestamp_utc: datetime
@@ -437,6 +450,7 @@ class EntsoeActivatedBalancingPrices(BaseSchema):
     reserve_type: str  # "fcr" | "afrr" | "mfrr" | "rr"
     direction: str  # "up" | "down"
     price_eur_mwh: float
+    currency: str = "EUR"
     resolution: str = ""
     data_provider: str = Field(default="entsoe")
     ingested_at: datetime | None = None
