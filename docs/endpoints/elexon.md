@@ -3,7 +3,7 @@
 **Source:** `elexon`
 **Base URL:** `https://data.elexon.co.uk/bmrs/api/v1`
 **Authentication:** None (public API)
-**Settlement period:** 30 minutes; SP1 = 00:00–00:30 UTC, SP48 = 23:30–24:00 UTC
+**Settlement period:** 30 minutes; SP1 = 00:00–00:30 UTC. The settlement-period range is **1..50** — 48 on a normal day, 46 on the spring-forward DST day, 50 on the autumn-back DST day (never a fixed 1..48).
 
 This document mirrors the navigation structure of the [Elexon BMRS Insights Solution](https://bmrs.elexon.co.uk/).
 
