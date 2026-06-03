@@ -210,13 +210,13 @@ gridflow init
 
 | Source | CLI Name | Datasets |
 |--------|----------|----------|
-| Elexon | `elexon` | `system_prices`, `fuelhh`, `fuelinst`, `boal`, `mid`, `freq`, `ndf`, `ndfd`, `pn`, `disbsad`, `netbsad`, `imbalngc`, `melngc`, `windfor`, `temp`, `fou2t14d`, `uou2t14d`, `generation_by_fuel`, `bmunits_reference` |
-| ENTSO-E | `entsoe` | `day_ahead_prices`, `actual_load`, `load_forecast`, `actual_generation`, `wind_solar_forecast`, `cross_border_flows`, `outages_generation`, `installed_capacity` |
-| ENTSO-G | `entsog` | `physical_flows` |
-| GIE AGSI | `gie_agsi` | `storage` |
+| Elexon | `elexon` | `system_prices`, `boal`, `disbsad`, `freq`, `fuelhh`, `fuelinst`, `imbalngc`, `mid`, `netbsad`, `ndf`, `ndfd`, `pn`, `melngc`, `fou2t14d`, `uou2t14d`, `windfor`, `temp`, `agpt`, `agws`, `atl`, `indo`, `itsdo`, `indod`, `nonbm`, `inddem`, `indgen`, `tsdf`, `tsdfd`, `lolpdrm`, `remit`, `soso`, `market_depth`, `bmunits_reference` |
+| ENTSO-E | `entsoe` | `day_ahead_prices`, `actual_load`, `load_forecast`, `actual_generation`, `wind_solar_forecast`, `cross_border_flows`, `outages_generation`, `outages_consumption`, `outages_transmission`, `outages_offshore_grid`, `outages_production`, `installed_capacity`, `installed_capacity_units`, `generation_forecast`, `actual_generation_units`, `water_reservoirs`, `generation_units_master_data`, `load_forecast_weekly`, `load_forecast_monthly`, `load_forecast_yearly`, `forecast_margin`, `net_transfer_capacity`, `dc_link_intraday_transfer_limits`, `commercial_schedules`, `redispatching_cross_border`, `redispatching_internal`, `countertrading`, `congestion_management_costs`, `offered_transfer_capacity_continuous`, `offered_transfer_capacity_implicit`, `offered_transfer_capacity_explicit`, `auction_revenue`, `transfer_capacity_use`, `total_nominated_capacity`, `total_capacity_allocated`, `congestion_income`, `net_positions`, `imbalance_prices`, `imbalance_volume`, `activated_balancing_prices`, `contracted_reserves`, `current_balancing_state`, `balancing_energy_bids`, `aggregated_balancing_energy_bids`, `procured_balancing_capacity`, `cross_zonal_balancing_capacity`, `balancing_financial_expenses_income` |
+| ENTSO-G | `entsog` | `physical_flows`, `nominations`, `allocations`, `renominations`, `firm_available`, `firm_booked`, `firm_technical`, `interruptible_available`, `interruptible_booked`, `interruptible_total`, `gcv`, `wobbe_index`, `methane_content`, `hydrogen_content`, `oxygen_content`, `available_through_oversubscription`, `available_through_surrender`, `available_through_uioli_long_term`, `available_through_uioli_short_term`, `cmp_unsuccessful_requests`, `cmp_unavailable_firm_capacity`, `cmp_auction_premiums`, `interruptions`, `aggregated_physical_flows`, `tariffs`, `tariff_simulations`, `urgent_market_messages`, `connection_points`, `operators`, `balancing_zones`, `operator_point_directions`, `interconnections`, `aggregate_interconnections` |
+| GIE AGSI | `gie_agsi` | `storage`, `storage_reports`, `about_summary`, `about_listing`, `news`, `news_item`, `unavailability` |
 | GIE ALSI | `gie_alsi` | `lng` |
-| Open-Meteo | `open_meteo` | `historical`, `forecast` |
-| NESO | `neso` | `carbon_intensity` |
+| Open-Meteo | `open_meteo` | `historical_demand`, `forecast_demand`, `historical_wind`, `forecast_wind`, `historical_solar`, `forecast_solar` |
+| NESO | `neso` | `intensity_current`, `intensity_today`, `intensity_date`, `intensity_period`, `intensity_factors`, `intensity_at`, `intensity_fw24h`, `intensity_fw48h`, `intensity_pt24h`, `carbon_intensity`, `intensity_stats`, `intensity_stats_block`, `generation_current`, `generation_pt24h`, `generation`, `regional_current`, `regional_england`, `regional_scotland`, `regional_wales`, `regional_postcode`, `regional_regionid`, `regional_intensity_fw24h`, `regional_intensity_fw24h_postcode`, `regional_intensity_fw24h_regionid`, `regional_intensity_fw48h`, `regional_intensity_fw48h_postcode`, `regional_intensity_fw48h_regionid`, `regional_intensity_pt24h`, `regional_intensity_pt24h_postcode`, `regional_intensity_pt24h_regionid`, `regional_intensity`, `regional_intensity_postcode`, `regional_intensity_regionid` |
 | **Gold** | (see `build`) | `system_marginal_price` |
 
 ### Environment Variables (only needed for authenticated sources)
@@ -240,7 +240,7 @@ gridflow pipeline entsoe --all --last 24h
 gridflow pipeline entsog physical_flows --last 24h
 gridflow pipeline gie_agsi storage --last 24h
 gridflow pipeline gie_alsi lng --last 24h
-gridflow pipeline open_meteo forecast --last 24h
+gridflow pipeline open_meteo --all --last 24h
 gridflow pipeline neso carbon_intensity --last 24h
 ```
 

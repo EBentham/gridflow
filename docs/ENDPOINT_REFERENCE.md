@@ -174,7 +174,7 @@ Optional: `&processType={processType}` (when dataset requires it)
 | load_forecast | A65 | A01 | Per zone |
 | actual_generation | A75 | A16 | Per zone |
 | wind_solar_forecast | A69 | A01 | Per zone |
-| cross_border_flows | A88 | *(none)* | Per zone pair (in != out) |
+| cross_border_flows | A11 | *(none)* | Per zone pair (in != out) |
 | outages_generation | A80 | *(none)* | Per zone |
 | installed_capacity | A68 | A33 | Per zone |
 
@@ -209,7 +209,7 @@ https://web-api.tp.entsoe.eu/api?documentType=A69&processType=A01&in_Domain.mRID
 
 **cross_border_flows (GB -> FR):**
 ```
-https://web-api.tp.entsoe.eu/api?documentType=A88&in_Domain.mRID=10YGB----------A&out_Domain.mRID=10YFR-RTE------C&periodStart=202602010000&periodEnd=202602020000&securityToken={key}
+https://web-api.tp.entsoe.eu/api?documentType=A11&in_Domain.mRID=10YGB----------A&out_Domain.mRID=10YFR-RTE------C&periodStart=202602010000&periodEnd=202602020000&securityToken={key}
 ```
 
 **outages_generation:**
