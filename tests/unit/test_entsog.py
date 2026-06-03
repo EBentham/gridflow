@@ -224,6 +224,19 @@ class TestPhysicalFlowsTransformer:
         result = self.t.transform(raw)
         assert all(v == "entsog" for v in result["data_provider"].to_list())
 
+    def test_unit_column_relabelled_to_converted_unit(self):
+        """F-ENTSOG-UNITLABEL: flow_gwh_per_day is normalised to GWh/day, so the
+        emitted ``unit`` must read 'GWh/d', not the raw vendor 'kWh/d'. A row whose
+        value is in GWh/day while its own unit column still says kWh/d is internally
+        contradictory and mis-scales any consumer that trusts the unit column by 1e6.
+        """
+        raw = _load_fixture_df()  # fixture records all carry unit='kWh/d'
+        result = self.t.transform(raw)
+        assert "unit" in result.columns
+        assert set(result["unit"].to_list()) == {"GWh/d"}, (
+            "unit must reflect the normalised value (GWh/d), not the raw API unit"
+        )
+
     def test_dedup(self):
         raw = _load_fixture_df()
         doubled = pl.concat([raw, raw])

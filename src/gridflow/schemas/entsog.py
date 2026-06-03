@@ -19,7 +19,7 @@ class EntsogPhysicalFlow(BaseSchema):
     operator_label: str = ""
     direction_key: str = ""  # "entry" | "exit"
     flow_gwh_per_day: float = 0.0  # Normalised to GWh/day
-    unit: str = ""  # Raw unit from API (e.g. "kWh/d")
+    unit: str = ""  # Normalised flow unit, always "GWh/d" (raw kWh/d converted in silver)
     data_provider: str = Field(default="entsog")
 
     @field_validator("timestamp_utc")
