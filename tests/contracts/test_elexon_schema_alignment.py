@@ -37,7 +37,7 @@ from gridflow.schemas.elexon import (
     ElexonFOU2T14D,
     ElexonFrequency,
     ElexonFuelHH,
-    ElexonGenerationByFuel,
+    ElexonFuelInst,
     ElexonImbalNGC,
     ElexonIndDem,
     ElexonIndGen,
@@ -115,7 +115,13 @@ def _make_transformer(cls):
 SCHEMA_FIXTURE_MAP: dict[type[BaseModel], tuple[type, str]] = {
     # Pre-G5 schemas (12)
     ElexonSystemPrice: (SystemPriceTransformer, "system_prices_response.json"),
-    ElexonGenerationByFuel: (FuelInstTransformer, "generation_by_fuel_response.json"),
+    # ELEXB-05 (VT4): FUELINST's contract is ElexonFuelInst, driven by the
+    # fuelinst fixture (which carries publishDateTime, so transform() emits
+    # rows). The old (ElexonGenerationByFuel, FuelInstTransformer,
+    # generation_by_fuel_response.json) entry was vacuous: that fixture has no
+    # timestamp column, so FuelInst produced empty output and both parametrised
+    # cases silently skipped — the settlement_date/period mismatch was hidden.
+    ElexonFuelInst: (FuelInstTransformer, "fuelinst_response.json"),
     ElexonFuelHH: (FuelHHTransformer, "fuelhh_response.json"),
     ElexonBOAL: (BOALTransformer, "boal_response.json"),
     ElexonBOD: (BODTransformer, "bod_response.json"),
@@ -241,6 +247,36 @@ def test_silver_rows_validate_against_schema(schema_cls: type[BaseModel]):
         f"G5 regression: {schema_cls.__name__} row validation failed:\n"
         + "\n".join(errors[:3])  # truncate to first 3 errors
     )
+
+
+def test_fuelinst_validates_against_dedicated_fuelinst_schema() -> None:
+    """ELEXB-05 (VT4): FUELINST silver must validate against its dedicated
+    ElexonFuelInst schema, and must NOT validate against ElexonGenerationByFuel.
+
+    FuelInst emits an instantaneous timestamp_utc with no settlement
+    coordinates. ElexonGenerationByFuel requires settlement_date +
+    settlement_period, so every FuelInst row fails it — the old contract map
+    reused that schema but hid the mismatch behind an empty-output skip (the
+    generation_by_fuel fixture has no timestamp column). This test drives a
+    fixture that DOES produce rows, so the contract is exercised, not skipped.
+    """
+    from gridflow.schemas.elexon import ElexonGenerationByFuel
+
+    raw = pl.DataFrame(json.loads((FIXTURES / "fuelinst_response.json").read_text())["data"])
+    out = _make_transformer(FuelInstTransformer).transform(raw)
+    assert not out.is_empty(), "fuelinst fixture must yield rows so the contract is non-vacuous"
+
+    # Every row validates against the dedicated schema.
+    for row in out.iter_rows(named=True):
+        cleaned = {k: v for k, v in row.items() if k not in _BITEMPORAL_COLS}
+        ElexonFuelInst(**cleaned)  # raises on mismatch — the GREEN assertion
+
+    # And the reused-but-wrong schema genuinely rejects the same rows (its
+    # required settlement_date/settlement_period are absent). Proves the repoint
+    # fixed a real mismatch, not a cosmetic rename.
+    first = {k: v for k, v in next(out.iter_rows(named=True)).items() if k not in _BITEMPORAL_COLS}
+    with pytest.raises(Exception):  # noqa: B017,PT011 - pydantic ValidationError
+        ElexonGenerationByFuel(**first)
 
 
 def test_market_depth_maps_priced_volumes_not_adjustment() -> None:
