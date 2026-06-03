@@ -6,6 +6,8 @@
 **Coverage:** GB, FR, NL, BE, DE-LU, IE-SEM (default zones; configurable)
 **Timestamp format:** All timestamps are UTC, resolution-aligned (PT15M, PT30M, or PT60M)
 
+> **Area columns store raw EIC mRIDs.** `area_code`, `in_area_code`, and `out_area_code` hold the ENTSO-E EIC bidding-zone mRID as-is (e.g. `10YGB----------A`), with no normalisation to a human label. The `GB` / `FR` / `DE-LU` / `IE-SEM` values shown in the sample-row tables below are **illustrative only** — the actual silver value is the opaque mRID. (`actual_generation` additionally carries a separate human-readable `area_name` column; no other dataset does.)
+
 ---
 
 ## day_ahead_prices
@@ -23,7 +25,7 @@ Day-ahead electricity market clearing prices for each bidding zone. Published by
 | 2024-06-15 22:00:00+00 | FR        |         78.20 | PT60M      |
 | 2024-06-15 22:00:00+00 | DE-LU     |         76.40 | PT60M      |
 
-> Prices in €/MWh. GB uses 30-min resolution; Continental Europe uses 60-min. `area_code` maps to EIC bidding zone codes internally but is stored as the human-readable zone label.
+> Prices in €/MWh. GB uses 30-min resolution; Continental Europe uses 60-min. `area_code` holds the raw ENTSO-E EIC bidding-zone mRID (e.g. `10YGB----------A`), stored as-is with no normalisation — it is **not** a human-readable label.
 
 ---
 
@@ -69,7 +71,7 @@ Actual generation output disaggregated by production type within each bidding zo
 
 Actual physical electricity flows between adjacent bidding zones. Positive values represent net flow in the `in_area_code → out_area_code` direction. Used to assess interconnector utilisation and analyse European grid integration.
 
-**Document type:** `A88`
+**Document type:** `A11`
 **Coverage:** GB↔FR, GB↔NL, GB↔BE, GB↔IE-SEM, FR↔BE, FR↔DE-LU, NL↔DE-LU, NL↔BE
 **Silver key columns:** `timestamp_utc`, `in_area_code`, `out_area_code`, `flow_mw`, `resolution`
 

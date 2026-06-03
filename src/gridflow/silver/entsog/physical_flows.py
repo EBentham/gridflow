@@ -175,6 +175,11 @@ class PhysicalFlowsTransformer(BaseSilverTransformer):
             [
                 pl.lit("entsog").alias("data_provider"),
                 pl.lit(now).cast(pl.Datetime("us", "UTC")).alias("ingested_at"),
+                # VTA-ENTSOG-UNITLABEL-01 (F-ENTSOG-UNITLABEL): flow_gwh_per_day is
+                # post-normalisation, so the raw vendor unit ("kWh/d") would
+                # contradict the value. Unrecognised units are already dropped
+                # above, so every surviving row is genuinely GWh/day.
+                pl.lit("GWh/d").alias("unit"),
             ]
         )
 
