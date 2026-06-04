@@ -548,9 +548,14 @@ class TestWindForecastTransformer:
         result = self.t.transform(raw)
 
         assert not result.is_empty()
-        assert "initial_forecast_mw" in result.columns
+        # Current live WINDFOR shape (publishTime/startTime/generation, verified
+        # 2026-06-04): `generation` maps to latest_forecast_mw and `startTime` to
+        # timestamp_utc. The API no longer emits initialForecast/latestForecast, so
+        # initial_forecast_mw is absent here (the SP-keyed legacy path is still
+        # exercised by the inline-data tests below).
         assert "latest_forecast_mw" in result.columns
         assert "timestamp_utc" in result.columns
+        assert "published_at" in result.columns
 
     def test_dedup_on_settlement_date_period(self):
         raw = pl.DataFrame(
@@ -713,6 +718,18 @@ class TestDISBSADTransformer:
             "G5-W1.3 regression: component silent-null from current-API bronze"
         )
         assert "ENERGY" in result["component"].to_list()
+
+    def test_current_api_storflag_field_populates_stor_flag(self):
+        """ELEXA-06: the live API (verified 2026-06-04) emits `storFlag`, not the
+        older `storProviderFlag`. The transformer must map the current key so
+        stor_flag is not silently always-False on current-API bronze."""
+        data = json.loads((FIXTURES / "disbsad_response_v2.json").read_text())
+        raw = pl.DataFrame(data["data"])
+        result = self.t.transform(raw)
+
+        assert True in result["stor_flag"].to_list(), (
+            "ELEXA-06 regression: stor_flag silent-False from current-API storFlag"
+        )
 
 
 # ---------------------------------------------------------------------------
