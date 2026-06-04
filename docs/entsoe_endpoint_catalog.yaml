@@ -315,7 +315,12 @@ entries:
     document_type: A92
     process_type: null
     business_type: null
-    area_params: [in_Domain, out_Domain]
+    # ENTX-04 (v0.15): A92 is SINGLE-ZONE. Live probe 2026-06-04 — the ENTSO-E API
+    # accepts in_Domain==out_Domain (HTTP 200) but rejects in_Domain!=out_Domain
+    # (HTTP 400), so A92 takes one domain, not a directional border pair. This
+    # agrees with the connector (domain_style="zone") and the vault page; the prior
+    # [in_Domain, out_Domain] here was the lone disagreeing layer. Corrected.
+    area_params: [in_Domain]
     optional_filters: []
     max_window: 1 year
     parser_family: price_timeseries
