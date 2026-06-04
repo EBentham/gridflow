@@ -17,8 +17,10 @@ F7.5 split:
 - Per-location bronze dataset names use ``f"{dataset}__{loc.name}"`` (double
   underscore separator) to disambiguate against multi-word dataset prefixes.
 
-Solar GTI fetches add ``tilt=35&azimuth=180`` query params, a UK fixed-tilt
-representative geometry (latitude minus 15 degrees + due south).
+Solar GTI fetches add ``tilt=35&azimuth=0`` query params, a UK fixed-tilt
+representative geometry (tilt ≈ latitude minus 15 degrees, facing due south).
+Open-Meteo's GTI azimuth is PV-convention (0°=South, ±180°=North), not
+compass bearing — so due south is ``azimuth=0`` (see ``_SOLAR_GTI_PARAMS``).
 """
 
 from __future__ import annotations
@@ -152,11 +154,15 @@ SOLAR_HOURLY_VARS: tuple[str, ...] = (
 )
 
 
-# UK fixed-tilt representative geometry: latitude (~51-52) minus ~15
-# degrees + due south. Documented in vault open-meteo README.
+# UK fixed-tilt representative geometry: tilt 35° (≈ latitude 51-52° minus
+# ~15°) facing due south. Open-Meteo's GTI azimuth is PV-convention
+# (0°=South, -90°=East, +90°=West, ±180°=North) — NOT compass bearing — so
+# due south is azimuth=0, not 180. Verified by live probe; see
+# test_solar_gti_params_face_south. azimuth=180 would request a north-facing
+# panel and silently halve GTI (OM-04).
 _SOLAR_GTI_PARAMS: tuple[tuple[str, str], ...] = (
     ("tilt", "35"),
-    ("azimuth", "180"),
+    ("azimuth", "0"),
 )
 
 

@@ -717,7 +717,7 @@ class TestOpenMeteoEndpointDefinitions:
         for ds in ("historical_solar", "forecast_solar"):
             assert DATASET_SPECS[ds].extra_params == (
                 ("tilt", "35"),
-                ("azimuth", "180"),
+                ("azimuth", "0"),  # due south (Open-Meteo PV convention 0=S); OM-04
             )
         for ds in ("historical_demand", "forecast_demand", "historical_wind", "forecast_wind"):
             assert DATASET_SPECS[ds].extra_params == ()

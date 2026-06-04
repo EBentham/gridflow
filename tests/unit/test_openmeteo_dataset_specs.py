@@ -8,6 +8,7 @@ and immediate.
 from __future__ import annotations
 
 from gridflow.connectors.openmeteo.endpoints import (
+    _SOLAR_GTI_PARAMS,
     DATASET_SPECS,
     DEMAND_LOCATIONS,
     SOLAR_LOCATIONS,
@@ -74,9 +75,24 @@ def test_extra_params_iff_gti_in_hourly() -> None:
 
 
 def test_solar_extra_params_are_uk_fixed_tilt() -> None:
-    expected = (("tilt", "35"), ("azimuth", "180"))
+    # azimuth=0 is due SOUTH under Open-Meteo's PV convention (0=S, ±180=N);
+    # see test_solar_gti_params_face_south for the empirical probe (OM-04).
+    expected = (("tilt", "35"), ("azimuth", "0"))
     assert DATASET_SPECS["historical_solar"].extra_params == expected
     assert DATASET_SPECS["forecast_solar"].extra_params == expected
+
+
+def test_solar_gti_params_face_south() -> None:
+    # OM-04 regression. Open-Meteo's GTI azimuth is PV-convention
+    # (0°=South, -90°=East, +90°=West, ±180°=North) — NOT compass bearing.
+    # Proven by live probe (archive-api, lat 51.5 lon -1.2, tilt=35, clear day
+    # 2025-06-18 at solar noon): azimuth=0 → GTI ≈ 963-972 W/m² (exceeds the
+    # ~865 W/m² GHI = textbook south tilt-gain) vs azimuth=180 → ≈ 503 W/m²
+    # (~half, north-facing). The connector must request a SOUTH-facing UK
+    # fixed-tilt panel, i.e. azimuth=0. A regression to azimuth=180 silently
+    # halves global_tilted_irradiance_wm2 for both solar datasets (GHI/DNI/DHI
+    # are orientation-independent and unaffected).
+    assert _SOLAR_GTI_PARAMS == (("tilt", "35"), ("azimuth", "0"))
 
 
 def test_dataset_keys_split_cleanly_by_prefix() -> None:

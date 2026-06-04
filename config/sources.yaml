@@ -173,8 +173,9 @@ sources:
         schedule: "hourly"
         max_query_days: 7
       # Solar role: 6 capacity-weighted GB solar sites. GTI request adds
-      # tilt=35&azimuth=180 query params via DATASET_SPECS.extra_params
-      # (UK fixed-tilt representative geometry).
+      # tilt=35&azimuth=0 query params via DATASET_SPECS.extra_params
+      # (UK fixed-tilt representative geometry, due south — Open-Meteo PV
+      # convention 0=S / ±180=N; OM-04).
       historical_solar:
         endpoint: "archive"
         schedule: "daily"
