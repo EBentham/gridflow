@@ -57,12 +57,16 @@ class DISBSADTransformer(BaseSilverTransformer):
         # G5-W1.3 (2026-05): live API renamed `component` to `service`. The
         # silver column stays `component` (downstream contract); we map both
         # source keys to it so historical bronze still ingests cleanly.
+        # ELEXA-06 (2026-06-04): live API also emits `storFlag` (not the older
+        # `storProviderFlag`) — map both so stor_flag is not silently always-False
+        # on current bronze. Only one is present per record, so no rename clash.
         column_mapping = {
             "settlementDate": "settlement_date",
             "settlementPeriod": "settlement_period",
             "id": "adjustment_action_id",
             "soFlag": "so_flag",
-            "storProviderFlag": "stor_flag",
+            "storProviderFlag": "stor_flag",  # legacy (pre-2026)
+            "storFlag": "stor_flag",  # current API (ELEXA-06)
             "component": "component",  # legacy (pre-2026)
             "service": "component",  # current API
             "cost": "cost",
@@ -88,6 +92,12 @@ class DISBSADTransformer(BaseSilverTransformer):
         for col in ["cost", "volume"]:
             if col in df.columns:
                 df = df.with_columns(pl.col(col).cast(pl.Float64))
+
+        # ELEXA-06: the current API returns an integer `id`; the silver contract
+        # (ElexonDISBSAD.adjustment_action_id) is a string. Cast so live int ids
+        # conform without a fail-soft schema warning (legacy str ids pass through).
+        if "adjustment_action_id" in df.columns:
+            df = df.with_columns(pl.col("adjustment_action_id").cast(pl.Utf8))
 
         df = df.with_columns(
             pl.struct(["settlement_date", "settlement_period"])

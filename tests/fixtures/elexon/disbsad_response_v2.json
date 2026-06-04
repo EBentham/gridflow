@@ -1,34 +1,46 @@
 {
   "data": [
     {
+      "dataset": "DISBSAD",
       "settlementDate": "2026-05-08",
       "settlementPeriod": 1,
-      "id": "DISBSAD-001",
-      "soFlag": true,
-      "storProviderFlag": false,
-      "service": "ENERGY",
+      "id": 1,
       "cost": 1250.50,
-      "volume": 15.0
+      "volume": 15.0,
+      "soFlag": true,
+      "storFlag": false,
+      "partyId": null,
+      "assetId": null,
+      "isTendered": false,
+      "service": "ENERGY"
     },
     {
+      "dataset": "DISBSAD",
       "settlementDate": "2026-05-08",
       "settlementPeriod": 1,
-      "id": "DISBSAD-002",
-      "soFlag": false,
-      "storProviderFlag": true,
-      "service": "STOR",
+      "id": 2,
       "cost": -800.0,
-      "volume": -10.0
+      "volume": -10.0,
+      "soFlag": false,
+      "storFlag": true,
+      "partyId": "T_DRAXX-1",
+      "assetId": "DRAXX-1",
+      "isTendered": true,
+      "service": "STOR"
     },
     {
+      "dataset": "DISBSAD",
       "settlementDate": "2026-05-08",
       "settlementPeriod": 2,
-      "id": "DISBSAD-003",
-      "soFlag": true,
-      "storProviderFlag": false,
-      "service": "ENERGY",
+      "id": 3,
       "cost": 2100.0,
-      "volume": 25.0
+      "volume": 25.0,
+      "soFlag": true,
+      "storFlag": false,
+      "partyId": null,
+      "assetId": null,
+      "isTendered": false,
+      "service": "ENERGY"
     }
   ]
 }

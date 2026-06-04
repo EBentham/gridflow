@@ -1,22 +1,22 @@
 {
   "data": [
     {
-      "settlementDate": "2024-01-15",
-      "settlementPeriod": 1,
-      "initialForecast": 4500.0,
-      "latestForecast": 4320.0
+      "dataset": "WINDFOR",
+      "publishTime": "2026-06-04T19:30:00Z",
+      "startTime": "2026-06-03T20:00:00Z",
+      "generation": 14052
     },
     {
-      "settlementDate": "2024-01-15",
-      "settlementPeriod": 2,
-      "initialForecast": 4480.0,
-      "latestForecast": 4310.0
+      "dataset": "WINDFOR",
+      "publishTime": "2026-06-04T19:30:00Z",
+      "startTime": "2026-06-03T20:30:00Z",
+      "generation": 13980
     },
     {
-      "settlementDate": "2024-01-15",
-      "settlementPeriod": 3,
-      "initialForecast": 4460.0,
-      "latestForecast": 4290.0
+      "dataset": "WINDFOR",
+      "publishTime": "2026-06-04T19:30:00Z",
+      "startTime": "2026-06-03T21:00:00Z",
+      "generation": 13755
     }
   ]
 }
