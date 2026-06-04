@@ -147,7 +147,7 @@ _OPEN_METEO_OVERRIDES: dict[tuple[str, str], dict[str, Any]] = {
         "cadence": "daily",
         "notes": (
             "ERA5 archive. 6 capacity-weighted GB solar sites. "
-            "GTI request adds tilt=35, azimuth=180 (UK fixed-tilt). "
+            "GTI request adds tilt=35, azimuth=0 (UK fixed-tilt, due south). "
             "Unit renames applied by F15-B."
         ),
     },
@@ -263,7 +263,7 @@ _OPEN_METEO_OVERRIDES: dict[tuple[str, str], dict[str, Any]] = {
         "cadence": "hourly",
         "notes": (
             "UKMO/ECMWF NWP forecast. 6 capacity-weighted GB solar sites. "
-            "GTI request adds tilt=35, azimuth=180 (UK fixed-tilt). "
+            "GTI request adds tilt=35, azimuth=0 (UK fixed-tilt, due south). "
             "Unit renames applied by F15-B."
         ),
     },

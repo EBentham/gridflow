@@ -307,7 +307,8 @@ class HistoricalSolarWeather(BaseOpenMeteoTransformer):
 
     GHI/DNI/DHI/GTI components plus cloud-cover decomposition. The GTI
     request is keyed by the connector ``DATASET_SPECS`` entry's
-    ``extra_params`` (tilt=35, azimuth=180 for UK fixed-tilt).
+    ``extra_params`` (tilt=35, azimuth=0 = due south for UK fixed-tilt;
+    Open-Meteo PV convention 0=S, ±180=N — see OM-04).
     """
 
     dataset = "historical_solar"

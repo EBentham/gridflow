@@ -350,8 +350,8 @@ Six role-specific datasets:
 | `forecast_demand`   | 7 demand           | 9         | `/forecast` |
 | `historical_wind`   | 12 wind            | 13        | `/archive` |
 | `forecast_wind`     | 12 wind            | 19        | `/forecast` |
-| `historical_solar`  | 6 solar            | 12        | `/archive` (+ `tilt=35&azimuth=180`) |
-| `forecast_solar`    | 6 solar            | 12        | `/forecast` (+ `tilt=35&azimuth=180`) |
+| `historical_solar`  | 6 solar            | 12        | `/archive` (+ `tilt=35&azimuth=0`) |
+| `forecast_solar`    | 6 solar            | 12        | `/forecast` (+ `tilt=35&azimuth=0`) |
 
 Per-location bronze identifiers use double-underscore separator:
 `f"{dataset}__{location_name}"` — e.g. `historical_wind__hornsea`.
@@ -364,7 +364,7 @@ Per-location bronze identifiers use double-underscore separator:
 
 **Wind forecast (19):** archive list ∪ `{wind_speed_80m, wind_speed_120m, wind_speed_180m, wind_direction_80m, wind_direction_120m, wind_direction_180m}`. UKMO UKV / ECMWF / GFS carry hub heights; Open-Meteo nulls fields the underlying model lacks.
 
-**Solar (12):** `temperature_2m, shortwave_radiation, direct_radiation, direct_normal_irradiance, diffuse_radiation, global_tilted_irradiance, cloud_cover, cloud_cover_low, cloud_cover_mid, cloud_cover_high, snowfall, snow_depth`. GTI request adds `tilt=35&azimuth=180` (UK fixed-tilt representative geometry).
+**Solar (12):** `temperature_2m, shortwave_radiation, direct_radiation, direct_normal_irradiance, diffuse_radiation, global_tilted_irradiance, cloud_cover, cloud_cover_low, cloud_cover_mid, cloud_cover_high, snowfall, snow_depth`. GTI request adds `tilt=35&azimuth=0` (UK fixed-tilt representative geometry).
 
 ### Locations
 
@@ -437,7 +437,7 @@ https://archive-api.open-meteo.com/v1/archive?latitude=51.5074&longitude=-0.1278
 | `end_date` | `2026-02-01` | YYYY-MM-DD |
 | `timezone` | `UTC` | Fixed |
 | `tilt` | `35` | Solar datasets only (GTI request) |
-| `azimuth` | `180` | Solar datasets only (GTI request) |
+| `azimuth` | `0` | Solar datasets only (GTI request); due south, Open-Meteo PV convention 0=S / ±180=N |
 
 ### Iteration
 

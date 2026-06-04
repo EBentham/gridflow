@@ -271,10 +271,11 @@ class TestDatasetSpecs:
         assert DATASET_SPECS["forecast_solar"].locations == SOLAR_LOCATIONS
 
     def test_solar_extra_params_carry_tilt_azimuth(self):
+        # azimuth=0 = due south (Open-Meteo PV convention 0=S, ±180=N); OM-04.
         for ds in ("historical_solar", "forecast_solar"):
             assert DATASET_SPECS[ds].extra_params == (
                 ("tilt", "35"),
-                ("azimuth", "180"),
+                ("azimuth", "0"),
             )
 
     def test_non_solar_specs_have_no_extra_params(self):

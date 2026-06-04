@@ -21,7 +21,7 @@ family has an archive (ERA5 historical) and a forecast variant.
 | `forecast_demand`   | 7 demand  | forecast | 9              | same vars as historical_demand |
 | `historical_wind`   | 12 wind   | archive  | 13             | hub heights {10m, 100m} only — see "Archive 10m+100m limitation" below |
 | `forecast_wind`     | 12 wind   | forecast | 19             | full hub-height set {10, 80, 100, 120, 180}m + directions |
-| `historical_solar`  | 6 solar   | archive  | 12             | GHI + DNI + DHI + GTI; `tilt=35&azimuth=180` |
+| `historical_solar`  | 6 solar   | archive  | 12             | GHI + DNI + DHI + GTI; `tilt=35&azimuth=0` |
 | `forecast_solar`    | 6 solar   | forecast | 12             | same as historical_solar |
 
 Per-location bronze files live under
@@ -164,7 +164,7 @@ ERA5 irradiance-decomposition observations at the 6 GB solar sites.
 
 **API path:** `https://archive-api.open-meteo.com/v1/archive`
 **Hourly variables (12):** `temperature_2m, shortwave_radiation, direct_radiation, direct_normal_irradiance, diffuse_radiation, global_tilted_irradiance, cloud_cover, cloud_cover_low, cloud_cover_mid, cloud_cover_high, snowfall, snow_depth`
-**Extra params:** `tilt=35&azimuth=180` (UK fixed-tilt rep geometry: latitude minus ~15°, due south).
+**Extra params:** `tilt=35&azimuth=0` (UK fixed-tilt rep geometry: latitude minus ~15°, due south).
 **Silver schema:** `SolarWeather`.
 **Derived:** none. Solar dataset does not request `surface_pressure`, so
 no air-density derivation.
