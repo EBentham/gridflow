@@ -5,7 +5,6 @@ from __future__ import annotations
 import asyncio
 import contextlib
 import logging
-import re
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
@@ -709,13 +708,14 @@ def _resolve_dates(
 
 
 def _safe_error_message(message: str) -> str:
-    """Redact sensitive query parameters from user-facing command errors."""
-    return re.sub(
-        r"(securityToken=)[^&\s)]+",
-        r"\1<redacted>",
-        message,
-        flags=re.IGNORECASE,
-    )
+    """Redact sensitive query parameters from user-facing command errors.
+
+    The input is free text containing a URL, so the value class stops at the
+    URL boundary (whitespace / closing paren) to avoid eating trailing prose.
+    """
+    from gridflow.bronze.sanitize import sanitize_url
+
+    return sanitize_url(message, value_chars=r"[^&\s)]")
 
 
 def _resolve_datasets(

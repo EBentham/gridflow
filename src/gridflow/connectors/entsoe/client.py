@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import io
 import logging
-import re
 import zipfile
 from datetime import datetime
 from time import monotonic
@@ -13,6 +12,7 @@ from xml.etree import ElementTree
 
 import httpx
 
+from gridflow.bronze.sanitize import sanitize_url
 from gridflow.connectors.base import BaseConnector, RawResponse, _make_ssl_context
 from gridflow.connectors.entsoe.endpoints import (
     BIDDING_ZONES,
@@ -472,7 +472,7 @@ def _optional_filter_params(
 
 def _redact_security_token(url: str) -> str:
     """Redact ENTSO-E query-token values from URLs."""
-    return re.sub(r"(securityToken=)[^&]+", r"\1<redacted>", url)
+    return sanitize_url(url)
 
 
 # Register connector

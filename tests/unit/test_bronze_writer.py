@@ -121,3 +121,116 @@ def test_body_sha256_detects_mutated_body(tmp_path: Path) -> None:
     data_path.write_bytes(b"tampered")
     mutated_hash = hashlib.sha256(data_path.read_bytes()).hexdigest()
     assert mutated_hash != recorded
+
+
+# --- Secret sanitization in the sidecar (CH1-01 / CH-SEC-01) -----------------
+# The sidecar is the irreproducible system-of-record; an API key written there
+# is a durable on-disk leak. These tests assert the writer masks secret values
+# while preserving the key's presence (CLAUDE.md "surface, never drop").
+
+
+def _sidecar(data_path: Path) -> dict[str, object]:
+    meta_path = data_path.parent / (data_path.stem + ".meta.json")
+    return json.loads(meta_path.read_text())
+
+
+def _sidecar_text(data_path: Path) -> str:
+    meta_path = data_path.parent / (data_path.stem + ".meta.json")
+    return meta_path.read_text()
+
+
+def test_sidecar_redacts_security_token(tmp_path: Path) -> None:
+    """A securityToken in both the url and params must never reach the sidecar.
+
+    The raw secret string must be absent from the serialized sidecar text, the
+    param key must survive masked, the url token value masked, and a non-secret
+    param (documentType) must pass through untouched.
+    """
+    secret = "SECRET123"  # noqa: S105 - test fixture, not a real credential
+    response = RawResponse(
+        body=b'{"data": []}',
+        content_type="application/json",
+        source="entsoe",
+        dataset="actual_load",
+        fetched_at=datetime(2024, 1, 15, 12, 0, 0, tzinfo=UTC),
+        data_date=datetime(2024, 1, 15, tzinfo=UTC).date(),
+        request_url=(f"https://web-api.tp.entsoe.eu/api?documentType=A44&securityToken={secret}"),
+        request_params={"documentType": "A44", "securityToken": secret},
+    )
+    writer = BronzeWriter(tmp_path)
+    data_path = writer.write(response)
+
+    assert secret not in _sidecar_text(data_path)
+    meta = _sidecar(data_path)
+    assert meta["request_params"]["securityToken"] == "<redacted>"  # type: ignore[index]
+    assert meta["request_params"]["documentType"] == "A44"  # type: ignore[index]
+    assert "securityToken=<redacted>" in meta["request_url"]  # type: ignore[operator]
+    assert "documentType=A44" in meta["request_url"]  # type: ignore[operator]
+
+
+def test_redaction_case_insensitive(tmp_path: Path) -> None:
+    """Key matching is case-folded: SecurityToken / SECURITYTOKEN both masked."""
+    secret = "SECRET123"  # noqa: S105 - test fixture, not a real credential
+    response = RawResponse(
+        body=b"{}",
+        content_type="application/json",
+        source="entsoe",
+        dataset="actual_load",
+        fetched_at=datetime(2024, 1, 15, 12, 0, 0, tzinfo=UTC),
+        data_date=datetime(2024, 1, 15, tzinfo=UTC).date(),
+        request_url=f"https://example.com/api?SecurityToken={secret}",
+        request_params={"SECURITYTOKEN": secret},
+    )
+    writer = BronzeWriter(tmp_path)
+    data_path = writer.write(response)
+
+    assert secret not in _sidecar_text(data_path)
+    meta = _sidecar(data_path)
+    assert meta["request_params"]["SECURITYTOKEN"] == "<redacted>"  # type: ignore[index]
+    assert "SecurityToken=<redacted>" in meta["request_url"]  # type: ignore[operator]
+
+
+def test_redaction_nested_and_list_params(tmp_path: Path) -> None:
+    """Secret keys nested inside dicts and lists are still masked."""
+    secret = "K"  # noqa: S105 - test fixture, not a real credential
+    response = RawResponse(
+        body=b"{}",
+        content_type="application/json",
+        source="gie",
+        dataset="storage",
+        fetched_at=datetime(2024, 1, 15, 12, 0, 0, tzinfo=UTC),
+        data_date=datetime(2024, 1, 15, tzinfo=UTC).date(),
+        request_params={"filters": [{"x-key": secret, "country": "DE"}]},
+    )
+    writer = BronzeWriter(tmp_path)
+    data_path = writer.write(response)
+
+    meta = _sidecar(data_path)
+    inner = meta["request_params"]["filters"][0]  # type: ignore[index]
+    assert inner["x-key"] == "<redacted>"
+    assert inner["country"] == "DE"
+
+
+def test_no_secret_is_byte_identical_noop(tmp_path: Path) -> None:
+    """When no secret key is present the sidecar is byte-identical to the
+    un-sanitized form, and integrity fields (body_sha256/data_date) are
+    untouched. Regression guard against the sanitizer perturbing clean metadata.
+    """
+    response = RawResponse(
+        body=b'{"data": [1, 2, 3]}',
+        content_type="application/json",
+        source="elexon",
+        dataset="system_prices",
+        fetched_at=datetime(2024, 1, 15, 12, 0, 0, tzinfo=UTC),
+        data_date=datetime(2024, 1, 15, tzinfo=UTC).date(),
+        request_url="https://data.elexon.co.uk/bmrs/api/v1/balancing?from=2024-01-15",
+        request_params={"from": "2024-01-15", "settlementPeriodFrom": 1},
+    )
+    writer = BronzeWriter(tmp_path)
+    data_path = writer.write(response)
+
+    meta = _sidecar(data_path)
+    assert meta["request_url"] == response.request_url
+    assert meta["request_params"] == response.request_params
+    assert meta["data_date"] == "2024-01-15"
+    assert meta["body_sha256"] == hashlib.sha256(response.body).hexdigest()
