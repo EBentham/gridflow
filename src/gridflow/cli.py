@@ -14,6 +14,55 @@ app = typer.Typer(name="gridflow", help="UK/EU energy market data pipeline")
 logger = logging.getLogger(__name__)
 
 
+def _is_dangerous_delete_target(target: Path, project_root: Path) -> bool:
+    """Return True if recursively deleting ``target`` would be catastrophic.
+
+    A target is dangerous when it is the filesystem root, the user's home
+    directory, or an ancestor of (or equal to) the project root — deleting any
+    of those would wipe the repository or more. Targets under the project root,
+    and unrelated locations such as an OS temp dir, are NOT dangerous; the guard
+    is a denylist of the three catastrophic cases, not an allowlist of the repo.
+
+    Args:
+        target: The directory or file slated for recursive deletion.
+        project_root: The resolved gridflow repository root.
+
+    Returns:
+        True if the target must be refused, False if deletion may proceed.
+    """
+    resolved = target.resolve()
+    root = project_root.resolve()
+    # Filesystem root: on every platform a path equals its own parent only at the root.
+    if resolved == resolved.parent:
+        return True
+    # Home directory (resolved at call time so tests can monkeypatch Path.home).
+    if resolved == Path.home().resolve():
+        return True
+    # ``root`` lives inside ``resolved`` → ``resolved`` is an ancestor of (or is)
+    # the repo, so deleting it would take the repo with it.
+    return root.is_relative_to(resolved)
+
+
+def _assert_safe_delete_target(target: Path, project_root: Path) -> None:
+    """Raise ``typer.Exit(1)`` if ``target`` is a catastrophic deletion target.
+
+    Args:
+        target: The directory or file slated for recursive deletion.
+        project_root: The resolved gridflow repository root.
+
+    Raises:
+        typer.Exit: With code 1 if the target is refused by the containment guard.
+    """
+    if _is_dangerous_delete_target(target, project_root):
+        typer.echo(
+            f"Refusing to delete {target.resolve()}: target is the filesystem root, "
+            "the home directory, or an ancestor of the project — this would wipe the "
+            "repository or more. Aborting (nothing deleted).",
+            err=True,
+        )
+        raise typer.Exit(1)
+
+
 @app.command()
 def ingest(
     source: str = typer.Argument(help="Data source (elexon, entsoe, entsog)"),
@@ -531,6 +580,9 @@ def reset(
     gold: bool = typer.Option(False, "--gold", help="Wipe gold layer only"),
     duckdb: bool = typer.Option(False, "--duckdb", help="Wipe and recreate DuckDB catalogue only"),
     yes: bool = typer.Option(False, "--yes", "-y", help="Skip confirmation prompt"),
+    dry_run: bool = typer.Option(
+        False, "--dry-run", help="Preview targets without deleting anything"
+    ),
 ) -> None:
     """Delete bronze / silver / gold data and reset the DuckDB catalogue.
 
@@ -544,11 +596,18 @@ def reset(
       gridflow reset elexon system_prices --silver  # silver layer only\n
     """
 
-    from gridflow.config.settings import load_settings
+    from gridflow.config.settings import _project_root, load_settings
     from gridflow.storage.duckdb import init_catalogue
 
     settings = load_settings()
     data_dir = settings.pipeline.data_dir
+    project_root = _project_root()
+
+    # Containment guard: a misconfigured data_dir / duckdb_path that resolves to
+    # the filesystem root, the home dir, or an ancestor of the repo would let a
+    # recursive wipe destroy the repository or more. Refuse before any deletion.
+    _assert_safe_delete_target(data_dir, project_root)
+    _assert_safe_delete_target(settings.pipeline.duckdb_path, project_root)
 
     # If no layer flags given, wipe all layers
     wipe_all_layers = not any([bronze, silver, gold, duckdb])
@@ -578,6 +637,38 @@ def reset(
 
     description = f"{'/'.join(scope_parts)} [{', '.join(layer_parts)}]"
 
+    def _layer_root(layer: str) -> Path:
+        """Return the target directory for a given layer + scope."""
+        base = data_dir / layer
+        if source:
+            base = base / source
+            if dataset:
+                base = base / dataset
+        return base
+
+    # Collect the directory targets in deletion order for preview / wiping.
+    dir_targets: list[Path] = []
+    if wipe_bronze:
+        dir_targets.append(_layer_root("bronze"))
+    if wipe_silver:
+        dir_targets.append(_layer_root("silver"))
+    if wipe_gold:
+        dir_targets.append(data_dir / "gold")
+
+    if dry_run:
+        typer.echo(f"DRY RUN — would PERMANENTLY DELETE: {description}")
+        for root in dir_targets:
+            if root.exists():
+                for f in sorted(root.rglob("*")):
+                    if f.is_file():
+                        typer.echo(f"  would delete: {f}")
+            else:
+                typer.echo(f"  (absent, nothing to delete): {root}")
+        if wipe_duckdb and settings.pipeline.duckdb_path.exists():
+            typer.echo(f"  would delete: {settings.pipeline.duckdb_path}")
+        typer.echo("DRY RUN complete — nothing was deleted.")
+        return
+
     if not yes:
         typer.echo(f"About to PERMANENTLY DELETE: {description}")
         typer.confirm("Are you sure?", abort=True)
@@ -606,26 +697,12 @@ def reset(
                 except OSError:
                     pass
 
-    def _layer_root(layer: str) -> Path:
-        """Return the target directory for a given layer + scope."""
-        base = data_dir / layer
-        if source:
-            base = base / source
-            if dataset:
-                base = base / dataset
-        return base
+    if wipe_gold and (source or dataset):
+        # Gold is not organised by source — warn if scoping doesn't apply.
+        typer.echo("  Note: gold layer is not source-scoped; wiping entire gold directory.")
 
-    if wipe_bronze:
-        _wipe_dir(_layer_root("bronze"))
-
-    if wipe_silver:
-        _wipe_dir(_layer_root("silver"))
-
-    if wipe_gold:
-        if source or dataset:
-            # Gold is not organised by source — warn if scoping doesn't apply
-            typer.echo("  Note: gold layer is not source-scoped; wiping entire gold directory.")
-        _wipe_dir(data_dir / "gold")
+    for root in dir_targets:
+        _wipe_dir(root)
 
     if wipe_duckdb and settings.pipeline.duckdb_path.exists():
         try:
