@@ -10,6 +10,24 @@ from typing import Any
 
 logger = logging.getLogger(__name__)
 
+
+def _hardened_parser() -> Any:
+    """Return a fresh lxml parser configured to refuse external entities.
+
+    A new parser is returned on every call because lxml parsers are stateful and
+    must not be shared across parses.
+
+    Returns:
+        A configured ``lxml.etree.XMLParser``.
+    """
+    from lxml import etree  # type: ignore[import-untyped]
+
+    # resolve_entities=False is the load-bearing flag: it blocks XXE external-entity
+    # resolution and billion-laughs entity expansion. no_network and huge_tree are
+    # already lxml defaults; set explicitly as belt-and-suspenders.
+    return etree.XMLParser(resolve_entities=False, no_network=True, huge_tree=False)
+
+
 # Resolution code -> timedelta. Used as a fallback / human-readable string in
 # silver `resolution` columns. For P1M and P1Y the timedelta is an approximation
 # only (30d / 365d); the actual point timestamps for those codes are computed
@@ -159,13 +177,13 @@ def parse_timeseries_xml(
         (backward-compatible).
     """
     try:
-        from lxml import etree  # type: ignore[import-untyped]
+        from lxml import etree
     except ImportError:
         logger.error("lxml not installed; cannot parse ENTSO-E XML")
         return []
 
     try:
-        root = etree.fromstring(xml_bytes)  # noqa: S320 (trusted internal data)
+        root = etree.fromstring(xml_bytes, parser=_hardened_parser())
     except etree.XMLSyntaxError as exc:
         logger.error("XML parse error: %s", exc)
         return []
@@ -415,13 +433,13 @@ def parse_generation_units_master_data_xml(xml_bytes: bytes) -> list[dict[str, A
     fields the silver layer needs while tolerating small document-shape changes.
     """
     try:
-        from lxml import etree  # type: ignore[import-untyped]
+        from lxml import etree
     except ImportError:
         logger.error("lxml not installed; cannot parse ENTSO-E XML")
         return []
 
     try:
-        root = etree.fromstring(xml_bytes)  # noqa: S320 (trusted internal data)
+        root = etree.fromstring(xml_bytes, parser=_hardened_parser())
     except etree.XMLSyntaxError as exc:
         logger.error("XML parse error: %s", exc)
         return []
