@@ -171,6 +171,12 @@ def run_silver_for_source(
         print(f"  [silver] {source}/{ds}")
         try:
             transformer = get_transformer(source, ds, settings.pipeline.data_dir)
+            # Honour the silver-CSV opt-in the same way the production runner does
+            # (pipeline/runner.py): without this the per-instance flag stays at the
+            # class default (False) and this debug script can never emit the CSV
+            # sidecar even when the config enables it. Default off, so unchanged
+            # unless settings.pipeline.write_silver_csv is set.
+            transformer.write_silver_csv = settings.pipeline.write_silver_csv
             rows = transformer.run(target_date)
             tracker.complete(rows_out=rows)
             print(f"           -> {rows} rows transformed")
