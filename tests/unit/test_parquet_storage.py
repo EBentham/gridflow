@@ -2,13 +2,20 @@
 
 from __future__ import annotations
 
+from datetime import date
 from typing import TYPE_CHECKING
 
 import polars as pl
 import pytest
 from polars.exceptions import PolarsError
+from polars.testing import assert_frame_equal
 
-from gridflow.storage.parquet import read_parquet, read_parquet_dir
+from gridflow.storage.parquet import (
+    read_parquet,
+    read_parquet_dir,
+    scan_parquet_dir,
+    scan_parquet_range,
+)
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -17,6 +24,20 @@ if TYPE_CHECKING:
 def _write_parquet(df: pl.DataFrame, path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     df.write_parquet(path)
+
+
+def _write_month(
+    dataset_dir: Path, year: int, month: int, rows: list[date], extra: dict | None = None
+) -> None:
+    """Write a Hive ``year=/month=`` partition file with one row per date.
+
+    ``extra`` adds an extra column (for the mixed-schema null-fill test).
+    """
+    data: dict = {"settlement_date": rows, "value": list(range(len(rows)))}
+    if extra:
+        data.update(extra)
+    part = dataset_dir / f"year={year}" / f"month={month:02d}"
+    _write_parquet(pl.DataFrame(data), part / f"system_prices_{year}{month:02d}.parquet")
 
 
 def test_read_parquet_dir_tolerates_mixed_pre_and_post_f0_schemas(
@@ -66,3 +87,165 @@ def test_read_parquet_dir_propagates_schema_errors(tmp_path: Path) -> None:
 
     with pytest.raises(PolarsError):
         read_parquet_dir(dataset_dir)
+
+
+# --- scan_parquet_dir / scan_parquet_range (CH3-01) ---
+
+
+def test_scan_parquet_dir_returns_lazyframe_equivalent_to_read(tmp_path: Path) -> None:
+    """scan_parquet_dir().collect() must equal read_parquet_dir()."""
+    dataset_dir = tmp_path / "ds"
+    _write_month(dataset_dir, 2024, 1, [date(2024, 1, 5), date(2024, 1, 6)])
+
+    lf = scan_parquet_dir(dataset_dir)
+    assert isinstance(lf, pl.LazyFrame)
+    assert_frame_equal(
+        lf.collect().sort("settlement_date"),
+        read_parquet_dir(dataset_dir).sort("settlement_date"),
+        check_column_order=False,
+    )
+
+
+def test_scan_parquet_dir_empty_and_absent(tmp_path: Path) -> None:
+    """Empty/absent dir -> empty LazyFrame whose collect is empty."""
+    absent = scan_parquet_dir(tmp_path / "nope")
+    assert isinstance(absent, pl.LazyFrame)
+    assert absent.collect().is_empty()
+
+    empty_dir = tmp_path / "empty"
+    empty_dir.mkdir()
+    assert scan_parquet_dir(empty_dir).collect().is_empty()
+
+
+def test_scan_parquet_range_prunes_to_overlapping_month_glob(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The globs handed to pl.scan_parquet must include only month=02.
+
+    Primary pruning assertion: spy on pl.scan_parquet, capture each glob source
+    it is called with, and assert the set includes a ``month=02`` entry and NO
+    ``month=01``/``month=03`` entry. Non-overlapping months' files are never
+    opened.
+    """
+    dataset_dir = tmp_path / "ds"
+    _write_month(dataset_dir, 2024, 1, [date(2024, 1, 15)])
+    _write_month(dataset_dir, 2024, 2, [date(2024, 2, 14)])
+    _write_month(dataset_dir, 2024, 3, [date(2024, 3, 10)])
+
+    captured: list[str] = []
+    real_scan = pl.scan_parquet
+
+    def _spy(source, *args, **kwargs):  # type: ignore[no-untyped-def]
+        captured.append(str(source))
+        return real_scan(source, *args, **kwargs)
+
+    monkeypatch.setattr(pl, "scan_parquet", _spy)
+
+    lf = scan_parquet_range(dataset_dir, date(2024, 2, 1), date(2024, 2, 28))
+    lf.collect()
+
+    assert captured, "pl.scan_parquet was not called"
+    assert any("month=02" in g for g in captured)
+    assert not any("month=01" in g for g in captured)
+    assert not any("month=03" in g for g in captured)
+
+
+def test_scan_parquet_range_equivalent_to_eager_then_filter(tmp_path: Path) -> None:
+    """Lazy-pruned collect == eager read_parquet_dir().filter(range).
+
+    Schema is held constant across all three months so the comparison varies
+    only dates (pruning), never columns.
+    """
+    dataset_dir = tmp_path / "ds"
+    _write_month(dataset_dir, 2024, 1, [date(2024, 1, 31)])
+    _write_month(dataset_dir, 2024, 2, [date(2024, 2, 1), date(2024, 2, 28)])
+    _write_month(dataset_dir, 2024, 3, [date(2024, 3, 1)])
+
+    start, end = date(2024, 2, 1), date(2024, 2, 28)
+    lazy = scan_parquet_range(dataset_dir, start, end).collect()
+    eager = read_parquet_dir(dataset_dir).filter(
+        (pl.col("settlement_date") >= start) & (pl.col("settlement_date") <= end)
+    )
+
+    assert_frame_equal(
+        lazy.sort("settlement_date"),
+        eager.sort("settlement_date"),
+        check_column_order=False,
+    )
+    assert lazy["settlement_date"].to_list() == [date(2024, 2, 1), date(2024, 2, 28)]
+
+
+def test_scan_parquet_range_boundary_predicate_trims_partial_month(tmp_path: Path) -> None:
+    """Residual predicate trims boundary days within an overlapping month."""
+    dataset_dir = tmp_path / "ds"
+    _write_month(dataset_dir, 2024, 2, [date(2024, 2, 1), date(2024, 2, 14), date(2024, 2, 28)])
+
+    df = scan_parquet_range(dataset_dir, date(2024, 2, 10), date(2024, 2, 20)).collect()
+    assert df["settlement_date"].to_list() == [date(2024, 2, 14)]
+
+
+def test_scan_parquet_range_none_bounds_delegate_to_dir(tmp_path: Path) -> None:
+    """Both bounds None -> whole-tree scan (delegates to scan_parquet_dir)."""
+    dataset_dir = tmp_path / "ds"
+    _write_month(dataset_dir, 2024, 1, [date(2024, 1, 5)])
+    _write_month(dataset_dir, 2024, 2, [date(2024, 2, 5)])
+
+    df = scan_parquet_range(dataset_dir, None, None).collect()
+    assert sorted(df["settlement_date"].to_list()) == [date(2024, 1, 5), date(2024, 2, 5)]
+
+
+def test_scan_parquet_range_no_overlapping_partitions_is_empty(tmp_path: Path) -> None:
+    """A range with no on-disk overlapping partitions -> empty (no scan error)."""
+    dataset_dir = tmp_path / "ds"
+    _write_month(dataset_dir, 2024, 2, [date(2024, 2, 14)])
+
+    df = scan_parquet_range(dataset_dir, date(2025, 6, 1), date(2025, 6, 30)).collect()
+    assert df.is_empty()
+
+
+def test_scan_parquet_range_skips_empty_in_range_partition_dir(tmp_path: Path) -> None:
+    """An empty-but-existing in-range partition dir is skipped, not fatal.
+
+    An interrupted write can leave ``year=/month=`` with no parquet file; the
+    whole-tree glob skips it silently, so the range path must too (not raise on
+    a zero-match glob).
+    """
+    dataset_dir = tmp_path / "ds"
+    _write_month(dataset_dir, 2024, 1, [date(2024, 1, 10)])
+    _write_month(dataset_dir, 2024, 3, [date(2024, 3, 10)])
+    (dataset_dir / "year=2024" / "month=02").mkdir(parents=True, exist_ok=True)
+
+    df = scan_parquet_range(dataset_dir, date(2024, 1, 1), date(2024, 3, 31)).collect()
+    assert sorted(df["settlement_date"].to_list()) == [date(2024, 1, 10), date(2024, 3, 10)]
+
+
+def test_scan_parquet_range_mixed_schema_null_fills_in_range(tmp_path: Path) -> None:
+    """missing_columns='insert' tolerance holds under lazy scan, in-range.
+
+    Both differing files are inside the scanned range so schema drift never
+    crosses month-pruning.
+    """
+    dataset_dir = tmp_path / "ds"
+    _write_month(dataset_dir, 2024, 1, [date(2024, 1, 10)])
+    _write_month(
+        dataset_dir, 2024, 2, [date(2024, 2, 10)], extra={"available_at": ["2024-02-10T00:00:00Z"]}
+    )
+
+    df = scan_parquet_range(dataset_dir, date(2024, 1, 1), date(2024, 2, 28)).collect()
+    df = df.sort("settlement_date")
+    assert df["settlement_date"].to_list() == [date(2024, 1, 10), date(2024, 2, 10)]
+    assert df["available_at"].to_list() == [None, "2024-02-10T00:00:00Z"]
+
+
+def test_scan_parquet_range_propagates_schema_errors_on_collect(tmp_path: Path) -> None:
+    """Schema corruption inside an in-range partition surfaces on collect."""
+    dataset_dir = tmp_path / "ds"
+    part = dataset_dir / "year=2024" / "month=02"
+    _write_parquet(
+        pl.DataFrame({"settlement_date": [date(2024, 2, 1)], "value": [1]}),
+        part / "good.parquet",
+    )
+    (part / "bad.parquet").write_bytes(b"not a parquet file")
+
+    with pytest.raises(PolarsError):
+        scan_parquet_range(dataset_dir, date(2024, 2, 1), date(2024, 2, 28)).collect()

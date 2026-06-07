@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING
 import polars as pl
 
 from gridflow.gold.base import BaseGoldBuilder
-from gridflow.storage.parquet import read_parquet_dir
+from gridflow.storage.parquet import scan_parquet_range
 
 if TYPE_CHECKING:
     from datetime import date
@@ -28,16 +28,12 @@ class SystemMarginalPriceBuilder(BaseGoldBuilder):
         """Build enriched system price dataset."""
         silver_dir = self.data_dir / "silver" / "elexon" / "system_prices"
 
-        df = read_parquet_dir(silver_dir)
-        if df.is_empty():
-            return df
-
-        # Filter to date range
-        if "settlement_date" in df.columns:
-            df = df.filter(
-                (pl.col("settlement_date") >= start_date) & (pl.col("settlement_date") <= end_date)
-            )
-
+        # The range helper prunes to overlapping year=/month= partitions and
+        # applies the settlement_date predicate itself, so no post-load filter
+        # is needed here.
+        df = scan_parquet_range(
+            silver_dir, start_date, end_date, date_col="settlement_date"
+        ).collect()
         if df.is_empty():
             return df
 
