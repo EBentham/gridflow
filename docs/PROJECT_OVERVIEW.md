@@ -289,7 +289,7 @@ The DuckDB file (`data/gridflow.duckdb`) stores:
 | `pipeline_runs` | Run history: source, dataset, operation, status, row counts, duration |
 | `pipeline_watermarks` | Last successful end timestamp per source/dataset (for incremental runs) |
 | `quality_reports` | Data quality check results |
-| `silver_{dataset}` (views) | Auto-registered views pointing at silver Parquet files |
+| `silver_{source}_{dataset}` (views) | Auto-registered, source-qualified views pointing at silver Parquet files (a few legacy unqualified aliases remain as deprecation shims) |
 | `gold_{dataset}` (views) | Auto-registered views pointing at gold Parquet files |
 
 Views use `read_parquet('path/**/*.parquet', hive_partitioning=true)` so you can query all historical data with plain SQL.

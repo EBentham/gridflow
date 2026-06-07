@@ -72,14 +72,14 @@ class GridflowClient:
     ) -> pl.DataFrame:
         """Get system sell/buy prices for a date range.
 
-        Returns a Polars DataFrame with the live silver_system_prices
+        Returns a Polars DataFrame with the live silver_elexon_system_prices
         public schema (bitemporal / partitioning columns excluded). The
         column set is what the silver transformer publishes today; new
         columns added to the silver layer surface here automatically.
         """
         sql = (
             "SELECT * EXCLUDE (" + _BITEMPORAL_EXCLUDE_SQL + ") "
-            "FROM silver_system_prices "
+            "FROM silver_elexon_system_prices "
             "WHERE settlement_date BETWEEN ? AND ? "
             "ORDER BY timestamp_utc"
         )
@@ -95,23 +95,23 @@ class GridflowClient:
 
         .. deprecated::
             ``silver_generation_by_fuel`` was a duplicate of
-            ``silver_fuelhh`` and was removed from the silver registry
+            ``silver_elexon_fuelhh`` and was removed from the silver registry
             (see ``gridflow/silver/elexon/__init__.py``). This method
-            now queries ``silver_fuelhh`` and emits a DeprecationWarning.
+            now queries ``silver_elexon_fuelhh`` and emits a DeprecationWarning.
             Call :meth:`get_fuel_generation` instead, which returns the
-            full silver_fuelhh public schema.
+            full silver_elexon_fuelhh public schema.
         """
         warnings.warn(
             "GridflowClient.get_generation_by_fuel() is deprecated; "
             "the underlying silver_generation_by_fuel view was removed "
-            "(it duplicated silver_fuelhh). Call get_fuel_generation() "
-            "instead. This shim queries silver_fuelhh under the hood.",
+            "(it duplicated silver_elexon_fuelhh). Call get_fuel_generation() "
+            "instead. This shim queries silver_elexon_fuelhh under the hood.",
             DeprecationWarning,
             stacklevel=2,
         )
         sql = (
             "SELECT timestamp_utc, fuel_type, generation_mw "
-            "FROM silver_fuelhh "
+            "FROM silver_elexon_fuelhh "
             "WHERE settlement_date BETWEEN ? AND ? "
             "ORDER BY timestamp_utc, fuel_type"
         )
@@ -124,12 +124,12 @@ class GridflowClient:
     ) -> pl.DataFrame:
         """Get half-hourly fuel generation mix for the GB grid.
 
-        Returns a Polars DataFrame with the live silver_fuelhh public
+        Returns a Polars DataFrame with the live silver_elexon_fuelhh public
         schema (bitemporal / partitioning columns excluded).
         """
         sql = (
             "SELECT * EXCLUDE (" + _BITEMPORAL_EXCLUDE_SQL + ") "
-            "FROM silver_fuelhh "
+            "FROM silver_elexon_fuelhh "
             "WHERE settlement_date BETWEEN ? AND ? "
             "ORDER BY timestamp_utc, fuel_type"
         )
@@ -167,7 +167,7 @@ class GridflowClient:
     ) -> pl.DataFrame:
         """Get historical weather observations from Open-Meteo (demand role).
 
-        Returns a Polars DataFrame with the live silver_itsdo public
+        Returns a Polars DataFrame with the live silver_elexon_itsdo public
         schema (demand-role weather; bitemporal / partitioning columns
         excluded). Renamed from silver_historical at F7.5 during the
         wind/solar role-split; new columns surface here automatically.
@@ -179,7 +179,7 @@ class GridflowClient:
             params.append(location)
         sql = (
             "SELECT * EXCLUDE (" + _BITEMPORAL_EXCLUDE_SQL + ") "
-            "FROM silver_itsdo "
+            "FROM silver_elexon_itsdo "
             "WHERE timestamp_utc::DATE BETWEEN ? AND ?" + location_filter + " "
             "ORDER BY timestamp_utc, location"
         )
@@ -194,8 +194,8 @@ class GridflowClient:
 
         Returns a Polars DataFrame with the gold_uk_imbalance_context
         public schema (bitemporal / partitioning columns excluded). The
-        view joins silver_system_prices and silver_carbon_intensity; new
-        columns on either side surface here automatically.
+        view joins silver_elexon_system_prices and silver_neso_carbon_intensity;
+        new columns on either side surface here automatically.
         """
         sql = (
             "SELECT * EXCLUDE (" + _BITEMPORAL_EXCLUDE_SQL + ") "

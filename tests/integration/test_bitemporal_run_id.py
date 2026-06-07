@@ -115,7 +115,7 @@ def test_cli_transform_stamps_source_run_id_matching_pipeline_run(
         duckdb_rows = con.execute(
             """
             SELECT event_time IS NOT NULL, available_at IS NOT NULL, source_run_id, dataset_version
-            FROM silver_fuelhh
+            FROM silver_elexon_fuelhh
             LIMIT 5
             """
         ).fetchall()

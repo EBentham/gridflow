@@ -13,8 +13,8 @@ SELECT
     ci.forecast_gco2_kwh   AS carbon_intensity_forecast_gco2_kwh,
     ci.actual_gco2_kwh     AS carbon_intensity_actual_gco2_kwh,
     ci.intensity_index
-FROM silver_system_prices sp
-LEFT JOIN silver_carbon_intensity ci
+FROM silver_elexon_system_prices sp
+LEFT JOIN silver_neso_carbon_intensity ci
     ON sp.timestamp_utc = ci.timestamp_utc
 ORDER BY sp.timestamp_utc, sp.run_type;
 

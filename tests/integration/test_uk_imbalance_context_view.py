@@ -36,8 +36,8 @@ def _connection_with_view(data_dir: Path) -> duckdb.DuckDBPyConnection:
     """In-memory connection with silver views + only the view under test.
 
     Avoids init_catalogue, which under strict mode (pytest) would also try to
-    register the unrelated eu_gas_storage gold view whose silver_storage table
-    is absent in this fixture.
+    register the unrelated eu_gas_storage gold view whose
+    silver_gie_agsi_storage table is absent in this fixture.
     """
     con = duckdb.connect(":memory:")
     _register_views(con, data_dir)
@@ -101,7 +101,7 @@ def test_view_join_does_not_fan_out_and_left_join_nulls(tmp_path: Path) -> None:
 
     con = _connection_with_view(data_dir)
     try:
-        n_prices = con.execute("SELECT count(*) FROM silver_system_prices").fetchone()[0]
+        n_prices = con.execute("SELECT count(*) FROM silver_elexon_system_prices").fetchone()[0]
         rows = con.execute(
             """
             SELECT settlement_period,

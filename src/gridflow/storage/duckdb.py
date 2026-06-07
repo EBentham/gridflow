@@ -11,6 +11,24 @@ import duckdb
 
 logger = logging.getLogger(__name__)
 
+# Backward-compat deprecation shims for silver views renamed to the
+# source-qualified scheme (C1-4 / CH-ARCH-03). Each maps an OLD unqualified
+# alias -> the NEW source-qualified view it now forwards to.
+#
+# WHY only these five: they are the silver views with external / by-name
+# consumers (the GridflowClient.get_* SDK methods, the gold SQL views, and
+# downstream gridflow_models). Aliasing *every* silver view would reintroduce
+# the cross-source collision surface the qualification exists to remove, so the
+# allow-list is explicit and closed. New code must use the qualified name; these
+# shims exist solely so out-of-repo callers do not break on the rename.
+_SILVER_VIEW_ALIASES: dict[str, str] = {
+    "silver_system_prices": "silver_elexon_system_prices",
+    "silver_fuelhh": "silver_elexon_fuelhh",
+    "silver_itsdo": "silver_elexon_itsdo",
+    "silver_storage": "silver_gie_agsi_storage",
+    "silver_carbon_intensity": "silver_neso_carbon_intensity",
+}
+
 
 def _is_strict_mode() -> bool:
     """True when broken view registration should raise instead of debug-log.
@@ -153,7 +171,10 @@ def _register_views(con: duckdb.DuckDBPyConnection, data_dir: Path) -> None:
     silver_dir = data_dir / "silver"
     gold_dir = data_dir / "gold"
 
-    # Silver views
+    # Silver views — source-qualified (C1-4): silver_{source}_{dataset}. Two
+    # sources sharing a dataset directory name (e.g. a future bare ``forecast``)
+    # would otherwise collapse to one view under CREATE OR REPLACE in
+    # nondeterministic iterdir() order, silently shadowing one source's data.
     if silver_dir.exists():
         for source_dir in silver_dir.iterdir():
             if not source_dir.is_dir():
@@ -161,9 +182,11 @@ def _register_views(con: duckdb.DuckDBPyConnection, data_dir: Path) -> None:
             for dataset_dir in source_dir.iterdir():
                 if not dataset_dir.is_dir():
                     continue
-                view_name = f"silver_{dataset_dir.name}"
+                view_name = f"silver_{source_dir.name}_{dataset_dir.name}"
                 pattern = str(dataset_dir / "**" / "*.parquet").replace("\\", "/")
                 _try_create_view(con, view_name, pattern)
+
+        _register_silver_aliases(con)
 
     # Gold views
     if gold_dir.exists():
@@ -173,6 +196,38 @@ def _register_views(con: duckdb.DuckDBPyConnection, data_dir: Path) -> None:
             view_name = f"gold_{dataset_dir.name}"
             pattern = str(dataset_dir / "**" / "*.parquet").replace("\\", "/")
             _try_create_view(con, view_name, pattern)
+
+
+def _register_silver_aliases(con: duckdb.DuckDBPyConnection) -> None:
+    """Register backward-compat aliases for renamed silver views (C1-4).
+
+    Each alias in ``_SILVER_VIEW_ALIASES`` is a deprecation shim forwarding an
+    old unqualified name to its new source-qualified view, so external callers
+    survive the rename. An alias is only created when its target view actually
+    exists in this catalogue: tests (and partial pipelines) init the catalogue
+    over a tmpdir holding only a subset of datasets, and creating an alias over
+    an absent target raises a DuckDB binder error — which, under pytest /
+    GRIDFLOW_ENV strict mode (F15-D), would propagate and break catalogue init.
+    Gating on the live catalogue keeps the shim loud-failure-free.
+
+    Args:
+        con: Open DuckDB connection whose silver views have already been
+            registered by the caller.
+    """
+    existing = {
+        row[0]
+        for row in con.execute(
+            "SELECT table_name FROM information_schema.tables WHERE table_schema = 'main'"
+        ).fetchall()
+    }
+    for alias, target in _SILVER_VIEW_ALIASES.items():
+        if target not in existing:
+            continue
+        con.execute(
+            f"CREATE OR REPLACE VIEW {_quote_identifier(alias)} "
+            f"AS SELECT * FROM {_quote_identifier(target)}"
+        )
+        logger.info("Registered backward-compat silver alias: %s -> %s", alias, target)
 
 
 def _quote_identifier(name: str) -> str:
