@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 import os
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal, cast
 
 import polars as pl
 
@@ -14,6 +14,10 @@ if TYPE_CHECKING:
     from datetime import date
 
 logger = logging.getLogger(__name__)
+
+# Mirror of polars' private ParquetCompression literal; kept local to avoid
+# importing from polars._typing (a private module that may move between releases).
+_ParquetCompression = Literal["lz4", "uncompressed", "snappy", "gzip", "brotli", "zstd"]
 
 
 def write_parquet(
@@ -28,7 +32,8 @@ def write_parquet(
     path.parent.mkdir(parents=True, exist_ok=True)
     tmp_path = path.parent / f".tmp_{path.name}"
 
-    df.write_parquet(tmp_path, compression=compression)
+    # polars validates the compression value at runtime; cast satisfies its Literal param.
+    df.write_parquet(tmp_path, compression=cast("_ParquetCompression", compression))
     # os.replace is atomic on both Unix and Windows (overwrites existing)
     os.replace(tmp_path, path)
 

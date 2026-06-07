@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 from datetime import UTC, date, datetime
+from typing import Any
 
 import polars as pl
 
@@ -33,7 +34,7 @@ class ActivatedBalancingQtyTransformer(BaseSilverTransformer):
         if bronze_path is None:
             return pl.DataFrame()
 
-        records: list[dict] = []
+        records: list[dict[str, Any]] = []
         for xml_file in sorted(bronze_path.glob("raw_*.xml")):
             records.extend(parse_timeseries_xml(xml_file.read_bytes(), value_tag="quantity"))
 

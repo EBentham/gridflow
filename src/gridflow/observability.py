@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 import uuid
 from datetime import UTC, datetime
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 if TYPE_CHECKING:
     import duckdb
@@ -242,7 +242,8 @@ def get_watermark(
             [source, dataset],
         ).fetchone()
         if result and result[0] is not None:
-            return result[0].replace(tzinfo=UTC)
+            # DuckDB fetchone() returns Any; last_end is a naive datetime here.
+            return cast("datetime", result[0]).replace(tzinfo=UTC)
     except Exception as e:
         logger.debug(f"Could not read watermark: {e}")
     return None

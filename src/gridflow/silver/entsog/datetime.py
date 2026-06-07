@@ -24,6 +24,7 @@ def parse_entsog_datetime(value: Any) -> datetime | None:
     """Parse ENTSO-G datetime strings, returning ``None`` for placeholders."""
     if value is None:
         return None
+    parsed: datetime | None
     if isinstance(value, datetime):
         parsed = value
     elif isinstance(value, date):

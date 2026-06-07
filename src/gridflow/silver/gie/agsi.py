@@ -6,7 +6,7 @@ import json
 import logging
 import re
 from datetime import UTC, date, datetime
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, cast
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -537,7 +537,10 @@ def _storage_entity_level(
 def _about_summary_records(payload: Any) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
     for company in _about_summary_companies(payload):
-        company_data = company.get("data") if isinstance(company.get("data"), dict) else {}
+        raw_company_data = company.get("data")
+        company_data: dict[str, Any] = (
+            raw_company_data if isinstance(raw_company_data, dict) else {}
+        )
         country = company_data.get("country") or company.get("country")
         company_code = str(company.get("eic") or company.get("code") or "")
         company_name = str(company.get("name") or company.get("short_name") or company_code)
@@ -621,9 +624,11 @@ def _unavailability_record_overlaps(record: dict[str, Any], target_date: date) -
     event_end = _safe_date(_first(row, "event_end", "end_at", "gas_day_end"))
     if event_start is None and event_end is None:
         return True
-    event_start = event_start or event_end
-    event_end = event_end or event_start
-    return event_start <= target_date <= event_end
+    # At least one bound is set (None-None handled above); coalescing an open-ended
+    # window collapses it to a point, so both are non-None here.
+    start = cast("date", event_start or event_end)
+    end = cast("date", event_end or event_start)
+    return start <= target_date <= end
 
 
 def _metadata_request_window_contains(path: Path, target_date: date) -> bool:
@@ -632,9 +637,10 @@ def _metadata_request_window_contains(path: Path, target_date: date) -> bool:
     end = _safe_date(request_params.get("end"))
     if start is None and end is None:
         return False
-    start = start or end
-    end = end or start
-    return start <= target_date <= end
+    # At least one bound is set (None-None handled above), so both are non-None here.
+    start_bound = cast("date", start or end)
+    end_bound = cast("date", end or start)
+    return start_bound <= target_date <= end_bound
 
 
 def _metadata_request_params(path: Path) -> dict[str, Any]:

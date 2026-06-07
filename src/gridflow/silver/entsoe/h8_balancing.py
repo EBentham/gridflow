@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from datetime import UTC, date, datetime
-from typing import Any
+from typing import TYPE_CHECKING, Any, ClassVar
 
 import polars as pl
 
@@ -19,6 +19,9 @@ from gridflow.schemas.entsoe import (
 from gridflow.silver.base import BaseSilverTransformer
 from gridflow.silver.registry import register_transformer
 
+if TYPE_CHECKING:
+    from pydantic import BaseModel
+
 logger = logging.getLogger(__name__)
 
 
@@ -27,9 +30,9 @@ class _H8BalancingTransformer(BaseSilverTransformer):
 
     value_tag = "quantity"
     value_column = "quantity_mw"
-    schema_cls = EntsoeBalancingState
-    area_columns = ("area_domain",)
-    output_cols = (
+    schema_cls: ClassVar[type[BaseModel]] = EntsoeBalancingState
+    area_columns: ClassVar[tuple[str, ...]] = ("area_domain",)
+    output_cols: ClassVar[tuple[str, ...]] = (
         "timestamp_utc",
         "area_code",
         "quantity_mw",
@@ -38,7 +41,7 @@ class _H8BalancingTransformer(BaseSilverTransformer):
         "data_provider",
         "ingested_at",
     )
-    unique_subset = ("timestamp_utc", "area_code", "business_type")
+    unique_subset: ClassVar[tuple[str, ...]] = ("timestamp_utc", "area_code", "business_type")
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         bronze_path = self._bronze_path_for_date(target_date)
