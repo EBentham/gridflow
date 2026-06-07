@@ -140,8 +140,25 @@ def ingest(
             responses = asyncio.run(_do_fetch())
             for resp in responses:
                 writer.write(resp)
-            tracker.complete(rows_in=len(responses), rows_out=len(responses))
-            typer.echo(f"  {source}/{ds}: {len(responses)} responses ingested")
+            # A partial fetch (some sub-units skipped after retries, but not all)
+            # must be recorded as completed_with_warnings, never silently
+            # 'success' (CH-COR-01 → C3-9/C2-9). The counter persists on the
+            # connector instance past the `async with`, so it is read here on the
+            # same object. Mirrors the transform path's last_unmapped_count branch.
+            skipped = connector.last_skipped_units
+            if skipped:
+                tracker.complete_with_warnings(
+                    rows_in=len(responses),
+                    rows_out=len(responses),
+                    rows_skipped=skipped,
+                )
+                typer.echo(
+                    f"  {source}/{ds}: {len(responses)} responses ingested, "
+                    f"{skipped} unit(s) skipped (completed_with_warnings)"
+                )
+            else:
+                tracker.complete(rows_in=len(responses), rows_out=len(responses))
+                typer.echo(f"  {source}/{ds}: {len(responses)} responses ingested")
         except Exception as e:
             error_message = _safe_error_message(str(e))
             tracker.fail(error_message)
