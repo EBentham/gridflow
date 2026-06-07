@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 import uuid
+from contextlib import closing
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
@@ -84,29 +85,31 @@ class QualityReporter:
         # Table 'df' does not exist).
         df = pl.DataFrame(rows)  # noqa: F841
 
-        # Write to DuckDB
+        # Write to DuckDB. `closing` guarantees the connection is released on the
+        # failure path too — the bare `con.close()` only ran on success, leaving
+        # cleanup to refcount/__del__ when the write raised.
         try:
-            con = duckdb.connect(str(self.duckdb_path))
-            con.execute("""
-                CREATE TABLE IF NOT EXISTS quality_reports (
-                    run_id          VARCHAR,
-                    id              INTEGER,
-                    run_date        TIMESTAMP WITH TIME ZONE,
-                    check_name      VARCHAR,
-                    dataset         VARCHAR,
-                    source          VARCHAR,
-                    passed          BOOLEAN,
-                    metric          DOUBLE,
-                    detail          VARCHAR
+            with closing(duckdb.connect(str(self.duckdb_path))) as con:
+                con.execute("""
+                    CREATE TABLE IF NOT EXISTS quality_reports (
+                        run_id          VARCHAR,
+                        id              INTEGER,
+                        run_date        TIMESTAMP WITH TIME ZONE,
+                        check_name      VARCHAR,
+                        dataset         VARCHAR,
+                        source          VARCHAR,
+                        passed          BOOLEAN,
+                        metric          DOUBLE,
+                        detail          VARCHAR
+                    )
+                """)
+                con.execute(
+                    "INSERT INTO quality_reports "
+                    "(run_id, id, run_date, check_name, dataset, source, passed, metric, detail) "
+                    "SELECT run_id, id, run_date, check_name, dataset, source, "
+                    "passed, metric, detail "
+                    "FROM df"
                 )
-            """)
-            con.execute(
-                "INSERT INTO quality_reports "
-                "(run_id, id, run_date, check_name, dataset, source, passed, metric, detail) "
-                "SELECT run_id, id, run_date, check_name, dataset, source, passed, metric, detail "
-                "FROM df"
-            )
-            con.close()
         except Exception:
             # The quality report is this command's deliverable. Returning 0 here
             # would be indistinguishable from the legitimate "no results" empty

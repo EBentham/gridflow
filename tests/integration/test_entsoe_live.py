@@ -305,6 +305,12 @@ class TestEntsoeCliFailurePropagation:
         )
 
         class FakeConnector:
+            # Mirror BaseConnector's default so the ingest success path
+            # (which reads connector.last_skipped_units after a clean fetch)
+            # exercises day_ahead_prices as a real SUCCESS — without this the
+            # fake AttributeErrors and the success branch is never covered.
+            last_skipped_units = 0
+
             async def __aenter__(self) -> FakeConnector:
                 return self
 
@@ -355,6 +361,15 @@ class TestEntsoeCliFailurePropagation:
         assert exc_info.value.exit_code == 1
         assert "actual_load" in captured.err
         assert "forced actual_load failure" in captured.err
+        # The whole point of this test is "one dataset succeeds, one fails -> exit 1".
+        # The success side must genuinely succeed: day_ahead_prices must NOT appear in
+        # the failure stream, and its success echo must land on stdout. Without a
+        # `last_skipped_units` attribute on the fake, the ingest success path
+        # AttributeErrors on day_ahead_prices, recording it as a failure too — which
+        # this assertion catches (the discriminating guard against that masking).
+        assert "day_ahead_prices" not in captured.err
+        assert "entsoe/day_ahead_prices" in captured.out
+        assert "ingested" in captured.out
 
 
 class TestEntsoeLiveAllDatasets:

@@ -102,6 +102,16 @@ class PipelineSettings(BaseSettings):
     # `--incremental` behaviour-preserving (start == watermark). Raising it is safe
     # because bronze is immutable and silver dedups on (date, period, run_type), so
     # re-fetching the recent past adds bronze bytes without corrupting silver.
+    #
+    # WARNING (revision-settlement lag): with the default 0, `--incremental`
+    # advances each dataset's frontier past the requested window and NEVER
+    # re-fetches it. A revision-bearing dataset (Elexon settlement data
+    # republished II->SF->R1 under a new run_type for an already-watermarked
+    # date/period) will silently miss those late revisions on the incremental
+    # path. Raise this to cover the publisher's revision lag (settlement runs
+    # can revise for weeks) — or run a periodic backfill — before adopting
+    # `--incremental` for settlement data. CLAUDE.md treats settlement revisions
+    # as first-class, so a zero overlap on that path is a latent data-loss trap.
     incremental_overlap_hours: int = 0
     max_concurrent_requests: int = 5
     log_level: str = "INFO"
