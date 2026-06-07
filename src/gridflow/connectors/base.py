@@ -54,6 +54,28 @@ class BaseConnector(ABC):
 
     source_name: str  # Must be set by subclasses
 
+    last_skipped_units: int = 0
+    """Count of sub-fetch units skipped in the most recent ``fetch()`` (CH-COR-01).
+
+    A "unit" is one independently-fetched slice of a dataset whose failure a
+    connector tolerates while continuing the rest — a GIE country or a NESO
+    request window. Reset to 0 at the top of every ``fetch()`` (so a reused
+    connector never inherits a prior call's count) and set once, from a
+    post-loop tally of the failures, after all units have been attempted.
+
+    The CLI reads it after the fetch to thread the skipped total into
+    ``PipelineRunTracker.complete_with_warnings`` — so a partial ingest is
+    recorded as ``completed_with_warnings`` rather than silently ``success``
+    (parallel to the transformer's ``last_unmapped_count``; CLAUDE.md hard rule
+    that swallowed failures must surface). Connectors that raise on any failure
+    (Open-Meteo) leave this at 0; connectors that tolerate per-unit failures
+    (GIE, NESO) re-raise only when *every* attempted unit failed, so an
+    all-fail run is a hard ``failed`` and a partial run carries the count.
+
+    Set once from a post-loop tally rather than incremented mid-coroutine so the
+    CH3 swap to ``asyncio.gather(..., return_exceptions=True)`` is a drop-in.
+    """
+
     def __init__(self, config: SourceConfig):
         self.config = config
         self._client: httpx.AsyncClient | None = None

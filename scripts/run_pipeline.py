@@ -114,7 +114,14 @@ def _setup() -> tuple:
 
 
 def _import_connectors() -> None:
-    """Import connector modules to trigger auto-registration."""
+    """Import connector modules to trigger auto-registration.
+
+    These are core modules present in every healthy install, so an
+    ``ImportError`` always indicates a real bug in the module rather than an
+    absent optional dependency. Log it with the module name instead of
+    swallowing it, so a broken connector is visible rather than masquerading as
+    a missing registration.
+    """
     for module in [
         "gridflow.connectors.elexon",
         "gridflow.connectors.openmeteo",
@@ -126,11 +133,17 @@ def _import_connectors() -> None:
         try:
             __import__(module)
         except ImportError:
-            pass
+            logging.getLogger(__name__).warning(
+                "Failed to import connector module %s", module, exc_info=True
+            )
 
 
 def _import_transformers() -> None:
-    """Import transformer modules to trigger auto-registration."""
+    """Import transformer modules to trigger auto-registration.
+
+    Core modules — an ``ImportError`` signals a real bug, not a missing optional
+    dependency. Log with the module name instead of swallowing it.
+    """
     for module in [
         "gridflow.silver.elexon",
         "gridflow.silver.openmeteo",
@@ -142,7 +155,9 @@ def _import_transformers() -> None:
         try:
             __import__(module)
         except ImportError:
-            pass
+            logging.getLogger(__name__).warning(
+                "Failed to import transformer module %s", module, exc_info=True
+            )
 
 
 def resolve_dates(
@@ -160,9 +175,7 @@ def resolve_dates(
         return now - delta, now
     if start:
         start_dt = datetime.fromisoformat(start).replace(tzinfo=timezone.utc)
-        end_dt = (
-            datetime.fromisoformat(end).replace(tzinfo=timezone.utc) if end else now
-        )
+        end_dt = datetime.fromisoformat(end).replace(tzinfo=timezone.utc) if end else now
         return start_dt, end_dt
     return now - timedelta(hours=default_lookback_hours), now
 
@@ -174,9 +187,7 @@ def resolve_datasets(source: str, dataset: str | None, all_flag: bool, settings)
         return list(source_config.datasets.keys())
     if dataset:
         return [dataset]
-    raise SystemExit(
-        f"Error: specify --dataset NAME or --all-datasets for source '{source}'"
-    )
+    raise SystemExit(f"Error: specify --dataset NAME or --all-datasets for source '{source}'")
 
 
 # ---------------------------------------------------------------------------
@@ -184,7 +195,9 @@ def resolve_datasets(source: str, dataset: str | None, all_flag: bool, settings)
 # ---------------------------------------------------------------------------
 
 
-def run_bronze(source: str, datasets: list[str], start_dt: datetime, end_dt: datetime, settings, con) -> None:
+def run_bronze(
+    source: str, datasets: list[str], start_dt: datetime, end_dt: datetime, settings, con
+) -> None:
     """Ingest raw data from APIs into the bronze layer."""
     from gridflow.bronze.writer import BronzeWriter
     from gridflow.connectors.registry import get_connector
@@ -238,7 +251,9 @@ def run_silver(
 
     for ds in datasets:
         tracker = PipelineRunTracker(con, source, ds, "transform")
-        print(f"  [silver] {source}/{ds}  {start_dt.date()} -> {end_dt.date()}  ({len(dates)} days)")
+        print(
+            f"  [silver] {source}/{ds}  {start_dt.date()} -> {end_dt.date()}  ({len(dates)} days)"
+        )
         total_rows = 0
         try:
             transformer = get_transformer(source, ds, settings.pipeline.data_dir)
@@ -307,7 +322,9 @@ def main() -> None:
     )
     parser.add_argument("--source", help="Data source name (e.g. elexon, entsoe, gie_agsi)")
     parser.add_argument("--dataset", help="Specific dataset name")
-    parser.add_argument("--all-datasets", action="store_true", help="Process all datasets for the source")
+    parser.add_argument(
+        "--all-datasets", action="store_true", help="Process all datasets for the source"
+    )
     parser.add_argument("--start", help="Start date (YYYY-MM-DD)")
     parser.add_argument("--end", help="End date (YYYY-MM-DD)")
     parser.add_argument("--last", help="Relative lookback (e.g. 24h, 7d, 30d)")
@@ -325,7 +342,9 @@ def main() -> None:
         parser.error(f"--source is required for step '{step}'")
 
     settings, con = _setup()
-    start_dt, end_dt = resolve_dates(args.start, args.end, args.last, settings.pipeline.default_lookback_hours)
+    start_dt, end_dt = resolve_dates(
+        args.start, args.end, args.last, settings.pipeline.default_lookback_hours
+    )
 
     print(f"gridflow pipeline runner")
     print(f"  Step:  {step}")
@@ -354,6 +373,7 @@ def main() -> None:
         if step in ("gold", "all"):
             if args.all_datasets:
                 from gridflow.gold.system_marginal_price import SystemMarginalPriceBuilder
+
                 gold_names = ["system_marginal_price"]
             elif args.dataset:
                 gold_names = [args.dataset]

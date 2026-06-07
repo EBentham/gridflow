@@ -3,13 +3,16 @@
 from __future__ import annotations
 
 import asyncio
-import contextlib
 import logging
 import os
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import typer
+
+if TYPE_CHECKING:
+    import duckdb
 
 app = typer.Typer(name="gridflow", help="UK/EU energy market data pipeline")
 logger = logging.getLogger(__name__)
@@ -96,6 +99,28 @@ def ingest(
     all_datasets: bool = typer.Option(
         False, "--all", "-all", help="Ingest all datasets for source"
     ),
+    incremental: bool = typer.Option(
+        False,
+        "--incremental",
+        "--since-watermark",
+        help="Resume each dataset from its stored watermark (minus the configured "
+        "overlap). Ignored when --start or --last is given. First run falls back "
+        "to the default lookback. WARNING: incremental skips already-watermarked "
+        "windows, so revision-bearing datasets (e.g. Elexon settlement run_type "
+        "revisions II->SF->R1, republished under the same date/period) are NEVER "
+        "re-fetched on this path unless incremental_overlap_hours is non-zero (or "
+        "you run a periodic backfill). With the shipped default of 0, late "
+        "revisions are silently missed — do not use --incremental for settlement "
+        "data without raising the overlap.",
+    ),
+    write_watermark: bool = typer.Option(
+        True,
+        "--write-watermark/--no-write-watermark",
+        hidden=True,
+        help="Advance the ingestion watermark on success. Internal: backfill "
+        "passes --no-write-watermark so a historical chunk-ingest never moves "
+        "the forward frontier.",
+    ),
 ) -> None:
     """Ingest raw data from an API source into the bronze layer."""
     from gridflow.config.settings import load_settings
@@ -108,7 +133,14 @@ def ingest(
         settings.pipeline.console_log_level,
     )
 
-    start_dt, end_dt = _resolve_dates(start, end, last, settings.pipeline.default_lookback_hours)
+    # end_dt is resolved once up front (= now for the lookback/incremental paths);
+    # incremental resolves start per-dataset inside the loop from each watermark.
+    # Precedence: --start > --last > --incremental (watermark) > default lookback.
+    default_start_dt, end_dt = _resolve_dates(
+        start, end, last, settings.pipeline.default_lookback_hours
+    )
+    use_watermark_start = incremental and start is None and last is None
+    overlap = timedelta(hours=settings.pipeline.incremental_overlap_hours)
     datasets = _resolve_datasets(source, dataset, all_datasets, settings)
 
     # Import connector registrations
@@ -122,26 +154,59 @@ def ingest(
     init_catalogue(settings.pipeline.duckdb_path, settings.pipeline.data_dir)
     con = get_connection(settings.pipeline.duckdb_path)
 
-    from gridflow.observability import PipelineRunTracker
+    from gridflow.observability import PipelineRunTracker, update_watermark
 
     source_config = settings.get_source_config(source)
     writer = BronzeWriter(settings.pipeline.data_dir)
     failures: list[tuple[str, str]] = []
 
     for ds in datasets:
+        # Resolve start per-dataset: incremental reads each dataset's own
+        # watermark (first run falls back to the default-lookback start);
+        # otherwise the explicit/lookback start applies to every dataset.
+        if use_watermark_start:
+            start_dt = _resolve_incremental_start(con, source, ds, default_start_dt, overlap)
+        else:
+            start_dt = default_start_dt
+
         tracker = PipelineRunTracker(con, source, ds, "ingest")
         try:
             connector = get_connector(source, source_config)
 
-            async def _do_fetch(connector=connector, ds=ds) -> list:
+            async def _do_fetch(connector=connector, ds=ds, start_dt=start_dt) -> list:
                 async with connector:
                     return await connector.fetch(ds, start_dt, end_dt)
 
             responses = asyncio.run(_do_fetch())
             for resp in responses:
                 writer.write(resp)
-            tracker.complete(rows_in=len(responses), rows_out=len(responses))
-            typer.echo(f"  {source}/{ds}: {len(responses)} responses ingested")
+            # A partial fetch (some sub-units skipped after retries, but not all)
+            # must be recorded as completed_with_warnings, never silently
+            # 'success' (CH-COR-01 → C3-9/C2-9). The counter persists on the
+            # connector instance past the `async with`, so it is read here on the
+            # same object. Mirrors the transform path's last_unmapped_count branch.
+            skipped = connector.last_skipped_units
+            if skipped:
+                tracker.complete_with_warnings(
+                    rows_in=len(responses),
+                    rows_out=len(responses),
+                    rows_skipped=skipped,
+                )
+                typer.echo(
+                    f"  {source}/{ds}: {len(responses)} responses ingested, "
+                    f"{skipped} unit(s) skipped (completed_with_warnings)"
+                )
+            else:
+                tracker.complete(rows_in=len(responses), rows_out=len(responses))
+                typer.echo(f"  {source}/{ds}: {len(responses)} responses ingested")
+            # Advance the watermark only AFTER a successful write (clean or
+            # with-warnings both landed rows). Never on the except path; never for
+            # a backfill chunk-ingest (write_watermark=False), which is an explicit
+            # historical op that must not rewind/move the forward frontier. The
+            # monotonic upsert is the second guard. end_dt = the requested window
+            # end ("last successful end" semantics; ADR-022 ingestion-only).
+            if write_watermark:
+                update_watermark(con, source, ds, end_dt)
         except Exception as e:
             error_message = _safe_error_message(str(e))
             tracker.fail(error_message)
@@ -348,7 +413,9 @@ def backfill(
             typer.echo(f"  Chunk {chunk_num}: {current.date()} to {chunk_end.date()}")
 
             # Call ingest for this chunk (pass all Optional params explicitly to
-            # avoid typer OptionInfo objects leaking in as default values)
+            # avoid typer OptionInfo objects leaking in as default values).
+            # write_watermark=False: backfill is an explicit historical op and must
+            # never advance/rewind the forward incremental frontier (C3-11).
             ingest(
                 source=source,
                 dataset=ds,
@@ -356,6 +423,8 @@ def backfill(
                 end=chunk_end.date().isoformat(),
                 last=None,
                 all_datasets=False,
+                incremental=False,
+                write_watermark=False,
             )
 
             # Call transform for this chunk.  chunk_end is the exclusive API
@@ -454,6 +523,8 @@ def pipeline(
         end=end,
         last=last,
         all_datasets=all_datasets,
+        incremental=False,
+        write_watermark=True,
     )
 
     # Silver
@@ -571,11 +642,26 @@ def quality(
                     __import__("polars").Int32,
                     __import__("polars").Int64,
                 ):
-                    reporter.add_result(check_null_rate(df, col, source=src, dataset=ds))
+                    reporter.add_result(
+                        check_null_rate(
+                            df,
+                            col,
+                            source=src,
+                            dataset=ds,
+                            max_rate=settings.quality.null_rate_threshold,
+                        )
+                    )
 
             # Check time series gaps if timestamp exists
             if "timestamp_utc" in df.columns:
-                reporter.add_result(check_time_series_gaps(df, source=src, dataset=ds))
+                reporter.add_result(
+                    check_time_series_gaps(
+                        df,
+                        source=src,
+                        dataset=ds,
+                        expected_freq_minutes=settings.quality.expected_freq_minutes,
+                    )
+                )
 
             # Check for duplicates on key columns
             if "settlement_date" in df.columns and "settlement_period" in df.columns:
@@ -588,7 +674,14 @@ def quality(
                     )
                 )
 
-    reporter.write_report()
+    # A failed quality-report write is a real failure of this command, not a
+    # clean empty result — surface it as a non-zero exit instead of swallowing.
+    try:
+        reporter.write_report()
+    except Exception as e:
+        logger.error("Quality report write failed: %s", e, exc_info=True)
+        typer.echo(f"Quality report write failed: {e}", err=True)
+        raise typer.Exit(1) from e
     typer.echo(reporter.summary())
 
 
@@ -832,6 +925,37 @@ def _resolve_dates(
     return now - timedelta(hours=default_lookback_hours), now
 
 
+def _resolve_incremental_start(
+    con: duckdb.DuckDBPyConnection,
+    source: str,
+    dataset: str,
+    default_start: datetime,
+    overlap: timedelta,
+) -> datetime:
+    """Resolve the per-dataset incremental start from the stored watermark.
+
+    Args:
+        con: Open DuckDB connection.
+        source: Data source name.
+        dataset: Dataset name.
+        default_start: Fallback start used on the first run (no watermark yet) —
+            the caller's default-lookback start.
+        overlap: How far before the watermark to re-fetch, to recover late/revised
+            publications (run_type II->SF->R1). Zero is behaviour-preserving.
+
+    Returns:
+        ``watermark - overlap`` when a watermark exists for the pair, otherwise
+        ``default_start``. Re-fetching the overlap window is safe: bronze is
+        immutable and silver dedups on ``(date, period, run_type)``.
+    """
+    from gridflow.observability import get_watermark
+
+    watermark = get_watermark(con, source, dataset)
+    if watermark is None:
+        return default_start
+    return watermark - overlap
+
+
 def _safe_error_message(message: str) -> str:
     """Redact sensitive query parameters from user-facing command errors.
 
@@ -864,7 +988,15 @@ def _resolve_datasets(
 
 
 def _import_connectors() -> None:
-    """Import connector modules to trigger registration."""
+    """Import connector modules to trigger registration.
+
+    These are core modules shipped with every install, so an ``ImportError``
+    here never means "optional dependency absent" — it always indicates a real
+    bug in the module (e.g. a syntax/import error). Swallowing it silently would
+    hide the broken module as a missing registration, which later surfaces as a
+    confusing "unknown source". Log it loudly instead and keep going so the
+    other connectors still register.
+    """
     for module in [
         "gridflow.connectors.elexon",
         "gridflow.connectors.openmeteo",
@@ -873,12 +1005,18 @@ def _import_connectors() -> None:
         "gridflow.connectors.entsog",
         "gridflow.connectors.neso",
     ]:
-        with contextlib.suppress(ImportError):
+        try:
             __import__(module)
+        except ImportError:
+            logger.warning("Failed to import connector module %s", module, exc_info=True)
 
 
 def _import_transformers() -> None:
-    """Import transformer modules to trigger registration."""
+    """Import transformer modules to trigger registration.
+
+    Core modules — an ``ImportError`` always signals a real bug, not a missing
+    optional dependency. Log with the module name instead of swallowing it.
+    """
     for module in [
         "gridflow.silver.elexon",
         "gridflow.silver.openmeteo",
@@ -887,5 +1025,7 @@ def _import_transformers() -> None:
         "gridflow.silver.entsog",
         "gridflow.silver.neso",
     ]:
-        with contextlib.suppress(ImportError):
+        try:
             __import__(module)
+        except ImportError:
+            logger.warning("Failed to import transformer module %s", module, exc_info=True)

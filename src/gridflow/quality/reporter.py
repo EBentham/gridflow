@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 import uuid
+from contextlib import closing
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
@@ -45,7 +46,13 @@ class QualityReporter:
     def write_report(self) -> int:
         """Write all collected results to DuckDB quality_reports table.
 
-        Returns the number of results written.
+        Returns:
+            The number of results written. ``0`` only when there were no results
+            to write — never as a stand-in for a failed write.
+
+        Raises:
+            Exception: Re-raised from the DuckDB write if it fails, so a failed
+                write is not silently mistaken for a clean empty result.
         """
         if not self._results:
             logger.info("No quality results to write")
@@ -78,32 +85,38 @@ class QualityReporter:
         # Table 'df' does not exist).
         df = pl.DataFrame(rows)  # noqa: F841
 
-        # Write to DuckDB
+        # Write to DuckDB. `closing` guarantees the connection is released on the
+        # failure path too — the bare `con.close()` only ran on success, leaving
+        # cleanup to refcount/__del__ when the write raised.
         try:
-            con = duckdb.connect(str(self.duckdb_path))
-            con.execute("""
-                CREATE TABLE IF NOT EXISTS quality_reports (
-                    run_id          VARCHAR,
-                    id              INTEGER,
-                    run_date        TIMESTAMP WITH TIME ZONE,
-                    check_name      VARCHAR,
-                    dataset         VARCHAR,
-                    source          VARCHAR,
-                    passed          BOOLEAN,
-                    metric          DOUBLE,
-                    detail          VARCHAR
+            with closing(duckdb.connect(str(self.duckdb_path))) as con:
+                con.execute("""
+                    CREATE TABLE IF NOT EXISTS quality_reports (
+                        run_id          VARCHAR,
+                        id              INTEGER,
+                        run_date        TIMESTAMP WITH TIME ZONE,
+                        check_name      VARCHAR,
+                        dataset         VARCHAR,
+                        source          VARCHAR,
+                        passed          BOOLEAN,
+                        metric          DOUBLE,
+                        detail          VARCHAR
+                    )
+                """)
+                con.execute(
+                    "INSERT INTO quality_reports "
+                    "(run_id, id, run_date, check_name, dataset, source, passed, metric, detail) "
+                    "SELECT run_id, id, run_date, check_name, dataset, source, "
+                    "passed, metric, detail "
+                    "FROM df"
                 )
-            """)
-            con.execute(
-                "INSERT INTO quality_reports "
-                "(run_id, id, run_date, check_name, dataset, source, passed, metric, detail) "
-                "SELECT run_id, id, run_date, check_name, dataset, source, passed, metric, detail "
-                "FROM df"
-            )
-            con.close()
-        except Exception as e:
-            logger.error(f"Failed to write quality report to DuckDB: {e}")
-            return 0
+        except Exception:
+            # The quality report is this command's deliverable. Returning 0 here
+            # would be indistinguishable from the legitimate "no results" empty
+            # write (above), making a failed write look like a clean success.
+            # Surface it loudly and re-raise so the caller fails the command.
+            logger.exception("Failed to write quality report to DuckDB")
+            raise
 
         logger.info(f"Wrote {len(self._results)} quality results to DuckDB")
         return len(self._results)

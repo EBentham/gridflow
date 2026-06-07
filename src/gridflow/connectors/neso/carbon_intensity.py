@@ -37,13 +37,25 @@ class CarbonIntensityConnector(BaseConnector):
         end: datetime,
         **params: Any,
     ) -> list[RawResponse]:
-        """Fetch one NESO Carbon Intensity API dataset."""
+        """Fetch one NESO Carbon Intensity API dataset.
+
+        A single request window is split into many sub-requests (settlement
+        periods, 14-day chunks). One bad window must not abort the rest, so each
+        is fetched in its own ``try``; but a partial result must surface, not be
+        silently recorded as success. The number of failed windows is tallied
+        into ``last_skipped_units`` once after the loop (CH-COR-01), and if
+        *every* attempted window failed the last error is re-raised so the run
+        is a hard ``failed`` (raise-on-all-fail, parallel to the GIE legacy
+        path).
+        """
+        self.last_skipped_units = 0
         if dataset not in ENDPOINTS:
             raise ValueError(f"Unknown NESO dataset: {dataset!r}. Available: {list(ENDPOINTS)}")
 
         endpoint = ENDPOINTS[dataset]
         requests = _request_specs(endpoint, start, end, params)
         responses: list[RawResponse] = []
+        failures: list[tuple[datetime, datetime, Exception]] = []
 
         for window_start, window_end, path_overrides in requests:
             path, path_values = build_path(
@@ -75,13 +87,24 @@ class CarbonIntensityConnector(BaseConnector):
                     window_end.date(),
                     exc,
                 )
+                failures.append((window_start, window_end, exc))
+
+        # Tally once after the loop (not incremented mid-loop) so the CH3 swap to
+        # asyncio.gather(..., return_exceptions=True) is a drop-in replacement.
+        self.last_skipped_units = len(failures)
+
+        # All attempted windows failed → re-raise so the run is recorded as
+        # 'failed', not an empty 'success'/'completed_with_warnings' (C2-6).
+        if not responses and failures:
+            raise failures[-1][2]
 
         logger.info(
-            "Fetched %d responses for neso/%s from %s to %s",
+            "Fetched %d responses for neso/%s from %s to %s (%d windows skipped)",
             len(responses),
             dataset,
             start.date(),
             end.date(),
+            len(failures),
         )
         return responses
 

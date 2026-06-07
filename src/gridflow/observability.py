@@ -48,8 +48,19 @@ class PipelineRunTracker:
                     self.started_at,
                 ],
             )
-        except Exception as e:
-            logger.warning(f"Failed to record pipeline start: {e}")
+        except Exception:
+            # Non-fatal: a tracking-DB hiccup must not kill the operation. But a
+            # missing 'running' row means later status transitions UPDATE nothing,
+            # so make the lost insert loud rather than swallowing it to a warning.
+            logger.error(
+                "Failed to record pipeline start; run will be untracked "
+                "(no 'running' row): run_id=%s operation=%s source=%s dataset=%s",
+                self.run_id,
+                self.operation,
+                self.source,
+                self.dataset,
+                exc_info=True,
+            )
 
     def complete(
         self,
@@ -70,8 +81,19 @@ class PipelineRunTracker:
                 """,
                 [now, rows_in, rows_out, rows_skipped, duration, self.run_id],
             )
-        except Exception as e:
-            logger.warning(f"Failed to record pipeline completion: {e}")
+        except Exception:
+            # Non-fatal: an otherwise-successful run must not fail on a telemetry
+            # write. But the lost transition means the row stays 'running' — log
+            # that explicitly so the stuck run is visible.
+            logger.error(
+                "Failed to record pipeline completion; run remains 'running': "
+                "run_id=%s operation=%s source=%s dataset=%s",
+                self.run_id,
+                self.operation,
+                self.source,
+                self.dataset,
+                exc_info=True,
+            )
 
     def complete_with_warnings(
         self,
@@ -101,8 +123,17 @@ class PipelineRunTracker:
                 """,
                 [now, rows_in, rows_out, rows_skipped, duration, self.run_id],
             )
-        except Exception as e:
-            logger.warning(f"Failed to record pipeline completion-with-warnings: {e}")
+        except Exception:
+            # Non-fatal; but the lost transition leaves the row 'running'.
+            logger.error(
+                "Failed to record pipeline completion-with-warnings; run remains "
+                "'running': run_id=%s operation=%s source=%s dataset=%s",
+                self.run_id,
+                self.operation,
+                self.source,
+                self.dataset,
+                exc_info=True,
+            )
 
     def fail(self, error: str) -> None:
         """Record pipeline run failure."""
@@ -117,8 +148,33 @@ class PipelineRunTracker:
                 """,
                 [now, duration, error[:2000], self.run_id],
             )
-        except Exception as e:
-            logger.warning(f"Failed to record pipeline failure: {e}")
+        except Exception:
+            # Non-fatal; but the lost transition leaves the row 'running' even
+            # though the operation actually failed — doubly misleading, so ERROR.
+            logger.error(
+                "Failed to record pipeline failure; run remains 'running' despite "
+                "the failure: run_id=%s operation=%s source=%s dataset=%s "
+                "original_error=%s",
+                self.run_id,
+                self.operation,
+                self.source,
+                self.dataset,
+                error[:500],
+                exc_info=True,
+            )
+
+
+def _to_naive_utc(dt: datetime) -> datetime:
+    """Return ``dt`` as a naive UTC datetime for tz-machinery-free DuckDB storage.
+
+    The ``pipeline_watermarks`` columns are plain ``TIMESTAMP`` so DuckDB never
+    invokes its named-timezone path (which requires pytz/ICU, absent in minimal
+    environments such as CI). Callers pass tz-aware UTC; the tz-aware-UTC contract
+    is re-established on read in ``get_watermark``.
+    """
+    if dt.tzinfo is not None:
+        dt = dt.astimezone(UTC)
+    return dt.replace(tzinfo=None)
 
 
 def update_watermark(
@@ -127,18 +183,31 @@ def update_watermark(
     dataset: str,
     last_end: datetime,
 ) -> None:
-    """Update the pipeline watermark for incremental ingestion."""
-    now = datetime.now(UTC)
+    """Advance the pipeline watermark for incremental ingestion (monotonic).
+
+    Args:
+        con: Open DuckDB connection.
+        source: Data source name (e.g. ``"elexon"``).
+        dataset: Dataset name (e.g. ``"fuelhh"``).
+        last_end: The requested window end of a *successful* ingest, tz-aware UTC.
+
+    The upsert is monotonic — ``GREATEST(existing, excluded)`` — so an
+    out-of-order or backfill ingest can never rewind the frontier backward
+    (C3-11). A telemetry-write failure is swallowed to a warning: a watermark
+    hiccup must not fail an otherwise-successful ingest.
+    """
+    now = _to_naive_utc(datetime.now(UTC))
     try:
-        # Upsert watermark
+        # Monotonic upsert: only ever move the frontier forward.
         con.execute(
             """
             INSERT INTO pipeline_watermarks (source, dataset, last_end, updated_at)
             VALUES (?, ?, ?, ?)
             ON CONFLICT (source, dataset) DO UPDATE
-            SET last_end = excluded.last_end, updated_at = excluded.updated_at
+            SET last_end = GREATEST(pipeline_watermarks.last_end, excluded.last_end),
+                updated_at = excluded.updated_at
             """,
-            [source, dataset, last_end, now],
+            [source, dataset, _to_naive_utc(last_end), now],
         )
     except Exception as e:
         logger.warning(f"Failed to update watermark: {e}")
@@ -149,7 +218,21 @@ def get_watermark(
     source: str,
     dataset: str,
 ) -> datetime | None:
-    """Get the last watermark for a source/dataset pair."""
+    """Return the last watermark for a source/dataset pair, or ``None``.
+
+    Args:
+        con: Open DuckDB connection.
+        source: Data source name.
+        dataset: Dataset name.
+
+    Returns:
+        The stored ``last_end`` as a tz-aware UTC datetime, or ``None`` if no
+        watermark exists for the pair.
+
+    ``last_end`` is stored as a naive UTC ``TIMESTAMP``; re-attaching ``UTC`` here
+    restores the tz-aware-UTC contract (CLAUDE.md hard rule) without invoking
+    DuckDB's named-timezone machinery.
+    """
     try:
         result = con.execute(
             """
@@ -158,8 +241,8 @@ def get_watermark(
             """,
             [source, dataset],
         ).fetchone()
-        if result:
-            return result[0]
+        if result and result[0] is not None:
+            return result[0].replace(tzinfo=UTC)
     except Exception as e:
         logger.debug(f"Could not read watermark: {e}")
     return None

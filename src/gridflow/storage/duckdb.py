@@ -114,8 +114,8 @@ def init_catalogue(db_path: Path, data_dir: Path) -> None:
         CREATE TABLE IF NOT EXISTS pipeline_watermarks (
             source      VARCHAR NOT NULL,
             dataset     VARCHAR NOT NULL,
-            last_end    TIMESTAMP WITH TIME ZONE NOT NULL,
-            updated_at  TIMESTAMP WITH TIME ZONE NOT NULL,
+            last_end    TIMESTAMP NOT NULL,
+            updated_at  TIMESTAMP NOT NULL,
             PRIMARY KEY (source, dataset)
         )
     """)

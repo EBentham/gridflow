@@ -80,6 +80,7 @@ class QualityConfig(BaseModel):
 
     null_rate_threshold: float = 0.05
     enable_outlier_detection: bool = True
+    expected_freq_minutes: int = 30
 
 
 class PipelineSettings(BaseSettings):
@@ -96,6 +97,22 @@ class PipelineSettings(BaseSettings):
     log_dir: Path = Path("./logs")
     duckdb_path: Path = Path("./data/gridflow.duckdb")
     default_lookback_hours: int = 24
+    # Incremental ingest re-fetches from `watermark - incremental_overlap_hours`
+    # to recover late/revised publications (run_type II->SF->R1). Default 0 keeps
+    # `--incremental` behaviour-preserving (start == watermark). Raising it is safe
+    # because bronze is immutable and silver dedups on (date, period, run_type), so
+    # re-fetching the recent past adds bronze bytes without corrupting silver.
+    #
+    # WARNING (revision-settlement lag): with the default 0, `--incremental`
+    # advances each dataset's frontier past the requested window and NEVER
+    # re-fetches it. A revision-bearing dataset (Elexon settlement data
+    # republished II->SF->R1 under a new run_type for an already-watermarked
+    # date/period) will silently miss those late revisions on the incremental
+    # path. Raise this to cover the publisher's revision lag (settlement runs
+    # can revise for weeks) — or run a periodic backfill — before adopting
+    # `--incremental` for settlement data. CLAUDE.md treats settlement revisions
+    # as first-class, so a zero overlap on that path is a latent data-loss trap.
+    incremental_overlap_hours: int = 0
     max_concurrent_requests: int = 5
     log_level: str = "INFO"
     console_log_level: str = "WARNING"
@@ -104,6 +121,7 @@ class PipelineSettings(BaseSettings):
     elexon_api_key: str = Field(default="")
     entsoe_api_key: str = Field(default="")
     entsog_api_key: str = Field(default="")
+    gie_api_key: str = Field(default="")
 
     @model_validator(mode="after")
     def _resolve_paths(self) -> PipelineSettings:
@@ -185,11 +203,15 @@ def load_settings() -> GridflowConfig:
     for name, src_data in sources_data.get("sources", {}).items():
         sources[name] = SourceConfig(**src_data)
 
-    # Resolve API keys from pipeline settings into source configs
+    # Resolve API keys from pipeline settings into source configs.
+    # AGSI+ and ALSI are two GIE endpoints sharing one credential, so both
+    # source configs map to the single gie_api_key field.
     key_map = {
         "elexon": pipeline.elexon_api_key,
         "entsoe": pipeline.entsoe_api_key,
         "entsog": pipeline.entsog_api_key,
+        "gie_agsi": pipeline.gie_api_key,
+        "gie_alsi": pipeline.gie_api_key,
     }
     for name, key in key_map.items():
         if name in sources and key:

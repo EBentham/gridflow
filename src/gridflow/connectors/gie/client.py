@@ -55,6 +55,11 @@ class GieConnector(BaseConnector):
         **params: Any,
     ) -> list[RawResponse]:
         """Fetch GIE data for the given date range."""
+        # Reset the partial-fetch counter at the top of the public entry point so
+        # a reused connector never inherits a prior call's count (CH-COR-01).
+        # Reset before the dispatch branch so an AGSI raise-path can't leave a
+        # stale legacy count behind.
+        self.last_skipped_units = 0
         if self.source_name == "gie_agsi":
             if dataset in _AGSI_STORAGE_DATASETS:
                 return await self._fetch_agsi_storage(
@@ -83,9 +88,20 @@ class GieConnector(BaseConnector):
         start: datetime,
         end: datetime,
     ) -> list[RawResponse]:
-        """Fetch legacy country-scoped GIE datasets."""
+        """Fetch legacy country-scoped GIE datasets.
+
+        One bad country must not abort the rest (the API serves countries
+        independently), so each is fetched in its own ``try``. But a partial
+        result must be visible downstream, not silently recorded as success:
+        the number of failed countries is tallied into ``last_skipped_units``
+        once after the loop (CH-COR-01), and if *every* attempted country
+        failed the last error is re-raised so the run is a hard ``failed``
+        rather than an empty ``completed_with_warnings`` (raise-on-all-fail,
+        matching the Open-Meteo contract).
+        """
         countries = _COUNTRY_MAP.get(self.source_name, AGSI_COUNTRIES)
         responses: list[RawResponse] = []
+        failures: list[tuple[str, Exception]] = []
 
         for country in countries:
             try:
@@ -104,14 +120,25 @@ class GieConnector(BaseConnector):
                     country,
                     exc,
                 )
+                failures.append((country, exc))
+
+        # Tally once after the loop (not incremented mid-loop) so the CH3 swap to
+        # asyncio.gather(..., return_exceptions=True) is a drop-in replacement.
+        self.last_skipped_units = len(failures)
+
+        # All attempted countries failed → re-raise so the run is recorded as
+        # 'failed', not an empty 'success'/'completed_with_warnings' (C2-6).
+        if not responses and failures:
+            raise failures[-1][1]
 
         logger.info(
-            "Fetched %d responses for %s/%s from %s to %s",
+            "Fetched %d responses for %s/%s from %s to %s (%d countries skipped)",
             len(responses),
             self.source_name,
             dataset,
             start.date(),
             end.date(),
+            len(failures),
         )
         return responses
 
