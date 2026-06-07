@@ -19,6 +19,7 @@ line it locks so a future drift is traceable.
 from __future__ import annotations
 
 import json
+import re
 from datetime import UTC, date, datetime
 from typing import TYPE_CHECKING, Any
 
@@ -35,6 +36,20 @@ if TYPE_CHECKING:
     from gridflow.connectors.base import RawResponse
 
 runner = CliRunner()
+
+_ANSI_RE = re.compile(r"\x1b\[[0-9;]*m")
+
+
+def _plain(text: str) -> str:
+    """Strip ANSI color codes for deterministic substring assertions.
+
+    typer renders ``BadParameter`` via a Rich error panel that colorizes flags
+    (e.g. ``--all`` gets color codes inserted between its dashes) whenever color is
+    forced — CI sets ``FORCE_COLOR``, which ``NO_COLOR`` does not override here. The
+    CLI behavior is identical; only the rendering differs, so strip ANSI before
+    asserting on message text.
+    """
+    return _ANSI_RE.sub("", text)
 
 
 def _isolated_env(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
@@ -163,7 +178,7 @@ def test_ingest_missing_dataset_bad_parameter(
     _isolated_env(tmp_path, monkeypatch)
     result = runner.invoke(app, ["ingest", "elexon", "--start", "2024-01-15"])
     assert result.exit_code == 2, result.output
-    assert "Specify a dataset name or use --all" in result.output
+    assert "Specify a dataset name or use --all" in _plain(result.output)
 
 
 def test_ingest_naive_datetime_bad_parameter(
@@ -277,7 +292,7 @@ def test_build_no_target_bad_parameter(tmp_path: Path, monkeypatch: pytest.Monke
     _isolated_env(tmp_path, monkeypatch)
     result = runner.invoke(app, ["build", "--start", "2026-05-01"])
     assert result.exit_code == 2, result.output
-    assert "Specify a gold dataset name or use --all" in result.output
+    assert "Specify a gold dataset name or use --all" in _plain(result.output)
 
 
 def test_build_unknown_dataset_skips(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
