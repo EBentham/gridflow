@@ -588,11 +588,26 @@ def quality(
                     __import__("polars").Int32,
                     __import__("polars").Int64,
                 ):
-                    reporter.add_result(check_null_rate(df, col, source=src, dataset=ds))
+                    reporter.add_result(
+                        check_null_rate(
+                            df,
+                            col,
+                            source=src,
+                            dataset=ds,
+                            max_rate=settings.quality.null_rate_threshold,
+                        )
+                    )
 
             # Check time series gaps if timestamp exists
             if "timestamp_utc" in df.columns:
-                reporter.add_result(check_time_series_gaps(df, source=src, dataset=ds))
+                reporter.add_result(
+                    check_time_series_gaps(
+                        df,
+                        source=src,
+                        dataset=ds,
+                        expected_freq_minutes=settings.quality.expected_freq_minutes,
+                    )
+                )
 
             # Check for duplicates on key columns
             if "settlement_date" in df.columns and "settlement_period" in df.columns:

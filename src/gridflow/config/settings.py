@@ -80,6 +80,7 @@ class QualityConfig(BaseModel):
 
     null_rate_threshold: float = 0.05
     enable_outlier_detection: bool = True
+    expected_freq_minutes: int = 30
 
 
 class PipelineSettings(BaseSettings):
@@ -104,6 +105,7 @@ class PipelineSettings(BaseSettings):
     elexon_api_key: str = Field(default="")
     entsoe_api_key: str = Field(default="")
     entsog_api_key: str = Field(default="")
+    gie_api_key: str = Field(default="")
 
     @model_validator(mode="after")
     def _resolve_paths(self) -> PipelineSettings:
@@ -185,11 +187,15 @@ def load_settings() -> GridflowConfig:
     for name, src_data in sources_data.get("sources", {}).items():
         sources[name] = SourceConfig(**src_data)
 
-    # Resolve API keys from pipeline settings into source configs
+    # Resolve API keys from pipeline settings into source configs.
+    # AGSI+ and ALSI are two GIE endpoints sharing one credential, so both
+    # source configs map to the single gie_api_key field.
     key_map = {
         "elexon": pipeline.elexon_api_key,
         "entsoe": pipeline.entsoe_api_key,
         "entsog": pipeline.entsog_api_key,
+        "gie_agsi": pipeline.gie_api_key,
+        "gie_alsi": pipeline.gie_api_key,
     }
     for name, key in key_map.items():
         if name in sources and key:
