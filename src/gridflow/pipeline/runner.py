@@ -48,10 +48,12 @@ _TRANSFORMER_MODULES = [
     "gridflow.silver.neso",
 ]
 
-# The single gold-dataset registry, shared by the runner and every adapter (was
-# duplicated as an inline dict in cli.build and run_pipeline.run_gold). Kept as a
-# name tuple here; ``_gold_builders()`` resolves the classes lazily so importing
-# the runner never pulls in the gold build modules.
+# The gold-dataset name tuple, shared by the runner and every adapter for the
+# ``--all`` expansion (was duplicated as an inline dict in cli.build and
+# run_pipeline.run_gold). Class resolution lives in the gold registry
+# (``gridflow.gold.registry``); ``run_build`` asserts the two stay in lockstep.
+# Kept as a plain tuple so importing the runner never pulls in the gold build
+# modules — the registry is populated lazily, inside ``run_build``.
 GOLD_DATASETS: tuple[str, ...] = ("system_marginal_price",)
 
 
@@ -583,19 +585,18 @@ def run_build(
     Returns:
         One :class:`DatasetResult` per requested target, in input order.
     """
-    from gridflow.gold.system_marginal_price import SystemMarginalPriceBuilder
+    import gridflow.gold  # noqa: F401 — import the package to populate the gold registry
+    from gridflow.gold.registry import get_builder, list_gold_datasets
     from gridflow.observability import PipelineRunTracker
 
     con = ctx.con
     settings = ctx.settings
-    gold_builders = {
-        "system_marginal_price": SystemMarginalPriceBuilder,
-    }
-    assert set(gold_builders) == set(GOLD_DATASETS)  # noqa: S101 — registry/name-list drift guard
+    known = set(list_gold_datasets())
+    assert known == set(GOLD_DATASETS)  # noqa: S101 — registry/name-list drift guard
     results: list[DatasetResult] = []
 
     for name in targets:
-        if name not in gold_builders:
+        if name not in known:
             results.append(
                 DatasetResult(
                     source="gold",
@@ -609,7 +610,7 @@ def run_build(
 
         tracker = PipelineRunTracker(con, "gold", name, "build")
         try:
-            builder = gold_builders[name](settings.pipeline.data_dir)
+            builder = get_builder(name, settings.pipeline.data_dir)
             rows = builder.run(start_dt.date(), end_dt.date())
             tracker.complete(rows_out=rows)
             results.append(

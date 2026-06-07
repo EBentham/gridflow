@@ -78,9 +78,8 @@ src/gridflow/
 │
 ├── gold/                   # GOLD LAYER — feature builders
 │   ├── base.py             # BaseGoldBuilder ABC
+│   ├── registry.py         # gold dataset name -> builder class
 │   ├── system_marginal_price.py
-│   ├── demand_features.py
-│   ├── merit_order.py
 │   └── views/              # SQL files for cross-source DuckDB views
 │
 ├── schemas/                # Pydantic v2 schemas (contract validation)
