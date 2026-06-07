@@ -45,7 +45,13 @@ class QualityReporter:
     def write_report(self) -> int:
         """Write all collected results to DuckDB quality_reports table.
 
-        Returns the number of results written.
+        Returns:
+            The number of results written. ``0`` only when there were no results
+            to write — never as a stand-in for a failed write.
+
+        Raises:
+            Exception: Re-raised from the DuckDB write if it fails, so a failed
+                write is not silently mistaken for a clean empty result.
         """
         if not self._results:
             logger.info("No quality results to write")
@@ -101,9 +107,13 @@ class QualityReporter:
                 "FROM df"
             )
             con.close()
-        except Exception as e:
-            logger.error(f"Failed to write quality report to DuckDB: {e}")
-            return 0
+        except Exception:
+            # The quality report is this command's deliverable. Returning 0 here
+            # would be indistinguishable from the legitimate "no results" empty
+            # write (above), making a failed write look like a clean success.
+            # Surface it loudly and re-raise so the caller fails the command.
+            logger.exception("Failed to write quality report to DuckDB")
+            raise
 
         logger.info(f"Wrote {len(self._results)} quality results to DuckDB")
         return len(self._results)

@@ -48,8 +48,19 @@ class PipelineRunTracker:
                     self.started_at,
                 ],
             )
-        except Exception as e:
-            logger.warning(f"Failed to record pipeline start: {e}")
+        except Exception:
+            # Non-fatal: a tracking-DB hiccup must not kill the operation. But a
+            # missing 'running' row means later status transitions UPDATE nothing,
+            # so make the lost insert loud rather than swallowing it to a warning.
+            logger.error(
+                "Failed to record pipeline start; run will be untracked "
+                "(no 'running' row): run_id=%s operation=%s source=%s dataset=%s",
+                self.run_id,
+                self.operation,
+                self.source,
+                self.dataset,
+                exc_info=True,
+            )
 
     def complete(
         self,
@@ -70,8 +81,19 @@ class PipelineRunTracker:
                 """,
                 [now, rows_in, rows_out, rows_skipped, duration, self.run_id],
             )
-        except Exception as e:
-            logger.warning(f"Failed to record pipeline completion: {e}")
+        except Exception:
+            # Non-fatal: an otherwise-successful run must not fail on a telemetry
+            # write. But the lost transition means the row stays 'running' — log
+            # that explicitly so the stuck run is visible.
+            logger.error(
+                "Failed to record pipeline completion; run remains 'running': "
+                "run_id=%s operation=%s source=%s dataset=%s",
+                self.run_id,
+                self.operation,
+                self.source,
+                self.dataset,
+                exc_info=True,
+            )
 
     def complete_with_warnings(
         self,
@@ -101,8 +123,17 @@ class PipelineRunTracker:
                 """,
                 [now, rows_in, rows_out, rows_skipped, duration, self.run_id],
             )
-        except Exception as e:
-            logger.warning(f"Failed to record pipeline completion-with-warnings: {e}")
+        except Exception:
+            # Non-fatal; but the lost transition leaves the row 'running'.
+            logger.error(
+                "Failed to record pipeline completion-with-warnings; run remains "
+                "'running': run_id=%s operation=%s source=%s dataset=%s",
+                self.run_id,
+                self.operation,
+                self.source,
+                self.dataset,
+                exc_info=True,
+            )
 
     def fail(self, error: str) -> None:
         """Record pipeline run failure."""
@@ -117,8 +148,20 @@ class PipelineRunTracker:
                 """,
                 [now, duration, error[:2000], self.run_id],
             )
-        except Exception as e:
-            logger.warning(f"Failed to record pipeline failure: {e}")
+        except Exception:
+            # Non-fatal; but the lost transition leaves the row 'running' even
+            # though the operation actually failed — doubly misleading, so ERROR.
+            logger.error(
+                "Failed to record pipeline failure; run remains 'running' despite "
+                "the failure: run_id=%s operation=%s source=%s dataset=%s "
+                "original_error=%s",
+                self.run_id,
+                self.operation,
+                self.source,
+                self.dataset,
+                error[:500],
+                exc_info=True,
+            )
 
 
 def update_watermark(

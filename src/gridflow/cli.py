@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import asyncio
-import contextlib
 import logging
 import os
 from datetime import UTC, datetime, timedelta
@@ -620,7 +619,14 @@ def quality(
                     )
                 )
 
-    reporter.write_report()
+    # A failed quality-report write is a real failure of this command, not a
+    # clean empty result — surface it as a non-zero exit instead of swallowing.
+    try:
+        reporter.write_report()
+    except Exception as e:
+        logger.error("Quality report write failed: %s", e, exc_info=True)
+        typer.echo(f"Quality report write failed: {e}", err=True)
+        raise typer.Exit(1) from e
     typer.echo(reporter.summary())
 
 
@@ -896,7 +902,15 @@ def _resolve_datasets(
 
 
 def _import_connectors() -> None:
-    """Import connector modules to trigger registration."""
+    """Import connector modules to trigger registration.
+
+    These are core modules shipped with every install, so an ``ImportError``
+    here never means "optional dependency absent" — it always indicates a real
+    bug in the module (e.g. a syntax/import error). Swallowing it silently would
+    hide the broken module as a missing registration, which later surfaces as a
+    confusing "unknown source". Log it loudly instead and keep going so the
+    other connectors still register.
+    """
     for module in [
         "gridflow.connectors.elexon",
         "gridflow.connectors.openmeteo",
@@ -905,12 +919,18 @@ def _import_connectors() -> None:
         "gridflow.connectors.entsog",
         "gridflow.connectors.neso",
     ]:
-        with contextlib.suppress(ImportError):
+        try:
             __import__(module)
+        except ImportError:
+            logger.warning("Failed to import connector module %s", module, exc_info=True)
 
 
 def _import_transformers() -> None:
-    """Import transformer modules to trigger registration."""
+    """Import transformer modules to trigger registration.
+
+    Core modules — an ``ImportError`` always signals a real bug, not a missing
+    optional dependency. Log with the module name instead of swallowing it.
+    """
     for module in [
         "gridflow.silver.elexon",
         "gridflow.silver.openmeteo",
@@ -919,5 +939,7 @@ def _import_transformers() -> None:
         "gridflow.silver.entsog",
         "gridflow.silver.neso",
     ]:
-        with contextlib.suppress(ImportError):
+        try:
             __import__(module)
+        except ImportError:
+            logger.warning("Failed to import transformer module %s", module, exc_info=True)
