@@ -116,6 +116,14 @@ class PipelineSettings(BaseSettings):
     max_concurrent_requests: int = 5
     log_level: str = "INFO"
     console_log_level: str = "WARNING"
+    # Per-date silver CSV sidecar (CH3-02 / CH-PERF-02 / C4-1). Default OFF:
+    # Parquet is the canonical silver format. The old always-on write emitted an
+    # unpartitioned per-date `.csv` alongside every Parquet partition on EVERY
+    # run, doubling the silver write surface for a sidecar nothing in the
+    # read/gold/quality path consumes. On-demand CSV is covered by the
+    # `export_csv` CLI command, so the per-run write is pure redundant I/O.
+    # Flip to True only when a downstream tool genuinely needs the live sidecar.
+    write_silver_csv: bool = False
 
     # Secrets (loaded from .env)
     elexon_api_key: str = Field(default="")

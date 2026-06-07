@@ -46,6 +46,18 @@ class BaseSilverTransformer(ABC):
     GIE generic JSON family). Subclasses that serve one dataset set this as a class
     attribute; one-class-many-schemas transformers (NESO) set it per instance.
     """
+    write_silver_csv: bool = False
+    """Opt-in for the per-date silver CSV sidecar (CH3-02 / CH-PERF-02 / C4-1).
+
+    Default ``False``: ``run()`` writes only the canonical Parquet partition. The
+    legacy always-on ``_write_csv`` emitted an unpartitioned ``.csv`` alongside
+    every Parquet write on every run, doubling the silver write surface for a
+    sidecar no read/gold/quality consumer reads (on-demand CSV is served by the
+    ``export_csv`` CLI command). Set per-instance at the call boundary from
+    ``PipelineSettings.write_silver_csv`` — a plain instance attribute (not
+    ``ClassVar``), mirroring ``last_unmapped_count``, so the boundary assignment
+    is clean under ``mypy --strict`` and never leaks class state across runs.
+    """
     last_unmapped_count: int = 0
     """Count of rows whose enum code was unmapped in the most recent ``run()``.
 
@@ -148,7 +160,10 @@ class BaseSilverTransformer(ABC):
 
         # Write silver (atomic: write to temp, then rename)
         self._write_silver(clean_df, target_date, available_at=available_at)
-        self._write_csv(clean_df, target_date)
+        # Per-date CSV sidecar is opt-in (CH3-02 / CH-PERF-02): Parquet is
+        # canonical; the on-demand CSV path is the export_csv CLI command.
+        if self.write_silver_csv:
+            self._write_csv(clean_df, target_date)
 
         logger.info(
             f"Silver write: {self.source}/{self.dataset} {target_date} -> {len(clean_df)} rows"

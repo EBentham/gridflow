@@ -273,6 +273,8 @@ def transform(
         total_validation_failures = 0
         try:
             transformer = get_transformer(source, ds, settings.pipeline.data_dir)
+            # CH3-02 (CH-PERF-02): per-date silver CSV is opt-in (default OFF).
+            transformer.write_silver_csv = settings.pipeline.write_silver_csv
             for target_date in dates:
                 rows = transformer.run(
                     target_date,
