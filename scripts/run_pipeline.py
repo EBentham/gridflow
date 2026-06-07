@@ -16,7 +16,8 @@ python scripts/run_pipeline.py --help
 python scripts/run_pipeline.py --step bronze --source elexon --dataset system_prices --last 24h
 
 # Ingest ALL Elexon datasets for a specific date range
-python scripts/run_pipeline.py --step bronze --source elexon --all-datasets --start 2024-01-15 --end 2024-01-16
+python scripts/run_pipeline.py --step bronze --source elexon --all-datasets \
+    --start 2024-01-15 --end 2024-01-16
 
 # Ingest ENTSO-E day-ahead prices for the last 7 days
 python scripts/run_pipeline.py --step bronze --source entsoe --dataset day_ahead_prices --last 7d
@@ -28,7 +29,8 @@ python scripts/run_pipeline.py --step bronze --source gie_agsi --dataset storage
 python scripts/run_pipeline.py --step bronze --source neso --dataset carbon_intensity --last 24h
 
 # Ingest Open-Meteo weather (historical)
-python scripts/run_pipeline.py --step bronze --source open_meteo --dataset historical --start 2024-01-01 --end 2024-01-07
+python scripts/run_pipeline.py --step bronze --source open_meteo --dataset historical \
+    --start 2024-01-01 --end 2024-01-07
 
 # --- SILVER (transform bronze -> normalised parquet) ---
 
@@ -137,10 +139,14 @@ def main() -> None:
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=(
             "Examples:\n"
-            "  python scripts/run_pipeline.py --step bronze --source elexon --dataset system_prices --last 24h\n"
-            "  python scripts/run_pipeline.py --step silver --source elexon --all-datasets --last 7d\n"
-            "  python scripts/run_pipeline.py --step gold --dataset system_marginal_price --last 30d\n"
-            "  python scripts/run_pipeline.py --step all --source elexon --dataset system_prices --last 24h\n"
+            "  python scripts/run_pipeline.py --step bronze --source elexon "
+            "--dataset system_prices --last 24h\n"
+            "  python scripts/run_pipeline.py --step silver --source elexon "
+            "--all-datasets --last 7d\n"
+            "  python scripts/run_pipeline.py --step gold "
+            "--dataset system_marginal_price --last 30d\n"
+            "  python scripts/run_pipeline.py --step all --source elexon "
+            "--dataset system_prices --last 24h\n"
         ),
     )
     parser.add_argument(

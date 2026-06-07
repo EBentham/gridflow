@@ -15,8 +15,8 @@ os.replace) per CLAUDE.md hard rule.
 from __future__ import annotations
 
 import argparse
+import contextlib
 import os
-import sys
 import tempfile
 from pathlib import Path
 from typing import Any
@@ -30,7 +30,6 @@ import gridflow.silver.entsog  # noqa: F401
 import gridflow.silver.gie  # noqa: F401
 import gridflow.silver.neso  # noqa: F401
 import gridflow.silver.openmeteo  # noqa: F401
-
 from gridflow.silver.registry import list_transformers
 
 _REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -302,7 +301,7 @@ def _skeleton_entry(source: str, dataset: str, cadence: str) -> dict[str, Any]:
             "dataset_version": {"type": "Utf8"},
         },
         "cadence": cadence,
-        "notes": f"Schema not yet curated. Run seed_canonical_schema.py after curation.",
+        "notes": "Schema not yet curated. Run seed_canonical_schema.py after curation.",
     }
 
 
@@ -353,10 +352,8 @@ def build_canonical(output: Path) -> None:
             )
         os.replace(tmp_path_str, output)
     except Exception:
-        try:
+        with contextlib.suppress(OSError):
             os.unlink(tmp_path_str)
-        except OSError:
-            pass
         raise
 
     print(f"Written {len(datasets)} datasets to {output}")
@@ -365,9 +362,12 @@ def build_canonical(output: Path) -> None:
 def _repo_head_sha() -> str:
     try:
         import subprocess
+
         result = subprocess.run(
             ["git", "-C", str(_REPO_ROOT), "rev-parse", "--short", "HEAD"],
-            capture_output=True, text=True, timeout=5,
+            capture_output=True,
+            text=True,
+            timeout=5,
         )
         return result.stdout.strip() if result.returncode == 0 else "unknown"
     except Exception:
