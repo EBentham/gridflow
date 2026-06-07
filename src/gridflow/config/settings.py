@@ -97,6 +97,12 @@ class PipelineSettings(BaseSettings):
     log_dir: Path = Path("./logs")
     duckdb_path: Path = Path("./data/gridflow.duckdb")
     default_lookback_hours: int = 24
+    # Incremental ingest re-fetches from `watermark - incremental_overlap_hours`
+    # to recover late/revised publications (run_type II->SF->R1). Default 0 keeps
+    # `--incremental` behaviour-preserving (start == watermark). Raising it is safe
+    # because bronze is immutable and silver dedups on (date, period, run_type), so
+    # re-fetching the recent past adds bronze bytes without corrupting silver.
+    incremental_overlap_hours: int = 0
     max_concurrent_requests: int = 5
     log_level: str = "INFO"
     console_log_level: str = "WARNING"

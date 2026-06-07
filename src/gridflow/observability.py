@@ -170,16 +170,29 @@ def update_watermark(
     dataset: str,
     last_end: datetime,
 ) -> None:
-    """Update the pipeline watermark for incremental ingestion."""
+    """Advance the pipeline watermark for incremental ingestion (monotonic).
+
+    Args:
+        con: Open DuckDB connection.
+        source: Data source name (e.g. ``"elexon"``).
+        dataset: Dataset name (e.g. ``"fuelhh"``).
+        last_end: The requested window end of a *successful* ingest, tz-aware UTC.
+
+    The upsert is monotonic — ``GREATEST(existing, excluded)`` — so an
+    out-of-order or backfill ingest can never rewind the frontier backward
+    (C3-11). A telemetry-write failure is swallowed to a warning: a watermark
+    hiccup must not fail an otherwise-successful ingest.
+    """
     now = datetime.now(UTC)
     try:
-        # Upsert watermark
+        # Monotonic upsert: only ever move the frontier forward.
         con.execute(
             """
             INSERT INTO pipeline_watermarks (source, dataset, last_end, updated_at)
             VALUES (?, ?, ?, ?)
             ON CONFLICT (source, dataset) DO UPDATE
-            SET last_end = excluded.last_end, updated_at = excluded.updated_at
+            SET last_end = GREATEST(pipeline_watermarks.last_end, excluded.last_end),
+                updated_at = excluded.updated_at
             """,
             [source, dataset, last_end, now],
         )
@@ -192,7 +205,21 @@ def get_watermark(
     source: str,
     dataset: str,
 ) -> datetime | None:
-    """Get the last watermark for a source/dataset pair."""
+    """Return the last watermark for a source/dataset pair, or ``None``.
+
+    Args:
+        con: Open DuckDB connection.
+        source: Data source name.
+        dataset: Dataset name.
+
+    Returns:
+        The stored ``last_end`` as a tz-aware UTC datetime, or ``None`` if no
+        watermark exists for the pair.
+
+    DuckDB returns a ``TIMESTAMP WITH TIME ZONE`` as an aware datetime in the
+    session-local zone; normalising to UTC here keeps the tz-aware-UTC contract
+    deterministic regardless of the machine's local timezone (CLAUDE.md hard rule).
+    """
     try:
         result = con.execute(
             """
@@ -201,8 +228,8 @@ def get_watermark(
             """,
             [source, dataset],
         ).fetchone()
-        if result:
-            return result[0]
+        if result and result[0] is not None:
+            return result[0].astimezone(UTC)
     except Exception as e:
         logger.debug(f"Could not read watermark: {e}")
     return None
