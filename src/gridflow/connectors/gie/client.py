@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 from datetime import date, datetime
@@ -91,39 +92,61 @@ class GieConnector(BaseConnector):
         """Fetch legacy country-scoped GIE datasets.
 
         One bad country must not abort the rest (the API serves countries
-        independently), so each is fetched in its own ``try``. But a partial
-        result must be visible downstream, not silently recorded as success:
-        the number of failed countries is tallied into ``last_skipped_units``
-        once after the loop (CH-COR-01), and if *every* attempted country
-        failed the last error is re-raised so the run is a hard ``failed``
-        rather than an empty ``completed_with_warnings`` (raise-on-all-fail,
-        matching the Open-Meteo contract).
+        independently), so each is fetched concurrently and its failure is
+        captured rather than propagated. But a partial result must be visible
+        downstream, not silently recorded as success: the number of failed
+        countries is tallied into ``last_skipped_units`` once after the gather
+        (CH-COR-01), and if *every* attempted country failed the last error is
+        re-raised so the run is a hard ``failed`` rather than an empty
+        ``completed_with_warnings`` (raise-on-all-fail, matching the Open-Meteo
+        contract).
+
+        Countries are independent units, so they fetch concurrently via
+        ``asyncio.gather(..., return_exceptions=True)`` (CH3-03 / C2-7). Paging
+        *within* a country stays sequential inside ``_fetch_country``; only the
+        across-country loop is parallel. The ``rate_limit_per_second`` semaphore
+        inside ``_request`` keeps in-flight HTTP bounded, so widening this loop
+        does not widen concurrency. Tallying once from a post-gather count (not
+        incremented mid-coroutine) is the drop-in the CH-COR-01 counter was
+        designed for.
         """
         countries = _COUNTRY_MAP.get(self.source_name, AGSI_COUNTRIES)
-        responses: list[RawResponse] = []
-        failures: list[tuple[str, Exception]] = []
-
-        for country in countries:
-            try:
-                country_responses = await self._fetch_country(
+        results = await asyncio.gather(
+            *(
+                self._fetch_country(
                     dataset=dataset,
                     country=country,
                     start=start,
                     end=end,
                 )
-                responses.extend(country_responses)
-            except Exception as exc:  # noqa: BLE001
+                for country in countries
+            ),
+            return_exceptions=True,
+        )
+
+        responses: list[RawResponse] = []
+        failures: list[tuple[str, Exception]] = []
+        for country, result in zip(countries, results, strict=True):
+            if isinstance(result, Exception):
+                # Tolerate a per-country failure (the original ``except Exception``
+                # behaviour); tally it for the CH-COR-01 partial-fetch contract.
                 logger.warning(
                     "Failed to fetch %s/%s for country %s: %s",
                     self.source_name,
                     dataset,
                     country,
-                    exc,
+                    result,
                 )
-                failures.append((country, exc))
+                failures.append((country, result))
+            elif isinstance(result, BaseException):
+                # CancelledError / KeyboardInterrupt / SystemExit are not country
+                # failures — the sequential ``except Exception`` propagated them,
+                # so do not swallow them into a partial-success tally.
+                raise result
+            else:
+                responses.extend(result)
 
-        # Tally once after the loop (not incremented mid-loop) so the CH3 swap to
-        # asyncio.gather(..., return_exceptions=True) is a drop-in replacement.
+        # Tally once from the post-gather count (CH-COR-01 contract).
         self.last_skipped_units = len(failures)
 
         # All attempted countries failed → re-raise so the run is recorded as
