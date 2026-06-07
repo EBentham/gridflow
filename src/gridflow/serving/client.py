@@ -209,12 +209,16 @@ class GridflowClient:
         end: str | date,
         location: str | None = None,
     ) -> pl.DataFrame:
-        """Get historical weather observations from Open-Meteo (demand role).
+        """Get Elexon ITSDO (Initial Transmission System Demand Outturn).
 
-        Returns a Polars DataFrame with the live silver_elexon_itsdo public
-        schema (demand-role weather; bitemporal / partitioning columns
-        excluded). Renamed from silver_historical at F7.5 during the
-        wind/solar role-split; new columns surface here automatically.
+        Despite the method name, this reads ``silver_elexon_itsdo`` — the GB
+        transmission-system DEMAND outturn (MW), not weather. The name is a
+        pre-existing misnomer kept for SDK compatibility.
+
+        Returns a Polars DataFrame with the live ``silver_elexon_itsdo`` public
+        schema (bitemporal / partitioning columns excluded). The ``location``
+        filter and ordering are retained for backward compatibility; new columns
+        added to the silver layer surface here automatically.
         """
         params: list[str] = [str(start), str(end)]
         location_filter = ""

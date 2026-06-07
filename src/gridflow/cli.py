@@ -475,10 +475,14 @@ def pipeline(
     Runs bronze and silver stages for the specified source/dataset. If --gold is
     given, also builds that gold dataset from the resulting silver data.
 
-    Dates and datasets are resolved ONCE here and the bronze/silver stages share a
-    single connection (via ``run_full``); the old form re-resolved dates 2-3x
-    across the sub-command calls. Behavior is otherwise preserved: a bronze (or
-    silver) failure aborts before the completion marker and exits 1.
+    Dates and datasets are resolved ONCE here; this command then opens a single
+    pipeline context (``runner.build_context``) and drives ``run_ingest`` ->
+    ``run_transform`` (-> ``run_build``) inline on that one connection, refreshing
+    views once after it closes. Inlining the stages (rather than delegating to a
+    runner orchestration) is deliberate: it preserves the abort-on-bronze-failure
+    short-circuit and the exact per-stage echo ordering. The old form re-resolved
+    dates 2-3x across separate sub-command calls. A bronze (or silver) failure
+    aborts before the completion marker and exits 1.
     """
     from gridflow.config.settings import load_settings
     from gridflow.utils.logging import setup_logging

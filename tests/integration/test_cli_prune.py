@@ -321,6 +321,34 @@ def test_prune_refuses_escaping_source_arg(tmp_path: Path, monkeypatch: pytest.M
 
 
 @pytest.mark.integration
+def test_prune_refuses_climbing_source_arg(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """A SOURCE arg that climbs out via ``../..`` is refused (R-1 scope guard).
+
+    Unlike the absolute-path case, this exercises a relative climb: the scan root
+    ``data_dir/silver/../../external`` resolves to ``tmp_path/external``, which is
+    outside ``data_dir`` (``tmp_path/data``). The R-1 ``is_relative_to(data_dir)``
+    check must refuse it before any deletion — pinning that the guard handles a
+    climb, not just an absolute target.
+    """
+    data_dir = tmp_path / "data"
+    data_dir.mkdir()
+    _isolated_env(data_dir, tmp_path, monkeypatch)
+
+    external = tmp_path / "external"
+    external.mkdir()
+    sentinel = external / "precious.txt"
+    sentinel.write_text("precious")
+
+    result = runner.invoke(
+        app,
+        ["prune", "silver", "../../external", "--older-than", "2026-01-01", "--execute"],
+    )
+
+    assert result.exit_code != 0, result.output
+    assert sentinel.exists(), "guard must not delete a target reached via a ../.. climb"
+
+
+@pytest.mark.integration
 def test_prune_dry_run_refuses_escaping_source_arg(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

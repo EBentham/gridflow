@@ -7,7 +7,6 @@ from typing import TYPE_CHECKING
 import polars as pl
 
 from gridflow.storage.duckdb import (
-    _SILVER_VIEW_ALIASES,
     get_connection,
     init_catalogue,
 )
@@ -92,22 +91,34 @@ def test_two_sources_sharing_a_dataset_name_get_distinct_views(
         entsog_rows = con.execute(
             "SELECT src, value FROM silver_entsog_dupe ORDER BY value"
         ).fetchall()
+        silver_views = {
+            row[0]
+            for row in con.execute(
+                "SELECT table_name FROM information_schema.tables "
+                "WHERE table_schema = 'main' AND table_name LIKE 'silver_%'"
+            ).fetchall()
+        }
     finally:
         con.close()
 
     assert elexon_rows == [("elexon", 1)]
     assert entsog_rows == [("entsog", 2)]
+    # A name owned by >1 source must get NO single-token backward-compat alias:
+    # an ambiguous ``silver_dupe`` would arbitrarily shadow one source (C1-4).
+    assert "silver_dupe" not in silver_views
 
 
 def test_silver_view_count_matches_silver_dir_count(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """C1-7 anti-regression: one silver view per silver/<source>/<dataset> dir.
+    """C1-7 anti-regression: one qualified silver view per silver/<source>/<dataset>.
 
-    Excludes the backward-compat alias allow-list (those are extra views over
-    existing targets). Reverting to the unqualified producer collapses the two
-    ``dupe`` dirs into a single ``silver_dupe`` view, so the count drops below
-    the directory count and this guard fails.
+    The qualified-view count must equal the silver-dir count; the auto-generated
+    backward-compat aliases are the extra views, one per dataset name owned by
+    exactly ONE source. Both halves are recomputed from the dir structure so the
+    guard stays correct as the alias scheme evolves. Reverting to the unqualified
+    producer collapses the two ``dupe`` dirs into a single ``silver_dupe`` view,
+    so the qualified count drops below the directory count and this guard fails.
     """
     monkeypatch.setattr("gridflow.storage.duckdb._register_gold_views", lambda con: None)
 
@@ -127,6 +138,17 @@ def test_silver_view_count_matches_silver_dir_count(
             data_dir / "silver" / source / dataset / "year=2024" / "month=01" / "x.parquet",
         )
 
+    # Expected qualified views and single-token aliases, derived from the dirs:
+    # a dataset name gets an alias iff exactly one source owns it (``dupe`` is
+    # owned by two → no alias; ``fuelhh`` by one → ``silver_fuelhh``).
+    expected_qualified = {f"silver_{source}_{dataset}" for source, dataset in silver_dirs}
+    name_owners: dict[str, set[str]] = {}
+    for source, dataset in silver_dirs:
+        name_owners.setdefault(dataset, set()).add(source)
+    expected_aliases = {
+        f"silver_{dataset}" for dataset, owners in name_owners.items() if len(owners) == 1
+    }
+
     init_catalogue(db_path, data_dir)
     con = get_connection(db_path, read_only=True)
     try:
@@ -140,9 +162,14 @@ def test_silver_view_count_matches_silver_dir_count(
     finally:
         con.close()
 
-    qualified = silver_views - set(_SILVER_VIEW_ALIASES)
+    qualified = silver_views - expected_aliases
     assert len(qualified) == len(silver_dirs)
-    assert qualified == {"silver_elexon_dupe", "silver_entsog_dupe", "silver_elexon_fuelhh"}
+    assert qualified == expected_qualified
+    # The aliases are exactly the single-source dataset names — no more, no less.
+    assert silver_views == expected_qualified | expected_aliases
+    assert expected_aliases == {"silver_fuelhh"}
+    # The collision name gets no single-token alias.
+    assert "silver_dupe" not in silver_views
 
 
 def test_backward_compat_alias_resolves_to_qualified_view(
@@ -184,6 +211,47 @@ def test_backward_compat_alias_resolves_to_qualified_view(
     # Aliases whose qualified target was not seeded must not be registered.
     assert "silver_storage" not in present
     assert "silver_fuelhh" not in present
+
+
+def test_previously_unaliased_names_now_resolve_via_auto_alias(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """C1-4 cross-repo safety: ALL single-source old names get a working alias.
+
+    The old hardcoded allow-list aliased only five names; a downstream repo
+    querying any OTHER single-source old name (e.g. ``silver_day_ahead_prices``,
+    ``silver_actual_load``) hit a ``BinderException`` after the rename. The
+    auto-alias pass closes that gap: each previously-unaliased single-source name
+    now resolves to its qualified view's rows.
+
+    RED before the auto-alias change: ``silver_day_ahead_prices`` /
+    ``silver_actual_load`` do not exist (the SELECT raises BinderException).
+    GREEN after: each returns exactly its qualified view's rows.
+    """
+    monkeypatch.setattr("gridflow.storage.duckdb._register_gold_views", lambda con: None)
+
+    data_dir = tmp_path / "data"
+    db_path = tmp_path / "gridflow.duckdb"
+    seeded = {
+        ("entsoe", "day_ahead_prices"): 11,
+        ("entsoe", "actual_load"): 22,
+    }
+    for (source, dataset), value in seeded.items():
+        _write_parquet(
+            pl.DataFrame({"value": [value]}),
+            data_dir / "silver" / source / dataset / "year=2024" / "month=01" / "x.parquet",
+        )
+
+    init_catalogue(db_path, data_dir)
+    con = get_connection(db_path, read_only=True)
+    try:
+        # Each old single-token name resolves to exactly its qualified rows.
+        for (source, dataset), value in seeded.items():
+            via_alias = con.execute(f"SELECT value FROM silver_{dataset}").fetchall()
+            via_qualified = con.execute(f"SELECT value FROM silver_{source}_{dataset}").fetchall()
+            assert via_alias == via_qualified == [(value,)]
+    finally:
+        con.close()
 
 
 def test_gold_view_reads_mixed_schemas(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:

@@ -592,7 +592,15 @@ def run_build(
     con = ctx.con
     settings = ctx.settings
     known = set(list_gold_datasets())
-    assert known == set(GOLD_DATASETS)  # noqa: S101 — registry/name-list drift guard
+    # Drift guard: the lazily-populated gold registry and the static
+    # GOLD_DATASETS tuple (used by adapters for ``--all`` expansion) must stay in
+    # lockstep. A bare ``assert`` is stripped under ``python -O``; raise a real
+    # error so the divergence cannot pass silently in an optimised build.
+    if known != set(GOLD_DATASETS):
+        raise RuntimeError(
+            "Gold registry drift: list_gold_datasets() "
+            f"{sorted(known)} != GOLD_DATASETS {sorted(GOLD_DATASETS)}"
+        )
     results: list[DatasetResult] = []
 
     for name in targets:
@@ -642,55 +650,6 @@ def run_build(
 # --------------------------------------------------------------------------- #
 # Orchestrations
 # --------------------------------------------------------------------------- #
-
-
-def run_full(
-    settings: GridflowConfig,
-    source: str,
-    datasets: list[str],
-    start_dt: datetime,
-    end_dt: datetime,
-    *,
-    gold_targets: list[str] | None = None,
-    reingest: bool = False,
-) -> RunReport:
-    """Run the full pipeline: ingest -> transform (-> build) on one connection.
-
-    Resolves dates ONCE (the caller passes concrete ``start_dt``/``end_dt``) and
-    reuses a single DuckDB connection across all stages, then refreshes views
-    once after the connection closes. Mirrors cli.pipeline's stage order.
-
-    Note: unlike the standalone CLI commands, ``run_full`` does NOT abort the run
-    when ingest fails — every stage runs and all results are collected. The
-    adapter inspects :attr:`RunReport.ok` for the exit code. (cli.pipeline's old
-    abort-on-bronze-failure came from sub-command ``Exit(1)``; the equivalent
-    adapter behavior is reproduced in the cli adapter, which short-circuits.)
-
-    Args:
-        settings: Loaded configuration.
-        source: Data source name.
-        datasets: Datasets to ingest + transform.
-        start_dt: Window start.
-        end_dt: Window end.
-        gold_targets: Gold datasets to build after silver, or None to skip.
-        reingest: Passed through to the transform stage.
-
-    Returns:
-        A :class:`RunReport` with every stage's :class:`DatasetResult`.
-    """
-    results: list[DatasetResult] = []
-    with build_context(settings) as ctx:
-        results.extend(
-            run_ingest(
-                ctx, source, datasets, start_dt, end_dt, incremental=False, write_watermark=True
-            )
-        )
-        results.extend(run_transform(ctx, source, datasets, start_dt, end_dt, reingest=reingest))
-        if gold_targets:
-            results.extend(run_build(ctx, gold_targets, start_dt, end_dt))
-    # Refresh once, after the run's connection has closed (Windows lock safety).
-    refresh_views(settings)
-    return RunReport(results=results)
 
 
 def run_backfill(

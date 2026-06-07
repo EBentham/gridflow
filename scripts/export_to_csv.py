@@ -30,9 +30,10 @@ python scripts/export_to_csv.py --view silver_elexon_system_prices --limit 1000
 Available Views (after running the pipeline)
 --------------------------------------------
 
-Silver views are source-qualified: silver_{source}_{dataset}. A small set of
-legacy unqualified aliases (silver_system_prices, silver_fuelhh, silver_storage,
-silver_carbon_intensity, silver_itsdo) is kept as deprecation shims.
+Silver views are source-qualified: silver_{source}_{dataset}. For every dataset
+name owned by exactly ONE source, a DEPRECATED legacy unqualified alias
+(silver_{dataset}) is also registered as a backward-compat shim; collision names
+owned by >1 source get no alias. Prefer the qualified name in new code.
 
   silver_elexon_system_prices      Elexon system buy/sell prices (half-hourly)
   silver_elexon_fuelhh             Elexon fuel-type generation (half-hourly)
