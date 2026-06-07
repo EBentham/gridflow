@@ -13,7 +13,8 @@ python scripts/export_to_csv.py --list
 python scripts/export_to_csv.py --view silver_elexon_system_prices
 
 # Export a view with date filtering
-python scripts/export_to_csv.py --view silver_elexon_system_prices --start 2024-01-15 --end 2024-01-16
+python scripts/export_to_csv.py --view silver_elexon_system_prices \
+    --start 2024-01-15 --end 2024-01-16
 
 # Export a gold view
 python scripts/export_to_csv.py --view gold_uk_imbalance_context

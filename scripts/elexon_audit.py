@@ -34,14 +34,13 @@ logging.basicConfig(level=logging.WARNING, format="%(levelname)s %(name)s: %(mes
 logger = logging.getLogger("elexon_audit")
 logger.setLevel(logging.INFO)
 
+import gridflow.connectors.elexon  # noqa: E402,F401  trigger registration
+import gridflow.silver.elexon  # noqa: E402,F401   trigger registration
 from gridflow.bronze.writer import BronzeWriter  # noqa: E402
 from gridflow.config.settings import load_settings  # noqa: E402
 from gridflow.connectors.elexon.endpoints import ENDPOINTS, ParamStyle  # noqa: E402
 from gridflow.connectors.registry import get_connector  # noqa: E402
 from gridflow.silver.registry import get_transformer, list_transformers  # noqa: E402
-
-import gridflow.connectors.elexon  # noqa: E402,F401  trigger registration
-import gridflow.silver.elexon  # noqa: E402,F401   trigger registration
 
 
 def _fetch_window(param_style: ParamStyle, target: date) -> tuple[datetime, datetime]:
@@ -142,8 +141,10 @@ def main() -> None:
             print(f"--- {dataset} ({endpoint.param_style.value}) ---")
             r = audit_endpoint(dataset, endpoint, source_config, bronze_root, target)
             status = (
-                "OK" if r["fetch_ok"] and r["transform_ok"]
-                else "FETCH_OK" if r["fetch_ok"]
+                "OK"
+                if r["fetch_ok"] and r["transform_ok"]
+                else "FETCH_OK"
+                if r["fetch_ok"]
                 else "FAIL"
             )
             print(
@@ -156,9 +157,7 @@ def main() -> None:
                 print(f"   transform_error: {r['transform_error']}")
             results.append(r)
 
-    transformer_only = sorted(
-        ds for src, ds in registered if ds not in ENDPOINTS
-    )
+    transformer_only = sorted(ds for src, ds in registered if ds not in ENDPOINTS)
 
     summary = {
         "target_date": target.isoformat(),

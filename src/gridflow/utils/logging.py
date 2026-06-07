@@ -7,7 +7,7 @@ import sys
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
-from pythonjsonlogger import jsonlogger
+from pythonjsonlogger.json import JsonFormatter
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -31,9 +31,7 @@ def setup_logging(
     file_log_level = _resolve_level(level)
     console_log_level = _resolve_level(console_level)
 
-    # pythonjsonlogger re-exports JsonFormatter at runtime but does not declare it as an
-    # explicit export, so mypy reports a false-positive attr-defined here.
-    json_formatter = jsonlogger.JsonFormatter(  # type: ignore[attr-defined]
+    json_formatter = JsonFormatter(
         fmt="%(asctime)s %(name)s %(levelname)s %(message)s",
         rename_fields={"asctime": "timestamp", "levelname": "level"},
     )

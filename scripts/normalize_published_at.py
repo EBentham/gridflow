@@ -43,8 +43,21 @@ _PUBLISHED_AT_DTYPE = pl.Datetime("us", "UTC")
 # a legacy issue_time column needing an issue_time->published_at rename migration —
 # tracked separately, not handled by this typed-null back-fill pass.)
 _DATASETS = (
-    "indo", "imbalngc", "melngc", "inddem", "itsdo", "indgen", "agpt", "agws",
-    "atl", "nonbm", "fou2t14d", "lolpdrm", "fuelhh", "uou2t14d", "tsdfd",
+    "indo",
+    "imbalngc",
+    "melngc",
+    "inddem",
+    "itsdo",
+    "indgen",
+    "agpt",
+    "agws",
+    "atl",
+    "nonbm",
+    "fou2t14d",
+    "lolpdrm",
+    "fuelhh",
+    "uou2t14d",
+    "tsdfd",
 )
 
 
@@ -81,7 +94,10 @@ def normalize_published_at(data_dir: Path, *, dry_run: bool = False) -> int:
             continue
         logger.info(
             "%-10s back-filling %s into %d/%d files",
-            dataset, _PUBLISHED_AT, len(drifted), len(files),
+            dataset,
+            _PUBLISHED_AT,
+            len(drifted),
+            len(files),
         )
         for file in drifted:
             rewritten += 1

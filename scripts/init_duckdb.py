@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from pathlib import Path
-
 from gridflow.config.settings import load_settings
 from gridflow.storage.duckdb import init_catalogue
 

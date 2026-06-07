@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import glob
 import logging
 import os
 from pathlib import Path
@@ -42,11 +43,29 @@ def write_parquet(
 
 
 def read_parquet(path: Path | str) -> pl.DataFrame:
-    """Read a Parquet file or glob pattern into a Polars DataFrame."""
+    """Read a Parquet file or glob pattern into a Polars DataFrame.
+
+    For a glob, each matched file is read separately and diagonal-concatenated
+    so that within-glob schema drift (an extra column in a later file) unions
+    and null-fills instead of raising. A single multi-file read resolves the
+    schema from the first file and rejects any later file carrying an extra
+    column -- a real failure once silver gains bitemporal columns over time and
+    a partial re-transform leaves a narrow file beside a wide one. Genuine
+    corruption / dtype conflicts still surface (per-file read raises). See
+    :func:`scan_parquet_dir` for the directory-tree equivalent.
+    """
     path_str = str(path)
 
     if "*" in path_str:
-        return pl.read_parquet(path_str, hive_partitioning=True, missing_columns="insert")
+        files = sorted(glob.glob(path_str, recursive=True))
+        if not files:
+            # No match: defer to polars so a genuinely bad path raises the same
+            # error as before rather than being masked as empty data.
+            return pl.read_parquet(path_str, hive_partitioning=True, missing_columns="insert")
+        frames = [
+            pl.read_parquet(f, hive_partitioning=True, missing_columns="insert") for f in files
+        ]
+        return pl.concat(frames, how="diagonal")
 
     path_obj = Path(path_str)
     if not path_obj.exists():
@@ -60,9 +79,13 @@ def scan_parquet_dir(directory: Path) -> pl.LazyFrame:
     """Lazily scan all Parquet files in a directory tree.
 
     Lazy equivalent of :func:`read_parquet_dir`: returns a ``LazyFrame`` so the
-    caller controls when (and how much of) the tree is materialised. Tolerates
-    mixed schemas across files via ``missing_columns="insert"``; schema errors
-    surface on ``.collect()`` rather than at scan time.
+    caller controls when (and how much of) the tree is materialised. Each file is
+    scanned separately and diagonal-concatenated so within-tree schema drift (an
+    extra column in a later file) unions and null-fills instead of raising; a
+    single multi-file glob scan would resolve the schema from the first file and
+    reject any later file carrying an extra column. This mirrors the per-file
+    approach in :func:`scan_parquet_range`. Genuine corruption / dtype conflicts
+    still surface on ``.collect()`` rather than at scan time.
 
     Args:
         directory: Root of a Hive-partitioned silver tree.
@@ -71,11 +94,20 @@ def scan_parquet_dir(directory: Path) -> pl.LazyFrame:
         A ``LazyFrame`` over the tree, or an empty ``LazyFrame`` when the
         directory is absent or contains no Parquet files.
     """
-    if not directory.exists() or not any(directory.rglob("*.parquet")):
+    if not directory.exists():
         logger.warning(f"No Parquet files found in {directory}")
         return pl.LazyFrame()
-    pattern = str(directory / "**" / "*.parquet")
-    return pl.scan_parquet(pattern, hive_partitioning=True, missing_columns="insert")
+    # Skip transient ``.tmp_*.parquet`` files: write_parquet writes to a
+    # ``.tmp_<name>`` sibling then os.replace()s it into place, so a ``.tmp_``
+    # parquet is always an in-flight or torn write that a concurrent read must not
+    # pick up. glob-based read_parquet already skips dotfiles; mirror that here so
+    # both read paths agree.
+    files = sorted(f for f in directory.rglob("*.parquet") if not f.name.startswith(".tmp_"))
+    if not files:
+        logger.warning(f"No Parquet files found in {directory}")
+        return pl.LazyFrame()
+    lfs = [pl.scan_parquet(f, hive_partitioning=True, missing_columns="insert") for f in files]
+    return pl.concat(lfs, how="diagonal")
 
 
 def scan_parquet_range(

@@ -26,10 +26,10 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import contextlib
 import logging
-import os
 import sys
-from datetime import date, datetime, timedelta, timezone
+from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 
 # ---------------------------------------------------------------------------
@@ -97,10 +97,8 @@ def _import_connectors() -> None:
         "gridflow.connectors.entsog",
         "gridflow.connectors.neso",
     ]:
-        try:
+        with contextlib.suppress(ImportError):
             __import__(module)
-        except ImportError:
-            pass
 
 
 def _import_transformers() -> None:
@@ -112,10 +110,8 @@ def _import_transformers() -> None:
         "gridflow.silver.entsog",
         "gridflow.silver.neso",
     ]:
-        try:
+        with contextlib.suppress(ImportError):
             __import__(module)
-        except ImportError:
-            pass
 
 
 def run_bronze_for_source(
@@ -140,7 +136,7 @@ def run_bronze_for_source(
         try:
             connector = get_connector(source, source_config)
 
-            async def _do_fetch():
+            async def _do_fetch(connector=connector, ds=ds):
                 async with connector:
                     return await connector.fetch(ds, start_dt, end_dt)
 
@@ -163,14 +159,20 @@ def run_silver_for_source(
     con,
 ) -> None:
     """Transform all datasets for a single source on a single date."""
-    from gridflow.silver.registry import get_transformer
     from gridflow.observability import PipelineRunTracker
+    from gridflow.silver.registry import get_transformer
 
     for ds in datasets:
         tracker = PipelineRunTracker(con, source, ds, "transform")
         print(f"  [silver] {source}/{ds}")
         try:
             transformer = get_transformer(source, ds, settings.pipeline.data_dir)
+            # Honour the silver-CSV opt-in the same way the production runner does
+            # (pipeline/runner.py): without this the per-instance flag stays at the
+            # class default (False) and this debug script can never emit the CSV
+            # sidecar even when the config enables it. Default off, so unchanged
+            # unless settings.pipeline.write_silver_csv is set.
+            transformer.write_silver_csv = settings.pipeline.write_silver_csv
             rows = transformer.run(target_date)
             tracker.complete(rows_out=rows)
             print(f"           -> {rows} rows transformed")
@@ -208,12 +210,9 @@ def main() -> None:
     args = parser.parse_args()
 
     # Resolve target date
-    if args.date:
-        target = date.fromisoformat(args.date)
-    else:
-        target = date.today() - timedelta(days=1)
+    target = date.fromisoformat(args.date) if args.date else date.today() - timedelta(days=1)
 
-    start_dt = datetime(target.year, target.month, target.day, tzinfo=timezone.utc)
+    start_dt = datetime(target.year, target.month, target.day, tzinfo=UTC)
     end_dt = start_dt + timedelta(days=1)
 
     # Build the source map
@@ -235,10 +234,17 @@ def main() -> None:
     _import_connectors()
     _import_transformers()
 
-    print(f"gridflow — run all sources")
+    if args.bronze_only:
+        mode = "bronze only"
+    elif args.silver_only:
+        mode = "silver only"
+    else:
+        mode = "bronze + silver"
+
+    print("gridflow — run all sources")
     print(f"  Date:    {target}")
     print(f"  Sources: {len(sources)}")
-    print(f"  Mode:    {'bronze only' if args.bronze_only else 'silver only' if args.silver_only else 'bronze + silver'}")
+    print(f"  Mode:    {mode}")
     print()
 
     run_bronze = not args.silver_only
