@@ -121,6 +121,28 @@ def test_scan_parquet_dir_returns_lazyframe_equivalent_to_read(tmp_path: Path) -
     )
 
 
+def test_scan_parquet_dir_skips_transient_tmp_writes(tmp_path: Path) -> None:
+    """A ``.tmp_*.parquet`` sibling (in-flight/torn write) is never scanned.
+
+    ``write_parquet`` writes to a ``.tmp_<name>`` sibling then ``os.replace``s it
+    into place, so a ``.tmp_`` parquet is always an in-flight or torn write that
+    a concurrent read must not pick up. Glob-based ``read_parquet`` already skips
+    dotfiles; ``scan_parquet_dir`` must agree (the file is a valid parquet here so
+    the assertion isolates the skip, not a parse error).
+    """
+    part = tmp_path / "ds" / "year=2024" / "month=02"
+    _write_parquet(
+        pl.DataFrame({"settlement_date": [date(2024, 2, 1)], "value": [1]}), part / "real.parquet"
+    )
+    _write_parquet(
+        pl.DataFrame({"settlement_date": [date(2024, 2, 2)], "value": [99]}),
+        part / ".tmp_real.parquet",
+    )
+
+    df = read_parquet_dir(tmp_path / "ds")
+    assert df["value"].to_list() == [1]
+
+
 def test_scan_parquet_dir_empty_and_absent(tmp_path: Path) -> None:
     """Empty/absent dir -> empty LazyFrame whose collect is empty."""
     absent = scan_parquet_dir(tmp_path / "nope")

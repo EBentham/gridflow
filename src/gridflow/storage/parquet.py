@@ -97,7 +97,12 @@ def scan_parquet_dir(directory: Path) -> pl.LazyFrame:
     if not directory.exists():
         logger.warning(f"No Parquet files found in {directory}")
         return pl.LazyFrame()
-    files = sorted(directory.rglob("*.parquet"))
+    # Skip transient ``.tmp_*.parquet`` files: write_parquet writes to a
+    # ``.tmp_<name>`` sibling then os.replace()s it into place, so a ``.tmp_``
+    # parquet is always an in-flight or torn write that a concurrent read must not
+    # pick up. glob-based read_parquet already skips dotfiles; mirror that here so
+    # both read paths agree.
+    files = sorted(f for f in directory.rglob("*.parquet") if not f.name.startswith(".tmp_"))
     if not files:
         logger.warning(f"No Parquet files found in {directory}")
         return pl.LazyFrame()
