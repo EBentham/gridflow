@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from datetime import UTC, date, datetime
-from typing import Any
+from typing import TYPE_CHECKING, Any, ClassVar
 
 import polars as pl
 
@@ -18,6 +18,9 @@ from gridflow.schemas.entsoe import (
 from gridflow.silver.base import BaseSilverTransformer
 from gridflow.silver.registry import register_transformer
 
+if TYPE_CHECKING:
+    from pydantic import BaseModel
+
 logger = logging.getLogger(__name__)
 
 
@@ -25,7 +28,7 @@ class _H7OutageTransformer(BaseSilverTransformer):
     """Shared outage transformer preserving document and asset metadata."""
 
     value_tag = "quantity"
-    schema_cls = EntsoeOutagesConsumption
+    schema_cls: ClassVar[type[BaseModel]] = EntsoeOutagesConsumption
     output_cols: list[str] = []
     required_domain_cols: set[str] = {"in_domain"}
     rename_cols: dict[str, str] = {"in_domain": "area_code"}

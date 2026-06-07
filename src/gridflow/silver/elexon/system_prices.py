@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import logging
 from datetime import UTC, date, datetime
+from typing import Any
 
 import polars as pl
 
@@ -37,7 +38,7 @@ class SystemPriceTransformer(BaseSilverTransformer):
         if not bronze_path.exists():
             return pl.DataFrame()
 
-        rows: list[dict] = []
+        rows: list[dict[str, Any]] = []
         for f in sorted(bronze_path.glob("raw_*.json")):
             if f.name.endswith(".meta.json"):
                 continue

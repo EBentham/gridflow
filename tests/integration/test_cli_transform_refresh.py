@@ -4,7 +4,7 @@ PBI-04: after transform/build, silver/gold DuckDB views must be queryable
 without a separate `gridflow init`.
 
 RED before F15-C (transform and build do not call refresh_views):
-  - Test 1: silver_fuelhh view absent after transform exits.
+  - Test 1: silver_elexon_fuelhh view absent after transform exits.
   - Test 2: gold_system_marginal_price view absent after build exits.
 
 GREEN after F15-C (transform and build both call refresh_views at the end).
@@ -60,7 +60,7 @@ def _write_fuelhh_bronze(data_dir: Path) -> None:
 def test_transform_makes_silver_view_queryable_immediately(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """F15-C / PBI-04: silver_fuelhh view returns rows the moment transform exits.
+    """F15-C / PBI-04: silver_elexon_fuelhh view returns rows the moment transform exits.
 
     Pre-F15-C: init_catalogue at transform-start sees an empty data_dir; the
     newly-written silver parquet is invisible to a subsequent DuckDB connection
@@ -88,10 +88,10 @@ def test_transform_makes_silver_view_queryable_immediately(
 
     con = duckdb.connect(str(db_path), read_only=True)
     try:
-        rows = con.execute("SELECT COUNT(*) FROM silver_fuelhh").fetchone()
+        rows = con.execute("SELECT COUNT(*) FROM silver_elexon_fuelhh").fetchone()
     finally:
         con.close()
-    assert rows[0] > 0, "silver_fuelhh view should be queryable immediately post-transform"
+    assert rows[0] > 0, "silver_elexon_fuelhh view should be queryable immediately post-transform"
 
 
 @pytest.mark.integration

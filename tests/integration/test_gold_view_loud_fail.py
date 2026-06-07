@@ -21,8 +21,8 @@ def test_register_gold_views_raises_on_broken_sql_under_strict_mode(
 ) -> None:
     """F15-D / PBI-05: _register_gold_views raises when GRIDFLOW_ENV=dev.
 
-    The real gold SQL files reference silver views (silver_storage, etc.) that
-    do not exist in a fresh in-memory connection.  DuckDB fails at CREATE VIEW
+    The real gold SQL files reference silver views (silver_gie_agsi_storage,
+    etc.) that do not exist in a fresh in-memory connection.  DuckDB fails at CREATE VIEW
     time (not lazily).  Pre-F15-D: exception is swallowed; pytest.raises sees
     no raise → FAILS RED.  Post-F15-D: exception propagates → PASSES GREEN.
     """

@@ -10,10 +10,10 @@ Usage Examples
 python scripts/export_to_csv.py --list
 
 # Export a specific silver view to CSV
-python scripts/export_to_csv.py --view silver_system_prices
+python scripts/export_to_csv.py --view silver_elexon_system_prices
 
 # Export a view with date filtering
-python scripts/export_to_csv.py --view silver_system_prices --start 2024-01-15 --end 2024-01-16
+python scripts/export_to_csv.py --view silver_elexon_system_prices --start 2024-01-15 --end 2024-01-16
 
 # Export a gold view
 python scripts/export_to_csv.py --view gold_uk_imbalance_context
@@ -22,40 +22,44 @@ python scripts/export_to_csv.py --view gold_uk_imbalance_context
 python scripts/export_to_csv.py --all
 
 # Export to a custom directory
-python scripts/export_to_csv.py --view silver_fuelhh --output-dir ./my_exports
+python scripts/export_to_csv.py --view silver_elexon_fuelhh --output-dir ./my_exports
 
 # Export with a row limit (useful for large datasets)
-python scripts/export_to_csv.py --view silver_system_prices --limit 1000
+python scripts/export_to_csv.py --view silver_elexon_system_prices --limit 1000
 
 Available Views (after running the pipeline)
 --------------------------------------------
 
-Silver views (one per source/dataset):
-  silver_system_prices       Elexon system buy/sell prices (half-hourly)
-  silver_fuelhh              Elexon fuel-type generation (half-hourly)
-  silver_boal                Elexon bid-offer acceptance levels
-  silver_bod                 Elexon bid-offer data
-  silver_mid                 Elexon market index data
-  silver_freq                Elexon system frequency
-  silver_demand_forecast     Elexon demand forecasts (NDF)
-  silver_wind_forecast       Elexon wind generation forecasts
-  silver_pn                  Elexon physical notifications
-  silver_disbsad             Elexon disaggregated BSAD
-  silver_bmunits             Elexon BM unit reference data
-  silver_historical_demand   Open-Meteo historical weather (7 demand sites)
-  silver_historical_wind     Open-Meteo historical weather (12 wind sites)
-  silver_historical_solar    Open-Meteo historical weather (6 solar sites)
-  silver_forecast_demand     Open-Meteo weather forecasts (7 demand sites)
-  silver_forecast_wind       Open-Meteo weather forecasts (12 wind sites)
-  silver_forecast_solar      Open-Meteo weather forecasts (6 solar sites)
-  silver_day_ahead_prices    ENTSO-E day-ahead electricity prices
-  silver_actual_load         ENTSO-E actual total load
-  silver_actual_generation   ENTSO-E actual generation by type
-  silver_cross_border_flows  ENTSO-E cross-border physical flows
-  silver_storage             GIE AGSI+ gas storage levels
-  silver_lng                 GIE ALSI LNG terminal data
-  silver_physical_flows      ENTSO-G physical gas flows
-  silver_carbon_intensity    NESO carbon intensity (half-hourly)
+Silver views are source-qualified: silver_{source}_{dataset}. For every dataset
+name owned by exactly ONE source, a DEPRECATED legacy unqualified alias
+(silver_{dataset}) is also registered as a backward-compat shim; collision names
+owned by >1 source get no alias. Prefer the qualified name in new code.
+
+  silver_elexon_system_prices      Elexon system buy/sell prices (half-hourly)
+  silver_elexon_fuelhh             Elexon fuel-type generation (half-hourly)
+  silver_elexon_boal               Elexon bid-offer acceptance levels
+  silver_elexon_bod                Elexon bid-offer data
+  silver_elexon_mid                Elexon market index data
+  silver_elexon_freq               Elexon system frequency
+  silver_elexon_demand_forecast    Elexon demand forecasts (NDF)
+  silver_elexon_wind_forecast      Elexon wind generation forecasts
+  silver_elexon_pn                 Elexon physical notifications
+  silver_elexon_disbsad            Elexon disaggregated BSAD
+  silver_elexon_bmunits            Elexon BM unit reference data
+  silver_open_meteo_historical_demand   Open-Meteo historical weather (demand sites)
+  silver_open_meteo_historical_wind     Open-Meteo historical weather (wind sites)
+  silver_open_meteo_historical_solar    Open-Meteo historical weather (solar sites)
+  silver_open_meteo_forecast_demand     Open-Meteo weather forecasts (demand sites)
+  silver_open_meteo_forecast_wind       Open-Meteo weather forecasts (wind sites)
+  silver_open_meteo_forecast_solar      Open-Meteo weather forecasts (solar sites)
+  silver_entsoe_day_ahead_prices   ENTSO-E day-ahead electricity prices
+  silver_entsoe_actual_load        ENTSO-E actual total load
+  silver_entsoe_actual_generation  ENTSO-E actual generation by type
+  silver_entsoe_cross_border_flows ENTSO-E cross-border physical flows
+  silver_gie_agsi_storage          GIE AGSI+ gas storage levels
+  silver_gie_alsi_lng              GIE ALSI LNG terminal data
+  silver_entsog_physical_flows     ENTSO-G physical gas flows
+  silver_neso_carbon_intensity     NESO carbon intensity (half-hourly)
 
 Gold views (cross-source analytics):
   gold_uk_imbalance_context  UK prices + carbon intensity
@@ -261,11 +265,11 @@ def main() -> None:
         epilog=(
             "Examples:\n"
             "  python scripts/export_to_csv.py --list\n"
-            "  python scripts/export_to_csv.py --view silver_system_prices\n"
-            "  python scripts/export_to_csv.py --view silver_system_prices "
+            "  python scripts/export_to_csv.py --view silver_elexon_system_prices\n"
+            "  python scripts/export_to_csv.py --view silver_elexon_system_prices "
             "--start 2024-01-15 --end 2024-01-16\n"
             "  python scripts/export_to_csv.py --all --output-dir ./my_exports\n"
-            "  python scripts/export_to_csv.py --view silver_fuelhh --limit 500\n"
+            "  python scripts/export_to_csv.py --view silver_elexon_fuelhh --limit 500\n"
         ),
     )
     group = parser.add_mutually_exclusive_group(required=True)

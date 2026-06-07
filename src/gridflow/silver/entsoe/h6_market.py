@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from datetime import UTC, date, datetime
-from typing import Any
+from typing import TYPE_CHECKING, Any, ClassVar
 
 import polars as pl
 
@@ -16,6 +16,9 @@ from gridflow.schemas.entsoe import (
 from gridflow.silver.base import BaseSilverTransformer
 from gridflow.silver.registry import register_transformer
 
+if TYPE_CHECKING:
+    from pydantic import BaseModel
+
 logger = logging.getLogger(__name__)
 
 
@@ -24,7 +27,7 @@ class _H6ZonePairTransformer(BaseSilverTransformer):
 
     value_tag = "quantity"
     value_column = "quantity_mw"
-    schema_cls = EntsoeTransmissionMarketQuantity
+    schema_cls: ClassVar[type[BaseModel]] = EntsoeTransmissionMarketQuantity
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         bronze_path = self._bronze_path_for_date(target_date)

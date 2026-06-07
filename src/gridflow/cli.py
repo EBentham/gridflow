@@ -1,18 +1,33 @@
-"""gridflow CLI — ingest, transform, build, and query energy market data."""
+"""gridflow CLI — ingest, transform, build, and query energy market data.
+
+The pipeline commands (``ingest``/``transform``/``build``/``pipeline``/
+``backfill``) are thin adapters over :mod:`gridflow.pipeline.runner`: the adapter
+owns option parsing, settings/logging setup, console output, and exit-code
+translation; the runner owns the actual step loops, resolution, tracking, and
+error redaction. Stays adapter-only: the ``reset``/``export_csv`` containment
+guards and the ``status``/``quality``/``init`` commands.
+"""
 
 from __future__ import annotations
 
-import asyncio
 import logging
 import os
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from typing import TYPE_CHECKING
 
 import typer
 
 if TYPE_CHECKING:
-    import duckdb
+    from collections.abc import Callable, Iterator
+
+from gridflow.pipeline import runner
+from gridflow.pipeline.runner import (
+    DatasetResolutionError,
+    DatasetResult,
+    NaiveDatetimeError,
+    RunReport,
+)
 
 app = typer.Typer(name="gridflow", help="UK/EU energy market data pipeline")
 logger = logging.getLogger(__name__)
@@ -89,6 +104,84 @@ def _realpath_within(path: Path, data_dir: Path) -> bool:
     return real_path.is_relative_to(real_root)
 
 
+def _silver_month_older_than(part_dir: Path, cutoff: date) -> bool | None:
+    """Return whether a ``year=YYYY/month=MM`` partition is wholly before ``cutoff``.
+
+    A silver month is unambiguously older than the cutoff only when the entire
+    month precedes the cutoff month — i.e. ``(year, month) < (cutoff.year,
+    cutoff.month)``. The cutoff month itself straddles the cutoff (it holds days
+    both before and on/after it) and is kept.
+
+    Args:
+        part_dir: A ``month=MM`` partition directory whose parent is ``year=YYYY``.
+        cutoff: The retention cutoff date; partitions before it are prunable.
+
+    Returns:
+        True if the partition is wholly older than the cutoff, False if it is
+        not, or None if the directory names cannot be parsed (caller must skip
+        unparseable partitions rather than risk deleting unknown data).
+    """
+    year_name = part_dir.parent.name
+    month_name = part_dir.name
+    if not (year_name.startswith("year=") and month_name.startswith("month=")):
+        return None
+    try:
+        year = int(year_name.removeprefix("year="))
+        month = int(month_name.removeprefix("month="))
+    except ValueError:
+        return None
+    if not (1 <= month <= 12):
+        return None
+    return (year, month) < (cutoff.year, cutoff.month)
+
+
+def _gold_year_older_than(part_dir: Path, cutoff: date) -> bool | None:
+    """Return whether a gold ``year=YYYY`` partition is wholly before ``cutoff``.
+
+    Gold is year-partitioned (``gold/<dataset>/year=YYYY``), so a year is
+    unambiguously older only when ``year < cutoff.year``; the cutoff year
+    straddles the cutoff and is kept.
+
+    Returns:
+        True if wholly older, False if not, None if the name cannot be parsed.
+    """
+    name = part_dir.name
+    if not name.startswith("year="):
+        return None
+    try:
+        year = int(name.removeprefix("year="))
+    except ValueError:
+        return None
+    return year < cutoff.year
+
+
+def _bronze_day_older_than(day_dir: Path, cutoff: date) -> bool | None:
+    """Return whether a bronze ``YYYY/MM/DD`` day partition is before ``cutoff``.
+
+    Bronze partitions are single days, so a day can never straddle a date cutoff:
+    its date is wholly before or on/after the cutoff. The day equal to the cutoff
+    is the cutoff itself (not older) and is kept; pruning is by the partition's
+    filing date (datasets that batch several days under a window-start date are
+    pruned on that filed date, not their covered span).
+
+    Args:
+        day_dir: A ``DD`` day directory whose parents are ``MM`` and ``YYYY``.
+        cutoff: The retention cutoff date.
+
+    Returns:
+        True if the day is strictly before the cutoff, False if not, None if the
+        directory names cannot be parsed as a date.
+    """
+    try:
+        year = int(day_dir.parent.parent.name)
+        month = int(day_dir.parent.name)
+        day = int(day_dir.name)
+        part_date = date(year, month, day)
+    except ValueError:
+        return None
+    return part_date < cutoff
+
+
 @app.command()
 def ingest(
     source: str = typer.Argument(help="Data source (elexon, entsoe, entsog)"),
@@ -134,92 +227,33 @@ def ingest(
     )
 
     # end_dt is resolved once up front (= now for the lookback/incremental paths);
-    # incremental resolves start per-dataset inside the loop from each watermark.
-    # Precedence: --start > --last > --incremental (watermark) > default lookback.
+    # incremental resolves start per-dataset inside the runner loop from each
+    # watermark. Precedence: --start > --last > --incremental > default lookback.
     default_start_dt, end_dt = _resolve_dates(
         start, end, last, settings.pipeline.default_lookback_hours
     )
     use_watermark_start = incremental and start is None and last is None
-    overlap = timedelta(hours=settings.pipeline.incremental_overlap_hours)
     datasets = _resolve_datasets(source, dataset, all_datasets, settings)
 
-    # Import connector registrations
-    _import_connectors()
+    runner.import_connectors()
 
-    from gridflow.bronze.writer import BronzeWriter
-    from gridflow.connectors.registry import get_connector
-    from gridflow.storage.duckdb import get_connection, init_catalogue
+    with runner.build_context(settings) as ctx:
+        results = runner.run_ingest(
+            ctx,
+            source,
+            datasets,
+            default_start_dt,
+            end_dt,
+            incremental=use_watermark_start,
+            write_watermark=write_watermark,
+        )
 
-    # Ensure catalogue exists
-    init_catalogue(settings.pipeline.duckdb_path, settings.pipeline.data_dir)
-    con = get_connection(settings.pipeline.duckdb_path)
-
-    from gridflow.observability import PipelineRunTracker, update_watermark
-
-    source_config = settings.get_source_config(source)
-    writer = BronzeWriter(settings.pipeline.data_dir)
-    failures: list[tuple[str, str]] = []
-
-    for ds in datasets:
-        # Resolve start per-dataset: incremental reads each dataset's own
-        # watermark (first run falls back to the default-lookback start);
-        # otherwise the explicit/lookback start applies to every dataset.
-        if use_watermark_start:
-            start_dt = _resolve_incremental_start(con, source, ds, default_start_dt, overlap)
-        else:
-            start_dt = default_start_dt
-
-        tracker = PipelineRunTracker(con, source, ds, "ingest")
-        try:
-            connector = get_connector(source, source_config)
-
-            async def _do_fetch(connector=connector, ds=ds, start_dt=start_dt) -> list:
-                async with connector:
-                    return await connector.fetch(ds, start_dt, end_dt)
-
-            responses = asyncio.run(_do_fetch())
-            for resp in responses:
-                writer.write(resp)
-            # A partial fetch (some sub-units skipped after retries, but not all)
-            # must be recorded as completed_with_warnings, never silently
-            # 'success' (CH-COR-01 → C3-9/C2-9). The counter persists on the
-            # connector instance past the `async with`, so it is read here on the
-            # same object. Mirrors the transform path's last_unmapped_count branch.
-            skipped = connector.last_skipped_units
-            if skipped:
-                tracker.complete_with_warnings(
-                    rows_in=len(responses),
-                    rows_out=len(responses),
-                    rows_skipped=skipped,
-                )
-                typer.echo(
-                    f"  {source}/{ds}: {len(responses)} responses ingested, "
-                    f"{skipped} unit(s) skipped (completed_with_warnings)"
-                )
-            else:
-                tracker.complete(rows_in=len(responses), rows_out=len(responses))
-                typer.echo(f"  {source}/{ds}: {len(responses)} responses ingested")
-            # Advance the watermark only AFTER a successful write (clean or
-            # with-warnings both landed rows). Never on the except path; never for
-            # a backfill chunk-ingest (write_watermark=False), which is an explicit
-            # historical op that must not rewind/move the forward frontier. The
-            # monotonic upsert is the second guard. end_dt = the requested window
-            # end ("last successful end" semantics; ADR-022 ingestion-only).
-            if write_watermark:
-                update_watermark(con, source, ds, end_dt)
-        except Exception as e:
-            error_message = _safe_error_message(str(e))
-            tracker.fail(error_message)
-            failures.append((ds, error_message))
-            typer.echo(f"  {source}/{ds}: FAILED - {error_message}", err=True)
-            logger.error("Ingest failed for %s/%s: %s", source, ds, error_message)
-            continue
-
-    con.close()
+    _echo_ingest_results(source, results)
+    failures = [r for r in results if r.status == "failed"]
     if failures:
         typer.echo(f"Ingestion failed for {len(failures)} dataset(s):", err=True)
-        for ds, error_message in failures:
-            typer.echo(f"  {source}/{ds}: {error_message}", err=True)
+        for r in failures:
+            typer.echo(f"  {source}/{r.dataset}: {r.error}", err=True)
         raise typer.Exit(1)
     typer.echo("Ingestion complete")
 
@@ -241,7 +275,6 @@ def transform(
     """Transform bronze data to silver (normalised, validated, deduplicated)."""
     from gridflow.config.settings import load_settings
     from gridflow.utils.logging import setup_logging
-    from gridflow.utils.time import date_range
 
     settings = load_settings()
     setup_logging(
@@ -253,68 +286,19 @@ def transform(
     start_dt, end_dt = _resolve_dates(start, end, last, settings.pipeline.default_lookback_hours)
     datasets = _resolve_datasets(source, dataset, all_datasets, settings)
 
-    # Import transformer registrations
-    _import_transformers()
+    runner.import_transformers()
 
-    from gridflow.observability import PipelineRunTracker
-    from gridflow.silver.registry import get_transformer
-    from gridflow.storage.duckdb import get_connection, init_catalogue, refresh_views
+    with runner.build_context(settings) as ctx:
+        results = runner.run_transform(ctx, source, datasets, start_dt, end_dt, reingest=reingest)
+    # Refresh views once, after the run connection has closed (Windows lock safety).
+    runner.refresh_views(settings)
 
-    init_catalogue(settings.pipeline.duckdb_path, settings.pipeline.data_dir)
-    con = get_connection(settings.pipeline.duckdb_path)
-
-    dates = date_range(start_dt.date(), end_dt.date())
-    failures: list[tuple[str, str]] = []
-
-    for ds in datasets:
-        tracker = PipelineRunTracker(con, source, ds, "transform")
-        total_rows = 0
-        total_unmapped = 0
-        total_validation_failures = 0
-        try:
-            transformer = get_transformer(source, ds, settings.pipeline.data_dir)
-            # CH3-02 (CH-PERF-02): per-date silver CSV is opt-in (default OFF).
-            transformer.write_silver_csv = settings.pipeline.write_silver_csv
-            for target_date in dates:
-                rows = transformer.run(
-                    target_date,
-                    run_id=tracker.run_id,
-                    reingest=reingest,
-                )
-                total_rows += rows
-                # Per-date warning counts surfaced by the transformer. run() resets
-                # both each call, so accumulating inside the loop never double-counts
-                # an empty/missing date. unmapped = ADR-022 enum sentinels;
-                # validation = VTA-SCHEMA-01 full-frame schema failures.
-                total_unmapped += transformer.last_unmapped_count
-                total_validation_failures += transformer.last_validation_failure_count
-            if total_unmapped or total_validation_failures:
-                tracker.complete_with_warnings(
-                    rows_out=total_rows,
-                    rows_skipped=total_unmapped + total_validation_failures,
-                )
-                typer.echo(
-                    f"  {source}/{ds}: {total_rows} rows transformed, "
-                    f"{total_unmapped} unmapped, {total_validation_failures} schema-invalid "
-                    f"(completed_with_warnings)"
-                )
-            else:
-                tracker.complete(rows_out=total_rows)
-                typer.echo(f"  {source}/{ds}: {total_rows} rows transformed")
-        except Exception as e:
-            error_message = _safe_error_message(str(e))
-            tracker.fail(error_message)
-            failures.append((ds, error_message))
-            typer.echo(f"  {source}/{ds}: FAILED - {error_message}", err=True)
-            logger.error("Transform failed for %s/%s: %s", source, ds, error_message)
-            continue
-
-    con.close()
-    refresh_views(settings.pipeline.duckdb_path, settings.pipeline.data_dir)
+    _echo_transform_results(source, results)
+    failures = [r for r in results if r.status == "failed"]
     if failures:
         typer.echo(f"Transform failed for {len(failures)} dataset(s):", err=True)
-        for ds, error_message in failures:
-            typer.echo(f"  {source}/{ds}: {error_message}", err=True)
+        for r in failures:
+            typer.echo(f"  {source}/{r.dataset}: {r.error}", err=True)
         raise typer.Exit(1)
     typer.echo("Transform complete")
 
@@ -329,7 +313,6 @@ def build(
 ) -> None:
     """Build gold-layer modelling-ready datasets from silver."""
     from gridflow.config.settings import load_settings
-    from gridflow.gold.system_marginal_price import SystemMarginalPriceBuilder
     from gridflow.utils.logging import setup_logging
 
     settings = load_settings()
@@ -341,42 +324,22 @@ def build(
 
     start_dt, end_dt = _resolve_dates(start, end, last, settings.pipeline.default_lookback_hours)
 
-    # Gold dataset registry
-    gold_builders = {
-        "system_marginal_price": SystemMarginalPriceBuilder,
-    }
-
     if all_datasets:
-        targets = list(gold_builders.keys())
+        targets = list(runner.GOLD_DATASETS)
     elif gold_dataset:
         targets = [gold_dataset]
     else:
         raise typer.BadParameter("Specify a gold dataset name or use --all")
 
-    from gridflow.observability import PipelineRunTracker
-    from gridflow.storage.duckdb import get_connection, init_catalogue, refresh_views
+    with runner.build_context(settings) as ctx:
+        results = runner.run_build(ctx, targets, start_dt, end_dt)
+    runner.refresh_views(settings)
 
-    init_catalogue(settings.pipeline.duckdb_path, settings.pipeline.data_dir)
-    con = get_connection(settings.pipeline.duckdb_path)
-
-    for name in targets:
-        if name not in gold_builders:
-            typer.echo(f"  Unknown gold dataset: {name}", err=True)
-            continue
-
-        tracker = PipelineRunTracker(con, "gold", name, "build")
-        try:
-            builder = gold_builders[name](settings.pipeline.data_dir)
-            rows = builder.run(start_dt.date(), end_dt.date())
-            tracker.complete(rows_out=rows)
-            typer.echo(f"  {name}: {rows} rows built")
-        except Exception as e:
-            tracker.fail(str(e))
-            typer.echo(f"  {name}: FAILED - {e}", err=True)
-            logger.exception(f"Build failed for {name}")
-
-    con.close()
-    refresh_views(settings.pipeline.duckdb_path, settings.pipeline.data_dir)
+    # build historically NEVER aborts: an unknown dataset and a builder failure
+    # both print a line and the command STILL exits 0 with "Build complete".
+    # Preserve that (the runner records both as 'failed' results; the adapter
+    # decides — and here it does NOT translate to a non-zero exit).
+    _echo_build_results(results)
     typer.echo("Build complete")
 
 
@@ -405,48 +368,46 @@ def backfill(
     start_dt = datetime.fromisoformat(start).replace(tzinfo=UTC)
     end_dt = datetime.fromisoformat(end).replace(tzinfo=UTC)
 
-    for ds in datasets:
-        typer.echo(f"\n--- Backfilling {source}/{ds} ---")
-        current = start_dt
-        chunk_num = 0
-        while current < end_dt:
-            chunk_end = min(current + timedelta(days=chunk_days), end_dt)
-            chunk_num += 1
-            typer.echo(f"  Chunk {chunk_num}: {current.date()} to {chunk_end.date()}")
+    runner.import_connectors()
+    runner.import_transformers()
 
-            # Call ingest for this chunk (pass all Optional params explicitly to
-            # avoid typer OptionInfo objects leaking in as default values).
-            # write_watermark=False: backfill is an explicit historical op and must
-            # never advance/rewind the forward incremental frontier (C3-11).
-            ingest(
-                source=source,
-                dataset=ds,
-                start=current.date().isoformat(),
-                end=chunk_end.date().isoformat(),
-                last=None,
-                all_datasets=False,
-                incremental=False,
-                write_watermark=False,
-            )
+    # The adapter owns the chunk loop + per-chunk echo; each chunk's ingest and
+    # transform delegate to the runner on ONE shared connection (Windows-safe:
+    # no second RW handle to the catalogue). Views are refreshed once at the end
+    # after the connection closes.
+    with runner.build_context(settings) as ctx:
+        for ds in datasets:
+            typer.echo(f"\n--- Backfilling {source}/{ds} ---")
+            current = start_dt
+            chunk_num = 0
+            while current < end_dt:
+                chunk_end = min(current + timedelta(days=chunk_days), end_dt)
+                chunk_num += 1
+                typer.echo(f"  Chunk {chunk_num}: {current.date()} to {chunk_end.date()}")
 
-            # Call transform for this chunk.  chunk_end is the exclusive API
-            # boundary; transform date iteration is inclusive, so subtract one
-            # day to avoid a spurious "no bronze data" warning for the end date.
-            transform_end = (chunk_end - timedelta(days=1)).date()
-            transform(
-                source=source,
-                dataset=ds,
-                start=current.date().isoformat(),
-                end=transform_end.isoformat(),
-                last=None,
-                all_datasets=False,
-                reingest=False,
-            )
+                # write_watermark=False: backfill is an explicit historical op and
+                # must never advance/rewind the forward incremental frontier (C3-11).
+                runner.run_ingest(
+                    ctx,
+                    source,
+                    [ds],
+                    current,
+                    chunk_end,
+                    incremental=False,
+                    write_watermark=False,
+                )
 
-            current = chunk_end
+                # chunk_end is the exclusive API boundary; transform date iteration
+                # is inclusive, so subtract one day to avoid a spurious "no bronze
+                # data" warning for the end date.
+                transform_end = chunk_end - timedelta(days=1)
+                runner.run_transform(ctx, source, [ds], current, transform_end)
 
-        typer.echo(f"  {source}/{ds}: {chunk_num} chunks processed")
+                current = chunk_end
 
+            typer.echo(f"  {source}/{ds}: {chunk_num} chunks processed")
+
+    runner.refresh_views(settings)
     typer.echo("\nBackfill complete")
 
 
@@ -513,44 +474,86 @@ def pipeline(
 
     Runs bronze and silver stages for the specified source/dataset. If --gold is
     given, also builds that gold dataset from the resulting silver data.
+
+    Dates and datasets are resolved ONCE here; this command then opens a single
+    pipeline context (``runner.build_context``) and drives ``run_ingest`` ->
+    ``run_transform`` (-> ``run_build``) inline on that one connection, refreshing
+    views once after it closes. Inlining the stages (rather than delegating to a
+    runner orchestration) is deliberate: it preserves the abort-on-bronze-failure
+    short-circuit and the exact per-stage echo ordering. The old form re-resolved
+    dates 2-3x across separate sub-command calls. A bronze (or silver) failure
+    aborts before the completion marker and exits 1.
     """
+    from gridflow.config.settings import load_settings
+    from gridflow.utils.logging import setup_logging
+
+    settings = load_settings()
+    setup_logging(
+        settings.pipeline.log_dir,
+        settings.pipeline.log_level,
+        settings.pipeline.console_log_level,
+    )
+
+    start_dt, end_dt = _resolve_dates(start, end, last, settings.pipeline.default_lookback_hours)
+    datasets = _resolve_datasets(source, dataset, all_datasets, settings)
+
+    runner.import_connectors()
+    runner.import_transformers()
+
     typer.echo(f"=== Pipeline: {source} ===")
 
-    # Bronze
-    typer.echo("\n--- Bronze (ingest) ---")
-    ingest(
-        source=source,
-        dataset=dataset,
-        start=start,
-        end=end,
-        last=last,
-        all_datasets=all_datasets,
-        incremental=False,
-        write_watermark=True,
-    )
-
-    # Silver
-    typer.echo("\n--- Silver (transform) ---")
-    transform(
-        source=source,
-        dataset=dataset,
-        start=start,
-        end=end,
-        last=last,
-        all_datasets=all_datasets,
-        reingest=False,
-    )
-
-    # Gold (optional)
-    if gold_dataset:
-        typer.echo("\n--- Gold (build) ---")
-        build(
-            gold_dataset=gold_dataset,
-            start=start,
-            end=end,
-            last=last,
+    # The bronze/silver/gold stages share ONE connection (the old form opened a
+    # fresh connection per sub-command); views are refreshed ONCE after it closes
+    # (refresh-per-stage vs refresh-once is internal, not stdout-observable — the
+    # Windows lock hazard forbids refreshing while the RW connection is open). The
+    # ECHO sequence below reproduces the old delegated output exactly: each
+    # stage's per-dataset lines, then that stage's terminal status line, in order.
+    silver_failures: list[DatasetResult] = []
+    with runner.build_context(settings) as ctx:
+        # Bronze
+        typer.echo("\n--- Bronze (ingest) ---")
+        bronze_results = runner.run_ingest(
+            ctx, source, datasets, start_dt, end_dt, incremental=False, write_watermark=True
         )
+        _echo_ingest_results(source, bronze_results)
+        if not RunReport(bronze_results).ok:
+            # The old ``ingest`` sub-call printed its summary block and raised
+            # Exit(1) here — WITHOUT refreshing views (ingest never refreshes).
+            # Match it (abort inside the block: the ctx-mgr still closes the con,
+            # and the refresh after the block is skipped).
+            bronze_failures = [r for r in bronze_results if r.status == "failed"]
+            typer.echo(f"Ingestion failed for {len(bronze_failures)} dataset(s):", err=True)
+            for r in bronze_failures:
+                typer.echo(f"  {source}/{r.dataset}: {r.error}", err=True)
+            raise typer.Exit(1)
+        typer.echo("Ingestion complete")
 
+        # Silver
+        typer.echo("\n--- Silver (transform) ---")
+        silver_results = runner.run_transform(ctx, source, datasets, start_dt, end_dt)
+        _echo_transform_results(source, silver_results)
+        silver_failures = [r for r in silver_results if r.status == "failed"]
+        # The old ``transform`` sub-call refreshed views (after closing its con)
+        # EVEN on failure, then raised. So a silver failure must NOT short-circuit
+        # the refresh below — fall through to the post-block refresh, then exit.
+        if not silver_failures:
+            typer.echo("Transform complete")
+            # Gold (optional) — only reached after a successful silver (the old
+            # short-circuit: a failed transform raised before --gold).
+            if gold_dataset:
+                typer.echo("\n--- Gold (build) ---")
+                gold_results = runner.run_build(ctx, [gold_dataset], start_dt, end_dt)
+                _echo_build_results(gold_results)
+                typer.echo("Build complete")
+
+    # Connection closed; refresh once (transform/the completed pipeline always
+    # refreshed). A silver failure refreshed-then-exited in the old form — match.
+    runner.refresh_views(settings)
+    if silver_failures:
+        typer.echo(f"Transform failed for {len(silver_failures)} dataset(s):", err=True)
+        for r in silver_failures:
+            typer.echo(f"  {source}/{r.dataset}: {r.error}", err=True)
+        raise typer.Exit(1)
     typer.echo("\n=== Pipeline complete ===")
 
 
@@ -867,6 +870,243 @@ def reset(
 
 
 @app.command()
+def prune(
+    layer: str = typer.Argument(help="Layer to prune: bronze, silver, or gold"),
+    source: str | None = typer.Argument(
+        default=None, help="Limit to this source (e.g. elexon). Ignored for gold."
+    ),
+    dataset: str | None = typer.Argument(
+        default=None,
+        help="Limit to this dataset (silver/bronze), or the gold dataset name.",
+    ),
+    older_than: str | None = typer.Option(
+        None,
+        "--older-than",
+        help="Retention cutoff (YYYY-MM-DD). Partitions wholly older are pruned.",
+    ),
+    keep_days: int | None = typer.Option(
+        None,
+        "--keep-days",
+        help="Keep the last N days; cutoff = today (UTC) minus N days.",
+    ),
+    execute: bool = typer.Option(
+        False,
+        "--execute",
+        help="Actually delete. Without this flag prune runs as a dry-run preview.",
+    ),
+) -> None:
+    """Delete old partitions for a layer/scope past a retention cutoff.
+
+    Removes partitions UNAMBIGUOUSLY older than the cutoff for the selected
+    scope. Granularity follows the on-disk partition layout:
+
+      - bronze (``YYYY/MM/DD``): day-dirs strictly before the cutoff date;
+      - silver (``year=YYYY/month=MM``): months wholly before the cutoff month
+        (the straddling cutoff month is kept);
+      - gold (``year=YYYY``): years before the cutoff year (the cutoff year is
+        kept).
+
+    Safety: this defaults to a DRY RUN — pass ``--execute`` to delete. Every
+    target is run through the same containment guards as ``reset`` so prune can
+    never escape the data directory or follow a junction out of the tree. Gold
+    is not source-scoped; a SOURCE for gold is ignored and DATASET is the gold
+    dataset name.
+
+    Examples:
+
+      gridflow prune silver elexon system_prices --older-than 2025-01-01\n
+      gridflow prune bronze --keep-days 90 --execute\n
+      gridflow prune gold price_curve --older-than 2024-01-01 --execute\n
+    """
+    from gridflow.config.settings import _project_root, load_settings
+    from gridflow.storage.paths import PathBuilder
+
+    layer = layer.lower()
+    if layer not in {"bronze", "silver", "gold"}:
+        typer.echo(f"Unknown layer '{layer}'. Choose one of: bronze, silver, gold.", err=True)
+        raise typer.Exit(2)
+
+    # Exactly one cutoff source — neither leaves the op undefined, both is ambiguous.
+    if (older_than is None) == (keep_days is None):
+        typer.echo("Provide exactly one of --older-than YYYY-MM-DD or --keep-days N.", err=True)
+        raise typer.Exit(2)
+
+    if older_than is not None:
+        try:
+            cutoff = date.fromisoformat(older_than)
+        except ValueError:
+            typer.echo(f"Invalid --older-than date '{older_than}' (expected YYYY-MM-DD).", err=True)
+            raise typer.Exit(2) from None
+    else:
+        if keep_days is None or keep_days < 0:
+            typer.echo("--keep-days must be a non-negative integer.", err=True)
+            raise typer.Exit(2)
+        cutoff = datetime.now(UTC).date() - timedelta(days=keep_days)
+
+    settings = load_settings()
+    data_dir = settings.pipeline.data_dir
+    project_root = _project_root()
+
+    # Containment guard 1: a misconfigured data_dir resolving to the filesystem
+    # root, the home dir, or an ancestor of the repo would let a recursive prune
+    # destroy the repository or more. Refuse before any deletion (same as reset).
+    _assert_safe_delete_target(data_dir, project_root)
+
+    paths = PathBuilder(data_dir)
+
+    # Resolve the dataset roots to scan and the per-partition prune predicate.
+    # source/dataset are user CLI args interpolated into the scan root; gold is
+    # not source-keyed so DATASET is the gold dataset name.
+    scan_roots: list[Path] = []
+    # The three predicates share an identical signature; annotate so mypy keeps
+    # the variable type wide across the reassignments below.
+    is_older: Callable[[Path, date], bool | None]
+    if layer == "gold":
+        if source and not dataset:
+            # A single positional for gold reads as the gold dataset name.
+            dataset = source
+        if dataset:
+            scan_roots.append(paths.gold_dir(dataset))
+        else:
+            scan_roots.append(data_dir / "gold")
+        is_older = _gold_year_older_than
+    elif layer == "silver":
+        if source and dataset:
+            scan_roots.append(paths.silver_dir(source, dataset))
+        elif source:
+            scan_roots.append(data_dir / "silver" / source)
+        else:
+            scan_roots.append(data_dir / "silver")
+        is_older = _silver_month_older_than
+    else:  # bronze
+        if source and dataset:
+            scan_roots.append(paths.bronze_dir(source, dataset))
+        elif source:
+            scan_roots.append(data_dir / "bronze" / source)
+        else:
+            scan_roots.append(data_dir / "bronze")
+        is_older = _bronze_day_older_than
+
+    # Containment guard 2 (R-1): source/dataset are user args; an absolute value
+    # or a `../..` climb escapes data_dir. Validate every scan root before any
+    # preview or deletion, exactly as reset validates its dir_targets.
+    data_root = data_dir.resolve()
+    for root in scan_roots:
+        if not root.resolve().is_relative_to(data_root):
+            typer.echo(
+                f"Refusing to prune {root.resolve()}: target escapes the data "
+                f"directory {data_root} (check the SOURCE / DATASET arguments). "
+                "Aborting (nothing deleted).",
+                err=True,
+            )
+            raise typer.Exit(1)
+
+    scope = "/".join(p for p in [layer, source, dataset] if p)
+
+    # Collect the partition directories to prune (those wholly older than cutoff).
+    # Silver/gold partitions live at a fixed depth from the dataset root; bronze
+    # day-dirs are the depth-3 leaves. _collect_partitions walks the tree and
+    # applies the layer predicate, skipping anything it cannot parse.
+    targets: list[Path] = []
+    for root in scan_roots:
+        if not root.exists():
+            continue
+        for candidate in _iter_partition_dirs(root, layer):
+            verdict = is_older(candidate, cutoff)
+            if verdict is True:
+                targets.append(candidate)
+
+    targets.sort()
+
+    if not execute:
+        typer.echo(
+            f"DRY RUN — would prune {scope} partitions older than {cutoff.isoformat()} "
+            f"({len(targets)} partition(s)). Pass --execute to delete."
+        )
+        for t in targets:
+            typer.echo(f"  would delete: {t.relative_to(data_dir)}")
+        if not targets:
+            typer.echo("  (nothing older than the cutoff)")
+        typer.echo("DRY RUN complete — nothing was deleted.")
+        return
+
+    deleted_files = 0
+    deleted_dirs = 0
+    for part in targets:
+        # Containment guard 3: rglob descends Windows junctions (is_symlink() ==
+        # False); a junction inside the partition pointing outside the data tree
+        # would otherwise have its external targets unlinked. Skip any file whose
+        # real path escapes data_dir, mirroring reset's _wipe_dir.
+        for f in part.rglob("*"):
+            if f.is_file():
+                if not _realpath_within(f, data_dir):
+                    typer.echo(f"  Skipping (resolves outside data dir): {f}", err=True)
+                    continue
+                try:
+                    f.unlink()
+                    deleted_files += 1
+                except OSError as e:
+                    typer.echo(f"  Warning: could not delete {f}: {e}", err=True)
+        # Remove now-empty dirs bottom-up (the partition dir and its children).
+        for d in sorted(part.rglob("*"), reverse=True):
+            if d.is_dir():
+                try:
+                    if not any(d.iterdir()):
+                        d.rmdir()
+                        deleted_dirs += 1
+                except OSError:
+                    pass
+        try:
+            if part.is_dir() and not any(part.iterdir()):
+                part.rmdir()
+                deleted_dirs += 1
+        except OSError:
+            pass
+        typer.echo(f"  pruned: {part.relative_to(data_dir)}")
+
+    typer.echo(
+        f"Prune complete — {deleted_files} files and {deleted_dirs} directories removed "
+        f"({scope}, older than {cutoff.isoformat()})."
+    )
+
+
+def _iter_partition_dirs(root: Path, layer: str) -> Iterator[Path]:
+    """Yield the prunable partition directories beneath a scan ``root``.
+
+    The partition depth depends on both the layer and how deep the scan root
+    already is (a dataset-scoped root vs. a layer-wide root). Rather than hard-
+    code depths, this yields every ``year=*`` directory (silver/gold) or every
+    numeric ``YYYY/MM/DD`` leaf (bronze) found anywhere under the root, so the
+    same logic works for ``silver/elexon/system_prices`` and for ``silver``.
+
+    Args:
+        root: An existing directory at or above the partition level.
+        layer: One of ``bronze``/``silver``/``gold``.
+
+    Yields:
+        Candidate partition directories for the layer's prune predicate.
+    """
+    if layer == "silver":
+        # month=MM dirs whose parent is year=YYYY.
+        for month_dir in root.rglob("month=*"):
+            if month_dir.is_dir() and month_dir.parent.name.startswith("year="):
+                yield month_dir
+    elif layer == "gold":
+        for year_dir in root.rglob("year=*"):
+            if year_dir.is_dir():
+                yield year_dir
+    else:  # bronze: YYYY/MM/DD numeric day leaves.
+        for day_dir in root.rglob("*"):
+            if (
+                day_dir.is_dir()
+                and day_dir.name.isdigit()
+                and day_dir.parent.name.isdigit()
+                and day_dir.parent.parent.name.isdigit()
+            ):
+                yield day_dir
+
+
+@app.command()
 def init() -> None:
     """Initialise DuckDB catalogue and register views."""
     from gridflow.config.settings import load_settings
@@ -886,28 +1126,13 @@ def init() -> None:
 
 
 # --- Helper Functions ---
-
-
-def _parse_window_bound(value: str) -> datetime:
-    """Parse a CLI ``--start``/``--end`` bound to a tz-aware UTC datetime.
-
-    Offset-bearing strings are CONVERTED (``astimezone``), not relabelled; a
-    bare calendar date (no time component) is taken as midnight UTC
-    (unambiguous); a naive datetime (wall-clock time, no offset) is REJECTED.
-    Silently relabelling a naive datetime as UTC — what ``.replace(tzinfo=...)``
-    did — shifts the ingest window by up to ±1h under BST, the same
-    tz-aware-UTC-contract hazard the leakage barrier guards downstream
-    (issue-19 site A).
-    """
-    parsed = datetime.fromisoformat(value)
-    if parsed.tzinfo is None:
-        if "T" not in value and ":" not in value:
-            return parsed.replace(tzinfo=UTC)
-        raise typer.BadParameter(
-            f"Naive datetime {value!r} has no timezone; pass an explicit offset "
-            f"(e.g. '2026-02-01T00:00:00Z' or '...+01:00') or a bare date."
-        )
-    return parsed.astimezone(UTC)
+#
+# The resolution/registration/redaction logic now lives in
+# ``gridflow.pipeline.runner`` (the single source of truth shared with the
+# scripts). These module-level names are kept as thin adapter wrappers so that
+# (a) existing unit tests importing ``_resolve_dates``/``_resolve_datasets`` from
+# ``gridflow.cli`` stay green, and (b) the runner's plain exceptions are
+# translated into the ``typer.BadParameter`` the CLI contract expects.
 
 
 def _resolve_dates(
@@ -916,60 +1141,18 @@ def _resolve_dates(
     last: str | None,
     default_lookback_hours: int,
 ) -> tuple[datetime, datetime]:
-    """Parse date arguments into (start_dt, end_dt) UTC datetimes."""
-    now = datetime.now(UTC)
-    if last:
-        from gridflow.utils.time import parse_lookback
+    """Parse date arguments into ``(start_dt, end_dt)`` UTC datetimes.
 
-        delta = parse_lookback(last)
-        return now - delta, now
-    if start:
-        start_dt = _parse_window_bound(start)
-        end_dt = _parse_window_bound(end) if end else now
-        return start_dt, end_dt
-    return now - timedelta(hours=default_lookback_hours), now
-
-
-def _resolve_incremental_start(
-    con: duckdb.DuckDBPyConnection,
-    source: str,
-    dataset: str,
-    default_start: datetime,
-    overlap: timedelta,
-) -> datetime:
-    """Resolve the per-dataset incremental start from the stored watermark.
-
-    Args:
-        con: Open DuckDB connection.
-        source: Data source name.
-        dataset: Dataset name.
-        default_start: Fallback start used on the first run (no watermark yet) —
-            the caller's default-lookback start.
-        overlap: How far before the watermark to re-fetch, to recover late/revised
-            publications (run_type II->SF->R1). Zero is behaviour-preserving.
-
-    Returns:
-        ``watermark - overlap`` when a watermark exists for the pair, otherwise
-        ``default_start``. Re-fetching the overlap window is safe: bronze is
-        immutable and silver dedups on ``(date, period, run_type)``.
+    Delegates to :func:`gridflow.pipeline.runner.resolve_dates`, translating the
+    runner's :class:`~gridflow.pipeline.runner.NaiveDatetimeError` into a
+    ``typer.BadParameter``. A malformed-string ``ValueError`` from
+    ``datetime.fromisoformat`` is intentionally NOT caught here — it surfaces as
+    typer's own usage error, exactly as before.
     """
-    from gridflow.observability import get_watermark
-
-    watermark = get_watermark(con, source, dataset)
-    if watermark is None:
-        return default_start
-    return watermark - overlap
-
-
-def _safe_error_message(message: str) -> str:
-    """Redact sensitive query parameters from user-facing command errors.
-
-    The input is free text containing a URL, so the value class stops at the
-    URL boundary (whitespace / closing paren) to avoid eating trailing prose.
-    """
-    from gridflow.bronze.sanitize import sanitize_url
-
-    return sanitize_url(message, value_chars=r"[^&\s)]")
+    try:
+        return runner.resolve_dates(start, end, last, default_lookback_hours)
+    except NaiveDatetimeError as e:
+        raise typer.BadParameter(str(e)) from e
 
 
 def _resolve_datasets(
@@ -978,59 +1161,65 @@ def _resolve_datasets(
     all_flag: bool,
     settings: object,
 ) -> list[str]:
-    """Resolve which datasets to process."""
-    from gridflow.config.settings import GridflowConfig
+    """Resolve which datasets to process.
 
-    if not isinstance(settings, GridflowConfig):
-        raise TypeError("Expected GridflowConfig")
-
-    if all_flag or (dataset is not None and dataset.lower() == "all"):
-        source_config = settings.get_source_config(source)
-        return list(source_config.datasets.keys())
-    if dataset:
-        return [dataset]
-    raise typer.BadParameter("Specify a dataset name or use --all")
-
-
-def _import_connectors() -> None:
-    """Import connector modules to trigger registration.
-
-    These are core modules shipped with every install, so an ``ImportError``
-    here never means "optional dependency absent" — it always indicates a real
-    bug in the module (e.g. a syntax/import error). Swallowing it silently would
-    hide the broken module as a missing registration, which later surfaces as a
-    confusing "unknown source". Log it loudly instead and keep going so the
-    other connectors still register.
+    Delegates to :func:`gridflow.pipeline.runner.resolve_datasets`, translating
+    the runner's :class:`~gridflow.pipeline.runner.DatasetResolutionError` into a
+    ``typer.BadParameter``. A ``TypeError`` (non-``GridflowConfig`` settings)
+    propagates unchanged, preserving ``test_invalid_settings_type``.
     """
-    for module in [
-        "gridflow.connectors.elexon",
-        "gridflow.connectors.openmeteo",
-        "gridflow.connectors.entsoe",
-        "gridflow.connectors.gie",
-        "gridflow.connectors.entsog",
-        "gridflow.connectors.neso",
-    ]:
-        try:
-            __import__(module)
-        except ImportError:
-            logger.warning("Failed to import connector module %s", module, exc_info=True)
+    try:
+        return runner.resolve_datasets(source, dataset, all_flag, settings)
+    except DatasetResolutionError as e:
+        raise typer.BadParameter(str(e)) from e
 
 
-def _import_transformers() -> None:
-    """Import transformer modules to trigger registration.
+# Re-exported for the two unit tests that import them directly from the cli and
+# for any historical caller. The runner is the single implementation.
+_resolve_incremental_start = runner.resolve_incremental_start
+_safe_error_message = runner.safe_error_message
+_import_connectors = runner.import_connectors
+_import_transformers = runner.import_transformers
 
-    Core modules — an ``ImportError`` always signals a real bug, not a missing
-    optional dependency. Log with the module name instead of swallowing it.
-    """
-    for module in [
-        "gridflow.silver.elexon",
-        "gridflow.silver.openmeteo",
-        "gridflow.silver.entsoe",
-        "gridflow.silver.gie",
-        "gridflow.silver.entsog",
-        "gridflow.silver.neso",
-    ]:
-        try:
-            __import__(module)
-        except ImportError:
-            logger.warning("Failed to import transformer module %s", module, exc_info=True)
+
+# --- Adapter output helpers (RunReport -> echo) ---
+
+
+def _echo_ingest_results(source: str, results: list[DatasetResult]) -> None:
+    """Echo per-dataset ingest result lines (preserves cli.ingest formatting)."""
+    for r in results:
+        if r.status == "completed_with_warnings":
+            typer.echo(
+                f"  {source}/{r.dataset}: {r.rows_in} responses ingested, "
+                f"{r.rows_skipped} unit(s) skipped (completed_with_warnings)"
+            )
+        elif r.status == "success":
+            typer.echo(f"  {source}/{r.dataset}: {r.rows_in} responses ingested")
+        else:
+            typer.echo(f"  {source}/{r.dataset}: FAILED - {r.error}", err=True)
+
+
+def _echo_transform_results(source: str, results: list[DatasetResult]) -> None:
+    """Echo per-dataset transform result lines (preserves cli.transform formatting)."""
+    for r in results:
+        if r.status == "completed_with_warnings":
+            typer.echo(
+                f"  {source}/{r.dataset}: {r.rows_out} rows transformed, "
+                f"{r.rows_unmapped} unmapped, {r.rows_invalid} schema-invalid "
+                f"(completed_with_warnings)"
+            )
+        elif r.status == "success":
+            typer.echo(f"  {source}/{r.dataset}: {r.rows_out} rows transformed")
+        else:
+            typer.echo(f"  {source}/{r.dataset}: FAILED - {r.error}", err=True)
+
+
+def _echo_build_results(results: list[DatasetResult]) -> None:
+    """Echo per-dataset build result lines (preserves cli.build formatting)."""
+    for r in results:
+        if r.status == "failed" and r.error and r.error.startswith("Unknown gold dataset:"):
+            typer.echo(f"  {r.error}", err=True)
+        elif r.status == "failed":
+            typer.echo(f"  {r.dataset}: FAILED - {r.error}", err=True)
+        else:
+            typer.echo(f"  {r.dataset}: {r.rows_out} rows built")

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 import logging
-from typing import Any
+from typing import Any, cast
 
 logger = logging.getLogger(__name__)
 
@@ -12,7 +12,8 @@ logger = logging.getLogger(__name__)
 def parse_json_response(body: bytes) -> dict[str, Any]:
     """Parse a JSON API response body."""
     try:
-        return json.loads(body)
+        # json.loads is typed as Any; callers rely on the dict shape of Elexon responses.
+        return cast("dict[str, Any]", json.loads(body))
     except json.JSONDecodeError as e:
         logger.error(f"Failed to parse JSON response: {e}")
         return {}
@@ -25,7 +26,7 @@ def extract_data_records(response_body: bytes) -> list[dict[str, Any]]:
     """
     parsed = parse_json_response(response_body)
     if isinstance(parsed, dict):
-        return parsed.get("data", [])
+        return cast("list[dict[str, Any]]", parsed.get("data", []))
     if isinstance(parsed, list):
         return parsed
     return []
@@ -43,8 +44,8 @@ def get_pagination_info(response_body: bytes) -> tuple[int, int]:
     # Elexon Insights API uses metadata field for pagination
     meta = parsed.get("meta", parsed.get("metadata", {}))
     if isinstance(meta, dict):
-        current = meta.get("page", meta.get("currentPage", 1))
-        total = meta.get("totalPages", meta.get("lastPage", 1))
+        current: Any = meta.get("page", meta.get("currentPage", 1))
+        total: Any = meta.get("totalPages", meta.get("lastPage", 1))
         return int(current), int(total)
     return 1, 1
 

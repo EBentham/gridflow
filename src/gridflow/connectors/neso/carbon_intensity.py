@@ -150,7 +150,9 @@ def _request_specs(
         start + timedelta(days=1) if end <= start and "{to_dt}" in endpoint.path_template else end
     )
 
-    windows: list[tuple[datetime, datetime, dict[str, Any]]] = []
+    # Annotation already established on the daily-iteration branch above; this branch
+    # is reached only when that one is skipped, so re-annotating triggers [no-redef].
+    windows = []
     chunk_start = start
     chunk_delta = timedelta(days=_MAX_DAYS_PER_REQUEST)
     while chunk_start < effective_end:

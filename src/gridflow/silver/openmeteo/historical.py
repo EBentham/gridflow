@@ -19,9 +19,12 @@ from __future__ import annotations
 import json
 import logging
 from datetime import UTC, date, datetime
-from typing import Any, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 import polars as pl
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 from gridflow.connectors.openmeteo.endpoints import (
     DATASET_SPECS,
@@ -144,6 +147,7 @@ class BaseOpenMeteoTransformer(BaseSilverTransformer):
                 / f"{target_date.month:02d}"
                 / f"{target_date.day:02d}"
             )
+            date_path: Path | None
             if exact_path.exists() and any(exact_path.glob("raw_*")):
                 date_path = exact_path
             else:

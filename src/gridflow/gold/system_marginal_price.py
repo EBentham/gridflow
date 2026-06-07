@@ -11,6 +11,7 @@ from typing import TYPE_CHECKING
 import polars as pl
 
 from gridflow.gold.base import BaseGoldBuilder
+from gridflow.gold.registry import register_builder
 from gridflow.storage.parquet import scan_parquet_range
 
 if TYPE_CHECKING:
@@ -62,3 +63,6 @@ class SystemMarginalPriceBuilder(BaseGoldBuilder):
             )
 
         return df.sort("timestamp_utc") if "timestamp_utc" in df.columns else df
+
+
+register_builder(SystemMarginalPriceBuilder.gold_dataset, SystemMarginalPriceBuilder)

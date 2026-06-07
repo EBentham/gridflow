@@ -1,8 +1,24 @@
 # ADR-003 (a.k.a. ADR-GF-003) — GridflowClient.get_* SELECT * EXCLUDE pattern
 
-**Status:** Accepted
+**Status:** Accepted (amended 2026-06-07, CH4-07)
 **Date:** 2026-05-10
 **Phase:** Companion to gridflow_models F11 / WBH-03
+
+> **Amendment (2026-06-07, CH4-07 — `fix/ch4-architecture-hygiene`):** the
+> "Consequences" claim that a column named in EXCLUDE but absent fails loudly
+> with `BinderException` as a desirable drift detector held only for the silver
+> parquet views (which carry all six bitemporal columns). The two cross-source
+> **gold** SQL views (`gold_eu_gas_storage`, `gold_uk_imbalance_context`) are
+> explicit-column SELECTs that carry NONE of them, so the unconditional EXCLUDE
+> raised `BinderException` on every real catalogue, breaking both public SDK
+> methods. The client now EXCLUDEs only the bitemporal columns ACTUALLY present
+> in the queried relation (`GridflowClient._present_bitemporal_exclude_clause`,
+> introspecting `information_schema.columns` with a bound relation name): silver
+> views still exclude all six; the gold views exclude none and bind cleanly. The
+> forward-compat "new public column flows through automatically" property is
+> retained. Tradeoff: a bitemporal column dropped from a *silver* view is now
+> silently not excluded rather than raising — the loud drift detector is traded
+> for cross-source correctness.
 
 > Naming note: gridflow_models' F11-E plan refers to this ADR as
 > "ADR-GF-003" for cross-reference symmetry with the `GF-` prefix the

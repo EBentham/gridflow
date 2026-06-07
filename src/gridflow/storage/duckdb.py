@@ -153,17 +153,26 @@ def _register_views(con: duckdb.DuckDBPyConnection, data_dir: Path) -> None:
     silver_dir = data_dir / "silver"
     gold_dir = data_dir / "gold"
 
-    # Silver views
+    # Silver views — source-qualified (C1-4): silver_{source}_{dataset}. Two
+    # sources sharing a dataset directory name (e.g. a future bare ``forecast``)
+    # would otherwise collapse to one view under CREATE OR REPLACE in
+    # nondeterministic iterdir() order, silently shadowing one source's data.
     if silver_dir.exists():
+        # Track which source(s) own each dataset NAME so the alias pass can tell
+        # single-source names (safe to alias) from collision names (must NOT).
+        dataset_sources: dict[str, set[str]] = {}
         for source_dir in silver_dir.iterdir():
             if not source_dir.is_dir():
                 continue
             for dataset_dir in source_dir.iterdir():
                 if not dataset_dir.is_dir():
                     continue
-                view_name = f"silver_{dataset_dir.name}"
+                dataset_sources.setdefault(dataset_dir.name, set()).add(source_dir.name)
+                view_name = f"silver_{source_dir.name}_{dataset_dir.name}"
                 pattern = str(dataset_dir / "**" / "*.parquet").replace("\\", "/")
                 _try_create_view(con, view_name, pattern)
+
+        _register_silver_aliases(con, dataset_sources)
 
     # Gold views
     if gold_dir.exists():
@@ -173,6 +182,79 @@ def _register_views(con: duckdb.DuckDBPyConnection, data_dir: Path) -> None:
             view_name = f"gold_{dataset_dir.name}"
             pattern = str(dataset_dir / "**" / "*.parquet").replace("\\", "/")
             _try_create_view(con, view_name, pattern)
+
+
+def _register_silver_aliases(
+    con: duckdb.DuckDBPyConnection, dataset_sources: dict[str, set[str]]
+) -> None:
+    """Register DEPRECATED backward-compat aliases for renamed silver views (C1-4).
+
+    The silver views were renamed to the source-qualified scheme
+    ``silver_{source}_{dataset}`` (C1-4 / CH-ARCH-03). Each alias registered here
+    is a deprecation shim ``silver_{dataset} -> silver_{source}_{dataset}`` so an
+    out-of-repo caller (e.g. ``gridflow_models``) querying the OLD single-token
+    name survives the rename. These shims are DEPRECATED: new code must use the
+    qualified name, and the aliases may be dropped in a future cleanup.
+
+    An alias is auto-generated for every dataset NAME owned by exactly ONE source
+    (looked up in ``dataset_sources``). A name owned by MORE than one source is a
+    collision case — exactly what the source-qualified scheme exists to
+    disambiguate — so it is SKIPPED (logged at DEBUG): a single-token alias would
+    arbitrarily shadow one source's data and reintroduce the foot-gun the rename
+    removed.
+
+    An alias is only created when its qualified target view actually exists in
+    the live catalogue: tests (and partial pipelines) init over a tmpdir holding
+    only a subset of datasets, so a dataset dir whose parquet has not been
+    written yet has no qualified view, and aliasing an absent target raises a
+    DuckDB binder error — which under pytest / GRIDFLOW_ENV strict mode (F15-D)
+    would propagate and break catalogue init. Gating on the live catalogue keeps
+    the shim loud-failure-free.
+
+    Args:
+        con: Open DuckDB connection whose silver views have already been
+            registered by the caller.
+        dataset_sources: Map of each silver dataset NAME to the set of source
+            names that own a ``silver/<source>/<dataset>`` directory, built by
+            :func:`_register_views` while registering the qualified views.
+    """
+    existing = {
+        row[0]
+        for row in con.execute(
+            "SELECT table_name FROM information_schema.tables WHERE table_schema = 'main'"
+        ).fetchall()
+    }
+    for dataset, sources in dataset_sources.items():
+        if len(sources) > 1:
+            # Collision name: a single-token alias would silently shadow one
+            # source. The qualified ``silver_{source}_{dataset}`` views remain
+            # the only way to reach these — by design (C1-4).
+            logger.debug(
+                "Skipping ambiguous silver alias silver_%s: owned by %d sources (%s)",
+                dataset,
+                len(sources),
+                ", ".join(sorted(sources)),
+            )
+            continue
+        (source,) = tuple(sources)
+        alias = f"silver_{dataset}"
+        target = f"silver_{source}_{dataset}"
+        if target not in existing:
+            continue
+        if alias in existing:
+            # The single-token alias collides with an already-registered
+            # qualified view (only possible if a future dataset name equals
+            # ``{source}_{dataset2}``). Never CREATE OR REPLACE over it — that is
+            # the silent-shadow this whole mechanism exists to prevent (C1-4).
+            logger.debug("Skipping silver alias %s: name already taken by a qualified view", alias)
+            continue
+        con.execute(
+            f"CREATE OR REPLACE VIEW {_quote_identifier(alias)} "
+            f"AS SELECT * FROM {_quote_identifier(target)}"
+        )
+        # WHY logged: these single-token aliases are deprecation shims; a future
+        # cleanup can drop them once downstream migrates to the qualified name.
+        logger.info("Registered DEPRECATED backward-compat silver alias: %s -> %s", alias, target)
 
 
 def _quote_identifier(name: str) -> str:

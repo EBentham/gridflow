@@ -6,7 +6,7 @@ import asyncio
 import json
 import logging
 from datetime import date, datetime
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, cast
 from urllib.parse import parse_qs, urlparse
 
 if TYPE_CHECKING:
@@ -313,7 +313,7 @@ class GieConnector(BaseConnector):
             ENDPOINTS["about_listing"].path,
             dict(ENDPOINTS["about_listing"].default_params),
         )
-        return json.loads(raw.content)
+        return cast("dict[str, Any] | list[dict[str, Any]]", json.loads(raw.content))
 
     async def _fetch_paginated(
         self,
@@ -548,9 +548,10 @@ def _news_record_in_window(record: dict[str, Any], start: date, end: date) -> bo
     event_start = _date_from_record(record, "start_at", "startAt", "event_start", "eventStart")
     event_end = _date_from_record(record, "end_at", "endAt", "event_end", "eventEnd")
     if event_start is not None or event_end is not None:
-        event_start = event_start or event_end
-        event_end = event_end or event_start
-        return event_start <= end and event_end >= start
+        # At least one bound is set; coalescing makes both non-None here.
+        resolved_start = cast("date", event_start or event_end)
+        resolved_end = cast("date", event_end or event_start)
+        return resolved_start <= end and resolved_end >= start
 
     reference_date = _date_from_record(
         record,

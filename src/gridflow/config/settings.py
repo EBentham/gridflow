@@ -16,7 +16,8 @@ from functools import cache
 from pathlib import Path
 from typing import Any
 
-import yaml
+# PyYAML ships no type stubs; types-PyYAML is a dev-only stub, not a runtime dependency.
+import yaml  # type: ignore[import-untyped]
 from dotenv import load_dotenv
 from pydantic import BaseModel, Field, model_validator
 from pydantic_settings import BaseSettings

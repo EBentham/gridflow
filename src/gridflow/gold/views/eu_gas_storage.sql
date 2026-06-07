@@ -14,5 +14,5 @@ SELECT
     trend,
     data_provider,
     ingested_at
-FROM silver_storage
+FROM silver_gie_agsi_storage
 ORDER BY gas_day DESC, country_code

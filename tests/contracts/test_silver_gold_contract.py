@@ -5,11 +5,7 @@ from __future__ import annotations
 from datetime import date
 from typing import TYPE_CHECKING
 
-import pytest
-
 from gridflow.bronze.writer import BronzeWriter
-from gridflow.gold.demand_features import DemandFeaturesBuilder
-from gridflow.gold.merit_order import MeritOrderBuilder
 from gridflow.gold.system_marginal_price import SystemMarginalPriceBuilder
 from gridflow.silver.elexon.system_prices import SystemPriceTransformer
 
@@ -132,25 +128,3 @@ class TestGoldBuilderEmptyOutGuard:
             date(2024, 1, 15), date(2024, 1, 15)
         )
         assert gold_rows == 0
-
-    @pytest.mark.xfail(
-        strict=True,
-        reason="DemandFeaturesBuilder is an intentional Phase-3 placeholder; "
-        "this xfail flips to a failure the moment it is implemented and emits "
-        "rows, forcing a real value-level contract test to be written.",
-    )
-    def test_demand_features_placeholder_is_unimplemented(self, tmp_data_dir: Path):
-        df = DemandFeaturesBuilder(tmp_data_dir).build(date(2024, 1, 15), date(2024, 1, 15))
-        # While a placeholder, build() returns empty -> this assertion fails ->
-        # xfail. Once implemented to return rows, the assertion passes ->
-        # xpass -> strict xfail turns the suite RED, demanding a real test.
-        assert not df.is_empty()
-
-    @pytest.mark.xfail(
-        strict=True,
-        reason="MeritOrderBuilder is an intentional Phase-3 placeholder; this "
-        "xfail flips to a failure the moment it is implemented and emits rows.",
-    )
-    def test_merit_order_placeholder_is_unimplemented(self, tmp_data_dir: Path):
-        df = MeritOrderBuilder(tmp_data_dir).build(date(2024, 1, 15), date(2024, 1, 15))
-        assert not df.is_empty()

@@ -204,7 +204,7 @@ def storage_params_for_date(
     size: int = DEFAULT_PAGE_SIZE,
 ) -> dict[str, Any]:
     """Build AGSI storage params for one exact gas day and query scope."""
-    params = _storage_scope_params(
+    params: dict[str, Any] = _storage_scope_params(
         scope=scope,
         entity_key=entity_key,
         country=country,
@@ -237,7 +237,7 @@ def storage_params_for_range(
     if end_date < start_date:
         raise ValueError("end date must be on or after start date")
 
-    params = _storage_scope_params(
+    params: dict[str, Any] = _storage_scope_params(
         scope=scope,
         entity_key=entity_key,
         country=country,

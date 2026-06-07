@@ -70,4 +70,5 @@ testpaths = ["tests"]
 asyncio_mode = "auto"
 markers = [
     "live: tests that ping real APIs over the network (may be slow, require internet)",
+    "integration: end-to-end tests exercising the CLI/storage stack against a tmp workspace (no network)",
 ]
