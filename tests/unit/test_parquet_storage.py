@@ -43,11 +43,20 @@ def _write_month(
 def test_read_parquet_dir_tolerates_mixed_pre_and_post_f0_schemas(
     tmp_path: Path,
 ) -> None:
+    """A narrow pre-F0 file beside a wide post-F0 file in one tree null-fills.
+
+    Load-bearing: the NARROW file MUST sort lexically before the WIDE one
+    (``a_narrow`` < ``b_wide``). Polars scans glob matches in sorted order and
+    resolves the schema from the first match, so only narrow-then-wide order
+    triggers the extra-column raise on unfixed code. Reversing the names lets
+    ``missing_columns='insert'`` absorb the drift and the test passes on the bug
+    (proving nothing) — mirroring ``scan_parquet_range``'s within-month test.
+    """
     dataset_dir = tmp_path / "silver" / "elexon" / "mixed" / "year=2024" / "month=01"
-    _write_parquet(pl.DataFrame({"value": [1]}), dataset_dir / "old.parquet")
+    _write_parquet(pl.DataFrame({"value": [1]}), dataset_dir / "a_narrow.parquet")
     _write_parquet(
         pl.DataFrame({"value": [2], "available_at": ["2024-01-16T00:00:00Z"]}),
-        dataset_dir / "new.parquet",
+        dataset_dir / "b_wide.parquet",
     )
 
     df = read_parquet_dir(tmp_path / "silver" / "elexon" / "mixed").sort("value")
@@ -57,10 +66,16 @@ def test_read_parquet_dir_tolerates_mixed_pre_and_post_f0_schemas(
 
 
 def test_read_parquet_glob_tolerates_mixed_schemas(tmp_path: Path) -> None:
-    _write_parquet(pl.DataFrame({"value": [1]}), tmp_path / "old.parquet")
+    """read_parquet(glob) null-fills within-glob drift (narrow-then-wide order).
+
+    Same load-bearing ordering as the tree test above: ``a_narrow`` (no extra
+    column) MUST sort before ``b_wide`` so the unfixed single-glob read resolves
+    the schema from the narrow file and raises on the wide file's extra column.
+    """
+    _write_parquet(pl.DataFrame({"value": [1]}), tmp_path / "a_narrow.parquet")
     _write_parquet(
         pl.DataFrame({"value": [2], "source_run_id": ["run-xyz"]}),
-        tmp_path / "new.parquet",
+        tmp_path / "b_wide.parquet",
     )
 
     df = read_parquet(str(tmp_path / "*.parquet")).sort("value")
