@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 from datetime import date, datetime, timedelta
@@ -16,6 +17,8 @@ from gridflow.connectors.registry import register_connector
 from gridflow.utils.retry import RETRY_POLICY
 
 if TYPE_CHECKING:
+    from collections.abc import Coroutine
+
     from gridflow.config.settings import SourceConfig
     from gridflow.connectors.elexon.endpoints import ElexonEndpoint
 
@@ -41,51 +44,65 @@ class ElexonConnector(BaseConnector):
         **params: Any,
     ) -> list[RawResponse]:
         """Fetch raw data for a date range from Elexon."""
+        # Reset the partial-fetch counter at the top of the public entry point so
+        # a reused connector never inherits a prior call's count (CC-4 / matches
+        # GIE). Elexon is raise-on-any, so it stays 0 — the explicit reset
+        # documents that invariant rather than relying on it.
+        self.last_skipped_units = 0
         if dataset not in ENDPOINTS:
             raise ValueError(
                 f"Unknown Elexon dataset: {dataset}. Available: {list(ENDPOINTS.keys())}"
             )
 
         endpoint = ENDPOINTS[dataset]
-        responses: list[RawResponse] = []
 
         if endpoint.param_style == ParamStyle.NO_PARAMS:
-            responses.extend(await self._fetch_single(dataset, endpoint))
+            responses = await self._fetch_single(dataset, endpoint)
+            logger.info(
+                f"Fetched {len(responses)} responses for elexon/{dataset} from {start} to {end}"
+            )
+            return responses
 
-        elif endpoint.param_style == ParamStyle.SETTLEMENT_DATE:
-            current_date = start.date() if isinstance(start, datetime) else start
-            end_date = end.date() if isinstance(end, datetime) else end
-            while current_date <= end_date:
-                date_responses = await self._fetch_date(dataset, endpoint, current_date)
-                responses.extend(date_responses)
-                current_date += timedelta(days=1)
+        # Each date (or publish-datetime chunk) is an independent unit: no chunk
+        # reads another chunk's result. Build one per-unit coroutine, then fetch
+        # them concurrently (CH3-03 / C2-7). Paging *within* a unit — and the
+        # 1..50 settlement-period iteration with its empty-data/4xx early-stop —
+        # stays sequential inside the ``_fetch_date*`` helpers; only the
+        # across-date loop is parallel. The ``rate_limit_per_second`` semaphore
+        # inside ``_request`` keeps in-flight HTTP bounded, and ``gather``
+        # preserves input order so the flattened list matches the sequential one.
+        tasks: list[Coroutine[Any, Any, list[RawResponse]]] = []
+
+        if endpoint.param_style == ParamStyle.SETTLEMENT_DATE:
+            for current_date in _date_range(start, end):
+                tasks.append(self._fetch_date(dataset, endpoint, current_date))
 
         elif endpoint.param_style == ParamStyle.SETTLEMENT_DATE_PERIOD:
-            current_date = start.date() if isinstance(start, datetime) else start
-            end_date = end.date() if isinstance(end, datetime) else end
-            while current_date <= end_date:
-                date_responses = await self._fetch_date_period(dataset, endpoint, current_date)
-                responses.extend(date_responses)
-                current_date += timedelta(days=1)
+            for current_date in _date_range(start, end):
+                tasks.append(self._fetch_date_period(dataset, endpoint, current_date))
 
         elif endpoint.param_style == ParamStyle.DATE_PATH:
-            current_date = start.date() if isinstance(start, datetime) else start
-            end_date = end.date() if isinstance(end, datetime) else end
-            while current_date <= end_date:
-                date_responses = await self._fetch_date_path(dataset, endpoint, current_date)
-                responses.extend(date_responses)
-                current_date += timedelta(days=1)
+            for current_date in _date_range(start, end):
+                tasks.append(self._fetch_date_path(dataset, endpoint, current_date))
 
         elif endpoint.param_style == ParamStyle.PUBLISH_DATETIME:
             chunk_delta = timedelta(hours=endpoint.max_chunk_hours)
             current = start
             while current < end:
                 chunk_end = min(current + chunk_delta, end)
-                chunk_responses = await self._fetch_datetime_range(
-                    dataset, endpoint, current, chunk_end
-                )
-                responses.extend(chunk_responses)
+                tasks.append(self._fetch_datetime_range(dataset, endpoint, current, chunk_end))
                 current = chunk_end
+
+        # Elexon has no per-unit tolerance: a failing date fails the whole run
+        # (raise-on-any). ``return_exceptions=True`` collects every result, then
+        # the first exception is re-raised in input order — matching the
+        # sequential loop's first-in-iteration failure.
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+        responses = []
+        for result in results:
+            if isinstance(result, BaseException):
+                raise result
+            responses.extend(result)
 
         logger.info(
             f"Fetched {len(responses)} responses for elexon/{dataset} from {start} to {end}"
@@ -311,6 +328,22 @@ class ElexonConnector(BaseConnector):
             resp = await self._client.get(path, params=params)
             resp.raise_for_status()
             return resp
+
+
+def _date_range(start: datetime | date, end: datetime | date) -> list[date]:
+    """Return the inclusive list of calendar dates from ``start`` to ``end``.
+
+    Both bounds are coerced to ``date`` (accepting either a ``datetime`` or a
+    plain ``date``), matching the per-style date iteration the fetch loop used
+    before it was parallelised.
+    """
+    current = start.date() if isinstance(start, datetime) else start
+    end_date = end.date() if isinstance(end, datetime) else end
+    dates: list[date] = []
+    while current <= end_date:
+        dates.append(current)
+        current += timedelta(days=1)
+    return dates
 
 
 # Register this connector

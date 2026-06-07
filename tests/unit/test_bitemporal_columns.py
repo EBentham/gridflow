@@ -136,8 +136,52 @@ def test_indo_run_writes_bitemporal_columns(tmp_data_dir: Path) -> None:
     _assert_base_bitemporal_columns(df)
     assert df["event_time"].to_list() == df["timestamp_utc"].to_list()
     assert (df["event_time"] <= df["available_at"]).all()
+    # CH3-02 (CH-PERF-02): silver CSV write is opt-in, default OFF. A plain run
+    # writes only the Parquet partition; no per-date CSV sidecar.
     csv_path = tmp_data_dir / "silver" / "elexon" / "indo" / "indo_20240115.csv"
-    assert "available_at" in csv_path.read_text().splitlines()[0]
+    assert not csv_path.exists()
+
+
+def test_silver_csv_not_written_by_default(tmp_data_dir: Path) -> None:
+    """CH3-02 (CH-PERF-02): default-OFF flag writes Parquet but no per-date CSV.
+
+    This is the genuine fail-first assertion: today ``_write_csv`` runs on every
+    ``run()``, so the CSV always exists (RED). Once the write is gated behind
+    ``write_silver_csv`` (default ``False``), only the Parquet partition is
+    written.
+    """
+    payload = json.loads((FIXTURES / "elexon" / "ndf_response.json").read_text())
+    for row in payload["data"]:
+        row["demand"] = row.pop("nationalDemand")
+    _write_bronze_json(tmp_data_dir, "elexon", "indo", TARGET_DATE, payload)
+
+    transformer = INDOTransformer(tmp_data_dir)
+    assert transformer.write_silver_csv is False
+    rows = transformer.run(TARGET_DATE, run_id=RUN_ID)
+
+    df = _read_single_silver(tmp_data_dir, "elexon", "indo")
+    assert rows == len(df)
+    csv_path = tmp_data_dir / "silver" / "elexon" / "indo" / "indo_20240115.csv"
+    assert not csv_path.exists()
+
+
+def test_silver_csv_written_when_flag_enabled(tmp_data_dir: Path) -> None:
+    """CH3-02 (CH-PERF-02): the opt-in flag restores the per-date CSV sidecar."""
+    payload = json.loads((FIXTURES / "elexon" / "ndf_response.json").read_text())
+    for row in payload["data"]:
+        row["demand"] = row.pop("nationalDemand")
+    _write_bronze_json(tmp_data_dir, "elexon", "indo", TARGET_DATE, payload)
+
+    transformer = INDOTransformer(tmp_data_dir)
+    transformer.write_silver_csv = True
+    rows = transformer.run(TARGET_DATE, run_id=RUN_ID)
+
+    csv_path = tmp_data_dir / "silver" / "elexon" / "indo" / "indo_20240115.csv"
+    assert csv_path.exists()
+    header = csv_path.read_text().splitlines()[0]
+    assert "available_at" in header
+    df = _read_single_silver(tmp_data_dir, "elexon", "indo")
+    assert rows == len(df)
 
 
 def test_fuelhh_run_writes_bitemporal_columns(tmp_data_dir: Path) -> None:

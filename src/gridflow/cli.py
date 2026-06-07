@@ -273,6 +273,8 @@ def transform(
         total_validation_failures = 0
         try:
             transformer = get_transformer(source, ds, settings.pipeline.data_dir)
+            # CH3-02 (CH-PERF-02): per-date silver CSV is opt-in (default OFF).
+            transformer.write_silver_csv = settings.pipeline.write_silver_csv
             for target_date in dates:
                 rows = transformer.run(
                     target_date,
@@ -601,7 +603,7 @@ def quality(
         check_time_series_gaps,
     )
     from gridflow.quality.reporter import QualityReporter
-    from gridflow.storage.parquet import read_parquet_dir
+    from gridflow.storage.parquet import scan_parquet_dir
     from gridflow.utils.logging import setup_logging
 
     settings = load_settings()
@@ -628,7 +630,10 @@ def quality(
             if not dataset_dir.is_dir():
                 continue
             ds = dataset_dir.name
-            df = read_parquet_dir(dataset_dir)
+            # Quality wants the whole dataset (no date range); non-date/single
+            # flat-file datasets (NESO carbon_intensity, entsog generic) route
+            # through the rangeless dir scan, never the range helper.
+            df = scan_parquet_dir(dataset_dir).collect()
             if df.is_empty():
                 continue
 

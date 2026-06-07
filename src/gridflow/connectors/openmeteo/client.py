@@ -59,24 +59,40 @@ class OpenMeteoConnector(BaseConnector):
 
         ``dataset`` is one of the six role keys in ``DATASET_SPECS``.
         """
+        # Reset the partial-fetch counter at the top of the public entry point so
+        # a reused connector never inherits a prior call's count (CC-4 / matches
+        # GIE). This connector is raise-on-any, so it stays 0 — the explicit
+        # reset documents that invariant rather than relying on it.
+        self.last_skipped_units = 0
         if dataset not in DATASET_SPECS:
             raise ValueError(
                 f"Unknown open_meteo dataset {dataset!r}; expected one of "
                 f"{sorted(DATASET_SPECS.keys())}"
             )
         spec = DATASET_SPECS[dataset]
-        responses: list[RawResponse] = []
-        for location in spec.locations:
-            # issue-13 (finding 184): a location that fails *after* the retry
-            # policy is exhausted must surface, not be silently downgraded to a
-            # warning. Open-Meteo locations are capacity-weighted (offshore wind
-            # sites, demand population centres); silently dropping one re-weights
-            # that run's aggregate with no error raised. ``_request`` already
-            # retries transients (429 / archive-host timeout), so only a
-            # persistent failure reaches here — and it propagates to the caller.
-            resp = await self._fetch_location(dataset, location, start, end)
-            responses.append(resp)
-        return responses
+
+        # issue-13 (finding 184): a location that fails *after* the retry policy
+        # is exhausted must surface, not be silently downgraded to a warning.
+        # Open-Meteo locations are capacity-weighted (offshore wind sites, demand
+        # population centres); silently dropping one re-weights that run's
+        # aggregate with no error raised. ``_request`` already retries transients
+        # (429 / archive-host timeout), so only a persistent failure reaches here.
+        #
+        # Locations are independent units, so they fetch concurrently via
+        # asyncio.gather (CH3-03 / C2-7); the ``rate_limit_per_second`` semaphore
+        # inside ``_request`` keeps in-flight HTTP bounded. ``gather`` preserves
+        # input order, so the returned list matches the sequential one exactly.
+        # ``return_exceptions=True`` collects every result, then the first
+        # exception is re-raised — preserving the raise-on-any contract (one bad
+        # location fails the whole run; ``last_skipped_units`` stays 0).
+        results = await asyncio.gather(
+            *(self._fetch_location(dataset, location, start, end) for location in spec.locations),
+            return_exceptions=True,
+        )
+        for result in results:
+            if isinstance(result, BaseException):
+                raise result
+        return [resp for resp in results if isinstance(resp, RawResponse)]
 
     async def _fetch_location(
         self,

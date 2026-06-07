@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import io
 import logging
 import zipfile
@@ -28,6 +29,8 @@ from gridflow.utils.retry import RETRY_POLICY
 logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
+    from collections.abc import Coroutine
+
     from gridflow.config.settings import SourceConfig
 
 # Cross-border zone pairs (in_zone, out_zone)
@@ -110,6 +113,11 @@ class EntsoeConnector(BaseConnector):
 
         Dispatches per-zone (or per-zone-pair for cross-border flows).
         """
+        # Reset the partial-fetch counter at the top of the public entry point so
+        # a reused connector never inherits a prior call's count (CC-4 / matches
+        # GIE). ENTSO-E is raise-on-any, so it stays 0 — the explicit reset
+        # documents that invariant rather than relying on it.
+        self.last_skipped_units = 0
         if dataset not in DOC_TYPES:
             raise ValueError(
                 f"Unknown ENTSO-E dataset: {dataset!r}. Available: {list(DOC_TYPES.keys())}"
@@ -119,58 +127,79 @@ class EntsoeConnector(BaseConnector):
         period_start = start.strftime(ENTSOE_DT_FORMAT)
         period_end = end.strftime(ENTSOE_DT_FORMAT)
 
-        responses: list[RawResponse] = []
+        # Build one per-unit fetch coroutine per zone / zone-pair / control-area.
+        # Units are independent, so they fetch concurrently (CH3-03 / C2-7); the
+        # ``rate_limit_per_second`` semaphore plus the ENTSO-E request throttle
+        # inside ``_request`` keep in-flight HTTP bounded. ``gather`` preserves
+        # input order, so the flattened result list is identical to the
+        # sequential version. Paging *within* a unit stays sequential in
+        # ``_fetch_document``; only the across-unit loop is parallel.
+        tasks: list[Coroutine[Any, Any, list[RawResponse]]] = []
 
         if doc_type.domain_style == "zone_pair":
-            # Fetch one response per (in, out) zone pair
+            # One response per (in, out) zone pair.
             for in_zone, out_zone in _FLOW_PAIRS:
                 in_mrid = BIDDING_ZONES.get(in_zone)
                 out_mrid = BIDDING_ZONES.get(out_zone)
                 if not in_mrid or not out_mrid:
                     continue
-                resp = await self._fetch_document(
-                    dataset=dataset,
-                    doc_type=doc_type,
-                    in_domain=in_mrid,
-                    out_domain=out_mrid,
-                    period_start=period_start,
-                    period_end=period_end,
-                    fetch_params=params,
+                tasks.append(
+                    self._fetch_document(
+                        dataset=dataset,
+                        doc_type=doc_type,
+                        in_domain=in_mrid,
+                        out_domain=out_mrid,
+                        period_start=period_start,
+                        period_end=period_end,
+                        fetch_params=params,
+                    )
                 )
-                responses.extend(resp)
         elif doc_type.domain_style == "control_area":
-            # Fetch one response per control area (balancing datasets)
+            # One response per control area (balancing datasets).
             for area in DEFAULT_CONTROL_AREAS:
                 mrid = BIDDING_ZONES.get(area)
                 if not mrid:
                     continue
-                resp = await self._fetch_document(
-                    dataset=dataset,
-                    doc_type=doc_type,
-                    in_domain=mrid,
-                    out_domain=None,
-                    period_start=period_start,
-                    period_end=period_end,
-                    fetch_params=params,
+                tasks.append(
+                    self._fetch_document(
+                        dataset=dataset,
+                        doc_type=doc_type,
+                        in_domain=mrid,
+                        out_domain=None,
+                        period_start=period_start,
+                        period_end=period_end,
+                        fetch_params=params,
+                    )
                 )
-                responses.extend(resp)
         else:
-            # Fetch one response per bidding zone using the dataset's documented
+            # One response per bidding zone using the dataset's documented
             # domain parameter style.
             for zone in DEFAULT_ZONES:
                 mrid = BIDDING_ZONES.get(zone)
                 if not mrid:
                     continue
-                resp = await self._fetch_document(
-                    dataset=dataset,
-                    doc_type=doc_type,
-                    in_domain=mrid,
-                    out_domain=mrid if doc_type.domain_style == "zone" else None,
-                    period_start=period_start,
-                    period_end=period_end,
-                    fetch_params=params,
+                tasks.append(
+                    self._fetch_document(
+                        dataset=dataset,
+                        doc_type=doc_type,
+                        in_domain=mrid,
+                        out_domain=mrid if doc_type.domain_style == "zone" else None,
+                        period_start=period_start,
+                        period_end=period_end,
+                        fetch_params=params,
+                    )
                 )
-                responses.extend(resp)
+
+        # ENTSO-E has no per-unit tolerance: a failing zone fails the whole run
+        # (raise-on-any). ``return_exceptions=True`` collects every result, then
+        # the first exception is re-raised in input order — matching the
+        # sequential loop's first-in-iteration failure.
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+        responses: list[RawResponse] = []
+        for result in results:
+            if isinstance(result, BaseException):
+                raise result
+            responses.extend(result)
 
         logger.info(
             "Fetched %d responses for entsoe/%s from %s to %s",
