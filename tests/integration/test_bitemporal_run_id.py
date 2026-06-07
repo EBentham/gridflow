@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import importlib.util
 import json
 from dataclasses import dataclass
 from datetime import UTC, date, datetime
@@ -68,16 +67,6 @@ def _write_fuelhh_bronze(
                 }
             )
         )
-
-
-def _load_run_pipeline_script():
-    script_path = Path(__file__).parents[2] / "scripts" / "run_pipeline.py"
-    spec = importlib.util.spec_from_file_location("gridflow_run_pipeline_script", script_path)
-    assert spec is not None
-    assert spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
 
 
 def test_cli_transform_stamps_source_run_id_matching_pipeline_run(
@@ -172,7 +161,11 @@ def test_script_silver_step_threads_run_id_and_reingest(
     tmp_path: Path,
     monkeypatch,
 ) -> None:
+    """CH4-01: the script's silver step is now ``runner.run_transform`` (the
+    duplicated ``run_pipeline.run_silver`` was deduplicated into the shared
+    runner). Assert the runner threads ``run_id`` + ``reingest`` identically."""
     from gridflow.config.settings import load_settings
+    from gridflow.pipeline import runner as pipeline_runner
 
     paths = _isolated_env(tmp_path, monkeypatch)
     sidecar_time = datetime(2024, 1, 16, 10, 15, tzinfo=UTC)
@@ -181,18 +174,18 @@ def test_script_silver_step_threads_run_id_and_reingest(
     from gridflow.storage.duckdb import get_connection, init_catalogue
 
     settings = load_settings()
+    pipeline_runner.import_transformers()
     init_catalogue(paths.duckdb_path, paths.data_dir)
     con = get_connection(paths.duckdb_path)
     try:
         start_dt = datetime(2024, 1, 15, tzinfo=UTC)
-        run_pipeline = _load_run_pipeline_script()
-        run_pipeline.run_silver(
+        ctx = pipeline_runner.PipelineContext(con=con, settings=settings)
+        pipeline_runner.run_transform(
+            ctx,
             "elexon",
             ["fuelhh"],
             start_dt,
             start_dt,
-            settings,
-            con,
             reingest=True,
         )
     finally:

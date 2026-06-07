@@ -80,11 +80,9 @@ Gold Datasets
 from __future__ import annotations
 
 import argparse
-import asyncio
-import logging
 import sys
-from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 # ---------------------------------------------------------------------------
 # Ensure the project root is on sys.path so `gridflow` is importable
@@ -94,209 +92,38 @@ _PROJECT_ROOT = Path(__file__).resolve().parent.parent
 if str(_PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(_PROJECT_ROOT / "src"))
 
+if TYPE_CHECKING:
+    from gridflow.pipeline.runner import DatasetResult
 
-def _setup() -> tuple:
-    """Load settings, initialise logging, and return (settings, con)."""
-    from gridflow.config.settings import load_settings
-    from gridflow.storage.duckdb import get_connection, init_catalogue
-    from gridflow.utils.logging import setup_logging
-
-    settings = load_settings()
-    settings.pipeline.data_dir.mkdir(parents=True, exist_ok=True)
-    setup_logging(
-        settings.pipeline.log_dir,
-        settings.pipeline.log_level,
-        settings.pipeline.console_log_level,
-    )
-    init_catalogue(settings.pipeline.duckdb_path, settings.pipeline.data_dir)
-    con = get_connection(settings.pipeline.duckdb_path)
-    return settings, con
+# This script is now a THIN ADAPTER over gridflow.pipeline.runner — the same core
+# the CLI uses. Routing through the runner intentionally FIXES four latent drifts
+# the old hand-rolled copies had (CH-ARCH-01 / C3-1):
+#   1. non-zero exit on failure (the old loop caught-and-continued, always 0);
+#   2. completed_with_warnings is now surfaced (was always 'complete');
+#   3. views are refreshed after the run (the old script left stale views);
+#   4. stored/echoed errors are redacted (the old script stored raw exceptions,
+#      leaking securityToken into pipeline_runs.error_message).
+# These are INTENDED behaviour changes, not regressions.
 
 
-def _import_connectors() -> None:
-    """Import connector modules to trigger auto-registration.
-
-    These are core modules present in every healthy install, so an
-    ``ImportError`` always indicates a real bug in the module rather than an
-    absent optional dependency. Log it with the module name instead of
-    swallowing it, so a broken connector is visible rather than masquerading as
-    a missing registration.
-    """
-    for module in [
-        "gridflow.connectors.elexon",
-        "gridflow.connectors.openmeteo",
-        "gridflow.connectors.entsoe",
-        "gridflow.connectors.gie",
-        "gridflow.connectors.entsog",
-        "gridflow.connectors.neso",
-    ]:
-        try:
-            __import__(module)
-        except ImportError:
-            logging.getLogger(__name__).warning(
-                "Failed to import connector module %s", module, exc_info=True
+def _print_results(results: list[DatasetResult]) -> None:
+    """Echo one line per dataset result in the script's terse format."""
+    for r in results:
+        label = {
+            "ingest": "bronze",
+            "transform": "silver",
+            "build": "gold",
+        }.get(r.operation, r.operation)
+        if r.status == "failed":
+            print(f"  [{label}] {r.source}/{r.dataset}  ->FAILED: {r.error}", file=sys.stderr)
+        elif r.status == "completed_with_warnings":
+            print(
+                f"  [{label}] {r.source}/{r.dataset}  ->{r.rows_out} rows "
+                f"({r.rows_skipped} skipped, completed_with_warnings)"
             )
-
-
-def _import_transformers() -> None:
-    """Import transformer modules to trigger auto-registration.
-
-    Core modules — an ``ImportError`` signals a real bug, not a missing optional
-    dependency. Log with the module name instead of swallowing it.
-    """
-    for module in [
-        "gridflow.silver.elexon",
-        "gridflow.silver.openmeteo",
-        "gridflow.silver.entsoe",
-        "gridflow.silver.gie",
-        "gridflow.silver.entsog",
-        "gridflow.silver.neso",
-    ]:
-        try:
-            __import__(module)
-        except ImportError:
-            logging.getLogger(__name__).warning(
-                "Failed to import transformer module %s", module, exc_info=True
-            )
-
-
-def resolve_dates(
-    start: str | None,
-    end: str | None,
-    last: str | None,
-    default_lookback_hours: int = 24,
-) -> tuple[datetime, datetime]:
-    """Parse --start/--end/--last into (start_dt, end_dt) UTC datetimes."""
-    now = datetime.now(timezone.utc)
-    if last:
-        from gridflow.utils.time import parse_lookback
-
-        delta = parse_lookback(last)
-        return now - delta, now
-    if start:
-        start_dt = datetime.fromisoformat(start).replace(tzinfo=timezone.utc)
-        end_dt = datetime.fromisoformat(end).replace(tzinfo=timezone.utc) if end else now
-        return start_dt, end_dt
-    return now - timedelta(hours=default_lookback_hours), now
-
-
-def resolve_datasets(source: str, dataset: str | None, all_flag: bool, settings) -> list[str]:
-    """Resolve which datasets to process for a given source."""
-    if all_flag:
-        source_config = settings.get_source_config(source)
-        return list(source_config.datasets.keys())
-    if dataset:
-        return [dataset]
-    raise SystemExit(f"Error: specify --dataset NAME or --all-datasets for source '{source}'")
-
-
-# ---------------------------------------------------------------------------
-# Pipeline steps
-# ---------------------------------------------------------------------------
-
-
-def run_bronze(
-    source: str, datasets: list[str], start_dt: datetime, end_dt: datetime, settings, con
-) -> None:
-    """Ingest raw data from APIs into the bronze layer."""
-    from gridflow.bronze.writer import BronzeWriter
-    from gridflow.connectors.registry import get_connector
-    from gridflow.observability import PipelineRunTracker
-
-    _import_connectors()
-
-    source_config = settings.get_source_config(source)
-    writer = BronzeWriter(settings.pipeline.data_dir)
-
-    for ds in datasets:
-        tracker = PipelineRunTracker(con, source, ds, "ingest")
-        print(f"  [bronze] {source}/{ds}  {start_dt.date()} -> {end_dt.date()}")
-        try:
-            connector = get_connector(source, source_config)
-
-            async def _do_fetch():
-                async with connector:
-                    return await connector.fetch(ds, start_dt, end_dt)
-
-            responses = asyncio.run(_do_fetch())
-            rows_written = 0
-            for resp in responses:
-                writer.write(resp)
-                rows_written += 1
-            tracker.complete(rows_out=rows_written)
-            print(f"           ->{rows_written} raw files written")
-        except Exception as exc:
-            tracker.fail(str(exc))
-            print(f"           ->FAILED: {exc}", file=sys.stderr)
-            logging.getLogger(__name__).exception(f"Bronze ingest failed for {source}/{ds}")
-
-
-def run_silver(
-    source: str,
-    datasets: list[str],
-    start_dt: datetime,
-    end_dt: datetime,
-    settings,
-    con,
-    reingest: bool = False,
-) -> None:
-    """Transform bronze data to silver (normalised, validated, deduplicated)."""
-    from gridflow.silver.registry import get_transformer
-    from gridflow.observability import PipelineRunTracker
-    from gridflow.utils.time import date_range
-
-    _import_transformers()
-
-    dates = date_range(start_dt.date(), end_dt.date())
-
-    for ds in datasets:
-        tracker = PipelineRunTracker(con, source, ds, "transform")
-        print(
-            f"  [silver] {source}/{ds}  {start_dt.date()} -> {end_dt.date()}  ({len(dates)} days)"
-        )
-        total_rows = 0
-        try:
-            transformer = get_transformer(source, ds, settings.pipeline.data_dir)
-            # CH3-02 (CH-PERF-02): per-date silver CSV is opt-in (default OFF).
-            transformer.write_silver_csv = settings.pipeline.write_silver_csv
-            for target_date in dates:
-                rows = transformer.run(target_date, run_id=tracker.run_id, reingest=reingest)
-                total_rows += rows
-            tracker.complete(rows_out=total_rows)
-            print(f"           ->{total_rows} rows transformed")
-        except Exception as exc:
-            tracker.fail(str(exc))
-            print(f"           ->FAILED: {exc}", file=sys.stderr)
-            logging.getLogger(__name__).exception(f"Silver transform failed for {source}/{ds}")
-
-
-def run_gold(datasets: list[str], start_dt: datetime, end_dt: datetime, settings, con) -> None:
-    """Build gold-layer analytics-ready datasets from silver."""
-    from gridflow.gold.system_marginal_price import SystemMarginalPriceBuilder
-    from gridflow.observability import PipelineRunTracker
-
-    # Gold dataset registry (same as cli.py)
-    gold_builders = {
-        "system_marginal_price": SystemMarginalPriceBuilder,
-    }
-
-    for ds in datasets:
-        if ds not in gold_builders:
-            print(f"  [gold]   Unknown gold dataset: {ds}", file=sys.stderr)
-            print(f"           Available: {list(gold_builders.keys())}", file=sys.stderr)
-            continue
-
-        tracker = PipelineRunTracker(con, "gold", ds, "build")
-        print(f"  [gold]   {ds}  {start_dt.date()} -> {end_dt.date()}")
-        try:
-            builder = gold_builders[ds](settings.pipeline.data_dir)
-            rows = builder.run(start_dt.date(), end_dt.date())
-            tracker.complete(rows_out=rows)
-            print(f"           ->{rows} rows built")
-        except Exception as exc:
-            tracker.fail(str(exc))
-            print(f"           ->FAILED: {exc}", file=sys.stderr)
-            logging.getLogger(__name__).exception(f"Gold build failed for {ds}")
+        else:
+            rows = r.rows_out if r.operation != "ingest" else r.rows_in
+            print(f"  [{label}] {r.source}/{r.dataset}  ->{rows} rows")
 
 
 # ---------------------------------------------------------------------------
@@ -343,53 +170,89 @@ def main() -> None:
     if step in ("bronze", "silver", "all") and not args.source:
         parser.error(f"--source is required for step '{step}'")
 
-    settings, con = _setup()
-    start_dt, end_dt = resolve_dates(
-        args.start, args.end, args.last, settings.pipeline.default_lookback_hours
+    from gridflow.config.settings import load_settings
+    from gridflow.pipeline import runner
+    from gridflow.pipeline.runner import DatasetResolutionError, NaiveDatetimeError, RunReport
+    from gridflow.utils.logging import setup_logging
+
+    settings = load_settings()
+    settings.pipeline.data_dir.mkdir(parents=True, exist_ok=True)
+    setup_logging(
+        settings.pipeline.log_dir,
+        settings.pipeline.log_level,
+        settings.pipeline.console_log_level,
     )
 
-    print(f"gridflow pipeline runner")
+    try:
+        start_dt, end_dt = runner.resolve_dates(
+            args.start, args.end, args.last, settings.pipeline.default_lookback_hours
+        )
+    except NaiveDatetimeError as exc:
+        parser.error(str(exc))
+
+    runner.import_connectors()
+    runner.import_transformers()
+
+    print("gridflow pipeline runner")
     print(f"  Step:  {step}")
     print(f"  Range: {start_dt.date()} -> {end_dt.date()}")
     print()
 
-    try:
+    results: list[DatasetResult] = []
+    with runner.build_context(settings) as ctx:
         if step in ("bronze", "all"):
-            datasets = resolve_datasets(args.source, args.dataset, args.all_datasets, settings)
-            run_bronze(args.source, datasets, start_dt, end_dt, settings, con)
+            try:
+                datasets = runner.resolve_datasets(
+                    args.source, args.dataset, args.all_datasets, settings
+                )
+            except DatasetResolutionError as exc:
+                parser.error(str(exc))
+            results.extend(
+                runner.run_ingest(
+                    ctx, args.source, datasets, start_dt, end_dt, write_watermark=True
+                )
+            )
             print()
 
         if step in ("silver", "all"):
-            datasets = resolve_datasets(args.source, args.dataset, args.all_datasets, settings)
-            run_silver(
-                args.source,
-                datasets,
-                start_dt,
-                end_dt,
-                settings,
-                con,
-                reingest=args.reingest,
+            try:
+                datasets = runner.resolve_datasets(
+                    args.source, args.dataset, args.all_datasets, settings
+                )
+            except DatasetResolutionError as exc:
+                parser.error(str(exc))
+            results.extend(
+                runner.run_transform(
+                    ctx, args.source, datasets, start_dt, end_dt, reingest=args.reingest
+                )
             )
             print()
 
         if step in ("gold", "all"):
             if args.all_datasets:
-                from gridflow.gold.system_marginal_price import SystemMarginalPriceBuilder
-
-                gold_names = ["system_marginal_price"]
+                gold_names = list(runner.GOLD_DATASETS)
             elif args.dataset:
                 gold_names = [args.dataset]
             elif step == "gold":
                 parser.error("--dataset or --all-datasets is required for step 'gold'")
-                return  # unreachable, but keeps type checker happy
             else:
                 # step == "all": build all gold datasets
-                gold_names = ["system_marginal_price"]
-            run_gold(gold_names, start_dt, end_dt, settings, con)
+                gold_names = list(runner.GOLD_DATASETS)
+            results.extend(runner.run_build(ctx, gold_names, start_dt, end_dt))
             print()
 
-    finally:
-        con.close()
+    # Refresh views once, after the run connection has closed (Windows lock
+    # safety) — fixes the old script's stale-view drift.
+    runner.refresh_views(settings)
+
+    _print_results(results)
+    print()
+
+    report = RunReport(results)
+    if not report.ok:
+        # Fixes the old catch-and-continue drift: a failed step now exits non-zero.
+        print(f"FAILED: {len(report.failed)} step(s) failed.", file=sys.stderr)
+        raise SystemExit(1)
 
     print("Done.")
 
