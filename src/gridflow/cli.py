@@ -12,10 +12,14 @@ from __future__ import annotations
 
 import logging
 import os
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import typer
+
+if TYPE_CHECKING:
+    from collections.abc import Callable, Iterator
 
 from gridflow.pipeline import runner
 from gridflow.pipeline.runner import (
@@ -98,6 +102,84 @@ def _realpath_within(path: Path, data_dir: Path) -> bool:
     real_path = Path(os.path.realpath(path))
     real_root = Path(os.path.realpath(data_dir))
     return real_path.is_relative_to(real_root)
+
+
+def _silver_month_older_than(part_dir: Path, cutoff: date) -> bool | None:
+    """Return whether a ``year=YYYY/month=MM`` partition is wholly before ``cutoff``.
+
+    A silver month is unambiguously older than the cutoff only when the entire
+    month precedes the cutoff month — i.e. ``(year, month) < (cutoff.year,
+    cutoff.month)``. The cutoff month itself straddles the cutoff (it holds days
+    both before and on/after it) and is kept.
+
+    Args:
+        part_dir: A ``month=MM`` partition directory whose parent is ``year=YYYY``.
+        cutoff: The retention cutoff date; partitions before it are prunable.
+
+    Returns:
+        True if the partition is wholly older than the cutoff, False if it is
+        not, or None if the directory names cannot be parsed (caller must skip
+        unparseable partitions rather than risk deleting unknown data).
+    """
+    year_name = part_dir.parent.name
+    month_name = part_dir.name
+    if not (year_name.startswith("year=") and month_name.startswith("month=")):
+        return None
+    try:
+        year = int(year_name.removeprefix("year="))
+        month = int(month_name.removeprefix("month="))
+    except ValueError:
+        return None
+    if not (1 <= month <= 12):
+        return None
+    return (year, month) < (cutoff.year, cutoff.month)
+
+
+def _gold_year_older_than(part_dir: Path, cutoff: date) -> bool | None:
+    """Return whether a gold ``year=YYYY`` partition is wholly before ``cutoff``.
+
+    Gold is year-partitioned (``gold/<dataset>/year=YYYY``), so a year is
+    unambiguously older only when ``year < cutoff.year``; the cutoff year
+    straddles the cutoff and is kept.
+
+    Returns:
+        True if wholly older, False if not, None if the name cannot be parsed.
+    """
+    name = part_dir.name
+    if not name.startswith("year="):
+        return None
+    try:
+        year = int(name.removeprefix("year="))
+    except ValueError:
+        return None
+    return year < cutoff.year
+
+
+def _bronze_day_older_than(day_dir: Path, cutoff: date) -> bool | None:
+    """Return whether a bronze ``YYYY/MM/DD`` day partition is before ``cutoff``.
+
+    Bronze partitions are single days, so a day can never straddle a date cutoff:
+    its date is wholly before or on/after the cutoff. The day equal to the cutoff
+    is the cutoff itself (not older) and is kept; pruning is by the partition's
+    filing date (datasets that batch several days under a window-start date are
+    pruned on that filed date, not their covered span).
+
+    Args:
+        day_dir: A ``DD`` day directory whose parents are ``MM`` and ``YYYY``.
+        cutoff: The retention cutoff date.
+
+    Returns:
+        True if the day is strictly before the cutoff, False if not, None if the
+        directory names cannot be parsed as a date.
+    """
+    try:
+        year = int(day_dir.parent.parent.name)
+        month = int(day_dir.parent.name)
+        day = int(day_dir.name)
+        part_date = date(year, month, day)
+    except ValueError:
+        return None
+    return part_date < cutoff
 
 
 @app.command()
@@ -781,6 +863,243 @@ def reset(
     if wipe_duckdb:
         init_catalogue(settings.pipeline.duckdb_path, data_dir)
         typer.echo("DuckDB catalogue recreated.")
+
+
+@app.command()
+def prune(
+    layer: str = typer.Argument(help="Layer to prune: bronze, silver, or gold"),
+    source: str | None = typer.Argument(
+        default=None, help="Limit to this source (e.g. elexon). Ignored for gold."
+    ),
+    dataset: str | None = typer.Argument(
+        default=None,
+        help="Limit to this dataset (silver/bronze), or the gold dataset name.",
+    ),
+    older_than: str | None = typer.Option(
+        None,
+        "--older-than",
+        help="Retention cutoff (YYYY-MM-DD). Partitions wholly older are pruned.",
+    ),
+    keep_days: int | None = typer.Option(
+        None,
+        "--keep-days",
+        help="Keep the last N days; cutoff = today (UTC) minus N days.",
+    ),
+    execute: bool = typer.Option(
+        False,
+        "--execute",
+        help="Actually delete. Without this flag prune runs as a dry-run preview.",
+    ),
+) -> None:
+    """Delete old partitions for a layer/scope past a retention cutoff.
+
+    Removes partitions UNAMBIGUOUSLY older than the cutoff for the selected
+    scope. Granularity follows the on-disk partition layout:
+
+      - bronze (``YYYY/MM/DD``): day-dirs strictly before the cutoff date;
+      - silver (``year=YYYY/month=MM``): months wholly before the cutoff month
+        (the straddling cutoff month is kept);
+      - gold (``year=YYYY``): years before the cutoff year (the cutoff year is
+        kept).
+
+    Safety: this defaults to a DRY RUN — pass ``--execute`` to delete. Every
+    target is run through the same containment guards as ``reset`` so prune can
+    never escape the data directory or follow a junction out of the tree. Gold
+    is not source-scoped; a SOURCE for gold is ignored and DATASET is the gold
+    dataset name.
+
+    Examples:
+
+      gridflow prune silver elexon system_prices --older-than 2025-01-01\n
+      gridflow prune bronze --keep-days 90 --execute\n
+      gridflow prune gold price_curve --older-than 2024-01-01 --execute\n
+    """
+    from gridflow.config.settings import _project_root, load_settings
+    from gridflow.storage.paths import PathBuilder
+
+    layer = layer.lower()
+    if layer not in {"bronze", "silver", "gold"}:
+        typer.echo(f"Unknown layer '{layer}'. Choose one of: bronze, silver, gold.", err=True)
+        raise typer.Exit(2)
+
+    # Exactly one cutoff source — neither leaves the op undefined, both is ambiguous.
+    if (older_than is None) == (keep_days is None):
+        typer.echo("Provide exactly one of --older-than YYYY-MM-DD or --keep-days N.", err=True)
+        raise typer.Exit(2)
+
+    if older_than is not None:
+        try:
+            cutoff = date.fromisoformat(older_than)
+        except ValueError:
+            typer.echo(f"Invalid --older-than date '{older_than}' (expected YYYY-MM-DD).", err=True)
+            raise typer.Exit(2) from None
+    else:
+        if keep_days is None or keep_days < 0:
+            typer.echo("--keep-days must be a non-negative integer.", err=True)
+            raise typer.Exit(2)
+        cutoff = datetime.now(UTC).date() - timedelta(days=keep_days)
+
+    settings = load_settings()
+    data_dir = settings.pipeline.data_dir
+    project_root = _project_root()
+
+    # Containment guard 1: a misconfigured data_dir resolving to the filesystem
+    # root, the home dir, or an ancestor of the repo would let a recursive prune
+    # destroy the repository or more. Refuse before any deletion (same as reset).
+    _assert_safe_delete_target(data_dir, project_root)
+
+    paths = PathBuilder(data_dir)
+
+    # Resolve the dataset roots to scan and the per-partition prune predicate.
+    # source/dataset are user CLI args interpolated into the scan root; gold is
+    # not source-keyed so DATASET is the gold dataset name.
+    scan_roots: list[Path] = []
+    # The three predicates share an identical signature; annotate so mypy keeps
+    # the variable type wide across the reassignments below.
+    is_older: Callable[[Path, date], bool | None]
+    if layer == "gold":
+        if source and not dataset:
+            # A single positional for gold reads as the gold dataset name.
+            dataset = source
+        if dataset:
+            scan_roots.append(paths.gold_dir(dataset))
+        else:
+            scan_roots.append(data_dir / "gold")
+        is_older = _gold_year_older_than
+    elif layer == "silver":
+        if source and dataset:
+            scan_roots.append(paths.silver_dir(source, dataset))
+        elif source:
+            scan_roots.append(data_dir / "silver" / source)
+        else:
+            scan_roots.append(data_dir / "silver")
+        is_older = _silver_month_older_than
+    else:  # bronze
+        if source and dataset:
+            scan_roots.append(paths.bronze_dir(source, dataset))
+        elif source:
+            scan_roots.append(data_dir / "bronze" / source)
+        else:
+            scan_roots.append(data_dir / "bronze")
+        is_older = _bronze_day_older_than
+
+    # Containment guard 2 (R-1): source/dataset are user args; an absolute value
+    # or a `../..` climb escapes data_dir. Validate every scan root before any
+    # preview or deletion, exactly as reset validates its dir_targets.
+    data_root = data_dir.resolve()
+    for root in scan_roots:
+        if not root.resolve().is_relative_to(data_root):
+            typer.echo(
+                f"Refusing to prune {root.resolve()}: target escapes the data "
+                f"directory {data_root} (check the SOURCE / DATASET arguments). "
+                "Aborting (nothing deleted).",
+                err=True,
+            )
+            raise typer.Exit(1)
+
+    scope = "/".join(p for p in [layer, source, dataset] if p)
+
+    # Collect the partition directories to prune (those wholly older than cutoff).
+    # Silver/gold partitions live at a fixed depth from the dataset root; bronze
+    # day-dirs are the depth-3 leaves. _collect_partitions walks the tree and
+    # applies the layer predicate, skipping anything it cannot parse.
+    targets: list[Path] = []
+    for root in scan_roots:
+        if not root.exists():
+            continue
+        for candidate in _iter_partition_dirs(root, layer):
+            verdict = is_older(candidate, cutoff)
+            if verdict is True:
+                targets.append(candidate)
+
+    targets.sort()
+
+    if not execute:
+        typer.echo(
+            f"DRY RUN — would prune {scope} partitions older than {cutoff.isoformat()} "
+            f"({len(targets)} partition(s)). Pass --execute to delete."
+        )
+        for t in targets:
+            typer.echo(f"  would delete: {t.relative_to(data_dir)}")
+        if not targets:
+            typer.echo("  (nothing older than the cutoff)")
+        typer.echo("DRY RUN complete — nothing was deleted.")
+        return
+
+    deleted_files = 0
+    deleted_dirs = 0
+    for part in targets:
+        # Containment guard 3: rglob descends Windows junctions (is_symlink() ==
+        # False); a junction inside the partition pointing outside the data tree
+        # would otherwise have its external targets unlinked. Skip any file whose
+        # real path escapes data_dir, mirroring reset's _wipe_dir.
+        for f in part.rglob("*"):
+            if f.is_file():
+                if not _realpath_within(f, data_dir):
+                    typer.echo(f"  Skipping (resolves outside data dir): {f}", err=True)
+                    continue
+                try:
+                    f.unlink()
+                    deleted_files += 1
+                except OSError as e:
+                    typer.echo(f"  Warning: could not delete {f}: {e}", err=True)
+        # Remove now-empty dirs bottom-up (the partition dir and its children).
+        for d in sorted(part.rglob("*"), reverse=True):
+            if d.is_dir():
+                try:
+                    if not any(d.iterdir()):
+                        d.rmdir()
+                        deleted_dirs += 1
+                except OSError:
+                    pass
+        try:
+            if part.is_dir() and not any(part.iterdir()):
+                part.rmdir()
+                deleted_dirs += 1
+        except OSError:
+            pass
+        typer.echo(f"  pruned: {part.relative_to(data_dir)}")
+
+    typer.echo(
+        f"Prune complete — {deleted_files} files and {deleted_dirs} directories removed "
+        f"({scope}, older than {cutoff.isoformat()})."
+    )
+
+
+def _iter_partition_dirs(root: Path, layer: str) -> Iterator[Path]:
+    """Yield the prunable partition directories beneath a scan ``root``.
+
+    The partition depth depends on both the layer and how deep the scan root
+    already is (a dataset-scoped root vs. a layer-wide root). Rather than hard-
+    code depths, this yields every ``year=*`` directory (silver/gold) or every
+    numeric ``YYYY/MM/DD`` leaf (bronze) found anywhere under the root, so the
+    same logic works for ``silver/elexon/system_prices`` and for ``silver``.
+
+    Args:
+        root: An existing directory at or above the partition level.
+        layer: One of ``bronze``/``silver``/``gold``.
+
+    Yields:
+        Candidate partition directories for the layer's prune predicate.
+    """
+    if layer == "silver":
+        # month=MM dirs whose parent is year=YYYY.
+        for month_dir in root.rglob("month=*"):
+            if month_dir.is_dir() and month_dir.parent.name.startswith("year="):
+                yield month_dir
+    elif layer == "gold":
+        for year_dir in root.rglob("year=*"):
+            if year_dir.is_dir():
+                yield year_dir
+    else:  # bronze: YYYY/MM/DD numeric day leaves.
+        for day_dir in root.rglob("*"):
+            if (
+                day_dir.is_dir()
+                and day_dir.name.isdigit()
+                and day_dir.parent.name.isdigit()
+                and day_dir.parent.parent.name.isdigit()
+            ):
+                yield day_dir
 
 
 @app.command()
