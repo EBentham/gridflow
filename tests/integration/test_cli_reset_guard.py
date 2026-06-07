@@ -18,12 +18,13 @@ same pytest tmp dir, so even the *unguarded* (RED) run only rglobs an empty
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 import pytest
 from typer.testing import CliRunner
 
-from gridflow.cli import _is_dangerous_delete_target, app
+from gridflow.cli import _is_dangerous_delete_target, _realpath_within, app
 
 runner = CliRunner()
 
@@ -144,3 +145,115 @@ def test_reset_yes_deletes_in_bounds_data(tmp_path: Path, monkeypatch: pytest.Mo
 
     assert result.exit_code == 0, result.output
     assert not sentinel.exists(), "reset --yes should delete in-bounds bronze data"
+
+
+# --- R-1: source/dataset CLI args must not escape data_dir -------------------
+# The actual delete targets are data_dir/<layer>/<source>/<dataset>, where
+# source/dataset are user CLI args. An absolute source, or a `../..` climb,
+# resolves outside data_dir and must be refused before any deletion (and before
+# the --dry-run preview).
+
+
+@pytest.mark.integration
+def test_reset_refuses_absolute_source_arg(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """reset with an absolute `source` arg escaping data_dir is refused.
+
+    `data_dir/bronze / "<abs>"` collapses to the absolute path, so the delete
+    target lands outside data_dir entirely. A sentinel staged in that external
+    dir must survive and the command must exit non-zero.
+
+    RED before R-1: the guard only checks data_dir/duckdb_path, not the
+    source-derived targets, so the external sentinel is deleted and exit == 0.
+    """
+    data_dir = tmp_path / "data"
+    data_dir.mkdir()
+    _isolated_env(data_dir, tmp_path, monkeypatch)
+
+    external = tmp_path / "external"
+    external.mkdir()
+    sentinel = external / "precious.txt"
+    sentinel.write_text("precious")
+
+    result = runner.invoke(app, ["reset", str(external), "--bronze", "--yes"])
+
+    assert result.exit_code != 0, result.output
+    assert sentinel.exists(), "guard must not delete a target outside data_dir"
+
+
+@pytest.mark.integration
+def test_reset_refuses_climbing_source_arg(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """reset with a `../..`-style climbing source arg is refused.
+
+    A single `..` would resolve back to data_dir (still contained), so the
+    attack needs to climb above data_dir; `../..` lands outside.
+    """
+    data_dir = tmp_path / "data"
+    data_dir.mkdir()
+    _isolated_env(data_dir, tmp_path, monkeypatch)
+
+    # data_dir/bronze/../../<x> -> tmp_path/<x>, outside data_dir.
+    sentinel = tmp_path / "climbed.txt"
+    sentinel.write_text("precious")
+
+    result = runner.invoke(app, ["reset", "../..", "--bronze", "--yes"])
+
+    assert result.exit_code != 0, result.output
+    assert sentinel.exists(), "guard must not delete a climbed-to target"
+
+
+@pytest.mark.integration
+def test_reset_dry_run_refuses_escaped_source_arg(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """--dry-run must also refuse an escaped source arg (no preview of it).
+
+    The containment check runs before the dry-run preview, so an out-of-bounds
+    target is refused even in preview mode.
+    """
+    data_dir = tmp_path / "data"
+    data_dir.mkdir()
+    _isolated_env(data_dir, tmp_path, monkeypatch)
+
+    external = tmp_path / "external"
+    external.mkdir()
+    sentinel = external / "precious.txt"
+    sentinel.write_text("precious")
+
+    result = runner.invoke(app, ["reset", str(external), "--bronze", "--yes", "--dry-run"])
+
+    assert result.exit_code != 0, result.output
+    assert sentinel.exists(), "--dry-run must refuse (not preview) an escaped target"
+
+
+# --- R-2: _wipe_dir must not follow junctions/symlinks out of the tree -------
+
+
+def test_realpath_within_excludes_external_target(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The realpath-containment helper excludes a path whose realpath escapes.
+
+    A junction/symlink reports a benign path under data_dir but its realpath
+    resolves outside; the helper must return False so the wipe loop skips it.
+    Tested directly via a monkeypatched os.path.realpath so no real junction is
+    needed (Windows junction creation is privileged/flaky in CI).
+    """
+    data_dir = tmp_path / "data"
+    data_dir.mkdir()
+    inside = data_dir / "bronze" / "raw.json"
+    outside = tmp_path / "external" / "raw.json"
+
+    # An ordinary file under data_dir is contained.
+    assert _realpath_within(inside, data_dir) is True
+
+    # Simulate a junction: the apparent path is under data_dir, but its realpath
+    # points outside the tree -> must be excluded.
+    real = os.path.realpath
+
+    def fake_realpath(p: object, *args: object, **kwargs: object) -> str:
+        if str(p) == str(inside):
+            return str(outside)
+        return real(p, *args, **kwargs)
+
+    monkeypatch.setattr("gridflow.cli.os.path.realpath", fake_realpath)
+    assert _realpath_within(inside, data_dir) is False

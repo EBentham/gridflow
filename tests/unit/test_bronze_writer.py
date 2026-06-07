@@ -17,6 +17,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 
+from gridflow.bronze.sanitize import sanitize_params
 from gridflow.bronze.writer import BronzeWriter
 from gridflow.connectors.base import RawResponse
 
@@ -234,3 +235,43 @@ def test_no_secret_is_byte_identical_noop(tmp_path: Path) -> None:
     assert meta["request_params"] == response.request_params
     assert meta["data_date"] == "2024-01-15"
     assert meta["body_sha256"] == hashlib.sha256(response.body).hexdigest()
+
+
+# --- S-2: sanitize_params recurses into tuple/set containers -----------------
+# httpx accepts params as a list[tuple[str, str]], so a future connector
+# emitting a (key, value) pair tuple, or a secret nested in a tuple/set, must
+# still be redacted. These pin sanitize_params directly.
+
+
+def test_sanitize_params_redacts_secret_in_pair_tuple() -> None:
+    """A (secret_key, value) pair tuple nested in a list has its value masked."""
+    out = sanitize_params({"a": [("securityToken", "LEAK")]})
+    assert out == {"a": [("securityToken", "<redacted>")]}
+
+
+def test_sanitize_params_redacts_dict_nested_in_tuple() -> None:
+    """A secret-keyed dict nested inside a tuple is still masked."""
+    out = sanitize_params(({"securityToken": "LEAK"}, "other"))
+    assert out == ({"securityToken": "<redacted>"}, "other")
+
+
+def test_sanitize_params_redacts_secret_in_set() -> None:
+    """A secret-keyed dict nested inside a set is still masked.
+
+    The result is the same container type (a set), so it is rebuilt from
+    redacted, hashable members.
+    """
+    out = sanitize_params({frozenset({"keep"}), ("securityToken", "LEAK")})
+    assert ("securityToken", "<redacted>") in out
+    assert frozenset({"keep"}) in out
+
+
+def test_sanitize_params_preserves_clean_tuple_and_set() -> None:
+    """Clean tuple/set values round-trip unchanged and keep their type."""
+    clean_tuple = ("documentType", "A44")
+    assert sanitize_params(clean_tuple) == clean_tuple
+    assert isinstance(sanitize_params(clean_tuple), tuple)
+
+    clean_set = frozenset({"a", "b"})
+    assert sanitize_params(clean_set) == clean_set
+    assert isinstance(sanitize_params(clean_set), frozenset)

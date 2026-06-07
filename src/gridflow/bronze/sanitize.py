@@ -39,12 +39,17 @@ def sanitize_params(
 ) -> Any:
     """Return a copy of ``obj`` with any secret-keyed value replaced by ``<redacted>``.
 
-    Recurses into nested dicts and lists. The input is never mutated (``RawResponse``
-    is frozen), so a new structure is always returned. Dict insertion order is
-    preserved, so a payload with no secret keys round-trips byte-identically.
+    Recurses into nested dicts, lists, tuples, and sets, returning the same
+    container type. The input is never mutated (``RawResponse`` is frozen), so a
+    new structure is always returned. Dict insertion order is preserved, so a
+    payload with no secret keys round-trips byte-identically.
+
+    httpx accepts query params as a ``list[tuple[str, str]]``, so a ``(key,
+    value)`` pair tuple whose key is secret is masked positionally — the secret
+    sits in element ``[1]`` and would otherwise never be seen as a dict key.
 
     Args:
-        obj: An arbitrary JSON-like value (dict, list, or scalar).
+        obj: An arbitrary JSON-like value (dict, list, tuple, set, or scalar).
         secret_keys: Case-folded exact key names whose values are masked.
 
     Returns:
@@ -59,6 +64,16 @@ def sanitize_params(
         }
     if isinstance(obj, list):
         return [sanitize_params(item, secret_keys) for item in obj]
+    if isinstance(obj, tuple):
+        # A 2-tuple is the httpx (key, value) param shape: mask positionally when
+        # the key is secret, since the value is not reachable as a dict key.
+        if len(obj) == 2 and isinstance(obj[0], str) and obj[0].casefold() in secret_keys:
+            return (obj[0], REDACTED)
+        return tuple(sanitize_params(item, secret_keys) for item in obj)
+    if isinstance(obj, (set, frozenset)):
+        # Members route through the tuple/scalar branches above; the result is
+        # the same set type. Members stay hashable (a redacted pair is a tuple).
+        return type(obj)(sanitize_params(item, secret_keys) for item in obj)
     return obj
 
 

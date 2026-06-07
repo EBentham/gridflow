@@ -68,3 +68,19 @@ def test_safe_output_path_rejects_escape(tmp_path: Path) -> None:
     # A `../` escape must be refused.
     with pytest.raises(ValueError):
         mod._safe_output_path(out_dir, "../../etc/evil")
+
+
+def test_safe_output_path_rejects_single_quote_in_dir(tmp_path: Path) -> None:
+    """E-1: an --output-dir containing a single quote is refused.
+
+    The COPY target is a SQL string literal; a `'` in the path would break out
+    of the literal and inject SQL. `_safe_output_path` rejects the path as
+    defense-in-depth before the COPY site is ever reached.
+
+    RED before E-1: `_safe_output_path` only checks `../` containment, so a
+    `'`-containing dir that stays inside `out_dir` passes.
+    """
+    evil_dir = tmp_path / "ex'); CREATE TABLE pwned(x INT); --"
+    with pytest.raises(ValueError):
+        mod = _load_export_script()
+        mod._safe_output_path(evil_dir, "silver_system_prices")

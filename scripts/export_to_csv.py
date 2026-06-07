@@ -124,7 +124,10 @@ def _safe_output_path(output_dir: Path, view_name: str) -> Path:
     The output path is interpolated into a DuckDB ``COPY ... TO '<path>'``
     string literal (DuckDB does not bind the COPY target as a parameter), so a
     ``view_name`` containing ``../`` could redirect the write outside the
-    requested directory. This refuses any path that escapes ``output_dir``.
+    requested directory, and a single quote anywhere in the path could break out
+    of the literal and inject SQL. This refuses any path that escapes
+    ``output_dir`` or contains a single quote (defense-in-depth alongside the
+    quote-doubling applied at the COPY site).
 
     Args:
         output_dir: Directory the export is allowed to write into.
@@ -134,12 +137,15 @@ def _safe_output_path(output_dir: Path, view_name: str) -> Path:
         The resolved ``<output_dir>/<view_name>.csv`` path.
 
     Raises:
-        ValueError: If the resolved path escapes ``output_dir``.
+        ValueError: If the resolved path escapes ``output_dir`` or contains a
+            single quote.
     """
     base = output_dir.resolve()
     candidate = (base / f"{view_name}.csv").resolve()
     if not candidate.is_relative_to(base):
         raise ValueError(f"output path escapes {output_dir}: {view_name!r}")
+    if "'" in str(candidate):
+        raise ValueError(f"output path may not contain a single quote: {str(candidate)!r}")
     return candidate
 
 
@@ -231,9 +237,12 @@ def export_view(
 
     try:
         # Use DuckDB COPY for efficient CSV export. The COPY target is a string
-        # literal (DuckDB does not bind it), but _safe_output_path contained it.
+        # literal (DuckDB does not bind it); _safe_output_path contained it and
+        # rejected single quotes, and we double any quote (SQL-standard escaping)
+        # at the literal as a second layer against breakout.
+        out_literal = str(out_path).replace("'", "''")
         con.execute(
-            f"COPY ({query}) TO '{str(out_path)}' (FORMAT CSV, HEADER true)",
+            f"COPY ({query}) TO '{out_literal}' (FORMAT CSV, HEADER true)",
             params,
         )
         # Get the row count

@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import contextlib
 import logging
+import os
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
@@ -61,6 +62,28 @@ def _assert_safe_delete_target(target: Path, project_root: Path) -> None:
             err=True,
         )
         raise typer.Exit(1)
+
+
+def _realpath_within(path: Path, data_dir: Path) -> bool:
+    """Return True if ``path``'s real (symlink/junction-resolved) path stays inside ``data_dir``.
+
+    ``Path.rglob`` descends Windows junctions, which report ``is_symlink() ==
+    False``. A junction inside the data tree pointing outside it would let a
+    recursive wipe unlink external files. Resolving both sides with
+    ``os.path.realpath`` collapses junctions and symlinks so the containment
+    check reflects the file's true location, not its apparent one.
+
+    Args:
+        path: A candidate file slated for deletion.
+        data_dir: The data directory the wipe is confined to.
+
+    Returns:
+        True if the real path is inside (or equal to) the real ``data_dir``,
+        False if it escapes and must be skipped.
+    """
+    real_path = Path(os.path.realpath(path))
+    real_root = Path(os.path.realpath(data_dir))
+    return real_path.is_relative_to(real_root)
 
 
 @app.command()
@@ -655,6 +678,24 @@ def reset(
     if wipe_gold:
         dir_targets.append(data_dir / "gold")
 
+    # R-1 containment: source / dataset are user CLI args interpolated into the
+    # delete path (data_dir/<layer>/<source>/<dataset>). An absolute source
+    # collapses the path to an absolute location, and a `../..` climb escapes
+    # above data_dir — either would delete files outside the data tree. Validate
+    # every actual target before previewing (dry-run) or wiping. (duckdb_path is
+    # not derived from these args and keeps its own catastrophic-target guard
+    # above, so it is intentionally excluded from this data_dir check.)
+    data_root = data_dir.resolve()
+    for target in dir_targets:
+        if not target.resolve().is_relative_to(data_root):
+            typer.echo(
+                f"Refusing to delete {target.resolve()}: target escapes the data "
+                f"directory {data_root} (check the SOURCE / DATASET arguments). "
+                "Aborting (nothing deleted).",
+                err=True,
+            )
+            raise typer.Exit(1)
+
     if dry_run:
         typer.echo(f"DRY RUN — would PERMANENTLY DELETE: {description}")
         for root in dir_targets:
@@ -682,6 +723,13 @@ def reset(
             return
         for f in root.rglob("*"):
             if f.is_file():
+                # rglob descends Windows junctions (is_symlink() == False); a
+                # junction pointing outside the data tree would otherwise have
+                # its external targets unlinked. Skip anything whose real path
+                # escapes data_dir.
+                if not _realpath_within(f, data_dir):
+                    typer.echo(f"  Skipping (resolves outside data dir): {f}", err=True)
+                    continue
                 try:
                     f.unlink()
                     deleted_files += 1
