@@ -9,6 +9,8 @@ import os
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
+from gridflow.bronze.sanitize import sanitize_params, sanitize_url
+
 if TYPE_CHECKING:
     from pathlib import Path
 
@@ -68,8 +70,10 @@ class BronzeWriter:
             "fetched_at": response.fetched_at.isoformat(),
             "written_at": written_at.isoformat(),
             "data_date": response.data_date.isoformat() if response.data_date is not None else None,
-            "request_url": response.request_url,
-            "request_params": response.request_params,
+            # Mask credentials before they reach the irreproducible sidecar; the
+            # key is kept (presence recorded), only the value is redacted.
+            "request_url": sanitize_url(response.request_url),
+            "request_params": sanitize_params(response.request_params),
             "api_version": response.api_version,
             "http_status": response.http_status,
             "content_type": response.content_type,

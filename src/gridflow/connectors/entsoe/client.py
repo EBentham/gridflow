@@ -4,15 +4,14 @@ from __future__ import annotations
 
 import io
 import logging
-import re
 import zipfile
 from datetime import datetime
 from time import monotonic
 from typing import TYPE_CHECKING, Any
-from xml.etree import ElementTree
 
 import httpx
 
+from gridflow.bronze.sanitize import sanitize_url
 from gridflow.connectors.base import BaseConnector, RawResponse, _make_ssl_context
 from gridflow.connectors.entsoe.endpoints import (
     BIDDING_ZONES,
@@ -22,6 +21,7 @@ from gridflow.connectors.entsoe.endpoints import (
     ENTSOE_DT_FORMAT,
     EntsoeDocType,
 )
+from gridflow.connectors.entsoe.parsers import _hardened_parser
 from gridflow.connectors.registry import register_connector
 from gridflow.utils.retry import RETRY_POLICY
 
@@ -350,10 +350,20 @@ class EntsoeConnector(BaseConnector):
 
 
 def _extract_acknowledgement_reason(content: bytes) -> str:
-    """Extract code/text from an ENTSO-E Acknowledgement_MarketDocument."""
+    """Extract code/text from an ENTSO-E Acknowledgement_MarketDocument.
+
+    The content is an untrusted HTTP-error body, so it is parsed with the hardened
+    lxml parser (``resolve_entities=False``) to prevent XXE external-entity
+    resolution. ElementPath ``.find()`` queries work unchanged under lxml.
+    """
     try:
-        root = ElementTree.fromstring(content)
-    except ElementTree.ParseError:
+        from lxml import etree  # type: ignore[import-untyped]
+    except ImportError:
+        return ""
+
+    try:
+        root = etree.fromstring(content, parser=_hardened_parser())
+    except etree.XMLSyntaxError:
         return ""
 
     reason = root.find(".//ack:Reason", _ACK_REASON_NS)
@@ -388,11 +398,11 @@ def _count_timeseries(xml_bytes: bytes) -> int:
     if not xml_bytes:
         return 0
     try:
-        from lxml import etree  # type: ignore[import-untyped]
+        from lxml import etree
     except ImportError:
         return 0
     try:
-        root = etree.fromstring(xml_bytes)  # noqa: S320 (trusted internal data)
+        root = etree.fromstring(xml_bytes, parser=_hardened_parser())
     except etree.XMLSyntaxError:
         return 0
 
@@ -472,7 +482,7 @@ def _optional_filter_params(
 
 def _redact_security_token(url: str) -> str:
     """Redact ENTSO-E query-token values from URLs."""
-    return re.sub(r"(securityToken=)[^&]+", r"\1<redacted>", url)
+    return sanitize_url(url)
 
 
 # Register connector

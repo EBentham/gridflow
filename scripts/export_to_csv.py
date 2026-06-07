@@ -67,6 +67,7 @@ from __future__ import annotations
 
 import argparse
 import sys
+from datetime import date
 from pathlib import Path
 
 # ---------------------------------------------------------------------------
@@ -75,6 +76,77 @@ from pathlib import Path
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent
 if str(_PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(_PROJECT_ROOT / "src"))
+
+
+def _validate_dates(start: str | None, end: str | None) -> None:
+    """Reject `--start` / `--end` values that are not ISO-8601 calendar dates.
+
+    The CLI interpolates these into SQL date literals, so a non-date value is
+    both a correctness bug and an injection vector. ``date.fromisoformat``
+    raises ``ValueError`` on anything that is not ``YYYY-MM-DD``.
+
+    Args:
+        start: Raw ``--start`` value, or ``None`` if unset.
+        end: Raw ``--end`` value, or ``None`` if unset.
+
+    Raises:
+        ValueError: If either value is non-``None`` and not an ISO date.
+    """
+    for label, value in (("--start", start), ("--end", end)):
+        if value is None:
+            continue
+        try:
+            date.fromisoformat(value)
+        except ValueError as exc:
+            raise ValueError(f"{label} must be an ISO date (YYYY-MM-DD): {value!r}") from exc
+
+
+def _validate_limit(limit: int | None) -> int | None:
+    """Reject a non-positive `--limit`.
+
+    Args:
+        limit: Raw ``--limit`` value, or ``None`` if unset.
+
+    Returns:
+        The validated limit (or ``None``).
+
+    Raises:
+        ValueError: If ``limit`` is provided and is zero or negative.
+    """
+    if limit is not None and limit <= 0:
+        raise ValueError(f"--limit must be a positive integer: {limit}")
+    return limit
+
+
+def _safe_output_path(output_dir: Path, view_name: str) -> Path:
+    """Resolve the CSV output path and confirm it stays inside ``output_dir``.
+
+    The output path is interpolated into a DuckDB ``COPY ... TO '<path>'``
+    string literal (DuckDB does not bind the COPY target as a parameter), so a
+    ``view_name`` containing ``../`` could redirect the write outside the
+    requested directory, and a single quote anywhere in the path could break out
+    of the literal and inject SQL. This refuses any path that escapes
+    ``output_dir`` or contains a single quote (defense-in-depth alongside the
+    quote-doubling applied at the COPY site).
+
+    Args:
+        output_dir: Directory the export is allowed to write into.
+        view_name: View name used as the CSV file stem.
+
+    Returns:
+        The resolved ``<output_dir>/<view_name>.csv`` path.
+
+    Raises:
+        ValueError: If the resolved path escapes ``output_dir`` or contains a
+            single quote.
+    """
+    base = output_dir.resolve()
+    candidate = (base / f"{view_name}.csv").resolve()
+    if not candidate.is_relative_to(base):
+        raise ValueError(f"output path escapes {output_dir}: {view_name!r}")
+    if "'" in str(candidate):
+        raise ValueError(f"output path may not contain a single quote: {str(candidate)!r}")
+    return candidate
 
 
 def _get_connection():
@@ -126,37 +198,55 @@ def export_view(
     end: str | None = None,
     limit: int | None = None,
 ) -> Path | None:
-    """Export a single view to a CSV file. Returns the output path or None on failure."""
-    output_dir.mkdir(parents=True, exist_ok=True)
-    out_path = output_dir / f"{view_name}.csv"
+    """Export a single view to a CSV file. Returns the output path or None on failure.
 
-    # Build the query
+    ``start`` / ``end`` / ``limit`` are bound as DuckDB query parameters rather
+    than interpolated, and the output path is contained to ``output_dir``.
+    Callers must have validated these via ``_validate_dates`` / ``_validate_limit``
+    before reaching here; the containment of the output path is enforced inline.
+    """
+    output_dir.mkdir(parents=True, exist_ok=True)
+    out_path = _safe_output_path(output_dir, view_name)
+
+    # Build the WHERE clause with placeholders; values are bound, not interpolated.
     where_parts: list[str] = []
+    params: list[object] = []
 
     if start or end:
         date_col = _detect_date_column(con, view_name)
         if date_col:
-            # Cast to DATE for timestamp columns to enable simple date filtering
+            # Cast to DATE for timestamp columns to enable simple date filtering.
             cast = f"{date_col}::DATE" if "timestamp" in date_col else date_col
             if start and end:
-                where_parts.append(f"{cast} BETWEEN '{start}' AND '{end}'")
+                where_parts.append(f"{cast} BETWEEN ? AND ?")
+                params.extend([start, end])
             elif start:
-                where_parts.append(f"{cast} >= '{start}'")
+                where_parts.append(f"{cast} >= ?")
+                params.append(start)
             elif end:
-                where_parts.append(f"{cast} <= '{end}'")
+                where_parts.append(f"{cast} <= ?")
+                params.append(end)
 
     where_clause = f" WHERE {' AND '.join(where_parts)}" if where_parts else ""
-    limit_clause = f" LIMIT {limit}" if limit else ""
+    limit_clause = " LIMIT ?" if limit else ""
+    if limit:
+        params.append(limit)
 
+    # view_name is validated against the live catalogue by the caller (main).
     query = f"SELECT * FROM {view_name}{where_clause}{limit_clause}"
 
     try:
-        # Use DuckDB COPY for efficient CSV export
+        # Use DuckDB COPY for efficient CSV export. The COPY target is a string
+        # literal (DuckDB does not bind it); _safe_output_path contained it and
+        # rejected single quotes, and we double any quote (SQL-standard escaping)
+        # at the literal as a second layer against breakout.
+        out_literal = str(out_path).replace("'", "''")
         con.execute(
-            f"COPY ({query}) TO '{str(out_path)}' (FORMAT CSV, HEADER true)"
+            f"COPY ({query}) TO '{out_literal}' (FORMAT CSV, HEADER true)",
+            params,
         )
         # Get the row count
-        row_count = con.sql(f"SELECT COUNT(*) FROM ({query})").fetchone()[0]
+        row_count = con.execute(f"SELECT COUNT(*) FROM ({query})", params).fetchone()[0]
         print(f"  ✓ {view_name} → {out_path}  ({row_count:,} rows)")
         return out_path
     except Exception as exc:
@@ -172,7 +262,8 @@ def main() -> None:
             "Examples:\n"
             "  python scripts/export_to_csv.py --list\n"
             "  python scripts/export_to_csv.py --view silver_system_prices\n"
-            "  python scripts/export_to_csv.py --view silver_system_prices --start 2024-01-15 --end 2024-01-16\n"
+            "  python scripts/export_to_csv.py --view silver_system_prices "
+            "--start 2024-01-15 --end 2024-01-16\n"
             "  python scripts/export_to_csv.py --all --output-dir ./my_exports\n"
             "  python scripts/export_to_csv.py --view silver_fuelhh --limit 500\n"
         ),
@@ -181,12 +272,23 @@ def main() -> None:
     group.add_argument("--list", action="store_true", help="List all available views and tables")
     group.add_argument("--view", help="Export a specific view by name")
     group.add_argument("--all", action="store_true", help="Export all views to CSV")
-    parser.add_argument("--output-dir", default="exports", help="Output directory (default: exports/)")
+    parser.add_argument(
+        "--output-dir", default="exports", help="Output directory (default: exports/)"
+    )
     parser.add_argument("--start", help="Filter start date (YYYY-MM-DD)")
     parser.add_argument("--end", help="Filter end date (YYYY-MM-DD)")
     parser.add_argument("--limit", type=int, help="Maximum number of rows to export per view")
 
     args = parser.parse_args()
+
+    # Validate user-supplied filter values before touching the database so a
+    # malformed date / unbounded limit fails fast with a clear, non-zero exit.
+    try:
+        _validate_dates(args.start, args.end)
+        _validate_limit(args.limit)
+    except ValueError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        sys.exit(1)
 
     con, settings = _get_connection()
 
