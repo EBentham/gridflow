@@ -59,6 +59,11 @@ class OpenMeteoConnector(BaseConnector):
 
         ``dataset`` is one of the six role keys in ``DATASET_SPECS``.
         """
+        # Reset the partial-fetch counter at the top of the public entry point so
+        # a reused connector never inherits a prior call's count (CC-4 / matches
+        # GIE). This connector is raise-on-any, so it stays 0 — the explicit
+        # reset documents that invariant rather than relying on it.
+        self.last_skipped_units = 0
         if dataset not in DATASET_SPECS:
             raise ValueError(
                 f"Unknown open_meteo dataset {dataset!r}; expected one of "

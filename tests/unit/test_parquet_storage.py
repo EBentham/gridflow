@@ -237,6 +237,44 @@ def test_scan_parquet_range_mixed_schema_null_fills_in_range(tmp_path: Path) -> 
     assert df["available_at"].to_list() == [None, "2024-02-10T00:00:00Z"]
 
 
+def test_scan_parquet_range_within_month_schema_drift_null_fills(tmp_path: Path) -> None:
+    """Two drifting files in the SAME month null-fill the union, not SchemaError.
+
+    A partial re-transform can leave a narrow pre-F0 file beside a wide post-F0
+    file in one ``year=/month=`` partition. A single per-partition glob scan
+    resolves the schema from the first file and raises ``SchemaError`` on the
+    later file's extra column. The fix unions per-file via diagonal concat.
+
+    Load-bearing: the narrow file MUST sort lexically *before* the wide one
+    (``a_narrow`` < ``b_wide``). Polars scans glob matches in sorted order and
+    resolves the schema from the first match, so only a narrow-then-wide order
+    triggers the extra-column raise. Reversing the names would let
+    ``missing_columns='insert'`` absorb it and the test would pass on unfixed
+    code — proving nothing.
+    """
+    dataset_dir = tmp_path / "ds"
+    part = dataset_dir / "year=2024" / "month=02"
+    _write_parquet(
+        pl.DataFrame({"settlement_date": [date(2024, 2, 1)], "value": [1]}),
+        part / "a_narrow.parquet",
+    )
+    _write_parquet(
+        pl.DataFrame(
+            {
+                "settlement_date": [date(2024, 2, 2)],
+                "value": [2],
+                "available_at": ["2024-02-02T00:00:00Z"],
+            }
+        ),
+        part / "b_wide.parquet",
+    )
+
+    df = scan_parquet_range(dataset_dir, date(2024, 2, 1), date(2024, 2, 28)).collect()
+    df = df.sort("settlement_date")
+    assert df["settlement_date"].to_list() == [date(2024, 2, 1), date(2024, 2, 2)]
+    assert df["available_at"].to_list() == [None, "2024-02-02T00:00:00Z"]
+
+
 def test_scan_parquet_range_propagates_schema_errors_on_collect(tmp_path: Path) -> None:
     """Schema corruption inside an in-range partition surfaces on collect."""
     dataset_dir = tmp_path / "ds"

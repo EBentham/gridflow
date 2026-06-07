@@ -100,6 +100,12 @@ def scan_parquet_range(
     Returns:
         A ``LazyFrame`` restricted to the overlapping partitions and date
         range, or an empty ``LazyFrame`` when no partition overlaps.
+
+    Note:
+        ``date_col`` MUST be a ``pl.Date`` column. The residual ``<= end``
+        predicate compares against a Python ``date``; if ``date_col`` were a
+        ``Datetime`` (especially tz-aware) column, Polars would coerce that
+        bound to midnight and silently drop the end-day's non-midnight rows.
     """
     # Glob pruning needs both concrete bounds; otherwise fall back to the
     # whole-tree scan and still apply whichever residual predicate exists.
@@ -111,25 +117,28 @@ def scan_parquet_range(
             lf = lf.filter(pl.col(date_col) <= end)
         return lf
 
-    # Require actual parquet files (not just an existing dir): an empty
-    # partition dir left by an interrupted write would make pl.scan_parquet
-    # raise on the zero-match glob, whereas the whole-tree **/*.parquet path
-    # silently skips it. Matching that tolerance keeps the two paths equivalent.
-    globs = [
-        str(part / "*.parquet")
+    # Enumerate the individual parquet files in each overlapping partition (the
+    # ``year=/month=`` glob is the load-bearing pruning -- files in non-
+    # overlapping months are never listed). Requiring actual files, not just an
+    # existing dir, matches the whole-tree **/*.parquet path: an empty partition
+    # dir left by an interrupted write is skipped silently rather than raising
+    # on a zero-match glob.
+    files = [
+        f
         for year, month in _overlapping_partitions(start, end)
-        if any((part := directory / f"year={year}" / f"month={month:02d}").glob("*.parquet"))
+        for f in sorted((directory / f"year={year}" / f"month={month:02d}").glob("*.parquet"))
     ]
-    if not globs:
+    if not files:
         logger.warning(f"No overlapping Parquet partitions in {directory} for {start}..{end}")
         return pl.LazyFrame()
 
-    # Scan each overlapping partition separately and diagonal-concat: a single
-    # multi-glob scan resolves the schema from the first file and rejects later
-    # files carrying extra columns (real here -- silver gains pre/post-F0
-    # bitemporal columns over time). Per-partition diagonal concat unions the
-    # schema and null-fills, dropping nothing.
-    lfs = [pl.scan_parquet(g, hive_partitioning=True, missing_columns="insert") for g in globs]
+    # Scan each file separately and diagonal-concat. A single glob/multi-file
+    # scan resolves the schema from the first file and rejects any later file
+    # carrying an extra column -- a real failure here, since silver gains
+    # pre/post-F0 bitemporal columns over time and a partial re-transform can
+    # leave a narrow file beside a wide one in the SAME partition. Per-FILE
+    # diagonal concat unions the schema and null-fills, dropping nothing.
+    lfs = [pl.scan_parquet(f, hive_partitioning=True, missing_columns="insert") for f in files]
     lf = pl.concat(lfs, how="diagonal")
     lf = lf.filter(pl.col(date_col) >= start)
     lf = lf.filter(pl.col(date_col) <= end)

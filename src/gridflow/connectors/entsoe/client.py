@@ -113,6 +113,11 @@ class EntsoeConnector(BaseConnector):
 
         Dispatches per-zone (or per-zone-pair for cross-border flows).
         """
+        # Reset the partial-fetch counter at the top of the public entry point so
+        # a reused connector never inherits a prior call's count (CC-4 / matches
+        # GIE). ENTSO-E is raise-on-any, so it stays 0 — the explicit reset
+        # documents that invariant rather than relying on it.
+        self.last_skipped_units = 0
         if dataset not in DOC_TYPES:
             raise ValueError(
                 f"Unknown ENTSO-E dataset: {dataset!r}. Available: {list(DOC_TYPES.keys())}"
