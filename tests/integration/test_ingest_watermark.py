@@ -109,7 +109,9 @@ def _read_watermark(db_path: Path, source: str, dataset: str) -> datetime | None
         ).fetchone()
     finally:
         con.close()
-    return row[0] if row else None
+    # last_end is stored as naive UTC (pytz-free TIMESTAMP); re-attach UTC so the
+    # raw-storage read matches the tz-aware-UTC values the assertions compare against.
+    return row[0].replace(tzinfo=UTC) if row and row[0] is not None else None
 
 
 @pytest.mark.integration
