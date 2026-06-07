@@ -19,6 +19,23 @@ jobs:
         # died in ~6s with "No virtual environment found", so NONE of the gates
         # below had ever run — the lint/format/mypy debt accumulated because
         # enforcement was never reachable, not because it was waived.
+        #
+        # CH4-05 / C4-9 (enforce uv.lock in CI) — DEFERRED-WITH-REASON.
+        # Goal was to install from the committed uv.lock (`uv sync --frozen` +
+        # a `uv lock --check` drift gate) so CI builds are reproducible. Blocked:
+        # the lock is STALE w.r.t. pyproject. pyproject pins `ruff==0.15.12`
+        # (line 28), but uv.lock's recorded `[package.metadata].requires-dist`
+        # still has `ruff ... >=0.4` (line 180) — the pin was tightened after the
+        # last `uv lock`. The resolved ruff (0.15.12) satisfies both, so no
+        # version would change; only the recorded specifier drifted. Effect: the
+        # `uv lock --check` gate (and `uv sync --locked`) would go RED on this
+        # mismatch. (`uv sync --frozen` would NOT — it skips the pyproject-sync
+        # check and installs the lock as-is — but frozen-only omits the drift
+        # enforcement that C4-9 requires.) Regenerating the lock needs `uv lock`,
+        # and `uv` is absent from this dev env, so it can't be done here.
+        # FOLLOW-UP (one line): after the ruff pin, re-run `uv lock`, commit the
+        # refreshed uv.lock, then flip this step to `uv sync --frozen` + add a
+        # `uv lock --check` step. Until then the install stays on the `>=` ranges.
         run: uv pip install --system -e ".[dev]"
 
       - name: Lint
