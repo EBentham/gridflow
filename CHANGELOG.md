@@ -256,7 +256,7 @@ extension audit, making the ENTSO-E silver layer spec-compliant. 551 tests passi
 [v0.12]: https://github.com/EBentham/gridflow/releases/tag/v0.12
 [v0.11]: https://github.com/EBentham/gridflow/releases/tag/v0.11
 [v0.10]: https://github.com/EBentham/gridflow/releases/tag/v0.10
-[v0.9]: https://github.com/EBentham/gridflow/commit/b3b5659
+[v0.9]: https://github.com/EBentham/gridflow/releases/tag/v0.9
 [v0.8]: https://github.com/EBentham/gridflow/releases/tag/v0.8
 [v0.7]: https://github.com/EBentham/gridflow/releases/tag/v0.7
 [v0.6]: https://github.com/EBentham/gridflow/releases/tag/v0.6
