@@ -7,8 +7,11 @@ intensity from 7 public APIs into a clean, queryable analytical store backed by
 DuckDB and Parquet. No cloud, no database server — just files on your disk and
 SQL.
 
+[![CI](https://github.com/EBentham/gridflow/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/EBentham/gridflow/actions/workflows/ci.yml)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
+
+[Changelog](CHANGELOG.md) · [Releases](https://github.com/EBentham/gridflow/releases)
 
 ---
 
