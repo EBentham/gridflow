@@ -1,6 +1,6 @@
 [project]
 name = "gridflow"
-version = "0.1.0"
+version = "0.16.0"
 description = "UK/EU energy market data pipeline for quantitative modelling"
 requires-python = ">=3.11"
 license = {text = "Apache-2.0"}
