@@ -1,17 +1,17 @@
-# Changelog
+﻿# Changelog
 
-All notable changes to **gridflow** — a local-first Python data pipeline for UK/EU power and gas
-market data — are documented in this file. The format follows
+All notable changes to **gridflow** â€” a local-first Python data pipeline for UK/EU power and gas
+market data â€” are documented in this file. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version numbers correspond to project
 milestones (not SemVer), dated by milestone completion. v0.13 (a planned dataset-coverage
 expansion) was paused before release and is intentionally absent.
 
 ## [v0.16] - 2026-06-07
 
-**Codebase Hardening** — internal tech-debt milestone: remediated 31 of 32 open items from the
+**Codebase Hardening** â€” internal tech-debt milestone: remediated 31 of 32 open items from the
 June 2026 codebase re-audit across security, pipeline correctness, read-path performance, and
-architecture (PRs #25–#29). Test suite grew from 1387 to 1530 passing; mypy is now strict-clean
-(52 errors → 0).
+architecture (PRs #25â€“#29). Test suite grew from 1387 to 1530 passing; mypy is now strict-clean
+(52 errors â†’ 0).
 
 ### Added
 - Opt-in incremental ingest (`--incremental`) driven by monotonic per-dataset watermarks, with
@@ -34,12 +34,12 @@ architecture (PRs #25–#29). Test suite grew from 1387 to 1530 passing; mypy is
 - Latent gold-build crash across a silver schema boundary; Parquet readers now tolerate
   mixed-width silver files (null-filling missing columns) and skip in-flight temp files
   (PRs #27, #29).
-- Serving-SDK `get_gas_storage`/`get_imbalance_context` were broken against any real catalogue —
+- Serving-SDK `get_gas_storage`/`get_imbalance_context` were broken against any real catalogue â€”
   found and fixed by a new operational test sweep (PR #28).
 
 ## [v0.15] - 2026-06-04
 
-**Vendor-Truth Cleanup** — closed the items deferred by the v0.14 vendor-truth audit; the headline
+**Vendor-Truth Cleanup** â€” closed the items deferred by the v0.14 vendor-truth audit; the headline
 was a confirmed silent solar-irradiance data bug. 1387 tests passing.
 
 ### Fixed
@@ -54,17 +54,17 @@ was a confirmed silent solar-irradiance data bug. 1387 tests passing.
   live probe showed zone-pair queries are rejected (PR #24).
 
 ### Changed
-- ENTSO-G gas-quality content indicators un-marked as "removed" in the docs — live probes showed
+- ENTSO-G gas-quality content indicators un-marked as "removed" in the docs â€” live probes showed
   the endpoints are recognised but sparse; documentation corrected across all three doc layers.
 
 ## [v0.14] - 2026-06-03
 
-**Vendor-Truth Remediation** — closed the write-path-guarantee and documentation-truth gaps from
-the 2026-05-31 vendor-truth audit (88 findings across 13 units). +51 tests (1334 → 1385 passing).
+**Vendor-Truth Remediation** â€” closed the write-path-guarantee and documentation-truth gaps from
+the 2026-05-31 vendor-truth audit (88 findings across 13 units). +51 tests (1334 â†’ 1385 passing).
 
 ### Added
 - Fail-soft Pydantic schema validation on every silver write: failures are logged, counted, and
-  surfaced as `completed_with_warnings` — never raised, never silently dropped. 123 datasets wired
+  surfaced as `completed_with_warnings` â€” never raised, never silently dropped. 123 datasets wired
   (PR #17).
 - Dedicated contract schema for Elexon fuel-mix (FUELINST) and `currency` labels on imbalance and
   activated-balancing prices (PR #21).
@@ -81,7 +81,7 @@ the 2026-05-31 vendor-truth audit (88 findings across 13 units). +51 tests (1334
 
 ## [v0.12] - 2026-05-23
 
-**Schema Drift Cleanup** — schema-drift cleanup and post-audit polish, shipped as one batch
+**Schema Drift Cleanup** â€” schema-drift cleanup and post-audit polish, shipped as one batch
 (PR #8).
 
 ### Fixed
@@ -97,7 +97,7 @@ the 2026-05-31 vendor-truth audit (88 findings across 13 units). +51 tests (1334
 
 ## [v0.11] - 2026-05-09
 
-**Open-Meteo Renewable Extension** — extended the Open-Meteo connector and silver layer into
+**Open-Meteo Renewable Extension** â€” extended the Open-Meteo connector and silver layer into
 role-specific demand/wind/solar dataset families for renewable forecasting. +74 tests
 (1116 passing).
 
@@ -110,12 +110,12 @@ role-specific demand/wind/solar dataset families for renewable forecasting. +74 
   combinations.
 
 ### Changed
-- Datasets renamed `historical`/`forecast` → `historical_demand`/`forecast_demand`; silver
+- Datasets renamed `historical`/`forecast` â†’ `historical_demand`/`forecast_demand`; silver
   dataset version bumped to 2.0.0. A migration sweep caught two stale references.
 
 ## [v0.10] - 2026-05-09
 
-**Vendor Bug-Fix Follow-ups** — fixed the production bugs surfaced (but not patched) by the v0.9
+**Vendor Bug-Fix Follow-ups** â€” fixed the production bugs surfaced (but not patched) by the v0.9
 live validation, across Elexon, NESO, ENTSO-E, and ENTSO-G; every fixed dataset re-validated live.
 
 ### Fixed
@@ -130,7 +130,7 @@ live validation, across Elexon, NESO, ENTSO-E, and ENTSO-G; every fixed dataset 
 
 ## [v0.9] - 2026-05-08
 
-**Vault Vendor Validation & Docs** — live-validated every active endpoint (156 datasets across six
+**Vault Vendor Validation & Docs** â€” live-validated every active endpoint (156 datasets across six
 vendors) against official vendor documentation and populated the documentation vault.
 
 ### Added
@@ -144,7 +144,7 @@ vendors) against official vendor documentation and populated the documentation v
 
 ## [v0.8] - 2026-05-05
 
-**Fundamentals Model Silver Foundations** — point-in-time (bitemporal) lineage for silver outputs,
+**Fundamentals Model Silver Foundations** â€” point-in-time (bitemporal) lineage for silver outputs,
 groundwork for downstream forecasting models.
 
 ### Added
@@ -157,7 +157,7 @@ groundwork for downstream forecasting models.
 
 ## [v0.7] - 2026-05-04
 
-**GIE AGSI Gas Storage Validation** — validated the GIE AGSI (EU gas storage inventory) connector
+**GIE AGSI Gas Storage Validation** â€” validated the GIE AGSI (EU gas storage inventory) connector
 end to end.
 
 ### Added
@@ -171,7 +171,7 @@ end to end.
 
 ## [v0.6] - 2026-05-04
 
-**NESO Carbon Intensity Platform** — expanded NESO Carbon Intensity from a single national route
+**NESO Carbon Intensity Platform** â€” expanded NESO Carbon Intensity from a single national route
 to all documented route families.
 
 ### Added
@@ -187,7 +187,7 @@ to all documented route families.
 
 ## [v0.5] - 2026-05-04
 
-**ENTSOG Pipeline Validation** — validated the ENTSO-G (EU gas transparency) pipeline: 33 active
+**ENTSOG Pipeline Validation** â€” validated the ENTSO-G (EU gas transparency) pipeline: 33 active
 datasets from endpoint research through live CLI confidence. 857 non-live tests passing.
 
 ### Added
@@ -203,7 +203,7 @@ datasets from endpoint research through live CLI confidence. 857 non-live tests 
 
 ## [v0.4] - 2026-05-04
 
-**Elexon Pipeline Validation** — validated the Elexon (GB balancing mechanism) pipeline from
+**Elexon Pipeline Validation** â€” validated the Elexon (GB balancing mechanism) pipeline from
 inventory through live CLI smoke coverage. 81 non-live regression tests plus 10 live tests passing.
 
 ### Added
@@ -219,14 +219,14 @@ inventory through live CLI smoke coverage. 81 non-live regression tests plus 10 
 
 ## [v0.3] - 2026-05-03
 
-**ENTSO-E Pipeline Validation** — expanded the ENTSO-E pipeline from 16 to 48 active datasets with
+**ENTSO-E Pipeline Validation** â€” expanded the ENTSO-E pipeline from 16 to 48 active datasets with
 an auditable endpoint catalog. 378 tests passing on the close-out gate.
 
 ### Added
 - New source families: generation (unit-level generation, reservoirs, master data),
   transmission/market, outages, and balancing extensions.
 - Official endpoint catalog (`docs/entsoe_endpoint_catalog.yaml`) tracking implementation,
-  deferral, and scope decisions — deferred endpoints are explicit follow-ups, not silent gaps.
+  deferral, and scope decisions â€” deferred endpoints are explicit follow-ups, not silent gaps.
 - Credential-gated live request-shape tests and mocked bronze-to-silver coverage across the fleet.
 
 ### Fixed
@@ -235,7 +235,7 @@ an auditable endpoint catalog. 378 tests passing on the close-out gate.
 
 ## [v0.2] - 2026-05-02
 
-**ENTSO-E Extension Gap Closure** — closed all 10 gap findings from the ENTSO-E connector
+**ENTSO-E Extension Gap Closure** â€” closed all 10 gap findings from the ENTSO-E connector
 extension audit, making the ENTSO-E silver layer spec-compliant. 551 tests passing.
 
 ### Fixed
@@ -256,7 +256,7 @@ extension audit, making the ENTSO-E silver layer spec-compliant. 551 tests passi
 [v0.12]: https://github.com/EBentham/gridflow/releases/tag/v0.12
 [v0.11]: https://github.com/EBentham/gridflow/releases/tag/v0.11
 [v0.10]: https://github.com/EBentham/gridflow/releases/tag/v0.10
-[v0.9]: https://github.com/EBentham/gridflow/commit/b3b5659
+[v0.9]: https://github.com/EBentham/gridflow/releases/tag/v0.9
 [v0.8]: https://github.com/EBentham/gridflow/releases/tag/v0.8
 [v0.7]: https://github.com/EBentham/gridflow/releases/tag/v0.7
 [v0.6]: https://github.com/EBentham/gridflow/releases/tag/v0.6
