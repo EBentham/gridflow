@@ -12,8 +12,9 @@ No cloud. DuckDB + Parquet on local filesystem.
 Read before doing anything else:
 
 1. The vault-context block injected at session start (head of the vault's
-   `00-active/now.md` — current focus and milestone position). If absent, read
-   `.planning/STATE.md`.
+   `00-active/now-gridflow.md` — this project's live focus and milestone
+   position). If absent, read `.planning/STATE.md`. (`00-active/now.md` is a
+   generated cross-stack index, not the live per-project file.)
 2. `.planning/STATE.md` + the active phase dir under `.planning/phases/` when
    working inside a milestone.
 3. `docs/DECISION_LOG/` before touching a design boundary — check for a prior ADR.
@@ -25,7 +26,7 @@ Read before doing anything else:
 | gridflow (this repo) | `C:\Users\Bobbo\OneDrive\Desktop\Python\gridflow` | Data pipeline: bronze → silver → gold |
 | gridflow_models | `C:\Users\Bobbo\OneDrive\Desktop\Python\gridflow_models` | GB power-market models; reads gridflow silver/gold via editable install |
 | gridflow-front-end | `C:\Users\Bobbo\OneDrive\Desktop\Python\gridflow-front-end` | Recruiter-facing static docs site (GitHub Pages) |
-| quant-vault | `C:\Users\Bobbo\OneDrive\Desktop\Learning\AI\quant-vault` | Obsidian vault: vendor reference (`30-vendors/`), domain theory, cross-repo contracts, current focus (`00-active/now.md`) |
+| quant-vault | `C:\Users\Bobbo\OneDrive\Desktop\Learning\AI\quant-vault` | Obsidian vault: vendor reference (`30-vendors/`), domain theory, cross-repo contracts, per-project focus (`00-active/now-gridflow.md`; `now.md` is the generated cross-stack index) |
 
 Source-of-truth order: gridflow code → live API responses → vault `30-vendors/`
 pages → front-end rendered pages. The front-end `vault/` mirror is generated —
