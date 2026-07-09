@@ -101,3 +101,88 @@ class TestRegionKeyedRegionalLivePayload:
             f"region-keyed payload for regionid/13 should yield only "
             f"regionid 13 in silver; got {regionids}"
         )
+
+
+class TestRegionalStringIdentityColumns:
+    """Regression coverage for present-but-all-null regional identity columns."""
+
+    def test_regional_all_null_postcode_is_utf8(self) -> None:
+        raw = pl.DataFrame(
+            [
+                {
+                    "from": "2026-05-06T00:00Z",
+                    "to": "2026-05-06T00:30Z",
+                    "regionid": 1,
+                    "dnoregion": "North Scotland",
+                    "shortname": "North Scotland",
+                    "postcode": None,
+                    "forecast": 10,
+                    "actual": None,
+                    "index": "low",
+                    "fuel": "wind",
+                    "perc": 50.0,
+                },
+                {
+                    "from": "2026-05-06T00:30Z",
+                    "to": "2026-05-06T01:00Z",
+                    "regionid": 1,
+                    "dnoregion": "North Scotland",
+                    "shortname": "North Scotland",
+                    "postcode": None,
+                    "forecast": 11,
+                    "actual": None,
+                    "index": "low",
+                    "fuel": "wind",
+                    "perc": 51.0,
+                },
+            ],
+            infer_schema_length=None,
+        )
+
+        df = _transform_regional(raw)
+
+        assert df.schema["postcode"] == pl.Utf8
+        assert df["postcode"].to_list() == ["", ""]
+
+    def test_regional_string_identity_columns_are_utf8(self) -> None:
+        present_raw = pl.DataFrame(
+            [
+                {
+                    "from": "2026-05-06T00:00Z",
+                    "to": "2026-05-06T00:30Z",
+                    "regionid": 1,
+                    "dnoregion": None,
+                    "shortname": None,
+                    "postcode": None,
+                    "forecast": 10,
+                    "actual": None,
+                    "index": "low",
+                    "fuel": "wind",
+                    "perc": 50.0,
+                }
+            ],
+            infer_schema_length=None,
+        )
+        absent_raw = pl.DataFrame(
+            [
+                {
+                    "from": "2026-05-06T00:00Z",
+                    "to": "2026-05-06T00:30Z",
+                    "regionid": 1,
+                    "forecast": 10,
+                    "actual": None,
+                    "index": "low",
+                    "fuel": "wind",
+                    "perc": 50.0,
+                }
+            ],
+            infer_schema_length=None,
+        )
+
+        present = _transform_regional(present_raw)
+        absent = _transform_regional(absent_raw)
+
+        for df in (present, absent):
+            assert df.schema["dnoregion"] == pl.Utf8
+            assert df.schema["shortname"] == pl.Utf8
+            assert df.schema["postcode"] == pl.Utf8

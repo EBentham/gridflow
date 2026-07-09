@@ -471,6 +471,8 @@ def _transform_regional(raw_df: pl.DataFrame) -> pl.DataFrame:
     for column in ["dnoregion", "shortname", "postcode"]:
         if column not in df.columns:
             df = df.with_columns(pl.lit("").alias(column))
+        else:
+            df = df.with_columns(pl.col(column).fill_null("").cast(pl.Utf8))
 
     df = _add_common_columns(df)
     return (

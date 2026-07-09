@@ -8,6 +8,8 @@ from typing import TYPE_CHECKING
 
 import duckdb
 
+from gridflow.silver.schema_manifest import BITEMPORAL_EXCLUDE
+
 if TYPE_CHECKING:
     from datetime import date
 
@@ -15,7 +17,9 @@ if TYPE_CHECKING:
 
 # WHY: the F0 silver-layer convention adds these bitemporal / partitioning
 # columns to every silver parquet view. The user-facing get_* helpers hide
-# them via SELECT * EXCLUDE so callers see only the public surface.
+# them via SELECT * EXCLUDE so callers see only the public surface. The public
+# authority now lives in gridflow.silver.schema_manifest because downstream
+# schema consumers need the same contract without copying literals.
 #
 # Not every relation carries all six, though: the cross-source gold SQL views
 # (gold_eu_gas_storage, gold_uk_imbalance_context) are explicit-column SELECTs
@@ -23,14 +27,7 @@ if TYPE_CHECKING:
 # BinderException, so the helpers EXCLUDE only the bitemporal columns ACTUALLY
 # present in the queried relation (see _present_bitemporal_exclude_clause). A
 # new public column on either layer still flows through automatically.
-_BITEMPORAL_EXCLUDE = (
-    "event_time",
-    "available_at",
-    "source_run_id",
-    "dataset_version",
-    "month",
-    "year",
-)
+_BITEMPORAL_EXCLUDE = BITEMPORAL_EXCLUDE
 
 
 class GridflowClient:

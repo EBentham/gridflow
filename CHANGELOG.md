@@ -6,6 +6,20 @@ market data — are documented in this file. The format follows
 milestones (not SemVer), dated by milestone completion. v0.13 (a planned dataset-coverage
 expansion) was paused before release and is intentionally absent.
 
+## [Unreleased]
+
+### Added
+- Silver schema manifest API exporting registered relation names, designated date columns,
+  bitemporal columns, partition columns, and fixed/dynamic column contracts.
+
+### Changed
+- Serving client bitemporal exclude columns now use the public silver manifest authority while
+  retaining the private compatibility alias.
+
+### Fixed
+- NESO regional silver transforms now cast present all-null identity columns to strings before
+  Parquet writes, avoiding DuckDB reads over NULL-typed `postcode` columns.
+
 ## [v0.16] - 2026-06-07
 
 **Codebase Hardening** — internal tech-debt milestone: remediated 31 of 32 open items from the
