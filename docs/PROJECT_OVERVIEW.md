@@ -276,13 +276,20 @@ Two YAML files in `config/`:
 - **`settings.yaml`** — Pipeline paths, lookback defaults, quality thresholds
 - **`sources.yaml`** — All 7 sources with base URLs, auth, rate limits, and per-dataset endpoint configs
 
+The default data root is repo-local `data/`, with the DuckDB catalogue at
+`data/gridflow.duckdb`. Override it with `GRIDFLOW_DATA_DIR` and
+`GRIDFLOW_DUCKDB_PATH` in the process environment or an untracked repo-root
+`.env`; absolute paths pass through unchanged. Precedence is process
+environment, then repo-root `.env`, then `config/settings.yaml`, then built-in
+defaults.
+
 API keys are resolved from environment variables (e.g. `ENTSOE_API_KEY`, `GIE_API_KEY`). Sources without auth (Elexon, Open-Meteo, ENTSO-G, NESO) work out of the box.
 
 ---
 
 ## DuckDB Catalogue
 
-The DuckDB file (`data/gridflow.duckdb`) stores:
+The DuckDB file (`<data-root>/gridflow.duckdb` by default) stores:
 
 | Table/View | Purpose |
 |------------|---------|
@@ -293,6 +300,8 @@ The DuckDB file (`data/gridflow.duckdb`) stores:
 | `gold_{dataset}` (views) | Auto-registered views pointing at gold Parquet files |
 
 Views use `read_parquet('path/**/*.parquet', hive_partitioning=true)` so you can query all historical data with plain SQL.
+After relocating an existing data root, run the view refresh because Parquet
+view globs store absolute paths.
 
 ---
 
