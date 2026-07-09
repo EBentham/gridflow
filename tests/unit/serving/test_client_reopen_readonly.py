@@ -31,6 +31,60 @@ def tiny_duckdb(tmp_path: Path) -> Path:
     return db_path
 
 
+def _seed_duckdb(db_path: Path, value: int) -> None:
+    """Seed a minimal DuckDB catalogue at db_path."""
+    con = duckdb.connect(str(db_path), read_only=False)
+    try:
+        con.execute("CREATE TABLE t (x INTEGER)")
+        con.execute("INSERT INTO t VALUES (?)", [value])
+    finally:
+        con.close()
+
+
+def test_default_db_path_comes_from_settings(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """GridflowClient() uses GRIDFLOW_DUCKDB_PATH via settings when no path is given."""
+    db_path = tmp_path / "configured.duckdb"
+    _seed_duckdb(db_path, 7)
+    monkeypatch.setenv("GRIDFLOW_DUCKDB_PATH", str(db_path))
+
+    client = GridflowClient()
+    try:
+        df = client.query("SELECT x FROM t")
+    finally:
+        client.close()
+
+    assert df.row(0) == (7,)
+
+
+def test_explicit_db_path_overrides_settings(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """An explicit db_path argument wins over the settings-derived default."""
+    configured_db = tmp_path / "configured.duckdb"
+    explicit_db = tmp_path / "explicit.duckdb"
+    _seed_duckdb(configured_db, 1)
+    _seed_duckdb(explicit_db, 2)
+    monkeypatch.setenv("GRIDFLOW_DUCKDB_PATH", str(configured_db))
+
+    client = GridflowClient(db_path=explicit_db)
+    try:
+        df = client.query("SELECT x FROM t")
+    finally:
+        client.close()
+
+    assert df.row(0) == (2,)
+
+
+def test_missing_duckdb_raises_file_not_found(tmp_path: Path) -> None:
+    """A missing explicit catalogue path still raises FileNotFoundError."""
+    missing_db = tmp_path / "missing.duckdb"
+
+    with pytest.raises(FileNotFoundError, match="DuckDB catalogue not found"):
+        GridflowClient(db_path=missing_db)
+
+
 def test_close_idempotent(tiny_duckdb: Path) -> None:
     """Two close() calls are safe — second is a no-op."""
     client = GridflowClient(db_path=tiny_duckdb)

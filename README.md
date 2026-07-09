@@ -79,6 +79,22 @@ GIE_API_KEY=your-token-here
 
 Elexon, Open-Meteo, ENTSO-G, and NESO work out of the box with no key.
 
+### Configuring the data root
+
+By default, gridflow stores data in repo-local `data/` and the catalogue at
+`data/gridflow.duckdb`. To move the data root, set environment variables in
+your shell or in an untracked repo-root `.env` file:
+
+```env
+GRIDFLOW_DATA_DIR=<absolute local data root>
+GRIDFLOW_DUCKDB_PATH=<absolute local data root>/gridflow.duckdb
+```
+
+Absolute paths pass through unchanged. Precedence is process environment,
+then repo-root `.env`, then `config/settings.yaml`, then built-in defaults.
+Keep cloud-synced folders such as OneDrive or Google Drive out of the data
+root; sync clients can lock the DuckDB file and make reads or writes fail.
+
 ---
 
 ## Usage

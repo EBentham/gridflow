@@ -290,14 +290,18 @@ python scripts/run_all_sources.py --public-only
 
 ## File Locations
 
+Default `<data-root>` is repo-local `data/`. Override it with
+`GRIDFLOW_DATA_DIR` and `GRIDFLOW_DUCKDB_PATH` in the process environment or an
+untracked repo-root `.env`.
+
 | What | Path |
 |------|------|
 | CLI entrypoint | `src/gridflow/cli.py` |
 | Config files | `config/settings.yaml`, `config/sources.yaml` |
-| Raw data (bronze) | `data/bronze/{source}/{dataset}/YYYY/MM/DD/` |
-| Clean data (silver) | `data/silver/{source}/{dataset}/year=YYYY/month=MM/` |
-| Analytics data (gold) | `data/gold/{dataset}/year=YYYY/` |
-| CSV exports | `data/exports/{source}/{dataset}.csv` |
-| DuckDB catalogue | `data/gridflow.duckdb` |
+| Raw data (bronze) | `<data-root>/bronze/{source}/{dataset}/YYYY/MM/DD/` |
+| Clean data (silver) | `<data-root>/silver/{source}/{dataset}/year=YYYY/month=MM/` |
+| Analytics data (gold) | `<data-root>/gold/{dataset}/year=YYYY/` |
+| CSV exports | `<data-root>/exports/{source}/{dataset}.csv` |
+| DuckDB catalogue | `<data-root>/gridflow.duckdb` |
 | Logs | `logs/` |
 | IDE debug scripts | `scripts/run_pipeline.py`, `scripts/run_all_sources.py` |

@@ -3,12 +3,14 @@
 from __future__ import annotations
 
 import json
+import os
 from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
 from dotenv import load_dotenv
 
+from gridflow.config import settings as settings_module
 from gridflow.config.settings import (
     DatasetConfig,
     GridflowConfig,
@@ -20,6 +22,26 @@ from gridflow.connectors.base import RawResponse
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 load_dotenv(PROJECT_ROOT / ".env", override=False)
+_PATH_ENV_VARS = ("GRIDFLOW_DATA_DIR", "GRIDFLOW_DUCKDB_PATH", "GRIDFLOW_LOG_DIR")
+
+
+@pytest.fixture(autouse=True)
+def _clear_gridflow_path_env(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Clear data-root overrides so local machine settings cannot leak into tests."""
+    for env_var in _PATH_ENV_VARS:
+        monkeypatch.delenv(env_var, raising=False)
+
+    original_load_dotenv = settings_module.load_dotenv
+
+    def load_dotenv_without_path_env(*args: object, **kwargs: object) -> bool:
+        protected = {env_var for env_var in _PATH_ENV_VARS if env_var in os.environ}
+        loaded = original_load_dotenv(*args, **kwargs)
+        for env_var in _PATH_ENV_VARS:
+            if env_var not in protected:
+                monkeypatch.delenv(env_var, raising=False)
+        return loaded
+
+    monkeypatch.setattr(settings_module, "load_dotenv", load_dotenv_without_path_env)
 
 
 def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item]) -> None:
