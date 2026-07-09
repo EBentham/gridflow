@@ -36,12 +36,22 @@ _BITEMPORAL_EXCLUDE = (
 class GridflowClient:
     """Client for querying gridflow data via DuckDB.
 
+    Args:
+        db_path: Path to the DuckDB catalogue. When omitted, the path comes
+            from gridflow settings: process environment
+            ``GRIDFLOW_DUCKDB_PATH`` first, then repo-root ``.env``, then
+            ``config/settings.yaml``, then the default.
+
     Usage:
         gf = GridflowClient()
         prices = gf.get_system_prices("2024-01-01", "2024-01-31")
     """
 
-    def __init__(self, db_path: str | Path = "data/gridflow.duckdb"):
+    def __init__(self, db_path: str | Path | None = None):
+        if db_path is None:
+            from gridflow.config.settings import load_settings
+
+            db_path = load_settings().pipeline.duckdb_path
         self._db_path = Path(db_path)
         if not self._db_path.exists():
             raise FileNotFoundError(
