@@ -92,6 +92,13 @@ class BaseSilverTransformer(ABC):
     run-suffixed-files.md`` for the trade-off discussion. Only datasets that
     publish meaningful revisions (REMIT, FOU2T14D) should opt in.
     """
+    VINTAGE_PER_BRONZE_FILE: ClassVar[bool] = False
+    """Opt in to assigning one availability timestamp per bronze raw file.
+
+    The default keeps the established whole-date read and single availability
+    timestamp. Revision feeds whose bronze fetch time is their only vintage
+    marker set this to ``True`` and implement ``read_bronze_file``.
+    """
 
     def __init__(self, data_dir: Path):
         self.data_dir = data_dir
@@ -110,6 +117,16 @@ class BaseSilverTransformer(ABC):
         Returns a clean DataFrame matching the silver schema."""
         ...
 
+    def read_bronze_file(self, raw_path: Path) -> pl.DataFrame:
+        """Read one raw bronze file for per-file vintage capture.
+
+        Only transformers opting into ``VINTAGE_PER_BRONZE_FILE`` need to
+        implement this method; the ordinary ``read_bronze`` path is unchanged.
+        """
+        raise NotImplementedError(
+            f"{type(self).__name__} must implement read_bronze_file for per-file vintages"
+        )
+
     def run(
         self,
         target_date: date,
@@ -127,17 +144,71 @@ class BaseSilverTransformer(ABC):
         self.last_unmapped_count = 0
         self.last_validation_failure_count = 0
 
-        # Read bronze
-        raw_df = self.read_bronze(target_date)
-        if raw_df.is_empty():
+        resolved_run_id = run_id or f"adhoc-{datetime.now(UTC).isoformat()}"
+        frames: list[pl.DataFrame] = []
+
+        if self.VINTAGE_PER_BRONZE_FILE:
+            for date_dir in self._bronze_date_dirs(target_date):
+                for raw_path in sorted(date_dir.glob("raw_*.json")):
+                    # The data glob also matches sidecars (raw_*.meta.json) — skip them.
+                    if raw_path.name.endswith(".meta.json"):
+                        continue
+                    available_at = self._timestamp_from_sidecar(raw_path.with_suffix(".meta.json"))
+                    if available_at is None:
+                        available_at = datetime.now(UTC)
+                        logger.warning(
+                            "No usable bronze sidecar timestamp for %s; using %s",
+                            raw_path,
+                            available_at.isoformat(),
+                        )
+                    clean_df = self._process_frame(
+                        self.read_bronze_file(raw_path),
+                        target_date,
+                        resolved_run_id,
+                        available_at,
+                    )
+                    if clean_df is not None:
+                        frames.append(clean_df)
+        else:
+            available_at = (
+                self._available_at_from_bronze(target_date) if reingest else datetime.now(UTC)
+            )
+            clean_df = self._process_frame(
+                self.read_bronze(target_date), target_date, resolved_run_id, available_at
+            )
+            if clean_df is not None:
+                frames.append(clean_df)
+
+        if not frames:
             logger.warning(f"No bronze data for {self.source}/{self.dataset} on {target_date}")
             return 0
 
-        # Transform
+        if self.write_silver_csv:
+            # Frames can differ in optional columns (e.g. run_type present in one
+            # vintage only) — diagonal concat null-fills instead of raising (CL-1).
+            self._write_csv(pl.concat(frames, how="diagonal"), target_date)
+
+        total_rows = sum(len(frame) for frame in frames)
+        logger.info(
+            f"Silver write: {self.source}/{self.dataset} {target_date} -> {total_rows} rows"
+        )
+        return total_rows
+
+    def _process_frame(
+        self,
+        raw_df: pl.DataFrame,
+        target_date: date,
+        run_id: str,
+        available_at: datetime,
+    ) -> pl.DataFrame | None:
+        """Transform, validate, stamp, and write one bronze-vintage frame."""
+        if raw_df.is_empty():
+            return None
+
         clean_df = self.transform(raw_df)
         if clean_df.is_empty():
             logger.warning(f"Transform produced 0 rows for {target_date}")
-            return 0
+            return None
 
         # Enforce the declared Pydantic schema on the FULL frame, fail-soft
         # (VTA-SCHEMA-01): failures are counted + logged here and surfaced by the
@@ -145,30 +216,16 @@ class BaseSilverTransformer(ABC):
         # hard rule). Validated on the transform() output, before bitemporal
         # columns are stamped (schemas do not declare those). No-op when
         # schema_cls is None (generic/dynamic transformers, incl. ENTSO-G CMP).
-        self.last_validation_failure_count = self._validate_against_schema(clean_df)
-
-        resolved_run_id = run_id or f"adhoc-{datetime.now(UTC).isoformat()}"
-        available_at = (
-            self._available_at_from_bronze(target_date) if reingest else datetime.now(UTC)
-        )
+        # Accumulates across vintage frames (reset once at run() start).
+        self.last_validation_failure_count += self._validate_against_schema(clean_df)
         clean_df = self._add_bitemporal_columns(
             clean_df,
             target_date=target_date,
-            run_id=resolved_run_id,
+            run_id=run_id,
             available_at=available_at,
         )
-
-        # Write silver (atomic: write to temp, then rename)
         self._write_silver(clean_df, target_date, available_at=available_at)
-        # Per-date CSV sidecar is opt-in (CH3-02 / CH-PERF-02): Parquet is
-        # canonical; the on-demand CSV path is the export_csv CLI command.
-        if self.write_silver_csv:
-            self._write_csv(clean_df, target_date)
-
-        logger.info(
-            f"Silver write: {self.source}/{self.dataset} {target_date} -> {len(clean_df)} rows"
-        )
-        return len(clean_df)
+        return clean_df
 
     def _validate_against_schema(self, df: pl.DataFrame) -> int:
         """Validate every row of the transform output against ``schema_cls``, fail-soft.

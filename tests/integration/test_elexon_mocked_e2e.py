@@ -138,15 +138,20 @@ def _silver_parquet_path(data_dir: Path, dataset: str) -> Path:
     if dataset == "bmunits_reference":
         return data_dir / "silver" / "elexon" / dataset / "bmunits_reference.parquet"
 
-    return (
+    partition = (
         data_dir
         / "silver"
         / "elexon"
         / dataset
         / f"year={TARGET_DATE.year}"
         / f"month={TARGET_DATE.month:02d}"
-        / f"{dataset}_{TARGET_DATE:%Y%m%d}.parquet"
     )
+    if dataset == "system_prices":
+        # APPEND_ONLY run-suffixed filename (ADR-025); the fixture writes one
+        # bronze file → exactly one vintage file.
+        [path] = partition.glob(f"{dataset}_{TARGET_DATE:%Y%m%d}_run*.parquet")
+        return path
+    return partition / f"{dataset}_{TARGET_DATE:%Y%m%d}.parquet"
 
 
 def _assert_bronze_metadata(

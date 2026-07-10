@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 import logging
 from datetime import UTC, date, datetime
-from typing import Any
+from typing import TYPE_CHECKING, Any, ClassVar
 
 import polars as pl
 
@@ -13,6 +13,9 @@ from gridflow.schemas.elexon import ElexonSystemPrice
 from gridflow.silver.base import BaseSilverTransformer
 from gridflow.silver.registry import register_transformer
 from gridflow.utils.time import settlement_period_to_utc
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +28,8 @@ class SystemPriceTransformer(BaseSilverTransformer):
     schema_cls = ElexonSystemPrice
 
     # Run type precedence — higher number wins
-    RUN_PRECEDENCE = {"II": 1, "SF": 2, "R1": 3, "R2": 4, "R3": 5, "RF": 6, "DF": 7}
+    APPEND_ONLY: ClassVar[bool] = True
+    VINTAGE_PER_BRONZE_FILE: ClassVar[bool] = True
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         """Read all bronze JSON files for a given date."""
@@ -55,6 +59,17 @@ class SystemPriceTransformer(BaseSilverTransformer):
             return pl.DataFrame()
 
         return pl.DataFrame(rows)
+
+    def read_bronze_file(self, raw_path: Path) -> pl.DataFrame:
+        """Read one Elexon system-price bronze response."""
+        try:
+            data = json.loads(raw_path.read_text())
+            records = data.get("data", []) if isinstance(data, dict) else data
+        except (OSError, json.JSONDecodeError, AttributeError) as exc:
+            logger.warning(f"Failed to parse bronze file {raw_path}: {exc}")
+            return pl.DataFrame()
+
+        return pl.DataFrame(records) if records else pl.DataFrame()
 
     def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
         """Normalise, validate, and deduplicate system price data."""
@@ -123,12 +138,6 @@ class SystemPriceTransformer(BaseSilverTransformer):
             .alias("timestamp_utc")
         )
 
-        # Resolve settlement runs: keep only the latest per SP
-        if "run_type" in df.columns:
-            df = self._resolve_runs(df)
-        else:
-            df = df.unique(subset=["settlement_date", "settlement_period"], keep="last")
-
         # Add metadata columns
         now = datetime.now(UTC)
         df = df.with_columns(
@@ -154,18 +163,6 @@ class SystemPriceTransformer(BaseSilverTransformer):
         available_cols = [c for c in output_cols if c in df.columns]
 
         return df.select(available_cols).sort("timestamp_utc")
-
-    def _resolve_runs(self, df: pl.DataFrame) -> pl.DataFrame:
-        """Keep only the latest run type per settlement period."""
-        return (
-            df.with_columns(
-                pl.col("run_type").replace_strict(self.RUN_PRECEDENCE, default=0).alias("_run_rank")
-            )
-            .sort("_run_rank", descending=True)
-            .group_by(["settlement_date", "settlement_period"])
-            .first()
-            .drop("_run_rank")
-        )
 
 
 # Register this transformer
