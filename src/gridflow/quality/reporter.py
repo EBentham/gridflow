@@ -8,8 +8,9 @@ from contextlib import closing
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
-import duckdb
 import polars as pl
+
+from gridflow.storage.duckdb import get_connection
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -89,7 +90,7 @@ class QualityReporter:
         # failure path too — the bare `con.close()` only ran on success, leaving
         # cleanup to refcount/__del__ when the write raised.
         try:
-            with closing(duckdb.connect(str(self.duckdb_path))) as con:
+            with closing(get_connection(self.duckdb_path)) as con:
                 con.execute("""
                     CREATE TABLE IF NOT EXISTS quality_reports (
                         run_id          VARCHAR,
