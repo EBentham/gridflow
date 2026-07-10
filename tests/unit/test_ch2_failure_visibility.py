@@ -208,7 +208,7 @@ def test_write_report_db_failure_surfaces(
     def boom(*args: object, **kwargs: object) -> object:
         raise RuntimeError("simulated DuckDB connect failure")
 
-    monkeypatch.setattr(reporter_mod.duckdb, "connect", boom)
+    monkeypatch.setattr(reporter_mod, "get_connection", boom, raising=False)
 
     with (
         caplog.at_level(logging.ERROR, logger="gridflow.quality.reporter"),

@@ -165,6 +165,31 @@ def test_range_flags_out_of_range() -> None:
 # --- quality_reports id uniqueness ------------------------------------------
 
 
+def test_write_report_uses_shared_writable_connection(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Quality reports must use the shared retrying writable connection helper."""
+    import gridflow.quality.reporter as reporter_mod
+    from gridflow.quality.checks import QualityResult
+
+    duckdb_path = tmp_path / "q.duckdb"
+    data_dir = tmp_path / "data"
+    data_dir.mkdir()
+    reporter = QualityReporter(data_dir, duckdb_path)
+    reporter.add_result(QualityResult("c", "ds", "src", True, 0.0, "ok"))
+
+    calls: list[tuple[Path | str, bool]] = []
+    real_get_connection = reporter_mod.get_connection
+
+    def spy(db_path: Path | str, read_only: bool = False) -> object:
+        calls.append((db_path, read_only))
+        return real_get_connection(db_path, read_only=read_only)
+
+    monkeypatch.setattr(reporter_mod, "get_connection", spy, raising=False)
+    assert reporter.write_report() == 1
+    assert calls == [(reporter.duckdb_path, False)]
+
+
 def test_quality_report_ids_unique_across_runs(tmp_path: Path) -> None:
     """Two separate report runs must not produce colliding identity keys.
 
