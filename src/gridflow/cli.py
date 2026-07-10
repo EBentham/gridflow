@@ -606,6 +606,7 @@ def quality(
         check_time_series_gaps,
     )
     from gridflow.quality.reporter import QualityReporter
+    from gridflow.silver.latest_views import LATEST_VIEW_SPECS, select_latest_vintage
     from gridflow.storage.parquet import scan_parquet_dir
     from gridflow.utils.logging import setup_logging
 
@@ -636,7 +637,14 @@ def quality(
             # Quality wants the whole dataset (no date range); non-date/single
             # flat-file datasets (NESO carbon_intensity, entsog generic) route
             # through the rangeless dir scan, never the range helper.
-            df = scan_parquet_dir(dataset_dir).collect()
+            lf = scan_parquet_dir(dataset_dir)
+            # APPEND_ONLY datasets keep every vintage on disk; quality reads the
+            # latest-vintage surface (ADR-025 P0.3) so duplicate/gap checks see
+            # one row per entity key, not one per vintage.
+            spec = LATEST_VIEW_SPECS.get((src, ds))
+            if spec is not None:
+                lf = select_latest_vintage(lf, spec)
+            df = lf.collect()
             if df.is_empty():
                 continue
 

@@ -282,3 +282,154 @@ def test_gold_view_reads_mixed_schemas(tmp_path: Path, monkeypatch: pytest.Monke
         con.close()
 
     assert rows == [(1, True), (2, False)]
+
+
+def test_latest_view_registered_for_append_only_datasets(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """ADR-025 P0.3: coexisting vintages resolve to one row per key via _latest."""
+    from datetime import UTC, date, datetime
+
+    monkeypatch.setattr("gridflow.storage.duckdb._register_gold_views", lambda con: None)
+
+    data_dir = tmp_path / "data"
+    db_path = tmp_path / "gridflow.duckdb"
+    partition = data_dir / "silver" / "elexon" / "system_prices" / "year=2024" / "month=01"
+
+    # Vintage A (08:00): SP1 R1 + SP2 SF. Vintage B (12:00 for SP1, 10:00 tie for
+    # SP2): SP1 II published later must WIN despite lower rank (available_at-
+    # primary); SP2 R1 wins its available_at tie on run rank.
+    _write_parquet(
+        pl.DataFrame(
+            {
+                "settlement_date": [date(2024, 1, 15)] * 2,
+                "settlement_period": [1, 2],
+                "system_sell_price": [44.0, 10.0],
+                "run_type": ["R1", "SF"],
+                "available_at": [
+                    datetime(2024, 1, 15, 8, tzinfo=UTC),
+                    datetime(2024, 1, 15, 10, tzinfo=UTC),
+                ],
+            }
+        ),
+        partition / "system_prices_20240115_runA.parquet",
+    )
+    _write_parquet(
+        pl.DataFrame(
+            {
+                "settlement_date": [date(2024, 1, 15)] * 2,
+                "settlement_period": [1, 2],
+                "system_sell_price": [45.5, 11.0],
+                "run_type": ["II", "R1"],
+                "available_at": [
+                    datetime(2024, 1, 15, 12, tzinfo=UTC),
+                    datetime(2024, 1, 15, 10, tzinfo=UTC),
+                ],
+            }
+        ),
+        partition / "system_prices_20240115_runB.parquet",
+    )
+
+    init_catalogue(db_path, data_dir)
+    con = get_connection(db_path, read_only=True)
+    try:
+        base_count = con.execute("SELECT COUNT(*) FROM silver_elexon_system_prices").fetchone()[0]
+        latest = con.execute(
+            "SELECT settlement_period, system_sell_price "
+            "FROM silver_elexon_system_prices_latest ORDER BY settlement_period"
+        ).fetchall()
+    finally:
+        con.close()
+
+    assert base_count == 4
+    assert latest == [(1, 45.5), (2, 11.0)]
+
+
+def test_latest_view_survives_missing_rank_column(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Live DISEBSP silver has no run_type at all — registration must not fail."""
+    from datetime import UTC, date, datetime
+
+    monkeypatch.setattr("gridflow.storage.duckdb._register_gold_views", lambda con: None)
+
+    data_dir = tmp_path / "data"
+    db_path = tmp_path / "gridflow.duckdb"
+    partition = data_dir / "silver" / "elexon" / "system_prices" / "year=2024" / "month=01"
+
+    for hour, price, suffix in ((8, 44.0, "A"), (12, 45.5, "B")):
+        _write_parquet(
+            pl.DataFrame(
+                {
+                    "settlement_date": [date(2024, 1, 15)],
+                    "settlement_period": [1],
+                    "system_sell_price": [price],
+                    "available_at": [datetime(2024, 1, 15, hour, tzinfo=UTC)],
+                }
+            ),
+            partition / f"system_prices_20240115_run{suffix}.parquet",
+        )
+
+    init_catalogue(db_path, data_dir)
+    con = get_connection(db_path, read_only=True)
+    try:
+        latest = con.execute(
+            "SELECT system_sell_price FROM silver_elexon_system_prices_latest"
+        ).fetchall()
+    finally:
+        con.close()
+
+    assert latest == [(45.5,)]
+
+
+def test_latest_views_for_remit_and_fou2t14d(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The F7 APPEND_ONLY datasets finally get their read surface (R1-F02)."""
+    from datetime import UTC, date, datetime
+
+    monkeypatch.setattr("gridflow.storage.duckdb._register_gold_views", lambda con: None)
+
+    data_dir = tmp_path / "data"
+    db_path = tmp_path / "gridflow.duckdb"
+    stamp = datetime(2024, 1, 15, 10, tzinfo=UTC)
+
+    remit_dir = data_dir / "silver" / "elexon" / "remit" / "year=2024" / "month=01"
+    _write_parquet(
+        pl.DataFrame({"mrid": ["m1"], "revision_number": [1], "available_at": [stamp]}),
+        remit_dir / "remit_20240115_runA.parquet",
+    )
+    _write_parquet(
+        pl.DataFrame({"mrid": ["m1"], "revision_number": [2], "available_at": [stamp]}),
+        remit_dir / "remit_20240115_runB.parquet",
+    )
+
+    fou_dir = data_dir / "silver" / "elexon" / "fou2t14d" / "year=2024" / "month=01"
+    for hour, usable, suffix in ((8, 100, "A"), (12, 120, "B")):
+        _write_parquet(
+            pl.DataFrame(
+                {
+                    "settlement_date": [date(2024, 1, 15)],
+                    "settlement_period": [1],
+                    "fuel_type": ["WIND"],
+                    "output_usable": [usable],
+                    "available_at": [datetime(2024, 1, 15, hour, tzinfo=UTC)],
+                }
+            ),
+            fou_dir / f"fou2t14d_20240115_run{suffix}.parquet",
+        )
+
+    init_catalogue(db_path, data_dir)
+    con = get_connection(db_path, read_only=True)
+    try:
+        remit_rows = con.execute(
+            "SELECT mrid, revision_number FROM silver_elexon_remit_latest"
+        ).fetchall()
+        fou_rows = con.execute(
+            "SELECT fuel_type, output_usable FROM silver_elexon_fou2t14d_latest"
+        ).fetchall()
+    finally:
+        con.close()
+
+    assert remit_rows == [("m1", 2)]
+    assert fou_rows == [("WIND", 120)]
