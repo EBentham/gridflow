@@ -129,21 +129,29 @@ class PhysicalFlowsTransformer(BaseSilverTransformer):
         if rename_map:
             df = df.rename(rename_map)
 
-        if "value" in df.columns and "unit" in df.columns:
+        if "value" in df.columns:
             raw_present = pl.col("value").is_not_null() & (
                 pl.col("value").cast(pl.Utf8).str.strip_chars() != ""
             )
-            parses = pl.col("value").cast(pl.Float64, strict=False).is_not_null()
+            parsed = pl.col("value").cast(pl.Float64, strict=False)
+            parses = parsed.is_not_null() & parsed.is_finite()
             unparseable = (raw_present & ~parses).fill_null(False)
             invalid = df.filter(unparseable)
             if not invalid.is_empty():
+                diagnostic_columns = [
+                    column for column in ("point_key", "value") if column in invalid.columns
+                ]
+                offending = invalid.select(diagnostic_columns).to_dicts()
                 logger.warning(
-                    "Dropping %d ENTSO-G physical-flow row(s) with unparseable value(s)",
+                    "Dropping %d ENTSO-G physical-flow row(s) with unparseable value(s): %s",
                     invalid.height,
+                    offending,
                 )
                 df = df.filter(~unparseable)
             if df.is_empty():
                 return pl.DataFrame()
+
+        if "value" in df.columns and "unit" in df.columns:
             df = df.with_columns(pl.col("value").cast(pl.Float64, strict=False).alias("value"))
             # Issue 05 #3: drop rows whose unit is not in the explicit factor
             # table BEFORE normalising, with a logged count, rather than

@@ -297,6 +297,98 @@ class TestPhysicalFlowsTransformer:
         assert len(result) == 1
         assert abs(result["flow_gwh_per_day"][0] - 15_000.0) < 0.01
 
+    def test_genuine_zero_flow_is_preserved(self):
+        raw = pl.DataFrame(
+            [
+                {
+                    "indicator": "Physical Flow",
+                    "periodFrom": "2024-01-15T06:00:00Z",
+                    "pointKey": "ZERO",
+                    "directionKey": "entry",
+                    "value": 0.0,
+                    "unit": "GWh/d",
+                }
+            ]
+        )
+
+        result = self.t.transform(raw)
+
+        assert len(result) == 1
+        assert result["flow_gwh_per_day"][0] == 0.0
+        assert result["flow_gwh_per_day"].null_count() == 0
+
+    def test_non_finite_flow_values_are_dropped_with_diagnostics(self, caplog):
+        import logging
+
+        raw = pl.DataFrame(
+            [
+                {
+                    "indicator": "Physical Flow",
+                    "periodFrom": "2024-01-15T06:00:00Z",
+                    "pointKey": "GOOD",
+                    "directionKey": "entry",
+                    "value": "1000000",
+                    "unit": "kWh/d",
+                },
+                {
+                    "indicator": "Physical Flow",
+                    "periodFrom": "2024-01-15T06:00:00Z",
+                    "pointKey": "NOT_A_NUMBER",
+                    "directionKey": "entry",
+                    "value": "NaN",
+                    "unit": "kWh/d",
+                },
+                {
+                    "indicator": "Physical Flow",
+                    "periodFrom": "2024-01-15T06:00:00Z",
+                    "pointKey": "INFINITE",
+                    "directionKey": "entry",
+                    "value": "inf",
+                    "unit": "kWh/d",
+                },
+            ]
+        )
+
+        with caplog.at_level(logging.WARNING):
+            result = self.t.transform(raw)
+
+        assert result["point_key"].to_list() == ["GOOD"]
+        assert "unparseable value" in caplog.text
+        assert "NOT_A_NUMBER" in caplog.text
+        assert "NaN" in caplog.text
+        assert "INFINITE" in caplog.text
+        assert "inf" in caplog.text
+
+    def test_unparseable_value_without_unit_is_dropped(self, caplog):
+        import logging
+
+        raw = pl.DataFrame(
+            [
+                {
+                    "indicator": "Physical Flow",
+                    "periodFrom": "2024-01-15T06:00:00Z",
+                    "pointKey": "GOOD",
+                    "directionKey": "entry",
+                    "value": "1000000",
+                },
+                {
+                    "indicator": "Physical Flow",
+                    "periodFrom": "2024-01-15T06:00:00Z",
+                    "pointKey": "UNPARSEABLE",
+                    "directionKey": "entry",
+                    "value": "abc",
+                },
+            ]
+        )
+
+        with caplog.at_level(logging.WARNING):
+            result = self.t.transform(raw)
+
+        assert result["point_key"].to_list() == ["GOOD"]
+        assert result["flow_gwh_per_day"][0] == 1.0
+        assert "UNPARSEABLE" in caplog.text
+        assert "abc" in caplog.text
+
     def test_gas_day_offset_converted_to_utc(self):
         """ENGOP-04 (VT4): a gas-day periodFrom bearing a real offset (winter CET
         +01:00) must convert to the equivalent UTC instant — the CLAUDE.md
