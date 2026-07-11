@@ -2074,6 +2074,162 @@ class TestParserCalendarResolution:
         assert timestamps[2].hour == 2
 
 
+class TestParserA03ForwardFill:
+    @staticmethod
+    def _xml(
+        points: str,
+        *,
+        curve_type: str = "A03",
+        start: str = "2024-01-01T04:00Z",
+        end: str | None = "2024-01-01T10:00Z",
+        resolution: str = "PT60M",
+        period_tag: str = "Period",
+        flattened_interval: bool = False,
+    ) -> bytes:
+        curve_type_xml = f"<curveType>{curve_type}</curveType>" if curve_type else ""
+        if flattened_interval:
+            interval_xml = f"<timeInterval.start>{start}</timeInterval.start>"
+            if end is not None:
+                interval_xml += f"<timeInterval.end>{end}</timeInterval.end>"
+        else:
+            end_xml = f"<end>{end}</end>" if end is not None else ""
+            interval_xml = f"<timeInterval><start>{start}</start>{end_xml}</timeInterval>"
+        return f"""<?xml version='1.0'?>
+<GL_MarketDocument>
+  <mRID>document-a03</mRID>
+  <TimeSeries>
+    <mRID>series-a03</mRID>
+    {curve_type_xml}
+    <{period_tag}>
+      {interval_xml}
+      <resolution>{resolution}</resolution>
+      {points}
+    </{period_tag}>
+  </TimeSeries>
+</GL_MarketDocument>""".encode()
+
+    def test_a03_forward_fills_omitted_hourly_positions(self):
+        records = parse_timeseries_xml(
+            self._xml(
+                """
+<Point><position>1</position><quantity>100</quantity></Point>
+<Point><position>4</position><quantity>50</quantity></Point>"""
+            ),
+            value_tag="quantity",
+        )
+
+        assert len(records) == 6
+        assert [record["value"] for record in records] == [100.0, 100.0, 100.0, 50.0, 50.0, 50.0]
+        assert [record["timestamp_utc"].hour for record in records] == [4, 5, 6, 7, 8, 9]
+        assert all(record["timestamp_utc"].tzinfo is UTC for record in records)
+
+    def test_a03_available_period_spans_multi_week_outage(self):
+        records = parse_timeseries_xml(
+            self._xml(
+                "<Point><position>1</position><quantity>75</quantity></Point>",
+                start="2024-01-01T00:00Z",
+                end="2024-01-15T00:00Z",
+                period_tag="Available_Period",
+            ),
+            value_tag="quantity",
+        )
+
+        assert len(records) == 336
+        assert all(record["value"] == 75.0 for record in records)
+        assert records[0]["timestamp_utc"] == datetime(2024, 1, 1, tzinfo=UTC)
+        assert records[-1]["timestamp_utc"] == datetime(2024, 1, 14, 23, tzinfo=UTC)
+
+    def test_a03_does_not_fill_leading_gap(self):
+        records = parse_timeseries_xml(
+            self._xml(
+                """
+<Point><position>3</position><quantity>100</quantity></Point>
+<Point><position>4</position><quantity>50</quantity></Point>""",
+                flattened_interval=True,
+            ),
+            value_tag="quantity",
+        )
+
+        # Positions 1-2 (before the first declared point) are undefined — never
+        # lead-filled. Trailing positions 5-6 ARE filled: the last declared
+        # value holds to the interval end (A03 semantics).
+        assert len(records) == 4
+        assert [record["timestamp_utc"].hour for record in records] == [6, 7, 8, 9]
+        assert [record["value"] for record in records] == [100.0, 50.0, 50.0, 50.0]
+
+    def test_a03_out_of_window_point_warns_and_is_emitted(self, caplog):
+        records = parse_timeseries_xml(
+            self._xml("<Point><position>7</position><quantity>100</quantity></Point>"),
+            value_tag="quantity",
+        )
+
+        assert "out-of-window" in caplog.text
+        assert len(records) == 1
+        assert records[0]["timestamp_utc"] == datetime(2024, 1, 1, 10, tzinfo=UTC)
+        assert records[0]["value"] == 100.0
+
+    def test_a03_duplicate_position_warns_without_changing_emission(self, caplog):
+        records = parse_timeseries_xml(
+            self._xml(
+                """
+<Point><position>1</position><quantity>100</quantity></Point>
+<Point><position>1</position><quantity>50</quantity></Point>"""
+            ),
+            value_tag="quantity",
+        )
+
+        assert "duplicate declared point position(s) [1]" in caplog.text
+        assert [record["value"] for record in records] == [
+            100.0,
+            50.0,
+            50.0,
+            50.0,
+            50.0,
+            50.0,
+            50.0,
+        ]
+
+    @pytest.mark.parametrize("curve_type", ["A01", ""])
+    def test_non_a03_keeps_declared_points_only(self, curve_type: str):
+        records = parse_timeseries_xml(
+            self._xml(
+                """
+<Point><position>1</position><quantity>100</quantity></Point>
+<Point><position>4</position><quantity>50</quantity></Point>""",
+                curve_type=curve_type,
+            ),
+            value_tag="quantity",
+        )
+
+        assert len(records) == 2
+        assert [record["value"] for record in records] == [100.0, 50.0]
+
+    def test_a03_missing_end_warns_and_keeps_declared_points_only(self, caplog):
+        records = parse_timeseries_xml(
+            self._xml("<Point><position>1</position><quantity>100</quantity></Point>", end=None),
+            value_tag="quantity",
+        )
+
+        assert len(records) == 1
+        assert "Skipping ENTSO-E A03 forward-fill" in caplog.text
+        assert "document-a03" in caplog.text
+        assert "series-a03" in caplog.text
+
+    def test_a03_unmapped_resolution_warns_and_keeps_declared_points_only(self, caplog):
+        records = parse_timeseries_xml(
+            self._xml(
+                "<Point><position>1</position><quantity>100</quantity></Point>",
+                resolution="PT5M",
+            ),
+            value_tag="quantity",
+        )
+
+        assert len(records) == 1
+        assert "Skipping ENTSO-E A03 forward-fill" in caplog.text
+        assert "document-a03" in caplog.text
+        assert "series-a03" in caplog.text
+
+
 # ---------------------------------------------------------------------------
 # Phase 3 — endpoints
 # ---------------------------------------------------------------------------
@@ -2426,10 +2582,14 @@ class TestContractedReservesTransformer:
         assert "quantity_mw" in result.columns
         assert "reserve_type" in result.columns
 
-    def test_four_records(self):
+    def test_a03_forward_fill_expands_records(self):
         raw = _make_df_from_xml("contracted_reserves_gb.xml", "quantity")
         result = self.t.transform(raw)
-        assert len(result) == 4
+        # Fixture is 2 TimeSeries, each curveType A03 / PT60M over a 24h window
+        # declaring only 2 points. P0.4 forward-fills each A03 block to interval
+        # end -> 24 hourly points per series -> 2 * 24 = 48 (was 4 before the fix,
+        # when omitted repeated points were silently dropped).
+        assert len(result) == 48
 
     def test_reserve_type_values(self):
         raw = _make_df_from_xml("contracted_reserves_gb.xml", "quantity")
@@ -2462,7 +2622,9 @@ class TestContractedReservesTransformer:
         raw = _make_df_from_xml("contracted_reserves_gb.xml", "quantity")
         doubled = pl.concat([raw, raw])
         result = self.t.transform(doubled)
-        assert len(result) == 4
+        # Doubled input dedups back to the unique A03 forward-filled set (48,
+        # see test_a03_forward_fill_expands_records), not 2x it.
+        assert len(result) == 48
 
     def test_empty_input(self):
         assert self.t.transform(pl.DataFrame()).is_empty()
