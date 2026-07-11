@@ -177,14 +177,19 @@ def _register_views(con: duckdb.DuckDBPyConnection, data_dir: Path) -> None:
                 if spec is not None and _view_exists(con, view_name):
                     # Order/rank terms adapt to the view's actual columns (live-feed
                     # system_prices has no run_type; legacy files lack available_at).
+                    latest_name = f"{view_name}_latest"
                     sql = latest_view_sql(
                         view_name,
-                        f"{view_name}_latest",
+                        latest_name,
                         spec,
                         available_columns=_view_columns(con, view_name),
                     )
                     if sql is not None:
                         con.execute(sql)
+                    else:
+                        # A previously-registered projection that can no longer be
+                        # built must not linger as a binder-error trap.
+                        con.execute(f"DROP VIEW IF EXISTS {_quote_identifier(latest_name)}")
 
         _register_silver_aliases(con, dataset_sources)
 

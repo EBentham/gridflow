@@ -215,3 +215,83 @@ class TestQualityReadsLatestSurface:
         assert "duplicate" not in result.output.lower(), (
             "duplicate check must not false-fail on coexisting vintages: " + result.output
         )
+
+
+class TestOptionalKeyColumns:
+    """PR-A review MED-3: fou2t14d's live forecastDate-only shape has no
+    settlement_period — the projection must still build on the coarser key."""
+
+    def test_polars_selection_without_optional_key(self):
+        spec = LATEST_VIEW_SPECS[("elexon", "fou2t14d")]
+        df = pl.DataFrame(
+            {
+                "settlement_date": [date(2024, 1, 15)] * 2,
+                "fuel_type": ["WIND", "WIND"],
+                "output_usable": [100, 120],
+                "available_at": [
+                    datetime(2024, 1, 15, 8, tzinfo=UTC),
+                    datetime(2024, 1, 15, 12, tzinfo=UTC),
+                ],
+            }
+        )
+        result = select_latest_vintage(df.lazy(), spec).collect()
+        assert result["output_usable"].to_list() == [120]
+
+    def test_optional_key_tightens_grain_when_present(self):
+        spec = LATEST_VIEW_SPECS[("elexon", "fou2t14d")]
+        stamp = datetime(2024, 1, 15, 8, tzinfo=UTC)
+        df = pl.DataFrame(
+            {
+                "settlement_date": [date(2024, 1, 15)] * 2,
+                "settlement_period": [1, 2],
+                "fuel_type": ["WIND", "WIND"],
+                "output_usable": [100, 110],
+                "available_at": [stamp, stamp],
+            }
+        )
+        result = select_latest_vintage(df.lazy(), spec).collect()
+        assert result.height == 2, "distinct periods are distinct keys, not vintages"
+
+    def test_sql_includes_optional_key_only_when_available(self):
+        spec = LATEST_VIEW_SPECS[("elexon", "fou2t14d")]
+        with_period = latest_view_sql(
+            "base",
+            "base_latest",
+            spec,
+            {"settlement_date", "settlement_period", "fuel_type", "available_at"},
+        )
+        without_period = latest_view_sql(
+            "base", "base_latest", spec, {"settlement_date", "fuel_type", "available_at"}
+        )
+        assert with_period is not None and '"settlement_period"' in with_period
+        assert without_period is not None and "settlement_period" not in without_period
+
+
+class TestGoldReadsLatestSurface:
+    """PR-A review HIGH-2: the gold SMP builder must not multiply settlement
+    rows per vintage once system_prices is APPEND_ONLY."""
+
+    def test_gold_smp_one_row_per_period_across_vintages(self, tmp_path: Path):
+        from gridflow.gold.system_marginal_price import SystemMarginalPriceBuilder
+
+        partition = tmp_path / "silver" / "elexon" / "system_prices"
+        partition = partition / "year=2024" / "month=01"
+        partition.mkdir(parents=True)
+        for hour, sell, buy, suffix in ((8, 44.0, 54.0, "A"), (12, 45.5, 55.5, "B")):
+            pl.DataFrame(
+                {
+                    "settlement_date": [date(2024, 1, 15)],
+                    "settlement_period": [1],
+                    "timestamp_utc": [datetime(2024, 1, 15, 0, 0, tzinfo=UTC)],
+                    "system_sell_price": [sell],
+                    "system_buy_price": [buy],
+                    "net_imbalance_volume": [-120.5],
+                    "available_at": [datetime(2024, 1, 15, hour, tzinfo=UTC)],
+                }
+            ).write_parquet(partition / f"system_prices_20240115_run{suffix}.parquet")
+
+        df = SystemMarginalPriceBuilder(tmp_path).build(date(2024, 1, 15), date(2024, 1, 15))
+
+        assert df.height == 1, "one row per settlement period, not per vintage"
+        assert df["system_sell_price"].to_list() == [45.5], "latest vintage must win"
+        assert df["spread"].to_list() == [10.0]

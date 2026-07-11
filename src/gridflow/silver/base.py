@@ -98,6 +98,17 @@ class BaseSilverTransformer(ABC):
     The default keeps the established whole-date read and single availability
     timestamp. Revision feeds whose bronze fetch time is their only vintage
     marker set this to ``True`` and implement ``read_bronze_file``.
+
+    Contract notes for opt-ins (ADR-025):
+    - Only the EXACT date partition is read — never the multi-day
+      covering-partition fallback, which would stamp a prior day's rows into a
+      wrong-dated vintage file (review finding, v0.17 PR-A).
+    - A raw file without a parseable sidecar timestamp is SKIPPED loudly: a
+      ``now()`` fallback would mint a new non-idempotent vintage filename on
+      every re-transform and poison point-in-time reads.
+    - Transformers that ASSIGN ``last_unmapped_count`` inside ``transform()``
+      (the ADR-022 enum-mapping pattern) must convert to accumulation before
+      opting in, or per-frame counts overwrite each other.
     """
 
     def __init__(self, data_dir: Path):
@@ -146,26 +157,40 @@ class BaseSilverTransformer(ABC):
 
         resolved_run_id = run_id or f"adhoc-{datetime.now(UTC).isoformat()}"
         frames: list[pl.DataFrame] = []
+        saw_bronze = False
 
         if self.VINTAGE_PER_BRONZE_FILE:
-            for date_dir in self._bronze_date_dirs(target_date):
+            # EXACT date partition only — the covering-partition fallback in
+            # _bronze_date_dirs would stamp a prior day's rows into a file named
+            # for target_date (wrong-dated vintage; see class docstring).
+            exact_dir = (
+                self.bronze_dir
+                / str(target_date.year)
+                / f"{target_date.month:02d}"
+                / f"{target_date.day:02d}"
+            )
+            date_dirs = [exact_dir] if exact_dir.exists() else []
+            for date_dir in date_dirs:
                 for raw_path in sorted(date_dir.glob("raw_*.json")):
                     # The data glob also matches sidecars (raw_*.meta.json) — skip them.
                     if raw_path.name.endswith(".meta.json"):
                         continue
                     available_at = self._timestamp_from_sidecar(raw_path.with_suffix(".meta.json"))
                     if available_at is None:
-                        available_at = datetime.now(UTC)
+                        # Skip loudly: a now() fallback would mint a fresh
+                        # non-idempotent vintage file on every re-transform.
                         logger.warning(
-                            "No usable bronze sidecar timestamp for %s; using %s",
+                            "Skipping bronze file with no usable sidecar timestamp "
+                            "(cannot assign an honest vintage): %s",
                             raw_path,
-                            available_at.isoformat(),
                         )
+                        continue
+                    raw_df = self.read_bronze_file(raw_path)
+                    if raw_df.is_empty():
+                        continue
+                    saw_bronze = True
                     clean_df = self._process_frame(
-                        self.read_bronze_file(raw_path),
-                        target_date,
-                        resolved_run_id,
-                        available_at,
+                        raw_df, target_date, resolved_run_id, available_at
                     )
                     if clean_df is not None:
                         frames.append(clean_df)
@@ -173,14 +198,18 @@ class BaseSilverTransformer(ABC):
             available_at = (
                 self._available_at_from_bronze(target_date) if reingest else datetime.now(UTC)
             )
-            clean_df = self._process_frame(
-                self.read_bronze(target_date), target_date, resolved_run_id, available_at
-            )
-            if clean_df is not None:
-                frames.append(clean_df)
+            raw_df = self.read_bronze(target_date)
+            if not raw_df.is_empty():
+                saw_bronze = True
+                clean_df = self._process_frame(raw_df, target_date, resolved_run_id, available_at)
+                if clean_df is not None:
+                    frames.append(clean_df)
 
         if not frames:
-            logger.warning(f"No bronze data for {self.source}/{self.dataset} on {target_date}")
+            # Distinguish "nothing to read" from "read but transformed to zero
+            # rows" (the latter already logged per frame by _process_frame).
+            if not saw_bronze:
+                logger.warning(f"No bronze data for {self.source}/{self.dataset} on {target_date}")
             return 0
 
         if self.write_silver_csv:

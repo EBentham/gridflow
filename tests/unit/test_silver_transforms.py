@@ -126,11 +126,14 @@ class TestSystemPriceTransformer:
         )
         result = self.transformer.transform(raw)
 
-        assert result.select(["run_type", "system_sell_price"]).to_dicts() == [
-            {"run_type": "SF", "system_sell_price": 44.0},
-            {"run_type": "II", "system_sell_price": 45.5},
-            {"run_type": "R1", "system_sell_price": 46.25},
-        ]
+        # Tie-order under sort("timestamp_utc") is not guaranteed stable, so
+        # assert as a set: all three runs survive with values intact — any
+        # keep="last"/precedence collapse regression drops at least one.
+        rows = {
+            (row["run_type"], row["system_sell_price"])
+            for row in result.select(["run_type", "system_sell_price"]).to_dicts()
+        }
+        assert rows == {("SF", 44.0), ("II", 45.5), ("R1", 46.25)}
 
     def test_no_run_type_rows_remain_intact(self):
         """Live-shaped rows without a run type must not be deduplicated."""
@@ -157,7 +160,7 @@ class TestSystemPriceTransformer:
 
         assert len(result) == 2
         assert "run_type" not in result.columns
-        assert result["system_sell_price"].to_list() == [44.0, 45.5]
+        assert set(result["system_sell_price"].to_list()) == {44.0, 45.5}
 
     def test_run_writes_one_file_per_bronze_vintage(self, tmp_path: Path):
         """Distinct bronze sidecars produce distinct idempotent silver vintages."""
@@ -203,6 +206,66 @@ class TestSystemPriceTransformer:
 
         assert transformer.run(target_date, run_id="vintages") == 2
         assert sorted(silver_dir.glob("*.parquet")) == paths
+
+    def test_run_never_uses_covering_partition_fallback(self, tmp_path: Path):
+        """PR-A review HIGH-1: bronze existing only for a PRIOR day must not be
+        written into the target day's partition as a wrong-dated vintage."""
+        prior_dir = tmp_path / "bronze" / "elexon" / "system_prices" / "2024" / "01" / "14"
+        prior_dir.mkdir(parents=True)
+        (prior_dir / "raw_prior.json").write_text(
+            json.dumps(
+                {
+                    "data": [
+                        {
+                            "settlementDate": "2024-01-14",
+                            "settlementPeriod": 1,
+                            "systemSellPrice": 44.0,
+                            "systemBuyPrice": 55.0,
+                            "netImbalanceVolume": -120.5,
+                        }
+                    ]
+                }
+            )
+        )
+        (prior_dir / "raw_prior.meta.json").write_text(
+            json.dumps({"written_at": datetime(2024, 1, 14, 8, tzinfo=UTC).isoformat()})
+        )
+
+        transformer = SystemPriceTransformer(tmp_path)
+        assert transformer.run(date(2024, 1, 15)) == 0
+        silver_root = tmp_path / "silver" / "elexon" / "system_prices"
+        assert not list(silver_root.rglob("*20240115*.parquet"))
+
+    def test_run_skips_bronze_file_without_sidecar(
+        self, tmp_path: Path, caplog: pytest.LogCaptureFixture
+    ):
+        """PR-A review MED-4: no sidecar means no honest vintage — skip loudly
+        instead of minting a fresh now()-suffixed file on every re-transform."""
+        target_date = date(2024, 1, 15)
+        bronze_dir = tmp_path / "bronze" / "elexon" / "system_prices" / "2024" / "01" / "15"
+        bronze_dir.mkdir(parents=True)
+        (bronze_dir / "raw_orphan.json").write_text(
+            json.dumps(
+                {
+                    "data": [
+                        {
+                            "settlementDate": target_date.isoformat(),
+                            "settlementPeriod": 1,
+                            "systemSellPrice": 44.0,
+                            "systemBuyPrice": 55.0,
+                            "netImbalanceVolume": -120.5,
+                        }
+                    ]
+                }
+            )
+        )
+
+        transformer = SystemPriceTransformer(tmp_path)
+        with caplog.at_level("WARNING"):
+            assert transformer.run(target_date) == 0
+        assert "no usable sidecar timestamp" in caplog.text
+        silver_root = tmp_path / "silver" / "elexon" / "system_prices"
+        assert not list(silver_root.rglob("*.parquet"))
 
     def test_empty_input(self):
         """Empty DataFrame should return empty DataFrame."""

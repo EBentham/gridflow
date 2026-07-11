@@ -49,6 +49,14 @@ class LatestViewSpec:
     order_columns: tuple[str, ...] = ("available_at",)
     rank_column: str | None = None
     rank_map: tuple[tuple[str, int], ...] | None = None
+    optional_key_columns: tuple[str, ...] = ()
+    """Key refinements included only when present on the relation.
+
+    fou2t14d's live forecastDate-only shape has no settlement_period; making it
+    a required key would silently skip the whole projection (review finding,
+    v0.17 PR-A). Optional keys tighten the grain when the column exists and are
+    dropped when it doesn't.
+    """
 
 
 # BSC settlement-run precedence (II < SF < R1 < R2 < R3 < RF < DF). Secondary
@@ -74,7 +82,8 @@ LATEST_VIEW_SPECS: dict[tuple[str, str], LatestViewSpec] = {
         order_columns=("available_at", "revision_number"),
     ),
     ("elexon", "fou2t14d"): LatestViewSpec(
-        key_columns=("settlement_date", "settlement_period", "fuel_type"),
+        key_columns=("settlement_date", "fuel_type"),
+        optional_key_columns=("settlement_period",),
     ),
 }
 
@@ -84,10 +93,17 @@ def _quote_identifier(name: str) -> str:
     return '"' + name.replace('"', '""') + '"'
 
 
+def _quote_string_literal(value: str) -> str:
+    """Quote a SQL string literal, doubling embedded single-quotes."""
+    return "'" + value.replace("'", "''") + "'"
+
+
 def _rank_case_sql(spec: LatestViewSpec) -> str:
     assert spec.rank_column is not None and spec.rank_map is not None
+    # Escape rather than drop: silently dropping an entry would diverge from the
+    # Polars mirror (and an empty WHEN list is a syntax error).
     whens = " ".join(
-        f"WHEN '{value}' THEN {rank}" for value, rank in spec.rank_map if "'" not in value
+        f"WHEN {_quote_string_literal(value)} THEN {rank}" for value, rank in spec.rank_map
     )
     return f"CASE {_quote_identifier(spec.rank_column)} {whens} ELSE 0 END"
 
@@ -132,7 +148,10 @@ def latest_view_sql(
         logger.warning("Skipping %s: no vintage-order column present on %s", latest_view, base_view)
         return None
 
-    keys = ", ".join(_quote_identifier(c) for c in spec.key_columns)
+    key_columns = list(spec.key_columns) + [
+        c for c in spec.optional_key_columns if c in available_columns
+    ]
+    keys = ", ".join(_quote_identifier(c) for c in key_columns)
     return (
         f"CREATE OR REPLACE VIEW {_quote_identifier(latest_view)} AS "
         f"SELECT * FROM {_quote_identifier(base_view)} "
@@ -179,7 +198,10 @@ def select_latest_vintage(lf: pl.LazyFrame, spec: LatestViewSpec) -> pl.LazyFram
         logger.warning("Latest-vintage selection skipped: no vintage-order column present")
         return lf
 
+    key_columns = list(spec.key_columns) + [
+        c for c in spec.optional_key_columns if c in schema_columns
+    ]
     out = lf.sort(sort_columns, descending=True, nulls_last=True).unique(
-        subset=list(spec.key_columns), keep="first", maintain_order=True
+        subset=key_columns, keep="first", maintain_order=True
     )
     return out.drop(rank_alias) if drop_rank else out
