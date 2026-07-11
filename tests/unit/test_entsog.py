@@ -169,12 +169,34 @@ class TestPhysicalFlowsTransformer:
         self.t = _make_transformer()
 
     def test_transform_basic(self):
-        raw = _load_fixture_df()
+        raw = pl.DataFrame(
+            [
+                {
+                    "indicator": "Physical Flow",
+                    "periodFrom": "2024-01-15T06:00:00Z",
+                    "pointKey": "GOOD",
+                    "directionKey": "entry",
+                    "value": 1_000_000.0,
+                    "unit": "kWh/d",
+                },
+                {
+                    "indicator": "Physical Flow",
+                    "periodFrom": "2024-01-15T06:00:00Z",
+                    "pointKey": "MISSING",
+                    "directionKey": "entry",
+                    "unit": "kWh/d",
+                },
+            ]
+        )
         result = self.t.transform(raw)
         assert not result.is_empty()
         assert "timestamp_utc" in result.columns
         assert "point_key" in result.columns
         assert "flow_gwh_per_day" in result.columns
+        missing = result.filter(pl.col("point_key") == "MISSING")
+        assert len(missing) == 1
+        assert missing["flow_gwh_per_day"].null_count() == 1
+        assert missing.filter(pl.col("flow_gwh_per_day") == 0.0).is_empty()
 
     def test_filters_to_physical_flow_only(self):
         """Non-Physical-Flow records (e.g. 'Other Indicator') are excluded."""
@@ -275,6 +297,98 @@ class TestPhysicalFlowsTransformer:
         assert len(result) == 1
         assert abs(result["flow_gwh_per_day"][0] - 15_000.0) < 0.01
 
+    def test_genuine_zero_flow_is_preserved(self):
+        raw = pl.DataFrame(
+            [
+                {
+                    "indicator": "Physical Flow",
+                    "periodFrom": "2024-01-15T06:00:00Z",
+                    "pointKey": "ZERO",
+                    "directionKey": "entry",
+                    "value": 0.0,
+                    "unit": "GWh/d",
+                }
+            ]
+        )
+
+        result = self.t.transform(raw)
+
+        assert len(result) == 1
+        assert result["flow_gwh_per_day"][0] == 0.0
+        assert result["flow_gwh_per_day"].null_count() == 0
+
+    def test_non_finite_flow_values_are_dropped_with_diagnostics(self, caplog):
+        import logging
+
+        raw = pl.DataFrame(
+            [
+                {
+                    "indicator": "Physical Flow",
+                    "periodFrom": "2024-01-15T06:00:00Z",
+                    "pointKey": "GOOD",
+                    "directionKey": "entry",
+                    "value": "1000000",
+                    "unit": "kWh/d",
+                },
+                {
+                    "indicator": "Physical Flow",
+                    "periodFrom": "2024-01-15T06:00:00Z",
+                    "pointKey": "NOT_A_NUMBER",
+                    "directionKey": "entry",
+                    "value": "NaN",
+                    "unit": "kWh/d",
+                },
+                {
+                    "indicator": "Physical Flow",
+                    "periodFrom": "2024-01-15T06:00:00Z",
+                    "pointKey": "INFINITE",
+                    "directionKey": "entry",
+                    "value": "inf",
+                    "unit": "kWh/d",
+                },
+            ]
+        )
+
+        with caplog.at_level(logging.WARNING):
+            result = self.t.transform(raw)
+
+        assert result["point_key"].to_list() == ["GOOD"]
+        assert "unparseable value" in caplog.text
+        assert "NOT_A_NUMBER" in caplog.text
+        assert "NaN" in caplog.text
+        assert "INFINITE" in caplog.text
+        assert "inf" in caplog.text
+
+    def test_unparseable_value_without_unit_is_dropped(self, caplog):
+        import logging
+
+        raw = pl.DataFrame(
+            [
+                {
+                    "indicator": "Physical Flow",
+                    "periodFrom": "2024-01-15T06:00:00Z",
+                    "pointKey": "GOOD",
+                    "directionKey": "entry",
+                    "value": "1000000",
+                },
+                {
+                    "indicator": "Physical Flow",
+                    "periodFrom": "2024-01-15T06:00:00Z",
+                    "pointKey": "UNPARSEABLE",
+                    "directionKey": "entry",
+                    "value": "abc",
+                },
+            ]
+        )
+
+        with caplog.at_level(logging.WARNING):
+            result = self.t.transform(raw)
+
+        assert result["point_key"].to_list() == ["GOOD"]
+        assert result["flow_gwh_per_day"][0] == 1.0
+        assert "UNPARSEABLE" in caplog.text
+        assert "abc" in caplog.text
+
     def test_gas_day_offset_converted_to_utc(self):
         """ENGOP-04 (VT4): a gas-day periodFrom bearing a real offset (winter CET
         +01:00) must convert to the equivalent UTC instant — the CLAUDE.md
@@ -326,7 +440,16 @@ class TestPhysicalFlowsTransformer:
                     "value": 1_000_000.0,
                     "unit": "mystery-unit",
                 },
-            ]
+                {
+                    "indicator": "Physical Flow",
+                    "periodFrom": "2024-01-15T06:00:00Z",
+                    "pointKey": "UNPARSEABLE",
+                    "directionKey": "entry",
+                    "value": "abc",
+                    "unit": "kWh/d",
+                },
+            ],
+            schema_overrides={"value": pl.String},
         )
         with caplog.at_level(logging.WARNING):
             result = self.t.transform(raw)
@@ -336,9 +459,11 @@ class TestPhysicalFlowsTransformer:
         assert "BAD" not in point_keys, (
             "unknown-unit row must be dropped, not emitted with a mis-scaled value"
         )
+        assert "UNPARSEABLE" not in point_keys
         good = result.filter(pl.col("point_key") == "GOOD")
         assert abs(good["flow_gwh_per_day"][0] - 1.0) < 1e-9
         assert "mystery-unit" in caplog.text, "unknown unit drop must be logged, not silent"
+        assert "unparseable value" in caplog.text
 
     def test_read_bronze_filters_records_to_target_date(self, tmp_path):
         target = date(2026, 4, 17)
@@ -390,7 +515,8 @@ class TestEntsogPhysicalFlowSchema:
         r = EntsogPhysicalFlow(timestamp_utc=self._TS, point_key="BBL")
         assert r.point_label == ""
         assert r.direction_key == ""
-        assert r.flow_gwh_per_day == 0.0
+        # A missing vendor flow remains distinguishable from a real zero flow.
+        assert r.flow_gwh_per_day is None
 
     def test_naive_timestamp_rejected(self):
         from pydantic import ValidationError

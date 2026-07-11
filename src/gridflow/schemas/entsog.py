@@ -18,7 +18,7 @@ class EntsogPhysicalFlow(BaseSchema):
     operator_key: str = ""
     operator_label: str = ""
     direction_key: str = ""  # "entry" | "exit"
-    flow_gwh_per_day: float = 0.0  # Normalised to GWh/day
+    flow_gwh_per_day: float | None = None  # Normalised to GWh/day
     unit: str = ""  # Normalised flow unit, always "GWh/d" (raw kWh/d converted in silver)
     data_provider: str = Field(default="entsog")
 
