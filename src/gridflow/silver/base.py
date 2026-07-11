@@ -22,6 +22,26 @@ _VALIDATION_SAMPLE_LIMIT = 5
 """Max distinct validation-error strings logged per ``run()`` (fail-soft; bounded)."""
 
 
+def gas_day_event_time_expr(column: str = "gas_day") -> pl.Expr:
+    """Build the fixed-06:00 UTC event-time expression for a gas day.
+
+    Fixed 06:00 UTC is Gridflow's project labelling convention required by the
+    project ``CLAUDE.md``, the GIE vendor README, P0.6, and R1-F06. It
+    deliberately differs from the broader DST-aware vault page while tracked
+    follow-up P0.6-DOC-1 is unresolved. Any future convention change requires
+    another major dataset-version bump.
+
+    Args:
+        column: Name of the ``pl.Date`` gas-day column.
+
+    Returns:
+        A UTC-aware Polars expression aliased to ``event_time``.
+    """
+    return (pl.col(column).cast(pl.Datetime("us", "UTC")) + pl.duration(hours=6)).alias(
+        "event_time"
+    )
+
+
 class BaseSilverTransformer(ABC):
     """Base class for bronze -> silver transformations.
 

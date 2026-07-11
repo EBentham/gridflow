@@ -10,7 +10,7 @@ from typing import Any
 import polars as pl
 
 from gridflow.schemas.gie import LNGTerminal
-from gridflow.silver.base import BaseSilverTransformer
+from gridflow.silver.base import BaseSilverTransformer, gas_day_event_time_expr
 from gridflow.silver.registry import register_transformer
 
 logger = logging.getLogger(__name__)
@@ -22,6 +22,10 @@ class LNGTerminalTransformer(BaseSilverTransformer):
     source = "gie_alsi"
     dataset = "lng"
     schema_cls = LNGTerminal
+    DATASET_VERSION = "2.0.0"
+
+    def _event_time_expr(self, df: pl.DataFrame, target_date: date) -> pl.Expr:
+        return gas_day_event_time_expr("gas_day")
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         bronze_path = self._bronze_path_for_date(target_date)
@@ -59,6 +63,27 @@ class LNGTerminalTransformer(BaseSilverTransformer):
         df = df.with_columns(
             pl.col("gasDayStart").str.to_date(format="%Y-%m-%d", strict=False).alias("gas_day")
         )
+
+        invalid_dates = df.filter(pl.col("gas_day").is_null())
+        if not invalid_dates.is_empty():
+            sample_columns = [
+                column
+                for column in ("gasDayStart", "code", "countryCode", "name")
+                if column in invalid_dates.columns
+            ]
+            sample = [
+                {column: str(value)[:100] for column, value in row.items()}
+                for row in invalid_dates.select(sample_columns).head(5).to_dicts()
+            ]
+            logger.warning(
+                "Dropping %d GIE ALSI row(s) with invalid gasDayStart. "
+                "Sample raw date/country context: %s",
+                len(invalid_dates),
+                sample,
+            )
+            df = df.filter(pl.col("gas_day").is_not_null())
+            if df.is_empty():
+                return pl.DataFrame()
 
         # ALSI field names (may differ slightly from AGSI).
         # NB: vendor ``dtrs`` is carried RAW (neutral name) — it is NOT a percentage
