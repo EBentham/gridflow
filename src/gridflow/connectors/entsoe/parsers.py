@@ -464,6 +464,20 @@ def parse_timeseries_xml(
             declared_by_position: dict[int, list[dict[str, Any]]] = {}
             for position, record in declared_points:
                 declared_by_position.setdefault(position, []).append(record)
+            duplicate_positions = [
+                position
+                for position, declared_at_position in declared_by_position.items()
+                if len(declared_at_position) > 1
+            ]
+            if duplicate_positions:
+                logger.warning(
+                    "ENTSO-E A03 document %s series %s: duplicate declared point "
+                    "position(s) %s; emitting all declared records and using the last "
+                    "for forward-fill",
+                    document_id,
+                    timeseries_mrid,
+                    duplicate_positions,
+                )
 
             emitted_positions: set[int] = set()
             previous_record: dict[str, Any] | None = None
@@ -493,11 +507,20 @@ def parse_timeseries_xml(
                     records.append({**previous_record, "timestamp_utc": timestamp})
                 position += 1
 
-            records.extend(
+            out_of_window_records = [
                 record
                 for declared_position, record in declared_points
                 if declared_position not in emitted_positions
-            )
+            ]
+            if out_of_window_records:
+                logger.warning(
+                    "ENTSO-E A03 document %s series %s: %d declared point(s) fall "
+                    "at/after period end; emitting out-of-window",
+                    document_id,
+                    timeseries_mrid,
+                    len(out_of_window_records),
+                )
+            records.extend(out_of_window_records)
 
     return records
 

@@ -2157,6 +2157,38 @@ class TestParserA03ForwardFill:
         assert [record["timestamp_utc"].hour for record in records] == [6, 7, 8, 9]
         assert [record["value"] for record in records] == [100.0, 50.0, 50.0, 50.0]
 
+    def test_a03_out_of_window_point_warns_and_is_emitted(self, caplog):
+        records = parse_timeseries_xml(
+            self._xml("<Point><position>7</position><quantity>100</quantity></Point>"),
+            value_tag="quantity",
+        )
+
+        assert "out-of-window" in caplog.text
+        assert len(records) == 1
+        assert records[0]["timestamp_utc"] == datetime(2024, 1, 1, 10, tzinfo=UTC)
+        assert records[0]["value"] == 100.0
+
+    def test_a03_duplicate_position_warns_without_changing_emission(self, caplog):
+        records = parse_timeseries_xml(
+            self._xml(
+                """
+<Point><position>1</position><quantity>100</quantity></Point>
+<Point><position>1</position><quantity>50</quantity></Point>"""
+            ),
+            value_tag="quantity",
+        )
+
+        assert "duplicate declared point position(s) [1]" in caplog.text
+        assert [record["value"] for record in records] == [
+            100.0,
+            50.0,
+            50.0,
+            50.0,
+            50.0,
+            50.0,
+            50.0,
+        ]
+
     @pytest.mark.parametrize("curve_type", ["A01", ""])
     def test_non_a03_keeps_declared_points_only(self, curve_type: str):
         records = parse_timeseries_xml(
