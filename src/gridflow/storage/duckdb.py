@@ -9,6 +9,8 @@ from pathlib import Path
 
 import duckdb
 
+from gridflow.silver.latest_views import LATEST_VIEW_SPECS, latest_view_sql
+
 logger = logging.getLogger(__name__)
 
 
@@ -171,6 +173,23 @@ def _register_views(con: duckdb.DuckDBPyConnection, data_dir: Path) -> None:
                 view_name = f"silver_{source_dir.name}_{dataset_dir.name}"
                 pattern = str(dataset_dir / "**" / "*.parquet").replace("\\", "/")
                 _try_create_view(con, view_name, pattern)
+                spec = LATEST_VIEW_SPECS.get((source_dir.name, dataset_dir.name))
+                if spec is not None and _view_exists(con, view_name):
+                    # Order/rank terms adapt to the view's actual columns (live-feed
+                    # system_prices has no run_type; legacy files lack available_at).
+                    latest_name = f"{view_name}_latest"
+                    sql = latest_view_sql(
+                        view_name,
+                        latest_name,
+                        spec,
+                        available_columns=_view_columns(con, view_name),
+                    )
+                    if sql is not None:
+                        con.execute(sql)
+                    else:
+                        # A previously-registered projection that can no longer be
+                        # built must not linger as a binder-error trap.
+                        con.execute(f"DROP VIEW IF EXISTS {_quote_identifier(latest_name)}")
 
         _register_silver_aliases(con, dataset_sources)
 
@@ -266,6 +285,25 @@ def _quote_identifier(name: str) -> str:
     name safe and closes the local injection surface.
     """
     return '"' + name.replace('"', '""') + '"'
+
+
+def _view_exists(con: duckdb.DuckDBPyConnection, view_name: str) -> bool:
+    """Return whether a view is registered in DuckDB's main schema."""
+    row = con.execute(
+        "SELECT 1 FROM information_schema.views WHERE table_schema = ? AND table_name = ?",
+        ["main", view_name],
+    ).fetchone()
+    return row is not None
+
+
+def _view_columns(con: duckdb.DuckDBPyConnection, view_name: str) -> set[str]:
+    """Return the column names of a registered view."""
+    rows = con.execute(
+        "SELECT column_name FROM information_schema.columns "
+        "WHERE table_schema = ? AND table_name = ?",
+        ["main", view_name],
+    ).fetchall()
+    return {row[0] for row in rows}
 
 
 def _quote_string_literal(value: str) -> str:

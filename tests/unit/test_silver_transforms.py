@@ -95,7 +95,7 @@ class TestSystemPriceTransformer:
         assert result["data_provider"][0] == "elexon"
 
     def test_run_type_resolution(self):
-        """Later run types should supersede earlier ones."""
+        """Settlement runs remain intact for read-time vintage selection."""
         raw = self._make_raw_df(
             [
                 {
@@ -104,7 +104,7 @@ class TestSystemPriceTransformer:
                     "systemSellPrice": 44.00,
                     "systemBuyPrice": 54.00,
                     "netImbalanceVolume": -115.0,
-                    "settlementRunType": "II",
+                    "settlementRunType": "SF",
                 },
                 {
                     "settlementDate": "2024-01-15",
@@ -112,16 +112,160 @@ class TestSystemPriceTransformer:
                     "systemSellPrice": 45.50,
                     "systemBuyPrice": 55.00,
                     "netImbalanceVolume": -120.5,
-                    "settlementRunType": "SF",
+                    "settlementRunType": "II",
+                },
+                {
+                    "settlementDate": "2024-01-15",
+                    "settlementPeriod": 1,
+                    "systemSellPrice": 46.25,
+                    "systemBuyPrice": 56.25,
+                    "netImbalanceVolume": -125.0,
+                    "settlementRunType": "R1",
                 },
             ]
         )
         result = self.transformer.transform(raw)
 
-        # Should keep SF (precedence 2) over II (precedence 1)
-        assert len(result) == 1
-        assert result["run_type"][0] == "SF"
-        assert result["system_sell_price"][0] == 45.50
+        # Tie-order under sort("timestamp_utc") is not guaranteed stable, so
+        # assert as a set: all three runs survive with values intact — any
+        # keep="last"/precedence collapse regression drops at least one.
+        rows = {
+            (row["run_type"], row["system_sell_price"])
+            for row in result.select(["run_type", "system_sell_price"]).to_dicts()
+        }
+        assert rows == {("SF", 44.0), ("II", 45.5), ("R1", 46.25)}
+
+    def test_no_run_type_rows_remain_intact(self):
+        """Live-shaped rows without a run type must not be deduplicated."""
+        raw = self._make_raw_df(
+            [
+                {
+                    "settlementDate": "2024-01-15",
+                    "settlementPeriod": 1,
+                    "systemSellPrice": 44.0,
+                    "systemBuyPrice": 54.0,
+                    "netImbalanceVolume": -115.0,
+                },
+                {
+                    "settlementDate": "2024-01-15",
+                    "settlementPeriod": 1,
+                    "systemSellPrice": 45.5,
+                    "systemBuyPrice": 55.0,
+                    "netImbalanceVolume": -120.5,
+                },
+            ]
+        )
+
+        result = self.transformer.transform(raw)
+
+        assert len(result) == 2
+        assert "run_type" not in result.columns
+        assert set(result["system_sell_price"].to_list()) == {44.0, 45.5}
+
+    def test_run_writes_one_file_per_bronze_vintage(self, tmp_path: Path):
+        """Distinct bronze sidecars produce distinct idempotent silver vintages."""
+        target_date = date(2024, 1, 15)
+        bronze_dir = tmp_path / "bronze" / "elexon" / "system_prices" / "2024" / "01" / "15"
+        bronze_dir.mkdir(parents=True)
+        vintages = [
+            ("first", datetime(2024, 1, 15, 8, tzinfo=UTC), 44.0),
+            ("second", datetime(2024, 1, 15, 12, tzinfo=UTC), 45.5),
+        ]
+        for name, written_at, sell_price in vintages:
+            (bronze_dir / f"raw_{name}.json").write_text(
+                json.dumps(
+                    {
+                        "data": [
+                            {
+                                "settlementDate": target_date.isoformat(),
+                                "settlementPeriod": 1,
+                                "systemSellPrice": sell_price,
+                                "systemBuyPrice": 55.0,
+                                "netImbalanceVolume": -120.5,
+                            }
+                        ]
+                    }
+                )
+            )
+            (bronze_dir / f"raw_{name}.meta.json").write_text(
+                json.dumps({"written_at": written_at.isoformat()})
+            )
+
+        transformer = SystemPriceTransformer(tmp_path)
+        assert transformer.run(target_date, run_id="vintages") == 2
+
+        silver_dir = tmp_path / "silver" / "elexon" / "system_prices" / "year=2024" / "month=01"
+        paths = sorted(silver_dir.glob("*.parquet"))
+        assert [path.name for path in paths] == [
+            "system_prices_20240115_run2024-01-15T08-00-00-00-00.parquet",
+            "system_prices_20240115_run2024-01-15T12-00-00-00-00.parquet",
+        ]
+        assert [pl.read_parquet(path)["available_at"][0] for path in paths] == [
+            vintage[1] for vintage in vintages
+        ]
+
+        assert transformer.run(target_date, run_id="vintages") == 2
+        assert sorted(silver_dir.glob("*.parquet")) == paths
+
+    def test_run_never_uses_covering_partition_fallback(self, tmp_path: Path):
+        """PR-A review HIGH-1: bronze existing only for a PRIOR day must not be
+        written into the target day's partition as a wrong-dated vintage."""
+        prior_dir = tmp_path / "bronze" / "elexon" / "system_prices" / "2024" / "01" / "14"
+        prior_dir.mkdir(parents=True)
+        (prior_dir / "raw_prior.json").write_text(
+            json.dumps(
+                {
+                    "data": [
+                        {
+                            "settlementDate": "2024-01-14",
+                            "settlementPeriod": 1,
+                            "systemSellPrice": 44.0,
+                            "systemBuyPrice": 55.0,
+                            "netImbalanceVolume": -120.5,
+                        }
+                    ]
+                }
+            )
+        )
+        (prior_dir / "raw_prior.meta.json").write_text(
+            json.dumps({"written_at": datetime(2024, 1, 14, 8, tzinfo=UTC).isoformat()})
+        )
+
+        transformer = SystemPriceTransformer(tmp_path)
+        assert transformer.run(date(2024, 1, 15)) == 0
+        silver_root = tmp_path / "silver" / "elexon" / "system_prices"
+        assert not list(silver_root.rglob("*20240115*.parquet"))
+
+    def test_run_skips_bronze_file_without_sidecar(
+        self, tmp_path: Path, caplog: pytest.LogCaptureFixture
+    ):
+        """PR-A review MED-4: no sidecar means no honest vintage — skip loudly
+        instead of minting a fresh now()-suffixed file on every re-transform."""
+        target_date = date(2024, 1, 15)
+        bronze_dir = tmp_path / "bronze" / "elexon" / "system_prices" / "2024" / "01" / "15"
+        bronze_dir.mkdir(parents=True)
+        (bronze_dir / "raw_orphan.json").write_text(
+            json.dumps(
+                {
+                    "data": [
+                        {
+                            "settlementDate": target_date.isoformat(),
+                            "settlementPeriod": 1,
+                            "systemSellPrice": 44.0,
+                            "systemBuyPrice": 55.0,
+                            "netImbalanceVolume": -120.5,
+                        }
+                    ]
+                }
+            )
+        )
+
+        transformer = SystemPriceTransformer(tmp_path)
+        with caplog.at_level("WARNING"):
+            assert transformer.run(target_date) == 0
+        assert "no usable sidecar timestamp" in caplog.text
+        silver_root = tmp_path / "silver" / "elexon" / "system_prices"
+        assert not list(silver_root.rglob("*.parquet"))
 
     def test_empty_input(self):
         """Empty DataFrame should return empty DataFrame."""

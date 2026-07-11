@@ -92,6 +92,24 @@ class BaseSilverTransformer(ABC):
     run-suffixed-files.md`` for the trade-off discussion. Only datasets that
     publish meaningful revisions (REMIT, FOU2T14D) should opt in.
     """
+    VINTAGE_PER_BRONZE_FILE: ClassVar[bool] = False
+    """Opt in to assigning one availability timestamp per bronze raw file.
+
+    The default keeps the established whole-date read and single availability
+    timestamp. Revision feeds whose bronze fetch time is their only vintage
+    marker set this to ``True`` and implement ``read_bronze_file``.
+
+    Contract notes for opt-ins (ADR-025):
+    - Only the EXACT date partition is read — never the multi-day
+      covering-partition fallback, which would stamp a prior day's rows into a
+      wrong-dated vintage file (review finding, v0.17 PR-A).
+    - A raw file without a parseable sidecar timestamp is SKIPPED loudly: a
+      ``now()`` fallback would mint a new non-idempotent vintage filename on
+      every re-transform and poison point-in-time reads.
+    - Transformers that ASSIGN ``last_unmapped_count`` inside ``transform()``
+      (the ADR-022 enum-mapping pattern) must convert to accumulation before
+      opting in, or per-frame counts overwrite each other.
+    """
 
     def __init__(self, data_dir: Path):
         self.data_dir = data_dir
@@ -110,6 +128,16 @@ class BaseSilverTransformer(ABC):
         Returns a clean DataFrame matching the silver schema."""
         ...
 
+    def read_bronze_file(self, raw_path: Path) -> pl.DataFrame:
+        """Read one raw bronze file for per-file vintage capture.
+
+        Only transformers opting into ``VINTAGE_PER_BRONZE_FILE`` need to
+        implement this method; the ordinary ``read_bronze`` path is unchanged.
+        """
+        raise NotImplementedError(
+            f"{type(self).__name__} must implement read_bronze_file for per-file vintages"
+        )
+
     def run(
         self,
         target_date: date,
@@ -127,17 +155,89 @@ class BaseSilverTransformer(ABC):
         self.last_unmapped_count = 0
         self.last_validation_failure_count = 0
 
-        # Read bronze
-        raw_df = self.read_bronze(target_date)
-        if raw_df.is_empty():
-            logger.warning(f"No bronze data for {self.source}/{self.dataset} on {target_date}")
+        resolved_run_id = run_id or f"adhoc-{datetime.now(UTC).isoformat()}"
+        frames: list[pl.DataFrame] = []
+        saw_bronze = False
+
+        if self.VINTAGE_PER_BRONZE_FILE:
+            # EXACT date partition only — the covering-partition fallback in
+            # _bronze_date_dirs would stamp a prior day's rows into a file named
+            # for target_date (wrong-dated vintage; see class docstring).
+            exact_dir = (
+                self.bronze_dir
+                / str(target_date.year)
+                / f"{target_date.month:02d}"
+                / f"{target_date.day:02d}"
+            )
+            date_dirs = [exact_dir] if exact_dir.exists() else []
+            for date_dir in date_dirs:
+                for raw_path in sorted(date_dir.glob("raw_*.json")):
+                    # The data glob also matches sidecars (raw_*.meta.json) — skip them.
+                    if raw_path.name.endswith(".meta.json"):
+                        continue
+                    available_at = self._timestamp_from_sidecar(raw_path.with_suffix(".meta.json"))
+                    if available_at is None:
+                        # Skip loudly: a now() fallback would mint a fresh
+                        # non-idempotent vintage file on every re-transform.
+                        logger.warning(
+                            "Skipping bronze file with no usable sidecar timestamp "
+                            "(cannot assign an honest vintage): %s",
+                            raw_path,
+                        )
+                        continue
+                    raw_df = self.read_bronze_file(raw_path)
+                    if raw_df.is_empty():
+                        continue
+                    saw_bronze = True
+                    clean_df = self._process_frame(
+                        raw_df, target_date, resolved_run_id, available_at
+                    )
+                    if clean_df is not None:
+                        frames.append(clean_df)
+        else:
+            available_at = (
+                self._available_at_from_bronze(target_date) if reingest else datetime.now(UTC)
+            )
+            raw_df = self.read_bronze(target_date)
+            if not raw_df.is_empty():
+                saw_bronze = True
+                clean_df = self._process_frame(raw_df, target_date, resolved_run_id, available_at)
+                if clean_df is not None:
+                    frames.append(clean_df)
+
+        if not frames:
+            # Distinguish "nothing to read" from "read but transformed to zero
+            # rows" (the latter already logged per frame by _process_frame).
+            if not saw_bronze:
+                logger.warning(f"No bronze data for {self.source}/{self.dataset} on {target_date}")
             return 0
 
-        # Transform
+        if self.write_silver_csv:
+            # Frames can differ in optional columns (e.g. run_type present in one
+            # vintage only) — diagonal concat null-fills instead of raising (CL-1).
+            self._write_csv(pl.concat(frames, how="diagonal"), target_date)
+
+        total_rows = sum(len(frame) for frame in frames)
+        logger.info(
+            f"Silver write: {self.source}/{self.dataset} {target_date} -> {total_rows} rows"
+        )
+        return total_rows
+
+    def _process_frame(
+        self,
+        raw_df: pl.DataFrame,
+        target_date: date,
+        run_id: str,
+        available_at: datetime,
+    ) -> pl.DataFrame | None:
+        """Transform, validate, stamp, and write one bronze-vintage frame."""
+        if raw_df.is_empty():
+            return None
+
         clean_df = self.transform(raw_df)
         if clean_df.is_empty():
             logger.warning(f"Transform produced 0 rows for {target_date}")
-            return 0
+            return None
 
         # Enforce the declared Pydantic schema on the FULL frame, fail-soft
         # (VTA-SCHEMA-01): failures are counted + logged here and surfaced by the
@@ -145,30 +245,16 @@ class BaseSilverTransformer(ABC):
         # hard rule). Validated on the transform() output, before bitemporal
         # columns are stamped (schemas do not declare those). No-op when
         # schema_cls is None (generic/dynamic transformers, incl. ENTSO-G CMP).
-        self.last_validation_failure_count = self._validate_against_schema(clean_df)
-
-        resolved_run_id = run_id or f"adhoc-{datetime.now(UTC).isoformat()}"
-        available_at = (
-            self._available_at_from_bronze(target_date) if reingest else datetime.now(UTC)
-        )
+        # Accumulates across vintage frames (reset once at run() start).
+        self.last_validation_failure_count += self._validate_against_schema(clean_df)
         clean_df = self._add_bitemporal_columns(
             clean_df,
             target_date=target_date,
-            run_id=resolved_run_id,
+            run_id=run_id,
             available_at=available_at,
         )
-
-        # Write silver (atomic: write to temp, then rename)
         self._write_silver(clean_df, target_date, available_at=available_at)
-        # Per-date CSV sidecar is opt-in (CH3-02 / CH-PERF-02): Parquet is
-        # canonical; the on-demand CSV path is the export_csv CLI command.
-        if self.write_silver_csv:
-            self._write_csv(clean_df, target_date)
-
-        logger.info(
-            f"Silver write: {self.source}/{self.dataset} {target_date} -> {len(clean_df)} rows"
-        )
-        return len(clean_df)
+        return clean_df
 
     def _validate_against_schema(self, df: pl.DataFrame) -> int:
         """Validate every row of the transform output against ``schema_cls``, fail-soft.

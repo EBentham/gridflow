@@ -12,6 +12,7 @@ import polars as pl
 
 from gridflow.gold.base import BaseGoldBuilder
 from gridflow.gold.registry import register_builder
+from gridflow.silver.latest_views import LATEST_VIEW_SPECS, select_latest_vintage
 from gridflow.storage.parquet import scan_parquet_range
 
 if TYPE_CHECKING:
@@ -32,9 +33,11 @@ class SystemMarginalPriceBuilder(BaseGoldBuilder):
         # The range helper prunes to overlapping year=/month= partitions and
         # applies the settlement_date predicate itself, so no post-load filter
         # is needed here.
-        df = scan_parquet_range(
-            silver_dir, start_date, end_date, date_col="settlement_date"
-        ).collect()
+        lf = scan_parquet_range(silver_dir, start_date, end_date, date_col="settlement_date")
+        # system_prices is APPEND_ONLY (ADR-025): the directory holds every
+        # vintage, so gold must select the latest per settlement period or every
+        # SP row multiplies per vintage.
+        df = select_latest_vintage(lf, LATEST_VIEW_SPECS[("elexon", "system_prices")]).collect()
         if df.is_empty():
             return df
 

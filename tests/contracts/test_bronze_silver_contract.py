@@ -30,16 +30,10 @@ class TestBronzeSilverContract:
         transformer = SystemPriceTransformer(tmp_data_dir)
         transformer.run(date(2024, 1, 15))
 
-        # Read silver output
-        silver_path = (
-            tmp_data_dir
-            / "silver"
-            / "elexon"
-            / "system_prices"
-            / "year=2024"
-            / "month=01"
-            / "system_prices_20240115.parquet"
-        )
+        # Read silver output — APPEND_ONLY run-suffixed filename (ADR-025);
+        # one bronze file in the fixture → exactly one vintage file.
+        silver_dir = tmp_data_dir / "silver" / "elexon" / "system_prices" / "year=2024" / "month=01"
+        [silver_path] = silver_dir.glob("system_prices_20240115_run*.parquet")
         df = pl.read_parquet(silver_path)
 
         # Validate every row against the schema
@@ -60,15 +54,8 @@ class TestBronzeSilverContract:
         transformer = SystemPriceTransformer(tmp_data_dir)
         transformer.run(date(2024, 1, 15))
 
-        silver_path = (
-            tmp_data_dir
-            / "silver"
-            / "elexon"
-            / "system_prices"
-            / "year=2024"
-            / "month=01"
-            / "system_prices_20240115.parquet"
-        )
+        silver_dir = tmp_data_dir / "silver" / "elexon" / "system_prices" / "year=2024" / "month=01"
+        [silver_path] = silver_dir.glob("system_prices_20240115_run*.parquet")
         df = pl.read_parquet(silver_path)
 
         required_cols = {

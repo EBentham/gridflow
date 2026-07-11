@@ -37,22 +37,16 @@ class TestBronzeToSilver:
         transformer = SystemPriceTransformer(tmp_data_dir)
         rows = transformer.run(date(2024, 1, 15))
 
-        assert rows == 3  # 3 unique SPs (SP1 II superseded by SP1 SF)
+        assert rows == 3  # 3 unique SPs, no collapse (ADR-025 APPEND_ONLY)
 
-        # Step 3: Verify silver file exists
-        silver_path = (
-            tmp_data_dir
-            / "silver"
-            / "elexon"
-            / "system_prices"
-            / "year=2024"
-            / "month=01"
-            / "system_prices_20240115.parquet"
-        )
-        assert silver_path.exists()
+        # Step 3: Verify silver file exists — APPEND_ONLY writes one run-suffixed
+        # file per bronze vintage (one bronze file here → exactly one).
+        silver_dir = tmp_data_dir / "silver" / "elexon" / "system_prices" / "year=2024" / "month=01"
+        silver_files = sorted(silver_dir.glob("system_prices_20240115_run*.parquet"))
+        assert len(silver_files) == 1
 
         # Step 4: Verify silver data
-        df = pl.read_parquet(silver_path)
+        df = pl.read_parquet(silver_files[0])
         assert len(df) == 3
         assert "timestamp_utc" in df.columns
         assert "system_sell_price" in df.columns
@@ -70,16 +64,12 @@ class TestBronzeToSilver:
 
         assert rows1 == rows2
 
-        silver_path = (
-            tmp_data_dir
-            / "silver"
-            / "elexon"
-            / "system_prices"
-            / "year=2024"
-            / "month=01"
-            / "system_prices_20240115.parquet"
-        )
-        df = pl.read_parquet(silver_path)
+        # Same bronze sidecar → same available_at → same run-suffixed filename:
+        # the second run overwrites the first, never stacks a duplicate vintage.
+        silver_dir = tmp_data_dir / "silver" / "elexon" / "system_prices" / "year=2024" / "month=01"
+        silver_files = sorted(silver_dir.glob("system_prices_20240115_run*.parquet"))
+        assert len(silver_files) == 1
+        df = pl.read_parquet(silver_files[0])
         assert len(df) == 3
 
     def test_no_bronze_data(self, tmp_data_dir: Path):
