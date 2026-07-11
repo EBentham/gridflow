@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 from typing import TYPE_CHECKING
 
 import polars as pl
@@ -9,6 +10,7 @@ import polars as pl
 from gridflow.storage.duckdb import (
     get_connection,
     init_catalogue,
+    refresh_views,
 )
 
 if TYPE_CHECKING:
@@ -282,6 +284,173 @@ def test_gold_view_reads_mixed_schemas(tmp_path: Path, monkeypatch: pytest.Monke
         con.close()
 
     assert rows == [(1, True), (2, False)]
+
+
+def test_catalogue_views_ignore_reserved_temps_at_root_and_nested_depth(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr("gridflow.storage.duckdb._register_gold_views", lambda con: None)
+    data_dir = tmp_path / "data"
+    db_path = tmp_path / "gridflow.duckdb"
+    roots = [
+        data_dir / "silver" / "elexon" / "safe_root",
+        data_dir / "gold" / "safe_root",
+    ]
+    nested = [
+        data_dir / "silver" / "elexon" / "safe_nested",
+        data_dir / "gold" / "safe_nested",
+    ]
+    for root in roots:
+        _write_parquet(pl.DataFrame({"value": [1]}), root / "root.parquet")
+        _write_parquet(pl.DataFrame({"value": [99]}), root / ".tmp_valid.parquet")
+        (root / ".tmp_corrupt.parquet").write_bytes(b"corrupt")
+        (root / "corrupt.parquet.tmp_0123456789abcdef").write_bytes(b"corrupt")
+    for root in nested:
+        partition = root / "year=2024"
+        _write_parquet(pl.DataFrame({"value": [2]}), partition / "nested.parquet")
+        _write_parquet(pl.DataFrame({"value": [99]}), partition / ".tmp_valid.parquet")
+        (partition / ".tmp_corrupt.parquet").write_bytes(b"corrupt")
+        (partition / "corrupt.parquet.tmp_0123456789abcdef").write_bytes(b"corrupt")
+
+    init_catalogue(db_path, data_dir)
+    refresh_views(db_path, data_dir)
+    con = get_connection(db_path, read_only=True)
+    try:
+        assert con.execute("SELECT value FROM silver_elexon_safe_root").fetchall() == [(1,)]
+        assert con.execute("SELECT value FROM silver_elexon_safe_nested").fetchall() == [(2,)]
+        assert con.execute("SELECT value FROM gold_safe_root").fetchall() == [(1,)]
+        assert con.execute("SELECT value FROM gold_safe_nested").fetchall() == [(2,)]
+    finally:
+        con.close()
+
+
+def test_catalogue_sweeps_before_connect_and_reuses_root_objects(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    events: list[tuple[str, object, object]] = []
+    real_connection = get_connection
+
+    def _sweep(silver: Path, gold: Path) -> int:
+        events.append(("sweep", silver, gold))
+        return 0
+
+    def _connection(path: Path):
+        events.append(("connect", path, path))
+        return real_connection(path)
+
+    def _register(con: object, silver: Path, gold: Path) -> None:
+        events.append(("register", silver, gold))
+
+    monkeypatch.setattr("gridflow.storage.duckdb.sweep_orphan_temp_files", _sweep)
+    monkeypatch.setattr("gridflow.storage.duckdb.get_connection", _connection)
+    monkeypatch.setattr("gridflow.storage.duckdb._register_views", _register)
+    monkeypatch.setattr("gridflow.storage.duckdb._register_gold_views", lambda con: None)
+
+    init_catalogue(tmp_path / "db.duckdb", tmp_path / "data")
+
+    assert [event[0] for event in events] == ["sweep", "connect", "register"]
+    assert events[0][1] is events[2][1]
+    assert events[0][2] is events[2][2]
+
+
+def test_refresh_sweeps_before_connect_and_reuses_root_objects(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    events: list[tuple[str, object, object]] = []
+    real_connection = get_connection
+
+    def _sweep(silver: Path, gold: Path) -> int:
+        events.append(("sweep", silver, gold))
+        return 0
+
+    def _connection(path: Path):
+        events.append(("connect", path, path))
+        return real_connection(path)
+
+    def _register(con: object, silver: Path, gold: Path) -> None:
+        events.append(("register", silver, gold))
+
+    monkeypatch.setattr("gridflow.storage.duckdb.sweep_orphan_temp_files", _sweep)
+    monkeypatch.setattr("gridflow.storage.duckdb.get_connection", _connection)
+    monkeypatch.setattr("gridflow.storage.duckdb._register_views", _register)
+    monkeypatch.setattr("gridflow.storage.duckdb._register_gold_views", lambda con: None)
+
+    refresh_views(tmp_path / "db.duckdb", tmp_path / "data")
+
+    assert [event[0] for event in events] == ["sweep", "connect", "register"]
+    assert events[0][1] is events[2][1]
+    assert events[0][2] is events[2][2]
+
+
+def _assert_metadata_without_data_views(db_path: Path) -> None:
+    con = get_connection(db_path, read_only=True)
+    try:
+        names = {
+            row[0]
+            for row in con.execute(
+                "SELECT table_name FROM information_schema.tables WHERE table_schema = 'main'"
+            ).fetchall()
+        }
+    finally:
+        con.close()
+    assert {"pipeline_runs", "pipeline_watermarks", "quality_reports"} <= names
+    assert not {name for name in names if name.startswith(("silver_", "gold_"))}
+
+
+def test_init_and_refresh_preserve_absent_data_roots(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr("gridflow.storage.duckdb._register_gold_views", lambda con: None)
+    data_dir = tmp_path / "absent-data"
+    db_path = tmp_path / "catalogue.duckdb"
+
+    init_catalogue(db_path, data_dir)
+    assert not data_dir.exists()
+    _assert_metadata_without_data_views(db_path)
+
+    refresh_views(db_path, data_dir)
+    assert not data_dir.exists()
+    _assert_metadata_without_data_views(db_path)
+
+
+def test_init_and_refresh_preserve_empty_data_roots(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr("gridflow.storage.duckdb._register_gold_views", lambda con: None)
+    data_dir = tmp_path / "empty-data"
+    (data_dir / "silver").mkdir(parents=True)
+    (data_dir / "gold").mkdir()
+    db_path = tmp_path / "catalogue.duckdb"
+
+    init_catalogue(db_path, data_dir)
+    _assert_metadata_without_data_views(db_path)
+    refresh_views(db_path, data_dir)
+    _assert_metadata_without_data_views(db_path)
+    assert list((data_dir / "silver").iterdir()) == []
+    assert list((data_dir / "gold").iterdir()) == []
+
+
+def test_init_and_refresh_each_sweep_aged_reserved_temp(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr("gridflow.storage.duckdb._register_gold_views", lambda con: None)
+    data_dir = tmp_path / "data"
+    db_path = tmp_path / "catalogue.duckdb"
+    partition = data_dir / "silver" / "elexon" / "safe" / "year=2024"
+    partition.mkdir(parents=True)
+    _write_parquet(pl.DataFrame({"value": [1]}), partition / "safe.parquet")
+    init_temp = partition / ".tmp_init.parquet"
+    init_temp.write_bytes(b"orphan")
+    os.utime(init_temp, (0, 0))
+
+    init_catalogue(db_path, data_dir)
+    assert not init_temp.exists()
+
+    refresh_temp = partition / "safe.parquet.tmp_0123456789abcdef"
+    refresh_temp.write_bytes(b"orphan")
+    os.utime(refresh_temp, (0, 0))
+    refresh_views(db_path, data_dir)
+    assert not refresh_temp.exists()
 
 
 def test_latest_view_registered_for_append_only_datasets(

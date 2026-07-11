@@ -33,8 +33,12 @@ class PathBuilder:
 
     # --- Silver ---
 
+    def silver_root(self) -> Path:
+        """Return the authoritative root for all Silver datasets."""
+        return self.data_dir / "silver"
+
     def silver_dir(self, source: str, dataset: str) -> Path:
-        return self.data_dir / "silver" / source / dataset
+        return self.silver_root() / source / dataset
 
     def silver_partition_dir(self, source: str, dataset: str, target_date: date) -> Path:
         return (
@@ -49,12 +53,16 @@ class PathBuilder:
 
     def silver_glob_pattern(self, source: str, dataset: str) -> str:
         """Return a glob pattern for all silver parquet files."""
-        return str(self.silver_dir(source, dataset) / "**" / "*.parquet")
+        return str(self.silver_dir(source, dataset) / "**" / "[!.]*.parquet")
 
     # --- Gold ---
 
+    def gold_root(self) -> Path:
+        """Return the authoritative root for all Gold datasets."""
+        return self.data_dir / "gold"
+
     def gold_dir(self, gold_dataset: str) -> Path:
-        return self.data_dir / "gold" / gold_dataset
+        return self.gold_root() / gold_dataset
 
     def gold_partition_dir(self, gold_dataset: str, target_date: date) -> Path:
         return self.gold_dir(gold_dataset) / f"year={target_date.year}"
@@ -65,7 +73,7 @@ class PathBuilder:
 
     def gold_glob_pattern(self, gold_dataset: str) -> str:
         """Return a glob pattern for all gold parquet files."""
-        return str(self.gold_dir(gold_dataset) / "**" / "*.parquet")
+        return str(self.gold_dir(gold_dataset) / "**" / "[!.]*.parquet")
 
     # --- DuckDB ---
 
