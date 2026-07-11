@@ -15,7 +15,7 @@ import polars as pl
 
 from gridflow.connectors.gie.endpoints import parse_listing_inventory
 from gridflow.schemas.gie import GasStorage
-from gridflow.silver.base import BaseSilverTransformer
+from gridflow.silver.base import BaseSilverTransformer, gas_day_event_time_expr
 from gridflow.silver.registry import register_transformer
 
 logger = logging.getLogger(__name__)
@@ -119,6 +119,10 @@ class GasStorageTransformer(BaseSilverTransformer):
     source = "gie_agsi"
     dataset = "storage"
     schema_cls = GasStorage
+    DATASET_VERSION = "2.0.0"
+
+    def _event_time_expr(self, df: pl.DataFrame, target_date: date) -> pl.Expr:
+        return gas_day_event_time_expr("gas_day")
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         rows: list[dict[str, Any]] = []

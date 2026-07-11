@@ -3,19 +3,22 @@
 from __future__ import annotations
 
 import json
-from datetime import date
+from datetime import UTC, date, datetime
 from pathlib import Path
 
 import polars as pl
+import pytest
 
 from gridflow.connectors.gie.endpoints import AGSI_COUNTRIES, ALSI_COUNTRIES
 from gridflow.schemas.gie import GasStorage, LNGTerminal
+from gridflow.silver.base import BaseSilverTransformer, gas_day_event_time_expr
 from gridflow.silver.gie.agsi import (
     AboutListingTransformer,
     AboutSummaryTransformer,
     GasStorageTransformer,
     NewsItemTransformer,
     NewsTransformer,
+    StorageReportsTransformer,
     UnavailabilityTransformer,
 )
 from gridflow.silver.gie.alsi import LNGTerminalTransformer
@@ -60,6 +63,93 @@ def _make_transformer(cls):
 def _load_fixture_records(filename: str) -> list[dict]:
     payload = json.loads((FIXTURES / filename).read_text())
     return payload.get("data", [])
+
+
+def _write_bronze_payload(
+    transformer: BaseSilverTransformer,
+    target_date: date,
+    payload: dict,
+) -> None:
+    bronze_dir = (
+        transformer.bronze_dir
+        / str(target_date.year)
+        / f"{target_date.month:02d}"
+        / f"{target_date.day:02d}"
+    )
+    bronze_dir.mkdir(parents=True)
+    (bronze_dir / "raw_test.json").write_text(json.dumps(payload), encoding="utf-8")
+
+
+def _seed_fixture(
+    transformer: BaseSilverTransformer,
+    target_date: date,
+    filename: str,
+) -> None:
+    payload = json.loads((FIXTURES / filename).read_text(encoding="utf-8"))
+    _write_bronze_payload(transformer, target_date, payload)
+
+
+def _read_single_silver(transformer: BaseSilverTransformer) -> pl.DataFrame:
+    paths = list(transformer.silver_dir.rglob("*.parquet"))
+    assert len(paths) == 1
+    return pl.read_parquet(paths[0])
+
+
+def _assert_transformer_isolated(
+    transformer: BaseSilverTransformer,
+    tmp_data_dir: Path,
+) -> None:
+    root = tmp_data_dir.resolve()
+    assert transformer.bronze_dir.resolve().is_relative_to(root)
+    assert transformer.silver_dir.resolve().is_relative_to(root)
+
+
+@pytest.mark.parametrize("gas_day", [date(2024, 1, 15), date(2024, 7, 15)])
+def test_gas_day_event_time_expr_is_fixed_0600_utc(gas_day: date) -> None:
+    result = pl.DataFrame({"gas_day": [gas_day]}).with_columns(gas_day_event_time_expr())
+
+    assert result["event_time"].dtype == pl.Datetime("us", "UTC")
+    assert result["event_time"].to_list() == [
+        datetime(gas_day.year, gas_day.month, gas_day.day, 6, tzinfo=UTC)
+    ]
+
+
+@pytest.mark.parametrize(
+    ("transformer_cls", "fixture_name", "target_date", "expected_rows"),
+    [
+        (GasStorageTransformer, "agsi_gb_response.json", date(2024, 1, 20), 3),
+        (
+            StorageReportsTransformer,
+            "agsi_storage_reports_response.json",
+            date(2026, 5, 2),
+            4,
+        ),
+        (LNGTerminalTransformer, "alsi_gb_response.json", date(2024, 1, 20), 2),
+    ],
+)
+def test_gie_gas_day_run_persists_row_event_time_contract(
+    tmp_data_dir: Path,
+    transformer_cls: type[BaseSilverTransformer],
+    fixture_name: str,
+    target_date: date,
+    expected_rows: int,
+) -> None:
+    transformer = transformer_cls(tmp_data_dir)
+    _assert_transformer_isolated(transformer, tmp_data_dir)
+    _seed_fixture(transformer, target_date, fixture_name)
+
+    assert transformer.run(target_date, run_id="gie-gas-day-test") == expected_rows
+    persisted = _read_single_silver(transformer)
+
+    assert persisted["gas_day"].dtype == pl.Date
+    assert persisted["gas_day"].null_count() == 0
+    assert persisted["event_time"].dtype == pl.Datetime("us", "UTC")
+    assert any(gas_day != target_date for gas_day in persisted["gas_day"].to_list())
+    assert persisted["event_time"].to_list() == [
+        datetime(gas_day.year, gas_day.month, gas_day.day, 6, tzinfo=UTC)
+        for gas_day in persisted["gas_day"].to_list()
+    ]
+    assert set(persisted["dataset_version"].to_list()) == {"2.0.0"}
 
 
 # ---------------------------------------------------------------------------
@@ -228,6 +318,41 @@ class TestGasStorageTransformer:
             "facility",
         }
 
+    def test_run_excludes_malformed_gas_day(
+        self,
+        tmp_data_dir: Path,
+        caplog: pytest.LogCaptureFixture,
+    ) -> None:
+        target_date = date(2024, 1, 20)
+        transformer = GasStorageTransformer(tmp_data_dir)
+        _assert_transformer_isolated(transformer, tmp_data_dir)
+        _write_bronze_payload(
+            transformer,
+            target_date,
+            {
+                "data": [
+                    {
+                        "gasDayStart": "2024-01-15",
+                        "code": "GB",
+                        "countryCode": "GB",
+                        "gasInStorage": "100",
+                    },
+                    {
+                        "gasDayStart": "not-a-date",
+                        "code": "FR",
+                        "countryCode": "FR",
+                        "gasInStorage": "200",
+                    },
+                ]
+            },
+        )
+
+        assert transformer.run(target_date, run_id="agsi-malformed-test") == 1
+        persisted = _read_single_silver(transformer)
+        assert persisted["gas_day"].to_list() == [date(2024, 1, 15)]
+        assert persisted["event_time"].to_list() == [datetime(2024, 1, 15, 6, tzinfo=UTC)]
+        assert "Missing required gas day in GIE AGSI storage row" in caplog.text
+
 
 class TestAgsiReferenceTransformers:
     def test_about_listing_flattens_companies_and_facilities(self):
@@ -318,6 +443,22 @@ class TestAgsiReferenceTransformers:
         assert result["event_start"].dtype == pl.Datetime("us", "UTC")
         assert result["unavailable_capacity"].to_list() == [12.5]
 
+    def test_about_listing_run_retains_target_date_midnight(
+        self,
+        tmp_data_dir: Path,
+    ) -> None:
+        target_date = date(2024, 1, 20)
+        transformer = AboutListingTransformer(tmp_data_dir)
+        _assert_transformer_isolated(transformer, tmp_data_dir)
+        _seed_fixture(transformer, target_date, "agsi_listing_response.json")
+
+        assert transformer.run(target_date, run_id="agsi-reference-test") == 7
+        persisted = _read_single_silver(transformer)
+
+        assert "gas_day" not in persisted.columns
+        assert set(persisted["event_time"].to_list()) == {datetime(2024, 1, 20, tzinfo=UTC)}
+        assert set(persisted["dataset_version"].to_list()) == {"1.0.0"}
+
 
 # ---------------------------------------------------------------------------
 # LNGTerminalTransformer (ALSI)
@@ -403,6 +544,60 @@ class TestLNGTerminalTransformer:
         assert abs(row["lng_pct_full"][0] - expected) < 1e-6
         all_pct = [v for v in result["lng_pct_full"].to_list() if v is not None]
         assert all(0.0 <= v <= 100.0 for v in all_pct)
+
+    def test_run_drops_invalid_gas_days_with_bounded_raw_context(
+        self,
+        tmp_data_dir: Path,
+        caplog: pytest.LogCaptureFixture,
+    ) -> None:
+        target_date = date(2024, 1, 20)
+        transformer = LNGTerminalTransformer(tmp_data_dir)
+        _assert_transformer_isolated(transformer, tmp_data_dir)
+        _write_bronze_payload(
+            transformer,
+            target_date,
+            {
+                "data": [
+                    {"gasDayStart": "2024-01-15", "code": "GB", "lngInventory": "100"},
+                    {"gasDayStart": None, "code": "DE", "lngInventory": "200"},
+                    {"gasDayStart": "not-a-date", "code": "FR", "lngInventory": "300"},
+                ]
+            },
+        )
+
+        assert transformer.run(target_date, run_id="alsi-malformed-test") == 1
+        persisted = _read_single_silver(transformer)
+        assert persisted["gas_day"].to_list() == [date(2024, 1, 15)]
+        assert persisted["event_time"].to_list() == [datetime(2024, 1, 15, 6, tzinfo=UTC)]
+        assert "Dropping 2 GIE ALSI row(s)" in caplog.text
+        assert "not-a-date" in caplog.text
+        assert "None" in caplog.text
+        assert "DE" in caplog.text
+        assert "FR" in caplog.text
+
+    def test_run_with_all_invalid_gas_days_writes_nothing(
+        self,
+        tmp_data_dir: Path,
+        caplog: pytest.LogCaptureFixture,
+    ) -> None:
+        target_date = date(2024, 1, 20)
+        transformer = LNGTerminalTransformer(tmp_data_dir)
+        _assert_transformer_isolated(transformer, tmp_data_dir)
+        _write_bronze_payload(
+            transformer,
+            target_date,
+            {
+                "data": [
+                    {"gasDayStart": None, "code": "DE"},
+                    {"gasDayStart": "invalid-day", "code": "FR"},
+                ]
+            },
+        )
+
+        assert transformer.run(target_date, run_id="alsi-all-invalid-test") == 0
+        assert "Dropping 2 GIE ALSI row(s)" in caplog.text
+        assert "invalid-day" in caplog.text
+        assert not list(transformer.silver_dir.rglob("*.parquet"))
 
 
 # ---------------------------------------------------------------------------
