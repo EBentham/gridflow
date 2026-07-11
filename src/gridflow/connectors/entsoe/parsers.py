@@ -202,6 +202,7 @@ def parse_timeseries_xml(
         area_domain = connecting_domain = acquiring_domain = ""
         market_agreement_type = original_market_product = standard_market_product = ""
         unit_mrid = unit_name = ""
+        curve_type = ""
         # Issue 05 #1: ENTSO-E carries the price currency in
         # <currency_Unit.name> (e.g. EUR for continental zones, GBP for GB).
         # Capture it so a GBP price is never silently labelled EUR downstream.
@@ -237,6 +238,8 @@ def parse_timeseries_xml(
                 acquiring_domain = text
             elif tag == "businessType":
                 business_type = text
+            elif tag == "curveType":
+                curve_type = text
             elif tag in {"currency_Unit.name", "Currency_Unit.name"}:
                 currency_unit = text
             elif tag in {"docStatus", "docStatus.value"}:
@@ -342,6 +345,7 @@ def parse_timeseries_xml(
                 continue
 
             start_dt: datetime | None = None
+            end_dt: datetime | None = None
             resolution: timedelta = timedelta(hours=1)
             resolution_code: str = ""
 
@@ -352,9 +356,15 @@ def parse_timeseries_xml(
                         if _strip_ns(sub.tag) == "start":
                             with contextlib.suppress(ValueError):
                                 start_dt = _parse_utc(sub.text or "")
+                        elif _strip_ns(sub.tag) == "end":
+                            with contextlib.suppress(ValueError):
+                                end_dt = _parse_utc(sub.text or "")
                 elif tag == "timeInterval.start":
                     with contextlib.suppress(ValueError):
                         start_dt = _parse_utc(child.text or "")
+                elif tag == "timeInterval.end":
+                    with contextlib.suppress(ValueError):
+                        end_dt = _parse_utc(child.text or "")
                 elif tag == "resolution":
                     resolution_code = (child.text or "").strip()
                     resolution = _resolve_resolution(resolution_code)
@@ -362,6 +372,45 @@ def parse_timeseries_xml(
             if start_dt is None:
                 continue
 
+            record_prefix = {**document_metadata}
+            record_suffix = {
+                "in_domain": in_domain,
+                "out_domain": out_domain,
+                "production_type": production_type,
+                "control_area_domain": control_area_domain,
+                "area_domain": area_domain,
+                "connecting_domain": connecting_domain,
+                "acquiring_domain": acquiring_domain,
+                "business_type": business_type,
+                "flow_direction": flow_direction,
+                "market_agreement_type": market_agreement_type,
+                "original_market_product": original_market_product,
+                "standard_market_product": standard_market_product,
+                "currency_unit": currency_unit,
+                "resolution": resolution_code,
+                "unit_mrid": unit_mrid,
+                "unit_name": unit_name,
+                "timeseries_mrid": timeseries_mrid,
+                "asset_mrid": asset_mrid,
+                "asset_name": asset_name,
+                "document_status": document_status or document_metadata["document_status"],
+                "reason_code": reason_code,
+            }
+
+            def build_record(
+                timestamp: datetime,
+                value: float,
+                prefix: dict[str, Any] = record_prefix,
+                suffix: dict[str, Any] = record_suffix,
+            ) -> dict[str, Any]:
+                return {
+                    **prefix,
+                    "timestamp_utc": timestamp,
+                    "value": value,
+                    **suffix,
+                }
+
+            declared_points: list[tuple[int, dict[str, Any]]] = []
             for point_el in period_el.iter():
                 if _strip_ns(point_el.tag) != "Point":
                     continue
@@ -386,41 +435,69 @@ def parse_timeseries_xml(
                     timestamp = _advance_calendar(start_dt, position, resolution_code)
                 else:
                     timestamp = start_dt + (position - 1) * resolution
-                records.append(
-                    {
-                        **document_metadata,
-                        "timestamp_utc": timestamp,
-                        "value": value,
-                        "in_domain": in_domain,
-                        "out_domain": out_domain,
-                        "production_type": production_type,
-                        "control_area_domain": control_area_domain,
-                        "area_domain": area_domain,
-                        "connecting_domain": connecting_domain,
-                        "acquiring_domain": acquiring_domain,
-                        "business_type": business_type,
-                        "flow_direction": flow_direction,
-                        "market_agreement_type": market_agreement_type,
-                        "original_market_product": original_market_product,
-                        "standard_market_product": standard_market_product,
-                        # Issue 05 #1: carry the parsed currency through to silver.
-                        "currency_unit": currency_unit,
-                        # Issue 05 #4: emit the ENTSO-E ISO resolution code
-                        # (PT60M / PT15M / P1M / P1Y) verbatim, not str(timedelta)
-                        # ("1:00:00"). Empty string when the Period had no
-                        # <resolution> element (honest absence, not a fake code).
-                        "resolution": resolution_code,
-                        "unit_mrid": unit_mrid,
-                        "unit_name": unit_name,
-                        "timeseries_mrid": timeseries_mrid,
-                        "asset_mrid": asset_mrid,
-                        "asset_name": asset_name,
-                        "document_status": document_status or document_metadata["document_status"],
-                        # G9 ENTSOE-02: TimeSeries-level Reason.code
-                        # (populated for A87 financial documents).
-                        "reason_code": reason_code,
-                    }
+                declared_points.append((position, build_record(timestamp, value)))
+
+            if curve_type != "A03":
+                records.extend(record for _, record in declared_points)
+                continue
+
+            document_id = document_metadata["document_mrid"]
+            if end_dt is None or end_dt <= start_dt:
+                logger.warning(
+                    "Skipping ENTSO-E A03 forward-fill for document %s series %s: "
+                    "missing or invalid period end",
+                    document_id,
+                    timeseries_mrid,
                 )
+                records.extend(record for _, record in declared_points)
+                continue
+            if resolution_code not in _RESOLUTION_MAP:
+                logger.warning(
+                    "Skipping ENTSO-E A03 forward-fill for document %s series %s: "
+                    "missing or unmapped resolution",
+                    document_id,
+                    timeseries_mrid,
+                )
+                records.extend(record for _, record in declared_points)
+                continue
+
+            declared_by_position: dict[int, list[dict[str, Any]]] = {}
+            for position, record in declared_points:
+                declared_by_position.setdefault(position, []).append(record)
+
+            emitted_positions: set[int] = set()
+            previous_record: dict[str, Any] | None = None
+            position = 1
+            while True:
+                if resolution_code in _CALENDAR_RESOLUTIONS:
+                    timestamp = _advance_calendar(start_dt, position, resolution_code)
+                else:
+                    timestamp = start_dt + (position - 1) * resolution
+                if timestamp >= end_dt:
+                    break
+                if position > 100_000:
+                    logger.warning(
+                        "Stopping ENTSO-E A03 forward-fill for document %s series %s: "
+                        "period exceeds 100000 positions",
+                        document_id,
+                        timeseries_mrid,
+                    )
+                    break
+
+                declared_at_position = declared_by_position.get(position)
+                if declared_at_position:
+                    records.extend(declared_at_position)
+                    previous_record = declared_at_position[-1]
+                    emitted_positions.add(position)
+                elif previous_record is not None:
+                    records.append({**previous_record, "timestamp_utc": timestamp})
+                position += 1
+
+            records.extend(
+                record
+                for declared_position, record in declared_points
+                if declared_position not in emitted_positions
+            )
 
     return records
 
