@@ -5,8 +5,12 @@ from __future__ import annotations
 import glob
 import logging
 import os
+import re
+import stat
+import time
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal, cast
+from uuid import uuid4
 
 import polars as pl
 
@@ -19,6 +23,13 @@ logger = logging.getLogger(__name__)
 # Mirror of polars' private ParquetCompression literal; kept local to avoid
 # importing from polars._typing (a private module that may move between releases).
 _ParquetCompression = Literal["lz4", "uncompressed", "snappy", "gzip", "brotli", "zstd"]
+_SUFFIX_TEMP_RE = re.compile(r"^.+\.tmp_[0-9a-f]{16}$")
+
+
+def is_reserved_temp_path(path: Path | str) -> bool:
+    """Return whether a path name belongs to a supported temporary grammar."""
+    name = Path(path).name
+    return name.startswith(".tmp_") or _SUFFIX_TEMP_RE.fullmatch(name) is not None
 
 
 def write_parquet(
@@ -30,13 +41,27 @@ def write_parquet(
 
     Returns the final path.
     """
-    path.parent.mkdir(parents=True, exist_ok=True)
-    tmp_path = path.parent / f".tmp_{path.name}"
+    if is_reserved_temp_path(path):
+        raise ValueError(f"Refusing to write a reserved temporary path as final output: {path}")
 
-    # polars validates the compression value at runtime; cast satisfies its Literal param.
-    df.write_parquet(tmp_path, compression=cast("_ParquetCompression", compression))
-    # os.replace is atomic on both Unix and Windows (overwrites existing)
-    os.replace(tmp_path, path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp_path = path.parent / f"{path.name}.tmp_{uuid4().hex[:16]}"
+
+    try:
+        # polars validates the compression value at runtime; cast satisfies its Literal param.
+        df.write_parquet(tmp_path, compression=cast("_ParquetCompression", compression))
+        # os.replace is atomic on both Unix and Windows (overwrites existing)
+        os.replace(tmp_path, path)
+    except Exception:
+        try:
+            tmp_path.unlink(missing_ok=True)
+        except OSError as cleanup_error:
+            logger.warning(
+                "Could not clean failed Parquet temporary file %s: %s",
+                tmp_path,
+                cleanup_error,
+            )
+        raise
 
     logger.debug(f"Wrote {len(df)} rows to {path}")
     return path
@@ -57,8 +82,11 @@ def read_parquet(path: Path | str) -> pl.DataFrame:
     path_str = str(path)
 
     if "*" in path_str:
-        files = sorted(glob.glob(path_str, recursive=True))
+        matched = sorted(glob.glob(path_str, recursive=True))
+        files = [f for f in matched if not is_reserved_temp_path(f)]
         if not files:
+            if matched:
+                return pl.DataFrame()
             # No match: defer to polars so a genuinely bad path raises the same
             # error as before rather than being masked as empty data.
             return pl.read_parquet(path_str, hive_partitioning=True, missing_columns="insert")
@@ -68,6 +96,8 @@ def read_parquet(path: Path | str) -> pl.DataFrame:
         return pl.concat(frames, how="diagonal")
 
     path_obj = Path(path_str)
+    if is_reserved_temp_path(path_obj):
+        raise ValueError(f"Refusing to read reserved temporary Parquet path: {path_obj}")
     if not path_obj.exists():
         logger.warning(f"Parquet file not found: {path}")
         return pl.DataFrame()
@@ -97,12 +127,7 @@ def scan_parquet_dir(directory: Path) -> pl.LazyFrame:
     if not directory.exists():
         logger.warning(f"No Parquet files found in {directory}")
         return pl.LazyFrame()
-    # Skip transient ``.tmp_*.parquet`` files: write_parquet writes to a
-    # ``.tmp_<name>`` sibling then os.replace()s it into place, so a ``.tmp_``
-    # parquet is always an in-flight or torn write that a concurrent read must not
-    # pick up. glob-based read_parquet already skips dotfiles; mirror that here so
-    # both read paths agree.
-    files = sorted(f for f in directory.rglob("*.parquet") if not f.name.startswith(".tmp_"))
+    files = sorted(f for f in directory.rglob("*.parquet") if not is_reserved_temp_path(f))
     if not files:
         logger.warning(f"No Parquet files found in {directory}")
         return pl.LazyFrame()
@@ -164,6 +189,7 @@ def scan_parquet_range(
         f
         for year, month in _overlapping_partitions(start, end)
         for f in sorted((directory / f"year={year}" / f"month={month:02d}").glob("*.parquet"))
+        if not is_reserved_temp_path(f)
     ]
     if not files:
         logger.warning(f"No overlapping Parquet partitions in {directory} for {start}..{end}")
@@ -206,3 +232,130 @@ def read_parquet_dir(directory: Path) -> pl.DataFrame:
     regressions surface instead of returning silently empty data.
     """
     return scan_parquet_dir(directory).collect()
+
+
+def sweep_orphan_temp_files(
+    silver_root: Path,
+    gold_root: Path,
+    *,
+    max_age_seconds: float = 86_400,
+    now_epoch: float | None = None,
+) -> int:
+    """Remove aged reserved temps contained under authoritative data roots.
+
+    The walk never follows linked or junction directories and deletion uses a
+    non-following stat immediately before unlinking. During transition, a
+    pre-fix writer can still recreate a deterministic legacy ``.tmp_`` name in
+    the narrow stat-to-unlink window; suffix temps avoid that name-sharing risk.
+
+    Args:
+        silver_root: Exact authoritative Silver root to inspect.
+        gold_root: Exact authoritative Gold root to inspect.
+        max_age_seconds: Minimum age for deletion. Exact-cutoff files qualify.
+        now_epoch: Optional injected Unix timestamp for deterministic tests.
+
+    Returns:
+        Number of temporary files successfully removed.
+
+    Raises:
+        ValueError: If ``max_age_seconds`` is negative.
+    """
+    if max_age_seconds < 0:
+        raise ValueError("max_age_seconds must be non-negative")
+
+    cutoff = (time.time() if now_epoch is None else now_epoch) - max_age_seconds
+    removed = 0
+    for root in (Path(silver_root), Path(gold_root)):
+        try:
+            root_stat = os.stat(root, follow_symlinks=False)
+        except FileNotFoundError:
+            continue
+        except OSError as exc:
+            logger.warning("Could not inspect temporary-file sweep root %s: %s", root, exc)
+            continue
+        if _is_link_or_junction(root_stat):
+            logger.warning("Skipping linked temporary-file sweep root: %s", root)
+            continue
+        try:
+            resolved_root = root.resolve(strict=True)
+        except OSError as exc:
+            logger.warning("Could not resolve temporary-file sweep root %s: %s", root, exc)
+            continue
+
+        def _walk_error(exc: OSError, sweep_root: Path = root) -> None:
+            logger.warning(
+                "Could not inspect temporary-file sweep path under %s: %s",
+                sweep_root,
+                exc,
+            )
+
+        for current, dir_names, file_names in os.walk(
+            root, topdown=True, onerror=_walk_error, followlinks=False
+        ):
+            current_path = Path(current)
+            traversable: list[str] = []
+            for directory_name in dir_names:
+                directory = current_path / directory_name
+                try:
+                    directory_stat = os.stat(directory, follow_symlinks=False)
+                except FileNotFoundError:
+                    continue
+                except OSError as exc:
+                    logger.warning(
+                        "Could not inspect directory during temp sweep %s: %s", directory, exc
+                    )
+                    continue
+                if _is_link_or_junction(directory_stat):
+                    logger.warning("Skipping linked directory during temp sweep: %s", directory)
+                    continue
+                traversable.append(directory_name)
+            dir_names[:] = traversable
+
+            for file_name in file_names:
+                candidate = current_path / file_name
+                if not is_reserved_temp_path(candidate):
+                    continue
+                try:
+                    resolved_candidate = candidate.resolve(strict=True)
+                except FileNotFoundError:
+                    continue
+                except OSError as exc:
+                    logger.warning(
+                        "Could not resolve temporary-file candidate %s: %s", candidate, exc
+                    )
+                    continue
+                if not resolved_candidate.is_relative_to(resolved_root):
+                    logger.warning("Skipping temporary file outside root %s: %s", root, candidate)
+                    continue
+                try:
+                    candidate_stat = os.stat(candidate, follow_symlinks=False)
+                except FileNotFoundError:
+                    continue
+                except OSError as exc:
+                    logger.warning("Could not stat temporary-file candidate %s: %s", candidate, exc)
+                    continue
+                if _is_link_or_junction(candidate_stat):
+                    logger.warning("Skipping linked temporary-file candidate: %s", candidate)
+                    continue
+                if not stat.S_ISREG(candidate_stat.st_mode) or candidate_stat.st_mtime > cutoff:
+                    continue
+                try:
+                    candidate.unlink()
+                except FileNotFoundError:
+                    continue
+                except OSError as exc:
+                    logger.warning("Could not remove orphan temporary file %s: %s", candidate, exc)
+                    continue
+                removed += 1
+
+    if removed:
+        logger.info("Removed %d aged orphan temporary file(s)", removed)
+    return removed
+
+
+def _is_link_or_junction(path_stat: os.stat_result) -> bool:
+    """Return whether a non-following stat describes a link or reparse point."""
+    file_attribute_reparse_point = 0x400
+    return stat.S_ISLNK(path_stat.st_mode) or bool(
+        getattr(path_stat, "st_file_attributes", 0) & file_attribute_reparse_point
+    )

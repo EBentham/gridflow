@@ -16,6 +16,7 @@ import duckdb
 import polars as pl
 
 from gridflow.storage.duckdb import _register_views
+from gridflow.storage.paths import PathBuilder
 
 VIEW_SQL = (
     Path(__file__).resolve().parents[2]
@@ -40,7 +41,8 @@ def _connection_with_view(data_dir: Path) -> duckdb.DuckDBPyConnection:
     silver_gie_agsi_storage table is absent in this fixture.
     """
     con = duckdb.connect(":memory:")
-    _register_views(con, data_dir)
+    paths = PathBuilder(data_dir)
+    _register_views(con, paths.silver_root(), paths.gold_root())
     con.execute(VIEW_SQL.read_text())
     return con
 

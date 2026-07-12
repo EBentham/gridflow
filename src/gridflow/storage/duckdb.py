@@ -10,8 +10,11 @@ from pathlib import Path
 import duckdb
 
 from gridflow.silver.latest_views import LATEST_VIEW_SPECS, latest_view_sql
+from gridflow.storage.parquet import sweep_orphan_temp_files
+from gridflow.storage.paths import PathBuilder
 
 logger = logging.getLogger(__name__)
+_SAFE_PARQUET_GLOB = "**/[!.]*.parquet"
 
 
 def _is_strict_mode() -> bool:
@@ -91,6 +94,10 @@ def init_catalogue(db_path: Path, data_dir: Path) -> None:
     Creates views pointing to Parquet files and metadata tables for
     pipeline tracking.
     """
+    paths = PathBuilder(data_dir)
+    silver_root = paths.silver_root()
+    gold_root = paths.gold_root()
+    sweep_orphan_temp_files(silver_root, gold_root)
     con = get_connection(db_path)
 
     # Create metadata tables
@@ -141,7 +148,7 @@ def init_catalogue(db_path: Path, data_dir: Path) -> None:
     con.execute("ALTER TABLE quality_reports ADD COLUMN IF NOT EXISTS run_id VARCHAR")
 
     # Register views for silver and gold Parquet files
-    _register_views(con, data_dir)
+    _register_views(con, silver_root, gold_root)
 
     # Register SQL-defined gold cross-source views
     _register_gold_views(con)
@@ -150,20 +157,18 @@ def init_catalogue(db_path: Path, data_dir: Path) -> None:
     logger.info(f"DuckDB catalogue initialised at {db_path}")
 
 
-def _register_views(con: duckdb.DuckDBPyConnection, data_dir: Path) -> None:
+def _register_views(con: duckdb.DuckDBPyConnection, silver_root: Path, gold_root: Path) -> None:
     """Register DuckDB views pointing to Parquet files on disk."""
-    silver_dir = data_dir / "silver"
-    gold_dir = data_dir / "gold"
 
     # Silver views — source-qualified (C1-4): silver_{source}_{dataset}. Two
     # sources sharing a dataset directory name (e.g. a future bare ``forecast``)
     # would otherwise collapse to one view under CREATE OR REPLACE in
     # nondeterministic iterdir() order, silently shadowing one source's data.
-    if silver_dir.exists():
+    if silver_root.exists():
         # Track which source(s) own each dataset NAME so the alias pass can tell
         # single-source names (safe to alias) from collision names (must NOT).
         dataset_sources: dict[str, set[str]] = {}
-        for source_dir in silver_dir.iterdir():
+        for source_dir in silver_root.iterdir():
             if not source_dir.is_dir():
                 continue
             for dataset_dir in source_dir.iterdir():
@@ -171,7 +176,7 @@ def _register_views(con: duckdb.DuckDBPyConnection, data_dir: Path) -> None:
                     continue
                 dataset_sources.setdefault(dataset_dir.name, set()).add(source_dir.name)
                 view_name = f"silver_{source_dir.name}_{dataset_dir.name}"
-                pattern = str(dataset_dir / "**" / "*.parquet").replace("\\", "/")
+                pattern = str(dataset_dir / _SAFE_PARQUET_GLOB).replace("\\", "/")
                 _try_create_view(con, view_name, pattern)
                 spec = LATEST_VIEW_SPECS.get((source_dir.name, dataset_dir.name))
                 if spec is not None and _view_exists(con, view_name):
@@ -194,12 +199,12 @@ def _register_views(con: duckdb.DuckDBPyConnection, data_dir: Path) -> None:
         _register_silver_aliases(con, dataset_sources)
 
     # Gold views
-    if gold_dir.exists():
-        for dataset_dir in gold_dir.iterdir():
+    if gold_root.exists():
+        for dataset_dir in gold_root.iterdir():
             if not dataset_dir.is_dir():
                 continue
             view_name = f"gold_{dataset_dir.name}"
-            pattern = str(dataset_dir / "**" / "*.parquet").replace("\\", "/")
+            pattern = str(dataset_dir / _SAFE_PARQUET_GLOB).replace("\\", "/")
             _try_create_view(con, view_name, pattern)
 
 
@@ -380,7 +385,11 @@ def _register_gold_views(con: duckdb.DuckDBPyConnection) -> None:
 
 def refresh_views(db_path: Path, data_dir: Path) -> None:
     """Re-register all views from the current filesystem state."""
+    paths = PathBuilder(data_dir)
+    silver_root = paths.silver_root()
+    gold_root = paths.gold_root()
+    sweep_orphan_temp_files(silver_root, gold_root)
     con = get_connection(db_path)
-    _register_views(con, data_dir)
+    _register_views(con, silver_root, gold_root)
     _register_gold_views(con)
     con.close()

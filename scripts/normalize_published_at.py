@@ -30,7 +30,7 @@ from pathlib import Path
 
 import polars as pl
 
-from gridflow.storage.parquet import write_parquet
+from gridflow.storage.parquet import is_reserved_temp_path, write_parquet
 
 logger = logging.getLogger(__name__)
 
@@ -62,7 +62,11 @@ _DATASETS = (
 
 
 def _partition_files(data_dir: Path, dataset: str) -> list[Path]:
-    return sorted((data_dir / "silver" / "elexon" / dataset).glob("year=*/**/*.parquet"))
+    return sorted(
+        file
+        for file in (data_dir / "silver" / "elexon" / dataset).glob("year=*/**/*.parquet")
+        if not is_reserved_temp_path(file)
+    )
 
 
 def _canonical_order(columns: list[str]) -> list[str]:
