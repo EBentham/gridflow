@@ -8,8 +8,6 @@ import logging
 from datetime import date, datetime, timedelta
 from typing import TYPE_CHECKING, Any
 
-import httpx
-
 from gridflow.connectors.base import BaseConnector, RawResponse
 from gridflow.connectors.elexon.endpoints import ENDPOINTS, ParamStyle, build_params
 from gridflow.connectors.elexon.parsers import get_pagination_info
@@ -18,6 +16,8 @@ from gridflow.utils.retry import RETRY_POLICY
 
 if TYPE_CHECKING:
     from collections.abc import Coroutine
+
+    import httpx
 
     from gridflow.config.settings import SourceConfig
     from gridflow.connectors.elexon.endpoints import ElexonEndpoint
@@ -66,7 +66,7 @@ class ElexonConnector(BaseConnector):
         # Each date (or publish-datetime chunk) is an independent unit: no chunk
         # reads another chunk's result. Build one per-unit coroutine, then fetch
         # them concurrently (CH3-03 / C2-7). Paging *within* a unit — and the
-        # 1..50 settlement-period iteration with its empty-data/4xx early-stop —
+        # 1..50 settlement-period iteration with period-local empty handling —
         # stays sequential inside the ``_fetch_date*`` helpers; only the
         # across-date loop is parallel. The ``rate_limit_per_second`` semaphore
         # inside ``_request`` keeps in-flight HTTP bounded, and ``gather``
@@ -156,9 +156,9 @@ class ElexonConnector(BaseConnector):
         """Fetch all pages for each settlement period on a given date.
 
         Iterates through periods 1..max_periods, fetching paginated data for each.
-        Stops early when a period returns either an HTTP error or an HTTP 200 with
-        an empty ``data`` array — the latter occurs for periods 49–50 on non-DST days
-        and avoids writing empty 11-byte files to the bronze layer.
+        A page-one empty ``data`` array is local to that period, while an empty
+        later page is a fatal pagination-integrity failure. HTTP errors always
+        propagate after the configured retry policy is exhausted.
         """
         responses: list[RawResponse] = []
 
@@ -171,27 +171,19 @@ class ElexonConnector(BaseConnector):
                     settlement_period=period,
                     page=page,
                 )
-                try:
-                    raw = await self._request(endpoint.path, query_params)
-                except httpx.HTTPStatusError as exc:
-                    # Probed live (2026-05-31): a genuinely-absent period returns
-                    # HTTP 200 with an empty data array (handled below), and an
-                    # out-of-range period returns 4xx. So a 4xx here is a
-                    # definitive "this period cannot exist" -> stop cleanly; a 5xx
-                    # that survived the 5-attempt retry policy is a real upstream
-                    # transient and MUST surface (not be recorded as a clean stop
-                    # with the partial bronze of this date's earlier pages).
-                    if exc.response.status_code < 500:
-                        break
-                    raise
+                raw = await self._request(endpoint.path, query_params)
 
-                # HTTP 200 with empty data array means this period doesn't exist
-                # (e.g. periods 49–50 on non-DST days). Stop without writing bronze.
                 try:
                     parsed = json.loads(raw.content)
                     if isinstance(parsed.get("data"), list) and not parsed["data"]:
+                        if page > 1:
+                            raise RuntimeError(
+                                "Elexon pagination truncated for "
+                                f"{dataset} on {settlement_date}: period {period}, page {page} "
+                                "returned empty data after an earlier populated page"
+                            )
                         logger.debug(
-                            "PN period %d on %s returned empty data — stopping period iteration",
+                            "PN period %d on %s returned empty data; continuing to the next period",
                             period,
                             settlement_date,
                         )

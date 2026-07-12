@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import hashlib
 import json
 import re
@@ -400,13 +401,7 @@ def test_bronze_metadata_preserves_pagination_fields(tmp_path: Path) -> None:
 
 
 class TestElexonPeriodTransientVsAbsent:
-    """Issue 13 (finding 183): ``_fetch_date_period`` must surface a post-retry
-    transient (5xx / timeout) rather than swallow it as a clean period stop,
-    while still stopping cleanly on a *definitive* absent signal (HTTP 200 with
-    empty ``data``, or a 4xx). The pre-fix ``except Exception: break`` conflated
-    the two, so a real upstream blip mid-period was recorded as success with
-    partial bronze for that date's earlier pages.
-    """
+    """PN period absence and hard-failure integrity coverage."""
 
 
 async def _no_sleep(*_args: Any, **_kwargs: Any) -> None:
@@ -419,18 +414,15 @@ async def _no_sleep(*_args: Any, **_kwargs: Any) -> None:
 async def test_pn_period_surfaces_post_retry_5xx_transient(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """A 5xx surviving the retry policy mid-period must RAISE, not be recorded
-    as a complete success.
-
-    FAILS against the pre-fix ``except Exception: break``, which swallows the
-    re-raised ``HTTPStatusError`` and returns page-1-only as a clean stop.
-    """
+    """A persistent page-two 5xx is fatal before any later period."""
     monkeypatch.setattr("asyncio.sleep", _no_sleep)
+    requests: list[tuple[int, int]] = []
 
     def handler(request: httpx.Request) -> httpx.Response:
         params = request.url.params
         period = int(params["settlementPeriod"])
         page = int(params.get("page", "1"))
+        requests.append((period, page))
         if period == 1 and page == 1:
             # Populated page 1 advertising a second page.
             return httpx.Response(200, content=_synthetic_body("pn", page=1, total_pages=2))
@@ -445,60 +437,128 @@ async def test_pn_period_surfaces_post_retry_5xx_transient(
     async with ElexonConnector(_active_elexon_config()) as connector:
         with pytest.raises(httpx.HTTPStatusError):
             await connector.fetch("pn", START, START)
+        assert connector.last_skipped_units == 0
+
+    assert requests.count((1, 1)) == 1
+    assert requests.count((1, 2)) == 5
+    assert all(period == 1 for period, _page in requests)
 
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_pn_absent_period_200_empty_stops_clean() -> None:
-    """A genuinely-absent period (HTTP 200, empty ``data``) stops iteration
-    cleanly with no error and contributes no empty bronze for that period."""
-    populated = 3
+async def test_pn_page_one_empty_is_local_to_bounded_period() -> None:
+    """An empty period does not imply that any later period is absent."""
+    requests: list[int] = []
 
     def handler(request: httpx.Request) -> httpx.Response:
         period = int(request.url.params["settlementPeriod"])
-        if period <= populated:
-            return httpx.Response(
-                200,
-                content=_synthetic_body("pn", data=[{"dataset": "pn", "settlementPeriod": period}]),
-            )
-        return httpx.Response(200, content=_synthetic_body("pn", data=[]))
+        requests.append(period)
+        data = [{"dataset": "pn", "settlementPeriod": period}] if period in {1, 3, 5} else []
+        return httpx.Response(200, content=_synthetic_body("pn", data=data))
 
     _mock_all_elexon_gets(handler)
 
     async with ElexonConnector(_active_elexon_config()) as connector:
-        responses = await connector.fetch("pn", START, START)
+        responses = await connector._fetch_date_period(
+            "pn", ENDPOINTS["pn"], TARGET_DATE, max_periods=5
+        )
+        assert connector.last_skipped_units == 0
 
-    assert len(responses) == populated
-    assert all(r.dataset == "pn" for r in responses)
-    assert all(r.http_status == 200 for r in responses)
+    assert requests == [1, 2, 3, 4, 5]
+    assert [int(response.request_params["settlementPeriod"]) for response in responses] == [
+        1,
+        3,
+        5,
+    ]
+    assert all(json.loads(response.body)["data"] for response in responses)
 
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_pn_out_of_range_period_4xx_stops_clean(
+@pytest.mark.parametrize("status_code", [400, 401, 403, 404, 408, 429])
+async def test_pn_period_4xx_surfaces_after_exact_retry_count(
+    monkeypatch: pytest.MonkeyPatch,
+    status_code: int,
+) -> None:
+    """Every exhausted HTTP failure is fatal under the current retry policy."""
+    monkeypatch.setattr("asyncio.sleep", _no_sleep)
+    attempts = 0
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        nonlocal attempts
+        attempts += 1
+        return httpx.Response(status_code, content=b'{"error": "request failed"}')
+
+    _mock_all_elexon_gets(handler)
+
+    async with ElexonConnector(_active_elexon_config()) as connector:
+        with pytest.raises(httpx.HTTPStatusError) as exc_info:
+            await connector.fetch("pn", START, START)
+        assert connector.last_skipped_units == 0
+
+    assert exc_info.value.response.status_code == status_code
+    assert attempts == 5
+
+
+@respx.mock
+@pytest.mark.asyncio
+async def test_pn_later_page_empty_is_fatal_truncation() -> None:
+    """A later empty page cannot validate the earlier pages as complete."""
+    requests: list[tuple[int, int]] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        period = int(request.url.params["settlementPeriod"])
+        page = int(request.url.params.get("page", "1"))
+        requests.append((period, page))
+        data = [{"dataset": "pn"}] if page == 1 else []
+        return httpx.Response(
+            200,
+            content=_synthetic_body("pn", page=page, total_pages=2, data=data),
+        )
+
+    _mock_all_elexon_gets(handler)
+
+    async with ElexonConnector(_active_elexon_config()) as connector:
+        with pytest.raises(
+            RuntimeError,
+            match=r"pn.*2024-01-15.*period 1.*page 2",
+        ):
+            await connector.fetch("pn", START, START)
+        assert connector.last_skipped_units == 0
+
+    assert requests == [(1, 1), (1, 2)]
+
+
+@respx.mock
+@pytest.mark.asyncio
+async def test_pn_concurrent_dates_settle_and_raise_first_input_failure(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """A definitive 4xx for a period (out-of-range / 404) stops iteration
-    cleanly — distinct from the 5xx transient, which must raise.
-
-    FAILS if the 4xx-break regresses into a raised error.
-    """
+    """All date tasks settle, while the earliest input date controls the error."""
     monkeypatch.setattr("asyncio.sleep", _no_sleep)
-    populated = 2
+    attempts: dict[str, int] = {"2024-01-15": 0, "2024-01-16": 0}
+    completion_order: list[str] = []
+    later_date_reached_final_attempt = asyncio.Event()
 
-    def handler(request: httpx.Request) -> httpx.Response:
-        period = int(request.url.params["settlementPeriod"])
-        if period <= populated:
-            return httpx.Response(
-                200,
-                content=_synthetic_body("pn", data=[{"dataset": "pn", "settlementPeriod": period}]),
-            )
-        return httpx.Response(404, content=b'{"error": "not found"}')
+    async def handler(request: httpx.Request) -> httpx.Response:
+        settlement_date = request.url.params["settlementDate"]
+        attempts[settlement_date] += 1
+        if attempts[settlement_date] == 5:
+            if settlement_date == "2024-01-15":
+                await later_date_reached_final_attempt.wait()
+            else:
+                later_date_reached_final_attempt.set()
+            completion_order.append(settlement_date)
+        status = 429 if settlement_date == "2024-01-15" else 500
+        return httpx.Response(status, content=b'{"error": "request failed"}')
 
-    _mock_all_elexon_gets(handler)
+    respx.get(re.compile(rf"^{re.escape(BASE_URL)}/.*")).mock(side_effect=handler)
 
     async with ElexonConnector(_active_elexon_config()) as connector:
-        responses = await connector.fetch("pn", START, START)
+        with pytest.raises(httpx.HTTPStatusError) as exc_info:
+            await connector.fetch("pn", START, END)
+        assert connector.last_skipped_units == 0
 
-    assert len(responses) == populated
-    assert all(r.dataset == "pn" for r in responses)
+    assert exc_info.value.response.status_code == 429
+    assert attempts == {"2024-01-15": 5, "2024-01-16": 5}
+    assert completion_order == ["2024-01-16", "2024-01-15"]
