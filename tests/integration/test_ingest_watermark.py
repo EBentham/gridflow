@@ -25,7 +25,9 @@ from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Any
 
 import duckdb
+import httpx
 import pytest
+import respx
 from typer.testing import CliRunner
 
 from gridflow.cli import app
@@ -153,6 +155,88 @@ def test_failed_ingest_writes_no_watermark(
     assert _read_watermark(db_path, "elexon", "fuelhh") is None, (
         "a failed ingest must not write a watermark"
     )
+
+
+@respx.mock
+@pytest.mark.integration
+def test_incremental_pn_http_failure_preserves_bronze_and_watermark(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A failed real PN connector fetch is atomic before Bronze and watermark writes."""
+    db_path = _isolated_env(tmp_path, monkeypatch)
+    monkeypatch.setenv("GRIDFLOW_INCREMENTAL_OVERLAP_HOURS", "0")
+
+    from gridflow.observability import update_watermark
+    from gridflow.storage.duckdb import init_catalogue
+
+    data_dir = tmp_path / "data"
+    init_catalogue(db_path, data_dir)
+    existing = datetime(2024, 1, 15, 0, 0, tzinfo=UTC)
+    con = duckdb.connect(str(db_path))
+    try:
+        update_watermark(con, "elexon", "pn", existing)
+    finally:
+        con.close()
+
+    fallback_start = datetime(2024, 1, 1, 0, 0, tzinfo=UTC)
+    requested_end = datetime(2024, 1, 15, 23, 0, tzinfo=UTC)
+    monkeypatch.setattr(
+        "gridflow.pipeline.runner.resolve_dates",
+        lambda *_args, **_kwargs: (fallback_start, requested_end),
+    )
+
+    async def no_sleep(*_args: Any, **_kwargs: Any) -> None:
+        return None
+
+    monkeypatch.setattr("asyncio.sleep", no_sleep)
+    requests: list[tuple[str, int]] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        settlement_date = request.url.params["settlementDate"]
+        period = int(request.url.params["settlementPeriod"])
+        requests.append((settlement_date, period))
+        if period == 1:
+            return httpx.Response(
+                200,
+                json={
+                    "data": [{"settlementPeriod": 1}],
+                    "metadata": {"currentPage": 1, "totalPages": 1},
+                },
+            )
+        return httpx.Response(429, json={"error": "rate limited"})
+
+    respx.get(url__startswith="https://data.elexon.co.uk/bmrs/api/v1/").mock(side_effect=handler)
+
+    result = runner.invoke(app, ["ingest", "elexon", "pn", "--incremental"])
+
+    assert result.exit_code == 1, result.output
+    assert "Ingestion failed" in result.output
+    assert {settlement_date for settlement_date, _period in requests} == {"2024-01-15"}
+    assert requests.count(("2024-01-15", 1)) == 1
+    assert requests.count(("2024-01-15", 2)) == 5
+    assert len(requests) == 6
+
+    con = duckdb.connect(str(db_path), read_only=True)
+    try:
+        status = con.execute(
+            """
+            SELECT status
+            FROM pipeline_runs
+            WHERE source = ? AND dataset = ? AND operation = 'ingest'
+            ORDER BY started_at DESC
+            LIMIT 1
+            """,
+            ["elexon", "pn"],
+        ).fetchone()
+    finally:
+        con.close()
+    assert status == ("failed",)
+
+    bronze_dir = data_dir / "bronze" / "elexon" / "pn"
+    assert not list(bronze_dir.rglob("raw_*.json"))
+    assert not list(bronze_dir.rglob("raw_*.meta.json"))
+    assert _read_watermark(db_path, "elexon", "pn") == existing
 
 
 @pytest.mark.integration
