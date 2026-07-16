@@ -23,6 +23,7 @@ from gridflow.silver.gie.agsi import (
 )
 from gridflow.silver.gie.alsi import LNGTerminalTransformer
 from gridflow.silver.registry import list_transformers
+from gridflow.storage.paths import PathBuilder
 
 FIXTURES = Path(__file__).parent.parent / "fixtures" / "gie"
 
@@ -70,14 +71,25 @@ def _write_bronze_payload(
     target_date: date,
     payload: dict,
 ) -> None:
-    bronze_dir = (
-        transformer.bronze_dir
-        / str(target_date.year)
-        / f"{target_date.month:02d}"
-        / f"{target_date.day:02d}"
+    bronze_dir = PathBuilder(transformer.data_dir).bronze_date_dir(
+        transformer.source, transformer.dataset, target_date
     )
     bronze_dir.mkdir(parents=True)
     (bronze_dir / "raw_test.json").write_text(json.dumps(payload), encoding="utf-8")
+
+
+def _write_bronze_payloads(
+    transformer: BaseSilverTransformer,
+    target_date: date,
+    payloads: list[dict],
+) -> None:
+    """Seed a single partition with 2+ raw files (paginated partition, P0.8)."""
+    bronze_dir = PathBuilder(transformer.data_dir).bronze_date_dir(
+        transformer.source, transformer.dataset, target_date
+    )
+    bronze_dir.mkdir(parents=True, exist_ok=True)
+    for i, payload in enumerate(payloads):
+        (bronze_dir / f"raw_test_{i}.json").write_text(json.dumps(payload), encoding="utf-8")
 
 
 def _seed_fixture(
@@ -471,6 +483,12 @@ class TestAgsiReferenceTransformers:
         self,
         tmp_data_dir: Path,
     ) -> None:
+        """Case (e), P0.8: about_listing has no per-record dates to filter on
+        and inherits AgsiJsonTransformer's no-op ``_filter_records`` hook
+        (deviation note 3) -- unlike news/news_item, every fixture row must
+        survive ``run()`` untouched. This existing test already pins that
+        no-op inheritance (row count == the fixture's full 7 records, no
+        filtering applied); no separate P0.8 case is needed."""
         target_date = date(2024, 1, 20)
         transformer = AboutListingTransformer(tmp_data_dir)
         _assert_transformer_isolated(transformer, tmp_data_dir)
@@ -677,6 +695,194 @@ class TestLNGTerminalTransformer:
         assert transformer.run(target_date, run_id="alsi-p08-fallback") == 1
         persisted = _read_single_silver(transformer)
         assert persisted["gas_day"].to_list() == [target_date]
+
+
+# ---------------------------------------------------------------------------
+# NewsTransformer / NewsItemTransformer read_bronze tri-state filter (P0.8)
+#
+# ``AgsiJsonTransformer.read_bronze`` (silver/gie/agsi.py:333) now runs every
+# accumulated record through ``classify_news_record_for_window``
+# (connectors/gie/client.py:559) via the ``_filter_records`` hook, overridden
+# identically on ``NewsTransformer``/``NewsItemTransformer``. These cases
+# exercise ``run()``/``read_bronze`` end to end (not ``transform()`` in
+# isolation), per the review finding that the new filter was unexercised.
+# ---------------------------------------------------------------------------
+
+
+class TestNewsReadBronzeFilter:
+    def test_run_keeps_only_the_overlapping_record(self, tmp_data_dir: Path) -> None:
+        """Case (a): an exact partition with one event-spanning record
+        overlapping target_date and one reference-dated off-target record ->
+        run(target) persists exactly the overlapping one."""
+        target_date = date(2026, 5, 10)
+        transformer = NewsTransformer(tmp_data_dir)
+        _assert_transformer_isolated(transformer, tmp_data_dir)
+        _write_bronze_payload(
+            transformer,
+            target_date,
+            {
+                "data": [
+                    {
+                        "id": "news-overlap",
+                        "url": "https://agsi.gie.eu/news/overlap",
+                        "title": "Overlap announcement",
+                        "start_at": "2026-05-09T00:00:00Z",
+                        "end_at": "2026-05-11T00:00:00Z",
+                    },
+                    {
+                        "id": "news-off-target",
+                        "url": "https://agsi.gie.eu/news/off-target",
+                        "title": "Off-target announcement",
+                        "updatedAt": "2026-01-01T00:00:00Z",
+                    },
+                ]
+            },
+        )
+
+        assert transformer.run(target_date, run_id="news-p08-overlap") == 1
+        persisted = _read_single_silver(transformer)
+        assert persisted["id"].to_list() == ["news-overlap"]
+
+    def test_run_keeps_record_with_no_date_keys(self, tmp_data_dir: Path) -> None:
+        """Case (b): a record with NO event/reference date keys at all is
+        kept (classified ``"undated"``) -- the hedge pinned, never a silent
+        drop just because the vendor omitted every date key."""
+        target_date = date(2026, 5, 10)
+        transformer = NewsTransformer(tmp_data_dir)
+        _assert_transformer_isolated(transformer, tmp_data_dir)
+        _write_bronze_payload(
+            transformer,
+            target_date,
+            {
+                "data": [
+                    {
+                        "id": "news-no-dates",
+                        "url": "https://agsi.gie.eu/news/no-dates",
+                        "title": "No dates announcement",
+                    },
+                ]
+            },
+        )
+
+        assert transformer.run(target_date, run_id="news-p08-no-dates") == 1
+        persisted = _read_single_silver(transformer)
+        assert persisted["id"].to_list() == ["news-no-dates"]
+
+    def test_run_keeps_unparseable_date_and_warns(
+        self,
+        tmp_data_dir: Path,
+        caplog: pytest.LogCaptureFixture,
+    ) -> None:
+        """Case (c): a record with a PRESENT but unparseable date key
+        (vendor date-format drift, e.g. ``start_at="vendor-new-format"``) is
+        kept -- not silently dropped, same as the absent-key case -- and the
+        bounded undated warning is captured (Sol finding 3: a naive
+        "keep when keys absent" hedge would have missed exactly this case)."""
+        target_date = date(2026, 5, 10)
+        transformer = NewsTransformer(tmp_data_dir)
+        _assert_transformer_isolated(transformer, tmp_data_dir)
+        _write_bronze_payload(
+            transformer,
+            target_date,
+            {
+                "data": [
+                    {
+                        "id": "news-unparseable",
+                        "url": "https://agsi.gie.eu/news/unparseable",
+                        "title": "Vendor drift announcement",
+                        "start_at": "vendor-new-format",
+                    },
+                ]
+            },
+        )
+
+        assert transformer.run(target_date, run_id="news-p08-unparseable") == 1
+        persisted = _read_single_silver(transformer)
+        assert persisted["id"].to_list() == ["news-unparseable"]
+        assert "1 record(s) had no parseable date" in caplog.text
+
+    def test_run_warns_exactly_once_per_read_across_multiple_raw_files(
+        self,
+        tmp_data_dir: Path,
+        caplog: pytest.LogCaptureFixture,
+    ) -> None:
+        """Case (d): a paginated partition (2+ raw_*.json files), each
+        containing an undated record, must still emit exactly ONE aggregated
+        warning per read_bronze/run call -- never one warning per file
+        (Sol pass-2 finding 4: rows are accumulated across ALL raw files
+        first, then the filter hook runs exactly once)."""
+        target_date = date(2026, 5, 10)
+        transformer = NewsTransformer(tmp_data_dir)
+        _assert_transformer_isolated(transformer, tmp_data_dir)
+        _write_bronze_payloads(
+            transformer,
+            target_date,
+            [
+                {
+                    "data": [
+                        {
+                            "id": "news-page1-undated",
+                            "url": "https://agsi.gie.eu/news/page1",
+                            "title": "Page 1 undated",
+                        },
+                    ]
+                },
+                {
+                    "data": [
+                        {
+                            "id": "news-page2-undated",
+                            "url": "https://agsi.gie.eu/news/page2",
+                            "title": "Page 2 undated",
+                        },
+                    ]
+                },
+            ],
+        )
+
+        assert transformer.run(target_date, run_id="news-p08-multifile") == 2
+        matching_warnings = [
+            record for record in caplog.records if "had no parseable date" in record.getMessage()
+        ]
+        assert len(matching_warnings) == 1
+        assert "2 record(s) had no parseable date" in matching_warnings[0].getMessage()
+
+    def test_news_item_run_keeps_only_the_overlapping_record(self, tmp_data_dir: Path) -> None:
+        """Parity: NewsItemTransformer overrides ``_filter_records``
+        identically to NewsTransformer (Task 6) -- exercised via run() here
+        so the news_item read path is pinned too, not just news.
+
+        Fail-first: seeds one overlapping AND one off-target detail payload,
+        each in its own raw file (a news_item raw file is a single detail
+        payload, not wrapped in ``{"data": [...]}`` -- see
+        ``NewsItemTransformer._records_from_payload``). This only passes if
+        the tri-state filter actually runs on this class; the inherited
+        no-op (``AgsiJsonTransformer._filter_records``) would keep both
+        records and fail the ``run() == 1`` / turl assertions below.
+        """
+        target_date = date(2026, 5, 10)
+        transformer = NewsItemTransformer(tmp_data_dir)
+        _assert_transformer_isolated(transformer, tmp_data_dir)
+        _write_bronze_payloads(
+            transformer,
+            target_date,
+            [
+                {
+                    "turl": "news-item-overlap",
+                    "title": "Overlap detail",
+                    "start_at": "2026-05-09T00:00:00Z",
+                    "end_at": "2026-05-11T00:00:00Z",
+                },
+                {
+                    "turl": "news-item-off-target",
+                    "title": "Off-target detail",
+                    "updatedAt": "2026-01-01T00:00:00Z",
+                },
+            ],
+        )
+
+        assert transformer.run(target_date, run_id="news-item-p08-overlap") == 1
+        persisted = _read_single_silver(transformer)
+        assert persisted["turl"].to_list() == ["news-item-overlap"]
 
 
 # ---------------------------------------------------------------------------

@@ -36,6 +36,7 @@ from gridflow.silver.openmeteo.historical import (
     _pivot_openmeteo_json,
 )
 from gridflow.storage.parquet import read_parquet
+from gridflow.storage.paths import PathBuilder
 
 FIXTURES = Path(__file__).parent.parent / "fixtures" / "openmeteo"
 
@@ -432,14 +433,8 @@ def _write_openmeteo_bronze(
     partition_date: date,
     payload: dict,
 ) -> None:
-    bronze_dir = (
-        tmp_path
-        / "bronze"
-        / "open_meteo"
-        / f"{dataset_prefix}__{location}"
-        / str(partition_date.year)
-        / f"{partition_date.month:02d}"
-        / f"{partition_date.day:02d}"
+    bronze_dir = PathBuilder(tmp_path).bronze_date_dir(
+        "open_meteo", f"{dataset_prefix}__{location}", partition_date
     )
     bronze_dir.mkdir(parents=True, exist_ok=True)
     (bronze_dir / "raw_test.json").write_text(json.dumps(payload))
@@ -475,7 +470,7 @@ class TestHistoricalReadBronzeTargetDateFilter:
 
         assert rows_written == 24
         df = read_parquet(
-            tmp_path / "silver" / "open_meteo" / "historical_demand" / "**" / "*.parquet"
+            PathBuilder(tmp_path).silver_glob_pattern("open_meteo", "historical_demand")
         )
         assert df["timestamp_utc"].dt.date().unique().to_list() == [day1]
 
@@ -495,7 +490,7 @@ class TestHistoricalReadBronzeTargetDateFilter:
 
         assert rows_written == 24
         df = read_parquet(
-            tmp_path / "silver" / "open_meteo" / "historical_demand" / "**" / "*.parquet"
+            PathBuilder(tmp_path).silver_glob_pattern("open_meteo", "historical_demand")
         )
         assert df["timestamp_utc"].dt.date().unique().to_list() == [target_date]
 
@@ -525,7 +520,7 @@ class TestHistoricalReadBronzeTargetDateFilter:
         # null timestamp_utc since it can't parse as a datetime either).
         assert rows_written == 2
         df = read_parquet(
-            tmp_path / "silver" / "open_meteo" / "historical_demand" / "**" / "*.parquet"
+            PathBuilder(tmp_path).silver_glob_pattern("open_meteo", "historical_demand")
         )
         assert df["timestamp_utc"].null_count() == 1
 
@@ -608,29 +603,20 @@ class TestForecastDemandWeather:
         window_start = date(2026, 6, 1)
         day2 = date(2026, 6, 2)
         day3 = date(2026, 6, 3)
+        payload_times = (
+            [f"{window_start.isoformat()}T{h:02d}:00" for h in range(24)]
+            + [f"{day2.isoformat()}T{h:02d}:00" for h in range(24)]
+            + [f"{day3.isoformat()}T{h:02d}:00" for h in range(24)]
+        )
         payload = {
             "latitude": 51.5074,
             "longitude": -0.1278,
             "hourly": {
-                "time": (
-                    [f"{window_start.isoformat()}T{h:02d}:00" for h in range(24)]
-                    + [f"{day2.isoformat()}T{h:02d}:00" for h in range(24)]
-                    + [f"{day3.isoformat()}T{h:02d}:00" for h in range(24)]
-                ),
+                "time": payload_times,
                 "temperature_2m": [5.0 + i * 0.1 for i in range(72)],
             },
         }
-        bronze_dir = (
-            tmp_path
-            / "bronze"
-            / "open_meteo"
-            / "forecast_demand__london"
-            / str(window_start.year)
-            / f"{window_start.month:02d}"
-            / f"{window_start.day:02d}"
-        )
-        bronze_dir.mkdir(parents=True, exist_ok=True)
-        (bronze_dir / "raw_test.json").write_text(json.dumps(payload))
+        _write_openmeteo_bronze(tmp_path, "forecast_demand", "london", window_start, payload)
 
         transformer = ForecastDemandWeather(tmp_path)
         dates = [window_start, day2, day3]
@@ -640,15 +626,7 @@ class TestForecastDemandWeather:
 
         frames = []
         for d in dates:
-            path = (
-                tmp_path
-                / "silver"
-                / "open_meteo"
-                / "forecast_demand"
-                / f"year={d.year}"
-                / f"month={d.month:02d}"
-                / f"forecast_demand_{d.strftime('%Y%m%d')}.parquet"
-            )
+            path = PathBuilder(tmp_path).silver_file("open_meteo", "forecast_demand", d)
             frame = pl.read_parquet(path)
             assert frame["timestamp_utc"].dt.date().unique().to_list() == [d]
             frames.append(frame)
@@ -658,6 +636,18 @@ class TestForecastDemandWeather:
         dup_key = union.select(["timestamp_utc", "location"])
         assert dup_key.n_unique() == 72, "forecast horizon duplicated across per-date files"
         assert set(union["timestamp_utc"].dt.date().to_list()) == set(dates)
+
+        # P0.8 review finding: the date-set check above cannot catch a
+        # shifted/replaced hour (e.g. an off-by-one that swaps one hour for
+        # another but keeps the same date). Pin the exact hourly timestamp
+        # set: the union across the three per-date files must equal exactly
+        # the payload's 72 input timestamps, parsed to UTC the same way
+        # BaseOpenMeteoTransformer.transform() parses `time`
+        # (`%Y-%m-%dT%H:%M`, tz-localised to UTC).
+        expected_timestamps = {
+            datetime.strptime(t, "%Y-%m-%dT%H:%M").replace(tzinfo=UTC) for t in payload_times
+        }
+        assert set(union["timestamp_utc"].to_list()) == expected_timestamps
 
     def test_empty_input(self):
         assert self.t.transform(pl.DataFrame()).is_empty()
