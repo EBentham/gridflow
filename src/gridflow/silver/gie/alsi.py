@@ -43,6 +43,8 @@ class LNGTerminalTransformer(BaseSilverTransformer):
             except (json.JSONDecodeError, AttributeError) as exc:
                 logger.warning("Failed to parse GIE ALSI bronze file %s: %s", f, exc)
 
+        rows = _filter_records_to_gas_day(rows, target_date)
+
         if not rows:
             return pl.DataFrame()
         return pl.DataFrame(rows)
@@ -182,6 +184,41 @@ class LNGTerminalTransformer(BaseSilverTransformer):
         if "country_code" in df.columns:
             sort_cols.append("country_code")
         return df.select(available).sort(sort_cols)
+
+
+def _filter_records_to_gas_day(
+    rows: list[dict[str, Any]],
+    target_date: date,
+) -> list[dict[str, Any]]:
+    """Keep only records whose ``gasDayStart`` matches ``target_date`` (P0.8).
+
+    Fallback+filter compose correctly for a rolling window (deviation note 1
+    in the P0.8 plan): the ALSI connector stays window-start-partitioned
+    (chunking would send 8 countries x N days at a rate already 5x over GIE's
+    documented cap, P2.11), so ``read_bronze`` may resolve the covering
+    fallback partition for ``target_date`` — this filter keeps only that
+    date's rows out of whatever window the resolved partition covers.
+
+    Fail-open hedge: records whose ``gasDayStart`` key is missing OR present
+    but unparseable are KEPT here — the transform's existing invalid-date
+    drop (with its bounded-context warning) still handles them downstream.
+    A record is dropped only when its ``gasDayStart`` parses successfully to
+    a date that is NOT ``target_date``.
+    """
+    kept: list[dict[str, Any]] = []
+    for record in rows:
+        raw_value = record.get("gasDayStart")
+        if raw_value in (None, ""):
+            kept.append(record)
+            continue
+        try:
+            parsed = date.fromisoformat(str(raw_value)[:10])
+        except ValueError:
+            kept.append(record)
+            continue
+        if parsed == target_date:
+            kept.append(record)
+    return kept
 
 
 register_transformer("gie_alsi", "lng", LNGTerminalTransformer)

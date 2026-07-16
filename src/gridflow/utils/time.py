@@ -87,3 +87,48 @@ def date_range(start: date, end: date) -> list[date]:
         dates.append(current)
         current += timedelta(days=1)
     return dates
+
+
+def day_subwindows(start: datetime, end: datetime) -> list[tuple[datetime, datetime]]:
+    """Clamped calendar-day sub-windows covering ``[start, end)`` exactly.
+
+    Used by the ENTSO-E and ENTSO-G connectors (P0.8 / R2-F08) to chunk a
+    multi-day fetch window into one request per covered UTC calendar day, so
+    bronze ``data_date`` honours its documented contract (the calendar date the
+    data refers to) instead of stamping every day's rows under the window's
+    start date.
+
+    Args:
+        start: Window start. Must be tz-aware UTC.
+        end: Window end (exclusive). Must be tz-aware UTC and ``>= start``.
+
+    Returns:
+        A list of ``(sub_start, sub_end)`` pairs, one per UTC calendar day
+        touched by ``[start, end)``, clamped to the window bounds. An ``end``
+        that falls exactly at midnight excludes that date (matching the
+        exclusive ``periodEnd``/``to`` semantics of both chunked connectors).
+        ``start == end`` returns an empty list; callers apply their own
+        degenerate-window guard (a single legacy-shape request).
+
+    Raises:
+        ValueError: if either argument is naive, has a non-zero UTC offset, or
+            if ``end < start``.
+    """
+    for name, value in (("start", start), ("end", end)):
+        if value.tzinfo is None or value.utcoffset() is None:
+            raise ValueError(f"day_subwindows: {name} must be tz-aware, got naive {value!r}")
+        if value.utcoffset() != timedelta(0):
+            raise ValueError(f"day_subwindows: {name} must be UTC (zero offset), got {value!r}")
+    if end < start:
+        raise ValueError(f"day_subwindows: end {end!r} is before start {start!r}")
+    if end == start:
+        return []
+
+    windows: list[tuple[datetime, datetime]] = []
+    for day in date_range(start.date(), end.date()):
+        day_start = datetime(day.year, day.month, day.day, tzinfo=UTC)
+        sub_start = max(start, day_start)
+        sub_end = min(end, day_start + timedelta(days=1))
+        if sub_start < sub_end:
+            windows.append((sub_start, sub_end))
+    return windows

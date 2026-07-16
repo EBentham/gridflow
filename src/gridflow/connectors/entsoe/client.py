@@ -25,6 +25,7 @@ from gridflow.connectors.entsoe.endpoints import (
 from gridflow.connectors.entsoe.parsers import _hardened_parser
 from gridflow.connectors.registry import register_connector
 from gridflow.utils.retry import RETRY_POLICY
+from gridflow.utils.time import day_subwindows
 
 logger = logging.getLogger(__name__)
 
@@ -124,10 +125,21 @@ class EntsoeConnector(BaseConnector):
             )
 
         doc_type = DOC_TYPES[dataset]
-        period_start = start.strftime(ENTSOE_DT_FORMAT)
-        period_end = end.strftime(ENTSOE_DT_FORMAT)
 
-        # Build one per-unit fetch coroutine per zone / zone-pair / control-area.
+        # Build one per-unit fetch coroutine per zone / zone-pair / control-area,
+        # per calendar-day sub-window (P0.8 / R2-F08): bronze `data_date` must
+        # honour its documented contract (the calendar date the data refers to,
+        # `connectors/base.py:47-49`), so a multi-day window is chunked into one
+        # `_fetch_document` per unit PER DAY rather than one per unit spanning
+        # the whole window. Task list is built day-outer / unit-inner (so it
+        # stays chronological); `_fetch_document` itself is unchanged — only the
+        # per-day `period_start`/`period_end` strings it receives differ.
+        #
+        # `date_param` doc types (only `generation_units_master_data`) request a
+        # single date already (`_fetch_document` uses `period_start`'s date, not
+        # the window span) — one request per unit, as today; chunking them
+        # would be an incoherent N-times-identical-snapshot request.
+        #
         # Units are independent, so they fetch concurrently (CH3-03 / C2-7); the
         # ``rate_limit_per_second`` semaphore plus the ENTSO-E request throttle
         # inside ``_request`` keep in-flight HTTP bounded. ``gather`` preserves
@@ -136,58 +148,22 @@ class EntsoeConnector(BaseConnector):
         # ``_fetch_document``; only the across-unit loop is parallel.
         tasks: list[Coroutine[Any, Any, list[RawResponse]]] = []
 
-        if doc_type.domain_style == "zone_pair":
-            # One response per (in, out) zone pair.
-            for in_zone, out_zone in _FLOW_PAIRS:
-                in_mrid = BIDDING_ZONES.get(in_zone)
-                out_mrid = BIDDING_ZONES.get(out_zone)
-                if not in_mrid or not out_mrid:
-                    continue
-                tasks.append(
-                    self._fetch_document(
-                        dataset=dataset,
-                        doc_type=doc_type,
-                        in_domain=in_mrid,
-                        out_domain=out_mrid,
-                        period_start=period_start,
-                        period_end=period_end,
-                        fetch_params=params,
-                    )
-                )
-        elif doc_type.domain_style == "control_area":
-            # One response per control area (balancing datasets).
-            for area in DEFAULT_CONTROL_AREAS:
-                mrid = BIDDING_ZONES.get(area)
-                if not mrid:
-                    continue
-                tasks.append(
-                    self._fetch_document(
-                        dataset=dataset,
-                        doc_type=doc_type,
-                        in_domain=mrid,
-                        out_domain=None,
-                        period_start=period_start,
-                        period_end=period_end,
-                        fetch_params=params,
-                    )
-                )
+        if doc_type.date_param:
+            period_start = start.strftime(ENTSOE_DT_FORMAT)
+            period_end = end.strftime(ENTSOE_DT_FORMAT)
+            tasks.extend(
+                self._build_unit_tasks(dataset, doc_type, period_start, period_end, params)
+            )
         else:
-            # One response per bidding zone using the dataset's documented
-            # domain parameter style.
-            for zone in DEFAULT_ZONES:
-                mrid = BIDDING_ZONES.get(zone)
-                if not mrid:
-                    continue
-                tasks.append(
-                    self._fetch_document(
-                        dataset=dataset,
-                        doc_type=doc_type,
-                        in_domain=mrid,
-                        out_domain=mrid if doc_type.domain_style == "zone" else None,
-                        period_start=period_start,
-                        period_end=period_end,
-                        fetch_params=params,
-                    )
+            # Degenerate guard: start == end collapses to no sub-windows —
+            # fall back to a single legacy-shape request, preserving today's
+            # behaviour for a zero-width window.
+            windows = day_subwindows(start, end) or [(start, end)]
+            for sub_start, sub_end in windows:
+                period_start = sub_start.strftime(ENTSOE_DT_FORMAT)
+                period_end = sub_end.strftime(ENTSOE_DT_FORMAT)
+                tasks.extend(
+                    self._build_unit_tasks(dataset, doc_type, period_start, period_end, params)
                 )
 
         # ENTSO-E has no per-unit tolerance: a failing zone fails the whole run
@@ -213,6 +189,78 @@ class EntsoeConnector(BaseConnector):
     # ------------------------------------------------------------------
     # Internal helpers
     # ------------------------------------------------------------------
+
+    def _build_unit_tasks(
+        self,
+        dataset: str,
+        doc_type: EntsoeDocType,
+        period_start: str,
+        period_end: str,
+        fetch_params: dict[str, Any],
+    ) -> list[Coroutine[Any, Any, list[RawResponse]]]:
+        """Build one ``_fetch_document`` task per unit for one request window.
+
+        Single-sources the three ``domain_style`` dispatch branches (zone_pair /
+        control_area / zone-or-other) so ``fetch()``'s per-window loop (P0.8) has
+        one call site regardless of how many calendar-day sub-windows the
+        overall fetch spans.
+        """
+        tasks: list[Coroutine[Any, Any, list[RawResponse]]] = []
+
+        if doc_type.domain_style == "zone_pair":
+            # One response per (in, out) zone pair.
+            for in_zone, out_zone in _FLOW_PAIRS:
+                in_mrid = BIDDING_ZONES.get(in_zone)
+                out_mrid = BIDDING_ZONES.get(out_zone)
+                if not in_mrid or not out_mrid:
+                    continue
+                tasks.append(
+                    self._fetch_document(
+                        dataset=dataset,
+                        doc_type=doc_type,
+                        in_domain=in_mrid,
+                        out_domain=out_mrid,
+                        period_start=period_start,
+                        period_end=period_end,
+                        fetch_params=fetch_params,
+                    )
+                )
+        elif doc_type.domain_style == "control_area":
+            # One response per control area (balancing datasets).
+            for area in DEFAULT_CONTROL_AREAS:
+                mrid = BIDDING_ZONES.get(area)
+                if not mrid:
+                    continue
+                tasks.append(
+                    self._fetch_document(
+                        dataset=dataset,
+                        doc_type=doc_type,
+                        in_domain=mrid,
+                        out_domain=None,
+                        period_start=period_start,
+                        period_end=period_end,
+                        fetch_params=fetch_params,
+                    )
+                )
+        else:
+            # One response per bidding zone using the dataset's documented
+            # domain parameter style.
+            for zone in DEFAULT_ZONES:
+                mrid = BIDDING_ZONES.get(zone)
+                if not mrid:
+                    continue
+                tasks.append(
+                    self._fetch_document(
+                        dataset=dataset,
+                        doc_type=doc_type,
+                        in_domain=mrid,
+                        out_domain=mrid if doc_type.domain_style == "zone" else None,
+                        period_start=period_start,
+                        period_end=period_end,
+                        fetch_params=fetch_params,
+                    )
+                )
+        return tasks
 
     async def _fetch_document(
         self,

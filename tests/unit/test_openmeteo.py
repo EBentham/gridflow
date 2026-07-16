@@ -36,6 +36,7 @@ from gridflow.silver.openmeteo.historical import (
     _pivot_openmeteo_json,
 )
 from gridflow.storage.parquet import read_parquet
+from gridflow.storage.paths import PathBuilder
 
 FIXTURES = Path(__file__).parent.parent / "fixtures" / "openmeteo"
 
@@ -420,6 +421,111 @@ class TestHistoricalDemandWeather:
 
 
 # ---------------------------------------------------------------------------
+# P0.8: read_bronze per-record target-date filter (historical, all 6 datasets
+# share this code point via BaseOpenMeteoTransformer.read_bronze)
+# ---------------------------------------------------------------------------
+
+
+def _write_openmeteo_bronze(
+    tmp_path: Path,
+    dataset_prefix: str,
+    location: str,
+    partition_date: date,
+    payload: dict,
+) -> None:
+    bronze_dir = PathBuilder(tmp_path).bronze_date_dir(
+        "open_meteo", f"{dataset_prefix}__{location}", partition_date
+    )
+    bronze_dir.mkdir(parents=True, exist_ok=True)
+    (bronze_dir / "raw_test.json").write_text(json.dumps(payload))
+
+
+def _two_day_payload(day1: date, day2: date) -> dict:
+    times = [f"{day1.isoformat()}T{h:02d}:00" for h in range(24)] + [
+        f"{day2.isoformat()}T{h:02d}:00" for h in range(24)
+    ]
+    return {
+        "latitude": 51.5074,
+        "longitude": -0.1278,
+        "hourly": {
+            "time": times,
+            "temperature_2m": [5.0 + i * 0.1 for i in range(48)],
+        },
+    }
+
+
+class TestHistoricalReadBronzeTargetDateFilter:
+    """P0.8: exact-partition and covering-fallback reads both filter to
+    exactly target_date's rows out of a multi-day payload."""
+
+    def test_exact_partition_filters_to_target_date(self, tmp_path: Path) -> None:
+        day1 = date(2026, 5, 10)
+        day2 = date(2026, 5, 11)
+        _write_openmeteo_bronze(
+            tmp_path, "historical_demand", "london", day1, _two_day_payload(day1, day2)
+        )
+
+        transformer = HistoricalDemandWeather(tmp_path)
+        rows_written = transformer.run(day1, run_id="p08-historical-exact")
+
+        assert rows_written == 24
+        df = read_parquet(
+            PathBuilder(tmp_path).silver_glob_pattern("open_meteo", "historical_demand")
+        )
+        assert df["timestamp_utc"].dt.date().unique().to_list() == [day1]
+
+    def test_covering_fallback_partition_filters_to_target_date(self, tmp_path: Path) -> None:
+        window_start = date(2026, 5, 10)
+        target_date = date(2026, 5, 11)
+        _write_openmeteo_bronze(
+            tmp_path,
+            "historical_demand",
+            "london",
+            window_start,
+            _two_day_payload(window_start, target_date),
+        )
+
+        transformer = HistoricalDemandWeather(tmp_path)
+        rows_written = transformer.run(target_date, run_id="p08-historical-fallback")
+
+        assert rows_written == 24
+        df = read_parquet(
+            PathBuilder(tmp_path).silver_glob_pattern("open_meteo", "historical_demand")
+        )
+        assert df["timestamp_utc"].dt.date().unique().to_list() == [target_date]
+
+    def test_long_malformed_time_value_kept_and_flows_to_null_timestamp(
+        self, tmp_path: Path
+    ) -> None:
+        """A long present-but-unparseable `time` value must be KEPT by the
+        filter (fail-open, parse-based — not a prefix-equality check) and
+        continue to flow through the existing strict=False -> null
+        timestamp_utc path."""
+        target_date = date(2026, 5, 10)
+        payload = {
+            "latitude": 51.5074,
+            "longitude": -0.1278,
+            "hourly": {
+                "time": [f"{target_date.isoformat()}T00:00", "vendor-new-format"],
+                "temperature_2m": [5.0, 6.0],
+            },
+        }
+        _write_openmeteo_bronze(tmp_path, "historical_demand", "london", target_date, payload)
+
+        transformer = HistoricalDemandWeather(tmp_path)
+        rows_written = transformer.run(target_date, run_id="p08-historical-malformed")
+
+        # Both rows survive read_bronze/transform: the well-formed row (kept,
+        # matches target_date) and the malformed row (kept, fail-open hedge;
+        # null timestamp_utc since it can't parse as a datetime either).
+        assert rows_written == 2
+        df = read_parquet(
+            PathBuilder(tmp_path).silver_glob_pattern("open_meteo", "historical_demand")
+        )
+        assert df["timestamp_utc"].null_count() == 1
+
+
+# ---------------------------------------------------------------------------
 # ForecastDemandWeather
 # ---------------------------------------------------------------------------
 
@@ -484,6 +590,64 @@ class TestForecastDemandWeather:
         )
 
         assert set(df["available_at"].to_list()) == {forecast_time}
+
+    def test_horizon_preserved_across_per_date_files_grill_critical_1(self, tmp_path: Path) -> None:
+        """P0.8 / grill CRITICAL-1: a window-start forecast partition holding a
+        3-day (72-hour) horizon must have its hours split — not duplicated —
+        across each transformed date's silver file.
+
+        Pre-fix failure: every one of the 3 dates' files holds all 72 hours
+        (via the covering-partition fallback with no per-record filter), so
+        the union totals 216 rows with every hour duplicated 3x.
+        """
+        window_start = date(2026, 6, 1)
+        day2 = date(2026, 6, 2)
+        day3 = date(2026, 6, 3)
+        payload_times = (
+            [f"{window_start.isoformat()}T{h:02d}:00" for h in range(24)]
+            + [f"{day2.isoformat()}T{h:02d}:00" for h in range(24)]
+            + [f"{day3.isoformat()}T{h:02d}:00" for h in range(24)]
+        )
+        payload = {
+            "latitude": 51.5074,
+            "longitude": -0.1278,
+            "hourly": {
+                "time": payload_times,
+                "temperature_2m": [5.0 + i * 0.1 for i in range(72)],
+            },
+        }
+        _write_openmeteo_bronze(tmp_path, "forecast_demand", "london", window_start, payload)
+
+        transformer = ForecastDemandWeather(tmp_path)
+        dates = [window_start, day2, day3]
+        for d in dates:
+            rows_written = transformer.run(d, run_id="p08-horizon")
+            assert rows_written == 24, f"{d} expected exactly its own 24 hours, got {rows_written}"
+
+        frames = []
+        for d in dates:
+            path = PathBuilder(tmp_path).silver_file("open_meteo", "forecast_demand", d)
+            frame = pl.read_parquet(path)
+            assert frame["timestamp_utc"].dt.date().unique().to_list() == [d]
+            frames.append(frame)
+
+        union = pl.concat(frames)
+        assert len(union) == 72
+        dup_key = union.select(["timestamp_utc", "location"])
+        assert dup_key.n_unique() == 72, "forecast horizon duplicated across per-date files"
+        assert set(union["timestamp_utc"].dt.date().to_list()) == set(dates)
+
+        # P0.8 review finding: the date-set check above cannot catch a
+        # shifted/replaced hour (e.g. an off-by-one that swaps one hour for
+        # another but keeps the same date). Pin the exact hourly timestamp
+        # set: the union across the three per-date files must equal exactly
+        # the payload's 72 input timestamps, parsed to UTC the same way
+        # BaseOpenMeteoTransformer.transform() parses `time`
+        # (`%Y-%m-%dT%H:%M`, tz-localised to UTC).
+        expected_timestamps = {
+            datetime.strptime(t, "%Y-%m-%dT%H:%M").replace(tzinfo=UTC) for t in payload_times
+        }
+        assert set(union["timestamp_utc"].to_list()) == expected_timestamps
 
     def test_empty_input(self):
         assert self.t.transform(pl.DataFrame()).is_empty()

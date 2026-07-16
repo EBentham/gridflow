@@ -21,6 +21,31 @@ logger = logging.getLogger(__name__)
 _VALIDATION_SAMPLE_LIMIT = 5
 """Max distinct validation-error strings logged per ``run()`` (fail-soft; bounded)."""
 
+_EXACT_PARTITION_ONLY_SOURCES: frozenset[str] = frozenset({"entsoe"})
+"""Sources whose connectors write day-exact bronze partitions (P0.8 / R2-F08).
+
+As of P0.8, ``EntsoeConnector.fetch`` chunks every multi-day window into one
+request per covered UTC calendar day, so a correctly-fetched ENTSO-E date
+either has its own exact bronze partition or has no bronze at all. For these
+sources, any covering-fallback hit (``_find_covering_bronze_partition``) would
+fabricate wrong-day rows: it would silently relabel a neighbouring day's rows
+under the requested date's silver file, reproducing the R2-F08 duplication bug
+chunking exists to fix. This mirrors the project's own precedent for exactly
+this failure class — ``VINTAGE_PER_BRONZE_FILE`` / ADR-025 (class docstring
+above, "Only the EXACT date partition is read — never the multi-day
+covering-partition fallback") and the ENTSO-G generic family's exact-only
+``_bronze_files`` (``silver/entsog/generic.py``).
+
+Source-scoped (not a per-transformer ``ClassVar`` flag) because the exact-only
+guarantee is a property of the *connector's* write layout established by this
+unit: every current and future ENTSO-E transformer is covered automatically,
+and a new ENTSO-E dataset cannot silently reintroduce the fallback by
+forgetting to set a flag. ``_find_covering_bronze_partition`` itself is not
+modified — NESO and Open-Meteo/ALSI resolution (the other callers) are
+unaffected; ``tests/silver/test_partition_fallback.py``'s ``test_source``
+stub pins that the fallback stays intact for non-ENTSO-E sources.
+"""
+
 
 def gas_day_event_time_expr(column: str = "gas_day") -> pl.Expr:
     """Build the fixed-06:00 UTC event-time expression for a gas day.
@@ -431,10 +456,11 @@ class BaseSilverTransformer(ABC):
                 candidates.append(parent / sibling_dataset / suffix)
 
         existing = [p for p in candidates if p.exists()]
-        if not existing:
+        if not existing and self.source not in _EXACT_PARTITION_ONLY_SOURCES:
             # No exact-date partition found; fall back to the nearest covering
             # partition so that transformers that iterate _bronze_date_dirs()
-            # also benefit from the Variant A/B fix.
+            # also benefit from the Variant A/B fix. Skipped for exact-only
+            # sources (P0.8) — see _EXACT_PARTITION_ONLY_SOURCES docstring.
             fallback = self._find_covering_bronze_partition(target_date)
             if fallback is not None:
                 return [fallback]
@@ -478,7 +504,10 @@ class BaseSilverTransformer(ABC):
         """Return the bronze partition path to read for target_date.
 
         Returns exact partition if it exists and has raw files, falls back to
-        the nearest covering partition, or None if nothing found.
+        the nearest covering partition, or None if nothing found. For sources
+        in ``_EXACT_PARTITION_ONLY_SOURCES`` (P0.8), never falls back — the
+        exact partition or nothing, since a covering-fallback hit for those
+        sources would fabricate wrong-day rows (see that constant's docstring).
         """
         exact = (
             self.bronze_dir
@@ -488,6 +517,8 @@ class BaseSilverTransformer(ABC):
         )
         if exact.exists() and any(exact.glob("raw_*")):
             return exact
+        if self.source in _EXACT_PARTITION_ONLY_SOURCES:
+            return None
         return self._find_covering_bronze_partition(target_date, max_lookback_days)
 
     @staticmethod

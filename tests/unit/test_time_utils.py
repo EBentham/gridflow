@@ -6,6 +6,7 @@ import pytest
 
 from gridflow.utils.time import (
     date_range,
+    day_subwindows,
     parse_lookback,
     settlement_period_to_utc,
     utc_to_settlement_period,
@@ -250,3 +251,76 @@ class TestDateRange:
     def test_empty_range(self):
         result = date_range(date(2024, 1, 17), date(2024, 1, 15))
         assert result == []
+
+
+class TestDaySubwindows:
+    """P0.8: day_subwindows clamps a [start, end) fetch window to per-UTC-day chunks."""
+
+    def test_mid_day_24h_window_yields_two_clamped_windows(self):
+        start = datetime(2024, 1, 15, 6, 0, tzinfo=UTC)
+        end = datetime(2024, 1, 16, 6, 0, tzinfo=UTC)
+        result = day_subwindows(start, end)
+        assert result == [
+            (start, datetime(2024, 1, 16, 0, 0, tzinfo=UTC)),
+            (datetime(2024, 1, 16, 0, 0, tzinfo=UTC), end),
+        ]
+
+    def test_midnight_aligned_24h_window_yields_one_window(self):
+        start = datetime(2024, 1, 15, 0, 0, tzinfo=UTC)
+        end = datetime(2024, 1, 16, 0, 0, tzinfo=UTC)
+        result = day_subwindows(start, end)
+        assert result == [(start, end)]
+
+    def test_end_exactly_midnight_excludes_last_date(self):
+        # end == 2024-01-17T00:00Z must NOT emit a sub-window for the 17th.
+        start = datetime(2024, 1, 15, 0, 0, tzinfo=UTC)
+        end = datetime(2024, 1, 17, 0, 0, tzinfo=UTC)
+        result = day_subwindows(start, end)
+        assert [d.date() for d, _ in result] == [date(2024, 1, 15), date(2024, 1, 16)]
+
+    def test_multi_day_interior_days_are_full_days(self):
+        start = datetime(2024, 1, 15, 6, 0, tzinfo=UTC)
+        end = datetime(2024, 1, 18, 6, 0, tzinfo=UTC)
+        result = day_subwindows(start, end)
+        # interior day (the 16th->17th) is a full [00:00, 00:00) window
+        interior = [
+            (s, e)
+            for s, e in result
+            if s.date() == date(2024, 1, 16) and e.date() == date(2024, 1, 17)
+        ]
+        assert interior == [
+            (datetime(2024, 1, 16, 0, 0, tzinfo=UTC), datetime(2024, 1, 17, 0, 0, tzinfo=UTC))
+        ]
+
+    def test_start_equals_end_returns_empty_list(self):
+        instant = datetime(2024, 1, 15, 6, 0, tzinfo=UTC)
+        assert day_subwindows(instant, instant) == []
+
+    def test_union_of_windows_reconstructs_range_with_no_overlap(self):
+        start = datetime(2024, 1, 15, 6, 0, tzinfo=UTC)
+        end = datetime(2024, 1, 18, 12, 0, tzinfo=UTC)
+        result = day_subwindows(start, end)
+        assert result[0][0] == start
+        assert result[-1][1] == end
+        for (_, prev_end), (next_start, _) in zip(result, result[1:], strict=False):
+            assert prev_end == next_start
+
+    def test_naive_input_raises_value_error(self):
+        naive = datetime(2024, 1, 15, 0, 0)
+        with pytest.raises(ValueError, match="tz-aware"):
+            day_subwindows(naive, datetime(2024, 1, 16, 0, 0, tzinfo=UTC))
+        with pytest.raises(ValueError, match="tz-aware"):
+            day_subwindows(datetime(2024, 1, 15, 0, 0, tzinfo=UTC), naive)
+
+    def test_non_utc_offset_raises_value_error(self):
+        from datetime import timezone
+
+        non_utc = datetime(2024, 1, 15, 0, 0, tzinfo=timezone(timedelta(hours=2)))
+        with pytest.raises(ValueError, match="UTC"):
+            day_subwindows(non_utc, datetime(2024, 1, 16, 0, 0, tzinfo=UTC))
+
+    def test_reversed_bounds_raise_value_error(self):
+        start = datetime(2024, 1, 16, 0, 0, tzinfo=UTC)
+        end = datetime(2024, 1, 15, 0, 0, tzinfo=UTC)
+        with pytest.raises(ValueError, match="before start"):
+            day_subwindows(start, end)

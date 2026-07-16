@@ -13,6 +13,7 @@ if TYPE_CHECKING:
 
 import polars as pl
 
+from gridflow.connectors.gie.client import classify_news_record_for_window
 from gridflow.connectors.gie.endpoints import parse_listing_inventory
 from gridflow.schemas.gie import GasStorage
 from gridflow.silver.base import BaseSilverTransformer, gas_day_event_time_expr
@@ -338,7 +339,26 @@ class AgsiJsonTransformer(BaseSilverTransformer):
                 logger.warning("Failed to parse AGSI bronze file %s: %s", path, exc)
                 continue
             rows.extend(self._records_from_payload(payload))
+        # P0.8: accumulate rows across ALL raw files first (unfiltered), THEN
+        # apply the filter hook exactly once — news is paginated (multiple
+        # raw_*.json per partition), so a per-payload call would warn once per
+        # file instead of once per read_bronze/run (Sol pass-2 finding 4).
+        rows = self._filter_records(rows, target_date)
         return pl.DataFrame(rows, infer_schema_length=None) if rows else pl.DataFrame()
+
+    def _filter_records(
+        self,
+        records: list[dict[str, Any]],
+        target_date: date,
+    ) -> list[dict[str, Any]]:
+        """No-op hook (P0.8). Overridden by ``NewsTransformer``/
+        ``NewsItemTransformer`` for the tri-state date-overlap filter;
+        ``AboutSummaryTransformer``/``AboutListingTransformer`` inherit this
+        no-op (dateless reference inventory — deviation note 3).
+        ``UnavailabilityTransformer.read_bronze`` has its own override and
+        never calls this hook.
+        """
+        return records
 
     def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
         if raw_df.is_empty():
@@ -474,6 +494,15 @@ class NewsTransformer(AgsiJsonTransformer):
 
     dataset = "news"
 
+    def _filter_records(
+        self,
+        records: list[dict[str, Any]],
+        target_date: date,
+    ) -> list[dict[str, Any]]:
+        return _filter_news_records_to_target_date(
+            records, target_date, source=self.source, dataset=self.dataset
+        )
+
 
 class NewsItemTransformer(AgsiJsonTransformer):
     """Transform AGSI service-announcement/news detail payloads."""
@@ -487,6 +516,15 @@ class NewsItemTransformer(AgsiJsonTransformer):
         if records:
             return records
         return [payload] if isinstance(payload, dict) else []
+
+    def _filter_records(
+        self,
+        records: list[dict[str, Any]],
+        target_date: date,
+    ) -> list[dict[str, Any]]:
+        return _filter_news_records_to_target_date(
+            records, target_date, source=self.source, dataset=self.dataset
+        )
 
 
 class UnavailabilityTransformer(AgsiJsonTransformer):
@@ -620,6 +658,47 @@ def _nested_text(value: Any, key: str) -> str | None:
         nested = value.get(key)
         return str(nested) if nested not in (None, "") else None
     return str(value) if key == "code" and value not in (None, "") else None
+
+
+def _filter_news_records_to_target_date(
+    records: list[dict[str, Any]],
+    target_date: date,
+    *,
+    source: str,
+    dataset: str,
+) -> list[dict[str, Any]]:
+    """Keep AGSI news/news_item records overlapping ``target_date`` (P0.8).
+
+    Tri-state via ``classify_news_record_for_window`` (Sol finding 3):
+    ``"overlap"`` records are kept; ``"outside"`` records are dropped;
+    ``"undated"`` records (no parseable date at all — covers both absent AND
+    present-but-unparseable date keys) are KEPT and counted into exactly ONE
+    bounded warning per call, never silently dropped. A multi-day
+    announcement legitimately appears in each overlapped day's file; the
+    dedup key (``id``/``url``/``turl``) in ``AgsiJsonTransformer.transform``
+    is unchanged.
+    """
+    kept: list[dict[str, Any]] = []
+    undated_count = 0
+    for record in records:
+        classification = classify_news_record_for_window(record, target_date, target_date)
+        if classification == "overlap":
+            kept.append(record)
+        elif classification == "undated":
+            kept.append(record)
+            undated_count += 1
+        # "outside" -> dropped (not appended)
+
+    if undated_count:
+        logger.warning(
+            "%s/%s: %d record(s) had no parseable date for target_date %s; "
+            "kept (fail-open hedge) rather than dropped",
+            source,
+            dataset,
+            undated_count,
+            target_date,
+        )
+    return kept
 
 
 def _unavailability_record_overlaps(record: dict[str, Any], target_date: date) -> bool:

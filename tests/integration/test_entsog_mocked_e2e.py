@@ -247,8 +247,12 @@ async def test_active_datasets_fetch_with_expected_mocked_request_shape(
     assert response.data_date == (TARGET_DATE if endpoint.requires_dates else None)
 
     if endpoint.requires_dates:
+        # P0.8: START..END is a single midnight-aligned 24h window -> one
+        # covered day under the half-open day_subwindows derivation -> one
+        # request with from == to == that day (not the old inclusive
+        # from=start, to=end shape).
         assert params["from"] == "2024-01-15"
-        assert params["to"] == "2024-01-16"
+        assert params["to"] == "2024-01-15"
     else:
         assert "from" not in params
         assert "to" not in params

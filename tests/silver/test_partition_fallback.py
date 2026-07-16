@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 import polars as pl
 
 from gridflow.silver.base import BaseSilverTransformer
+from gridflow.storage.paths import PathBuilder
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -13,6 +14,19 @@ if TYPE_CHECKING:
 
 class _StubTransformer(BaseSilverTransformer):
     source = "test_source"
+    dataset = "test_dataset"
+
+    def read_bronze(self, target_date: date) -> pl.DataFrame:
+        return pl.DataFrame()
+
+    def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
+        return pl.DataFrame()
+
+
+class _EntsoeStubTransformer(BaseSilverTransformer):
+    """P0.8: pins the exact-partition-only policy for source == 'entsoe'."""
+
+    source = "entsoe"
     dataset = "test_dataset"
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
@@ -82,3 +96,39 @@ class TestBronzeDateDirsFallback:
         dirs = t._bronze_date_dirs(date(2026, 5, 11))
         assert exact in dirs
         assert len(dirs) == 1
+
+
+class TestEntsoeExactPartitionOnlyPolicy:
+    """P0.8: source == 'entsoe' never uses the covering-partition fallback."""
+
+    def test_exact_partition_used_when_present(self, tmp_path: Path) -> None:
+        t = _EntsoeStubTransformer(tmp_path)
+        exact = PathBuilder(tmp_path).bronze_date_dir("entsoe", "test_dataset", date(2026, 5, 10))
+        _make_raw_file(exact)
+        result = t._bronze_path_for_date(date(2026, 5, 10))
+        assert result == exact
+
+    def test_none_when_only_prior_partition_exists(self, tmp_path: Path) -> None:
+        """Inverted `test_fallback_to_prior_partition`: entsoe gets None, not the fallback."""
+        t = _EntsoeStubTransformer(tmp_path)
+        prior = PathBuilder(tmp_path).bronze_date_dir("entsoe", "test_dataset", date(2026, 5, 10))
+        _make_raw_file(prior)
+        result = t._bronze_path_for_date(date(2026, 5, 11))
+        assert result is None
+
+    def test_bronze_date_dirs_empty_when_only_prior_partition_exists(self, tmp_path: Path) -> None:
+        t = _EntsoeStubTransformer(tmp_path)
+        prior = PathBuilder(tmp_path).bronze_date_dir("entsoe", "test_dataset", date(2026, 5, 10))
+        _make_raw_file(prior)
+        dirs = t._bronze_date_dirs(date(2026, 5, 11))
+        assert dirs == []
+
+    def test_non_entsoe_source_fallback_unaffected(self, tmp_path: Path) -> None:
+        """Pins that test_source's fallback stays intact (decision 3 evidence)."""
+        t = _StubTransformer(tmp_path)
+        prior = PathBuilder(tmp_path).bronze_date_dir(
+            "test_source", "test_dataset", date(2026, 5, 10)
+        )
+        _make_raw_file(prior)
+        result = t._bronze_path_for_date(date(2026, 5, 11))
+        assert result == prior
