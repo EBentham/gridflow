@@ -375,6 +375,9 @@ def backfill(
     # transform delegate to the runner on ONE shared connection (Windows-safe:
     # no second RW handle to the catalogue). Views are refreshed once at the end
     # after the connection closes.
+    # Collect every chunk's ingest + transform result so a failed step can no
+    # longer hide behind "Backfill complete" / exit 0 (R3-F03).
+    all_results: list[DatasetResult] = []
     with runner.build_context(settings) as ctx:
         for ds in datasets:
             typer.echo(f"\n--- Backfilling {source}/{ds} ---")
@@ -387,27 +390,40 @@ def backfill(
 
                 # write_watermark=False: backfill is an explicit historical op and
                 # must never advance/rewind the forward incremental frontier (C3-11).
-                runner.run_ingest(
-                    ctx,
-                    source,
-                    [ds],
-                    current,
-                    chunk_end,
-                    incremental=False,
-                    write_watermark=False,
+                all_results.extend(
+                    runner.run_ingest(
+                        ctx,
+                        source,
+                        [ds],
+                        current,
+                        chunk_end,
+                        incremental=False,
+                        write_watermark=False,
+                    )
                 )
 
                 # chunk_end is the exclusive API boundary; transform date iteration
                 # is inclusive, so subtract one day to avoid a spurious "no bronze
                 # data" warning for the end date.
                 transform_end = chunk_end - timedelta(days=1)
-                runner.run_transform(ctx, source, [ds], current, transform_end)
+                all_results.extend(runner.run_transform(ctx, source, [ds], current, transform_end))
 
                 current = chunk_end
 
             typer.echo(f"  {source}/{ds}: {chunk_num} chunks processed")
 
     runner.refresh_views(settings)
+
+    # R3-F03: surface any failed ingest/transform step and exit non-zero, mirroring
+    # cli.ingest / scripts/backfill.py. Only per-dataset step failures are echoed
+    # here; an infra exception outside the runner's per-dataset guards still
+    # propagates and exits non-zero, just without this summary.
+    failures = [r for r in all_results if r.status == "failed"]
+    if failures:
+        typer.echo(f"Backfill failed for {len(failures)} step(s):", err=True)
+        for r in failures:
+            typer.echo(f"  {r.operation} {source}/{r.dataset}: {r.error}", err=True)
+        raise typer.Exit(1)
     typer.echo("\nBackfill complete")
 
 
