@@ -30,8 +30,10 @@ recorded pre-fix signature.
 
 from __future__ import annotations
 
+import hashlib
 import json
 from datetime import UTC, date, datetime, timedelta
+from pathlib import Path
 
 import httpx
 import polars as pl
@@ -41,15 +43,20 @@ import respx
 import gridflow.silver.entsog  # noqa: F401 — registers the generic ENTSO-G transformers
 from gridflow.bronze.writer import BronzeWriter
 from gridflow.config.settings import SourceConfig, load_settings
+from gridflow.connectors.base import RawResponse
 from gridflow.connectors.entsoe.client import EntsoeConnector
-from gridflow.connectors.entsoe.endpoints import ENTSOE_DT_FORMAT
+from gridflow.connectors.entsoe.endpoints import DOC_TYPES, ENTSOE_DT_FORMAT
 from gridflow.connectors.entsog.client import EntsogConnector
 from gridflow.silver.entsoe.day_ahead_prices import DayAheadPricesTransformer
+from gridflow.silver.entsoe.generation_units_master_data import (
+    GenerationUnitsMasterDataTransformer,
+)
 from gridflow.silver.registry import get_transformer
 from gridflow.storage.paths import PathBuilder
 
 ENTSOE_BASE = "https://web-api.tp.entsoe.eu"
 ENTSOG_BASE = "https://transparency.entsog.eu/api/v1"
+ENTSOE_FIXTURES = Path(__file__).parent.parent / "fixtures" / "entsoe"
 
 
 def _entsoe_config() -> SourceConfig:
@@ -192,14 +199,22 @@ async def test_entsoe_multi_day_window_partitions_per_day_and_transforms_without
     dup_key = union.select(["timestamp_utc", "area_code"])
     assert dup_key.n_unique() == 95, "duplicate (timestamp_utc, area_code) pairs across days"
 
-    # NOTE: the durability step (rmtree a bronze day, assert re-run returns 0
-    # and the silver file is byte-identical/stale-not-regenerated) is added
-    # here as a final step of THIS test by Task 5, once the ENTSO-E
-    # exact-partition-only silver read policy lands — before Task 5 the
-    # covering-partition fallback would still regenerate the file from a
-    # neighbouring day's bronze, so asserting it here would be a false RED
-    # tied to a not-yet-implemented task, not a fail-first probe of this
-    # task's own change.
+    # --- durability step (Task 5): a missing bronze day never silently
+    # borrows a neighbour's bronze again; the existing silver file is stale,
+    # not regenerated ---
+    silver_may_03 = paths.silver_file("entsoe", "day_ahead_prices", date(2026, 5, 3))
+    pre_hash = hashlib.sha256(silver_may_03.read_bytes()).hexdigest()
+
+    bronze_may_03 = paths.bronze_date_dir("entsoe", "day_ahead_prices", date(2026, 5, 3))
+    for f in bronze_may_03.glob("*"):
+        f.unlink()
+    bronze_may_03.rmdir()
+
+    rerun_rows = transformer.run(date(2026, 5, 3), run_id="p08-parity-rerun")
+    assert rerun_rows == 0
+
+    post_hash = hashlib.sha256(silver_may_03.read_bytes()).hexdigest()
+    assert post_hash == pre_hash, "05-03 silver file was regenerated instead of left stale"
 
 
 # ---------------------------------------------------------------------------
@@ -462,3 +477,48 @@ async def test_entsog_multi_day_window_generic_family_data_loss(tmp_path) -> Non
     transformer = get_transformer("entsog", "nominations", tmp_path)
     for d in covered_days:
         assert transformer.run(d, run_id="p08-entsog-parity") == 2
+
+
+# ---------------------------------------------------------------------------
+# Task 5 — generation_units_master_data accepted-change acceptance test
+# ---------------------------------------------------------------------------
+
+
+def test_generation_units_master_data_trails_by_one_run_under_exact_only(
+    tmp_path: Path,
+) -> None:
+    """`generation_units_master_data` is exempt from ENTSO-E chunking (its
+    `date_param` branch already requests a single date per window), so under
+    the P0.8 exact-partition-only silver read policy it now trails by one
+    run instead of getting a fabricated same-day fallback copy.
+
+    Pre-fix: seeding the fixture at partition D and running for D+1 returned
+    the D snapshot mis-labelled as D+1 (the covering-partition fallback). Post-
+    fix (this test): D+1 gets 0 rows and no silver file is written for D+1 —
+    the honest snapshot for D+1 only appears once D+1 becomes a window-start
+    partition of its own (accepted behaviour change, documented in the plan's
+    "generation_units_master_data under exact-only" subsection).
+    """
+    fixture_body = (ENTSOE_FIXTURES / "generation_units_master_data_gb.xml").read_bytes()
+    target_date = date(2026, 5, 10)
+
+    response = RawResponse(
+        body=fixture_body,
+        content_type="text/xml",
+        source="entsoe",
+        dataset="generation_units_master_data",
+        request_url=f"{ENTSOE_BASE}/api",
+        request_params={"documentType": DOC_TYPES["generation_units_master_data"].document_type},
+        http_status=200,
+        data_date=target_date,
+    )
+    BronzeWriter(tmp_path).write(response)
+
+    transformer = GenerationUnitsMasterDataTransformer(tmp_path)
+    assert transformer.run(target_date, run_id="p08-master-data") > 0
+
+    next_day = target_date + timedelta(days=1)
+    assert transformer.run(next_day, run_id="p08-master-data") == 0
+
+    paths = PathBuilder(tmp_path)
+    assert not paths.silver_file("entsoe", "generation_units_master_data", next_day).exists()
