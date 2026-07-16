@@ -448,10 +448,27 @@ def run_ingest(
                         rows_out=len(responses),
                     )
                 )
-            # Advance the watermark only AFTER a successful write. Never on the
-            # except path; never for a backfill chunk-ingest (write_watermark=
-            # False). The monotonic upsert is the second guard.
-            if write_watermark:
+            # Advance the frontier only as far as observed evidence (R3-F04).
+            # Never advance on an empty ingest (no data-bearing responses) or a
+            # partial fetch (skipped units): both leave gaps a later incremental
+            # run — widened by incremental_overlap_hours — must re-fetch. Advancing
+            # to end_dt on empty/partial permanently strands the missing window.
+            #
+            # `data_date` is a bronze PARTITION KEY with per-connector semantics
+            # (whole-window-start for Open-Meteo, gas-day for GIE, settlement-date
+            # for Elexon), so it is NOT used as an evidence timestamp — the guard
+            # is deliberately coarse (advance to end_dt, or not at all). An
+            # http_status>=400 response is ENTSO-G's "No result found" 404
+            # short-circuit (the one expected-empty response that still
+            # materialises as a RawResponse; every other connector raises on 4xx),
+            # so it carries no evidence. A 200 body with an empty record array is
+            # NOT detected here (see incremental_overlap_hours: the overlap window
+            # re-fetches it on the next run).
+            #
+            # Never on the except path; never for a backfill chunk-ingest
+            # (write_watermark=False). The monotonic upsert is the second guard.
+            data_responses = [r for r in responses if r.http_status < 400]
+            if write_watermark and data_responses and not skipped:
                 update_watermark(con, source, ds, end_dt)
         except Exception as e:  # noqa: BLE001 — surfaced as a failed DatasetResult, never swallowed
             error_message = safe_error_message(str(e))

@@ -99,21 +99,21 @@ class PipelineSettings(BaseSettings):
     duckdb_path: Path = Path("./data/gridflow.duckdb")
     default_lookback_hours: int = 24
     # Incremental ingest re-fetches from `watermark - incremental_overlap_hours`
-    # to recover late/revised publications (run_type II->SF->R1). Default 0 keeps
-    # `--incremental` behaviour-preserving (start == watermark). Raising it is safe
-    # because bronze is immutable and silver dedups on (date, period, run_type), so
-    # re-fetching the recent past adds bronze bytes without corrupting silver.
+    # to recover late/revised publications (run_type II->SF->R1) and any window
+    # that was empty at fetch time (publication lag). Re-fetching is safe: bronze
+    # is immutable and silver dedups on (date, period, run_type), so re-fetching
+    # the recent past adds bronze bytes without corrupting silver.
     #
-    # WARNING (revision-settlement lag): with the default 0, `--incremental`
-    # advances each dataset's frontier past the requested window and NEVER
-    # re-fetches it. A revision-bearing dataset (Elexon settlement data
-    # republished II->SF->R1 under a new run_type for an already-watermarked
-    # date/period) will silently miss those late revisions on the incremental
-    # path. Raise this to cover the publisher's revision lag (settlement runs
-    # can revise for weeks) — or run a periodic backfill — before adopting
-    # `--incremental` for settlement data. CLAUDE.md treats settlement revisions
-    # as first-class, so a zero overlap on that path is a latent data-loss trap.
-    incremental_overlap_hours: int = 0
+    # Default 72h (3 days): covers weekend publication lag + the initial Elexon
+    # II->SF->R1 revision burst. It is the backstop for the R3-F04 fix — the
+    # watermark no longer advances past empty/partial evidence, and a 200 response
+    # carrying an empty record array (which run_ingest cannot detect without
+    # parsing the body) self-heals because the next incremental run re-fetches the
+    # last 3 days. It does NOT cover weeks-long settlement revision tails: complete
+    # revision capture still needs a periodic backfill. CLAUDE.md treats settlement
+    # revisions as first-class, so do not lower this to 0 without a backfill
+    # schedule in place.
+    incremental_overlap_hours: int = 72
     max_concurrent_requests: int = 5
     log_level: str = "INFO"
     console_log_level: str = "WARNING"

@@ -126,7 +126,7 @@ def test_resolve_incremental_start_present_subtracts_overlap(
 def test_resolve_incremental_start_zero_overlap_uses_watermark_exactly(
     con: duckdb.DuckDBPyConnection,
 ) -> None:
-    """With zero overlap (the behaviour-preserving default) start == watermark."""
+    """With zero overlap, start == watermark (an explicit override of the 72h default)."""
     watermark = datetime(2026, 5, 20, 0, 0, tzinfo=UTC)
     update_watermark(con, "elexon", "fuelhh", watermark)
     default_start = datetime(2026, 6, 1, 0, 0, tzinfo=UTC)
