@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 import polars as pl
 
 from gridflow.silver.base import BaseSilverTransformer
+from gridflow.storage.paths import PathBuilder
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -102,7 +103,7 @@ class TestEntsoeExactPartitionOnlyPolicy:
 
     def test_exact_partition_used_when_present(self, tmp_path: Path) -> None:
         t = _EntsoeStubTransformer(tmp_path)
-        exact = tmp_path / "bronze" / "entsoe" / "test_dataset" / "2026" / "05" / "10"
+        exact = PathBuilder(tmp_path).bronze_date_dir("entsoe", "test_dataset", date(2026, 5, 10))
         _make_raw_file(exact)
         result = t._bronze_path_for_date(date(2026, 5, 10))
         assert result == exact
@@ -110,14 +111,14 @@ class TestEntsoeExactPartitionOnlyPolicy:
     def test_none_when_only_prior_partition_exists(self, tmp_path: Path) -> None:
         """Inverted `test_fallback_to_prior_partition`: entsoe gets None, not the fallback."""
         t = _EntsoeStubTransformer(tmp_path)
-        prior = tmp_path / "bronze" / "entsoe" / "test_dataset" / "2026" / "05" / "10"
+        prior = PathBuilder(tmp_path).bronze_date_dir("entsoe", "test_dataset", date(2026, 5, 10))
         _make_raw_file(prior)
         result = t._bronze_path_for_date(date(2026, 5, 11))
         assert result is None
 
     def test_bronze_date_dirs_empty_when_only_prior_partition_exists(self, tmp_path: Path) -> None:
         t = _EntsoeStubTransformer(tmp_path)
-        prior = tmp_path / "bronze" / "entsoe" / "test_dataset" / "2026" / "05" / "10"
+        prior = PathBuilder(tmp_path).bronze_date_dir("entsoe", "test_dataset", date(2026, 5, 10))
         _make_raw_file(prior)
         dirs = t._bronze_date_dirs(date(2026, 5, 11))
         assert dirs == []
@@ -125,7 +126,9 @@ class TestEntsoeExactPartitionOnlyPolicy:
     def test_non_entsoe_source_fallback_unaffected(self, tmp_path: Path) -> None:
         """Pins that test_source's fallback stays intact (decision 3 evidence)."""
         t = _StubTransformer(tmp_path)
-        prior = tmp_path / "bronze" / "test_source" / "test_dataset" / "2026" / "05" / "10"
+        prior = PathBuilder(tmp_path).bronze_date_dir(
+            "test_source", "test_dataset", date(2026, 5, 10)
+        )
         _make_raw_file(prior)
         result = t._bronze_path_for_date(date(2026, 5, 11))
         assert result == prior
