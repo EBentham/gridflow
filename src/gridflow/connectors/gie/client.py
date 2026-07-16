@@ -6,7 +6,7 @@ import asyncio
 import json
 import logging
 from datetime import date, datetime
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, Any, Literal, cast
 from urllib.parse import parse_qs, urlparse
 
 if TYPE_CHECKING:
@@ -544,25 +544,60 @@ def _is_news_item_detail(body: bytes) -> bool:
     return isinstance(records, dict) or bool(payload.get("turl") or payload.get("title"))
 
 
-def _news_record_in_window(record: dict[str, Any], start: date, end: date) -> bool:
-    event_start = _date_from_record(record, "start_at", "startAt", "event_start", "eventStart")
-    event_end = _date_from_record(record, "end_at", "endAt", "event_end", "eventEnd")
+_NEWS_EVENT_DATE_KEYS = ("start_at", "startAt", "event_start", "eventStart")
+_NEWS_EVENT_END_DATE_KEYS = ("end_at", "endAt", "event_end", "eventEnd")
+_NEWS_REFERENCE_DATE_KEYS = (
+    "updatedAt",
+    "updated_at",
+    "createdAt",
+    "created_at",
+    "publication_date",
+    "publicationDate",
+)
+
+
+def classify_news_record_for_window(
+    record: dict[str, Any],
+    start: date,
+    end: date,
+) -> Literal["overlap", "outside", "undated"]:
+    """Classify an AGSI news/news_item record against a ``[start, end]`` window.
+
+    P0.8 tri-state hedge (Sol finding 3): ``"undated"`` covers BOTH a record
+    with none of the event/reference date keys present AND a record whose key
+    IS present but fails to parse (e.g. a vendor date-format drift such as
+    ``start_at="vendor-new-format"``) — ``_date_from_record`` swallows
+    ``ValueError`` into ``None`` for both cases, so a naive "keep when keys
+    absent" hedge would still silently drop the latter. Callers must treat
+    ``"undated"`` as "keep, but count/flag it" — never as "outside".
+
+    Returns:
+        ``"overlap"`` if a parseable event window overlaps ``[start, end]``,
+        or (no event dates) a parseable reference date falls in
+        ``[start, end]``. ``"outside"`` if a parseable date resolves and does
+        NOT overlap/fall within the window. ``"undated"`` if no date among the
+        event or reference key sets parses at all.
+    """
+    event_start = _date_from_record(record, *_NEWS_EVENT_DATE_KEYS)
+    event_end = _date_from_record(record, *_NEWS_EVENT_END_DATE_KEYS)
     if event_start is not None or event_end is not None:
         # At least one bound is set; coalescing makes both non-None here.
         resolved_start = cast("date", event_start or event_end)
         resolved_end = cast("date", event_end or event_start)
-        return resolved_start <= end and resolved_end >= start
+        return "overlap" if (resolved_start <= end and resolved_end >= start) else "outside"
 
-    reference_date = _date_from_record(
-        record,
-        "updatedAt",
-        "updated_at",
-        "createdAt",
-        "created_at",
-        "publication_date",
-        "publicationDate",
-    )
-    return reference_date is not None and start <= reference_date <= end
+    reference_date = _date_from_record(record, *_NEWS_REFERENCE_DATE_KEYS)
+    if reference_date is None:
+        return "undated"
+    return "overlap" if start <= reference_date <= end else "outside"
+
+
+def _news_record_in_window(record: dict[str, Any], start: date, end: date) -> bool:
+    """Byte-identical to the pre-P0.8 boolean contract, reimplemented atop
+    the tri-state classifier — ``news_item`` discovery (``_news_item_turls``,
+    which SKIPS non-window records) is unaffected: ``"undated"`` still means
+    "not in window" here, exactly as the old code's ``False`` return did."""
+    return classify_news_record_for_window(record, start, end) == "overlap"
 
 
 def _date_from_record(record: dict[str, Any], *keys: str) -> date | None:

@@ -82,6 +82,47 @@ def _pivot_openmeteo_json(
     return rows
 
 
+def _filter_rows_to_target_date(
+    rows: list[dict[str, Any]],
+    target_date: date,
+) -> list[dict[str, Any]]:
+    """Keep only pivoted rows whose ``time`` falls on ``target_date`` (P0.8).
+
+    Bronze stays window-start-partitioned for Open-Meteo (chunking would cost
+    30x requests on historical backfills / multiply every forecast fetch by
+    its horizon length through a connector with no min-interval throttle, for
+    zero silver-correctness gain — deviation note 4). Silver row timestamps
+    come from the payload's own ``hourly.time``, never from bronze
+    ``data_date``, so this per-record filter is a complete duplication fix at
+    zero request cost. Applies to all 6 datasets — the three ``forecast.py``
+    subclasses inherit this ``read_bronze`` unchanged and the forecast
+    horizon is preserved across the transform window's per-date files (each
+    date's file gets exactly that date's hours; the union across dates
+    reconstructs the full fetched horizon).
+
+    Fail-open, parse-based (Sol pass-2 finding 1): a row is dropped ONLY when
+    the first 10 characters of ``time`` parse successfully via
+    ``date.fromisoformat`` to a DIFFERENT date. Missing, short, and — unlike
+    a prefix-equality check — LONG present-but-unparseable values (e.g.
+    ``"vendor-new-format"``) are all KEPT and continue to flow through the
+    existing ``strict=False`` parse -> null ``timestamp_utc`` ->
+    schema-validation-warning path in ``transform()``/``base.py``. Non-string
+    ``time`` values are also kept unchanged — the filter only stringifies for
+    comparison, never mutates the row.
+    """
+    kept: list[dict[str, Any]] = []
+    for row in rows:
+        raw_value = row.get("time")
+        try:
+            row_date = date.fromisoformat(str(raw_value)[:10])
+        except (ValueError, TypeError):
+            kept.append(row)
+            continue
+        if row_date == target_date:
+            kept.append(row)
+    return kept
+
+
 class BaseOpenMeteoTransformer(BaseSilverTransformer):
     """Shared logic for all six role-split openmeteo transformers."""
 
@@ -163,6 +204,8 @@ class BaseOpenMeteoTransformer(BaseSilverTransformer):
                     rows.extend(_pivot_openmeteo_json(data, loc.name, self.HOURLY_VARS))
                 except (json.JSONDecodeError, AttributeError, KeyError) as exc:
                     logger.warning("Failed to parse weather bronze file %s: %s", f, exc)
+
+        rows = _filter_rows_to_target_date(rows, target_date)
 
         if not rows:
             return pl.DataFrame()

@@ -124,7 +124,6 @@ def test_gas_day_event_time_expr_is_fixed_0600_utc(gas_day: date) -> None:
             date(2026, 5, 2),
             4,
         ),
-        (LNGTerminalTransformer, "alsi_gb_response.json", date(2024, 1, 20), 2),
     ],
 )
 def test_gie_gas_day_run_persists_row_event_time_contract(
@@ -144,11 +143,36 @@ def test_gie_gas_day_run_persists_row_event_time_contract(
     assert persisted["gas_day"].dtype == pl.Date
     assert persisted["gas_day"].null_count() == 0
     assert persisted["event_time"].dtype == pl.Datetime("us", "UTC")
+    # AGSI storage's read path is unchanged by P0.8 (no per-record date
+    # filter) — a seeded partition can legitimately carry rows for gas days
+    # other than target_date.
     assert any(gas_day != target_date for gas_day in persisted["gas_day"].to_list())
     assert persisted["event_time"].to_list() == [
         datetime(gas_day.year, gas_day.month, gas_day.day, 6, tzinfo=UTC)
         for gas_day in persisted["gas_day"].to_list()
     ]
+    assert set(persisted["dataset_version"].to_list()) == {"2.0.0"}
+
+
+def test_alsi_lng_run_persists_only_target_gas_day(tmp_data_dir: Path) -> None:
+    """P0.8: ALSI's silver-side gas-day filter — split out of the shared
+    parametrized case above because, unlike AGSI storage, ALSI now keeps
+    ONLY the rows matching ``target_date`` (fallback+filter, deviation
+    note 1). ``alsi_gb_response.json`` carries two gas days (2024-01-15 and
+    2024-01-14); seeding it at partition 2024-01-15 and running for that
+    date keeps only the 2024-01-15 row.
+    """
+    transformer = LNGTerminalTransformer(tmp_data_dir)
+    _assert_transformer_isolated(transformer, tmp_data_dir)
+    target_date = date(2024, 1, 15)
+    _seed_fixture(transformer, target_date, "alsi_gb_response.json")
+
+    assert transformer.run(target_date, run_id="gie-gas-day-test") == 1
+    persisted = _read_single_silver(transformer)
+
+    assert persisted["gas_day"].dtype == pl.Date
+    assert persisted["gas_day"].to_list() == [target_date]
+    assert persisted["event_time"].to_list() == [datetime(2024, 1, 15, 6, tzinfo=UTC)]
     assert set(persisted["dataset_version"].to_list()) == {"2.0.0"}
 
 
@@ -550,6 +574,13 @@ class TestLNGTerminalTransformer:
         tmp_data_dir: Path,
         caplog: pytest.LogCaptureFixture,
     ) -> None:
+        # P0.8: the valid record's gasDayStart must equal the seeded target
+        # date, since the new silver-side gas-day filter (read_bronze) now
+        # drops any record whose gasDayStart parses successfully to a
+        # DIFFERENT date than target_date — the None/"not-a-date" records
+        # are unparseable, so the filter's fail-open hedge keeps them and
+        # the transform's own invalid-date drop (asserted below) still
+        # removes them.
         target_date = date(2024, 1, 20)
         transformer = LNGTerminalTransformer(tmp_data_dir)
         _assert_transformer_isolated(transformer, tmp_data_dir)
@@ -558,7 +589,7 @@ class TestLNGTerminalTransformer:
             target_date,
             {
                 "data": [
-                    {"gasDayStart": "2024-01-15", "code": "GB", "lngInventory": "100"},
+                    {"gasDayStart": "2024-01-20", "code": "GB", "lngInventory": "100"},
                     {"gasDayStart": None, "code": "DE", "lngInventory": "200"},
                     {"gasDayStart": "not-a-date", "code": "FR", "lngInventory": "300"},
                 ]
@@ -567,8 +598,8 @@ class TestLNGTerminalTransformer:
 
         assert transformer.run(target_date, run_id="alsi-malformed-test") == 1
         persisted = _read_single_silver(transformer)
-        assert persisted["gas_day"].to_list() == [date(2024, 1, 15)]
-        assert persisted["event_time"].to_list() == [datetime(2024, 1, 15, 6, tzinfo=UTC)]
+        assert persisted["gas_day"].to_list() == [date(2024, 1, 20)]
+        assert persisted["event_time"].to_list() == [datetime(2024, 1, 20, 6, tzinfo=UTC)]
         assert "Dropping 2 GIE ALSI row(s)" in caplog.text
         assert "not-a-date" in caplog.text
         assert "None" in caplog.text
@@ -598,6 +629,54 @@ class TestLNGTerminalTransformer:
         assert "Dropping 2 GIE ALSI row(s)" in caplog.text
         assert "invalid-day" in caplog.text
         assert not list(transformer.silver_dir.rglob("*.parquet"))
+
+    def test_run_exact_partition_filters_to_target_gas_day(self, tmp_data_dir: Path) -> None:
+        """P0.8: an exact bronze partition holding 3 gas days -> run(D)
+        persists only day-D rows."""
+        target_date = date(2024, 1, 20)
+        transformer = LNGTerminalTransformer(tmp_data_dir)
+        _assert_transformer_isolated(transformer, tmp_data_dir)
+        _write_bronze_payload(
+            transformer,
+            target_date,
+            {
+                "data": [
+                    {"gasDayStart": "2024-01-18", "code": "GB", "lngInventory": "100"},
+                    {"gasDayStart": "2024-01-19", "code": "GB", "lngInventory": "200"},
+                    {"gasDayStart": "2024-01-20", "code": "GB", "lngInventory": "300"},
+                ]
+            },
+        )
+
+        assert transformer.run(target_date, run_id="alsi-p08-exact") == 1
+        persisted = _read_single_silver(transformer)
+        assert persisted["gas_day"].to_list() == [target_date]
+
+    def test_run_covering_fallback_partition_filters_to_target_gas_day(
+        self, tmp_data_dir: Path
+    ) -> None:
+        """P0.8: a window-start bronze partition at D-1 (resolved via the
+        covering fallback — ALSI's connector is unchunked, deviation note 1)
+        holding both D-1 and D gas days -> run(D) keeps only D's rows (the
+        rolling-window walk the plan's deviation note describes)."""
+        window_start = date(2024, 1, 19)
+        target_date = date(2024, 1, 20)
+        transformer = LNGTerminalTransformer(tmp_data_dir)
+        _assert_transformer_isolated(transformer, tmp_data_dir)
+        _write_bronze_payload(
+            transformer,
+            window_start,
+            {
+                "data": [
+                    {"gasDayStart": "2024-01-19", "code": "GB", "lngInventory": "100"},
+                    {"gasDayStart": "2024-01-20", "code": "GB", "lngInventory": "200"},
+                ]
+            },
+        )
+
+        assert transformer.run(target_date, run_id="alsi-p08-fallback") == 1
+        persisted = _read_single_silver(transformer)
+        assert persisted["gas_day"].to_list() == [target_date]
 
 
 # ---------------------------------------------------------------------------
