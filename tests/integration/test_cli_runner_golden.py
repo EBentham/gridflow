@@ -425,6 +425,54 @@ def test_backfill_multi_chunk(
     assert "Backfill complete" in result.output
 
 
+def test_backfill_ingest_failure_exits_1(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, _patch_connector: None
+) -> None:
+    """R3-F03: a failed chunk INGEST makes backfill exit 1 with a failure echo,
+    not "Backfill complete" / exit 0 (cli.backfill collects run_ingest results)."""
+    _isolated_env(tmp_path, monkeypatch)
+    _FakeConnector.raise_on_fetch = True
+    result = runner.invoke(
+        app,
+        ["backfill", "elexon", "fuelhh", "--start", "2024-01-15", "--end", "2024-01-16"],
+    )
+    assert result.exit_code == 1, result.output
+    assert "Backfill failed for" in result.output
+    assert "ingest elexon/fuelhh" in result.output
+    assert "Backfill complete" not in result.output
+
+
+def test_backfill_transform_failure_exits_1(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, _patch_connector: None
+) -> None:
+    """R3-F03 (Sol #4): a failed chunk TRANSFORM (ingest OK) also makes backfill
+    exit 1 — an impl that only collected the ingest result would wrongly exit 0."""
+    from gridflow.pipeline.runner import DatasetResult
+
+    _isolated_env(tmp_path, monkeypatch)
+
+    def _failing_transform(*_args: Any, **_kwargs: Any) -> list[DatasetResult]:
+        return [
+            DatasetResult(
+                source="elexon",
+                dataset="fuelhh",
+                operation="transform",
+                status="failed",
+                error="simulated transform failure",
+            )
+        ]
+
+    monkeypatch.setattr("gridflow.pipeline.runner.run_transform", _failing_transform)
+    result = runner.invoke(
+        app,
+        ["backfill", "elexon", "fuelhh", "--start", "2024-01-15", "--end", "2024-01-16"],
+    )
+    assert result.exit_code == 1, result.output
+    assert "Backfill failed for" in result.output
+    assert "transform elexon/fuelhh: simulated transform failure" in result.output
+    assert "Backfill complete" not in result.output
+
+
 def test_backfill_chunk_ingest_does_not_write_watermark(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, _patch_connector: None
 ) -> None:
