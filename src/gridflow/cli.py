@@ -197,14 +197,13 @@ def ingest(
         "--incremental",
         "--since-watermark",
         help="Resume each dataset from its stored watermark (minus the configured "
-        "overlap). Ignored when --start or --last is given. First run falls back "
-        "to the default lookback. WARNING: incremental skips already-watermarked "
-        "windows, so revision-bearing datasets (e.g. Elexon settlement run_type "
-        "revisions II->SF->R1, republished under the same date/period) are NEVER "
-        "re-fetched on this path unless incremental_overlap_hours is non-zero (or "
-        "you run a periodic backfill). With the shipped default of 0, late "
-        "revisions are silently missed — do not use --incremental for settlement "
-        "data without raising the overlap.",
+        "overlap, default 72h). Ignored when --start or --last is given. First run "
+        "falls back to the default lookback. The watermark advances only on "
+        "observed data (not on empty or partial fetches), and the overlap "
+        "re-fetches the recent window to recover late publications and Elexon "
+        "settlement run_type revisions (II->SF->R1). NOTE: weeks-long settlement "
+        "revision tails still need a periodic backfill — the overlap only covers "
+        "the recent window.",
     ),
     write_watermark: bool = typer.Option(
         True,

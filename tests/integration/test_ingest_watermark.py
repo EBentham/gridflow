@@ -1,27 +1,30 @@
-"""CH2-04 / CH-COR-06: ``--incremental`` ingest wires the watermark frontier.
+"""CH2-04 / CH-COR-06 / R3-F04: ``--incremental`` ingest wires the watermark frontier.
 
 End-to-end through the CLI (CliRunner), with NO HTTP — the connector is replaced
-in the registry by a minimal async-context-manager fake whose ``fetch`` returns
-an empty (but successful) response list. An empty successful fetch still advances
-the frontier to the requested window end (overlap covers publication lag).
+in the registry by a minimal async-context-manager fake whose ``fetch`` returns a
+configurable response list.
 
-Guarantees pinned here (audit C3-3 / C3-11):
-- a successful ``--incremental`` ingest writes ``watermark == end_dt``;
+Guarantees pinned here (audit C3-3 / C3-11; R3-F04 evidence guard):
+- a ``--incremental`` ingest that OBSERVES DATA advances ``watermark == end_dt``;
+- an EMPTY fetch (no data-bearing responses) does NOT advance the frontier —
+  R3-F04 reverses the prior CH2-04 behaviour (an empty fetch used to advance to
+  end_dt, which only self-heals with a non-zero overlap and the shipped overlap
+  was 0);
+- a PARTIAL fetch (``last_skipped_units`` > 0) does NOT advance to the requested
+  end;
+- an all-``http_status`` >= 400 fetch (ENTSO-G's "No result found" 404 shape)
+  carries no evidence and does NOT advance;
 - a FAILED ingest writes NO watermark (the frontier must never move before a
   successful write);
-- a 2nd ``--incremental`` run resolves its start from the 1st run's watermark;
+- a 2nd ``--incremental`` run resolves its start from the 1st run's watermark
+  minus the configured overlap (default 72h);
 - a ``backfill`` over a historical range does NOT advance an existing forward
   watermark (the backfill chunk-ingests run with ``write_watermark=False``).
-
-RED before CH2-04: ``ingest`` had no ``--incremental`` flag and never called
-``update_watermark`` — no watermark row was ever written. The success/2nd-run
-assertions FAIL (no row); the backfill-advance assertion FAILS once the write
-exists unless backfill suppresses it.
 """
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING, Any
 
 import duckdb
@@ -31,11 +34,26 @@ import respx
 from typer.testing import CliRunner
 
 from gridflow.cli import app
+from gridflow.connectors.base import RawResponse
 
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from gridflow.connectors.base import RawResponse
+
+def _data_response() -> RawResponse:
+    """A minimal successful (http_status=200) data-bearing response.
+
+    Under the R3-F04 evidence guard this is what advances the watermark; the fake
+    connector defaults to an empty list (no evidence, no advance).
+    """
+    return RawResponse(
+        body=b'{"data": [{"x": 1}]}',
+        content_type="application/json",
+        source="elexon",
+        dataset="fuelhh",
+        http_status=200,
+    )
+
 
 runner = CliRunner()
 
@@ -91,6 +109,7 @@ def _reset_fake() -> None:
     _FakeConnector.calls = []
     _FakeConnector.raise_on_fetch = False
     _FakeConnector.responses = []
+    _FakeConnector.last_skipped_units = 0
 
 
 @pytest.fixture
@@ -120,12 +139,13 @@ def _read_watermark(db_path: Path, source: str, dataset: str) -> datetime | None
 def test_incremental_success_writes_watermark_at_end_dt(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, _patch_connector: None
 ) -> None:
-    """A successful ``--incremental`` ingest sets ``watermark == end_dt``.
+    """A ``--incremental`` ingest that observes data sets ``watermark == end_dt``.
 
     end_dt is resolved to "now" up front; assert the written watermark is at that
     same instant (within a second of the invocation).
     """
     db_path = _isolated_env(tmp_path, monkeypatch)
+    _FakeConnector.responses = [_data_response()]
     before = datetime.now(UTC)
 
     result = runner.invoke(app, ["ingest", "elexon", "fuelhh", "--incremental"])
@@ -133,8 +153,75 @@ def test_incremental_success_writes_watermark_at_end_dt(
 
     after = datetime.now(UTC)
     wm = _read_watermark(db_path, "elexon", "fuelhh")
-    assert wm is not None, "successful incremental ingest must write a watermark"
+    assert wm is not None, "incremental ingest that observed data must write a watermark"
     assert before <= wm <= after, f"watermark {wm} should be end_dt (~now)"
+
+
+@pytest.mark.integration
+def test_incremental_empty_fetch_does_not_advance_watermark(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, _patch_connector: None
+) -> None:
+    """R3-F04: an EMPTY fetch (no responses) leaves the watermark unchanged.
+
+    Reverses the prior CH2-04 behaviour where an empty fetch advanced to end_dt —
+    advancing past a window that had no data yet permanently strands it once the
+    data lands.
+    """
+    db_path = _isolated_env(tmp_path, monkeypatch)
+    _FakeConnector.responses = []  # empty but successful
+
+    result = runner.invoke(app, ["ingest", "elexon", "fuelhh", "--incremental"])
+    assert result.exit_code == 0, result.output
+
+    assert _read_watermark(db_path, "elexon", "fuelhh") is None, (
+        "an empty fetch must not advance the frontier (R3-F04)"
+    )
+
+
+@pytest.mark.integration
+def test_incremental_partial_fetch_does_not_advance_watermark(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, _patch_connector: None
+) -> None:
+    """R3-F04: a PARTIAL fetch (skipped units) does NOT advance the frontier.
+
+    Data-bearing responses are present, but ``last_skipped_units`` > 0 means the
+    window is incomplete; advancing to end_dt would strand the skipped units.
+    """
+    db_path = _isolated_env(tmp_path, monkeypatch)
+    _FakeConnector.responses = [_data_response()]
+    _FakeConnector.last_skipped_units = 2
+
+    result = runner.invoke(app, ["ingest", "elexon", "fuelhh", "--incremental"])
+    assert result.exit_code == 0, result.output
+
+    assert _read_watermark(db_path, "elexon", "fuelhh") is None, (
+        "a partial fetch must not advance the frontier (R3-F04)"
+    )
+
+
+@pytest.mark.integration
+def test_incremental_all_no_result_responses_do_not_advance_watermark(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, _patch_connector: None
+) -> None:
+    """R3-F04: a fetch whose only responses are http_status >= 400 (ENTSO-G's
+    "No result found" 404 short-circuit) carries no evidence — no advance."""
+    db_path = _isolated_env(tmp_path, monkeypatch)
+    _FakeConnector.responses = [
+        RawResponse(
+            body=b'{"message": "No result found"}',
+            content_type="application/json",
+            source="elexon",
+            dataset="fuelhh",
+            http_status=404,
+        )
+    ]
+
+    result = runner.invoke(app, ["ingest", "elexon", "fuelhh", "--incremental"])
+    assert result.exit_code == 0, result.output
+
+    assert _read_watermark(db_path, "elexon", "fuelhh") is None, (
+        "an all-4xx (no-result) fetch must not advance the frontier (R3-F04)"
+    )
 
 
 @pytest.mark.integration
@@ -243,12 +330,13 @@ def test_incremental_pn_http_failure_preserves_bronze_and_watermark(
 def test_second_incremental_run_resolves_start_from_first_watermark(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, _patch_connector: None
 ) -> None:
-    """The 2nd ``--incremental`` run starts from the 1st run's watermark.
+    """The 2nd ``--incremental`` run starts from the 1st run's watermark minus overlap.
 
-    With the default zero overlap, the 2nd fetch's ``start`` equals the watermark
-    the 1st run wrote (== the 1st run's end_dt).
+    Run 1 observes data and advances the watermark to its end_dt; run 2 resolves
+    its start to ``watermark - incremental_overlap_hours`` (the 72h default).
     """
     db_path = _isolated_env(tmp_path, monkeypatch)
+    _FakeConnector.responses = [_data_response()]
 
     first = runner.invoke(app, ["ingest", "elexon", "fuelhh", "--incremental"])
     assert first.exit_code == 0, first.output
@@ -258,10 +346,11 @@ def test_second_incremental_run_resolves_start_from_first_watermark(
     second = runner.invoke(app, ["ingest", "elexon", "fuelhh", "--incremental"])
     assert second.exit_code == 0, second.output
 
-    # calls[0] is the 1st run's start (default lookback); calls[1] is the 2nd's.
+    # calls[0] is the 1st run's start (default lookback); calls[1] is the 2nd's,
+    # resolved from the 1st run's watermark minus the 72h default overlap.
     assert len(_FakeConnector.calls) == 2
-    assert _FakeConnector.calls[1] == wm_after_first, (
-        "2nd incremental run must resolve its start from the 1st run's watermark"
+    assert _FakeConnector.calls[1] == wm_after_first - timedelta(hours=72), (
+        "2nd incremental run must resolve its start from watermark - overlap (72h)"
     )
 
 
