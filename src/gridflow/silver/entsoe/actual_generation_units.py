@@ -11,6 +11,7 @@ import polars as pl
 from gridflow.connectors.entsoe.parsers import parse_timeseries_xml
 from gridflow.schemas.entsoe import EntsoeActualGenerationUnits
 from gridflow.silver.base import BaseSilverTransformer
+from gridflow.silver.entsoe._published_at import with_published_at
 from gridflow.silver.registry import register_transformer
 
 logger = logging.getLogger(__name__)
@@ -76,6 +77,9 @@ class ActualGenerationUnitsTransformer(BaseSilverTransformer):
             ]
         )
 
+        # ADR-025 P1.1: carry the document publication vintage (createdDateTime) as published_at.
+        df = with_published_at(df)
+
         output_cols = [
             "timestamp_utc",
             "area_code",
@@ -84,6 +88,7 @@ class ActualGenerationUnitsTransformer(BaseSilverTransformer):
             "unit_name",
             "generation_mw",
             "resolution",
+            "published_at",
             "data_provider",
             "ingested_at",
         ]
