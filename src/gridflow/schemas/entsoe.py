@@ -514,6 +514,7 @@ class EntsoeOutagesConsumption(BaseSchema):
     document_status: str = ""
     timeseries_mrid: str = ""
     resolution: str = ""
+    published_at: datetime | None = None
     data_provider: str = Field(default="entsoe")
     ingested_at: datetime | None = None
 
@@ -540,6 +541,7 @@ class EntsoeOutagesTransmission(BaseSchema):
     document_status: str = ""
     timeseries_mrid: str = ""
     resolution: str = ""
+    published_at: datetime | None = None
     data_provider: str = Field(default="entsoe")
     ingested_at: datetime | None = None
 
@@ -565,6 +567,7 @@ class EntsoeOutagesOffshoreGrid(BaseSchema):
     document_status: str = ""
     timeseries_mrid: str = ""
     resolution: str = ""
+    published_at: datetime | None = None
     data_provider: str = Field(default="entsoe")
     ingested_at: datetime | None = None
 
@@ -591,6 +594,7 @@ class EntsoeOutagesProduction(BaseSchema):
     document_status: str = ""
     timeseries_mrid: str = ""
     resolution: str = ""
+    published_at: datetime | None = None
     data_provider: str = Field(default="entsoe")
     ingested_at: datetime | None = None
 
@@ -611,6 +615,7 @@ class EntsoeTransmissionMarketQuantity(BaseSchema):
     quantity_mw: float
     business_type: str = ""
     resolution: str = ""
+    published_at: datetime | None = None
     data_provider: str = Field(default="entsoe")
     ingested_at: datetime | None = None
 
@@ -631,6 +636,7 @@ class EntsoeTransmissionMarketAmount(BaseSchema):
     amount_eur: float
     business_type: str = ""
     resolution: str = ""
+    published_at: datetime | None = None
     data_provider: str = Field(default="entsoe")
     ingested_at: datetime | None = None
 
@@ -650,6 +656,7 @@ class EntsoeBalancingState(BaseSchema):
     quantity_mw: float
     business_type: str = "B33"
     resolution: str = ""
+    published_at: datetime | None = None
     data_provider: str = Field(default="entsoe")
     ingested_at: datetime | None = None
 
@@ -673,6 +680,7 @@ class EntsoeBalancingEnergyBid(BaseSchema):
     original_market_product: str = ""
     standard_market_product: str = ""
     resolution: str = ""
+    published_at: datetime | None = None
     data_provider: str = Field(default="entsoe")
     ingested_at: datetime | None = None
 
@@ -693,6 +701,7 @@ class EntsoeBalancingCapacity(BaseSchema):
     market_agreement_type: str = ""
     business_type: str = ""
     resolution: str = ""
+    published_at: datetime | None = None
     data_provider: str = Field(default="entsoe")
     ingested_at: datetime | None = None
 
@@ -714,6 +723,7 @@ class EntsoeCrossZonalBalancingCapacity(BaseSchema):
     market_agreement_type: str = ""
     business_type: str = ""
     resolution: str = ""
+    published_at: datetime | None = None
     data_provider: str = Field(default="entsoe")
     ingested_at: datetime | None = None
 
@@ -736,6 +746,7 @@ class EntsoeBalancingFinancial(BaseSchema):
     # classifying the financial category. Empty string when absent.
     reason_code: str = ""
     resolution: str = ""
+    published_at: datetime | None = None
     data_provider: str = Field(default="entsoe")
     ingested_at: datetime | None = None
 

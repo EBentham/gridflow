@@ -794,6 +794,11 @@ class TestEntsoeBronzeToSilverPipeline:
         assert required_columns.issubset(df.columns)
         if "data_provider" in df.columns:
             assert df["data_provider"].unique().to_list() == ["entsoe"]
+        # ADR-025 P1.1: every timeseries-parsed ENTSO-E dataset emits published_at
+        # (typed-null when the document lacks createdDateTime). Only the master-data
+        # parser has no such field — documented as a structural ingest-time fallback.
+        if dataset != "generation_units_master_data":
+            assert "published_at" in df.columns
 
 
 # ---------------------------------------------------------------------------

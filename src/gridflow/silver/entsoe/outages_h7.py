@@ -16,6 +16,7 @@ from gridflow.schemas.entsoe import (
     EntsoeOutagesTransmission,
 )
 from gridflow.silver.base import BaseSilverTransformer
+from gridflow.silver.entsoe._published_at import with_published_at
 from gridflow.silver.registry import register_transformer
 
 if TYPE_CHECKING:
@@ -101,6 +102,9 @@ class _H7OutageTransformer(BaseSilverTransformer):
         )
 
         df = df.unique(subset=self.dedup_subset, keep="last").sort(self.dedup_subset)
+        # ADR-025 P1.1: carry the document publication vintage (createdDateTime)
+        # as published_at before the hard select; typed-null when absent.
+        df = with_published_at(df)
         df = df.select(self.output_cols)
 
         return df
@@ -120,6 +124,7 @@ class OutagesConsumptionTransformer(_H7OutageTransformer):
         "document_status",
         "timeseries_mrid",
         "resolution",
+        "published_at",
         "data_provider",
         "ingested_at",
     ]
@@ -145,6 +150,7 @@ class OutagesTransmissionTransformer(_H7OutageTransformer):
         "document_status",
         "timeseries_mrid",
         "resolution",
+        "published_at",
         "data_provider",
         "ingested_at",
     ]
@@ -173,6 +179,7 @@ class OutagesOffshoreGridTransformer(_H7OutageTransformer):
         "document_status",
         "timeseries_mrid",
         "resolution",
+        "published_at",
         "data_provider",
         "ingested_at",
     ]
@@ -196,6 +203,7 @@ class OutagesProductionTransformer(_H7OutageTransformer):
         "document_status",
         "timeseries_mrid",
         "resolution",
+        "published_at",
         "data_provider",
         "ingested_at",
     ]
