@@ -48,6 +48,68 @@ class SiblingCollisionTransformer(BaseSilverTransformer):
         return raw_df
 
 
+class MixedVintageTransformer(BaseSilverTransformer):
+    """Emits ``published_at`` non-null on SOME rows only — the row-wise coalesce /
+    column-swap-trap probe (ADR-025 §3 P1.1)."""
+
+    source = "test"
+    dataset = "mixed_vintage"
+
+    def read_bronze(self, target_date: date) -> pl.DataFrame:
+        return pl.DataFrame([{"name": "r1"}, {"name": "r2"}, {"name": "r3"}])
+
+    def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
+        return raw_df.with_columns(
+            pl.Series(
+                "published_at",
+                [
+                    datetime(2024, 1, 10, 8, tzinfo=UTC),
+                    None,
+                    datetime(2024, 1, 10, 12, tzinfo=UTC),
+                ],
+                dtype=pl.Datetime("us", "UTC"),
+            )
+        )
+
+
+class AllPublishedTransformer(BaseSilverTransformer):
+    """Emits ``published_at`` non-null on EVERY row."""
+
+    source = "test"
+    dataset = "all_published"
+
+    def read_bronze(self, target_date: date) -> pl.DataFrame:
+        return pl.DataFrame([{"name": "r1"}, {"name": "r2"}, {"name": "r3"}])
+
+    def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
+        return raw_df.with_columns(
+            pl.Series(
+                "published_at",
+                [
+                    datetime(2024, 1, 10, 8, tzinfo=UTC),
+                    datetime(2024, 1, 10, 10, tzinfo=UTC),
+                    datetime(2024, 1, 10, 12, tzinfo=UTC),
+                ],
+                dtype=pl.Datetime("us", "UTC"),
+            )
+        )
+
+
+class AllNullPublishedTransformer(BaseSilverTransformer):
+    """Emits a typed-null ``published_at`` column (the Elexon absent-publishTime shape)."""
+
+    source = "test"
+    dataset = "all_null_published"
+
+    def read_bronze(self, target_date: date) -> pl.DataFrame:
+        return pl.DataFrame([{"name": "r1"}, {"name": "r2"}])
+
+    def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
+        return raw_df.with_columns(
+            pl.lit(None).cast(pl.Datetime("us", "UTC")).alias("published_at")
+        )
+
+
 def _date_dir(root: Path, source: str, dataset: str, target_date: date) -> Path:
     return (
         root
@@ -509,3 +571,78 @@ def test_wind_forecast_preserves_publish_time_as_published_at() -> None:
     assert "published_at" in result.columns
     assert result["published_at"].dtype == pl.Datetime("us", "UTC")
     assert result["published_at"][0] == datetime(2024, 1, 14, 8, 0, tzinfo=UTC)
+
+
+# ---------------------------------------------------------------------------
+# ADR-025 §3 (P1.1): available_at = coalesce(published_at, ingest_time), row-wise.
+# These pin the base-write coalesce at silver/base.py::_add_bitemporal_columns.
+# ---------------------------------------------------------------------------
+
+
+def test_available_at_coalesces_published_at_rowwise(tmp_data_dir: Path) -> None:
+    """CRITICAL row-wise regression (the column-swap trap). A frame with
+    published_at non-null on SOME rows: the vintage-bearing rows get
+    available_at == published_at; the null-published_at row falls back to the
+    ingest scalar — NOT null, NOT a neighbour's vintage."""
+    sidecar_time = datetime(2024, 1, 16, 9, 0, 0, tzinfo=UTC)
+    _write_bronze_json(
+        tmp_data_dir, "test", "mixed_vintage", TARGET_DATE, {"data": []}, fetched_at=sidecar_time
+    )
+    MixedVintageTransformer(tmp_data_dir).run(TARGET_DATE, run_id=RUN_ID, reingest=True)
+    df = _read_single_silver(tmp_data_dir, "test", "mixed_vintage")
+
+    assert df["available_at"].null_count() == 0  # the trap: available_at is never null
+    for published, available in zip(
+        df["published_at"].to_list(), df["available_at"].to_list(), strict=True
+    ):
+        assert available == (published if published is not None else sidecar_time)
+    # both vintages and the ingest-scalar fallback are present
+    assert datetime(2024, 1, 10, 8, tzinfo=UTC) in df["available_at"].to_list()
+    assert datetime(2024, 1, 10, 12, tzinfo=UTC) in df["available_at"].to_list()
+    assert sidecar_time in df["available_at"].to_list()
+
+
+def test_available_at_equals_published_at_when_all_rows_published(tmp_data_dir: Path) -> None:
+    """Every row carries a vintage → available_at is the vintage on every row;
+    the ingest scalar appears nowhere."""
+    sidecar_time = datetime(2024, 1, 16, 9, 0, 0, tzinfo=UTC)
+    _write_bronze_json(
+        tmp_data_dir, "test", "all_published", TARGET_DATE, {"data": []}, fetched_at=sidecar_time
+    )
+    AllPublishedTransformer(tmp_data_dir).run(TARGET_DATE, run_id=RUN_ID, reingest=True)
+    df = _read_single_silver(tmp_data_dir, "test", "all_published")
+
+    assert df["available_at"].to_list() == df["published_at"].to_list()
+    assert sidecar_time not in df["available_at"].to_list()
+
+
+def test_all_null_published_at_column_falls_back_to_scalar(tmp_data_dir: Path) -> None:
+    """A typed-null published_at column (the Elexon absent-publishTime shape) →
+    every available_at is the ingest scalar. This is WHY the fuelhh/indo/remit
+    sidecar pins elsewhere in this file stay green after the coalesce."""
+    sidecar_time = datetime(2024, 1, 16, 9, 0, 0, tzinfo=UTC)
+    _write_bronze_json(
+        tmp_data_dir,
+        "test",
+        "all_null_published",
+        TARGET_DATE,
+        {"data": []},
+        fetched_at=sidecar_time,
+    )
+    AllNullPublishedTransformer(tmp_data_dir).run(TARGET_DATE, run_id=RUN_ID, reingest=True)
+    df = _read_single_silver(tmp_data_dir, "test", "all_null_published")
+
+    assert set(df["available_at"].to_list()) == {sidecar_time}
+
+
+def test_available_at_unchanged_without_published_at_column(tmp_data_dir: Path) -> None:
+    """Byte-preservation: a transformer emitting NO published_at column hits the
+    else branch — available_at is the scalar, byte-identical to pre-P1.1."""
+    sidecar_time = datetime(2024, 1, 16, 9, 0, 0, tzinfo=UTC)
+    _write_bronze_json(
+        tmp_data_dir, "test", "static", TARGET_DATE, {"data": []}, fetched_at=sidecar_time
+    )
+    StaticTransformer(tmp_data_dir).run(TARGET_DATE, run_id=RUN_ID, reingest=True)
+    df = _read_single_silver(tmp_data_dir, "test", "static")
+
+    assert set(df["available_at"].to_list()) == {sidecar_time}

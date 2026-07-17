@@ -371,16 +371,37 @@ class BaseSilverTransformer(ABC):
         run_id: str,
         available_at: datetime,
     ) -> pl.DataFrame:
-        """Add modelling lineage columns before silver output is persisted."""
+        """Add modelling lineage columns before silver output is persisted.
+
+        ``available_at = coalesce(published_at, ingest_time)`` (ADR-025 §3): when
+        the transformer emitted a ``published_at`` column (the vendor publication
+        vintage), it becomes ``available_at`` per row; rows with a null
+        ``published_at`` fall back to the ingest/reingest scalar. Datasets that
+        emit no ``published_at`` column keep byte-identical ``available_at``.
+        """
         if available_at.tzinfo is None:
             available_at = available_at.replace(tzinfo=UTC)
         else:
             available_at = available_at.astimezone(UTC)
 
+        ingest_stamp = pl.lit(available_at).cast(pl.Datetime("us", "UTC"))
+        # ADR-025 §3: available_at = coalesce(published_at, ingest_time), ROW-WISE.
+        # pl.coalesce is per-row, so a mixed-null frame (Elexon publishTime is
+        # per-record; a date's ENTSO-E bronze can mix files with and without
+        # createdDateTime) falls back to the ingest scalar on null rows rather
+        # than writing a null available_at — which gridflow_models' fail-closed
+        # availability barrier rejects wholesale. A frame-level column swap would not.
+        if "published_at" in df.columns:
+            available_at_expr = pl.coalesce(pl.col("published_at"), ingest_stamp).alias(
+                "available_at"
+            )
+        else:
+            available_at_expr = ingest_stamp.alias("available_at")
+
         return df.with_columns(
             [
                 self._event_time_expr(df, target_date),
-                pl.lit(available_at).cast(pl.Datetime("us", "UTC")).alias("available_at"),
+                available_at_expr,
                 pl.lit(run_id).alias("source_run_id"),
                 pl.lit(self.DATASET_VERSION).alias("dataset_version"),
             ]

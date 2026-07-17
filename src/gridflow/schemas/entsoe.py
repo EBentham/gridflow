@@ -25,6 +25,7 @@ class EntsoeDayAheadPrice(BaseSchema):
     price_eur_mwh: float
     currency: str = "EUR"
     resolution: str = ""
+    published_at: datetime | None = None
     data_provider: str = Field(default="entsoe")
 
     @field_validator("timestamp_utc")
@@ -42,6 +43,7 @@ class EntsoeActualLoad(BaseSchema):
     area_code: str
     load_mw: float
     resolution: str = ""
+    published_at: datetime | None = None
     data_provider: str = Field(default="entsoe")
 
     @field_validator("timestamp_utc")
@@ -60,6 +62,7 @@ class EntsoeActualGeneration(BaseSchema):
     area_name: str = ""
     production_type: str
     generation_mw: float
+    published_at: datetime | None = None
     data_provider: str = Field(default="entsoe")
 
     @field_validator("timestamp_utc")
@@ -82,6 +85,7 @@ class EntsoeCrossborderFlow(BaseSchema):
     out_area_code: str
     flow_mw: float
     resolution: str = ""
+    published_at: datetime | None = None
     data_provider: str = Field(default="entsoe")
     ingested_at: datetime | None = None
 
@@ -156,6 +160,7 @@ class EntsoeOutagesGeneration(BaseSchema):
     outage_type: str  # "planned" (A53) | "unplanned" (A54)
     unavailable_mw: float
     resolution: str = ""
+    published_at: datetime | None = None
     data_provider: str = Field(default="entsoe")
     ingested_at: datetime | None = None
 
@@ -179,6 +184,7 @@ class EntsoeInstalledCapacity(BaseSchema):
     production_type: str
     capacity_mw: float
     resolution: str = ""
+    published_at: datetime | None = None
     data_provider: str = Field(default="entsoe")
 
     @field_validator("timestamp_utc")
@@ -199,6 +205,7 @@ class EntsoeInstalledCapacityUnits(BaseSchema):
     unit_name: str = ""
     capacity_mw: float
     resolution: str = ""
+    published_at: datetime | None = None
     data_provider: str = Field(default="entsoe")
     ingested_at: datetime | None = None
 
@@ -243,6 +250,7 @@ class EntsoeActualGenerationUnits(BaseSchema):
     unit_name: str = ""
     generation_mw: float
     resolution: str = ""
+    published_at: datetime | None = None
     data_provider: str = Field(default="entsoe")
     ingested_at: datetime | None = None
 
@@ -261,6 +269,7 @@ class EntsoeWaterReservoirs(BaseSchema):
     area_code: str
     reservoir_mwh: float
     resolution: str = ""
+    published_at: datetime | None = None
     data_provider: str = Field(default="entsoe")
     ingested_at: datetime | None = None
 
@@ -317,6 +326,7 @@ class EntsoeForecastMargin(BaseSchema):
     area_code: str
     forecast_margin_mw: float
     resolution: str = ""
+    published_at: datetime | None = None
     data_provider: str = Field(default="entsoe")
     ingested_at: datetime | None = None
 
@@ -342,6 +352,7 @@ class EntsoeNetTransferCapacity(BaseSchema):
     out_area_code: str
     ntc_mw: float
     resolution: str = ""
+    published_at: datetime | None = None
     data_provider: str = Field(default="entsoe")
     ingested_at: datetime | None = None
 
@@ -373,6 +384,7 @@ class EntsoeImbalancePrices(BaseSchema):
     price_eur_mwh: float
     currency: str = "EUR"
     resolution: str = ""
+    published_at: datetime | None = None
     data_provider: str = Field(default="entsoe")
     ingested_at: datetime | None = None
 
@@ -396,6 +408,7 @@ class EntsoeImbalanceVolume(BaseSchema):
     direction: str  # "long" | "short"
     volume_mwh: float
     resolution: str = ""
+    published_at: datetime | None = None
     data_provider: str = Field(default="entsoe")
     ingested_at: datetime | None = None
 
@@ -421,6 +434,7 @@ class EntsoeActivatedBalancingQty(BaseSchema):
     direction: str  # "up" | "down"
     quantity_mwh: float
     resolution: str = ""
+    published_at: datetime | None = None
     data_provider: str = Field(default="entsoe")
     ingested_at: datetime | None = None
 
@@ -452,6 +466,7 @@ class EntsoeActivatedBalancingPrices(BaseSchema):
     price_eur_mwh: float
     currency: str = "EUR"
     resolution: str = ""
+    published_at: datetime | None = None
     data_provider: str = Field(default="entsoe")
     ingested_at: datetime | None = None
 
@@ -475,6 +490,7 @@ class EntsoeContractedReserves(BaseSchema):
     reserve_type: str  # "fcr" | "afrr" | "mfrr" | "rr"
     quantity_mw: float
     resolution: str = ""
+    published_at: datetime | None = None
     data_provider: str = Field(default="entsoe")
     ingested_at: datetime | None = None
 
@@ -498,6 +514,7 @@ class EntsoeOutagesConsumption(BaseSchema):
     document_status: str = ""
     timeseries_mrid: str = ""
     resolution: str = ""
+    published_at: datetime | None = None
     data_provider: str = Field(default="entsoe")
     ingested_at: datetime | None = None
 
@@ -524,6 +541,7 @@ class EntsoeOutagesTransmission(BaseSchema):
     document_status: str = ""
     timeseries_mrid: str = ""
     resolution: str = ""
+    published_at: datetime | None = None
     data_provider: str = Field(default="entsoe")
     ingested_at: datetime | None = None
 
@@ -549,6 +567,7 @@ class EntsoeOutagesOffshoreGrid(BaseSchema):
     document_status: str = ""
     timeseries_mrid: str = ""
     resolution: str = ""
+    published_at: datetime | None = None
     data_provider: str = Field(default="entsoe")
     ingested_at: datetime | None = None
 
@@ -575,6 +594,7 @@ class EntsoeOutagesProduction(BaseSchema):
     document_status: str = ""
     timeseries_mrid: str = ""
     resolution: str = ""
+    published_at: datetime | None = None
     data_provider: str = Field(default="entsoe")
     ingested_at: datetime | None = None
 
@@ -595,6 +615,7 @@ class EntsoeTransmissionMarketQuantity(BaseSchema):
     quantity_mw: float
     business_type: str = ""
     resolution: str = ""
+    published_at: datetime | None = None
     data_provider: str = Field(default="entsoe")
     ingested_at: datetime | None = None
 
@@ -615,6 +636,7 @@ class EntsoeTransmissionMarketAmount(BaseSchema):
     amount_eur: float
     business_type: str = ""
     resolution: str = ""
+    published_at: datetime | None = None
     data_provider: str = Field(default="entsoe")
     ingested_at: datetime | None = None
 
@@ -634,6 +656,7 @@ class EntsoeBalancingState(BaseSchema):
     quantity_mw: float
     business_type: str = "B33"
     resolution: str = ""
+    published_at: datetime | None = None
     data_provider: str = Field(default="entsoe")
     ingested_at: datetime | None = None
 
@@ -657,6 +680,7 @@ class EntsoeBalancingEnergyBid(BaseSchema):
     original_market_product: str = ""
     standard_market_product: str = ""
     resolution: str = ""
+    published_at: datetime | None = None
     data_provider: str = Field(default="entsoe")
     ingested_at: datetime | None = None
 
@@ -677,6 +701,7 @@ class EntsoeBalancingCapacity(BaseSchema):
     market_agreement_type: str = ""
     business_type: str = ""
     resolution: str = ""
+    published_at: datetime | None = None
     data_provider: str = Field(default="entsoe")
     ingested_at: datetime | None = None
 
@@ -698,6 +723,7 @@ class EntsoeCrossZonalBalancingCapacity(BaseSchema):
     market_agreement_type: str = ""
     business_type: str = ""
     resolution: str = ""
+    published_at: datetime | None = None
     data_provider: str = Field(default="entsoe")
     ingested_at: datetime | None = None
 
@@ -720,6 +746,7 @@ class EntsoeBalancingFinancial(BaseSchema):
     # classifying the financial category. Empty string when absent.
     reason_code: str = ""
     resolution: str = ""
+    published_at: datetime | None = None
     data_provider: str = Field(default="entsoe")
     ingested_at: datetime | None = None
 

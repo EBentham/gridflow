@@ -14,6 +14,7 @@ from gridflow.schemas.entsoe import (
     EntsoeTransmissionMarketQuantity,
 )
 from gridflow.silver.base import BaseSilverTransformer
+from gridflow.silver.entsoe._published_at import with_published_at
 from gridflow.silver.registry import register_transformer
 
 if TYPE_CHECKING:
@@ -99,6 +100,10 @@ class _H6ZonePairTransformer(BaseSilverTransformer):
             .sort(["timestamp_utc", "in_area_code", "out_area_code"])
         )
 
+        # ADR-025 P1.1: carry the document publication vintage (createdDateTime)
+        # as published_at; typed-null when the source lacks it.
+        df = with_published_at(df)
+
         output_cols = [
             "timestamp_utc",
             "in_area_code",
@@ -106,6 +111,7 @@ class _H6ZonePairTransformer(BaseSilverTransformer):
             self.value_column,
             "business_type",
             "resolution",
+            "published_at",
             "data_provider",
             "ingested_at",
         ]

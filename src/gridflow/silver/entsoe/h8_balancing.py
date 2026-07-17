@@ -17,6 +17,7 @@ from gridflow.schemas.entsoe import (
     EntsoeCrossZonalBalancingCapacity,
 )
 from gridflow.silver.base import BaseSilverTransformer
+from gridflow.silver.entsoe._published_at import with_published_at
 from gridflow.silver.registry import register_transformer
 
 if TYPE_CHECKING:
@@ -38,6 +39,7 @@ class _H8BalancingTransformer(BaseSilverTransformer):
         "quantity_mw",
         "business_type",
         "resolution",
+        "published_at",
         "data_provider",
         "ingested_at",
     )
@@ -82,6 +84,11 @@ class _H8BalancingTransformer(BaseSilverTransformer):
 
         if "timestamp_utc" in df.columns and df["timestamp_utc"].dtype != pl.Datetime("us", "UTC"):
             df = df.with_columns(pl.col("timestamp_utc").cast(pl.Datetime("us", "UTC")))
+
+        # ADR-025 P1.1: carry the document publication vintage (createdDateTime) as
+        # published_at BEFORE the output_cols select (this family selects then dedups);
+        # typed-null when the source lacks it.
+        df = with_published_at(df)
 
         now = datetime.now(UTC)
         df = (
@@ -134,6 +141,7 @@ class BalancingEnergyBidsTransformer(_H8BalancingTransformer):
         "original_market_product",
         "standard_market_product",
         "resolution",
+        "published_at",
         "data_provider",
         "ingested_at",
     )
@@ -157,6 +165,7 @@ class ProcuredBalancingCapacityTransformer(_H8BalancingTransformer):
         "market_agreement_type",
         "business_type",
         "resolution",
+        "published_at",
         "data_provider",
         "ingested_at",
     )
@@ -176,6 +185,7 @@ class CrossZonalBalancingCapacityTransformer(_H8BalancingTransformer):
         "market_agreement_type",
         "business_type",
         "resolution",
+        "published_at",
         "data_provider",
         "ingested_at",
     )
@@ -211,6 +221,7 @@ class BalancingFinancialExpensesIncomeTransformer(_H8BalancingTransformer):
         # parse_timeseries_xml). Empty string when source has no Reason.
         "reason_code",
         "resolution",
+        "published_at",
         "data_provider",
         "ingested_at",
     )

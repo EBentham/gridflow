@@ -794,6 +794,11 @@ class TestEntsoeBronzeToSilverPipeline:
         assert required_columns.issubset(df.columns)
         if "data_provider" in df.columns:
             assert df["data_provider"].unique().to_list() == ["entsoe"]
+        # ADR-025 P1.1: every timeseries-parsed ENTSO-E dataset emits published_at
+        # (typed-null when the document lacks createdDateTime). Only the master-data
+        # parser has no such field — documented as a structural ingest-time fallback.
+        if dataset != "generation_units_master_data":
+            assert "published_at" in df.columns
 
 
 # ---------------------------------------------------------------------------
@@ -837,27 +842,23 @@ def test_forecast_published_at_survives_bronze_to_silver(
     assert _FORECAST_VINTAGE not in df["timestamp_utc"].to_list()
 
 
-def test_forecast_available_at_is_not_repointed_to_vintage(
+def test_forecast_available_at_carries_publication_vintage(
     tmp_data_dir: Path,
 ) -> None:
-    """Issue 04 acceptance criterion: the fix must NOT repoint `available_at`
-    to the createdDateTime vintage. `available_at` stays the ingest clock
-    (now() on the live path), preserving the ORDER BY available_at DESC
-    revision contract.
+    """ADR-025 §3 (P1.1): available_at = coalesce(published_at, ingest_time).
 
-    FAILS if a future change feeds the vintage into available_at.
+    Supersedes the Issue-04-era contract that available_at must stay the ingest
+    clock: for a vintage-bearing forecast document (every row carries a non-null
+    createdDateTime), available_at now EQUALS the publication vintage, so a
+    historical as_of fetch can see it. Null-published_at rows (none in this
+    fixture) fall back to the ingest scalar — covered at unit level in
+    tests/unit/test_bitemporal_columns.py::test_available_at_coalesces_published_at_rowwise.
     """
     _write_fixture_to_bronze(tmp_data_dir, "generation_forecast", "generation_forecast_gb.xml")
-    transformer = GenerationForecastTransformer(tmp_data_dir)
-    transformer.run(TARGET_DATE)
+    GenerationForecastTransformer(tmp_data_dir).run(TARGET_DATE)
 
     df = pl.read_parquet(_silver_path(tmp_data_dir, "generation_forecast", TARGET_DATE))
-    available = set(df["available_at"].to_list())
-    # available_at must NOT equal the document vintage.
-    assert available != {_FORECAST_VINTAGE}
-    assert all(ts != _FORECAST_VINTAGE for ts in available), (
-        "available_at was repointed to the createdDateTime vintage — forbidden"
-    )
-    # published_at carries the vintage; available_at must differ from it.
-    assert set(df["published_at"].to_list()) == {_FORECAST_VINTAGE}
-    assert available != set(df["published_at"].to_list())
+    # The fixture's rows all carry the same createdDateTime vintage, so the
+    # row-wise coalesce sets available_at to that vintage on every row.
+    assert set(df["available_at"].to_list()) == {_FORECAST_VINTAGE}
+    assert df["available_at"].to_list() == df["published_at"].to_list()

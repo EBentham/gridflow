@@ -12,6 +12,7 @@ from gridflow.connectors.entsoe.parsers import parse_timeseries_xml
 from gridflow.schemas.entsoe import EntsoeActivatedBalancingPrices
 from gridflow.silver.base import BaseSilverTransformer
 from gridflow.silver.entsoe._enum_maps import UNMAPPED_SENTINEL, currency_expr
+from gridflow.silver.entsoe._published_at import with_published_at
 from gridflow.silver.registry import register_transformer
 
 logger = logging.getLogger(__name__)
@@ -118,6 +119,9 @@ class ActivatedBalancingPricesTransformer(BaseSilverTransformer):
             )
         )
 
+        # ADR-025 P1.1: carry the document publication vintage (createdDateTime) as published_at.
+        df = with_published_at(df)
+
         output_cols = [
             "timestamp_utc",
             "area_code",
@@ -126,6 +130,7 @@ class ActivatedBalancingPricesTransformer(BaseSilverTransformer):
             "price_eur_mwh",
             "currency",
             "resolution",
+            "published_at",
             "data_provider",
             "ingested_at",
         ]
