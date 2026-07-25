@@ -8,17 +8,62 @@ expansion) was paused before release and is intentionally absent.
 
 ## [Unreleased]
 
+## [v0.17] - 2026-07-25
+
+**Review Remediation (P0+P1)** — executed the P0+P1 block of the July 2026 full-stack review:
+all 11 P0 findings (silent data-correctness and ingest-integrity classes) and all 11 P1 findings,
+across gridflow (PRs #38–#48) and its companion repos (gridflow_models #28–#31, docs vault + site).
+Test suite grew from 1530 to 1679 passing; mypy stays strict-clean.
+
 ### Added
+- **Temporal vintage capture (ADR-025):** `elexon/system_prices` is now APPEND_ONLY — every
+  settlement run is preserved as its own vintage instead of collapsed; new
+  `silver_{source}_{dataset}_latest` views select the latest vintage per natural key, and the gold
+  SMP builder applies the same selection (PR #38).
+- **True vendor vintage in `available_at`:** row-wise
+  `available_at = coalesce(published_at, ingest_time)` at the silver base, `published_at` emitted
+  across ~30 ENTSO-E transformers, and a per-dataset stamp-fidelity table
+  (`docs/available_at_stamp_fidelity.md`) distinguishing true vintage from ingest fallback —
+  historical `as_of` queries now return honest point-in-time slices (PR #47).
 - Silver schema manifest API exporting registered relation names, designated date columns,
-  bitemporal columns, partition columns, and fixed/dynamic column contracts.
+  bitemporal columns, partition columns, and fixed/dynamic column contracts (ADR-024; consumed by
+  gridflow_models in place of re-declared schema literals).
 
 ### Changed
+- ENTSO-E/ENTSO-G ingestion fetches in strict day-chunks with per-day `data_date` stamping —
+  multi-day windows no longer strand days 2..N of gas data, and ENTSO-E silver reads
+  exact-partition-only (PR #44).
+- Incremental-ingest watermarks advance only on observed evidence (HTTP < 400, not skipped);
+  empty or partial fetches leave the frontier; `incremental_overlap_hours` defaults to 72 (PR #46).
+- ENTSO-E A03 curve documents are walk-filled using `curveType` and period `end` — multi-week
+  outages no longer collapse to a single timestamp (PR #39).
 - Serving client bitemporal exclude columns now use the public silver manifest authority while
   retaining the private compatibility alias.
 
 ### Fixed
+- **Silent ingest failures:** Elexon per-settlement-period HTTP errors surviving retries now fail
+  the dataset instead of recording success (PR #43); `backfill` surfaces every failed chunk and
+  exits non-zero (PR #45); Parquet write temps can no longer be double-counted into gold and
+  serving views (PR #42).
+- **Fabricated values:** ENTSO-G null flow values are preserved as null instead of fabricated
+  0.0 GWh/day (PR #40); GIE gas-day event times are stamped at the true 06:00 UTC gas-day start
+  instead of midnight (PR #41).
+- `gold_uk_imbalance_context` could not register against live silver (stale `run_type` reference →
+  `price_derivation_code`) and the failure was silent outside strict mode — gold-view registration
+  failures now log WARNING in production (PR #48).
 - NESO regional silver transforms now cast present all-null identity columns to strings before
   Parquet writes, avoiding DuckDB reads over NULL-typed `postcode` columns.
+
+### Companion repos (same milestone)
+- **gridflow_models:** declared 2-day leakage embargo actually enforced via
+  `BlockedTimeSeriesSplit` (#28); warn-only degenerate `available_at`-spread check (#29);
+  role-split weather datasets reaching the estimators via per-component feature namespacing
+  (ADR-055), config-aware fetch helper, `_mps` column rename, plant-universe column adapter, and a
+  `contract` CI tier for cross-repo drift guards (#30, #31).
+- **Docs (vault + site):** gold-layer contract notes (columns/joins/grain per view/builder),
+  canonical `silver_{source}_{dataset}` naming with aliases marked deprecated; site mirror
+  re-synced, and a first PR-triggered CI on the site repo checking authored pages against the
+  mirror's Silver schema (removals-only staleness baseline).
 
 ## [v0.16] - 2026-06-07
 
