@@ -380,7 +380,7 @@ def _register_gold_views(con: duckdb.DuckDBPyConnection) -> None:
         except Exception as exc:
             if _is_strict_mode():
                 raise
-            logger.debug("Could not register gold view %s: %s", sql_file.name, exc)
+            logger.warning("Could not register gold view %s: %s", sql_file.name, exc)
 
 
 def refresh_views(db_path: Path, data_dir: Path) -> None:

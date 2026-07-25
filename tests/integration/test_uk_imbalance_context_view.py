@@ -61,7 +61,7 @@ def _seed_silver(data_dir: Path) -> None:
             "system_sell_price": [45.5, 46.75, 48.0],
             "system_buy_price": [55.0, 56.25, 58.5],
             "net_imbalance_volume": [-120.5, 80.3, -45.0],
-            "run_type": ["SF", "SF", "SF"],
+            "price_derivation_code": ["A", "A", "A"],
         }
     )
     _write_parquet(
