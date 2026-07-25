@@ -79,7 +79,7 @@ def _seed_silver(data_dir: Path) -> None:
                 "system_sell_price": [45.5],
                 "system_buy_price": [55.0],
                 "net_imbalance_volume": [-120.5],
-                "run_type": ["SF"],
+                "price_derivation_code": ["A"],
             }
         ),
         data_dir

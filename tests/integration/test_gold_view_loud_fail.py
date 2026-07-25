@@ -6,6 +6,7 @@ instead of silently swallowing view-creation errors.
 
 from __future__ import annotations
 
+import logging
 from typing import TYPE_CHECKING
 
 import duckdb
@@ -82,3 +83,34 @@ def test_production_mode_swallows(tmp_path: Path, monkeypatch: pytest.MonkeyPatc
         )
     finally:
         con.close()
+
+
+@pytest.mark.integration
+def test_register_gold_views_warns_in_production_mode(
+    caplog: pytest.LogCaptureFixture, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """R7-F05: registration failures WARN (not DEBUG) in production mode.
+
+    With neither PYTEST_CURRENT_TEST nor GRIDFLOW_ENV=dev/test set, and no
+    silver views registered, every gold SQL file fails to bind.
+    _register_gold_views must swallow (not raise) but log at WARNING so the
+    failure is not silently invisible in production.
+    """
+    from gridflow.storage.duckdb import _register_gold_views
+
+    monkeypatch.delenv("PYTEST_CURRENT_TEST", raising=False)
+    monkeypatch.delenv("GRIDFLOW_ENV", raising=False)
+
+    con = duckdb.connect(":memory:")
+    try:
+        with caplog.at_level(logging.WARNING, logger="gridflow.storage.duckdb"):
+            _register_gold_views(con)
+    finally:
+        con.close()
+
+    warning_messages = [
+        record.getMessage() for record in caplog.records if record.levelno == logging.WARNING
+    ]
+    assert any("uk_imbalance_context.sql" in msg for msg in warning_messages), (
+        f"expected a WARNING mentioning uk_imbalance_context.sql, got: {warning_messages}"
+    )

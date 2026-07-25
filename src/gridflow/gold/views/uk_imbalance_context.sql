@@ -9,14 +9,14 @@ SELECT
     sp.system_sell_price,
     sp.system_buy_price,
     sp.net_imbalance_volume,
-    sp.run_type,
+    sp.price_derivation_code,
     ci.forecast_gco2_kwh   AS carbon_intensity_forecast_gco2_kwh,
     ci.actual_gco2_kwh     AS carbon_intensity_actual_gco2_kwh,
     ci.intensity_index
 FROM silver_elexon_system_prices sp
 LEFT JOIN silver_neso_carbon_intensity ci
     ON sp.timestamp_utc = ci.timestamp_utc
-ORDER BY sp.timestamp_utc, sp.run_type;
+ORDER BY sp.timestamp_utc, sp.price_derivation_code;
 
 -- Leakage foot-gun warning: carbon_intensity_actual_gco2_kwh is the REALISED
 -- carbon intensity, published AFTER the settlement period it describes. It is
