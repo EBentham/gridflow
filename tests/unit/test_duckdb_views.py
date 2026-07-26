@@ -554,7 +554,15 @@ def test_latest_view_survives_missing_rank_column(
 def test_latest_views_for_remit_and_fou2t14d(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """The F7 APPEND_ONLY datasets finally get their read surface (R1-F02)."""
+    """The F7 APPEND_ONLY datasets' _latest view RENDERS and SELECTS correctly
+    over hand-written parquet (R1-F02).
+
+    R1-C (F-06) note: this test does NOT prove the pipeline ever writes two
+    vintages -- silver held one row per key for fou2t14d (the cross-vintage
+    collapse) until v0.18 R1-C fixed it. See
+    ``tests/integration/test_fou2t14d_vintage_retention.py`` for the
+    end-to-end bronze -> silver -> _latest guard that closes that gap.
+    """
     from datetime import UTC, date, datetime
 
     monkeypatch.setattr("gridflow.storage.duckdb._register_gold_views", lambda con: None)
