@@ -24,9 +24,10 @@ review items P2.30/P2.32) read to know which datasets support honest historical
   `publishTime`); `available_at` is a genuine "when this was knowable" instant.
 - **unverified vintage** — `published_at` is mechanically wired from the ENTSO-E
   document `createdDateTime`, but that field's provenance for this document family
-  is unconfirmed (submission-time vs. serialization-time). Pending an authorized
-  live-sample check comparing `createdDateTime` to the bronze sidecar `fetched_at`.
-  Treat as ingest-grade until verified.
+  is unconfirmed (submission-time vs. serialization-time).
+  **RESOLVED 2026-07-26 (C-13 probe): request/serialization artifact** — see the
+  ENTSO-E section and "Upgrade path (resolved)" below. Label resolves to
+  ingest-grade per the pre-committed rule.
 - **ingest-time fallback** — no vendor stamp is emitted (the feed has none, or the
   transformer consumes `publishTime` as its event/timestamp axis rather than
   emitting `published_at`); `available_at` is the ingest/reingest clock, honestly.
@@ -52,8 +53,8 @@ split by whether `createdDateTime` is an established vendor vintage.
 | Dataset(s) | Fidelity | Notes |
 |---|---|---|
 | generation_forecast, load_forecast, load_forecast_weekly, load_forecast_monthly, load_forecast_yearly, wind_solar_forecast | **true vintage** | forecast issue-time; established semantics. |
-| day_ahead_prices, forecast_margin, contracted_reserves, net_transfer_capacity, installed_capacity, installed_capacity_units | **true vintage** | ex-ante / day-ahead products; `installed_capacity*` noted "thin spread — annual cadence". |
-| actual_load, actual_generation, actual_generation_units, cross_border_flows, imbalance_prices, imbalance_volume, activated_balancing_prices, activated_balancing_qty, outages_generation, water_reservoirs; the 4 outages (h7) datasets; the 15 transmission/market (h6) datasets; the 6 balancing (h8) datasets | **unverified (createdDateTime provenance unconfirmed — pending an authorized live-sample check)** | observational / mixed families. Wired mechanically (safe), but whether `createdDateTime` is a genuine publication vintage or a request/serialization artifact is unverifiable locally (no ENTSO-E bronze on disk; fixtures are synthetic). Do NOT treat as leakage-safe until the live check upgrades the label. |
+| day_ahead_prices, forecast_margin, contracted_reserves, net_transfer_capacity, installed_capacity, installed_capacity_units | **true vintage — CAVEAT measured 2026-07-26** | ex-ante / day-ahead products; `installed_capacity*` noted "thin spread — annual cadence". **Caveat:** the C-13 probe ran on A44 (day_ahead_prices) itself and proved the ENVELOPE `createdDateTime` is request-generated. The issue-time reading therefore holds only under prompt periodic ingest (fetch ≈ publication); a backfilled `published_at` is fetch-time for these rows too. Per-family re-derivation of these labels is filed as v0.18 N-3. |
+| actual_load, actual_generation, actual_generation_units, cross_border_flows, imbalance_prices, imbalance_volume, activated_balancing_prices, activated_balancing_qty, outages_generation, water_reservoirs; the 4 outages (h7) datasets; the 15 transmission/market (h6) datasets; the 6 balancing (h8) datasets | **ingest-grade (RESOLVED 2026-07-26 — request artifact, measured)** | observational / mixed families. The authorized C-13 probe (see Upgrade path) measured the API envelope `createdDateTime` as a **per-request generation stamp**, so `published_at` for these families is fetch-time: an acceptable publication proxy ONLY under prompt periodic ingest, never for backfills. Do NOT treat backfilled `published_at` as vendor publication history. |
 | generation_units_master_data | ingest-time fallback (structural) | its parser carries no `createdDateTime` field; deliberately NOT wired. |
 
 ## Open-Meteo
@@ -62,15 +63,24 @@ split by whether `createdDateTime` is an established vendor vintage.
 |---|---|---|
 | all Open-Meteo datasets | ingest-time fallback | the API exposes no document-level publication timestamp; no coalesce input exists. |
 
-## Upgrade path
+## Upgrade path — RESOLVED 2026-07-26 (C-13 probe)
 
-The **unverified** ENTSO-E families upgrade to **true vintage** with one authorized
-live-sample check per document family: fetch one live document, compare its
-`createdDateTime` to the bronze sidecar `fetched_at`/`written_at`. A distinct,
-plausibly-earlier `createdDateTime` confirms a genuine vendor vintage; a value that
-tracks fetch time indicates a request/serialization artifact (label stays
-ingest-grade). No live ingestion was performed for this table — labels are honest,
-conservative, and revisable.
+The rule pre-committed here was: "a value that tracks fetch time indicates a
+request/serialization artifact (label stays ingest-grade)." The authorized probe
+(2026-07-26, orchestrator-run, no bronze written) applied an equivalent-or-stronger
+protocol: two A44 fetches of the SAME historical window (DE-LU, 2024-01-15), 32
+seconds apart. Result: **identical price payload, but a fresh `mRID` and a moving
+`createdDateTime` (14:06:41Z → 14:07:13Z) each time** — the API generates the
+document per request and stamps it with the request clock. For a January-2024
+window fetched in July 2026, `createdDateTime` was the fetch moment, not any 2024
+publication instant.
+
+Consequences: the **unverified** families above resolve to **ingest-grade** per the
+pre-committed rule (not upgraded — resolved downward, honestly). The
+**true-vintage** ENTSO-E rows keep their label only under the prompt-ingest
+reading (fetch ≈ publication); their per-family re-derivation is v0.18 N-3.
+Elexon labels are unaffected (`publishTime` is an in-payload vendor field, not an
+envelope stamp).
 
 Downstream: P2.30 (per-fold publication cutoff) and P2.32 (tie-break dedupe on
 `available_at` / `published_at`) consume the **true vintage** column — do not weaken
