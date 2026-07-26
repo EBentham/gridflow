@@ -2381,6 +2381,17 @@ class TestImbalancePricesTransformer:
     def test_empty_input(self):
         assert self.t.transform(pl.DataFrame()).is_empty()
 
+    def test_published_at_equals_document_vintage(self):
+        """F-02: the column-dropping select must not precede with_published_at
+        — value-level check, not just column presence."""
+        raw = _make_df_from_xml("imbalance_prices_gb.xml", "price.amount")
+        result = self.t.transform(raw)
+        assert "published_at" in result.columns
+        assert result["published_at"].dtype == pl.Datetime("us", "UTC")
+        assert result["published_at"].null_count() == 0
+        assert set(result["published_at"].to_list()) == {_VINTAGE}
+        assert result["published_at"].to_list() != result["ingested_at"].to_list()
+
 
 # ---------------------------------------------------------------------------
 # Phase 3 — ImbalanceVolumeTransformer
@@ -2434,6 +2445,17 @@ class TestImbalanceVolumeTransformer:
 
     def test_empty_input(self):
         assert self.t.transform(pl.DataFrame()).is_empty()
+
+    def test_published_at_equals_document_vintage(self):
+        """F-02: the column-dropping select must not precede with_published_at
+        — value-level check, not just column presence."""
+        raw = _make_df_from_xml("imbalance_volume_gb.xml", "quantity")
+        result = self.t.transform(raw)
+        assert "published_at" in result.columns
+        assert result["published_at"].dtype == pl.Datetime("us", "UTC")
+        assert result["published_at"].null_count() == 0
+        assert set(result["published_at"].to_list()) == {_VINTAGE}
+        assert result["published_at"].to_list() != result["ingested_at"].to_list()
 
 
 # ---------------------------------------------------------------------------
@@ -2500,6 +2522,17 @@ class TestActivatedBalancingQtyTransformer:
     def test_empty_input(self):
         assert self.t.transform(pl.DataFrame()).is_empty()
 
+    def test_published_at_equals_document_vintage(self):
+        """F-02: the column-dropping select must not precede with_published_at
+        — value-level check, not just column presence."""
+        raw = _make_df_from_xml("activated_balancing_qty_gb.xml", "quantity")
+        result = self.t.transform(raw)
+        assert "published_at" in result.columns
+        assert result["published_at"].dtype == pl.Datetime("us", "UTC")
+        assert result["published_at"].null_count() == 0
+        assert set(result["published_at"].to_list()) == {_VINTAGE}
+        assert result["published_at"].to_list() != result["ingested_at"].to_list()
+
 
 # ---------------------------------------------------------------------------
 # Phase 3 — ActivatedBalancingPricesTransformer
@@ -2565,6 +2598,17 @@ class TestActivatedBalancingPricesTransformer:
     def test_empty_input(self):
         assert self.t.transform(pl.DataFrame()).is_empty()
 
+    def test_published_at_equals_document_vintage(self):
+        """F-02: the column-dropping select must not precede with_published_at
+        — value-level check, not just column presence."""
+        raw = _make_df_from_xml("activated_balancing_prices_gb.xml", "price.amount")
+        result = self.t.transform(raw)
+        assert "published_at" in result.columns
+        assert result["published_at"].dtype == pl.Datetime("us", "UTC")
+        assert result["published_at"].null_count() == 0
+        assert set(result["published_at"].to_list()) == {_VINTAGE}
+        assert result["published_at"].to_list() != result["ingested_at"].to_list()
+
 
 # ---------------------------------------------------------------------------
 # Phase 3 — ContractedReservesTransformer
@@ -2628,6 +2672,17 @@ class TestContractedReservesTransformer:
 
     def test_empty_input(self):
         assert self.t.transform(pl.DataFrame()).is_empty()
+
+    def test_published_at_equals_document_vintage(self):
+        """F-02: the column-dropping select must not precede with_published_at
+        — value-level check, not just column presence."""
+        raw = _make_df_from_xml("contracted_reserves_gb.xml", "quantity")
+        result = self.t.transform(raw)
+        assert "published_at" in result.columns
+        assert result["published_at"].dtype == pl.Datetime("us", "UTC")
+        assert result["published_at"].null_count() == 0
+        assert set(result["published_at"].to_list()) == {_VINTAGE}
+        assert result["published_at"].to_list() != result["ingested_at"].to_list()
 
 
 # ---------------------------------------------------------------------------

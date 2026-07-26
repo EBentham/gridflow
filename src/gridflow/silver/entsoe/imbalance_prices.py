@@ -57,33 +57,38 @@ class ImbalancePricesTransformer(BaseSilverTransformer):
             return pl.DataFrame()
 
         now = datetime.now(UTC)
+        df = raw_df.rename(
+            {
+                "value": "price_eur_mwh",
+                "control_area_domain": "area_code",
+            }
+        ).with_columns(
+            [
+                pl.col("business_type")
+                .replace_strict(
+                    {"A19": "long", "A20": "short"},
+                    default=UNMAPPED_SENTINEL,
+                    return_dtype=pl.Utf8,
+                )
+                .alias("direction"),
+                # ENPRICE-04 (VT4): carry the explicit source currency
+                # (parsed from <currency_Unit.name>) so a GBP price is never
+                # silently trusted as EUR on the strength of the
+                # `price_eur_mwh` column name alone. Mirrors day_ahead_prices.
+                # Empty -> "EUR" fallback only when the source omitted
+                # currency_Unit (continental default). Derived here, while
+                # `currency_unit` is still in scope before the select() below.
+                currency_expr(raw_df).alias("currency"),
+            ]
+        )
+
+        # F-02 fix: derive published_at from document_created_at BEFORE the
+        # column-dropping select below, which otherwise discards
+        # document_created_at and forces the typed-null branch permanently.
+        df = with_published_at(df)
+
         df = (
-            raw_df.rename(
-                {
-                    "value": "price_eur_mwh",
-                    "control_area_domain": "area_code",
-                }
-            )
-            .with_columns(
-                [
-                    pl.col("business_type")
-                    .replace_strict(
-                        {"A19": "long", "A20": "short"},
-                        default=UNMAPPED_SENTINEL,
-                        return_dtype=pl.Utf8,
-                    )
-                    .alias("direction"),
-                    # ENPRICE-04 (VT4): carry the explicit source currency
-                    # (parsed from <currency_Unit.name>) so a GBP price is never
-                    # silently trusted as EUR on the strength of the
-                    # `price_eur_mwh` column name alone. Mirrors day_ahead_prices.
-                    # Empty -> "EUR" fallback only when the source omitted
-                    # currency_Unit (continental default). Derived here, while
-                    # `currency_unit` is still in scope before the select() below.
-                    currency_expr(raw_df).alias("currency"),
-                ]
-            )
-            .select(
+            df.select(
                 [
                     "timestamp_utc",
                     "area_code",
@@ -91,6 +96,7 @@ class ImbalancePricesTransformer(BaseSilverTransformer):
                     "price_eur_mwh",
                     "currency",
                     "resolution",
+                    "published_at",
                 ]
             )
             .unique(subset=["timestamp_utc", "area_code", "direction"], keep="last")
@@ -103,9 +109,6 @@ class ImbalancePricesTransformer(BaseSilverTransformer):
                 ]
             )
         )
-
-        # ADR-025 P1.1: carry the document publication vintage (createdDateTime) as published_at.
-        df = with_published_at(df)
 
         output_cols = [
             "timestamp_utc",
