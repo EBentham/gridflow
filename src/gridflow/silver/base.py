@@ -75,15 +75,18 @@ through ``silver.elexon.__init__`` — see that method's docstring).
 
 @dataclass(frozen=True)
 class _PublicationWindowPlan:
-    """Per-``run()`` inputs for
-    :meth:`BaseSilverTransformer._apply_publication_window_filter`.
+    """Per-``run()`` inputs for the request-window filter, shared by both
+    Elexon's publication-window filter
+    (:meth:`BaseSilverTransformer._apply_publication_window_filter`, Task 2)
+    and ENTSO-E's event-window filter
+    (:meth:`BaseSilverTransformer._apply_event_window_filter`, Task 4 / F-10).
 
     Resolved once per ``run()`` call from the CURRENT partition's own
     sidecars (D-7e, all-or-nothing) — cheap and IO-bounded to this one
-    partition. The neighbour-durability proof (D-3b, extra IO against the
-    successor partition) is deliberately NOT resolved here: it is deferred
+    partition. The neighbour-durability proof (D-3b, extra IO against a
+    neighbour partition) is deliberately NOT resolved here: it is deferred
     until the transformed frame is known to actually have a row sitting at
-    the boundary (R-10's short-circuit), which needs the frame, not just the
+    a boundary (R-10's short-circuit), which needs the frame, not just the
     partition directory.
     """
 
@@ -91,6 +94,12 @@ class _PublicationWindowPlan:
     window: RequestWindow
     from_param: str
     to_param: str
+    enforce_lower_bound: bool = False
+    """D-3: Elexon (default ``False``) never enforces its lower bound at
+    all. ENTSO-E (``True``, set only by
+    :meth:`BaseSilverTransformer._resolve_event_window_plan`) enforces BOTH
+    bounds under D-3d's per-instant durability proof, because a trimmed row
+    is re-homed in an adjacent UTC-day partition on either side."""
 
 
 def gas_day_event_time_expr(column: str = "gas_day") -> pl.Expr:
@@ -170,10 +179,14 @@ class BaseSilverTransformer(ABC):
     written — the count is the only signal (fail-soft).
     """
     last_partition_filter_dropped_count: int = 0
-    """Rows dropped by the partition-window filter in the most recent ``run()``
-    (R2-A / F-04). Reset to 0 at the start of every ``run()``. Only nonzero for
-    sources in ``_PUBLICATION_WINDOW_FILTER_SOURCES`` with an in-scope,
-    resolvable dataset — see ``_apply_publication_window_filter``.
+    """Rows dropped by the request-window filter in the most recent ``run()``
+    (R2-A / F-04, F-10). Reset to 0 at the start of every ``run()``. Nonzero
+    for sources in ``_PUBLICATION_WINDOW_FILTER_SOURCES`` with an in-scope,
+    resolvable dataset (``_apply_publication_window_filter``) OR a
+    transformer with ``EVENT_WINDOW_FILTER = True``
+    (``_apply_event_window_filter``) — the two filters share these counters
+    since they are the same underlying primitive (``partition_window.py``)
+    applied to two different sources/dimensions.
     """
     last_partition_filter_unclassified_count: int = 0
     """Rows whose filter-dimension value was null (unclassifiable) in the most
@@ -193,6 +206,22 @@ class BaseSilverTransformer(ABC):
     attempted but could not be proven (D-3b/D-3e) — the failing
     ``WindowReason`` is always logged alongside this count, never just the
     number (A-3/A-12). Reset to 0 at the start of every ``run()``.
+    """
+    EVENT_WINDOW_FILTER: ClassVar[bool] = False
+    """Opt-in, PER TRANSFORMER (D-6 — contrast with Elexon's source-scoped
+    ``_PUBLICATION_WINDOW_FILTER_SOURCES``), to the ENTSO-E event-window
+    filter (R2-A Task 4 / F-10). Default ``False``. When ``True``, ``run()``
+    resolves the CURRENT partition's own ``[periodStart, periodEnd)`` request
+    window (same D-7e all-or-nothing pairing rule as the publication-window
+    filter) and trims ``timestamp_utc`` rows outside it under BOTH bounds'
+    neighbour-durability proof: D-3b for the upper bound (successor
+    partition) and D-3d for the lower bound, resolved PER INSTANT — never per
+    calendar date, since ``day_subwindows`` clamps sub-windows at range edges
+    (``utils/time.py:130-131``), so two below-bound instants on the same UTC
+    date can have different ownership. See
+    ``silver/entsoe/_event_window.py`` for the 7-dataset opt-in list and the
+    exemption table with reasons. **D-9: this closes F-10 for the 7 opted-in
+    datasets only — not repo-wide.**
     """
     DATASET_VERSION: ClassVar[str] = "1.0.0"
     BRONZE_SIBLING_DATASETS: ClassVar[tuple[str, ...]] = ()
@@ -311,7 +340,14 @@ class BaseSilverTransformer(ABC):
         frames: list[pl.DataFrame] = []
         saw_bronze = False
 
-        window_plan = self._resolve_publication_window_plan(target_date)
+        # Mutually exclusive: a transformer is either an Elexon in-scope
+        # dataset (source-scoped, D-6) or an ENTSO-E opt-in
+        # (EVENT_WINDOW_FILTER, per-transformer, D-6) — never both, since
+        # _PUBLICATION_WINDOW_FILTER_SOURCES is elexon-only and
+        # EVENT_WINDOW_FILTER defaults False for every Elexon transformer.
+        window_plan = self._resolve_publication_window_plan(
+            target_date
+        ) or self._resolve_event_window_plan(target_date)
 
         if self.VINTAGE_PER_BRONZE_FILE:
             # EXACT date partition only — the covering-partition fallback in
@@ -397,7 +433,11 @@ class BaseSilverTransformer(ABC):
             return None
 
         if window_plan is not None:
-            clean_df = self._apply_publication_window_filter(clean_df, window_plan, target_date)
+            clean_df = (
+                self._apply_event_window_filter(clean_df, window_plan, target_date)
+                if window_plan.enforce_lower_bound
+                else self._apply_publication_window_filter(clean_df, window_plan, target_date)
+            )
             if clean_df.is_empty():
                 # D-5's refusal never empties an otherwise non-empty frame, so
                 # reaching an empty frame here means the ORIGINAL transform()
@@ -587,6 +627,177 @@ class BaseSilverTransformer(ABC):
         if result.retained_reasons:
             logger.warning(
                 "Partition-window filter: %d row(s) retained at an unproven "
+                "boundary for %s/%s on %s: %s",
+                result.boundary_retained,
+                self.source,
+                self.dataset,
+                target_date,
+                result.retained_reasons,
+            )
+
+        return result.frame
+
+    def _resolve_event_window_plan(self, target_date: date) -> _PublicationWindowPlan | None:
+        """Resolve the CURRENT partition's request window for the ENTSO-E
+        event-window filter (Task 4 / F-10).
+
+        ``None`` (filtering disabled, no-op) when ``EVENT_WINDOW_FILTER`` is
+        ``False`` (the default — D-6, opt-in PER TRANSFORMER, unlike
+        Elexon's source-scoped constant) or when the CURRENT partition's own
+        window could not be resolved (D-7e: an orphan raw body, an invalid
+        sidecar, or an unparseable bound) — counted into
+        ``last_partition_filter_unresolved_count`` and logged ``WARNING``
+        with the failing reason, never silently narrowed to "filter what we
+        can". Params are always ``("periodStart", "periodEnd")`` and the
+        dimension is always ``timestamp_utc`` (D-1) — no per-dataset
+        overrides, unlike Elexon's ``remit`` column override.
+        """
+        if not self.EVENT_WINDOW_FILTER:
+            return None
+
+        from_param, to_param = "periodStart", "periodEnd"
+        partition_dir = (
+            self.bronze_dir
+            / str(target_date.year)
+            / f"{target_date.month:02d}"
+            / f"{target_date.day:02d}"
+        )
+        window, reason = partition_request_window(
+            partition_dir,
+            from_param,
+            to_param,
+            expect_source=self.source,
+            expect_dataset=self.dataset,
+        )
+        if window is None:
+            self.last_partition_filter_unresolved_count += 1
+            logger.warning(
+                "Event-window filter unresolved for %s/%s on %s (%s); "
+                "filtering disabled for this partition (all-or-nothing, D-7e)",
+                self.source,
+                self.dataset,
+                target_date,
+                reason,
+            )
+            return None
+
+        return _PublicationWindowPlan(
+            column="timestamp_utc",
+            window=window,
+            from_param=from_param,
+            to_param=to_param,
+            enforce_lower_bound=True,
+        )
+
+    def _apply_event_window_filter(
+        self,
+        df: pl.DataFrame,
+        plan: _PublicationWindowPlan,
+        target_date: date,
+    ) -> pl.DataFrame:
+        """Trim ``df`` to ``plan.window`` under BOTH bounds' durability
+        proofs — the ENTSO-E event-window filter (Task 4 / F-10). Unlike
+        Elexon's upper-only trim (D-3), ENTSO-E enforces both bounds because
+        a trimmed row is re-homed in an adjacent UTC-day partition on either
+        side.
+
+        D-7(c): an absent filter column is FAIL-LOUD, the same contract as
+        :meth:`_apply_publication_window_filter`.
+
+        The upper-bound ownership check is short-circuited entirely when no
+        row sits at or after ``plan.window.end`` (R-10). The lower bound is
+        resolved PER DISTINCT below-window instant (D-3d — never per date):
+        the caller (here) computes the distinct below-``window.start``
+        values and calls ``neighbour_owns`` once per distinct value,
+        memoized in a plain dict so a repeated instant (e.g. the same
+        ``timestamp_utc`` shared across many zones/production types) costs
+        one IO resolution rather than one per row — short-circuited
+        entirely when no row sits below ``plan.window.start``.
+        """
+        if plan.column not in df.columns:
+            raise ValueError(
+                f"{self.source}/{self.dataset}: event-window filter column "
+                f"{plan.column!r} is absent from transform() output. Declare an "
+                "exemption in EVENT_WINDOW_FILTER_EXEMPT "
+                "(silver/entsoe/_event_window.py) or unset EVENT_WINDOW_FILTER."
+            )
+
+        has_boundary_rows = df.filter(pl.col(plan.column) >= plan.window.end).height > 0
+        if has_boundary_rows:
+            upper_bound_ownership = neighbour_owns(
+                self.bronze_dir,
+                plan.window.end,
+                plan.from_param,
+                plan.to_param,
+                expect_source=self.source,
+                expect_dataset=self.dataset,
+            )
+        else:
+            upper_bound_ownership = OwnershipVerdict(False, WindowReason.NOT_RESOLVED)
+
+        below_start_instants = (
+            df.filter(pl.col(plan.column) < plan.window.start)
+            .select(plan.column)
+            .unique()
+            .to_series()
+            .to_list()
+        )
+        lower_bound_ownership: dict[datetime, OwnershipVerdict] = {}
+        for instant in below_start_instants:
+            if instant is None:
+                continue  # Null values are unclassified (D-7d), not a lower-bound instant.
+            lower_bound_ownership[instant] = neighbour_owns(
+                self.bronze_dir,
+                instant,
+                plan.from_param,
+                plan.to_param,
+                expect_source=self.source,
+                expect_dataset=self.dataset,
+            )
+
+        result = filter_frame_to_window(
+            df,
+            plan.column,
+            plan.window,
+            upper_bound_ownership=upper_bound_ownership,
+            lower_bound_ownership=lower_bound_ownership,
+        )
+
+        self.last_partition_filter_dropped_count += result.dropped
+        self.last_partition_filter_unclassified_count += result.unclassified
+        self.last_partition_filter_boundary_retained_count += result.boundary_retained
+
+        if result.refused:
+            logger.error(
+                "Event-window filter would drop the entire %s/%s frame for "
+                "%s; keeping every row instead (D-5 refusal)",
+                self.source,
+                self.dataset,
+                target_date,
+            )
+        if result.dropped:
+            logger.warning(
+                "Event-window filter dropped %d row(s) for %s/%s on %s: a "
+                "durable covering chunk in a neighbour partition owns the "
+                "boundary instant(s)",
+                result.dropped,
+                self.source,
+                self.dataset,
+                target_date,
+            )
+        if result.unclassified:
+            logger.warning(
+                "Event-window filter: %d row(s) with an unparseable/null %s "
+                "could not be classified and were kept for %s/%s on %s",
+                result.unclassified,
+                plan.column,
+                self.source,
+                self.dataset,
+                target_date,
+            )
+        if result.retained_reasons:
+            logger.warning(
+                "Event-window filter: %d row(s) retained at an unproven "
                 "boundary for %s/%s on %s: %s",
                 result.boundary_retained,
                 self.source,

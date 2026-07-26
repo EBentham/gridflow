@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from datetime import UTC, date, datetime
-from typing import Any
+from typing import Any, ClassVar
 
 import polars as pl
 
@@ -23,6 +23,9 @@ class DayAheadPricesTransformer(BaseSilverTransformer):
     source = "entsoe"
     dataset = "day_ahead_prices"
     schema_cls = EntsoeDayAheadPrice
+    EVENT_WINDOW_FILTER: ClassVar[bool] = True
+    """R2-A Task 4 / F-10: the probe-proven over-span case (plan S1.4) --
+    opted in first, see ``silver/entsoe/_event_window.py``."""
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         bronze_path = self._bronze_path_for_date(target_date)
