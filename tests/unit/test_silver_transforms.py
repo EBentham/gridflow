@@ -439,6 +439,47 @@ class TestFuelHHTransformer:
         assert result["published_at"].null_count() == 0
         assert result["published_at"].dtype == pl.Datetime("us", "UTC")
 
+    def test_published_at_from_publish_time_field(self):
+        """F-03: bronze has carried the publication vintage under `publishTime`
+        (live-shaped payload), not just `publishDateTime`. Before the fix, only
+        `publishDateTime` was mapped, so `publishTime`-shaped rows silently
+        nulled published_at (29,400/29,400 on-disk rows affected)."""
+        raw = pl.DataFrame(
+            [
+                {
+                    "settlementDate": "2026-05-08",
+                    "settlementPeriod": 1,
+                    "fuelType": "CCGT",
+                    "generation": 12500.5,
+                    "publishTime": "2026-05-08T00:30:00Z",
+                },
+            ]
+        )
+        result = self.t.transform(raw)
+        assert not result.is_empty()
+        assert "published_at" in result.columns
+        assert result["published_at"].null_count() == 0
+        assert result["published_at"].dtype == pl.Datetime("us", "UTC")
+        assert result["published_at"][0] == datetime(2026, 5, 8, 0, 30, tzinfo=UTC)
+
+    def test_published_at_prefers_publish_date_time_when_both_present(self):
+        """If bronze ever carries both field names on the same row,
+        publishDateTime (the documented field) wins via coalesce order."""
+        raw = pl.DataFrame(
+            [
+                {
+                    "settlementDate": "2026-05-08",
+                    "settlementPeriod": 1,
+                    "fuelType": "CCGT",
+                    "generation": 12500.5,
+                    "publishDateTime": "2026-05-08T00:30:00Z",
+                    "publishTime": "2026-05-08T00:00:00Z",
+                },
+            ]
+        )
+        result = self.t.transform(raw)
+        assert result["published_at"][0] == datetime(2026, 5, 8, 0, 30, tzinfo=UTC)
+
 
 # ---------------------------------------------------------------------------
 # BOAL

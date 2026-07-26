@@ -60,12 +60,22 @@ class FuelHHTransformer(BaseSilverTransformer):
             "settlementPeriod": "settlement_period",
             "fuelType": "fuel_type",
             "generation": "generation_mw",
-            "publishDateTime": "published_at",
             "startTimeOfHalfHrPeriod": "start_time",
         }
         rename_map = {k: v for k, v in column_mapping.items() if k in raw_df.columns}
         if rename_map:
             raw_df = raw_df.rename(rename_map)
+
+        # F-03: FUELHH bronze responses have carried the publication vintage
+        # under either `publishDateTime` OR `publishTime` depending on vendor
+        # response shape. Mapping only `publishDateTime` silently nulled
+        # published_at for every `publishTime`-shaped payload (29,400/29,400
+        # on-disk rows). Coalesce both raw field names into `published_at`.
+        publish_cols = [c for c in ("publishDateTime", "publishTime") if c in raw_df.columns]
+        if publish_cols:
+            raw_df = raw_df.with_columns(
+                pl.coalesce([pl.col(c) for c in publish_cols]).alias("published_at")
+            )
 
         required = ["settlement_date", "settlement_period", "fuel_type", "generation_mw"]
         missing = [c for c in required if c not in raw_df.columns]
