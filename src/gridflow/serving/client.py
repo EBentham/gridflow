@@ -11,9 +11,11 @@ import duckdb
 from gridflow.silver.schema_manifest import BITEMPORAL_EXCLUDE
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
     from datetime import date
 
     import polars as pl
+
 
 # WHY: the F0 silver-layer convention adds these bitemporal / partitioning
 # columns to every silver parquet view. The user-facing get_* helpers hide
@@ -28,6 +30,13 @@ if TYPE_CHECKING:
 # present in the queried relation (see _present_bitemporal_exclude_clause). A
 # new public column on either layer still flows through automatically.
 _BITEMPORAL_EXCLUDE = BITEMPORAL_EXCLUDE
+
+# WHY (R1-A, F-01): ADR-025 makes available_at the vintage discriminator for
+# APPEND_ONLY datasets. A caller reading a vintage-collapsed relation with no
+# available_at column cannot tell which vintage it is holding, so the two
+# system_prices-derived read paths retain it against the general bitemporal
+# EXCLUDE (see _present_bitemporal_exclude_clause's retain= parameter).
+_VINTAGE_VISIBLE: tuple[str, ...] = ("available_at",)
 
 
 class GridflowClient:
@@ -75,7 +84,9 @@ class GridflowClient:
         """Execute a SQL query and return results as a Polars DataFrame."""
         return self._require_con().sql(sql).pl()
 
-    def _present_bitemporal_exclude_clause(self, relation: str) -> str:
+    def _present_bitemporal_exclude_clause(
+        self, relation: str, *, retain: Sequence[str] = ()
+    ) -> str:
         """Build a ``SELECT *`` EXCLUDE clause for one relation's bitemporal columns.
 
         Introspects the relation's columns via ``information_schema.columns`` and
@@ -87,10 +98,16 @@ class GridflowClient:
 
         Args:
             relation: The unqualified view/table name the caller SELECTs from.
+            retain: Bitemporal column(s) to keep VISIBLE despite being present —
+                e.g. ``available_at`` on the vintage-collapsed ``system_prices``
+                read paths (ADR-025, R1-A/F-01): a caller reading a collapsed
+                relation with no vintage discriminator cannot tell which vintage
+                it is holding. Converted to a set internally; the emitted clause
+                still preserves :data:`_BITEMPORAL_EXCLUDE` order.
 
         Returns:
             ``" EXCLUDE (col, ...)"`` (leading space, identifier-quoted) when one or
-            more bitemporal columns are present, else ``""``.
+            more bitemporal columns are present and not retained, else ``""``.
         """
         # WHY: parameterised SQL only — the relation name binds as data against
         # information_schema rather than being interpolated into the query text.
@@ -103,8 +120,9 @@ class GridflowClient:
             )
             .fetchall()
         }
+        retained = set(retain)
         # Preserve _BITEMPORAL_EXCLUDE order for a stable, readable clause.
-        to_exclude = [col for col in _BITEMPORAL_EXCLUDE if col in present]
+        to_exclude = [col for col in _BITEMPORAL_EXCLUDE if col in present and col not in retained]
         if not to_exclude:
             return ""
         # WHY: column names come from the curated catalogue, not user input, but
@@ -119,15 +137,34 @@ class GridflowClient:
     ) -> pl.DataFrame:
         """Get system sell/buy prices for a date range.
 
-        Returns a Polars DataFrame with the live silver_elexon_system_prices
-        public schema (bitemporal / partitioning columns excluded). The
-        column set is what the silver transformer publishes today; new
-        columns added to the silver layer surface here automatically.
+        Reads ``silver_elexon_system_prices_latest`` (R1-A/F-01), so this
+        returns exactly one row per ``(settlement_date, settlement_period)`` —
+        the winning vintage by ``available_at`` then settlement-run rank
+        (ADR-025 §2), even with 2+ vintages on disk.
+
+        ``available_at`` is returned as the winning vintage's provenance
+        stamp. Filtering it (``available_at <= as_of``) is a **fail-closed
+        cutoff, not historical point-in-time selection**: an ``as_of`` that
+        falls between vintages returns nothing for that key rather than the
+        value that was current then (ADR-025:117-120). A consumer needing
+        genuine historical PIT must query the **all-vintage** surface —
+        ``silver_elexon_system_prices``, or the deprecated
+        ``silver_system_prices`` alias, both of which still return every
+        vintage by design — and apply ``available_at <= as_of`` **then
+        latest-of-survivors**. That primitive is consumer-side
+        (gridflow_models) and is not built here.
+
+        Fails loud, deliberately: if ``silver_elexon_system_prices_latest`` is
+        absent (a stale catalogue, or the view dropped on key-column drift)
+        this raises ``duckdb.CatalogException`` rather than silently falling
+        back to the all-vintage base view and serving stacked vintages. Run
+        ``gridflow init`` / refresh the catalogue if this occurs.
         """
-        exclude = self._present_bitemporal_exclude_clause("silver_elexon_system_prices")
+        relation = "silver_elexon_system_prices_latest"
+        exclude = self._present_bitemporal_exclude_clause(relation, retain=_VINTAGE_VISIBLE)
         sql = (
             "SELECT *" + exclude + " "
-            "FROM silver_elexon_system_prices "
+            f"FROM {relation} "
             "WHERE settlement_date BETWEEN ? AND ? "
             "ORDER BY timestamp_utc"
         )
@@ -250,11 +287,25 @@ class GridflowClient:
 
         Returns a Polars DataFrame with the gold_uk_imbalance_context public
         schema. That gold view is an explicit-column cross-source SQL view
-        (joining silver_elexon_system_prices and silver_neso_carbon_intensity)
-        carrying no bitemporal / partitioning columns, so none are excluded
-        here; new columns added to the view surface here automatically.
+        (joining silver_elexon_system_prices_latest and
+        silver_neso_carbon_intensity) carrying no bitemporal / partitioning
+        columns other than the deliberately-projected ``available_at``
+        (R1-A/F-01); new columns added to the view surface here
+        automatically.
+
+        ``available_at`` is the winning PRICE vintage's provenance stamp — it
+        does not gate the carbon-intensity columns (see the view's leakage
+        comment for the carbon-intensity realised/forecast distinction).
+        Filtering it (``available_at <= as_of``) is a **fail-closed cutoff,
+        not historical point-in-time selection**: an ``as_of`` between
+        vintages returns nothing for that key rather than the value current
+        then (ADR-025:117-120). Genuine historical PIT needs the all-vintage
+        silver surfaces followed by ``available_at <= as_of`` then
+        latest-of-survivors — consumer-side, not built here.
         """
-        exclude = self._present_bitemporal_exclude_clause("gold_uk_imbalance_context")
+        exclude = self._present_bitemporal_exclude_clause(
+            "gold_uk_imbalance_context", retain=_VINTAGE_VISIBLE
+        )
         sql = (
             "SELECT *" + exclude + " "
             "FROM gold_uk_imbalance_context "
