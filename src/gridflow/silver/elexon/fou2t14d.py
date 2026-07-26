@@ -23,7 +23,12 @@ class FOU2T14DTransformer(BaseSilverTransformer):
     F7 makes the dataset append-only: each daily run writes a run-suffixed
     file so revised forward availability forecasts coexist with prior runs.
     Silver retains EVERY vendor publication that bronze carries for a key
-    (F-06, v0.18 R1-C); latest-vintage selection is a read-time concern,
+    (F-06, v0.18 R1-C). The dedup key includes ``published_at``
+    UNCONDITIONALLY — deliberately diverging from the presence-guarded
+    siblings (``demand_forecast``, ``wind_forecast``): if the column ever
+    drifts out of the output, this transformer raises loudly rather than
+    silently reverting to the vintage-collapsing business-key dedup that
+    F-06 fixed. Latest-vintage selection is a read-time concern,
     served by ``silver_elexon_fou2t14d_latest`` (``latest_views.py:104-107``,
     ADR-025 §2) and by the models-side ``latest_only``/``partition_columns``
     fetch (see ADR-019 in the gridflow_models repo).
