@@ -97,9 +97,16 @@ class SystemPriceTransformer(BaseSilverTransformer):
         if rename_map:
             raw_df = raw_df.rename(rename_map)
 
-        # Ensure required columns exist (run_type and price_derivation_code
-        # are both optional — depend on which Elexon endpoint produced
-        # the bronze).
+        # Ensure required columns exist. run_type and price_derivation_code are
+        # optional at the RAW-FIELD layer only — depend on which Elexon
+        # endpoint produced the bronze (settlementRunType / priceDerivationCode
+        # may each be absent). The SILVER columns are NOT optional (F-13):
+        # gold/views/uk_imbalance_context.sql SELECTs price_derivation_code
+        # unconditionally, so a raw-field absence must not silently drop the
+        # silver column the view depends on. schemas/elexon.py:48-49 already
+        # declares both as `str | None = None`, so always emitting them
+        # (typed-null when absent) moves physical output TOWARD the declared
+        # contract, not away from it.
         required = [
             "settlement_date",
             "settlement_period",
@@ -112,18 +119,25 @@ class SystemPriceTransformer(BaseSilverTransformer):
             logger.error(f"Missing required columns: {missing}")
             return pl.DataFrame()
 
-        # Cast types
+        # Inject any missing optional column as a typed-null Utf8 column
+        # BEFORE casting, so the cast below is unconditional. Never bare
+        # `pl.lit(None)`: a Null-dtype run_type makes select_latest_vintage's
+        # replace_strict raise (latent R1-F02 limb 2) — a typed Utf8 null
+        # column round-trips through parquet and that codepath cleanly.
+        for optional_col in ("run_type", "price_derivation_code"):
+            if optional_col not in raw_df.columns:
+                raw_df = raw_df.with_columns(pl.lit(None, dtype=pl.Utf8).alias(optional_col))
+
+        # Cast types (run_type / price_derivation_code always exist now).
         casts = [
             pl.col("settlement_date").cast(pl.Date),
             pl.col("settlement_period").cast(pl.Int32),
             pl.col("system_sell_price").cast(pl.Float64),
             pl.col("system_buy_price").cast(pl.Float64),
             pl.col("net_imbalance_volume").cast(pl.Float64),
+            pl.col("run_type").cast(pl.Utf8),
+            pl.col("price_derivation_code").cast(pl.Utf8),
         ]
-        if "run_type" in raw_df.columns:
-            casts.append(pl.col("run_type").cast(pl.Utf8))
-        if "price_derivation_code" in raw_df.columns:
-            casts.append(pl.col("price_derivation_code").cast(pl.Utf8))
         df = raw_df.with_columns(casts)
 
         # Derive UTC timestamp from settlement date + period
@@ -147,7 +161,13 @@ class SystemPriceTransformer(BaseSilverTransformer):
             ]
         )
 
-        # Select final columns in order
+        # Select final columns in order, UNCONDITIONALLY (F-13): run_type and
+        # price_derivation_code are always present at this point (injected
+        # typed-null above when the raw field was absent), so a drift that
+        # somehow removed one before this point now fails LOUD
+        # (ColumnNotFoundError) instead of silently narrowing the selection —
+        # that silent narrowing is precisely why the P1.5 guard could not fail
+        # before this fix.
         output_cols = [
             "settlement_date",
             "settlement_period",
@@ -160,9 +180,8 @@ class SystemPriceTransformer(BaseSilverTransformer):
             "data_provider",
             "ingested_at",
         ]
-        available_cols = [c for c in output_cols if c in df.columns]
 
-        return df.select(available_cols).sort("timestamp_utc")
+        return df.select(output_cols).sort("timestamp_utc")
 
 
 # Register this transformer

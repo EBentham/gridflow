@@ -414,3 +414,38 @@ def test_view_referenced_columns_are_carried_by_written_silver(tmp_path: Path) -
     assert not missing, (
         f"gold view references sp.{missing} but the written silver parquet does not carry it"
     )
+
+
+def test_transform_emits_optional_columns_unconditionally() -> None:
+    """AC-5 (F-13), business-column layer: transform() on bronze carrying
+    NEITHER optional raw field must still emit both silver columns as
+    typed-null Utf8 — never dropped. This is the business-column-layer
+    counterpart to test_view_referenced_columns_are_carried_by_written_silver
+    above (the write-boundary layer): together they make the P1.5 guard able
+    to fail if either layer regresses.
+    """
+    transformer = SystemPriceTransformer.__new__(SystemPriceTransformer)
+    transformer.data_dir = Path("/tmp/test")
+    transformer.bronze_dir = Path("/tmp/test/bronze/elexon/system_prices")
+    transformer.silver_dir = Path("/tmp/test/silver/elexon/system_prices")
+
+    raw = pl.DataFrame(
+        [
+            {
+                "settlementDate": "2024-01-15",
+                "settlementPeriod": 1,
+                "systemSellPrice": 44.0,
+                "systemBuyPrice": 54.0,
+                "netImbalanceVolume": -120.5,
+                # Neither settlementRunType nor priceDerivationCode present.
+            }
+        ]
+    )
+    result = transformer.transform(raw)
+
+    for col in ("run_type", "price_derivation_code"):
+        assert col in result.columns, (
+            f"F-13: {col} must be emitted even when the raw field is absent"
+        )
+        assert result[col].dtype == pl.Utf8
+        assert result[col].null_count() == result.height
