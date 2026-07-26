@@ -230,6 +230,26 @@ class BaseSilverTransformer(ABC):
     never retains an out-of-scope row, so this stays 0 for
     ``EVENT_WINDOW_FILTER`` transformers (Sol ruling 2026-07-26).
     """
+    last_partition_filter_all_dropped_count: int = 0
+    """Rows excluded by a 100%-out-of-window event-window filter drop in the
+    most recent ``run()`` (Sol re-review, 2026-07-26 — the ``all_dropped``
+    gap: performing the HALF_OPEN drop instead of D-5's CLOSED-path refusal
+    is correct, but logging it as ``ERROR`` is not a status, and a 100% drop
+    on an in-scope dataset is never a normal outcome). Reset to 0 at the
+    start of every ``run()``; incremented ONLY on the HALF_OPEN
+    (``EVENT_WINDOW_FILTER``) path when :func:`exclude_out_of_window` reports
+    ``all_dropped=True`` — never on the CLOSED (Elexon) path, which keeps
+    D-5's refusal and its ``success`` status completely unchanged. The CLI
+    (``pipeline/runner.py::run_transform``) treats a nonzero accumulated
+    total as a HARD FAILURE for the whole date range, distinct from and
+    taking priority over the ``completed_with_warnings`` path that
+    ``last_unmapped_count``/``last_validation_failure_count`` drive — a
+    misclassified opt-in must stop the run, not blend into a routine
+    warning. Deliberately NOT threaded together with the other
+    ``last_partition_filter_*`` counters (those stay deferred to N-10):
+    this one counter is the sole exceptional-outcome signal propagated by
+    this fix.
+    """
     EVENT_WINDOW_FILTER: ClassVar[bool] = False
     """Opt-in, PER TRANSFORMER (D-6 — contrast with Elexon's source-scoped
     ``_PUBLICATION_WINDOW_FILTER_SOURCES``), to the ENTSO-E event-window
@@ -384,6 +404,7 @@ class BaseSilverTransformer(ABC):
         self.last_partition_filter_unclassified_count = 0
         self.last_partition_filter_unresolved_count = 0
         self.last_partition_filter_boundary_retained_count = 0
+        self.last_partition_filter_all_dropped_count = 0
 
         resolved_run_id = run_id or f"adhoc-{datetime.now(UTC).isoformat()}"
         frames: list[pl.DataFrame] = []
@@ -797,7 +818,12 @@ class BaseSilverTransformer(ABC):
             # unconditionally), but this is also the exact signature of a
             # horizon/annual dataset opted into EVENT_WINDOW_FILTER by
             # mistake (D-5's original misclassification concern) -- logged
-            # ERROR, loud rather than silent, never retained.
+            # ERROR, loud rather than silent, never retained. A log line is
+            # not a safety net (Sol re-review, 2026-07-26): this counter is
+            # what turns it into a HARD FAILURE of the whole date-range run
+            # (pipeline/runner.py::run_transform), not merely a log a nobody
+            # reads.
+            self.last_partition_filter_all_dropped_count += result.dropped
             logger.error(
                 "Event-window filter excluded 100%% of the %s/%s frame for %s "
                 "(%d row(s)): none fall inside the partition's own recorded "
