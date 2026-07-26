@@ -680,6 +680,13 @@ def quality(
         settings.pipeline.console_log_level,
     )
 
+    # F-16 follow-up: without this, a fresh process's silver registry is empty,
+    # `_entity_key_for` always falls back to the legacy (settlement_date,
+    # settlement_period) pair, and F-16's real-entity-key fix is a no-op in
+    # production. Mirrors ingest/transform/pipeline/backfill (cli.py:288,
+    # :371, :516).
+    runner.import_transformers()
+
     reporter = QualityReporter(settings.pipeline.data_dir, settings.pipeline.duckdb_path)
     silver_dir = settings.pipeline.data_dir / "silver"
 
