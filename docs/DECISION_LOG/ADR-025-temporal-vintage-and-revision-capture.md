@@ -161,10 +161,32 @@ Two capture models were considered:
   `--incremental` revision-capture policy needs; P0.10 (watermark-advance guard +
   non-zero overlap default) is its ingest-side complement (Phase 2). This ADR
   does not itself resolve CH2-W1's scheduling policy.
-- **P1.5 gold path.** `gold_uk_imbalance_context` consumes
-  `silver_elexon_system_prices`; once APPEND_ONLY it must read the `_latest` view
-  (or apply the same QUALIFY) — handled in P1.5 alongside the
-  `run_type`/`price_derivation_code` column fix.
+- **P1.5 gold path — CORRECTED 2026-07-26 (v0.18 R1 Cycle A / F-01).** This ADR
+  required `gold_uk_imbalance_context` to read the `_latest` view once
+  `system_prices` went APPEND_ONLY. **P1.5 did not deliver it**: PR #48
+  shipped only the `sp.run_type` → `sp.price_derivation_code` SELECT/ORDER-BY
+  rename (and, as a side effect, made the view register for the first time —
+  it previously died at bind time on `sp.run_type`). The requirement was
+  dropped from the Phase-0 reconcile residual
+  (`.planning/milestones/v0.17-OPEN-ITEMS.md:42`), not at execution time —
+  noted here as the process cause, without a blame narrative.
+
+  **What actually shipped (R1-A):** `gold_uk_imbalance_context` and
+  `GridflowClient.get_system_prices` now read
+  `silver_elexon_system_prices_latest`; `available_at` is projected/returned
+  as the winning vintage's provenance stamp; and gold-view registration now
+  depends on the `_latest` view existing (fail-loud — raise under strict
+  mode, WARNING in production — rather than silently binding the all-vintage
+  base view and serving stacked vintages).
+
+  Tying this to `:117-120` above: exposing `available_at` on the collapsed
+  surface makes the vintage legible and gives callers a fail-closed cutoff
+  (`available_at <= as_of` returns nothing for an `as_of` that falls between
+  vintages); it does **not** make the gold view a point-in-time surface. The
+  all-vintage base view (`silver_elexon_system_prices`) and its deprecated
+  `silver_system_prices` alias remain the historical-PIT source, and the PIT
+  primitive itself (`available_at <= as_of` then latest-of-survivors) stays
+  consumer-side (gridflow_models), exactly as this ADR always specified.
 
 ## Resolved at grill (2026-07-10)
 
