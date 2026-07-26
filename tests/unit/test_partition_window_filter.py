@@ -800,8 +800,12 @@ class TestExcludeOutOfWindow:
         assert result.unclassified == 1
         assert len(result.frame) == 2  # the null row is kept, not dropped
 
-    def test_drop_all_refusal_keeps_the_frame(self) -> None:
-        """D-5 still applies even without any ownership question."""
+    def test_drop_all_is_performed_not_refused(self) -> None:
+        """D-5's REFUSAL does NOT carry over to HALF_OPEN semantics: unlike
+        filter_frame_to_window's CLOSED path, a 100%-out-of-window frame is
+        still excluded, not kept -- the TRIM ruling is unconditional even at
+        100%. ``all_dropped`` signals the case for ERROR-level logging
+        instead of the usual per-row WARNING."""
         window = RequestWindow(
             start=datetime(2026, 7, 11, tzinfo=UTC),
             end=datetime(2026, 7, 12, tzinfo=UTC),
@@ -809,6 +813,7 @@ class TestExcludeOutOfWindow:
         )
         df = self._frame([datetime(2026, 7, 12, tzinfo=UTC)])
         result = exclude_out_of_window(df, "timestamp_utc", window)
-        assert result.refused is True
-        assert result.dropped == 0
-        assert len(result.frame) == 1
+        assert result.refused is False
+        assert result.all_dropped is True
+        assert result.dropped == 1
+        assert len(result.frame) == 0

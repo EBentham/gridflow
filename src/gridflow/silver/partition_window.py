@@ -165,6 +165,20 @@ class WindowFilterResult:
     """
     retained_reasons: tuple[tuple[WindowReason, int], ...]
     refused: bool
+    all_dropped: bool = False
+    """``True`` only on the HALF_OPEN path (:func:`exclude_out_of_window`)
+    when every row in a non-empty frame fell outside the partition's own
+    recorded window. Unlike ``refused`` (CLOSED/D-5: the drop is refused and
+    the frame kept unchanged), the HALF_OPEN drop-all case still PERFORMS
+    the drop -- ``frame`` is empty, ``dropped == `` the original row count --
+    because a wholly out-of-scope response was never part of this
+    partition's request at all (no ownership to preserve by retaining it).
+    The flag exists purely so the caller can log this loudly (ERROR, not the
+    usual per-row WARNING): a 100% drop is the exact signature of a horizon
+    dataset opted into the filter by mistake (D-5's original misclassification
+    concern), so it must be visible even though the rows are correctly
+    excluded. Always ``False`` on the CLOSED path
+    (:func:`filter_frame_to_window`)."""
 
 
 def _parse_bound(raw_value: object) -> datetime | None:
@@ -554,9 +568,15 @@ def exclude_out_of_window(
     ``column`` -> the frame is returned unchanged, same contract as
     :func:`filter_frame_to_window`.
 
-    D-5 still applies: refuses to empty an otherwise non-empty frame (a
-    corrupt or mis-declared window), returned with ``refused=True`` for the
-    caller to log ``ERROR``.
+    D-5's REFUSAL does NOT apply here (contrast with :func:`filter_frame_to_window`,
+    CLOSED interval, where D-5 keeps the frame unchanged and sets
+    ``refused=True``). A wholly out-of-window frame is still performed, not
+    refused: TRIM ruling — an out-of-scope ENTSO-E row is ALWAYS excluded,
+    unconditionally, even when every row qualifies. ``refused`` stays
+    ``False`` on this path; ``all_dropped=True`` signals the 100% case
+    instead, so the caller can log it as ``ERROR`` (loud, not silent) --
+    the exact signature of a horizon dataset opted into the filter by
+    mistake, D-5's original misclassification concern.
     """
     if column not in df.columns or df.is_empty():
         return WindowFilterResult(
@@ -579,19 +599,32 @@ def exclude_out_of_window(
     dropped = int(drop_mask.sum())
     n_below = int(below_start.sum())
 
+    kept_frame = df.filter(~drop_mask)
+
     if dropped > 0 and dropped == total:
-        # D-5: never empty an otherwise non-empty frame.
+        # D-5's refusal ("never empty an otherwise non-empty frame") does
+        # NOT apply here, unlike filter_frame_to_window's CLOSED path: a
+        # 100%-out-of-window frame is not an ownership question this
+        # partition could ever answer "yes" to -- every row genuinely was
+        # never part of THIS partition's own request. Refusing the drop
+        # would write out-of-scope vendor over-span into silver, which is
+        # exactly the F-10/TRIM violation this function exists to prevent.
+        # The drop PROCEEDS; the caller logs ERROR (not the usual per-row
+        # WARNING) so a wrongly opted-in horizon dataset -- where ~100% of
+        # rows would legitimately fall outside a delivery-day window -- is
+        # loud, not silently retained (D-5's original misclassification
+        # concern, preserved as a signal rather than a refusal).
         return WindowFilterResult(
-            frame=df,
-            dropped=0,
+            frame=kept_frame,
+            dropped=dropped,
             unclassified=unclassified,
             below_window=n_below,
             boundary_retained=0,
             retained_reasons=(),
-            refused=True,
+            refused=False,
+            all_dropped=True,
         )
 
-    kept_frame = df.filter(~drop_mask)
     return WindowFilterResult(
         frame=kept_frame,
         dropped=dropped,

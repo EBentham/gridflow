@@ -762,7 +762,30 @@ class BaseSilverTransformer(ABC):
                 self.dataset,
                 target_date,
             )
-        if result.dropped:
+        if result.all_dropped:
+            # 100% of a non-empty frame fell outside this partition's own
+            # [periodStart, periodEnd) window -- the drop is PERFORMED (TRIM
+            # ruling: out-of-scope ENTSO-E rows are always excluded,
+            # unconditionally), but this is also the exact signature of a
+            # horizon/annual dataset opted into EVENT_WINDOW_FILTER by
+            # mistake (D-5's original misclassification concern) -- logged
+            # ERROR, loud rather than silent, never retained.
+            logger.error(
+                "Event-window filter excluded 100%% of the %s/%s frame for %s "
+                "(%d row(s)): none fall inside the partition's own recorded "
+                "[%s, %s) request window (%s). Rows are correctly dropped, not "
+                "retained -- but a 100%% drop may indicate this dataset was "
+                "opted into EVENT_WINDOW_FILTER by mistake; verify its window "
+                "semantics",
+                self.source,
+                self.dataset,
+                target_date,
+                result.dropped,
+                plan.window.start,
+                plan.window.end,
+                WindowReason.OUT_OF_REQUEST_SCOPE,
+            )
+        elif result.dropped:
             logger.warning(
                 "Event-window filter excluded %d out-of-scope row(s) for %s/%s "
                 "on %s: outside the partition's own recorded [%s, %s) request "
