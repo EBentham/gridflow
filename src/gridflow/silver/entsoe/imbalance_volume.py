@@ -75,7 +75,7 @@ class ImbalanceVolumeTransformer(BaseSilverTransformer):
         # F-02 fix: derive published_at from document_created_at BEFORE the
         # column-dropping select below, which otherwise discards
         # document_created_at and forces the typed-null branch permanently.
-        df = with_published_at(df)
+        df = with_published_at(df, dataset=self.dataset)
 
         df = (
             df.select(

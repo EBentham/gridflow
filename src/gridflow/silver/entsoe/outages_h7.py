@@ -104,7 +104,7 @@ class _H7OutageTransformer(BaseSilverTransformer):
         df = df.unique(subset=self.dedup_subset, keep="last").sort(self.dedup_subset)
         # ADR-025 P1.1: carry the document publication vintage (createdDateTime)
         # as published_at before the hard select; typed-null when absent.
-        df = with_published_at(df)
+        df = with_published_at(df, dataset=self.dataset)
         df = df.select(self.output_cols)
 
         return df

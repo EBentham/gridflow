@@ -97,7 +97,7 @@ class OutagesGenerationTransformer(BaseSilverTransformer):
         )
 
         # ADR-025 P1.1: carry the document publication vintage (createdDateTime) as published_at.
-        df = with_published_at(df)
+        df = with_published_at(df, dataset=self.dataset)
 
         output_cols = [
             "timestamp_utc",

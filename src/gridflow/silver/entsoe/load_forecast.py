@@ -65,7 +65,7 @@ class LoadForecastTransformer(BaseSilverTransformer):
 
         # Issue 04: carry the document publication vintage (createdDateTime)
         # as published_at; typed-null when the source lacks it.
-        df = with_published_at(df)
+        df = with_published_at(df, dataset=self.dataset)
 
         now = datetime.now(UTC)
         df = df.with_columns(
