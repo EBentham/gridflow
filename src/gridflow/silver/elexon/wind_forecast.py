@@ -24,6 +24,13 @@ class WindForecastTransformer(BaseSilverTransformer):
     dataset = "windfor"
     schema_cls = ElexonWindForecast
     DATASET_VERSION: ClassVar[str] = "1.0.0"
+    # D-8: the static base key. transform()'s own dedup_cols has a
+    # timestamp_utc-only FALLBACK when neither settlement_date nor
+    # settlement_period is present at all (wind_forecast.py) -- a
+    # degenerate shape not represented here; the declared key is the
+    # primary (settlement-coordinate) grain the CLI duplicate check keys on.
+    ENTITY_KEY_COLUMNS = ("settlement_date", "settlement_period")
+    OPTIONAL_ENTITY_KEY_COLUMNS = ("published_at",)
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         bronze_path = (

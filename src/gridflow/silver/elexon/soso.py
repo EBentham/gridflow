@@ -23,6 +23,8 @@ class SOSOTransformer(BaseSilverTransformer):
     source = "elexon"
     dataset = "soso"
     schema_cls = ElexonSOSO
+    ENTITY_KEY_COLUMNS = ("settlement_date", "contract_identification")  # D-8
+    OPTIONAL_ENTITY_KEY_COLUMNS = ("trade_direction",)
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         bronze_path = (

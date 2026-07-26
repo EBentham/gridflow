@@ -23,6 +23,8 @@ class BOALTransformer(BaseSilverTransformer):
     source = "elexon"
     dataset = "boal"
     schema_cls = ElexonBOAL
+    ENTITY_KEY_COLUMNS = ("settlement_date", "settlement_period", "bm_unit_id")  # D-8
+    OPTIONAL_ENTITY_KEY_COLUMNS = ("acceptance_number",)
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         bronze_path = (

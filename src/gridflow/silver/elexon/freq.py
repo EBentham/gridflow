@@ -22,6 +22,7 @@ class FreqTransformer(BaseSilverTransformer):
     source = "elexon"
     dataset = "freq"
     schema_cls = ElexonFrequency
+    ENTITY_KEY_COLUMNS = ("timestamp_utc",)  # D-8: verbatim from unique() below
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         bronze_path = (

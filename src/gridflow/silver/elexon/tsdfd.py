@@ -22,6 +22,7 @@ class TSDFDTransformer(BaseSilverTransformer):
     source = "elexon"
     dataset = "tsdfd"
     schema_cls = ElexonTSDFD
+    ENTITY_KEY_COLUMNS = ("forecast_date",)  # D-8: verbatim from unique() below
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         bronze_path = (

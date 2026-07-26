@@ -21,6 +21,8 @@ class BODTransformer(BaseSilverTransformer):
 
     source = "elexon"
     dataset = "bod"
+    ENTITY_KEY_COLUMNS = ("settlement_date", "settlement_period", "bm_unit_id")  # D-8
+    OPTIONAL_ENTITY_KEY_COLUMNS = ("bid_offer_pair_number",)
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         bronze_path = (
