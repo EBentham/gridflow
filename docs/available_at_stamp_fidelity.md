@@ -1,6 +1,6 @@
 # `available_at` stamp-fidelity
 
-**Date:** 2026-07-17 · **Authority:** [ADR-025](DECISION_LOG/ADR-025-temporal-vintage-and-revision-capture.md) §3 · **Item:** v0.17 P1.1 (R1-F07 + R5-F04)
+**Date:** 2026-07-17 (corrected 2026-07-26, R1-B batch, F-20) · **Authority:** [ADR-025](DECISION_LOG/ADR-025-temporal-vintage-and-revision-capture.md) §3 · **Item:** v0.17 P1.1 (R1-F07 + R5-F04)
 
 `available_at` is derived at the silver-write boundary
 (`silver/base.py::_add_bitemporal_columns`) as a **row-wise coalesce**:
@@ -35,10 +35,12 @@ review items P2.30/P2.32) read to know which datasets support honest historical
 
 | Dataset | Fidelity | Source field | Notes |
 |---|---|---|---|
-| agpt, agws, atl, demand_forecast, fou2t14d, fuelhh, imbalngc, inddem, indgen, indo, itsdo, lolpdrm, melngc, nonbm, tsdfd, uou2t14d, **windfor** | **true vintage** | `publishTime` / `publishDateTime` → `published_at` | 17 emitters. `windfor` is the only one with on-disk silver — re-transformed under 4.1b so its `available_at` reflects the forecast-issue spread. |
+| agpt, agws, atl, demand_forecast, fou2t14d, imbalngc, inddem, indgen, indo, itsdo, lolpdrm, melngc, nonbm, tsdfd, uou2t14d, **windfor** | **true vintage** | `publishTime` / `publishDateTime` → `published_at` | 16 emitters. `windfor` is the only one with on-disk silver — re-transformed under 4.1b so its `available_at` reflects the forecast-issue spread. |
+| fuelhh | **true vintage** (code fixed 2026-07-26; on-disk repair at R2 exit) | `publishTime` / `publishDateTime` (coalesced) → `published_at` | R1-B batch (F-03): the transformer previously mapped only `publishDateTime`, so bronze rows carrying `publishTime` instead (29,400/29,400 on-disk rows) had `published_at` silently null. The code now coalesces both raw field names. No re-transform was performed as part of this fix — existing on-disk silver stays null until the R2-exit rebuild re-runs this transformer from bronze. |
+| soso, indod, tsdf | **true vintage** (code fixed 2026-07-26; on-disk repair at R2 exit) | `publishTime` → `published_at` (independent of, and distinct from, their own event-time axis: `start_time` / `settlement_date` / `settlement_period`) | R1-B batch (F-08): all three receive their own `publishTime` alongside separate event-time fields — a genuinely independent vendor vintage, same class as the 16-emitter cohort above. Previously the rename map produced `published_at` but `output_cols` dropped it before write (the same W2.2-pattern bug G6 fixed elsewhere), so it never reached silver. The former doc entry lumped these three in with remit/fuelinst below — a distinct class error: remit/fuelinst have NO independent vintage field (their `publishTime` IS their event time, consumed into `timestamp_utc` and not retained separately); soso/indod/tsdf do. No re-transform performed; on-disk repair rides the R2-exit rebuild. |
 | system_prices | ingest-time fallback | — | live DISEBSP DATE_PATH feed exposes no `publishTime` (ADR-025 §Context); honest fallback, not a gap. |
 | bmunits_reference | ingest-time fallback | — | static reference snapshot; `publishTime` not mapped. |
-| remit, fuelinst, soso, indod, tsdf | ingest-time fallback | `publishTime` → `timestamp_utc` | map `publishTime` as their event/timestamp axis, do NOT emit a separate `published_at`. (Emitting it for `remit` would invert `event_time <= available_at` — advance outage notices publish before the event window.) |
+| remit, fuelinst | ingest-time fallback | `publishTime` → `timestamp_utc` | map `publishTime` as their event/timestamp axis and do NOT retain a separate `published_at` in output — REMIT's publish time and FUELINST's instantaneous reading time both ARE the event time for these datasets, so there is nothing independent left to emit once `timestamp_utc` is derived. **Correction (R1-B, F-20):** the previous rationale here — "emitting it for remit would invert `event_time <= available_at`" — was FALSE. No such invariant exists in this codebase: `windfor` already legitimately inverts it (X2-F03: 802/1022 rows), and soso/indod/tsdf above emit an independent vintage without issue. The real reason remit/fuelinst don't emit a separate `published_at` is architectural (no independent field survives once consumed into `timestamp_utc`), not invariant-protection. |
 | temp, and all other Elexon datasets | ingest-time fallback | — | no `publishTime` emitted as `published_at`. |
 
 ## ENTSO-E
