@@ -378,6 +378,16 @@ class BaseSilverTransformer(ABC):
         vintage), it becomes ``available_at`` per row; rows with a null
         ``published_at`` fall back to the ingest/reingest scalar. Datasets that
         emit no ``published_at`` column keep byte-identical ``available_at``.
+
+        Raises:
+            TypeError: F-19 — ``published_at`` present but not a ``pl.Datetime``
+                dtype (e.g. String or Int64, a transformer bug: the rename map
+                produced the column but never cast it). ``pl.coalesce`` already
+                raises loudly on a tz-naive ``Datetime`` (supertype mismatch
+                against the tz-aware ingest scalar); String/Int previously
+                passed through *silently*, mistyping ``available_at`` instead
+                of raising — same failure class, same loudness, now enforced
+                explicitly rather than left to chance.
         """
         if available_at.tzinfo is None:
             available_at = available_at.replace(tzinfo=UTC)
@@ -392,6 +402,19 @@ class BaseSilverTransformer(ABC):
         # than writing a null available_at — which gridflow_models' fail-closed
         # availability barrier rejects wholesale. A frame-level column swap would not.
         if "published_at" in df.columns:
+            published_dtype = df.schema["published_at"]
+            if not isinstance(published_dtype, pl.Datetime):
+                # F-19: a String/Int published_at silently passes through
+                # pl.coalesce, mistyping available_at instead of failing. Raise
+                # explicitly — the tz-naive Datetime case already raises via
+                # Polars' own supertype check below; this closes the latent
+                # non-Datetime half of the same failure class.
+                raise TypeError(
+                    f"{self.source}/{self.dataset}: published_at must be a "
+                    f"pl.Datetime dtype (tz-aware UTC), got {published_dtype!r}. "
+                    "Fix the transformer's published_at emission — do not rely "
+                    "on pl.coalesce to catch a mistyped column."
+                )
             available_at_expr = pl.coalesce(pl.col("published_at"), ingest_stamp).alias(
                 "available_at"
             )
