@@ -2,11 +2,14 @@
 
 Covers D-7(a) sidecar validation, D-7(e) all-or-nothing partition pairing,
 D-3b's chunk-scoped durability proof, D-3d's per-instant lower-bound
-ownership, D-3e's reason propagation, and D-5's drop-all refusal.
+ownership, D-3e's reason propagation, D-5's drop-all refusal, and (Sol
+ruling, 2026-07-26) ``exclude_out_of_window``'s HALF_OPEN interval
+semantics -- unconditional exclusion, no neighbour proof at all.
 """
 
 from __future__ import annotations
 
+import inspect
 import json
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING
@@ -18,6 +21,7 @@ from gridflow.silver.partition_window import (
     RequestWindow,
     WindowReason,
     covering_chunk_is_durable,
+    exclude_out_of_window,
     filter_frame_to_window,
     neighbour_owns,
     partition_request_window,
@@ -726,6 +730,85 @@ class TestFilterFrameToWindow:
             window,
             upper_bound_ownership=OwnershipVerdict(True, WindowReason.OK),
         )
+        assert result.refused is True
+        assert result.dropped == 0
+        assert len(result.frame) == 1
+
+
+# ---------------------------------------------------------------------------
+# exclude_out_of_window (HALF_OPEN interval semantics -- Sol ruling,
+# 2026-07-26): unconditional exclusion, no ownership question, no neighbour
+# proof at all. Contrast with TestFilterFrameToWindow above (CLOSED interval,
+# Elexon), which stays untouched and unchanged by this ruling.
+# ---------------------------------------------------------------------------
+
+
+class TestExcludeOutOfWindow:
+    def _frame(self, values: list[datetime | None]) -> pl.DataFrame:
+        return pl.DataFrame({"timestamp_utc": pl.Series(values, dtype=pl.Datetime("us", "UTC"))})
+
+    def test_absent_column_is_a_noop(self) -> None:
+        df = pl.DataFrame({"other": [1, 2, 3]})
+        window = RequestWindow(
+            start=datetime(2026, 7, 11, tzinfo=UTC),
+            end=datetime(2026, 7, 12, tzinfo=UTC),
+            param_names=("periodStart", "periodEnd"),
+        )
+        result = exclude_out_of_window(df, "timestamp_utc", window)
+        assert result.frame.equals(df)
+        assert result.dropped == 0
+        assert result.refused is False
+
+    def test_rows_outside_the_window_are_dropped_on_both_sides_unconditionally(self) -> None:
+        """No OwnershipVerdict / neighbour proof is passed at all -- this is
+        the whole point of HALF_OPEN semantics."""
+        window = RequestWindow(
+            start=datetime(2026, 7, 11, tzinfo=UTC),
+            end=datetime(2026, 7, 12, tzinfo=UTC),
+            param_names=("periodStart", "periodEnd"),
+        )
+        df = self._frame(
+            [
+                datetime(2026, 7, 10, 23, tzinfo=UTC),  # below start
+                datetime(2026, 7, 11, 12, tzinfo=UTC),  # in window
+                datetime(2026, 7, 12, tzinfo=UTC),  # at/after end
+            ]
+        )
+        result = exclude_out_of_window(df, "timestamp_utc", window)
+        assert result.dropped == 2
+        assert len(result.frame) == 1
+        assert result.frame["timestamp_utc"].to_list() == [datetime(2026, 7, 11, 12, tzinfo=UTC)]
+        assert result.boundary_retained == 0
+        assert result.retained_reasons == ()
+
+    def test_no_neighbour_bronze_needed_no_ownership_verdict_argument_exists(self) -> None:
+        """The function signature itself proves the point: there is no
+        ``upper_bound_ownership``/``lower_bound_ownership`` parameter to
+        pass, unlike ``filter_frame_to_window``."""
+        params = inspect.signature(exclude_out_of_window).parameters
+        assert "upper_bound_ownership" not in params
+        assert "lower_bound_ownership" not in params
+
+    def test_unclassified_null_rows_are_kept_and_counted(self) -> None:
+        window = RequestWindow(
+            start=datetime(2026, 7, 11, tzinfo=UTC),
+            end=datetime(2026, 7, 12, tzinfo=UTC),
+            param_names=("periodStart", "periodEnd"),
+        )
+        df = self._frame([None, datetime(2026, 7, 11, 12, tzinfo=UTC)])
+        result = exclude_out_of_window(df, "timestamp_utc", window)
+        assert result.unclassified == 1
+        assert len(result.frame) == 2  # the null row is kept, not dropped
+
+    def test_drop_all_refusal_keeps_the_frame(self) -> None:
+        """D-5 still applies even without any ownership question."""
+        window = RequestWindow(
+            start=datetime(2026, 7, 11, tzinfo=UTC),
+            end=datetime(2026, 7, 12, tzinfo=UTC),
+            param_names=("periodStart", "periodEnd"),
+        )
+        df = self._frame([datetime(2026, 7, 12, tzinfo=UTC)])
+        result = exclude_out_of_window(df, "timestamp_utc", window)
         assert result.refused is True
         assert result.dropped == 0
         assert len(result.frame) == 1

@@ -82,6 +82,46 @@ class WindowReason(StrEnum):
     INCOMPLETE_PAGE_SET = "INCOMPLETE_PAGE_SET"
     NO_COVERING_CHUNK = "NO_COVERING_CHUNK"
     NOT_RESOLVED = "NOT_RESOLVED"
+    OUT_OF_REQUEST_SCOPE = "OUT_OF_REQUEST_SCOPE"
+    """A row outside a HALF_OPEN vendor interval (Sol ruling, 2026-07-26) --
+    never requested by this partition at all, so there is no ownership
+    question to resolve; it is unconditionally excluded. Contrast with the
+    CLOSED-interval reasons above, which all describe why a genuinely
+    REQUESTED boundary row's removal could or could not be proven safe."""
+
+
+class IntervalSemantics(StrEnum):
+    """The vendor's OWN request-interval semantics for a dataset family --
+    the property that decides whether a boundary/out-of-window row needs a
+    neighbour-durability proof at all (Sol ruling, 2026-07-26, amending the
+    R2-A plan's D-3d).
+
+    This is a property of how the VENDOR interprets ``[from, to]`` /
+    ``[from, to)``, never of a source name -- so a future connector inherits
+    the correct behaviour automatically by declaring which interval its
+    vendor uses, without anyone re-deriving this argument.
+
+    - ``CLOSED``: the vendor treats the request window as closed at BOTH
+      ends (Elexon's ``publishDateTimeFrom``/``To`` -- ``R2-A-PLAN.md``
+      S1.1). The row AT the boundary is genuinely PART of the request and
+      is legitimately returned by two adjacent chunks -- ownership is
+      shared, so removing it from one side requires D-3b's
+      neighbour-durability proof (:func:`filter_frame_to_window`). Retained,
+      never dropped, when that proof cannot be made -- duplication is
+      preferred to loss.
+    - ``HALF_OPEN``: the vendor's OWN request is ``[from, to)`` (ENTSO-E's
+      ``periodStart``/``periodEnd``), but the vendor may return rows beyond
+      it (ENTSO-E's measured CET/CEST delivery-day over-span, S1.4). Those
+      rows were never part of THIS partition's request in the first place --
+      there is no ownership to resolve, no neighbour proof needed, and
+      keeping one in silver both violates the partition's own declared scope
+      and plants a duplicate for whenever the owning date is properly
+      ingested. Unconditionally excluded (:func:`exclude_out_of_window`),
+      counted, and logged -- never silent.
+    """
+
+    CLOSED = "closed"
+    HALF_OPEN = "half_open"
 
 
 @dataclass(frozen=True)
@@ -482,5 +522,86 @@ def filter_frame_to_window(
         below_window=n_below,
         boundary_retained=boundary_retained,
         retained_reasons=retained_reasons,
+        refused=False,
+    )
+
+
+def exclude_out_of_window(
+    df: pl.DataFrame,
+    column: str,
+    window: RequestWindow,
+) -> WindowFilterResult:
+    """Unconditionally exclude rows outside ``window`` -- HALF_OPEN interval
+    semantics (:class:`IntervalSemantics`, Sol ruling 2026-07-26).
+
+    Contrast with :func:`filter_frame_to_window` (CLOSED interval, Elexon):
+    there, a boundary row genuinely belongs to two adjacent chunks and its
+    removal must be proven safe against a neighbour first (D-3b), because
+    dropping an unproven row would be a real loss. Here, a row outside
+    ``[window.start, window.end)`` was never part of THIS partition's own
+    request in the first place (ENTSO-E's measured CET/CEST delivery-day
+    over-span, ``R2-A-PLAN.md`` S1.4) -- there is no ownership question to
+    resolve. Bronze is immutable and remains the source of truth for that
+    row under its OWN correctly-scoped partition; keeping the over-returned
+    copy in THIS partition's silver output would both violate this
+    partition's declared window and plant a duplicate for whenever the
+    owning date is properly ingested. So the row is always excluded here,
+    never gated on any neighbour's durability -- but always counted and
+    logged (never a silent drop).
+
+    IO-free, like :func:`filter_frame_to_window`; does no logging itself
+    (the caller owns that, D-7c's absent-column check included). Absent
+    ``column`` -> the frame is returned unchanged, same contract as
+    :func:`filter_frame_to_window`.
+
+    D-5 still applies: refuses to empty an otherwise non-empty frame (a
+    corrupt or mis-declared window), returned with ``refused=True`` for the
+    caller to log ``ERROR``.
+    """
+    if column not in df.columns or df.is_empty():
+        return WindowFilterResult(
+            frame=df,
+            dropped=0,
+            unclassified=0,
+            below_window=0,
+            boundary_retained=0,
+            retained_reasons=(),
+            refused=False,
+        )
+
+    total = len(df)
+    values = df[column]
+    unclassified = int(values.is_null().sum())
+
+    below_start = (values < window.start).fill_null(False)
+    at_or_after_end = (values >= window.end).fill_null(False)
+    drop_mask = below_start | at_or_after_end
+    dropped = int(drop_mask.sum())
+    n_below = int(below_start.sum())
+
+    if dropped > 0 and dropped == total:
+        # D-5: never empty an otherwise non-empty frame.
+        return WindowFilterResult(
+            frame=df,
+            dropped=0,
+            unclassified=unclassified,
+            below_window=n_below,
+            boundary_retained=0,
+            retained_reasons=(),
+            refused=True,
+        )
+
+    kept_frame = df.filter(~drop_mask)
+    return WindowFilterResult(
+        frame=kept_frame,
+        dropped=dropped,
+        unclassified=unclassified,
+        below_window=n_below,
+        boundary_retained=0,
+        # retained_reasons is meaningless here -- nothing is ever RETAINED
+        # under HALF_OPEN semantics (an unproven boundary), only ever
+        # dropped as OUT_OF_REQUEST_SCOPE or kept because it is genuinely
+        # in-window. The caller logs `dropped` directly with that reason.
+        retained_reasons=(),
         refused=False,
     )

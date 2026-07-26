@@ -134,7 +134,22 @@ class TestOptedInTransformersProduceFilterableTimestamp:
 
 
 # ---------------------------------------------------------------------------
-# A-16 — D-3d ENTSO-E lower-bound trim, per-instant ownership
+# HALF_OPEN interval semantics -- unconditional out-of-scope exclusion
+# (Sol ruling, 2026-07-26, amending the R2-A plan's original D-3d).
+#
+# ENTSO-E's request is [periodStart, periodEnd); the vendor may return rows
+# beyond it (measured CET/CEST delivery-day over-span, S1.4). Those rows
+# were never requested by THIS partition at all, so there is no ownership
+# question and no neighbour-durability proof to make -- they are always
+# excluded, with or without any neighbour bronze existing. This supersedes
+# the per-instant NEIGHBOUR-durability-gated lower bound this file
+# originally pinned for ENTSO-E; that mechanism remains correct and
+# untouched for Elexon's CLOSED-interval boundary (D-3b,
+# tests/silver/test_elexon_publication_window.py), and the underlying
+# per-instant-not-per-date primitive (the S4-1 regression) stays pinned at
+# the primitive level, unaffected by this ruling, in
+# tests/unit/test_partition_window_filter.py::TestNeighbourOwns::
+# test_lower_bound_ownership_is_resolved_per_instant_not_per_date.
 # ---------------------------------------------------------------------------
 
 
@@ -206,154 +221,66 @@ def _write_entsoe_chunk(
     BronzeWriter(tmp_path).write(response)
 
 
-class TestD3dLowerBoundDurabilityProof:
-    def test_entsoe_lower_bound_trim_requires_a_page_complete_predecessor(
+class TestHalfOpenIntervalUnconditionalExclusion:
+    def test_out_of_window_rows_excluded_with_no_neighbour_bronze_at_all(
         self, tmp_path: Path
     ) -> None:
-        """Predecessor present, single-page (durable) -> the below-window
-        over-span row is trimmed."""
+        """No predecessor and no successor bronze exists ANYWHERE -- the
+        over-span rows are still excluded, proving no neighbour proof is
+        attempted or needed under HALF_OPEN semantics (contrast with
+        Elexon's CLOSED-interval boundary, which RETAINS in this exact
+        no-neighbour situation, D-3b)."""
         target_date = date(2024, 1, 16)
         window_start = datetime(2024, 1, 16, tzinfo=UTC)
         window_end = datetime(2024, 1, 17, tzinfo=UTC)
 
-        # Own partition: 25 points, starting 1h before window.start (over-span).
+        # 26 points: 1h below window.start, 24 in-window, 1h at/after window.end.
         own_start = datetime(2024, 1, 15, 23, tzinfo=UTC)
         _write_entsoe_chunk(
-            tmp_path, target_date, _points_xml(own_start, 25), window_start, window_end
+            tmp_path, target_date, _points_xml(own_start, 26), window_start, window_end
         )
-
-        # Predecessor (2024-01-15): its OWN durable, single-page chunk.
-        predecessor_start = datetime(2024, 1, 15, tzinfo=UTC)
-        _write_entsoe_chunk(
-            tmp_path,
-            date(2024, 1, 15),
-            _points_xml(predecessor_start, 24),
-            predecessor_start,
-            window_start,
-        )
+        # Deliberately NO predecessor (2024-01-15) and NO successor
+        # (2024-01-17) bronze partition exists anywhere.
 
         transformer = DayAheadPricesTransformer(tmp_path)
-        rows = transformer.run(target_date, run_id="d3d-complete")
-        assert rows == 24, "the below-window row must be trimmed by the proven predecessor"
-        assert transformer.last_partition_filter_dropped_count == 1
-        assert transformer.last_partition_filter_boundary_retained_count == 0
+        rows = transformer.run(target_date, run_id="half-open-no-neighbours")
+        assert rows == 24, "both out-of-scope rows must be excluded without any neighbour proof"
+        assert transformer.last_partition_filter_dropped_count == 2
+        assert transformer.last_partition_filter_boundary_retained_count == 0, (
+            "HALF_OPEN semantics never retains an out-of-scope row"
+        )
 
-    def test_entsoe_lower_bound_rows_retained_when_predecessor_is_incomplete(
-        self, tmp_path: Path
+    def test_out_of_window_exclusion_is_counted_and_logged_never_silent(
+        self, tmp_path: Path, caplog: pytest.LogCaptureFixture
     ) -> None:
-        """S3-1-equivalent regression for ENTSO-E: predecessor declares
-        total_pages=2, only page 1 present -> the below-window row is
-        RETAINED, not dropped."""
         target_date = date(2024, 1, 16)
         window_start = datetime(2024, 1, 16, tzinfo=UTC)
         window_end = datetime(2024, 1, 17, tzinfo=UTC)
 
-        own_start = datetime(2024, 1, 15, 23, tzinfo=UTC)
+        own_start = datetime(2024, 1, 15, 22, tzinfo=UTC)
         _write_entsoe_chunk(
-            tmp_path, target_date, _points_xml(own_start, 25), window_start, window_end
-        )
-
-        predecessor_start = datetime(2024, 1, 15, tzinfo=UTC)
-        _write_entsoe_chunk(
-            tmp_path,
-            date(2024, 1, 15),
-            _points_xml(predecessor_start, 24),
-            predecessor_start,
-            window_start,
-            total_pages=2,
-            page=1,
+            tmp_path, target_date, _points_xml(own_start, 28), window_start, window_end
         )
 
         transformer = DayAheadPricesTransformer(tmp_path)
-        rows = transformer.run(target_date, run_id="d3d-incomplete")
-        assert rows == 25, "the below-window row must be RETAINED when the predecessor is torn"
+        with caplog.at_level("WARNING"):
+            rows = transformer.run(target_date, run_id="half-open-logged")
+
+        assert rows == 24
+        assert transformer.last_partition_filter_dropped_count == 4
+        assert any("out-of-scope" in message for message in caplog.messages)
+
+    def test_in_window_rows_are_unaffected(self, tmp_path: Path) -> None:
+        """A request whose response does not over-span at all is a no-op."""
+        target_date = date(2024, 1, 16)
+        window_start = datetime(2024, 1, 16, tzinfo=UTC)
+        window_end = datetime(2024, 1, 17, tzinfo=UTC)
+
+        _write_entsoe_chunk(
+            tmp_path, target_date, _points_xml(window_start, 24), window_start, window_end
+        )
+
+        transformer = DayAheadPricesTransformer(tmp_path)
+        rows = transformer.run(target_date, run_id="half-open-noop")
+        assert rows == 24
         assert transformer.last_partition_filter_dropped_count == 0
-        assert transformer.last_partition_filter_boundary_retained_count == 1
-
-    def test_entsoe_mixed_ownership_within_one_utc_date_trims_only_the_proven_row(
-        self, tmp_path: Path
-    ) -> None:
-        """S4-1 regression: the predecessor partition for date D holds a
-        CLAMPED chunk covering only [D T06:00, D+1 00:00) (as
-        ``utils/time.py``'s ``day_subwindows`` produces at a range edge).
-        Two below-bound rows on date D: one at D T20:00 (inside the clamped
-        chunk) and one at D T03:00 (outside it). Only the first is trimmed;
-        the second is retained with NO_COVERING_CHUNK -- never collapsed to
-        a per-date verdict.
-        """
-        target_date = date(2024, 1, 17)
-        window_start = datetime(2024, 1, 17, tzinfo=UTC)
-        window_end = datetime(2024, 1, 18, tzinfo=UTC)
-
-        predecessor_date = date(2024, 1, 16)
-        # The predecessor's OWN clamped sub-window: [D 06:00, D+1 00:00).
-        clamped_start = datetime(2024, 1, 16, 6, tzinfo=UTC)
-        clamped_hours = 18  # 06:00 -> next-day 00:00
-        _write_entsoe_chunk(
-            tmp_path,
-            predecessor_date,
-            _points_xml(clamped_start, clamped_hours),
-            clamped_start,
-            window_start,
-        )
-
-        # Current partition's own raw body: two below-window points (one
-        # inside the predecessor's clamped chunk, one outside it) plus the
-        # 24 in-window hours -- built via explicit per-point timestamps
-        # (_mixed_points_xml) since the two extra points are not
-        # contiguous with the 24-hour block.
-        inside_instant = datetime(2024, 1, 16, 20, tzinfo=UTC)  # inside [06:00, 24:00)
-        outside_instant = datetime(2024, 1, 16, 3, tzinfo=UTC)  # outside the clamped chunk
-        body = _mixed_points_xml(
-            [inside_instant, outside_instant]
-            + [window_start + timedelta(hours=h) for h in range(24)]
-        )
-        _write_entsoe_chunk(tmp_path, target_date, body, window_start, window_end)
-
-        transformer = DayAheadPricesTransformer(tmp_path)
-        rows = transformer.run(target_date, run_id="d3d-mixed")
-        assert rows == 25, "only the proven (inside-chunk) row is trimmed; the other is retained"
-        assert transformer.last_partition_filter_dropped_count == 1
-        assert transformer.last_partition_filter_boundary_retained_count == 1
-
-
-def _mixed_points_xml(timestamps: list[datetime]) -> bytes:
-    """Build an A44 document whose Points carry EXPLICIT, non-contiguous
-    instants via one ``Period`` per point (each with its own 1h
-    ``timeInterval`` and a single ``position=1`` Point) -- avoids relying on
-    ``start + (position-1)*resolution`` arithmetic for non-sequential
-    instants."""
-    periods = []
-    for ts in timestamps:
-        start_s = ts.strftime("%Y-%m-%dT%H:%MZ")
-        end_s = (ts + __import__("datetime").timedelta(hours=1)).strftime("%Y-%m-%dT%H:%MZ")
-        periods.append(
-            f"""<Period>
-      <timeInterval><start>{start_s}</start><end>{end_s}</end></timeInterval>
-      <resolution>PT60M</resolution>
-      <Point><position>1</position><price.amount>50.0</price.amount></Point>
-    </Period>"""
-        )
-    periods_xml = "\n    ".join(periods)
-    doc_end_s = (timestamps[-1] + timedelta(hours=1)).strftime("%Y-%m-%dT%H:%MZ")
-    return f"""<?xml version="1.0" encoding="UTF-8"?>
-<Publication_MarketDocument xmlns="urn:iec62325.351:tc57wg16:451-3:publicationdocument:7:3">
-  <mRID>d3d-mixed</mRID>
-  <revisionNumber>1</revisionNumber>
-  <type>A44</type>
-  <createdDateTime>{timestamps[0].strftime("%Y-%m-%dT%H:%MZ")}</createdDateTime>
-  <period.timeInterval>
-    <start>{timestamps[0].strftime("%Y-%m-%dT%H:%MZ")}</start>
-    <end>{doc_end_s}</end>
-  </period.timeInterval>
-  <TimeSeries>
-    <mRID>1</mRID>
-    <businessType>A62</businessType>
-    <in_Domain.mRID codingScheme="A01">10YGB----------A</in_Domain.mRID>
-    <out_Domain.mRID codingScheme="A01">10YGB----------A</out_Domain.mRID>
-    <currency_Unit.name>EUR</currency_Unit.name>
-    <price_Measure_Unit.name>MWH</price_Measure_Unit.name>
-    <curveType>A01</curveType>
-    {periods_xml}
-  </TimeSeries>
-</Publication_MarketDocument>""".encode()
