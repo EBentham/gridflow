@@ -3,7 +3,7 @@
 APPEND_ONLY datasets store one run-suffixed parquet file per vintage, so their
 base ``silver_{source}_{dataset}`` views return one row per vintage. This module
 is the single home for the "current best value" selection, rendered two ways
-that MUST stay semantically identical (guarded by a parity test):
+(guarded by a parity test):
 
 - :func:`latest_view_sql` — a DuckDB ``QUALIFY ROW_NUMBER()`` view for catalogue
   consumers (``silver_{source}_{dataset}_latest``).
@@ -11,12 +11,32 @@ that MUST stay semantically identical (guarded by a parity test):
   Polars-native readers (the quality CLI), which must not depend on the DuckDB
   catalogue file.
 
+R1-A/F-18 correction: the two renderers make the SAME selection and the SAME
+skip decision (both delegate to :func:`_resolve_selection`, so the decision is
+identical by construction — not merely asserted), and diverge ONLY in how they
+REACT to a skip. This is a deliberate, documented asymmetry, not a bug:
+
+- :func:`latest_view_sql` returns ``None`` on a skip, so ``storage.duckdb``
+  DROPs the ``_latest`` projection entirely — fail-closed: the DuckDB
+  consumer gets no surface at all, and any gold view reading it fails to
+  register (raise under strict/pytest mode, WARNING in production).
+- :func:`select_latest_vintage` returns the frame UNCHANGED (all vintages) on
+  a skip, with a warning — so the quality CLI's checks then see the raw
+  vintages and surface the drift loudly (e.g. a false duplicate-key failure)
+  rather than crashing the whole run.
+
+A present rank column counts as a usable ordering term ON ITS OWN: a
+rank-only schema (key columns + a rank column, no ``available_at`` at all)
+stays a SELECTION on both renderers, not a skip — see :func:`_resolve_selection`.
+
 Ordering is ``available_at``-primary (ADR-025: the live system_prices feed has
 no run label; publication order is the only universal vintage axis), with an
 optional categorical rank as the secondary tie-break. Both renderers adapt to
-the columns actually present: silver written from the live DISEBSP feed has no
-``run_type`` column at all, and pre-F0 legacy files union in null
-``available_at`` (sorted last).
+the columns actually present: silver written BEFORE v0.18 R1-A from the live
+DISEBSP feed has no ``run_type`` column at all (the transformer now always
+emits it, typed-null when the raw field is absent — F-13), so the
+rank-column-absent path is legacy-file compatibility, and pre-F0 legacy files
+union in null ``available_at`` (sorted last).
 
 Kept dependency-light (polars + stdlib only) so ``storage.duckdb`` can import
 it without dragging in the transformer stack.
@@ -108,6 +128,69 @@ def _rank_case_sql(spec: LatestViewSpec) -> str:
     return f"CASE {_quote_identifier(spec.rank_column)} {whens} ELSE 0 END"
 
 
+@dataclass(frozen=True)
+class _Selection:
+    """The shared skip decision's resolved output — one row per renderer call.
+
+    Carries enough render-agnostic information for EACH renderer to build its
+    own concrete ordering (SQL ``CASE...WHEN`` vs Polars ``replace_strict``);
+    the renderers still differ in HOW they render, only the decision of WHAT
+    to select is now made once, by :func:`_resolve_selection`.
+    """
+
+    key_columns: tuple[str, ...]
+    order_columns: tuple[str, ...]
+    has_rank: bool
+
+
+def _resolve_selection(spec: LatestViewSpec, available_columns: set[str]) -> _Selection | None:
+    """Resolve the shared latest-vintage skip decision (R1-A/F-18).
+
+    Both :func:`latest_view_sql` and :func:`select_latest_vintage` call this,
+    so the *decision* (skip vs. select, and on what) is identical by
+    construction; only the *reaction* to a skip differs between them (see the
+    module docstring). This function does no logging — callers log their own
+    skip warning, since their messages carry different context (view names
+    vs. bare frame semantics) and existing tests pin those exact messages.
+
+    Skip (return ``None``) only when:
+      (a) a required key column (``spec.key_columns``) is missing, or
+      (b) NEITHER any ``order_columns`` member NOR ``rank_column`` is present.
+
+    A present rank column counts as a usable ordering term ON ITS OWN (Sol
+    finding 6): a rank-only schema — e.g.
+    ``{settlement_date, settlement_period, run_type}`` with no
+    ``available_at`` at all — must stay a SELECTION (ordered by rank alone),
+    not a skip/drop. Both renderers already behaved this way before this
+    refactor (the rank term was appended before either renderer's own
+    "no order column" check); this function is what makes that behaviour
+    provably shared rather than independently-duplicated.
+
+    Args:
+        spec: Key and precedence definition.
+        available_columns: Columns actually present on the relation/frame.
+
+    Returns:
+        A :class:`_Selection` with the resolved key columns, the
+        ``order_columns`` members present (in spec order), and whether the
+        rank column is present and usable — or ``None`` when the selection is
+        impossible.
+    """
+    missing_keys = [c for c in spec.key_columns if c not in available_columns]
+    if missing_keys:
+        return None
+
+    order_columns = tuple(c for c in spec.order_columns if c in available_columns)
+    has_rank = spec.rank_column is not None and spec.rank_column in available_columns
+    if not order_columns and not has_rank:
+        return None
+
+    key_columns = tuple(spec.key_columns) + tuple(
+        c for c in spec.optional_key_columns if c in available_columns
+    )
+    return _Selection(key_columns=key_columns, order_columns=order_columns, has_rank=has_rank)
+
+
 def latest_view_sql(
     base_view: str,
     latest_view: str,
@@ -124,34 +207,36 @@ def latest_view_sql(
             adapted to what exists (live-feed silver has no ``run_type``).
 
     Returns:
-        The DDL string, or ``None`` when a key column is missing (a projection
-        keyed on absent columns would be meaningless — caller logs and skips).
+        The DDL string, or ``None`` when the shared skip decision
+        (:func:`_resolve_selection`) says the projection cannot be built (a
+        missing key column, or no usable order/rank column at all) — caller
+        logs and skips; ``storage.duckdb`` DROPs the view fail-closed.
     """
-    missing_keys = [c for c in spec.key_columns if c not in available_columns]
-    if missing_keys:
-        logger.warning(
-            "Skipping %s: key column(s) %s absent from %s",
-            latest_view,
-            missing_keys,
-            base_view,
-        )
+    selection = _resolve_selection(spec, available_columns)
+    if selection is None:
+        # The decision itself came from _resolve_selection (called once,
+        # above); this recomputation is ONLY to pick which warning message to
+        # log — the missing-key and no-order-column messages carry different
+        # context and existing tests pin their exact text.
+        missing_keys = [c for c in spec.key_columns if c not in available_columns]
+        if missing_keys:
+            logger.warning(
+                "Skipping %s: key column(s) %s absent from %s",
+                latest_view,
+                missing_keys,
+                base_view,
+            )
+        else:
+            logger.warning(
+                "Skipping %s: no vintage-order column present on %s", latest_view, base_view
+            )
         return None
 
-    order_terms = [
-        f"{_quote_identifier(c)} DESC NULLS LAST"
-        for c in spec.order_columns
-        if c in available_columns
-    ]
-    if spec.rank_column is not None and spec.rank_column in available_columns:
+    order_terms = [f"{_quote_identifier(c)} DESC NULLS LAST" for c in selection.order_columns]
+    if selection.has_rank:
         order_terms.append(f"{_rank_case_sql(spec)} DESC")
-    if not order_terms:
-        logger.warning("Skipping %s: no vintage-order column present on %s", latest_view, base_view)
-        return None
 
-    key_columns = list(spec.key_columns) + [
-        c for c in spec.optional_key_columns if c in available_columns
-    ]
-    keys = ", ".join(_quote_identifier(c) for c in key_columns)
+    keys = ", ".join(_quote_identifier(c) for c in selection.key_columns)
     return (
         f"CREATE OR REPLACE VIEW {_quote_identifier(latest_view)} AS "
         f"SELECT * FROM {_quote_identifier(base_view)} "
@@ -162,10 +247,13 @@ def latest_view_sql(
 def select_latest_vintage(lf: pl.LazyFrame, spec: LatestViewSpec) -> pl.LazyFrame:
     """Apply the latest-vintage selection to a Polars frame (SQL-view mirror).
 
-    Semantically identical to the view produced by :func:`latest_view_sql`
-    (parity-tested). When a key column is missing the frame is returned
-    unchanged with a warning — downstream checks then see the raw vintages and
-    surface the drift loudly rather than crashing the whole quality run.
+    Makes the SAME selection and the SAME skip decision as
+    :func:`latest_view_sql` (both delegate to :func:`_resolve_selection`,
+    parity-tested) — they diverge only in how they REACT to a skip: this
+    function returns the frame unchanged (all vintages) with a warning,
+    rather than dropping anything, so downstream checks (the quality CLI)
+    then see the raw vintages and surface the drift loudly rather than
+    crashing the whole run.
 
     Args:
         lf: Frame carrying all vintages of one dataset.
@@ -176,15 +264,25 @@ def select_latest_vintage(lf: pl.LazyFrame, spec: LatestViewSpec) -> pl.LazyFram
         ``order_columns`` (DESC, nulls last) then by the optional rank.
     """
     schema_columns = set(lf.collect_schema().names())
-    missing_keys = [c for c in spec.key_columns if c not in schema_columns]
-    if missing_keys:
-        logger.warning("Latest-vintage selection skipped: key column(s) %s absent", missing_keys)
+    selection = _resolve_selection(spec, schema_columns)
+    if selection is None:
+        # The decision itself came from _resolve_selection (called once,
+        # above); this recomputation is ONLY to pick which warning message to
+        # log — existing tests pin the missing-key message's exact text.
+        missing_keys = [c for c in spec.key_columns if c not in schema_columns]
+        if missing_keys:
+            logger.warning(
+                "Latest-vintage selection skipped: key column(s) %s absent", missing_keys
+            )
+        else:
+            logger.warning("Latest-vintage selection skipped: no vintage-order column present")
         return lf
 
-    sort_columns = [c for c in spec.order_columns if c in schema_columns]
+    sort_columns = list(selection.order_columns)
     rank_alias = "_vintage_rank"
     drop_rank = False
-    if spec.rank_column is not None and spec.rank_column in schema_columns:
+    if selection.has_rank:
+        assert spec.rank_column is not None  # has_rank implies this (_resolve_selection)
         mapping = dict(spec.rank_map or ())
         lf = lf.with_columns(
             pl.col(spec.rank_column)
@@ -194,13 +292,8 @@ def select_latest_vintage(lf: pl.LazyFrame, spec: LatestViewSpec) -> pl.LazyFram
         )
         sort_columns.append(rank_alias)
         drop_rank = True
-    if not sort_columns:
-        logger.warning("Latest-vintage selection skipped: no vintage-order column present")
-        return lf
 
-    key_columns = list(spec.key_columns) + [
-        c for c in spec.optional_key_columns if c in schema_columns
-    ]
+    key_columns = list(selection.key_columns)
     out = lf.sort(sort_columns, descending=True, nulls_last=True).unique(
         subset=key_columns, keep="first", maintain_order=True
     )

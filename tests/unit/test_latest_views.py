@@ -122,6 +122,34 @@ class TestSqlPolarsParity:
         result = select_latest_vintage(df.lazy(), _SP_SPEC).collect()
         assert result["system_sell_price"].to_list() == [2.0]
 
+    def test_rank_only_schema_is_a_selection_not_a_skip_on_both_renderers(self):
+        """Sol finding 6 (R1-A/F-18): a legacy/alternate-endpoint schema of
+        {settlement_date, settlement_period, run_type} — NO available_at at
+        all — must stay a SELECTION (ordered by run rank alone) on BOTH
+        renderers, not a skip/drop. This extends TestSqlPolarsParity so
+        SQL<->Polars agreement is PROVEN for the rank-only case, not just
+        asserted by construction.
+        """
+        df = pl.DataFrame(
+            {
+                "settlement_date": [date(2024, 1, 15), date(2024, 1, 15)],
+                "settlement_period": [1, 1],
+                "system_sell_price": [44.0, 45.5],
+                "run_type": ["SF", "R1"],
+            }
+        )
+        rank_only_columns = {"settlement_date", "settlement_period", "run_type"}
+
+        sql = latest_view_sql("base", "base_latest", _SP_SPEC, rank_only_columns)
+        assert sql is not None, "rank-only schema must be a SELECTION, not a skip"
+        assert 'CASE "run_type"' in sql
+
+        polars_result = select_latest_vintage(df.lazy(), _SP_SPEC).collect()
+        assert polars_result["system_sell_price"].to_list() == [45.5], (
+            "rank-only schema must collapse to the higher-ranked run (R1 over SF), "
+            "proving both sides treat rank-only as a selection"
+        )
+
 
 class TestSelectLatestVintage:
     def test_rank_helper_column_not_leaked(self):
@@ -166,6 +194,31 @@ class TestSelectLatestVintage:
         )
         result = select_latest_vintage(df.lazy(), spec).collect().sort("fuel_type")
         assert result["output_usable"].to_list() == [300, 120]
+
+
+class TestMissingKeySkipAsymmetry:
+    """R1-A/F-18: pin the reaction pair for one column set as a DOCUMENTED
+    pair, not two unrelated behaviours. Both renderers share the SAME skip
+    decision (identical by construction, via _resolve_selection) and REACT
+    to it differently: latest_view_sql returns None (fail-closed drop),
+    select_latest_vintage returns the frame unchanged (pass-through, so
+    downstream drift is surfaced loudly rather than crashing). Both emit a
+    WARNING naming the missing key column(s).
+    """
+
+    def test_missing_key_reaction_pair(self, caplog: pytest.LogCaptureFixture) -> None:
+        columns = {"available_at"}  # settlement_date/settlement_period both absent
+        df = pl.DataFrame({"available_at": [datetime(2024, 1, 15, 10, tzinfo=UTC)] * 2})
+
+        with caplog.at_level("WARNING"):
+            sql = latest_view_sql("base", "base_latest", _SP_SPEC, columns)
+            assert sql is None
+            assert "key column(s)" in caplog.text
+            caplog.clear()
+
+            result = select_latest_vintage(df.lazy(), _SP_SPEC).collect()
+            assert result.height == 2, "pass-through: every input row survives the skip"
+            assert "key column(s)" in caplog.text
 
 
 class TestQualityReadsLatestSurface:

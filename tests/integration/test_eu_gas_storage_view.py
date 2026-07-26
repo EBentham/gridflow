@@ -70,6 +70,9 @@ def _seed_silver(data_dir: Path) -> None:
     )
 
     # Minimal seeds so uk_imbalance_context.sql binds under strict mode.
+    # available_at is required here too (R1-A): the gold view now reads
+    # silver_elexon_system_prices_latest, which _register_views only builds
+    # when the seed carries a key + at least one order/rank column.
     _write_parquet(
         pl.DataFrame(
             {
@@ -80,6 +83,7 @@ def _seed_silver(data_dir: Path) -> None:
                 "system_buy_price": [55.0],
                 "net_imbalance_volume": [-120.5],
                 "price_derivation_code": ["A"],
+                "available_at": ["2024-01-16T06:00:00Z"],
             }
         ),
         data_dir

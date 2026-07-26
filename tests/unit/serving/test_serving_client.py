@@ -37,7 +37,7 @@ lives here.
 
 from __future__ import annotations
 
-from datetime import date
+from datetime import UTC, date, datetime
 from typing import TYPE_CHECKING
 
 import duckdb
@@ -55,6 +55,12 @@ if TYPE_CHECKING:
 # queried relation (so the gold methods bind cleanly with no EXCLUDE clause).
 # Do NOT make the gold fixtures carry the six columns — that would mask the
 # present-columns behavior the gold tests below assert.
+#
+# R1-A/F-01 deliberate exception: gold_uk_imbalance_context now genuinely
+# projects `available_at` (the collapsed view's winning-vintage provenance
+# stamp) as a real gold column — this is NOT fixture drift, it mirrors the
+# shipped SQL view. The other five bitemporal columns are still absent from
+# the gold fixtures.
 _BITEMPORAL_COLS = list(_BITEMPORAL_EXCLUDE)
 
 
@@ -65,6 +71,7 @@ def _create_view(
     rows: Sequence[tuple[object, ...]],
     *,
     with_bitemporal: bool = True,
+    bitemporal_types: dict[str, str] | None = None,
 ) -> None:
     """Create one seeded table named ``name`` modelling a real silver/gold view.
 
@@ -78,39 +85,74 @@ def _create_view(
         NONE of the six (``with_bitemporal=False``). Faking those columns on a
         gold table would mask a real binder mismatch in the client.
 
+    R1-A/F-01: ``available_at`` is now a RETAINED and ASSERTED column on the
+    ``system_prices`` paths (it survives the client's EXCLUDE deliberately), so
+    it must carry a real ``TIMESTAMPTZ`` value rather than the ``bt_<col>``
+    VARCHAR sentinel every other bitemporal column gets. To model that: declare
+    ``available_at`` directly in ``columns`` (with its real type) and supply its
+    real value in each row tuple — this helper then SKIPS re-appending it as a
+    sentinel, so no duplicate column is created. The other five bitemporal
+    columns stay VARCHAR sentinels as before.
+
     Args:
         con: An open writeable DuckDB connection.
         name: The view/table name the client SELECTs from (source-qualified).
-        columns: ``(column_name, sql_type)`` pairs for the PUBLIC surface.
+        columns: ``(column_name, sql_type)`` pairs for the PUBLIC surface. A
+            bitemporal column declared here (e.g. ``available_at``) is treated
+            as public and is never re-appended as a sentinel.
         rows: One tuple per row holding the public-column values in order.
         with_bitemporal: When True, append the six bitemporal/partitioning
-            columns (silver layout). When False, the table holds only the public
-            columns (gold SQL-view layout).
+            columns (silver layout) EXCEPT any already declared in ``columns``.
+            When False, the table holds only the public columns (gold
+            SQL-view layout).
+        bitemporal_types: SQL-type overrides (column -> type) for an
+            auto-appended bitemporal sentinel column. Unused for a bitemporal
+            column already declared in ``columns`` — that one is skipped here
+            entirely, per the R1-A note above.
     """
+    declared = {col for col, _ in columns}
     public_defs = ", ".join(f"{col} {sql_type}" for col, sql_type in columns)
-    if with_bitemporal:
-        bitemporal_defs = ", ".join(f"{col} VARCHAR" for col in _BITEMPORAL_COLS)
+    # A bitemporal column the caller already declared publicly (available_at,
+    # R1-A/F-01) must NOT be appended again as a bt_<col> sentinel — that would
+    # create a duplicate column.
+    sentinel_cols = [c for c in _BITEMPORAL_COLS if c not in declared] if with_bitemporal else []
+    types = bitemporal_types or {}
+    if sentinel_cols:
+        bitemporal_defs = ", ".join(f"{col} {types.get(col, 'VARCHAR')}" for col in sentinel_cols)
         con.execute(f"CREATE TABLE {name} ({public_defs}, {bitemporal_defs})")
     else:
         con.execute(f"CREATE TABLE {name} ({public_defs})")
 
-    n_extra = len(_BITEMPORAL_COLS) if with_bitemporal else 0
-    placeholders = ", ".join(["?"] * (len(columns) + n_extra))
+    placeholders = ", ".join(["?"] * (len(columns) + len(sentinel_cols)))
     for row in rows:
-        # Fill the bitemporal columns with stable sentinels; the client EXCLUDEs
-        # them, so their values never reach an assertion.
-        extra_vals = [f"bt_{col}" for col in _BITEMPORAL_COLS] if with_bitemporal else []
+        # Fill the (non-declared) bitemporal columns with stable sentinels; the
+        # client EXCLUDEs them (unless retained), so their values never reach
+        # an assertion. A column given a non-VARCHAR type via bitemporal_types
+        # gets NULL instead — a bt_<col> string would fail INSERT conversion
+        # (Sol diff-review nit 3).
+        extra_vals = [None if col in types else f"bt_{col}" for col in sentinel_cols]
         con.execute(f"INSERT INTO {name} VALUES ({placeholders})", [*row, *extra_vals])
 
 
 @pytest.fixture
 def catalogue(tmp_path: Path) -> Path:
-    """Build a DuckDB catalogue seeded with the five views the client queries.
+    """Build a DuckDB catalogue seeded with the views the client queries.
 
     Returns the catalogue path; tests open a read-only GridflowClient over it.
     Each view's PUBLIC columns mirror the live silver/gold schema the matching
     ``get_*`` method filters/orders by; the bitemporal columns are appended by
     ``_create_view`` so ``SELECT * EXCLUDE (...)`` resolves.
+
+    R1-A/F-01 (Sol finding 3): ``silver_elexon_system_prices`` (base) and
+    ``silver_elexon_system_prices_latest`` must NOT hold the same rows, or no
+    assertion could distinguish which relation ``get_system_prices`` actually
+    read once ``available_at`` retention lands (both would expose it). So the
+    base table seeds DUPLICATE vintages for 2024-01-15 (08:00Z/50.0 and
+    18:00Z/52.5 — 4 rows total, non-unique grain for that key), and
+    ``_latest`` holds ONLY the winning row for that key (18:00Z/52.5 — 3 rows
+    total, unique grain). A regression back to the base view in
+    ``get_system_prices`` would return 2 rows for 2024-01-15 and fail every
+    assertion in ``test_get_system_prices_returns_rows_in_range``.
     """
     db_path = tmp_path / "catalogue.duckdb"
     con = duckdb.connect(str(db_path), read_only=False)
@@ -118,11 +160,32 @@ def catalogue(tmp_path: Path) -> Path:
         _create_view(
             con,
             "silver_elexon_system_prices",
-            [("settlement_date", "DATE"), ("timestamp_utc", "TIMESTAMP"), ("price", "DOUBLE")],
             [
-                ("2024-01-10", "2024-01-10 00:00:00", 40.0),
-                ("2024-01-15", "2024-01-15 00:00:00", 50.0),
-                ("2024-01-20", "2024-01-20 00:00:00", 60.0),
+                ("settlement_date", "DATE"),
+                ("timestamp_utc", "TIMESTAMP"),
+                ("price", "DOUBLE"),
+                ("available_at", "TIMESTAMPTZ"),
+            ],
+            [
+                ("2024-01-10", "2024-01-10 00:00:00", 40.0, "2024-01-10 00:00:00+00"),
+                ("2024-01-15", "2024-01-15 00:00:00", 50.0, "2024-01-15 08:00:00+00"),
+                ("2024-01-15", "2024-01-15 00:00:00", 52.5, "2024-01-15 18:00:00+00"),
+                ("2024-01-20", "2024-01-20 00:00:00", 60.0, "2024-01-20 00:00:00+00"),
+            ],
+        )
+        _create_view(
+            con,
+            "silver_elexon_system_prices_latest",
+            [
+                ("settlement_date", "DATE"),
+                ("timestamp_utc", "TIMESTAMP"),
+                ("price", "DOUBLE"),
+                ("available_at", "TIMESTAMPTZ"),
+            ],
+            [
+                ("2024-01-10", "2024-01-10 00:00:00", 40.0, "2024-01-10 00:00:00+00"),
+                ("2024-01-15", "2024-01-15 00:00:00", 52.5, "2024-01-15 18:00:00+00"),
+                ("2024-01-20", "2024-01-20 00:00:00", 60.0, "2024-01-20 00:00:00+00"),
             ],
         )
         _create_view(
@@ -171,10 +234,11 @@ def catalogue(tmp_path: Path) -> Path:
                 ("settlement_date", "DATE"),
                 ("timestamp_utc", "TIMESTAMP"),
                 ("system_sell_price", "DOUBLE"),
+                ("available_at", "TIMESTAMPTZ"),
             ],
             [
-                ("2024-01-15", "2024-01-15 00:00:00", 55.0),
-                ("2024-01-25", "2024-01-25 00:00:00", 65.0),
+                ("2024-01-15", "2024-01-15 00:00:00", 55.0, "2024-01-15 18:00:00+00"),
+                ("2024-01-25", "2024-01-25 00:00:00", 65.0, "2024-01-25 06:00:00+00"),
             ],
             with_bitemporal=False,
         )
@@ -189,7 +253,15 @@ def catalogue(tmp_path: Path) -> Path:
 
 
 def test_get_system_prices_returns_rows_in_range(catalogue: Path) -> None:
-    """get_system_prices filters on settlement_date BETWEEN start AND end."""
+    """get_system_prices reads silver_elexon_system_prices_latest (R1-A/F-01).
+
+    Filters on settlement_date BETWEEN start AND end, over the vintage-
+    collapsed relation: unique grain (one row for 2024-01-15, not the base
+    view's two duplicate-vintage rows), the WINNING value (52.5, not the
+    earlier vintage's 50.0), and the exact winning available_at timestamp. A
+    regression back to the base view returns 2 rows for 2024-01-15 and fails
+    all three assertions below.
+    """
     client = GridflowClient(db_path=catalogue)
     try:
         df = client.get_system_prices("2024-01-12", "2024-01-18")
@@ -197,7 +269,8 @@ def test_get_system_prices_returns_rows_in_range(catalogue: Path) -> None:
         client.close()
     # Only the 2024-01-15 row falls in [12, 18]; 01-10 and 01-20 are excluded.
     assert df["settlement_date"].to_list() == [date(2024, 1, 15)]
-    assert df["price"].to_list() == [50.0]
+    assert df["price"].to_list() == [52.5]
+    assert df["available_at"].to_list() == [datetime(2024, 1, 15, 18, tzinfo=UTC)]
 
 
 def test_get_fuel_generation_returns_rows_in_range(catalogue: Path) -> None:
@@ -264,7 +337,12 @@ def test_get_gas_storage_country_filter(catalogue: Path) -> None:
 
 
 def test_get_imbalance_context_returns_rows_in_range(catalogue: Path) -> None:
-    """get_imbalance_context reads gold_uk_imbalance_context by settlement_date."""
+    """get_imbalance_context reads gold_uk_imbalance_context by settlement_date.
+
+    R1-A/F-01: the gold view now genuinely projects available_at (the winning
+    price vintage's provenance stamp) — the exact-column-set assertion below
+    is extended to include it, and its value is asserted too.
+    """
     client = GridflowClient(db_path=catalogue)
     try:
         df = client.get_imbalance_context("2024-01-14", "2024-01-16")
@@ -272,8 +350,15 @@ def test_get_imbalance_context_returns_rows_in_range(catalogue: Path) -> None:
         client.close()
     assert df.height == 1
     assert df["system_sell_price"].to_list() == [55.0]
-    # The gold view's public columns are returned in full (no bitemporal EXCLUDE).
-    assert set(df.columns) == {"settlement_date", "timestamp_utc", "system_sell_price"}
+    assert df["available_at"].to_list() == [datetime(2024, 1, 15, 18, tzinfo=UTC)]
+    # The gold view's public columns are returned in full (no bitemporal EXCLUDE
+    # beyond the deliberately-retained available_at).
+    assert set(df.columns) == {
+        "settlement_date",
+        "timestamp_utc",
+        "system_sell_price",
+        "available_at",
+    }
 
 
 # --------------------------------------------------------------------------- #
@@ -294,18 +379,32 @@ def test_get_imbalance_context_returns_rows_in_range(catalogue: Path) -> None:
     ],
 )
 def test_bitemporal_columns_excluded(catalogue: Path, method_name: str) -> None:
-    """No silver-backed get_* method leaks the bitemporal/partitioning columns.
+    """No silver-backed get_* method leaks a bitemporal/partitioning column it
+    does not deliberately retain.
 
     A passing assert proves the SELECT * EXCLUDE (...) actually fired (the
     seeded silver tables carry all six columns).
+
+    Narrowed deliberately for get_system_prices, NOT weakened (R1-A/F-01):
+    ADR-025 makes available_at the vintage discriminator for the
+    vintage-collapsed system_prices read path, so get_system_prices retains
+    and returns it while the other five stay excluded — asserted explicitly
+    below. get_fuel_generation and get_weather are unchanged: all six stay
+    excluded for them.
     """
     client = GridflowClient(db_path=catalogue)
     try:
         df = getattr(client, method_name)("2024-01-01", "2024-12-31")
     finally:
         client.close()
+    retained = {"available_at"} if method_name == "get_system_prices" else set()
     for excluded in _BITEMPORAL_EXCLUDE:
-        assert excluded not in df.columns, f"{method_name} leaked excluded column {excluded}"
+        if excluded in retained:
+            assert excluded in df.columns, (
+                f"{method_name} must retain {excluded} (R1-A/F-01 vintage discriminator)"
+            )
+        else:
+            assert excluded not in df.columns, f"{method_name} leaked excluded column {excluded}"
 
 
 # --------------------------------------------------------------------------- #
@@ -343,9 +442,12 @@ def test_quote_in_date_param_does_not_inject(catalogue: Path) -> None:
     finally:
         client.close()
     # If the quote had escaped the literal, the WHERE would be defeated and all
-    # three rows returned; binding keeps it to the single 2024-01-15 row.
+    # three _latest rows returned; binding keeps it to the single 2024-01-15
+    # row. Sol pass-2 N1: the divergent _latest fixture (R1-A/F-01) makes the
+    # winning 2024-01-15 price 52.5, not the base view's 50.0 — the injection-
+    # guard property under test is unchanged, only the winning value differs.
     assert df.height == 1
-    assert df["price"].to_list() == [50.0]
+    assert df["price"].to_list() == [52.5]
 
 
 def test_quote_in_string_filter_param_is_bound(catalogue: Path) -> None:

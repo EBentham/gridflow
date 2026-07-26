@@ -136,7 +136,14 @@ class TestSystemPriceTransformer:
         assert rows == {("SF", 44.0), ("II", 45.5), ("R1", 46.25)}
 
     def test_no_run_type_rows_remain_intact(self):
-        """Live-shaped rows without a run type must not be deduplicated."""
+        """Live-shaped rows without a run type must not be deduplicated.
+
+        F-13 (R1-A): `run_type` is now ALWAYS emitted as a typed-null Utf8
+        column (never dropped) so the gold view's producer/view column
+        contract cannot silently drift — "no run type" means the column is
+        present but all-null, not absent. The property under test (live-shaped
+        rows without a run type are NOT deduplicated) is unchanged.
+        """
         raw = self._make_raw_df(
             [
                 {
@@ -159,7 +166,9 @@ class TestSystemPriceTransformer:
         result = self.transformer.transform(raw)
 
         assert len(result) == 2
-        assert "run_type" not in result.columns
+        assert "run_type" in result.columns, "F-13: run_type must be emitted as typed-null"
+        assert result["run_type"].dtype == pl.Utf8
+        assert result["run_type"].null_count() == result.height
         assert set(result["system_sell_price"].to_list()) == {44.0, 45.5}
 
     def test_run_writes_one_file_per_bronze_vintage(self, tmp_path: Path):
@@ -279,8 +288,12 @@ class TestSystemPriceTransformer:
         renamed it to `run_type` and the Pydantic regex
         `^(II|SF|R[1-3]|RF|DF)$` rejected it. Post-V2 it lands in a
         dedicated `price_derivation_code` column with no constraint;
-        `run_type` stays absent because this endpoint exposes no
-        run-type field."""
+        `run_type` is emitted as typed-null (F-13, R1-A) and is NEVER
+        populated from priceDerivationCode — this endpoint exposes no
+        run-type field, so the guarantee is expressed on VALUES (all-null),
+        which is strictly stronger than an absence assertion: absence could
+        not have caught a leak into a column that also happened to exist.
+        """
         raw = self._make_raw_df(
             [
                 {
@@ -307,12 +320,15 @@ class TestSystemPriceTransformer:
             "priceDerivationCode must map to a dedicated "
             "`price_derivation_code` column, not `run_type`"
         )
-        assert "run_type" not in result.columns, (
+        codes = sorted(result["price_derivation_code"].to_list())
+        assert codes == ["N", "P"]
+
+        assert "run_type" in result.columns, "F-13: run_type must be emitted as typed-null"
+        assert result["run_type"].dtype == pl.Utf8
+        assert result["run_type"].null_count() == result.height, (
             "this endpoint exposes no run-type field — "
             "`run_type` must not be populated from priceDerivationCode"
         )
-        codes = sorted(result["price_derivation_code"].to_list())
-        assert codes == ["N", "P"]
 
     def test_missing_columns_returns_empty(self):
         """Missing required columns should return empty DataFrame."""

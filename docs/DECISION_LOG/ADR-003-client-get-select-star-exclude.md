@@ -1,8 +1,25 @@
 # ADR-003 (a.k.a. ADR-GF-003) — GridflowClient.get_* SELECT * EXCLUDE pattern
 
-**Status:** Accepted (amended 2026-06-07, CH4-07)
+**Status:** Accepted (amended 2026-06-07, CH4-07; amended 2026-07-26, v0.18 R1-A)
 **Date:** 2026-05-10
 **Phase:** Companion to gridflow_models F11 / WBH-03
+
+> **Amendment (2026-07-26, v0.18 R1 Cycle A / F-01):** the `get_*` surface now
+> **retains** `available_at` for the two `system_prices`-derived read paths —
+> `get_system_prices` (reads `silver_elexon_system_prices_latest`) and
+> `get_imbalance_context` (reads `gold_uk_imbalance_context`, which now
+> projects `available_at`). `_present_bitemporal_exclude_clause` gained a
+> keyword-only `retain: Sequence[str] = ()` parameter; these two call sites
+> pass `retain=_VINTAGE_VISIBLE = ("available_at",)`, converted to a set
+> internally, so `available_at` survives the EXCLUDE while the other five
+> bitemporal columns stay hidden exactly as before. **Rationale:** ADR-025
+> made `available_at` a public vintage discriminator for APPEND_ONLY
+> datasets — hiding it on a vintage-collapsed relation would leave a caller
+> unable to tell which vintage it is holding, defeating the point of
+> collapsing to `_latest` in the first place. The other four `get_*` methods
+> (`get_fuel_generation`, `get_weather`, `get_gas_storage`, and the deprecated
+> `get_generation_by_fuel` shim) are unchanged — they still exclude (or never
+> carried) all bitemporal columns.
 
 > **Amendment (2026-06-07, CH4-07 — `fix/ch4-architecture-hygiene`):** the
 > "Consequences" claim that a column named in EXCLUDE but absent fails loudly
