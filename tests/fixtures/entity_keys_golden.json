@@ -1,0 +1,135 @@
+{
+  "_comment": "R2-A / F-16 / D-8: committed golden entity-key map for every registered Elexon dataset. 'required' + 'optional' are declared verbatim from each transformer's own ENTITY_KEY_COLUMNS/OPTIONAL_ENTITY_KEY_COLUMNS (silver/elexon/*.py), hoisted from each transformer's existing unique(subset=...) dedup key where one exists. system_prices and remit have NO unique(subset=...) in transform() -- their keys are sourced from LATEST_VIEW_SPECS (silver/latest_views.py), cited in-comment at the class attribute site. Order is explicitly NOT part of the contract (D-8, test_unique_subset_is_order_insensitive): consumers compare declared keys as SETS, never caring about list order. See test_entity_key_completeness.py::test_resolved_entity_keys_match_the_golden_map.",
+  "elexon/agpt": {
+    "required": ["settlement_date", "settlement_period", "psr_type"],
+    "optional": []
+  },
+  "elexon/agws": {
+    "required": ["settlement_date", "settlement_period", "psr_type"],
+    "optional": []
+  },
+  "elexon/atl": {
+    "required": ["settlement_date", "settlement_period"],
+    "optional": []
+  },
+  "elexon/bmunits_reference": {
+    "required": ["bm_unit_id"],
+    "optional": []
+  },
+  "elexon/boal": {
+    "required": ["settlement_date", "settlement_period", "bm_unit_id"],
+    "optional": ["acceptance_number"]
+  },
+  "elexon/disbsad": {
+    "required": ["settlement_date", "settlement_period"],
+    "optional": ["adjustment_action_id", "component"]
+  },
+  "elexon/fou2t14d": {
+    "required": ["settlement_date", "fuel_type", "published_at"],
+    "optional": ["settlement_period"]
+  },
+  "elexon/freq": {
+    "required": ["timestamp_utc"],
+    "optional": []
+  },
+  "elexon/fuelhh": {
+    "required": ["settlement_date", "settlement_period", "fuel_type"],
+    "optional": []
+  },
+  "elexon/fuelinst": {
+    "required": ["timestamp_utc", "fuel_type"],
+    "optional": []
+  },
+  "elexon/imbalngc": {
+    "required": ["settlement_date", "settlement_period"],
+    "optional": []
+  },
+  "elexon/inddem": {
+    "required": ["settlement_date", "settlement_period"],
+    "optional": ["boundary"]
+  },
+  "elexon/indgen": {
+    "required": ["settlement_date", "settlement_period"],
+    "optional": ["boundary"]
+  },
+  "elexon/indo": {
+    "required": ["settlement_date", "settlement_period"],
+    "optional": []
+  },
+  "elexon/indod": {
+    "required": ["settlement_date"],
+    "optional": []
+  },
+  "elexon/itsdo": {
+    "required": ["settlement_date", "settlement_period"],
+    "optional": []
+  },
+  "elexon/lolpdrm": {
+    "required": ["settlement_date", "settlement_period"],
+    "optional": []
+  },
+  "elexon/market_depth": {
+    "required": ["settlement_date", "settlement_period"],
+    "optional": []
+  },
+  "elexon/melngc": {
+    "required": ["settlement_date", "settlement_period"],
+    "optional": []
+  },
+  "elexon/mid": {
+    "required": ["settlement_date", "settlement_period"],
+    "optional": ["data_provider_id"]
+  },
+  "elexon/ndf": {
+    "required": ["settlement_date", "settlement_period", "forecast_type"],
+    "optional": ["published_at"]
+  },
+  "elexon/ndfd": {
+    "required": ["settlement_date", "settlement_period", "forecast_type"],
+    "optional": ["published_at"]
+  },
+  "elexon/netbsad": {
+    "required": ["settlement_date", "settlement_period"],
+    "optional": []
+  },
+  "elexon/nonbm": {
+    "required": ["settlement_date", "settlement_period"],
+    "optional": []
+  },
+  "elexon/pn": {
+    "required": ["settlement_date", "settlement_period", "bm_unit_id"],
+    "optional": []
+  },
+  "elexon/remit": {
+    "required": ["mrid"],
+    "optional": []
+  },
+  "elexon/soso": {
+    "required": ["settlement_date", "contract_identification"],
+    "optional": ["trade_direction"]
+  },
+  "elexon/system_prices": {
+    "required": ["settlement_date", "settlement_period"],
+    "optional": []
+  },
+  "elexon/temp": {
+    "required": ["timestamp_utc"],
+    "optional": []
+  },
+  "elexon/tsdf": {
+    "required": ["settlement_date", "settlement_period"],
+    "optional": ["boundary"]
+  },
+  "elexon/tsdfd": {
+    "required": ["forecast_date"],
+    "optional": []
+  },
+  "elexon/uou2t14d": {
+    "required": ["settlement_date", "bm_unit_id"],
+    "optional": ["settlement_period"]
+  },
+  "elexon/windfor": {
+    "required": ["settlement_date", "settlement_period"],
+    "optional": ["published_at"]
+  }
+}

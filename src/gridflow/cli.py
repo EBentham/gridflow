@@ -19,7 +19,7 @@ from typing import TYPE_CHECKING
 import typer
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Iterator
+    from collections.abc import Callable, Iterable, Iterator
 
 from gridflow.pipeline import runner
 from gridflow.pipeline.runner import (
@@ -607,6 +607,54 @@ def status() -> None:
     con.close()
 
 
+def _entity_key_for(
+    source: str, dataset: str, available_columns: Iterable[str]
+) -> list[str] | None:
+    """Resolve the F-16 entity/business key for a quality-check frame.
+
+    Class-attribute reads only (T-R2A-04) -- no instantiation, no dynamic
+    import from a data-derived name, no SQL from ``source``/``dataset``.
+    Returns the transformer's declared ``ENTITY_KEY_COLUMNS`` plus whichever
+    ``OPTIONAL_ENTITY_KEY_COLUMNS`` are actually present on this frame (D-8).
+
+    A hardcoded ``(settlement_date, settlement_period)`` pair previously fed
+    every dataset's duplicate check regardless of its real grain, falsely
+    flagging every genuinely-distinct row of a finer-grained dataset (e.g.
+    ``fuelhh``'s ``fuel_type``) as a duplicate (F-16). Falls back LOUDLY (a
+    WARNING) to that legacy pair only when both columns are actually present
+    and no key is declared -- preserving today's behaviour for any dataset
+    that was checked before this fix but never declares
+    ``ENTITY_KEY_COLUMNS`` (an unregistered or future dataset). Returns
+    ``None`` -- skip the check entirely, exactly like before this fix -- for
+    a dataset with neither a declared key nor the legacy pair present
+    (every non-Elexon source today: none of them emit
+    ``settlement_date``/``settlement_period``). ``check_duplicates``'s own
+    missing-column failure path is untouched for any dataset THIS function
+    does resolve a key for.
+    """
+    from gridflow.silver.registry import get_transformer_class
+
+    available = set(available_columns)
+    cls = get_transformer_class(source, dataset)
+    if cls is not None and cls.ENTITY_KEY_COLUMNS:
+        return list(cls.ENTITY_KEY_COLUMNS) + [
+            c for c in cls.OPTIONAL_ENTITY_KEY_COLUMNS if c in available
+        ]
+
+    legacy_key = ["settlement_date", "settlement_period"]
+    if set(legacy_key).issubset(available):
+        logger.warning(
+            "No declared ENTITY_KEY_COLUMNS for %s/%s; falling back to the "
+            "legacy (settlement_date, settlement_period) pair for the "
+            "duplicate check",
+            source,
+            dataset,
+        )
+        return legacy_key
+
+    return None
+
+
 @app.command()
 def quality(
     source: str | None = typer.Option(None, help="Filter by source"),
@@ -694,12 +742,15 @@ def quality(
                     )
                 )
 
-            # Check for duplicates on key columns
-            if "settlement_date" in df.columns and "settlement_period" in df.columns:
+            # Check for duplicates on the dataset's own entity grain (F-16):
+            # see _entity_key_for's docstring for why a hardcoded pair was
+            # wrong and what stays unchanged for non-Elexon sources.
+            entity_key = _entity_key_for(src, ds, df.columns)
+            if entity_key is not None:
                 reporter.add_result(
                     check_duplicates(
                         df,
-                        ["settlement_date", "settlement_period"],
+                        entity_key,
                         source=src,
                         dataset=ds,
                     )
