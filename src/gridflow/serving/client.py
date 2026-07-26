@@ -24,11 +24,14 @@ if TYPE_CHECKING:
 # schema consumers need the same contract without copying literals.
 #
 # Not every relation carries all six, though: the cross-source gold SQL views
-# (gold_eu_gas_storage, gold_uk_imbalance_context) are explicit-column SELECTs
-# that carry NONE of them. An unconditional EXCLUDE of absent columns raises
+# are explicit-column SELECTs — gold_eu_gas_storage carries NONE of them, and
+# gold_uk_imbalance_context deliberately projects available_at as a PUBLIC
+# column (R1-A/F-01: the winning price vintage's provenance stamp, retained,
+# not hidden). An unconditional EXCLUDE of absent columns raises
 # BinderException, so the helpers EXCLUDE only the bitemporal columns ACTUALLY
-# present in the queried relation (see _present_bitemporal_exclude_clause). A
-# new public column on either layer still flows through automatically.
+# present in the queried relation, minus any retained ones (see
+# _present_bitemporal_exclude_clause). A new public column on either layer
+# still flows through automatically.
 _BITEMPORAL_EXCLUDE = BITEMPORAL_EXCLUDE
 
 # WHY (R1-A, F-01): ADR-025 makes available_at the vintage discriminator for

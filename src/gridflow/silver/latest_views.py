@@ -32,9 +32,11 @@ stays a SELECTION on both renderers, not a skip — see :func:`_resolve_selectio
 Ordering is ``available_at``-primary (ADR-025: the live system_prices feed has
 no run label; publication order is the only universal vintage axis), with an
 optional categorical rank as the secondary tie-break. Both renderers adapt to
-the columns actually present: silver written from the live DISEBSP feed has no
-``run_type`` column at all, and pre-F0 legacy files union in null
-``available_at`` (sorted last).
+the columns actually present: silver written BEFORE v0.18 R1-A from the live
+DISEBSP feed has no ``run_type`` column at all (the transformer now always
+emits it, typed-null when the raw field is absent — F-13), so the
+rank-column-absent path is legacy-file compatibility, and pre-F0 legacy files
+union in null ``available_at`` (sorted last).
 
 Kept dependency-light (polars + stdlib only) so ``storage.duckdb`` can import
 it without dragging in the transformer stack.

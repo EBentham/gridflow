@@ -127,8 +127,10 @@ def _create_view(
     for row in rows:
         # Fill the (non-declared) bitemporal columns with stable sentinels; the
         # client EXCLUDEs them (unless retained), so their values never reach
-        # an assertion.
-        extra_vals = [f"bt_{col}" for col in sentinel_cols]
+        # an assertion. A column given a non-VARCHAR type via bitemporal_types
+        # gets NULL instead — a bt_<col> string would fail INSERT conversion
+        # (Sol diff-review nit 3).
+        extra_vals = [None if col in types else f"bt_{col}" for col in sentinel_cols]
         con.execute(f"INSERT INTO {name} VALUES ({placeholders})", [*row, *extra_vals])
 
 
