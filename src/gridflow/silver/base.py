@@ -9,7 +9,10 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
-from typing import ClassVar
+from typing import TYPE_CHECKING, ClassVar
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
 
 import polars as pl
 from pydantic import BaseModel, ValidationError
@@ -306,8 +309,33 @@ class BaseSilverTransformer(ABC):
     ``LatestViewSpec.optional_key_columns``, ``latest_views.py``) — e.g.
     ``fou2t14d``'s live forecastDate-only shape has no ``settlement_period``.
     Consumers resolve the effective key as ``ENTITY_KEY_COLUMNS + tuple(c for
-    c in OPTIONAL_ENTITY_KEY_COLUMNS if c in <the frame's columns>)``.
+    c in OPTIONAL_ENTITY_KEY_COLUMNS if c in <the frame's columns>)`` via
+    :meth:`resolve_entity_key`.
     """
+
+    @classmethod
+    def resolve_entity_key(cls, available_columns: Iterable[str]) -> tuple[str, ...] | None:
+        """Resolve the effective F-16 entity/business key for a frame with
+        the given columns.
+
+        Default (this implementation): ``ENTITY_KEY_COLUMNS`` plus whichever
+        ``OPTIONAL_ENTITY_KEY_COLUMNS`` are actually present -- the additive
+        contract every dataset with a single required shape needs. Returns
+        ``None`` when ``ENTITY_KEY_COLUMNS`` is undeclared (empty).
+
+        A transformer whose ``transform()`` picks between mutually EXCLUSIVE
+        required shapes (not merely an additive optional refinement --
+        e.g. ``WindForecastTransformer``'s settlement-coordinate vs
+        ``timestamp_utc``-only fallback) overrides this classmethod to
+        mirror that exact conditional. Class-level only (no instantiation,
+        T-R2A-04) -- called by the CLI's ``_entity_key_for``.
+        """
+        if not cls.ENTITY_KEY_COLUMNS:
+            return None
+        available = set(available_columns)
+        return tuple(cls.ENTITY_KEY_COLUMNS) + tuple(
+            c for c in cls.OPTIONAL_ENTITY_KEY_COLUMNS if c in available
+        )
 
     def __init__(self, data_dir: Path):
         self.data_dir = data_dir

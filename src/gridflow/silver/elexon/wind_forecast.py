@@ -5,9 +5,12 @@ from __future__ import annotations
 import json
 import logging
 from datetime import UTC, date, datetime
-from typing import Any, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 import polars as pl
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
 
 from gridflow.schemas.elexon import ElexonWindForecast
 from gridflow.silver.base import BaseSilverTransformer
@@ -24,13 +27,35 @@ class WindForecastTransformer(BaseSilverTransformer):
     dataset = "windfor"
     schema_cls = ElexonWindForecast
     DATASET_VERSION: ClassVar[str] = "1.0.0"
-    # D-8: the static base key. transform()'s own dedup_cols has a
-    # timestamp_utc-only FALLBACK when neither settlement_date nor
-    # settlement_period is present at all (wind_forecast.py) -- a
-    # degenerate shape not represented here; the declared key is the
-    # primary (settlement-coordinate) grain the CLI duplicate check keys on.
+    # D-8: the static base key -- the PRIMARY (settlement-coordinate) shape.
+    # transform()'s own dedup_cols (below) has a real timestamp_utc-only
+    # FALLBACK when neither settlement_date nor settlement_period is
+    # present at all. That alternate shape is NOT expressible as an
+    # additive ENTITY_KEY_COLUMNS + OPTIONAL_ENTITY_KEY_COLUMNS refinement
+    # (it swaps the REQUIRED columns, not just an optional suffix), so
+    # resolve_entity_key() is overridden below to mirror transform()'s exact
+    # conditional instead. These two class attributes stay declared for the
+    # golden-map / completeness contract (A-4, A-13) and remain correct for
+    # the primary shape.
     ENTITY_KEY_COLUMNS = ("settlement_date", "settlement_period")
     OPTIONAL_ENTITY_KEY_COLUMNS = ("published_at",)
+
+    @classmethod
+    def resolve_entity_key(cls, available_columns: Iterable[str]) -> tuple[str, ...]:
+        """Mirror transform()'s own dedup_cols conditional exactly (below):
+        settlement_date + settlement_period when both are present, else the
+        timestamp_utc-only fallback; published_at appended when present
+        (transform() always emits it -- typed-null when bronze lacks the
+        publish field, see the ``else`` branch below)."""
+        available = set(available_columns)
+        key: tuple[str, ...]
+        if "settlement_date" in available and "settlement_period" in available:
+            key = ("settlement_date", "settlement_period")
+        else:
+            key = ("timestamp_utc",)
+        if "published_at" in available:
+            key = (*key, "published_at")
+        return key
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         bronze_path = (

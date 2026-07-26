@@ -636,10 +636,10 @@ def _entity_key_for(
 
     available = set(available_columns)
     cls = get_transformer_class(source, dataset)
-    if cls is not None and cls.ENTITY_KEY_COLUMNS:
-        return list(cls.ENTITY_KEY_COLUMNS) + [
-            c for c in cls.OPTIONAL_ENTITY_KEY_COLUMNS if c in available
-        ]
+    if cls is not None:
+        resolved = cls.resolve_entity_key(available)
+        if resolved:
+            return list(resolved)
 
     legacy_key = ["settlement_date", "settlement_period"]
     if set(legacy_key).issubset(available):
