@@ -401,6 +401,7 @@ class ElexonTSDF(BaseSchema):
     timestamp_utc: datetime
     forecast_demand_mw: float
     boundary: str | None = None
+    published_at: datetime | None = None
     data_provider: str = Field(default="elexon")
     ingested_at: datetime | None = None
 
@@ -444,6 +445,7 @@ class ElexonINDOD(BaseSchema):
     settlement_date: date
     timestamp_utc: datetime
     initial_demand_outturn_mw: float
+    published_at: datetime | None = None
     data_provider: str = Field(default="elexon")
     ingested_at: datetime | None = None
 
@@ -784,6 +786,7 @@ class ElexonSOSO(BaseSchema):
     trader_unit: str | None = None
     start_time: datetime | None = None
     end_time: datetime | None = None
+    published_at: datetime | None = None
     data_provider: str = Field(default="elexon")
     ingested_at: datetime | None = None
 

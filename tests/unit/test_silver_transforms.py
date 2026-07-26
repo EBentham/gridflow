@@ -33,8 +33,10 @@ from gridflow.silver.elexon.mid import MIDTransformer
 from gridflow.silver.elexon.netbsad import NETBSADTransformer
 from gridflow.silver.elexon.nonbm import NONBMTransformer
 from gridflow.silver.elexon.pn import PNTransformer
+from gridflow.silver.elexon.soso import SOSOTransformer
 from gridflow.silver.elexon.system_prices import SystemPriceTransformer
 from gridflow.silver.elexon.temp import TempTransformer
+from gridflow.silver.elexon.tsdf import TSDFTransformer
 from gridflow.silver.elexon.tsdfd import TSDFDTransformer
 from gridflow.silver.elexon.uou2t14d import UOU2T14DTransformer
 from gridflow.silver.elexon.wind_forecast import WindForecastTransformer
@@ -438,6 +440,47 @@ class TestFuelHHTransformer:
         )
         assert result["published_at"].null_count() == 0
         assert result["published_at"].dtype == pl.Datetime("us", "UTC")
+
+    def test_published_at_from_publish_time_field(self):
+        """F-03: bronze has carried the publication vintage under `publishTime`
+        (live-shaped payload), not just `publishDateTime`. Before the fix, only
+        `publishDateTime` was mapped, so `publishTime`-shaped rows silently
+        nulled published_at (29,400/29,400 on-disk rows affected)."""
+        raw = pl.DataFrame(
+            [
+                {
+                    "settlementDate": "2026-05-08",
+                    "settlementPeriod": 1,
+                    "fuelType": "CCGT",
+                    "generation": 12500.5,
+                    "publishTime": "2026-05-08T00:30:00Z",
+                },
+            ]
+        )
+        result = self.t.transform(raw)
+        assert not result.is_empty()
+        assert "published_at" in result.columns
+        assert result["published_at"].null_count() == 0
+        assert result["published_at"].dtype == pl.Datetime("us", "UTC")
+        assert result["published_at"][0] == datetime(2026, 5, 8, 0, 30, tzinfo=UTC)
+
+    def test_published_at_prefers_publish_date_time_when_both_present(self):
+        """If bronze ever carries both field names on the same row,
+        publishDateTime (the documented field) wins via coalesce order."""
+        raw = pl.DataFrame(
+            [
+                {
+                    "settlementDate": "2026-05-08",
+                    "settlementPeriod": 1,
+                    "fuelType": "CCGT",
+                    "generation": 12500.5,
+                    "publishDateTime": "2026-05-08T00:30:00Z",
+                    "publishTime": "2026-05-08T00:00:00Z",
+                },
+            ]
+        )
+        result = self.t.transform(raw)
+        assert result["published_at"][0] == datetime(2026, 5, 8, 0, 30, tzinfo=UTC)
 
 
 # ---------------------------------------------------------------------------
@@ -1412,6 +1455,25 @@ _G6_TRANSFORMER_CASES: list[tuple[type, str, dict[str, object]]] = [
             "lossOfLoadProbability": 0.001,
             "deratedMargin": 5000.0,
         },
+    ),
+    # F-08: soso/indod/tsdf each receive an independent vendor vintage
+    # (publishTime) alongside their own event-time fields, and previously
+    # dropped it at output_cols (rename map produced published_at, select
+    # discarded it) — the same W2.2-pattern bug as the 12 cases above.
+    (
+        INDODTransformer,
+        "publishTime",
+        {"settlementDate": "2024-01-15", "demand": 30000.0},
+    ),
+    (
+        TSDFTransformer,
+        "publishTime",
+        {"settlementDate": "2024-01-15", "settlementPeriod": 1, "demand": 32000.0},
+    ),
+    (
+        SOSOTransformer,
+        "publishTime",
+        {"settlementDate": "2024-01-15", "contractIdentification": "IFA-2024-01-15-01"},
     ),
 ]
 

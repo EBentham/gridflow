@@ -17,8 +17,10 @@ from gridflow.config.settings import SourceConfig, load_settings
 from gridflow.connectors.base import RawResponse
 from gridflow.connectors.entsoe.client import EntsoeConnector
 from gridflow.connectors.entsoe.endpoints import DOC_TYPES
+from gridflow.silver.entsoe.activated_balancing_prices import ActivatedBalancingPricesTransformer
 from gridflow.silver.entsoe.actual_generation_units import ActualGenerationUnitsTransformer
 from gridflow.silver.entsoe.actual_load import ActualLoadTransformer
+from gridflow.silver.entsoe.contracted_reserves import ContractedReservesTransformer
 from gridflow.silver.entsoe.cross_border_flows import CrossBorderFlowsTransformer
 from gridflow.silver.entsoe.day_ahead_prices import DayAheadPricesTransformer
 from gridflow.silver.entsoe.forecast_margin import ForecastMarginTransformer
@@ -52,6 +54,7 @@ from gridflow.silver.entsoe.h8_balancing import (
     ProcuredBalancingCapacityTransformer,
 )
 from gridflow.silver.entsoe.imbalance_prices import ImbalancePricesTransformer
+from gridflow.silver.entsoe.imbalance_volume import ImbalanceVolumeTransformer
 from gridflow.silver.entsoe.installed_capacity_units import InstalledCapacityUnitsTransformer
 from gridflow.silver.entsoe.load_forecast import LoadForecastTransformer
 from gridflow.silver.entsoe.load_forecast_monthly import LoadForecastMonthlyTransformer
@@ -533,6 +536,33 @@ class TestEntsoeBronzeToSilverPipeline:
                 ImbalancePricesTransformer,
                 {"timestamp_utc", "area_code", "direction", "price_eur_mwh"},
                 id="imbalance_prices",
+            ),
+            pytest.param(
+                "imbalance_volume",
+                "imbalance_volume_gb.xml",
+                ImbalanceVolumeTransformer,
+                {"timestamp_utc", "area_code", "direction", "volume_mwh"},
+                id="imbalance_volume",
+            ),
+            pytest.param(
+                "activated_balancing_prices",
+                "activated_balancing_prices_gb.xml",
+                ActivatedBalancingPricesTransformer,
+                {"timestamp_utc", "area_code", "reserve_type", "direction", "price_eur_mwh"},
+                id="activated_balancing_prices",
+            ),
+            # NOTE: activated_balancing_qty is intentionally NOT added here — it
+            # has no DOC_TYPES/connector config entry (pre-existing gap, unrelated
+            # to F-02, out of scope per this batch's ingest-changes scope fence).
+            # Its value-level published_at coverage lives at the unit level:
+            # tests/unit/test_entsoe.py::TestActivatedBalancingQtyTransformer::
+            # test_published_at_equals_document_vintage.
+            pytest.param(
+                "contracted_reserves",
+                "contracted_reserves_gb.xml",
+                ContractedReservesTransformer,
+                {"timestamp_utc", "area_code", "reserve_type", "quantity_mw"},
+                id="contracted_reserves",
             ),
             pytest.param(
                 "load_forecast_monthly",

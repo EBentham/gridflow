@@ -7,6 +7,7 @@ from datetime import UTC, date, datetime
 from pathlib import Path
 
 import polars as pl
+import pytest
 
 from gridflow.silver.base import BaseSilverTransformer
 from gridflow.silver.elexon.demand_forecast import DemandForecastTransformer
@@ -108,6 +109,33 @@ class AllNullPublishedTransformer(BaseSilverTransformer):
         return raw_df.with_columns(
             pl.lit(None).cast(pl.Datetime("us", "UTC")).alias("published_at")
         )
+
+
+class StringPublishedAtTransformer(BaseSilverTransformer):
+    """F-19: emits ``published_at`` as a String — a transformer bug (rename
+    map produced the column but never cast it to Datetime)."""
+
+    source = "test"
+    dataset = "string_published"
+
+    def read_bronze(self, target_date: date) -> pl.DataFrame:
+        return pl.DataFrame([{"name": "r1"}])
+
+    def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
+        return raw_df.with_columns(pl.lit("2024-01-10T08:00:00Z").alias("published_at"))
+
+
+class IntPublishedAtTransformer(BaseSilverTransformer):
+    """F-19: emits ``published_at`` as an Int64 — a transformer bug."""
+
+    source = "test"
+    dataset = "int_published"
+
+    def read_bronze(self, target_date: date) -> pl.DataFrame:
+        return pl.DataFrame([{"name": "r1"}])
+
+    def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
+        return raw_df.with_columns(pl.lit(1704873600).alias("published_at"))
 
 
 def _date_dir(root: Path, source: str, dataset: str, target_date: date) -> Path:
@@ -646,3 +674,70 @@ def test_available_at_unchanged_without_published_at_column(tmp_data_dir: Path) 
     df = _read_single_silver(tmp_data_dir, "test", "static")
 
     assert set(df["available_at"].to_list()) == {sidecar_time}
+
+
+# ---------------------------------------------------------------------------
+# F-19: the published_at coalesce raises on a non-Datetime dtype rather than
+# silently mistyping available_at (String/Int previously passed through
+# pl.coalesce untouched; tz-naive Datetime already raised via Polars' own
+# supertype check — same failure class, same loudness, now explicit).
+# ---------------------------------------------------------------------------
+
+
+def test_string_published_at_raises(tmp_data_dir: Path) -> None:
+    sidecar_time = datetime(2024, 1, 16, 9, 0, 0, tzinfo=UTC)
+    _write_bronze_json(
+        tmp_data_dir,
+        "test",
+        "string_published",
+        TARGET_DATE,
+        {"data": []},
+        fetched_at=sidecar_time,
+    )
+    with pytest.raises(TypeError, match="published_at must be a pl.Datetime dtype"):
+        StringPublishedAtTransformer(tmp_data_dir).run(TARGET_DATE, run_id=RUN_ID, reingest=True)
+
+
+def test_int_published_at_raises(tmp_data_dir: Path) -> None:
+    sidecar_time = datetime(2024, 1, 16, 9, 0, 0, tzinfo=UTC)
+    _write_bronze_json(
+        tmp_data_dir, "test", "int_published", TARGET_DATE, {"data": []}, fetched_at=sidecar_time
+    )
+    with pytest.raises(TypeError, match="published_at must be a pl.Datetime dtype"):
+        IntPublishedAtTransformer(tmp_data_dir).run(TARGET_DATE, run_id=RUN_ID, reingest=True)
+
+
+def test_tz_naive_published_at_still_raises(tmp_data_dir: Path) -> None:
+    """Regression guard: the pre-existing tz-naive failure mode (Polars'
+    supertype-mismatch SchemaError) must still fire — F-19 must not have
+    accidentally papered over it."""
+
+    class NaivePublishedAtTransformer(BaseSilverTransformer):
+        source = "test"
+        dataset = "naive_published"
+
+        def read_bronze(self, target_date: date) -> pl.DataFrame:
+            return pl.DataFrame([{"name": "r1"}])
+
+        def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
+            return raw_df.with_columns(
+                pl.lit(datetime(2024, 1, 10, 8, 0, 0)).cast(pl.Datetime("us")).alias("published_at")
+            )
+
+    sidecar_time = datetime(2024, 1, 16, 9, 0, 0, tzinfo=UTC)
+    _write_bronze_json(
+        tmp_data_dir, "test", "naive_published", TARGET_DATE, {"data": []}, fetched_at=sidecar_time
+    )
+    with pytest.raises(pl.exceptions.SchemaError):
+        NaivePublishedAtTransformer(tmp_data_dir).run(TARGET_DATE, run_id=RUN_ID, reingest=True)
+
+
+def test_correct_dtype_published_at_passes(tmp_data_dir: Path) -> None:
+    """Regression guard: a correctly-typed published_at (the overwhelming
+    majority — all 22 live emitters) must not be affected by the F-19 guard."""
+    sidecar_time = datetime(2024, 1, 16, 9, 0, 0, tzinfo=UTC)
+    _write_bronze_json(
+        tmp_data_dir, "test", "all_published", TARGET_DATE, {"data": []}, fetched_at=sidecar_time
+    )
+    rows = AllPublishedTransformer(tmp_data_dir).run(TARGET_DATE, run_id=RUN_ID, reingest=True)
+    assert rows == 3

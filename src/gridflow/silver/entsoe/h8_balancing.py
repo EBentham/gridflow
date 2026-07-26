@@ -88,7 +88,7 @@ class _H8BalancingTransformer(BaseSilverTransformer):
         # ADR-025 P1.1: carry the document publication vintage (createdDateTime) as
         # published_at BEFORE the output_cols select (this family selects then dedups);
         # typed-null when the source lacks it.
-        df = with_published_at(df)
+        df = with_published_at(df, dataset=self.dataset)
 
         now = datetime.now(UTC)
         df = (
