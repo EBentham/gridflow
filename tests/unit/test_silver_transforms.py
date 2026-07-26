@@ -1218,6 +1218,15 @@ class TestFOU2T14DTransformer:
         assert result["data_provider"][0] == "elexon"
 
     def test_dedup_on_period_fuel(self):
+        """GUARD-2 (F-06, R1-C): stays 1 row after the vintage fix, and here's why.
+
+        Formerly ``test_dedup_on_period_fuel`` (name unchanged; annotating only).
+        Neither raw row carries a publish field, so ``published_at`` is emitted
+        typed-null for both (fou2t14d.py:127-133). ``unique(subset=...)`` treats
+        nulls as equal (verified, polars 1.40.1), so there is no vintage axis to
+        preserve here and the pair legitimately collapses to one row both before
+        and after F-06's fix.
+        """
         raw = pl.DataFrame(
             [
                 {
@@ -1236,6 +1245,108 @@ class TestFOU2T14DTransformer:
         )
         result = self.t.transform(raw)
         assert len(result) == 1
+
+    def test_distinct_publish_times_are_retained_as_vintages(self):
+        """RED-1 (F-06): two vendor publications of one key must both survive.
+
+        `transform()` collapses cross-vintage publications of one
+        ``(settlement_date, settlement_period, fuel_type)`` key onto a single
+        row today, discarding the earlier one. That earlier publication was
+        genuinely knowable and must remain queryable at an ``as_of`` between
+        the two publish stamps -- that is the entire content of F-06's 95.7%
+        vintage-loss finding. Pre-fix: 1 row (RED). Post-fix: 2 rows.
+        """
+        raw = pl.DataFrame(
+            [
+                {
+                    "settlementDate": "2024-01-17",
+                    "settlementPeriod": 1,
+                    "fuelType": "WIND",
+                    "outputUsable": 1000.0,
+                    "publishDateTime": "2024-01-15T06:00:00Z",
+                },
+                {
+                    "settlementDate": "2024-01-17",
+                    "settlementPeriod": 1,
+                    "fuelType": "WIND",
+                    "outputUsable": 1750.0,
+                    "publishDateTime": "2024-01-16T06:00:00Z",
+                },
+            ]
+        )
+        result = self.t.transform(raw)
+        assert result.height == 2
+        # R-4: transform's final .sort("timestamp_utc", "fuel_type") no longer
+        # yields a deterministic order once two rows share both sort keys --
+        # sort explicitly by published_at before any positional assertion.
+        result = result.sort("published_at")
+        published = result["published_at"].to_list()
+        assert published == [
+            datetime(2024, 1, 15, 6, tzinfo=UTC),
+            datetime(2024, 1, 16, 6, tzinfo=UTC),
+        ]
+        assert all(ts.tzinfo is not None for ts in published)
+        assert result["output_usable_mw"].to_list() == [1000.0, 1750.0]
+
+    def test_forecast_date_only_shape_retains_vintages(self):
+        """RED-2 (F-06): the real on-disk bronze shape also retains both vintages.
+
+        100% of on-disk fou2t14d silver uses ``forecastDate`` (no
+        ``settlementPeriod``) and ``publishTime`` rather than
+        ``settlementDate``/``publishDateTime`` (X1-F05 footnote 1) -- this is
+        the shape the 176,035/184,015 (95.7%) loss was actually measured on.
+        Pre-fix: 1 row (RED). Post-fix: 2 rows.
+        """
+        raw = pl.DataFrame(
+            [
+                {
+                    "forecastDate": "2024-01-17",
+                    "fuelType": "WIND",
+                    "outputUsable": 1000.0,
+                    "publishTime": "2024-01-15T06:00:00Z",
+                },
+                {
+                    "forecastDate": "2024-01-17",
+                    "fuelType": "WIND",
+                    "outputUsable": 1750.0,
+                    "publishTime": "2024-01-16T06:00:00Z",
+                },
+            ]
+        )
+        result = self.t.transform(raw)
+        assert result.height == 2
+        if "settlement_period" in result.columns:
+            assert result["settlement_period"].null_count() == result.height
+
+    def test_same_publish_time_duplicates_still_collapse(self):
+        """GUARD-1 (F-06): same key AND same published_at still collapse to one.
+
+        One vendor response cannot carry two truths for one key at one
+        publication instant -- this is the intra-vintage duplicate class the
+        dedup legitimately exists for, distinct from the cross-vintage
+        collapse F-06 fixes. This test passes BOTH before and after the fix;
+        it is a boundary guard, not RED evidence.
+        """
+        raw = pl.DataFrame(
+            [
+                {
+                    "settlementDate": "2024-01-17",
+                    "settlementPeriod": 1,
+                    "fuelType": "WIND",
+                    "outputUsable": 1000.0,
+                    "publishDateTime": "2024-01-15T06:00:00Z",
+                },
+                {
+                    "settlementDate": "2024-01-17",
+                    "settlementPeriod": 1,
+                    "fuelType": "WIND",
+                    "outputUsable": 1750.0,
+                    "publishDateTime": "2024-01-15T06:00:00Z",
+                },
+            ]
+        )
+        result = self.t.transform(raw)
+        assert result.height == 1
 
     def test_empty_input(self):
         assert self.t.transform(pl.DataFrame()).is_empty()
