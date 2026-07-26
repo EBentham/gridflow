@@ -19,7 +19,7 @@ from __future__ import annotations
 
 import json
 from datetime import UTC, date, datetime
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 import duckdb
 import polars as pl
@@ -28,6 +28,9 @@ from gridflow.silver.elexon.fou2t14d import FOU2T14DTransformer
 from gridflow.silver.latest_views import LATEST_VIEW_SPECS, select_latest_vintage
 from gridflow.storage.duckdb import _register_views
 from gridflow.storage.paths import PathBuilder
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 def _seed_bronze_two_vintages(data_dir: Path) -> None:
