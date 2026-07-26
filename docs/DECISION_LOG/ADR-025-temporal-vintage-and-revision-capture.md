@@ -87,8 +87,15 @@ Two capture models were considered:
   so a second pass overwrites the same files.
 - **Scope of the flip: `system_prices` only, this milestone.** The
   settlement-decomposition datasets (BOAV/EBOCF/DISEBSP-stack/ISPSTACK) do not yet
-  exist in the repo; when they land they inherit this decision. `remit`/
-  `fou2t14d` already comply.
+  exist in the repo; when they land they inherit this decision. `fou2t14d` did
+  **not** comply: `transform()` deduped on the business key without
+  `published_at`, discarding 176,035 of 184,015 bronze vintage rows (95.7%).
+  Corrected in v0.18 R1-C (F-06); the pre-existing on-disk loss is recovered by
+  the R2-exit silver rebuild from bronze, not by a targeted re-transform.
+  `remit` still does not fully comply on the **availability-granularity** axis:
+  it emits no `published_at` (`remit.py`, X1-F07) and does not set
+  `VINTAGE_PER_BRONZE_FILE`, so one scalar covers a whole date. `fou2t14d`
+  shares that residual for null-`published_at` rows. Both are MEDIUM and open.
 - **Regression guard (P2.1 — same PR).** The run-precedence test becomes
   order-sensitive: an SF-then-II fixture plus a mid-frame R1 row must fail under a
   `keep="last"` / collapse regression, and a two-vintage live-shaped fixture
