@@ -6,6 +6,7 @@ import json
 import logging
 import os
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from typing import ClassVar
@@ -13,6 +14,14 @@ from typing import ClassVar
 import polars as pl
 from pydantic import BaseModel, ValidationError
 
+from gridflow.silver.partition_window import (
+    OwnershipVerdict,
+    RequestWindow,
+    WindowReason,
+    filter_frame_to_window,
+    neighbour_owns,
+    partition_request_window,
+)
 from gridflow.storage.parquet import write_parquet
 from gridflow.utils.time import settlement_period_to_utc
 
@@ -45,6 +54,43 @@ modified — NESO and Open-Meteo/ALSI resolution (the other callers) are
 unaffected; ``tests/silver/test_partition_fallback.py``'s ``test_source``
 stub pins that the fallback stays intact for non-ENTSO-E sources.
 """
+
+_PUBLICATION_WINDOW_FILTER_SOURCES: frozenset[str] = frozenset({"elexon"})
+"""Sources whose bronze partitions are PUBLICATION windows, not settlement
+days (R2-A / F-04, F-10, F-16).
+
+Elexon's ``PUBLISH_DATETIME`` chunks are closed at both ends and share their
+boundary instant with the neighbouring chunk (``R2-A-PLAN.md`` S1.1), so the
+same vendor record is written into BOTH partitions unless trimmed under a
+proven neighbour-durability gate (D-3b). Source-scoped like
+``_EXACT_PARTITION_ONLY_SOURCES`` above, for the same reason: the property
+belongs to the connector's write layout, not to any one transformer, so every
+current and future in-scope Elexon dataset is covered automatically (scope
+and exemptions are resolved per-dataset by
+``silver.elexon._publication_window``, imported lazily inside
+``_resolve_publication_window_plan`` to avoid a module-load-time cycle
+through ``silver.elexon.__init__`` — see that method's docstring).
+"""
+
+
+@dataclass(frozen=True)
+class _PublicationWindowPlan:
+    """Per-``run()`` inputs for
+    :meth:`BaseSilverTransformer._apply_publication_window_filter`.
+
+    Resolved once per ``run()`` call from the CURRENT partition's own
+    sidecars (D-7e, all-or-nothing) — cheap and IO-bounded to this one
+    partition. The neighbour-durability proof (D-3b, extra IO against the
+    successor partition) is deliberately NOT resolved here: it is deferred
+    until the transformed frame is known to actually have a row sitting at
+    the boundary (R-10's short-circuit), which needs the frame, not just the
+    partition directory.
+    """
+
+    column: str
+    window: RequestWindow
+    from_param: str
+    to_param: str
 
 
 def gas_day_event_time_expr(column: str = "gas_day") -> pl.Expr:
@@ -123,6 +169,31 @@ class BaseSilverTransformer(ABC):
     ``last_unmapped_count``; VTA-SCHEMA-01). Rows that fail validation are still
     written — the count is the only signal (fail-soft).
     """
+    last_partition_filter_dropped_count: int = 0
+    """Rows dropped by the partition-window filter in the most recent ``run()``
+    (R2-A / F-04). Reset to 0 at the start of every ``run()``. Only nonzero for
+    sources in ``_PUBLICATION_WINDOW_FILTER_SOURCES`` with an in-scope,
+    resolvable dataset — see ``_apply_publication_window_filter``.
+    """
+    last_partition_filter_unclassified_count: int = 0
+    """Rows whose filter-dimension value was null (unclassifiable) in the most
+    recent ``run()`` — always KEPT, never dropped (D-7d). Reset to 0 at the
+    start of every ``run()``.
+    """
+    last_partition_filter_unresolved_count: int = 0
+    """Count of ``run()`` calls where the partition-window filter could not
+    resolve the CURRENT partition's own window at all (D-7e: an unpaired raw
+    body, a missing/invalid sidecar, or an unparseable bound) and was
+    therefore disabled for the whole partition. Reset to 0 at the start of
+    every ``run()``. This is the aggregate A-15's R2-exit gate checks for
+    ``ORPHAN_BODY``/unresolved events (R-12: not otherwise self-detecting).
+    """
+    last_partition_filter_boundary_retained_count: int = 0
+    """Rows retained at a window boundary because neighbour ownership was
+    attempted but could not be proven (D-3b/D-3e) — the failing
+    ``WindowReason`` is always logged alongside this count, never just the
+    number (A-3/A-12). Reset to 0 at the start of every ``run()``.
+    """
     DATASET_VERSION: ClassVar[str] = "1.0.0"
     BRONZE_SIBLING_DATASETS: ClassVar[tuple[str, ...]] = ()
     APPEND_ONLY: ClassVar[bool] = False
@@ -154,6 +225,38 @@ class BaseSilverTransformer(ABC):
     - Transformers that ASSIGN ``last_unmapped_count`` inside ``transform()``
       (the ADR-022 enum-mapping pattern) must convert to accumulation before
       opting in, or per-frame counts overwrite each other.
+    """
+    ENTITY_KEY_COLUMNS: ClassVar[tuple[str, ...]] = ()
+    """The dataset's REQUIRED entity/business key — the columns that, taken
+    together, grain the ``transform()`` output to one row per real-world
+    entity (R2-A / F-16, D-8). Consumed by the F-16 duplicate-quality-check
+    (``cli.py``) so it keys ``check_duplicates`` on the dataset's actual
+    grain instead of a hardcoded ``(settlement_date, settlement_period)`` —
+    the hardcoded pair falsely flagged every genuinely-distinct row of a
+    dataset with a finer grain (e.g. ``fuelhh``'s ``fuel_type``) as a
+    duplicate.
+
+    Declared verbatim from each transformer's own ``.unique(subset=...)``
+    dedup key where one exists; sourced from ``LATEST_VIEW_SPECS`` (cited
+    in-comment) for the two APPEND_ONLY datasets with no in-transform
+    ``unique()`` call at all (``system_prices``, ``remit`` — no
+    ``unique(subset=...)`` to hoist). Empty (``()``) is a bug for any
+    REGISTERED dataset — ``test_every_elexon_transformer_declares_an_entity_key``
+    (A-4) pins 33/33.
+
+    **D-8 order-insensitivity contract**: this is SET semantics
+    (``unique(subset=...)`` behaves as a set of columns, not an ordered
+    tuple) — ``test_unique_subset_is_order_insensitive`` pins that the golden
+    map (``tests/fixtures/entity_keys_golden.json``) and every consumer
+    compare declared keys as sets, never caring about declaration order.
+    """
+    OPTIONAL_ENTITY_KEY_COLUMNS: ClassVar[tuple[str, ...]] = ()
+    """Key refinements included in the entity grain only when the column is
+    actually present on the frame being checked (mirrors
+    ``LatestViewSpec.optional_key_columns``, ``latest_views.py``) — e.g.
+    ``fou2t14d``'s live forecastDate-only shape has no ``settlement_period``.
+    Consumers resolve the effective key as ``ENTITY_KEY_COLUMNS + tuple(c for
+    c in OPTIONAL_ENTITY_KEY_COLUMNS if c in <the frame's columns>)``.
     """
 
     def __init__(self, data_dir: Path):
@@ -199,10 +302,16 @@ class BaseSilverTransformer(ABC):
         # both after each per-date run).
         self.last_unmapped_count = 0
         self.last_validation_failure_count = 0
+        self.last_partition_filter_dropped_count = 0
+        self.last_partition_filter_unclassified_count = 0
+        self.last_partition_filter_unresolved_count = 0
+        self.last_partition_filter_boundary_retained_count = 0
 
         resolved_run_id = run_id or f"adhoc-{datetime.now(UTC).isoformat()}"
         frames: list[pl.DataFrame] = []
         saw_bronze = False
+
+        window_plan = self._resolve_publication_window_plan(target_date)
 
         if self.VINTAGE_PER_BRONZE_FILE:
             # EXACT date partition only — the covering-partition fallback in
@@ -235,7 +344,7 @@ class BaseSilverTransformer(ABC):
                         continue
                     saw_bronze = True
                     clean_df = self._process_frame(
-                        raw_df, target_date, resolved_run_id, available_at
+                        raw_df, target_date, resolved_run_id, available_at, window_plan
                     )
                     if clean_df is not None:
                         frames.append(clean_df)
@@ -246,7 +355,9 @@ class BaseSilverTransformer(ABC):
             raw_df = self.read_bronze(target_date)
             if not raw_df.is_empty():
                 saw_bronze = True
-                clean_df = self._process_frame(raw_df, target_date, resolved_run_id, available_at)
+                clean_df = self._process_frame(
+                    raw_df, target_date, resolved_run_id, available_at, window_plan
+                )
                 if clean_df is not None:
                     frames.append(clean_df)
 
@@ -274,8 +385,9 @@ class BaseSilverTransformer(ABC):
         target_date: date,
         run_id: str,
         available_at: datetime,
+        window_plan: _PublicationWindowPlan | None = None,
     ) -> pl.DataFrame | None:
-        """Transform, validate, stamp, and write one bronze-vintage frame."""
+        """Transform, filter, validate, stamp, and write one bronze-vintage frame."""
         if raw_df.is_empty():
             return None
 
@@ -283,6 +395,15 @@ class BaseSilverTransformer(ABC):
         if clean_df.is_empty():
             logger.warning(f"Transform produced 0 rows for {target_date}")
             return None
+
+        if window_plan is not None:
+            clean_df = self._apply_publication_window_filter(clean_df, window_plan, target_date)
+            if clean_df.is_empty():
+                # D-5's refusal never empties an otherwise non-empty frame, so
+                # reaching an empty frame here means the ORIGINAL transform()
+                # output was already empty of the filter dimension's rows —
+                # already logged above; nothing further to write.
+                return None
 
         # Enforce the declared Pydantic schema on the FULL frame, fail-soft
         # (VTA-SCHEMA-01): failures are counted + logged here and surfaced by the
@@ -300,6 +421,181 @@ class BaseSilverTransformer(ABC):
         )
         self._write_silver(clean_df, target_date, available_at=available_at)
         return clean_df
+
+    def _resolve_publication_window_plan(self, target_date: date) -> _PublicationWindowPlan | None:
+        """Resolve the CURRENT partition's request window for the publication-window filter.
+
+        ``None`` (filtering disabled, no-op) for: any source not in
+        ``_PUBLICATION_WINDOW_FILTER_SOURCES``; any out-of-scope/exempt
+        dataset (logged ``DEBUG`` — D-7b); or an in-scope dataset whose own
+        partition could not be resolved (D-7e: an orphan raw body, an invalid
+        sidecar, or an unparseable bound) — counted into
+        ``last_partition_filter_unresolved_count`` and logged ``WARNING``
+        with the failing reason (D-7b/D-3e), never silently narrowed to
+        "filter what we can".
+
+        The ``silver.elexon._publication_window`` import is deliberately
+        LOCAL (not module-level): ``silver.elexon.__init__`` eagerly imports
+        every Elexon transformer module, each of which does
+        ``from gridflow.silver.base import BaseSilverTransformer`` — a
+        module-level import here would cycle back into this half-initialised
+        module. Deferring the import to call time (after both modules have
+        fully loaded) avoids the cycle; ``partition_window`` itself carries
+        no such risk and is imported at module level above (R-8's import
+        boundary is about ``connectors.elexon``, confined to
+        ``_publication_window.py``, not about ``partition_window``, which is
+        source-agnostic).
+        """
+        if self.source not in _PUBLICATION_WINDOW_FILTER_SOURCES:
+            return None
+
+        from gridflow.silver.elexon._publication_window import (
+            publication_window_column,
+            publication_window_params,
+        )
+
+        params = publication_window_params(self.dataset)
+        if params is None:
+            logger.debug(
+                "Partition-window filter: %s/%s is out of scope or exempt",
+                self.source,
+                self.dataset,
+            )
+            return None
+        from_param, to_param = params
+
+        partition_dir = (
+            self.bronze_dir
+            / str(target_date.year)
+            / f"{target_date.month:02d}"
+            / f"{target_date.day:02d}"
+        )
+        window, reason = partition_request_window(
+            partition_dir,
+            from_param,
+            to_param,
+            expect_source=self.source,
+            expect_dataset=self.dataset,
+        )
+        if window is None:
+            self.last_partition_filter_unresolved_count += 1
+            logger.warning(
+                "Partition-window filter unresolved for %s/%s on %s (%s); "
+                "filtering disabled for this partition (all-or-nothing, D-7e)",
+                self.source,
+                self.dataset,
+                target_date,
+                reason,
+            )
+            return None
+
+        return _PublicationWindowPlan(
+            column=publication_window_column(self.dataset),
+            window=window,
+            from_param=from_param,
+            to_param=to_param,
+        )
+
+    def _apply_publication_window_filter(
+        self,
+        df: pl.DataFrame,
+        plan: _PublicationWindowPlan,
+        target_date: date,
+    ) -> pl.DataFrame:
+        """Trim ``df`` to ``plan.window`` under a per-instant durability proof (D-3b/D-3d).
+
+        D-7(c): an absent filter column is FAIL-LOUD — a ``ValueError``
+        naming the dataset, the column, and where to declare an exemption,
+        never a silent no-op filter.
+
+        The upper-bound ownership check (extra IO against the successor
+        partition) is short-circuited entirely when no row sits at or after
+        ``plan.window.end`` (R-10) — the common case costs nothing. Elexon
+        never enforces its lower bound (D-3): ``lower_bound_ownership=None``.
+        """
+        if plan.column not in df.columns:
+            raise ValueError(
+                f"{self.source}/{self.dataset}: publication-window filter column "
+                f"{plan.column!r} is absent from transform() output. Declare an "
+                "override in PUBLICATION_WINDOW_COLUMN or an exemption in "
+                "PUBLICATION_WINDOW_EXEMPT (silver/elexon/_publication_window.py)."
+            )
+
+        has_boundary_rows = df.filter(pl.col(plan.column) >= plan.window.end).height > 0
+        if has_boundary_rows:
+            upper_bound_ownership = neighbour_owns(
+                self.bronze_dir,
+                plan.window.end,
+                plan.from_param,
+                plan.to_param,
+                expect_source=self.source,
+                expect_dataset=self.dataset,
+            )
+        else:
+            upper_bound_ownership = OwnershipVerdict(False, WindowReason.NOT_RESOLVED)
+
+        result = filter_frame_to_window(
+            df,
+            plan.column,
+            plan.window,
+            upper_bound_ownership=upper_bound_ownership,
+            lower_bound_ownership=None,
+        )
+
+        self.last_partition_filter_dropped_count += result.dropped
+        self.last_partition_filter_unclassified_count += result.unclassified
+        self.last_partition_filter_boundary_retained_count += result.boundary_retained
+
+        if result.refused:
+            logger.error(
+                "Partition-window filter would drop the entire %s/%s frame for "
+                "%s; keeping every row instead (D-5 refusal)",
+                self.source,
+                self.dataset,
+                target_date,
+            )
+        if result.dropped:
+            logger.warning(
+                "Partition-window filter dropped %d row(s) for %s/%s on %s: a "
+                "durable covering chunk in the successor partition owns the "
+                "boundary instant",
+                result.dropped,
+                self.source,
+                self.dataset,
+                target_date,
+            )
+        if result.unclassified:
+            logger.warning(
+                "Partition-window filter: %d row(s) with an unparseable/null %s "
+                "could not be classified and were kept for %s/%s on %s",
+                result.unclassified,
+                plan.column,
+                self.source,
+                self.dataset,
+                target_date,
+            )
+        if result.below_window:
+            logger.warning(
+                "Partition-window filter: %d row(s) below the window start were "
+                "kept for %s/%s on %s (the lower bound is not enforced for this "
+                "source, D-3)",
+                result.below_window,
+                self.source,
+                self.dataset,
+                target_date,
+            )
+        if result.retained_reasons:
+            logger.warning(
+                "Partition-window filter: %d row(s) retained at an unproven "
+                "boundary for %s/%s on %s: %s",
+                result.boundary_retained,
+                self.source,
+                self.dataset,
+                target_date,
+                result.retained_reasons,
+            )
+
+        return result.frame
 
     def _validate_against_schema(self, df: pl.DataFrame) -> int:
         """Validate every row of the transform output against ``schema_cls``, fail-soft.
