@@ -88,6 +88,20 @@ class INDODTransformer(BaseSilverTransformer):
             .alias("timestamp_utc")
         )
 
+        # F-08: INDOD carries its own independent vendor vintage (publishTime,
+        # distinct from timestamp_utc). Cast it to UTC datetime (indo.py W2.2
+        # pattern) rather than dropping it at select — there is no
+        # "event_time<=available_at" invariant to protect (X2-F03: 802/1022
+        # windfor rows legitimately invert it), so emit unconditionally.
+        if "published_at" in df.columns:
+            df = df.with_columns(
+                pl.col("published_at")
+                .str.to_datetime(format="%Y-%m-%dT%H:%M:%SZ", time_unit="us", strict=False)
+                .dt.replace_time_zone("UTC")
+            )
+        else:
+            df = df.with_columns(pl.lit(None).cast(pl.Datetime("us", "UTC")).alias("published_at"))
+
         df = df.unique(subset=["settlement_date"], keep="last")
 
         now = datetime.now(UTC)
@@ -102,6 +116,7 @@ class INDODTransformer(BaseSilverTransformer):
             "settlement_date",
             "timestamp_utc",
             "initial_demand_outturn_mw",
+            "published_at",
             "data_provider",
             "ingested_at",
         ]
