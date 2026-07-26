@@ -419,8 +419,14 @@ def parse_timeseries_xml(
                 for child in point_el:
                     tag = _strip_ns(child.tag)
                     if tag == "position":
-                        with contextlib.suppress(ValueError):
-                            position = int(child.text or "0")
+                        # C-9: an empty <position/> element (child.text is
+                        # None or "") must stay unparsed, not fabricate 0 —
+                        # the `position is None` check below already drops
+                        # the point; `child.text or "0"` previously defeated
+                        # that by coercing empty text into a fake position 0.
+                        if child.text:
+                            with contextlib.suppress(ValueError):
+                                position = int(child.text)
                     elif _matches_value_tag(tag, value_tag):
                         with contextlib.suppress(ValueError):
                             value = float(child.text or "nan")
