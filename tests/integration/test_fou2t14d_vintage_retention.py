@@ -154,10 +154,18 @@ def test_latest_view_collapses_genuine_multi_vintage_silver(tmp_path: Path) -> N
         ]
         assert latest_count == 1
 
+        # epoch_us keeps the instant-exact assertion while avoiding DuckDB's
+        # TIMESTAMPTZ->Python conversion, which imports pytz (absent in CI --
+        # the v0.16 env-parity class).
         row = con.execute(
-            "SELECT fuel_type, output_usable_mw, available_at FROM silver_elexon_fou2t14d_latest"
+            "SELECT fuel_type, output_usable_mw, epoch_us(available_at) "
+            "FROM silver_elexon_fou2t14d_latest"
         ).fetchone()
-        assert row == ("WIND", 1750.0, datetime(2024, 1, 15, 18, tzinfo=UTC))
+        assert row == (
+            "WIND",
+            1750.0,
+            int(datetime(2024, 1, 15, 18, tzinfo=UTC).timestamp() * 1_000_000),
+        )
 
         # A silently-dropped projection (duckdb.py:194-197) must not pass as a
         # zero-row result -- assert the view is actually registered.
@@ -201,13 +209,16 @@ def test_sql_and_polars_latest_agree_on_the_same_multi_vintage_frame(tmp_path: P
         polars_result["settlement_date"][0],
         polars_result["fuel_type"][0],
         polars_result["output_usable_mw"][0],
-        polars_result["available_at"][0],
+        # epoch microseconds on both sides -- avoids DuckDB's pytz-dependent
+        # TIMESTAMPTZ->Python conversion (absent in CI) without weakening the
+        # instant-exact parity assertion.
+        int(polars_result["available_at"][0].timestamp() * 1_000_000),
     )
 
     con = _connection_with_views(data_dir)
     try:
         sql_row = con.execute(
-            "SELECT settlement_date, fuel_type, output_usable_mw, available_at "
+            "SELECT settlement_date, fuel_type, output_usable_mw, epoch_us(available_at) "
             "FROM silver_elexon_fou2t14d_latest"
         ).fetchone()
     finally:
