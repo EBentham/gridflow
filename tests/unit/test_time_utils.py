@@ -313,6 +313,19 @@ class TestDaySubwindows:
         with pytest.raises(ValueError, match="tz-aware"):
             day_subwindows(datetime(2024, 1, 15, 0, 0, tzinfo=UTC), naive)
 
+    def test_non_utc_offset_raises_value_error(self):
+        from datetime import timezone
+
+        non_utc = datetime(2024, 1, 15, 0, 0, tzinfo=timezone(timedelta(hours=2)))
+        with pytest.raises(ValueError, match="UTC"):
+            day_subwindows(non_utc, datetime(2024, 1, 16, 0, 0, tzinfo=UTC))
+
+    def test_reversed_bounds_raise_value_error(self):
+        start = datetime(2024, 1, 16, 0, 0, tzinfo=UTC)
+        end = datetime(2024, 1, 15, 0, 0, tzinfo=UTC)
+        with pytest.raises(ValueError, match="before start"):
+            day_subwindows(start, end)
+
 
 class TestSettlementPeriodsInDay:
     """R2-B / F-22: bounds the elexon per-period REQUEST loop by the DST
@@ -333,16 +346,3 @@ class TestSettlementPeriodsInDay:
 
     def test_ordinary_summer_day_2024_is_48(self):
         assert settlement_periods_in_day(date(2024, 7, 15)) == 48
-
-    def test_non_utc_offset_raises_value_error(self):
-        from datetime import timezone
-
-        non_utc = datetime(2024, 1, 15, 0, 0, tzinfo=timezone(timedelta(hours=2)))
-        with pytest.raises(ValueError, match="UTC"):
-            day_subwindows(non_utc, datetime(2024, 1, 16, 0, 0, tzinfo=UTC))
-
-    def test_reversed_bounds_raise_value_error(self):
-        start = datetime(2024, 1, 16, 0, 0, tzinfo=UTC)
-        end = datetime(2024, 1, 15, 0, 0, tzinfo=UTC)
-        with pytest.raises(ValueError, match="before start"):
-            day_subwindows(start, end)
