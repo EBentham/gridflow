@@ -22,6 +22,29 @@ expansion) was paused before release and is intentionally absent.
   `[periodStart, periodEnd)` was never requested by that partition at all, so it is always
   excluded from silver, unconditionally, regardless of whether any neighbour bronze exists.
 
+### Fixed
+- Undated ENTSO-G records are no longer filtered in silence (F-05, partial). The date filter
+  still keeps a record whose timestamp is missing or unparseable — fail-open is deliberate —
+  but now counts them into exactly one bounded warning per call rather than dropping them
+  into a silent pass-through. The other half of F-05 (making `entsog` exact-partition-only,
+  so a date with no bronze of its own cannot borrow a neighbouring partition up to 35 days
+  away) is **not** in this release: it turned out to also gate the `--reingest` availability
+  reconstruction path, and that interaction is being handled as its own change.
+- The Elexon connector bounds its per-settlement-period request loop by the UK DST calendar
+  (46 / 48 / 50) instead of asking for 1..50 on every date (F-22), via a new derived
+  `utils.time.settlement_periods_in_day`. Schema-level validation still accepts 1..50 and is
+  unchanged. A live probe (2026-07-27) established that the vendor validates
+  `settlementPeriod` statically against 1..50 for *every* date and answers an
+  out-of-calendar period with `200` and an empty array rather than a `4xx`, so this is a
+  request-count reduction on short and ordinary days — not, as the originating finding
+  supposed, a fix for a spring-DST hard failure.
+
+### Changed
+- mypy's `python_version` pin moves 3.11 → 3.12, matching both the development venv and CI.
+  Local type-checking had been failing closed against a 3.11 target: numpy's PEP 695 stubs
+  are a syntax error there, which silently blocked all checking. `requires-python` still
+  declares `>=3.11`.
+
 ### Known limitations
 - The ENTSO-E event-window filter closes F-10 for `day_ahead_prices`, `actual_load`,
   `load_forecast`, `actual_generation`, `actual_generation_units`, `wind_solar_forecast`, and
