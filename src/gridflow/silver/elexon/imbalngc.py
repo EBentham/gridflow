@@ -23,6 +23,10 @@ class ImbalNGCTransformer(BaseSilverTransformer):
     source = "elexon"
     dataset = "imbalngc"
     schema_cls = ElexonImbalNGC
+    ENTITY_KEY_COLUMNS = (
+        "settlement_date",
+        "settlement_period",
+    )  # D-8: verbatim from unique() below
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         bronze_path = (

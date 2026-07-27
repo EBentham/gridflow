@@ -33,6 +33,7 @@ class BMUnitsTransformer(BaseSilverTransformer):
     dataset = "bmunits_reference"
     schema_cls = ElexonBMUnit
     DATASET_VERSION: ClassVar[str] = "1.0.0"
+    ENTITY_KEY_COLUMNS = ("bm_unit_id",)  # D-8: verbatim from unique() below
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         # Reference data has no date partitioning; read latest file from any date dir

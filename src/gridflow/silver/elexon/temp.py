@@ -22,6 +22,7 @@ class TempTransformer(BaseSilverTransformer):
     source = "elexon"
     dataset = "temp"
     schema_cls = ElexonTemp
+    ENTITY_KEY_COLUMNS = ("timestamp_utc",)  # D-8: verbatim from unique() below
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         bronze_path = (

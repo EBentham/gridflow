@@ -52,6 +52,12 @@ class FOU2T14DTransformer(BaseSilverTransformer):
     schema_cls = ElexonFOU2T14D
     APPEND_ONLY: ClassVar[bool] = True
     DATASET_VERSION: ClassVar[str] = "1.0.0"
+    # D-8: published_at is UNCONDITIONAL here (see the F-06 dedup_cols note
+    # below) -- this is the revision-preserving grain, distinct from
+    # LATEST_VIEW_SPECS's coarser business key (latest_views.py, no
+    # published_at) used to pick ONE winning vintage per business key.
+    ENTITY_KEY_COLUMNS = ("settlement_date", "fuel_type", "published_at")
+    OPTIONAL_ENTITY_KEY_COLUMNS = ("settlement_period",)
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         bronze_path = (

@@ -26,6 +26,22 @@ This module is fail-first: run against pre-fix code, Test A and Test B fail
 on their very first topology assertions (partition/response counts), not on
 downstream row-count details — see each test's docstring for the exact
 recorded pre-fix signature.
+
+R2-A Task 5 (F-10 guard, ``R2-A-PLAN.md`` S2/A-5): the day-ahead-prices mock
+(``_day_ahead_prices_xml``/``_day_ahead_prices_handler``) now over-spans to
+whole CET/CEST DELIVERY days via ``ZoneInfo("Europe/Brussels")`` — mirroring
+the vendor's real, measured over-span (S1.4) — instead of always echoing
+back exactly the requested window. Before this change the mock never
+over-spanned, so the per-day row-count parity assertion below
+(``expected_counts = [24, 24, 24, 23]``) could never observe a vendor
+over-span at all: it was a vacuous guard. As of this commit alone (R2-A
+Task 4's neighbour-durability trim is a separate executor's work, not yet
+applied here), the guard now BITES — ``row_counts`` comes back
+``[48, 48, 48, 48]`` instead. The new
+``test_entsoe_cest_over_span_is_trimmed_to_the_requested_utc_day`` pins the
+same mechanism in isolation (24 vs 48). Both are expected to go GREEN once
+Task 4 lands the durability-gated trim; both are RED right now, by design
+(the guard being ABLE to fail is what this commit proves).
 """
 
 from __future__ import annotations
@@ -34,6 +50,7 @@ import hashlib
 import json
 from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 import httpx
 import polars as pl
@@ -77,18 +94,41 @@ def _entsog_config() -> SourceConfig:
 
 # ---------------------------------------------------------------------------
 # Test A helpers — synthetic ENTSO-E day-ahead-prices XML builder
+#
+# R2-A Task 5 (F-10 guard): the handler now over-spans to whole CET/CEST
+# DELIVERY days, exactly mirroring the vendor's real, measured behaviour
+# (R2-A-PLAN.md S1.4) instead of a hardcoded ``hours=23``-style shortcut. A
+# UTC request touching any part of a Brussels calendar day gets that WHOLE
+# day's document back, unioned across every Brussels day the request
+# touches. Measured ground truth this mirrors: a clean 24h UTC request for
+# 2024-01-15 (winter, CET = UTC+1) returned points spanning
+# 2024-01-14T23:00Z -> 2024-01-16T23:00Z (48h, both Brussels days the
+# request's [00:00, 24:00) UTC span touches). Before this change the mock
+# always echoed back exactly the requested window, so the per-day guard
+# (below) could never observe an over-span at all -- it was vacuous.
 # ---------------------------------------------------------------------------
 
+BRUSSELS_TZ = ZoneInfo("Europe/Brussels")
 
-def _day_ahead_prices_xml(period_start: datetime, period_end: datetime, hours: int) -> bytes:
+
+def _brussels_day_bounds_utc(instant: datetime) -> tuple[datetime, datetime]:
+    """Return the ``[start, end)`` UTC bounds of ``instant``'s Brussels calendar day."""
+    local = instant.astimezone(BRUSSELS_TZ)
+    day_start_local = datetime(local.year, local.month, local.day, tzinfo=BRUSSELS_TZ)
+    day_end_local = day_start_local + timedelta(days=1)
+    return day_start_local.astimezone(UTC), day_end_local.astimezone(UTC)
+
+
+def _day_ahead_prices_xml(period_start: datetime, period_end: datetime) -> bytes:
     """Build a synthetic A44 Publication_MarketDocument for GB day-ahead prices.
 
     Mirrors the namespace/element shape of
     ``tests/fixtures/entsoe/day_ahead_prices_gb.xml`` so
-    ``parse_timeseries_xml`` accepts it. ``hours`` sequential PT60M points
-    starting at ``period_start`` — deterministic, distinct prices so a
-    duplicated day is visibly detectable.
+    ``parse_timeseries_xml`` accepts it. Sequential PT60M points spanning
+    ``[period_start, period_end)`` — deterministic, distinct prices so a
+    duplicated/over-spanning day is visibly detectable.
     """
+    hours = round((period_end - period_start).total_seconds() / 3600)
     start_s = period_start.strftime("%Y-%m-%dT%H:%MZ")
     end_s = period_end.strftime("%Y-%m-%dT%H:%MZ")
     points = "".join(
@@ -126,13 +166,26 @@ def _day_ahead_prices_xml(period_start: datetime, period_end: datetime, hours: i
 
 
 def _day_ahead_prices_handler(request: httpx.Request) -> httpx.Response:
+    """Simulate the vendor's real delivery-day (CET/CEST) alignment.
+
+    The response is the union of every Brussels calendar day the requested
+    ``[periodStart, periodEnd)`` UTC window touches -- NEVER simply the
+    requested window itself, and never a hardcoded DST-magnitude shortcut
+    (rejecting the same "assume-a-magnitude" shortcut the plan's D-3d
+    documents rejecting for ownership granularity).
+    """
     params = dict(request.url.params)
-    period_start = datetime.strptime(params["periodStart"], ENTSOE_DT_FORMAT).replace(tzinfo=UTC)
-    period_end = datetime.strptime(params["periodEnd"], ENTSOE_DT_FORMAT).replace(tzinfo=UTC)
-    hours = int((period_end - period_start).total_seconds() // 3600)
+    request_start = datetime.strptime(params["periodStart"], ENTSOE_DT_FORMAT).replace(tzinfo=UTC)
+    request_end = datetime.strptime(params["periodEnd"], ENTSOE_DT_FORMAT).replace(tzinfo=UTC)
+
+    doc_start, _ = _brussels_day_bounds_utc(request_start)
+    # request_end is exclusive; the union must be anchored on the last
+    # COVERED instant, one microsecond before it.
+    _, doc_end = _brussels_day_bounds_utc(request_end - timedelta(microseconds=1))
+
     return httpx.Response(
         200,
-        content=_day_ahead_prices_xml(period_start, period_end, hours),
+        content=_day_ahead_prices_xml(doc_start, doc_end),
         headers={"content-type": "text/xml"},
     )
 
@@ -215,6 +268,48 @@ async def test_entsoe_multi_day_window_partitions_per_day_and_transforms_without
 
     post_hash = hashlib.sha256(silver_may_03.read_bytes()).hexdigest()
     assert post_hash == pre_hash, "05-03 silver file was regenerated instead of left stale"
+
+
+# ---------------------------------------------------------------------------
+# R2-A Task 5 — the per-day guard must be ABLE to fail on vendor over-span (F-10)
+# ---------------------------------------------------------------------------
+
+
+@respx.mock
+@pytest.mark.asyncio
+async def test_entsoe_cest_over_span_is_trimmed_to_the_requested_utc_day(
+    tmp_path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A-5 CEST variant: 24 (branch, once R2-A Task 4 lands) vs 48 (this
+    commit alone -- Task 4's neighbour-durability trim is a separate
+    executor's work, not yet applied here).
+
+    A single UTC day request during CEST (Brussels = UTC+2, DST active in
+    July) gets a 48h over-spanning vendor response from this module's mock
+    (matching the measured winter case at S1.4 -- any full UTC day crosses
+    into the next Brussels calendar day at its tail, regardless of season).
+    The bronze partition for 2024-07-15 durably contains all 48 returned
+    hours; once Task 4's per-instant durability gate fires, the transform
+    trims back to the requested UTC day's own 24 hours.
+    """
+    monkeypatch.setattr("gridflow.connectors.entsoe.client.DEFAULT_ZONES", ["GB"])
+    respx.get(f"{ENTSOE_BASE}/api").mock(side_effect=_day_ahead_prices_handler)
+
+    start = datetime(2024, 7, 15, tzinfo=UTC)
+    end = datetime(2024, 7, 17, tzinfo=UTC)
+    target_date = date(2024, 7, 15)
+
+    async with EntsoeConnector(_entsoe_config()) as connector:
+        responses = await connector.fetch("day_ahead_prices", start, end)
+
+    writer = BronzeWriter(tmp_path)
+    for response in responses:
+        writer.write(response)
+
+    transformer = DayAheadPricesTransformer(tmp_path)
+    rows = transformer.run(target_date, run_id="r2a-cest-overspan")
+    assert rows == 24, "the requested UTC day's own 24 hours, trimmed of the CEST over-span"
 
 
 # ---------------------------------------------------------------------------

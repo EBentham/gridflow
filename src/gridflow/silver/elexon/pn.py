@@ -23,6 +23,7 @@ class PNTransformer(BaseSilverTransformer):
     source = "elexon"
     dataset = "pn"
     schema_cls = ElexonPN
+    ENTITY_KEY_COLUMNS = ("settlement_date", "settlement_period", "bm_unit_id")  # D-8
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         bronze_path = (

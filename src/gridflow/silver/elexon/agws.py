@@ -23,6 +23,7 @@ class AGWSTransformer(BaseSilverTransformer):
     source = "elexon"
     dataset = "agws"
     schema_cls = ElexonAGWS
+    ENTITY_KEY_COLUMNS = ("settlement_date", "settlement_period", "psr_type")  # D-8
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         bronze_path = (

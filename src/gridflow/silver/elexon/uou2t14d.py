@@ -23,6 +23,8 @@ class UOU2T14DTransformer(BaseSilverTransformer):
     source = "elexon"
     dataset = "uou2t14d"
     schema_cls = ElexonUOU2T14D
+    ENTITY_KEY_COLUMNS = ("settlement_date", "bm_unit_id")  # D-8: verbatim from unique() below
+    OPTIONAL_ENTITY_KEY_COLUMNS = ("settlement_period",)
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         bronze_path = (

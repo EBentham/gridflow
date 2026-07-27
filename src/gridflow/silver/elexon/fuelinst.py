@@ -26,6 +26,7 @@ class FuelInstTransformer(BaseSilverTransformer):
     # ElexonGenerationByFuel, which requires settlement_date + settlement_period
     # the transformer never emits.
     schema_cls = ElexonFuelInst
+    ENTITY_KEY_COLUMNS = ("timestamp_utc", "fuel_type")  # D-8: verbatim from unique() below
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         bronze_path = (

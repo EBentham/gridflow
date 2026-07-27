@@ -43,6 +43,11 @@ class REMITTransformer(BaseSilverTransformer):
     schema_cls = ElexonREMIT
     APPEND_ONLY: ClassVar[bool] = True
     DATASET_VERSION: ClassVar[str] = "2.0.0"
+    # D-8: remit has NO unique(subset=...) in transform() to hoist (F7 keeps
+    # every revision). Sourced from LATEST_VIEW_SPECS's key_columns
+    # (latest_views.py) -- the same business key the latest-vintage
+    # projection groups by.
+    ENTITY_KEY_COLUMNS = ("mrid",)
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         bronze_path = (

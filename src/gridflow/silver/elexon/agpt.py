@@ -23,6 +23,7 @@ class AGPTTransformer(BaseSilverTransformer):
     source = "elexon"
     dataset = "agpt"
     schema_cls = ElexonAGPT
+    ENTITY_KEY_COLUMNS = ("settlement_date", "settlement_period", "psr_type")  # D-8
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         bronze_path = (

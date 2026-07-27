@@ -28,6 +28,8 @@ class DemandForecastTransformer(BaseSilverTransformer):
     dataset = "ndf"
     schema_cls = ElexonDemandForecast
     DATASET_VERSION: ClassVar[str] = "1.0.0"
+    ENTITY_KEY_COLUMNS = ("settlement_date", "settlement_period", "forecast_type")  # D-8
+    OPTIONAL_ENTITY_KEY_COLUMNS = ("published_at",)
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         bronze_path = (

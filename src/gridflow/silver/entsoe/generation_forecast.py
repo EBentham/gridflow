@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from datetime import UTC, date, datetime
-from typing import Any
+from typing import Any, ClassVar
 
 import polars as pl
 
@@ -28,6 +28,8 @@ class GenerationForecastTransformer(BaseSilverTransformer):
     source = "entsoe"
     dataset = "generation_forecast"
     schema_cls = EntsoeGenerationForecast
+    EVENT_WINDOW_FILTER: ClassVar[bool] = True
+    """R2-A Task 4 / F-10 opt-in — see ``silver/entsoe/_event_window.py``."""
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         bronze_path = self._bronze_path_for_date(target_date)

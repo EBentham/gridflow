@@ -24,6 +24,10 @@ class INDOTransformer(BaseSilverTransformer):
     dataset = "indo"
     schema_cls = ElexonINDO
     DATASET_VERSION: ClassVar[str] = "1.0.0"
+    ENTITY_KEY_COLUMNS = (
+        "settlement_date",
+        "settlement_period",
+    )  # D-8: verbatim from unique() below
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         bronze_path = (

@@ -30,6 +30,11 @@ class SystemPriceTransformer(BaseSilverTransformer):
     # Run type precedence — higher number wins
     APPEND_ONLY: ClassVar[bool] = True
     VINTAGE_PER_BRONZE_FILE: ClassVar[bool] = True
+    # D-8: system_prices has NO unique(subset=...) in transform() to hoist
+    # (VINTAGE_PER_BRONZE_FILE preserves every per-file vintage). Sourced
+    # from LATEST_VIEW_SPECS's key_columns (latest_views.py) -- the same
+    # business key the latest-vintage projection groups by.
+    ENTITY_KEY_COLUMNS = ("settlement_date", "settlement_period")
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         """Read all bronze JSON files for a given date."""

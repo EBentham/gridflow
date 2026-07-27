@@ -523,6 +523,7 @@ def run_transform(
         total_rows = 0
         total_unmapped = 0
         total_validation_failures = 0
+        total_all_dropped = 0
         try:
             transformer = get_transformer(source, ds, settings.pipeline.data_dir)
             # CH3-02 (CH-PERF-02): per-date silver CSV is opt-in (default OFF).
@@ -534,7 +535,49 @@ def run_transform(
                 # accumulating never double-counts an empty/missing date.
                 total_unmapped += transformer.last_unmapped_count
                 total_validation_failures += transformer.last_validation_failure_count
-            if total_unmapped or total_validation_failures:
+                # Sol re-review (2026-07-26): a 100%-out-of-window event-window
+                # drop is never a routine warning -- it means an in-scope
+                # dataset was misclassified into EVENT_WINDOW_FILTER, or is
+                # producing wholly out-of-scope vendor output. Deliberately
+                # NOT threaded together with total_unmapped/total_validation_
+                # failures (N-10 stays deferred; those are routine, this is
+                # exceptional and categorical) and checked FIRST, below, so
+                # it overrides the warnings path rather than blending into it.
+                total_all_dropped += transformer.last_partition_filter_all_dropped_count
+            if total_all_dropped:
+                # No silver was written for the affected date(s) (base.py's
+                # _process_frame returns None before _write_silver when the
+                # filtered frame is empty) -- but any PRE-EXISTING Parquet
+                # from an earlier, correctly-classified run is left on disk
+                # untouched. Failing the WHOLE dataset-level result here
+                # (rather than reporting success/warnings for the date range)
+                # is what keeps that stale file from silently passing as
+                # "current": the run's status and exit code now say
+                # otherwise, so a scheduler or operator relying on either
+                # sees the failure instead of a quiet success.
+                error_message = safe_error_message(
+                    f"{source}/{ds}: event-window filter excluded 100% of "
+                    f"{total_all_dropped} row(s) across the requested date "
+                    "range -- no in-window rows for at least one date. This "
+                    "is never a normal outcome for an in-scope dataset; "
+                    "verify EVENT_WINDOW_FILTER classification and window "
+                    "semantics before re-running. No silver was written for "
+                    "the affected date(s); any pre-existing Parquet there is "
+                    "unchanged and must not be treated as current."
+                )
+                tracker.fail(error_message)
+                logger.error("Transform hard-failed for %s/%s: %s", source, ds, error_message)
+                results.append(
+                    DatasetResult(
+                        source=source,
+                        dataset=ds,
+                        operation="transform",
+                        status="failed",
+                        rows_out=total_rows,
+                        error=error_message,
+                    )
+                )
+            elif total_unmapped or total_validation_failures:
                 tracker.complete_with_warnings(
                     rows_out=total_rows,
                     rows_skipped=total_unmapped + total_validation_failures,

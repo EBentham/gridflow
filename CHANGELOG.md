@@ -8,6 +8,27 @@ expansion) was paused before release and is intentionally absent.
 
 ## [Unreleased]
 
+### Added
+- Partition-window filters (ADR-026): a source-agnostic request-window primitive
+  (`silver/partition_window.py`) closes F-04 (Elexon publication-boundary duplication — 29
+  duplicated `indo` keys, 580 `fuelhh` keys), scoped to 7 opted-in ENTSO-E datasets for F-10
+  (vendor CET/CEST over-span), and fixes F-16 (the duplicate-quality-check now keys on each
+  dataset's real entity grain via a committed golden map instead of a hardcoded
+  `(settlement_date, settlement_period)` pair that falsely flagged 27,959 `fuelhh` rows). The
+  two vendors are handled under distinct interval semantics (`IntervalSemantics`, Sol ruling
+  2026-07-26): Elexon's closed-interval boundary row is genuinely shared with a neighbour and
+  is trimmed only when a page-completeness proof shows that neighbour durably holds it (never
+  dropped unproven); ENTSO-E's half-open request means any vendor-returned row outside
+  `[periodStart, periodEnd)` was never requested by that partition at all, so it is always
+  excluded from silver, unconditionally, regardless of whether any neighbour bronze exists.
+
+### Known limitations
+- The ENTSO-E event-window filter closes F-10 for `day_ahead_prices`, `actual_load`,
+  `load_forecast`, `actual_generation`, `actual_generation_units`, `wind_solar_forecast`, and
+  `generation_forecast` only — not repo-wide (ADR-026 D-9; tracked as N-9, a v0.18 milestone
+  gate). 13 further datasets are named-exempt (horizon forecasts, snapshot queries, open-ended
+  revision streams); the rest are unclassified pending N-9.
+
 ## [v0.17] - 2026-07-25
 
 **Review Remediation (P0+P1)** — executed the P0+P1 block of the July 2026 full-stack review:

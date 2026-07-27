@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from datetime import UTC, date, datetime
-from typing import Any
+from typing import Any, ClassVar
 
 import polars as pl
 
@@ -24,6 +24,10 @@ class LoadForecastTransformer(BaseSilverTransformer):
     dataset = "load_forecast"
     schema_cls = EntsoeLoadForecast
     forecast_horizon = "day_ahead"
+    EVENT_WINDOW_FILTER: ClassVar[bool] = True
+    """R2-A Task 4 / F-10 opt-in — day-ahead only (A01), NOT the week/month/
+    year-ahead siblings (A31/A32/A33 — those stay exempt, see
+    ``silver/entsoe/_event_window.py``)."""
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         bronze_path = self._bronze_path_for_date(target_date)

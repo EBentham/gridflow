@@ -23,6 +23,11 @@ class INDGENTransformer(BaseSilverTransformer):
     source = "elexon"
     dataset = "indgen"
     schema_cls = ElexonIndGen
+    ENTITY_KEY_COLUMNS = (
+        "settlement_date",
+        "settlement_period",
+    )  # D-8: verbatim from unique() below
+    OPTIONAL_ENTITY_KEY_COLUMNS = ("boundary",)
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         bronze_path = (

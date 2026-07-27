@@ -30,6 +30,19 @@ def get_transformer(source: str, dataset: str, data_dir: Path) -> BaseSilverTran
     return _REGISTRY[key](data_dir)
 
 
+def get_transformer_class(source: str, dataset: str) -> type[BaseSilverTransformer] | None:
+    """Return the registered transformer CLASS for source/dataset, or ``None``.
+
+    Class-attribute reads only — no instantiation, no filesystem access, no
+    ``data_dir`` required. Used by the F-16 duplicate-quality-check
+    (``cli.py``) to resolve ``ENTITY_KEY_COLUMNS``/``OPTIONAL_ENTITY_KEY_COLUMNS``
+    without constructing a transformer for a dataset it is merely reading a
+    quality-report frame for (T-R2A-04: no dynamic import from a
+    data-derived name, no SQL from ``source``/``dataset`` either).
+    """
+    return _REGISTRY.get((source, dataset))
+
+
 def list_transformers(source: str | None = None) -> list[tuple[str, str]]:
     """Return all registered (source, dataset) pairs, optionally filtered by source."""
     if source:
