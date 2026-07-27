@@ -215,10 +215,24 @@ class GenericEntsogJsonTransformer(BaseSilverTransformer):
         Args:
             target_date: The date being re-transformed.
 
+        The fallback deliberately does NOT delegate to the base method. Doing so
+        would rescan the whole partition and could return a SIBLING file's
+        sidecar — and the bronze writer persists the body before the sidecar, so
+        a crash between the two leaves a newer body with no sidecar next to an
+        older complete pair. The reader takes the newer file; borrowing the older
+        file's stamp would mark those rows available earlier than they existed,
+        which is the leakage direction (``available_at <= :as_of`` would surface
+        them to a query positioned before the fetch). ``now()`` is the only
+        conservative answer when the file actually read cannot vouch for itself
+        (Sol R2-B pass-2 finding 1).
+
+        Args:
+            target_date: The date being re-transformed.
+
         Returns:
             The latest usable sidecar timestamp among the bronze files that
-            :meth:`_bronze_files` resolves for ``target_date``; otherwise the
-            base implementation's result (which warns and falls back to now()).
+            :meth:`_bronze_files` resolves for ``target_date``, else the current
+            time.
         """
         timestamps = [
             timestamp
@@ -228,7 +242,17 @@ class GenericEntsogJsonTransformer(BaseSilverTransformer):
         ]
         if timestamps:
             return max(timestamps)
-        return super()._available_at_from_bronze(target_date)
+
+        fallback = datetime.now(UTC)
+        logger.warning(
+            "No usable sidecar among the bronze files read for %s/%s on %s; using %s "
+            "rather than another file's timestamp",
+            self.source,
+            self.dataset,
+            target_date,
+            fallback,
+        )
+        return fallback
 
     def _write_silver(
         self,

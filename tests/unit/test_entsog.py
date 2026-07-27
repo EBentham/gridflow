@@ -231,13 +231,40 @@ class TestReferenceDatasetReingestVintage:
         )
         assert transformer._available_at_from_bronze(target) == self.RECORDED
 
-    def test_falls_back_when_the_read_file_has_no_usable_sidecar(self, tmp_path: Path) -> None:
-        transformer = self._build(tmp_path)
-        sidecar = transformer.bronze_dir / "2026" / "07" / "01" / "raw_0001.meta.json"
-        sidecar.write_text(json.dumps({"unrelated_key": "no timestamp here"}))
+    def test_never_borrows_a_sibling_file_s_timestamp(self, tmp_path: Path) -> None:
+        """Sol pass-2 finding 1: the fallback must not reach a file that was not read.
 
-        result = transformer._available_at_from_bronze(date(2026, 7, 2))
-        assert result > self.RECORDED, "no usable sidecar -> documented now() fallback"
+        Same partition, two files: the reader takes the newest (``raw_1000``),
+        whose sidecar is missing — the writer persists the body first, so a
+        crash between the two leaves exactly this residue. Delegating the
+        fallback to the base method scans the WHOLE partition and returns
+        ``raw_0900``'s 09:15 stamp, marking 10:00 rows as available at 09:15.
+        That is the leakage direction: an ``as_of=09:30`` query would surface
+        data that did not yet exist. Falling forward to ``now()`` is the only
+        conservative answer when the file actually read cannot vouch for itself.
+        """
+        transformer = self._build(tmp_path)
+        day = transformer.bronze_dir / "2026" / "07" / "01"
+        (day / "raw_0900.json").write_text(json.dumps({"operators": [{"operatorKey": "X"}]}))
+        (day / "raw_0900.meta.json").write_text(
+            json.dumps({"written_at": self.RECORDED.isoformat()})
+        )
+        (day / "raw_1000.json").write_text(json.dumps({"operators": [{"operatorKey": "Y"}]}))
+        (day / "raw_0001.json").unlink()
+        (day / "raw_0001.meta.json").unlink()
+
+        target = date(2026, 7, 1)
+        assert [p.name for p in transformer._bronze_files(target)] == ["raw_1000.json"], (
+            "precondition: the reader takes the newest file, the one with no sidecar"
+        )
+
+        result = transformer._available_at_from_bronze(target)
+        assert result != self.RECORDED, (
+            "must not borrow raw_0900's timestamp for rows read from raw_1000"
+        )
+        assert result > self.RECORDED, (
+            "unvouched read -> conservative now(), never an earlier stamp"
+        )
 
 
 # ---------------------------------------------------------------------------
