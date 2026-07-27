@@ -100,7 +100,13 @@ class GenericEntsogJsonTransformer(BaseSilverTransformer):
         if not rows:
             return pl.DataFrame()
         if self.date_window_dataset:
-            rows = filter_records_to_target_date(rows, target_date, _RAW_TIMESTAMP_PRIORITY)
+            rows = filter_records_to_target_date(
+                rows,
+                target_date,
+                _RAW_TIMESTAMP_PRIORITY,
+                source=self.source,
+                dataset=self.dataset,
+            )
             if not rows:
                 return pl.DataFrame()
         return pl.DataFrame(rows, infer_schema_length=None)

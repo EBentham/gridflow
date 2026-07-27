@@ -23,6 +23,7 @@ from gridflow.connectors.entsog.endpoints import (
     build_params,
 )
 from gridflow.schemas.entsog import EntsogPhysicalFlow
+from gridflow.silver.entsog.datetime import filter_records_to_target_date
 from gridflow.silver.entsog.physical_flows import (
     PhysicalFlowsTransformer,
     _normalise_to_gwh_day,
@@ -138,6 +139,52 @@ class TestNormaliseToGwhDay:
         # 15 billion kWh/d = 15,000 GWh/d
         result = _normalise_to_gwh_day(15_000_000_000.0, "kWh/d")
         assert abs(result - 15_000.0) < 0.01
+
+
+# ---------------------------------------------------------------------------
+# filter_records_to_target_date (R2-B / F-05)
+# ---------------------------------------------------------------------------
+
+
+class TestFilterRecordsToTargetDate:
+    def test_record_dated_to_target_is_kept(self):
+        records = [{"periodFrom": "2026-04-17T05:00:00+02:00", "pointKey": "A"}]
+        result = filter_records_to_target_date(
+            records, date(2026, 4, 17), ("periodFrom",), source="entsog", dataset="physical_flows"
+        )
+        assert result == records
+
+    def test_record_dated_to_another_day_is_dropped(self):
+        records = [{"periodFrom": "2026-04-18T05:00:00+02:00", "pointKey": "A"}]
+        result = filter_records_to_target_date(
+            records, date(2026, 4, 17), ("periodFrom",), source="entsog", dataset="physical_flows"
+        )
+        assert result == []
+
+    def test_undated_record_kept_with_exactly_one_bounded_warning(self, caplog):
+        import logging
+
+        records = [
+            {"pointKey": "A"},
+            {"pointKey": "B"},
+            {"periodFrom": "2026-04-17T05:00:00+02:00", "pointKey": "C"},
+        ]
+        with caplog.at_level(logging.WARNING):
+            result = filter_records_to_target_date(
+                records,
+                date(2026, 4, 17),
+                ("periodFrom",),
+                source="entsog",
+                dataset="physical_flows",
+            )
+
+        assert result == records, "undated records must be KEPT (fail-open), not dropped"
+        warnings = [r for r in caplog.records if r.levelno == logging.WARNING]
+        assert len(warnings) == 1, "exactly one bounded WARNING per call, not one per record"
+        assert "2 record(s)" in warnings[0].getMessage()
+        assert "entsog" in warnings[0].getMessage()
+        assert "physical_flows" in warnings[0].getMessage()
+        assert "2026-04-17" in warnings[0].getMessage()
 
 
 # ---------------------------------------------------------------------------

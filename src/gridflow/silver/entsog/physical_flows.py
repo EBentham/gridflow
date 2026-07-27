@@ -89,7 +89,9 @@ class PhysicalFlowsTransformer(BaseSilverTransformer):
 
         if not rows:
             return pl.DataFrame()
-        rows = filter_records_to_target_date(rows, target_date, ("periodFrom",))
+        rows = filter_records_to_target_date(
+            rows, target_date, ("periodFrom",), source=self.source, dataset=self.dataset
+        )
         if not rows:
             return pl.DataFrame()
         return pl.DataFrame(rows, infer_schema_length=None)
