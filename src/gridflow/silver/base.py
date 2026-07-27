@@ -67,9 +67,21 @@ ENTSO-G transformer families, only ``PhysicalFlowsTransformer.read_bronze``
 (``silver/entsog/physical_flows.py``) actually reaches the covering fallback,
 via ``_bronze_path_for_date``. The generic family
 (``silver/entsog/generic.py``'s ``GenericEntsogJsonTransformer._bronze_files``)
-already overrides bronze resolution outright — exact-date-dir or nothing —
-and never consults ``_bronze_path_for_date``/``_bronze_date_dirs``, so it was
-already exact-only in practice and this addition is a no-op for it. On disk
+already overrides bronze *reading* outright — exact-date-dir or nothing, except
+a ``reference_dataset``, which deliberately takes the newest file anywhere under
+its dataset dir — so for the READ path this addition is a no-op.
+
+It is NOT a no-op for the VINTAGE path, and that asymmetry is the trap (Sol
+R2-B finding 1): ``run(reingest=True)`` reconstructs ``available_at`` via
+``_available_at_from_bronze`` -> ``_bronze_date_dirs``, which this constant
+DOES gate. A reference dataset therefore read its rows from an older partition
+while availability reconstruction found no directory and fell back to ``now()``
+— a fabricated vintage that ``available_at <= :as_of`` then hides from
+point-in-time queries. ``GenericEntsogJsonTransformer`` now overrides
+``_available_at_from_bronze`` to derive from the files ``_bronze_files``
+actually returns. **Before adding a source here, check both paths**: any
+transformer that overrides bronze reading without overriding availability
+reconstruction has the same latent split. On disk
 today (2026-07-27) ``bronze/entsog`` and ``silver/entsog`` are both absent, so
 this closes a latent hazard for the next ENTSO-G ingest rather than
 correcting any already-written silver.
