@@ -36,6 +36,19 @@ class _EntsoeStubTransformer(BaseSilverTransformer):
         return pl.DataFrame()
 
 
+class _EntsogStubTransformer(BaseSilverTransformer):
+    """R2-B / F-05: pins the exact-partition-only policy for source == 'entsog'."""
+
+    source = "entsog"
+    dataset = "test_dataset"
+
+    def read_bronze(self, target_date: date) -> pl.DataFrame:
+        return pl.DataFrame()
+
+    def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
+        return pl.DataFrame()
+
+
 def _make_raw_file(partition_dir: Path) -> None:
     """Create a minimal raw file so glob("raw_*") matches."""
     partition_dir.mkdir(parents=True, exist_ok=True)
@@ -132,3 +145,38 @@ class TestEntsoeExactPartitionOnlyPolicy:
         _make_raw_file(prior)
         result = t._bronze_path_for_date(date(2026, 5, 11))
         assert result == prior
+
+
+class TestEntsogExactPartitionOnlyPolicy:
+    """R2-B / F-05: source == 'entsog' never uses the covering-partition
+    fallback — a target date with no bronze partition of its own yields
+    ``None`` even when a neighbouring partition covers it (today, before the
+    fix, that neighbour is fabricated into the requested date's rows)."""
+
+    def test_exact_partition_used_when_present(self, tmp_path: Path) -> None:
+        t = _EntsogStubTransformer(tmp_path)
+        exact = PathBuilder(tmp_path).bronze_date_dir("entsog", "test_dataset", date(2026, 5, 10))
+        _make_raw_file(exact)
+        result = t._bronze_path_for_date(date(2026, 5, 10))
+        assert result == exact
+
+    def test_none_when_only_neighbouring_partition_exists(self, tmp_path: Path) -> None:
+        """A neighbouring covering partition must NOT be resolved for entsog."""
+        t = _EntsogStubTransformer(tmp_path)
+        neighbour = PathBuilder(tmp_path).bronze_date_dir(
+            "entsog", "test_dataset", date(2026, 5, 10)
+        )
+        _make_raw_file(neighbour)
+        result = t._bronze_path_for_date(date(2026, 5, 11))
+        assert result is None
+
+    def test_bronze_date_dirs_empty_when_only_neighbouring_partition_exists(
+        self, tmp_path: Path
+    ) -> None:
+        t = _EntsogStubTransformer(tmp_path)
+        neighbour = PathBuilder(tmp_path).bronze_date_dir(
+            "entsog", "test_dataset", date(2026, 5, 10)
+        )
+        _make_raw_file(neighbour)
+        dirs = t._bronze_date_dirs(date(2026, 5, 11))
+        assert dirs == []

@@ -35,8 +35,9 @@ logger = logging.getLogger(__name__)
 _VALIDATION_SAMPLE_LIMIT = 5
 """Max distinct validation-error strings logged per ``run()`` (fail-soft; bounded)."""
 
-_EXACT_PARTITION_ONLY_SOURCES: frozenset[str] = frozenset({"entsoe"})
-"""Sources whose connectors write day-exact bronze partitions (P0.8 / R2-F08).
+_EXACT_PARTITION_ONLY_SOURCES: frozenset[str] = frozenset({"entsoe", "entsog"})
+"""Sources whose connectors write day-exact bronze partitions (P0.8 / R2-F08;
+``entsog`` added R2-B / F-05).
 
 As of P0.8, ``EntsoeConnector.fetch`` chunks every multi-day window into one
 request per covered UTC calendar day, so a correctly-fetched ENTSO-E date
@@ -58,6 +59,20 @@ forgetting to set a flag. ``_find_covering_bronze_partition`` itself is not
 modified — NESO and Open-Meteo/ALSI resolution (the other callers) are
 unaffected; ``tests/silver/test_partition_fallback.py``'s ``test_source``
 stub pins that the fallback stays intact for non-ENTSO-E sources.
+
+``entsog`` (R2-B / F-05, measured blast radius): the ENTSO-G connector chunks
+per UTC calendar day the same way (``connectors/entsog/client.py:78`` ->
+``day_subwindows``), which is this constant's precondition. Of the two
+ENTSO-G transformer families, only ``PhysicalFlowsTransformer.read_bronze``
+(``silver/entsog/physical_flows.py``) actually reaches the covering fallback,
+via ``_bronze_path_for_date``. The generic family
+(``silver/entsog/generic.py``'s ``GenericEntsogJsonTransformer._bronze_files``)
+already overrides bronze resolution outright — exact-date-dir or nothing —
+and never consults ``_bronze_path_for_date``/``_bronze_date_dirs``, so it was
+already exact-only in practice and this addition is a no-op for it. On disk
+today (2026-07-27) ``bronze/entsog`` and ``silver/entsog`` are both absent, so
+this closes a latent hazard for the next ENTSO-G ingest rather than
+correcting any already-written silver.
 """
 
 _PUBLICATION_WINDOW_FILTER_SOURCES: frozenset[str] = frozenset({"elexon"})
