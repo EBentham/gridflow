@@ -475,6 +475,38 @@ async def test_pn_page_one_empty_is_local_to_bounded_period() -> None:
 
 @respx.mock
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("settlement_date", "expected_periods"),
+    [
+        (date(2026, 3, 29), 46),  # spring DST short day
+        (date(2026, 7, 1), 48),  # ordinary day
+        (date(2025, 10, 26), 50),  # autumn DST long day
+    ],
+)
+async def test_fetch_date_period_bounds_loop_by_dst_calendar(
+    settlement_date: date, expected_periods: int
+) -> None:
+    """F-22: with no override, the period loop is bounded by the DST
+    calendar (settlement_periods_in_day), not a flat 1..50 -- this test
+    would have failed before the fix (50 requests on every date)."""
+    requests: list[int] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        period = int(request.url.params["settlementPeriod"])
+        requests.append(period)
+        return httpx.Response(200, content=_synthetic_body("pn", data=[]))
+
+    _mock_all_elexon_gets(handler)
+
+    async with ElexonConnector(_active_elexon_config()) as connector:
+        responses = await connector._fetch_date_period("pn", ENDPOINTS["pn"], settlement_date)
+
+    assert requests == list(range(1, expected_periods + 1))
+    assert responses == []
+
+
+@respx.mock
+@pytest.mark.asyncio
 @pytest.mark.parametrize("status_code", [400, 401, 403, 404, 408, 429])
 async def test_pn_period_4xx_surfaces_after_exact_retry_count(
     monkeypatch: pytest.MonkeyPatch,

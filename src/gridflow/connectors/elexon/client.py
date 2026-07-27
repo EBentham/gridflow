@@ -13,6 +13,7 @@ from gridflow.connectors.elexon.endpoints import ENDPOINTS, ParamStyle, build_pa
 from gridflow.connectors.elexon.parsers import get_pagination_info
 from gridflow.connectors.registry import register_connector
 from gridflow.utils.retry import RETRY_POLICY
+from gridflow.utils.time import settlement_periods_in_day
 
 if TYPE_CHECKING:
     from collections.abc import Coroutine
@@ -66,8 +67,9 @@ class ElexonConnector(BaseConnector):
         # Each date (or publish-datetime chunk) is an independent unit: no chunk
         # reads another chunk's result. Build one per-unit coroutine, then fetch
         # them concurrently (CH3-03 / C2-7). Paging *within* a unit — and the
-        # 1..50 settlement-period iteration with period-local empty handling —
-        # stays sequential inside the ``_fetch_date*`` helpers; only the
+        # DST-calendar-bounded settlement-period iteration with period-local
+        # empty handling (F-22) — stays sequential inside the ``_fetch_date*``
+        # helpers; only the
         # across-date loop is parallel. The ``rate_limit_per_second`` semaphore
         # inside ``_request`` keeps in-flight HTTP bounded, and ``gather``
         # preserves input order so the flattened list matches the sequential one.
@@ -151,18 +153,33 @@ class ElexonConnector(BaseConnector):
         dataset: str,
         endpoint: ElexonEndpoint,
         settlement_date: Any,
-        max_periods: int = 50,
+        max_periods: int | None = None,
     ) -> list[RawResponse]:
         """Fetch all pages for each settlement period on a given date.
 
-        Iterates through periods 1..max_periods, fetching paginated data for each.
-        A page-one empty ``data`` array is local to that period, while an empty
-        later page is a fatal pagination-integrity failure. HTTP errors always
+        Iterates through periods 1..N, fetching paginated data for each. N
+        defaults to ``settlement_periods_in_day(settlement_date)`` (46/48/50
+        by the UK DST calendar); pass ``max_periods`` to override (tests only
+        -- production call sites rely on the calendar default). A page-one
+        empty ``data`` array is local to that period, while an empty later
+        page is a fatal pagination-integrity failure. HTTP errors always
         propagate after the configured retry policy is exhausted.
+
+        R2-B / F-22: bounding by the calendar is a request-count reduction,
+        not a crash fix -- probed 2026-07-27 against the live PN dataset, the
+        vendor's ``settlementPeriod`` parameter validates statically against
+        1..50 for every date and returns HTTP 200 with an empty ``data``
+        array for a period outside that date's own DST calendar (e.g. SP 49
+        on a 48-period day), never a 4xx. The existing page-1-empty branch
+        below already handled that response cleanly; this only stops asking
+        for periods that can never carry data.
         """
         responses: list[RawResponse] = []
+        period_count = (
+            max_periods if max_periods is not None else settlement_periods_in_day(settlement_date)
+        )
 
-        for period in range(1, max_periods + 1):
+        for period in range(1, period_count + 1):
             page = 1
             while True:
                 query_params = build_params(
