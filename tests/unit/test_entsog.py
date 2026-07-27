@@ -187,6 +187,59 @@ class TestFilterRecordsToTargetDate:
         assert "2026-04-17" in warnings[0].getMessage()
 
 
+class TestReferenceDatasetReingestVintage:
+    """R2-B / Sol finding 1: availability reconstruction must follow the bronze
+    files the transformer ACTUALLY reads.
+
+    ``GenericEntsogJsonTransformer`` overrides ``_bronze_files`` — a reference
+    dataset deliberately reads the newest bronze file anywhere under its dir,
+    since it is fetched weekly and has no per-date partition. Availability
+    reconstruction on ``--reingest`` went through ``_bronze_date_dirs`` instead,
+    which R2-B made exact-only for ``entsog``. The two then disagreed: the rows
+    were read from the older partition but stamped ``available_at = now()``,
+    silently fabricating a vintage weeks off the recorded one and (via
+    ``available_at <= :as_of``) dropping those rows out of historical
+    point-in-time queries.
+    """
+
+    RECORDED = datetime(2026, 7, 1, 9, 15, tzinfo=UTC)
+
+    def _build(self, tmp_path: Path):
+        from gridflow.silver.entsog.generic import GenericEntsogJsonTransformer
+        from gridflow.storage.paths import PathBuilder
+
+        class _RefStub(GenericEntsogJsonTransformer):
+            dataset = "operators"
+            response_key = "operators"
+            reference_dataset = True
+            date_window_dataset = False
+
+        day = PathBuilder(tmp_path).bronze_date_dir("entsog", "operators", date(2026, 7, 1))
+        day.mkdir(parents=True, exist_ok=True)
+        (day / "raw_0001.json").write_text(json.dumps({"operators": [{"operatorKey": "X"}]}))
+        (day / "raw_0001.meta.json").write_text(
+            json.dumps({"written_at": self.RECORDED.isoformat()})
+        )
+        return _RefStub(tmp_path)
+
+    def test_reingest_vintage_matches_the_file_actually_read(self, tmp_path: Path) -> None:
+        transformer = self._build(tmp_path)
+        target = date(2026, 7, 2)  # no exact partition; the 07-01 file is what gets read
+
+        assert [p.name for p in transformer._bronze_files(target)] == ["raw_0001.json"], (
+            "precondition: the reference reader still resolves the older bronze file"
+        )
+        assert transformer._available_at_from_bronze(target) == self.RECORDED
+
+    def test_falls_back_when_the_read_file_has_no_usable_sidecar(self, tmp_path: Path) -> None:
+        transformer = self._build(tmp_path)
+        sidecar = transformer.bronze_dir / "2026" / "07" / "01" / "raw_0001.meta.json"
+        sidecar.write_text(json.dumps({"unrelated_key": "no timestamp here"}))
+
+        result = transformer._available_at_from_bronze(date(2026, 7, 2))
+        assert result > self.RECORDED, "no usable sidecar -> documented now() fallback"
+
+
 # ---------------------------------------------------------------------------
 # Helper to build transformer instances bypassing __init__
 # ---------------------------------------------------------------------------

@@ -198,6 +198,38 @@ class GenericEntsogJsonTransformer(BaseSilverTransformer):
             if not path.name.endswith(".meta.json")
         ]
 
+    def _available_at_from_bronze(self, target_date: date) -> datetime:
+        """Reconstruct availability from the bronze files this class actually reads.
+
+        The base implementation walks ``_bronze_date_dirs``, but this class
+        overrides ``_bronze_files`` — a ``reference_dataset`` deliberately reads
+        the newest bronze file anywhere under its dataset dir, because it is
+        fetched on its own cadence and has no partition for most dates. Since
+        R2-B added ``entsog`` to ``_EXACT_PARTITION_ONLY_SOURCES`` those two
+        resolutions diverge: on ``--reingest`` the rows come from an older
+        partition while the base method finds no directory at all and falls back
+        to ``now()``, stamping a fabricated vintage weeks off the recorded one.
+        Deriving the timestamp from the same files the reader returns keeps the
+        two in lockstep by construction rather than by coincidence.
+
+        Args:
+            target_date: The date being re-transformed.
+
+        Returns:
+            The latest usable sidecar timestamp among the bronze files that
+            :meth:`_bronze_files` resolves for ``target_date``; otherwise the
+            base implementation's result (which warns and falls back to now()).
+        """
+        timestamps = [
+            timestamp
+            for path in self._bronze_files(target_date)
+            if (timestamp := self._timestamp_from_sidecar(path.with_suffix(".meta.json")))
+            is not None
+        ]
+        if timestamps:
+            return max(timestamps)
+        return super()._available_at_from_bronze(target_date)
+
     def _write_silver(
         self,
         df: pl.DataFrame,
