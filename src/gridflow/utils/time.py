@@ -42,6 +42,37 @@ def settlement_period_to_utc(settlement_date: date, period: int) -> datetime:
     return sp1_utc + timedelta(minutes=30 * (period - 1))
 
 
+def settlement_periods_in_day(settlement_date: date) -> int:
+    """Return the number of settlement periods on ``settlement_date``.
+
+    Derived from the same DST-fold-safe day-length machinery as
+    :func:`settlement_period_to_utc` (:func:`_settlement_day_start_utc` of the
+    next day minus this day, in half-hours) rather than a hardcoded 46/48/50
+    lookup table, so a future DST rule change is picked up automatically.
+
+    R2-B / F-22: this bounds the elexon connector's per-period REQUEST loop
+    (``ElexonConnector._fetch_date_period``). The vendor's own
+    ``settlementPeriod`` *parameter* validates statically against 1..50 for
+    every date (measured 2026-07-27: an out-of-calendar period, e.g. SP 49 on
+    a 48-period day, returns HTTP 200 with an empty ``data`` array — never a
+    4xx), so this is a request-count reduction, not a crash fix. The
+    project's schema-level ``1..50`` validator (``SettlementPeriodMixin``) is
+    unrelated and unchanged.
+
+    Args:
+        settlement_date: The UK settlement date.
+
+    Returns:
+        46 on the spring-forward DST day, 50 on the autumn-back DST day, 48
+        on every ordinary day.
+    """
+    half_hours = (
+        _settlement_day_start_utc(settlement_date + timedelta(days=1))
+        - _settlement_day_start_utc(settlement_date)
+    ).total_seconds() / 1800
+    return round(half_hours)
+
+
 def utc_to_settlement_period(ts: datetime) -> tuple[date, int]:
     """Convert UTC timestamp to (settlement_date, period).
 

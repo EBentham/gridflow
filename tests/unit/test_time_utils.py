@@ -9,6 +9,7 @@ from gridflow.utils.time import (
     day_subwindows,
     parse_lookback,
     settlement_period_to_utc,
+    settlement_periods_in_day,
     utc_to_settlement_period,
 )
 
@@ -324,3 +325,24 @@ class TestDaySubwindows:
         end = datetime(2024, 1, 15, 0, 0, tzinfo=UTC)
         with pytest.raises(ValueError, match="before start"):
             day_subwindows(start, end)
+
+
+class TestSettlementPeriodsInDay:
+    """R2-B / F-22: bounds the elexon per-period REQUEST loop by the DST
+    calendar. Derived from the day-length machinery, not a hardcoded lookup
+    table."""
+
+    def test_spring_dst_short_day_is_46(self):
+        assert settlement_periods_in_day(date(2026, 3, 29)) == 46
+
+    def test_ordinary_summer_day_is_48(self):
+        assert settlement_periods_in_day(date(2026, 7, 1)) == 48
+
+    def test_autumn_dst_long_day_is_50(self):
+        assert settlement_periods_in_day(date(2025, 10, 26)) == 50
+
+    def test_ordinary_winter_day_is_48(self):
+        assert settlement_periods_in_day(date(2024, 1, 15)) == 48
+
+    def test_ordinary_summer_day_2024_is_48(self):
+        assert settlement_periods_in_day(date(2024, 7, 15)) == 48
