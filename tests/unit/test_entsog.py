@@ -258,12 +258,56 @@ class TestReferenceDatasetReingestVintage:
             "precondition: the reader takes the newest file, the one with no sidecar"
         )
 
+        before = datetime.now(UTC)
         result = transformer._available_at_from_bronze(target)
-        assert result != self.RECORDED, (
-            "must not borrow raw_0900's timestamp for rows read from raw_1000"
+        after = datetime.now(UTC)
+        assert before <= result <= after, (
+            "must be THIS call's now(), not the borrowed 09:15 and not merely "
+            "some instant after it — a 09:15:01 stamp still leaks at as_of=09:30"
         )
         assert result > self.RECORDED, (
             "unvouched read -> conservative now(), never an earlier stamp"
+        )
+
+    def test_mixed_sidecars_across_multiple_read_files(self, tmp_path: Path) -> None:
+        """Sol pass-3 finding 1: a NON-reference dataset reads every file in the
+        partition, so one unvouched file among several must not be silently
+        skipped in favour of a sibling's older stamp.
+
+        ``raw_0900`` is complete at 09:15; ``raw_1000`` carries rows but lost its
+        sidecar. Both are read. Taking ``max`` over only the stamps that exist
+        yields 09:15 and marks the 10:00 rows available before they were written.
+        """
+        from gridflow.silver.entsog.generic import GenericEntsogJsonTransformer
+        from gridflow.storage.paths import PathBuilder
+
+        class _NonRefStub(GenericEntsogJsonTransformer):
+            dataset = "operational_data"
+            response_key = "operationalData"
+            reference_dataset = False
+            date_window_dataset = True
+
+        target = date(2026, 7, 1)
+        day = PathBuilder(tmp_path).bronze_date_dir("entsog", "operational_data", target)
+        day.mkdir(parents=True, exist_ok=True)
+        (day / "raw_0900.json").write_text(json.dumps({"operationalData": [{"id": "a"}]}))
+        (day / "raw_0900.meta.json").write_text(
+            json.dumps({"written_at": self.RECORDED.isoformat()})
+        )
+        (day / "raw_1000.json").write_text(json.dumps({"operationalData": [{"id": "b"}]}))
+
+        transformer = _NonRefStub(tmp_path)
+        assert [p.name for p in transformer._bronze_files(target)] == [
+            "raw_0900.json",
+            "raw_1000.json",
+        ], "precondition: a non-reference dataset reads BOTH files"
+
+        before = datetime.now(UTC)
+        result = transformer._available_at_from_bronze(target)
+        after = datetime.now(UTC)
+        assert before <= result <= after, (
+            "the unvouched raw_1000 must contribute now(), so the frame's vintage "
+            "cannot be raw_0900's 09:15"
         )
 
 

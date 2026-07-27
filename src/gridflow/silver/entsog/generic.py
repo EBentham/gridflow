@@ -212,47 +212,50 @@ class GenericEntsogJsonTransformer(BaseSilverTransformer):
         Deriving the timestamp from the same files the reader returns keeps the
         two in lockstep by construction rather than by coincidence.
 
-        Args:
-            target_date: The date being re-transformed.
-
-        The fallback deliberately does NOT delegate to the base method. Doing so
-        would rescan the whole partition and could return a SIBLING file's
-        sidecar — and the bronze writer persists the body before the sidecar, so
-        a crash between the two leaves a newer body with no sidecar next to an
-        older complete pair. The reader takes the newer file; borrowing the older
-        file's stamp would mark those rows available earlier than they existed,
-        which is the leakage direction (``available_at <= :as_of`` would surface
-        them to a query positioned before the fetch). ``now()`` is the only
-        conservative answer when the file actually read cannot vouch for itself
-        (Sol R2-B pass-2 finding 1).
+        **Every selected file must vouch for itself.** The vintage is the latest
+        stamp over all files read, and a file whose sidecar is missing or
+        unparseable contributes ``now()`` rather than being skipped. Skipping it
+        would let a sibling's older stamp represent rows that file contributed —
+        and the bronze writer persists the body before the sidecar
+        (``bronze/writer.py:64`` then ``:86``), so a crash between the two leaves
+        exactly that residue: a newer body with no sidecar beside an older
+        complete pair. An older stamp is the leakage direction, since
+        ``available_at <= :as_of`` would then surface those rows to a query
+        positioned before they existed. Late is recoverable; early is not
+        (Sol R2-B pass-2 finding 1, pass-3 finding 1).
 
         Args:
             target_date: The date being re-transformed.
 
         Returns:
-            The latest usable sidecar timestamp among the bronze files that
-            :meth:`_bronze_files` resolves for ``target_date``, else the current
-            time.
+            The latest availability stamp across every bronze file
+            :meth:`_bronze_files` resolves for ``target_date``, taking the
+            current time for any file that cannot vouch for itself (including
+            when no files resolve at all).
         """
-        timestamps = [
-            timestamp
-            for path in self._bronze_files(target_date)
-            if (timestamp := self._timestamp_from_sidecar(path.with_suffix(".meta.json")))
-            is not None
-        ]
-        if timestamps:
-            return max(timestamps)
+        now = datetime.now(UTC)
+        stamps: list[datetime] = []
+        unvouched: list[str] = []
+        for path in self._bronze_files(target_date):
+            timestamp = self._timestamp_from_sidecar(path.with_suffix(".meta.json"))
+            if timestamp is None:
+                unvouched.append(path.name)
+                stamps.append(now)
+            else:
+                stamps.append(timestamp)
 
-        fallback = datetime.now(UTC)
-        logger.warning(
-            "No usable sidecar among the bronze files read for %s/%s on %s; using %s "
-            "rather than another file's timestamp",
-            self.source,
-            self.dataset,
-            target_date,
-            fallback,
-        )
-        return fallback
+        if unvouched:
+            logger.warning(
+                "%s/%s on %s: %d bronze file(s) read with no usable sidecar (%s); "
+                "using %s for them rather than a sibling file's earlier stamp",
+                self.source,
+                self.dataset,
+                target_date,
+                len(unvouched),
+                ", ".join(unvouched[:5]),
+                now,
+            )
+        return max(stamps, default=now)
 
     def _write_silver(
         self,
