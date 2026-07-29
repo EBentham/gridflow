@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import dataclasses
 import io
 import logging
 import zipfile
@@ -325,9 +326,24 @@ class EntsoeConnector(BaseConnector):
             query_params["offset"] = str(offset)
             raw = await self._request(_ENTSOE_API_PATH, query_params)
             page_responses = self._raw_response_to_records(raw, dataset, query_params, data_date)
-            all_responses.extend(page_responses)
 
-            ts_count = sum(_count_timeseries(resp.body) for resp in page_responses)
+            # D-18/D-25: parse ONCE per body (net 1 -> 1), and stamp BEFORE the
+            # extend so the RETURNED objects are the stamped ones -- a future
+            # replace-after-extend regression would leave `all_responses`
+            # holding the unstamped originals while every registry pin still
+            # passes (T3-g / #37). `strict=True` makes a length drift between
+            # `counts` and `page_responses` raise instead of silently
+            # truncating.
+            counts = [count_timeseries_or_none(resp.body) for resp in page_responses]
+            stamped = [
+                dataclasses.replace(resp, record_count=count)
+                for resp, count in zip(page_responses, counts, strict=True)
+            ]
+            all_responses.extend(stamped)
+
+            # 0-for-None preserves the pagination contract exactly: a
+            # malformed page must not spin the loop indefinitely.
+            ts_count = sum(count if count is not None else 0 for count in counts)
             if ts_count < _ENTSOE_PAGE_SIZE:
                 break
             offset += _ENTSOE_PAGE_SIZE
@@ -464,24 +480,27 @@ def _extract_acknowledgement_reason(content: bytes) -> str:
     return " - ".join(parts)
 
 
-def _count_timeseries(xml_bytes: bytes) -> int:
-    """Count `<TimeSeries>` elements in an ENTSO-E XML response.
+def count_timeseries_or_none(xml_bytes: bytes) -> int | None:
+    """Count `<TimeSeries>` elements in an ENTSO-E XML response, or None.
 
-    G9 ENTSOE-01: used by the pagination loop in ``_fetch_document`` to
-    decide whether to request another page. Namespace-agnostic — checks
-    the local-name part of each tag. Returns 0 on parse failure so a
-    malformed page does not spin the loop indefinitely.
+    C-8/D-8/D-18: the primitive parse. Namespace-agnostic — checks the
+    local-name part of each tag. Returns ``None`` (not ``0``) on an empty
+    body, a missing lxml dependency, or a malformed document — a parse
+    FAILURE must never be conflated with "zero records" (D-8): that would
+    turn every malformed page into a permanent frontier freeze. A
+    well-formed document carrying no ``<TimeSeries>`` elements at all
+    correctly yields ``0``.
     """
     if not xml_bytes:
-        return 0
+        return None
     try:
         from lxml import etree
     except ImportError:
-        return 0
+        return None
     try:
         root = etree.fromstring(xml_bytes, parser=_hardened_parser())
     except etree.XMLSyntaxError:
-        return 0
+        return None
 
     count = 0
     for el in root.iter():
@@ -491,6 +510,18 @@ def _count_timeseries(xml_bytes: bytes) -> int:
             if local == "TimeSeries":
                 count += 1
     return count
+
+
+def _count_timeseries(xml_bytes: bytes) -> int:
+    """Count `<TimeSeries>` elements in an ENTSO-E XML response.
+
+    G9 ENTSOE-01: thin wrapper over ``count_timeseries_or_none`` (D-18),
+    returning ``0`` for ``None`` -- preserves the pagination loop's original
+    "a malformed page must not spin the loop indefinitely" contract exactly
+    for any caller that has not migrated to the three-valued primitive.
+    """
+    result = count_timeseries_or_none(xml_bytes)
+    return result if result is not None else 0
 
 
 def _is_zip_response(content_type: str, content: bytes) -> bool:

@@ -1015,3 +1015,133 @@ def test_elexon_truncated_json_stamps_none_and_advances_unchanged(
     wm = _read_watermark(db_path, "elexon", "c8_truncated_probe")
     assert wm is not None, "a parse failure (None) must not be treated as zero records"
     assert before <= wm <= after
+
+
+@respx.mock
+@pytest.mark.integration
+def test_entsoe_valid_empty_paginated_page_stamps_zero_and_does_not_advance(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """T3-g (#37, the non-vacuous stamping test, D-25/W-7): a VALID, empty
+    paginated ENTSO-E document -- well-formed XML carrying zero
+    ``<TimeSeries>`` elements on a doc type that supports pagination.
+
+    Asserts on the objects the connector RETURNS (``record_count == 0``, not
+    ``None``) -- this fails when stamping is absent (the field default is
+    ``None``) and fails when stamping lands on dead copies (a future
+    replace-after-extend regression), the W-7 vacuity lesson: the
+    malformed-XML test alone cannot distinguish "parse failed -> None" from
+    "never stamped". Then feeds those exact stamped responses through the CLI
+    ingest path (via ``asyncio.run``, synchronously -- the CLI's own
+    ``run_ingest`` calls ``asyncio.run`` internally and cannot be nested
+    inside a already-running event loop) and asserts the watermark does not
+    advance.
+    """
+    import asyncio
+
+    from gridflow.config.settings import SourceConfig
+    from gridflow.connectors.entsoe.client import EntsoeConnector
+
+    db_path = _isolated_env(tmp_path, monkeypatch)
+    monkeypatch.setenv("ENTSOE_API_KEY", "test-token")
+
+    async def _no_sleep(*_args: Any, **_kwargs: Any) -> None:
+        return None
+
+    monkeypatch.setattr("asyncio.sleep", _no_sleep)
+
+    respx.get("https://web-api.tp.entsoe.eu/api").mock(
+        return_value=httpx.Response(
+            200,
+            content=b"<root></root>",  # well-formed, zero TimeSeries
+            headers={"content-type": "text/xml"},
+        )
+    )
+
+    config = SourceConfig(
+        base_url="https://web-api.tp.entsoe.eu",
+        api_key="test-token",
+        api_key_header="",
+        rate_limit_per_second=1000,
+        timeout=5,
+        datasets={"balancing_energy_bids": {}},
+    )
+    start = datetime(2024, 1, 15, tzinfo=UTC)
+    end = datetime(2024, 1, 16, tzinfo=UTC)
+
+    async def _do_fetch() -> list[RawResponse]:
+        async with EntsoeConnector(config) as connector:
+            return await connector.fetch("balancing_energy_bids", start, end)
+
+    responses = asyncio.run(_do_fetch())
+
+    assert responses, "expected at least one response (one per default zone)"
+    assert all(r.record_count == 0 for r in responses), (
+        "a valid, empty paginated page must stamp record_count == 0 on the "
+        "RETURNED objects, not None"
+    )
+
+    monkeypatch.setattr(
+        "gridflow.connectors.registry.get_connector",
+        lambda source_name, config: _StampedFakeConnector(responses),
+    )
+    result = runner.invoke(app, ["ingest", "entsoe", "balancing_energy_bids", "--incremental"])
+    assert result.exit_code == 0, result.output
+
+    assert _read_watermark(db_path, "entsoe", "balancing_energy_bids") is None, (
+        "a run whose only evidence is record_count == 0 must not advance the frontier"
+    )
+
+
+class _StampedFakeConnector:
+    """Minimal async-CM connector that replays a fixed, pre-stamped response list.
+
+    Used by ``test_entsoe_valid_empty_paginated_page_stamps_zero_and_does_not_advance``
+    to feed the REAL connector's stamped ``RawResponse`` objects through the CLI
+    ingest path without re-issuing HTTP requests.
+    """
+
+    def __init__(self, responses: list[RawResponse]) -> None:
+        self._responses = responses
+        self.last_skipped_units = 0
+
+    async def __aenter__(self) -> _StampedFakeConnector:
+        return self
+
+    async def __aexit__(self, *exc: Any) -> None:
+        return None
+
+    async def fetch(
+        self, dataset: str, start: datetime, end: datetime, **params: Any
+    ) -> list[RawResponse]:
+        return self._responses
+
+
+@pytest.mark.integration
+def test_entsog_unstamped_connector_behaves_exactly_as_before(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, _patch_connector: None
+) -> None:
+    """An unstamped connector (ENTSO-G, EXEMPT per D-18) is unaffected by C-8:
+    ``record_count`` stays at its default ``None`` (evidence, as today), so a
+    populated 200 response still advances exactly as before the boundary was
+    added."""
+    db_path = _isolated_env(tmp_path, monkeypatch)
+    _FakeConnector.responses = [
+        RawResponse(
+            body=b'{"data": [{"x": 1}]}',
+            content_type="application/json",
+            source="entsog",
+            dataset="physical_flows",
+            http_status=200,
+        )
+    ]
+    assert _FakeConnector.responses[0].record_count is None
+
+    before = datetime.now(UTC)
+    result = runner.invoke(app, ["ingest", "entsog", "physical_flows", "--incremental"])
+    assert result.exit_code == 0, result.output
+    after = datetime.now(UTC)
+
+    wm = _read_watermark(db_path, "entsog", "physical_flows")
+    assert wm is not None, "an unstamped connector's populated response must still advance"
+    assert before <= wm <= after
