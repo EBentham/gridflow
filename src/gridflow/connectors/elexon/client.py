@@ -3,14 +3,17 @@
 from __future__ import annotations
 
 import asyncio
-import json
 import logging
 from datetime import date, datetime, timedelta
 from typing import TYPE_CHECKING, Any
 
 from gridflow.connectors.base import BaseConnector, RawResponse
 from gridflow.connectors.elexon.endpoints import ENDPOINTS, ParamStyle, build_params
-from gridflow.connectors.elexon.parsers import get_pagination_info
+from gridflow.connectors.elexon.parsers import (
+    pagination_from,
+    parse_json_response,
+    record_count_from,
+)
 from gridflow.connectors.registry import register_connector
 from gridflow.utils.retry import RETRY_POLICY
 from gridflow.utils.time import settlement_periods_in_day
@@ -125,7 +128,9 @@ class ElexonConnector(BaseConnector):
             query_params = build_params(endpoint, settlement_date=settlement_date, page=page)
             raw = await self._request(endpoint.path, query_params)
 
-            current_page, total_pages = get_pagination_info(raw.content)
+            # D-18: parse ONCE, derive both pagination and the C-8 record count.
+            parsed = parse_json_response(raw.content)
+            current_page, total_pages = pagination_from(parsed)
             responses.append(
                 RawResponse(
                     body=raw.content,
@@ -139,6 +144,7 @@ class ElexonConnector(BaseConnector):
                     total_pages=total_pages,
                     http_status=raw.status_code,
                     data_date=settlement_date,
+                    record_count=record_count_from(parsed),
                 )
             )
 
@@ -190,25 +196,30 @@ class ElexonConnector(BaseConnector):
                 )
                 raw = await self._request(endpoint.path, query_params)
 
-                try:
-                    parsed = json.loads(raw.content)
-                    if isinstance(parsed.get("data"), list) and not parsed["data"]:
-                        if page > 1:
-                            raise RuntimeError(
-                                "Elexon pagination truncated for "
-                                f"{dataset} on {settlement_date}: period {period}, page {page} "
-                                "returned empty data after an earlier populated page"
-                            )
-                        logger.debug(
-                            "PN period %d on %s returned empty data; continuing to the next period",
-                            period,
-                            settlement_date,
+                # D-18: parse ONCE (net two parses -> one at this site); the
+                # page-1-empty early-stop check and pagination/record-count
+                # all derive from this same parsed body. A JSONDecodeError (or
+                # any unexpected shape) is swallowed inside
+                # ``parse_json_response`` and yields ``{}`` -- `.get("data")`
+                # is then None, so the check below falls through to "treat as
+                # real data", matching the prior try/except's behaviour.
+                parsed = parse_json_response(raw.content)
+                data = parsed.get("data") if isinstance(parsed, dict) else None
+                if isinstance(data, list) and not data:
+                    if page > 1:
+                        raise RuntimeError(
+                            "Elexon pagination truncated for "
+                            f"{dataset} on {settlement_date}: period {period}, page {page} "
+                            "returned empty data after an earlier populated page"
                         )
-                        break
-                except (json.JSONDecodeError, AttributeError, TypeError):
-                    pass  # Not JSON or unexpected shape — treat as real data
+                    logger.debug(
+                        "PN period %d on %s returned empty data; continuing to the next period",
+                        period,
+                        settlement_date,
+                    )
+                    break
 
-                current_page, total_pages = get_pagination_info(raw.content)
+                current_page, total_pages = pagination_from(parsed)
                 responses.append(
                     RawResponse(
                         body=raw.content,
@@ -222,6 +233,7 @@ class ElexonConnector(BaseConnector):
                         total_pages=total_pages,
                         http_status=raw.status_code,
                         data_date=settlement_date,
+                        record_count=record_count_from(parsed),
                     )
                 )
 
@@ -246,7 +258,9 @@ class ElexonConnector(BaseConnector):
             query_params = build_params(endpoint, page=page)
             raw = await self._request(path, query_params)
 
-            current_page, total_pages = get_pagination_info(raw.content)
+            # D-18: parse ONCE, derive both pagination and the C-8 record count.
+            parsed = parse_json_response(raw.content)
+            current_page, total_pages = pagination_from(parsed)
             responses.append(
                 RawResponse(
                     body=raw.content,
@@ -260,6 +274,7 @@ class ElexonConnector(BaseConnector):
                     total_pages=total_pages,
                     http_status=raw.status_code,
                     data_date=settlement_date,
+                    record_count=record_count_from(parsed),
                 )
             )
 
@@ -302,7 +317,9 @@ class ElexonConnector(BaseConnector):
             query_params = build_params(endpoint, start=start, end=end, page=page)
             raw = await self._request(endpoint.path, query_params)
 
-            current_page, total_pages = get_pagination_info(raw.content)
+            # D-18: parse ONCE, derive both pagination and the C-8 record count.
+            parsed = parse_json_response(raw.content)
+            current_page, total_pages = pagination_from(parsed)
             responses.append(
                 RawResponse(
                     body=raw.content,
@@ -316,6 +333,7 @@ class ElexonConnector(BaseConnector):
                     total_pages=total_pages,
                     http_status=raw.status_code,
                     data_date=data_date,
+                    record_count=record_count_from(parsed),
                 )
             )
 

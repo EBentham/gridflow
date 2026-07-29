@@ -32,12 +32,13 @@ def extract_data_records(response_body: bytes) -> list[dict[str, Any]]:
     return []
 
 
-def get_pagination_info(response_body: bytes) -> tuple[int, int]:
-    """Extract current page and total pages from response metadata.
+def pagination_from(parsed: dict[str, Any]) -> tuple[int, int]:
+    """Extract (current_page, total_pages) from an ALREADY-PARSED response body.
 
-    Returns (current_page, total_pages).
+    D-18: the pure half of the parse-once split -- callers that already hold
+    the parsed body (from a single ``parse_json_response`` call) derive
+    pagination from it directly instead of re-parsing.
     """
-    parsed = parse_json_response(response_body)
     if not isinstance(parsed, dict):
         return 1, 1
 
@@ -48,6 +49,32 @@ def get_pagination_info(response_body: bytes) -> tuple[int, int]:
         total: Any = meta.get("totalPages", meta.get("lastPage", 1))
         return int(current), int(total)
     return 1, 1
+
+
+def record_count_from(parsed: dict[str, Any]) -> int | None:
+    """Return the record count from an ALREADY-PARSED response body, or None.
+
+    C-8/D-8: ``None`` unless ``parsed`` is a dict whose ``data`` field is a
+    list -- a parse failure (``parse_json_response`` returns ``{}``) or any
+    unexpected shape means the count is UNAVAILABLE, never zero. Only a
+    genuinely parsed, empty list yields ``0``.
+    """
+    if not isinstance(parsed, dict):
+        return None
+    data = parsed.get("data")
+    if not isinstance(data, list):
+        return None
+    return len(data)
+
+
+def get_pagination_info(response_body: bytes) -> tuple[int, int]:
+    """Extract current page and total pages from response metadata.
+
+    Returns (current_page, total_pages). Thin wrapper over
+    ``pagination_from`` (D-18) -- contract unchanged; retained for callers
+    that have not materialised a parse of their own.
+    """
+    return pagination_from(parse_json_response(response_body))
 
 
 # Settlement run type precedence (higher = more final)

@@ -864,3 +864,154 @@ def test_run_backfill_over_400_days_issues_every_chunk_no_advance(
 
     assert len(_FakeConnector.calls) == 400, "every 1-day chunk over 400 days must be issued"
     assert _read_watermark(db_path, "elexon", "fuelhh") is None, "backfill must never advance"
+
+
+# --------------------------------------------------------------------------- #
+# R2-C Task 3: C-8 -- ingest-boundary emptiness detection (parse-once).
+#
+# These tests drive the REAL connectors (no ``_patch_connector`` fixture) via
+# respx-mocked HTTP so the boundary predicate is exercised end-to-end against
+# genuinely stamped ``RawResponse.record_count`` values, not hand-built fakes.
+# --------------------------------------------------------------------------- #
+
+
+@respx.mock
+@pytest.mark.integration
+def test_elexon_settlement_date_empty_data_array_does_not_advance_watermark(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """T3-a (RED-first): an incremental Elexon run over a genuinely stamped
+    path (``_fetch_date``) whose every response is HTTP 200 with a parsed,
+    empty ``data`` array must NOT advance the watermark (C-8).
+
+    No production ``ENDPOINTS`` entry currently uses the plain
+    ``SETTLEMENT_DATE`` style (all active datasets use
+    ``SETTLEMENT_DATE_PERIOD`` / ``PUBLISH_DATETIME`` / ``DATE_PATH`` /
+    ``NO_PARAMS``), so a throwaway dataset entry is registered for the
+    duration of this test to exercise ``_fetch_date`` specifically -- it is
+    removed automatically by ``monkeypatch`` teardown.
+
+    Before C-8 is closed, ``data_responses`` only filters on ``http_status``,
+    so this 200-with-empty-array response counts as evidence and the
+    watermark incorrectly advances -- RED.
+    """
+    from gridflow.connectors.elexon.client import ENDPOINTS
+    from gridflow.connectors.elexon.endpoints import ElexonEndpoint, ParamStyle
+
+    db_path = _isolated_env(tmp_path, monkeypatch)
+    monkeypatch.setitem(
+        ENDPOINTS,
+        "c8_settlement_date_probe",
+        ElexonEndpoint(
+            path="/datasets/C8PROBE",
+            description="R2-C T3-a boundary probe (SETTLEMENT_DATE, test-only)",
+            param_style=ParamStyle.SETTLEMENT_DATE,
+        ),
+    )
+    respx.get(url__startswith="https://data.elexon.co.uk/bmrs/api/v1/datasets/C8PROBE").mock(
+        return_value=httpx.Response(
+            200,
+            json={"data": [], "metadata": {"page": 1, "totalPages": 1}},
+        )
+    )
+
+    result = runner.invoke(app, ["ingest", "elexon", "c8_settlement_date_probe", "--incremental"])
+    assert result.exit_code == 0, result.output
+
+    assert _read_watermark(db_path, "elexon", "c8_settlement_date_probe") is None, (
+        "a 200 response carrying a parsed, empty record array must not advance the frontier (C-8)"
+    )
+
+
+@respx.mock
+@pytest.mark.integration
+def test_elexon_mixed_empty_and_populated_responses_advances(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """#7: a mixed run (some responses carry records, some are genuinely
+    empty) still advances -- the boundary excludes only the zero-record
+    responses, not the whole run."""
+    from gridflow.connectors.elexon.client import ENDPOINTS
+    from gridflow.connectors.elexon.endpoints import ElexonEndpoint, ParamStyle
+
+    db_path = _isolated_env(tmp_path, monkeypatch)
+    monkeypatch.setitem(
+        ENDPOINTS,
+        "c8_mixed_probe",
+        ElexonEndpoint(
+            path="/datasets/C8MIXED",
+            description="R2-C mixed-evidence boundary probe (test-only)",
+            param_style=ParamStyle.SETTLEMENT_DATE,
+        ),
+    )
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        settlement_date = request.url.params.get("settlementDate", "")
+        if settlement_date == "2024-01-15":
+            body = {
+                "data": [{"settlementDate": settlement_date, "x": i} for i in range(5)],
+                "metadata": {"page": 1, "totalPages": 1},
+            }
+        else:
+            body = {"data": [], "metadata": {"page": 1, "totalPages": 1}}
+        return httpx.Response(200, json=body)
+
+    respx.get(url__startswith="https://data.elexon.co.uk/bmrs/api/v1/datasets/C8MIXED").mock(
+        side_effect=handler
+    )
+
+    # Explicit dates (not "--incremental") for determinism: exactly two
+    # calendar dates, one populated (2024-01-15) and one genuinely empty
+    # (2024-01-16), regardless of when this test happens to run.
+    result = runner.invoke(
+        app,
+        [
+            "ingest",
+            "elexon",
+            "c8_mixed_probe",
+            "--start",
+            "2024-01-15",
+            "--end",
+            "2024-01-16",
+        ],
+    )
+    assert result.exit_code == 0, result.output
+
+    wm = _read_watermark(db_path, "elexon", "c8_mixed_probe")
+    assert wm is not None, "a run with at least one non-empty response must still advance"
+
+
+@respx.mock
+@pytest.mark.integration
+def test_elexon_truncated_json_stamps_none_and_advances_unchanged(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """#5: a truncated/malformed JSON body stamps ``record_count is None``
+    (a parse failure, not zero records, D-8) -- treated as evidence exactly
+    like today, so the frontier advances unchanged, and no exception
+    escapes the connector or the runner."""
+    from gridflow.connectors.elexon.client import ENDPOINTS
+    from gridflow.connectors.elexon.endpoints import ElexonEndpoint, ParamStyle
+
+    db_path = _isolated_env(tmp_path, monkeypatch)
+    monkeypatch.setitem(
+        ENDPOINTS,
+        "c8_truncated_probe",
+        ElexonEndpoint(
+            path="/datasets/C8TRUNC",
+            description="R2-C truncated-JSON boundary probe (test-only)",
+            param_style=ParamStyle.SETTLEMENT_DATE,
+        ),
+    )
+    respx.get(url__startswith="https://data.elexon.co.uk/bmrs/api/v1/datasets/C8TRUNC").mock(
+        return_value=httpx.Response(200, content=b'{"data": [{"x": 1}'),  # truncated, invalid JSON
+    )
+
+    before = datetime.now(UTC)
+    result = runner.invoke(app, ["ingest", "elexon", "c8_truncated_probe", "--incremental"])
+    assert result.exit_code == 0, result.output
+    after = datetime.now(UTC)
+
+    wm = _read_watermark(db_path, "elexon", "c8_truncated_probe")
+    assert wm is not None, "a parse failure (None) must not be treated as zero records"
+    assert before <= wm <= after
