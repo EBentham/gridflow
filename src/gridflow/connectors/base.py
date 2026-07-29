@@ -47,6 +47,16 @@ class RawResponse:
     # The calendar date the data refers to (used for bronze directory partitioning).
     # When set, the writer partitions by data_date rather than fetched_at.
     data_date: date | None = None
+    # C-8 (D-8): the number of records this response carries, three-valued.
+    #   None  -- the connector did not determine a count (today's behaviour;
+    #            treated as evidence at the ingest boundary, same as before C-8).
+    #   0     -- the vendor returned zero records (a parsed, empty body).
+    #   > 0   -- that many records were parsed.
+    # A parse FAILURE stamps None, never 0 -- conflating "could not count" with
+    # "counted zero" would turn every malformed body into a permanent frontier
+    # freeze. Deliberately absent from the bronze sidecar (D-7): it is an
+    # in-process signal only, never written to the immutable bronze metadata.
+    record_count: int | None = None
 
 
 class BaseConnector(ABC):

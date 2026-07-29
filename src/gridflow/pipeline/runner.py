@@ -18,7 +18,8 @@ import logging
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
-from typing import TYPE_CHECKING
+from enum import StrEnum
+from typing import TYPE_CHECKING, assert_never
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
@@ -27,8 +28,84 @@ if TYPE_CHECKING:
 
     from gridflow.config.settings import GridflowConfig
     from gridflow.connectors.base import BaseConnector, RawResponse
+    from gridflow.observability import WatermarkRead, WatermarkWrite
 
 logger = logging.getLogger(__name__)
+
+
+class WindowReason(StrEnum):
+    """Why an incremental window resolved the way it did (D-14/D-16)."""
+
+    HEALTHY = "healthy"
+    CLAMPED_NO_GAP = "clamped_no_gap"
+    UNFETCHED_GAP = "unfetched_gap"
+    FRONTIER_UNREADABLE = "frontier_unreadable"
+    FUTURE_END = "future_end"
+    NOT_INCREMENTAL = "not_incremental"
+
+
+@dataclass(frozen=True)
+class IncrementalWindow:
+    """The resolved incremental fetch window and its provenance (D-16).
+
+    Attributes:
+        start: The resolved fetch-window start (never ``None`` -- both paths
+            build this, D-12).
+        clamped: Whether ``start`` was pulled forward to the
+            ``max_incremental_lookback_hours`` floor.
+        advance_permitted: Whether the watermark may advance once evidence is
+            observed (D-14). Always ``True`` for ``not_applicable`` -- the
+            explicit path's own gate is the write decision (D-22/D-23), not
+            this resolver.
+        reason: Why the window resolved the way it did.
+        snapshot: The single :class:`~gridflow.observability.WatermarkRead`
+            the predicate was evaluated against -- threaded through to the
+            later CAS (D-10.3/D-20). ``None`` only for ``not_applicable``; the
+            ``snapshot is None`` <-> ``not_applicable`` equivalence is what the
+            runner's unified write gate branches on (D-22).
+        frontier: The known watermark value, or ``None`` when absent/unreadable.
+        frontier_error: The redacted read-failure detail when ``unreadable``.
+        gap_start: Start of the never-fetched interval, when ``reason`` denies
+            coverage (``UNFETCHED_GAP``); ``None`` otherwise.
+        gap_end: End of that interval (``== start``); ``None`` otherwise.
+        stall: ``end_dt - frontier``, when a frontier is known.
+        runs_since: Ingest-run count since the frontier (diagnostic only,
+            ``None`` on failure -- the record prints ``unknown``).
+    """
+
+    start: datetime
+    clamped: bool
+    advance_permitted: bool
+    reason: WindowReason
+    snapshot: WatermarkRead | None
+    frontier: datetime | None
+    frontier_error: str | None
+    gap_start: datetime | None
+    gap_end: datetime | None
+    stall: timedelta | None
+    runs_since: int | None
+
+    @classmethod
+    def not_applicable(cls, start: datetime) -> IncrementalWindow:
+        """The explicit/backfill path: no resolver decision applies (D-16, D-22).
+
+        ``advance_permitted=True`` and ``snapshot=None`` -- the explicit path's
+        own write decision (D-22/D-23) is the real gate, not this resolver.
+        """
+        return cls(
+            start=start,
+            clamped=False,
+            advance_permitted=True,
+            reason=WindowReason.NOT_INCREMENTAL,
+            snapshot=None,
+            frontier=None,
+            frontier_error=None,
+            gap_start=None,
+            gap_end=None,
+            stall=None,
+            runs_since=None,
+        )
+
 
 _CONNECTOR_MODULES = [
     "gridflow.connectors.elexon",
@@ -263,33 +340,163 @@ def resolve_datasets(
 
 
 def resolve_incremental_start(
-    con: duckdb.DuckDBPyConnection,
-    source: str,
-    dataset: str,
+    watermark: datetime | None,
     default_start: datetime,
     overlap: timedelta,
 ) -> datetime:
-    """Resolve the per-dataset incremental start from the stored watermark.
+    """Resolve the per-dataset incremental start from a watermark value (D-10.3).
+
+    Pure: the caller supplies the watermark value directly (usually threaded
+    from the single :func:`~gridflow.observability.read_watermark` snapshot
+    :func:`resolve_incremental_window` reads), rather than this function
+    reading it itself -- so a resolution never makes more than one read.
 
     Args:
-        con: Open DuckDB connection.
-        source: Data source name.
-        dataset: Dataset name.
+        watermark: The stored ``last_end`` (tz-aware UTC), or ``None`` when no
+            watermark exists for the pair.
         default_start: Fallback start used on the first run (no watermark yet).
         overlap: How far before the watermark to re-fetch, to recover late/revised
             publications. Zero is behaviour-preserving.
 
     Returns:
-        ``watermark - overlap`` when a watermark exists for the pair, otherwise
+        ``watermark - overlap`` when a watermark is given, otherwise
         ``default_start``. Re-fetching the overlap window is safe: bronze is
         immutable and silver dedups on ``(date, period, run_type)``.
     """
-    from gridflow.observability import get_watermark
-
-    watermark = get_watermark(con, source, dataset)
     if watermark is None:
         return default_start
     return watermark - overlap
+
+
+def resolve_incremental_window(
+    con: duckdb.DuckDBPyConnection,
+    source: str,
+    dataset: str,
+    default_start: datetime,
+    overlap: timedelta,
+    end_dt: datetime,
+    max_lookback: timedelta,
+) -> IncrementalWindow:
+    """Resolve a single incremental fetch window (D-14/D-16): one snapshot,
+    one clock, one ordered permission predicate.
+
+    The watermark may advance iff the fetched window provably covers
+    ``[frontier, end_dt)`` and ``end_dt`` is not in the future; an unknown
+    frontier is not a provable cover.
+
+    Makes exactly **one** :func:`~gridflow.observability.read_watermark` call
+    (D-10.3, T1-j) and threads that snapshot through the ``raw_start``
+    derivation, the permission predicate, and (via the returned
+    :attr:`IncrementalWindow.snapshot`) the later CAS write (D-20).
+
+    Args:
+        con: Open DuckDB connection.
+        source: Data source name.
+        dataset: Dataset name.
+        default_start: Fallback start used on the first run (frontier absent).
+        overlap: How far before the frontier to re-fetch (recovers late/revised
+            publications). May be negative when passed directly (bypassing the
+            config validator) -- D-14 denies the resulting overshoot structurally
+            (T1-m), independent of the validator.
+        end_dt: The requested window end (the resolution clock's bound).
+        max_lookback: The clamp/coverage ceiling
+            (``max_incremental_lookback_hours``).
+
+    Returns:
+        The resolved :class:`IncrementalWindow`.
+    """
+    from gridflow.observability import ingest_runs_since, read_watermark
+
+    now_at_resolution = datetime.now(UTC)
+    snapshot = read_watermark(con, source, dataset)  # the ONE read (D-10.3/T1-j)
+
+    frontier = snapshot.value if snapshot.status == "present" else None
+    raw_start = resolve_incremental_start(frontier, default_start, overlap)
+    clamp_floor = end_dt - max_lookback
+    clamped = raw_start < clamp_floor
+    start = clamp_floor if clamped else raw_start
+
+    # D-14 clause 1: an unknown frontier fails closed -- NEVER treated as absent.
+    if snapshot.status == "unreadable":
+        return IncrementalWindow(
+            start=start,
+            clamped=clamped,
+            advance_permitted=False,
+            reason=WindowReason.FRONTIER_UNREADABLE,
+            snapshot=snapshot,
+            frontier=None,
+            frontier_error=safe_error_message(
+                snapshot.error or "watermark read failed (no detail)"
+            ),
+            gap_start=None,
+            gap_end=None,
+            stall=None,
+            runs_since=None,
+        )
+
+    # D-14 clause 2: the frontier can never be advanced into the future.
+    # `now_at_resolution` is captured once, single-clock discipline (D-14.2).
+    if end_dt > now_at_resolution:
+        return IncrementalWindow(
+            start=start,
+            clamped=clamped,
+            advance_permitted=False,
+            reason=WindowReason.FUTURE_END,
+            snapshot=snapshot,
+            frontier=frontier,
+            frontier_error=None,
+            gap_start=None,
+            gap_end=None,
+            stall=None,
+            runs_since=None,
+        )
+
+    if frontier is not None:
+        # D-14 clause 3: the coverage predicate -- the whole coverage story
+        # (D-14.1): healthy, clamped-no-gap, true gap, and a negative overlap
+        # overshoot are all just this one inequality.
+        advance_permitted = start <= frontier
+        stall = end_dt - frontier
+        runs_since = ingest_runs_since(con, source, dataset, frontier)
+        if advance_permitted:
+            reason = WindowReason.CLAMPED_NO_GAP if clamped else WindowReason.HEALTHY
+            gap_start, gap_end = None, None
+        else:
+            reason = WindowReason.UNFETCHED_GAP
+            gap_start, gap_end = frontier, start  # D-2b: [frontier, start), not raw_start
+        return IncrementalWindow(
+            start=start,
+            clamped=clamped,
+            advance_permitted=advance_permitted,
+            reason=reason,
+            snapshot=snapshot,
+            frontier=frontier,
+            frontier_error=None,
+            gap_start=gap_start,
+            gap_end=gap_end,
+            stall=stall,
+            runs_since=runs_since,
+        )
+
+    # D-14 clause 4: frontier known absent -- permitted iff the window wasn't
+    # clamped. Clause 2 of the settings validator makes this denial branch
+    # unreachable from validated config (T1-k); it is structurally total here
+    # regardless, for a directly-supplied `default_start`.
+    advance_permitted = not clamped
+    reason = WindowReason.HEALTHY if advance_permitted else WindowReason.UNFETCHED_GAP
+    return IncrementalWindow(
+        start=start,
+        clamped=clamped,
+        advance_permitted=advance_permitted,
+        reason=reason,
+        snapshot=snapshot,
+        frontier=None,
+        frontier_error=None,
+        gap_start=None,
+        gap_end=None if advance_permitted else start,
+        stall=None,
+        runs_since=None,
+    )
 
 
 def safe_error_message(message: str) -> str:
@@ -355,6 +562,92 @@ def refresh_views(settings: GridflowConfig) -> None:
 # --------------------------------------------------------------------------- #
 
 
+def _watermark_record_message(
+    *,
+    source: str,
+    dataset: str,
+    window: IncrementalWindow,
+    condition: WindowReason | None,
+    frontier_error: str | None,
+    expected_snapshot: WatermarkRead | None,
+    write_outcome: WatermarkWrite | None,
+    skipped: int,
+    end_dt: datetime,
+) -> str:
+    """Compose the ONE aggregated post-write record for this pair (D-17).
+
+    Names a new frontier only when the outcome is ``ADVANCED``; ``NO_OP`` reads
+    "frontier unchanged"; ``CAS_MISMATCH`` names the expected AND observed
+    value; ``WRITE_FAILED`` says the write attempt failed, never that the
+    frontier moved. When a WARNING-class condition fired, the record
+    additionally carries the frontier, stall, run count, the gap
+    ``[frontier, start)`` (D-2b, never ``raw_start``), the never-self-heals
+    clause (G-1), and the gap-bounded repair command (S4) -- never
+    ``backfill`` (R-2), never ``--end <now>`` (R-10).
+    """
+    from gridflow.observability import WatermarkOutcome
+
+    if write_outcome is not None:
+        outcome = write_outcome.outcome
+        if outcome == WatermarkOutcome.ADVANCED:
+            headline = f"frontier advanced to {end_dt.isoformat()}"
+        elif outcome == WatermarkOutcome.NO_OP:
+            headline = "frontier unchanged (nothing to advance)"
+        elif outcome == WatermarkOutcome.CAS_MISMATCH:
+            expected_value = (
+                expected_snapshot.value.isoformat()
+                if expected_snapshot is not None and expected_snapshot.value is not None
+                else "unavailable"
+            )
+            observed = (
+                write_outcome.observed.isoformat()
+                if write_outcome.observed is not None
+                else "unavailable"
+            )
+            headline = (
+                f"frontier write refused (stale snapshot): expected {expected_value}, "
+                f"observed {observed}"
+            )
+        elif outcome == WatermarkOutcome.WRITE_FAILED:
+            headline = f"frontier write attempt failed: {write_outcome.error or 'unavailable'}"
+        else:
+            assert_never(outcome)
+    elif condition is not None:
+        headline = f"advance refused ({condition.value})"
+    else:
+        headline = "advance remains permitted; frontier unchanged -- no evidence"
+
+    parts = [headline]
+    if skipped:
+        parts.append(f"partial fetch: {skipped} unit(s) skipped")
+
+    if condition is not None:
+        parts.append(f"window=[{window.start.isoformat()}, {end_dt.isoformat()})")
+        if window.frontier is not None:
+            parts.append(f"frontier={window.frontier.isoformat()}")
+        if window.stall is not None:
+            parts.append(f"stall={window.stall}")
+        parts.append(
+            f"runs_since={window.runs_since if window.runs_since is not None else 'unknown'}"
+        )
+        if window.gap_start is not None and window.gap_end is not None:
+            parts.append(f"gap=[{window.gap_start.isoformat()}, {window.gap_end.isoformat()})")
+            parts.append(
+                "repair (gap-bounded): "
+                f"gridflow ingest {source} {dataset} "
+                f"--start {window.gap_start.isoformat()} --end {window.gap_end.isoformat()}"
+            )
+            parts.append(
+                "the full max_incremental_lookback_hours window is re-fetched every "
+                "run until this resolves (duplicate bronze bytes -- safe, wasteful) "
+                "and will NOT self-heal"
+            )
+        if frontier_error is not None:
+            parts.append(f"frontier_error={frontier_error}")
+
+    return f"{source}/{dataset}: " + "; ".join(parts)
+
+
 def run_ingest(
     ctx: PipelineContext,
     source: str,
@@ -373,8 +666,9 @@ def run_ingest(
         datasets: Datasets to ingest.
         start_dt: Window start (the default-lookback start when ``incremental``).
         end_dt: Window end.
-        incremental: Resolve each dataset's start from its stored watermark
-            (first run falls back to ``start_dt``).
+        incremental: Resolve each dataset's window from its stored watermark,
+            bounded by ``max_incremental_lookback_hours`` (F-09) -- first run
+            falls back to ``start_dt``.
         write_watermark: Advance the watermark on success. Backfill passes False.
 
     Returns:
@@ -382,23 +676,32 @@ def run_ingest(
     """
     from gridflow.bronze.writer import BronzeWriter
     from gridflow.connectors.registry import get_connector
-    from gridflow.observability import PipelineRunTracker, update_watermark
+    from gridflow.observability import (
+        PipelineRunTracker,
+        WatermarkOutcome,
+        advance_watermark,
+        read_watermark,
+    )
 
     con = ctx.con
     settings = ctx.settings
     source_config = settings.get_source_config(source)
     writer = BronzeWriter(settings.pipeline.data_dir)
     overlap = timedelta(hours=settings.pipeline.incremental_overlap_hours)
+    max_lookback = timedelta(hours=settings.pipeline.max_incremental_lookback_hours)
     results: list[DatasetResult] = []
 
     for ds in datasets:
-        # Resolve start per-dataset: incremental reads each dataset's own
-        # watermark (first run falls back to the default-lookback start);
-        # otherwise the explicit/lookback start applies to every dataset.
-        if incremental:
-            ds_start = resolve_incremental_start(con, source, ds, start_dt, overlap)
-        else:
-            ds_start = start_dt
+        # The window is built on EVERY path (D-12): an explicit/backfill run
+        # never resolves via the incremental predicate, but still needs a
+        # non-Optional `start`, and its `snapshot is None` marker is what the
+        # unified write gate below branches on (D-16/D-22).
+        window = (
+            resolve_incremental_window(con, source, ds, start_dt, overlap, end_dt, max_lookback)
+            if incremental
+            else IncrementalWindow.not_applicable(start_dt)
+        )
+        ds_start = window.start
 
         tracker = PipelineRunTracker(con, source, ds, "ingest")
         try:
@@ -415,44 +718,13 @@ def run_ingest(
             responses = asyncio.run(_do_fetch())
             for resp in responses:
                 writer.write(resp)
-            # A partial fetch (some sub-units skipped after retries, not all) is
-            # completed_with_warnings, never silent 'success' (CH-COR-01). The
-            # counter persists on the connector instance past the async-with.
+            # The counter persists on the connector instance past the async-with.
             skipped = connector.last_skipped_units
-            if skipped:
-                tracker.complete_with_warnings(
-                    rows_in=len(responses),
-                    rows_out=len(responses),
-                    rows_skipped=skipped,
-                )
-                results.append(
-                    DatasetResult(
-                        source=source,
-                        dataset=ds,
-                        operation="ingest",
-                        status="completed_with_warnings",
-                        rows_in=len(responses),
-                        rows_out=len(responses),
-                        rows_skipped=skipped,
-                    )
-                )
-            else:
-                tracker.complete(rows_in=len(responses), rows_out=len(responses))
-                results.append(
-                    DatasetResult(
-                        source=source,
-                        dataset=ds,
-                        operation="ingest",
-                        status="success",
-                        rows_in=len(responses),
-                        rows_out=len(responses),
-                    )
-                )
+
             # Advance the frontier only as far as observed evidence (R3-F04).
             # Never advance on an empty ingest (no data-bearing responses) or a
             # partial fetch (skipped units): both leave gaps a later incremental
-            # run — widened by incremental_overlap_hours — must re-fetch. Advancing
-            # to end_dt on empty/partial permanently strands the missing window.
+            # run — widened by incremental_overlap_hours — must re-fetch.
             #
             # `data_date` is a bronze PARTITION KEY with per-connector semantics
             # (whole-window-start for Open-Meteo, gas-day for GIE, settlement-date
@@ -461,15 +733,107 @@ def run_ingest(
             # http_status>=400 response is ENTSO-G's "No result found" 404
             # short-circuit (the one expected-empty response that still
             # materialises as a RawResponse; every other connector raises on 4xx),
-            # so it carries no evidence. A 200 body with an empty record array is
-            # NOT detected here (see incremental_overlap_hours: the overlap window
-            # re-fetches it on the next run).
+            # so it carries no evidence. A 200 body carrying a parsed, empty
+            # record array is ALSO excluded here (C-8, D-8): `record_count == 0`
+            # means the vendor returned zero records; `record_count is None`
+            # means the count is unavailable (an unstamped connector, or a parse
+            # failure) and is treated as evidence, exactly as before C-8.
             #
-            # Never on the except path; never for a backfill chunk-ingest
-            # (write_watermark=False). The monotonic upsert is the second guard.
-            data_responses = [r for r in responses if r.http_status < 400]
-            if write_watermark and data_responses and not skipped:
-                update_watermark(con, source, ds, end_dt)
+            # F-09 (D-14): the watermark may ALSO only advance when the fetched
+            # window provably covers [frontier, end_dt) — `window.advance_permitted`
+            # — and EVERY production write is the CAS (D-20/D-21/D-22): it lands
+            # only if the row is still exactly the snapshot the decision read.
+            # There is NO production call to `update_watermark` anywhere (T1-q).
+            # The write is conditional, not atomic-with-the-fetch, so a future
+            # connection-pooling/service-mode change should note this write no
+            # longer depends on a sole-writer assumption (D-20.8).
+            # `!= 0` (not `> 0`) so `record_count is None` (unstamped/unknown)
+            # still passes as evidence -- only a CONFIRMED zero is excluded.
+            data_responses = [r for r in responses if r.http_status < 400 and r.record_count != 0]
+            write_outcome: WatermarkWrite | None = None
+            explicit_denial: WindowReason | None = None
+            explicit_frontier_error: str | None = None
+            expected_snapshot = window.snapshot
+
+            if write_watermark and data_responses and not skipped and window.advance_permitted:
+                if window.snapshot is not None:
+                    # Incremental: CAS against the single snapshot the D-14
+                    # predicate was evaluated against.
+                    write_outcome = advance_watermark(
+                        con, source, ds, end_dt, expected=window.snapshot
+                    )
+                else:
+                    # Explicit / repair path (D-22): its own snapshot, its own
+                    # right bound (D-23) — `resolve_incremental_window` is never
+                    # entered on this path.
+                    now_at_decision = datetime.now(UTC)
+                    if end_dt > now_at_decision:
+                        explicit_denial = WindowReason.FUTURE_END
+                    else:
+                        snap = read_watermark(con, source, ds)  # the ONE read on this path
+                        if snap.status == "unreadable":
+                            explicit_denial = WindowReason.FRONTIER_UNREADABLE
+                            explicit_frontier_error = safe_error_message(
+                                snap.error or "watermark read failed (no detail)"
+                            )
+                        else:
+                            expected_snapshot = snap
+                            write_outcome = advance_watermark(
+                                con, source, ds, end_dt, expected=snap
+                            )
+
+            incremental_denied = incremental and not window.advance_permitted
+            condition = window.reason if incremental_denied else explicit_denial
+            frontier_error = window.frontier_error or explicit_frontier_error
+            write_problem = write_outcome is not None and write_outcome.outcome in (
+                WatermarkOutcome.CAS_MISMATCH,
+                WatermarkOutcome.WRITE_FAILED,
+            )
+            is_warning = bool(condition is not None or skipped or write_problem)
+
+            message = _watermark_record_message(
+                source=source,
+                dataset=ds,
+                window=window,
+                condition=condition,
+                frontier_error=frontier_error,
+                expected_snapshot=expected_snapshot,
+                write_outcome=write_outcome,
+                skipped=skipped,
+                end_dt=end_dt,
+            )
+            # D-17 emission scope: the incremental path emits unconditionally
+            # (one record per pair per run, `window.snapshot is not None`); the
+            # explicit path stays silent on a clean advance/NO_OP, emitting only
+            # when a WARNING-class condition fired — preserving today's operator
+            # experience on healthy explicit ingests and backfills.
+            if window.snapshot is not None or is_warning:
+                if is_warning:
+                    logger.warning(message)
+                else:
+                    logger.info(message)
+
+            if is_warning:
+                tracker.complete_with_warnings(
+                    rows_in=len(responses),
+                    rows_out=len(responses),
+                    rows_skipped=skipped,
+                )
+                status = "completed_with_warnings"
+            else:
+                tracker.complete(rows_in=len(responses), rows_out=len(responses))
+                status = "success"
+            results.append(
+                DatasetResult(
+                    source=source,
+                    dataset=ds,
+                    operation="ingest",
+                    status=status,
+                    rows_in=len(responses),
+                    rows_out=len(responses),
+                    rows_skipped=skipped,
+                )
+            )
         except Exception as e:  # noqa: BLE001 — surfaced as a failed DatasetResult, never swallowed
             error_message = safe_error_message(str(e))
             tracker.fail(error_message)
