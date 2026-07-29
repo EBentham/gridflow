@@ -1,23 +1,30 @@
 """CH2-04 / CH-COR-06: watermark round-trip, monotonic upsert, and the
-``_resolve_incremental_start`` precedence helper.
+``resolve_incremental_start`` precedence helper.
 
 These exercise the previously-dead ``update_watermark``/``get_watermark`` helpers
-(``observability.py``) plus the new incremental-start resolver (``cli.py``):
+(``observability.py``) plus the incremental-start resolver (``runner.py``):
 
 - round-trip: writing then reading a watermark returns the same tz-aware UTC
   instant; an absent ``(source, dataset)`` pair returns ``None``.
 - monotonic upsert (the C3-11 frontier-rewind guard): once ``last_end`` is at a
   later instant, a subsequent earlier write must NOT move it backward.
-- ``_resolve_incremental_start``: ``None`` watermark falls back to the
+- ``resolve_incremental_start``: ``None`` watermark falls back to the
   default-lookback start; a present watermark resolves to ``watermark - overlap``.
 
 RED before CH2-04:
 - monotonic test FAILS — the upsert was an unconditional ``SET last_end =
   excluded.last_end``, so the 2020 write clobbered the 2026 frontier.
-- ``_resolve_incremental_start`` test FAILS — the helper does not yet exist
+- ``resolve_incremental_start`` test FAILS — the helper does not yet exist
   (ImportError).
 The round-trip / absent-pair assertions are green-before-and-after guards: a
 single write already worked; they pin the contract the rest depends on.
+
+**T1-e (R2-C, rev 6) — the ONE sanctioned test migration.** ``resolve_incremental_
+start`` became a PURE function (``(watermark, default_start, overlap) -> datetime``)
+so ``resolve_incremental_window`` can thread its single snapshot through it without
+a second read (D-10.3). The three tests below now pass the watermark value
+directly instead of reading it via a ``con``/``source``/``dataset`` triple — every
+assertion is identical to before the migration.
 """
 
 from __future__ import annotations
@@ -27,8 +34,8 @@ from datetime import UTC, datetime, timedelta
 import duckdb
 import pytest
 
-from gridflow.cli import _resolve_incremental_start
 from gridflow.observability import get_watermark, update_watermark
+from gridflow.pipeline.runner import resolve_incremental_start
 from gridflow.storage.duckdb import init_catalogue
 
 
@@ -95,44 +102,30 @@ def test_upsert_advances_on_later_write(con: duckdb.DuckDBPyConnection) -> None:
     assert get_watermark(con, "elexon", "fuelhh") == second
 
 
-def test_resolve_incremental_start_none_falls_back_to_default(
-    con: duckdb.DuckDBPyConnection,
-) -> None:
+def test_resolve_incremental_start_none_falls_back_to_default() -> None:
     """No watermark (first run) -> the default-lookback start, unchanged."""
     default_start = datetime(2026, 6, 1, 0, 0, tzinfo=UTC)
 
-    resolved = _resolve_incremental_start(
-        con, "elexon", "fuelhh", default_start, timedelta(hours=0)
-    )
+    resolved = resolve_incremental_start(None, default_start, timedelta(hours=0))
 
     assert resolved == default_start
 
 
-def test_resolve_incremental_start_present_subtracts_overlap(
-    con: duckdb.DuckDBPyConnection,
-) -> None:
+def test_resolve_incremental_start_present_subtracts_overlap() -> None:
     """A present watermark resolves to ``watermark - overlap``."""
     watermark = datetime(2026, 5, 20, 0, 0, tzinfo=UTC)
-    update_watermark(con, "elexon", "fuelhh", watermark)
     default_start = datetime(2026, 6, 1, 0, 0, tzinfo=UTC)
 
-    resolved = _resolve_incremental_start(
-        con, "elexon", "fuelhh", default_start, timedelta(hours=6)
-    )
+    resolved = resolve_incremental_start(watermark, default_start, timedelta(hours=6))
 
     assert resolved == watermark - timedelta(hours=6)
 
 
-def test_resolve_incremental_start_zero_overlap_uses_watermark_exactly(
-    con: duckdb.DuckDBPyConnection,
-) -> None:
+def test_resolve_incremental_start_zero_overlap_uses_watermark_exactly() -> None:
     """With zero overlap, start == watermark (an explicit override of the 72h default)."""
     watermark = datetime(2026, 5, 20, 0, 0, tzinfo=UTC)
-    update_watermark(con, "elexon", "fuelhh", watermark)
     default_start = datetime(2026, 6, 1, 0, 0, tzinfo=UTC)
 
-    resolved = _resolve_incremental_start(
-        con, "elexon", "fuelhh", default_start, timedelta(hours=0)
-    )
+    resolved = resolve_incremental_start(watermark, default_start, timedelta(hours=0))
 
     assert resolved == watermark
