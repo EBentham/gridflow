@@ -19,7 +19,7 @@ from contextlib import contextmanager
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
 from enum import StrEnum
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, assert_never
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
@@ -587,27 +587,31 @@ def _watermark_record_message(
     """
     from gridflow.observability import WatermarkOutcome
 
-    if write_outcome is not None and write_outcome.outcome == WatermarkOutcome.ADVANCED:
-        headline = f"frontier advanced to {end_dt.isoformat()}"
-    elif write_outcome is not None and write_outcome.outcome == WatermarkOutcome.NO_OP:
-        headline = "frontier unchanged (nothing to advance)"
-    elif write_outcome is not None and write_outcome.outcome == WatermarkOutcome.CAS_MISMATCH:
-        expected_value = (
-            expected_snapshot.value.isoformat()
-            if expected_snapshot is not None and expected_snapshot.value is not None
-            else "unavailable"
-        )
-        observed = (
-            write_outcome.observed.isoformat()
-            if write_outcome.observed is not None
-            else "unavailable"
-        )
-        headline = (
-            f"frontier write refused (stale snapshot): expected {expected_value}, "
-            f"observed {observed}"
-        )
-    elif write_outcome is not None and write_outcome.outcome == WatermarkOutcome.WRITE_FAILED:
-        headline = f"frontier write attempt failed: {write_outcome.error or 'unavailable'}"
+    if write_outcome is not None:
+        outcome = write_outcome.outcome
+        if outcome == WatermarkOutcome.ADVANCED:
+            headline = f"frontier advanced to {end_dt.isoformat()}"
+        elif outcome == WatermarkOutcome.NO_OP:
+            headline = "frontier unchanged (nothing to advance)"
+        elif outcome == WatermarkOutcome.CAS_MISMATCH:
+            expected_value = (
+                expected_snapshot.value.isoformat()
+                if expected_snapshot is not None and expected_snapshot.value is not None
+                else "unavailable"
+            )
+            observed = (
+                write_outcome.observed.isoformat()
+                if write_outcome.observed is not None
+                else "unavailable"
+            )
+            headline = (
+                f"frontier write refused (stale snapshot): expected {expected_value}, "
+                f"observed {observed}"
+            )
+        elif outcome == WatermarkOutcome.WRITE_FAILED:
+            headline = f"frontier write attempt failed: {write_outcome.error or 'unavailable'}"
+        else:
+            assert_never(outcome)
     elif condition is not None:
         headline = f"advance refused ({condition.value})"
     else:
