@@ -114,6 +114,15 @@ class PipelineSettings(BaseSettings):
     # revisions as first-class, so do not lower this to 0 without a backfill
     # schedule in place.
     incremental_overlap_hours: int = 72
+    # F-09: the incremental fetch window can never span more than this many
+    # hours, however long the frontier has been frozen. Two derived trip
+    # points (D-1): the clamp fires (quiet, window still advances) at
+    # staleness > max_incremental_lookback_hours - incremental_overlap_hours
+    # = 96h; the coverage predicate denies the advance (alarming, R-8) at
+    # staleness > max_incremental_lookback_hours = 168h. NOT applied to
+    # backfill or explicit --start/--end windows (D-3) -- those are never
+    # clamped, so the gap-repair command can never be clamped shut.
+    max_incremental_lookback_hours: int = 168
     max_concurrent_requests: int = 5
     log_level: str = "INFO"
     console_log_level: str = "WARNING"
@@ -140,6 +149,57 @@ class PipelineSettings(BaseSettings):
             object.__setattr__(self, "duckdb_path", (_project_root() / self.duckdb_path).resolve())
         if not self.log_dir.is_absolute():
             object.__setattr__(self, "log_dir", (_project_root() / self.log_dir).resolve())
+        return self
+
+    @model_validator(mode="after")
+    def _validate_incremental_bounds(self) -> PipelineSettings:
+        """Guard the F-09 clamp/coverage constants against config foot-guns (R-7).
+
+        Three clauses, each naming the offending values:
+
+        Clause 1 -- ``incremental_overlap_hours <= max_incremental_lookback_hours``.
+        Otherwise the clamp trip point (``max_lookback - overlap``) goes
+        negative, so every incremental run would be denied regardless of
+        staleness.
+
+        Clause 2 (D-11) -- ``default_lookback_hours <= max_incremental_lookback_hours``.
+        Makes a first run's span ``<= max_lookback``, so "a first run never
+        clamps" is a *derived* property rather than an assumption.
+
+        Clause 3 (D-15) -- non-negativity / per-constant floor:
+        ``incremental_overlap_hours >= 0`` (zero is documented
+        behaviour-preserving); ``default_lookback_hours >= 1`` (zero yields a
+        zero-width first-run window that silently ingests nothing);
+        ``max_incremental_lookback_hours >= 1`` (asserted so each constant
+        carries its own floor, even though clause 1/2 imply it when the other
+        constants are positive).
+        """
+        if self.incremental_overlap_hours > self.max_incremental_lookback_hours:
+            raise ValueError(
+                f"incremental_overlap_hours ({self.incremental_overlap_hours}) must be "
+                f"<= max_incremental_lookback_hours ({self.max_incremental_lookback_hours}); "
+                "otherwise the clamp trip point (max_lookback - overlap) goes negative."
+            )
+        if self.default_lookback_hours > self.max_incremental_lookback_hours:
+            raise ValueError(
+                f"default_lookback_hours ({self.default_lookback_hours}) must be <= "
+                f"max_incremental_lookback_hours ({self.max_incremental_lookback_hours}); "
+                "otherwise a first run's own span could exceed the clamp (D-11)."
+            )
+        if self.incremental_overlap_hours < 0:
+            raise ValueError(
+                f"incremental_overlap_hours ({self.incremental_overlap_hours}) must be >= 0."
+            )
+        if self.default_lookback_hours < 1:
+            raise ValueError(
+                f"default_lookback_hours ({self.default_lookback_hours}) must be >= 1 "
+                "(zero yields a zero-width first-run window that silently ingests nothing)."
+            )
+        if self.max_incremental_lookback_hours < 1:
+            raise ValueError(
+                "max_incremental_lookback_hours "
+                f"({self.max_incremental_lookback_hours}) must be >= 1."
+            )
         return self
 
 
