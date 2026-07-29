@@ -389,7 +389,11 @@ def test_clause1_overlap_equal_to_max_lookback_is_ok() -> None:
 
 
 def test_clause1_overlap_one_over_max_lookback_raises() -> None:
-    with pytest.raises(ValidationError, match="incremental_overlap_hours"):
+    with pytest.raises(
+        ValidationError,
+        match=r"incremental_overlap_hours \(169\) must be <= "
+        r"max_incremental_lookback_hours \(168\)",
+    ):
         _settings(incremental_overlap_hours=169, max_incremental_lookback_hours=168)
 
 
@@ -398,12 +402,15 @@ def test_clause2_default_lookback_equal_to_max_lookback_is_ok() -> None:
 
 
 def test_clause2_default_lookback_one_over_max_lookback_raises() -> None:
-    with pytest.raises(ValidationError, match="default_lookback_hours"):
+    with pytest.raises(
+        ValidationError,
+        match=r"default_lookback_hours \(169\) must be <= max_incremental_lookback_hours \(168\)",
+    ):
         _settings(default_lookback_hours=169, max_incremental_lookback_hours=168)
 
 
 def test_clause3_overlap_negative_one_raises() -> None:
-    with pytest.raises(ValidationError, match="incremental_overlap_hours"):
+    with pytest.raises(ValidationError, match=r"incremental_overlap_hours \(-1\) must be >= 0"):
         _settings(incremental_overlap_hours=-1)
 
 
@@ -416,7 +423,7 @@ def test_clause3_overlap_one_is_ok() -> None:
 
 
 def test_clause3_default_lookback_zero_raises() -> None:
-    with pytest.raises(ValidationError, match="default_lookback_hours"):
+    with pytest.raises(ValidationError, match=r"default_lookback_hours \(0\) must be >= 1"):
         _settings(default_lookback_hours=0)
 
 
@@ -425,10 +432,10 @@ def test_clause3_default_lookback_one_is_ok() -> None:
 
 
 def test_clause3_max_lookback_zero_raises() -> None:
-    """max_incremental_lookback_hours=0 always fails validation -- via clause 2
-    (default_lookback_hours <= max_lookback) whenever default_lookback_hours >= 1,
-    or via clause 3's own floor otherwise; either way the config is rejected."""
-    with pytest.raises(ValidationError):
+    """max_incremental_lookback_hours=0 fails validation via clause 3's own floor
+    check, which now runs before the cross-field clauses -- so this test is
+    reachable purely through the scalar floor guard, independent of clause 1/2."""
+    with pytest.raises(ValidationError, match=r"max_incremental_lookback_hours \(0\) must be >= 1"):
         _settings(max_incremental_lookback_hours=0)
 
 

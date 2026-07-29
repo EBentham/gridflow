@@ -176,18 +176,6 @@ class PipelineSettings(BaseSettings):
         carries its own floor, even though clause 1/2 imply it when the other
         constants are positive).
         """
-        if self.incremental_overlap_hours > self.max_incremental_lookback_hours:
-            raise ValueError(
-                f"incremental_overlap_hours ({self.incremental_overlap_hours}) must be "
-                f"<= max_incremental_lookback_hours ({self.max_incremental_lookback_hours}); "
-                "otherwise the clamp trip point (max_lookback - overlap) goes negative."
-            )
-        if self.default_lookback_hours > self.max_incremental_lookback_hours:
-            raise ValueError(
-                f"default_lookback_hours ({self.default_lookback_hours}) must be <= "
-                f"max_incremental_lookback_hours ({self.max_incremental_lookback_hours}); "
-                "otherwise a first run's own span could exceed the clamp (D-11)."
-            )
         if self.incremental_overlap_hours < 0:
             raise ValueError(
                 f"incremental_overlap_hours ({self.incremental_overlap_hours}) must be >= 0."
@@ -201,6 +189,18 @@ class PipelineSettings(BaseSettings):
             raise ValueError(
                 "max_incremental_lookback_hours "
                 f"({self.max_incremental_lookback_hours}) must be >= 1."
+            )
+        if self.incremental_overlap_hours > self.max_incremental_lookback_hours:
+            raise ValueError(
+                f"incremental_overlap_hours ({self.incremental_overlap_hours}) must be "
+                f"<= max_incremental_lookback_hours ({self.max_incremental_lookback_hours}); "
+                "otherwise the clamp trip point (max_lookback - overlap) goes negative."
+            )
+        if self.default_lookback_hours > self.max_incremental_lookback_hours:
+            raise ValueError(
+                f"default_lookback_hours ({self.default_lookback_hours}) must be <= "
+                f"max_incremental_lookback_hours ({self.max_incremental_lookback_hours}); "
+                "otherwise a first run's own span could exceed the clamp (D-11)."
             )
         return self
 
