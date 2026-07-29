@@ -106,13 +106,15 @@ class PipelineSettings(BaseSettings):
     #
     # Default 72h (3 days): covers weekend publication lag + the initial Elexon
     # II->SF->R1 revision burst. It is the backstop for the R3-F04 fix — the
-    # watermark no longer advances past empty/partial evidence, and a 200 response
-    # carrying an empty record array (which run_ingest cannot detect without
-    # parsing the body) self-heals because the next incremental run re-fetches the
-    # last 3 days. It does NOT cover weeks-long settlement revision tails: complete
-    # revision capture still needs a periodic backfill. CLAUDE.md treats settlement
-    # revisions as first-class, so do not lower this to 0 without a backfill
-    # schedule in place.
+    # watermark no longer advances past empty/partial evidence — AND, since C-8,
+    # for a 200 response carrying a parsed, empty record array from a connector
+    # that stamps `record_count` (detected directly at the ingest boundary, no
+    # longer only self-healed by re-fetching). For a connector that cannot
+    # supply a count without a new parse (D-9), or on a parse failure, the
+    # overlap re-fetch remains the only defence. It does NOT cover weeks-long
+    # settlement revision tails: complete revision capture still needs a
+    # periodic backfill. CLAUDE.md treats settlement revisions as first-class,
+    # so do not lower this to 0 without a backfill schedule in place.
     incremental_overlap_hours: int = 72
     # F-09: the incremental fetch window can never span more than this many
     # hours, however long the frontier has been frozen. Two derived trip

@@ -729,8 +729,11 @@ def run_ingest(
             # http_status>=400 response is ENTSO-G's "No result found" 404
             # short-circuit (the one expected-empty response that still
             # materialises as a RawResponse; every other connector raises on 4xx),
-            # so it carries no evidence. A 200 body with an empty record array is
-            # NOT detected here (Task 3/C-8; the overlap window re-fetches it).
+            # so it carries no evidence. A 200 body carrying a parsed, empty
+            # record array is ALSO excluded here (C-8, D-8): `record_count == 0`
+            # means the vendor returned zero records; `record_count is None`
+            # means the count is unavailable (an unstamped connector, or a parse
+            # failure) and is treated as evidence, exactly as before C-8.
             #
             # F-09 (D-14): the watermark may ALSO only advance when the fetched
             # window provably covers [frontier, end_dt) — `window.advance_permitted`
@@ -740,7 +743,9 @@ def run_ingest(
             # The write is conditional, not atomic-with-the-fetch, so a future
             # connection-pooling/service-mode change should note this write no
             # longer depends on a sole-writer assumption (D-20.8).
-            data_responses = [r for r in responses if r.http_status < 400]
+            # `!= 0` (not `> 0`) so `record_count is None` (unstamped/unknown)
+            # still passes as evidence -- only a CONFIRMED zero is excluded.
+            data_responses = [r for r in responses if r.http_status < 400 and r.record_count != 0]
             write_outcome: WatermarkWrite | None = None
             explicit_denial: WindowReason | None = None
             explicit_frontier_error: str | None = None
