@@ -360,11 +360,3 @@ class TestEntsoeParseOnceHelpers:
         from gridflow.connectors.entsoe.client import count_timeseries_or_none
 
         assert count_timeseries_or_none(b"") is None
-
-    def test_count_timeseries_thin_wrapper_zero_for_none(self) -> None:
-        """``_count_timeseries`` (G9 ENTSOE-01) preserves its original
-        0-on-parse-failure contract as a thin wrapper (D-18)."""
-        from gridflow.connectors.entsoe.client import _count_timeseries
-
-        assert _count_timeseries(b"<root><unclosed>") == 0
-        assert _count_timeseries(b"<root><TimeSeries/></root>") == 1

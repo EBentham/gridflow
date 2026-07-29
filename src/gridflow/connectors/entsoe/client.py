@@ -512,18 +512,6 @@ def count_timeseries_or_none(xml_bytes: bytes) -> int | None:
     return count
 
 
-def _count_timeseries(xml_bytes: bytes) -> int:
-    """Count `<TimeSeries>` elements in an ENTSO-E XML response.
-
-    G9 ENTSOE-01: thin wrapper over ``count_timeseries_or_none`` (D-18),
-    returning ``0`` for ``None`` -- preserves the pagination loop's original
-    "a malformed page must not spin the loop indefinitely" contract exactly
-    for any caller that has not migrated to the three-valued primitive.
-    """
-    result = count_timeseries_or_none(xml_bytes)
-    return result if result is not None else 0
-
-
 def _is_zip_response(content_type: str, content: bytes) -> bool:
     base_type = content_type.split(";")[0].strip().lower()
     return base_type in {
