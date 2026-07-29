@@ -24,6 +24,7 @@ Guarantees pinned here (audit C3-3 / C3-11; R3-F04 evidence guard):
 
 from __future__ import annotations
 
+import logging
 from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING, Any
 
@@ -408,3 +409,458 @@ def test_backfill_does_not_advance_existing_forward_watermark(
     )
     # Sanity: backfill ran at least one chunk that ended after the watermark.
     assert len(_FakeConnector.calls) >= 1
+
+
+# --------------------------------------------------------------------------- #
+# R2-C Task 2: F-09 wiring -- the unified write gate, the one aggregated
+# record, and completed_with_warnings status (D-4/D-17/D-22/D-23).
+# --------------------------------------------------------------------------- #
+
+
+def _seed_watermark(
+    db_path: Path, data_dir: Path, source: str, dataset: str, when: datetime
+) -> None:
+    from gridflow.observability import update_watermark
+    from gridflow.storage.duckdb import init_catalogue
+
+    init_catalogue(db_path, data_dir)
+    con = duckdb.connect(str(db_path))
+    try:
+        update_watermark(con, source, dataset, when)
+    finally:
+        con.close()
+
+
+@pytest.mark.integration
+def test_incremental_true_gap_refuses_advance_and_warns(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    _patch_connector: None,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """T2-a/T2-i: a 30-day stall is a TRUE GAP -- refused, exactly one WARNING."""
+    db_path = _isolated_env(tmp_path, monkeypatch)
+    stale = datetime.now(UTC) - timedelta(days=30)
+    _seed_watermark(db_path, tmp_path / "data", "elexon", "fuelhh", stale)
+    _FakeConnector.responses = [_data_response()]
+
+    with caplog.at_level(logging.WARNING, logger="gridflow.pipeline.runner"):
+        result = runner.invoke(app, ["ingest", "elexon", "fuelhh", "--incremental"])
+    assert result.exit_code == 0, result.output
+
+    assert _read_watermark(db_path, "elexon", "fuelhh") == stale, (
+        "a TRUE GAP must refuse the advance"
+    )
+    warnings = [r for r in caplog.records if r.levelno == logging.WARNING]
+    assert len(warnings) == 1, f"expected exactly one WARNING, got {warnings}"
+    assert "unfetched_gap" in warnings[0].message
+    # T2-b: the repair line is Command 1 -- gap-bounded, backfill never offered.
+    assert "gridflow ingest elexon fuelhh --start" in warnings[0].message
+    assert "backfill" not in warnings[0].message
+    assert "will NOT self-heal" in warnings[0].message
+
+
+@pytest.mark.integration
+def test_incremental_clamped_no_gap_advances_with_info_not_warning(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    _patch_connector: None,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """T2-j (anti-wedge): a 5-day stall clamps but has no gap -- advances, INFO
+    only; a second run is not clamped at all and still advances."""
+    db_path = _isolated_env(tmp_path, monkeypatch)
+    stale = datetime.now(UTC) - timedelta(hours=120)
+    _seed_watermark(db_path, tmp_path / "data", "elexon", "fuelhh", stale)
+    _FakeConnector.responses = [_data_response()]
+
+    with caplog.at_level(logging.INFO, logger="gridflow.pipeline.runner"):
+        result = runner.invoke(app, ["ingest", "elexon", "fuelhh", "--incremental"])
+    assert result.exit_code == 0, result.output
+
+    wm = _read_watermark(db_path, "elexon", "fuelhh")
+    assert wm is not None and wm > stale, "clamped-no-gap must still advance"
+    assert not [r for r in caplog.records if r.levelno == logging.WARNING]
+    assert any(r.levelno == logging.INFO for r in caplog.records)
+
+    caplog.clear()
+    second = runner.invoke(app, ["ingest", "elexon", "fuelhh", "--incremental"])
+    assert second.exit_code == 0, second.output
+    wm2 = _read_watermark(db_path, "elexon", "fuelhh")
+    assert wm2 is not None and wm2 >= wm, "the 2nd run (no longer clamped) must still advance"
+
+
+@pytest.mark.integration
+def test_incremental_start_equals_frontier_boundary_advances(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, _patch_connector: None
+) -> None:
+    """T2-k: with overlap=0, start == frontier exactly -- permitted (<=), advances."""
+    db_path = _isolated_env(tmp_path, monkeypatch)
+    monkeypatch.setenv("GRIDFLOW_INCREMENTAL_OVERLAP_HOURS", "0")
+    frontier = datetime.now(UTC) - timedelta(hours=1)
+    _seed_watermark(db_path, tmp_path / "data", "elexon", "fuelhh", frontier)
+    _FakeConnector.responses = [_data_response()]
+
+    result = runner.invoke(app, ["ingest", "elexon", "fuelhh", "--incremental"])
+    assert result.exit_code == 0, result.output
+
+    assert _FakeConnector.calls[-1] == frontier, "start must equal the frontier exactly (overlap=0)"
+    wm = _read_watermark(db_path, "elexon", "fuelhh")
+    assert wm is not None and wm > frontier
+
+
+@pytest.mark.integration
+def test_explicit_ingest_advances_via_unified_cas_and_raises_nothing(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, _patch_connector: None
+) -> None:
+    """T2-l (#19): an explicit --start/--end ingest with data advances (via the
+    CAS) and raises nothing -- the repair-command regression."""
+    db_path = _isolated_env(tmp_path, monkeypatch)
+    _FakeConnector.responses = [_data_response()]
+
+    result = runner.invoke(
+        app, ["ingest", "elexon", "fuelhh", "--start", "2024-01-01", "--end", "2024-01-02"]
+    )
+    assert result.exit_code == 0, result.output
+
+    assert _read_watermark(db_path, "elexon", "fuelhh") == datetime(2024, 1, 2, tzinfo=UTC)
+
+
+@pytest.mark.integration
+def test_gap_repair_command_lands_exactly_on_gap_end(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, _patch_connector: None
+) -> None:
+    """T2-m (#21): Command 1 with gap-local data advances via CAS Arm A, landing
+    exactly on gap_end; an empty gap correctly does not advance."""
+    db_path = _isolated_env(tmp_path, monkeypatch)
+    gap_start = datetime(2024, 1, 1, tzinfo=UTC)
+    _seed_watermark(db_path, tmp_path / "data", "elexon", "fuelhh", gap_start)
+    gap_end = datetime(2024, 1, 5, tzinfo=UTC)
+    _FakeConnector.responses = [_data_response()]
+
+    result = runner.invoke(
+        app,
+        [
+            "ingest",
+            "elexon",
+            "fuelhh",
+            "--start",
+            gap_start.isoformat(),
+            "--end",
+            gap_end.isoformat(),
+        ],
+    )
+    assert result.exit_code == 0, result.output
+    assert _read_watermark(db_path, "elexon", "fuelhh") == gap_end
+
+    # Empty-gap variant: no data -> no advance.
+    _FakeConnector.responses = []
+    result2 = runner.invoke(
+        app,
+        [
+            "ingest",
+            "elexon",
+            "fuelhh",
+            "--start",
+            gap_end.isoformat(),
+            "--end",
+            "2024-01-06T00:00:00+00:00",
+        ],
+    )
+    assert result2.exit_code == 0, result2.output
+    assert _read_watermark(db_path, "elexon", "fuelhh") == gap_end, "an empty gap must not advance"
+
+
+@pytest.mark.integration
+@pytest.mark.parametrize("delta", [timedelta(hours=1), timedelta(days=30)])
+def test_explicit_future_end_denied_bronze_kept_one_warning(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    _patch_connector: None,
+    caplog: pytest.LogCaptureFixture,
+    delta: timedelta,
+) -> None:
+    """T2-s (#34, the CLI-reachable case): a future --end is denied at the write
+    decision (D-23); bronze is kept; exactly one WARNING (FUTURE_END)."""
+    db_path = _isolated_env(tmp_path, monkeypatch)
+    _FakeConnector.responses = [_data_response()]
+    future_end = (datetime.now(UTC) + delta).isoformat()
+
+    with caplog.at_level(logging.WARNING, logger="gridflow.pipeline.runner"):
+        result = runner.invoke(
+            app, ["ingest", "elexon", "fuelhh", "--start", "2024-01-01", "--end", future_end]
+        )
+    assert result.exit_code == 0, result.output
+
+    assert _read_watermark(db_path, "elexon", "fuelhh") is None, "future end_dt must not advance"
+    warnings = [r for r in caplog.records if r.levelno == logging.WARNING]
+    assert len(warnings) == 1
+    assert "future_end" in warnings[0].message
+
+    bronze_dir = tmp_path / "data" / "bronze" / "elexon" / "fuelhh"
+    assert list(bronze_dir.rglob("raw_*.json")), "bronze bytes must be kept even when refused"
+
+
+@pytest.mark.integration
+def test_explicit_unreadable_frontier_denies_bronze_kept(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    _patch_connector: None,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """T2-t(a) (#35): the explicit path's own write-decision snapshot fails
+    closed -- no write attempt, one WARNING carrying frontier_error (redacted)."""
+    db_path = _isolated_env(tmp_path, monkeypatch)
+    _FakeConnector.responses = [_data_response()]
+
+    from gridflow.observability import WatermarkRead
+
+    def _broken_read(con: Any, source: str, dataset: str) -> WatermarkRead:
+        return WatermarkRead(status="unreadable", value=None, error="boom securityToken=SECRET123")
+
+    monkeypatch.setattr("gridflow.observability.read_watermark", _broken_read)
+
+    with caplog.at_level(logging.WARNING, logger="gridflow.pipeline.runner"):
+        result = runner.invoke(
+            app, ["ingest", "elexon", "fuelhh", "--start", "2024-01-01", "--end", "2024-01-02"]
+        )
+    assert result.exit_code == 0, result.output
+
+    assert _read_watermark(db_path, "elexon", "fuelhh") is None
+    warnings = [r for r in caplog.records if r.levelno == logging.WARNING]
+    assert len(warnings) == 1
+    assert "frontier_unreadable" in warnings[0].message
+    assert "SECRET123" not in warnings[0].message
+
+    bronze_dir = tmp_path / "data" / "bronze" / "elexon" / "fuelhh"
+    assert list(bronze_dir.rglob("raw_*.json")), "bronze bytes must be kept even when refused"
+
+
+@pytest.mark.integration
+def test_explicit_path_interloper_between_snapshot_and_cas_is_mismatch(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    _patch_connector: None,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """T2-t(b) (#36): a second connection moves the row AFTER the explicit
+    path's fresh snapshot and BEFORE the CAS call -- CAS_MISMATCH, frontier is
+    the interloper's, WARNING names expected vs observed (timing is
+    load-bearing: Sol pass-5 nit 1)."""
+    db_path = _isolated_env(tmp_path, monkeypatch)
+    existing = datetime(2024, 1, 1, tzinfo=UTC)
+    _seed_watermark(db_path, tmp_path / "data", "elexon", "fuelhh", existing)
+
+    from gridflow.observability import read_watermark as real_read_watermark
+    from gridflow.observability import update_watermark
+
+    interloper_value = datetime(2024, 1, 10, tzinfo=UTC)
+
+    def _snapshot_then_interlope(con: Any, source: str, dataset: str) -> Any:
+        snap = real_read_watermark(con, source, dataset)
+        interloper = duckdb.connect(str(db_path))
+        try:
+            update_watermark(interloper, source, dataset, interloper_value)
+        finally:
+            interloper.close()
+        return snap
+
+    monkeypatch.setattr("gridflow.observability.read_watermark", _snapshot_then_interlope)
+    _FakeConnector.responses = [_data_response()]
+
+    with caplog.at_level(logging.WARNING, logger="gridflow.pipeline.runner"):
+        result = runner.invoke(
+            app, ["ingest", "elexon", "fuelhh", "--start", "2024-01-02", "--end", "2024-01-03"]
+        )
+    assert result.exit_code == 0, result.output
+
+    assert _read_watermark(db_path, "elexon", "fuelhh") == interloper_value
+    warnings = [r for r in caplog.records if r.levelno == logging.WARNING]
+    assert len(warnings) == 1
+    assert "stale snapshot" in warnings[0].message
+    assert interloper_value.isoformat() in warnings[0].message
+
+
+@pytest.mark.integration
+def test_refused_and_partial_produces_one_warning_with_both_conditions(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    _patch_connector: None,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """T2-n (#4 x #21): refused AND partial -- one record at WARNING, real
+    rows_skipped, no advance."""
+    db_path = _isolated_env(tmp_path, monkeypatch)
+    stale = datetime.now(UTC) - timedelta(days=30)
+    _seed_watermark(db_path, tmp_path / "data", "elexon", "fuelhh", stale)
+    _FakeConnector.responses = [_data_response()]
+    _FakeConnector.last_skipped_units = 2
+
+    with caplog.at_level(logging.WARNING, logger="gridflow.pipeline.runner"):
+        result = runner.invoke(app, ["ingest", "elexon", "fuelhh", "--incremental"])
+    assert result.exit_code == 0, result.output
+
+    assert _read_watermark(db_path, "elexon", "fuelhh") == stale
+    warnings = [r for r in caplog.records if r.levelno == logging.WARNING]
+    assert len(warnings) == 1
+    assert "partial fetch: 2 unit(s) skipped" in warnings[0].message
+    assert "unfetched_gap" in warnings[0].message
+    assert "completed_with_warnings" in result.output
+
+
+@pytest.mark.integration
+def test_clamped_no_gap_no_evidence_is_info_not_warning(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    _patch_connector: None,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """T2-o (#25): clamped-no-gap with an all-empty fetch -- INFO, "no
+    evidence"; frontier really unchanged."""
+    db_path = _isolated_env(tmp_path, monkeypatch)
+    stale = datetime.now(UTC) - timedelta(hours=120)
+    _seed_watermark(db_path, tmp_path / "data", "elexon", "fuelhh", stale)
+    _FakeConnector.responses = []
+
+    with caplog.at_level(logging.INFO, logger="gridflow.pipeline.runner"):
+        result = runner.invoke(app, ["ingest", "elexon", "fuelhh", "--incremental"])
+    assert result.exit_code == 0, result.output
+
+    assert _read_watermark(db_path, "elexon", "fuelhh") == stale
+    assert not [r for r in caplog.records if r.levelno == logging.WARNING]
+    assert any("no evidence" in r.message for r in caplog.records if r.levelno == logging.INFO)
+
+
+@pytest.mark.integration
+def test_clamped_no_gap_partial_is_warning_and_never_claims_advance(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    _patch_connector: None,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """T2-p (#25/P3-4): clamped-no-gap PARTIAL run -- WARNING, never claims the
+    frontier moved."""
+    db_path = _isolated_env(tmp_path, monkeypatch)
+    stale = datetime.now(UTC) - timedelta(hours=120)
+    _seed_watermark(db_path, tmp_path / "data", "elexon", "fuelhh", stale)
+    _FakeConnector.responses = [_data_response()]
+    _FakeConnector.last_skipped_units = 3
+
+    with caplog.at_level(logging.WARNING, logger="gridflow.pipeline.runner"):
+        result = runner.invoke(app, ["ingest", "elexon", "fuelhh", "--incremental"])
+    assert result.exit_code == 0, result.output
+
+    assert _read_watermark(db_path, "elexon", "fuelhh") == stale
+    warnings = [r for r in caplog.records if r.levelno == logging.WARNING]
+    assert len(warnings) == 1
+    assert "frontier advanced" not in warnings[0].message
+    assert "partial fetch: 3 unit(s) skipped" in warnings[0].message
+
+
+@pytest.mark.integration
+def test_write_failure_reports_write_failed_one_warning_rows_still_reported(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    _patch_connector: None,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """T2-q (#2/#31/#38): a write exception -> WRITE_FAILED; the record says
+    the attempt failed and carries the redacted detail; rows are still
+    reported; caplog counts exactly ONE WARNING for the pair (D-26)."""
+    db_path = _isolated_env(tmp_path, monkeypatch)
+    _FakeConnector.responses = [_data_response()]
+
+    from gridflow.observability import WatermarkOutcome, WatermarkWrite
+
+    def _boom(
+        con: Any, source: str, dataset: str, last_end: Any, *, expected: Any
+    ) -> WatermarkWrite:
+        return WatermarkWrite(outcome=WatermarkOutcome.WRITE_FAILED, error="write boom (redacted)")
+
+    monkeypatch.setattr("gridflow.observability.advance_watermark", _boom)
+
+    with caplog.at_level(logging.DEBUG, logger="gridflow"):
+        result = runner.invoke(app, ["ingest", "elexon", "fuelhh", "--incremental"])
+    assert result.exit_code == 0, result.output
+
+    assert _read_watermark(db_path, "elexon", "fuelhh") is None
+    warnings = [r for r in caplog.records if r.levelno == logging.WARNING]
+    assert len(warnings) == 1, f"expected exactly one WARNING, got {warnings}"
+    assert "write attempt failed" in warnings[0].message
+    assert "write boom (redacted)" in warnings[0].message
+    assert "1 responses ingested" in result.output
+
+
+@pytest.mark.integration
+def test_multi_dataset_run_mixes_refused_clamped_and_healthy(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, _patch_connector: None
+) -> None:
+    """T2-g (#13): three datasets in one run -- refused / clamped-no-gap /
+    healthy -- the window is a per-iteration local, never global state.
+
+    Calls ``runner.run_ingest`` directly (the CLI's ``ingest`` command only
+    accepts one dataset name or ``--all``, and these fake dataset names are
+    not registered in the source config)."""
+    from gridflow.config.settings import load_settings
+    from gridflow.pipeline import runner as runner_module
+
+    db_path = _isolated_env(tmp_path, monkeypatch)
+    data_dir = tmp_path / "data"
+    now = datetime.now(UTC)
+    _seed_watermark(db_path, data_dir, "elexon", "refused_ds", now - timedelta(days=30))
+    _seed_watermark(db_path, data_dir, "elexon", "clamped_ds", now - timedelta(hours=120))
+    _seed_watermark(db_path, data_dir, "elexon", "healthy_ds", now - timedelta(hours=10))
+    _FakeConnector.responses = [_data_response()]
+
+    settings = load_settings()
+    with runner_module.build_context(settings) as ctx:
+        results = runner_module.run_ingest(
+            ctx,
+            "elexon",
+            ["refused_ds", "clamped_ds", "healthy_ds"],
+            now - timedelta(hours=24),
+            now,
+            incremental=True,
+            write_watermark=True,
+        )
+
+    by_dataset = {r.dataset: r for r in results}
+    assert by_dataset["refused_ds"].status == "completed_with_warnings"
+    assert by_dataset["clamped_ds"].status == "success"
+    assert by_dataset["healthy_ds"].status == "success"
+
+    assert _read_watermark(db_path, "elexon", "refused_ds") == now - timedelta(days=30)
+    clamped_wm = _read_watermark(db_path, "elexon", "clamped_ds")
+    assert clamped_wm is not None and clamped_wm > now - timedelta(hours=120)
+    healthy_wm = _read_watermark(db_path, "elexon", "healthy_ds")
+    assert healthy_wm is not None and healthy_wm > now - timedelta(hours=10)
+
+
+@pytest.mark.integration
+def test_run_backfill_over_400_days_issues_every_chunk_no_advance(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, _patch_connector: None
+) -> None:
+    """T2-h (#14/R-3): a 400-day backfill, chunk_days=1 -- every chunk issued,
+    no advance; the clamp never touches the backfill path."""
+    db_path = _isolated_env(tmp_path, monkeypatch)
+    _FakeConnector.responses = [_data_response()]
+    monkeypatch.setattr("gridflow.cli.transform", lambda **kwargs: None)
+
+    result = runner.invoke(
+        app,
+        [
+            "backfill",
+            "elexon",
+            "fuelhh",
+            "--start",
+            "2023-01-01",
+            "--end",
+            "2024-02-05",
+            "--chunk-days",
+            "1",
+        ],
+    )
+    assert result.exit_code == 0, result.output
+
+    assert len(_FakeConnector.calls) == 400, "every 1-day chunk over 400 days must be issued"
+    assert _read_watermark(db_path, "elexon", "fuelhh") is None, "backfill must never advance"

@@ -241,6 +241,26 @@ def test_ingest_runs_since_returns_none_on_failure(con: duckdb.DuckDBPyConnectio
     assert result is None
 
 
+def test_ingest_runs_since_pytz_blocked_still_works(
+    con: duckdb.DuckDBPyConnection, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """R-6 (CI env parity): ``pipeline_runs.started_at`` IS ``TIMESTAMPTZ``, but
+    ``ingest_runs_since`` compares ``epoch_us(started_at)`` -- a plain integer
+    -- against an integer bound, so no TIMESTAMPTZ value ever crosses into
+    Python. Simulate CI's pytz-less environment (blocking the import) and
+    confirm the count still works."""
+    import sys
+
+    monkeypatch.setitem(sys.modules, "pytz", None)  # any `import pytz` now raises ImportError
+
+    anchor = datetime.now(UTC) - timedelta(hours=1)
+    PipelineRunTracker(con, "elexon", "fuelhh", "ingest")
+
+    count = ingest_runs_since(con, "elexon", "fuelhh", anchor)
+
+    assert count == 1
+
+
 def test_resolver_tolerates_ingest_runs_since_failure(con: duckdb.DuckDBPyConnection) -> None:
     """T1-h (#12): a diagnostic-only failure never affects the advance decision."""
     now = datetime.now(UTC)

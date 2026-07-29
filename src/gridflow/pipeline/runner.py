@@ -629,7 +629,7 @@ def _watermark_record_message(
         if window.gap_start is not None and window.gap_end is not None:
             parts.append(f"gap=[{window.gap_start.isoformat()}, {window.gap_end.isoformat()})")
             parts.append(
-                "repair (gap-bounded, never backfill): "
+                "repair (gap-bounded): "
                 f"gridflow ingest {source} {dataset} "
                 f"--start {window.gap_start.isoformat()} --end {window.gap_end.isoformat()}"
             )
