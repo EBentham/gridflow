@@ -267,6 +267,12 @@ async def test_active_datasets_fetch_with_expected_mocked_request_shape(
             assert first_response.request_params[endpoint.to_param].startswith(
                 "2024-01-15T23:00:00"
             )
+        elif dataset == "lolpdrm":
+            # Vendor enforces a max-12h publish window (live-verified
+            # 2026-07-30); connector chunks at exactly 12h.
+            assert first_response.request_params[endpoint.to_param].startswith(
+                "2024-01-15T12:00:00"
+            )
         else:
             assert first_response.request_params[endpoint.to_param].startswith(
                 "2024-01-16T00:00:00"
