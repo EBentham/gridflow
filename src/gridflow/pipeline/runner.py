@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+from collections import Counter
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
@@ -23,12 +24,15 @@ from typing import TYPE_CHECKING, assert_never
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
+    from datetime import date
+    from pathlib import Path
 
     import duckdb
 
     from gridflow.config.settings import GridflowConfig
     from gridflow.connectors.base import BaseConnector, RawResponse
     from gridflow.observability import WatermarkRead, WatermarkWrite
+    from gridflow.silver.base import BronzeVouchReason
 
 logger = logging.getLogger(__name__)
 
@@ -134,6 +138,47 @@ _TRANSFORMER_MODULES = [
 GOLD_DATASETS: tuple[str, ...] = ("system_marginal_price",)
 
 
+_UNVOUCHED_SAMPLE_LIMIT = 5
+"""Max example unvouched bronze paths named in the aggregated record.
+
+Only the EXAMPLES are capped. The distinct-file count and the per-reason
+totals are EXACT and are never truncated -- truncating those would hide files
+in the one record whose job is to say how many are missing.
+"""
+
+
+def _describe_unvouched_bronze(
+    unvouched: set[tuple[Path, BronzeVouchReason]],
+    dates: list[date],
+) -> str:
+    """Render THE one aggregated unvouched-bronze record, or ``""`` if none.
+
+    Args:
+        unvouched: The union of ``(path, reason)`` pairs across every date.
+        dates: The transformed date range, for the reported window.
+
+    Returns:
+        A leading-space-prefixed sentence for appending to a status message,
+        or the empty string when nothing was excluded.
+    """
+    if not unvouched:
+        return ""
+    reasons_by_path: dict[Path, BronzeVouchReason] = dict(unvouched)
+    reason_totals = Counter(reasons_by_path.values())
+    reasons = ", ".join(f"{reason}={count}" for reason, count in sorted(reason_totals.items()))
+    samples = ", ".join(
+        f"{path} ({reason})"
+        for path, reason in sorted(reasons_by_path.items())[:_UNVOUCHED_SAMPLE_LIMIT]
+    )
+    window = f"{dates[0]}..{dates[-1]}" if dates else "the requested range"
+    return (
+        f" Excluded {len(reasons_by_path)} unvouched bronze body(ies) across {window} "
+        "(body present, sidecar missing or unusable) -- their rows are NOT in this "
+        "silver partition and their stamps did NOT contribute to available_at. "
+        f"Reasons: {reasons}. Examples: {samples}."
+    )
+
+
 class DatasetResolutionError(Exception):
     """Raised when no dataset can be resolved (no name and no ``--all`` flag).
 
@@ -172,6 +217,13 @@ class DatasetResult:
             count for ingests).
         rows_unmapped: Transform-only: rows kept with an ADR-022 enum sentinel.
         rows_invalid: Transform-only: rows failing full-frame schema validation.
+        bronze_unvouched: Transform-only: DISTINCT bronze bodies excluded from
+            the read because their own sidecar could not vouch for them
+            (ADR-028). A FILE count, deliberately kept out of ``rows_skipped``:
+            their row count is unknown precisely because we refuse to read
+            them, so summing them into a row counter would be a category error
+            and would corrupt an existing contract. Nonzero implies
+            ``status != "success"``, every run, until the state is resolved.
         error: Pre-redacted error message when ``status == "failed"``, else None.
     """
 
@@ -184,6 +236,7 @@ class DatasetResult:
     rows_skipped: int = 0
     rows_unmapped: int = 0
     rows_invalid: int = 0
+    bronze_unvouched: int = 0
     error: str | None = None
 
     @property
@@ -888,6 +941,20 @@ def run_transform(
         total_unmapped = 0
         total_validation_failures = 0
         total_all_dropped = 0
+        # A UNION of (path, reason) pairs, not a running integer: the ENTSO-G
+        # reference family rescans the whole tree on every target date, so one
+        # orphan body over a 30-day range would otherwise be reported as 30 --
+        # a 30x overstatement in the very record whose job is to size the
+        # remediation. The pairing is kept so exact per-reason totals survive
+        # deduplication across dates (a detached Counter could not attribute a
+        # newly-seen path to its reason). See ADR-028.
+        unvouched_bronze: set[tuple[Path, BronzeVouchReason]] = set()
+        total_unvouched_total_exclusion = 0
+        # `None` until `get_transformer` returns, so the `except` handler below
+        # can tell "never constructed this date" apart from "constructed, then
+        # `run()` raised" without risking a `transformer` left over from a
+        # PRIOR dataset in this loop (plain `for` loops don't scope locals).
+        transformer = None
         try:
             transformer = get_transformer(source, ds, settings.pipeline.data_dir)
             # CH3-02 (CH-PERF-02): per-date silver CSV is opt-in (default OFF).
@@ -908,6 +975,13 @@ def run_transform(
                 # exceptional and categorical) and checked FIRST, below, so
                 # it overrides the warnings path rather than blending into it.
                 total_all_dropped += transformer.last_partition_filter_all_dropped_count
+                unvouched_bronze |= transformer.last_unvouched_bronze
+                total_unvouched_total_exclusion += int(transformer.last_unvouched_total_exclusion)
+
+            # Deduplicate PATHS first, then derive the per-reason totals from
+            # the surviving pairs, so both numbers describe distinct files.
+            bronze_unvouched = len({path for path, _ in unvouched_bronze})
+            unvouched_detail = _describe_unvouched_bronze(unvouched_bronze, dates)
             if total_all_dropped:
                 # No silver was written for the affected date(s) (base.py's
                 # _process_frame returns None before _write_silver when the
@@ -927,7 +1001,12 @@ def run_transform(
                     "verify EVENT_WINDOW_FILTER classification and window "
                     "semantics before re-running. No silver was written for "
                     "the affected date(s); any pre-existing Parquet there is "
-                    "unchanged and must not be treated as current."
+                    "unchanged and must not be treated as current." + unvouched_detail
+                    # This rung wins the STATUS and the MESSAGE, but it must
+                    # not swallow the unvouched COUNT: a scheduler reads the
+                    # highest-precedence failure first, and a permanent orphan
+                    # hidden there would break the visibility contract on
+                    # exactly the path that matters most.
                 )
                 tracker.fail(error_message)
                 logger.error("Transform hard-failed for %s/%s: %s", source, ds, error_message)
@@ -938,10 +1017,49 @@ def run_transform(
                         operation="transform",
                         status="failed",
                         rows_out=total_rows,
+                        bronze_unvouched=bronze_unvouched,
                         error=error_message,
                     )
                 )
-            elif total_unmapped or total_validation_failures:
+            elif total_unvouched_total_exclusion:
+                # Every examined candidate for at least one date was unvouched:
+                # bronze demonstrably exists and ZERO rows could be read from
+                # it. Under master that state is invisible -- read_bronze never
+                # inspects sidecars, so those rows are read and (on reingest)
+                # stamped now(). Under exclusion the frame is empty, and the
+                # only other signal would be a generic warning nobody reads.
+                # Same argument as the all_dropped rung above: a stale
+                # pre-existing Parquet is left on disk untouched, and only a
+                # FAILED dataset-level status stops it passing as current.
+                error_message = safe_error_message(
+                    f"{source}/{ds}: every examined bronze body was unvouched for "
+                    f"{total_unvouched_total_exclusion} date(s) in the requested range "
+                    "-- bronze exists but no row could be read from it, because no "
+                    "sidecar could establish an honest availability timestamp. No "
+                    "silver was written for the affected date(s); any pre-existing "
+                    "Parquet there is unchanged and must not be treated as current. "
+                    "Bronze is left exactly as found (never repaired, never deleted)."
+                    + unvouched_detail
+                )
+                tracker.fail(error_message)
+                logger.error("Transform hard-failed for %s/%s: %s", source, ds, error_message)
+                results.append(
+                    DatasetResult(
+                        source=source,
+                        dataset=ds,
+                        operation="transform",
+                        status="failed",
+                        rows_out=total_rows,
+                        bronze_unvouched=bronze_unvouched,
+                        error=error_message,
+                    )
+                )
+            elif total_unmapped or total_validation_failures or bronze_unvouched:
+                if bronze_unvouched:
+                    # THE one aggregated record per (source, dataset) per
+                    # run_transform invocation, whatever the file count or the
+                    # date-range length.
+                    logger.warning("Transform completed with warnings for %s", unvouched_detail)
                 tracker.complete_with_warnings(
                     rows_out=total_rows,
                     rows_skipped=total_unmapped + total_validation_failures,
@@ -953,9 +1071,13 @@ def run_transform(
                         operation="transform",
                         status="completed_with_warnings",
                         rows_out=total_rows,
+                        # rows_skipped keeps its ROW meaning -- excluded FILES
+                        # are never summed into it (they have no known row
+                        # count) and live in bronze_unvouched instead.
                         rows_skipped=total_unmapped + total_validation_failures,
                         rows_unmapped=total_unmapped,
                         rows_invalid=total_validation_failures,
+                        bronze_unvouched=bronze_unvouched,
                     )
                 )
             else:
@@ -973,12 +1095,24 @@ def run_transform(
             error_message = safe_error_message(str(e))
             tracker.fail(error_message)
             logger.error("Transform failed for %s/%s: %s", source, ds, error_message)
+            # R2-g finding 1: a collision guard / read error raised from inside
+            # `run()` -- AFTER it classified an orphan -- must not silently
+            # report `bronze_unvouched=0` here. The counters are instance state
+            # on the transformer and survive the exception; fold in whatever
+            # the failing call classified on top of what earlier dates in this
+            # loop already accumulated (I-7: counted, every run, indefinitely).
+            # `transformer` may still be `None` -- `get_transformer` itself can
+            # raise before any instance exists.
+            if transformer is not None:
+                unvouched_bronze |= transformer.last_unvouched_bronze
+            bronze_unvouched = len({path for path, _ in unvouched_bronze})
             results.append(
                 DatasetResult(
                     source=source,
                     dataset=ds,
                     operation="transform",
                     status="failed",
+                    bronze_unvouched=bronze_unvouched,
                     error=error_message,
                 )
             )

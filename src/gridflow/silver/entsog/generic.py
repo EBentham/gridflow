@@ -7,18 +7,24 @@ import logging
 import os
 import re
 from datetime import UTC, date, datetime
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, ClassVar
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
     from pathlib import Path
 
 import polars as pl
 
 from gridflow.connectors.entsog.endpoints import ENDPOINTS, EntsogEndpoint
-from gridflow.silver.base import BaseSilverTransformer
+from gridflow.silver.base import (
+    _BRONZE_VINTAGE_COLUMN,
+    BaseSilverTransformer,
+    BronzeReadSelection,
+)
 from gridflow.silver.entsog.datetime import (
-    filter_records_to_target_date,
+    log_undated_records,
     parse_entsog_datetime_expr,
+    partition_records_to_target_date,
 )
 from gridflow.silver.registry import register_transformer
 from gridflow.storage.parquet import write_parquet
@@ -61,6 +67,16 @@ _NUMERIC_SUFFIXES = (
     "_x",
     "_y",
 )
+_DEDUP_EXCLUDED = frozenset({"timestamp_utc", _BRONZE_VINTAGE_COLUMN})
+"""Columns held out of the all-columns dedup subset.
+
+The bronze-vintage carrier's exclusion is LOAD-BEARING and its failure mode is
+SILENT: the column is per-file-varying, so leaving it in the subset makes two
+identical records from two bronze files stop comparing equal and lets
+cross-file duplicates survive to disk. For every non-lockstep call the column
+is absent and the computed subset is identical to the pre-R2-g one, so this
+edit preserves the on-disk row set rather than changing it.
+"""
 _NUMERIC_NAMES = {
     "value",
     "auction_premium",
@@ -85,31 +101,76 @@ class GenericEntsogJsonTransformer(BaseSilverTransformer):
     response_key: str
     reference_dataset: bool = False
     date_window_dataset: bool = False
+    LOCKSTEP_BRONZE_READ: ClassVar[bool] = True
+
+    def _bronze_read_selection(self) -> BronzeReadSelection:
+        """Mirror the two branches of :meth:`_bronze_candidates`.
+
+        Resolved per instance from ``reference_dataset``, which is set per
+        generated subclass -- never by mutating a ClassVar at import time.
+        """
+        return (
+            BronzeReadSelection.NEWEST_VOUCHED
+            if self.reference_dataset
+            else BronzeReadSelection.ALL
+        )
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
-        files = self._bronze_files(target_date)
-        rows: list[dict[str, Any]] = []
-        for path in files:
+        """Read this date's bronze into one merged raw frame.
+
+        Applies the family's own selection rule DIRECTLY and never vouches.
+        Vouching lives only on the lockstep ``run()`` branch, which is the only
+        path that can count and report an exclusion -- routing this method
+        through the resolver would discard ``VouchedBronzeSet.unvouched`` and
+        silently drop rows under a ``success`` status.
+        """
+        paths = self._bronze_candidates(target_date)
+        if self.reference_dataset:
+            paths = paths[:1]
+        rows = [
+            record
+            for _, records in self._read_bronze_records(paths, target_date)
+            for record in records
+        ]
+        return pl.DataFrame(rows, infer_schema_length=None) if rows else pl.DataFrame()
+
+    def _read_bronze_records(
+        self,
+        paths: Sequence[Path],
+        target_date: date,
+    ) -> tuple[tuple[Path, list[dict[str, Any]]], ...]:
+        """Parse each body and apply the date-window filter, per file.
+
+        The filter runs through its PURE core so the undated count can be
+        aggregated into exactly ONE warning per call rather than one per file
+        -- the same bound the single-frame path has always had.
+        """
+        pairs: list[tuple[Path, list[dict[str, Any]]]] = []
+        undated_total = 0
+        for path in paths:
             try:
                 payload = json.loads(path.read_text())
             except json.JSONDecodeError as exc:
                 logger.warning("Failed to parse ENTSO-G bronze file %s: %s", path, exc)
                 continue
-            rows.extend(_extract_records(payload, self.response_key))
+            records = _extract_records(payload, self.response_key)
+            if self.date_window_dataset and records:
+                records, undated = partition_records_to_target_date(
+                    records, target_date, _RAW_TIMESTAMP_PRIORITY
+                )
+                undated_total += undated
+            pairs.append((path, records))
+        log_undated_records(undated_total, target_date, source=self.source, dataset=self.dataset)
+        return tuple(pairs)
 
-        if not rows:
-            return pl.DataFrame()
-        if self.date_window_dataset:
-            rows = filter_records_to_target_date(
-                rows,
-                target_date,
-                _RAW_TIMESTAMP_PRIORITY,
-                source=self.source,
-                dataset=self.dataset,
-            )
-            if not rows:
-                return pl.DataFrame()
-        return pl.DataFrame(rows, infer_schema_length=None)
+    def _normalise_raw_column_name(self, column: str) -> str:
+        """This family folds vendor spellings with ``_camel_to_snake``.
+
+        Load-bearing for the base class's reserved-name collision guard: a
+        vendor field spelled ``gfBronzeVintage`` normalises onto the transient
+        bronze-vintage carrier and would be coalesced into it.
+        """
+        return _camel_to_snake(column)
 
     def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
         if raw_df.is_empty():
@@ -132,7 +193,7 @@ class GenericEntsogJsonTransformer(BaseSilverTransformer):
         dedup_subset = (
             ["id"]
             if "id" in df.columns
-            else [column for column in df.columns if column not in {"timestamp_utc"}]
+            else [column for column in df.columns if column not in _DEDUP_EXCLUDED]
         )
         if dedup_subset:
             df = df.unique(subset=dedup_subset, keep="last")
@@ -174,7 +235,20 @@ class GenericEntsogJsonTransformer(BaseSilverTransformer):
         result = df.select(ordered)
         return result.sort(sort_cols) if sort_cols else result
 
-    def _bronze_files(self, target_date: date) -> list[Path]:
+    def _bronze_candidates(self, target_date: date) -> list[Path]:
+        """The FULL ordered candidate list -- no ``[:1]`` truncation.
+
+        The reference family's "newest only" policy became
+        ``BronzeReadSelection.NEWEST_VOUCHED``, applied AFTER vouching:
+        truncating here would let one orphan newest body empty the frame for a
+        dataset with dozens of perfectly good older files. ``read_bronze()``
+        still applies the truncation itself, so its own contract is unchanged.
+
+        The ``.meta.json`` exclusion is load-bearing: the writer puts bodies
+        and sidecars in the same directory and ``raw_*.json`` matches both, so
+        a sidecar admitted as a body would classify ``NO_SIDECAR`` and fire the
+        hard-fail rung on every healthy run.
+        """
         if self.reference_dataset:
             if not self.bronze_dir.exists():
                 return []
@@ -182,7 +256,7 @@ class GenericEntsogJsonTransformer(BaseSilverTransformer):
                 path
                 for path in sorted(self.bronze_dir.rglob("raw_*.json"), reverse=True)
                 if not path.name.endswith(".meta.json")
-            ][:1]
+            ]
 
         bronze_path = (
             self.bronze_dir

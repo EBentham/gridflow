@@ -89,10 +89,20 @@ def _write_cmp_bronze(
 ) -> None:
     """Write a cmp_* bronze partition mirroring GenericEntsogJsonTransformer.read_bronze:
     bronze/entsog/<dataset>/<YYYY>/<MM>/<DD>/raw_*.json with a {response_key: [...]} body.
+
+    Writes the body/sidecar PAIR that ``BronzeWriter`` always produces, not a
+    bare body. Under ADR-028's exclude-until-vouched rule a body with no
+    sidecar is an orphan -- excluded from the frame, counted, and hard-failed
+    -- so a bare-body fixture would exercise the vouching gate rather than this
+    test's subject (cmp_* schema drift). The stamp value is irrelevant here;
+    only its presence and parseability are.
     """
     partition = bronze_root / str(day.year) / f"{day.month:02d}" / f"{day.day:02d}"
     partition.mkdir(parents=True, exist_ok=True)
     (partition / "raw_test.json").write_text(json.dumps({response_key: records}))
+    (partition / "raw_test.meta.json").write_text(
+        json.dumps({"written_at": f"{day.isoformat()}T12:00:00+00:00"})
+    )
 
 
 @pytest.mark.parametrize("dataset,response_key", _CMP_DATASETS)

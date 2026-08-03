@@ -8,11 +8,12 @@ import os
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import UTC, date, datetime, timedelta
+from enum import StrEnum
 from pathlib import Path
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar, assert_never
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable
+    from collections.abc import Iterable, Sequence
 
 import polars as pl
 from pydantic import BaseModel, ValidationError
@@ -35,8 +36,187 @@ logger = logging.getLogger(__name__)
 _VALIDATION_SAMPLE_LIMIT = 5
 """Max distinct validation-error strings logged per ``run()`` (fail-soft; bounded)."""
 
-_EXACT_PARTITION_ONLY_SOURCES: frozenset[str] = frozenset({"entsoe"})
-"""Sources whose connectors write day-exact bronze partitions (P0.8 / R2-F08).
+_BRONZE_VINTAGE_COLUMN = "gf_bronze_vintage"
+"""Transient per-row bronze vintage carrier for ``LOCKSTEP_BRONZE_READ`` reads.
+
+Added by ``run()`` to the RAW frame, consumed by ``_add_bitemporal_columns``
+as the ingest-time source, and DROPPED inside ``_process_frame`` before
+``_write_silver`` -- it must never reach silver.
+
+No frame-level ``available_at`` can satisfy the invariant once two bronze
+files with different stamps both contribute rows: ``max`` over-stamps the
+earlier file's rows (hiding them from a point-in-time query positioned between
+the two) and ``min`` leaks the later file's (lookahead bias). So the stamp
+travels WITH the row, from the same per-file structure the rows come from, and
+``available_at``'s existing row-wise ``coalesce(published_at, ingest_time)``
+(ADR-025 §3) simply gets a per-row fallback arm for opted-in transformers.
+
+The name is deliberately (a) lower-snake with no leading underscore, so
+ENTSO-G's ``_camel_to_snake`` is the identity on it, and (b) ``gf_``-prefixed,
+to make a vendor-field clash implausible.
+
+WARNING: ``gf_``-prefixing does NOT make collision impossible.
+``_normalise_column_names`` maps ``gfBronzeVintage``, ``gf-bronze-vintage`` and
+``GF_Bronze_Vintage`` all onto this exact name and coalesces them, so the
+collision guard tests NORMALISED names (``_normalise_raw_column_name``), never
+the literal string. "Vendor fields are camelCase" is not a defence here --
+camelCase is precisely the colliding spelling.
+"""
+
+_SIDECAR_TIMESTAMP_KEYS: tuple[str, ...] = (
+    "available_at",
+    "written_at",
+    "response_received_at",
+    "fetched_at",
+)
+"""Bronze sidecar timestamp keys, most-to-least authoritative as the historical
+availability anchor.
+
+``written_at`` (durable bronze write completion) is preferred over
+``fetched_at`` (stamped at ``RawResponse`` construction, before any
+paging/retries) so reingest reconstructs availability from the true write time
+rather than a pre-write proxy. The direction is conservative
+(``written_at >= fetched_at``), so this never makes a row look available
+earlier than it truly was. ``response_received_at`` is an as-yet-unwritten
+reserved key kept for forward compatibility.
+
+**The search FALLS THROUGH on a parse failure** (R2-g D-3): a key that is
+present but unparseable does not end the search, so a sidecar with an invalid
+``written_at`` and a valid ``fetched_at`` still vouches, on ``fetched_at``.
+Only a successful parse returns.
+
+N-16 (accepted residual, NOT fixed in R2-g): ``bronze/writer.py`` captures
+``written_at`` *before* the body write it marks the completion of, so a
+RECORDED stamp can be earlier than the true durable-write instant. Every
+availability claim in this module is stated over the recorded stamp.
+"""
+
+
+class BronzeVouchReason(StrEnum):
+    """Why a bronze body could not be vouched for by its own sidecar (ADR-028).
+
+    ``UNPARSEABLE_TIMESTAMP`` means EVERY present-and-truthy key in
+    :data:`_SIDECAR_TIMESTAMP_KEYS` failed to parse, never merely the first
+    one -- see that constant's fall-through note (R2-g D-3).
+    """
+
+    NO_SIDECAR = "NO_SIDECAR"
+    """No ``<body stem>.meta.json`` beside the body (the literal orphan: a
+    crash between ``bronze/writer.py``'s body write and its sidecar write)."""
+    UNREADABLE_SIDECAR = "UNREADABLE_SIDECAR"
+    """``OSError``/``JSONDecodeError`` on the sidecar, or syntactically valid
+    but non-object JSON (``[1, 2]``, ``"text"``, ``3``, ``null``)."""
+    NO_TIMESTAMP_KEY = "NO_TIMESTAMP_KEY"
+    """Valid sidecar object, but no key from :data:`_SIDECAR_TIMESTAMP_KEYS`
+    was present and truthy."""
+    UNPARSEABLE_TIMESTAMP = "UNPARSEABLE_TIMESTAMP"
+    """Every present-and-truthy key failed to parse into a datetime."""
+
+
+class BronzeReadSelection(StrEnum):
+    """Which vouched bronze bodies a lockstep read consumes (R2-g D-4).
+
+    The truncation happens INSIDE the resolver, on the vouched list -- never
+    before it. Truncating first would let one orphan newest body empty the
+    frame for a dataset with dozens of perfectly good older files.
+    """
+
+    ALL = "ALL"
+    """Examine every candidate; read every one that vouches."""
+    NEWEST_VOUCHED = "NEWEST_VOUCHED"
+    """Walk candidates in order and stop at the FIRST that vouches. The
+    stepped-over bodies are counted and named; the selected file's rows are
+    read together with its OWN stamp -- never a borrowed sibling's."""
+
+
+@dataclass(frozen=True)
+class VouchedBronzeSet:
+    """The single value threaded to BOTH the frame read and the vintage (I-1).
+
+    Resolved by exactly ONE filesystem scan and ONE sidecar read per examined
+    candidate, so there is no second scan for the two derivations to disagree
+    about -- R2-C's ``IncrementalWindow.snapshot`` shape (ADR-027) applied to
+    the filesystem.
+
+    Deliberately has NO ``available_at()`` aggregate: per D-5 the vintage is
+    PER ROW, taken from ``dict(entries)`` as a path -> stamp lookup at
+    frame-build time. No frame-level scalar can satisfy the invariant once two
+    files with different stamps both contribute rows, so none is offered.
+
+    Attributes:
+        entries: ``(body path, that body's OWN recorded stamp)`` pairs, in
+            candidate order. The pairing is structural: a stamp exists only as
+            the second element of a tuple whose first element IS in the read
+            set, so a sibling's stamp can never be borrowed.
+        unvouched: ``(body path, reason)`` for every examined candidate that
+            could not vouch. Excluded from the frame AND from the vintage --
+            never deleted, never repaired, never written to.
+        examined: How many candidates were actually probed. Under
+            ``NEWEST_VOUCHED`` the walk stops early, so this is less than
+            ``len(candidates)`` whenever a vouched file was found.
+    """
+
+    entries: tuple[tuple[Path, datetime], ...]
+    unvouched: tuple[tuple[Path, BronzeVouchReason], ...]
+    examined: int
+
+    @property
+    def paths(self) -> tuple[Path, ...]:
+        """The body paths whose rows may enter the frame, in candidate order."""
+        return tuple(path for path, _ in self.entries)
+
+
+@dataclass(frozen=True)
+class SidecarDiagnostic:
+    """One failure seen while classifying a sidecar, in the order it occurred.
+
+    Attributes:
+        key: The :data:`_SIDECAR_TIMESTAMP_KEYS` entry that failed, or ``None``
+            for a file-level failure (unreadable / undecodable sidecar).
+        reason: The classification this individual failure carries.
+        detail: Pre-narrowed text for the WARNING the logging wrapper replays,
+            or ``None`` when master emits no warning for this failure -- a
+            present-but-non-string, non-datetime value fails *silently* on
+            master (:meth:`BaseSilverTransformer._parse_timestamp` returns
+            ``None`` without logging for those).
+    """
+
+    key: str | None
+    reason: BronzeVouchReason
+    detail: str | None = None
+
+
+@dataclass(frozen=True)
+class SidecarRead:
+    """Pure classification of one bronze sidecar (R2-g D-7).
+
+    Attributes:
+        timestamp: The vouched tz-aware UTC stamp, or ``None``.
+        reason: ``None`` iff ``timestamp`` is not ``None``.
+        diagnostics: An ORDERED log of every failure seen on the way,
+            INCLUDING ones that preceded a later success. Master logs a
+            warning per failed key and then keeps going (the fall-through at
+            :data:`_SIDECAR_TIMESTAMP_KEYS`), so a single ``reason``/``detail``
+            pair could not let the logging wrapper replay master's output.
+        non_object_json: ``True`` iff the sidecar held syntactically valid
+            JSON that is not an object. Master reaches ``meta.get(key)`` on it
+            and raises an uncaught ``AttributeError``; the wrapper preserves
+            that exactly (N-18) while this classifier excludes the file.
+        payload: The parsed non-object payload, kept solely so the wrapper can
+            reproduce master's ``AttributeError`` verbatim. Meaningless unless
+            ``non_object_json`` is ``True``.
+    """
+
+    timestamp: datetime | None
+    reason: BronzeVouchReason | None
+    diagnostics: tuple[SidecarDiagnostic, ...] = ()
+    non_object_json: bool = False
+    payload: Any = None
+
+
+_EXACT_PARTITION_ONLY_SOURCES: frozenset[str] = frozenset({"entsoe", "entsog"})
+"""Sources whose connectors write day-exact bronze partitions (P0.8 / R2-F08,
+plus ENTSO-G via R2-g / F-05).
 
 As of P0.8, ``EntsoeConnector.fetch`` chunks every multi-day window into one
 request per covered UTC calendar day, so a correctly-fetched ENTSO-E date
@@ -49,6 +229,33 @@ this failure class — ``VINTAGE_PER_BRONZE_FILE`` / ADR-025 (class docstring
 above, "Only the EXACT date partition is read — never the multi-day
 covering-partition fallback") and the ENTSO-G generic family's exact-only
 ``_bronze_files`` (``silver/entsog/generic.py``).
+
+**ENTSO-G (R2-g, closing F-05's open half).** ``EntsogConnector.fetch`` chunks
+every multi-day window into one request per covered UTC calendar day
+(``connectors/entsog/client.py``), so the same exact-or-nothing guarantee
+holds. Before this change, ``PhysicalFlowsTransformer.read_bronze`` could
+resolve a covering partition up to **35 days** before ``target_date`` and
+relabel those rows under it -- precisely the fabrication the per-day chunking
+exists to prevent.
+
+The two gated call sites, and what entsog's membership changes at each:
+
+- ``_bronze_path_for_date`` (the READ path, below): the covering fallback is
+  removed. This IS F-05's open half, and the only production effect the flip
+  now has.
+- ``_bronze_date_dirs`` (the VINTAGE path, below): **dead with respect to
+  entsog.** R2-g's ``LOCKSTEP_BRONZE_READ`` branch resolves the vintage from
+  the same vouched set as the read, so neither ENTSO-G family calls this
+  method at all any more (pinned by a spy in
+  ``tests/silver/test_entsog_exact_partition.py``). The gate is left in place
+  because it remains correct for ``entsoe``.
+
+That ordering is deliberate and load-bearing. Flipping the frozenset while the
+vintage path still ran through ``_bronze_date_dirs`` would make that walk
+return ``[]`` for any date without an exact partition and fall through to
+``datetime.now(UTC)`` -- a FABRICATED vintage, measured 26 days off on an
+earlier attempt. Removing entsog from that method's caller set first leaves
+the flip with no path to fire down.
 
 Source-scoped (not a per-transformer ``ClassVar`` flag) because the exact-only
 guarantee is a property of the *connector's* write layout established by this
@@ -250,6 +457,69 @@ class BaseSilverTransformer(ABC):
     this one counter is the sole exceptional-outcome signal propagated by
     this fix.
     """
+    last_unvouched_bronze: frozenset[tuple[Path, BronzeVouchReason]] = frozenset()
+    """Bronze bodies EXCLUDED from the most recent ``run()`` because their own
+    sidecar could not vouch for them (R2-g / ADR-028). Reset at the top of
+    every ``run()``; only the ``LOCKSTEP_BRONZE_READ`` branch ever populates it.
+
+    Carries the ``(path, reason)`` ASSOCIATION deliberately, rather than a
+    running integer or a path set beside a detached reason counter. Both of
+    those misreport:
+
+    - the reference ENTSO-G family rescans the whole tree on every target
+      date, so one orphan body over a 30-day range would be counted 30 times —
+      a 30x overstatement of the remediation scope in the very record whose
+      job is to size it. ``run_transform`` unions the SETS instead;
+    - once paths are deduplicated across dates, a detached ``Counter`` cannot
+      say which reason belongs to a newly-seen path, so exact per-reason
+      totals become impossible.
+
+    A path appears at most once because the classifier assigns exactly one
+    reason per file per read.
+    """
+    last_unvouched_total_exclusion: bool = False
+    """``True`` when the most recent ``run()`` examined at least one bronze
+    candidate and NONE of them vouched — bronze demonstrably exists and zero
+    rows could be read from it (R2-g D-9 rung 2).
+
+    Distinct from "no bronze at all" (``examined == 0``), which is not a
+    failure. ``run_transform`` turns a nonzero accumulated total into a HARD
+    FAILURE for the whole dataset, mirroring
+    ``last_partition_filter_all_dropped_count``: under exclusion the frame is
+    empty, and only a failed dataset-level status stops a stale pre-existing
+    Parquet being treated as current.
+    """
+    LOCKSTEP_BRONZE_READ: ClassVar[bool] = False
+    """Opt in to resolving the bronze read set and the vintage from ONE scan.
+
+    When ``True``, ``run()`` calls :meth:`_bronze_candidates` exactly once and
+    threads the resulting :class:`VouchedBronzeSet` into BOTH the frame read
+    and ``available_at`` — so the set of files whose rows enter the frame and
+    the set of files whose sidecars determine the vintage are the SAME set, by
+    construction rather than by argument (R2-g I-1). Opt-ins must implement
+    :meth:`_bronze_candidates` AND :meth:`_read_bronze_records`.
+
+    Per-transformer (like :attr:`VINTAGE_PER_BRONZE_FILE`), NOT source-scoped
+    like ``_EXACT_PARTITION_ONLY_SOURCES``. The honest reason, so the next
+    reader need not reconstruct it: vouching is a property of the BRONZE
+    WRITER's body-then-sidecar ordering (``bronze/writer.py``), which is
+    universal across sources — so the control is universally correct, not
+    entsog-specific. It is rolled out narrowly because every other source has
+    bronze on disk and changing their read sets is a data-semantics change on
+    live data. Generalising the rollout is N-15, which must audit every
+    ``_bronze_files`` override rather than point-fix known cases.
+
+    Mutually exclusive with :attr:`VINTAGE_PER_BRONZE_FILE`: they are different
+    vintage strategies over the same partition, and ``run()`` dispatches over
+    three mutually exclusive branches. A transformer setting both is a bug.
+    """
+    BRONZE_READ_SELECTION: ClassVar[BronzeReadSelection] = BronzeReadSelection.ALL
+    """Default selection policy for :attr:`LOCKSTEP_BRONZE_READ` reads.
+
+    Transformers whose policy depends on instance state override
+    :meth:`_bronze_read_selection` instead of reassigning this — a ClassVar
+    mutated at import time cannot express "reference datasets only".
+    """
     EVENT_WINDOW_FILTER: ClassVar[bool] = False
     """Opt-in, PER TRANSFORMER (D-6 — contrast with Elexon's source-scoped
     ``_PUBLICATION_WINDOW_FILTER_SOURCES``), to the ENTSO-E event-window
@@ -384,6 +654,84 @@ class BaseSilverTransformer(ABC):
             f"{type(self).__name__} must implement read_bronze_file for per-file vintages"
         )
 
+    def _bronze_read_selection(self) -> BronzeReadSelection:
+        """Resolve this run's selection policy (R2-g D-6).
+
+        Defaults to :attr:`BRONZE_READ_SELECTION`. Families whose policy
+        depends on instance state (the ENTSO-G generic family's
+        ``reference_dataset``) override this method rather than mutating the
+        ClassVar at import time.
+        """
+        return self.BRONZE_READ_SELECTION
+
+    def _bronze_candidates(self, target_date: date) -> list[Path]:
+        """Resolve the ordered bronze BODY paths to consider for ``target_date``.
+
+        THE one filesystem scan of a ``LOCKSTEP_BRONZE_READ`` run. Must return
+        the FULL ordered candidate list -- any "newest only" truncation belongs
+        to :class:`BronzeReadSelection`, applied after vouching, never before
+        it. Must exclude ``*.meta.json``: the writer puts bodies and sidecars in
+        the same directory under names that a ``raw_*.json`` glob both match,
+        and a sidecar admitted as a body has no sidecar of its own, so it would
+        classify ``NO_SIDECAR`` and fire the hard-fail rung on every healthy run.
+
+        Args:
+            target_date: The date being transformed.
+
+        Returns:
+            Body paths in the family's own selection order.
+        """
+        raise NotImplementedError(
+            f"{type(self).__name__} sets LOCKSTEP_BRONZE_READ but does not implement "
+            "_bronze_candidates + _read_bronze_records"
+        )
+
+    def _read_bronze_records(
+        self,
+        paths: Sequence[Path],
+        target_date: date,
+    ) -> tuple[tuple[Path, list[dict[str, Any]]], ...]:
+        """Parse each vouched bronze body and apply this family's date filter.
+
+        Returns PER-FILE record lists and constructs NO DataFrame, so the base
+        keeps ownership of frame construction and the merged frame stays
+        byte-identical to the non-lockstep path's. The per-file structure is
+        what lets ``run()`` build the row list and the stamp list by parallel
+        comprehensions over ONE object, so rows and stamps cannot desync.
+
+        ``target_date`` is required, not optional: both ENTSO-G families apply
+        a row-level date filter INSIDE the read, and a hook without it would
+        strand that filter in ``read_bronze()``, which the lockstep branch
+        bypasses -- writing parseable OFF-DATE rows into the target-date silver
+        partition, the exact fabrication class this unit exists to stop.
+
+        Implementations emit at most ONE record above ``DEBUG`` per call (the
+        aggregated undated-record warning), never one per file.
+
+        Args:
+            paths: Vouched body paths, in candidate order.
+            target_date: The date being transformed.
+
+        Returns:
+            ``(path, records)`` pairs in the same order as ``paths``.
+        """
+        raise NotImplementedError(
+            f"{type(self).__name__} sets LOCKSTEP_BRONZE_READ but does not implement "
+            "_bronze_candidates + _read_bronze_records"
+        )
+
+    def _normalise_raw_column_name(self, column: str) -> str:
+        """Normalisation this family applies to RAW bronze column names.
+
+        Used only by the lockstep branch's reserved-name collision guard.
+        Identity by default; families that fold vendor spellings together
+        (ENTSO-G's ``_camel_to_snake``) override it, because a guard that
+        tested the literal name would pass a vendor field spelled
+        ``gfBronzeVintage`` and let a datetime-castable vendor value silently
+        replace the true bronze stamp.
+        """
+        return column
+
     def run(
         self,
         target_date: date,
@@ -405,6 +753,11 @@ class BaseSilverTransformer(ABC):
         self.last_partition_filter_unresolved_count = 0
         self.last_partition_filter_boundary_retained_count = 0
         self.last_partition_filter_all_dropped_count = 0
+        # Not optional: run_transform reads these PER DATE inside its loop, so
+        # a run() returning early without resetting would charge this date the
+        # previous date's exclusions.
+        self.last_unvouched_bronze = frozenset()
+        self.last_unvouched_total_exclusion = False
 
         resolved_run_id = run_id or f"adhoc-{datetime.now(UTC).isoformat()}"
         frames: list[pl.DataFrame] = []
@@ -454,6 +807,86 @@ class BaseSilverTransformer(ABC):
                     )
                     if clean_df is not None:
                         frames.append(clean_df)
+        elif self.LOCKSTEP_BRONZE_READ:
+            # ONE scan, ONE sidecar read per examined candidate, threaded as a
+            # single value into BOTH the frame read and available_at. There is
+            # no second scan for the two derivations to disagree about, so the
+            # wrong-partition, borrowed-sibling-stamp, mixed-sidecar and TOCTOU
+            # failure modes are closed structurally rather than case by case.
+            candidates = self._bronze_candidates(target_date)
+            vouched = self._resolve_vouched_bronze_set(candidates, self._bronze_read_selection())
+            self.last_unvouched_bronze = frozenset(vouched.unvouched)
+            self.last_unvouched_total_exclusion = vouched.examined > 0 and not vouched.entries
+            # Suppress master's generic "No bronze data" warning exactly when
+            # this unit's own machinery will emit a record for this date -- i.e.
+            # whenever any unvouched file was seen. Keyed on `unvouched`, never
+            # an unconditional True: `entries` is empty in TWO shapes, and only
+            # total exclusion (unvouched non-empty) should suppress it. With no
+            # candidates at all, `unvouched` is empty and the warning correctly
+            # still fires. Evaluated BEFORE the `not entries` arm below.
+            saw_bronze = saw_bronze or bool(vouched.unvouched)
+            if vouched.entries:
+                stamp_by_path = dict(vouched.entries)
+                pairs = self._read_bronze_records(vouched.paths, target_date)
+                rows = [record for _, records in pairs for record in records]
+                # Master's rule exactly: set only on a NON-EMPTY frame. Vouched
+                # bronze holding only off-date rows must keep emitting master's
+                # warning, or this becomes a new silent zero-row path.
+                saw_bronze = saw_bronze or bool(rows)
+                if rows:
+                    # The only REACHABLE way rows and stamps could desync: a
+                    # reader returning records for a path the resolver never
+                    # vouched. Fail loud rather than mis-stamp those rows with
+                    # a sibling's timestamp.
+                    smuggled = [path for path, _ in pairs if path not in stamp_by_path]
+                    if smuggled:
+                        raise ValueError(
+                            f"{self.source}/{self.dataset}: the bronze reader returned "
+                            f"records for {smuggled}, which are not in the vouched read "
+                            "set. The read set and the stamp set must be ONE set."
+                        )
+                    live_now = None if reingest else datetime.now(UTC)
+                    stamps = [
+                        stamp_by_path[path] if live_now is None else live_now
+                        for path, records in pairs
+                        for _ in records
+                    ]
+                    raw_df = pl.DataFrame(rows, infer_schema_length=None)
+                    collisions = [
+                        column
+                        for column in raw_df.columns
+                        if self._normalise_raw_column_name(column) == _BRONZE_VINTAGE_COLUMN
+                    ]
+                    if collisions:
+                        raise ValueError(
+                            f"{self.source}/{self.dataset}: bronze column(s) {collisions} "
+                            f"normalise onto the reserved bronze-vintage carrier "
+                            f"{_BRONZE_VINTAGE_COLUMN!r}. A vendor value there would "
+                            "silently replace the true bronze stamp and corrupt "
+                            "available_at. Rename the carrier before proceeding."
+                        )
+                    if len(stamps) != raw_df.height:
+                        raise ValueError(
+                            f"{self.source}/{self.dataset}: {len(stamps)} bronze vintage "
+                            f"stamp(s) for {raw_df.height} raw row(s) -- the read hook's "
+                            "per-file record counts disagree with the rows it returned."
+                        )
+                    raw_df = raw_df.with_columns(
+                        pl.Series(_BRONZE_VINTAGE_COLUMN, stamps, dtype=pl.Datetime("us", "UTC"))
+                    )
+                    clean_df = self._process_frame(
+                        raw_df,
+                        target_date,
+                        resolved_run_id,
+                        live_now if live_now is not None else stamps[0],
+                        window_plan,
+                        vintage_column=_BRONZE_VINTAGE_COLUMN,
+                    )
+                    if clean_df is not None:
+                        frames.append(clean_df)
+            # Neither empty arm returns early: both fall through to the common
+            # tail below, so master's "nothing to read" vs "read but transformed
+            # to zero rows" distinction is preserved rather than bypassed.
         else:
             available_at = (
                 self._available_at_from_bronze(target_date) if reingest else datetime.now(UTC)
@@ -492,8 +925,31 @@ class BaseSilverTransformer(ABC):
         run_id: str,
         available_at: datetime,
         window_plan: _PublicationWindowPlan | None = None,
+        *,
+        vintage_column: str | None = None,
     ) -> pl.DataFrame | None:
-        """Transform, filter, validate, stamp, and write one bronze-vintage frame."""
+        """Transform, filter, validate, stamp, and write one bronze-vintage frame.
+
+        Args:
+            raw_df: The raw bronze frame.
+            target_date: The date being transformed.
+            run_id: The pipeline run id stamped into ``source_run_id``.
+            available_at: The frame-level ingest vintage. Ignored as the
+                ingest-time source when ``vintage_column`` is set (each row
+                carries its own), but still passed to ``_write_silver``.
+            window_plan: The resolved request-window filter plan, if any.
+            vintage_column: Name of the transient per-row bronze-vintage
+                carrier on ``raw_df``, for ``LOCKSTEP_BRONZE_READ`` reads.
+                ``None`` (the default) leaves both existing branches
+                character-for-character unchanged. When set, the column is the
+                ingest-time source and is DROPPED before ``_write_silver`` --
+                it must never reach silver.
+
+        Raises:
+            ValueError: ``vintage_column`` was requested but ``transform()``
+                dropped it (per-row ``available_at`` could not be derived), or
+                it survived to the write boundary.
+        """
         if raw_df.is_empty():
             return None
 
@@ -523,12 +979,26 @@ class BaseSilverTransformer(ABC):
         # schema_cls is None (generic/dynamic transformers, incl. ENTSO-G CMP).
         # Accumulates across vintage frames (reset once at run() start).
         self.last_validation_failure_count += self._validate_against_schema(clean_df)
+        if vintage_column is not None and vintage_column not in clean_df.columns:
+            raise ValueError(
+                f"{self.source}/{self.dataset}: transform() dropped the transient "
+                f"bronze-vintage column {vintage_column!r}; per-row available_at "
+                "cannot be derived. Carry it through the output projection."
+            )
         clean_df = self._add_bitemporal_columns(
             clean_df,
             target_date=target_date,
             run_id=run_id,
             available_at=available_at,
+            vintage_column=vintage_column,
         )
+        if vintage_column is not None:
+            clean_df = clean_df.drop(vintage_column)
+        if vintage_column is not None and vintage_column in clean_df.columns:
+            raise ValueError(
+                f"{self.source}/{self.dataset}: the transient bronze-vintage column "
+                f"{vintage_column!r} reached the silver write boundary."
+            )
         self._write_silver(clean_df, target_date, available_at=available_at)
         return clean_df
 
@@ -935,6 +1405,8 @@ class BaseSilverTransformer(ABC):
         target_date: date,
         run_id: str,
         available_at: datetime,
+        *,
+        vintage_column: str | None = None,
     ) -> pl.DataFrame:
         """Add modelling lineage columns before silver output is persisted.
 
@@ -943,6 +1415,14 @@ class BaseSilverTransformer(ABC):
         vintage), it becomes ``available_at`` per row; rows with a null
         ``published_at`` fall back to the ingest/reingest scalar. Datasets that
         emit no ``published_at`` column keep byte-identical ``available_at``.
+
+        ``vintage_column`` (keyword-only, default ``None``) makes only the
+        FALLBACK arm of that coalesce per-row, for ``LOCKSTEP_BRONZE_READ``
+        reads: the ingest stamp becomes each row's own bronze file's recorded
+        sidecar timestamp instead of a frame-level literal. With the default
+        ``None`` the emitted expression is character-for-character today's, so
+        every existing caller and every non-opted-in transformer is untouched.
+        A non-null vendor ``published_at`` still wins the coalesce either way.
 
         Raises:
             TypeError: F-19 — ``published_at`` present but not a ``pl.Datetime``
@@ -959,7 +1439,11 @@ class BaseSilverTransformer(ABC):
         else:
             available_at = available_at.astimezone(UTC)
 
-        ingest_stamp = pl.lit(available_at).cast(pl.Datetime("us", "UTC"))
+        ingest_stamp = (
+            pl.col(vintage_column).cast(pl.Datetime("us", "UTC"))
+            if vintage_column is not None
+            else pl.lit(available_at).cast(pl.Datetime("us", "UTC"))
+        )
         # ADR-025 §3: available_at = coalesce(published_at, ingest_time), ROW-WISE.
         # pl.coalesce is per-row, so a mixed-null frame (Elexon publishTime is
         # per-record; a date's ENTSO-E bronze can mix files with and without
@@ -1130,33 +1614,195 @@ class BaseSilverTransformer(ABC):
             return None
         return self._find_covering_bronze_partition(target_date, max_lookback_days)
 
+    def _resolve_vouched_bronze_set(
+        self,
+        candidates: Sequence[Path],
+        selection: BronzeReadSelection,
+    ) -> VouchedBronzeSet:
+        """Classify an already-scanned candidate list into vouched/unvouched.
+
+        Every clause of this contract is load-bearing (R2-g D-2):
+
+        1. ``candidates`` is an already-ordered list produced by exactly ONE
+           filesystem scan, supplied by the caller. This method performs **no
+           globbing at all** -- a second scanning surface here would reopen
+           precisely the read-path/vintage-path disagreement it exists to close.
+        2. For each candidate examined, the sidecar is read **exactly once**
+           via the pure classifier, and the stamp is stored IN the returned
+           value. Nothing downstream re-reads a sidecar.
+        3. ``ALL`` examines every candidate. ``NEWEST_VOUCHED`` walks in order
+           and stops at the first vouched one, so ``unvouched`` then holds
+           exactly those STEPPED OVER, and ``examined`` records how many were
+           probed.
+        4. Emits nothing above ``DEBUG``. All aggregation is the caller's job.
+        5. Pure with respect to its inputs and the on-disk sidecar bytes -- no
+           clock, no ``now()``, no filesystem write.
+
+        Args:
+            candidates: Body paths, in the caller's own selection order.
+            selection: Which vouched bodies to consume.
+
+        Returns:
+            The :class:`VouchedBronzeSet` threaded to both derivations.
+        """
+        match selection:
+            case BronzeReadSelection.ALL:
+                stop_at_first_vouched = False
+            case BronzeReadSelection.NEWEST_VOUCHED:
+                stop_at_first_vouched = True
+            case _:  # pragma: no cover - exhaustiveness guard (mypy does not check enum matches)
+                assert_never(selection)
+
+        entries: list[tuple[Path, datetime]] = []
+        unvouched: list[tuple[Path, BronzeVouchReason]] = []
+        examined = 0
+        for candidate in candidates:
+            examined += 1
+            read = self._read_sidecar_timestamp(candidate.with_suffix(".meta.json"))
+            if read.timestamp is not None:
+                entries.append((candidate, read.timestamp))
+                if stop_at_first_vouched:
+                    break
+                continue
+            if read.reason is None:  # pragma: no cover - SidecarRead's own invariant
+                raise ValueError(
+                    f"SidecarRead for {candidate} has neither a timestamp nor a reason"
+                )
+            unvouched.append((candidate, read.reason))
+
+        logger.debug(
+            "Vouched bronze for %s/%s: %d of %d examined candidate(s) usable",
+            self.source,
+            self.dataset,
+            len(entries),
+            examined,
+        )
+        return VouchedBronzeSet(
+            entries=tuple(entries),
+            unvouched=tuple(unvouched),
+            examined=examined,
+        )
+
     @staticmethod
-    def _timestamp_from_sidecar(meta_path: Path) -> datetime | None:
-        """Extract the most useful timestamp field from a bronze sidecar."""
+    def _read_sidecar_timestamp(meta_path: Path) -> SidecarRead:
+        """Classify one bronze sidecar. PURE (R2-g D-7).
+
+        No logging at any level, no clock, no globbing, no filesystem write --
+        every emission decision belongs to the caller (D-8's layering), so the
+        lockstep read path can aggregate one bounded record per
+        ``run_transform`` invocation instead of one WARNING per file.
+
+        Hardened beyond :meth:`_timestamp_from_sidecar` in exactly one named
+        place: syntactically valid NON-OBJECT JSON is classified
+        ``UNREADABLE_SIDECAR`` here, where master raises ``AttributeError``
+        (N-18). That divergence is deliberate and confined to this
+        lockstep-only classifier -- the wrapper keeps master's crash, because
+        softening it would let the non-lockstep callers stamp a frame from a
+        SIBLING file's timestamp or fall through to ``now()``.
+
+        Args:
+            meta_path: The sidecar path (``<body stem>.meta.json``).
+
+        Returns:
+            A :class:`SidecarRead` whose ``reason`` is ``None`` iff the file
+            vouched.
+        """
         try:
             meta = json.loads(meta_path.read_text())
         except (OSError, json.JSONDecodeError) as exc:
-            logger.warning("Failed to parse bronze sidecar %s: %s", meta_path, exc)
-            return None
+            # An ABSENT sidecar is the literal orphan (a crash between the
+            # writer's body write and its sidecar write) and is reported as
+            # such; a sidecar that exists but cannot be read is a different
+            # remediation story, so the aggregate must be able to say which.
+            file_level_reason = (
+                BronzeVouchReason.NO_SIDECAR
+                if isinstance(exc, FileNotFoundError)
+                else BronzeVouchReason.UNREADABLE_SIDECAR
+            )
+            return SidecarRead(
+                timestamp=None,
+                reason=file_level_reason,
+                diagnostics=(
+                    SidecarDiagnostic(key=None, reason=file_level_reason, detail=str(exc)),
+                ),
+            )
 
-        # Preference order, most-to-least authoritative as the historical
-        # availability anchor. `written_at` (durable bronze write completion)
-        # is preferred over `fetched_at` (stamped at RawResponse construction,
-        # before any paging/retries) so reingest reconstructs availability from
-        # the true write time rather than a pre-write proxy. The direction is
-        # conservative (written_at >= fetched_at), so this never makes a row
-        # look available earlier than it truly was. `response_received_at` is
-        # an as-yet-unwritten reserved key kept for forward compatibility.
-        for key in ("available_at", "written_at", "response_received_at", "fetched_at"):
+        if not isinstance(meta, dict):
+            return SidecarRead(
+                timestamp=None,
+                reason=BronzeVouchReason.UNREADABLE_SIDECAR,
+                non_object_json=True,
+                payload=meta,
+            )
+
+        diagnostics: list[SidecarDiagnostic] = []
+        reason = BronzeVouchReason.NO_TIMESTAMP_KEY
+        for key in _SIDECAR_TIMESTAMP_KEYS:
             raw_value = meta.get(key)
-            if raw_value:
-                timestamp = BaseSilverTransformer._parse_timestamp(raw_value)
-                if timestamp is not None:
-                    return timestamp
-        return None
+            if not raw_value:
+                continue
+            timestamp, loggable_failure = BaseSilverTransformer._coerce_sidecar_timestamp(raw_value)
+            if timestamp is not None:
+                return SidecarRead(timestamp=timestamp, reason=None, diagnostics=tuple(diagnostics))
+            # Fall through to the next key, exactly as master does: a present
+            # but unparseable key must not exclude a file master would read.
+            reason = BronzeVouchReason.UNPARSEABLE_TIMESTAMP
+            diagnostics.append(
+                SidecarDiagnostic(
+                    key=key,
+                    reason=BronzeVouchReason.UNPARSEABLE_TIMESTAMP,
+                    detail=str(raw_value) if loggable_failure else None,
+                )
+            )
+        return SidecarRead(timestamp=None, reason=reason, diagnostics=tuple(diagnostics))
 
     @staticmethod
-    def _parse_timestamp(raw_value: object) -> datetime | None:
+    def _timestamp_from_sidecar(meta_path: Path) -> datetime | None:
+        """Extract the most useful timestamp field from a bronze sidecar.
+
+        UNCHANGED CONTRACT (R2-g D-7): a thin logging wrapper over
+        :meth:`_read_sidecar_timestamp`. Same return value, same WARNING text
+        at the same two conditions, in the same order -- and, deliberately,
+        master's uncaught ``AttributeError`` on non-object JSON (N-18).
+        ``VINTAGE_PER_BRONZE_FILE`` and :meth:`_available_at_from_bronze` call
+        this for EVERY source, none of which opts into lockstep reads, so any
+        softening here would convert a loud fail-closed crash into fabricated
+        provenance or missing rows outside ENTSO-G.
+        """
+        read = BaseSilverTransformer._read_sidecar_timestamp(meta_path)
+        for diagnostic in read.diagnostics:
+            if diagnostic.detail is None:
+                # Master's `_parse_timestamp` is silent for a present-but-
+                # non-string, non-datetime value; replaying nothing is correct.
+                continue
+            if diagnostic.key is None:
+                logger.warning(
+                    "Failed to parse bronze sidecar %s: %s", meta_path, diagnostic.detail
+                )
+            else:
+                logger.warning("Could not parse bronze sidecar timestamp: %s", diagnostic.detail)
+        if read.non_object_json:
+            # N-18: master lands on `meta.get(key)` with a non-dict `meta` and
+            # raises. Reproduced through the payload itself so the exception
+            # type and message stay master's, byte for byte.
+            payload: Any = read.payload
+            payload.get(_SIDECAR_TIMESTAMP_KEYS[0])
+        return read.timestamp
+
+    @staticmethod
+    def _coerce_sidecar_timestamp(raw_value: object) -> tuple[datetime | None, bool]:
+        """Pure core of :meth:`_parse_timestamp` -- identical logic, no logging.
+
+        Args:
+            raw_value: The sidecar value to coerce.
+
+        Returns:
+            ``(timestamp, loggable_failure)``. ``loggable_failure`` is ``True``
+            only for the single case master warns about: a STRING that
+            :meth:`datetime.fromisoformat` rejects. A non-string,
+            non-datetime value fails silently on master, so it yields
+            ``(None, False)`` and the wrapper replays no warning for it.
+        """
         if isinstance(raw_value, datetime):
             value = raw_value
         elif isinstance(raw_value, str):
@@ -1164,14 +1810,20 @@ class BaseSilverTransformer(ABC):
             try:
                 value = datetime.fromisoformat(normalized)
             except ValueError:
-                logger.warning("Could not parse bronze sidecar timestamp: %s", raw_value)
-                return None
+                return None, True
         else:
-            return None
+            return None, False
 
         if value.tzinfo is None:
-            return value.replace(tzinfo=UTC)
-        return value.astimezone(UTC)
+            return value.replace(tzinfo=UTC), False
+        return value.astimezone(UTC), False
+
+    @staticmethod
+    def _parse_timestamp(raw_value: object) -> datetime | None:
+        value, loggable_failure = BaseSilverTransformer._coerce_sidecar_timestamp(raw_value)
+        if value is None and loggable_failure:
+            logger.warning("Could not parse bronze sidecar timestamp: %s", raw_value)
+        return value
 
     def _write_silver(
         self,
