@@ -1,7 +1,7 @@
 # ADR-028 - Bronze vouching and lockstep bronze reads
 
-**Status:** Proposed
-**Date:** 2026-08-03
+**Status:** Accepted
+**Date:** 2026-08-03 (accepted 2026-08-03, Bobbo)
 **Phase:** R2-g (Partition integrity), `.planning/phases/R2-partition-integrity/R2-g-PLAN.md`
 **Findings closed:** F-05 (ENTSO-G covering-partition read + fabricated reingest vintage) —
 scoped, see "What F-05 closure does and does not cover" below
