@@ -138,17 +138,53 @@ def test_qualified_view_is_the_base_of_its_own_relation_gold(dataset: str) -> No
     assert matches[0].qualified_view is None
 
 
-def test_non_append_only_relations_unchanged() -> None:
-    """I-3: every non-APPEND_ONLY silver row is byte-identical to before N-5."""
-    entries = _silver_entries()
-    non_append_only = [
-        entry for entry in entries if (entry.source, entry.dataset) not in _APPEND_ONLY_DATASETS
-    ]
-    assert len(non_append_only) == len(entries) - len(_APPEND_ONLY_DATASETS)
-    for entry in non_append_only:
-        base = f"silver_{entry.source}_{entry.dataset}"
-        assert entry.relation_name == base
-        assert entry.qualified_view == base
+def test_non_append_only_relations_unchanged(monkeypatch: pytest.MonkeyPatch) -> None:
+    """I-3: every non-APPEND_ONLY silver row is byte-identical to before N-5.
+
+    Full-entry pinning (Sol diff-review finding, 2026-08-03): comparing only
+    `relation_name`/`qualified_view` leaves every other `SilverSchemaEntry`
+    field (columns, date col, bitemporal/partition columns, ...) undetected
+    against drift. Neutralising the APPEND_ONLY gate on the three
+    transformers that carry it (`APPEND_ONLY -> False`) reduces
+    `_preferred_relation` to its pre-N-5 identity behaviour (always
+    `base_view`), so rebuilding the manifest under that patch reconstructs
+    exactly what N-5 must not have disturbed. `SilverSchemaEntry` is a frozen
+    dataclass, so `==` already compares every field -- no need to enumerate
+    them by hand for the non-APPEND_ONLY rows.
+    """
+    from gridflow.silver.elexon.fou2t14d import FOU2T14DTransformer
+    from gridflow.silver.elexon.remit import REMITTransformer
+    from gridflow.silver.elexon.system_prices import SystemPriceTransformer
+
+    live = {(entry.source, entry.dataset): entry for entry in _silver_entries()}
+
+    monkeypatch.setattr(FOU2T14DTransformer, "APPEND_ONLY", False)
+    monkeypatch.setattr(REMITTransformer, "APPEND_ONLY", False)
+    monkeypatch.setattr(SystemPriceTransformer, "APPEND_ONLY", False)
+    neutralised = {(entry.source, entry.dataset): entry for entry in _silver_entries()}
+
+    assert set(live) == set(neutralised)
+    assert len(live) - len(_APPEND_ONLY_DATASETS) == sum(
+        1 for key in live if key not in _APPEND_ONLY_DATASETS
+    )
+    for key, live_entry in live.items():
+        neutral_entry = neutralised[key]
+        if key in _APPEND_ONLY_DATASETS:
+            assert live_entry.relation_name == f"{neutral_entry.relation_name}_latest"
+            assert live_entry != neutral_entry
+            live_sans_relation = {
+                field: getattr(live_entry, field)
+                for field in live_entry.__dataclass_fields__
+                if field != "relation_name"
+            }
+            neutral_sans_relation = {
+                field: getattr(neutral_entry, field)
+                for field in neutral_entry.__dataclass_fields__
+                if field != "relation_name"
+            }
+            assert live_sans_relation == neutral_sans_relation
+        else:
+            assert live_entry == neutral_entry
 
 
 def test_latest_relations_have_a_view_spec() -> None:
@@ -213,9 +249,23 @@ def test_append_only_set_equals_latest_spec_set() -> None:
     )
 
 
+_EXPECTED_APPEND_ONLY_DEPRECATED_ALIASES: dict[tuple[str, str], str | None] = {
+    ("elexon", "system_prices"): "silver_system_prices",
+    ("elexon", "remit"): "silver_remit",
+    ("elexon", "fou2t14d"): "silver_fou2t14d",
+}
+
+
 def test_deprecated_alias_still_all_vintage() -> None:
-    """I-7: deprecated_alias continues to name the base (all-vintage) view."""
+    """I-7: deprecated_alias continues to name the base (all-vintage) view.
+
+    Pinned against an explicit expected mapping rather than a conditional
+    skip (Sol diff-review finding, 2026-08-03): a regression that made all
+    three APPEND_ONLY entries return `deprecated_alias=None` -- silently
+    dropping the promised all-vintage legacy names -- passed a
+    ``if entry.deprecated_alias is not None`` guard silently. It fails here.
+    """
     for source, dataset in _APPEND_ONLY_DATASETS:
         entry = _entry(source, dataset)
-        if entry.deprecated_alias is not None:
-            assert entry.deprecated_alias == f"silver_{dataset}"
+        expected = _EXPECTED_APPEND_ONLY_DEPRECATED_ALIASES[(source, dataset)]
+        assert entry.deprecated_alias == expected
