@@ -1,12 +1,34 @@
 # ADR-026 - Partition-window filters (publication-window + event-window)
 
 **Status:** Proposed
-**Date:** 2026-07-26 (amended same day — see "Amendment" below)
+**Date:** 2026-07-26 (amended same day, and again 2026-08-03 — see the "Amendment" sections below)
 **Phase:** R2-A (Partition integrity), `.planning/phases/R2-partition-integrity/R2-A-PLAN.md`
 **Findings closed:** F-04 (Elexon boundary duplication), F-16 (duplicate-check key), F-10
 (ENTSO-E vendor over-span) — scoped, see "Scope" below
 **Cross-references:** ADR-025 (temporal vintage / `available_at`, incl. its §3 residual for
 `remit`/`fou2t14d`), `_EXACT_PARTITION_ONLY_SOURCES` (`silver/base.py`)
+
+## Amendment (2026-08-03, R2-g / F-05) — `entsog` joins `_EXACT_PARTITION_ONLY_SOURCES`
+
+A membership change to a decision this ADR already owns, not a new decision.
+
+`entsog` joins `entsoe` in `_EXACT_PARTITION_ONLY_SOURCES` (`silver/base.py`), so neither of the
+two gated callers — `_bronze_path_for_date` (the READ path) and `_bronze_date_dirs` (the vintage
+path) — may resolve a covering bronze partition for an ENTSO-G date. **Evidence:**
+`EntsogConnector.fetch` (`connectors/entsog/client.py`) chunks every multi-day window into one
+request per covered UTC calendar day, so a correctly-fetched ENTSO-G date either has its own
+exact partition or has no bronze at all; a covering-fallback hit could only relabel a
+neighbouring day's rows under the requested date. Before this change,
+`PhysicalFlowsTransformer.read_bronze` could reach back **35 days**.
+
+Post-R2-g the `_bronze_date_dirs` gate is **dead with respect to `entsog`** — the lockstep read
+path resolves the vintage from the same vouched set as the read, so neither ENTSO-G family calls
+that method any more. The gate is left in place because it remains correct for `entsoe`.
+
+**The vintage half of F-05 is NOT recorded here.** See **ADR-028** for the exclude-until-vouched
+ruling, the one-scan lockstep invariant, the per-row vintage attribution, and the three-valued
+run outcome — including why the two halves had to ship together, and the narrowed statement of
+what "F-05 closed" does and does not cover.
 
 ## Amendment (2026-07-26, same day as first draft)
 
