@@ -806,6 +806,17 @@ class BaseSilverTransformer(ABC):
                 # warning, or this becomes a new silent zero-row path.
                 saw_bronze = saw_bronze or bool(rows)
                 if rows:
+                    # The only REACHABLE way rows and stamps could desync: a
+                    # reader returning records for a path the resolver never
+                    # vouched. Fail loud rather than mis-stamp those rows with
+                    # a sibling's timestamp.
+                    smuggled = [path for path, _ in pairs if path not in stamp_by_path]
+                    if smuggled:
+                        raise ValueError(
+                            f"{self.source}/{self.dataset}: the bronze reader returned "
+                            f"records for {smuggled}, which are not in the vouched read "
+                            "set. The read set and the stamp set must be ONE set."
+                        )
                     live_now = None if reingest else datetime.now(UTC)
                     stamps = [
                         stamp_by_path[path] if live_now is None else live_now
