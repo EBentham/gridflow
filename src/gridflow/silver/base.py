@@ -214,8 +214,9 @@ class SidecarRead:
     payload: Any = None
 
 
-_EXACT_PARTITION_ONLY_SOURCES: frozenset[str] = frozenset({"entsoe"})
-"""Sources whose connectors write day-exact bronze partitions (P0.8 / R2-F08).
+_EXACT_PARTITION_ONLY_SOURCES: frozenset[str] = frozenset({"entsoe", "entsog"})
+"""Sources whose connectors write day-exact bronze partitions (P0.8 / R2-F08,
+plus ENTSO-G via R2-g / F-05).
 
 As of P0.8, ``EntsoeConnector.fetch`` chunks every multi-day window into one
 request per covered UTC calendar day, so a correctly-fetched ENTSO-E date
@@ -228,6 +229,33 @@ this failure class — ``VINTAGE_PER_BRONZE_FILE`` / ADR-025 (class docstring
 above, "Only the EXACT date partition is read — never the multi-day
 covering-partition fallback") and the ENTSO-G generic family's exact-only
 ``_bronze_files`` (``silver/entsog/generic.py``).
+
+**ENTSO-G (R2-g, closing F-05's open half).** ``EntsogConnector.fetch`` chunks
+every multi-day window into one request per covered UTC calendar day
+(``connectors/entsog/client.py``), so the same exact-or-nothing guarantee
+holds. Before this change, ``PhysicalFlowsTransformer.read_bronze`` could
+resolve a covering partition up to **35 days** before ``target_date`` and
+relabel those rows under it -- precisely the fabrication the per-day chunking
+exists to prevent.
+
+The two gated call sites, and what entsog's membership changes at each:
+
+- ``_bronze_path_for_date`` (the READ path, below): the covering fallback is
+  removed. This IS F-05's open half, and the only production effect the flip
+  now has.
+- ``_bronze_date_dirs`` (the VINTAGE path, below): **dead with respect to
+  entsog.** R2-g's ``LOCKSTEP_BRONZE_READ`` branch resolves the vintage from
+  the same vouched set as the read, so neither ENTSO-G family calls this
+  method at all any more (pinned by a spy in
+  ``tests/silver/test_entsog_exact_partition.py``). The gate is left in place
+  because it remains correct for ``entsoe``.
+
+That ordering is deliberate and load-bearing. Flipping the frozenset while the
+vintage path still ran through ``_bronze_date_dirs`` would make that walk
+return ``[]`` for any date without an exact partition and fall through to
+``datetime.now(UTC)`` -- a FABRICATED vintage, measured 26 days off on an
+earlier attempt. Removing entsog from that method's caller set first leaves
+the flip with no path to fire down.
 
 Source-scoped (not a per-transformer ``ClassVar`` flag) because the exact-only
 guarantee is a property of the *connector's* write layout established by this

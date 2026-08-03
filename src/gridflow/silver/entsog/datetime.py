@@ -130,10 +130,21 @@ def filter_records_to_target_date(
     """Keep records whose first parseable timestamp falls on ``target_date``.
 
     Fail-open by design (R2-B / F-05): a record with no parseable timestamp in
-    ``timestamp_fields`` is KEPT rather than dropped, since bronze is already
+    ``timestamp_fields`` is KEPT rather than dropped, since bronze is
     known-exact for ``entsog`` (``_EXACT_PARTITION_ONLY_SOURCES``) — an undated
     record here is a genuinely undated ENTSO-G record, not evidence of a
-    wrong-day fabrication. What F-05 closes is the previous *silence*: undated
+    wrong-day fabrication.
+
+    **That premise became TRUE in R2-g, and was not when R2-B shipped it.** On
+    master before R2-g, ``entsog`` was NOT in ``_EXACT_PARTITION_ONLY_SOURCES``,
+    so ``PhysicalFlowsTransformer.read_bronze`` could still resolve a covering
+    partition up to 35 days earlier — and an undated record there genuinely
+    WAS potential evidence of a wrong-day read. R2-g adds ``entsog`` to that
+    frozenset (F-05's open half) and removes the vintage path's dependence on
+    the same fallback, which is what makes keeping an undated record safe.
+    This is the mechanical reason F-05's two halves are one finding.
+
+    What F-05 closes is the previous *silence*: undated
     records are now counted and surfaced in exactly ONE bounded WARNING per
     call, never one log line per record (mirrors the GIE precedent,
     ``silver/gie/agsi.py::_filter_news_records_to_target_date``).
