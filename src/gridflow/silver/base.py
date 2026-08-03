@@ -10,10 +10,10 @@ from dataclasses import dataclass
 from datetime import UTC, date, datetime, timedelta
 from enum import StrEnum
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar, assert_never
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable
+    from collections.abc import Iterable, Sequence
 
 import polars as pl
 from pydantic import BaseModel, ValidationError
@@ -84,6 +84,59 @@ class BronzeVouchReason(StrEnum):
     was present and truthy."""
     UNPARSEABLE_TIMESTAMP = "UNPARSEABLE_TIMESTAMP"
     """Every present-and-truthy key failed to parse into a datetime."""
+
+
+class BronzeReadSelection(StrEnum):
+    """Which vouched bronze bodies a lockstep read consumes (R2-g D-4).
+
+    The truncation happens INSIDE the resolver, on the vouched list -- never
+    before it. Truncating first would let one orphan newest body empty the
+    frame for a dataset with dozens of perfectly good older files.
+    """
+
+    ALL = "ALL"
+    """Examine every candidate; read every one that vouches."""
+    NEWEST_VOUCHED = "NEWEST_VOUCHED"
+    """Walk candidates in order and stop at the FIRST that vouches. The
+    stepped-over bodies are counted and named; the selected file's rows are
+    read together with its OWN stamp -- never a borrowed sibling's."""
+
+
+@dataclass(frozen=True)
+class VouchedBronzeSet:
+    """The single value threaded to BOTH the frame read and the vintage (I-1).
+
+    Resolved by exactly ONE filesystem scan and ONE sidecar read per examined
+    candidate, so there is no second scan for the two derivations to disagree
+    about -- R2-C's ``IncrementalWindow.snapshot`` shape (ADR-027) applied to
+    the filesystem.
+
+    Deliberately has NO ``available_at()`` aggregate: per D-5 the vintage is
+    PER ROW, taken from ``dict(entries)`` as a path -> stamp lookup at
+    frame-build time. No frame-level scalar can satisfy the invariant once two
+    files with different stamps both contribute rows, so none is offered.
+
+    Attributes:
+        entries: ``(body path, that body's OWN recorded stamp)`` pairs, in
+            candidate order. The pairing is structural: a stamp exists only as
+            the second element of a tuple whose first element IS in the read
+            set, so a sibling's stamp can never be borrowed.
+        unvouched: ``(body path, reason)`` for every examined candidate that
+            could not vouch. Excluded from the frame AND from the vintage --
+            never deleted, never repaired, never written to.
+        examined: How many candidates were actually probed. Under
+            ``NEWEST_VOUCHED`` the walk stops early, so this is less than
+            ``len(candidates)`` whenever a vouched file was found.
+    """
+
+    entries: tuple[tuple[Path, datetime], ...]
+    unvouched: tuple[tuple[Path, BronzeVouchReason], ...]
+    examined: int
+
+    @property
+    def paths(self) -> tuple[Path, ...]:
+        """The body paths whose rows may enter the frame, in candidate order."""
+        return tuple(path for path, _ in self.entries)
 
 
 @dataclass(frozen=True)
@@ -1229,6 +1282,75 @@ class BaseSilverTransformer(ABC):
             return None
         return self._find_covering_bronze_partition(target_date, max_lookback_days)
 
+    def _resolve_vouched_bronze_set(
+        self,
+        candidates: Sequence[Path],
+        selection: BronzeReadSelection,
+    ) -> VouchedBronzeSet:
+        """Classify an already-scanned candidate list into vouched/unvouched.
+
+        Every clause of this contract is load-bearing (R2-g D-2):
+
+        1. ``candidates`` is an already-ordered list produced by exactly ONE
+           filesystem scan, supplied by the caller. This method performs **no
+           globbing at all** -- a second scanning surface here would reopen
+           precisely the read-path/vintage-path disagreement it exists to close.
+        2. For each candidate examined, the sidecar is read **exactly once**
+           via the pure classifier, and the stamp is stored IN the returned
+           value. Nothing downstream re-reads a sidecar.
+        3. ``ALL`` examines every candidate. ``NEWEST_VOUCHED`` walks in order
+           and stops at the first vouched one, so ``unvouched`` then holds
+           exactly those STEPPED OVER, and ``examined`` records how many were
+           probed.
+        4. Emits nothing above ``DEBUG``. All aggregation is the caller's job.
+        5. Pure with respect to its inputs and the on-disk sidecar bytes -- no
+           clock, no ``now()``, no filesystem write.
+
+        Args:
+            candidates: Body paths, in the caller's own selection order.
+            selection: Which vouched bodies to consume.
+
+        Returns:
+            The :class:`VouchedBronzeSet` threaded to both derivations.
+        """
+        match selection:
+            case BronzeReadSelection.ALL:
+                stop_at_first_vouched = False
+            case BronzeReadSelection.NEWEST_VOUCHED:
+                stop_at_first_vouched = True
+            case _:  # pragma: no cover - exhaustiveness guard (mypy does not check enum matches)
+                assert_never(selection)
+
+        entries: list[tuple[Path, datetime]] = []
+        unvouched: list[tuple[Path, BronzeVouchReason]] = []
+        examined = 0
+        for candidate in candidates:
+            examined += 1
+            read = self._read_sidecar_timestamp(candidate.with_suffix(".meta.json"))
+            if read.timestamp is not None:
+                entries.append((candidate, read.timestamp))
+                if stop_at_first_vouched:
+                    break
+                continue
+            if read.reason is None:  # pragma: no cover - SidecarRead's own invariant
+                raise ValueError(
+                    f"SidecarRead for {candidate} has neither a timestamp nor a reason"
+                )
+            unvouched.append((candidate, read.reason))
+
+        logger.debug(
+            "Vouched bronze for %s/%s: %d of %d examined candidate(s) usable",
+            self.source,
+            self.dataset,
+            len(entries),
+            examined,
+        )
+        return VouchedBronzeSet(
+            entries=tuple(entries),
+            unvouched=tuple(unvouched),
+            examined=examined,
+        )
+
     @staticmethod
     def _read_sidecar_timestamp(meta_path: Path) -> SidecarRead:
         """Classify one bronze sidecar. PURE (R2-g D-7).
@@ -1256,15 +1378,20 @@ class BaseSilverTransformer(ABC):
         try:
             meta = json.loads(meta_path.read_text())
         except (OSError, json.JSONDecodeError) as exc:
+            # An ABSENT sidecar is the literal orphan (a crash between the
+            # writer's body write and its sidecar write) and is reported as
+            # such; a sidecar that exists but cannot be read is a different
+            # remediation story, so the aggregate must be able to say which.
+            file_level_reason = (
+                BronzeVouchReason.NO_SIDECAR
+                if isinstance(exc, FileNotFoundError)
+                else BronzeVouchReason.UNREADABLE_SIDECAR
+            )
             return SidecarRead(
                 timestamp=None,
-                reason=BronzeVouchReason.UNREADABLE_SIDECAR,
+                reason=file_level_reason,
                 diagnostics=(
-                    SidecarDiagnostic(
-                        key=None,
-                        reason=BronzeVouchReason.UNREADABLE_SIDECAR,
-                        detail=str(exc),
-                    ),
+                    SidecarDiagnostic(key=None, reason=file_level_reason, detail=str(exc)),
                 ),
             )
 
