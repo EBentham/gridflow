@@ -29,6 +29,13 @@ import pytest
 
 import gridflow.silver.entsog  # noqa: F401 -- registers the generic entsog family
 from gridflow.silver.base import _BRONZE_VINTAGE_COLUMN
+from gridflow.silver.entsog.generic import (
+    _DATETIME_COLUMNS,
+    _TIMESTAMP_PRIORITY,
+    _camel_to_snake,
+    _looks_numeric,
+    _normalise_column_names,
+)
 from gridflow.silver.entsog.physical_flows import PhysicalFlowsTransformer
 from gridflow.silver.registry import get_transformer
 
@@ -484,6 +491,86 @@ class TestPerRowVintageAttribution:
 
         with pytest.raises(ValueError, match="not in the vouched read set"):
             transformer.run(TARGET, reingest=True)
+
+
+# --------------------------------------------------------------------------- #
+# Carry-audit mechanics: the generic family's normalisation pipeline (TV-7)
+# and schema-validation tolerance for the transient carrier (TV-12)
+# --------------------------------------------------------------------------- #
+
+
+class TestCarryAuditMechanics:
+    def test_carrier_column_name_is_a_fixed_point_of_camel_to_snake(self) -> None:
+        """TV-7, clause 1: `_camel_to_snake` is the identity on the carrier name.
+
+        Asserted against the real function and the real constant, not a
+        restated literal -- renaming `_BRONZE_VINTAGE_COLUMN` to anything
+        camelCase or containing a space/dash would desync this from
+        `_normalise_column_names`'s rename map and this assertion would catch
+        it immediately, before the carry-audit's other clauses even run.
+        """
+        assert _camel_to_snake(_BRONZE_VINTAGE_COLUMN) == _BRONZE_VINTAGE_COLUMN
+
+    def test_carrier_column_survives_normalise_column_names_unrenamed(self) -> None:
+        """TV-7, clause 2: the column passes through `_normalise_column_names` untouched.
+
+        Builds a frame carrying the carrier alongside an ordinary camelCase
+        vendor column, so the assertion is decisive against two distinct
+        regressions: (a) the carrier itself being renamed/coalesced away, and
+        (b) the normaliser failing to touch unrelated columns.
+        """
+        df = pl.DataFrame(
+            {
+                _BRONZE_VINTAGE_COLUMN: [STAMP_A, STAMP_B],
+                "pointKey": ["A", "B"],
+            }
+        )
+        normalised = _normalise_column_names(df)
+
+        assert _BRONZE_VINTAGE_COLUMN in normalised.columns
+        assert normalised[_BRONZE_VINTAGE_COLUMN].to_list() == [STAMP_A, STAMP_B]
+        assert "point_key" in normalised.columns, "an unrelated vendor column must still rename"
+
+    def test_carrier_column_is_never_treated_as_numeric(self) -> None:
+        """TV-7, clause 3: `_looks_numeric` is False for the carrier name.
+
+        Checked against the real `_NUMERIC_NAMES`/`_NUMERIC_SUFFIXES`-backed
+        helper. If a future suffix addition (e.g. a broad `_e` or `_age`
+        pattern) ever swallowed `gf_bronze_vintage`, this fails immediately --
+        a numeric cast of a UTC datetime string would corrupt the stamp
+        silently rather than raising.
+        """
+        assert _looks_numeric(_BRONZE_VINTAGE_COLUMN) is False
+
+    def test_carrier_column_is_excluded_from_datetime_reparsing_and_timestamp_selection(
+        self,
+    ) -> None:
+        """TV-7, clause 4: absent from both `_DATETIME_COLUMNS` and `_TIMESTAMP_PRIORITY`.
+
+        Either membership would mean the carrier gets re-parsed as a vendor
+        datetime or promoted to `timestamp_utc`, silently replacing its role
+        as the bronze-file vintage with a business-datetime meaning.
+        """
+        assert _BRONZE_VINTAGE_COLUMN not in _DATETIME_COLUMNS
+        assert _BRONZE_VINTAGE_COLUMN not in _TIMESTAMP_PRIORITY
+
+    def test_carrier_column_does_not_trip_schema_validation(self, tmp_path: Path) -> None:
+        """TV-12: `extra="ignore"` tolerates the transient carrier during validation.
+
+        `physical_flows.transform()` carries the column through its output
+        projection (§4.3), and `_validate_against_schema` runs on exactly that
+        pre-bitemporal frame -- so a lockstep run with the carrier present
+        must validate with zero failures. If `EntsogPhysicalFlow`'s
+        `extra="ignore"` config were ever tightened to `"forbid"`, every row
+        would fail Pydantic validation and this count would go non-zero.
+        """
+        partition = _partition(tmp_path, "physical_flows", TARGET)
+        body = _write_body(partition, "raw_0900_a.json", {"operationalData": [_flow("A", TARGET)]})
+        _write_sidecar(body, STAMP_A)
+
+        transformer = _flows_transformer(tmp_path)
+        assert transformer.run(TARGET, reingest=True) == 1
+        assert transformer.last_validation_failure_count == 0
 
 
 # --------------------------------------------------------------------------- #
