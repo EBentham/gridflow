@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 import logging
 from datetime import UTC, date, datetime
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, ClassVar
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -75,6 +75,9 @@ class PhysicalFlowsTransformer(BaseSilverTransformer):
     source = "entsog"
     dataset = "physical_flows"
     schema_cls = EntsogPhysicalFlow
+    LOCKSTEP_BRONZE_READ: ClassVar[bool] = True
+    # BRONZE_READ_SELECTION stays ALL: every raw_*.json in the resolved
+    # partition is read, so every vouched body's rows enter the frame.
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         """Read this date's bronze into one merged raw frame.

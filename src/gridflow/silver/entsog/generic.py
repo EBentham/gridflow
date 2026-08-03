@@ -7,7 +7,7 @@ import logging
 import os
 import re
 from datetime import UTC, date, datetime
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, ClassVar
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -16,7 +16,11 @@ if TYPE_CHECKING:
 import polars as pl
 
 from gridflow.connectors.entsog.endpoints import ENDPOINTS, EntsogEndpoint
-from gridflow.silver.base import _BRONZE_VINTAGE_COLUMN, BaseSilverTransformer
+from gridflow.silver.base import (
+    _BRONZE_VINTAGE_COLUMN,
+    BaseSilverTransformer,
+    BronzeReadSelection,
+)
 from gridflow.silver.entsog.datetime import (
     log_undated_records,
     parse_entsog_datetime_expr,
@@ -97,6 +101,19 @@ class GenericEntsogJsonTransformer(BaseSilverTransformer):
     response_key: str
     reference_dataset: bool = False
     date_window_dataset: bool = False
+    LOCKSTEP_BRONZE_READ: ClassVar[bool] = True
+
+    def _bronze_read_selection(self) -> BronzeReadSelection:
+        """Mirror the two branches of :meth:`_bronze_candidates`.
+
+        Resolved per instance from ``reference_dataset``, which is set per
+        generated subclass -- never by mutating a ClassVar at import time.
+        """
+        return (
+            BronzeReadSelection.NEWEST_VOUCHED
+            if self.reference_dataset
+            else BronzeReadSelection.ALL
+        )
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         """Read this date's bronze into one merged raw frame.
