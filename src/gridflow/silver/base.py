@@ -8,8 +8,9 @@ import os
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import UTC, date, datetime, timedelta
+from enum import StrEnum
 from pathlib import Path
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -34,6 +35,104 @@ logger = logging.getLogger(__name__)
 
 _VALIDATION_SAMPLE_LIMIT = 5
 """Max distinct validation-error strings logged per ``run()`` (fail-soft; bounded)."""
+
+_SIDECAR_TIMESTAMP_KEYS: tuple[str, ...] = (
+    "available_at",
+    "written_at",
+    "response_received_at",
+    "fetched_at",
+)
+"""Bronze sidecar timestamp keys, most-to-least authoritative as the historical
+availability anchor.
+
+``written_at`` (durable bronze write completion) is preferred over
+``fetched_at`` (stamped at ``RawResponse`` construction, before any
+paging/retries) so reingest reconstructs availability from the true write time
+rather than a pre-write proxy. The direction is conservative
+(``written_at >= fetched_at``), so this never makes a row look available
+earlier than it truly was. ``response_received_at`` is an as-yet-unwritten
+reserved key kept for forward compatibility.
+
+**The search FALLS THROUGH on a parse failure** (R2-g D-3): a key that is
+present but unparseable does not end the search, so a sidecar with an invalid
+``written_at`` and a valid ``fetched_at`` still vouches, on ``fetched_at``.
+Only a successful parse returns.
+
+N-16 (accepted residual, NOT fixed in R2-g): ``bronze/writer.py`` captures
+``written_at`` *before* the body write it marks the completion of, so a
+RECORDED stamp can be earlier than the true durable-write instant. Every
+availability claim in this module is stated over the recorded stamp.
+"""
+
+
+class BronzeVouchReason(StrEnum):
+    """Why a bronze body could not be vouched for by its own sidecar (ADR-028).
+
+    ``UNPARSEABLE_TIMESTAMP`` means EVERY present-and-truthy key in
+    :data:`_SIDECAR_TIMESTAMP_KEYS` failed to parse, never merely the first
+    one -- see that constant's fall-through note (R2-g D-3).
+    """
+
+    NO_SIDECAR = "NO_SIDECAR"
+    """No ``<body stem>.meta.json`` beside the body (the literal orphan: a
+    crash between ``bronze/writer.py``'s body write and its sidecar write)."""
+    UNREADABLE_SIDECAR = "UNREADABLE_SIDECAR"
+    """``OSError``/``JSONDecodeError`` on the sidecar, or syntactically valid
+    but non-object JSON (``[1, 2]``, ``"text"``, ``3``, ``null``)."""
+    NO_TIMESTAMP_KEY = "NO_TIMESTAMP_KEY"
+    """Valid sidecar object, but no key from :data:`_SIDECAR_TIMESTAMP_KEYS`
+    was present and truthy."""
+    UNPARSEABLE_TIMESTAMP = "UNPARSEABLE_TIMESTAMP"
+    """Every present-and-truthy key failed to parse into a datetime."""
+
+
+@dataclass(frozen=True)
+class SidecarDiagnostic:
+    """One failure seen while classifying a sidecar, in the order it occurred.
+
+    Attributes:
+        key: The :data:`_SIDECAR_TIMESTAMP_KEYS` entry that failed, or ``None``
+            for a file-level failure (unreadable / undecodable sidecar).
+        reason: The classification this individual failure carries.
+        detail: Pre-narrowed text for the WARNING the logging wrapper replays,
+            or ``None`` when master emits no warning for this failure -- a
+            present-but-non-string, non-datetime value fails *silently* on
+            master (:meth:`BaseSilverTransformer._parse_timestamp` returns
+            ``None`` without logging for those).
+    """
+
+    key: str | None
+    reason: BronzeVouchReason
+    detail: str | None = None
+
+
+@dataclass(frozen=True)
+class SidecarRead:
+    """Pure classification of one bronze sidecar (R2-g D-7).
+
+    Attributes:
+        timestamp: The vouched tz-aware UTC stamp, or ``None``.
+        reason: ``None`` iff ``timestamp`` is not ``None``.
+        diagnostics: An ORDERED log of every failure seen on the way,
+            INCLUDING ones that preceded a later success. Master logs a
+            warning per failed key and then keeps going (the fall-through at
+            :data:`_SIDECAR_TIMESTAMP_KEYS`), so a single ``reason``/``detail``
+            pair could not let the logging wrapper replay master's output.
+        non_object_json: ``True`` iff the sidecar held syntactically valid
+            JSON that is not an object. Master reaches ``meta.get(key)`` on it
+            and raises an uncaught ``AttributeError``; the wrapper preserves
+            that exactly (N-18) while this classifier excludes the file.
+        payload: The parsed non-object payload, kept solely so the wrapper can
+            reproduce master's ``AttributeError`` verbatim. Meaningless unless
+            ``non_object_json`` is ``True``.
+    """
+
+    timestamp: datetime | None
+    reason: BronzeVouchReason | None
+    diagnostics: tuple[SidecarDiagnostic, ...] = ()
+    non_object_json: bool = False
+    payload: Any = None
+
 
 _EXACT_PARTITION_ONLY_SOURCES: frozenset[str] = frozenset({"entsoe"})
 """Sources whose connectors write day-exact bronze partitions (P0.8 / R2-F08).
@@ -1131,32 +1230,120 @@ class BaseSilverTransformer(ABC):
         return self._find_covering_bronze_partition(target_date, max_lookback_days)
 
     @staticmethod
-    def _timestamp_from_sidecar(meta_path: Path) -> datetime | None:
-        """Extract the most useful timestamp field from a bronze sidecar."""
+    def _read_sidecar_timestamp(meta_path: Path) -> SidecarRead:
+        """Classify one bronze sidecar. PURE (R2-g D-7).
+
+        No logging at any level, no clock, no globbing, no filesystem write --
+        every emission decision belongs to the caller (D-8's layering), so the
+        lockstep read path can aggregate one bounded record per
+        ``run_transform`` invocation instead of one WARNING per file.
+
+        Hardened beyond :meth:`_timestamp_from_sidecar` in exactly one named
+        place: syntactically valid NON-OBJECT JSON is classified
+        ``UNREADABLE_SIDECAR`` here, where master raises ``AttributeError``
+        (N-18). That divergence is deliberate and confined to this
+        lockstep-only classifier -- the wrapper keeps master's crash, because
+        softening it would let the non-lockstep callers stamp a frame from a
+        SIBLING file's timestamp or fall through to ``now()``.
+
+        Args:
+            meta_path: The sidecar path (``<body stem>.meta.json``).
+
+        Returns:
+            A :class:`SidecarRead` whose ``reason`` is ``None`` iff the file
+            vouched.
+        """
         try:
             meta = json.loads(meta_path.read_text())
         except (OSError, json.JSONDecodeError) as exc:
-            logger.warning("Failed to parse bronze sidecar %s: %s", meta_path, exc)
-            return None
+            return SidecarRead(
+                timestamp=None,
+                reason=BronzeVouchReason.UNREADABLE_SIDECAR,
+                diagnostics=(
+                    SidecarDiagnostic(
+                        key=None,
+                        reason=BronzeVouchReason.UNREADABLE_SIDECAR,
+                        detail=str(exc),
+                    ),
+                ),
+            )
 
-        # Preference order, most-to-least authoritative as the historical
-        # availability anchor. `written_at` (durable bronze write completion)
-        # is preferred over `fetched_at` (stamped at RawResponse construction,
-        # before any paging/retries) so reingest reconstructs availability from
-        # the true write time rather than a pre-write proxy. The direction is
-        # conservative (written_at >= fetched_at), so this never makes a row
-        # look available earlier than it truly was. `response_received_at` is
-        # an as-yet-unwritten reserved key kept for forward compatibility.
-        for key in ("available_at", "written_at", "response_received_at", "fetched_at"):
+        if not isinstance(meta, dict):
+            return SidecarRead(
+                timestamp=None,
+                reason=BronzeVouchReason.UNREADABLE_SIDECAR,
+                non_object_json=True,
+                payload=meta,
+            )
+
+        diagnostics: list[SidecarDiagnostic] = []
+        reason = BronzeVouchReason.NO_TIMESTAMP_KEY
+        for key in _SIDECAR_TIMESTAMP_KEYS:
             raw_value = meta.get(key)
-            if raw_value:
-                timestamp = BaseSilverTransformer._parse_timestamp(raw_value)
-                if timestamp is not None:
-                    return timestamp
-        return None
+            if not raw_value:
+                continue
+            timestamp, loggable_failure = BaseSilverTransformer._coerce_sidecar_timestamp(raw_value)
+            if timestamp is not None:
+                return SidecarRead(timestamp=timestamp, reason=None, diagnostics=tuple(diagnostics))
+            # Fall through to the next key, exactly as master does: a present
+            # but unparseable key must not exclude a file master would read.
+            reason = BronzeVouchReason.UNPARSEABLE_TIMESTAMP
+            diagnostics.append(
+                SidecarDiagnostic(
+                    key=key,
+                    reason=BronzeVouchReason.UNPARSEABLE_TIMESTAMP,
+                    detail=str(raw_value) if loggable_failure else None,
+                )
+            )
+        return SidecarRead(timestamp=None, reason=reason, diagnostics=tuple(diagnostics))
 
     @staticmethod
-    def _parse_timestamp(raw_value: object) -> datetime | None:
+    def _timestamp_from_sidecar(meta_path: Path) -> datetime | None:
+        """Extract the most useful timestamp field from a bronze sidecar.
+
+        UNCHANGED CONTRACT (R2-g D-7): a thin logging wrapper over
+        :meth:`_read_sidecar_timestamp`. Same return value, same WARNING text
+        at the same two conditions, in the same order -- and, deliberately,
+        master's uncaught ``AttributeError`` on non-object JSON (N-18).
+        ``VINTAGE_PER_BRONZE_FILE`` and :meth:`_available_at_from_bronze` call
+        this for EVERY source, none of which opts into lockstep reads, so any
+        softening here would convert a loud fail-closed crash into fabricated
+        provenance or missing rows outside ENTSO-G.
+        """
+        read = BaseSilverTransformer._read_sidecar_timestamp(meta_path)
+        for diagnostic in read.diagnostics:
+            if diagnostic.detail is None:
+                # Master's `_parse_timestamp` is silent for a present-but-
+                # non-string, non-datetime value; replaying nothing is correct.
+                continue
+            if diagnostic.key is None:
+                logger.warning(
+                    "Failed to parse bronze sidecar %s: %s", meta_path, diagnostic.detail
+                )
+            else:
+                logger.warning("Could not parse bronze sidecar timestamp: %s", diagnostic.detail)
+        if read.non_object_json:
+            # N-18: master lands on `meta.get(key)` with a non-dict `meta` and
+            # raises. Reproduced through the payload itself so the exception
+            # type and message stay master's, byte for byte.
+            payload: Any = read.payload
+            payload.get(_SIDECAR_TIMESTAMP_KEYS[0])
+        return read.timestamp
+
+    @staticmethod
+    def _coerce_sidecar_timestamp(raw_value: object) -> tuple[datetime | None, bool]:
+        """Pure core of :meth:`_parse_timestamp` -- identical logic, no logging.
+
+        Args:
+            raw_value: The sidecar value to coerce.
+
+        Returns:
+            ``(timestamp, loggable_failure)``. ``loggable_failure`` is ``True``
+            only for the single case master warns about: a STRING that
+            :meth:`datetime.fromisoformat` rejects. A non-string,
+            non-datetime value fails silently on master, so it yields
+            ``(None, False)`` and the wrapper replays no warning for it.
+        """
         if isinstance(raw_value, datetime):
             value = raw_value
         elif isinstance(raw_value, str):
@@ -1164,14 +1351,20 @@ class BaseSilverTransformer(ABC):
             try:
                 value = datetime.fromisoformat(normalized)
             except ValueError:
-                logger.warning("Could not parse bronze sidecar timestamp: %s", raw_value)
-                return None
+                return None, True
         else:
-            return None
+            return None, False
 
         if value.tzinfo is None:
-            return value.replace(tzinfo=UTC)
-        return value.astimezone(UTC)
+            return value.replace(tzinfo=UTC), False
+        return value.astimezone(UTC), False
+
+    @staticmethod
+    def _parse_timestamp(raw_value: object) -> datetime | None:
+        value, loggable_failure = BaseSilverTransformer._coerce_sidecar_timestamp(raw_value)
+        if value is None and loggable_failure:
+            logger.warning("Could not parse bronze sidecar timestamp: %s", raw_value)
+        return value
 
     def _write_silver(
         self,
