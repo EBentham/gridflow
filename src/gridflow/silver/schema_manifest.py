@@ -11,7 +11,59 @@ from typing import TYPE_CHECKING, Literal
 import polars as pl
 
 from gridflow.silver.base import BaseSilverTransformer
+from gridflow.silver.latest_views import LATEST_VIEW_SPECS
 from gridflow.silver.registry import get_transformer, list_transformers
+
+
+def _preferred_relation(
+    transformer: BaseSilverTransformer,
+    source: str,
+    dataset: str,
+    base_view: str,
+) -> str:
+    """Return the relation callers should read by default (N-5, ADR-024 amendment).
+
+    An APPEND_ONLY dataset's base view carries one row per vintage; its
+    ``_latest`` QUALIFY projection (:mod:`gridflow.silver.latest_views`) carries
+    one row per business key. Membership is keyed on the SAME dict
+    (:data:`gridflow.silver.latest_views.LATEST_VIEW_SPECS`) that
+    ``storage/duckdb.py`` gates view construction on, so the manifest can never
+    advertise a ``_latest`` name without a matching ``LATEST_VIEW_SPECS`` entry
+    -- the one common cause shared with view construction. Whether the view
+    object actually exists in a given DuckDB catalogue still depends on
+    ``gridflow init``/rebuild state; the manifest is a registry-derived Python
+    API surface, not a catalogue read. The documented failure posture for that
+    gap is the fail-closed DROP (``storage/duckdb.py:194-197``) surfacing as
+    ``CatalogException`` on read, never a silent all-vintage fallback.
+
+    Args:
+        transformer: The dataset's registered silver transformer.
+        source: Source namespace.
+        dataset: Dataset name.
+        base_view: The all-vintage ``silver_{source}_{dataset}`` view name.
+
+    Returns:
+        ``f"{base_view}_latest"`` for an APPEND_ONLY dataset with a registered
+        ``_latest`` spec; ``base_view`` otherwise.
+
+    Raises:
+        ValueError: If the transformer is APPEND_ONLY but has no
+            ``LATEST_VIEW_SPECS`` entry — silently falling back to the
+            all-vintage view here is precisely the defect this function
+            exists to close, and it would recur for every future
+            APPEND_ONLY transformer added with no spec.
+    """
+    if not transformer.APPEND_ONLY:
+        return base_view
+    if (source, dataset) not in LATEST_VIEW_SPECS:
+        raise ValueError(
+            f"{source}/{dataset} is APPEND_ONLY but has no LATEST_VIEW_SPECS "
+            f"entry in gridflow.silver.latest_views — an APPEND_ONLY dataset "
+            f"must never silently advertise its all-vintage relation as the "
+            f"preferred one. Register a spec or unset APPEND_ONLY."
+        )
+    return f"{base_view}_latest"
+
 
 if TYPE_CHECKING:
     from pydantic import BaseModel
@@ -226,9 +278,18 @@ class SilverSchemaEntry:
         source: Source namespace for source-owned relations, or ``None`` for
             cross-source serving/gold relations.
         dataset: Dataset or public serving handle name.
-        relation_name: Preferred SQL relation name callers should query.
+        relation_name: Preferred SQL relation name callers should query. For an
+            APPEND_ONLY dataset with a registered ``_latest`` spec (see
+            :mod:`gridflow.silver.latest_views`), this is the ``_latest``
+            projection (one row per business key), not the all-vintage base
+            view — see ``docs/DECISION_LOG/ADR-024-silver-schema-manifest.md``'s
+            2026-08-03 amendment (N-5).
         relation_kind: Layer/kind of the relation.
-        qualified_view: Source-qualified silver view name, when applicable.
+        qualified_view: The all-vintage base of THIS row's own relation —
+            mechanically, ``relation_name`` with a trailing ``_latest`` suffix
+            removed — never a name derived from ``dataset``. ``None`` for
+            gold-backed rows, which have no silver base and were never
+            vintage-stacked.
         deprecated_alias: Legacy single-token silver alias, when unique.
         designated_date_col: Column to use for date-range filtering.
         date_col_sql_type: SQL type family for ``designated_date_col``.
@@ -267,10 +328,15 @@ class _ServingAliasSpec:
 # reads silver_elexon_itsdo, which serves GB Initial Transmission System Demand
 # Outturn, not meteorological weather data.
 _SERVING_ALIASES: tuple[_ServingAliasSpec, ...] = (
+    # R1-A shipped GridflowClient.get_system_prices reading the `_latest`
+    # projection (serving/client.py:166); this row advertised the all-vintage
+    # base view until now (D-4) — corrected in the same edit as D-1/D-2 so the
+    # manifest never contradicts itself row-to-row (silver-row precedence
+    # would otherwise overwrite this alias for `system_prices` anyway).
     _ServingAliasSpec(
         "elexon",
         "system_prices",
-        "silver_elexon_system_prices",
+        "silver_elexon_system_prices_latest",
         "serving_alias",
         "settlement_date",
     ),
@@ -398,15 +464,16 @@ def _silver_entry(
     aliases: dict[tuple[str, str], str | None],
 ) -> SilverSchemaEntry:
     date_col = _date_col_for(source, dataset)
-    relation_name = f"silver_{source}_{dataset}"
+    base_view = f"silver_{source}_{dataset}"
     transformer = get_transformer(source, dataset, Path("__schema_manifest__"))
+    relation_name = _preferred_relation(transformer, source, dataset, base_view)
     columns, columns_source = _transformer_columns(transformer)
     return SilverSchemaEntry(
         source=source,
         dataset=dataset,
         relation_name=relation_name,
         relation_kind="silver",
-        qualified_view=relation_name,
+        qualified_view=base_view,
         deprecated_alias=aliases[(source, dataset)],
         designated_date_col=date_col,
         date_col_sql_type=_date_col_sql_type(date_col),
@@ -427,7 +494,17 @@ def _serving_alias_entry(spec: _ServingAliasSpec) -> SilverSchemaEntry:
         columns = None
         columns_source = "serving_alias"
 
-    qualified_view = spec.relation_name if spec.relation_name.startswith("silver_") else None
+    # I-2b/I-2c (D-3): qualified_view names the all-vintage base of THIS row's
+    # own relation — relation_name with a trailing "_latest" stripped — never a
+    # name derived from `spec.dataset`. The public handle name (fuel_generation,
+    # weather) does not appear in the underlying relation, so a dataset-derived
+    # formula would be wrong for those two rows. Gold-backed rows (relation_name
+    # never starts with "silver_") keep qualified_view=None (I-2c, unchanged).
+    qualified_view = (
+        spec.relation_name.removesuffix("_latest")
+        if spec.relation_name.startswith("silver_")
+        else None
+    )
     return SilverSchemaEntry(
         source=spec.source,
         dataset=spec.dataset,

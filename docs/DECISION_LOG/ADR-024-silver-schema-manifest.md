@@ -82,6 +82,38 @@ timestamp until a reviewed event-date contract is added.
 `CANONICAL_SCHEMA.yaml` remains subordinate documentation and test
 input. It is not the source for the runtime manifest.
 
+**Amended 2026-08-03 (v0.18 N-5).** `relation_name` for an APPEND_ONLY
+dataset with a registered `LATEST_VIEW_SPECS` entry (see
+`src/gridflow/silver/latest_views.py`) is now that dataset's `_latest`
+projection, not its all-vintage base view — the manifest advertises the
+one-row-per-business-key relation a default read should serve
+(F-17 doctrine: `_latest` answers "what do we believe now", see
+`v0.18-EFFORT-PLAN.md:143-156`). `qualified_view` is amended in the same
+edit to state its full semantics precisely: it names the all-vintage base
+of the ROW'S OWN relation — mechanically, `relation_name` with a trailing
+`_latest` suffix removed — and is **never** derived from the row's
+`dataset` field (two serving-alias rows, `fuel_generation` and `weather`,
+have public handle names that differ from their underlying relation, so a
+dataset-derived formula would misname them). `qualified_view` is `None`
+for gold-backed rows, unchanged. The membership test that selects a
+`_latest` name is keyed on `LATEST_VIEW_SPECS` — the SAME dict that gates
+`_latest` view construction in `storage/duckdb.py` — so the manifest can
+never advertise a `_latest` name without a matching `LATEST_VIEW_SPECS`
+entry, the one common cause shared with view construction; an APPEND_ONLY
+dataset registered with no spec raises `ValueError` at manifest build
+rather than silently falling back to the all-vintage view. Whether the
+view object actually exists in a given catalogue still depends on
+`gridflow init`/rebuild state — the manifest is a registry-derived Python
+API surface, not a catalogue read (ADR-024's Decision section) — and the
+documented failure posture for that gap is the fail-closed DROP
+(`storage/duckdb.py:194-197`) surfacing as `CatalogException` on read,
+never a silent all-vintage fallback.
+See `.planning/phases/R2-partition-integrity/N-5-PLAN.md` D-1 through D-4
+for the full design rationale and `.planning/phases/R2-partition-integrity/N-5-PLAN.md`
+Section 1.1 for the F-17 doctrine this ruling carries
+forward. Cross-references: ADR-025 §2 (the `_latest` read surface this
+amendment extends to the manifest) and ADR-017.
+
 ## Alternatives considered
 
 - **Keep literals in gridflow_models.** Rejected. This repeats the

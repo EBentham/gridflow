@@ -41,6 +41,19 @@ _BITEMPORAL_EXCLUDE = BITEMPORAL_EXCLUDE
 # EXCLUDE (see _present_bitemporal_exclude_clause's retain= parameter).
 _VINTAGE_VISIBLE: tuple[str, ...] = ("available_at",)
 
+# WHY (N-5, D-8): one module-level constant per SDK serving handle, each
+# referenced at BOTH its _present_bitemporal_exclude_clause call and its FROM
+# clause. Naming this once and reusing it at both sites is what makes the
+# relation redirectable for the behavioural usage proof
+# (tests/unit/serving/test_serving_relation_constants.py) -- a proof an
+# inlined literal cannot pass. Each name matches its row in
+# gridflow.silver.schema_manifest._SERVING_ALIASES.
+_REL_SYSTEM_PRICES = "silver_elexon_system_prices_latest"  # _SERVING_ALIASES["system_prices"]
+_REL_FUEL_GENERATION = "silver_elexon_fuelhh"  # _SERVING_ALIASES["fuel_generation"]
+_REL_GAS_STORAGE = "gold_eu_gas_storage"  # _SERVING_ALIASES["gas_storage"]
+_REL_WEATHER = "silver_elexon_itsdo"  # _SERVING_ALIASES["weather"]
+_REL_IMBALANCE_CONTEXT = "gold_uk_imbalance_context"  # _SERVING_ALIASES["imbalance_context"]
+
 
 class GridflowClient:
     """Client for querying gridflow data via DuckDB.
@@ -163,7 +176,7 @@ class GridflowClient:
         back to the all-vintage base view and serving stacked vintages. Run
         ``gridflow init`` / refresh the catalogue if this occurs.
         """
-        relation = "silver_elexon_system_prices_latest"
+        relation = _REL_SYSTEM_PRICES
         exclude = self._present_bitemporal_exclude_clause(relation, retain=_VINTAGE_VISIBLE)
         sql = (
             "SELECT *" + exclude + " "
@@ -215,10 +228,10 @@ class GridflowClient:
         Returns a Polars DataFrame with the live silver_elexon_fuelhh public
         schema (bitemporal / partitioning columns excluded).
         """
-        exclude = self._present_bitemporal_exclude_clause("silver_elexon_fuelhh")
+        exclude = self._present_bitemporal_exclude_clause(_REL_FUEL_GENERATION)
         sql = (
             "SELECT *" + exclude + " "
-            "FROM silver_elexon_fuelhh "
+            f"FROM {_REL_FUEL_GENERATION} "
             "WHERE settlement_date BETWEEN ? AND ? "
             "ORDER BY timestamp_utc, fuel_type"
         )
@@ -241,10 +254,10 @@ class GridflowClient:
         if country_code:
             country_filter = " AND country_code = ?"
             params.append(country_code)
-        exclude = self._present_bitemporal_exclude_clause("gold_eu_gas_storage")
+        exclude = self._present_bitemporal_exclude_clause(_REL_GAS_STORAGE)
         sql = (
             "SELECT *" + exclude + " "
-            "FROM gold_eu_gas_storage "
+            f"FROM {_REL_GAS_STORAGE} "
             "WHERE gas_day BETWEEN ? AND ?" + country_filter + " "
             "ORDER BY gas_day DESC, country_code"
         )
@@ -272,10 +285,10 @@ class GridflowClient:
         if location:
             location_filter = " AND location = ?"
             params.append(location)
-        exclude = self._present_bitemporal_exclude_clause("silver_elexon_itsdo")
+        exclude = self._present_bitemporal_exclude_clause(_REL_WEATHER)
         sql = (
             "SELECT *" + exclude + " "
-            "FROM silver_elexon_itsdo "
+            f"FROM {_REL_WEATHER} "
             "WHERE timestamp_utc::DATE BETWEEN ? AND ?" + location_filter + " "
             "ORDER BY timestamp_utc, location"
         )
@@ -307,11 +320,11 @@ class GridflowClient:
         latest-of-survivors — consumer-side, not built here.
         """
         exclude = self._present_bitemporal_exclude_clause(
-            "gold_uk_imbalance_context", retain=_VINTAGE_VISIBLE
+            _REL_IMBALANCE_CONTEXT, retain=_VINTAGE_VISIBLE
         )
         sql = (
             "SELECT *" + exclude + " "
-            "FROM gold_uk_imbalance_context "
+            f"FROM {_REL_IMBALANCE_CONTEXT} "
             "WHERE settlement_date BETWEEN ? AND ? "
             "ORDER BY timestamp_utc"
         )

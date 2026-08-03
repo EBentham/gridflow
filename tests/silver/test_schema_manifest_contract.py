@@ -66,7 +66,12 @@ def test_manifest_has_ratified_date_columns() -> None:
     assert DESIGNATED_DATE_COLS[("entsog", "balancing_zones")] == "ingested_at"
     assert DESIGNATED_DATE_COLS[("entsog", "connection_points")] == "ingested_at"
     assert ("elexon", "bod") not in DESIGNATED_DATE_COLS
-    assert _silver_entry("elexon", "system_prices").relation_name == ("silver_elexon_system_prices")
+    entry = _silver_entry("elexon", "system_prices")
+    # system_prices is APPEND_ONLY with a registered _latest spec (N-5, D-1/D-2):
+    # relation_name is the _latest projection; qualified_view keeps naming the
+    # all-vintage base (D-3/I-2a) so the full history stays reachable.
+    assert entry.relation_name == "silver_elexon_system_prices_latest"
+    assert entry.qualified_view == "silver_elexon_system_prices"
 
 
 def test_manifest_designated_date_col_resolvable() -> None:
@@ -87,10 +92,14 @@ def test_manifest_designated_date_col_resolvable() -> None:
         if entry.columns_source == "declared_dynamic":
             allowed.update(dynamic_date_cols)
         if entry.columns_source == "serving_alias" and entry.qualified_view is not None:
+            # candidate.qualified_view, not candidate.relation_name: an
+            # APPEND_ONLY silver row's relation_name is its `_latest` name
+            # (N-5), but qualified_view always names the all-vintage base --
+            # the correct join key for a serving alias's own qualified_view.
             target = next(
                 candidate
                 for candidate in _silver_entries()
-                if candidate.relation_name == entry.qualified_view
+                if candidate.qualified_view == entry.qualified_view
             )
             allowed.add(target.designated_date_col)
 
