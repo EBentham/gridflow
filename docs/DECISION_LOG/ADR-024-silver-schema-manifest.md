@@ -98,12 +98,19 @@ dataset-derived formula would misname them). `qualified_view` is `None`
 for gold-backed rows, unchanged. The membership test that selects a
 `_latest` name is keyed on `LATEST_VIEW_SPECS` — the SAME dict that gates
 `_latest` view construction in `storage/duckdb.py` — so the manifest can
-never advertise a relation the catalogue does not also build; an
-APPEND_ONLY dataset registered with no spec raises `ValueError` at
-manifest build rather than silently falling back to the all-vintage view.
+never advertise a `_latest` name without a matching `LATEST_VIEW_SPECS`
+entry, the one common cause shared with view construction; an APPEND_ONLY
+dataset registered with no spec raises `ValueError` at manifest build
+rather than silently falling back to the all-vintage view. Whether the
+view object actually exists in a given catalogue still depends on
+`gridflow init`/rebuild state — the manifest is a registry-derived Python
+API surface, not a catalogue read (ADR-024's Decision section) — and the
+documented failure posture for that gap is the fail-closed DROP
+(`storage/duckdb.py:194-197`) surfacing as `CatalogException` on read,
+never a silent all-vintage fallback.
 See `.planning/phases/R2-partition-integrity/N-5-PLAN.md` D-1 through D-4
-for the full design rationale and `.planning/phases/R2-partition-integrity/
-N-5-PLAN.md` Section 1.1 for the F-17 doctrine this ruling carries
+for the full design rationale and `.planning/phases/R2-partition-integrity/N-5-PLAN.md`
+Section 1.1 for the F-17 doctrine this ruling carries
 forward. Cross-references: ADR-025 §2 (the `_latest` read surface this
 amendment extends to the manifest) and ADR-017.
 

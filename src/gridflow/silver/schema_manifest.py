@@ -28,7 +28,13 @@ def _preferred_relation(
     one row per business key. Membership is keyed on the SAME dict
     (:data:`gridflow.silver.latest_views.LATEST_VIEW_SPECS`) that
     ``storage/duckdb.py`` gates view construction on, so the manifest can never
-    advertise a ``_latest`` name the catalogue does not also build.
+    advertise a ``_latest`` name without a matching ``LATEST_VIEW_SPECS`` entry
+    -- the one common cause shared with view construction. Whether the view
+    object actually exists in a given DuckDB catalogue still depends on
+    ``gridflow init``/rebuild state; the manifest is a registry-derived Python
+    API surface, not a catalogue read. The documented failure posture for that
+    gap is the fail-closed DROP (``storage/duckdb.py:194-197``) surfacing as
+    ``CatalogException`` on read, never a silent all-vintage fallback.
 
     Args:
         transformer: The dataset's registered silver transformer.
