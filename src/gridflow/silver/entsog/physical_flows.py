@@ -5,15 +5,20 @@ from __future__ import annotations
 import json
 import logging
 from datetime import UTC, date, datetime
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+    from pathlib import Path
 
 import polars as pl
 
 from gridflow.schemas.entsog import EntsogPhysicalFlow
-from gridflow.silver.base import BaseSilverTransformer
+from gridflow.silver.base import _BRONZE_VINTAGE_COLUMN, BaseSilverTransformer
 from gridflow.silver.entsog.datetime import (
-    filter_records_to_target_date,
+    log_undated_records,
     parse_entsog_datetime_expr,
+    partition_records_to_target_date,
 )
 from gridflow.silver.registry import register_transformer
 
@@ -72,29 +77,62 @@ class PhysicalFlowsTransformer(BaseSilverTransformer):
     schema_cls = EntsogPhysicalFlow
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
+        """Read this date's bronze into one merged raw frame.
+
+        Applies the family's own selection rule directly and never vouches --
+        vouching belongs to the lockstep ``run()`` branch, the only path that
+        can count and report an exclusion.
+        """
+        rows = [
+            record
+            for _, records in self._read_bronze_records(
+                self._bronze_candidates(target_date), target_date
+            )
+            for record in records
+        ]
+        return pl.DataFrame(rows, infer_schema_length=None) if rows else pl.DataFrame()
+
+    def _bronze_candidates(self, target_date: date) -> list[Path]:
+        """Bodies in the resolved partition, sidecars excluded.
+
+        The ``.meta.json`` exclusion is load-bearing: ``raw_*.json`` matches
+        sidecars too, and a sidecar admitted as a body has no sidecar of its
+        own, so it would classify ``NO_SIDECAR`` on a perfectly healthy
+        partition.
+        """
         bronze_path = self._bronze_path_for_date(target_date)
         if bronze_path is None:
-            return pl.DataFrame()
+            return []
+        return [
+            f for f in sorted(bronze_path.glob("raw_*.json")) if not f.name.endswith(".meta.json")
+        ]
 
-        rows: list[dict[str, Any]] = []
-        for f in sorted(bronze_path.glob("raw_*.json")):
-            if f.name.endswith(".meta.json"):
-                continue
+    def _read_bronze_records(
+        self,
+        paths: Sequence[Path],
+        target_date: date,
+    ) -> tuple[tuple[Path, list[dict[str, Any]]], ...]:
+        """Parse each body and apply the ``periodFrom`` date filter, per file.
+
+        The filter runs through its PURE core so the undated count is
+        aggregated into exactly ONE warning per call, never one per file.
+        """
+        pairs: list[tuple[Path, list[dict[str, Any]]]] = []
+        undated_total = 0
+        for f in paths:
+            rows: list[dict[str, Any]] = []
             try:
                 payload = json.loads(f.read_text())
                 records = payload.get("operationalData", []) if isinstance(payload, dict) else []
                 rows.extend(records)
             except (json.JSONDecodeError, AttributeError) as exc:
                 logger.warning("Failed to parse ENTSO-G bronze file %s: %s", f, exc)
-
-        if not rows:
-            return pl.DataFrame()
-        rows = filter_records_to_target_date(
-            rows, target_date, ("periodFrom",), source=self.source, dataset=self.dataset
-        )
-        if not rows:
-            return pl.DataFrame()
-        return pl.DataFrame(rows, infer_schema_length=None)
+                continue
+            kept, undated = partition_records_to_target_date(rows, target_date, ("periodFrom",))
+            undated_total += undated
+            pairs.append((f, kept))
+        log_undated_records(undated_total, target_date, source=self.source, dataset=self.dataset)
+        return tuple(pairs)
 
     def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
         if raw_df.is_empty():
@@ -223,6 +261,13 @@ class PhysicalFlowsTransformer(BaseSilverTransformer):
             "ingested_at",
         ]
         available = [column for column in output_cols if column in df.columns]
+        if _BRONZE_VINTAGE_COLUMN in df.columns:
+            # Transient carrier for LOCKSTEP_BRONZE_READ reads: it must survive
+            # this projection so _add_bitemporal_columns can stamp each row
+            # from its own bronze file, and _process_frame then drops it before
+            # the silver write. The explicit dedup allow-list above already
+            # excludes it, so no dedup edit is needed here.
+            available.append(_BRONZE_VINTAGE_COLUMN)
         sort_cols = ["timestamp_utc", "point_key"]
         if "direction_key" in df.columns:
             sort_cols.append("direction_key")

@@ -53,6 +53,72 @@ def parse_entsog_datetime_expr(column: str) -> pl.Expr:
     )
 
 
+def partition_records_to_target_date(
+    records: Iterable[dict[str, Any]],
+    target_date: date,
+    timestamp_fields: Iterable[str],
+) -> tuple[list[dict[str, Any]], int]:
+    """Pure core of :func:`filter_records_to_target_date` -- no logging.
+
+    Row-wise: each record's verdict depends only on that record's own fields,
+    never on the surrounding set, so callers may apply it per bronze FILE and
+    aggregate the undated count into ONE warning instead of emitting one per
+    file (R2-g, the lockstep read path).
+
+    Args:
+        records: Raw ENTSO-G records to partition.
+        target_date: The date being read.
+        timestamp_fields: Field names to probe, in priority order.
+
+    Returns:
+        ``(kept, undated_count)`` -- ``kept`` holds records dated
+        ``target_date`` plus every undated record (fail-open, see the wrapper);
+        ``undated_count`` counts the undated ones among them.
+    """
+    kept: list[dict[str, Any]] = []
+    undated_count = 0
+    for record in records:
+        record_date = _record_date(record, timestamp_fields)
+        if record_date is None:
+            kept.append(record)
+            undated_count += 1
+        elif record_date == target_date:
+            kept.append(record)
+    return kept, undated_count
+
+
+def log_undated_records(
+    undated_count: int,
+    target_date: date,
+    *,
+    source: str,
+    dataset: str,
+) -> None:
+    """Emit the single bounded WARNING for undated ENTSO-G records.
+
+    Shared by :func:`filter_records_to_target_date` and by the lockstep read
+    path, which aggregates across bronze files before calling this once -- so
+    both produce the identical message, and neither emits one line per record
+    or one per file. No-op when ``undated_count`` is zero.
+
+    Args:
+        undated_count: Total undated records kept across the whole call.
+        target_date: The date being read.
+        source: Caller's ``self.source`` (message only).
+        dataset: Caller's ``self.dataset`` (message only).
+    """
+    if not undated_count:
+        return
+    logger.warning(
+        "%s/%s: %d record(s) had no parseable date for target_date %s; "
+        "kept (fail-open hedge) rather than dropped",
+        source,
+        dataset,
+        undated_count,
+        target_date,
+    )
+
+
 def filter_records_to_target_date(
     records: Iterable[dict[str, Any]],
     target_date: date,
@@ -85,25 +151,10 @@ def filter_records_to_target_date(
         Records dated ``target_date`` plus any undated records (kept, not
         dropped). Records dated to a different day are dropped.
     """
-    filtered: list[dict[str, Any]] = []
-    undated_count = 0
-    for record in records:
-        record_date = _record_date(record, timestamp_fields)
-        if record_date is None:
-            filtered.append(record)
-            undated_count += 1
-        elif record_date == target_date:
-            filtered.append(record)
-
-    if undated_count:
-        logger.warning(
-            "%s/%s: %d record(s) had no parseable date for target_date %s; "
-            "kept (fail-open hedge) rather than dropped",
-            source,
-            dataset,
-            undated_count,
-            target_date,
-        )
+    filtered, undated_count = partition_records_to_target_date(
+        records, target_date, timestamp_fields
+    )
+    log_undated_records(undated_count, target_date, source=source, dataset=dataset)
     return filtered
 
 
