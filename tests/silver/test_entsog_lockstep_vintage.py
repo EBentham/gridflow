@@ -392,6 +392,40 @@ class TestPerRowVintageAttribution:
         assert written.height == 1
         assert written["available_at"].to_list() == [STAMP_B]
 
+    def test_generic_family_per_row_vintage_attribution_across_two_files(
+        self, tmp_path: Path
+    ) -> None:
+        """R2-g finding 2: generic-family multi-contributor, decisively pinned.
+
+        TV-3 above only exercises ``PhysicalFlowsTransformer``. The existing
+        generic multi-file test (TV-5) deliberately dedups down to ONE row, so
+        a generic-only regression that stamped every row with the LAST file's
+        vintage would still pass both -- it would over-stamp every earlier
+        row and nothing here would notice. This test writes two DISTINCT
+        ``nominations`` records (different ``id``, so they cannot collapse
+        under the generic family's ``["id"]`` dedup subset) from two files
+        with different sidecar stamps, and asserts per row, not on an
+        aggregate.
+        """
+        partition = _partition(tmp_path, GENERIC_DATASET, TARGET)
+        a = _write_body(
+            partition, "raw_0900_a.json", {"nominations": [_nomination("id-A", TARGET)]}
+        )
+        _write_sidecar(a, STAMP_A)
+        b = _write_body(
+            partition, "raw_1000_b.json", {"nominations": [_nomination("id-B", TARGET)]}
+        )
+        _write_sidecar(b, STAMP_B)
+
+        assert _generic(tmp_path).run(TARGET, reingest=True) == 2
+
+        written = _silver(tmp_path, GENERIC_DATASET, TARGET)
+        assert written.height == 2, (
+            "the two records must survive as distinct rows, not dedup to one"
+        )
+        by_id = dict(zip(written["id"], written["available_at"], strict=True))
+        assert by_id == {"id-A": STAMP_A, "id-B": STAMP_B}
+
     def test_the_transient_carrier_never_reaches_silver(self, tmp_path: Path) -> None:
         """TV-4: assert on the file read back from disk, not the in-memory frame."""
         partition = _partition(tmp_path, "physical_flows", TARGET)
