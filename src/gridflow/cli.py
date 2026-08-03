@@ -1284,10 +1284,16 @@ def _echo_transform_results(source: str, results: list[DatasetResult]) -> None:
     """Echo per-dataset transform result lines (preserves cli.transform formatting)."""
     for r in results:
         if r.status == "completed_with_warnings":
+            # Excluded bronze bodies are a FILE count, appended only when
+            # nonzero so the existing line is unchanged for every other
+            # warning shape (ADR-028).
+            unvouched = (
+                f", {r.bronze_unvouched} bronze file(s) unvouched" if r.bronze_unvouched else ""
+            )
             typer.echo(
                 f"  {source}/{r.dataset}: {r.rows_out} rows transformed, "
-                f"{r.rows_unmapped} unmapped, {r.rows_invalid} schema-invalid "
-                f"(completed_with_warnings)"
+                f"{r.rows_unmapped} unmapped, {r.rows_invalid} schema-invalid"
+                f"{unvouched} (completed_with_warnings)"
             )
         elif r.status == "success":
             typer.echo(f"  {source}/{r.dataset}: {r.rows_out} rows transformed")
