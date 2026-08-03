@@ -440,6 +440,38 @@ def test_a_resolver_error_fails_closed_with_a_redacted_message(
     assert result.error is not None
 
 
+def test_a_run_exception_after_classification_still_reports_unvouched_count(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """R2-g finding 1: ``run()`` classifies an orphan, then raises.
+
+    A collision guard, a read error, anything -- if ``run()`` raises AFTER
+    classifying an unvouched body, ``run_transform``'s ``except`` handler must
+    still report the count. ``bronze_unvouched`` defaults to 0 on
+    ``DatasetResult``, so without the fix this silently drops a permanently-
+    unvouched file from the one structured result a scheduler reads (I-7).
+    """
+    from gridflow.silver.entsog.physical_flows import PhysicalFlowsTransformer
+
+    original_run = PhysicalFlowsTransformer.run
+
+    def run_then_raise(self, target_date, run_id=None, reingest=False):  # type: ignore[no-untyped-def]
+        original_run(self, target_date, run_id=run_id, reingest=reingest)
+        raise OSError("simulated failure after classification")
+
+    monkeypatch.setattr(PhysicalFlowsTransformer, "run", run_then_raise)
+
+    def seed(data_dir: Path) -> None:
+        partition = _partition(data_dir, FLOWS, DAY_1)
+        _write_pair(partition, "raw_ok.json", {"operationalData": [_flow("GOOD", DAY_1)]})
+        _write_orphan(partition, "raw_orphan.json", {"operationalData": [_flow("X", DAY_1)]})
+
+    result = _run(tmp_path, monkeypatch, seed)
+
+    assert result.status == "failed"
+    assert result.bronze_unvouched > 0
+
+
 def test_all_dropped_keeps_precedence_but_does_not_swallow_the_count(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
 ) -> None:

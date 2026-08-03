@@ -950,6 +950,11 @@ def run_transform(
         # newly-seen path to its reason). See ADR-028.
         unvouched_bronze: set[tuple[Path, BronzeVouchReason]] = set()
         total_unvouched_total_exclusion = 0
+        # `None` until `get_transformer` returns, so the `except` handler below
+        # can tell "never constructed this date" apart from "constructed, then
+        # `run()` raised" without risking a `transformer` left over from a
+        # PRIOR dataset in this loop (plain `for` loops don't scope locals).
+        transformer = None
         try:
             transformer = get_transformer(source, ds, settings.pipeline.data_dir)
             # CH3-02 (CH-PERF-02): per-date silver CSV is opt-in (default OFF).
@@ -1090,12 +1095,24 @@ def run_transform(
             error_message = safe_error_message(str(e))
             tracker.fail(error_message)
             logger.error("Transform failed for %s/%s: %s", source, ds, error_message)
+            # R2-g finding 1: a collision guard / read error raised from inside
+            # `run()` -- AFTER it classified an orphan -- must not silently
+            # report `bronze_unvouched=0` here. The counters are instance state
+            # on the transformer and survive the exception; fold in whatever
+            # the failing call classified on top of what earlier dates in this
+            # loop already accumulated (I-7: counted, every run, indefinitely).
+            # `transformer` may still be `None` -- `get_transformer` itself can
+            # raise before any instance exists.
+            if transformer is not None:
+                unvouched_bronze |= transformer.last_unvouched_bronze
+            bronze_unvouched = len({path for path, _ in unvouched_bronze})
             results.append(
                 DatasetResult(
                     source=source,
                     dataset=ds,
                     operation="transform",
                     status="failed",
+                    bronze_unvouched=bronze_unvouched,
                     error=error_message,
                 )
             )
