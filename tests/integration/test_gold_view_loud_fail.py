@@ -222,3 +222,111 @@ def test_register_gold_views_warns_on_real_error_in_production_mode(
     assert not any("broken_real_error.sql" in msg for msg in debug_messages), (
         f"expected no DEBUG log for the real-error fixture, got: {debug_messages}"
     )
+
+
+@pytest.mark.integration
+def test_register_gold_views_warns_on_missing_gold_serving_alias_in_production_mode(
+    tmp_path: Path, caplog: pytest.LogCaptureFixture, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Sol diff pass 2 major 1: a missing GOLD relation must WARN, not DEBUG.
+
+    Before the fix, ``_expected_silver_relation_names`` was built from the
+    UNFILTERED manifest, which includes gold-layer serving aliases
+    (``gold_eu_gas_storage``, ``gold_uk_imbalance_context``). A gold SQL file
+    referencing one of those names as if it were an upstream relation would
+    then classify as benign-absent DEBUG -- re-opening the silent-swallow
+    for exactly the names the membership test exists to police. The expected
+    set must be filtered to silver-layer relations (``relation_kind`` of
+    ``"silver"``/``"serving_alias"``) only, so a missing gold-layer object
+    always falls to WARNING.
+    """
+    from gridflow.storage import duckdb as duckdb_module
+
+    monkeypatch.delenv("PYTEST_CURRENT_TEST", raising=False)
+    monkeypatch.delenv("GRIDFLOW_ENV", raising=False)
+
+    fake_module_dir = tmp_path / "storage"
+    fake_module_dir.mkdir()
+    monkeypatch.setattr(duckdb_module, "__file__", str(fake_module_dir / "duckdb.py"))
+
+    views_dir = tmp_path / "gold" / "views"
+    views_dir.mkdir(parents=True)
+    (views_dir / "downstream_of_gold.sql").write_text(
+        "CREATE OR REPLACE VIEW gold_downstream AS SELECT * FROM gold_uk_imbalance_context"
+    )
+
+    con = duckdb.connect(":memory:")
+    try:
+        with caplog.at_level(logging.DEBUG, logger="gridflow.storage.duckdb"):
+            duckdb_module._register_gold_views(con)
+    finally:
+        con.close()
+
+    warning_messages = [
+        record.getMessage() for record in caplog.records if record.levelno == logging.WARNING
+    ]
+    debug_messages = [
+        record.getMessage() for record in caplog.records if record.levelno == logging.DEBUG
+    ]
+    assert any("downstream_of_gold.sql" in msg for msg in warning_messages), (
+        f"expected a WARNING mentioning downstream_of_gold.sql, got: {warning_messages}"
+    )
+    assert not any("downstream_of_gold.sql" in msg for msg in debug_messages), (
+        f"expected no DEBUG log for a missing gold-layer relation, got: {debug_messages}"
+    )
+
+
+@pytest.mark.integration
+def test_register_gold_views_fails_closed_when_expected_set_build_raises(
+    tmp_path: Path, caplog: pytest.LogCaptureFixture, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Sol diff pass 2 major 2: an expected-set build failure must not escape.
+
+    ``_expected_silver_relation_names`` is built INSIDE
+    ``_register_gold_views``' exception handler, and its manifest builder
+    (``get_silver_schema_manifest``) has documented ``ValueError`` paths (an
+    incomplete transformer/date/spec registration). Before the fix, a build
+    failure there would propagate out of ``_register_gold_views`` and turn
+    production's logging-only posture into an init/refresh hard failure.
+    The build must fail closed: registration completes without the
+    exception escaping, classifying the triggering error as non-benign
+    (WARNING), and the build failure itself is logged at WARNING once.
+    """
+    from gridflow.storage import duckdb as duckdb_module
+
+    monkeypatch.delenv("PYTEST_CURRENT_TEST", raising=False)
+    monkeypatch.delenv("GRIDFLOW_ENV", raising=False)
+
+    def _boom() -> frozenset[str]:
+        raise ValueError("No designated date column registered for fake/dataset")
+
+    monkeypatch.setattr(duckdb_module, "_expected_silver_relation_names", _boom)
+
+    fake_module_dir = tmp_path / "storage"
+    fake_module_dir.mkdir()
+    monkeypatch.setattr(duckdb_module, "__file__", str(fake_module_dir / "duckdb.py"))
+
+    views_dir = tmp_path / "gold" / "views"
+    views_dir.mkdir(parents=True)
+    (views_dir / "uk_imbalance_context.sql").write_text(
+        "CREATE OR REPLACE VIEW gold_uk_imbalance_context AS "
+        "SELECT * FROM silver_elexon_system_prices_latest"
+    )
+
+    con = duckdb.connect(":memory:")
+    try:
+        with caplog.at_level(logging.DEBUG, logger="gridflow.storage.duckdb"):
+            duckdb_module._register_gold_views(con)
+    finally:
+        con.close()
+
+    warning_messages = [
+        record.getMessage() for record in caplog.records if record.levelno == logging.WARNING
+    ]
+    assert any(
+        "expected silver relation names" in msg and "No designated date column" in msg
+        for msg in warning_messages
+    ), f"expected a WARNING logging the expected-set build failure, got: {warning_messages}"
+    assert any("uk_imbalance_context.sql" in msg for msg in warning_messages), (
+        f"expected a WARNING mentioning uk_imbalance_context.sql, got: {warning_messages}"
+    )

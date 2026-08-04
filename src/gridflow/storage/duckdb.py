@@ -368,11 +368,22 @@ def _expected_silver_relation_names() -> frozenset[str]:
     CatalogException names — a misspelled relation, a missing scalar
     function, or any other object gridflow does not itself register — falls
     outside this set and is a genuine defect.
+
+    Filtered to SILVER-layer relations only (manifest ``relation_kind`` of
+    ``"silver"`` or ``"serving_alias"``, both of which point at
+    ``silver_*`` views). Rows with ``relation_kind == "gold"``
+    (``gold_eu_gas_storage``, ``gold_uk_imbalance_context``) are deliberately
+    excluded: a missing GOLD relation is never a benign "upstream silver not
+    yet written" case, and including gold names here would re-open the
+    silent-swallow this membership test exists to close (Sol diff pass 2
+    major finding 1).
     """
     from gridflow.silver.schema_manifest import get_silver_schema_manifest
 
     names: set[str] = set()
     for entry in get_silver_schema_manifest():
+        if entry.relation_kind == "gold":
+            continue
         names.add(entry.relation_name)
         if entry.qualified_view is not None:
             names.add(entry.qualified_view)
@@ -396,13 +407,28 @@ def _is_benign_absent_gold_view(exc: Exception) -> bool:
     to exist eventually (:func:`_expected_silver_relation_names`); if the
     name cannot be extracted from the message, or isn't in that set, this
     falls to WARNING — ambiguity always resolves to the loud, safe branch.
+    The expected-set build itself fails closed: a manifest-build failure
+    (e.g. ``get_silver_schema_manifest``'s documented ``ValueError`` paths)
+    is caught, logged once at WARNING, and treated as non-benign rather than
+    escaping this classification path and turning production's
+    logging-only posture into an init/refresh hard failure (Sol diff pass 2
+    major finding 2).
     """
     if not isinstance(exc, duckdb.CatalogException):
         return False
     missing_name = _extract_missing_catalog_name(exc)
     if missing_name is None:
         return False
-    return missing_name in _expected_silver_relation_names()
+    try:
+        expected_names = _expected_silver_relation_names()
+    except Exception as build_exc:
+        logger.warning(
+            "Could not build expected silver relation names for gold-view "
+            "absence classification; treating as non-benign: %s",
+            build_exc,
+        )
+        return False
+    return missing_name in expected_names
 
 
 def _try_create_view(con: duckdb.DuckDBPyConnection, view_name: str, pattern: str) -> None:
