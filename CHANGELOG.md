@@ -56,7 +56,9 @@ expansion) was paused before release and is intentionally absent.
 
 **Review Remediation (P0+P1)** — executed the P0+P1 block of the July 2026 full-stack review:
 all 11 P0 findings (silent data-correctness and ingest-integrity classes) and all 11 P1 findings,
-across gridflow (PRs #38–#48) and its companion repos (gridflow_models #28–#31, docs vault + site).
+across gridflow (PRs #38–#49; PR #37, a pre-existing completed P3.11 fix, also merged in-window
+and is noted here rather than left unmentioned) and its companion repos (gridflow_models #28–#31,
+docs vault #19, front-end #30–#31) — 19 merged PRs across 4 repos (R3-f/F-21).
 Test suite grew from 1530 to 1679 passing; mypy stays strict-clean.
 
 ### Added
