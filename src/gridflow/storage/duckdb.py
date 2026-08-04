@@ -335,6 +335,22 @@ def _is_benign_absent_parquet(exc: Exception) -> bool:
     return "no files found" in msg or "no files that match" in msg
 
 
+def _is_benign_absent_gold_view(exc: Exception) -> bool:
+    """True when a gold view fails because a referenced silver relation is absent.
+
+    Mirrors _is_benign_absent_parquet's DEBUG/WARNING split one layer up:
+    DuckDB raises a CatalogException citing a missing table/view when the
+    upstream silver relation has not been created yet (data not transformed
+    or registered in this session) — that is benign and expected during
+    partial pipeline runs. Any other error (parser syntax error, a binder
+    error against columns of a table that DOES exist, etc.) is a genuine
+    DDL/binder bug in the gold SQL file and must not be swallowed quietly.
+    """
+    if not isinstance(exc, duckdb.CatalogException):
+        return False
+    return "does not exist" in str(exc).lower()
+
+
 def _try_create_view(con: duckdb.DuckDBPyConnection, view_name: str, pattern: str) -> None:
     """Create a view over the Parquet files, if any have been written.
 
@@ -380,7 +396,20 @@ def _register_gold_views(con: duckdb.DuckDBPyConnection) -> None:
         except Exception as exc:
             if _is_strict_mode():
                 raise
-            logger.warning("Could not register gold view %s: %s", sql_file.name, exc)
+            if _is_benign_absent_gold_view(exc):
+                logger.debug(
+                    "Could not register gold view %s (upstream relation not yet present): %s",
+                    sql_file.name,
+                    exc,
+                )
+            else:
+                # Deterministic DDL/binder error — make the silent-corruption case
+                # visible rather than letting a later SELECT fail opaquely.
+                logger.warning(
+                    "Gold view registration failed for %s (not absent-data): %s",
+                    sql_file.name,
+                    exc,
+                )
 
 
 def refresh_views(db_path: Path, data_dir: Path) -> None:

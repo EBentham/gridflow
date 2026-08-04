@@ -86,15 +86,17 @@ def test_production_mode_swallows(tmp_path: Path, monkeypatch: pytest.MonkeyPatc
 
 
 @pytest.mark.integration
-def test_register_gold_views_warns_in_production_mode(
+def test_register_gold_views_debug_logs_benign_absent_in_production_mode(
     caplog: pytest.LogCaptureFixture, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """R7-F05: registration failures WARN (not DEBUG) in production mode.
+    """B1.1 / F-14 / R3-c: benign-absent gold view registration logs DEBUG.
 
     With neither PYTEST_CURRENT_TEST nor GRIDFLOW_ENV=dev/test set, and no
-    silver views registered, every gold SQL file fails to bind.
-    _register_gold_views must swallow (not raise) but log at WARNING so the
-    failure is not silently invisible in production.
+    silver views registered, every gold SQL file fails to bind because its
+    referenced silver relation does not exist yet -- the benign "not yet
+    transformed" case (storage/duckdb.py:369-390). _register_gold_views must
+    swallow (not raise) and log at DEBUG, mirroring _try_create_view's
+    benign-absent convention (storage/duckdb.py:354-382), not WARNING.
     """
     from gridflow.storage.duckdb import _register_gold_views
 
@@ -103,14 +105,70 @@ def test_register_gold_views_warns_in_production_mode(
 
     con = duckdb.connect(":memory:")
     try:
-        with caplog.at_level(logging.WARNING, logger="gridflow.storage.duckdb"):
+        with caplog.at_level(logging.DEBUG, logger="gridflow.storage.duckdb"):
             _register_gold_views(con)
+    finally:
+        con.close()
+
+    debug_messages = [
+        record.getMessage() for record in caplog.records if record.levelno == logging.DEBUG
+    ]
+    warning_messages = [
+        record.getMessage() for record in caplog.records if record.levelno == logging.WARNING
+    ]
+    assert any("uk_imbalance_context.sql" in msg for msg in debug_messages), (
+        f"expected a DEBUG log mentioning uk_imbalance_context.sql, got: {debug_messages}"
+    )
+    assert not warning_messages, (
+        f"expected no WARNING logs for the benign-absent case, got: {warning_messages}"
+    )
+
+
+@pytest.mark.integration
+def test_register_gold_views_warns_on_real_error_in_production_mode(
+    tmp_path: Path, caplog: pytest.LogCaptureFixture, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """B1.1 / F-14 / R3-c: a genuine DDL/binder error still WARNs.
+
+    A gold SQL file referencing an EXISTING silver table but a bogus column
+    is a deterministic DDL/binder bug, not a "not yet transformed" absence
+    (the CatalogException "does not exist" case _is_benign_absent_gold_view
+    matches). _register_gold_views must swallow it (strict-mode raise path
+    untouched) but log at WARNING so the failure stays visible in
+    production, distinguishing it from the benign-absent DEBUG case.
+    """
+    from gridflow.storage import duckdb as duckdb_module
+
+    monkeypatch.delenv("PYTEST_CURRENT_TEST", raising=False)
+    monkeypatch.delenv("GRIDFLOW_ENV", raising=False)
+
+    fake_module_dir = tmp_path / "storage"
+    fake_module_dir.mkdir()
+    monkeypatch.setattr(duckdb_module, "__file__", str(fake_module_dir / "duckdb.py"))
+
+    views_dir = tmp_path / "gold" / "views"
+    views_dir.mkdir(parents=True)
+    (views_dir / "broken_real_error.sql").write_text(
+        "CREATE OR REPLACE VIEW gold_broken AS SELECT bogus_col FROM silver_present"
+    )
+
+    con = duckdb.connect(":memory:")
+    con.execute("CREATE TABLE silver_present (a INTEGER)")
+    try:
+        with caplog.at_level(logging.DEBUG, logger="gridflow.storage.duckdb"):
+            duckdb_module._register_gold_views(con)
     finally:
         con.close()
 
     warning_messages = [
         record.getMessage() for record in caplog.records if record.levelno == logging.WARNING
     ]
-    assert any("uk_imbalance_context.sql" in msg for msg in warning_messages), (
-        f"expected a WARNING mentioning uk_imbalance_context.sql, got: {warning_messages}"
+    debug_messages = [
+        record.getMessage() for record in caplog.records if record.levelno == logging.DEBUG
+    ]
+    assert any("broken_real_error.sql" in msg for msg in warning_messages), (
+        f"expected a WARNING mentioning broken_real_error.sql, got: {warning_messages}"
+    )
+    assert not any("broken_real_error.sql" in msg for msg in debug_messages), (
+        f"expected no DEBUG log for the real-error fixture, got: {debug_messages}"
     )
