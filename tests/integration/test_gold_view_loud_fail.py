@@ -125,6 +125,56 @@ def test_register_gold_views_debug_logs_benign_absent_in_production_mode(
 
 
 @pytest.mark.integration
+def test_register_gold_views_warns_on_misspelled_relation_in_production_mode(
+    tmp_path: Path, caplog: pytest.LogCaptureFixture, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Sol diff pass 1 major: a misspelled relation name must WARN, not DEBUG.
+
+    A gold SQL file referencing a name that LOOKS like a silver relation but
+    isn't one gridflow actually registers (a typo) raises a CatalogException
+    with the identical "does not exist" message shape as the genuine
+    benign-absent case. _is_benign_absent_gold_view must classify by
+    membership in the known-relation set, not by message shape alone --
+    otherwise this typo is silently logged at DEBUG and the gold view stays
+    silently absent in production.
+    """
+    from gridflow.storage import duckdb as duckdb_module
+
+    monkeypatch.delenv("PYTEST_CURRENT_TEST", raising=False)
+    monkeypatch.delenv("GRIDFLOW_ENV", raising=False)
+
+    fake_module_dir = tmp_path / "storage"
+    fake_module_dir.mkdir()
+    monkeypatch.setattr(duckdb_module, "__file__", str(fake_module_dir / "duckdb.py"))
+
+    views_dir = tmp_path / "gold" / "views"
+    views_dir.mkdir(parents=True)
+    (views_dir / "misspelled_relation.sql").write_text(
+        "CREATE OR REPLACE VIEW gold_misspelled AS SELECT * FROM silver_elexon_sysprices"
+    )
+
+    con = duckdb.connect(":memory:")
+    try:
+        with caplog.at_level(logging.DEBUG, logger="gridflow.storage.duckdb"):
+            duckdb_module._register_gold_views(con)
+    finally:
+        con.close()
+
+    warning_messages = [
+        record.getMessage() for record in caplog.records if record.levelno == logging.WARNING
+    ]
+    debug_messages = [
+        record.getMessage() for record in caplog.records if record.levelno == logging.DEBUG
+    ]
+    assert any("misspelled_relation.sql" in msg for msg in warning_messages), (
+        f"expected a WARNING mentioning misspelled_relation.sql, got: {warning_messages}"
+    )
+    assert not any("misspelled_relation.sql" in msg for msg in debug_messages), (
+        f"expected no DEBUG log for the misspelled-relation fixture, got: {debug_messages}"
+    )
+
+
+@pytest.mark.integration
 def test_register_gold_views_warns_on_real_error_in_production_mode(
     tmp_path: Path, caplog: pytest.LogCaptureFixture, monkeypatch: pytest.MonkeyPatch
 ) -> None:

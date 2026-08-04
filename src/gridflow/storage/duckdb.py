@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 import os
+import re
 import time
 from pathlib import Path
 
@@ -335,20 +336,73 @@ def _is_benign_absent_parquet(exc: Exception) -> bool:
     return "no files found" in msg or "no files that match" in msg
 
 
+_MISSING_CATALOG_NAME_RE = re.compile(
+    r'with name "?([A-Za-z0-9_]+)"?\s+does not exist', re.IGNORECASE
+)
+
+
+def _extract_missing_catalog_name(exc: Exception) -> str | None:
+    """Extract the missing table/view/function name DuckDB names in a CatalogException.
+
+    DuckDB's CatalogException states the offending object name in a
+    consistent shape (``... with name <name> does not exist!``) regardless of
+    whether the missing object is a table, view, or scalar function — see
+    the three probed message shapes in the Sol diff pass 1 major finding.
+    Returns ``None`` if the message doesn't match (defensive: a future DuckDB
+    version could reword this), which callers must treat as "cannot
+    classify" rather than "benign".
+    """
+    match = _MISSING_CATALOG_NAME_RE.search(str(exc))
+    return match.group(1) if match else None
+
+
+def _expected_silver_relation_names() -> frozenset[str]:
+    """Relation names gridflow itself expects to exist once transform/rebuild runs.
+
+    Sourced from the two places the repo already owns this list, never
+    hardcoded here: the silver schema manifest (``relation_name`` and
+    ``qualified_view`` for every registered dataset) and
+    ``LATEST_VIEW_SPECS``' base/``_latest`` view-name pair. A gold view
+    referencing one of these names that isn't materialized YET is a benign,
+    expected absence during partial pipeline runs. Anything else a
+    CatalogException names — a misspelled relation, a missing scalar
+    function, or any other object gridflow does not itself register — falls
+    outside this set and is a genuine defect.
+    """
+    from gridflow.silver.schema_manifest import get_silver_schema_manifest
+
+    names: set[str] = set()
+    for entry in get_silver_schema_manifest():
+        names.add(entry.relation_name)
+        if entry.qualified_view is not None:
+            names.add(entry.qualified_view)
+    for source, dataset in LATEST_VIEW_SPECS:
+        base_view = f"silver_{source}_{dataset}"
+        names.add(base_view)
+        names.add(f"{base_view}_latest")
+    return frozenset(names)
+
+
 def _is_benign_absent_gold_view(exc: Exception) -> bool:
-    """True when a gold view fails because a referenced silver relation is absent.
+    """True when a gold view fails because a KNOWN silver relation is absent.
 
     Mirrors _is_benign_absent_parquet's DEBUG/WARNING split one layer up:
-    DuckDB raises a CatalogException citing a missing table/view when the
-    upstream silver relation has not been created yet (data not transformed
-    or registered in this session) — that is benign and expected during
-    partial pipeline runs. Any other error (parser syntax error, a binder
-    error against columns of a table that DOES exist, etc.) is a genuine
-    DDL/binder bug in the gold SQL file and must not be swallowed quietly.
+    DuckDB raises a CatalogException citing a missing table/view/function.
+    Message-shape alone ("does not exist") is not enough to call this
+    benign — a misspelled relation name or a missing scalar function raises
+    the identical shape (Sol diff pass 1 major finding) and must NOT be
+    classified as benign-absent. Classification is therefore a MEMBERSHIP
+    test: DEBUG only when the missing object is one gridflow itself expects
+    to exist eventually (:func:`_expected_silver_relation_names`); if the
+    name cannot be extracted from the message, or isn't in that set, this
+    falls to WARNING — ambiguity always resolves to the loud, safe branch.
     """
     if not isinstance(exc, duckdb.CatalogException):
         return False
-    return "does not exist" in str(exc).lower()
+    missing_name = _extract_missing_catalog_name(exc)
+    if missing_name is None:
+        return False
+    return missing_name in _expected_silver_relation_names()
 
 
 def _try_create_view(con: duckdb.DuckDBPyConnection, view_name: str, pattern: str) -> None:
