@@ -13,8 +13,15 @@ document lacks ``createdDateTime`` the column is emitted as a typed-null
 ``pl.Datetime("us", "UTC")`` rather than dropped, so a ``SELECT *`` partition
 glob spanning vintage-present and vintage-absent files stays schema-stable.
 
-``available_at`` / ``ingested_at`` are NOT touched here — they remain the
-ingest-side clocks stamped by ``BaseSilverTransformer``.
+This module does not set ``available_at`` / ``ingested_at`` directly, but its
+output feeds ``available_at`` indirectly: per ADR-025 Sec 3,
+``BaseSilverTransformer`` row-wise coalesces
+``available_at = coalesce(published_at, ingest_time)``
+(``silver/base.py:1447-1471``), so once ``published_at`` is emitted here it
+silently becomes ``available_at`` for every row with a non-null vintage.
+Only rows with a null ``published_at`` fall back to the ingest/reingest
+scalar clock. (X1-F09: corrects prior wording that claimed ``available_at``
+was untouched by this helper's output.)
 
 F-07 (2026-07-26): the nominal ``createdDateTime`` format is
 ``"%Y-%m-%dT%H:%M:%SZ"``, but ENTSO-E documents have carried a fractional-second

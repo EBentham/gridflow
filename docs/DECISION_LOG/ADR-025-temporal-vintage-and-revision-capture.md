@@ -127,6 +127,40 @@ Two capture models were considered:
   replace the point-in-time (`available_at <= as_of`) selection in
   gridflow_models — that consumer-side barrier is unchanged and remains the
   authority for training-time correctness.
+- **F-17 doctrine, RATIFIED 2026-07-26 (sharpened here 2026-08-04, R3-e /
+  B1.3):** the two repos' selection rules are deliberately different
+  because they answer different questions, not because one is wrong.
+  gridflow's `_latest` (this view) serves **"what do we believe now"** — the
+  current-best value for ad-hoc/quality reads. `gridflow_models`'
+  earliest-`available_at`-wins dedup (`core/bitemporal.py`,
+  `dedupe_event_time_revisions`, ADR-049) answers **"what would we have
+  believed then"** — leakage-safe training, deliberately keeping the
+  *earliest* surviving vintage rather than the latest.
+  - **Caveat 1 — earliest-wins is an approximation, not the primitive.**
+    Keeping the earliest `available_at` row per event-time key is a
+    *conservative approximation* of point-in-time correctness, not the
+    exact primitive. The exact primitive is `available_at <= as_of` then
+    latest-of-survivors (P2.30/P2.32 describe the projection; §3 P1.1 below
+    is what makes `available_at` a true vintage rather than an ingest
+    timestamp, and therefore makes the primitive constructible at all).
+  - **Caveat 2 — two divergences are gaps, not doctrine, and remain OPEN.**
+    (a) a run-rank tie-break asymmetry between this view's secondary
+    `<run_rank>` ordering and the training-side dedup, which has no
+    equivalent secondary key, and (b) `dedupe_event_time_revisions` sorting
+    a null `available_at` FIRST (Polars default), so a null vintage can win
+    over a real one with no secondary key to stop it. Neither is the
+    ratified doctrine above — both are carried as **R3-h**
+    (`R3-SPECS.md` B2.5), not fixed by this amendment. ADR-049 carries the
+    models-side half of this same note.
+- **R5-F11 (LOW, accept-with-note, 2026-08-04):** this section states
+  `_latest` is added "for APPEND_ONLY datasets" as a property. In practice
+  the view is generated from a hand-maintained registry (`LATEST_VIEW_SPECS`,
+  `silver/latest_views.py:74-88`) that today coincides exactly with the
+  `APPEND_ONLY = True` set (3/3: system_prices, remit, fou2t14d) but is not
+  derived from it — a future `APPEND_ONLY` dataset without a matching
+  registry entry silently gets no `_latest` view and nothing fails. Not
+  fixed here (v0.18-unit candidate: assert the two sets are equal in a
+  test); recorded so the property claim above isn't read as enforced.
 
 ### 3. Vintage semantics (P1.1) — `available_at = coalesce(published_at, ingest_time)`
 

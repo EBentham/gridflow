@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 import os
+import re
 import time
 from pathlib import Path
 
@@ -335,6 +336,101 @@ def _is_benign_absent_parquet(exc: Exception) -> bool:
     return "no files found" in msg or "no files that match" in msg
 
 
+_MISSING_CATALOG_NAME_RE = re.compile(
+    r'with name "?([A-Za-z0-9_]+)"?\s+does not exist', re.IGNORECASE
+)
+
+
+def _extract_missing_catalog_name(exc: Exception) -> str | None:
+    """Extract the missing table/view/function name DuckDB names in a CatalogException.
+
+    DuckDB's CatalogException states the offending object name in a
+    consistent shape (``... with name <name> does not exist!``) regardless of
+    whether the missing object is a table, view, or scalar function — see
+    the three probed message shapes in the Sol diff pass 1 major finding.
+    Returns ``None`` if the message doesn't match (defensive: a future DuckDB
+    version could reword this), which callers must treat as "cannot
+    classify" rather than "benign".
+    """
+    match = _MISSING_CATALOG_NAME_RE.search(str(exc))
+    return match.group(1) if match else None
+
+
+def _expected_silver_relation_names() -> frozenset[str]:
+    """Relation names gridflow itself expects to exist once transform/rebuild runs.
+
+    Sourced from the two places the repo already owns this list, never
+    hardcoded here: the silver schema manifest (``relation_name`` and
+    ``qualified_view`` for every registered dataset) and
+    ``LATEST_VIEW_SPECS``' base/``_latest`` view-name pair. A gold view
+    referencing one of these names that isn't materialized YET is a benign,
+    expected absence during partial pipeline runs. Anything else a
+    CatalogException names — a misspelled relation, a missing scalar
+    function, or any other object gridflow does not itself register — falls
+    outside this set and is a genuine defect.
+
+    Filtered to SILVER-layer relations only (manifest ``relation_kind`` of
+    ``"silver"`` or ``"serving_alias"``, both of which point at
+    ``silver_*`` views). Rows with ``relation_kind == "gold"``
+    (``gold_eu_gas_storage``, ``gold_uk_imbalance_context``) are deliberately
+    excluded: a missing GOLD relation is never a benign "upstream silver not
+    yet written" case, and including gold names here would re-open the
+    silent-swallow this membership test exists to close (Sol diff pass 2
+    major finding 1).
+    """
+    from gridflow.silver.schema_manifest import get_silver_schema_manifest
+
+    names: set[str] = set()
+    for entry in get_silver_schema_manifest():
+        if entry.relation_kind == "gold":
+            continue
+        names.add(entry.relation_name)
+        if entry.qualified_view is not None:
+            names.add(entry.qualified_view)
+    for source, dataset in LATEST_VIEW_SPECS:
+        base_view = f"silver_{source}_{dataset}"
+        names.add(base_view)
+        names.add(f"{base_view}_latest")
+    return frozenset(names)
+
+
+def _is_benign_absent_gold_view(exc: Exception) -> bool:
+    """True when a gold view fails because a KNOWN silver relation is absent.
+
+    Mirrors _is_benign_absent_parquet's DEBUG/WARNING split one layer up:
+    DuckDB raises a CatalogException citing a missing table/view/function.
+    Message-shape alone ("does not exist") is not enough to call this
+    benign — a misspelled relation name or a missing scalar function raises
+    the identical shape (Sol diff pass 1 major finding) and must NOT be
+    classified as benign-absent. Classification is therefore a MEMBERSHIP
+    test: DEBUG only when the missing object is one gridflow itself expects
+    to exist eventually (:func:`_expected_silver_relation_names`); if the
+    name cannot be extracted from the message, or isn't in that set, this
+    falls to WARNING — ambiguity always resolves to the loud, safe branch.
+    The expected-set build itself fails closed: a manifest-build failure
+    (e.g. ``get_silver_schema_manifest``'s documented ``ValueError`` paths)
+    is caught, logged once at WARNING, and treated as non-benign rather than
+    escaping this classification path and turning production's
+    logging-only posture into an init/refresh hard failure (Sol diff pass 2
+    major finding 2).
+    """
+    if not isinstance(exc, duckdb.CatalogException):
+        return False
+    missing_name = _extract_missing_catalog_name(exc)
+    if missing_name is None:
+        return False
+    try:
+        expected_names = _expected_silver_relation_names()
+    except Exception as build_exc:
+        logger.warning(
+            "Could not build expected silver relation names for gold-view "
+            "absence classification; treating as non-benign: %s",
+            build_exc,
+        )
+        return False
+    return missing_name in expected_names
+
+
 def _try_create_view(con: duckdb.DuckDBPyConnection, view_name: str, pattern: str) -> None:
     """Create a view over the Parquet files, if any have been written.
 
@@ -380,7 +476,20 @@ def _register_gold_views(con: duckdb.DuckDBPyConnection) -> None:
         except Exception as exc:
             if _is_strict_mode():
                 raise
-            logger.warning("Could not register gold view %s: %s", sql_file.name, exc)
+            if _is_benign_absent_gold_view(exc):
+                logger.debug(
+                    "Could not register gold view %s (upstream relation not yet present): %s",
+                    sql_file.name,
+                    exc,
+                )
+            else:
+                # Deterministic DDL/binder error — make the silent-corruption case
+                # visible rather than letting a later SELECT fail opaquely.
+                logger.warning(
+                    "Gold view registration failed for %s (not absent-data): %s",
+                    sql_file.name,
+                    exc,
+                )
 
 
 def refresh_views(db_path: Path, data_dir: Path) -> None:
