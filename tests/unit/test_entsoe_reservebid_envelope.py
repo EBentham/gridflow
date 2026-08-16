@@ -4389,22 +4389,19 @@ A11_AMBIGUOUS_POINT_QUANTITY_QUANTITY_FIRST_DOCUMENT = b"""<?xml version="1.0" e
 </ReserveBid_MarketDocument>
 """
 
-#: D-11 (Sol review, finding 1): a <Point> presenting the SAME accepted
-#: value tag TWICE (rather than two DIFFERENT accepted spellings, as A11
-#: does) must also be refused. D-11 is specified to count occurrences of
-#: accepted value tags, not distinct names -- a set-based implementation
-#: (``seen.add(tag); if len(seen) > 1: return []``) would pass A10, both
-#: A11 parametrizations and B5, yet silently accept this document via
-#: last-write-wins/element-order dependence, which is the exact defect
-#: D-11 exists to remove. The two duplicate values (11 and 22) are
-#: deliberately UNEQUAL so a last-write-wins implementation is observable
-#: (a wrong implementation would return 1 record with value 22.0, not an
-#: error) rather than passing by coincidence of the values matching.
-DUPLICATE_QUANTITY_DOCUMENT = b"""<?xml version="1.0" encoding="UTF-8"?>
+#: D-11 occurrence-matrix template (Sol R4-b redesign): a single
+#: Bid_TimeSeries/Period/Point ReserveBid document with the Point's
+#: value-bearing children left as a ``{value_children}`` slot. The matrix
+#: test below fills the slot with an ordered sequence of (tag, value) pairs
+#: to exercise every N/spelling/value/ordering combination without
+#: committing one hand-written fixture per combination. Still an inline
+#: literal per the repo constraint (no external fixture file, no lxml
+#: tree-building) -- only the value-bearing Point children vary.
+_POINT_MATRIX_DOCUMENT_TEMPLATE = """<?xml version="1.0" encoding="UTF-8"?>
 <ReserveBid_MarketDocument xmlns="urn:iec62325.351:tc57wg16:451-7:reservebiddocument:7:2">
-  <mRID>inline-duplicate-quantity-doc</mRID>
+  <mRID>inline-point-matrix-doc</mRID>
   <Bid_TimeSeries>
-    <mRID>dup-quantity-1</mRID>
+    <mRID>point-matrix-1</mRID>
     <connecting_Domain.mRID>10Y-TEST</connecting_Domain.mRID>
     <Period>
       <timeInterval>
@@ -4414,40 +4411,27 @@ DUPLICATE_QUANTITY_DOCUMENT = b"""<?xml version="1.0" encoding="UTF-8"?>
       <resolution>PT60M</resolution>
       <Point>
         <position>1</position>
-        <quantity>11</quantity>
-        <quantity>22</quantity>
-      </Point>
+{value_children}      </Point>
     </Period>
   </Bid_TimeSeries>
 </ReserveBid_MarketDocument>
 """
 
-#: D-11 (Sol review, finding 1): the ``quantity.quantity`` counterpart of
-#: DUPLICATE_QUANTITY_DOCUMENT above -- two accepted-alias children of the
-#: SAME spelling, reversed values (22 then 11) relative to the sibling
-#: fixture so neither fixture's pass/fail depends on which value happens
-#: to land last across the pair.
-DUPLICATE_QUANTITY_QUANTITY_DOCUMENT = b"""<?xml version="1.0" encoding="UTF-8"?>
-<ReserveBid_MarketDocument xmlns="urn:iec62325.351:tc57wg16:451-7:reservebiddocument:7:2">
-  <mRID>inline-duplicate-quantity-quantity-doc</mRID>
-  <Bid_TimeSeries>
-    <mRID>dup-quantity-quantity-1</mRID>
-    <connecting_Domain.mRID>10Y-TEST</connecting_Domain.mRID>
-    <Period>
-      <timeInterval>
-        <start>2026-01-01T00:00Z</start>
-        <end>2026-01-01T01:00Z</end>
-      </timeInterval>
-      <resolution>PT60M</resolution>
-      <Point>
-        <position>1</position>
-        <quantity.quantity>22</quantity.quantity>
-        <quantity.quantity>11</quantity.quantity>
-      </Point>
-    </Period>
-  </Bid_TimeSeries>
-</ReserveBid_MarketDocument>
-"""
+
+def _point_matrix_document(children: tuple[tuple[str, str], ...]) -> bytes:
+    """Fill ``_POINT_MATRIX_DOCUMENT_TEMPLATE`` with an ordered sequence of
+    ``(tag, value)`` Point children and return the encoded document bytes.
+
+    Args:
+        children: Ordered ``(tag, value)`` pairs, e.g.
+            ``(("quantity", "5"), ("quantity.quantity", "9"))``. Order is
+            preserved in the emitted XML so element-order-dependent
+            implementations are exercised in both directions across the
+            matrix's parametrize cases.
+    """
+    value_children = "".join(f"        <{tag}>{value}</{tag}>\n" for tag, value in children)
+    return _POINT_MATRIX_DOCUMENT_TEMPLATE.format(value_children=value_children).encode("utf-8")
+
 
 #: B5 / Sec 9.5: reproduces the shape measured at
 #: `.planning/phases/R3-test-integrity/probes/entsoe_A15_extracted.xml:35-39`
@@ -4698,69 +4682,192 @@ class TestGroupAReservebidEnvelope:
 
         assert records == []
         errors = [r for r in caplog.records if r.levelname == "ERROR"]
-        got = [r.getMessage() for r in errors]
-        # Sol review, finding 2: a bare `"quantity" in message` substring
-        # check is automatically true whenever "quantity.quantity" appears,
-        # so an error naming ONLY quantity.quantity would pass. The message
-        # also carries an unrelated `value_tag='quantity'` (%r) fragment
-        # BEFORE the accepted-tags list, so even a quoted
-        # `"'quantity'" in message` check would still be defeated by that
-        # unrelated occurrence. Scope the check to the `accepted: [...]`
-        # segment (the `sorted(accepted_value_tags)` rendering) so only
-        # THAT list is examined for both quoted spellings.
-        assert any(
-            "'quantity'" in r.getMessage().split("accepted:", 1)[-1]
-            and "'quantity.quantity'" in r.getMessage().split("accepted:", 1)[-1]
-            for r in errors
-        ), (
-            f"expected the ERROR's accepted-tags list to name both 'quantity' and "
-            f"'quantity.quantity'; got: {got}"
+        # R4-b redesign, structural change 2: `sorted(accepted_value_tags)`
+        # is logging arg index 3 -- a real Python list on the LogRecord, not
+        # text. Asserting the structured value is immune to message
+        # wording, marker renaming (M5) and substring collisions in one
+        # move, unlike the previous `"'quantity'" in
+        # message.split("accepted:", 1)[-1]` scrape it replaces (that scrape
+        # itself only existed because a bare substring check was defeated
+        # by the unrelated `value_tag='quantity'` fragment -- Sol review,
+        # finding 2 -- but text-scraping is still fails-open the moment the
+        # marker text changes, which is exactly what M5 in the sibling
+        # occurrence-matrix test proves).
+        assert len(errors) == 1, (
+            f"expected exactly one D-11 ERROR; got: {[r.getMessage() for r in errors]}"
         )
+        assert errors[0].args[3] == ["quantity", "quantity.quantity"]
+        # Supplementary readability check only (never load-bearing).
+        assert "N-21/D-11" in errors[0].getMessage()
 
     @pytest.mark.parametrize(
-        "document",
+        ("children", "expect_refused", "expect_value"),
         [
-            pytest.param(DUPLICATE_QUANTITY_DOCUMENT, id="duplicate-quantity"),
-            pytest.param(DUPLICATE_QUANTITY_QUANTITY_DOCUMENT, id="duplicate-quantity.quantity"),
+            pytest.param((), False, None, id="n0-empty"),
+            pytest.param((("quantity", "7"),), False, 7.0, id="n1-quantity"),
+            pytest.param((("quantity.quantity", "7"),), False, 7.0, id="n1-quantity.quantity"),
+            pytest.param(
+                (("quantity", "5"), ("quantity", "5")),
+                True,
+                None,
+                id="n2-quantity-quantity-equal",
+            ),
+            pytest.param(
+                (("quantity", "5"), ("quantity", "9")),
+                True,
+                None,
+                id="n2-quantity-quantity-unequal",
+            ),
+            pytest.param(
+                (("quantity", "9"), ("quantity", "5")),
+                True,
+                None,
+                id="n2-quantity-quantity-unequal-rev",
+            ),
+            pytest.param(
+                (("quantity.quantity", "5"), ("quantity.quantity", "5")),
+                True,
+                None,
+                id="n2-qq-qq-equal",
+            ),
+            pytest.param(
+                (("quantity.quantity", "5"), ("quantity.quantity", "9")),
+                True,
+                None,
+                id="n2-qq-qq-unequal",
+            ),
+            pytest.param(
+                (("quantity.quantity", "9"), ("quantity.quantity", "5")),
+                True,
+                None,
+                id="n2-qq-qq-unequal-rev",
+            ),
+            pytest.param(
+                (("quantity", "5"), ("quantity.quantity", "5")),
+                True,
+                None,
+                id="n2-mixed-quantity-first-equal",
+            ),
+            pytest.param(
+                (("quantity", "5"), ("quantity.quantity", "9")),
+                True,
+                None,
+                id="n2-mixed-quantity-first-unequal",
+            ),
+            pytest.param(
+                (("quantity.quantity", "5"), ("quantity", "5")),
+                True,
+                None,
+                id="n2-mixed-quantity.quantity-first-equal",
+            ),
+            pytest.param(
+                (("quantity.quantity", "9"), ("quantity", "5")),
+                True,
+                None,
+                id="n2-mixed-quantity.quantity-first-unequal",
+            ),
+            pytest.param(
+                (("quantity", "1"), ("quantity", "2"), ("quantity", "3")),
+                True,
+                None,
+                id="n3-all-quantity",
+            ),
+            pytest.param(
+                (
+                    ("quantity.quantity", "1"),
+                    ("quantity.quantity", "2"),
+                    ("quantity.quantity", "3"),
+                ),
+                True,
+                None,
+                id="n3-all-quantity.quantity",
+            ),
+            pytest.param(
+                (("quantity", "1"), ("quantity.quantity", "2"), ("quantity", "3")),
+                True,
+                None,
+                id="n3-mixed",
+            ),
+            pytest.param(
+                (("quantity.quantity", "3"), ("quantity", "2"), ("quantity.quantity", "1")),
+                True,
+                None,
+                id="n3-mixed-rev",
+            ),
         ],
     )
-    def test_reservebid_point_with_duplicate_identical_value_tag_is_refused(
-        self, document: bytes, caplog: pytest.LogCaptureFixture
+    def test_reservebid_point_accepted_value_tag_occurrence_matrix(
+        self,
+        children: tuple[tuple[str, str], ...],
+        expect_refused: bool,
+        expect_value: float | None,
+        caplog: pytest.LogCaptureFixture,
     ) -> None:
-        """D-11 (Sol review, finding 1): a <Point> presenting the SAME
-        accepted value tag TWICE must be refused exactly like A11's two
-        DIFFERENT accepted spellings -- D-11 is specified to count
-        occurrences of accepted value tags, not distinct names. A
-        set-based implementation (``seen.add(tag); if len(seen) > 1:
-        return []``) would pass A10, both A11 parametrizations and B5
-        while silently accepting this document via last-write-wins
-        (returning 1 record with the LATER duplicate's value), which is
-        the exact defect D-11 exists to remove. The fixture's two
-        duplicate values are unequal so that failure mode is observable
-        rather than passing by coincidence."""
+        """D-11 (Sec 9.3/9.5, Sol R4-b redesign): D-11's rule -- refuse a
+        <Point> presenting MORE THAN ONE accepted value-tag occurrence
+        (``quantity``/``quantity.quantity`` under value_tag="quantity") -- is
+        a small, fully enumerable property. This parametrizes the property
+        directly: occurrence count N in {0, 1, 2, 3} x both spellings and
+        mixtures x equal/unequal values x both child orderings for N >= 2,
+        instead of sampling it with hand-picked duplicate examples (the
+        example-by-example approach five prior review rounds each defeated
+        with one more wrong implementation fitting the fixtures so far).
+
+        Supersedes
+        ``test_reservebid_point_with_duplicate_identical_value_tag_is_refused``
+        (the ``DUPLICATE_QUANTITY_DOCUMENT`` / ``DUPLICATE_QUANTITY_QUANTITY_DOCUMENT``
+        fixtures): those two documents are exactly the
+        n2-quantity-quantity-unequal and n2-qq-qq-unequal cases below, and
+        this matrix strictly covers everything they pinned plus the N=3 and
+        equal-value cases they could not.
+
+        N=0 refuses nothing -- the pre-existing ``value is None`` skip (no
+        record for that Point, no ERROR), not a D-11 refusal. N=1 parses to
+        its own value regardless of spelling. N >= 2, any mixture, any
+        values, any order: refused with 0 records and exactly one ERROR
+        whose structured accepted-tags argument names both spellings
+        (asserted via ``record.args[3]``, never via message text -- see the
+        sibling assertion in
+        ``test_reservebid_point_with_two_accepted_value_tags_is_refused_in_either_order``
+        for why).
+
+        Kills, per this unit's mutation matrix (verbatim RED captured in the
+        unit's return message):
+        - M1 (set-based ``len(seen) > 1``, dedups occurrences of the SAME
+          tag before counting): every n2/n3 same-tag case -- a set collapses
+          repeated identical tags to one member and never trips.
+        - M2 (count-EQUALITY ``accepted_hits == 2``, the Major finding): the
+          n3-* cases, where a count of 3 is wrongly accepted by ``== 2``.
+        - M3 (refuse only when the two values DIFFER): the *-equal cases,
+          which must refuse despite identical values.
+        """
+        document = _point_matrix_document(children)
         with caplog.at_level("ERROR", logger="gridflow.connectors.entsoe.parsers"):
             records = parse_timeseries_xml(document, value_tag="quantity")
 
-        assert records == []
         errors = [r for r in caplog.records if r.levelname == "ERROR"]
-        got = [r.getMessage() for r in errors]
-        # Sol review, finding 2: a bare `"quantity" in message` substring
-        # check is automatically true whenever "quantity.quantity" appears,
-        # so an error naming ONLY quantity.quantity would pass. The message
-        # also carries an unrelated `value_tag='quantity'` (%r) fragment
-        # BEFORE the accepted-tags list, so even a quoted
-        # `"'quantity'" in message` check would still be defeated by that
-        # unrelated occurrence. Scope the check to the `accepted: [...]`
-        # segment (the `sorted(accepted_value_tags)` rendering) so only
-        # THAT list is examined for both quoted spellings.
-        assert any(
-            "'quantity'" in r.getMessage().split("accepted:", 1)[-1]
-            and "'quantity.quantity'" in r.getMessage().split("accepted:", 1)[-1]
-            for r in errors
-        ), (
-            f"expected the ERROR's accepted-tags list to name both 'quantity' and "
-            f"'quantity.quantity'; got: {got}"
-        )
+
+        if expect_refused:
+            assert records == [], f"expected 0 records for children={children!r}; got {records!r}"
+            assert len(errors) == 1, (
+                f"expected exactly one D-11 ERROR for children={children!r}; got "
+                f"{[r.getMessage() for r in errors]}"
+            )
+            # Structured assertion, never message text (structural change 2).
+            assert errors[0].args[3] == ["quantity", "quantity.quantity"]
+        else:
+            assert errors == [], (
+                f"expected no D-11 ERROR for children={children!r}; got "
+                f"{[r.getMessage() for r in errors]}"
+            )
+            if expect_value is None:
+                assert records == [], (
+                    f"expected 0 records (N=0, value is None) for children="
+                    f"{children!r}; got {records!r}"
+                )
+            else:
+                assert len(records) == 1
+                assert records[0]["value"] == expect_value
 
 
 class TestGroupBInvariants:
