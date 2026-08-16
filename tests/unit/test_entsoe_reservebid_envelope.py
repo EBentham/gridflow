@@ -46,9 +46,10 @@ from __future__ import annotations
 import json
 from datetime import UTC, date, datetime
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 import polars as pl
+import pytest
 from lxml import etree
 
 import gridflow.silver.entsoe  # noqa: F401 -- registers every entsoe transformer
@@ -58,9 +59,6 @@ from gridflow.connectors.entsoe.endpoints import ENTSOE_DT_FORMAT
 from gridflow.connectors.entsoe.parsers import parse_timeseries_xml
 from gridflow.silver.entsoe.h8_balancing import BalancingEnergyBidsTransformer
 from gridflow.silver.partition_window import RequestWindow, exclude_out_of_window
-
-if TYPE_CHECKING:
-    import pytest
 
 FIXTURES = Path(__file__).parent.parent / "fixtures" / "entsoe"
 A37_FIXTURE = FIXTURES / "balancing_energy_bids_a37_reservebid_de_20260601.xml"
@@ -4310,6 +4308,116 @@ BARE_TIMESERIES_ONLY_DOCUMENT = b"""<?xml version="1.0" encoding="UTF-8"?>
 </ReserveBid_MarketDocument>
 """
 
+#: A10 / Sec 9.5: a ReserveBid Point with exactly ONE value-bearing child,
+#: `quantity.quantity`, and no price element of any spelling -- every
+#: element name observed in `entsoe_A37_extracted.xml` (D-4c). Ordering-
+#: immune by construction: there is nothing for element order to decide.
+#: Cross-constrained against a "return [] for everything" impl by A1, B3 and
+#: this document's own assertion 1 (value_tag="quantity" -> 1 record, 7.0).
+A10_SCOPED_ALIAS_DOCUMENT = b"""<?xml version="1.0" encoding="UTF-8"?>
+<ReserveBid_MarketDocument xmlns="urn:iec62325.351:tc57wg16:451-7:reservebiddocument:7:2">
+  <mRID>inline-a10-scoped-alias-doc</mRID>
+  <Bid_TimeSeries>
+    <mRID>a10-1</mRID>
+    <connecting_Domain.mRID>10Y-TEST</connecting_Domain.mRID>
+    <Period>
+      <timeInterval>
+        <start>2026-06-01T00:00Z</start>
+        <end>2026-06-01T00:15Z</end>
+      </timeInterval>
+      <resolution>PT15M</resolution>
+      <Point>
+        <position>1</position>
+        <quantity.quantity>7</quantity.quantity>
+      </Point>
+    </Period>
+  </Bid_TimeSeries>
+</ReserveBid_MarketDocument>
+"""
+
+#: A11 / Sec 9.5 (Sol pass-3, FM-22): a ReserveBid Point presenting BOTH
+#: accepted spellings of the same value under value_tag="quantity" --
+#: <quantity>11</quantity> and <quantity.quantity>22</quantity.quantity>.
+#: This shape is ADVERSARIAL and NEVER OBSERVED (same posture as
+#: MIXED_ENVELOPE_DOCUMENT, D-9a, FM-19) -- it is constructed to prove the
+#: D-11 predicate is order-invariant, not to model a real vendor payload.
+#: Measured RED at HEAD cd9e99d (F-15): quantity-first -> 1 record, 22.0;
+#: quantity.quantity-first -> 1 record, 11.0; no log either way. Two
+#: separate literals (rather than one document reordered at runtime) so the
+#: committed bytes are the exact adversarial fixture in each ordering.
+A11_AMBIGUOUS_POINT_QUANTITY_FIRST_DOCUMENT = b"""<?xml version="1.0" encoding="UTF-8"?>
+<ReserveBid_MarketDocument xmlns="urn:iec62325.351:tc57wg16:451-7:reservebiddocument:7:2">
+  <mRID>inline-a11-ambiguous-point-doc</mRID>
+  <Bid_TimeSeries>
+    <mRID>a11-1</mRID>
+    <connecting_Domain.mRID>10Y-TEST</connecting_Domain.mRID>
+    <Period>
+      <timeInterval>
+        <start>2026-01-01T00:00Z</start>
+        <end>2026-01-01T01:00Z</end>
+      </timeInterval>
+      <resolution>PT60M</resolution>
+      <Point>
+        <position>1</position>
+        <quantity>11</quantity>
+        <quantity.quantity>22</quantity.quantity>
+      </Point>
+    </Period>
+  </Bid_TimeSeries>
+</ReserveBid_MarketDocument>
+"""
+
+A11_AMBIGUOUS_POINT_QUANTITY_QUANTITY_FIRST_DOCUMENT = b"""<?xml version="1.0" encoding="UTF-8"?>
+<ReserveBid_MarketDocument xmlns="urn:iec62325.351:tc57wg16:451-7:reservebiddocument:7:2">
+  <mRID>inline-a11-ambiguous-point-doc</mRID>
+  <Bid_TimeSeries>
+    <mRID>a11-1</mRID>
+    <connecting_Domain.mRID>10Y-TEST</connecting_Domain.mRID>
+    <Period>
+      <timeInterval>
+        <start>2026-01-01T00:00Z</start>
+        <end>2026-01-01T01:00Z</end>
+      </timeInterval>
+      <resolution>PT60M</resolution>
+      <Point>
+        <position>1</position>
+        <quantity.quantity>22</quantity.quantity>
+        <quantity>11</quantity>
+      </Point>
+    </Period>
+  </Bid_TimeSeries>
+</ReserveBid_MarketDocument>
+"""
+
+#: B5 / Sec 9.5: reproduces the shape measured at
+#: `.planning/phases/R3-test-integrity/probes/entsoe_A15_extracted.xml:35-39`
+#: (the probe is git-ignored, F-8, so only the SHAPE is inlined here) -- a
+#: real Balancing_MarketDocument Point carrying <quantity> and
+#: <procurement_Price.amount> as siblings, selected by DIFFERENT value_tag
+#: values rather than multi-matching under either one (F-17). This is the
+#: executable proof that D-11 does not reach the general suffix-rule path.
+B5_SUFFIX_SIBLING_DOCUMENT = b"""<?xml version="1.0" encoding="UTF-8"?>
+<Balancing_MarketDocument xmlns="urn:iec62325.351:tc57wg16:451-6:balancingdocument:4:0">
+  <mRID>inline-b5-suffix-sibling-doc</mRID>
+  <TimeSeries>
+    <mRID>b5-1</mRID>
+    <connecting_Domain.mRID>10Y-TEST</connecting_Domain.mRID>
+    <Period>
+      <timeInterval>
+        <start>2026-01-01T00:00Z</start>
+        <end>2026-01-01T01:00Z</end>
+      </timeInterval>
+      <resolution>PT60M</resolution>
+      <Point>
+        <position>1</position>
+        <quantity>1</quantity>
+        <procurement_Price.amount>0.11</procurement_Price.amount>
+      </Point>
+    </Period>
+  </TimeSeries>
+</Balancing_MarketDocument>
+"""
+
 
 class TestGroupAReservebidEnvelope:
     """GROUP A -- RED on master @ e7be850, GREEN after Task 2."""
@@ -4455,19 +4563,85 @@ class TestGroupAReservebidEnvelope:
         assert sorted(raw_df["value"].to_list()) == [4.0, 4.0, 4.0]
 
     def test_reservebid_honours_a_non_quantity_value_tag(self) -> None:
-        """A9 (Sol pass-2 finding 1): the ONLY constraint that the ReserveBid
-        value-tag alias stays scoped to the value_tag the caller actually
-        requested. Without it, an implementation that accepts
-        {"quantity", "quantity.quantity"} under a ReserveBid root
-        REGARDLESS of value_tag passes every other test in this module
-        (A1-A8 and B3 all request "quantity"; B1 excludes ReserveBid
-        documents; B4 checks only diagnostics) while silently returning
-        quantity where price was requested -- a contract break for all 21
-        callers of the parser. RED today: the series tag never matches, so
-        0 records under any value_tag."""
+        """A9 (Sec 9.4/9.5 -- SUPERSEDED): this docstring previously claimed
+        A9 was "the ONLY constraint that the ReserveBid value-tag alias
+        stays scoped to the value_tag the caller actually requested." That
+        claim is FALSIFIED (Sol pass-3): all three <Point>s in the A37
+        fixture place quantity.quantity BEFORE energy_Price.amount (F-14),
+        and parsers.py:471-484 overwrites `value` per matching child, so an
+        implementation that also matches quantity.quantity under
+        value_tag="price.amount" still returns the LATER price and passes
+        this assertion unchanged.
+
+        A9 is demoted to a POSITIVE CONTROL: the end-to-end proof that the
+        suffix rule (`_matches_value_tag`) correctly sources
+        energy_Price.amount on real vendor bytes. It keeps every assertion
+        it had. The actual scoping gate is A10
+        (test_reservebid_alias_is_scoped_to_the_requested_value_tag), which
+        is ordering-immune by construction; the ordering ambiguity itself is
+        closed by D-11 and proven order-invariant by A11."""
         records = parse_timeseries_xml(A37_FIXTURE.read_bytes(), value_tag="price.amount")
 
         assert [record["value"] for record in records] == F3A_PRICES
+
+    def test_reservebid_alias_is_scoped_to_the_requested_value_tag(self) -> None:
+        """A10 (Sec 9.5): the scoping gate that supersedes A9's falsified
+        claim. The document's Point has exactly ONE value-bearing child,
+        quantity.quantity, and no price element -- ordering-immune by
+        construction, since no permutation of the document changes which
+        child wins. Assertion 1 (value_tag="quantity" -> 1 record, 7.0) is
+        what stops assertion 2 (value_tag="price.amount" -> []) from being
+        satisfiable by "the document is unparseable"; the two must be in the
+        SAME test so they cannot drift apart. Honest limitation (not a new
+        finding): assertion 2's zero records are produced silently --
+        matched_series == 1 so D-9 correctly stays quiet, and the Point is
+        skipped by the pre-existing `value is None` branch with no counter.
+        That is R-3's accepted class, exercised here on a deliberately
+        contrived document; it is not a production hazard for caller 1,
+        whose value_tag is pinned to "quantity" and asserted by A8."""
+        records_quantity = parse_timeseries_xml(A10_SCOPED_ALIAS_DOCUMENT, value_tag="quantity")
+        assert len(records_quantity) == 1
+        assert records_quantity[0]["value"] == 7.0
+
+        records_price = parse_timeseries_xml(A10_SCOPED_ALIAS_DOCUMENT, value_tag="price.amount")
+        assert records_price == []
+
+    @pytest.mark.parametrize(
+        "document",
+        [
+            pytest.param(A11_AMBIGUOUS_POINT_QUANTITY_FIRST_DOCUMENT, id="quantity-first"),
+            pytest.param(
+                A11_AMBIGUOUS_POINT_QUANTITY_QUANTITY_FIRST_DOCUMENT,
+                id="quantity.quantity-first",
+            ),
+        ],
+    )
+    def test_reservebid_point_with_two_accepted_value_tags_is_refused_in_either_order(
+        self, document: bytes, caplog: pytest.LogCaptureFixture
+    ) -> None:
+        """A11 / D-11 (Sec 9.3, FM-22, Sol pass-3): a <Point> presenting MORE
+        THAN ONE accepted value tag (here, both `quantity` and
+        `quantity.quantity` under value_tag="quantity") must be refused --
+        zero records, ERROR naming both spellings -- in EITHER child
+        ordering. This shape is ADVERSARIAL and NEVER OBSERVED (same posture
+        as MIXED_ENVELOPE_DOCUMENT, D-9a, FM-19); it exists to prove the
+        predicate is order-invariant, not to model a real payload. RED at
+        HEAD cd9e99d (F-15): 1 record, 22.0 (quantity-first) or 11.0
+        (quantity.quantity-first), with NO log either way -- the load-
+        bearing RED reason is the missing ERROR, not the record count
+        (`records == []` already holds on master @ e7be850, F-15a). Both
+        assertions are load-bearing for that reason. Cross-constrained
+        against a "refuse every ReserveBid" implementation by A1 (3
+        records), B3 (1 record, 9.0) and A10 assertion 1 (1 record, 7.0)."""
+        with caplog.at_level("ERROR", logger="gridflow.connectors.entsoe.parsers"):
+            records = parse_timeseries_xml(document, value_tag="quantity")
+
+        assert records == []
+        errors = [r for r in caplog.records if r.levelname == "ERROR"]
+        got = [r.getMessage() for r in errors]
+        assert any(
+            "quantity" in r.getMessage() and "quantity.quantity" in r.getMessage() for r in errors
+        ), f"expected an ERROR naming both quantity and quantity.quantity; got: {got}"
 
 
 class TestGroupBInvariants:
@@ -4538,10 +4712,13 @@ class TestGroupBInvariants:
         self, caplog: pytest.LogCaptureFixture
     ) -> None:
         """B4 / V-8: parsing every committed fixture under both value_tag
-        values must trip ZERO D-9 guard warnings and ZERO D-10 mixed-
-        envelope errors. Vacuously green today (no guard exists yet); the
-        real claim is post-fix, and it is what forbids ever committing a
-        guard-tripping or mixed fixture (FM-19)."""
+        values must trip ZERO D-9 guard warnings, ZERO D-10 mixed-envelope
+        errors AND ZERO D-11 value-tag-ambiguity errors (Sec 9.4/9.5) --
+        neither committed ReserveBid fixture is mixed and no <Point> in
+        either carries two accepted value tags (F-16). Vacuously green
+        today (no guard exists yet); the real claim is post-fix, and it is
+        what forbids ever committing a guard-tripping, mixed or value-tag-
+        ambiguous fixture (FM-19)."""
         with caplog.at_level("WARNING", logger="gridflow.connectors.entsoe.parsers"):
             for fixture_path in sorted(FIXTURES.glob("*.xml")):
                 data = fixture_path.read_bytes()
@@ -4554,6 +4731,48 @@ class TestGroupBInvariants:
             if r.levelname in ("WARNING", "ERROR") and "N-21" in r.getMessage()
         ]
         assert guard_hits == [], (
-            "expected zero D-9/D-10 diagnostics across the committed corpus; got: "
+            "expected zero D-9/D-10/D-11 diagnostics across the committed corpus; got: "
             f"{[(r.levelname, r.getMessage()) for r in guard_hits]}"
+        )
+
+        d11_hits = [
+            r for r in caplog.records if r.levelname == "ERROR" and "D-11" in r.getMessage()
+        ]
+        assert d11_hits == [], (
+            f"expected zero D-11 errors across the committed corpus; got: "
+            f"{[r.getMessage() for r in d11_hits]}"
+        )
+
+    def test_general_value_tag_suffix_matching_is_unchanged(
+        self, caplog: pytest.LogCaptureFixture
+    ) -> None:
+        """B5 (Sec 9.5): the executable statement that D-11 does NOT reach
+        the general suffix-rule path -- the boundary R-6 sits on. Reproduces
+        the shape measured at
+        `.planning/phases/R3-test-integrity/probes/entsoe_A15_extracted.xml:35-39`
+        (the probe is git-ignored, F-8, so only the shape is inlined): a
+        real Balancing_MarketDocument Point carrying <quantity> and
+        <procurement_Price.amount> as siblings. The two candidate spellings
+        are selected by DIFFERENT value_tag values, so the Point never
+        multi-matches (F-17) -- 1 record under each value_tag, no ERROR and
+        no WARNING either way. Without this test, a future executor could
+        "simplify" D-11 by dropping the `len(accepted_value_tags) > 1` gate
+        and only V-8's corpus sweep would notice."""
+        with caplog.at_level("WARNING", logger="gridflow.connectors.entsoe.parsers"):
+            records_quantity = parse_timeseries_xml(
+                B5_SUFFIX_SIBLING_DOCUMENT, value_tag="quantity"
+            )
+            records_price = parse_timeseries_xml(
+                B5_SUFFIX_SIBLING_DOCUMENT, value_tag="price.amount"
+            )
+
+        assert len(records_quantity) == 1
+        assert records_quantity[0]["value"] == 1.0
+        assert len(records_price) == 1
+        assert records_price[0]["value"] == 0.11
+
+        diagnostics = [r for r in caplog.records if r.levelname in ("WARNING", "ERROR")]
+        assert diagnostics == [], (
+            f"expected no WARNING/ERROR from the parser logger; got: "
+            f"{[(r.levelname, r.getMessage()) for r in diagnostics]}"
         )
