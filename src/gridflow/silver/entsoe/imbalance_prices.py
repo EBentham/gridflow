@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from datetime import UTC, date, datetime
-from typing import Any
+from typing import Any, ClassVar
 
 import polars as pl
 
@@ -28,6 +28,11 @@ class ImbalancePricesTransformer(BaseSilverTransformer):
     source = "entsoe"
     dataset = "imbalance_prices"
     schema_cls = EntsoeImbalancePrices
+    EVENT_WINDOW_FILTER: ClassVar[bool] = True
+    """B4 (N-9): FILTER_SAFE, vault-recorded live FR 2025-04-01: real
+    populated data, PT15M (R3-RESEARCH.md:67); window-bound comparison not
+    shown in the abridged vault text, see
+    ``silver/entsoe/_event_window.py::EVENT_WINDOW_CLASSIFICATION``."""
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         bronze_path = self._bronze_path_for_date(target_date)

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from datetime import UTC, date, datetime
-from typing import Any
+from typing import Any, ClassVar
 
 import polars as pl
 
@@ -23,6 +23,10 @@ class CrossBorderFlowsTransformer(BaseSilverTransformer):
     source = "entsoe"
     dataset = "cross_border_flows"
     schema_cls = EntsoeCrossborderFlow
+    EVENT_WINDOW_FILTER: ClassVar[bool] = True
+    """B4 (N-9): FILTER_SAFE, live-probed FR-BE 2026-08-01 -- period.time
+    Interval matches the request window exactly (R3-RESEARCH.md:50); see
+    ``silver/entsoe/_event_window.py::EVENT_WINDOW_CLASSIFICATION``."""
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         bronze_path = self._bronze_path_for_date(target_date)
