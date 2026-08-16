@@ -1,34 +1,58 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Balancing_MarketDocument xmlns="urn:iec62325.351:tc57wg16:451-6:balancingdocument:4:0">
+<!--
+N-21 (D-4b/D-4c): reshaped from a hand-made Balancing_MarketDocument /
+bare-TimeSeries / bare-quantity fiction (never observed for A37) to the
+real ReserveBid_MarketDocument / Bid_TimeSeries / quantity.quantity shape
+measured in the live A37 probe (F-1). Only element local-names present in
+that probe are used here: Original_MarketProduct and the Direction element
+are NOT observed for ReserveBid and are therefore absent (D-4c); values are
+preserved from the pre-reshape fixture where the shape allows it
+(bid-1/bid-2, A01, A05, 45/52). Two series x one Point each (the observed
+per-series cardinality, F-1) reproduces the pre-reshape fixture's 2-instant
+structure (2024-01-15T00:00Z, T01:00Z) so filter-mechanics coverage is
+unchanged (Sec 3b row 4); within-Period multi-point expansion coverage is
+retained from 31 other committed fixtures (F-13).
+-->
+<ReserveBid_MarketDocument xmlns="urn:iec62325.351:tc57wg16:451-7:reservebiddocument:7:2">
   <mRID>fixture-balancing-energy-bids-gb-20240115</mRID>
   <revisionNumber>1</revisionNumber>
   <type>A37</type>
   <process.processType>A47</process.processType>
-  <TimeSeries>
+  <domain.mRID codingScheme="A01">10YGB----------A</domain.mRID>
+  <Bid_TimeSeries>
     <mRID>bid-1</mRID>
     <businessType>B74</businessType>
-    <Direction>A01</Direction>
-    <Original_MarketProduct>
-      <marketProductType>A01</marketProductType>
-    </Original_MarketProduct>
-    <Standard_MarketProduct>
-      <marketProductType>A05</marketProductType>
-    </Standard_MarketProduct>
     <connecting_Domain.mRID codingScheme="A01">10YGB----------A</connecting_Domain.mRID>
+    <flowDirection.direction>A01</flowDirection.direction>
+    <standard_MarketProduct.marketProductType>A05</standard_MarketProduct.marketProductType>
     <Period>
       <timeInterval>
         <start>2024-01-15T00:00Z</start>
+        <end>2024-01-15T01:00Z</end>
+      </timeInterval>
+      <resolution>PT60M</resolution>
+      <Point>
+        <position>1</position>
+        <quantity.quantity>45</quantity.quantity>
+      </Point>
+    </Period>
+  </Bid_TimeSeries>
+  <Bid_TimeSeries>
+    <mRID>bid-2</mRID>
+    <businessType>B74</businessType>
+    <connecting_Domain.mRID codingScheme="A01">10YGB----------A</connecting_Domain.mRID>
+    <flowDirection.direction>A01</flowDirection.direction>
+    <standard_MarketProduct.marketProductType>A05</standard_MarketProduct.marketProductType>
+    <Period>
+      <timeInterval>
+        <start>2024-01-15T01:00Z</start>
         <end>2024-01-15T02:00Z</end>
       </timeInterval>
       <resolution>PT60M</resolution>
       <Point>
         <position>1</position>
-        <quantity>45</quantity>
-      </Point>
-      <Point>
-        <position>2</position>
-        <quantity>52</quantity>
+        <quantity.quantity>52</quantity.quantity>
       </Point>
     </Period>
-  </TimeSeries>
-</Balancing_MarketDocument>
+  </Bid_TimeSeries>
+</ReserveBid_MarketDocument>
