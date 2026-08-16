@@ -4389,6 +4389,66 @@ A11_AMBIGUOUS_POINT_QUANTITY_QUANTITY_FIRST_DOCUMENT = b"""<?xml version="1.0" e
 </ReserveBid_MarketDocument>
 """
 
+#: D-11 (Sol review, finding 1): a <Point> presenting the SAME accepted
+#: value tag TWICE (rather than two DIFFERENT accepted spellings, as A11
+#: does) must also be refused. D-11 is specified to count occurrences of
+#: accepted value tags, not distinct names -- a set-based implementation
+#: (``seen.add(tag); if len(seen) > 1: return []``) would pass A10, both
+#: A11 parametrizations and B5, yet silently accept this document via
+#: last-write-wins/element-order dependence, which is the exact defect
+#: D-11 exists to remove. The two duplicate values (11 and 22) are
+#: deliberately UNEQUAL so a last-write-wins implementation is observable
+#: (a wrong implementation would return 1 record with value 22.0, not an
+#: error) rather than passing by coincidence of the values matching.
+DUPLICATE_QUANTITY_DOCUMENT = b"""<?xml version="1.0" encoding="UTF-8"?>
+<ReserveBid_MarketDocument xmlns="urn:iec62325.351:tc57wg16:451-7:reservebiddocument:7:2">
+  <mRID>inline-duplicate-quantity-doc</mRID>
+  <Bid_TimeSeries>
+    <mRID>dup-quantity-1</mRID>
+    <connecting_Domain.mRID>10Y-TEST</connecting_Domain.mRID>
+    <Period>
+      <timeInterval>
+        <start>2026-01-01T00:00Z</start>
+        <end>2026-01-01T01:00Z</end>
+      </timeInterval>
+      <resolution>PT60M</resolution>
+      <Point>
+        <position>1</position>
+        <quantity>11</quantity>
+        <quantity>22</quantity>
+      </Point>
+    </Period>
+  </Bid_TimeSeries>
+</ReserveBid_MarketDocument>
+"""
+
+#: D-11 (Sol review, finding 1): the ``quantity.quantity`` counterpart of
+#: DUPLICATE_QUANTITY_DOCUMENT above -- two accepted-alias children of the
+#: SAME spelling, reversed values (22 then 11) relative to the sibling
+#: fixture so neither fixture's pass/fail depends on which value happens
+#: to land last across the pair.
+DUPLICATE_QUANTITY_QUANTITY_DOCUMENT = b"""<?xml version="1.0" encoding="UTF-8"?>
+<ReserveBid_MarketDocument xmlns="urn:iec62325.351:tc57wg16:451-7:reservebiddocument:7:2">
+  <mRID>inline-duplicate-quantity-quantity-doc</mRID>
+  <Bid_TimeSeries>
+    <mRID>dup-quantity-quantity-1</mRID>
+    <connecting_Domain.mRID>10Y-TEST</connecting_Domain.mRID>
+    <Period>
+      <timeInterval>
+        <start>2026-01-01T00:00Z</start>
+        <end>2026-01-01T01:00Z</end>
+      </timeInterval>
+      <resolution>PT60M</resolution>
+      <Point>
+        <position>1</position>
+        <quantity.quantity>22</quantity.quantity>
+        <quantity.quantity>11</quantity.quantity>
+      </Point>
+    </Period>
+  </Bid_TimeSeries>
+</ReserveBid_MarketDocument>
+"""
+
 #: B5 / Sec 9.5: reproduces the shape measured at
 #: `.planning/phases/R3-test-integrity/probes/entsoe_A15_extracted.xml:35-39`
 #: (the probe is git-ignored, F-8, so only the SHAPE is inlined here) -- a
@@ -4633,6 +4693,37 @@ class TestGroupAReservebidEnvelope:
         assertions are load-bearing for that reason. Cross-constrained
         against a "refuse every ReserveBid" implementation by A1 (3
         records), B3 (1 record, 9.0) and A10 assertion 1 (1 record, 7.0)."""
+        with caplog.at_level("ERROR", logger="gridflow.connectors.entsoe.parsers"):
+            records = parse_timeseries_xml(document, value_tag="quantity")
+
+        assert records == []
+        errors = [r for r in caplog.records if r.levelname == "ERROR"]
+        got = [r.getMessage() for r in errors]
+        assert any(
+            "quantity" in r.getMessage() and "quantity.quantity" in r.getMessage() for r in errors
+        ), f"expected an ERROR naming both quantity and quantity.quantity; got: {got}"
+
+    @pytest.mark.parametrize(
+        "document",
+        [
+            pytest.param(DUPLICATE_QUANTITY_DOCUMENT, id="duplicate-quantity"),
+            pytest.param(DUPLICATE_QUANTITY_QUANTITY_DOCUMENT, id="duplicate-quantity.quantity"),
+        ],
+    )
+    def test_reservebid_point_with_duplicate_identical_value_tag_is_refused(
+        self, document: bytes, caplog: pytest.LogCaptureFixture
+    ) -> None:
+        """D-11 (Sol review, finding 1): a <Point> presenting the SAME
+        accepted value tag TWICE must be refused exactly like A11's two
+        DIFFERENT accepted spellings -- D-11 is specified to count
+        occurrences of accepted value tags, not distinct names. A
+        set-based implementation (``seen.add(tag); if len(seen) > 1:
+        return []``) would pass A10, both A11 parametrizations and B5
+        while silently accepting this document via last-write-wins
+        (returning 1 record with the LATER duplicate's value), which is
+        the exact defect D-11 exists to remove. The fixture's two
+        duplicate values are unequal so that failure mode is observable
+        rather than passing by coincidence."""
         with caplog.at_level("ERROR", logger="gridflow.connectors.entsoe.parsers"):
             records = parse_timeseries_xml(document, value_tag="quantity")
 
