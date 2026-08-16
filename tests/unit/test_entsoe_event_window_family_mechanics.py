@@ -2,13 +2,15 @@
 
 Pins the *filter's* boundary behaviour (HALF_OPEN semantics,
 :func:`exclude_out_of_window`) for every newly-classified family (Sec 5,
-Sec 9). This file (T4) covers the two shared families: h6-quantity via
+Sec 9): the two shared families from T4 -- h6-quantity via
 :class:`NetPositionsTransformer`, and h8-balancing via
 :class:`ProcuredBalancingCapacityTransformer` and
-:class:`BalancingEnergyBidsTransformer` for the distinct output shape.
-T5 adds the five single-class families to ``FAMILY_CASES`` below. These
-tests exercise both request boundaries in the mechanics layer; they cannot
-and do not upgrade the *vendor* evidence recorded in
+:class:`BalancingEnergyBidsTransformer` for the distinct output shape --
+plus the five single-class families added in T5 (``cross_border_flows``,
+``net_transfer_capacity``, ``imbalance_prices``, ``imbalance_volume``,
+``activated_balancing_prices``). These tests exercise both request
+boundaries in the mechanics layer; they cannot and do not upgrade the
+*vendor* evidence recorded in
 ``silver/entsoe/_event_window.py::EVENT_WINDOW_CLASSIFICATION`` (Sec 9 step
 5) -- some opted-in families rest on an untested boundary or a sample never
 interval-compared, and this file's job is only to pin the filter mechanic,
@@ -46,12 +48,17 @@ import gridflow.silver.entsoe  # noqa: F401 -- registers every entsoe transforme
 from gridflow.bronze.writer import BronzeWriter
 from gridflow.connectors.base import RawResponse
 from gridflow.connectors.entsoe.endpoints import ENTSOE_DT_FORMAT
+from gridflow.silver.entsoe.activated_balancing_prices import ActivatedBalancingPricesTransformer
+from gridflow.silver.entsoe.cross_border_flows import CrossBorderFlowsTransformer
 from gridflow.silver.entsoe.h6_market import NetPositionsTransformer
 from gridflow.silver.entsoe.h8_balancing import (
     AggregatedBalancingEnergyBidsTransformer,
     BalancingEnergyBidsTransformer,
     ProcuredBalancingCapacityTransformer,
 )
+from gridflow.silver.entsoe.imbalance_prices import ImbalancePricesTransformer
+from gridflow.silver.entsoe.imbalance_volume import ImbalanceVolumeTransformer
+from gridflow.silver.entsoe.net_transfer_capacity import NetTransferCapacityTransformer
 
 if TYPE_CHECKING:
     from gridflow.silver.base import BaseSilverTransformer
@@ -64,8 +71,7 @@ TARGET_DATE = date(2024, 1, 15)
 
 #: (family_id, transformer class, source, dataset, fixture filename) --
 #: T4: the two shared families (h6-quantity, h8-balancing, including its
-#: distinct-output-shape sibling). T5 appends the five single-class
-#: families.
+#: distinct-output-shape sibling). T5: the five single-class families.
 FAMILY_CASES = [
     pytest.param(
         "h6_quantity",
@@ -90,6 +96,46 @@ FAMILY_CASES = [
         "balancing_energy_bids",
         "balancing_energy_bids_gb.xml",
         id="h8_balancing_bids",
+    ),
+    pytest.param(
+        "cross_border_flows",
+        CrossBorderFlowsTransformer,
+        "entsoe",
+        "cross_border_flows",
+        "cross_border_flows_gb_fr.xml",
+        id="cross_border_flows",
+    ),
+    pytest.param(
+        "net_transfer_capacity",
+        NetTransferCapacityTransformer,
+        "entsoe",
+        "net_transfer_capacity",
+        "net_transfer_capacity_gb_fr.xml",
+        id="net_transfer_capacity",
+    ),
+    pytest.param(
+        "imbalance_prices",
+        ImbalancePricesTransformer,
+        "entsoe",
+        "imbalance_prices",
+        "imbalance_prices_gb.xml",
+        id="imbalance_prices",
+    ),
+    pytest.param(
+        "imbalance_volume",
+        ImbalanceVolumeTransformer,
+        "entsoe",
+        "imbalance_volume",
+        "imbalance_volume_gb.xml",
+        id="imbalance_volume",
+    ),
+    pytest.param(
+        "activated_balancing_prices",
+        ActivatedBalancingPricesTransformer,
+        "entsoe",
+        "activated_balancing_prices",
+        "activated_balancing_prices_gb.xml",
+        id="activated_balancing_prices",
     ),
 ]
 
