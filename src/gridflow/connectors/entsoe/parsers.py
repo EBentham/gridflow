@@ -217,6 +217,23 @@ def parse_timeseries_xml(
         root_name, {}
     ).get(value_tag, frozenset())
 
+    # D-11 (FM-22): D-1's alias set makes it possible for ONE <Point> to present
+    # more than one accepted value tag. `value` is overwritten per matching child
+    # below, so the winner would be decided by element order -- silently
+    # (measured F-15: the same document yields 22.0 or 11.0). That is FM-20's
+    # ambiguity one level down and D-10's answer applies unchanged: there is no
+    # vendor evidence for which spelling is authoritative in such a Point, so
+    # refuse rather than guess (repo rule: TODO: and stop).
+    #
+    # This flag IS the reachability proof. `accepted_value_tags` has exactly one
+    # member for every root outside _VALUE_TAG_ALIASES_BY_DOC_ROOT, and for
+    # ReserveBid under any value_tag other than "quantity" -- so the check below
+    # is structurally dead for callers 3-21 (§2). Matches made by
+    # _matches_value_tag's SUFFIX rule are deliberately NOT counted: counting
+    # them would change behaviour for all 21 callers, which is this unit's named
+    # T3 trigger (R-6).
+    value_tag_ambiguity_possible = len(accepted_value_tags) > 1
+
     # D-10: refuse a document that presents MORE THAN ONE accepted series
     # name. Merging them would silently inflate silver (distinct dedup
     # keys) or silently corrupt it (equal keys resolved order-dependently
@@ -468,6 +485,7 @@ def parse_timeseries_xml(
                     continue
                 position: int | None = None
                 value: float | None = None
+                accepted_hits = 0  # D-11: occurrences, not distinct names
                 for child in point_el:
                     tag = _strip_ns(child.tag)
                     if tag == "position":
@@ -480,8 +498,25 @@ def parse_timeseries_xml(
                             with contextlib.suppress(ValueError):
                                 position = int(child.text)
                     elif tag in accepted_value_tags or _matches_value_tag(tag, value_tag):
+                        if tag in accepted_value_tags:
+                            accepted_hits += 1  # occurrences, not distinct names
                         with contextlib.suppress(ValueError):
                             value = float(child.text or "nan")
+
+                if value_tag_ambiguity_possible and accepted_hits > 1:
+                    logger.error(
+                        "N-21/D-11: ENTSO-E document %s (root %s) has a <Point> presenting "
+                        "more than one accepted value tag for value_tag=%r (accepted: %s); "
+                        "refusing to parse it ambiguously and returning 0 records. The value "
+                        "would otherwise be decided by element order. Record the real payload "
+                        "and narrow _VALUE_TAG_ALIASES_BY_DOC_ROOT deliberately",
+                        document_metadata["document_mrid"] or "<no mRID>",
+                        root_name,
+                        value_tag,
+                        sorted(accepted_value_tags),
+                    )
+                    return []
+
                 if position is None or value is None:
                     continue
 
