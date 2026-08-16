@@ -4,7 +4,14 @@ logs/
 .tmp/
 
 # Environment
+# Cover every .env variant, not just the bare name: a suffixed backup such as
+# .env.pre-data-relocation is a real credentials file, and matching only `.env`
+# left it untracked-but-not-ignored, i.e. one `git add -A` from publishing live
+# API keys in a public repo.
 .env
+.env.*
+# ...but .env.example carries no secrets and is deliberately tracked.
+!.env.example
 
 # DuckDB
 *.duckdb
