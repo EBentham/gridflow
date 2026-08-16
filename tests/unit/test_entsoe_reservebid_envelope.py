@@ -4433,6 +4433,23 @@ def _point_matrix_document(children: tuple[tuple[str, str], ...]) -> bytes:
     return _POINT_MATRIX_DOCUMENT_TEMPLATE.format(value_children=value_children).encode("utf-8")
 
 
+def _repeated_children(
+    tag: str, count: int, *, start_value: int = 1
+) -> tuple[tuple[str, str], ...]:
+    """Generate ``count`` ``(tag, value)`` pairs of a single spelling, with
+    distinct ascending values, for the large-N occurrence-matrix cases
+    (N=4/9/23) so they are never hand-written."""
+    return tuple((tag, str(start_value + i)) for i in range(count))
+
+
+def _alternating_children(count: int, *, start_value: int = 1) -> tuple[tuple[str, str], ...]:
+    """Generate ``count`` ``(tag, value)`` pairs alternating between the two
+    accepted spellings (``quantity`` / ``quantity.quantity``), distinct
+    ascending values, for the large-N occurrence-matrix cases."""
+    tags = ("quantity", "quantity.quantity")
+    return tuple((tags[i % 2], str(start_value + i)) for i in range(count))
+
+
 #: B5 / Sec 9.5: reproduces the shape measured at
 #: `.planning/phases/R3-test-integrity/probes/entsoe_A15_extracted.xml:35-39`
 #: (the probe is git-ignored, F-8, so only the SHAPE is inlined here) -- a
@@ -4794,6 +4811,27 @@ class TestGroupAReservebidEnvelope:
                 None,
                 id="n3-mixed-rev",
             ),
+            # Irregular, non-contiguous, deliberately large N (Sol R4-b
+            # major finding): N=4 closes the specific `in {2, 3}` gap; N=9
+            # and N=23 make ANY finite set-membership implementation
+            # implausible, not merely wrong for one more value. Generated
+            # programmatically via `_repeated_children`/`_alternating_children`
+            # -- never hand-written.
+            pytest.param(_repeated_children("quantity", 4), True, None, id="n4-all-quantity"),
+            pytest.param(
+                _repeated_children("quantity.quantity", 4),
+                True,
+                None,
+                id="n4-all-quantity.quantity",
+            ),
+            pytest.param(_alternating_children(4), True, None, id="n4-mixed"),
+            pytest.param(tuple(reversed(_alternating_children(4))), True, None, id="n4-mixed-rev"),
+            pytest.param(_alternating_children(9), True, None, id="n9-mixed"),
+            pytest.param(tuple(reversed(_alternating_children(9))), True, None, id="n9-mixed-rev"),
+            pytest.param(_alternating_children(23), True, None, id="n23-mixed"),
+            pytest.param(
+                tuple(reversed(_alternating_children(23))), True, None, id="n23-mixed-rev"
+            ),
         ],
     )
     def test_reservebid_point_accepted_value_tag_occurrence_matrix(
@@ -4807,11 +4845,34 @@ class TestGroupAReservebidEnvelope:
         <Point> presenting MORE THAN ONE accepted value-tag occurrence
         (``quantity``/``quantity.quantity`` under value_tag="quantity") -- is
         a small, fully enumerable property. This parametrizes the property
-        directly: occurrence count N in {0, 1, 2, 3} x both spellings and
-        mixtures x equal/unequal values x both child orderings for N >= 2,
-        instead of sampling it with hand-picked duplicate examples (the
-        example-by-example approach five prior review rounds each defeated
-        with one more wrong implementation fitting the fixtures so far).
+        directly: occurrence count N in {0, 1, 2, 3, 4, 9, 23} (irregular,
+        non-contiguous, deliberately including a large value -- see below) x
+        both spellings and mixtures x equal/unequal values x both child
+        orderings for N >= 2, instead of sampling it with hand-picked
+        duplicate examples (the example-by-example approach five prior
+        review rounds each defeated with one more wrong implementation
+        fitting the fixtures so far).
+
+        Honest scope note (Sol R4-b major finding, this round): a
+        parametrized matrix over a FINITE set of occurrence counts SAMPLES
+        the "refuse iff N > 1" property, it does not PROVE it -- for any
+        finite set of tested counts, a set-membership implementation (e.g.
+        ``accepted_hits in {2, 3}``) can be constructed that happens to fit
+        every tested case while still being wrong on an untested one. Simply
+        appending N=4 after a prior round tested only {0, 1, 2, 3} would
+        just invite ``in {2, 3, 4}`` next, then N=5, and so on -- that
+        regress is a property of finite enumeration, not a defect this test
+        can fix by adding one more number. N=4, 9 and 23 are chosen
+        specifically to be irregular and non-contiguous, with N=23 large
+        enough that a set literal covering every tested count would be
+        immediately recognisable as contrived rather than a plausible
+        off-by-one mistake -- not to claim proof of the property for all N.
+        The production rule being pinned is a single ``accepted_hits > 1``
+        comparison (``parsers.py``, confirmed sound across four consecutive
+        reviews), so the realistic failure modes are the ones this matrix's
+        mutation testing already kills below (set-based dedup, count
+        equality, value-sensitivity, message-text dependence) -- not an
+        exhaustive proof over N.
 
         Supersedes
         ``test_reservebid_point_with_duplicate_identical_value_tag_is_refused``
@@ -4834,10 +4895,14 @@ class TestGroupAReservebidEnvelope:
         Kills, per this unit's mutation matrix (verbatim RED captured in the
         unit's return message):
         - M1 (set-based ``len(seen) > 1``, dedups occurrences of the SAME
-          tag before counting): every n2/n3 same-tag case -- a set collapses
-          repeated identical tags to one member and never trips.
+          tag before counting): every n2/n3/n4/n9/n23 same-tag or alternating
+          case -- a set collapses repeated identical tags to one member and
+          never trips.
         - M2 (count-EQUALITY ``accepted_hits == 2``, the Major finding): the
           n3-* cases, where a count of 3 is wrongly accepted by ``== 2``.
+        - M2b (set-membership ``accepted_hits in {2, 3}``, this round's Major
+          finding): the n4/n9/n23 cases, where counts of 4, 9 and 23 are
+          wrongly accepted by finite-set membership.
         - M3 (refuse only when the two values DIFFER): the *-equal cases,
           which must refuse despite identical values.
         """
