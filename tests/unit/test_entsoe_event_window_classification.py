@@ -10,6 +10,7 @@ records, not re-derived here).
 
 from __future__ import annotations
 
+from collections import Counter
 from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 
@@ -19,7 +20,13 @@ import gridflow.silver.entsoe  # noqa: F401 -- registers every entsoe transforme
 from gridflow.bronze.writer import BronzeWriter
 from gridflow.connectors.base import RawResponse
 from gridflow.connectors.entsoe.endpoints import ENTSOE_DT_FORMAT
-from gridflow.silver.entsoe._event_window import EVENT_WINDOW_FILTER_EXEMPT
+from gridflow.silver.base import BaseSilverTransformer
+from gridflow.silver.entsoe._event_window import (
+    EVENT_WINDOW_CLASSIFICATION,
+    EVENT_WINDOW_FILTER_EXEMPT,
+    R2A_CARRIED_DATASETS,
+    Classification,
+)
 from gridflow.silver.entsoe.actual_generation import ActualGenerationTransformer
 from gridflow.silver.entsoe.actual_generation_units import ActualGenerationUnitsTransformer
 from gridflow.silver.entsoe.actual_load import ActualLoadTransformer
@@ -29,8 +36,200 @@ from gridflow.silver.entsoe.load_forecast import LoadForecastTransformer
 from gridflow.silver.entsoe.wind_solar_forecast import WindSolarForecastTransformer
 from gridflow.silver.registry import get_transformer_class, list_transformers
 
+
+class TestClassificationMap:
+    """B4 (N-9) EVENT_WINDOW_CLASSIFICATION map invariants I-1..I-9.
+
+    I-7 is reserved to the family mechanics tests
+    (``test_entsoe_event_window_family_mechanics.py``, T4/T5) and the final
+    gate -- not part of this class.
+    """
+
+    def test_i1_filter_safe_iff_opted_in_and_not_exempt(self) -> None:
+        """I-1: classification == FILTER_SAFE <=> EVENT_WINDOW_FILTER is
+        True <=> dataset absent from EVENT_WINDOW_FILTER_EXEMPT."""
+        for dataset, entry in EVENT_WINDOW_CLASSIFICATION.items():
+            cls = get_transformer_class("entsoe", dataset)
+            assert cls is not None, f"{dataset} must be registered"
+            opted_in = cls.EVENT_WINDOW_FILTER
+            exempt_present = dataset in EVENT_WINDOW_FILTER_EXEMPT
+            is_filter_safe = entry.classification is Classification.FILTER_SAFE
+            assert is_filter_safe == opted_in, (
+                f"I-1 [{dataset}]: classification FILTER_SAFE={is_filter_safe} "
+                f"but EVENT_WINDOW_FILTER={opted_in}"
+            )
+            assert is_filter_safe == (not exempt_present), (
+                f"I-1 [{dataset}]: classification FILTER_SAFE={is_filter_safe} "
+                f"but exempt-dict presence={exempt_present}"
+            )
+
+    def test_i2_exempt_or_unknown_iff_not_opted_in_and_exempt_present(self) -> None:
+        """I-2: classification in (EXEMPT, UNKNOWN) <=> EVENT_WINDOW_FILTER
+        is False <=> dataset present in EVENT_WINDOW_FILTER_EXEMPT with a
+        non-empty reason."""
+        for dataset, entry in EVENT_WINDOW_CLASSIFICATION.items():
+            cls = get_transformer_class("entsoe", dataset)
+            assert cls is not None
+            opted_in = cls.EVENT_WINDOW_FILTER
+            reason = EVENT_WINDOW_FILTER_EXEMPT.get(dataset, "")
+            is_exempt_or_unknown = entry.classification in (
+                Classification.EXEMPT,
+                Classification.UNKNOWN,
+            )
+            assert is_exempt_or_unknown == (not opted_in), (
+                f"I-2 [{dataset}]: EXEMPT/UNKNOWN={is_exempt_or_unknown} "
+                f"but EVENT_WINDOW_FILTER={opted_in}"
+            )
+            assert is_exempt_or_unknown == bool(reason), (
+                f"I-2 [{dataset}]: EXEMPT/UNKNOWN={is_exempt_or_unknown} "
+                f"but exempt-dict reason={reason!r}"
+            )
+
+    def test_i3_total_coverage(self) -> None:
+        """I-3: set(EVENT_WINDOW_CLASSIFICATION) == set(registered entsoe
+        datasets) -- no orphan entry either way."""
+        registered = {dataset for _, dataset in list_transformers("entsoe")}
+        assert set(EVENT_WINDOW_CLASSIFICATION) == registered
+
+    def test_i4_every_entry_has_a_resolvable_citation(self) -> None:
+        """I-4: non-empty doc_type/evidence/family/transformer; every
+        UNKNOWN entry's exemption reason starts with 'TODO:'; every entry
+        with an empty probes tuple names a vault page path in evidence,
+        except R2A_CARRIED_DATASETS members (I-9's pointer carve-out)."""
+        for dataset, entry in EVENT_WINDOW_CLASSIFICATION.items():
+            assert entry.doc_type, f"I-4 [{dataset}]: empty doc_type"
+            assert entry.evidence, f"I-4 [{dataset}]: empty evidence"
+            assert entry.family, f"I-4 [{dataset}]: empty family"
+            assert entry.transformer, f"I-4 [{dataset}]: empty transformer"
+            if entry.classification is Classification.UNKNOWN:
+                reason = EVENT_WINDOW_FILTER_EXEMPT.get(dataset, "")
+                assert reason.startswith("TODO:"), (
+                    f"I-4 [{dataset}]: UNKNOWN reason does not start with 'TODO:': {reason!r}"
+                )
+            if not entry.probes and dataset not in R2A_CARRIED_DATASETS:
+                assert "30-vendors/" in entry.evidence, (
+                    f"I-4 [{dataset}]: empty probes but no vault page path in evidence"
+                )
+
+    def test_i5_end_state_figures_match_the_plan(self) -> None:
+        """I-5: every figure in Sec 5/5a holds when measured from a live
+        import, transcribed from the plan (the only place these figures are
+        stated)."""
+        registered = {dataset for _, dataset in list_transformers("entsoe")}
+        classification_counts = Counter(
+            e.classification for e in EVENT_WINDOW_CLASSIFICATION.values()
+        )
+        assert classification_counts[Classification.FILTER_SAFE] == 26
+        assert classification_counts[Classification.EXEMPT] == 17
+        assert classification_counts[Classification.UNKNOWN] == 5
+        true_flag_count = 0
+        for dataset in registered:
+            cls = get_transformer_class("entsoe", dataset)
+            assert cls is not None
+            if cls.EVENT_WINDOW_FILTER:
+                true_flag_count += 1
+        assert true_flag_count == 26
+        assert len(EVENT_WINDOW_FILTER_EXEMPT) == 22
+        todo_count = sum(
+            1 for reason in EVENT_WINDOW_FILTER_EXEMPT.values() if reason.startswith("TODO:")
+        )
+        assert todo_count == 5
+        assert len(R2A_CARRIED_DATASETS) == 20
+
+    def test_i6_true_flag_is_never_inherited(self) -> None:
+        """I-6: for every registered ENTSO-E transformer,
+        EVENT_WINDOW_FILTER is True implies 'EVENT_WINDOW_FILTER' in
+        cls.__dict__ -- a True flag is always locally declared, never
+        inherited (M-6). Already true on master (C-14)."""
+        for source, dataset in list_transformers("entsoe"):
+            cls = get_transformer_class(source, dataset)
+            assert cls is not None
+            if cls.EVENT_WINDOW_FILTER is True:
+                assert "EVENT_WINDOW_FILTER" in cls.__dict__, (
+                    f"I-6 [{dataset}]: EVENT_WINDOW_FILTER=True but not locally "
+                    f"declared on {cls.__name__} -- inherited True (M-6)"
+                )
+
+    def test_i8_family_and_transformer_match_the_live_class_graph(self) -> None:
+        """I-8: entry.transformer == get_transformer_class(...).__name__,
+        and entry.family == cls.__bases__[0].__name__ unless that immediate
+        base is BaseSilverTransformer, in which case entry.family ==
+        'own'."""
+        for dataset, entry in EVENT_WINDOW_CLASSIFICATION.items():
+            cls = get_transformer_class("entsoe", dataset)
+            assert cls is not None
+            assert entry.transformer == cls.__name__, (
+                f"I-8 [{dataset}]: transformer={entry.transformer!r} != {cls.__name__!r}"
+            )
+            base = cls.__bases__[0]
+            expected_family = "own" if base is BaseSilverTransformer else base.__name__
+            assert entry.family == expected_family, (
+                f"I-8 [{dataset}]: family={entry.family!r} != {expected_family!r}"
+            )
+
+    def test_i9_r2a_pointer_rule(self) -> None:
+        """I-9: dataset in R2A_CARRIED_DATASETS <=> limitation == '', and
+        every member also has an empty probes tuple and a non-empty pointer
+        evidence. R2A_CARRIED_DATASETS must equal the registered ENTSO-E
+        datasets minus the B4 research population (_B1_POPULATION,
+        transcribed independently above, never re-derived from the map
+        itself), checked against a live registry walk."""
+        registered = {dataset for _, dataset in list_transformers("entsoe")}
+        expected_r2a = registered - set(_B1_POPULATION)
+        assert expected_r2a == R2A_CARRIED_DATASETS
+        assert len(R2A_CARRIED_DATASETS) == 20
+        for dataset, entry in EVENT_WINDOW_CLASSIFICATION.items():
+            is_member = dataset in R2A_CARRIED_DATASETS
+            assert is_member == (entry.limitation == ""), (
+                f"I-9 [{dataset}]: R2A member={is_member} but limitation={entry.limitation!r}"
+            )
+            if is_member:
+                assert entry.probes == (), f"I-9 [{dataset}]: R2A member has non-empty probes"
+                assert entry.evidence, f"I-9 [{dataset}]: R2A member has empty evidence"
+            else:
+                assert entry.limitation, f"I-9 [{dataset}]: non-member has empty limitation"
+
+
+#: The 28-dataset B4 research population (R3-RESEARCH.md Sec 1.1/1.3),
+#: transcribed independently of EVENT_WINDOW_CLASSIFICATION so I-9's check
+#: below is not circular (it must not derive its own expected answer from
+#: the map under test).
+_B1_POPULATION = (
+    "cross_border_flows",
+    "commercial_schedules",
+    "total_nominated_capacity",
+    "net_transfer_capacity",
+    "net_positions",
+    "procured_balancing_capacity",
+    "balancing_energy_bids",
+    "dc_link_intraday_transfer_limits",
+    "redispatching_cross_border",
+    "redispatching_internal",
+    "countertrading",
+    "offered_transfer_capacity_continuous",
+    "offered_transfer_capacity_implicit",
+    "offered_transfer_capacity_explicit",
+    "transfer_capacity_use",
+    "total_capacity_allocated",
+    "activated_balancing_prices",
+    "imbalance_prices",
+    "imbalance_volume",
+    "congestion_management_costs",
+    "balancing_financial_expenses_income",
+    "auction_revenue",
+    "congestion_income",
+    "contracted_reserves",
+    "current_balancing_state",
+    "aggregated_balancing_energy_bids",
+    "cross_zonal_balancing_capacity",
+    "activated_balancing_qty",
+)
+
 FIXTURES = Path(__file__).parent.parent / "fixtures" / "entsoe"
 
+#: B4 (N-9): the R2-A original 7 plus the 19 evidence-classified FILTER_SAFE
+#: datasets (R3-RESEARCH.md Sec 1.1) -- 26 total, per
+#: EVENT_WINDOW_CLASSIFICATION / plan Sec 5.
 OPTED_IN_DATASETS = (
     "day_ahead_prices",
     "actual_load",
@@ -39,6 +238,25 @@ OPTED_IN_DATASETS = (
     "actual_generation_units",
     "wind_solar_forecast",
     "generation_forecast",
+    "cross_border_flows",
+    "commercial_schedules",
+    "total_nominated_capacity",
+    "net_transfer_capacity",
+    "net_positions",
+    "procured_balancing_capacity",
+    "balancing_energy_bids",
+    "dc_link_intraday_transfer_limits",
+    "redispatching_cross_border",
+    "redispatching_internal",
+    "countertrading",
+    "offered_transfer_capacity_continuous",
+    "offered_transfer_capacity_implicit",
+    "offered_transfer_capacity_explicit",
+    "transfer_capacity_use",
+    "total_capacity_allocated",
+    "activated_balancing_prices",
+    "imbalance_prices",
+    "imbalance_volume",
 )
 
 HORIZON_EXEMPT_DATASETS = (
@@ -80,7 +298,8 @@ class TestClassificationCompleteness:
             cls = get_transformer_class(source, dataset)
             assert cls is not None
             assert (dataset in OPTED_IN_DATASETS) == cls.EVENT_WINDOW_FILTER, (
-                f"{dataset}: EVENT_WINDOW_FILTER does not match the plan's 7-dataset opt-in set"
+                f"{dataset}: EVENT_WINDOW_FILTER does not match B4's 26-dataset "
+                "opt-in set (R2-A's 7 plus B4's 19 evidence-classified FILTER_SAFE)"
             )
 
 

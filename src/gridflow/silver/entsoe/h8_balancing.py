@@ -146,11 +146,22 @@ class BalancingEnergyBidsTransformer(_H8BalancingTransformer):
         "ingested_at",
     )
     unique_subset = ("timestamp_utc", "area_code", "bid_mrid", "direction")
+    # B4 (N-9): FILTER_SAFE, live probe DE-LU 2026-06-01, lower edge
+    # coincides exactly with the request start (R3-RESEARCH.md:56, B-7);
+    # see _event_window.py::EVENT_WINDOW_CLASSIFICATION.
+    EVENT_WINDOW_FILTER: ClassVar[bool] = True
 
 
 class AggregatedBalancingEnergyBidsTransformer(BalancingEnergyBidsTransformer):
     dataset = "aggregated_balancing_energy_bids"
     area_columns = ("area_domain",)
+    # C-5/I-6: this class subclasses BalancingEnergyBidsTransformer (now
+    # EVENT_WINDOW_FILTER=True) and would silently inherit that True
+    # without this explicit override. aggregated_balancing_energy_bids is
+    # UNKNOWN (B4/N-9, R3-RESEARCH.md:75) -- never observed populated,
+    # fixture-only prior evidence not trusted alone. Un-inherit the
+    # parent's opt-in explicitly (M-6).
+    EVENT_WINDOW_FILTER: ClassVar[bool] = False
 
 
 class ProcuredBalancingCapacityTransformer(_H8BalancingTransformer):
@@ -170,6 +181,10 @@ class ProcuredBalancingCapacityTransformer(_H8BalancingTransformer):
         "ingested_at",
     )
     unique_subset = ("timestamp_utc", "area_code", "market_agreement_type")
+    # B4 (N-9): FILTER_SAFE, live probe DE-LU 2026-06-01, CET-boundary
+    # over-span, same shape as the already-proven A44 case (R3-RESEARCH.md:55,
+    # B-7); see _event_window.py::EVENT_WINDOW_CLASSIFICATION.
+    EVENT_WINDOW_FILTER: ClassVar[bool] = True
 
 
 class CrossZonalBalancingCapacityTransformer(_H8BalancingTransformer):
