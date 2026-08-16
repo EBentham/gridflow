@@ -224,7 +224,11 @@ EVENT_WINDOW_FILTER_EXEMPT: dict[str, str] = {
     "current_balancing_state": "TODO: unclassified -- see N-9 (v0.18 milestone gate)",
     "aggregated_balancing_energy_bids": "TODO: unclassified -- see N-9 (v0.18 milestone gate)",
     "cross_zonal_balancing_capacity": "TODO: unclassified -- see N-9 (v0.18 milestone gate)",
-    "activated_balancing_qty": "TODO: unclassified -- see N-9 (v0.18 milestone gate)",
+    "activated_balancing_qty": (
+        "TODO: unreachable -- not wired into DOC_TYPES or sources.yaml, "
+        "so no fetch path exists and no evidence can be gathered. "
+        "Cannot be classified until wired (N-22)."
+    ),
 }
 
 
