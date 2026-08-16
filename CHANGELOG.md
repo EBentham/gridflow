@@ -8,6 +8,8 @@ expansion) was paused before release and is intentionally absent.
 
 ## [Unreleased]
 
+## [v0.18] - 2026-08-16 — Retro Remediation
+
 ### Added
 - Partition-window filters (ADR-026): a source-agnostic request-window primitive
   (`silver/partition_window.py`) closes F-04 (Elexon publication-boundary duplication — 29
@@ -48,9 +50,56 @@ expansion) was paused before release and is intentionally absent.
 ### Known limitations
 - The ENTSO-E event-window filter closes F-10 for `day_ahead_prices`, `actual_load`,
   `load_forecast`, `actual_generation`, `actual_generation_units`, `wind_solar_forecast`, and
-  `generation_forecast` only — not repo-wide (ADR-026 D-9; tracked as N-9, a v0.18 milestone
-  gate). 13 further datasets are named-exempt (horizon forecasts, snapshot queries, open-ended
-  revision streams); the rest are unclassified pending N-9.
+  `generation_forecast` only — not repo-wide (ADR-026 D-9; tracked as N-9). **Superseded
+  mid-milestone:** the opted-in population grew to 26 datasets under a tracked, machine-checked
+  classification map (see below), but F-10 still does not close — see "Known limitations" at the
+  end of this release.
+
+### Added (late milestone)
+- **A tracked ENTSO-E event-window classification map** (`silver/entsoe/_event_window.py::
+  EVENT_WINDOW_CLASSIFICATION`) — one entry per registered ENTSO-E dataset, each carrying its
+  verdict, its citation, its transformer family and, crucially, an explicit `limitation` line
+  stating what its evidence does *not* establish. Nine invariants (I-1..I-9) machine-check the
+  map against the live class graph, so it cannot silently drift from the code it describes.
+  19 datasets were opted into the filter on cited evidence, 4 held exempt, 5 left unclassified.
+- **Fail-hard on a null entity key in `bmunits_reference`.** `bm_unit_id` is that transformer's
+  entity key and its dedup is `keep="last"` on the same key, so two null-key rows silently
+  collapsed into one. A null or empty key now aborts the transform with an actionable error
+  naming the offending row count and sample `national_grid_bm_unit` values.
+
+### Fixed (late milestone)
+- **ENTSO-E A37 balancing energy bids parsed to zero rows, silently.** The vendor returns a
+  `ReserveBid_MarketDocument` containing `Bid_TimeSeries` elements with `quantity.quantity`
+  points; the parser matched the literal local-name `TimeSeries` and the literal value tag
+  `quantity` by exact equality. A live 144 KB payload carrying 100 populated bid series
+  therefore produced **no rows and no warning**. The parser now resolves its accepted series
+  and value tags from the document root, and — because the alias itself introduced a new
+  ambiguity — refuses, loudly and with zero records, any document presenting more than one
+  accepted series name, or any `<Point>` presenting more than one accepted value tag. Neither
+  refusal can silently inflate or silently collapse a frame.
+- **A zero-match diagnostic for the whole ENTSO-E parser.** A document that yields no series
+  matches at all now warns. Counting *matches* rather than returned records is deliberate: it
+  avoids a false positive on documents whose single series legitimately carries a `Reason` and
+  no `Point`. Calibrated across the saved probe corpus at one pre-fix trip and none after —
+  the one trip being the very payload that had been failing silently.
+
+### Known limitations
+- **F-10 does not close.** 23 of 28 ENTSO-E datasets are classified; 5 remain unclassified and
+  keep their `TODO:` markers — `contracted_reserves`, `current_balancing_state`,
+  `aggregated_balancing_energy_bids`, `cross_zonal_balancing_capacity` and
+  `activated_balancing_qty`. The last of these is unclassifiable in principle rather than merely
+  unresearched: it is wired into neither the document-type registry nor the source config, so no
+  fetch path exists and no probe can reach it. Guessing was refused; this is fail-safe deferral,
+  not closure. Carried to v0.19.
+- **Reference-dataset `event_time` can be a run-date artefact.** Where a payload carries no
+  recognised timestamp column, the row is stamped with the date the transform ran for.
+  Measured live on six datasets across three sources, with a second, quieter class beside it in
+  which the column resolves fully null instead. Deferred to v0.19 as its own unit — the fix
+  touches a resolver shared by 155 transformers and one affected dataset is load-bearing for a
+  downstream consumer, so it is not a change to make at milestone close.
+- **A37 bid prices are still discarded.** The dataset's silver schema has no price column, so
+  the recovered rows carry quantity only. Verified that no gold view, model handle, notebook or
+  quality check reads these rows as complete bid records. Bronze retains the bytes.
 
 ## [v0.17] - 2026-07-25
 

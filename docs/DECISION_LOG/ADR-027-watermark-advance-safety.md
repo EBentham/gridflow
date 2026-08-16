@@ -1,6 +1,6 @@
 # ADR-027 - Watermark advance safety: compare-and-set writes, independent clamp/suppression
 
-**Status:** Proposed
+**Status:** Accepted (v0.18 milestone close, 2026-08-16 — batch flip authorized by Bobbo)
 **Date:** 2026-07-29
 **Phase:** R2-C (Partition integrity), `.planning/phases/R2-partition-integrity/R2-C-PLAN.md`
 **Findings closed:** F-09 (watermark freeze → unbounded incremental window growth), C-8
