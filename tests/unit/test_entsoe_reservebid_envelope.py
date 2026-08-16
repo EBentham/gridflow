@@ -4844,14 +4844,20 @@ class TestGroupAReservebidEnvelope:
         """D-11 (Sec 9.3/9.5, Sol R4-b redesign): D-11's rule -- refuse a
         <Point> presenting MORE THAN ONE accepted value-tag occurrence
         (``quantity``/``quantity.quantity`` under value_tag="quantity") -- is
-        a small, fully enumerable property. This parametrizes the property
-        directly: occurrence count N in {0, 1, 2, 3, 4, 9, 23} (irregular,
-        non-contiguous, deliberately including a large value -- see below) x
-        both spellings and mixtures x equal/unequal values x both child
-        orderings for N >= 2, instead of sampling it with hand-picked
-        duplicate examples (the example-by-example approach five prior
-        review rounds each defeated with one more wrong implementation
-        fitting the fixtures so far).
+        a small property with a simple rule. This parametrizes it across
+        occurrence count N in {0, 1, 2, 3, 4, 9, 23} (irregular,
+        non-contiguous, deliberately including a large value -- see below),
+        rather than sampling it with hand-picked duplicate examples (the
+        example-by-example approach five prior review rounds each defeated
+        with one more wrong implementation fitting the fixtures so far).
+
+        Coverage, stated precisely so this docstring does not overstate
+        itself (Sol pass-7 nit): the dimensions are NOT a full Cartesian
+        product at every N. N <= 4 covers both spellings, mixtures, equal
+        AND unequal values, and both child orderings; **N = 9 and N = 23
+        sample mixed, distinct-value orderings only**. Those two exist to
+        defeat set-membership fits over the smaller counts, not to re-cover
+        every dimension.
 
         Honest scope note (Sol R4-b major finding, this round): a
         parametrized matrix over a FINITE set of occurrence counts SAMPLES
@@ -4895,9 +4901,11 @@ class TestGroupAReservebidEnvelope:
         Kills, per this unit's mutation matrix (verbatim RED captured in the
         unit's return message):
         - M1 (set-based ``len(seen) > 1``, dedups occurrences of the SAME
-          tag before counting): every n2/n3/n4/n9/n23 same-tag or alternating
-          case -- a set collapses repeated identical tags to one member and
-          never trips.
+          tag before counting): killed by the **same-tag** cases only -- a set
+          collapses repeated identical tags to one member and never trips.
+          Corrected per Sol pass-7 nit: **alternating/mixed cases do NOT kill
+          M1**, because they present two distinct spellings, so the set does
+          reach two members and the mutation trips on them anyway.
         - M2 (count-EQUALITY ``accepted_hits == 2``, the Major finding): the
           n3-* cases, where a count of 3 is wrongly accepted by ``== 2``.
         - M2b (set-membership ``accepted_hits in {2, 3}``, this round's Major
