@@ -3,8 +3,9 @@
 **Status:** Proposed
 **Date:** 2026-07-26 (amended same day, and again 2026-08-03 — see the "Amendment" sections below)
 **Phase:** R2-A (Partition integrity), `.planning/phases/R2-partition-integrity/R2-A-PLAN.md`
-**Findings closed:** F-04 (Elexon boundary duplication), F-16 (duplicate-check key), F-10
-(ENTSO-E vendor over-span) — scoped, see "Scope" below
+**Findings closed:** F-04 (Elexon boundary duplication), F-16 (duplicate-check key). F-10
+(ENTSO-E vendor over-span) is closed for the opted-in population only — OPEN pending the N-9
+gate, 5 datasets unclassified — scoped, see D-9 below
 **Cross-references:** ADR-025 (temporal vintage / `available_at`, incl. its §3 residual for
 `remit`/`fou2t14d`), `_EXACT_PARTITION_ONLY_SOURCES` (`silver/base.py`)
 
