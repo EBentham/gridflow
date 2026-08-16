@@ -1,6 +1,6 @@
 # ADR-029 - Bronze retention and silver rebuildability
 
-**Status:** Proposed
+**Status:** Accepted (v0.18 milestone close, 2026-08-16 — batch flip authorized by Bobbo)
 **Date:** 2026-07-26
 **Phase:** v0.18 kickoff + Phase R1; migrated to this repo under N-8 (v0.18 R2)
 **Cross-references:** ADR-025 (the vintages bronze retention protects), ADR-028 (bronze is
@@ -78,6 +78,48 @@ already asserted and what `guard.py` already enforces mechanically.
   sync-lock); nothing currently mirrors it. Worth a deliberate decision separate from this one.
 - If a future rebuild's vintage counts do NOT reconcile with bronze, that is a transformer bug
   to investigate, not an expected loss.
+
+---
+
+## Amendment (2026-08-16, v0.18 close) — the owner deleted the data root; the rule's OUTCOME was superseded, its RATIONALE stands
+
+**On 2026-08-03 the repo owner deleted the entire data root `C:\gridflow-data`
+directly**, including bronze — verified empty afterwards (previously bronze 578
+files / 88.3 MB spanning 2026-07-16→07-31, silver 296 files, plus
+`gridflow.duckdb`). The orchestrator had declined to delete bronze, citing this
+ADR and the closed 2026-07-26 data-reset ruling, and stated the loss; the owner
+performed the deletion themselves.
+
+**This is an owner decision of record. It supersedes this ADR's outcome for
+that data, and it does not weaken the rule going forward.** The rationale was
+correct and is unchanged: vendors serve their *current* revision, not their
+publication history, so the ~15 days of captured publication history — including
+F-06's 176,035 recoverable vintage rows — is **permanently unrecoverable**.
+Re-extraction returns one publication per key, not the ~23 intraday publications
+that had been captured live.
+
+Consequences that followed, recorded so the ADR is not read as counterfactual:
+
+- **The R2-exit silver wipe + rebuild was cancelled** — there was nothing to
+  rebuild from. Its verification gates (per-dataset row-count MATCH,
+  `ORPHAN_BODY` sweep, the N-5 `_latest` PARTITION-BY reconciliation) are
+  **dead, not passed**. Their *semantics* still bind any future post-re-ingest
+  verification.
+- **All R1/R2 code fixes were unaffected** and remain shipped; the suite does
+  not depend on live data. A fresh ingest lands under the fixed transformers,
+  so new silver is born clean — F-04's on-disk duplicates and F-03's null rows
+  ceased to exist rather than being repaired.
+- **`pipeline_watermarks` went with the DB.** Cold start is a supported path.
+- **Measured 2026-08-16:** the root has since been partially repopulated by an
+  owner re-ingest — bronze 562 files / silver 215, but only **two datasets**
+  (`elexon/fuelhh`, `elexon/system_prices`). Any data-dependent verification is
+  bounded to those two until a fuller re-ingest. **Re-measure before relying on
+  this figure** — that is the standing rule for this root.
+
+**The rule itself is unchanged and now Accepted: bronze is never deleted or
+edited by the pipeline, or by an agent acting on it.** An owner may of course
+do as they wish with their own data; what this ADR governs is automated and
+agent behaviour, and there the prohibition is absolute.
 
 ---
 
