@@ -533,9 +533,14 @@ class BaseSilverTransformer(ABC):
     partition's own request at all (the vendor's measured CET/CEST
     delivery-day over-span, S1.4), so there is no ownership question and no
     neighbour-durability proof to make before excluding it — it is always
-    dropped, counted, and logged. See ``silver/entsoe/_event_window.py`` for
-    the 7-dataset opt-in list and the exemption table with reasons. **D-9:
-    this closes F-10 for the 7 opted-in datasets only — not repo-wide.**
+    dropped, counted, and logged. See ``silver/entsoe/_event_window.py``
+    (``EVENT_WINDOW_CLASSIFICATION``) for the full dataset -> verdict ->
+    citation -> transformer-family map and the exemption table with reasons.
+    **B4 (N-9): the opt-in set is R2-A's original 7 plus B4's 19
+    evidence-classified FILTER_SAFE datasets (R3-RESEARCH.md Sec 1.1). A
+    `TODO`-marked minority remains genuinely unclassified, so F-10 and the
+    N-9 gate stay OPEN until that residual is resolved or accepted at a
+    milestone close (a Bobbo decision).**
     """
     DATASET_VERSION: ClassVar[str] = "1.0.0"
     BRONZE_SIBLING_DATASETS: ClassVar[tuple[str, ...]] = ()
@@ -965,10 +970,16 @@ class BaseSilverTransformer(ABC):
                 else self._apply_publication_window_filter(clean_df, window_plan, target_date)
             )
             if clean_df.is_empty():
-                # D-5's refusal never empties an otherwise non-empty frame, so
-                # reaching an empty frame here means the ORIGINAL transform()
-                # output was already empty of the filter dimension's rows —
-                # already logged above; nothing further to write.
+                # Two routes land here, not one. CLOSED (Elexon, D-5): the
+                # trim is refused rather than emptying an otherwise
+                # non-empty frame, so an empty frame here means the
+                # ORIGINAL transform() output was already empty of the
+                # filter dimension's rows. HALF_OPEN (ENTSO-E): D-5's
+                # refusal rule does NOT apply on this path
+                # (exclude_out_of_window, TRIM ruling) -- a 100%-out-of-
+                # window drop empties a non-empty frame by design
+                # (all_dropped=True, already logged ERROR above). Either
+                # way, nothing further to write.
                 return None
 
         # Enforce the declared Pydantic schema on the FULL frame, fail-soft

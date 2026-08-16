@@ -92,7 +92,7 @@ delete rows.
 |---|---|---|---|
 | `elexon` (23 of 24 in-scope datasets) | a **publication** window | `published_at` | `publishDateTimeFrom`/`publishDateTimeTo` |
 | `elexon/remit` (D-1b) | same, but `remit` derives `timestamp_utc` deterministically from `published_at` and drops the source column at select | `timestamp_utc` | same |
-| `entsoe` (7 opted-in datasets) | a **UTC delivery day** | `timestamp_utc` | `periodStart`/`periodEnd` |
+| `entsoe` (opted-in per `EVENT_WINDOW_CLASSIFICATION`, D-9) | a **UTC delivery day** | `timestamp_utc` | `periodStart`/`periodEnd` |
 
 For ENTSO-E, `[periodStart, periodEnd)` is DST-invariant because CET/CEST never enters the
 computation (D-2) — the window is a UTC instant range, not a calendar-local one.
@@ -193,12 +193,18 @@ covering chunk, so an unrelated orphan elsewhere in that partition is irrelevant
 applies identically to BOTH interval-semantics paths — resolving the CURRENT partition's own
 window is unaffected by which application path consumes it afterward.
 
-### D-5 — never empty a non-empty frame
+### D-5 — never empty a non-empty frame (CLOSED path only; amended 2026-08 by the TRIM ruling)
 
-If applying the trim would drop every row (a corrupted or mis-declared window), the filter is
-refused entirely — the frame is returned unchanged, logged `ERROR`. Silent unfiltered fallback is
-preferred to silent data loss. Applies identically to both `filter_frame_to_window` (CLOSED) and
-`exclude_out_of_window` (HALF_OPEN).
+If applying the trim would drop every row (a corrupted or mis-declared window), the CLOSED-interval
+filter (`filter_frame_to_window`, Elexon) is refused entirely — the frame is returned unchanged,
+logged `ERROR`. Silent unfiltered fallback is preferred to silent data loss.
+
+**This refusal does NOT extend to the HALF_OPEN path** (`exclude_out_of_window`, ENTSO-E) since the
+2026-07-26 TRIM ruling (`partition_window.py:604-626`): a 100%-out-of-window drop is PERFORMED, not
+refused — every row in the frame genuinely was never part of that partition's own request, so there
+is no ownership to preserve by retaining it. The drop is signalled via `all_dropped=True` and logged
+`ERROR` (the same loud, never-silent treatment as the CLOSED refusal, achieved by a different
+mechanism: proceeding with the drop rather than reverting it).
 
 ### D-6 — Elexon source-scoped; ENTSO-E opt-in per transformer
 
@@ -224,19 +230,26 @@ pair, closing F-16: the check reports `fuelhh`'s 580 real duplicated keys and no
 set semantics) — `tests/fixtures/entity_keys_golden.json` and every consumer compare declared keys
 as sets.
 
-### D-9 — F-10 closure is scoped, not repo-wide
+### D-9 — F-10 closure is scoped, not repo-wide (amended 2026-08 by B4/N-9)
 
-**This ADR closes F-10 for exactly 7 opted-in ENTSO-E datasets**: `day_ahead_prices` (the
-probe-proven case), `actual_load`, `load_forecast`, `actual_generation`,
-`actual_generation_units`, `wind_solar_forecast`, `generation_forecast`. 13 further datasets are
+**This ADR originally closed F-10 for a narrow, probe-proven ENTSO-E opt-in set only**:
+`day_ahead_prices` (the probe-proven case), `actual_load`, `load_forecast`, `actual_generation`,
+`actual_generation_units`, `wind_solar_forecast`, `generation_forecast`. 13 further datasets were
 named-exempt with a recorded reason (the A31/A32/A33 horizon forecasts, `forecast_margin`,
 `installed_capacity*`, `water_reservoirs`, all `outages_*`, and `generation_units_master_data`,
-which has no `periodStart`/`periodEnd` at all). The remaining ~28 registered ENTSO-E datasets are
-`EVENT_WINDOW_FILTER_EXEMPT` with a literal `"TODO: unclassified"` reason
-(`silver/entsoe/_event_window.py`) — this plan does not infer their window semantics
-(CLAUDE.md: "Do not invent rate limits, endpoints, or schemas... write a TODO and stop"). Tracked
-as **N-9, a v0.18 milestone gate**; `cross_border_flows` is named as the leading candidate for the
-next classification pass.
+which has no `periodStart`/`periodEnd` at all). The remaining 28 registered ENTSO-E datasets
+carried a literal `"TODO: unclassified"` reason (`silver/entsoe/_event_window.py`) pending N-9
+research (CLAUDE.md: "Do not invent rate limits, endpoints, or schemas... write a TODO and stop").
+
+**B4 (2026-08, milestone v0.18) landed the N-9 research verdict** (`R3-RESEARCH.md` Sec 1.1): 19
+of the 28 TODO datasets are evidence-classified FILTER_SAFE and now opted in (26 opted-in total),
+4 are evidence-classified EXEMPT with a cited reason, and 5 remain genuinely `TODO`-marked
+UNKNOWN (never observed populated-and-window-compared, or unwired — N-22). The full dataset ->
+verdict -> citation -> transformer-family map lives in
+`silver/entsoe/_event_window.py::EVENT_WINDOW_CLASSIFICATION`, the audit surface F-10's closure
+and the N-9 gate check against. **F-10 and the N-9 gate remain OPEN**: they close only when the
+5 UNKNOWN entries are resolved by a future pass, or their residual is accepted at a milestone
+close (a Bobbo decision, not this ADR's to make).
 
 ## Residuals (accepted, not pursued here)
 
