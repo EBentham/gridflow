@@ -27,6 +27,18 @@ class BMUnitsTransformer(BaseSilverTransformer):
     publication timestamp added by ``BaseSilverTransformer``; ``ingested_at``
     is retained for backward compatibility as the local processing
     timestamp. Under ``--reingest`` the two diverge.
+
+    Fail-hard on a null/empty ``bm_unit_id`` (C-7, ruled by Bobbo
+    2026-08-16): ``bm_unit_id`` is this transformer's entity key
+    (``ENTITY_KEY_COLUMNS = ("bm_unit_id",)``). A null-key row cannot be
+    joined by any downstream consumer, and because the dedup below is
+    ``keep="last"`` on that same key, two null-key rows would silently
+    collapse into one. Fail-closed on a null primary key is therefore the
+    literal reading of the ruling -- not a bypassable warning. Consequence,
+    stated explicitly because it is deliberate: one malformed vendor row now
+    aborts the entire ``bmunits_reference`` transform, and this is a
+    reference dataset other joins depend on. That is the accepted cost of
+    the fail-hard ruling; do not soften it, do not add a bypass flag.
     """
 
     source = "elexon"
@@ -84,6 +96,27 @@ class BMUnitsTransformer(BaseSilverTransformer):
             return pl.DataFrame()
 
         df = raw_df.with_columns(pl.col("bm_unit_id").cast(pl.Utf8))
+
+        # C-7 (fail-hard, ruled 2026-08-16): bm_unit_id is ENTITY_KEY_COLUMNS.
+        # A null-key row cannot be joined downstream, and the keep="last"
+        # dedup a few lines below would silently collapse two null-key rows
+        # into one -- so abort here, before dedup, rather than let a
+        # malformed vendor row corrupt this reference dataset.
+        null_bm_unit_id = df.filter(pl.col("bm_unit_id").is_null() | (pl.col("bm_unit_id") == ""))
+        if not null_bm_unit_id.is_empty():
+            if "national_grid_bm_unit" in null_bm_unit_id.columns:
+                sample = null_bm_unit_id["national_grid_bm_unit"].to_list()[:10]
+            else:
+                sample = ["<national_grid_bm_unit column absent from this payload>"]
+            raise ValueError(
+                f"{self.source}/{self.dataset}: {null_bm_unit_id.height} row(s) have a "
+                "null or empty-string bm_unit_id, this transformer's entity key "
+                "(ENTITY_KEY_COLUMNS). A null-key row cannot be joined by any "
+                'downstream consumer, and the keep="last" dedup below would silently '
+                "collapse two null-key rows into one -- failing closed on a malformed "
+                "vendor row rather than corrupting this reference dataset. Affected "
+                f"national_grid_bm_unit sample: {sample}."
+            )
 
         if "registered_capacity_mw" in df.columns:
             df = df.with_columns(pl.col("registered_capacity_mw").cast(pl.Float64))
