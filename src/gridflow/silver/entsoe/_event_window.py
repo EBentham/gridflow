@@ -440,11 +440,13 @@ EVENT_WINDOW_CLASSIFICATION: dict[str, DatasetClassification] = {
         evidence=(
             "Vault quant-vault/30-vendors/entsoe/datasets/commercial_schedules.md, "
             "live GB-FR 2026-05-06: Publication_MarketDocument, 2 TimeSeries, hourly "
-            "points, window-bounded (PASS, R3-RESEARCH.md:51)."
+            "points (research verdict FILTER_SAFE, R3-RESEARCH.md:51)."
         ),
         limitation=(
             "Vault-recorded prior live validation, not re-probed this session; no "
-            "local probe artifact exists for this dataset (Sec 5a)."
+            "local probe artifact exists, and the vault artifact records TimeSeries/"
+            "point counts only - the response interval was never compared against "
+            "the request bounds (Sec 5a)."
         ),
         probes=(),
         family="_H6QuantityTransformer",
