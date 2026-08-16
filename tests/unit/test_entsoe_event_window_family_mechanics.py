@@ -38,7 +38,7 @@ partition.
 
 from __future__ import annotations
 
-from datetime import date, datetime
+from datetime import UTC, date, datetime
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -168,6 +168,15 @@ def _write_entsoe_partition(
     BronzeWriter(data_dir).write(response)
 
 
+#: A window wide enough to cover every fixture's rows regardless of family
+#: (all fixtures are dated 2024-01-15). The learning pass never consults the
+#: event-window filter (``transform()`` doesn't call it), so the exact bounds
+#: are immaterial -- only that the sidecar is written through the real
+#: ``BronzeWriter`` harness (T4 harness note), not a hand-built path.
+_LEARN_WINDOW_START = datetime(2020, 1, 1, tzinfo=UTC)
+_LEARN_WINDOW_END = datetime(2030, 1, 1, tzinfo=UTC)
+
+
 def _learn_instants(
     tmp_path: Path,
     cls: type[BaseSilverTransformer],
@@ -179,11 +188,19 @@ def _learn_instants(
     fixture (no filter is consulted by ``transform()`` itself) to learn the
     fixture's real ``timestamp_utc`` instants and how many rows share each
     one -- never guessed from the filename. Uses its own isolated partition
-    (step 0)."""
+    (step 0), written through the same parameterised ``BronzeWriter`` harness
+    (``_write_entsoe_partition``) the scenario steps use -- no hand-built
+    ``bronze/<source>/<dataset>/...`` path (plan Sec 9)."""
     root = tmp_path / "learn"
-    partition_dir = root / "bronze" / source / dataset / "2024" / "01" / "15"
-    partition_dir.mkdir(parents=True)
-    (partition_dir / "raw_learn.xml").write_bytes((FIXTURES / fixture_name).read_bytes())
+    _write_entsoe_partition(
+        root,
+        source=source,
+        dataset=dataset,
+        partition_date=TARGET_DATE,
+        body=(FIXTURES / fixture_name).read_bytes(),
+        period_start=_LEARN_WINDOW_START,
+        period_end=_LEARN_WINDOW_END,
+    )
 
     transformer = cls(root)
     raw_df = transformer.read_bronze(TARGET_DATE)
@@ -408,8 +425,11 @@ class TestEventWindowFamilyMechanics:
         with caplog.at_level("WARNING"):
             transformer.run(TARGET_DATE, run_id=f"{family_id}-warning")
         assert transformer.last_partition_filter_dropped_count == last_count
-        assert any("out-of-scope" in message for message in caplog.messages), (
-            f"{family_id}: no out-of-scope WARNING logged for a non-zero drop (M-2)"
+        assert any(
+            "out-of-scope" in message and str(last_count) in message for message in caplog.messages
+        ), (
+            f"{family_id}: no out-of-scope WARNING logged carrying the measured "
+            f"dropped-row count ({last_count}) for a non-zero drop (M-2)"
         )
 
 
