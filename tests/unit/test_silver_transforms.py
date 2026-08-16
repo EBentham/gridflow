@@ -1008,6 +1008,22 @@ class TestBMUnitsTransformer:
         with pytest.raises(ValueError, match="bm_unit_id"):
             self.t.transform(raw)
 
+    def test_empty_string_bm_unit_id_fails_hard(self):
+        """C-7 covers empty-string as well as null -- both are unusable
+        entity keys, not merely a JSON-null representation."""
+        raw = pl.DataFrame(
+            [
+                {
+                    "bmUnit": "",
+                    "nationalGridBmUnit": "WTGRW-1",
+                    "name": "Turbine WTGRW-1",
+                    "fuelType": "WIND",
+                },
+            ]
+        )
+        with pytest.raises(ValueError, match="bm_unit_id"):
+            self.t.transform(raw)
+
 
 # === New transformer tests ===
 
