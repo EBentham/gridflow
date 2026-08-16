@@ -4699,9 +4699,23 @@ class TestGroupAReservebidEnvelope:
         assert records == []
         errors = [r for r in caplog.records if r.levelname == "ERROR"]
         got = [r.getMessage() for r in errors]
+        # Sol review, finding 2: a bare `"quantity" in message` substring
+        # check is automatically true whenever "quantity.quantity" appears,
+        # so an error naming ONLY quantity.quantity would pass. The message
+        # also carries an unrelated `value_tag='quantity'` (%r) fragment
+        # BEFORE the accepted-tags list, so even a quoted
+        # `"'quantity'" in message` check would still be defeated by that
+        # unrelated occurrence. Scope the check to the `accepted: [...]`
+        # segment (the `sorted(accepted_value_tags)` rendering) so only
+        # THAT list is examined for both quoted spellings.
         assert any(
-            "quantity" in r.getMessage() and "quantity.quantity" in r.getMessage() for r in errors
-        ), f"expected an ERROR naming both quantity and quantity.quantity; got: {got}"
+            "'quantity'" in r.getMessage().split("accepted:", 1)[-1]
+            and "'quantity.quantity'" in r.getMessage().split("accepted:", 1)[-1]
+            for r in errors
+        ), (
+            f"expected the ERROR's accepted-tags list to name both 'quantity' and "
+            f"'quantity.quantity'; got: {got}"
+        )
 
     @pytest.mark.parametrize(
         "document",
@@ -4730,9 +4744,23 @@ class TestGroupAReservebidEnvelope:
         assert records == []
         errors = [r for r in caplog.records if r.levelname == "ERROR"]
         got = [r.getMessage() for r in errors]
+        # Sol review, finding 2: a bare `"quantity" in message` substring
+        # check is automatically true whenever "quantity.quantity" appears,
+        # so an error naming ONLY quantity.quantity would pass. The message
+        # also carries an unrelated `value_tag='quantity'` (%r) fragment
+        # BEFORE the accepted-tags list, so even a quoted
+        # `"'quantity'" in message` check would still be defeated by that
+        # unrelated occurrence. Scope the check to the `accepted: [...]`
+        # segment (the `sorted(accepted_value_tags)` rendering) so only
+        # THAT list is examined for both quoted spellings.
         assert any(
-            "quantity" in r.getMessage() and "quantity.quantity" in r.getMessage() for r in errors
-        ), f"expected an ERROR naming both quantity and quantity.quantity; got: {got}"
+            "'quantity'" in r.getMessage().split("accepted:", 1)[-1]
+            and "'quantity.quantity'" in r.getMessage().split("accepted:", 1)[-1]
+            for r in errors
+        ), (
+            f"expected the ERROR's accepted-tags list to name both 'quantity' and "
+            f"'quantity.quantity'; got: {got}"
+        )
 
 
 class TestGroupBInvariants:
