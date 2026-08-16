@@ -989,6 +989,25 @@ class TestBMUnitsTransformer:
         raw = pl.DataFrame([{"fuelType": "GAS", "name": "No ID"}])
         assert self.t.transform(raw).is_empty()
 
+    def test_null_bm_unit_id_fails_hard(self):
+        """C-7 (ruled fail-hard 2026-08-16): a null bm_unit_id is this
+        transformer's entity key (ENTITY_KEY_COLUMNS). A null-key row cannot
+        be joined by any downstream consumer, and keep="last" dedup on that
+        same key would silently collapse two null-key rows into one -- so
+        the transform must abort rather than let it through."""
+        raw = pl.DataFrame(
+            [
+                {
+                    "bmUnit": None,
+                    "nationalGridBmUnit": "WTGRW-1",
+                    "name": "Turbine WTGRW-1",
+                    "fuelType": "WIND",
+                },
+            ]
+        )
+        with pytest.raises(ValueError, match="bm_unit_id"):
+            self.t.transform(raw)
+
 
 # === New transformer tests ===
 
