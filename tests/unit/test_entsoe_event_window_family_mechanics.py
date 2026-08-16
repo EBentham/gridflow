@@ -90,6 +90,13 @@ FAMILY_CASES = [
         id="h8_balancing_capacity",
     ),
     pytest.param(
+        # N-21: this case now runs on the real ReserveBid_MarketDocument /
+        # Bid_TimeSeries envelope (D-4b reshaped balancing_energy_bids_gb.xml
+        # to the live A37 shape, F-1) rather than the fictional
+        # Balancing_MarketDocument / bare-TimeSeries shape it used before.
+        # The filter operates on the transformed frame, not the XML, so what
+        # is proven about the filter mechanic here is unchanged -- the proof
+        # now rests on a shape ENTSO-E actually returns (Sec 3b row 4).
         "h8_balancing_bids",
         BalancingEnergyBidsTransformer,
         "entsoe",

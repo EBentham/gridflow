@@ -3265,15 +3265,24 @@ class TestPhaseH8Endpoints:
 
 class TestPhaseH8Parser:
     def test_parser_extracts_bid_metadata(self):
+        """N-21 (D-4b/D-4c): the fixture is now 2 Bid_TimeSeries x 1 Point
+        each (the real A37 envelope shape, F-1), not 1 TimeSeries x 2
+        Points -- ``len(records) == 2`` still holds but now means 2 series,
+        not 1 series with 2 declared points. ``original_market_product`` is
+        ``""`` because Original_MarketProduct is not an element the live A37
+        probe carries (D-4c); ``flow_direction`` moves to
+        ``flowDirection.direction`` (also probe-observed) and keeps its
+        value."""
         records = parse_timeseries_xml(
             (FIXTURES / "balancing_energy_bids_gb.xml").read_bytes(),
             value_tag="quantity",
         )
 
         assert len(records) == 2
+        assert len({r["timeseries_mrid"] for r in records}) == 2
         assert records[0]["connecting_domain"] == "10YGB----------A"
         assert records[0]["flow_direction"] == "A01"
-        assert records[0]["original_market_product"] == "A01"
+        assert records[0]["original_market_product"] == ""
         assert records[0]["standard_market_product"] == "A05"
 
     def test_parser_extracts_cross_zonal_domains(self):

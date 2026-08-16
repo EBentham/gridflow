@@ -537,13 +537,15 @@ EVENT_WINDOW_CLASSIFICATION: dict[str, DatasetClassification] = {
             "(R3-RESEARCH.md:56)."
         ),
         limitation=(
-            "The upper request-window relation is untested: the response ends far "
-            "short of the request end (B-7), so only the lower boundary is "
-            "confirmed. Unrelated to the window verdict: the live envelope is "
-            "ReserveBid_MarketDocument/Bid_TimeSeries, not the "
-            "Balancing_MarketDocument/TimeSeries shape the parser matches by "
-            "literal local-name (R3-RESEARCH.md Sec 5 item 3) -- flagged as a "
-            "parser-correctness finding out of N-9's scope."
+            "N-21 fixed the envelope handling: parse_timeseries_xml now accepts "
+            "ReserveBid_MarketDocument/Bid_TimeSeries (root-scoped, "
+            "_SERIES_TAGS_BY_DOC_ROOT) rather than matching only the literal "
+            "Balancing_MarketDocument/TimeSeries shape, so the live A37 payload no "
+            "longer parses to zero rows. The filter has now been exercised against "
+            "real A37 rows: 100 rows at 2026-06-01T00:00Z, all retained at the "
+            "recorded window's lower edge under HALF_OPEN (N-21 F-5). The upper "
+            "request-window relation remains untested: the response ends far short "
+            "of the request end (B-7), so only the lower boundary is confirmed."
         ),
         probes=(
             "entsoe_A37_balancing_energy_bids_DE_20260601.xml",
@@ -914,7 +916,11 @@ EVENT_WINDOW_CLASSIFICATION: dict[str, DatasetClassification] = {
             "aggregated_balancing_energy_bids_gb.xml (fixture only). This "
             "session's live probe probes/entsoe_A24_aggregated_balancing_"
             "energy_bids_DE_20260601.xml (DE-LU) returned real EMPTY, and GB is "
-            "EMPTY per vault (R3-RESEARCH.md:75)."
+            "EMPTY per vault (R3-RESEARCH.md:75). N-21 (Sec 0 correction) "
+            "confirmed the A24 probe is a 967-byte Acknowledgement_MarketDocument, "
+            'Reason/code 999 ("No matching data found"), zero TimeSeries-like '
+            "elements of any name -- a real-EMPTY response, not an envelope "
+            "mismatch like the A37 sibling dataset (N-21)."
         ),
         limitation=(
             "Never observed populated; fixture-only prior evidence is not "

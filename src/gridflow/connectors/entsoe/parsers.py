@@ -153,6 +153,26 @@ def _matches_value_tag(tag: str, value_tag: str) -> bool:
     return False
 
 
+# N-21: ENTSO-E does not use one series-element name across document types.
+# A37 balancing energy bids arrive as ReserveBid_MarketDocument/
+# Bid_TimeSeries with Point/quantity.quantity; every other observed
+# document type uses TimeSeries/quantity. Keyed on the ROOT local-name so
+# the accepted set is unchanged for every document that is not a
+# ReserveBid (D-2). The ReserveBid entry lists BOTH names so a variant
+# carrying bare TimeSeries still parses rather than vanishing silently
+# (FM-15) -- but a document presenting both at once is refused, never
+# merged (D-10, FM-20).
+_DEFAULT_SERIES_TAGS: frozenset[str] = frozenset({"TimeSeries"})
+
+_SERIES_TAGS_BY_DOC_ROOT: dict[str, frozenset[str]] = {
+    "ReserveBid_MarketDocument": frozenset({"Bid_TimeSeries", "TimeSeries"}),
+}
+
+_VALUE_TAG_ALIASES_BY_DOC_ROOT: dict[str, dict[str, frozenset[str]]] = {
+    "ReserveBid_MarketDocument": {"quantity": frozenset({"quantity.quantity"})},
+}
+
+
 def parse_timeseries_xml(
     xml_bytes: bytes,
     value_tag: str = "price.amount",
@@ -191,10 +211,59 @@ def parse_timeseries_xml(
     records: list[dict[str, Any]] = []
     document_metadata = _root_document_metadata(root)
 
-    # Collect all TimeSeries elements (namespace-agnostic)
+    root_name = _strip_ns(root.tag)
+    series_tags = _SERIES_TAGS_BY_DOC_ROOT.get(root_name, _DEFAULT_SERIES_TAGS)
+    accepted_value_tags = frozenset({value_tag}) | _VALUE_TAG_ALIASES_BY_DOC_ROOT.get(
+        root_name, {}
+    ).get(value_tag, frozenset())
+
+    # D-11 (FM-22): D-1's alias set makes it possible for ONE <Point> to present
+    # more than one accepted value tag. `value` is overwritten per matching child
+    # below, so the winner would be decided by element order -- silently
+    # (measured F-15: the same document yields 22.0 or 11.0). That is FM-20's
+    # ambiguity one level down and D-10's answer applies unchanged: there is no
+    # vendor evidence for which spelling is authoritative in such a Point, so
+    # refuse rather than guess (repo rule: TODO: and stop).
+    #
+    # This flag IS the reachability proof. `accepted_value_tags` has exactly one
+    # member for every root outside _VALUE_TAG_ALIASES_BY_DOC_ROOT, and for
+    # ReserveBid under any value_tag other than "quantity" -- so the check below
+    # is structurally dead for callers 3-21 (§2). Matches made by
+    # _matches_value_tag's SUFFIX rule are deliberately NOT counted: counting
+    # them would change behaviour for all 21 callers, which is this unit's named
+    # T3 trigger (R-6).
+    value_tag_ambiguity_possible = len(accepted_value_tags) > 1
+
+    # D-10: refuse a document that presents MORE THAN ONE accepted series
+    # name. Merging them would silently inflate silver (distinct dedup
+    # keys) or silently corrupt it (equal keys resolved order-dependently
+    # by keep="last") -- FM-20, measured F-12. There is no vendor evidence
+    # for which name is authoritative in such a document, so we refuse
+    # rather than guess (repo rule: TODO: and stop). Structurally
+    # unreachable for every root whose accepted set has one member, i.e.
+    # every non-ReserveBid document -- that is what preserves D-2.
+    present_series_tags = {name for el in root.iter() if (name := _strip_ns(el.tag)) in series_tags}
+    if len(present_series_tags) > 1:
+        logger.error(
+            "N-21: ENTSO-E document %s (root %s) presents multiple accepted "
+            "series element names %s; refusing to parse it ambiguously and "
+            "returning 0 records. Merging them would silently inflate or "
+            "reorder silver rows (N-21/D-10). Record the real envelope and "
+            "extend _SERIES_TAGS_BY_DOC_ROOT deliberately",
+            document_metadata["document_mrid"] or "<no mRID>",
+            root_name,
+            sorted(present_series_tags),
+        )
+        return []
+
+    matched_series = 0  # D-9
+
+    # Collect all series elements (namespace-agnostic), scoped to the
+    # accepted set for this document's root (N-21/D-1).
     for ts_el in root.iter():
-        if _strip_ns(ts_el.tag) != "TimeSeries":
+        if _strip_ns(ts_el.tag) not in series_tags:
             continue
+        matched_series += 1  # D-9
 
         # Extract domain codes and metadata fields
         in_domain = out_domain = production_type = ""
@@ -416,6 +485,7 @@ def parse_timeseries_xml(
                     continue
                 position: int | None = None
                 value: float | None = None
+                accepted_hits = 0  # D-11: occurrences, not distinct names
                 for child in point_el:
                     tag = _strip_ns(child.tag)
                     if tag == "position":
@@ -427,9 +497,26 @@ def parse_timeseries_xml(
                         if child.text:
                             with contextlib.suppress(ValueError):
                                 position = int(child.text)
-                    elif _matches_value_tag(tag, value_tag):
+                    elif tag in accepted_value_tags or _matches_value_tag(tag, value_tag):
+                        if tag in accepted_value_tags:
+                            accepted_hits += 1  # occurrences, not distinct names
                         with contextlib.suppress(ValueError):
                             value = float(child.text or "nan")
+
+                if value_tag_ambiguity_possible and accepted_hits > 1:
+                    logger.error(
+                        "N-21/D-11: ENTSO-E document %s (root %s) has a <Point> presenting "
+                        "more than one accepted value tag for value_tag=%r (accepted: %s); "
+                        "refusing to parse it ambiguously and returning 0 records. The value "
+                        "would otherwise be decided by element order. Record the real payload "
+                        "and narrow _VALUE_TAG_ALIASES_BY_DOC_ROOT deliberately",
+                        document_metadata["document_mrid"] or "<no mRID>",
+                        root_name,
+                        value_tag,
+                        sorted(accepted_value_tags),
+                    )
+                    return []
+
                 if position is None or value is None:
                     continue
 
@@ -527,6 +614,26 @@ def parse_timeseries_xml(
                     len(out_of_window_records),
                 )
             records.extend(out_of_window_records)
+
+    # D-9: a populated document that matches no series element at all is
+    # the N-21 class -- it returns [] with no signal whatsoever. Count
+    # MATCHES, not records: a matched series legitimately carrying a
+    # Reason and no Point (A87) must not warn (FM-16).
+    if matched_series == 0:
+        unmatched = sorted(
+            {name for el in root.iter() if (name := _strip_ns(el.tag)).endswith("TimeSeries")}
+        )
+        if unmatched:
+            logger.warning(
+                "N-21: ENTSO-E document %s (root %s): matched 0 series elements, "
+                "but the document contains series-shaped element(s) %s; expected "
+                "one of %s. Returning 0 records -- this is the N-21 envelope-"
+                "mismatch class, not an empty response",
+                document_metadata["document_mrid"] or "<no mRID>",
+                root_name,
+                unmatched,
+                sorted(series_tags),
+            )
 
     return records
 
