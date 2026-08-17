@@ -16,6 +16,30 @@ network sends inside one throttled call.
 
 Distinct from the existing ``neso`` source, which is the Carbon Intensity API
 and is not touched by anything here (D-01).
+
+**Accepted residual — URLs held inside httpx's own objects.** ``SafeUrl`` governs
+every URL this connector holds, but it cannot govern objects it does not own:
+``repr(exc.request)`` on an ``httpx.HTTPStatusError``, ``exc.response.request``,
+and httpx's own INFO log line all render the raw URL, including the presigned
+query. This is recorded as a decision, not an oversight.
+
+Why it is accepted here, and why the reasoning does NOT transfer:
+
+- **This source is keyless and its data is public.** No API key exists — 24 live
+  probes returned 2xx unauthenticated, ``_auth_headers()`` returns ``{}``, and
+  every package carries the NESO Open Data Licence with ``private: false``. The
+  presigned Cloudflare URL is a 7-day capability for a CSV that anybody can
+  obtain by calling ``package_show``. It is a capability URL for open data, not
+  a credential, so its appearance in a traceback exposes nothing that was not
+  already public.
+- The httpx-logger half is filed separately, with the measurement showing that
+  gridflow's logging configures the ``"gridflow"`` logger rather than the true
+  root, so those records are dropped today.
+
+**A source with real credentials would need this closed**, not merely
+documented — a query-parameter API key (ENTSO-E's shape) reaching a traceback is
+a different matter entirely. The rationale above is about what the value IS, not
+about the mechanism being sufficient.
 """
 
 from __future__ import annotations
@@ -45,6 +69,8 @@ from gridflow.silver.csv_bronze import read_csv_bronze_body
 from gridflow.utils.retry import RETRY_POLICY
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from gridflow.config.settings import SourceConfig
 
 logger = logging.getLogger(__name__)
@@ -290,9 +316,9 @@ class SafeUrl:
       and unconstrained — every redirect hop.
     """
 
-    __slots__ = ("_display", "_raw")
+    __slots__ = ("__raw", "_display")
 
-    _raw: httpx.URL
+    __raw: httpx.URL
     _display: str
 
     def __init__(self, raw: httpx.URL | str, *, keep_path: bool) -> None:
@@ -301,12 +327,16 @@ class SafeUrl:
         # httpx), so the origin cannot carry credentials even when the source
         # URL does.
         origin = f"{parsed.scheme}://{parsed.netloc.decode('ascii')}"
-        self._raw = parsed
+        self.__raw = parsed
         self._display = origin + parsed.path if keep_path else origin
 
     @classmethod
     def verified(cls, url: httpx.URL | str) -> SafeUrl:
-        """For a URL whose path we built or proved. Renders scheme://host[:port]/path."""
+        """For a URL whose path we built or PROVED. Renders scheme://host[:port]/path.
+
+        Never construct this before the proof: a value that says "verified"
+        before verification has happened is worse than no marker at all.
+        """
         return cls(url, keep_path=True)
 
     @classmethod
@@ -324,58 +354,94 @@ class SafeUrl:
     def __format__(self, format_spec: str) -> str:
         return format(self._display, format_spec)
 
-    # -- components, so validation never needs the raw object --------------
+    def __getstate__(self) -> object:
+        """Refuse serialisation.
+
+        Pickle would otherwise walk ``__slots__`` and write the raw URL into a
+        byte stream that no rendering rule governs — a hole straight through
+        the representation guarantee.
+        """
+        raise TypeError("SafeUrl is not serialisable: it would carry the raw URL")
+
+    # -- components that CANNOT carry credentials --------------------------
     @property
     def scheme(self) -> str:
-        return str(self._raw.scheme)
+        return str(self.__raw.scheme)
 
     @property
     def host(self) -> str:
-        return str(self._raw.host)
+        return str(self.__raw.host)
 
     @property
     def port(self) -> int | None:
-        port: int | None = self._raw.port
+        port: int | None = self.__raw.port
         return port
 
-    @property
-    def path(self) -> str:
-        return str(self._raw.path)
+    # -- questions, not values ---------------------------------------------
+    # The credential-bearing components are exposed as PREDICATES so validation
+    # can do its job without handing anyone a string to render. An accessor
+    # returning `.query` would be a second door out of the type, which is what
+    # `unsafe_raw` exists to be the only one of.
+    def has_userinfo(self) -> bool:
+        return bool(self.__raw.userinfo)
 
-    @property
-    def userinfo(self) -> bytes:
-        userinfo: bytes = self._raw.userinfo
-        return userinfo
+    def has_query(self) -> bool:
+        return bool(self.__raw.query)
 
-    @property
-    def query(self) -> bytes:
-        query: bytes = self._raw.query
-        return query
+    def has_fragment(self) -> bool:
+        return bool(self.__raw.fragment)
 
-    @property
-    def fragment(self) -> str:
-        return str(self._raw.fragment)
+    def path_matches(self, pattern: Sequence[str | frozenset[str] | None]) -> bool:
+        """Whole-path segment match, evaluated INSIDE the object.
+
+        The path never leaves, so a caller cannot render an unproven one. A
+        ``None`` element matches any non-empty segment; a ``frozenset`` matches
+        any of its members.
+        """
+        segments = str(self.__raw.path).split("/")
+        if len(segments) != len(pattern) + 1 or segments[0] != "":
+            return False
+        for actual, expected in zip(segments[1:], pattern, strict=True):
+            if expected is None:
+                if not actual:
+                    return False
+            elif isinstance(expected, frozenset):
+                if actual not in expected:
+                    return False
+            elif actual != expected:
+                return False
+        return True
 
     def join(self, location: str) -> SafeUrl:
         """Resolve a relative ``Location`` against this URL (RFC 3986).
 
-        The result is :meth:`opaque` because a redirect target is
-        vendor-controlled and unproven, path included.
+        The result is :meth:`opaque`: a redirect target is vendor-controlled and
+        unproven, path included.
+
+        A malformed ``Location`` is a real vendor failure mode, so httpx's own
+        ``InvalidURL`` — which repeats the offending value — is caught here and
+        replaced at the boundary rather than propagated.
         """
-        return SafeUrl.opaque(self._raw.join(location))
+        try:
+            joined = self.__raw.join(location)
+        except (httpx.InvalidURL, ValueError):
+            raise NesoUnsafeRedirectError(
+                f"{self} returned a Location header that is not a resolvable URL"
+            ) from None
+        return SafeUrl.opaque(joined)
 
     def unsafe_raw(self) -> httpx.URL:
-        """Return the RAW URL, credentials and all. **Sending only.**
+        """Return the RAW URL, query and all. **Sending only.**
 
         The only legitimate caller is the code that builds an outbound request:
         the bytes have to go on the wire intact — the presigned target is signed
         with ``X-Amz-SignedHeaders=host`` and any alteration invalidates it.
 
         Never pass the result to a log, an exception, a format string or the
-        bronze sidecar. A test asserts this method's production call sites, so a
+        bronze sidecar. A test pins this method's production call sites, so a
         new one is a deliberate act rather than an accident.
         """
-        raw: httpx.URL = self._raw
+        raw: httpx.URL = self.__raw
         return raw
 
 
@@ -515,7 +581,20 @@ class NesoDataPortalConnector(BaseConnector):
 
         async with self._semaphore:
             await self._throttle_request()
-            response = await self._client.send(request, stream=stream, follow_redirects=False)
+            try:
+                response = await self._client.send(request, stream=stream, follow_redirects=False)
+            except httpx.RemoteProtocolError as exc:
+                # httpx parses the Location header inside send(), even with
+                # follow_redirects=False, and its error repeats the offending
+                # value. A malformed Location is an ordinary vendor failure
+                # mode, so it is translated here — the one point every response
+                # passes through — into a typed connector error. Any OTHER
+                # protocol error is re-raised untouched.
+                if "location header" not in str(exc).lower():
+                    raise
+                raise NesoUnsafeRedirectError(
+                    f"{target} returned a Location header that is not a resolvable URL"
+                ) from None
 
         if response.has_redirect_location:
             return response
@@ -588,7 +667,7 @@ class NesoDataPortalConnector(BaseConnector):
             raise NesoUnsafeRedirectError(
                 f"refusing to send to {url}: scheme must be https, got {url.scheme!r}"
             )
-        if url.userinfo:
+        if url.has_userinfo():
             raise NesoUnsafeRedirectError(
                 f"refusing to send to {url}: the URL carries "
                 "userinfo, which httpx would turn into Basic credentials for that host"
@@ -1004,7 +1083,11 @@ class NesoDataPortalConnector(BaseConnector):
         if not raw_url:
             raise NesoUnexpectedResourceUrlError(f"{dataset}: the selected resource carries no url")
 
-        url = SafeUrl.verified(raw_url)
+        # OPAQUE while unproven. Constructing a `verified` value before the
+        # checks run would mark something verified that has not been, and the
+        # unproven path would then be renderable by the very messages that
+        # report why it failed.
+        url = SafeUrl.opaque(raw_url)
         base = httpx.URL(self.config.base_url)
         resource_id = str(resource.get("id", ""))
         # CKAN builds this path from the package's id; its name is the other
@@ -1023,37 +1106,31 @@ class NesoDataPortalConnector(BaseConnector):
             problems.append(f"host is {url.host!r}, expected {base.host!r}")
         if url.port != base.port:
             problems.append(f"port is {url.port!r}, expected {base.port!r}")
-        if url.userinfo:
+        if url.has_userinfo():
             problems.append("it carries userinfo, which the redirector never does")
-        if url.query:
+        if url.has_query():
             problems.append(
                 "it carries a query string, which the redirector never does — an "
                 "already-resolved presigned URL would put X-Amz-Signature into the "
                 "immutable bronze sidecar (D-11)"
             )
-        if url.fragment:
+        if url.has_fragment():
             problems.append(
                 "it carries a fragment, which the redirector never does and which can "
                 "carry credentials of its own"
             )
 
-        segments = url.path.split("/")
         if not resource_id:
             problems.append("the resource declares no id to match the path against")
         elif not package_keys:
             problems.append("the package declares neither an id nor a name")
-        elif not (
-            len(segments) == 7
-            and segments[0] == ""
-            and segments[1] == "dataset"
-            and segments[2] in package_keys
-            and segments[3] == "resource"
-            and segments[4] == resource_id
-            and segments[5] == "download"
-            and segments[6]
+        elif not url.path_matches(
+            ("dataset", frozenset(package_keys), "resource", resource_id, "download", None)
         ):
+            # The offending path is NOT echoed: it is unproven, and explaining
+            # why a path was rejected is a poor reason to render it.
             problems.append(
-                f"path {url.path!r} is not exactly "
+                "its path is not exactly "
                 f"/dataset/<package>/resource/{resource_id}/download/<filename>"
             )
 
@@ -1063,8 +1140,9 @@ class NesoDataPortalConnector(BaseConnector):
                 f"redirector D-11 requires: {'; '.join(problems)}"
             )
 
-        # Only NOW is the path proven, so only now may it be rendered.
-        return url
+        # Only NOW is the path proven, so only now is a `verified` value —
+        # whose rendering includes the path — a true statement about it.
+        return SafeUrl.verified(raw_url)
 
     async def _download_resource(
         self,

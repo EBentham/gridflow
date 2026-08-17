@@ -17,6 +17,7 @@ import asyncio
 import ipaddress
 import json
 import logging
+import pickle
 import socket
 import traceback
 from datetime import UTC, datetime, timedelta, timezone
@@ -2553,3 +2554,102 @@ class TestCredentialsCannotLeave:
             ("client.py", "_download_resource"),
             ("client.py", "_download_resource"),
         ], f"unsafe_raw() is called somewhere new: {call_sites}"
+
+    def test_the_type_exposes_no_second_door_to_the_raw_url(self) -> None:
+        """4.3: ``unsafe_raw()`` must be the ONLY way out.
+
+        The previous version claimed to be a closed representation and was not:
+        ``_raw``, ``path``, ``query``, ``fragment`` and ``userinfo`` were all
+        public, and pickle walked the slot. A type whose docstring promises
+        closure and whose surface does not deliver it is worse than an honest
+        helper, because it invites callers to trust it.
+        """
+        hostile = f"https://user:pw@evil.example/p?X-Amz-Signature={_TEST_SIGNATURE}#frag"
+        safe = client_module.SafeUrl.opaque(hostile)
+
+        for attribute in ("_raw", "path", "query", "fragment", "userinfo"):
+            assert not hasattr(safe, attribute), (
+                f"SafeUrl.{attribute} is a second door to the raw URL"
+            )
+
+        # The credential-bearing components are answerable as questions only.
+        assert safe.has_query() is True
+        assert safe.has_userinfo() is True
+        assert safe.has_fragment() is True
+
+        # Safe components stay available — they cannot carry credentials.
+        assert safe.scheme == "https"
+        assert safe.host
+
+    def test_the_type_refuses_serialisation(self) -> None:
+        """Pickle would write the raw URL into a byte stream no rendering rule
+        governs — a hole straight through the guarantee."""
+        safe = client_module.SafeUrl.opaque(_LEAKY_PRESIGNED_URL)
+
+        with pytest.raises(TypeError, match="not serialisable"):
+            pickle.dumps(safe)
+
+    def test_path_matching_happens_inside_the_object(self) -> None:
+        """The path never leaves, so an unproven one cannot be rendered."""
+        redirector = client_module.SafeUrl.opaque(DAILY_WIND_RESOURCE_URL)
+        pattern = (
+            "dataset",
+            frozenset({DAILY_WIND_PACKAGE_ID}),
+            "resource",
+            DAILY_WIND_RESOURCE_ID,
+            "download",
+            None,
+        )
+
+        assert redirector.path_matches(pattern) is True
+        assert client_module.SafeUrl.opaque(f"{BASE_URL}/x.csv").path_matches(pattern) is False
+        # `None` means "any NON-EMPTY segment", so a trailing slash fails.
+        assert (
+            client_module.SafeUrl.opaque(
+                f"{BASE_URL}/dataset/{DAILY_WIND_PACKAGE_ID}/resource/"
+                f"{DAILY_WIND_RESOURCE_ID}/download/"
+            ).path_matches(pattern)
+            is False
+        )
+
+    def test_a_rejected_redirector_never_echoes_its_unproven_path(
+        self, router: respx.MockRouter, raw_response_spy: list[dict[str, Any]]
+    ) -> None:
+        """4.1: the value is OPAQUE until the checks pass, so the message that
+        explains a rejection cannot render the path it just rejected."""
+        odd_path = "/dataset/pkg/resource/other-id/download/leaky-path-segment.csv"
+        payload = _fixture("package_show_daily_wind_availability.json")
+        payload["result"]["resources"][0]["url"] = BASE_URL + odd_path
+        _wire_package_show(router, payload)
+        _add_catch_all(router)
+
+        with pytest.raises(NesoUnexpectedResourceUrlError) as excinfo:
+            _run_fetch(_source_config())
+
+        message = str(excinfo.value)
+        assert "leaky-path-segment" not in message, "the unproven path was echoed"
+        assert "its path is not exactly" in message
+        assert raw_response_spy == []
+
+    def test_a_malformed_location_is_replaced_at_the_boundary(
+        self, router: respx.MockRouter
+    ) -> None:
+        """4.2: httpx's own ``InvalidURL`` repeats the offending value.
+
+        A malformed ``Location`` is a real vendor failure mode, so it is caught
+        where it is resolved and replaced with a connector error raised
+        ``from None``.
+        """
+        _wire_package_show(router)
+        router.get(url__startswith=DAILY_WIND_RESOURCE_URL).mock(
+            return_value=httpx.Response(302, headers={"location": "https://host:notaport/x.csv"})
+        )
+        _add_catch_all(router)
+
+        with pytest.raises(NesoUnsafeRedirectError) as excinfo:
+            _run_fetch(_source_config())
+
+        message = str(excinfo.value)
+        assert "not a resolvable URL" in message
+        assert "notaport" not in message, "the malformed vendor value was echoed"
+        assert excinfo.value.__cause__ is None, "httpx's own error was chained"
