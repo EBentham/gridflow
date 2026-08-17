@@ -71,6 +71,14 @@ REGISTRY: dict[str, _RegistryEntry] = {
         1,
         reason="module parsers run on other paths; no parse at this construction site",
     ),
+    "neso_data_portal/client.py:fetch": _RegistryEntry(
+        "EXEMPT",
+        1,
+        reason=(
+            "CSV body is handed to bronze unparsed; the D-36 admission parse is "
+            "discarded and is not a row count of record"
+        ),
+    ),
     "neso/carbon_intensity.py:fetch": _RegistryEntry(
         "EXEMPT",
         1,
