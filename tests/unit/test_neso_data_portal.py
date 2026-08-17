@@ -18,6 +18,7 @@ import ipaddress
 import json
 import logging
 import socket
+import traceback
 from datetime import UTC, datetime, timedelta, timezone
 from pathlib import Path
 from time import monotonic
@@ -793,9 +794,13 @@ def sent_responses(monkeypatch: pytest.MonkeyPatch) -> list[httpx.Response]:
     real_send = NesoDataPortalConnector._send
 
     async def _spy(
-        self: NesoDataPortalConnector, request: httpx.Request, *, stream: bool = False
+        self: NesoDataPortalConnector,
+        request: httpx.Request,
+        target: Any,
+        *,
+        stream: bool = False,
     ) -> httpx.Response:
-        response = await real_send(self, request, stream=stream)
+        response = await real_send(self, request, target, stream=stream)
         captured.append(response)
         return response
 
@@ -849,7 +854,7 @@ class TestResourceSelection:
         spec = DATASETS[dataset]
         connector = NesoDataPortalConnector(_source_config())
 
-        resource = connector._select_resource(payload, spec, dataset)
+        resource, _redirector = connector._select_resource(payload, spec, dataset)
 
         assert resource["name"] == spec.resource_name
         expected = next(r for r in payload["resources"] if r["name"] == spec.resource_name)
@@ -866,7 +871,9 @@ class TestResourceSelection:
         spec = DATASETS["embedded_wind_solar_forecast"]
         connector = NesoDataPortalConnector(_source_config())
 
-        resource = connector._select_resource(payload, spec, "embedded_wind_solar_forecast")
+        resource, _redirector = connector._select_resource(
+            payload, spec, "embedded_wind_solar_forecast"
+        )
 
         assert len(payload["resources"]) == 11
         rejected = [r for r in payload["resources"] if r["id"] != resource["id"]]
@@ -2353,6 +2360,49 @@ class TestCredentialsCannotLeave:
         assert _TEST_CREDENTIAL not in emitted, f"{case}: X-Amz-Credential escaped"
         assert "X-Amz-Signature=" not in emitted, f"{case}: a signed query escaped"
 
+    @pytest.mark.parametrize(
+        ("status", "case"),
+        [(403, "signature rejected"), (500, "terminal 5xx after retries")],
+    )
+    def test_a_non_2xx_on_the_presigned_leg_does_not_leak_it(
+        self,
+        router: respx.MockRouter,
+        caplog: pytest.LogCaptureFixture,
+        no_retry_backoff: None,
+        status: int,
+        case: str,
+    ) -> None:
+        """Finding 1. ``raise_for_status()`` builds its message from the FULL
+        signed URL, and tenacity's ``before_sleep_log`` writes that string to
+        the log before every retry — so a 5xx leaked it five times over.
+
+        The whole exception chain is inspected, not just ``str(exc)``: a raw
+        ``__cause__`` would surface in any traceback the operator sees.
+        """
+        _wire_package_show(router)
+        _wire_redirect_download(
+            router, location=_LEAKY_PRESIGNED_URL, file_response=httpx.Response(status)
+        )
+
+        with caplog.at_level(logging.DEBUG), pytest.raises(httpx.HTTPStatusError) as excinfo:
+            _run_fetch(_source_config())
+
+        chain = "".join(
+            traceback.format_exception(
+                type(excinfo.value), excinfo.value, excinfo.value.__traceback__
+            )
+        )
+        emitted = (
+            str(excinfo.value)
+            + repr(excinfo.value)
+            + chain
+            + _connector_log_text(caplog)
+            + "".join(str(r.getMessage()) for r in caplog.records if r.name.startswith("tenacity"))
+        )
+        assert _TEST_SIGNATURE not in emitted, f"{case}: signature escaped"
+        assert _TEST_CREDENTIAL not in emitted, f"{case}: credential escaped"
+        assert excinfo.value.__cause__ is None, f"{case}: a raw cause was chained"
+
     def test_a_rejected_presigned_redirect_target_does_not_leak_it(
         self,
         router: respx.MockRouter,
@@ -2399,100 +2449,107 @@ class TestCredentialsCannotLeave:
         assert _TEST_CREDENTIAL not in recorded
         assert raw.request_url == DAILY_WIND_RESOURCE_URL
 
-    def test_safe_url_strips_every_credential_bearing_component(self) -> None:
-        """The choke point's own contract, tested directly.
+    def test_no_rendering_of_a_safe_url_can_produce_credentials(self) -> None:
+        """The representation-level guarantee, tested through EVERY spelling.
 
-        Stubbing it everywhere else would leave its body — which is the whole
-        guarantee — untested, exactly as stubbing the resolver everywhere would
-        have left the sockaddr extraction untested.
+        This is the list the previous name-based static check could be evaded
+        by — ``str()``, an f-string, ``.format()``, ``%``, an alias, ``repr``.
+        Under a sanitising helper each was a separate site someone had to
+        remember. Under a type they are all the same code path, so the test is
+        exhaustive over spellings rather than hopeful about them.
         """
-        hostile = httpx.URL(
-            f"https://user:pw@api.neso.energy:8443/a/b?X-Amz-Signature={_TEST_SIGNATURE}"
-            "#access_token=secret"
+        hostile = (
+            f"https://user:pw@evil.example:8443/p/a/t/h?X-Amz-Signature={_TEST_SIGNATURE}"
+            f"&X-Amz-Credential={_TEST_CREDENTIAL}#access_token=frag"
+        )
+        safe = client_module.SafeUrl.opaque(hostile)
+        alias = safe
+
+        renderings = [
+            str(safe),
+            repr(safe),
+            f"{safe}",
+            f"{safe!s}",
+            f"{safe!r}",
+            # These legacy spellings are the POINT: they are the forms a
+            # name-based check could be evaded by, so they are exercised
+            # deliberately rather than modernised away.
+            "{}".format(safe),  # noqa: UP032
+            "{0!s} {0!r}".format(safe),  # noqa: UP032
+            "%s" % safe,  # noqa: UP031
+            "%r" % safe,  # noqa: UP031
+            format(safe, ""),
+            format(safe, ">80"),
+            str(alias),
+            f"{alias}",
+            str([safe]),
+            str({"u": safe}),
+            str((safe,)),
+        ]
+
+        for rendered in renderings:
+            for forbidden in (
+                _TEST_SIGNATURE,
+                _TEST_CREDENTIAL,
+                "user:pw",
+                "access_token",
+                "X-Amz-",
+                "/p/a/t/h",
+            ):
+                assert forbidden not in rendered, f"{forbidden!r} leaked via {rendered!r}"
+
+    def test_an_unconstrained_hop_renders_origin_only(self) -> None:
+        """Finding 3: ``_assert_safe_target`` permits any globally-routable host
+        and ANY path, so an arbitrary redirect target's path may itself carry a
+        bearer token. Only the redirector's path has been proven, so only the
+        redirector's path may be rendered.
+        """
+        token_in_path = "https://cdn.example/download/bearer-abc123secret/file.csv"
+
+        assert str(client_module.SafeUrl.opaque(token_in_path)) == "https://cdn.example"
+        assert "bearer-abc123secret" not in str(client_module.SafeUrl.opaque(token_in_path))
+
+        # The shape-validated redirector keeps its path, which is the whole
+        # point of validating it.
+        verified = client_module.SafeUrl.verified(DAILY_WIND_RESOURCE_URL)
+        assert str(verified) == DAILY_WIND_RESOURCE_URL
+
+    def test_the_raw_form_is_reachable_only_through_the_ugly_accessor(self) -> None:
+        """``unsafe_raw`` is the single deliberate door to the credentials."""
+        safe = client_module.SafeUrl.opaque(PRESIGNED_URL)
+
+        assert _TEST_SIGNATURE not in str(safe)
+        assert str(safe.unsafe_raw()) == PRESIGNED_URL, (
+            "sending must get the bytes back byte-identical — the presigned "
+            "signature covers the query"
         )
 
-        rendered = client_module._safe_url(hostile)
+    def test_unsafe_raw_is_called_only_where_a_request_is_built(self) -> None:
+        """The narrow static check that survives, in the shape Sol accepted for
+        ``_assert_safe_target``: pin the accessor's production call sites.
 
-        assert rendered == "https://api.neso.energy:8443/a/b"
-        for forbidden in (_TEST_SIGNATURE, "user:pw", "access_token", "?", "#"):
-            assert forbidden not in rendered, forbidden
-
-    def test_no_raw_url_expression_reaches_a_raise_or_a_log_call(self) -> None:
-        """The static half: every URL RENDERED into an exception or a log
-        statement in the production package goes through ``_safe_url``.
-
-        The behavioural tests above prove the paths they exercise; this one
-        covers the paths no test exercises yet, which is where the next leak
-        would otherwise be introduced. It inspects the expressions actually
-        interpolated — f-string ``FormattedValue`` nodes and ``logger(...)``
-        args — rather than every name appearing anywhere nearby, so
-        ``url.scheme`` is not a false positive while ``url.copy_with(...)`` is
-        a true one. That distinction is not academic: this check found a real
-        site that stripped userinfo and kept the presigned query.
+        Deliberately NOT a check about how URLs are spelled — that model failed
+        twice. This asserts only that the one door to the raw form is opened
+        where requests are constructed and nowhere else, so a new call site is a
+        deliberate act rather than an accident.
         """
         package_dir = Path(client_module.__file__).parent
-        # Names that hold a whole URL. ``source_label`` is deliberately absent:
-        # its callers pass an already-safe rendering, and the two csv_bronze
-        # failure paths are covered behaviourally above.
-        url_names = {"url", "raw_url", "redirector_url", "target", "location"}
-        offenders: list[str] = []
-
-        def _is_url_expr(expr: ast.expr) -> bool:
-            """Does this expression evaluate to a (credential-bearing) URL?"""
-            if isinstance(expr, ast.Attribute):
-                return expr.attr == "url"
-            if isinstance(expr, ast.Name):
-                return expr.id in url_names
-            if isinstance(expr, ast.Call) and isinstance(expr.func, ast.Attribute):
-                # A method call on a URL yields a URL again — copy_with, join.
-                # Judged by its RECEIVER, not its name: "; ".join(problems) is
-                # not a URL and must not be flagged.
-                return _is_url_expr(expr.func.value)
-            return False
-
-        def _is_safe(expr: ast.expr) -> bool:
-            if (
-                isinstance(expr, ast.Call)
-                and isinstance(expr.func, ast.Name)
-                and expr.func.id == "_safe_url"
-            ):
-                return True
-            if isinstance(expr, ast.JoinedStr):
-                return all(
-                    _is_safe(part.value)
-                    for part in expr.values
-                    if isinstance(part, ast.FormattedValue)
-                )
-            # url.scheme / url.host / url.port / url.path are scalar components,
-            # not URLs, so _is_url_expr already returns False for them.
-            return not _is_url_expr(expr)
+        call_sites: list[tuple[str, str]] = []
 
         for path in sorted(package_dir.rglob("*.py")):
             tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
             for node in ast.walk(tree):
-                rendered: list[ast.expr] = []
-                if isinstance(node, ast.Raise):
-                    for inner in ast.walk(node):
-                        if isinstance(inner, ast.FormattedValue):
-                            rendered.append(inner.value)
-                elif (
-                    isinstance(node, ast.Call)
-                    and isinstance(node.func, ast.Attribute)
-                    and isinstance(node.func.value, ast.Name)
-                    and node.func.value.id == "logger"
-                ):
-                    rendered.extend(node.args[1:])
-                    for inner in ast.walk(node):
-                        if isinstance(inner, ast.FormattedValue):
-                            rendered.append(inner.value)
+                if not isinstance(node, ast.FunctionDef | ast.AsyncFunctionDef):
+                    continue
+                for inner in ast.walk(node):
+                    if (
+                        isinstance(inner, ast.Call)
+                        and isinstance(inner.func, ast.Attribute)
+                        and inner.func.attr == "unsafe_raw"
+                    ):
+                        call_sites.append((path.name, node.name))
 
-                for expr in rendered:
-                    if not _is_safe(expr):
-                        offenders.append(
-                            f"{path.name}:{getattr(expr, 'lineno', '?')} {ast.dump(expr)[:70]}"
-                        )
-
-        assert offenders == [], (
-            "a URL is rendered into an exception or log message without going through "
-            f"_safe_url: {offenders}"
-        )
+        assert call_sites == [
+            ("client.py", "_download_resource"),
+            ("client.py", "_download_resource"),
+        ], f"unsafe_raw() is called somewhere new: {call_sites}"

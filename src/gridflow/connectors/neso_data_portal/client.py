@@ -29,7 +29,7 @@ import socket
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from time import monotonic
-from typing import TYPE_CHECKING, Any, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar, final
 from uuid import uuid4
 
 import httpx
@@ -140,6 +140,19 @@ class NesoResourceSelectionError(NesoDataPortalError):
     """
 
 
+class NesoHttpStatusError(httpx.HTTPStatusError, NesoDataPortalError):
+    """A non-2xx response, rendered without the request URL.
+
+    Subclasses ``httpx.HTTPStatusError`` deliberately: ``RETRY_POLICY`` retries
+    on that type, so a 5xx must remain retryable. What it does NOT do is let
+    httpx build the message — ``raise_for_status()`` interpolates the complete
+    signed URL, and tenacity's ``before_sleep_log`` then writes that string to
+    the log before every retry. The message here is built from a
+    :class:`SafeUrl`, and it is raised ``from None`` so no raw cause is chained
+    behind it.
+    """
+
+
 class NesoUnexpectedStatusError(NesoDataPortalError):
     """A successful response that is not a complete-file HTTP 200.
 
@@ -244,37 +257,126 @@ class CatalogDiscovery:
     traces: tuple[RequestTrace, ...]
 
 
-def _safe_url(url: httpx.URL | str) -> str:
-    """Return the ONLY form of a URL this connector may record, raise or log.
+@final
+class SafeUrl:
+    """A URL whose EVERY string form is credential-free, by construction.
 
-    **The invariant, stated structurally rather than per site.** Vendor URLs on
-    the file leg are presigned: they carry ``X-Amz-Credential`` and
-    ``X-Amz-Signature`` in their query, and a fragment can carry anything at
-    all. Any of those reaching an exception message, a log line or the bronze
-    sidecar is a durable credential leak — the sidecar irreproducibly, the log
-    for as long as logs are kept.
+    **Why a type and not a sanitising helper.** Three consecutive review passes
+    found credential leaks in this connector, and each fix was the same shape:
+    render the safe form *at the sites we remembered*. A helper cannot win that
+    argument — ``str(url)``, an f-string, ``"{}".format(url)``, an alias, a
+    ``logger`` arg, ``raise ... from``, or an exception some library builds out
+    of the value are all ordinary spellings, and enumerating them is the losing
+    game the plan already abandoned once when it replaced its AST gate with a
+    behavioural proof.
 
-    Redacting at each emission site does not work, and this function exists
-    because it was tried: the first fix checked the URL's shape at one site and
-    redacted at another, and the very next review found both a hole in the
-    shape check and a *newly introduced* leak in the fix's own error message.
-    Site-by-site defence against a leak class always loses to the site nobody
-    listed. So there is one safe rendering, and every emission path uses it —
-    the same move that put target validation inside :meth:`_send` rather than
-    at remembered call sites.
+    So the credential-bearing form is not reachable by rendering at all. This
+    object holds the raw URL privately and defines ``__str__``, ``__repr__`` and
+    ``__format__`` to produce the safe form, so every one of those spellings is
+    safe **without anyone remembering anything**. Getting the raw bytes requires
+    :meth:`unsafe_raw` — deliberately ugly, greppable, and asserted by test to
+    be called only where a request is actually built.
 
-    Userinfo, query and fragment are ALL removed; scheme, host, port and path
-    are kept, which is everything an operator needs to diagnose a failure and
-    nothing an attacker can replay.
+    **Two renderings, because the path is only safe when it has been proven.**
+    ``_assert_safe_target`` permits any globally-routable host and any path, so
+    an arbitrary redirect target's path may itself carry a bearer token. Only
+    the redirector — whose path this connector has shape-validated against
+    ``/dataset/<pkg>/resource/<id>/download/<file>`` — has a path known to be
+    credential-free.
 
-    Args:
-        url: Any URL, trusted or not.
-
-    Returns:
-        ``scheme://host[:port]/path`` — never credentials.
+    - :meth:`verified` keeps the path. Use for URLs this connector CONSTRUCTED
+      (the CKAN action calls) or has SHAPE-VALIDATED (the redirector).
+    - :meth:`opaque` renders origin only. Use for everything vendor-supplied
+      and unconstrained — every redirect hop.
     """
-    parsed = url if isinstance(url, httpx.URL) else httpx.URL(url)
-    return str(parsed.copy_with(userinfo=b"", query=None, fragment=None))
+
+    __slots__ = ("_display", "_raw")
+
+    _raw: httpx.URL
+    _display: str
+
+    def __init__(self, raw: httpx.URL | str, *, keep_path: bool) -> None:
+        parsed = raw if isinstance(raw, httpx.URL) else httpx.URL(raw)
+        # `netloc` is host[:port] and EXCLUDES userinfo (verified on the pinned
+        # httpx), so the origin cannot carry credentials even when the source
+        # URL does.
+        origin = f"{parsed.scheme}://{parsed.netloc.decode('ascii')}"
+        self._raw = parsed
+        self._display = origin + parsed.path if keep_path else origin
+
+    @classmethod
+    def verified(cls, url: httpx.URL | str) -> SafeUrl:
+        """For a URL whose path we built or proved. Renders scheme://host[:port]/path."""
+        return cls(url, keep_path=True)
+
+    @classmethod
+    def opaque(cls, url: httpx.URL | str) -> SafeUrl:
+        """For an unconstrained vendor URL. Renders scheme://host[:port] only."""
+        return cls(url, keep_path=False)
+
+    # -- every rendering path, all safe ------------------------------------
+    def __str__(self) -> str:
+        return self._display
+
+    def __repr__(self) -> str:
+        return f"SafeUrl({self._display!r})"
+
+    def __format__(self, format_spec: str) -> str:
+        return format(self._display, format_spec)
+
+    # -- components, so validation never needs the raw object --------------
+    @property
+    def scheme(self) -> str:
+        return str(self._raw.scheme)
+
+    @property
+    def host(self) -> str:
+        return str(self._raw.host)
+
+    @property
+    def port(self) -> int | None:
+        port: int | None = self._raw.port
+        return port
+
+    @property
+    def path(self) -> str:
+        return str(self._raw.path)
+
+    @property
+    def userinfo(self) -> bytes:
+        userinfo: bytes = self._raw.userinfo
+        return userinfo
+
+    @property
+    def query(self) -> bytes:
+        query: bytes = self._raw.query
+        return query
+
+    @property
+    def fragment(self) -> str:
+        return str(self._raw.fragment)
+
+    def join(self, location: str) -> SafeUrl:
+        """Resolve a relative ``Location`` against this URL (RFC 3986).
+
+        The result is :meth:`opaque` because a redirect target is
+        vendor-controlled and unproven, path included.
+        """
+        return SafeUrl.opaque(self._raw.join(location))
+
+    def unsafe_raw(self) -> httpx.URL:
+        """Return the RAW URL, credentials and all. **Sending only.**
+
+        The only legitimate caller is the code that builds an outbound request:
+        the bytes have to go on the wire intact — the presigned target is signed
+        with ``X-Amz-SignedHeaders=host`` and any alteration invalidates it.
+
+        Never pass the result to a log, an exception, a format string or the
+        bronze sidecar. A test asserts this method's production call sites, so a
+        new one is a deliberate act rather than an accident.
+        """
+        raw: httpx.URL = self._raw
+        return raw
 
 
 async def _resolve_host_addresses(host: str, port: int) -> list[Any]:
@@ -353,7 +455,9 @@ class NesoDataPortalConnector(BaseConnector):
     # ------------------------------------------------------------------
 
     @RETRY_POLICY
-    async def _send(self, request: httpx.Request, *, stream: bool = False) -> httpx.Response:
+    async def _send(
+        self, request: httpx.Request, target: SafeUrl, *, stream: bool = False
+    ) -> httpx.Response:
         """Send one request. **The only network-I/O site in this package.**
 
         Nothing else may send — not the client's streaming context-manager
@@ -397,7 +501,7 @@ class NesoDataPortalConnector(BaseConnector):
         if self._client is None or self._semaphore is None:
             raise RuntimeError("Connector not initialized. Use 'async with' context manager.")
 
-        await self._assert_safe_target(request.url)
+        await self._assert_safe_target(target)
 
         # Per SEND ATTEMPT, never a per-session nonce: a session-long token
         # would still sit in ``extensions`` on an already-sent request, so
@@ -417,7 +521,14 @@ class NesoDataPortalConnector(BaseConnector):
             return response
         if not response.is_success:
             await response.aclose()
-            response.raise_for_status()
+            # NOT raise_for_status(): httpx builds that message from the full
+            # signed URL, and tenacity logs it before each retry. `from None`
+            # keeps a raw cause off the chain too.
+            raise NesoHttpStatusError(
+                f"{target} returned HTTP {response.status_code}",
+                request=request,
+                response=response,
+            ) from None
         return response
 
     async def _throttle_request(self) -> None:
@@ -448,7 +559,7 @@ class NesoDataPortalConnector(BaseConnector):
                 await asyncio.sleep(min_interval - elapsed)
             self._last_request_at = monotonic()
 
-    async def _assert_safe_target(self, url: httpx.URL) -> None:
+    async def _assert_safe_target(self, url: SafeUrl) -> None:
         """Raise unless ``url`` satisfies D-08's target policy.
 
         **Called from :meth:`_send` and from nowhere else** (D-39 §1a), and that
@@ -475,39 +586,37 @@ class NesoDataPortalConnector(BaseConnector):
         """
         if url.scheme != "https":
             raise NesoUnsafeRedirectError(
-                f"refusing to send to {_safe_url(url)}: scheme must be https, got {url.scheme!r}"
+                f"refusing to send to {url}: scheme must be https, got {url.scheme!r}"
             )
         if url.userinfo:
             raise NesoUnsafeRedirectError(
-                f"refusing to send to {_safe_url(url)}: the URL carries "
+                f"refusing to send to {url}: the URL carries "
                 "userinfo, which httpx would turn into Basic credentials for that host"
             )
         host = url.host
         if not host:
-            raise NesoUnsafeRedirectError(
-                f"refusing to send to {_safe_url(url)}: no host component"
-            )
+            raise NesoUnsafeRedirectError(f"refusing to send to {url}: no host component")
 
         port = url.port or 443
         try:
             addresses = await _resolve_host_addresses(host, port)
         except OSError as exc:
             raise NesoUnsafeRedirectError(
-                f"refusing to send to {_safe_url(url)}: host {host!r} did not resolve ({exc})"
+                f"refusing to send to {url}: host {host!r} did not resolve ({exc})"
             ) from exc
 
         if not addresses:
             raise NesoUnsafeRedirectError(
-                f"refusing to send to {_safe_url(url)}: host {host!r} resolved to no addresses"
+                f"refusing to send to {url}: host {host!r} resolved to no addresses"
             )
         for address in addresses:
             if not address.is_global:
                 raise NesoUnsafeRedirectError(
-                    f"refusing to send to {_safe_url(url)}: host {host!r} resolves to "
+                    f"refusing to send to {url}: host {host!r} resolves to "
                     f"{address}, which is not globally routable"
                 )
 
-    def _resolve_redirect_target(self, response: httpx.Response) -> httpx.URL:
+    def _resolve_redirect_target(self, response: httpx.Response, sent_to: SafeUrl) -> SafeUrl:
         """Resolve a redirect ``Location`` against the URL that sent it.
 
         **Resolution only, never validation** — validation is :meth:`_send`'s,
@@ -525,9 +634,11 @@ class NesoDataPortalConnector(BaseConnector):
             raise NesoDataPortalError(
                 "internal error: _resolve_redirect_target called on a response with no Location"
             )
-        return response.request.url.join(location)
+        return sent_to.join(location)
 
-    async def _read_capped_body(self, response: httpx.Response, spec: CkanDataset) -> bytes:
+    async def _read_capped_body(
+        self, response: httpx.Response, spec: CkanDataset, target: SafeUrl
+    ) -> bytes:
         """Read a streamed body under a hard size cap, and prove it is complete.
 
         In D-39 §4's order, which is not arbitrary: a declared oversize is
@@ -559,14 +670,14 @@ class NesoDataPortalConnector(BaseConnector):
         declared = _declared_content_length(response)
         if declared is not None and declared > spec.max_download_bytes:
             raise NesoResponseTooLargeError(
-                f"refusing {_safe_url(response.request.url)}: declared Content-Length {declared} B "
+                f"refusing {target}: declared Content-Length {declared} B "
                 f"exceeds the {spec.max_download_bytes} B cap"
             )
 
         encoding = response.headers.get("content-encoding", "").strip().lower()
         if encoding and encoding != "identity":
             raise NesoUnexpectedEncodingError(
-                f"{_safe_url(response.request.url)} returned Content-Encoding {encoding!r} after "
+                f"{target} returned Content-Encoding {encoding!r} after "
                 "the request asked for 'identity'; refusing to guess what the vendor did"
             )
 
@@ -577,19 +688,18 @@ class NesoDataPortalConnector(BaseConnector):
                 total += len(chunk)
                 if total > spec.max_download_bytes:
                     raise NesoResponseTooLargeError(
-                        f"aborting {_safe_url(response.request.url)}: body exceeded the "
+                        f"aborting {target}: body exceeded the "
                         f"{spec.max_download_bytes} B cap after {total} B"
                     )
                 chunks.append(chunk)
         except httpx.RemoteProtocolError as exc:
             raise NesoTruncatedBodyError(
-                f"{_safe_url(response.request.url)} closed mid-transfer after {total} B ({exc})"
+                f"{target} closed mid-transfer after {total} B ({exc})"
             ) from exc
 
         if declared is not None and total != declared:
             raise NesoTruncatedBodyError(
-                f"{_safe_url(response.request.url)} declared Content-Length {declared} B but "
-                f"delivered {total} B"
+                f"{target} declared Content-Length {declared} B but delivered {total} B"
             )
         return b"".join(chunks)
 
@@ -629,9 +739,10 @@ class NesoDataPortalConnector(BaseConnector):
 
         path, query = build_action_url(action, **params)
         request = self._client.build_request("GET", path, params=query)
+        target = SafeUrl.verified(request.url)
 
         started_at = datetime.now(UTC)
-        response = await self._send(request)
+        response = await self._send(request, target)
         try:
             if response.has_redirect_location:
                 raise CkanActionError(
@@ -808,7 +919,7 @@ class NesoDataPortalConnector(BaseConnector):
         package_payload: dict[str, Any],
         spec: CkanDataset,
         dataset: str,
-    ) -> dict[str, Any]:
+    ) -> tuple[dict[str, Any], SafeUrl]:
         """Select the one resource whose name matches the contract exactly (D-04).
 
         Exact-string match and nothing else: no fuzzy match, no
@@ -849,15 +960,14 @@ class NesoDataPortalConnector(BaseConnector):
                 f"{declared_format!r}, expected {spec.expected_format!r}; refusing to stamp "
                 "content_type from a format we did not verify"
             )
-        self._assert_redirector_url(package_payload, resource, dataset)
-        return resource
+        return resource, self._assert_redirector_url(package_payload, resource, dataset)
 
     def _assert_redirector_url(
         self,
         package_payload: dict[str, Any],
         resource: dict[str, Any],
         dataset: str,
-    ) -> None:
+    ) -> SafeUrl:
         """Raise unless ``resources[].url`` is the stable NESO redirector (D-11).
 
         **Why this is a check and not an assumption.** ``request_url`` is copied
@@ -877,7 +987,7 @@ class NesoDataPortalConnector(BaseConnector):
         so, so the segments are compared as a list rather than searched.
 
         This is **one instance of the emission invariant, not the whole of it**:
-        :func:`_safe_url` is what guarantees credentials cannot leave by any
+        :class:`SafeUrl` is what guarantees credentials cannot leave by any
         path. This check guarantees the *sidecar* records the redirector, which
         is a stronger statement than "records something without a query".
 
@@ -887,14 +997,14 @@ class NesoDataPortalConnector(BaseConnector):
 
         Raises:
             NesoUnexpectedResourceUrlError: Naming every way the URL departed
-                from the contract, rendered through :func:`_safe_url` so the
+                from the contract, rendered through :class:`SafeUrl` so the
                 refusal cannot leak what it exists to protect.
         """
         raw_url = str(resource.get("url", ""))
         if not raw_url:
             raise NesoUnexpectedResourceUrlError(f"{dataset}: the selected resource carries no url")
 
-        url = httpx.URL(raw_url)
+        url = SafeUrl.verified(raw_url)
         base = httpx.URL(self.config.base_url)
         resource_id = str(resource.get("id", ""))
         # CKAN builds this path from the package's id; its name is the other
@@ -949,13 +1059,17 @@ class NesoDataPortalConnector(BaseConnector):
 
         if problems:
             raise NesoUnexpectedResourceUrlError(
-                f"{dataset}: resource url {_safe_url(url)!r} is not the stable NESO "
+                f"{dataset}: resource url {url!r} is not the stable NESO "
                 f"redirector D-11 requires: {'; '.join(problems)}"
             )
+
+        # Only NOW is the path proven, so only now may it be rendered.
+        return url
 
     async def _download_resource(
         self,
         resource: dict[str, Any],
+        redirector: SafeUrl,
         spec: CkanDataset,
         dataset: str,
     ) -> tuple[bytes, str, int]:
@@ -981,23 +1095,23 @@ class NesoDataPortalConnector(BaseConnector):
         if self._client is None:
             raise RuntimeError("Connector not initialized. Use 'async with' context manager.")
 
-        redirector_url = str(resource.get("url", ""))
-        if not redirector_url:
-            raise NesoResourceSelectionError(
-                f"{dataset}: resource {spec.resource_name!r} carries no url"
-            )
-
-        request = self._client.build_request("GET", redirector_url, headers=_FILE_LEG_HEADERS)
+        # The redirector is shape-validated, so its path is proven and may be
+        # rendered. Every hop AFTER it is `opaque` — an unconstrained vendor URL
+        # whose path could itself carry a bearer token.
+        target = redirector
+        request = self._client.build_request("GET", target.unsafe_raw(), headers=_FILE_LEG_HEADERS)
         body: bytes | None = None
         final_status: int | None = None
         for _ in range(_MAX_REDIRECT_HOPS + 1):
-            response = await self._send(request, stream=True)
+            response = await self._send(request, target, stream=True)
             try:
                 if response.has_redirect_location:
-                    target = self._resolve_redirect_target(response)
+                    target = self._resolve_redirect_target(response, target)
                     # No validate() call here: _send validates every URL it is
                     # handed (D-39 §1a). There is no second call site to forget.
-                    request = self._client.build_request("GET", target, headers=_FILE_LEG_HEADERS)
+                    request = self._client.build_request(
+                        "GET", target.unsafe_raw(), headers=_FILE_LEG_HEADERS
+                    )
                     continue
                 # A 2xx that is not 200 does not describe a whole file. 206 in
                 # particular is a PARTIAL representation: we never send a Range
@@ -1006,25 +1120,24 @@ class NesoDataPortalConnector(BaseConnector):
                 # as valid CSV. Refused rather than recorded.
                 if response.status_code != 200:
                     raise NesoUnexpectedStatusError(
-                        f"{dataset}: {_safe_url(response.request.url)} answered HTTP "
+                        f"{dataset}: {target} answered HTTP "
                         f"{response.status_code}, which is not a complete-file 200 "
                         "response; no Range request was made, so a partial or "
                         "alternative representation cannot be admitted to bronze"
                     )
                 final_status = response.status_code
-                body = await self._read_capped_body(response, spec)
+                body = await self._read_capped_body(response, spec, target)
                 break
             finally:
                 await response.aclose()
 
         if body is None or final_status is None:
             raise NesoRedirectLoopError(
-                f"{dataset}: {_safe_url(redirector_url)} exceeded "
-                f"{_MAX_REDIRECT_HOPS} redirect hops"
+                f"{dataset}: {redirector} exceeded {_MAX_REDIRECT_HOPS} redirect hops"
             )
 
-        self._assert_admissible_csv(body, spec, dataset, _safe_url(redirector_url))
-        return body, redirector_url, final_status
+        self._assert_admissible_csv(body, spec, dataset, str(redirector))
+        return body, str(redirector), final_status
 
     def _assert_admissible_csv(
         self,
@@ -1213,8 +1326,10 @@ class NesoDataPortalConnector(BaseConnector):
         self._assert_window_admissible(dataset, start, end)
 
         package_payload = await self._package_show(spec.package)
-        resource = self._select_resource(package_payload, spec, dataset)
-        body, redirector_url, http_status = await self._download_resource(resource, spec, dataset)
+        resource, redirector = self._select_resource(package_payload, spec, dataset)
+        body, redirector_url, http_status = await self._download_resource(
+            resource, redirector, spec, dataset
+        )
 
         return [
             RawResponse(
