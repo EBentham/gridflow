@@ -1339,6 +1339,30 @@ class TestResourceUrlShape:
                 "plain http",
             ),
             (f"{BASE_URL}/datastore/dump/{DAILY_WIND_RESOURCE_ID}", "datastore dump path"),
+            (
+                f"https://api.neso.energy:8443/anything/resource/{DAILY_WIND_RESOURCE_ID}"
+                "/download/file.csv#access_token=secret",
+                "Sol's case: off-port, off-path, fragment-bearing",
+            ),
+            (
+                f"https://api.neso.energy:8443/dataset/{DAILY_WIND_PACKAGE_ID}/resource/"
+                f"{DAILY_WIND_RESOURCE_ID}/download/windavailability.csv",
+                "unexpected port",
+            ),
+            (
+                DAILY_WIND_RESOURCE_URL + "#access_token=secret",
+                "fragment on an otherwise valid redirector",
+            ),
+            (
+                f"{BASE_URL}/prefix/dataset/{DAILY_WIND_PACKAGE_ID}/resource/"
+                f"{DAILY_WIND_RESOURCE_ID}/download/windavailability.csv",
+                "extra leading path segment (substring match would pass)",
+            ),
+            (
+                f"{BASE_URL}/dataset/{DAILY_WIND_PACKAGE_ID}/resource/"
+                f"{DAILY_WIND_RESOURCE_ID}/download/",
+                "empty filename segment",
+            ),
             (f"{BASE_URL}/x.csv", "arbitrary path"),
             (
                 f"{BASE_URL}/dataset/pkg/resource/some-other-id/download/windavailability.csv",
@@ -1359,6 +1383,32 @@ class TestResourceUrlShape:
         downloads = [c for c in router.calls if _request_kind(c.request) != "package_show"]
         assert downloads == [], f"{case}: a request was sent anyway"
         assert raw_response_spy == [], f"{case}: a RawResponse was constructed"
+
+    def test_a_resource_url_carrying_userinfo_is_refused(
+        self, router: respx.MockRouter, raw_response_spy: list[dict[str, Any]]
+    ) -> None:
+        """httpx would turn ``user:pass@`` into Basic credentials for that host.
+
+        Owned by the SHAPE guard rather than by the target policy: the
+        redirector simply never carries userinfo, so this is a contract
+        violation before it is a routing question. ``_assert_safe_target``'s own
+        userinfo rule stays exercised through the redirect-``Location`` path in
+        :class:`TestRedirectPolicy`, so nothing lost coverage in the move.
+        """
+        payload = _fixture("package_show_daily_wind_availability.json")
+        payload["result"]["resources"][0]["url"] = DAILY_WIND_RESOURCE_URL.replace(
+            "https://", "https://user:pass@"
+        )
+        _wire_package_show(router, payload)
+        _add_catch_all(router)
+
+        with pytest.raises(NesoUnexpectedResourceUrlError) as excinfo:
+            _run_fetch(_source_config())
+
+        assert "user:pass" not in str(excinfo.value), "the refusal echoed the credentials"
+        downloads = [c for c in router.calls if _request_kind(c.request) != "package_show"]
+        assert downloads == []
+        assert raw_response_spy == []
 
     def test_the_real_redirector_shape_is_accepted(self, router: respx.MockRouter) -> None:
         """The positive control: the check must not refuse the real thing.
@@ -1437,29 +1487,6 @@ class TestInitialUrlValidation:
         downloads = [c for c in router.calls if _request_kind(c.request) != "package_show"]
         assert downloads == [], f"{case}: a request reached the rejected target"
         assert raw_response_spy == [], f"{case}: a RawResponse was constructed"
-
-    def test_a_resource_url_carrying_userinfo_is_refused(
-        self, router: respx.MockRouter, raw_response_spy: list[dict[str, Any]]
-    ) -> None:
-        """httpx would turn ``user:pass@`` into Basic credentials for that host.
-
-        Shape-valid — userinfo is not part of the host or path — so this is the
-        target policy's catch, not D-11's.
-        """
-        payload = _fixture("package_show_daily_wind_availability.json")
-        payload["result"]["resources"][0]["url"] = DAILY_WIND_RESOURCE_URL.replace(
-            "https://", "https://user:pass@"
-        )
-        _wire_package_show(router, payload)
-        _add_catch_all(router)
-
-        with pytest.raises(NesoUnsafeRedirectError) as excinfo:
-            _run_fetch(_source_config())
-
-        assert "user:pass" not in str(excinfo.value), "the refusal echoed the credentials"
-        downloads = [c for c in router.calls if _request_kind(c.request) != "package_show"]
-        assert downloads == []
-        assert raw_response_spy == []
 
 
 class TestRedirectPolicy:
@@ -2213,3 +2240,259 @@ class TestObservedHttpStatus:
 
         with pytest.raises(NesoUnexpectedStatusError):
             _run_fetch(_source_config())
+
+
+# The credential components of the presigned test URL. If either of these
+# strings appears in ANY exception message or log record the suite produces,
+# a credential has escaped the connector.
+_TEST_SIGNATURE = "b4f0da8dbcf4e5c46e06a16556fcc90257a632b4684f5d6d4c4d0da7565bceef"
+_TEST_CREDENTIAL = "564ecf1b9cb7e605192d2953e7a993b9"
+_LEAKY_PRESIGNED_URL = (
+    FILE_PATH
+    + "?response-content-disposition=attachment"
+    + f"&X-Amz-Credential={_TEST_CREDENTIAL}%2F20260816%2Fauto%2Fs3%2Faws4_request"
+    + "&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Expires=604800"
+    + f"&X-Amz-SignedHeaders=host&X-Amz-Signature={_TEST_SIGNATURE}"
+)
+
+
+def _connector_log_text(caplog: pytest.LogCaptureFixture) -> str:
+    """Log output emitted BY THIS CONNECTOR (and the reader it calls).
+
+    Scoped deliberately, and the scope is itself a finding. httpx's own logger
+    emits ``HTTP Request: GET <full url> "HTTP/1.1 200 OK"`` at INFO on every
+    single request, query string included -- so a presigned URL's
+    X-Amz-Signature reaches gridflow's log file on every successful fetch, and
+    ENTSO-E's securityToken does the same today. That is a real leak, it is
+    repo-wide and pre-existing, and it is NOT this connector's to fix: the
+    logger is module-global in httpx, so any suppression would change logging
+    for all six sources. Recorded in deferred-items.md and reported.
+
+    What this connector CAN guarantee is that nothing it emits itself carries
+    credentials, and that is what these tests assert.
+    """
+    return " | ".join(
+        record.getMessage() for record in caplog.records if record.name.startswith("gridflow.")
+    )
+
+
+class TestCredentialsCannotLeave:
+    """The emission invariant: credential-bearing material cannot leave this
+    connector by ANY path — sidecar, exception message or log line.
+
+    **Why this is a property test and not more redacted f-strings.** The first
+    fix for this class checked a URL's shape at one site and redacted at
+    another; the next review found both a hole in the shape check and a leak
+    the fix itself had introduced. Site-by-site defence against a leak class
+    loses to the site nobody enumerated. So the connector has ONE safe
+    rendering, :func:`~...client._safe_url`, and these tests assert the
+    property over observed output rather than over the list of sites we
+    happened to think of — the same move as proving the send invariant at the
+    transport instead of by matching source text.
+    """
+
+    @pytest.mark.parametrize(
+        ("file_response", "expected", "case"),
+        [
+            (
+                httpx.Response(200, content=DAILY_WIND_CSV, headers={"Content-Encoding": "br"}),
+                NesoUnexpectedEncodingError,
+                "unexpected content encoding",
+            ),
+            (
+                httpx.Response(206, content=DAILY_WIND_CSV),
+                NesoUnexpectedStatusError,
+                "partial content status",
+            ),
+            (
+                httpx.Response(200, content=DAILY_WIND_CSV, headers={"Content-Length": "999999"}),
+                NesoTruncatedBodyError,
+                "short body against a declared length",
+            ),
+            (
+                httpx.Response(
+                    200, content=b"x", headers={"Content-Length": str(64 * 1024 * 1024)}
+                ),
+                NesoResponseTooLargeError,
+                "declared oversize",
+            ),
+            (
+                httpx.Response(200, content=b"BMU_ID,Date,RENAMED\nT_A,2026-08-16,1\n"),
+                CsvHeaderDriftError,
+                "header drift (message built in csv_bronze, not here)",
+            ),
+            (
+                httpx.Response(200, content=b"<html>nope</html>"),
+                NotCsvBodyError,
+                "non-CSV body (message built in csv_bronze, not here)",
+            ),
+        ],
+    )
+    def test_no_failure_path_on_the_file_leg_leaks_the_presigned_credentials(
+        self,
+        router: respx.MockRouter,
+        caplog: pytest.LogCaptureFixture,
+        file_response: httpx.Response,
+        expected: type[Exception],
+        case: str,
+    ) -> None:
+        """Every failure mode reachable AFTER the redirect to the presigned URL.
+
+        Each one previously interpolated ``response.request.url`` — the
+        presigned target — straight into its message. Only one of them was
+        flagged in review; the rest are why the fix had to be structural.
+        """
+        _wire_package_show(router)
+        _wire_redirect_download(router, location=_LEAKY_PRESIGNED_URL, file_response=file_response)
+
+        with caplog.at_level(logging.DEBUG), pytest.raises(expected) as excinfo:
+            _run_fetch(_source_config())
+
+        emitted = str(excinfo.value) + "\n" + _connector_log_text(caplog)
+        assert _TEST_SIGNATURE not in emitted, f"{case}: X-Amz-Signature escaped"
+        assert _TEST_CREDENTIAL not in emitted, f"{case}: X-Amz-Credential escaped"
+        assert "X-Amz-Signature=" not in emitted, f"{case}: a signed query escaped"
+
+    def test_a_rejected_presigned_redirect_target_does_not_leak_it(
+        self,
+        router: respx.MockRouter,
+        caplog: pytest.LogCaptureFixture,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        """The refusal path itself must not echo what it refused.
+
+        A ``Location`` pointing at a presigned URL that fails the address policy
+        is the case where the connector holds vendor credentials and is about to
+        describe them in an error.
+        """
+        _wire_package_show(router)
+        _wire_redirect_download(router, location=_LEAKY_PRESIGNED_URL)
+
+        lookups = {"n": 0}
+
+        async def _stub(host: str, port: int) -> list[Any]:
+            lookups["n"] += 1
+            if lookups["n"] <= 2:
+                return [ipaddress.ip_address("93.184.216.34")]
+            return [ipaddress.ip_address("127.0.0.1")]
+
+        monkeypatch.setattr(client_module, "_resolve_host_addresses", _stub)
+
+        with caplog.at_level(logging.DEBUG), pytest.raises(NesoUnsafeRedirectError) as excinfo:
+            _run_fetch(_source_config())
+
+        emitted = str(excinfo.value) + "\n" + _connector_log_text(caplog)
+        assert _TEST_SIGNATURE not in emitted
+        assert _TEST_CREDENTIAL not in emitted
+
+    def test_the_bronze_provenance_never_carries_the_presigned_target(
+        self, router: respx.MockRouter
+    ) -> None:
+        """The original finding: the sidecar records the redirector only."""
+        _wire_package_show(router)
+        _wire_redirect_download(router, location=_LEAKY_PRESIGNED_URL)
+
+        (raw,) = _run_fetch(_source_config())
+
+        recorded = raw.request_url + "\n" + repr(raw.request_params)
+        assert _TEST_SIGNATURE not in recorded
+        assert _TEST_CREDENTIAL not in recorded
+        assert raw.request_url == DAILY_WIND_RESOURCE_URL
+
+    def test_safe_url_strips_every_credential_bearing_component(self) -> None:
+        """The choke point's own contract, tested directly.
+
+        Stubbing it everywhere else would leave its body — which is the whole
+        guarantee — untested, exactly as stubbing the resolver everywhere would
+        have left the sockaddr extraction untested.
+        """
+        hostile = httpx.URL(
+            f"https://user:pw@api.neso.energy:8443/a/b?X-Amz-Signature={_TEST_SIGNATURE}"
+            "#access_token=secret"
+        )
+
+        rendered = client_module._safe_url(hostile)
+
+        assert rendered == "https://api.neso.energy:8443/a/b"
+        for forbidden in (_TEST_SIGNATURE, "user:pw", "access_token", "?", "#"):
+            assert forbidden not in rendered, forbidden
+
+    def test_no_raw_url_expression_reaches_a_raise_or_a_log_call(self) -> None:
+        """The static half: every URL RENDERED into an exception or a log
+        statement in the production package goes through ``_safe_url``.
+
+        The behavioural tests above prove the paths they exercise; this one
+        covers the paths no test exercises yet, which is where the next leak
+        would otherwise be introduced. It inspects the expressions actually
+        interpolated — f-string ``FormattedValue`` nodes and ``logger(...)``
+        args — rather than every name appearing anywhere nearby, so
+        ``url.scheme`` is not a false positive while ``url.copy_with(...)`` is
+        a true one. That distinction is not academic: this check found a real
+        site that stripped userinfo and kept the presigned query.
+        """
+        package_dir = Path(client_module.__file__).parent
+        # Names that hold a whole URL. ``source_label`` is deliberately absent:
+        # its callers pass an already-safe rendering, and the two csv_bronze
+        # failure paths are covered behaviourally above.
+        url_names = {"url", "raw_url", "redirector_url", "target", "location"}
+        offenders: list[str] = []
+
+        def _is_url_expr(expr: ast.expr) -> bool:
+            """Does this expression evaluate to a (credential-bearing) URL?"""
+            if isinstance(expr, ast.Attribute):
+                return expr.attr == "url"
+            if isinstance(expr, ast.Name):
+                return expr.id in url_names
+            if isinstance(expr, ast.Call) and isinstance(expr.func, ast.Attribute):
+                # A method call on a URL yields a URL again — copy_with, join.
+                # Judged by its RECEIVER, not its name: "; ".join(problems) is
+                # not a URL and must not be flagged.
+                return _is_url_expr(expr.func.value)
+            return False
+
+        def _is_safe(expr: ast.expr) -> bool:
+            if (
+                isinstance(expr, ast.Call)
+                and isinstance(expr.func, ast.Name)
+                and expr.func.id == "_safe_url"
+            ):
+                return True
+            if isinstance(expr, ast.JoinedStr):
+                return all(
+                    _is_safe(part.value)
+                    for part in expr.values
+                    if isinstance(part, ast.FormattedValue)
+                )
+            # url.scheme / url.host / url.port / url.path are scalar components,
+            # not URLs, so _is_url_expr already returns False for them.
+            return not _is_url_expr(expr)
+
+        for path in sorted(package_dir.rglob("*.py")):
+            tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+            for node in ast.walk(tree):
+                rendered: list[ast.expr] = []
+                if isinstance(node, ast.Raise):
+                    for inner in ast.walk(node):
+                        if isinstance(inner, ast.FormattedValue):
+                            rendered.append(inner.value)
+                elif (
+                    isinstance(node, ast.Call)
+                    and isinstance(node.func, ast.Attribute)
+                    and isinstance(node.func.value, ast.Name)
+                    and node.func.value.id == "logger"
+                ):
+                    rendered.extend(node.args[1:])
+                    for inner in ast.walk(node):
+                        if isinstance(inner, ast.FormattedValue):
+                            rendered.append(inner.value)
+
+                for expr in rendered:
+                    if not _is_safe(expr):
+                        offenders.append(
+                            f"{path.name}:{getattr(expr, 'lineno', '?')} {ast.dump(expr)[:70]}"
+                        )
+
+        assert offenders == [], (
+            "a URL is rendered into an exception or log message without going through "
+            f"_safe_url: {offenders}"
+        )

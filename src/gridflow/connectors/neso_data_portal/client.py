@@ -244,6 +244,39 @@ class CatalogDiscovery:
     traces: tuple[RequestTrace, ...]
 
 
+def _safe_url(url: httpx.URL | str) -> str:
+    """Return the ONLY form of a URL this connector may record, raise or log.
+
+    **The invariant, stated structurally rather than per site.** Vendor URLs on
+    the file leg are presigned: they carry ``X-Amz-Credential`` and
+    ``X-Amz-Signature`` in their query, and a fragment can carry anything at
+    all. Any of those reaching an exception message, a log line or the bronze
+    sidecar is a durable credential leak — the sidecar irreproducibly, the log
+    for as long as logs are kept.
+
+    Redacting at each emission site does not work, and this function exists
+    because it was tried: the first fix checked the URL's shape at one site and
+    redacted at another, and the very next review found both a hole in the
+    shape check and a *newly introduced* leak in the fix's own error message.
+    Site-by-site defence against a leak class always loses to the site nobody
+    listed. So there is one safe rendering, and every emission path uses it —
+    the same move that put target validation inside :meth:`_send` rather than
+    at remembered call sites.
+
+    Userinfo, query and fragment are ALL removed; scheme, host, port and path
+    are kept, which is everything an operator needs to diagnose a failure and
+    nothing an attacker can replay.
+
+    Args:
+        url: Any URL, trusted or not.
+
+    Returns:
+        ``scheme://host[:port]/path`` — never credentials.
+    """
+    parsed = url if isinstance(url, httpx.URL) else httpx.URL(url)
+    return str(parsed.copy_with(userinfo=b"", query=None, fragment=None))
+
+
 async def _resolve_host_addresses(host: str, port: int) -> list[Any]:
     """Resolve ``host`` to every address the connector might connect to.
 
@@ -442,33 +475,35 @@ class NesoDataPortalConnector(BaseConnector):
         """
         if url.scheme != "https":
             raise NesoUnsafeRedirectError(
-                f"refusing to send to {url!s}: scheme must be https, got {url.scheme!r}"
+                f"refusing to send to {_safe_url(url)}: scheme must be https, got {url.scheme!r}"
             )
         if url.userinfo:
             raise NesoUnsafeRedirectError(
-                f"refusing to send to {url.copy_with(userinfo=b'')!s}: the URL carries "
+                f"refusing to send to {_safe_url(url)}: the URL carries "
                 "userinfo, which httpx would turn into Basic credentials for that host"
             )
         host = url.host
         if not host:
-            raise NesoUnsafeRedirectError(f"refusing to send to {url!s}: no host component")
+            raise NesoUnsafeRedirectError(
+                f"refusing to send to {_safe_url(url)}: no host component"
+            )
 
         port = url.port or 443
         try:
             addresses = await _resolve_host_addresses(host, port)
         except OSError as exc:
             raise NesoUnsafeRedirectError(
-                f"refusing to send to {url!s}: host {host!r} did not resolve ({exc})"
+                f"refusing to send to {_safe_url(url)}: host {host!r} did not resolve ({exc})"
             ) from exc
 
         if not addresses:
             raise NesoUnsafeRedirectError(
-                f"refusing to send to {url!s}: host {host!r} resolved to no addresses"
+                f"refusing to send to {_safe_url(url)}: host {host!r} resolved to no addresses"
             )
         for address in addresses:
             if not address.is_global:
                 raise NesoUnsafeRedirectError(
-                    f"refusing to send to {url!s}: host {host!r} resolves to "
+                    f"refusing to send to {_safe_url(url)}: host {host!r} resolves to "
                     f"{address}, which is not globally routable"
                 )
 
@@ -524,14 +559,14 @@ class NesoDataPortalConnector(BaseConnector):
         declared = _declared_content_length(response)
         if declared is not None and declared > spec.max_download_bytes:
             raise NesoResponseTooLargeError(
-                f"refusing {response.request.url!s}: declared Content-Length {declared} B "
+                f"refusing {_safe_url(response.request.url)}: declared Content-Length {declared} B "
                 f"exceeds the {spec.max_download_bytes} B cap"
             )
 
         encoding = response.headers.get("content-encoding", "").strip().lower()
         if encoding and encoding != "identity":
             raise NesoUnexpectedEncodingError(
-                f"{response.request.url!s} returned Content-Encoding {encoding!r} after "
+                f"{_safe_url(response.request.url)} returned Content-Encoding {encoding!r} after "
                 "the request asked for 'identity'; refusing to guess what the vendor did"
             )
 
@@ -542,18 +577,18 @@ class NesoDataPortalConnector(BaseConnector):
                 total += len(chunk)
                 if total > spec.max_download_bytes:
                     raise NesoResponseTooLargeError(
-                        f"aborting {response.request.url!s}: body exceeded the "
+                        f"aborting {_safe_url(response.request.url)}: body exceeded the "
                         f"{spec.max_download_bytes} B cap after {total} B"
                     )
                 chunks.append(chunk)
         except httpx.RemoteProtocolError as exc:
             raise NesoTruncatedBodyError(
-                f"{response.request.url!s} closed mid-transfer after {total} B ({exc})"
+                f"{_safe_url(response.request.url)} closed mid-transfer after {total} B ({exc})"
             ) from exc
 
         if declared is not None and total != declared:
             raise NesoTruncatedBodyError(
-                f"{response.request.url!s} declared Content-Length {declared} B but "
+                f"{_safe_url(response.request.url)} declared Content-Length {declared} B but "
                 f"delivered {total} B"
             )
         return b"".join(chunks)
@@ -814,10 +849,15 @@ class NesoDataPortalConnector(BaseConnector):
                 f"{declared_format!r}, expected {spec.expected_format!r}; refusing to stamp "
                 "content_type from a format we did not verify"
             )
-        self._assert_redirector_url(resource, dataset)
+        self._assert_redirector_url(package_payload, resource, dataset)
         return resource
 
-    def _assert_redirector_url(self, resource: dict[str, Any], dataset: str) -> None:
+    def _assert_redirector_url(
+        self,
+        package_payload: dict[str, Any],
+        resource: dict[str, Any],
+        dataset: str,
+    ) -> None:
         """Raise unless ``resources[].url`` is the stable NESO redirector (D-11).
 
         **Why this is a check and not an assumption.** ``request_url`` is copied
@@ -825,58 +865,92 @@ class NesoDataPortalConnector(BaseConnector):
         precisely so the presigned target's ``X-Amz-Signature`` and 7-day expiry
         never land in provenance. But the field is vendor-controlled: if CKAN
         ever returned an already-resolved presigned URL — or a
-        ``url_type: datastore`` dump path — the connector would happily record
-        it. Bronze is immutable, so that is not correctable afterwards; it is a
-        secret-hygiene violation written to an irreproducible file.
+        ``url_type: datastore`` dump path — the connector would record it.
+        Bronze is immutable, so that is not correctable afterwards.
 
-        The empty-query requirement is what actually forecloses the signature
-        leak, since every presigned form carries its credentials in the query.
-        The host and path requirements are what make it *the redirector* rather
-        than merely a query-less URL somewhere.
+        **Every component is checked, and the path is matched WHOLE.** An
+        earlier version searched for the resource-path substring and ignored
+        port and fragment, which admitted
+        ``https://host:8443/anything/resource/<id>/download/f.csv#access_token=x``
+        — right host, right substring, arbitrary origin and a fragment carrying
+        anything at all. A URL is only the redirector if every component says
+        so, so the segments are compared as a list rather than searched.
 
-        This does **not** replace D-08's target policy, which resolves the host
-        and rejects non-global addresses: a shape-valid URL on our own host can
-        still resolve somewhere it should not. Shape here, addresses in
-        :meth:`_send`.
+        This is **one instance of the emission invariant, not the whole of it**:
+        :func:`_safe_url` is what guarantees credentials cannot leave by any
+        path. This check guarantees the *sidecar* records the redirector, which
+        is a stronger statement than "records something without a query".
+
+        It does not replace D-08's target policy either: shape asks "is this the
+        redirector we contracted for", the address check asks "where does this
+        actually resolve". Shape here, addresses in :meth:`_send`.
 
         Raises:
             NesoUnexpectedResourceUrlError: Naming every way the URL departed
-                from the contract. The presigned query is never echoed into the
-                message — that would defeat the point.
+                from the contract, rendered through :func:`_safe_url` so the
+                refusal cannot leak what it exists to protect.
         """
         raw_url = str(resource.get("url", ""))
         if not raw_url:
             raise NesoUnexpectedResourceUrlError(f"{dataset}: the selected resource carries no url")
 
         url = httpx.URL(raw_url)
-        expected_host = httpx.URL(self.config.base_url).host
+        base = httpx.URL(self.config.base_url)
         resource_id = str(resource.get("id", ""))
+        # CKAN builds this path from the package's id; its name is the other
+        # stable identifier for the same package, so both are accepted. Neither
+        # is secret and neither is attacker-chosen — they come from the payload
+        # whose resource we already selected by exact name.
+        package_keys = {
+            str(package_payload.get("id", "")),
+            str(package_payload.get("name", "")),
+        } - {""}
         problems: list[str] = []
 
         if url.scheme != "https":
             problems.append(f"scheme is {url.scheme!r}, expected 'https'")
-        if url.host != expected_host:
-            problems.append(f"host is {url.host!r}, expected {expected_host!r}")
+        if url.host != base.host:
+            problems.append(f"host is {url.host!r}, expected {base.host!r}")
+        if url.port != base.port:
+            problems.append(f"port is {url.port!r}, expected {base.port!r}")
+        if url.userinfo:
+            problems.append("it carries userinfo, which the redirector never does")
         if url.query:
             problems.append(
                 "it carries a query string, which the redirector never does — an "
                 "already-resolved presigned URL would put X-Amz-Signature into the "
                 "immutable bronze sidecar (D-11)"
             )
+        if url.fragment:
+            problems.append(
+                "it carries a fragment, which the redirector never does and which can "
+                "carry credentials of its own"
+            )
+
+        segments = url.path.split("/")
         if not resource_id:
             problems.append("the resource declares no id to match the path against")
-        elif f"/resource/{resource_id}/download/" not in url.path:
+        elif not package_keys:
+            problems.append("the package declares neither an id nor a name")
+        elif not (
+            len(segments) == 7
+            and segments[0] == ""
+            and segments[1] == "dataset"
+            and segments[2] in package_keys
+            and segments[3] == "resource"
+            and segments[4] == resource_id
+            and segments[5] == "download"
+            and segments[6]
+        ):
             problems.append(
-                f"path {url.path!r} is not /dataset/<pkg>/resource/{resource_id}/download/<file>"
+                f"path {url.path!r} is not exactly "
+                f"/dataset/<package>/resource/{resource_id}/download/<filename>"
             )
 
         if problems:
-            # The URL is reported WITHOUT its query, so a refusal cannot itself
-            # leak the credentials the refusal exists to protect.
-            safe_url = str(url.copy_with(query=None, userinfo=b""))
             raise NesoUnexpectedResourceUrlError(
-                f"{dataset}: resource url {safe_url!r} is not the stable NESO redirector "
-                f"D-11 requires: {'; '.join(problems)}"
+                f"{dataset}: resource url {_safe_url(url)!r} is not the stable NESO "
+                f"redirector D-11 requires: {'; '.join(problems)}"
             )
 
     async def _download_resource(
@@ -932,7 +1006,7 @@ class NesoDataPortalConnector(BaseConnector):
                 # as valid CSV. Refused rather than recorded.
                 if response.status_code != 200:
                     raise NesoUnexpectedStatusError(
-                        f"{dataset}: {response.request.url} answered HTTP "
+                        f"{dataset}: {_safe_url(response.request.url)} answered HTTP "
                         f"{response.status_code}, which is not a complete-file 200 "
                         "response; no Range request was made, so a partial or "
                         "alternative representation cannot be admitted to bronze"
@@ -945,10 +1019,11 @@ class NesoDataPortalConnector(BaseConnector):
 
         if body is None or final_status is None:
             raise NesoRedirectLoopError(
-                f"{dataset}: {redirector_url} exceeded {_MAX_REDIRECT_HOPS} redirect hops"
+                f"{dataset}: {_safe_url(redirector_url)} exceeded "
+                f"{_MAX_REDIRECT_HOPS} redirect hops"
             )
 
-        self._assert_admissible_csv(body, spec, dataset, redirector_url)
+        self._assert_admissible_csv(body, spec, dataset, _safe_url(redirector_url))
         return body, redirector_url, final_status
 
     def _assert_admissible_csv(
