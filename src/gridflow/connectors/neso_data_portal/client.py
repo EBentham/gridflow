@@ -26,6 +26,7 @@ import ipaddress
 import json
 import logging
 import socket
+from datetime import UTC, datetime, timedelta
 from time import monotonic
 from typing import TYPE_CHECKING, Any, ClassVar
 from uuid import uuid4
@@ -43,8 +44,6 @@ from gridflow.silver.csv_bronze import read_csv_bronze_body
 from gridflow.utils.retry import RETRY_POLICY
 
 if TYPE_CHECKING:
-    from datetime import datetime
-
     from gridflow.config.settings import SourceConfig
 
 logger = logging.getLogger(__name__)
@@ -64,6 +63,32 @@ _VALIDATED_MARKER = "gridflow_neso_send_token"
 _FILE_LEG_HEADERS = {"Accept-Encoding": "identity"}
 
 _MAX_REDIRECT_HOPS = 3
+
+# D-34 window admission. Covers host clock skew and nothing else.
+_FUTURE_WINDOW_TOLERANCE = timedelta(minutes=5)
+
+# ``--end 2026-08-16`` parses to midnight UTC, so a legitimate "yesterday to
+# today" explicit window can end up to ~24 h behind the wall clock; 48 h clears
+# that with margin. Deliberately NOT tightened: a *recent* historical window is
+# indistinguishable from a live one by recency, definitionally, so no value of
+# this constant makes it a backfill guard. D-35's capability check is that.
+_HISTORICAL_WINDOW_TOLERANCE = timedelta(hours=48)
+
+# Not this connector's taste and not the per-dataset ``max_query_days``: it is
+# ``PipelineSettings.max_incremental_lookback_hours`` (168 h), the widest window
+# ``run_ingest`` itself can ever resolve. ``resolve_incremental_window`` clamps
+# every incremental window to it, so this bound refuses exactly the windows no
+# automated path can produce, and no others.
+#
+# Do NOT "tighten" this to ``max_query_days``. A one-day bound would false-refuse
+# an ordinary command recurringly: ``ingest --incremental`` resolves each
+# dataset's start from its watermark widened by ``incremental_overlap_hours``
+# (72 h), so every run after the first resolves a span of roughly four days.
+# ``max_query_days`` is, additionally, dead config — no code in the repo reads
+# it. The coupling to the declared 168 h ceiling is pinned by assertion in
+# ``tests/unit/test_neso_data_portal.py``, so widening that ceiling fails there
+# rather than silently turning this check into a false refusal.
+_MAX_INGEST_WINDOW = timedelta(days=7)
 
 
 class NesoDataPortalError(Exception):
@@ -109,6 +134,18 @@ class NesoUnexpectedEncodingError(NesoDataPortalError):
 
 class NesoTruncatedBodyError(NesoDataPortalError):
     """The transfer ended early, or fell short of a declared ``Content-Length``."""
+
+
+class NesoFutureWindowError(NesoDataPortalError):
+    """The requested window ends in the future (D-34 check 2)."""
+
+
+class NesoHistoricalWindowError(NesoDataPortalError):
+    """The requested window ends too far in the past (D-34 check 3)."""
+
+
+class NesoWindowTooLongError(NesoDataPortalError):
+    """The requested span exceeds what the pipeline itself can resolve (D-34 check 4)."""
 
 
 class NesoEmptyResourceError(NesoDataPortalError):
@@ -637,10 +674,102 @@ class NesoDataPortalConnector(BaseConnector):
     def _assert_window_admissible(self, dataset: str, start: datetime, end: datetime) -> None:
         """Screen the requested window before any network I/O (D-34).
 
-        Implemented by T-26 with its own test-first suite; wired here so
-        ``fetch()``'s ordering — admission, then ``package_show`` — is fixed by
-        the caller rather than by whoever writes the checks.
+        Four checks, in order, every one of which raises before a byte leaves
+        the process. Then — separately, and deliberately **not** a refusal — a
+        reinterpretation notice when the span exceeds the dataset's configured
+        ``max_query_days``.
+
+        **Scope, stated because it is easy to mistake.** Check 3 is *not* the
+        backfill guard: ``SNAPSHOT_ONLY`` (D-35) is, and it holds for every
+        window shape and every chunk size because it is decided by what the
+        source *is*, not by what the window looks like. Check 3's 48 h
+        tolerance is deliberately not tightened — a recent historical window is
+        indistinguishable from a live one by recency, definitionally, so
+        shaving the constant would be patch-first convergence against a bound
+        that cannot be made tight. Its cost is D-13's second residual: bronze
+        lands on that older date, so an immediately-following default
+        ``--last 24h`` transform may not reach back far enough to see it.
+
+        Check 4's bound comes from ``max_incremental_lookback_hours``, not from
+        ``max_query_days`` — see :data:`_MAX_INGEST_WINDOW` for why tightening
+        it would false-refuse ``--incremental`` on every run after the first.
+
+        Args:
+            dataset: The dataset key, for the ``max_query_days`` notice.
+            start: Window start.
+            end: Window end.
+
+        Raises:
+            ValueError: An endpoint is naive, carries a non-zero UTC offset, or
+                ``end < start``. The CLI already rejects naive input, so this is
+                defence for direct programmatic callers — tests, notebooks,
+                future schedulers — and protection for D-13, which derives a
+                bronze partition from ``end.date()``: a non-UTC ``end`` would
+                silently partition to the wrong day.
+            NesoFutureWindowError: ``end`` is beyond the clock-skew tolerance.
+            NesoHistoricalWindowError: ``end`` is more than 48 h stale.
+            NesoWindowTooLongError: The span exceeds what any automated path can
+                resolve.
         """
+        for label, value in (("start", start), ("end", end)):
+            offset = value.utcoffset()
+            if offset is None:
+                raise ValueError(
+                    f"neso_data_portal.fetch: {label} must be timezone-aware UTC, got the "
+                    f"naive value {value!r}"
+                )
+            if offset != timedelta(0):
+                raise ValueError(
+                    f"neso_data_portal.fetch: {label} must carry a zero UTC offset, got "
+                    f"{value!r} (offset {offset}); D-13 partitions bronze at end.date(), so "
+                    "a non-UTC endpoint would land the capture on the wrong day"
+                )
+        if end < start:
+            raise ValueError(
+                f"neso_data_portal.fetch: end ({end.isoformat()}) precedes start "
+                f"({start.isoformat()})"
+            )
+
+        now = datetime.now(UTC)
+        if end > now + _FUTURE_WINDOW_TOLERANCE:
+            raise NesoFutureWindowError(
+                f"neso_data_portal.fetch: window end {end.isoformat()} is in the future "
+                f"(now {now.isoformat()}). The portal has no future snapshot, and a future "
+                "partition is the one shape D-13 cannot recover from: ingest would report "
+                "success while transform stayed permanently silent. Use --last 24h, or "
+                f"--end {now.date().isoformat()} — note that a bare --end <date> means "
+                "midnight at the START of that date."
+            )
+        if end < now - _HISTORICAL_WINDOW_TOLERANCE:
+            raise NesoHistoricalWindowError(
+                f"neso_data_portal: window end {end.isoformat()} is more than "
+                f"{_HISTORICAL_WINDOW_TOLERANCE} before now ({now.isoformat()}). This source "
+                "serves only the vendor's CURRENT snapshot, so a historical window cannot be "
+                "honoured; NESO's per-year Archive resources are a separate, deferred scope."
+            )
+
+        span = end - start
+        if span > _MAX_INGEST_WINDOW:
+            raise NesoWindowTooLongError(
+                f"neso_data_portal: requested span {span} exceeds the {_MAX_INGEST_WINDOW} "
+                "maximum, which is the widest window the pipeline itself can resolve "
+                "(PipelineSettings.max_incremental_lookback_hours). No automated path can "
+                "produce a wider window."
+            )
+
+        configured = self.config.datasets.get(dataset)
+        max_query_days = configured.max_query_days if configured is not None else 0
+        if max_query_days > 0 and span > timedelta(days=max_query_days):
+            logger.warning(
+                "neso_data_portal/%s: requested span %s exceeds the configured "
+                "max_query_days of %d, and is being HONOURED rather than reinterpreted: "
+                "the window is not a selector for this source, so one whole-file capture "
+                "will be made and partitioned at %s (D-16).",
+                dataset,
+                span,
+                max_query_days,
+                end.date().isoformat(),
+            )
 
     async def fetch(
         self,
