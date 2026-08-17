@@ -296,6 +296,60 @@ def import_connectors() -> None:
             logger.warning("Failed to import connector module %s", module, exc_info=True)
 
 
+class BackfillUnsupportedError(RuntimeError):
+    """The source declares ``SNAPSHOT_ONLY`` and cannot be backfilled (D-35)."""
+
+
+def assert_backfillable(source: str) -> None:
+    """Raise unless ``source`` can meaningfully serve a historical window.
+
+    **Bootstraps the connector registry itself, as its first statement.** That
+    is not defensive padding — it is the difference between working and not. In
+    a fresh CLI process the registry is EMPTY until ``cli.py``'s
+    ``import_connectors()`` runs, which happens *after* dataset resolution and
+    would be after any guard placed "first"; ``run_backfill`` never bootstraps
+    at all, so a programmatic caller has the same empty registry. A helper that
+    resolved a class from an empty registry could not refuse anything: it would
+    fail to find the snapshot-only source *and* fail to find the legitimate
+    ones. ``import_connectors()`` is idempotent (module imports are cached), so
+    the existing bootstrap call downstream becomes a no-op rather than a
+    conflict.
+
+    Same principle as putting target validation inside the send primitive: the
+    guarantee is made unavoidable inside the helper rather than entrusted to the
+    order in which two callers happen to do things.
+
+    **Why a capability rather than a window heuristic.** "Does this window look
+    historical" is a proxy for "is this a backfill", and the proxy leaks: a
+    two-day backfill in ``--chunk-days 1`` produces chunk ends that are both
+    recent enough to look live, and a single large ``--chunk-days`` whose first
+    chunk ends near now leaks the same way. No constant fixes that, because a
+    recent backfill window is genuinely indistinguishable from a live one by
+    recency. This check is decided by what the source *is*.
+
+    Args:
+        source: The source name, as registered.
+
+    Raises:
+        BackfillUnsupportedError: The connector declares ``SNAPSHOT_ONLY``.
+        ValueError: The source is not registered.
+    """
+    from gridflow.connectors.registry import get_connector_class
+
+    import_connectors()
+
+    connector_cls = get_connector_class(source)
+    if connector_cls.SNAPSHOT_ONLY:
+        raise BackfillUnsupportedError(
+            f"{source} cannot be backfilled: it declares SNAPSHOT_ONLY, meaning the "
+            "vendor publishes only its CURRENT state with no server-side date filter. "
+            "A backfill would re-download identical bytes once per chunk and retain one "
+            "duplicate vintage per chunk, carrying no historical information. Use "
+            f"'gridflow ingest {source} ...' or 'gridflow pipeline {source} ...' to "
+            "capture the current snapshot instead."
+        )
+
+
 def import_transformers() -> None:
     """Import transformer modules to trigger registration.
 
@@ -1244,6 +1298,11 @@ def run_backfill(
     Returns:
         A :class:`RunReport` aggregating every chunk's ingest + transform results.
     """
+    # D-35: before date resolution and before the chunk loop. A snapshot-only
+    # source is refused for EVERY window shape and every chunk size, because the
+    # refusal is decided by the capability, not by what the window looks like.
+    assert_backfillable(source)
+
     results: list[DatasetResult] = []
     with build_context(settings) as ctx:
         for ds in datasets:
