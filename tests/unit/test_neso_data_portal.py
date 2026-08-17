@@ -162,7 +162,11 @@ PACKAGE_LIST_URL = f"{BASE_URL}/api/3/action/package_list"
 
 
 def _catalog_pages(
-    page_names: list[list[str]], *, count: int | None = None, counts: list[int] | None = None
+    page_names: list[list[str]],
+    *,
+    count: int | None = None,
+    counts: list[int] | None = None,
+    headers: dict[str, str] | None = None,
 ) -> list[httpx.Response]:
     """Build one ``package_search`` response per page of package names."""
     total = count if count is not None else sum(len(names) for names in page_names)
@@ -172,6 +176,7 @@ def _catalog_pages(
         responses.append(
             httpx.Response(
                 200,
+                headers=headers,
                 json={
                     "success": True,
                     "result": {
@@ -191,15 +196,16 @@ def _wire_catalog(
     *,
     counts: list[int] | None = None,
     count: int | None = None,
+    headers: dict[str, str] | None = None,
 ) -> None:
     """Route a paginated ``package_search`` plus the reconciling ``package_list``."""
     router.get(url__startswith=PACKAGE_SEARCH_URL).mock(
-        side_effect=_catalog_pages(page_names, count=count, counts=counts)
+        side_effect=_catalog_pages(page_names, count=count, counts=counts, headers=headers)
     )
     if listed is None:
         listed = [name for names in page_names for name in names]
     router.get(url__startswith=PACKAGE_LIST_URL).mock(
-        return_value=httpx.Response(200, json={"success": True, "result": listed})
+        return_value=httpx.Response(200, headers=headers, json={"success": True, "result": listed})
     )
 
 
@@ -247,13 +253,33 @@ class TestDiscoverCatalog:
         Each required field is asserted INDIVIDUALLY. A single "is not None"
         over the dataclass would pass with every field defaulted.
         """
-        _wire_catalog(router, [["alpha", "beta"]])
+        vendor_headers = {
+            "date": "Sun, 16 Aug 2026 18:54:01 GMT",
+            "content-type": "application/json;charset=utf-8",
+            "etag": '"2f733b738a4970f150601ca2b7da5df5"',
+            "last-modified": "Sun, 16 Aug 2026 18:21:38 GMT",
+            # Deliberately present and deliberately NOT recorded: an ephemeral
+            # CDN id changes every run and would defeat snapshot comparison.
+            "cf-ray": "a2c2a5209a41bed0-LHR",
+        }
+        _wire_catalog(router, [["alpha", "beta"]], headers=vendor_headers)
 
         discovery = _discover(_source_config())
 
         assert len(discovery.traces) == len(router.calls) == 2
         actions = [trace.action for trace in discovery.traces]
         assert actions == ["package_search", "package_list"]
+
+        for trace in discovery.traces:
+            assert trace.headers == {
+                "date": vendor_headers["date"],
+                "content-type": vendor_headers["content-type"],
+                "etag": vendor_headers["etag"],
+                "last-modified": vendor_headers["last-modified"],
+            }, f"{trace.action}: the four recorded headers drifted"
+            assert "cf-ray" not in trace.headers, (
+                "an ephemeral per-request header was captured into provenance"
+            )
 
         for trace in discovery.traces:
             assert trace.action, "action is empty"
@@ -987,14 +1013,35 @@ class TestTransportMarkerProof:
         pass validation-by-attestation while bypassing the real check.
         """
         connector, recorded = self._drive_all_five_kinds(router)
-        issued = set(connector._issued_send_tokens)
+        already_seen = len(recorded)
+
+        # The observer runs over the real traffic and CONSUMES each token, on
+        # the connector's own set — not a local copy. Asserting against a copy
+        # after removing from it is a tautology, not a test.
+        for request in recorded:
+            connector._issued_send_tokens.remove(request.extensions[_VALIDATED_MARKER])
+        assert connector._issued_send_tokens == set()
 
         replayed = recorded[0]
-        token = replayed.extensions[_VALIDATED_MARKER]
-        assert token in issued, "precondition: the token was live before observation"
-        issued.remove(token)
+        original_token = replayed.extensions[_VALIDATED_MARKER]
 
-        assert token not in issued, "a consumed token must not satisfy the observer twice"
+        async def _resend() -> None:
+            async with httpx.AsyncClient() as replay_client:
+                await replay_client.send(replayed)
+
+        asyncio.run(_resend())
+
+        new_calls = [call.request for call in router.calls][already_seen:]
+        assert len(new_calls) == 1, "the replayed request was not intercepted"
+        observed = new_calls[0].extensions.get(_VALIDATED_MARKER)
+        assert observed == original_token, (
+            "precondition: the replay must carry the ORIGINAL token — _send never "
+            "touched it, so a session-long nonce would still be riding along here"
+        )
+        assert observed not in connector._issued_send_tokens, (
+            "a replayed request satisfied the observer — the token was not single-use, "
+            "so resending an already-sent Request would bypass validation and the throttle"
+        )
 
     def test_the_package_contains_no_retired_streaming_constructs(self) -> None:
         """Two textual assertions whose job is D-09's RETIREMENT, not bypass
