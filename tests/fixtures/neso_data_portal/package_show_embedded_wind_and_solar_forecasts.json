@@ -1,0 +1,122 @@
+{
+  "success": true,
+  "result": {
+    "id": "91c0c70e-0ef5-4116-b6fa-7ad084b5e0e8",
+    "name": "embedded-wind-and-solar-forecasts",
+    "title": "Embedded Wind and Solar Forecasts",
+    "license_id": "ESO",
+    "license_title": "NESO Open Data Licence",
+    "resources": [
+      {
+        "id": "db6c038f-98af-4570-ab60-24d71ebd0ae5",
+        "name": "Embedded Solar and Wind Forecast",
+        "format": "CSV",
+        "url_type": "upload",
+        "url": "https://api.neso.energy/dataset/91c0c70e-0ef5-4116-b6fa-7ad084b5e0e8/resource/db6c038f-98af-4570-ab60-24d71ebd0ae5/download/202608161825_embedded_forecast.csv",
+        "last_modified": "2026-08-16T18:25:03.877001",
+        "size": null,
+        "datastore_active": true
+      },
+      {
+        "id": "3808c680-b5c0-4eab-aac4-7abb6345e65b",
+        "name": "Embedded Definition",
+        "format": "DOC",
+        "url_type": "upload",
+        "url": "https://api.neso.energy/dataset/91c0c70e-0ef5-4116-b6fa-7ad084b5e0e8/resource/3808c680-b5c0-4eab-aac4-7abb6345e65b/download/definition-of-embedded.docx",
+        "last_modified": "2024-10-23T13:11:31.785287",
+        "size": null,
+        "datastore_active": false
+      },
+      {
+        "id": "bc4d1093-ecf2-46d8-b207-7a0e3e8fb957",
+        "name": "Embedded Solar and Wind Forecast Archive 2019",
+        "format": "CSV",
+        "url_type": "upload",
+        "url": "https://api.neso.energy/dataset/91c0c70e-0ef5-4116-b6fa-7ad084b5e0e8/resource/bc4d1093-ecf2-46d8-b207-7a0e3e8fb957/download/embedded_archive_2019.csv",
+        "last_modified": "2025-05-23T09:32:48.819542",
+        "size": null,
+        "datastore_active": true
+      },
+      {
+        "id": "8a7249d4-ee67-45aa-9641-a3e063f54dba",
+        "name": "Embedded Solar and Wind Forecast Archive 2020",
+        "format": "CSV",
+        "url_type": "upload",
+        "url": "https://api.neso.energy/dataset/91c0c70e-0ef5-4116-b6fa-7ad084b5e0e8/resource/8a7249d4-ee67-45aa-9641-a3e063f54dba/download/embedded_archive_2020.csv",
+        "last_modified": "2025-05-23T10:18:28.096891",
+        "size": null,
+        "datastore_active": true
+      },
+      {
+        "id": "794107f5-8567-4b32-ae3a-6817fec73e5c",
+        "name": "Embedded Solar and Wind Forecast Archive 2021",
+        "format": "CSV",
+        "url_type": "upload",
+        "url": "https://api.neso.energy/dataset/91c0c70e-0ef5-4116-b6fa-7ad084b5e0e8/resource/794107f5-8567-4b32-ae3a-6817fec73e5c/download/embedded_archive_2021.csv",
+        "last_modified": "2025-05-23T11:08:53.229239",
+        "size": null,
+        "datastore_active": true
+      },
+      {
+        "id": "07b0b42c-5152-4fc5-bcd1-e10ec8ec07de",
+        "name": "Embedded Solar and Wind Forecast Archive 2022",
+        "format": "CSV",
+        "url_type": "upload",
+        "url": "https://api.neso.energy/dataset/91c0c70e-0ef5-4116-b6fa-7ad084b5e0e8/resource/07b0b42c-5152-4fc5-bcd1-e10ec8ec07de/download/embedded_archive_2022.csv",
+        "last_modified": "2025-05-23T11:56:25.476505",
+        "size": null,
+        "datastore_active": true
+      },
+      {
+        "id": "26c9ef64-ce43-4e22-b984-ef013636aacb",
+        "name": "Embedded Solar and Wind Forecast Archive 2023",
+        "format": "CSV",
+        "url_type": "upload",
+        "url": "https://api.neso.energy/dataset/91c0c70e-0ef5-4116-b6fa-7ad084b5e0e8/resource/26c9ef64-ce43-4e22-b984-ef013636aacb/download/embedded_archive_2023.csv",
+        "last_modified": "2025-05-23T13:50:26.773081",
+        "size": null,
+        "datastore_active": true
+      },
+      {
+        "id": "06abd00a-ef6b-488b-9b6d-5e08fdc0c890",
+        "name": "Embedded Solar and Wind Forecast Archive 2024",
+        "format": "CSV",
+        "url_type": "upload",
+        "url": "https://api.neso.energy/dataset/91c0c70e-0ef5-4116-b6fa-7ad084b5e0e8/resource/06abd00a-ef6b-488b-9b6d-5e08fdc0c890/download/embedded_archive_2024.csv",
+        "last_modified": "2025-05-23T14:30:16.994795",
+        "size": null,
+        "datastore_active": true
+      },
+      {
+        "id": "fc13df13-2dad-4a1c-b9e3-4569efba4955",
+        "name": "Embedded Solar and Wind Forecast Archive 2025",
+        "format": "CSV",
+        "url_type": "upload",
+        "url": "https://api.neso.energy/dataset/91c0c70e-0ef5-4116-b6fa-7ad084b5e0e8/resource/fc13df13-2dad-4a1c-b9e3-4569efba4955/download/embedded_archive_2025.csv",
+        "last_modified": "2026-01-17T07:00:51.043062",
+        "size": null,
+        "datastore_active": true
+      },
+      {
+        "id": "d6375700-69c2-4c25-8bde-883a205d742e",
+        "name": "Embedded Solar and Wind Forecast Archive 2026 (Jan- Jun)",
+        "format": "CSV",
+        "url_type": "datastore",
+        "url": "https://api.neso.energy/datastore/dump/d6375700-69c2-4c25-8bde-883a205d742e",
+        "last_modified": "2026-06-12T11:17:10.820157",
+        "size": null,
+        "datastore_active": true
+      },
+      {
+        "id": "31861619-0b86-47ba-bac2-d008a760af54",
+        "name": "Embedded Solar and Wind Forecast Archive 2026 (Jun - Dec)",
+        "format": "CSV",
+        "url_type": "datastore",
+        "url": "https://api.neso.energy/datastore/dump/31861619-0b86-47ba-bac2-d008a760af54",
+        "last_modified": "2026-07-28T16:19:45.553879",
+        "size": null,
+        "datastore_active": true
+      }
+    ]
+  }
+}
