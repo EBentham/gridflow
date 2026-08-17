@@ -44,6 +44,8 @@ from gridflow.connectors.neso_data_portal.client import (
     NesoResponseTooLargeError,
     NesoTruncatedBodyError,
     NesoUnexpectedEncodingError,
+    NesoUnexpectedResourceUrlError,
+    NesoUnexpectedStatusError,
     NesoUnsafeRedirectError,
     NesoWindowTooLongError,
     _resolve_host_addresses,
@@ -320,6 +322,48 @@ class TestDiscoverCatalog:
             _discover(_source_config())
 
         assert "pkg-0" in str(excinfo.value)
+
+    def test_an_early_empty_page_cannot_pass_as_a_complete_catalogue(
+        self, router: respx.MockRouter
+    ) -> None:
+        """The vendor declared 5 packages and served 2, then an empty page.
+
+        ``package_list`` is wired to AGREE with the short set, which is what
+        makes this dangerous: the name-set reconciliation below would pass and
+        the run would return a catalogue missing three packages while reporting
+        it as verified. A reconciliation that can succeed on an incomplete set
+        launders the incompleteness — strictly worse than having no check.
+        """
+        _wire_catalog(router, [["alpha", "beta"], []], listed=["alpha", "beta"], count=5)
+
+        with pytest.raises(CkanPaginationMismatch) as excinfo:
+            _discover(_source_config())
+
+        message = str(excinfo.value)
+        assert "count=5" in message
+        assert "2 packages" in message
+
+    def test_more_results_than_the_declared_count_also_raises(
+        self, router: respx.MockRouter
+    ) -> None:
+        """The other direction. An overfull page means ``count`` and the result
+        set disagree, and there is no basis for choosing which to believe."""
+        _wire_catalog(router, [["alpha", "beta", "gamma"]], count=2)
+
+        with pytest.raises(CkanPaginationMismatch) as excinfo:
+            _discover(_source_config())
+
+        assert "count=2" in str(excinfo.value)
+        assert "3 packages" in str(excinfo.value)
+
+    def test_an_empty_catalogue_is_not_itself_an_error(self, router: respx.MockRouter) -> None:
+        """The completeness rule must not misfire on a legitimately empty
+        answer: 0 collected against a declared 0 is consistent."""
+        _wire_catalog(router, [[]], listed=[], count=0)
+
+        discovery = _discover(_source_config())
+
+        assert discovery.packages == ()
 
     def test_a_package_list_longer_than_the_paginated_set_raises(
         self, router: respx.MockRouter
@@ -1238,6 +1282,99 @@ class TestResponseLifecycle:
         assert body_response.is_closed, "a second aclose() must remain a harmless no-op"
 
 
+class TestResourceUrlShape:
+    """D-11: ``resources[].url`` must be the stable NESO redirector.
+
+    That decision exists so the presigned target's ``X-Amz-Signature`` and its
+    7-day expiry never reach the bronze sidecar. But the field is
+    vendor-controlled, so the shape has to be VERIFIED rather than assumed: if
+    CKAN ever returned an already-resolved presigned URL, the connector would
+    copy it straight into an **immutable** provenance file, where it cannot be
+    cleaned up afterwards.
+    """
+
+    def _fetch_with_resource_url(self, router: respx.MockRouter, url: str) -> None:
+        payload = _fixture("package_show_daily_wind_availability.json")
+        payload["result"]["resources"][0]["url"] = url
+        _wire_package_show(router, payload)
+        _add_catch_all(router)
+        _run_fetch(_source_config())
+
+    def test_an_already_resolved_presigned_url_is_refused(
+        self, router: respx.MockRouter, raw_response_spy: list[dict[str, Any]]
+    ) -> None:
+        """The finding this check exists for: a signature in immutable bronze."""
+        with pytest.raises(NesoUnexpectedResourceUrlError) as excinfo:
+            self._fetch_with_resource_url(router, PRESIGNED_URL)
+
+        message = str(excinfo.value)
+        signature = "b4f0da8dbcf4e5c46e06a16556fcc90257a632b4684f5d6d4c4d0da7565bceef"
+        assert signature not in message, (
+            "the refusal echoed the signature VALUE it exists to protect"
+        )
+        assert "X-Amz-Credential" not in message, "the refusal echoed the credential id"
+        assert "?" not in message.split("resource url ")[1].split("'")[1], (
+            "the reported URL still carried its query string"
+        )
+        assert "query string" in message
+        assert raw_response_spy == [], "a RawResponse carrying the signature was built"
+        assert [c for c in router.calls if _request_kind(c.request) != "package_show"] == []
+
+    @pytest.mark.parametrize(
+        ("url", "case"),
+        [
+            (
+                f"{BASE_URL}/dataset/pkg/resource/{DAILY_WIND_RESOURCE_ID}"
+                "/download/windavailability.csv?X-Amz-Signature=deadbeef",
+                "redirector shape but query-bearing",
+            ),
+            (
+                "https://evil.example/dataset/pkg/resource/"
+                f"{DAILY_WIND_RESOURCE_ID}/download/windavailability.csv",
+                "foreign host",
+            ),
+            (
+                f"http://api.neso.energy/dataset/pkg/resource/{DAILY_WIND_RESOURCE_ID}"
+                "/download/windavailability.csv",
+                "plain http",
+            ),
+            (f"{BASE_URL}/datastore/dump/{DAILY_WIND_RESOURCE_ID}", "datastore dump path"),
+            (f"{BASE_URL}/x.csv", "arbitrary path"),
+            (
+                f"{BASE_URL}/dataset/pkg/resource/some-other-id/download/windavailability.csv",
+                "path names a different resource id",
+            ),
+        ],
+    )
+    def test_a_non_redirector_url_is_refused_before_any_download(
+        self,
+        router: respx.MockRouter,
+        raw_response_spy: list[dict[str, Any]],
+        url: str,
+        case: str,
+    ) -> None:
+        with pytest.raises(NesoUnexpectedResourceUrlError):
+            self._fetch_with_resource_url(router, url)
+
+        downloads = [c for c in router.calls if _request_kind(c.request) != "package_show"]
+        assert downloads == [], f"{case}: a request was sent anyway"
+        assert raw_response_spy == [], f"{case}: a RawResponse was constructed"
+
+    def test_the_real_redirector_shape_is_accepted(self, router: respx.MockRouter) -> None:
+        """The positive control: the check must not refuse the real thing.
+
+        A shape guard that rejected the genuine vendor URL would be caught by
+        every other test in this module, but stating it here keeps the refusal
+        cases from being trivially satisfiable by a guard that refuses always.
+        """
+        _wire_package_show(router)
+        _wire_redirect_download(router)
+
+        (raw,) = _run_fetch(_source_config())
+
+        assert raw.request_url == DAILY_WIND_RESOURCE_URL
+
+
 class TestInitialUrlValidation:
     """D-39 §1a: the vendor-supplied ``resources[].url`` gets exactly the
     guarantee the redirect hops get, because both go through ``_send``.
@@ -1245,46 +1382,84 @@ class TestInitialUrlValidation:
     Revision 5 sent this URL unvalidated because validation was wired into the
     redirect step rather than into sending. A poisoned catalogue entry is the
     same SSRF vector as a poisoned ``Location``.
+
+    **These cases are deliberately SHAPE-VALID.** D-11's shape check now runs
+    first and would otherwise mask them, and the two guards answer different
+    questions: shape asks "is this the redirector we contracted for", the
+    target policy asks "where does it actually resolve". A URL can satisfy the
+    first and fail the second — DNS is not part of a URL's shape — which is
+    exactly what these tests exercise.
+
+    The resolver is driven **per lookup order** rather than per host, because
+    the shape check forces the resource URL onto our own host: answering by
+    host would make ``package_show``'s own send fail first and the test would
+    pass without ever validating the resource URL. (That is not hypothetical —
+    it is how the first version of this class passed.)
     """
 
+    def _resolver_good_then(self, monkeypatch: pytest.MonkeyPatch, *later_addresses: str) -> None:
+        """First lookup (``package_show``) resolves publicly; the next — the
+        resource URL's own send — resolves to ``later_addresses``."""
+        lookups = {"n": 0}
+
+        async def _stub(host: str, port: int) -> list[Any]:
+            lookups["n"] += 1
+            if lookups["n"] == 1:
+                return [ipaddress.ip_address("93.184.216.34")]
+            return [ipaddress.ip_address(value) for value in later_addresses]
+
+        monkeypatch.setattr(client_module, "_resolve_host_addresses", _stub)
+
     @pytest.mark.parametrize(
-        ("url", "addresses", "case"),
+        ("addresses", "case"),
         [
-            ("http://api.neso.energy/x.csv", ("93.184.216.34",), "plain http"),
-            ("https://internal.invalid/x.csv", ("127.0.0.1",), "loopback"),
-            ("https://internal.invalid/x.csv", ("10.0.0.7",), "RFC-1918"),
-            (
-                "https://user:pass@api.neso.energy/x.csv",
-                ("93.184.216.34",),
-                "userinfo credentials",
-            ),
+            (("127.0.0.1",), "loopback"),
+            (("10.0.0.7",), "RFC-1918"),
+            (("93.184.216.34", "192.168.1.5"), "MIXED public+private answer"),
+            ((), "empty DNS answer"),
         ],
     )
-    def test_a_poisoned_resource_url_is_refused_before_any_request(
+    def test_a_resource_url_resolving_somewhere_unsafe_is_refused(
         self,
         router: respx.MockRouter,
         monkeypatch: pytest.MonkeyPatch,
         raw_response_spy: list[dict[str, Any]],
-        url: str,
         addresses: tuple[str, ...],
         case: str,
     ) -> None:
-        payload = _fixture("package_show_daily_wind_availability.json")
-        payload["result"]["resources"][0]["url"] = url
-        _wire_package_show(router, payload)
+        _wire_package_show(router)
         _add_catch_all(router)
-        _stub_addresses(monkeypatch, *addresses)
+        self._resolver_good_then(monkeypatch, *addresses)
 
         with pytest.raises(NesoUnsafeRedirectError):
             _run_fetch(_source_config())
 
-        targets = [
-            str(call.request.url)
-            for call in router.calls
-            if _request_kind(call.request) != "package_show"
-        ]
-        assert targets == [], f"{case}: a request was sent to the rejected target {targets}"
+        downloads = [c for c in router.calls if _request_kind(c.request) != "package_show"]
+        assert downloads == [], f"{case}: a request reached the rejected target"
         assert raw_response_spy == [], f"{case}: a RawResponse was constructed"
+
+    def test_a_resource_url_carrying_userinfo_is_refused(
+        self, router: respx.MockRouter, raw_response_spy: list[dict[str, Any]]
+    ) -> None:
+        """httpx would turn ``user:pass@`` into Basic credentials for that host.
+
+        Shape-valid — userinfo is not part of the host or path — so this is the
+        target policy's catch, not D-11's.
+        """
+        payload = _fixture("package_show_daily_wind_availability.json")
+        payload["result"]["resources"][0]["url"] = DAILY_WIND_RESOURCE_URL.replace(
+            "https://", "https://user:pass@"
+        )
+        _wire_package_show(router, payload)
+        _add_catch_all(router)
+
+        with pytest.raises(NesoUnsafeRedirectError) as excinfo:
+            _run_fetch(_source_config())
+
+        assert "user:pass" not in str(excinfo.value), "the refusal echoed the credentials"
+        downloads = [c for c in router.calls if _request_kind(c.request) != "package_show"]
+        assert downloads == []
+        assert raw_response_spy == []
 
 
 class TestRedirectPolicy:
@@ -1989,3 +2164,52 @@ class TestBronzeSidecarRoundTrip:
         assert (
             partition == tmp_path / "bronze" / "neso_data_portal" / DATASET / "2026" / "08" / "16"
         )
+
+
+class TestObservedHttpStatus:
+    """``http_status`` is written to the immutable bronze sidecar, so it must
+    record what was actually observed rather than a constant.
+
+    Recording a status we did not see is false provenance whether or not the
+    falsehood is currently reachable — and bronze cannot be corrected later.
+    """
+
+    def test_a_200_is_recorded_as_observed(self, router: respx.MockRouter) -> None:
+        _wire_package_show(router)
+        _wire_redirect_download(router)
+
+        (raw,) = _run_fetch(_source_config())
+
+        assert raw.http_status == 200
+
+    def test_a_206_partial_response_is_refused_rather_than_recorded_as_200(
+        self, router: respx.MockRouter, raw_response_spy: list[dict[str, Any]]
+    ) -> None:
+        """No Range header is ever sent, so a 206 means the transfer is not what
+        was asked for — and its body is a FRAGMENT that still parses as valid
+        CSV, so nothing downstream would notice.
+        """
+        _wire_package_show(router)
+        _wire_redirect_download(
+            router,
+            file_response=httpx.Response(
+                206,
+                content=DAILY_WIND_CSV,
+                headers={"Content-Range": "bytes 0-62/620"},
+            ),
+        )
+
+        with pytest.raises(NesoUnexpectedStatusError) as excinfo:
+            _run_fetch(_source_config())
+
+        assert "206" in str(excinfo.value)
+        assert raw_response_spy == [], "a partial body reached RawResponse construction"
+
+    def test_a_203_success_is_also_refused(self, router: respx.MockRouter) -> None:
+        """The rule is "complete-file 200", not "not 206" — an allow-list, so a
+        status nobody anticipated cannot slip through as provenance."""
+        _wire_package_show(router)
+        _wire_redirect_download(router, file_response=httpx.Response(203, content=DAILY_WIND_CSV))
+
+        with pytest.raises(NesoUnexpectedStatusError):
+            _run_fetch(_source_config())

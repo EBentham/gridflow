@@ -140,6 +140,26 @@ class NesoResourceSelectionError(NesoDataPortalError):
     """
 
 
+class NesoUnexpectedStatusError(NesoDataPortalError):
+    """A successful response that is not a complete-file HTTP 200.
+
+    ``RawResponse.http_status`` is written to the immutable bronze sidecar, so
+    it must record what was actually observed. Rather than stamp a status we
+    did not see, any non-200 success on the file leg is refused.
+    """
+
+
+class NesoUnexpectedResourceUrlError(NesoDataPortalError):
+    """``resources[].url`` is not the stable NESO redirector D-11 contracts for.
+
+    The field is vendor-controlled, and D-11's guarantee — that the presigned
+    URL's ``X-Amz-Signature`` never reaches the bronze sidecar — rests entirely
+    on it being a redirector rather than an already-resolved target. Bronze is
+    **immutable**, so a signature written there cannot be cleaned up afterwards:
+    the shape has to be verified before the fetch, not assumed.
+    """
+
+
 class NesoUnsafeRedirectError(NesoDataPortalError):
     """An outbound URL failed D-08's target policy and was never requested."""
 
@@ -715,6 +735,21 @@ class NesoDataPortalConnector(BaseConnector):
             if start >= declared_count:
                 break
 
+        # The paginated set must ACCOUNT FOR the count the vendor declared.
+        # Without this, a run that stops on an early empty page returns a short
+        # catalogue, and if package_list happens to agree with the short set the
+        # reconciliation below reports success — laundering an incomplete
+        # snapshot as a verified one, which is strictly worse than no check at
+        # all. Verified against the Stage-A capture: 50 + 50 + 29 == count 129.
+        if declared_count is None:
+            raise CkanActionError("CKAN package_search returned no pages at all")
+        if len(seen) != declared_count:
+            raise CkanPaginationMismatch(
+                f"CKAN package_search declared count={declared_count} but pagination "
+                f"collected {len(seen)} packages. The catalogue is incomplete, so it must "
+                "not be reconciled or snapshotted as though it were whole."
+            )
+
         listed, trace = await self._ckan_action("package_list")
         traces.append(trace)
         if not isinstance(listed, list):
@@ -779,14 +814,77 @@ class NesoDataPortalConnector(BaseConnector):
                 f"{declared_format!r}, expected {spec.expected_format!r}; refusing to stamp "
                 "content_type from a format we did not verify"
             )
+        self._assert_redirector_url(resource, dataset)
         return resource
+
+    def _assert_redirector_url(self, resource: dict[str, Any], dataset: str) -> None:
+        """Raise unless ``resources[].url`` is the stable NESO redirector (D-11).
+
+        **Why this is a check and not an assumption.** ``request_url`` is copied
+        into the bronze sidecar, and D-11 requires it to be the redirector
+        precisely so the presigned target's ``X-Amz-Signature`` and 7-day expiry
+        never land in provenance. But the field is vendor-controlled: if CKAN
+        ever returned an already-resolved presigned URL — or a
+        ``url_type: datastore`` dump path — the connector would happily record
+        it. Bronze is immutable, so that is not correctable afterwards; it is a
+        secret-hygiene violation written to an irreproducible file.
+
+        The empty-query requirement is what actually forecloses the signature
+        leak, since every presigned form carries its credentials in the query.
+        The host and path requirements are what make it *the redirector* rather
+        than merely a query-less URL somewhere.
+
+        This does **not** replace D-08's target policy, which resolves the host
+        and rejects non-global addresses: a shape-valid URL on our own host can
+        still resolve somewhere it should not. Shape here, addresses in
+        :meth:`_send`.
+
+        Raises:
+            NesoUnexpectedResourceUrlError: Naming every way the URL departed
+                from the contract. The presigned query is never echoed into the
+                message — that would defeat the point.
+        """
+        raw_url = str(resource.get("url", ""))
+        if not raw_url:
+            raise NesoUnexpectedResourceUrlError(f"{dataset}: the selected resource carries no url")
+
+        url = httpx.URL(raw_url)
+        expected_host = httpx.URL(self.config.base_url).host
+        resource_id = str(resource.get("id", ""))
+        problems: list[str] = []
+
+        if url.scheme != "https":
+            problems.append(f"scheme is {url.scheme!r}, expected 'https'")
+        if url.host != expected_host:
+            problems.append(f"host is {url.host!r}, expected {expected_host!r}")
+        if url.query:
+            problems.append(
+                "it carries a query string, which the redirector never does — an "
+                "already-resolved presigned URL would put X-Amz-Signature into the "
+                "immutable bronze sidecar (D-11)"
+            )
+        if not resource_id:
+            problems.append("the resource declares no id to match the path against")
+        elif f"/resource/{resource_id}/download/" not in url.path:
+            problems.append(
+                f"path {url.path!r} is not /dataset/<pkg>/resource/{resource_id}/download/<file>"
+            )
+
+        if problems:
+            # The URL is reported WITHOUT its query, so a refusal cannot itself
+            # leak the credentials the refusal exists to protect.
+            safe_url = str(url.copy_with(query=None, userinfo=b""))
+            raise NesoUnexpectedResourceUrlError(
+                f"{dataset}: resource url {safe_url!r} is not the stable NESO redirector "
+                f"D-11 requires: {'; '.join(problems)}"
+            )
 
     async def _download_resource(
         self,
         resource: dict[str, Any],
         spec: CkanDataset,
         dataset: str,
-    ) -> tuple[bytes, str]:
+    ) -> tuple[bytes, str, int]:
         """Download one resource through its redirector, validating every hop.
 
         Each iteration builds a **fresh** GET, which regenerates ``Host`` from
@@ -797,7 +895,8 @@ class NesoDataPortalConnector(BaseConnector):
         close a streamed 3xx leaks its connection.
 
         Returns:
-            The body bytes and the **redirector** URL — never the presigned
+            The body bytes, the **redirector** URL and the OBSERVED final HTTP
+            status — never the presigned
             target, which carries ``X-Amz-Signature`` and a 7-day expiry and
             must not reach an irreproducible bronze sidecar (D-11).
 
@@ -816,6 +915,7 @@ class NesoDataPortalConnector(BaseConnector):
 
         request = self._client.build_request("GET", redirector_url, headers=_FILE_LEG_HEADERS)
         body: bytes | None = None
+        final_status: int | None = None
         for _ in range(_MAX_REDIRECT_HOPS + 1):
             response = await self._send(request, stream=True)
             try:
@@ -825,18 +925,31 @@ class NesoDataPortalConnector(BaseConnector):
                     # handed (D-39 §1a). There is no second call site to forget.
                     request = self._client.build_request("GET", target, headers=_FILE_LEG_HEADERS)
                     continue
+                # A 2xx that is not 200 does not describe a whole file. 206 in
+                # particular is a PARTIAL representation: we never send a Range
+                # header, so receiving one means the transfer is not what we
+                # asked for, and its body would be a fragment that still parses
+                # as valid CSV. Refused rather than recorded.
+                if response.status_code != 200:
+                    raise NesoUnexpectedStatusError(
+                        f"{dataset}: {response.request.url} answered HTTP "
+                        f"{response.status_code}, which is not a complete-file 200 "
+                        "response; no Range request was made, so a partial or "
+                        "alternative representation cannot be admitted to bronze"
+                    )
+                final_status = response.status_code
                 body = await self._read_capped_body(response, spec)
                 break
             finally:
                 await response.aclose()
 
-        if body is None:
+        if body is None or final_status is None:
             raise NesoRedirectLoopError(
                 f"{dataset}: {redirector_url} exceeded {_MAX_REDIRECT_HOPS} redirect hops"
             )
 
         self._assert_admissible_csv(body, spec, dataset, redirector_url)
-        return body, redirector_url
+        return body, redirector_url, final_status
 
     def _assert_admissible_csv(
         self,
@@ -1026,7 +1139,7 @@ class NesoDataPortalConnector(BaseConnector):
 
         package_payload = await self._package_show(spec.package)
         resource = self._select_resource(package_payload, spec, dataset)
-        body, redirector_url = await self._download_resource(resource, spec, dataset)
+        body, redirector_url, http_status = await self._download_resource(resource, spec, dataset)
 
         return [
             RawResponse(
@@ -1042,6 +1155,11 @@ class NesoDataPortalConnector(BaseConnector):
                 request_url=redirector_url,
                 request_params=_provenance_params(spec, package_payload, resource, body),
                 api_version="3",
+                # The status actually observed on the final leg, never a
+                # constant: this is written to the immutable bronze sidecar,
+                # and recording a status we did not see is false provenance
+                # whether or not the falsehood is currently reachable.
+                http_status=http_status,
                 data_date=end.date(),
             )
         ]
