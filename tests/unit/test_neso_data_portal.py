@@ -1842,3 +1842,103 @@ class TestRealResolverHelper:
             ipaddress.ip_address("2606:2800:220:1:248:1893:25c8:1946"),
         ]
         assert all(address.is_global for address in addresses)
+
+
+class TestBronzeSidecarRoundTrip:
+    """The provenance the silver layer reads back must survive the write.
+
+    Bronze is **irreproducible**: a key that is dropped or masked here cannot be
+    recovered by re-running, and D-23 skips a whole vintage when any required
+    element is missing. So this drives the real ``BronzeWriter``, not a mock.
+    """
+
+    def _raw_response(self, *, data_date: Any, fetched_at: datetime) -> Any:
+        return client_module.RawResponse(
+            body=DAILY_WIND_CSV,
+            content_type="text/csv",
+            source="neso_data_portal",
+            dataset=DATASET,
+            fetched_at=fetched_at,
+            request_url=DAILY_WIND_RESOURCE_URL,
+            request_params={
+                "package": "daily-wind-availability",
+                "package_id": DAILY_WIND_PACKAGE_ID,
+                "resource_id": DAILY_WIND_RESOURCE_ID,
+                "resource_name": "Daily Wind Availability",
+                "resource_filename": "windavailability.csv",
+                "ckan_last_modified": "2026-08-16T18:20:11.953941",
+                "ckan_format": "CSV",
+                "body_sha256": "0" * 64,
+            },
+            api_version="3",
+            data_date=data_date,
+        )
+
+    def test_every_d12_key_survives_sanitize_params_unredacted(self, tmp_path: Path) -> None:
+        """``sanitize_params`` masks by exact key name. None of D-12's keys
+        collide with the secret list, and this is what proves it stays true —
+        a masked ``resource_filename`` would silently cost the embedded
+        forecast its ``issue_time``.
+        """
+        from gridflow.bronze.writer import BronzeWriter
+
+        end = datetime(2026, 8, 16, 23, 58, tzinfo=UTC)
+        raw = self._raw_response(data_date=end.date(), fetched_at=end)
+
+        path = BronzeWriter(tmp_path).write(raw)
+        sidecar = json.loads(path.with_suffix("").with_suffix(".meta.json").read_text())
+
+        assert sidecar["request_params"] == raw.request_params, (
+            "a D-12 provenance key was dropped or redacted on the way to bronze"
+        )
+        for key, value in raw.request_params.items():
+            assert sidecar["request_params"][key] == value
+            assert "<redacted>" not in str(sidecar["request_params"][key]), key
+
+    def test_the_body_lands_with_a_csv_extension(self, tmp_path: Path) -> None:
+        """D-10: the ``.csv`` extension comes from the stamped ``text/csv``.
+
+        The presigned host serves ``application/octet-stream``, which the writer
+        maps to ``.bin`` — and a ``.bin`` body is invisible to the
+        transformer's ``raw_*.csv`` glob, so silver would read zero rows from a
+        bronze tree that is not empty.
+        """
+        from gridflow.bronze.writer import BronzeWriter
+
+        end = datetime(2026, 8, 16, 12, 0, tzinfo=UTC)
+        path = BronzeWriter(tmp_path).write(
+            self._raw_response(data_date=end.date(), fetched_at=end)
+        )
+
+        assert path.suffix == ".csv"
+        assert path.name.startswith("raw_")
+        assert path.read_bytes() == DAILY_WIND_CSV
+
+    def test_the_partition_follows_the_window_end_not_the_wall_clock(self, tmp_path: Path) -> None:
+        """D-13 / FM-13, the case that motivated the decision.
+
+        A ``--last 24h`` run started at 23:58 UTC whose download finishes at
+        00:01 the next day. ``fetched_at`` is stamped at ``RawResponse``
+        construction — i.e. AFTER the download — so a ``fetched_at``-derived
+        partition would land on day N+1 while the transform leg, working from
+        the window resolved at 23:58, only looks at day N. Ingest succeeds,
+        transform finds nothing, and nothing anywhere reports a problem.
+        """
+        from gridflow.bronze.writer import BronzeWriter
+
+        end = datetime(2026, 8, 16, 23, 58, tzinfo=UTC)
+        finished_next_day = datetime(2026, 8, 17, 0, 1, tzinfo=UTC)
+        assert finished_next_day.date() != end.date(), "precondition: the clock crossed midnight"
+
+        path = BronzeWriter(tmp_path).write(
+            self._raw_response(data_date=end.date(), fetched_at=finished_next_day)
+        )
+
+        partition = path.parent
+        assert partition.parts[-3:] == ("2026", "08", "16"), (
+            f"bronze landed at {'/'.join(partition.parts[-3:])} — the partition followed "
+            "the wall clock instead of the resolved window end"
+        )
+        assert (
+            partition == tmp_path / "bronze" / "neso_data_portal" / DATASET / "2026" / "08" / "16"
+        )
