@@ -57,9 +57,9 @@ class CkanDataset:
 
 
 # The 34-column ``historic-generation-mix`` header, read verbatim from the
-# Stage-A capture ``_probe/sample_historic-generation-mix.csv``. (D-24's prose
-# describes it as 37 columns; the file is the cited authority and the decision's
-# own instruction is "read verbatim", so the file wins — see the unit report.)
+# Stage-A capture ``_probe/sample_historic-generation-mix.csv``, which D-24
+# names as the authority. (D-24's prose said 37 through plan revision 13; the
+# count was corrected to 34 in revision 14 after being counted from the file.)
 _HISTORIC_GENERATION_MIX_COLUMNS: tuple[str, ...] = (
     "DATETIME",
     "GAS",

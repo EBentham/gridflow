@@ -23,6 +23,7 @@ import respx
 from gridflow.config.settings import DatasetConfig, PipelineSettings, SourceConfig
 from gridflow.connectors.neso_data_portal.client import (
     _MAX_INGEST_WINDOW,
+    CkanPaginationMismatch,
     NesoDataPortalConnector,
     NesoFutureWindowError,
     NesoHistoricalWindowError,
@@ -125,6 +126,173 @@ def _fetch(
             return await connector.fetch(dataset, start, end)
 
     return asyncio.run(_run())
+
+
+# ---------------------------------------------------------------------------
+# T-11: discover_catalog (D-17)
+# ---------------------------------------------------------------------------
+
+PACKAGE_SEARCH_URL = f"{BASE_URL}/api/3/action/package_search"
+PACKAGE_LIST_URL = f"{BASE_URL}/api/3/action/package_list"
+
+
+def _catalog_pages(
+    page_names: list[list[str]], *, count: int | None = None, counts: list[int] | None = None
+) -> list[httpx.Response]:
+    """Build one ``package_search`` response per page of package names."""
+    total = count if count is not None else sum(len(names) for names in page_names)
+    responses = []
+    for index, names in enumerate(page_names):
+        page_count = counts[index] if counts is not None else total
+        responses.append(
+            httpx.Response(
+                200,
+                json={
+                    "success": True,
+                    "result": {
+                        "count": page_count,
+                        "results": [{"name": name, "resources": []} for name in names],
+                    },
+                },
+            )
+        )
+    return responses
+
+
+def _wire_catalog(
+    router: respx.MockRouter,
+    page_names: list[list[str]],
+    listed: list[str] | None = None,
+    *,
+    counts: list[int] | None = None,
+    count: int | None = None,
+) -> None:
+    """Route a paginated ``package_search`` plus the reconciling ``package_list``."""
+    router.get(url__startswith=PACKAGE_SEARCH_URL).mock(
+        side_effect=_catalog_pages(page_names, count=count, counts=counts)
+    )
+    if listed is None:
+        listed = [name for names in page_names for name in names]
+    router.get(url__startswith=PACKAGE_LIST_URL).mock(
+        return_value=httpx.Response(200, json={"success": True, "result": listed})
+    )
+
+
+def _discover(config: SourceConfig) -> Any:
+    """Drive ``discover_catalog()`` through the connector's real entry point."""
+
+    async def _run() -> Any:
+        async with NesoDataPortalConnector(config) as connector:
+            return await connector.discover_catalog()
+
+    return asyncio.run(_run())
+
+
+class TestDiscoverCatalog:
+    """D-17: page the catalogue, then RECONCILE it — permanently, not once.
+
+    ``rows``/``start`` pagination is CKAN-generic and works today, but NESO does
+    not contract it. A silently short catalogue is worse than no catalogue,
+    because it looks complete — so every failure mode below is a raise, never a
+    truncated result.
+    """
+
+    def test_three_page_happy_path_reconciles_exactly(self, router: respx.MockRouter) -> None:
+        """The real shape of the Stage-A capture: 129 packages, 50/50/29."""
+        pages = [
+            [f"pkg-{i:03d}" for i in range(0, 50)],
+            [f"pkg-{i:03d}" for i in range(50, 100)],
+            [f"pkg-{i:03d}" for i in range(100, 129)],
+        ]
+        _wire_catalog(router, pages)
+
+        discovery = _discover(_source_config())
+
+        assert len(discovery.packages) == 129
+        assert [p["name"] for p in discovery.packages] == [n for page in pages for n in page]
+        assert len(router.calls) == 4, "three package_search pages + one package_list"
+
+    def test_the_trace_has_one_populated_entry_per_http_call(
+        self, router: respx.MockRouter
+    ) -> None:
+        """FM-14: ``provenance.json`` has no source other than this trace, so a
+        missing field must fail the build rather than produce a snapshot that
+        merely *has* a provenance file.
+
+        Each required field is asserted INDIVIDUALLY. A single "is not None"
+        over the dataclass would pass with every field defaulted.
+        """
+        _wire_catalog(router, [["alpha", "beta"]])
+
+        discovery = _discover(_source_config())
+
+        assert len(discovery.traces) == len(router.calls) == 2
+        actions = [trace.action for trace in discovery.traces]
+        assert actions == ["package_search", "package_list"]
+
+        for trace in discovery.traces:
+            assert trace.action, "action is empty"
+            assert trace.started_at.tzinfo is not None, "started_at is naive"
+            assert trace.started_at.utcoffset() == timedelta(0), "started_at is not UTC"
+            assert trace.finished_at.tzinfo is not None, "finished_at is naive"
+            assert trace.finished_at.utcoffset() == timedelta(0), "finished_at is not UTC"
+            assert trace.finished_at >= trace.started_at, "timings are inverted"
+            assert trace.status_code == 200
+            assert len(trace.body_sha256) == 64, "body hash is not a sha256 hex digest"
+            assert int(trace.body_sha256, 16) >= 0, "body hash is not hex"
+
+        search_trace = discovery.traces[0]
+        assert search_trace.params == {"rows": "50", "start": "0"}, (
+            "the paginator's own constructed params must be recorded verbatim"
+        )
+
+    def test_a_count_that_changes_mid_pagination_raises(self, router: respx.MockRouter) -> None:
+        """The catalogue moved under the paginator, so the collected set is
+        neither the old catalogue nor the new one."""
+        pages = [[f"pkg-{i}" for i in range(50)], ["pkg-50"]]
+        _wire_catalog(router, pages, counts=[51, 60])
+
+        with pytest.raises(CkanPaginationMismatch) as excinfo:
+            _discover(_source_config())
+
+        message = str(excinfo.value)
+        assert "51" in message
+        assert "60" in message
+
+    def test_a_duplicate_package_name_across_pages_raises(self, router: respx.MockRouter) -> None:
+        """A repeat means the page window shifted — so some package was SKIPPED,
+        and the result would be short while looking complete."""
+        pages = [[f"pkg-{i}" for i in range(50)], ["pkg-0", "pkg-50"]]
+        _wire_catalog(router, pages, count=52)
+
+        with pytest.raises(CkanPaginationMismatch) as excinfo:
+            _discover(_source_config())
+
+        assert "pkg-0" in str(excinfo.value)
+
+    def test_a_package_list_longer_than_the_paginated_set_raises(
+        self, router: respx.MockRouter
+    ) -> None:
+        _wire_catalog(router, [["alpha", "beta"]], listed=["alpha", "beta", "gamma"])
+
+        with pytest.raises(CkanPaginationMismatch) as excinfo:
+            _discover(_source_config())
+
+        message = str(excinfo.value)
+        assert "2" in message and "3" in message, "both totals must be named"
+        assert "gamma" in message, "the example names must be listed"
+
+    def test_a_package_list_shorter_than_the_paginated_set_raises(
+        self, router: respx.MockRouter
+    ) -> None:
+        """The inverse direction. Asserted separately because a set-difference
+        implemented in one direction only would pass the case above."""
+        _wire_catalog(router, [["alpha", "beta", "gamma"]], listed=["alpha", "beta"])
+
+        with pytest.raises(CkanPaginationMismatch) as excinfo:
+            _discover(_source_config())
+
+        assert "gamma" in str(excinfo.value)
 
 
 class TestWindowAdmission:

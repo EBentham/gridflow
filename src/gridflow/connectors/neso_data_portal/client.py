@@ -26,6 +26,7 @@ import ipaddress
 import json
 import logging
 import socket
+from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from time import monotonic
 from typing import TYPE_CHECKING, Any, ClassVar
@@ -64,6 +65,17 @@ _FILE_LEG_HEADERS = {"Accept-Encoding": "identity"}
 
 _MAX_REDIRECT_HOPS = 3
 
+# CKAN's own default page size, and what the Stage-A capture used: 129 packages
+# in three pages of 50/50/29. Ours to choose, and we send it explicitly rather
+# than relying on a server default that could change under us.
+_PACKAGE_SEARCH_PAGE_SIZE = 50
+
+# The response headers the snapshot contract records. Not "all headers": a
+# provenance file is evidence, and evidence that carries a Set-Cookie or an
+# ephemeral CDN ray id is noise that changes every run and defeats hash
+# comparison between snapshots.
+_TRACED_RESPONSE_HEADERS = ("date", "content-type", "etag", "last-modified")
+
 # D-34 window admission. Covers host clock skew and nothing else.
 _FUTURE_WINDOW_TOLERANCE = timedelta(minutes=5)
 
@@ -101,6 +113,21 @@ class CkanActionError(NesoDataPortalError):
     CKAN reports errors as HTTP 200 with ``{"success": false}`` (verified
     against the live portal), so the envelope — not the status code — is what
     this connector checks.
+    """
+
+
+class CkanPaginationMismatch(NesoDataPortalError):  # noqa: N818
+    """The paginated catalogue did not reconcile (D-17).
+
+    The missing ``Error`` suffix is deliberate, not an oversight: D-17 names
+    this identifier, and the plan, the ADR and the snapshot materializer all
+    refer to it by that name. Renaming it to satisfy N818 would silently break
+    a ``grep`` from the decision record to the code, which is worth more here
+    than suffix uniformity. Flagged rather than quietly renamed.
+
+    ``rows``/``start`` pagination is CKAN-generic and works today, but it is
+    **not** contracted by NESO. A silently short catalogue is worse than no
+    catalogue, because it looks complete.
     """
 
 
@@ -154,6 +181,47 @@ class NesoEmptyResourceError(NesoDataPortalError):
     ``record_count`` stays ``None`` and is never replaced by ``0``; an empty
     body is refused before bronze rather than written as a zero-row capture.
     """
+
+
+@dataclass(frozen=True)
+class RequestTrace:
+    """Per-HTTP-call evidence for the vault snapshot's ``provenance.json`` (D-32).
+
+    Every field has a **real source** — the request we constructed, the clock,
+    the response. None is defaulted or synthesised: a provenance file whose
+    fields can be placeholders is a hash-verified record of nothing.
+
+    Attributes:
+        action: The CKAN action name.
+        params: The normalized query params, key-sorted so two snapshots of the
+            same call compare equal.
+        started_at: Immediately before the send, tz-aware UTC.
+        finished_at: Immediately after the response was received, tz-aware UTC.
+        status_code: The final HTTP status.
+        headers: Only :data:`_TRACED_RESPONSE_HEADERS`, and only those present.
+        body_sha256: Hex digest of the exact response bytes.
+    """
+
+    action: str
+    params: dict[str, str]
+    started_at: datetime
+    finished_at: datetime
+    status_code: int
+    headers: dict[str, str]
+    body_sha256: str
+
+
+@dataclass(frozen=True)
+class CatalogDiscovery:
+    """A reconciled catalogue snapshot plus the evidence of how it was obtained.
+
+    Returning bare payloads would leave the snapshot materializer with no source
+    for ``provenance.json``, which PHASE.md ruling 4 requires in full — so the
+    traces travel with the packages rather than being reconstructed later.
+    """
+
+    packages: tuple[dict[str, Any], ...]
+    traces: tuple[RequestTrace, ...]
 
 
 async def _resolve_host_addresses(host: str, port: int) -> list[Any]:
@@ -474,11 +542,77 @@ class NesoDataPortalConnector(BaseConnector):
     # CKAN two-stage fetch
     # ------------------------------------------------------------------
 
-    async def _package_show(self, package: str) -> dict[str, Any]:
-        """Resolve one CKAN package, checking the envelope rather than the status.
+    async def _ckan_action(self, action: str, **params: str) -> tuple[Any, RequestTrace]:
+        """Call one CKAN action, returning its ``result`` and a request trace.
 
-        NESO returns action errors as HTTP **200** with ``{"success": false}``,
-        so a status-only check would treat an error envelope as a payload.
+        **One envelope check, every action.** NESO returns action errors as HTTP
+        **200** with ``{"success": false}``, so a status-only check would treat
+        an error envelope as a payload. Both callers — the ingest path's
+        ``package_show`` and ``discover_catalog``'s ``package_search`` /
+        ``package_list`` — go through here so that check cannot diverge.
+
+        The trace is built unconditionally rather than behind a flag: it is the
+        sole source for the vault snapshot's ``provenance.json`` (D-32), and a
+        field that is only sometimes populated is a field that will one day be a
+        placeholder in a hash-verified evidence file.
+
+        Args:
+            action: The CKAN action name.
+            **params: Query parameters, sent as constructed against ``base_url``
+                — never a URL taken from a response body (D-39 §1a).
+
+        Returns:
+            The envelope's ``result`` value, and the :class:`RequestTrace` for
+            the call.
+
+        Raises:
+            CkanActionError: A redirect (action calls are not redirected), a
+                non-JSON body, or ``success: false``.
+        """
+        if self._client is None:
+            raise RuntimeError("Connector not initialized. Use 'async with' context manager.")
+
+        path, query = build_action_url(action, **params)
+        request = self._client.build_request("GET", path, params=query)
+
+        started_at = datetime.now(UTC)
+        response = await self._send(request)
+        try:
+            if response.has_redirect_location:
+                raise CkanActionError(
+                    f"CKAN {action} {query!r} answered with a redirect to "
+                    f"{response.headers.get('location')!r}; action calls are not redirected"
+                )
+            body = response.content
+            trace = RequestTrace(
+                action=action,
+                params=dict(sorted(query.items())),
+                started_at=started_at,
+                finished_at=datetime.now(UTC),
+                status_code=response.status_code,
+                headers={
+                    name: response.headers[name]
+                    for name in _TRACED_RESPONSE_HEADERS
+                    if name in response.headers
+                },
+                body_sha256=hashlib.sha256(body).hexdigest(),
+            )
+            try:
+                payload = json.loads(body)
+            except json.JSONDecodeError as exc:
+                raise CkanActionError(
+                    f"CKAN {action} {query!r} returned a body that is not JSON ({exc})"
+                ) from exc
+        finally:
+            await response.aclose()
+
+        if not isinstance(payload, dict) or not payload.get("success"):
+            detail = payload.get("error") if isinstance(payload, dict) else payload
+            raise CkanActionError(f"CKAN {action} {query!r} returned success=false: {detail!r}")
+        return payload.get("result"), trace
+
+    async def _package_show(self, package: str) -> dict[str, Any]:
+        """Resolve one CKAN package.
 
         Raises:
             CkanActionError: The envelope reported failure, the body was not a
@@ -486,13 +620,8 @@ class NesoDataPortalConnector(BaseConnector):
                 ADR-023 definitive-absent; one dataset per ``fetch()``, so there
                 is no sibling to keep going for).
         """
-        if self._client is None:
-            raise RuntimeError("Connector not initialized. Use 'async with' context manager.")
-
-        path, params = build_action_url("package_show", id=package)
-        request = self._client.build_request("GET", path, params=params)
         try:
-            response = await self._send(request)
+            result, _trace = await self._ckan_action("package_show", id=package)
         except httpx.HTTPStatusError as exc:
             if exc.response.status_code == 404:
                 raise CkanActionError(
@@ -500,30 +629,109 @@ class NesoDataPortalConnector(BaseConnector):
                 ) from exc
             raise
 
-        try:
-            if response.has_redirect_location:
-                raise CkanActionError(
-                    f"CKAN package_show for {package!r} answered with a redirect to "
-                    f"{response.headers.get('location')!r}; action calls are not redirected"
-                )
-            try:
-                payload = json.loads(response.content)
-            except json.JSONDecodeError as exc:
-                raise CkanActionError(
-                    f"CKAN package_show for {package!r} returned a body that is not JSON ({exc})"
-                ) from exc
-        finally:
-            await response.aclose()
-
-        if not isinstance(payload, dict) or not payload.get("success"):
-            detail = payload.get("error") if isinstance(payload, dict) else payload
-            raise CkanActionError(
-                f"CKAN package_show for {package!r} returned success=false: {detail!r}"
-            )
-        result = payload.get("result")
         if not isinstance(result, dict):
             raise CkanActionError(f"CKAN package_show for {package!r} returned no result object")
         return result
+
+    async def discover_catalog(self) -> CatalogDiscovery:
+        """Page the whole CKAN catalogue and reconcile it against ``package_list``.
+
+        **Placement — do NOT "helpfully" move this onto the ingest path.** The
+        per-dataset fetch never calls ``package_search`` at all (D-06 uses
+        ``package_show``), so there would be nothing to reconcile there, and it
+        would cost 4+ extra CKAN requests per ingest run against a 1 req/s
+        budget. It is created here because it is a method on the connector; it
+        is *invoked* by the snapshot materializer and by an opt-in live smoke
+        test. Permanent check, cheapest correct placement.
+
+        **The reconciliation is a permanent sanity check, not a one-off audit.**
+        ``rows``/``start`` pagination is CKAN-generic and working today, but it
+        is **not** contracted by NESO. So the paginated name-set is compared
+        against ``package_list`` on every run and a mismatch fails loudly rather
+        than silently returning a short catalogue — a snapshot missing packages
+        is worse than no snapshot, because it looks complete.
+
+        Pagination advances by ``rows``/``start`` parameters **we construct
+        ourselves** against ``base_url``. No URL from a response body is ever
+        fetched (D-39 §1a).
+
+        D-34's window guard does not apply: this is a catalogue call, not a
+        dataset fetch.
+
+        Returns:
+            Every package payload, plus one ordered :class:`RequestTrace` per
+            HTTP call — the sole source for the snapshot's ``provenance.json``.
+
+        Raises:
+            CkanPaginationMismatch: ``count`` changed mid-pagination, a package
+                name repeated across pages, or the paginated name-set differs
+                from ``package_list``.
+            CkanActionError: Any action returned a failed envelope.
+        """
+        packages: list[dict[str, Any]] = []
+        traces: list[RequestTrace] = []
+        seen: dict[str, None] = {}
+        declared_count: int | None = None
+        start = 0
+
+        while True:
+            result, trace = await self._ckan_action(
+                "package_search", rows=str(_PACKAGE_SEARCH_PAGE_SIZE), start=str(start)
+            )
+            traces.append(trace)
+            if not isinstance(result, dict):
+                raise CkanActionError("CKAN package_search returned no result object")
+
+            count = result.get("count")
+            if not isinstance(count, int):
+                raise CkanActionError(f"CKAN package_search returned a non-integer count {count!r}")
+            if declared_count is None:
+                declared_count = count
+            elif count != declared_count:
+                raise CkanPaginationMismatch(
+                    f"CKAN package_search count changed mid-pagination: {declared_count} at "
+                    f"start=0, {count} at start={start}. The catalogue moved under the "
+                    "paginator, so the collected set is neither the old catalogue nor the new."
+                )
+
+            page = result.get("results")
+            if not isinstance(page, list):
+                raise CkanActionError("CKAN package_search returned no results list")
+            if not page:
+                break
+
+            for entry in page:
+                name = str(entry.get("name", ""))
+                if name in seen:
+                    raise CkanPaginationMismatch(
+                        f"CKAN package_search returned package {name!r} on more than one "
+                        f"page (at start={start}); a duplicate means the page window "
+                        "shifted and some package was skipped"
+                    )
+                seen[name] = None
+                packages.append(entry)
+
+            start += len(page)
+            if start >= declared_count:
+                break
+
+        listed, trace = await self._ckan_action("package_list")
+        traces.append(trace)
+        if not isinstance(listed, list):
+            raise CkanActionError("CKAN package_list returned no result list")
+        listed_names = {str(name) for name in listed}
+
+        if listed_names != set(seen):
+            missing = sorted(listed_names - set(seen))[:10]
+            unexpected = sorted(set(seen) - listed_names)[:10]
+            raise CkanPaginationMismatch(
+                f"CKAN catalogue reconciliation failed: package_search yielded "
+                f"{len(seen)} packages, package_list yielded {len(listed_names)}. "
+                f"In package_list but not paginated (up to 10): {missing}. "
+                f"Paginated but not in package_list (up to 10): {unexpected}."
+            )
+
+        return CatalogDiscovery(packages=tuple(packages), traces=tuple(traces))
 
     def _select_resource(
         self,
