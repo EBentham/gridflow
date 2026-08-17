@@ -118,6 +118,7 @@ _CONNECTOR_MODULES = [
     "gridflow.connectors.gie",
     "gridflow.connectors.entsog",
     "gridflow.connectors.neso",
+    "gridflow.connectors.neso_data_portal",
 ]
 
 _TRANSFORMER_MODULES = [
@@ -127,6 +128,7 @@ _TRANSFORMER_MODULES = [
     "gridflow.silver.gie",
     "gridflow.silver.entsog",
     "gridflow.silver.neso",
+    "gridflow.silver.neso_data_portal",
 ]
 
 # The gold-dataset name tuple, shared by the runner and every adapter for the
