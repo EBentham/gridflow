@@ -45,9 +45,17 @@ print('RESOLVED')
 
 # import_transformers() logs and continues on a real ImportError, so its whole
 # hazard is that it SUCCEEDS while swallowing the failure. Checking the exit
-# code would prove nothing; the log is the only signal.
+# code would prove nothing; the log is one signal.
+#
+# But an absence-of-error check is only HALF the proof, and the weaker half:
+# an entry that is missing from _TRANSFORMER_MODULES logs nothing at all, so a
+# log-only assertion passes exactly as loudly for "imported fine" as for "never
+# attempted". That is the vacuity class this module exists to prevent, and the
+# first version of this test had it. The observation must be POSITIVE — the
+# module is in sys.modules only because the bootstrap put it there.
 _TRANSFORMER_BOOTSTRAP = """
 import logging
+import sys
 
 records = []
 
@@ -62,7 +70,18 @@ logging.getLogger().setLevel(logging.DEBUG)
 
 from gridflow.pipeline import runner
 
+assert 'gridflow.silver.neso_data_portal' not in sys.modules, (
+    'precondition failed: the package was already imported before the bootstrap ran, '
+    'so this test cannot attribute the import to import_transformers()'
+)
+
 runner.import_transformers()
+
+assert 'gridflow.silver.neso_data_portal' in sys.modules, (
+    'import_transformers() did NOT import gridflow.silver.neso_data_portal -- the '
+    '_TRANSFORMER_MODULES entry is missing, so every transformer in that package '
+    'would be silently unregistered'
+)
 
 offending = [
     r.getMessage()
@@ -71,6 +90,27 @@ offending = [
 ]
 assert not offending, offending
 print('IMPORTED_CLEANLY')
+"""
+
+# The negative control for the assertion above: with the entry stripped from the
+# bootstrap list, the positive observation MUST fail. Without this, "the module
+# is in sys.modules" could be true for some unrelated reason -- a transitive
+# import from gridflow.silver's own __init__, say -- and the check would be
+# green while proving nothing.
+_TRANSFORMER_BOOTSTRAP_WITHOUT_ENTRY = """
+import sys
+
+from gridflow.pipeline import runner
+
+runner._TRANSFORMER_MODULES = [
+    m for m in runner._TRANSFORMER_MODULES if m != 'gridflow.silver.neso_data_portal'
+]
+runner.import_transformers()
+
+if 'gridflow.silver.neso_data_portal' in sys.modules:
+    print('IMPORTED_ANYWAY')
+else:
+    print('NOT_IMPORTED')
 """
 
 
@@ -113,18 +153,45 @@ def test_the_negative_control_fails_without_the_bootstrap() -> None:
     assert "Unknown source" in result.stderr
 
 
-def test_transformer_bootstrap_logs_no_import_error_for_this_package() -> None:
-    """``_TRANSFORMER_MODULES`` must not reference a package that fails to import.
+def test_transformer_bootstrap_actually_imports_this_package() -> None:
+    """``import_transformers()`` must POSITIVELY import this package.
 
-    The silver package is created empty in this same task precisely so this
-    holds from the moment the list is extended, rather than leaving the
+    Two distinct failures are covered, and the first is the one a log-only
+    assertion misses entirely: an entry absent from ``_TRANSFORMER_MODULES``
+    logs nothing, so "no ImportError was logged" is equally true of a package
+    imported cleanly and a package never attempted. The module's presence in
+    ``sys.modules`` after the bootstrap — and its absence before — is what
+    distinguishes them.
+
+    The silver package is created empty in the task that adds the entry
+    precisely so this holds from that moment, rather than leaving the
     production bootstrap in a known-broken state across two units.
     """
     result = _run_in_fresh_interpreter(_TRANSFORMER_BOOTSTRAP)
 
     assert result.returncode == 0, (
-        "import_transformers() logged a failure for gridflow.silver.neso_data_portal "
-        f"(it swallows the ImportError, so the exit code alone would not show it)\n"
-        f"{result.stdout}\n{result.stderr}"
+        "import_transformers() did not import gridflow.silver.neso_data_portal, or "
+        "logged a failure for it (it swallows the ImportError, so the exit code alone "
+        f"would not show that)\n{result.stdout}\n{result.stderr}"
     )
     assert "IMPORTED_CLEANLY" in result.stdout
+
+
+def test_the_negative_control_shows_the_import_depends_on_the_bootstrap_entry() -> None:
+    """Strip the entry from ``_TRANSFORMER_MODULES`` and the package must NOT
+    be imported.
+
+    This is what makes the positive observation above meaningful. If the module
+    still appeared in ``sys.modules`` here — pulled in transitively by
+    ``gridflow.silver``'s own ``__init__``, for instance — then the positive
+    check would be measuring that transitive import rather than the bootstrap,
+    and removing the entry would leave every transformer in the package
+    unregistered behind a green test.
+    """
+    result = _run_in_fresh_interpreter(_TRANSFORMER_BOOTSTRAP_WITHOUT_ENTRY)
+
+    assert result.returncode == 0, result.stderr
+    assert "NOT_IMPORTED" in result.stdout, (
+        "the package was imported even with its bootstrap entry removed, so the "
+        "positive assertion above does not actually depend on _TRANSFORMER_MODULES"
+    )
