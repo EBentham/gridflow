@@ -8,6 +8,8 @@ Distinct from ``gridflow.connectors.neso``, which is the Carbon Intensity API
 and keeps its own scope (D-01).
 """
 
+from __future__ import annotations
+
 from gridflow.connectors.neso_data_portal.client import NesoDataPortalConnector
 
 __all__ = ["NesoDataPortalConnector"]

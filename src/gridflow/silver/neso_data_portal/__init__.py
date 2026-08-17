@@ -24,3 +24,5 @@ to judgement.
 Distinct from ``gridflow.silver.neso``, which is the Carbon Intensity source
 (D-01).
 """
+
+from __future__ import annotations
