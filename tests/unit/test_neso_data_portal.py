@@ -2555,22 +2555,33 @@ class TestCredentialsCannotLeave:
             ("client.py", "_download_resource"),
         ], f"unsafe_raw() is called somewhere new: {call_sites}"
 
-    def test_the_type_exposes_no_second_door_to_the_raw_url(self) -> None:
-        """4.3: ``unsafe_raw()`` must be the ONLY way out.
+    def test_the_type_exposes_no_second_supported_door_to_the_raw_url(self) -> None:
+        """4.3: ``unsafe_raw()`` must be the only SUPPORTED way out.
 
         The previous version claimed to be a closed representation and was not:
         ``_raw``, ``path``, ``query``, ``fragment`` and ``userinfo`` were all
         public, and pickle walked the slot. A type whose docstring promises
         closure and whose surface does not deliver it is worse than an honest
-        helper, because it invites callers to trust it.
+        helper, because it invites callers to trust it. The claim is therefore
+        narrowed, not the boundary strengthened: Python has no private
+        attributes, so the name-mangled slot stays reachable — and this test
+        says so instead of pretending otherwise.
         """
         hostile = f"https://user:pw@evil.example/p?X-Amz-Signature={_TEST_SIGNATURE}#frag"
         safe = client_module.SafeUrl.opaque(hostile)
 
-        for attribute in ("_raw", "path", "query", "fragment", "userinfo"):
+        for attribute in ("path", "query", "fragment", "userinfo"):
             assert not hasattr(safe, attribute), (
                 f"SafeUrl.{attribute} is a second door to the raw URL"
             )
+
+        # Honesty check for the narrowed claim: the mangled slot IS reachable
+        # (no Python object can prevent deliberate extraction). If this ever
+        # fails, the representation changed and the docstring's residual-risk
+        # paragraph must be re-derived, not deleted.
+        assert isinstance(safe._SafeUrl__raw, httpx.URL), (
+            "the name-mangled slot moved — re-derive SafeUrl's narrowed claim"
+        )
 
         # The credential-bearing components are answerable as questions only.
         assert safe.has_query() is True

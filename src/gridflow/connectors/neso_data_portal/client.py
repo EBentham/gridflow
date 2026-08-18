@@ -299,9 +299,18 @@ class SafeUrl:
     So the credential-bearing form is not reachable by rendering at all. This
     object holds the raw URL privately and defines ``__str__``, ``__repr__`` and
     ``__format__`` to produce the safe form, so every one of those spellings is
-    safe **without anyone remembering anything**. Getting the raw bytes requires
-    :meth:`unsafe_raw` — deliberately ugly, greppable, and asserted by test to
-    be called only where a request is actually built.
+    safe **without anyone remembering anything**. The only SUPPORTED accessor
+    for the raw bytes is :meth:`unsafe_raw` — deliberately ugly, greppable, and
+    asserted by test to be called only where a request is actually built.
+
+    **The claim is "only supported accessor", not "only reachable form".**
+    Python has no private attributes: the name-mangled slot is reachable as
+    ``_SafeUrl__raw`` and ``dir()`` advertises it. That is acceptable because
+    the defect this type prevents is *accidental rendering* — a log line, an
+    exception message, a format string — not deliberate extraction by hostile
+    code, which no Python object can prevent. The vendor is keyless and the
+    URLs are capability URLs for openly licensed data, so a deliberate
+    extractor gains nothing a public download would not give them.
 
     **Two renderings, because the path is only safe when it has been proven.**
     ``_assert_safe_target`` permits any globally-routable host and any path, so
@@ -380,8 +389,8 @@ class SafeUrl:
     # -- questions, not values ---------------------------------------------
     # The credential-bearing components are exposed as PREDICATES so validation
     # can do its job without handing anyone a string to render. An accessor
-    # returning `.query` would be a second door out of the type, which is what
-    # `unsafe_raw` exists to be the only one of.
+    # returning `.query` would be a second supported door out of the type, which
+    # is what `unsafe_raw` exists to be the only one of.
     def has_userinfo(self) -> bool:
         return bool(self.__raw.userinfo)
 
@@ -589,8 +598,12 @@ class NesoDataPortalConnector(BaseConnector):
                 # value. A malformed Location is an ordinary vendor failure
                 # mode, so it is translated here — the one point every response
                 # passes through — into a typed connector error. Any OTHER
-                # protocol error is re-raised untouched.
-                if "location header" not in str(exc).lower():
+                # protocol error is re-raised untouched. The discriminator is a
+                # prefix match on httpx's canonical message (raised verbatim as
+                # "Invalid URL in location header: ..." in httpx._client), so a
+                # protocol error that merely *mentions* a location header is
+                # not swallowed.
+                if not str(exc).startswith("Invalid URL in location header:"):
                     raise
                 raise NesoUnsafeRedirectError(
                     f"{target} returned a Location header that is not a resolvable URL"
