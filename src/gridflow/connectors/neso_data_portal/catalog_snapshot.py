@@ -54,10 +54,14 @@ if TYPE_CHECKING:
     from gridflow.connectors.neso_data_portal.client import CatalogDiscovery
 
 __all__ = [
+    "CATALOG_DOCUMENT_KEYS",
     "CATALOG_FILENAME",
     "CHECKSUMS_FILENAME",
     "MANIFEST_FILENAME",
+    "MEMBER_DOCUMENT_KEYS",
+    "PROVENANCE_DOCUMENT_KEYS",
     "PROVENANCE_FILENAME",
+    "PROVENANCE_REQUEST_KEYS",
     "REQUIRED_MEMBERS",
     "SNAPSHOTS_DIRNAME",
     "SNAPSHOT_ID_FORMAT",
@@ -86,14 +90,40 @@ CHECKSUMS_FILENAME = "sha256sums.txt"
 MANIFEST_FILENAME = "catalog-manifest.json"
 TEMP_SUFFIX = ".tmp"
 
-REQUIRED_MEMBERS = (CATALOG_FILENAME, PROVENANCE_FILENAME)
+CATALOG_DOCUMENT_KEYS: tuple[str, ...] = ("snapshot_id", "source", "package_count", "packages")
+PROVENANCE_DOCUMENT_KEYS: tuple[str, ...] = ("snapshot_id", "source", "requests")
+PROVENANCE_REQUEST_KEYS: tuple[str, ...] = (
+    "action",
+    "params",
+    "started_at",
+    "finished_at",
+    "status_code",
+    "headers",
+    "body_sha256",
+)
+
+MEMBER_DOCUMENT_KEYS: dict[str, tuple[str, ...]] = {
+    CATALOG_FILENAME: CATALOG_DOCUMENT_KEYS,
+    PROVENANCE_FILENAME: PROVENANCE_DOCUMENT_KEYS,
+}
+"""The shape of every required member — **written and verified from here**.
+
+The writer builds each document by zipping its values onto these key tuples and
+the verifier checks each parsed document against the same tuples, so the two
+cannot drift apart silently. A verifier that repeated the key literals would be
+a second copy of the contract, and the failure mode of a second copy is that it
+stops agreeing with the first without anything failing.
+"""
+
+REQUIRED_MEMBERS: tuple[str, ...] = tuple(MEMBER_DOCUMENT_KEYS)
 """The members a snapshot must carry to be worth activating.
 
 ``sha256sums.txt`` proves a directory is *self-consistent*, not that it is a
-snapshot: an empty marker in an empty directory verifies perfectly, and so does
-any self-consistent subset. Verification therefore requires these two by name
-(Sol pass 1, major 1) — an internally consistent record of nothing is exactly
-the class of failure the provenance contract exists to refuse.
+snapshot: an empty marker in an empty directory verifies perfectly, so does any
+self-consistent subset, and so do two zero-byte members listed with the hash of
+emptiness. Verification therefore requires these members by name **and checks
+what is inside them** (Sol passes 1 and 2) — "present and correctly hashed" is
+not "valid", and every variant of that gap is the same defect.
 """
 
 SOURCE_NAME = "neso_data_portal"
@@ -293,15 +323,21 @@ def _provenance_entry(index: int, trace: object) -> dict[str, Any]:
             f"request trace {index} field 'body_sha256' is not a lowercase sha256 hex digest"
         )
 
-    return {
-        "action": action,
-        "params": params,
-        "started_at": _iso_utc(started_at),
-        "finished_at": _iso_utc(finished_at),
-        "status_code": status_code,
-        "headers": headers,
-        "body_sha256": body_sha256,
-    }
+    return dict(
+        zip(
+            PROVENANCE_REQUEST_KEYS,
+            (
+                action,
+                params,
+                _iso_utc(started_at),
+                _iso_utc(finished_at),
+                status_code,
+                headers,
+                body_sha256,
+            ),
+            strict=True,
+        )
+    )
 
 
 def _provenance_document(snapshot_id: str, traces: Iterable[object]) -> dict[str, Any]:
@@ -312,7 +348,7 @@ def _provenance_document(snapshot_id: str, traces: Iterable[object]) -> dict[str
             "the discovery result carries no request traces at all; a snapshot without "
             "provenance is exactly what FM-14 exists to prevent"
         )
-    return {"snapshot_id": snapshot_id, "source": SOURCE_NAME, "requests": requests}
+    return dict(zip(PROVENANCE_DOCUMENT_KEYS, (snapshot_id, SOURCE_NAME, requests), strict=True))
 
 
 # ---------------------------------------------------------------------------
@@ -442,12 +478,13 @@ def _log_incomplete_snapshots(snapshots_root: Path) -> None:
 
 def _catalog_document(snapshot_id: str, packages: Sequence[dict[str, Any]]) -> dict[str, Any]:
     """Build the ``catalog-snapshot.json`` payload from the discovered packages."""
-    return {
-        "snapshot_id": snapshot_id,
-        "source": SOURCE_NAME,
-        "package_count": len(packages),
-        "packages": list(packages),
-    }
+    return dict(
+        zip(
+            CATALOG_DOCUMENT_KEYS,
+            (snapshot_id, SOURCE_NAME, len(packages), list(packages)),
+            strict=True,
+        )
+    )
 
 
 async def build_snapshot(
@@ -527,26 +564,141 @@ def _read_checksums(checksums: Path) -> dict[str, str]:
     return recorded
 
 
+def _member_error(directory: Path, name: str, defect: str) -> SnapshotVerificationError:
+    """Build the one error shape every member defect is reported through."""
+    return SnapshotVerificationError(f"snapshot {directory}: {name!r} {defect}")
+
+
+def _validate_member_document(directory: Path, name: str) -> dict[str, Any]:
+    """Parse one required member and check it against the shape the writer wrote.
+
+    Hash agreement proves the bytes have not changed since the marker was
+    installed. It proves nothing about what those bytes *are*: zero-byte
+    members listed with the hash of emptiness agree with their marker
+    perfectly. So each required member is parsed and checked against
+    :data:`MEMBER_DOCUMENT_KEYS` — the same tuples the writer builds from.
+
+    Raises:
+        SnapshotVerificationError: The member is empty, is not JSON, is not the
+            JSON object the writer writes, or does not carry exactly its keys.
+    """
+    raw = (directory / name).read_bytes()
+    if not raw.strip():
+        raise _member_error(
+            directory, name, "is empty; a present, correctly-hashed empty file is not evidence"
+        )
+    try:
+        document = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise _member_error(directory, name, f"is not valid JSON ({error})") from error
+    if not isinstance(document, dict):
+        raise _member_error(
+            directory,
+            name,
+            f"is a JSON {type(document).__name__}, not the object the writer writes",
+        )
+
+    expected = set(MEMBER_DOCUMENT_KEYS[name])
+    if set(document) != expected:
+        missing = sorted(expected - set(document))
+        unexpected = sorted(set(document) - expected)
+        raise _member_error(
+            directory,
+            name,
+            f"does not carry the keys the writer writes (missing {missing}, "
+            f"unexpected {unexpected})",
+        )
+
+    identity = document["snapshot_id"]
+    if identity != directory.name:
+        raise _member_error(
+            directory, name, f"names snapshot {identity!r}, but it sits in {directory.name!r}"
+        )
+    if document["source"] != SOURCE_NAME:
+        raise _member_error(directory, name, f"names source {document['source']!r}")
+    return document
+
+
+def _validate_catalog_content(directory: Path, document: dict[str, Any]) -> None:
+    """Check ``catalog-snapshot.json``'s own internal agreement.
+
+    **An empty catalogue is accepted**, deliberately. ``discover_catalog``
+    treats a catalogue of zero packages reconciling against a declared count of
+    zero as a legitimate answer rather than an error, so ``build_snapshot`` can
+    honestly produce a zero-package snapshot; refusing it here would make the
+    verifier stricter than the writer, and a verifier that rejects what the
+    writer produces fails on the real vault rather than on a bad one.
+    """
+    packages = document["packages"]
+    count = document["package_count"]
+    if not isinstance(packages, list):
+        raise _member_error(
+            directory, CATALOG_FILENAME, f"'packages' is a {type(packages).__name__}, not a list"
+        )
+    if isinstance(count, bool) or not isinstance(count, int):
+        raise _member_error(directory, CATALOG_FILENAME, "'package_count' is not an integer")
+    if count != len(packages):
+        raise _member_error(
+            directory,
+            CATALOG_FILENAME,
+            f"claims {count} packages but carries {len(packages)}",
+        )
+
+
+def _validate_provenance_content(directory: Path, document: dict[str, Any]) -> None:
+    """Check that ``provenance.json`` actually records requests.
+
+    ``build_snapshot`` refuses to write a provenance document with no requests
+    (FM-14), so an empty ``requests`` list on disk is not something the writer
+    can produce — unlike an empty catalogue, which it can.
+    """
+    requests = document["requests"]
+    if not isinstance(requests, list):
+        raise _member_error(
+            directory,
+            PROVENANCE_FILENAME,
+            f"'requests' is a {type(requests).__name__}, not a list",
+        )
+    if not requests:
+        raise _member_error(
+            directory, PROVENANCE_FILENAME, "records no requests, so it is evidence of nothing"
+        )
+    expected = set(PROVENANCE_REQUEST_KEYS)
+    for position, entry in enumerate(requests):
+        if not isinstance(entry, dict) or set(entry) != expected:
+            raise _member_error(
+                directory,
+                PROVENANCE_FILENAME,
+                f"request {position} does not carry the fields the writer writes "
+                f"({sorted(expected)})",
+            )
+
+
 def verify_snapshot(directory: Path) -> None:
-    """Re-hash every file in a snapshot directory against ``sha256sums.txt``.
+    """Re-hash every file in a snapshot directory and validate its contents.
 
     Bidirectional on purpose (FM-09): a listed file that is absent, an on-disk
     file that is not listed, and a digest that does not match are all
     mutations of a directory the contract calls immutable, and all three name
     the offending file.
 
-    Self-consistency is checked, but it is checked **second**. The contract
-    members are required by name first, because internal consistency alone is
-    satisfied by an empty marker over an empty directory — and by any
-    self-consistent subset of a real snapshot.
+    Self-consistency is necessary and **not sufficient**, so it is neither the
+    first check nor the last. The contract members are required by name first,
+    because an empty marker over an empty directory is self-consistent and so
+    is any subset. Their contents are validated last, because "present and
+    correctly hashed" says nothing about what is inside: two zero-byte members
+    listed with the hash of emptiness satisfy every membership and digest check
+    there is. Bytes are checked before meaning so that a mutated member is
+    reported as a mutation rather than as a shape defect.
 
     Args:
         directory: The snapshot directory to verify.
 
     Raises:
         SnapshotVerificationError: The directory is incomplete, is missing a
-            contract member, has extra or missing members, or a member's bytes
-            have changed.
+            contract member, has extra or missing members, a member's bytes
+            have changed, or a required member is not the document the writer
+            writes.
     """
     checksums = directory / CHECKSUMS_FILENAME
     if not checksums.is_file():
@@ -582,6 +734,11 @@ def verify_snapshot(directory: Path) -> None:
                 f"snapshot {directory}: {name!r} hashes to {actual}, but "
                 f"{CHECKSUMS_FILENAME} records {digest}"
             )
+
+    catalog = _validate_member_document(directory, CATALOG_FILENAME)
+    provenance = _validate_member_document(directory, PROVENANCE_FILENAME)
+    _validate_catalog_content(directory, catalog)
+    _validate_provenance_content(directory, provenance)
 
 
 def _replace_with_retry(

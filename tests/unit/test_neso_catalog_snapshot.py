@@ -845,3 +845,201 @@ class TestARealInterruptedBuild:
         monkeypatch.undo()
         assert _manifest_bytes(tmp_path) == before
         assert json.loads(before)["snapshot_id"] == SNAPSHOT_ONE
+
+
+# ---------------------------------------------------------------------------
+# Sol pass 2 — present and correctly hashed is not valid
+# ---------------------------------------------------------------------------
+
+
+def _restate(snapshot_dir: Path, name: str, body: bytes) -> None:
+    """Replace a member's bytes and re-record every digest.
+
+    This is the attack the pass-1 fix did not cover: after this the directory
+    is complete, carries both contract members, and agrees with its own marker
+    exactly. Only the *contents* are wrong.
+    """
+    (snapshot_dir / name).write_bytes(body)
+    lines = [
+        f"{hashlib.sha256(entry.read_bytes()).hexdigest()}  {entry.name}\n"
+        for entry in sorted(
+            path for path in snapshot_dir.iterdir() if path.name != CHECKSUMS_FILENAME
+        )
+    ]
+    (snapshot_dir / CHECKSUMS_FILENAME).write_bytes("".join(lines).encode("utf-8"))
+
+
+class TestMemberContentsAreValidated:
+    """Sol pass 2, major: hash agreement proves the bytes did not change since
+    the marker was installed. It proves nothing about what those bytes are.
+
+    Every case here leaves the directory complete, both members present, and
+    every digest matching — so it passes the whole of the pass-1 fix.
+    """
+
+    def test_zero_byte_members_hashed_as_empty_fail_verification(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        _at(monkeypatch, MOMENT_ONE)
+        snapshot_dir = _build(_discovery(), tmp_path)
+        _restate(snapshot_dir, CATALOG_FILENAME, b"")
+        _restate(snapshot_dir, PROVENANCE_FILENAME, b"")
+
+        with pytest.raises(SnapshotVerificationError, match="is empty"):
+            verify_snapshot(snapshot_dir)
+
+    def test_zero_byte_members_hashed_as_empty_cannot_be_advanced_to(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        _complete_and_advance(monkeypatch, tmp_path, MOMENT_ONE)
+        before = _manifest_bytes(tmp_path)
+
+        _at(monkeypatch, MOMENT_TWO)
+        second = _build(_discovery(), tmp_path)
+        _restate(second, CATALOG_FILENAME, b"")
+        _restate(second, PROVENANCE_FILENAME, b"")
+
+        with pytest.raises(SnapshotVerificationError, match="is empty"):
+            advance_manifest(tmp_path, second.name)
+
+        assert _manifest_bytes(tmp_path) == before
+        assert json.loads(before)["snapshot_id"] == SNAPSHOT_ONE
+
+    def test_a_torn_json_member_with_a_matching_hash_fails_verification(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """A write interrupted mid-flush, then re-hashed by a later marker."""
+        _at(monkeypatch, MOMENT_ONE)
+        snapshot_dir = _build(_discovery(), tmp_path)
+        whole = (snapshot_dir / CATALOG_FILENAME).read_bytes()
+        _restate(snapshot_dir, CATALOG_FILENAME, whole[: len(whole) // 2])
+
+        with pytest.raises(SnapshotVerificationError, match="not valid JSON"):
+            verify_snapshot(snapshot_dir)
+
+    def test_a_member_that_is_json_but_not_an_object_fails_verification(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        _at(monkeypatch, MOMENT_ONE)
+        snapshot_dir = _build(_discovery(), tmp_path)
+        _restate(snapshot_dir, PROVENANCE_FILENAME, b"[]\n")
+
+        with pytest.raises(SnapshotVerificationError, match="JSON list"):
+            verify_snapshot(snapshot_dir)
+
+    def test_a_member_missing_a_written_key_fails_verification(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        _at(monkeypatch, MOMENT_ONE)
+        snapshot_dir = _build(_discovery(), tmp_path)
+        document = json.loads((snapshot_dir / CATALOG_FILENAME).read_bytes())
+        del document["packages"]
+        _restate(snapshot_dir, CATALOG_FILENAME, json.dumps(document).encode("utf-8"))
+
+        with pytest.raises(SnapshotVerificationError, match="packages"):
+            verify_snapshot(snapshot_dir)
+
+    def test_a_catalogue_whose_count_disagrees_with_its_packages_fails(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        _at(monkeypatch, MOMENT_ONE)
+        snapshot_dir = _build(_discovery(), tmp_path)
+        document = json.loads((snapshot_dir / CATALOG_FILENAME).read_bytes())
+        document["packages"] = []
+        _restate(snapshot_dir, CATALOG_FILENAME, json.dumps(document).encode("utf-8"))
+
+        with pytest.raises(SnapshotVerificationError, match="claims 2 packages but carries 0"):
+            verify_snapshot(snapshot_dir)
+
+    def test_a_provenance_document_recording_no_requests_fails(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """``build_snapshot`` cannot produce this, so the verifier refuses it."""
+        _at(monkeypatch, MOMENT_ONE)
+        snapshot_dir = _build(_discovery(), tmp_path)
+        document = json.loads((snapshot_dir / PROVENANCE_FILENAME).read_bytes())
+        document["requests"] = []
+        _restate(snapshot_dir, PROVENANCE_FILENAME, json.dumps(document).encode("utf-8"))
+
+        with pytest.raises(SnapshotVerificationError, match="records no requests"):
+            verify_snapshot(snapshot_dir)
+
+    def test_a_provenance_request_missing_a_field_fails(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        _at(monkeypatch, MOMENT_ONE)
+        snapshot_dir = _build(_discovery(), tmp_path)
+        document = json.loads((snapshot_dir / PROVENANCE_FILENAME).read_bytes())
+        del document["requests"][0]["body_sha256"]
+        _restate(snapshot_dir, PROVENANCE_FILENAME, json.dumps(document).encode("utf-8"))
+
+        with pytest.raises(SnapshotVerificationError, match="request 0"):
+            verify_snapshot(snapshot_dir)
+
+    def test_a_member_carrying_another_snapshots_id_fails_verification(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        _at(monkeypatch, MOMENT_ONE)
+        snapshot_dir = _build(_discovery(), tmp_path)
+        document = json.loads((snapshot_dir / CATALOG_FILENAME).read_bytes())
+        document["snapshot_id"] = SNAPSHOT_TWO
+        _restate(snapshot_dir, CATALOG_FILENAME, json.dumps(document).encode("utf-8"))
+
+        with pytest.raises(SnapshotVerificationError, match="names snapshot"):
+            verify_snapshot(snapshot_dir)
+
+
+class TestTheVerifierAcceptsWhatTheWriterWrites:
+    """The other half of the class: a verifier that drifts stricter than the
+    writer fails on the real vault rather than on a bad snapshot."""
+
+    def test_the_real_build_output_verifies_and_advances(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        _at(monkeypatch, MOMENT_ONE)
+        snapshot_dir = _build(_discovery(), tmp_path)
+
+        verify_snapshot(snapshot_dir)
+        advance_manifest(tmp_path, snapshot_dir.name)
+
+        assert json.loads(_manifest_bytes(tmp_path))["snapshot_id"] == SNAPSHOT_ONE
+
+    def test_a_legitimately_empty_catalogue_still_verifies_and_advances(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """``discover_catalog`` treats zero packages reconciling against a
+        declared count of zero as a legitimate answer, so ``build_snapshot`` can
+        honestly produce a zero-package snapshot and the verifier must accept
+        one. Provenance is the asymmetric case: the writer refuses to produce an
+        empty one, so the verifier refuses to accept one."""
+        _at(monkeypatch, MOMENT_ONE)
+        snapshot_dir = _build(_discovery(packages=()), tmp_path)
+
+        verify_snapshot(snapshot_dir)
+        advance_manifest(tmp_path, snapshot_dir.name)
+
+        document = json.loads((snapshot_dir / CATALOG_FILENAME).read_bytes())
+        assert document["packages"] == []
+        assert document["package_count"] == 0
+        assert json.loads(_manifest_bytes(tmp_path))["snapshot_id"] == SNAPSHOT_ONE
+
+    def test_the_writer_emits_exactly_the_keys_the_verifier_requires(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """One source of truth: if the writer's shape ever moves, it moves
+        because the shared tuples moved, and the verifier moves with it."""
+        _at(monkeypatch, MOMENT_ONE)
+        snapshot_dir = _build(_discovery(), tmp_path)
+
+        catalog = json.loads((snapshot_dir / CATALOG_FILENAME).read_bytes())
+        provenance = json.loads((snapshot_dir / PROVENANCE_FILENAME).read_bytes())
+
+        assert set(catalog) == set(catalog_snapshot.CATALOG_DOCUMENT_KEYS)
+        assert set(provenance) == set(catalog_snapshot.PROVENANCE_DOCUMENT_KEYS)
+        for entry in provenance["requests"]:
+            assert set(entry) == set(catalog_snapshot.PROVENANCE_REQUEST_KEYS)
+        assert tuple(catalog_snapshot.MEMBER_DOCUMENT_KEYS) == catalog_snapshot.REQUIRED_MEMBERS
+        assert set(catalog_snapshot.MEMBER_DOCUMENT_KEYS) == {
+            CATALOG_FILENAME,
+            PROVENANCE_FILENAME,
+        }
