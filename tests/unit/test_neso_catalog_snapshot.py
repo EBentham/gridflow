@@ -1,4 +1,4 @@
-"""Vault snapshot materializer tests — crash states and provenance (T-13).
+"""Vault snapshot materializer tests — crash states and provenance (T-13, T-14).
 
 Every test is offline and runs against ``tmp_path``: the connector is a stub
 that returns a :class:`CatalogDiscovery`, so no HTTP, no DNS and no vault path
@@ -6,7 +6,7 @@ is involved. Crashes are simulated by calling the materializer's internal steps
 directly rather than by killing a process — an interrupted run is exactly "some
 of the steps ran", and that is reproducible without a signal.
 
-The failure modes pinned here are FM-06, FM-07, FM-09 and FM-14; each has a
+The failure modes pinned here are FM-06 through FM-10 and FM-14; each has a
 named test, and the provenance assertions are field by field, because a test
 that only checks ``provenance.json`` exists would pass against a file full of
 placeholders — which is the defect FM-14 names.
@@ -17,6 +17,7 @@ from __future__ import annotations
 import asyncio
 import hashlib
 import json
+import os
 from datetime import UTC, datetime, timedelta
 from types import SimpleNamespace
 from typing import TYPE_CHECKING, Any
@@ -31,6 +32,7 @@ from gridflow.connectors.neso_data_portal.catalog_snapshot import (
     PROVENANCE_FILENAME,
     SNAPSHOTS_DIRNAME,
     IncompleteProvenanceError,
+    ManifestAdvanceError,
     RowSampleRejectedError,
     SnapshotVerificationError,
     advance_manifest,
@@ -582,3 +584,108 @@ class TestRowSampleGuard:
 
         assert (snapshot_dir / CATALOG_FILENAME).is_file()
 
+
+# ---------------------------------------------------------------------------
+# T-14 — FM-08 and FM-10: the atomic manifest advance
+# ---------------------------------------------------------------------------
+
+
+class TestAtomicManifestAdvance:
+    """FM-08 and FM-10: the manifest is wholly old or wholly new, and a failed
+    advance is loud."""
+
+    def test_the_advance_goes_through_a_temp_file_and_os_replace(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """FM-08: the destination is never opened for direct write, so an
+        interrupted advance cannot truncate the manifest."""
+        _at(monkeypatch, MOMENT_ONE)
+        snapshot_dir = _build(_discovery(), tmp_path)
+        recorded: list[tuple[str, str]] = []
+
+        def _record(src: Any, dst: Any) -> None:
+            recorded.append((str(src), str(dst)))
+
+        monkeypatch.setattr(os, "replace", _record)
+        advance_manifest(tmp_path, snapshot_dir.name)
+
+        assert len(recorded) == 1, "the advance did not go through exactly one os.replace"
+        source, destination = recorded[0]
+        assert destination == str(tmp_path / MANIFEST_FILENAME)
+        assert source != destination, "the manifest was written in place, not via a temp file"
+        assert source.endswith(".tmp")
+        assert not (tmp_path / MANIFEST_FILENAME).exists(), (
+            "the destination was opened for direct write"
+        )
+        staged = json.loads((tmp_path / source.rsplit(os.sep, 1)[-1]).read_bytes())
+        assert staged["snapshot_id"] == snapshot_dir.name
+
+    def test_a_transient_replace_failure_is_retried_and_then_succeeds(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """FM-10: OneDrive takes transient handles on the vault path."""
+        _at(monkeypatch, MOMENT_ONE)
+        snapshot_dir = _build(_discovery(), tmp_path)
+
+        real_replace = os.replace
+        attempts: list[int] = []
+
+        def _flaky(src: Any, dst: Any) -> None:
+            attempts.append(1)
+            if len(attempts) <= 2:
+                raise PermissionError(32, "The process cannot access the file")
+            real_replace(src, dst)
+
+        monkeypatch.setattr(os, "replace", _flaky)
+        monkeypatch.setattr(catalog_snapshot.time, "sleep", lambda _seconds: None)
+
+        advance_manifest(tmp_path, snapshot_dir.name)
+
+        assert len(attempts) == 3
+        assert json.loads(_manifest_bytes(tmp_path))["snapshot_id"] == snapshot_dir.name
+
+    def test_a_permanently_failing_replace_fails_loudly_and_leaves_the_manifest(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """FM-10's other half: never a silent skip reported as success."""
+        _complete_and_advance(monkeypatch, tmp_path, MOMENT_ONE)
+        before = _manifest_bytes(tmp_path)
+
+        _at(monkeypatch, MOMENT_TWO)
+        second = _build(_discovery(), tmp_path)
+        attempts: list[int] = []
+
+        def _always_locked(src: Any, dst: Any) -> None:
+            attempts.append(1)
+            raise PermissionError(32, "The process cannot access the file")
+
+        monkeypatch.setattr(os, "replace", _always_locked)
+        monkeypatch.setattr(catalog_snapshot.time, "sleep", lambda _seconds: None)
+
+        with pytest.raises(ManifestAdvanceError, match="previous snapshot"):
+            advance_manifest(tmp_path, second.name)
+
+        assert len(attempts) == catalog_snapshot.REPLACE_ATTEMPTS
+        assert _manifest_bytes(tmp_path) == before
+        assert json.loads(before)["snapshot_id"] == SNAPSHOT_ONE
+        assert not list(tmp_path.glob(f"{MANIFEST_FILENAME}.*.tmp")), (
+            "a failed advance left its temp file behind"
+        )
+
+    def test_the_command_reports_a_failed_replace_with_a_non_zero_exit(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """A stale manifest reported as success is the silent-data-bug class."""
+        _at(monkeypatch, MOMENT_ONE)
+        monkeypatch.setattr(catalog_snapshot.time, "sleep", lambda _seconds: None)
+        monkeypatch.setattr(
+            os,
+            "replace",
+            lambda src, dst: (_ for _ in ()).throw(PermissionError(32, "locked")),
+        )
+        connector = _StubConnector(_discovery())
+
+        exit_code = main(["--out", str(tmp_path)], session_factory=lambda: _StubSession(connector))
+
+        assert exit_code == 1
+        assert not (tmp_path / MANIFEST_FILENAME).exists()
