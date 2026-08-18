@@ -4,8 +4,11 @@ Implements PHASE.md ruling 4 verbatim:
 
 * ``snapshots/<UTC-snapshot-id>/`` is **immutable once complete**. It carries
   ``catalog-snapshot.json``, ``provenance.json`` and ``sha256sums.txt``.
-* ``sha256sums.txt`` is written **last** and is therefore the completeness
-  marker: a directory without it is incomplete *by definition* (FM-06). An
+* ``sha256sums.txt`` is installed **last** and is therefore the completeness
+  marker: a directory without it is incomplete *by definition* (FM-06). It is
+  staged and installed with :func:`os.replace` like the manifest, so a torn
+  marker cannot exist — everything downstream tests the marker by existence,
+  and a half-written one would make an incomplete snapshot look complete. An
   incomplete directory is never deleted and never rewritten — it is left in
   place and named in the next run's log (ADR-029 spirit).
 * ``provenance.json`` is populated **only** from the ``CatalogDiscovery``
@@ -13,8 +16,9 @@ Implements PHASE.md ruling 4 verbatim:
   missing trace field raises :class:`IncompleteProvenanceError` rather than
   producing a hash-verified record of nothing (FM-14).
 * ``catalog-manifest.json`` names the active snapshot by id and by the hash of
-  its ``sha256sums.txt``. It is advanced **only after** every file is re-hashed
-  and verified (FM-09), through a temp file plus :func:`os.replace` (FM-08)
+  its ``sha256sums.txt``. It is advanced **only after** the contract members
+  are proven present and every file is re-hashed and verified (FM-09), through
+  a temp file plus :func:`os.replace` (FM-08)
   with a bounded retry for the vault's OneDrive sync locks (FM-10). A partial
   or failed refresh never advances it, and never advances it *silently*.
 * Metadata evidence only. Dataset row samples may not be committed to the
@@ -54,6 +58,7 @@ __all__ = [
     "CHECKSUMS_FILENAME",
     "MANIFEST_FILENAME",
     "PROVENANCE_FILENAME",
+    "REQUIRED_MEMBERS",
     "SNAPSHOTS_DIRNAME",
     "SNAPSHOT_ID_FORMAT",
     "CatalogDiscoverer",
@@ -62,6 +67,7 @@ __all__ = [
     "RowSampleRejectedError",
     "SnapshotError",
     "SnapshotVerificationError",
+    "SnapshotWriteError",
     "advance_manifest",
     "build_snapshot",
     "main",
@@ -78,6 +84,17 @@ CATALOG_FILENAME = "catalog-snapshot.json"
 PROVENANCE_FILENAME = "provenance.json"
 CHECKSUMS_FILENAME = "sha256sums.txt"
 MANIFEST_FILENAME = "catalog-manifest.json"
+TEMP_SUFFIX = ".tmp"
+
+REQUIRED_MEMBERS = (CATALOG_FILENAME, PROVENANCE_FILENAME)
+"""The members a snapshot must carry to be worth activating.
+
+``sha256sums.txt`` proves a directory is *self-consistent*, not that it is a
+snapshot: an empty marker in an empty directory verifies perfectly, and so does
+any self-consistent subset. Verification therefore requires these two by name
+(Sol pass 1, major 1) — an internally consistent record of nothing is exactly
+the class of failure the provenance contract exists to refuse.
+"""
 
 SOURCE_NAME = "neso_data_portal"
 
@@ -118,6 +135,10 @@ class RowSampleRejectedError(SnapshotError):
 
 class SnapshotVerificationError(SnapshotError):
     """A snapshot directory does not match its own ``sha256sums.txt`` (FM-09)."""
+
+
+class SnapshotWriteError(SnapshotError):
+    """A snapshot file could not be installed, leaving the snapshot incomplete."""
 
 
 class ManifestAdvanceError(SnapshotError):
@@ -357,17 +378,25 @@ def _snapshot_members(directory: Path) -> list[Path]:
 
 
 def _write_checksums(directory: Path) -> Path:
-    """Hash every file in the directory and write ``sha256sums.txt`` **last**.
+    """Hash every file in the directory and install ``sha256sums.txt`` **last**.
+
+    The marker is **staged and installed with** :func:`os.replace`, not written
+    in place. Everything downstream tests the marker by *existence* — the
+    incomplete-snapshot log, and the FM-06 contract itself — so a torn but
+    present marker would make a half-written snapshot look complete, which is
+    the one state the whole write order exists to prevent. Staging makes it
+    impossible by construction rather than unlikely (Sol pass 1, minor 2).
 
     Args:
         directory: The snapshot directory, already carrying its data files.
 
     Returns:
-        The path of the written checksum file.
+        The path of the installed checksum file.
 
     Raises:
         SnapshotVerificationError: The directory holds a sub-directory, which a
             flat snapshot never does and which no checksum line could describe.
+        SnapshotWriteError: The marker could not be installed (FM-10's lock).
     """
     lines = []
     for entry in _snapshot_members(directory):
@@ -377,8 +406,19 @@ def _write_checksums(directory: Path) -> Path:
                 "a snapshot directory is flat so that every member is hashable"
             )
         lines.append(f"{_sha256_file(entry)}  {entry.name}\n")
+
     checksums = directory / CHECKSUMS_FILENAME
-    checksums.write_bytes("".join(lines).encode("utf-8"))
+    staged = directory / f"{CHECKSUMS_FILENAME}{TEMP_SUFFIX}"
+    staged.write_bytes("".join(lines).encode("utf-8"))
+    _replace_with_retry(
+        staged,
+        checksums,
+        error_class=SnapshotWriteError,
+        consequence=(
+            "the snapshot has no completeness marker and so stays incomplete, which is the "
+            "correct outcome but must not be reported as a success"
+        ),
+    )
     return checksums
 
 
@@ -495,12 +535,18 @@ def verify_snapshot(directory: Path) -> None:
     mutations of a directory the contract calls immutable, and all three name
     the offending file.
 
+    Self-consistency is checked, but it is checked **second**. The contract
+    members are required by name first, because internal consistency alone is
+    satisfied by an empty marker over an empty directory — and by any
+    self-consistent subset of a real snapshot.
+
     Args:
         directory: The snapshot directory to verify.
 
     Raises:
-        SnapshotVerificationError: The directory is incomplete, has extra or
-            missing members, or a member's bytes have changed.
+        SnapshotVerificationError: The directory is incomplete, is missing a
+            contract member, has extra or missing members, or a member's bytes
+            have changed.
     """
     checksums = directory / CHECKSUMS_FILENAME
     if not checksums.is_file():
@@ -511,6 +557,14 @@ def verify_snapshot(directory: Path) -> None:
 
     recorded = _read_checksums(checksums)
     present = {entry.name for entry in _snapshot_members(directory)}
+
+    for name in REQUIRED_MEMBERS:
+        if name not in present or name not in recorded:
+            raise SnapshotVerificationError(
+                f"snapshot {directory} does not carry {name!r} both on disk and in "
+                f"{CHECKSUMS_FILENAME}. A self-consistent subset is not a snapshot, so it "
+                "must not be activated"
+            )
 
     for name in sorted(set(recorded) - present):
         raise SnapshotVerificationError(
@@ -530,16 +584,28 @@ def verify_snapshot(directory: Path) -> None:
             )
 
 
-def _replace_with_retry(source: Path, destination: Path) -> None:
+def _replace_with_retry(
+    source: Path,
+    destination: Path,
+    *,
+    error_class: type[SnapshotError],
+    consequence: str,
+) -> None:
     """``os.replace`` with FM-10's bounded retry, then a loud failure.
 
     The vault lives under OneDrive, whose sync process takes transient handles
     on the file being replaced. Retrying is legitimate; giving up quietly is
     not — a stale manifest reported as advanced is the silent-data-bug class.
 
+    Args:
+        source: The staged temp file.
+        destination: The path being installed, atomically.
+        error_class: Which failure this replace represents.
+        consequence: What the caller is left with, named in the error.
+
     Raises:
-        ManifestAdvanceError: Every attempt failed. The destination is
-            untouched and the temp file is removed.
+        SnapshotError: Every attempt failed. The destination is untouched and
+            the temp file is removed. The concrete class is ``error_class``.
     """
     last_error: OSError | None = None
     for attempt in range(1, REPLACE_ATTEMPTS + 1):
@@ -560,9 +626,9 @@ def _replace_with_retry(source: Path, destination: Path) -> None:
             return
 
     source.unlink(missing_ok=True)
-    raise ManifestAdvanceError(
-        f"could not replace {destination} after {REPLACE_ATTEMPTS} attempts; the manifest "
-        f"still points at its previous snapshot: {last_error}"
+    raise error_class(
+        f"could not replace {destination} after {REPLACE_ATTEMPTS} attempts; "
+        f"{consequence}: {last_error}"
     ) from last_error
 
 
@@ -594,9 +660,14 @@ def advance_manifest(out_root: Path, snapshot_id: str) -> None:
     }
 
     out_root.mkdir(parents=True, exist_ok=True)
-    temporary = out_root / f"{MANIFEST_FILENAME}.{snapshot_id}.tmp"
+    temporary = out_root / f"{MANIFEST_FILENAME}.{snapshot_id}{TEMP_SUFFIX}"
     _write_json(temporary, document)
-    _replace_with_retry(temporary, manifest)
+    _replace_with_retry(
+        temporary,
+        manifest,
+        error_class=ManifestAdvanceError,
+        consequence="the manifest still points at its previous snapshot",
+    )
     logger.info("catalog-manifest.json now points at snapshot %s", snapshot_id)
 
 

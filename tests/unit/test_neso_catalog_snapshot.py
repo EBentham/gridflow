@@ -689,3 +689,159 @@ class TestAtomicManifestAdvance:
 
         assert exit_code == 1
         assert not (tmp_path / MANIFEST_FILENAME).exists()
+
+
+# ---------------------------------------------------------------------------
+# Sol pass 1 — the contract members, the staged marker, and a real interruption
+# ---------------------------------------------------------------------------
+
+
+class TestASelfConsistentSubsetIsNotASnapshot:
+    """Sol pass 1, major 1: internal consistency is not completeness.
+
+    ``sha256sums.txt`` proves a directory agrees with itself. An empty marker
+    over an empty directory agrees with itself perfectly, and so does any
+    subset of a real snapshot — so verification must require the contract
+    members by name, or the manifest can be advanced to a directory carrying
+    neither catalogue nor provenance.
+    """
+
+    def test_an_empty_marker_over_an_empty_directory_fails_verification(
+        self, tmp_path: Path
+    ) -> None:
+        hollow = tmp_path / SNAPSHOTS_DIRNAME / SNAPSHOT_ONE
+        hollow.mkdir(parents=True)
+        (hollow / CHECKSUMS_FILENAME).write_bytes(b"")
+
+        with pytest.raises(SnapshotVerificationError, match=CATALOG_FILENAME):
+            verify_snapshot(hollow)
+
+    def test_an_empty_marker_over_an_empty_directory_is_not_advanceable(
+        self, tmp_path: Path
+    ) -> None:
+        hollow = tmp_path / SNAPSHOTS_DIRNAME / SNAPSHOT_ONE
+        hollow.mkdir(parents=True)
+        (hollow / CHECKSUMS_FILENAME).write_bytes(b"")
+
+        with pytest.raises(SnapshotVerificationError, match=CATALOG_FILENAME):
+            advance_manifest(tmp_path, SNAPSHOT_ONE)
+
+        assert not (tmp_path / MANIFEST_FILENAME).exists()
+
+    def test_a_self_consistent_subset_without_provenance_is_not_advanceable(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Every listed file present and hashing correctly — and still refused,
+        because a snapshot without its provenance is evidence of nothing."""
+        _complete_and_advance(monkeypatch, tmp_path, MOMENT_ONE)
+        before = _manifest_bytes(tmp_path)
+
+        subset = tmp_path / SNAPSHOTS_DIRNAME / SNAPSHOT_TWO
+        subset.mkdir(parents=True)
+        catalog_snapshot._write_json(subset / CATALOG_FILENAME, {"snapshot_id": SNAPSHOT_TWO})
+        digest = hashlib.sha256((subset / CATALOG_FILENAME).read_bytes()).hexdigest()
+        (subset / CHECKSUMS_FILENAME).write_bytes(f"{digest}  {CATALOG_FILENAME}\n".encode())
+
+        with pytest.raises(SnapshotVerificationError, match=PROVENANCE_FILENAME):
+            advance_manifest(tmp_path, SNAPSHOT_TWO)
+
+        assert _manifest_bytes(tmp_path) == before
+        assert json.loads(before)["snapshot_id"] == SNAPSHOT_ONE
+
+
+class TestTheCompletenessMarkerIsInstalledAtomically:
+    """Sol pass 1, minor 2: everything downstream tests the marker by existence,
+    so a torn-but-present marker would make an incomplete snapshot look
+    complete. Staging it makes that impossible rather than unlikely."""
+
+    def test_the_marker_is_staged_and_installed_with_os_replace(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        _at(monkeypatch, MOMENT_ONE)
+        monkeypatch.setattr(catalog_snapshot.time, "sleep", lambda _seconds: None)
+        recorded: list[tuple[str, str]] = []
+
+        def _record_and_fail(src: Any, dst: Any) -> None:
+            recorded.append((str(src), str(dst)))
+            raise PermissionError(32, "The process cannot access the file")
+
+        monkeypatch.setattr(os, "replace", _record_and_fail)
+
+        with pytest.raises(catalog_snapshot.SnapshotWriteError, match="completeness marker"):
+            _build(_discovery(), tmp_path)
+
+        monkeypatch.undo()
+        partial = tmp_path / SNAPSHOTS_DIRNAME / SNAPSHOT_ONE
+        assert [dst for _, dst in recorded] == [str(partial / CHECKSUMS_FILENAME)] * (
+            catalog_snapshot.REPLACE_ATTEMPTS
+        ), "the marker was not installed through os.replace onto its own path"
+        assert all(src.endswith(catalog_snapshot.TEMP_SUFFIX) for src, _ in recorded), (
+            "the marker was written in place rather than staged"
+        )
+        assert not (partial / CHECKSUMS_FILENAME).exists(), (
+            "a marker appeared even though every os.replace failed, so it was written directly"
+        )
+        assert not list(partial.glob(f"*{catalog_snapshot.TEMP_SUFFIX}")), (
+            "a failed marker install left its staged file behind"
+        )
+
+
+class TestARealInterruptedBuild:
+    """Sol pass 1, minor 3: FM-06 pinned through the REAL ``build_snapshot``.
+
+    The constructed-directory test above pins what verification does with an
+    incomplete directory; this one pins that ``build_snapshot`` actually
+    *produces* that shape when it is interrupted — the write order itself,
+    rather than a hand-made stand-in for it.
+    """
+
+    def test_a_crash_before_the_marker_leaves_data_files_and_no_marker(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+    ) -> None:
+        def _interrupted(_path: Path) -> str:
+            raise OSError("hashing interrupted")
+
+        _at(monkeypatch, MOMENT_ONE)
+        monkeypatch.setattr(catalog_snapshot, "_sha256_file", _interrupted)
+
+        with pytest.raises(OSError, match="hashing interrupted"):
+            _build(_discovery(), tmp_path)
+
+        monkeypatch.undo()
+        partial = tmp_path / SNAPSHOTS_DIRNAME / SNAPSHOT_ONE
+        assert sorted(entry.name for entry in partial.iterdir()) == [
+            CATALOG_FILENAME,
+            PROVENANCE_FILENAME,
+        ]
+        assert not (partial / CHECKSUMS_FILENAME).exists()
+
+        with pytest.raises(SnapshotVerificationError, match="incomplete by definition"):
+            verify_snapshot(partial)
+        with pytest.raises(SnapshotVerificationError, match="incomplete by definition"):
+            advance_manifest(tmp_path, SNAPSHOT_ONE)
+        assert not (tmp_path / MANIFEST_FILENAME).exists()
+
+        _at(monkeypatch, MOMENT_TWO)
+        with caplog.at_level("WARNING", logger=catalog_snapshot.logger.name):
+            _build(_discovery(), tmp_path)
+
+        assert SNAPSHOT_ONE in caplog.text, "the interrupted snapshot was not named in the log"
+        assert (partial / CATALOG_FILENAME).exists(), "an interrupted snapshot was deleted"
+
+    def test_a_crash_before_the_marker_leaves_the_previous_manifest_active(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        def _interrupted(_path: Path) -> str:
+            raise OSError("hashing interrupted")
+
+        _complete_and_advance(monkeypatch, tmp_path, MOMENT_ONE)
+        before = _manifest_bytes(tmp_path)
+
+        _at(monkeypatch, MOMENT_TWO)
+        monkeypatch.setattr(catalog_snapshot, "_sha256_file", _interrupted)
+        with pytest.raises(OSError, match="hashing interrupted"):
+            _build(_discovery(), tmp_path)
+
+        monkeypatch.undo()
+        assert _manifest_bytes(tmp_path) == before
+        assert json.loads(before)["snapshot_id"] == SNAPSHOT_ONE
