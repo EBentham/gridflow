@@ -2515,8 +2515,8 @@ class TestCredentialsCannotLeave:
         verified = client_module.SafeUrl.verified(DAILY_WIND_RESOURCE_URL)
         assert str(verified) == DAILY_WIND_RESOURCE_URL
 
-    def test_the_raw_form_is_reachable_only_through_the_ugly_accessor(self) -> None:
-        """``unsafe_raw`` is the single deliberate door to the credentials."""
+    def test_the_supported_door_returns_the_raw_bytes_intact(self) -> None:
+        """``unsafe_raw`` is the single SUPPORTED door to the raw URL."""
         safe = client_module.SafeUrl.opaque(PRESIGNED_URL)
 
         assert _TEST_SIGNATURE not in str(safe)
@@ -2530,9 +2530,9 @@ class TestCredentialsCannotLeave:
         ``_assert_safe_target``: pin the accessor's production call sites.
 
         Deliberately NOT a check about how URLs are spelled — that model failed
-        twice. This asserts only that the one door to the raw form is opened
-        where requests are constructed and nowhere else, so a new call site is a
-        deliberate act rather than an accident.
+        twice. This asserts only that the one SUPPORTED door to the raw form is
+        opened where requests are constructed and nowhere else, so a new call
+        site is a deliberate act rather than an accident.
         """
         package_dir = Path(client_module.__file__).parent
         call_sites: list[tuple[str, str]] = []
@@ -2572,7 +2572,7 @@ class TestCredentialsCannotLeave:
 
         for attribute in ("path", "query", "fragment", "userinfo"):
             assert not hasattr(safe, attribute), (
-                f"SafeUrl.{attribute} is a second door to the raw URL"
+                f"SafeUrl.{attribute} is a second supported door to the raw URL"
             )
 
         # Honesty check for the narrowed claim: the mangled slot IS reachable
@@ -2601,7 +2601,8 @@ class TestCredentialsCannotLeave:
             pickle.dumps(safe)
 
     def test_path_matching_happens_inside_the_object(self) -> None:
-        """The path never leaves, so an unproven one cannot be rendered."""
+        """No supported accessor exposes the path, so an unproven one cannot
+        be rendered by accident."""
         redirector = client_module.SafeUrl.opaque(DAILY_WIND_RESOURCE_URL)
         pattern = (
             "dataset",

@@ -403,9 +403,9 @@ class SafeUrl:
     def path_matches(self, pattern: Sequence[str | frozenset[str] | None]) -> bool:
         """Whole-path segment match, evaluated INSIDE the object.
 
-        The path never leaves, so a caller cannot render an unproven one. A
-        ``None`` element matches any non-empty segment; a ``frozenset`` matches
-        any of its members.
+        The path leaves through no supported accessor, so a caller cannot
+        render an unproven one *by accident*. A ``None`` element matches any
+        non-empty segment; a ``frozenset`` matches any of its members.
         """
         segments = str(self.__raw.path).split("/")
         if len(segments) != len(pattern) + 1 or segments[0] != "":
