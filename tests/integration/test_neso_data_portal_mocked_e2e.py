@@ -19,8 +19,10 @@ have it.
 
 from __future__ import annotations
 
+import csv
+import io
 import json
-from datetime import UTC, datetime, time, timedelta
+from datetime import UTC, date, datetime, time, timedelta
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
@@ -35,7 +37,9 @@ from gridflow.config.settings import load_settings
 from gridflow.connectors import base as connectors_base
 from gridflow.connectors.neso_data_portal.client import NesoDataPortalConnector
 from gridflow.connectors.neso_data_portal.endpoints import DATASETS
+from gridflow.silver.elexon.fuelhh import FuelHHTransformer
 from gridflow.silver.registry import get_transformer
+from gridflow.storage.parquet import scan_parquet_dir
 from gridflow.utils.time import settlement_period_to_utc
 
 if TYPE_CHECKING:
@@ -558,3 +562,233 @@ async def test_the_embedded_forecasts_issue_time_survives_the_whole_path(
         settlement_period_to_utc(row["settlement_date"], row["settlement_period"])
         for row in frame.iter_rows(named=True)
     ]
+
+
+# --------------------------------------------------------------------------- #
+# T-18 -- cross-source validation, both checks offline
+#
+# PHASE.md requires the settlement-convention claim be cross-VALIDATED, not
+# merely asserted internally. A transformer that derived `event_time` from its
+# own parallel arithmetic would satisfy every test above this line: they all
+# compare this source against itself. The only way to prove it shares the
+# repo's ONE convention is to compare it against a different source's
+# transformer over the same settlement pairs, on the days where a parallel
+# convention would diverge -- the 46- and 50-period DST days.
+# --------------------------------------------------------------------------- #
+
+EMB_SPRING_CSV = (FIXTURE_DIR / "embedded_forecast_dst_spring.csv").read_bytes()
+EMB_AUTUMN_CSV = (FIXTURE_DIR / "embedded_forecast_dst_autumn.csv").read_bytes()
+
+SPRING_DAY = date(2026, 3, 29)
+AUTUMN_DAY = date(2026, 10, 25)
+
+
+def _wire_dataset_legs_with_body(router: respx.MockRouter, dataset: str, body: bytes) -> None:
+    """`_wire_dataset_legs`, but serving a caller-supplied CSV body.
+
+    A separate function rather than a keyword on the T-27 helper: that helper
+    is what the row-count tests above depend on, and this unit adds tests
+    without touching the assertions already in place.
+    """
+    router.get(url__startswith=PACKAGE_SHOW_URL).mock(
+        return_value=httpx.Response(200, json=_package_show_for(dataset))
+    )
+    router.get(url__startswith=str(_selected_resource(dataset)["url"])).mock(
+        return_value=httpx.Response(
+            302,
+            headers=[("location", _presigned_for(dataset))],
+            content=b"<html>redirecting</html>",
+        )
+    )
+    router.get(url__startswith=FILE_HOST).mock(return_value=httpx.Response(200, content=body))
+
+
+def _fuelhh_period_instants(pairs: list[tuple[date, int]], data_dir: Path) -> pl.DataFrame:
+    """The instant `silver/elexon/fuelhh.py` derives for each settlement pair.
+
+    Driven through the REAL `FuelHHTransformer.transform`, from a frame in the
+    vendor's own bronze spelling, so this is the value Elexon silver actually
+    carries rather than a re-implementation of it here. `transform()` touches
+    no disk; `data_dir` only satisfies the constructor.
+    """
+    raw_df = pl.DataFrame(
+        {
+            "settlementDate": [day for day, _ in pairs],
+            "settlementPeriod": [period for _, period in pairs],
+            "fuelType": ["WIND"] * len(pairs),
+            "generation": [0.0] * len(pairs),
+        }
+    )
+    silver = FuelHHTransformer(data_dir).transform(raw_df)
+    return silver.select(
+        pl.col("settlement_date"),
+        pl.col("settlement_period").cast(pl.Int64),
+        pl.col("timestamp_utc"),
+    )
+
+
+@respx.mock
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("body", "expected_rows"),
+    [
+        pytest.param(EMB_CSV, EMB_EXPECTED_ROWS, id="ordinary-day-with-a-day-roll"),
+        pytest.param(EMB_SPRING_CSV, 46, id="spring-forward-46-periods"),
+        pytest.param(EMB_AUTUMN_CSV, 50, id="autumn-back-50-periods"),
+    ],
+)
+async def test_this_sources_event_time_uses_the_repos_one_settlement_convention(
+    router: respx.MockRouter,
+    short_data_dir: Path,
+    body: bytes,
+    expected_rows: int,
+) -> None:
+    """T-18 check 1: NESO `event_time` == Elexon `timestamp_utc`, pair for pair.
+
+    Both sides are the REAL transformers, so the assertion is that the two
+    sources agree, not that two copies of the same helper agree. The DST
+    parameters are what give the check teeth: a naive
+    `midnight + 30min * (period - 1)` convention agrees with
+    `settlement_period_to_utc` on every ordinary day and diverges by an hour
+    across the fold, so an ordinary-day-only comparison would pass against a
+    parallel convention. 46 and 50 periods are exactly the days where it
+    cannot.
+    """
+    _wire_dataset_legs_with_body(router, EMB_DATASET, body)
+    start, end = _window()
+
+    response = await _fetch_dataset(_source_config(), EMB_DATASET, start, end)
+    BronzeWriter(short_data_dir).write(response)
+
+    transformer = get_transformer(SOURCE, EMB_DATASET, short_data_dir)
+    assert transformer.run(end.date(), run_id="t18") == expected_rows
+    assert transformer.last_excluded_row_count == 0, (
+        "every fixture period is valid for its own day, so a D-27 exclusion "
+        "here means the comparison below is running over a truncated set"
+    )
+
+    neso = pl.read_parquet(_silver_files(short_data_dir, EMB_DATASET, end.date())[0]).select(
+        "settlement_date", "settlement_period", "event_time"
+    )
+    pairs = [
+        (row["settlement_date"], row["settlement_period"]) for row in neso.iter_rows(named=True)
+    ]
+    elexon = _fuelhh_period_instants(pairs, short_data_dir)
+
+    joined = neso.join(elexon, on=["settlement_date", "settlement_period"], how="inner")
+    assert joined.height == expected_rows, (
+        "the join lost rows, so the equality below would be asserted over a "
+        "subset and a divergent pair could pass unseen"
+    )
+    assert joined["event_time"].to_list() == joined["timestamp_utc"].to_list(), (
+        "this source derives a settlement instant that Elexon's transformer "
+        "does not -- i.e. a SECOND settlement convention now exists in the repo"
+    )
+
+
+def test_time_gmt_corroborates_the_period_end_instant() -> None:
+    """T-18 check 2, NON-BINDING: an observation guard, never a dependency.
+
+    On the real captured fixture (`_probe/sample_embedded-forecast-current.csv`,
+    carried verbatim as `embedded_forecast.csv`), the vendor's
+    `DATE_GMT` + `TIME_GMT` pair equals the settlement period's **end** in UTC.
+    Nothing in the pipeline reads it: D-26 carries `TIME_GMT` through as an
+    unparsed `time_gmt_raw` and derives `event_time` from the settlement pair
+    alone, precisely because this convention is observed rather than documented.
+
+    **A future failure here means NESO changed convention** -- it does not mean
+    the pipeline is wrong, and it must not be "fixed" by editing the expected
+    value. It is a tripwire on an undocumented vendor behaviour, and its
+    resolution is a vendor question (TODO-02), not a code change.
+
+    The two DST fixtures are deliberately NOT included: they are hand-authored
+    to this same convention, so asserting it over them would only prove the
+    fixtures are self-consistent.
+    """
+    rows = list(csv.DictReader(io.StringIO(EMB_CSV.decode("utf-8"))))
+    assert len(rows) == EMB_EXPECTED_ROWS, "the real capture is 20 complete rows"
+
+    mismatches: list[str] = []
+    for row in rows:
+        settlement_date = datetime.strptime(row["SETTLEMENT_DATE"], "%Y-%m-%dT%H:%M:%S").date()
+        period = int(row["SETTLEMENT_PERIOD"])
+        stamped = datetime.combine(
+            datetime.strptime(row["DATE_GMT"], "%Y-%m-%dT%H:%M:%S").date(),
+            time.fromisoformat(row["TIME_GMT"]),
+            tzinfo=UTC,
+        )
+        period_end = settlement_period_to_utc(settlement_date, period) + timedelta(minutes=30)
+        if stamped != period_end:
+            mismatches.append(
+                f"{settlement_date} SP{period}: vendor stamped {stamped.isoformat()}, "
+                f"period end is {period_end.isoformat()}"
+            )
+
+    assert not mismatches, (
+        "NESO's DATE_GMT/TIME_GMT no longer equals the settlement period's END "
+        f"in UTC: {mismatches}. D-26 keeps the pipeline independent of this "
+        "column, so nothing is broken -- but the vendor's convention moved and "
+        "the vault page's corroboration needs revisiting (TODO-02)"
+    )
+
+
+def test_local_fuelhh_parquet_agrees_in_magnitude_where_both_sources_exist() -> None:
+    """T-18 check 1's extension: real on-disk silver, never a hard dependency.
+
+    Compares total GB generation for overlapping half-hours between
+    `silver/elexon/fuelhh` and `silver/neso_data_portal/historic_generation_mix`
+    as a MAGNITUDE sanity check -- the two are measured differently (fuelhh is
+    transmission-metered by fuel; the generation mix includes embedded
+    estimates), so the tolerance is deliberately loose and only a
+    factor-of-scale error, e.g. GW read as MW, would trip it.
+
+    Skips with a stated reason whenever either side is absent locally. Local
+    data is a convenience, never a test dependency: this file must be green on
+    a clean checkout with no `data/` at all.
+
+    **Which root it looks in, and why it usually skips.** The repo-root
+    conftest's autouse `_clear_gridflow_path_env` deletes `GRIDFLOW_DATA_DIR`
+    so a machine's real root cannot leak into the suite, which leaves
+    `load_settings()` on `config/settings.yaml`'s repo-relative `./data`. That
+    is deliberately NOT worked around here -- reading the env var directly
+    would reintroduce exactly the leak the fixture exists to prevent -- and it
+    is the same path the plan names. So on a machine whose data lives
+    elsewhere (this one: `C:\\gridflow-data`) this check skips, and it is meant
+    to: the binding cross-validation is the convention test above, which needs
+    no local data at all.
+    """
+    data_dir = load_settings().pipeline.data_dir
+    elexon_dir = data_dir / "silver" / "elexon" / "fuelhh"
+    neso_dir = data_dir / "silver" / SOURCE / HGM_DATASET
+
+    missing = [str(path) for path in (elexon_dir, neso_dir) if not path.exists()]
+    if missing:
+        pytest.skip(f"no local silver to cross-check against: {missing}")
+
+    elexon = (
+        scan_parquet_dir(elexon_dir)
+        .group_by("timestamp_utc")
+        .agg(pl.col("generation_mw").sum().alias("elexon_mw"))
+        .collect()
+    )
+    neso = (
+        scan_parquet_dir(neso_dir)
+        .select("timestamp_utc", pl.col("generation").alias("neso_mw"))
+        .unique(subset=["timestamp_utc"], keep="last")
+        .collect()
+    )
+
+    overlap = elexon.join(neso, on="timestamp_utc", how="inner").filter(
+        (pl.col("elexon_mw") > 0) & (pl.col("neso_mw") > 0)
+    )
+    if overlap.height == 0:
+        pytest.skip("local silver exists for both sources but shares no half-hour")
+
+    sample = overlap.sort("timestamp_utc").head(24)
+    ratios = (sample["neso_mw"] / sample["elexon_mw"]).to_list()
+    assert all(0.5 <= ratio <= 2.0 for ratio in ratios), (
+        f"GB total generation differs by more than 2x on {sample.height} "
+        f"overlapping half-hour(s): ratios {ratios}. The two sources measure "
+        "differently, so a small spread is expected -- this is a unit/scale "
+        "check, and a failure means one side is out by an order of magnitude"
+    )
