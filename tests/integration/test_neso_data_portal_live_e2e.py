@@ -37,6 +37,7 @@ import pytest
 
 from gridflow.config.settings import load_settings
 from gridflow.connectors.neso_data_portal.client import (
+    _PACKAGE_SEARCH_PAGE_SIZE,
     CatalogDiscovery,
     NesoDataPortalConnector,
     SafeUrl,
@@ -269,7 +270,11 @@ async def test_discover_catalog_still_reconciles_and_traces_every_call() -> None
 
     The traces are asserted field by field because ``provenance.json`` (D-32)
     is built from them, and a provenance file whose fields can be placeholders
-    is a hash-verified record of nothing.
+    is a hash-verified record of nothing. ``params`` is asserted with the rest
+    (Sol review): it is the ONLY record of how the catalogue was paged, so a
+    ``package_search`` trace that lost its ``rows``/``start`` would leave D-32's
+    evidence unable to show which window each page covered — and every other
+    field would still look complete.
     """
     async with NesoDataPortalConnector(_live_config()) as connector:
         discovery: CatalogDiscovery = await connector.discover_catalog()
@@ -281,6 +286,7 @@ async def test_discover_catalog_still_reconciles_and_traces_every_call() -> None
     missing = sorted({spec.package for spec in DATASETS.values()} - names)
     assert not missing, f"packages this source depends on left the catalogue: {missing}"
 
+    starts: list[int] = []
     for trace in discovery.traces:
         detail: Any = trace
         assert trace.action in {"package_search", "package_list"}, detail
@@ -289,3 +295,24 @@ async def test_discover_catalog_still_reconciles_and_traces_every_call() -> None
         assert trace.finished_at >= trace.started_at, detail
         assert len(trace.body_sha256) == 64, detail
         assert trace.headers, "no response headers were captured for this call"
+
+        if trace.action == "package_search":
+            assert set(trace.params) == {"rows", "start"}, (
+                f"a package_search trace carries {sorted(trace.params)} instead of "
+                "the pagination parameters that are the only record of which "
+                f"window this page covered: {detail}"
+            )
+            assert trace.params["rows"] == str(_PACKAGE_SEARCH_PAGE_SIZE), detail
+            starts.append(int(trace.params["start"]))
+        else:
+            # `package_list` takes no parameters, so an EMPTY dict is the honest
+            # record and anything else means a parameter was sent that this
+            # connector does not believe it sends.
+            assert trace.params == {}, detail
+
+    assert starts, "no package_search page was traced at all"
+    assert starts[0] == 0, f"pagination did not start at offset 0: {starts}"
+    assert starts == sorted(set(starts)), (
+        f"the traced page offsets are not strictly increasing: {starts}. Either a "
+        "page was re-requested or the evidence no longer reflects the walk"
+    )

@@ -1102,6 +1102,17 @@ async def test_every_dataset_registers_a_base_and_a_latest_duckdb_view(
                 f"{spec.key_columns} -- it is not the one-row-per-key projection "
                 "D-30 names as the consumer default"
             )
+            # Uniqueness alone is a HALF assertion: an empty or short `_latest`
+            # satisfies `count(*) == count(DISTINCT key)` trivially, so a
+            # projection that silently dropped rows would pass it. Exactly ONE
+            # vintage is seeded here, so the consumer surface must carry every
+            # row the base view does -- losing any is a consumer-visible data
+            # loss, which is the failure that matters more than duplication.
+            assert grain[0] == expected_rows, (
+                f"{latest_view} returns {grain[0]} of the {expected_rows} rows in "
+                f"{base_view} over a SINGLE seeded vintage -- the consumer default "
+                "is dropping rows, not selecting among vintages"
+            )
     finally:
         con.close()
 
@@ -1149,24 +1160,41 @@ async def test_status_and_quality_run_over_the_new_source_with_no_source_branch(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
 ) -> None:
-    """Both operational commands work, and neither names this source.
+    """Both operational commands work, and neither MODULE names this source.
 
     "Runs without a source-specific branch" is asserted two ways, because
     either alone is weak: the commands actually produce results for all three
-    datasets (behavioural), AND neither command's source text -- nor
-    `_register_views`' -- mentions `neso_data_portal` (structural). A future
-    special case would keep the first assertion green.
+    datasets (behavioural), AND neither `cli.py` nor `storage/duckdb.py`
+    mentions `neso_data_portal` anywhere (structural). A future special case
+    would keep the first assertion green.
+
+    The structural half scans the **whole module**, not the three function
+    bodies it used to (Sol review, MEDIUM->LOW): a branch hoisted into a
+    private helper that `quality` calls would satisfy a per-function scan and
+    every behavioural assertion at once, which is exactly the shape a special
+    case takes when someone tries to keep a diff tidy. Both files are clean
+    today, so no legitimate-registration exclusion is needed -- registration
+    for this source lives in `silver/neso_data_portal/__init__.py` and
+    `LATEST_VIEW_SPECS`, neither of which is in this scan's scope.
     """
     import inspect
 
     import duckdb
 
-    from gridflow.cli import app, quality, status
-    from gridflow.storage.duckdb import _register_views
+    from gridflow import cli as cli_module
+    from gridflow.cli import app
+    from gridflow.storage import duckdb as duckdb_module
 
-    for function in (status, quality, _register_views):
-        assert SOURCE not in inspect.getsource(function), (
-            f"{function.__name__} carries a source-specific branch for {SOURCE}"
+    for module, marker in ((cli_module, "def quality("), (duckdb_module, "def _register_views(")):
+        source_text = inspect.getsource(module)
+        # Positive control: a scan over an empty or truncated string would pass
+        # the real assertion silently, which is the same shape of hole as
+        # scanning too few functions.
+        assert marker in source_text, f"{module.__name__} source did not scan as expected"
+        assert SOURCE not in source_text, (
+            f"{module.__name__} names {SOURCE} somewhere, i.e. a source-specific "
+            "branch now exists in a layer whose whole claim is that it does not "
+            "need one"
         )
 
     await _populate_every_dataset(router, short_data_dir)
@@ -1264,9 +1292,13 @@ async def test_two_identical_captures_duplicate_in_the_base_view_only(
         "duplication documented here no longer describes the code"
     )
 
+    latest_keys = LATEST_VIEW_SPECS[(SOURCE, DATASET)].key_columns
+    keys = ", ".join(f'"{column}"' for column in latest_keys)
     con = get_connection(_catalogue(short_data_dir, monkeypatch), read_only=True)
     try:
-        base = con.sql(f'SELECT count(*) FROM "silver_{SOURCE}_{DATASET}"').fetchone()
+        base = con.sql(
+            f'SELECT count(*), count(DISTINCT ({keys})) FROM "silver_{SOURCE}_{DATASET}"'
+        ).fetchone()
         latest = con.sql(f'SELECT count(*) FROM "silver_{SOURCE}_{DATASET}_latest"').fetchone()
     finally:
         con.close()
@@ -1275,9 +1307,18 @@ async def test_two_identical_captures_duplicate_in_the_base_view_only(
         "the base view no longer carries both vintages (FM-11 is documented as "
         "ACCEPTED -- a change here is a decision, not a bug fix)"
     )
+    assert base[1] == EXPECTED_ROWS, (
+        f"the base view's {base[0]} rows cover {base[1]} distinct {latest_keys}, not "
+        f"{EXPECTED_ROWS} -- so this is a test about two DIFFERENT captures rather "
+        "than about the redundant polling FM-11 describes"
+    )
+    # The exact count, not merely "fewer than the base": a projection that
+    # dropped rows would also be smaller, and losing a BMU-day silently is a
+    # worse outcome for a consumer than serving it twice.
     assert latest is not None and latest[0] == EXPECTED_ROWS, (
-        "the _latest projection served duplicates, so D-30's consumer default "
-        "does not actually protect consumers from FM-11"
+        "the _latest projection did not return exactly one row per key over two "
+        "identical vintages, so D-30's consumer default either serves FM-11's "
+        "duplicates or drops real rows"
     )
 
     # The entity key SEES the duplication on the raw frame -- and does not once
