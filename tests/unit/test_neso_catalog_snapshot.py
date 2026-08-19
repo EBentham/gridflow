@@ -934,7 +934,7 @@ class TestMemberContentsAreValidated:
         snapshot_dir = _build(_discovery(), tmp_path)
         document = json.loads((snapshot_dir / CATALOG_FILENAME).read_bytes())
         del document["packages"]
-        _restate(snapshot_dir, CATALOG_FILENAME, json.dumps(document).encode("utf-8"))
+        _restate(snapshot_dir, CATALOG_FILENAME, catalog_snapshot._serialize_document(document))
 
         with pytest.raises(SnapshotVerificationError, match="packages"):
             verify_snapshot(snapshot_dir)
@@ -946,7 +946,7 @@ class TestMemberContentsAreValidated:
         snapshot_dir = _build(_discovery(), tmp_path)
         document = json.loads((snapshot_dir / CATALOG_FILENAME).read_bytes())
         document["packages"] = []
-        _restate(snapshot_dir, CATALOG_FILENAME, json.dumps(document).encode("utf-8"))
+        _restate(snapshot_dir, CATALOG_FILENAME, catalog_snapshot._serialize_document(document))
 
         with pytest.raises(
             SnapshotVerificationError,
@@ -962,7 +962,7 @@ class TestMemberContentsAreValidated:
         snapshot_dir = _build(_discovery(), tmp_path)
         document = json.loads((snapshot_dir / PROVENANCE_FILENAME).read_bytes())
         document["requests"] = []
-        _restate(snapshot_dir, PROVENANCE_FILENAME, json.dumps(document).encode("utf-8"))
+        _restate(snapshot_dir, PROVENANCE_FILENAME, catalog_snapshot._serialize_document(document))
 
         with pytest.raises(SnapshotVerificationError, match="no request traces at all"):
             verify_snapshot(snapshot_dir)
@@ -974,7 +974,7 @@ class TestMemberContentsAreValidated:
         snapshot_dir = _build(_discovery(), tmp_path)
         document = json.loads((snapshot_dir / PROVENANCE_FILENAME).read_bytes())
         del document["requests"][0]["body_sha256"]
-        _restate(snapshot_dir, PROVENANCE_FILENAME, json.dumps(document).encode("utf-8"))
+        _restate(snapshot_dir, PROVENANCE_FILENAME, catalog_snapshot._serialize_document(document))
 
         with pytest.raises(SnapshotVerificationError, match="request trace 0 carries no"):
             verify_snapshot(snapshot_dir)
@@ -986,7 +986,7 @@ class TestMemberContentsAreValidated:
         snapshot_dir = _build(_discovery(), tmp_path)
         document = json.loads((snapshot_dir / CATALOG_FILENAME).read_bytes())
         document["snapshot_id"] = SNAPSHOT_TWO
-        _restate(snapshot_dir, CATALOG_FILENAME, json.dumps(document).encode("utf-8"))
+        _restate(snapshot_dir, CATALOG_FILENAME, catalog_snapshot._serialize_document(document))
 
         with pytest.raises(SnapshotVerificationError, match="names snapshot"):
             verify_snapshot(snapshot_dir)
@@ -1031,15 +1031,23 @@ class TestTheVerifierAcceptsWhatTheWriterWrites:
     ) -> None:
         """One source of truth (PHASE.md ruling 11): the verifier re-derives each
         member by calling the function that wrote it, so this asserts the fixed
-        point directly — writer output fed back through the builder is itself."""
+        point directly — writer output fed back through the builder, re-serialized
+        through the writer's own serializer, is the bytes on disk.
+
+        Asserted at the BYTE level, not between parsed documents: document
+        equality would hold for ``false`` where a ``0`` belongs, so a
+        document-level assertion here would not guard the fixed point it claims
+        to guard (Sol pass 4)."""
         _at(monkeypatch, MOMENT_ONE)
         snapshot_dir = _build(_discovery(), tmp_path)
 
-        catalog = json.loads((snapshot_dir / CATALOG_FILENAME).read_bytes())
-        provenance = json.loads((snapshot_dir / PROVENANCE_FILENAME).read_bytes())
+        for member in (CATALOG_FILENAME, PROVENANCE_FILENAME):
+            raw = (snapshot_dir / member).read_bytes()
+            rebuilt = catalog_snapshot.MEMBER_BUILDERS[member](json.loads(raw))
+            assert catalog_snapshot._serialize_document(rebuilt) == raw, (
+                f"{member} is not its own fixed point through the writer's serializer"
+            )
 
-        assert catalog_snapshot.MEMBER_BUILDERS[CATALOG_FILENAME](catalog) == catalog
-        assert catalog_snapshot.MEMBER_BUILDERS[PROVENANCE_FILENAME](provenance) == provenance
         assert tuple(catalog_snapshot.MEMBER_BUILDERS) == catalog_snapshot.REQUIRED_MEMBERS
         assert set(catalog_snapshot.MEMBER_BUILDERS) == {CATALOG_FILENAME, PROVENANCE_FILENAME}
 
@@ -1053,7 +1061,7 @@ def _rewrite_request(snapshot_dir: Path, field: str, value: Any) -> None:
     """Set one field of the first recorded request, and re-record the digests."""
     document = json.loads((snapshot_dir / PROVENANCE_FILENAME).read_bytes())
     document["requests"][0][field] = value
-    _restate(snapshot_dir, PROVENANCE_FILENAME, json.dumps(document).encode("utf-8"))
+    _restate(snapshot_dir, PROVENANCE_FILENAME, catalog_snapshot._serialize_document(document))
 
 
 class TestTheWritersOwnRejectionsApplyOnTheWayIn:
@@ -1131,7 +1139,7 @@ class TestTheMetadataOnlyGuardAppliesOnTheWayIn:
             {"name": "historic-generation-mix", "records": [{"DATETIME": "2026-08-16", "GAS": 1}]}
         ]
         document["package_count"] = 1
-        _restate(snapshot_dir, CATALOG_FILENAME, json.dumps(document).encode("utf-8"))
+        _restate(snapshot_dir, CATALOG_FILENAME, catalog_snapshot._serialize_document(document))
 
         with pytest.raises(SnapshotVerificationError, match="carries dataset rows"):
             verify_snapshot(snapshot_dir)
@@ -1147,7 +1155,7 @@ class TestTheMetadataOnlyGuardAppliesOnTheWayIn:
         document = json.loads((second / CATALOG_FILENAME).read_bytes())
         document["packages"] = [{"name": "daily-wind-availability", "records": [{"MW": 1}]}]
         document["package_count"] = 1
-        _restate(second, CATALOG_FILENAME, json.dumps(document).encode("utf-8"))
+        _restate(second, CATALOG_FILENAME, catalog_snapshot._serialize_document(document))
 
         with pytest.raises(SnapshotVerificationError, match="carries dataset rows"):
             advance_manifest(tmp_path, second.name)
@@ -1176,7 +1184,7 @@ class TestTheSnapshotIdMustBeOneTheWriterCouldProduce:
         for member in (CATALOG_FILENAME, PROVENANCE_FILENAME):
             document = json.loads((renamed / member).read_bytes())
             document["snapshot_id"] = directory_name
-            _restate(renamed, member, json.dumps(document).encode("utf-8"))
+            _restate(renamed, member, catalog_snapshot._serialize_document(document))
         return renamed
 
     def test_a_snapshot_under_a_non_utc_directory_name_fails_verification(
@@ -1205,3 +1213,100 @@ class TestTheSnapshotIdMustBeOneTheWriterCouldProduce:
 
         with pytest.raises(SnapshotVerificationError, match="20260899T185200Z"):
             verify_snapshot(renamed)
+
+
+# ---------------------------------------------------------------------------
+# Sol pass 4 — the fixed point is at the byte level, not at Python equality
+# ---------------------------------------------------------------------------
+
+
+def _restate_package_count(snapshot_dir: Path, count: object) -> None:
+    """Replace ``package_count`` and re-record the digests, keeping the file
+    canonical in every other respect — so the ONLY thing under test is the
+    value's type."""
+    document = json.loads((snapshot_dir / CATALOG_FILENAME).read_bytes())
+    document["package_count"] = count
+    _restate(snapshot_dir, CATALOG_FILENAME, catalog_snapshot._serialize_document(document))
+
+
+class TestFalseFixedPointsAreRefused:
+    """Sol pass 4: ``False == 0``, ``True == 1`` and ``2.0 == 2`` in Python, so a
+    document-level fixed point accepts a ``package_count`` the writer could
+    never emit — it only ever writes ``len(packages)``, an integer.
+
+    Each case below is hash-consistent, canonically formatted, and equal to the
+    rebuilt document under ``==``. Each is refused, because the fixed point is
+    taken over the serialized bytes: ``false`` and ``0`` are different bytes.
+    """
+
+    @pytest.mark.parametrize(
+        ("count", "packages"),
+        [
+            (False, ()),
+            (True, PACKAGES[:1]),
+            (2.0, PACKAGES[:2]),
+        ],
+        ids=["false-for-zero", "true-for-one", "float-for-two"],
+    )
+    def test_a_type_loose_package_count_fails_verification(
+        self,
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+        count: object,
+        packages: tuple[dict[str, Any], ...],
+    ) -> None:
+        _at(monkeypatch, MOMENT_ONE)
+        snapshot_dir = _build(_discovery(packages=packages), tmp_path)
+        _restate_package_count(snapshot_dir, count)
+
+        recorded = json.loads((snapshot_dir / CATALOG_FILENAME).read_bytes())
+        assert recorded["package_count"] == len(packages), (
+            "the fixture is not a FALSE fixed point unless it compares equal by =="
+        )
+
+        with pytest.raises(SnapshotVerificationError, match="byte-for-byte"):
+            verify_snapshot(snapshot_dir)
+
+    @pytest.mark.parametrize(
+        ("count", "packages"),
+        [
+            (False, ()),
+            (True, PACKAGES[:1]),
+            (2.0, PACKAGES[:2]),
+        ],
+        ids=["false-for-zero", "true-for-one", "float-for-two"],
+    )
+    def test_a_type_loose_package_count_cannot_be_advanced_to(
+        self,
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+        count: object,
+        packages: tuple[dict[str, Any], ...],
+    ) -> None:
+        _complete_and_advance(monkeypatch, tmp_path, MOMENT_ONE)
+        before = _manifest_bytes(tmp_path)
+
+        _at(monkeypatch, MOMENT_TWO)
+        second = _build(_discovery(packages=packages), tmp_path)
+        _restate_package_count(second, count)
+
+        with pytest.raises(SnapshotVerificationError, match="byte-for-byte"):
+            advance_manifest(tmp_path, second.name)
+
+        assert _manifest_bytes(tmp_path) == before
+        assert json.loads(before)["snapshot_id"] == SNAPSHOT_ONE
+
+    def test_the_defect_is_named_despite_comparing_equal(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """The diagnostic must not report "no keys disagree" for a document that
+        failed: the keys are compared by repr precisely because ``==`` calls
+        ``false`` and ``0`` the same thing."""
+        _at(monkeypatch, MOMENT_ONE)
+        snapshot_dir = _build(_discovery(packages=()), tmp_path)
+        _restate_package_count(snapshot_dir, False)
+
+        with pytest.raises(
+            SnapshotVerificationError, match=r"disagreeing keys: \['package_count'\]"
+        ):
+            verify_snapshot(snapshot_dir)

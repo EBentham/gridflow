@@ -477,15 +477,29 @@ def _reject_row_samples(payload: object, path: str = "packages") -> None:
 # ---------------------------------------------------------------------------
 
 
-def _write_json(path: Path, document: dict[str, Any]) -> None:
-    """Write one JSON document as exact UTF-8 bytes with a trailing newline.
+def _serialize_document(document: dict[str, Any]) -> bytes:
+    """Render one snapshot document as the exact bytes that go on disk.
+
+    **The only serializer in the module** — separators, indent, key order,
+    encoding and trailing newline all live here once. That is what lets
+    verification compare *bytes* rather than parsed values, which matters more
+    than it sounds: Python equality is not type-strict, so a document carrying
+    ``package_count: false`` beside zero packages, ``true`` beside one, or
+    ``2.0`` beside two compares equal to the integer the writer computes and
+    would be a false fixed point (Sol pass 4). ``false`` and ``0`` do not
+    serialize alike, so at the byte level the question does not arise.
 
     Bytes rather than text mode on purpose: the file is about to be hashed, and
     a platform default encoding or line ending would make the digest depend on
     the machine that produced it.
     """
     body = json.dumps(document, indent=2, ensure_ascii=False, sort_keys=False)
-    path.write_bytes(body.encode("utf-8") + b"\n")
+    return body.encode("utf-8") + b"\n"
+
+
+def _write_json(path: Path, document: dict[str, Any]) -> None:
+    """Write one JSON document through the module's single serializer."""
+    path.write_bytes(_serialize_document(document))
 
 
 def _sha256_file(path: Path) -> str:
@@ -722,11 +736,18 @@ def _member_error(directory: Path, name: str, defect: str) -> SnapshotVerificati
 
 
 def _disagreeing_keys(recorded: dict[str, Any], rebuilt: dict[str, Any]) -> list[str]:
-    """Name the keys on which a member disagrees with what the writer builds."""
+    """Name the keys on which a member disagrees with what the writer builds.
+
+    Diagnostics only — the verdict is the byte comparison. Values are compared
+    by :func:`repr` rather than by ``==`` deliberately: the defects this exists
+    to describe include ``false`` where an integer belongs and ``2.0`` where a
+    ``2`` belongs, and ``==`` calls both of those equal. A message that said
+    "no keys disagree" about a document that failed would be worse than none.
+    """
     return sorted(
         key
         for key in set(recorded) | set(rebuilt)
-        if recorded.get(key, _MISSING) != rebuilt.get(key, _MISSING)
+        if repr(recorded.get(key, _MISSING)) != repr(rebuilt.get(key, _MISSING))
     )
 
 
@@ -739,16 +760,24 @@ def _revalidate_member(directory: Path, name: str) -> None:
     perfectly, and so does a catalogue full of dataset rows.
 
     So the parsed document's own fields are handed back to the function that
-    built it (:data:`MEMBER_BUILDERS`) and the result must equal what is on
-    disk. Anything the writer would have rejected raises inside the builder;
+    built it (:data:`MEMBER_BUILDERS`), the result is re-serialized through
+    :func:`_serialize_document`, and those **bytes must equal the bytes on
+    disk**. Anything the writer would have rejected raises inside the builder;
     anything the writer would have written differently fails the comparison.
     **There is no second description of validity here to drift out of step**
     (PHASE.md ruling 11).
 
+    The comparison is at the byte level rather than between parsed documents
+    because Python equality is not type-strict: ``false == 0`` and ``2.0 == 2``,
+    so a catalogue whose ``package_count`` is ``false`` beside zero packages
+    would be a false fixed point under ``==`` (Sol pass 4). One code path
+    includes one serialization, so the round trip is closed where the evidence
+    actually lives — in the bytes that were hashed.
+
     Raises:
         SnapshotVerificationError: The member is empty, is not JSON, is not a
             JSON object, was rejected by the writer's own validation, or is not
-            what the writer builds from its own fields.
+            byte-for-byte what the writer emits from its own fields.
     """
     raw = (directory / name).read_bytes()
     if not raw.strip():
@@ -780,12 +809,17 @@ def _revalidate_member(directory: Path, name: str) -> None:
             directory, name, f"is not a document this materializer could have written: {error}"
         ) from error
 
-    if rebuilt != document:
+    if _serialize_document(rebuilt) != raw:
+        differing = _disagreeing_keys(document, rebuilt)
+        detail = (
+            f"disagreeing keys: {differing}"
+            if differing
+            else "its keys all agree, so the difference is one of ordering or formatting"
+        )
         raise _member_error(
             directory,
             name,
-            "is not what the writer builds from its own fields; disagreeing keys: "
-            f"{_disagreeing_keys(document, rebuilt)}",
+            f"is not byte-for-byte what the writer emits from its own fields; {detail}",
         )
 
 
