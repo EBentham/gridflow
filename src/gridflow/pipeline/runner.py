@@ -218,7 +218,12 @@ class DatasetResult:
             ``rows_unmapped`` + ``rows_invalid`` for transforms; the skipped-unit
             count for ingests).
         rows_unmapped: Transform-only: rows kept with an ADR-022 enum sentinel.
-        rows_invalid: Transform-only: rows failing full-frame schema validation.
+        rows_invalid: Transform-only: rows the contract calls wrong. TWO
+            dispositions, deliberately folded into one number (D-40): rows that
+            failed full-frame schema validation and were still WRITTEN
+            (fail-soft), and rows a transformer DECLARED INVALID AND REMOVED
+            (``last_excluded_row_count``). The discriminator is the per-row
+            WARNING the excluding transformer emits, not this field.
         bronze_unvouched: Transform-only: DISTINCT bronze bodies excluded from
             the read because their own sidecar could not vouch for them
             (ADR-028). A FILE count, deliberately kept out of ``rows_skipped``:
@@ -1021,7 +1026,15 @@ def run_transform(
                 # Per-date warning counts; run() resets both each call, so
                 # accumulating never double-counts an empty/missing date.
                 total_unmapped += transformer.last_unmapped_count
-                total_validation_failures += transformer.last_validation_failure_count
+                # D-40: a row a transformer DECLARED INVALID AND REMOVED is
+                # invisible to _validate_against_schema (which runs on
+                # transform()'s output), so without this second term a run can
+                # drop rows loudly in the log and still report plain `success`.
+                # Both dispositions land in one reported total on purpose --
+                # see last_excluded_row_count's docstring for the conflation.
+                total_validation_failures += (
+                    transformer.last_validation_failure_count + transformer.last_excluded_row_count
+                )
                 # Sol re-review (2026-07-26): a 100%-out-of-window event-window
                 # drop is never a routine warning -- it means an in-scope
                 # dataset was misclassified into EVENT_WINDOW_FILTER, or is

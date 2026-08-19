@@ -20,14 +20,16 @@ import logging
 import pickle
 import socket
 import traceback
-from datetime import UTC, datetime, timedelta, timezone
+from datetime import UTC, date, datetime, timedelta, timezone
 from pathlib import Path
 from time import monotonic
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, ClassVar
 
 import httpx
+import polars as pl
 import pytest
 import respx
+from pydantic import Field
 from tenacity import wait_none
 
 from gridflow.config.settings import DatasetConfig, PipelineSettings, SourceConfig
@@ -53,7 +55,10 @@ from gridflow.connectors.neso_data_portal.client import (
     _resolve_host_addresses,
 )
 from gridflow.connectors.neso_data_portal.endpoints import DATASETS
+from gridflow.schemas.common import BaseSchema
+from gridflow.silver.base import BaseSilverTransformer
 from gridflow.silver.csv_bronze import CsvHeaderDriftError, NotCsvBodyError
+from gridflow.silver.elexon.system_prices import SystemPriceTransformer
 
 if TYPE_CHECKING:
     from collections.abc import AsyncIterator, Iterator
@@ -2665,3 +2670,394 @@ class TestCredentialsCannotLeave:
         assert "not a resolvable URL" in message
         assert "notaport" not in message, "the malformed vendor value was echoed"
         assert excinfo.value.__cause__ is None, "httpx's own error was chained"
+
+
+# --------------------------------------------------------------------------- #
+# T-06 -- shared silver plumbing
+#
+# Two additive changes to `silver/base.py`, both audited by CALLER ENUMERATION
+# rather than by reasoning about intent:
+#
+#   D-20  `BRONZE_BODY_GLOB`, a read-path ClassVar with WRITE-path consequences
+#         (it selects which bodies are seen, hence which vintages are assigned,
+#         hence which silver FILENAMES are written). So both branch tests below
+#         assert on written FILENAMES, not on row counts -- a row-count
+#         assertion cannot see a filename move, which is the failure this
+#         guards.
+#   D-40  `last_excluded_row_count`, the counter that makes an EXCLUDED row
+#         reach the run status. Its two tests are on UNTOUCHED transformers,
+#         because the point of a defaulted counter is that nothing moves.
+# --------------------------------------------------------------------------- #
+
+
+_SP_VINTAGES: tuple[tuple[str, datetime, float], ...] = (
+    ("first", datetime(2024, 1, 15, 8, tzinfo=UTC), 44.0),
+    ("second", datetime(2024, 1, 15, 12, tzinfo=UTC), 45.5),
+)
+"""The exact fixture `test_run_writes_one_file_per_bronze_vintage` already
+pins on master, reused so the filename expectations below are the SAME
+expectations, not a new set that happens to agree."""
+
+
+def _system_prices_payload(day: date, sell_price: float) -> str:
+    return json.dumps(
+        {
+            "data": [
+                {
+                    "settlementDate": day.isoformat(),
+                    "settlementPeriod": 1,
+                    "systemSellPrice": sell_price,
+                    "systemBuyPrice": 55.0,
+                    "netImbalanceVolume": -120.5,
+                }
+            ]
+        }
+    )
+
+
+class _CsvGlobTransformer(BaseSilverTransformer):
+    """A `VINTAGE_PER_BRONZE_FILE` transformer whose bodies are CSV, not JSON.
+
+    The other branch of D-20's claim: overriding `BRONZE_BODY_GLOB` must make
+    the per-file loop see `raw_*.csv` bodies and nothing else -- not the
+    `.meta.json` sidecars beside them, and not a `raw_*.json` decoy sharing
+    the partition.
+    """
+
+    source = "test_glob"
+    dataset = "csv_bodies"
+    schema_cls = None
+    APPEND_ONLY: ClassVar[bool] = True
+    VINTAGE_PER_BRONZE_FILE: ClassVar[bool] = True
+    BRONZE_BODY_GLOB: ClassVar[str] = "raw_*.csv"
+    ENTITY_KEY_COLUMNS: ClassVar[tuple[str, ...]] = ("value",)
+
+    seen_bodies: list[str]
+    """Set per INSTANCE by the test. Annotation only -- a class-level ``[]``
+    default would be shared mutable state across every instance."""
+
+    def read_bronze(self, target_date: date) -> pl.DataFrame:
+        """Unused on the per-file branch; declared so the contract is complete."""
+        return pl.DataFrame()
+
+    def read_bronze_file(self, raw_path: Path) -> pl.DataFrame:
+        """Record which bodies the loop offered, then read the CSV."""
+        self.seen_bodies.append(raw_path.name)
+        return pl.read_csv(raw_path)
+
+    def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
+        """Identity: this fixture is about body SELECTION, not normalisation."""
+        return raw_df
+
+
+def test_bronze_body_glob_defaults_to_json_on_the_base_and_its_sole_inheritor() -> None:
+    """D-20, the default: the ClassVar is additive, so the one existing
+    `VINTAGE_PER_BRONZE_FILE` opt-in in the repo must inherit master's literal
+    unchanged. A default that drifted would move silver filenames for
+    `elexon/system_prices` without a single test naming it."""
+    assert BaseSilverTransformer.BRONZE_BODY_GLOB == "raw_*.json"
+    assert SystemPriceTransformer.BRONZE_BODY_GLOB == "raw_*.json"
+
+
+def test_json_glob_branch_writes_exactly_the_silver_filenames_it_wrote_before(
+    tmp_path: Path,
+) -> None:
+    """D-20, JSON branch, BEHAVIOURAL: the ClassVar's reach is the silver
+    filename, so the regression guard is the filename set."""
+    target_date = date(2024, 1, 15)
+    bronze_dir = tmp_path / "bronze" / "elexon" / "system_prices" / "2024" / "01" / "15"
+    bronze_dir.mkdir(parents=True)
+    for name, written_at, sell_price in _SP_VINTAGES:
+        (bronze_dir / f"raw_{name}.json").write_text(
+            _system_prices_payload(target_date, sell_price)
+        )
+        (bronze_dir / f"raw_{name}.meta.json").write_text(
+            json.dumps({"written_at": written_at.isoformat()})
+        )
+
+    transformer = SystemPriceTransformer(tmp_path)
+    assert transformer.run(target_date, run_id="glob") == 2
+
+    silver_dir = tmp_path / "silver" / "elexon" / "system_prices" / "year=2024" / "month=01"
+    assert sorted(path.name for path in silver_dir.glob("*.parquet")) == [
+        "system_prices_20240115_run2024-01-15T08-00-00-00-00.parquet",
+        "system_prices_20240115_run2024-01-15T12-00-00-00-00.parquet",
+    ], "the vintage->filename mapping moved; the glob reaches further than a read"
+
+
+def test_csv_glob_branch_sees_csv_bodies_and_never_their_sidecars(tmp_path: Path) -> None:
+    """D-20, CSV branch, BEHAVIOURAL: the override selects CSV bodies, the
+    `.meta.json` guard is still correct under a non-JSON glob, and a JSON
+    decoy in the same partition is invisible."""
+    target_date = date(2024, 1, 15)
+    bronze_dir = tmp_path / "bronze" / "test_glob" / "csv_bodies" / "2024" / "01" / "15"
+    bronze_dir.mkdir(parents=True)
+    for name, written_at, value in (
+        ("first", datetime(2024, 1, 15, 8, tzinfo=UTC), 1),
+        ("second", datetime(2024, 1, 15, 12, tzinfo=UTC), 2),
+    ):
+        (bronze_dir / f"raw_{name}.csv").write_text(f"value\n{value}\n")
+        (bronze_dir / f"raw_{name}.meta.json").write_text(
+            json.dumps({"written_at": written_at.isoformat()})
+        )
+    (bronze_dir / "raw_decoy.json").write_text(json.dumps({"value": 99}))
+    (bronze_dir / "raw_decoy.meta.json").write_text(
+        json.dumps({"written_at": datetime(2024, 1, 15, 16, tzinfo=UTC).isoformat()})
+    )
+
+    transformer = _CsvGlobTransformer(tmp_path)
+    transformer.seen_bodies = []
+    assert transformer.run(target_date, run_id="glob") == 2
+
+    assert transformer.seen_bodies == ["raw_first.csv", "raw_second.csv"], (
+        "a sidecar or the JSON decoy was offered to read_bronze_file as a body"
+    )
+    silver_dir = tmp_path / "silver" / "test_glob" / "csv_bodies" / "year=2024" / "month=01"
+    assert sorted(path.name for path in silver_dir.glob("*.parquet")) == [
+        "csv_bodies_20240115_run2024-01-15T08-00-00-00-00.parquet",
+        "csv_bodies_20240115_run2024-01-15T12-00-00-00-00.parquet",
+    ]
+
+
+class _ExcludingVintageTransformer(BaseSilverTransformer):
+    """A ``VINTAGE_PER_BRONZE_FILE`` transformer that DECLINES one row per body.
+
+    The framework hazard D-27 names, made testable: ``transform()`` runs once
+    per bronze file against a SINGLE reset in ``run()``, so the counter must be
+    accumulated with ``+=``. An assignment would report the last file's count
+    and silently lose every earlier file's exclusions.
+    """
+
+    source = "test_excl"
+    dataset = "vintage_rows"
+    schema_cls = None
+    APPEND_ONLY: ClassVar[bool] = True
+    VINTAGE_PER_BRONZE_FILE: ClassVar[bool] = True
+    ENTITY_KEY_COLUMNS: ClassVar[tuple[str, ...]] = ("value",)
+
+    def read_bronze(self, target_date: date) -> pl.DataFrame:
+        """Unused on the per-file branch; declared so the contract is complete."""
+        return pl.DataFrame()
+
+    def read_bronze_file(self, raw_path: Path) -> pl.DataFrame:
+        """Read one body: one kept row and one row flagged for exclusion."""
+        return pl.DataFrame(json.loads(raw_path.read_text()))
+
+    def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
+        """Drop every row flagged ``bad``, accumulating the count with ``+=``."""
+        declined = raw_df.filter(pl.col("bad"))
+        self.last_excluded_row_count += declined.height
+        return raw_df.filter(~pl.col("bad")).select("value")
+
+
+class _TinyBoundedSchema(BaseSchema):
+    """Minimal bounded schema (``BaseSchema`` is strict) for the fail-soft half."""
+
+    value: int = Field(ge=0, le=10)
+
+
+class _ValidatingPlainTransformer(BaseSilverTransformer):
+    """An UNTOUCHED-shape transformer: plain branch, no exclusions, real schema."""
+
+    source = "test_plain"
+    dataset = "validated"
+    schema_cls = _TinyBoundedSchema
+    ENTITY_KEY_COLUMNS: ClassVar[tuple[str, ...]] = ("value",)
+
+    def read_bronze(self, target_date: date) -> pl.DataFrame:
+        """Read the whole date partition as one frame (master's default shape)."""
+        partition = (
+            self.bronze_dir
+            / str(target_date.year)
+            / f"{target_date.month:02d}"
+            / f"{target_date.day:02d}"
+        )
+        rows: list[int] = []
+        for body in sorted(partition.glob("raw_*.json")):
+            if body.name.endswith(".meta.json"):
+                continue
+            rows.extend(json.loads(body.read_text()))
+        return pl.DataFrame({"value": rows}) if rows else pl.DataFrame()
+
+    def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
+        """Identity: validation, not normalisation, is what this fixture pins."""
+        return raw_df
+
+
+def _isolated_transform(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    seed: Any,
+    source: str,
+    dataset: str,
+    day: date,
+    *,
+    transformer_cls: type[BaseSilverTransformer] | None = None,
+) -> Any:
+    """Drive the REAL ``pipeline.runner.run_transform`` over a seeded bronze tree.
+
+    A unit assertion on the transformer's own counters could not prove the
+    reported STATUS, which is the whole point of D-40.
+
+    Args:
+        tmp_path: Per-test temporary root.
+        monkeypatch: Fixture used to isolate every gridflow path env var.
+        seed: Callable receiving the data dir; writes the bronze tree.
+        source: Source name passed to ``run_transform``.
+        dataset: Dataset name passed to ``run_transform``.
+        day: The single target date transformed.
+        transformer_cls: When set, ``get_transformer`` is stubbed to return an
+            instance of it, so a fixture transformer never has to be entered
+            into the process-wide registry.
+
+    Returns:
+        The single ``DatasetResult`` for the requested dataset.
+    """
+    from gridflow.config.settings import load_settings
+    from gridflow.pipeline import runner as pipeline_runner
+    from gridflow.storage.duckdb import get_connection, init_catalogue
+
+    data_dir = tmp_path / "data"
+    db_path = tmp_path / "catalogue" / "gridflow.duckdb"
+    monkeypatch.setenv("GRIDFLOW_DATA_DIR", str(data_dir))
+    monkeypatch.setenv("GRIDFLOW_DUCKDB_PATH", str(db_path))
+    monkeypatch.setenv("GRIDFLOW_LOG_DIR", str(tmp_path / "logs"))
+    monkeypatch.setattr("gridflow.storage.duckdb._register_gold_views", lambda con: None)
+    if transformer_cls is not None:
+        monkeypatch.setattr(
+            "gridflow.silver.registry.get_transformer",
+            lambda _source, _dataset, root: transformer_cls(root),
+        )
+    seed(data_dir)
+
+    settings = load_settings()
+    pipeline_runner.import_transformers()
+    init_catalogue(db_path, data_dir)
+    con = get_connection(db_path)
+    try:
+        ctx = pipeline_runner.PipelineContext(con=con, settings=settings)
+        results = pipeline_runner.run_transform(
+            ctx,
+            source,
+            [dataset],
+            datetime(day.year, day.month, day.day, tzinfo=UTC),
+            datetime(day.year, day.month, day.day, tzinfo=UTC),
+        )
+    finally:
+        con.close()
+    assert len(results) == 1
+    return results[0]
+
+
+def _write_vintage_body(partition: Path, name: str, payload: Any, written_at: datetime) -> None:
+    """Write one bronze body and the sidecar that vouches for it."""
+    (partition / f"raw_{name}.json").write_text(json.dumps(payload))
+    (partition / f"raw_{name}.meta.json").write_text(
+        json.dumps({"written_at": written_at.isoformat()})
+    )
+
+
+def test_an_untouched_source_reports_identical_counts_and_status(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """D-40, the whole point of a defaulted counter: NOTHING moves.
+
+    A transformer that never touches ``last_excluded_row_count`` contributes
+    exactly zero to a total it already contributed to. Asserted on the VALUES:
+    a test that only checked the call succeeded would pass with the fold
+    silently doubling ``rows_invalid``.
+    """
+    target_date = date(2026, 1, 5)
+
+    def seed(data_dir: Path) -> None:
+        partition = data_dir / "bronze" / "test_plain" / "validated" / "2026" / "01" / "05"
+        partition.mkdir(parents=True)
+        _write_vintage_body(partition, "clean", [1, 2, 3], datetime(2026, 1, 5, 9, tzinfo=UTC))
+
+    clean = _isolated_transform(
+        tmp_path,
+        monkeypatch,
+        seed,
+        "test_plain",
+        "validated",
+        target_date,
+        transformer_cls=_ValidatingPlainTransformer,
+    )
+    assert (clean.status, clean.rows_out, clean.rows_skipped, clean.rows_invalid) == (
+        "success",
+        3,
+        0,
+        0,
+    )
+
+
+def test_the_fold_carries_a_validation_failure_through_unchanged(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """D-40, the fold's FIRST term: a transformer with no exclusions whose rows
+    fail validation still reports exactly the validation-failure count.
+
+    The fold gained a second addend; this is the assertion that the first one
+    was not disturbed, and that the second contributes 0 rather than a copy.
+    """
+    target_date = date(2026, 1, 6)
+
+    def seed(data_dir: Path) -> None:
+        partition = data_dir / "bronze" / "test_plain" / "validated" / "2026" / "01" / "06"
+        partition.mkdir(parents=True)
+        # 99 breaches le=10; fail-soft, so it is COUNTED and still WRITTEN.
+        _write_vintage_body(partition, "dirty", [5, 7, 99], datetime(2026, 1, 6, 9, tzinfo=UTC))
+
+    result = _isolated_transform(
+        tmp_path,
+        monkeypatch,
+        seed,
+        "test_plain",
+        "validated",
+        target_date,
+        transformer_cls=_ValidatingPlainTransformer,
+    )
+    assert result.status == "completed_with_warnings"
+    assert result.rows_out == 3, "fail-soft never drops a row"
+    assert (result.rows_invalid, result.rows_skipped, result.rows_unmapped) == (1, 1, 0)
+
+
+def test_excluded_rows_accumulate_across_two_vintages_in_one_run(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """D-40 / D-27's framework hazard: ``+=`` against ONE reset per ``run()``.
+
+    Two bronze vintages, one declined row each. ``run_transform`` must report
+    2, not 1. 1 is exactly what an assignment inside ``transform()`` would
+    report on the ``VINTAGE_PER_BRONZE_FILE`` branch, and it would be wrong
+    silently.
+    """
+    target_date = date(2026, 1, 7)
+
+    def seed(data_dir: Path) -> None:
+        partition = data_dir / "bronze" / "test_excl" / "vintage_rows" / "2026" / "01" / "07"
+        partition.mkdir(parents=True)
+        for name, hour in (("first", 8), ("second", 12)):
+            _write_vintage_body(
+                partition,
+                name,
+                [{"value": 1, "bad": False}, {"value": 2, "bad": True}],
+                datetime(2026, 1, 7, hour, tzinfo=UTC),
+            )
+
+    result = _isolated_transform(
+        tmp_path,
+        monkeypatch,
+        seed,
+        "test_excl",
+        "vintage_rows",
+        target_date,
+        transformer_cls=_ExcludingVintageTransformer,
+    )
+    assert result.status == "completed_with_warnings", (
+        "an excluded row must reach the run status, never only the log"
+    )
+    assert result.rows_out == 2, "the kept row of each vintage is still written"
+    assert (result.rows_invalid, result.rows_skipped) == (2, 2), (
+        "one vintage's exclusions were lost -- the counter was assigned, not accumulated"
+    )

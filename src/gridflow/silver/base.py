@@ -400,7 +400,45 @@ class BaseSilverTransformer(ABC):
     CLI accumulates it across dates and threads the total into
     ``PipelineRunTracker.complete_with_warnings`` (parallel to
     ``last_unmapped_count``; VTA-SCHEMA-01). Rows that fail validation are still
-    written — the count is the only signal (fail-soft).
+    written by ``_validate_against_schema`` — for the rows THIS counter counts,
+    the count is the only signal (fail-soft). That sentence describes the base
+    validator, not the whole of ``rows_invalid``: a transformer that EXCLUDES a
+    row it declares invalid counts it in ``last_excluded_row_count`` instead,
+    and ``run_transform`` folds both into one reported total (D-40).
+    """
+    last_excluded_row_count: int = 0
+    """Rows a transformer DECLARED INVALID AND REMOVED in the most recent ``run()``.
+
+    A plain class-level attribute carrying a per-instance value -- exactly the
+    form ``last_unmapped_count`` uses, and deliberately NOT ``typing.ClassVar``:
+    this is per-run instance state, so a ``ClassVar`` annotation would both
+    misdescribe it and invite a class-level mutation leaking across every
+    transformer in the process.
+
+    Reset to 0 at the start of every ``run()`` and ACCUMULATED with ``+=``
+    inside ``transform()`` -- never assigned. The ``+=`` is not a style
+    preference: on the ``VINTAGE_PER_BRONZE_FILE`` branch ``transform()`` is
+    called once per bronze file against a single reset in ``run()``, so an
+    assignment would silently discard every earlier file's exclusions.
+
+    Exists because an excluded row is invisible to the counter that would
+    otherwise see it: the exclusion happens inside ``transform()`` and
+    ``_validate_against_schema`` runs on ``transform()``'s OUTPUT, so the
+    removed row is never seen by the thing that counts. Without this counter a
+    run can drop rows loudly in the log and still report plain ``success``.
+
+    ``run_transform`` folds it into the same per-dataset total as
+    ``last_validation_failure_count``, so an exclusion reaches
+    ``completed_with_warnings``, ``rows_skipped`` and ``rows_invalid`` through
+    the path that already exists -- no new result field, no new precedence rung.
+
+    THE CONFLATION IS DELIBERATE AND IS STATED HERE RATHER THAN LEFT TO BE
+    DISCOVERED: ``rows_invalid`` consequently carries TWO dispositions -- rows
+    that failed validation and were still WRITTEN (the base class's documented
+    fail-soft) and rows a transformer declared invalid and EXCLUDED. The
+    discriminator is the per-row WARNING the excluding transformer emits. One
+    number is the point: the operator's question is "did this run produce
+    anything the contract calls wrong", and that question has one answer.
     """
     last_partition_filter_dropped_count: int = 0
     """Rows dropped by the request-window filter in the most recent ``run()``
@@ -573,6 +611,33 @@ class BaseSilverTransformer(ABC):
     - Transformers that ASSIGN ``last_unmapped_count`` inside ``transform()``
       (the ADR-022 enum-mapping pattern) must convert to accumulation before
       opting in, or per-frame counts overwrite each other.
+    """
+    BRONZE_BODY_GLOB: ClassVar[str] = "raw_*.json"
+    """Which bronze bodies the ``VINTAGE_PER_BRONZE_FILE`` per-file loop sees.
+
+    Overridden by transformers whose bronze bodies are not JSON (the NESO
+    Data Portal family captures CSV: ``"raw_*.csv"``). The ``.meta.json``
+    guard in the loop stays correct under any glob -- a sidecar is never a
+    body.
+
+    Caller enumeration (required before touching a shared symbol): the single
+    read site is the per-file glob inside ``if self.VINTAGE_PER_BRONZE_FILE:``,
+    and the sole opt-in in the repo is
+    ``silver/elexon/system_prices.py:32`` (grep-verified), which inherits this
+    unchanged default -- so its behaviour is byte-identical. Every other
+    ``raw_*.json`` literal in the repo is a per-transformer local glob in that
+    transformer's own ``read_bronze`` and is untouched.
+
+    Blast-radius classification: this is a READ-path symbol with WRITE-path
+    consequences, and it must not be described as "read only". The glob
+    selects which bodies are seen; for each selected body the loop reads that
+    body's OWN sidecar for ``available_at``, and ``_write_silver`` turns that
+    scalar into the run-suffixed silver FILENAME. So the symbol determines
+    which vintages are assigned and which silver files are written. What makes
+    the change safe is not its reach but its default: unchanged, with the sole
+    inheritor enumerated above, so no existing dataset's vintage assignment or
+    filename can move -- a claim pinned by tests on BOTH branches (JSON and
+    CSV) asserting written silver FILENAMES, not row counts.
     """
     ENTITY_KEY_COLUMNS: ClassVar[tuple[str, ...]] = ()
     """The dataset's REQUIRED entity/business key — the columns that, taken
@@ -753,6 +818,8 @@ class BaseSilverTransformer(ABC):
         # both after each per-date run).
         self.last_unmapped_count = 0
         self.last_validation_failure_count = 0
+        # D-40: the SINGLE reset the transformer's `+=` accumulates against.
+        self.last_excluded_row_count = 0
         self.last_partition_filter_dropped_count = 0
         self.last_partition_filter_unclassified_count = 0
         self.last_partition_filter_unresolved_count = 0
@@ -789,7 +856,7 @@ class BaseSilverTransformer(ABC):
             )
             date_dirs = [exact_dir] if exact_dir.exists() else []
             for date_dir in date_dirs:
-                for raw_path in sorted(date_dir.glob("raw_*.json")):
+                for raw_path in sorted(date_dir.glob(self.BRONZE_BODY_GLOB)):
                     # The data glob also matches sidecars (raw_*.meta.json) — skip them.
                     if raw_path.name.endswith(".meta.json"):
                         continue
