@@ -32,6 +32,7 @@ import polars as pl
 import pytest
 import respx
 from pydantic import Field
+from pydantic import ValidationError as PydanticValidationError
 from tenacity import wait_none
 
 from gridflow.config.settings import DatasetConfig, PipelineSettings, SourceConfig
@@ -57,7 +58,11 @@ from gridflow.connectors.neso_data_portal.client import (
     _resolve_host_addresses,
 )
 from gridflow.connectors.neso_data_portal.endpoints import DATASETS
-from gridflow.schemas.common import BaseSchema
+from gridflow.schemas.common import BaseSchema, SettlementPeriodMixin
+from gridflow.schemas.neso_data_portal import (
+    NesoEmbeddedWindSolarForecast,
+    is_valid_settlement_period,
+)
 from gridflow.silver.base import BaseSilverTransformer
 from gridflow.silver.csv_bronze import CsvHeaderDriftError, NotCsvBodyError
 from gridflow.silver.elexon.system_prices import SystemPriceTransformer
@@ -69,6 +74,12 @@ from gridflow.silver.neso_data_portal._bronze import provenance_for
 from gridflow.silver.neso_data_portal.daily_wind_availability import (
     EXPECTED_COLUMNS,
     DailyWindAvailabilityTransformer,
+)
+from gridflow.silver.neso_data_portal.embedded_wind_solar_forecast import (
+    EXPECTED_COLUMNS as EMBEDDED_EXPECTED_COLUMNS,
+)
+from gridflow.silver.neso_data_portal.embedded_wind_solar_forecast import (
+    EmbeddedWindSolarForecastTransformer,
 )
 from gridflow.silver.neso_data_portal.historic_generation_mix import (
     COLUMN_MAPPING as HGM_COLUMN_MAPPING,
@@ -85,6 +96,7 @@ from gridflow.silver.schema_manifest import (
     DESIGNATED_DATE_COLS,
     get_silver_schema_manifest,
 )
+from gridflow.utils.time import settlement_period_to_utc, settlement_periods_in_day
 
 if TYPE_CHECKING:
     from collections.abc import AsyncIterator, Iterator
@@ -3985,3 +3997,709 @@ class TestHistoricGenerationMixRunAndRegistration:
         )
         assert transformer.last_validation_failure_count == 0
         assert transformer.last_excluded_row_count == 0
+
+
+# --------------------------------------------------------------------------- #
+# T-17 -- the `embedded_wind_solar_forecast` transformer
+#
+# FIXTURE PROVENANCE, DISCLOSED (three fixtures, two different provenances).
+#
+# `embedded_forecast.csv` is the Stage-A capture
+# `_probe/sample_embedded-forecast-current.csv`, which is a RANGE capture
+# (`Content-Range: bytes 0-1500/43527` in its `.headers` sidecar): 22 lines, of
+# which the last is cut after three fields. The fixture carries the TWENTY
+# complete captured rows verbatim.
+#
+# `embedded_forecast_dst_spring.csv` (2026-03-29, 46 periods) and
+# `embedded_forecast_dst_autumn.csv` (2026-10-25, 50 periods) are
+# HAND-CONSTRUCTED from that same shape. They have to be: NESO's embedded
+# forecast is a rolling ~2-day window, so no capture can ever supply a
+# historical DST day. Only the MW values are invented -- the settlement pairs
+# are complete and correct for the day length, and `DATE_GMT`/`TIME_GMT` follow
+# the convention the real capture exhibits (the UTC date and HH:MM of the
+# period's END: SP39 of 2026-08-16 starts 18:00Z and the capture stamps 18:30).
+# That convention is observed, NOT documented -- which is exactly why D-26
+# carries `TIME_GMT` unparsed as `time_gmt_raw` and lets no computation read it.
+#
+# The plan asked for this disclosure "in the fixture header comment". A CSV
+# comment line is impossible here: D-19's contract is that the first line IS the
+# header, exactly and in order, so a `#` line would raise `CsvHeaderDriftError`
+# in the reader and, via D-36, at fetch time too. The disclosure therefore lives
+# here, alongside T-09's and T-16's.
+# --------------------------------------------------------------------------- #
+
+EMBEDDED_DATASET = "embedded_wind_solar_forecast"
+
+EMB_FIXTURE_PATH = FIXTURE_DIR / "embedded_forecast.csv"
+EMB_FIXTURE_BYTES = EMB_FIXTURE_PATH.read_bytes()
+EMB_FIXTURE_ROWS = 20
+EMB_SPRING_BYTES = (FIXTURE_DIR / "embedded_forecast_dst_spring.csv").read_bytes()
+EMB_AUTUMN_BYTES = (FIXTURE_DIR / "embedded_forecast_dst_autumn.csv").read_bytes()
+
+EMB_PACKAGE = "embedded-wind-and-solar-forecasts"
+EMB_PACKAGE_ID = "91c0c70e-0ef5-4116-b6fa-7ad084b5e0e8"
+EMB_RESOURCE_ID = "db6c038f-98af-4570-ab60-24d71ebd0ae5"
+EMB_RESOURCE_FILENAME = "202608161825_embedded_forecast.csv"
+# The real values for that capture, from `_probe/show_embedded-wind-and-solar-forecasts.json`.
+EMB_CKAN_LAST_MODIFIED = "2026-08-16T18:25:03.877001"
+EMB_PUBLISHED_AT = datetime(2026, 8, 16, 18, 25, 3, 877001, tzinfo=UTC)
+EMB_ISSUE_TIME = datetime(2026, 8, 16, 18, 25, tzinfo=UTC)
+
+# The three day lengths the D-27 bound has to be right on. Verified against
+# `settlement_periods_in_day`, not recalled.
+ORDINARY_DAY = date(2026, 8, 16)
+SPRING_DAY = date(2026, 3, 29)
+AUTUMN_DAY = date(2026, 10, 25)
+_DAY_LENGTHS = {ORDINARY_DAY: 48, SPRING_DAY: 46, AUTUMN_DAY: 50}
+
+EMB_HEADER = ",".join(EMBEDDED_EXPECTED_COLUMNS)
+
+
+def _emb_row(settlement_date: date, settlement_period: int, *, wind: str = "468") -> str:
+    """One 8-field data row for the given settlement pair."""
+    return (
+        f"{settlement_date.isoformat()}T00:00:00,18:30,"
+        f"{settlement_date.isoformat()}T00:00:00,{settlement_period},"
+        f"{wind},6417,1323,23301"
+    )
+
+
+def _emb_csv(*rows: str) -> bytes:
+    """The exact 8-column header plus the given data rows."""
+    return (EMB_HEADER + "\n" + "".join(f"{row}\n" for row in rows)).encode()
+
+
+def _emb_sidecar_payload(
+    *,
+    written_at: datetime,
+    resource_filename: str = EMB_RESOURCE_FILENAME,
+    ckan_last_modified: str = EMB_CKAN_LAST_MODIFIED,
+) -> dict[str, Any]:
+    """A bronze sidecar carrying the D-12 provenance the connector writes."""
+    return {
+        "source": "neso_data_portal",
+        "dataset": EMBEDDED_DATASET,
+        "written_at": written_at.isoformat(),
+        "data_date": written_at.date().isoformat(),
+        "request_url": (
+            f"{BASE_URL}/dataset/{EMB_PACKAGE_ID}/resource/{EMB_RESOURCE_ID}"
+            f"/download/{resource_filename}"
+        ),
+        "request_params": {
+            "package": EMB_PACKAGE,
+            "package_id": EMB_PACKAGE_ID,
+            "resource_id": EMB_RESOURCE_ID,
+            "resource_name": "Embedded Solar and Wind Forecast",
+            "resource_filename": resource_filename,
+            "ckan_last_modified": ckan_last_modified,
+            "ckan_format": "CSV",
+            "body_sha256": "0" * 64,
+        },
+        "content_type": "text/csv",
+        "http_status": 200,
+    }
+
+
+def _seed_emb_bronze(
+    data_dir: Path,
+    target_date: date,
+    *,
+    name: str = "20260816T182500Z_abcd1234",
+    body: bytes = EMB_FIXTURE_BYTES,
+    resource_filename: str = EMB_RESOURCE_FILENAME,
+    written_at: datetime | None = None,
+    write_sidecar: bool = True,
+) -> Path:
+    """Write one `raw_*.csv` body plus its sidecar into the exact date partition."""
+    partition = (
+        data_dir
+        / "bronze"
+        / "neso_data_portal"
+        / EMBEDDED_DATASET
+        / str(target_date.year)
+        / f"{target_date.month:02d}"
+        / f"{target_date.day:02d}"
+    )
+    partition.mkdir(parents=True, exist_ok=True)
+    body_path = partition / f"raw_{name}.csv"
+    body_path.write_bytes(body)
+    if write_sidecar:
+        payload = _emb_sidecar_payload(
+            written_at=written_at or datetime(2026, 8, 16, 18, 25, tzinfo=UTC),
+            resource_filename=resource_filename,
+        )
+        (partition / f"raw_{name}.meta.json").write_text(json.dumps(payload, indent=2))
+    return body_path
+
+
+def _transform_emb(
+    tmp_path: Path,
+    body: bytes = EMB_FIXTURE_BYTES,
+    *,
+    target_date: date = ORDINARY_DAY,
+) -> pl.DataFrame:
+    """Read one bronze body through the real reader and transform it."""
+    raw_path = _seed_emb_bronze(tmp_path, target_date, body=body)
+    transformer = EmbeddedWindSolarForecastTransformer(tmp_path)
+    return transformer.transform(transformer.read_bronze_file(raw_path))
+
+
+@pytest.fixture
+def short_tmp_path(tmp_path_factory: pytest.TempPathFactory) -> Path:
+    """A deliberately SHORT temp root, for the tests that write silver.
+
+    Windows MAX_PATH, not a product limit. This dataset's silver filename is
+    74 characters (`embedded_wind_solar_forecast_20260816_run<ISO instant>
+    .parquet`) and `storage.parquet.write_parquet`'s atomic write adds a
+    21-character `.tmp_<16 hex>` suffix before `os.replace`. Under the standard
+    `tmp_path` fixture -- whose directory embeds the test's own name -- the
+    temporary path reaches 266 characters and `os.replace` fails with
+    `WinError 3`, while the final 245-character path would have been fine. The
+    real data root is `C:\\gridflow-data`, so production is ~90 characters
+    clear; only the harness overflows. `tmp_path_factory.mktemp` gives a
+    name-independent root about 30 characters shorter.
+    """
+    return tmp_path_factory.mktemp("e")
+
+
+def _emb_model_kwargs(settlement_date: date, settlement_period: int) -> dict[str, Any]:
+    """Every field the contract requires, so only the BOUND is under test."""
+    return {
+        "settlement_date": settlement_date,
+        "settlement_period": settlement_period,
+        "issue_time": EMB_ISSUE_TIME,
+        "time_gmt_raw": "18:30",
+        "embedded_wind_forecast": 468.0,
+        "embedded_wind_capacity": 6417.0,
+        "embedded_solar_forecast": 1323.0,
+        "embedded_solar_capacity": 23301.0,
+        "published_at": EMB_PUBLISHED_AT,
+    }
+
+
+def _schema_accepts(settlement_date: date, settlement_period: int) -> bool:
+    """Does the D-27 model validator accept this settlement pair?"""
+    try:
+        NesoEmbeddedWindSolarForecast(**_emb_model_kwargs(settlement_date, settlement_period))
+    except PydanticValidationError:
+        return False
+    return True
+
+
+class TestEmbeddedForecastProvenance:
+    """D-23/D-15: the issue instant comes from the vendor's own filename."""
+
+    def test_issue_time_is_parsed_from_the_filename_token_as_utc(self, tmp_path: Path) -> None:
+        """D-15's third observation: the token `202608161825` equals that
+        resource's `last_modified` to the minute, and 18:25 UTC falls inside
+        settlement period 39 of 2026-08-16 -- which is exactly the first row the
+        captured file carries. A BST reading would predict SP37.
+        """
+        raw_path = _seed_emb_bronze(tmp_path, ORDINARY_DAY)
+
+        provenance = provenance_for(raw_path)
+
+        assert provenance is not None
+        assert provenance.issue_time == EMB_ISSUE_TIME
+        assert provenance.issue_time.tzinfo is not None
+
+        frame = EmbeddedWindSolarForecastTransformer(tmp_path).read_bronze_file(raw_path)
+        assert frame["issue_time"].to_list() == [EMB_ISSUE_TIME] * EMB_FIXTURE_ROWS
+        assert frame.schema["issue_time"] == pl.Datetime("us", "UTC")
+
+    @pytest.mark.parametrize(
+        "resource_filename",
+        [
+            "embedded_forecast.csv",
+            "2026081618_embedded_forecast.csv",
+            "embedded_202608161825_forecast.csv",
+        ],
+    )
+    def test_a_filename_with_no_12_digit_token_is_an_empty_frame_and_a_warning(
+        self, tmp_path: Path, caplog: pytest.LogCaptureFixture, resource_filename: str
+    ) -> None:
+        """D-23 / FM-05: never a fetch-clock substitute.
+
+        `issue_time` is part of this dataset's entity key, so a fabricated one
+        would mint a vintage that never existed and silently outrank the real
+        forecasts in the `_latest` projection. Requiredness is the CALLER's job
+        (`_bronze.provenance_for` parses the token wherever one exists and takes
+        no view on which datasets must have one), which is why the refusal lives
+        here rather than in the shared reader.
+        """
+        raw_path = _seed_emb_bronze(tmp_path, ORDINARY_DAY, resource_filename=resource_filename)
+
+        with caplog.at_level(logging.WARNING):
+            frame = EmbeddedWindSolarForecastTransformer(tmp_path).read_bronze_file(raw_path)
+
+        assert frame.is_empty()
+        assert "issue_time" in caplog.text
+        assert resource_filename in caplog.text
+
+    def test_unusable_provenance_yields_an_empty_frame_rather_than_a_guess(
+        self, tmp_path: Path
+    ) -> None:
+        raw_path = _seed_emb_bronze(tmp_path, ORDINARY_DAY, write_sidecar=False)
+
+        assert EmbeddedWindSolarForecastTransformer(tmp_path).read_bronze_file(raw_path).is_empty()
+
+    def test_issue_time_and_published_at_agree_within_120s_on_the_real_capture(self) -> None:
+        """D-15's cross-check. The filename token and CKAN's `last_modified` are
+        two independent clocks; if they diverge by more than a couple of minutes
+        they are not the SAME clock and D-15's reading needs revisiting. On the
+        real capture they are 3.877 s apart.
+        """
+        assert abs((EMB_PUBLISHED_AT - EMB_ISSUE_TIME).total_seconds()) <= 120
+
+
+class TestSettlementPeriodPredicate:
+    """D-27, one predicate: `is_valid_settlement_period` and its two callers."""
+
+    def test_the_day_lengths_this_suite_relies_on_are_real(self) -> None:
+        """Non-vacuity guard: every bound assertion below is stated in terms of
+        46/48/50, so a wrong transition date would make them all agree about the
+        wrong day."""
+        for day, expected in _DAY_LENGTHS.items():
+            assert settlement_periods_in_day(day) == expected
+
+    @pytest.mark.parametrize("day", [ORDINARY_DAY, SPRING_DAY, AUTUMN_DAY])
+    def test_the_predicate_accepts_exactly_1_through_the_days_real_length(self, day: date) -> None:
+        """The table test D-27 asks for: every period in -2..52, on all three
+        day lengths, against the predicate DIRECTLY -- no model construction, so
+        no unrelated required field has to be synthesised to see the bound.
+        """
+        length = settlement_periods_in_day(day)
+
+        accepted = {period for period in range(-2, 53) if is_valid_settlement_period(day, period)}
+
+        assert accepted == set(range(1, length + 1))
+
+    @pytest.mark.parametrize("day", [ORDINARY_DAY, SPRING_DAY, AUTUMN_DAY])
+    def test_the_schema_validator_rejects_exactly_what_the_predicate_rejects(
+        self, day: date
+    ) -> None:
+        """Caller 1 routes through the predicate. An edit that inlined the
+        comparison into the validator -- and got it upper-only, which is how
+        revision 4 had it -- shows up here as a divergence rather than as a
+        wrong-day `event_time` in production.
+        """
+        for period in range(-2, 53):
+            assert _schema_accepts(day, period) is is_valid_settlement_period(day, period), (
+                f"validator and predicate disagree on {day} SP{period}"
+            )
+
+    @pytest.mark.parametrize("day", [ORDINARY_DAY, SPRING_DAY, AUTUMN_DAY])
+    def test_the_transformer_filter_excludes_exactly_what_the_predicate_rejects(
+        self, tmp_path: Path, day: date
+    ) -> None:
+        """Caller 2 routes through the same predicate."""
+        periods = list(range(-2, 53))
+        body = _emb_csv(*[_emb_row(day, period) for period in periods])
+
+        frame = _transform_emb(tmp_path, body)
+
+        survived = set(frame["settlement_period"].to_list())
+        assert survived == {p for p in periods if is_valid_settlement_period(day, p)}
+
+    def test_the_shared_mixin_still_declares_no_bound(self) -> None:
+        """Why the NESO-local validator exists at all (D-27, revision 7).
+
+        Revision 4 rested on a FALSE citation: that `SettlementPeriodMixin`
+        bounds the period to 1..50. It does not -- it declares two plain fields
+        with no constraint and no validator. Pinned here so that if the shared
+        mixin ever DOES gain a bound, this test fails and the NESO-local
+        duplication can be revisited deliberately (TODO-12) rather than lingering.
+        """
+        assert SettlementPeriodMixin(settlement_date=ORDINARY_DAY, settlement_period=0)
+        assert SettlementPeriodMixin(settlement_date=ORDINARY_DAY, settlement_period=999)
+
+
+class TestEmbeddedForecastSchemaBound:
+    """D-27, schema half -- both bounds, both sides of each, all three days."""
+
+    @pytest.mark.parametrize(
+        ("day", "period", "accepted"),
+        [
+            # Upper bound, both sides, on each of the three day lengths.
+            (SPRING_DAY, 46, True),
+            (SPRING_DAY, 47, False),
+            (ORDINARY_DAY, 48, True),
+            (ORDINARY_DAY, 49, False),
+            (AUTUMN_DAY, 50, True),
+            (AUTUMN_DAY, 51, False),
+            # Lower bound, both sides. NOT symmetry for its own sake: SP0
+            # reaching `settlement_period_to_utc` yields the PREVIOUS settlement
+            # day (measured: 2026-08-16 SP0 -> 2026-08-15 22:30Z), and an
+            # upper-bound-only check passes it without comment.
+            (ORDINARY_DAY, 1, True),
+            (ORDINARY_DAY, 0, False),
+            (ORDINARY_DAY, -1, False),
+            (SPRING_DAY, 1, True),
+            (SPRING_DAY, 0, False),
+            (AUTUMN_DAY, 1, True),
+            (AUTUMN_DAY, 0, False),
+        ],
+    )
+    def test_the_validator_declares_the_bound(self, day: date, period: int, accepted: bool) -> None:
+        assert _schema_accepts(day, period) is accepted
+
+    def test_the_rejection_names_the_period_and_the_days_real_length(self) -> None:
+        """A validation error a reader cannot act on is barely better than none."""
+        with pytest.raises(PydanticValidationError) as excinfo:
+            NesoEmbeddedWindSolarForecast(**_emb_model_kwargs(SPRING_DAY, 47))
+
+        message = str(excinfo.value)
+        assert "47" in message
+        assert "46" in message
+
+
+class TestEmbeddedForecastTransform:
+    """D-24's column contract and D-26's deliberate omission."""
+
+    def test_the_output_has_no_timestamp_utc_column(self, tmp_path: Path) -> None:
+        """D-26, and it is load-bearing rather than tidy: `_event_time_expr`
+        PREFERS `timestamp_utc` over the settlement pair, and only the pair
+        branch calls the DST-fold-safe `settlement_period_to_utc`. Emitting a
+        `timestamp_utc` here would silently take `event_time` off the safe path
+        on exactly the 46- and 50-period days it matters on.
+        """
+        frame = _transform_emb(tmp_path)
+
+        assert "timestamp_utc" not in frame.columns
+
+    def test_time_gmt_survives_verbatim_as_an_unparsed_string(self, tmp_path: Path) -> None:
+        """D-26: carried, never parsed. Values NESO would never emit survive."""
+        frame = _transform_emb(
+            tmp_path,
+            _emb_csv(EMB_FIXTURE_PATH.read_text().splitlines()[1].replace(",18:30,", ",25:99,")),
+        )
+
+        assert frame.schema["time_gmt_raw"] == pl.Utf8
+        assert frame["time_gmt_raw"].to_list() == ["25:99"], (
+            "a parse would have raised on an impossible clock time"
+        )
+
+    def test_no_other_output_column_depends_on_time_gmt(self, tmp_path: Path) -> None:
+        """D-26's real claim, asserted BEHAVIOURALLY rather than by grepping the
+        module: its start-vs-end convention is undocumented by NESO, so no code
+        path may depend on it. Two bodies differing ONLY in `TIME_GMT` must
+        produce output identical everywhere else -- including `event_time` when
+        this frame reaches `run()`, which comes from the settlement pair.
+        """
+        row = EMB_FIXTURE_PATH.read_text().splitlines()[1]
+        baseline = _transform_emb(tmp_path / "a", _emb_csv(row))
+        altered = _transform_emb(tmp_path / "b", _emb_csv(row.replace(",18:30,", ",03:15,")))
+
+        assert baseline["time_gmt_raw"].to_list() != altered["time_gmt_raw"].to_list()
+        other = [name for name in baseline.columns if name != "time_gmt_raw"]
+        assert baseline.select(other).equals(altered.select(other))
+
+    def test_date_gmt_is_not_emitted(self, tmp_path: Path) -> None:
+        """D-24's column list omits it. `DATE_GMT` is the calendar half of the
+        same undocumented GMT stamp as `TIME_GMT`, and the authoritative pair is
+        `SETTLEMENT_DATE`/`SETTLEMENT_PERIOD`. Bronze retains the bytes, so the
+        decision is reversible by re-transform.
+        """
+        frame = _transform_emb(tmp_path)
+
+        assert not [name for name in frame.columns if "date_gmt" in name]
+
+    def test_the_four_mw_columns_are_float64_and_the_period_is_an_integer(
+        self, tmp_path: Path
+    ) -> None:
+        frame = _transform_emb(tmp_path)
+
+        for column in (
+            "embedded_wind_forecast",
+            "embedded_wind_capacity",
+            "embedded_solar_forecast",
+            "embedded_solar_capacity",
+        ):
+            assert frame.schema[column] == pl.Float64, column
+        assert frame.schema["settlement_date"] == pl.Date
+        assert frame.schema["settlement_period"] == pl.Int64
+        assert frame.schema["published_at"] == pl.Datetime("us", "UTC")
+
+    def test_output_is_uniquely_grained_by_the_entity_key(self, tmp_path: Path) -> None:
+        """D-24: `(settlement_date, settlement_period, issue_time)`. The issue
+        instant is in the key because APPEND_ONLY exists so successive forecast
+        vintages for the same period coexist.
+        """
+        frame = _transform_emb(
+            tmp_path,
+            _emb_csv(
+                _emb_row(ORDINARY_DAY, 39, wind="100"),
+                _emb_row(ORDINARY_DAY, 39, wind="200"),
+                _emb_row(ORDINARY_DAY, 40, wind="300"),
+            ),
+        )
+
+        assert frame.height == 2
+        assert (
+            frame.select(list(EmbeddedWindSolarForecastTransformer.ENTITY_KEY_COLUMNS))
+            .is_unique()
+            .all()
+        )
+        assert frame["embedded_wind_forecast"].to_list()[0] == 200.0
+
+    def test_a_non_numeric_forecast_raises_at_cast_rather_than_being_nulled(
+        self, tmp_path: Path
+    ) -> None:
+        with pytest.raises(pl.exceptions.InvalidOperationError):
+            _transform_emb(tmp_path, _emb_csv(_emb_row(ORDINARY_DAY, 39, wind="not-a-number")))
+
+    def test_an_empty_frame_transforms_to_an_empty_frame(self, tmp_path: Path) -> None:
+        assert EmbeddedWindSolarForecastTransformer(tmp_path).transform(pl.DataFrame()).is_empty()
+
+    def test_an_upper_bound_row_is_excluded_and_its_siblings_survive(
+        self, tmp_path: Path, caplog: pytest.LogCaptureFixture
+    ) -> None:
+        """D-27, transformer half. The validator alone would COUNT this row and
+        still write it (`_validate_against_schema` is documented fail-soft), with
+        the next-day `event_time` `_add_bitemporal_columns` computes immediately
+        afterwards. Counting a silent data error is not preventing it.
+        """
+        body = _emb_csv(
+            _emb_row(ORDINARY_DAY, 47),
+            _emb_row(ORDINARY_DAY, 48),
+            _emb_row(ORDINARY_DAY, 49),
+        )
+
+        with caplog.at_level(logging.WARNING):
+            frame = _transform_emb(tmp_path, body)
+
+        assert frame["settlement_period"].to_list() == [47, 48]
+        assert "period 49" in caplog.text
+        assert "2026-08-16" in caplog.text
+        assert "48 settlement periods" in caplog.text, (
+            "the WARNING must name the day's REAL period count -- 49 is wrong on a "
+            "48-period day and right on a 50-period one, so the count is what makes "
+            "the message actionable"
+        )
+
+    def test_a_lower_bound_row_is_excluded_alongside_its_siblings(
+        self, tmp_path: Path, caplog: pytest.LogCaptureFixture
+    ) -> None:
+        body = _emb_csv(
+            _emb_row(ORDINARY_DAY, 0),
+            _emb_row(ORDINARY_DAY, 1),
+            _emb_row(ORDINARY_DAY, 2),
+        )
+
+        with caplog.at_level(logging.WARNING):
+            frame = _transform_emb(tmp_path, body)
+
+        assert frame["settlement_period"].to_list() == [1, 2]
+        assert "period 0" in caplog.text
+        assert "2026-08-16" in caplog.text
+        assert "48 settlement periods" in caplog.text
+
+
+class TestEmbeddedForecastEventTime:
+    """D-26 in effect: `event_time` comes from the settlement pair, DST and all."""
+
+    def _run_and_read(self, short_tmp_path: Path, body: bytes, run_id: str) -> pl.DataFrame:
+        _seed_emb_bronze(short_tmp_path, ORDINARY_DAY, body=body)
+        transformer = EmbeddedWindSolarForecastTransformer(short_tmp_path)
+        transformer.run(ORDINARY_DAY, run_id=run_id)
+        silver_dir = (
+            short_tmp_path
+            / "silver"
+            / "neso_data_portal"
+            / EMBEDDED_DATASET
+            / "year=2026"
+            / "month=08"
+        )
+        written = sorted(silver_dir.glob("*.parquet"))
+        assert len(written) == 1
+        return pl.read_parquet(written[0])
+
+    def test_event_time_equals_settlement_period_to_utc_row_for_row(
+        self, short_tmp_path: Path
+    ) -> None:
+        frame = self._run_and_read(short_tmp_path, EMB_FIXTURE_BYTES, "t17-base")
+
+        assert frame.height == EMB_FIXTURE_ROWS
+        assert frame.schema["event_time"] == pl.Datetime("us", "UTC")
+        expected = [
+            settlement_period_to_utc(row["settlement_date"], row["settlement_period"])
+            for row in frame.iter_rows(named=True)
+        ]
+        assert frame["event_time"].to_list() == expected
+
+    def test_the_autumn_fixture_carries_50_periods_that_stay_distinct(
+        self, short_tmp_path: Path
+    ) -> None:
+        """SP49 and SP50 exist only on the 50-period day, and they must land on
+        DIFFERENT UTC instants -- a naive local-time conversion repeats 01:00.
+        """
+        frame = self._run_and_read(short_tmp_path, EMB_AUTUMN_BYTES, "t17-autumn")
+
+        assert frame.height == 50
+        assert sorted(frame["settlement_period"].to_list()) == list(range(1, 51))
+        by_period = dict(zip(frame["settlement_period"], frame["event_time"], strict=True))
+        assert by_period[49] != by_period[50]
+        assert by_period[50] - by_period[49] == timedelta(minutes=30)
+        assert len(set(frame["event_time"].to_list())) == 50
+
+    def test_the_spring_fixture_carries_46_periods_with_no_collision(
+        self, short_tmp_path: Path
+    ) -> None:
+        """The spring day is 23 hours long: a wall-clock step would collapse two
+        periods onto one UTC instant.
+        """
+        frame = self._run_and_read(short_tmp_path, EMB_SPRING_BYTES, "t17-spring")
+
+        assert frame.height == 46
+        assert sorted(frame["settlement_period"].to_list()) == list(range(1, 47))
+        instants = frame["event_time"].to_list()
+        assert len(set(instants)) == 46
+        assert max(instants) - min(instants) == timedelta(minutes=30 * 45)
+
+    def test_an_excluded_upper_bound_row_never_reaches_the_next_settlement_day(
+        self, short_tmp_path: Path
+    ) -> None:
+        """The exclusion's whole purpose: SP49 on a 48-period day has no honest
+        `event_time`, and retaining it would place it silently in the NEXT day.
+        """
+        body = _emb_csv(_emb_row(ORDINARY_DAY, 48), _emb_row(ORDINARY_DAY, 49))
+
+        frame = self._run_and_read(short_tmp_path, body, "t17-upper")
+
+        assert frame.height == 1
+        next_day_start = settlement_period_to_utc(ORDINARY_DAY + timedelta(days=1), 1)
+        assert max(frame["event_time"].to_list()) < next_day_start
+
+    def test_an_excluded_lower_bound_row_never_reaches_the_previous_settlement_day(
+        self, short_tmp_path: Path
+    ) -> None:
+        """SP0 converts into the PREVIOUS settlement day (measured: 2026-08-16
+        SP0 -> 2026-08-15 22:30Z, half an hour before that day's SP1 at 23:00Z).
+        """
+        body = _emb_csv(_emb_row(ORDINARY_DAY, 0), _emb_row(ORDINARY_DAY, 1))
+
+        frame = self._run_and_read(short_tmp_path, body, "t17-lower")
+
+        assert frame.height == 1
+        day_start = settlement_period_to_utc(ORDINARY_DAY, 1)
+        assert min(frame["event_time"].to_list()) >= day_start
+
+
+class TestEmbeddedForecastExclusionAccounting:
+    """D-27/D-40: an excluded row is a COUNTED, SURFACED row."""
+
+    def test_run_counts_the_exclusion_and_still_writes_the_siblings(
+        self, short_tmp_path: Path
+    ) -> None:
+        """Asserted through `run()`, not only `transform()`: the exclusion
+        happens at `base.py:961` and the validator runs at `:992`, so an excluded
+        row is never seen by the thing that counts. The counter is the only
+        carrier that reaches the run status.
+        """
+        _seed_emb_bronze(
+            short_tmp_path,
+            ORDINARY_DAY,
+            body=_emb_csv(_emb_row(ORDINARY_DAY, 48), _emb_row(ORDINARY_DAY, 49)),
+        )
+        transformer = EmbeddedWindSolarForecastTransformer(short_tmp_path)
+
+        rows = transformer.run(ORDINARY_DAY, run_id="t17-count")
+
+        assert rows == 1, "the valid sibling is still written"
+        assert transformer.last_excluded_row_count == 1
+        assert transformer.last_validation_failure_count == 0, (
+            "the exclusion must NOT be charged to the base validator's counter, which "
+            "documents its rows as still written"
+        )
+
+    def test_run_transform_reports_completed_with_warnings(
+        self, short_tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """D-40 through the runner. A run that silently reports `success` while
+        dropping a row is the defect this pins -- loud in the log, invisible in
+        the status a scheduler and `gridflow status` actually read.
+        """
+
+        def seed(data_dir: Path) -> None:
+            _seed_emb_bronze(
+                data_dir,
+                ORDINARY_DAY,
+                body=_emb_csv(_emb_row(ORDINARY_DAY, 48), _emb_row(ORDINARY_DAY, 49)),
+            )
+
+        result = _isolated_transform(
+            short_tmp_path,
+            monkeypatch,
+            seed,
+            "neso_data_portal",
+            EMBEDDED_DATASET,
+            ORDINARY_DAY,
+        )
+
+        assert result.status == "completed_with_warnings"
+        assert result.rows_out == 1
+        assert result.rows_invalid >= 1
+
+    def test_two_vintages_in_one_run_accumulate_to_two(
+        self, short_tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """The `+=`-not-`=` contract on the `VINTAGE_PER_BRONZE_FILE` branch.
+        An assignment inside `transform()` reports 1 here, and reports it
+        silently.
+        """
+
+        def seed(data_dir: Path) -> None:
+            for name, filename in (
+                ("first", "202608161825_embedded_forecast.csv"),
+                ("second", "202608161855_embedded_forecast.csv"),
+            ):
+                _seed_emb_bronze(
+                    data_dir,
+                    ORDINARY_DAY,
+                    name=name,
+                    body=_emb_csv(_emb_row(ORDINARY_DAY, 48), _emb_row(ORDINARY_DAY, 49)),
+                    resource_filename=filename,
+                )
+
+        result = _isolated_transform(
+            short_tmp_path,
+            monkeypatch,
+            seed,
+            "neso_data_portal",
+            EMBEDDED_DATASET,
+            ORDINARY_DAY,
+        )
+
+        assert result.status == "completed_with_warnings"
+        assert result.rows_out == 2, "the kept row of each vintage is still written"
+        assert result.rows_invalid >= 2, (
+            "one vintage's exclusion was lost -- the counter was assigned, not accumulated"
+        )
+
+
+class TestEmbeddedForecastRunAndRegistration:
+    """The class attributes and the registration D-38's import line fires."""
+
+    def test_the_class_attributes_match_d02_d21_and_d24(self) -> None:
+        cls = EmbeddedWindSolarForecastTransformer
+        assert (cls.source, cls.dataset) == ("neso_data_portal", EMBEDDED_DATASET)
+        assert cls.APPEND_ONLY is True
+        assert cls.VINTAGE_PER_BRONZE_FILE is True
+        assert cls.BRONZE_BODY_GLOB == "raw_*.csv"
+        assert cls.DATASET_VERSION == "1.0.0"
+        assert cls.ENTITY_KEY_COLUMNS == ("settlement_date", "settlement_period", "issue_time")
+        assert DATASETS[EMBEDDED_DATASET].expected_columns == EMBEDDED_EXPECTED_COLUMNS, (
+            "the transformer's header contract drifted from the connector's, so a body "
+            "admitted at fetch time would be rejected at transform time (or worse)"
+        )
+
+    def test_the_transformer_is_registered_for_this_source(self) -> None:
+        key = ("neso_data_portal", EMBEDDED_DATASET)
+        assert key in list_transformers("neso_data_portal")
+        assert get_transformer_class(*key) is EmbeddedWindSolarForecastTransformer
+
+    def test_the_latest_view_key_drops_only_the_vintage_axis(self) -> None:
+        spec = LATEST_VIEW_SPECS[("neso_data_portal", EMBEDDED_DATASET)]
+
+        assert spec.key_columns == ("settlement_date", "settlement_period")
+        assert set(spec.key_columns) < set(EmbeddedWindSolarForecastTransformer.ENTITY_KEY_COLUMNS)

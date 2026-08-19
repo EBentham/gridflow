@@ -272,6 +272,11 @@ DESIGNATED_DATE_COLS: dict[tuple[str, str], str] = {
     # docstring). This dataset has no settlement pair and no calendar date of
     # its own -- the instant IS the grain.
     ("neso_data_portal", "historic_generation_mix"): "timestamp_utc",
+    # D-24/D-26. The settlement DATE, not a derived instant: this dataset
+    # deliberately emits no `timestamp_utc` (emitting one would take
+    # `event_time` off the DST-fold-safe settlement-pair branch), and the
+    # settlement date is what a consumer filters a forecast day by.
+    ("neso_data_portal", "embedded_wind_solar_forecast"): "settlement_date",
     ("open_meteo", "forecast_demand"): "timestamp_utc",
     ("open_meteo", "forecast_solar"): "timestamp_utc",
     ("open_meteo", "forecast_wind"): "timestamp_utc",

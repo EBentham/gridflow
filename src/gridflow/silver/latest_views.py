@@ -124,6 +124,13 @@ LATEST_VIEW_SPECS: dict[tuple[str, str], LatestViewSpec] = {
     ("neso_data_portal", "historic_generation_mix"): LatestViewSpec(
         key_columns=("timestamp_utc",),
     ),
+    # D-21/D-24. A rolling forecast republished several times a day, so the
+    # base view holds every issued vintage for a settlement period and this
+    # projection returns the current one. The key is the entity key MINUS
+    # `issue_time`, which is precisely the vintage axis it selects over.
+    ("neso_data_portal", "embedded_wind_solar_forecast"): LatestViewSpec(
+        key_columns=("settlement_date", "settlement_period"),
+    ),
 }
 
 

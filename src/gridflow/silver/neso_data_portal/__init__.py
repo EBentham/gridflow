@@ -29,5 +29,6 @@ from __future__ import annotations
 
 from gridflow.silver.neso_data_portal import (
     daily_wind_availability,  # noqa: F401
+    embedded_wind_solar_forecast,  # noqa: F401
     historic_generation_mix,  # noqa: F401
 )

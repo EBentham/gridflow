@@ -16,9 +16,51 @@ from __future__ import annotations
 
 from datetime import date, datetime  # noqa: TC003 - Pydantic needs these at runtime.
 
-from pydantic import Field
+from pydantic import Field, model_validator
 
-from gridflow.schemas.common import BaseSchema, TimestampMixin
+from gridflow.schemas.common import BaseSchema, SettlementPeriodMixin, TimestampMixin
+from gridflow.utils.time import settlement_periods_in_day
+
+
+def is_valid_settlement_period(settlement_date: date, settlement_period: int) -> bool:
+    """Does ``settlement_period`` exist on ``settlement_date``? (D-27)
+
+    **One predicate, two callers.** The schema validator on
+    :class:`NesoEmbeddedWindSolarForecast` calls this, and so does that
+    dataset's transformer filter; neither restates the comparison. Two
+    hand-written copies of a two-sided bound is how one of them ends up
+    upper-only again, and an upper-only filter beside a two-sided validator
+    would let SP0 through to a wrong-day ``event_time`` while the schema called
+    it invalid.
+
+    The bound is **two-sided**, and both sides are load-bearing because
+    ``settlement_period_to_utc`` bound-checks nothing:
+
+    * **upper** — SP49 on an ordinary 48-period day, or SP47 on a 46-period
+      spring day, lands in the *next* settlement day;
+    * **lower** — SP0 lands in the *previous* one (measured:
+      ``settlement_period_to_utc(2026-08-16, 0)`` is ``2026-08-15 22:30Z``,
+      half an hour before that day's SP1), and a negative period walks further
+      back still.
+
+    The day's length comes from :func:`~gridflow.utils.time.settlement_periods_in_day`,
+    which derives 46/48/50 from the DST machinery rather than a hardcoded table.
+
+    **Scope: NESO-local, deliberately.** The shared
+    :class:`~gridflow.schemas.common.SettlementPeriodMixin` declares no bound at
+    all — not an insufficient one, none — and adding one there would change
+    validation for every settlement-based schema in the repo. That needs its own
+    blast-radius review (TODO-12) and is not smuggled in here.
+
+    Args:
+        settlement_date: The UK settlement date the period is stated against.
+        settlement_period: The vendor's settlement period, unmodified.
+
+    Returns:
+        ``True`` when ``1 <= settlement_period <=
+        settlement_periods_in_day(settlement_date)``.
+    """
+    return 1 <= settlement_period <= settlement_periods_in_day(settlement_date)
 
 
 class _NesoDataPortalBase(BaseSchema):
@@ -112,3 +154,64 @@ class NesoHistoricGenerationMix(_NesoDataPortalBase, TimestampMixin):
     renewable_pct: float
     fossil_pct: float
     published_at: datetime
+
+
+class NesoEmbeddedWindSolarForecast(_NesoDataPortalBase, SettlementPeriodMixin):
+    """Silver schema for ``embedded_wind_solar_forecast`` (D-24).
+
+    **No ``timestamp_utc``** — and its absence is load-bearing, not tidiness
+    (D-26). ``BaseSilverTransformer._event_time_expr`` PREFERS a
+    ``timestamp_utc`` column over the settlement pair, and only the pair branch
+    calls the DST-fold-safe ``settlement_period_to_utc``. Emitting an instant
+    here would silently take ``event_time`` off the safe path on exactly the 46-
+    and 50-period days where it matters.
+
+    ``time_gmt_raw`` carries the vendor's ``TIME_GMT`` **unparsed**: its
+    start-vs-end convention is undocumented by NESO, so no code path may depend
+    on it. ``DATE_GMT``, its calendar half, is not emitted at all — the
+    authoritative pair is ``settlement_date``/``settlement_period``, and bronze
+    retains the bytes, so the decision is reversible by re-transform.
+
+    ``issue_time`` is REQUIRED and is part of the entity key: it comes from the
+    12-digit token in the vendor's own resource filename (D-15/D-23), and a body
+    whose filename carries no token is declined rather than stamped from the
+    fetch clock (FM-05).
+
+    The ``model_validator`` below is D-27's schema half. It is the ONLY place
+    the settlement-period constraint is stated for this dataset, because the
+    shared :class:`~gridflow.schemas.common.SettlementPeriodMixin` declares
+    none. See :func:`is_valid_settlement_period` for why the bound is two-sided
+    and why the transformer enforces the same predicate rather than trusting
+    this validator alone (``_validate_against_schema`` is documented fail-soft:
+    it counts an invalid row and still writes it).
+    """
+
+    issue_time: datetime
+    time_gmt_raw: str
+    embedded_wind_forecast: float
+    embedded_wind_capacity: float
+    embedded_solar_forecast: float
+    embedded_solar_capacity: float
+    published_at: datetime
+
+    @model_validator(mode="after")
+    def settlement_period_must_exist_on_its_date(self) -> NesoEmbeddedWindSolarForecast:
+        """Reject a settlement period that does not exist on its own date.
+
+        Returns:
+            The validated model.
+
+        Raises:
+            ValueError: The period is outside ``1..settlement_periods_in_day``.
+                The message names the period AND the day's real length, because
+                a bound violation a reader cannot act on is barely better than
+                none — 49 is wrong on a 48-period day and right on a 50-period
+                one.
+        """
+        if not is_valid_settlement_period(self.settlement_date, self.settlement_period):
+            raise ValueError(
+                f"settlement_period {self.settlement_period} does not exist on "
+                f"{self.settlement_date.isoformat()}, which has "
+                f"{settlement_periods_in_day(self.settlement_date)} settlement periods"
+            )
+        return self
