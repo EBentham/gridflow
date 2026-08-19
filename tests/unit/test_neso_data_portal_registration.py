@@ -270,6 +270,15 @@ def test_the_negative_control_fails_without_the_transformer_bootstrap() -> None:
     What makes the proof above meaningful: if a transformer resolved here too,
     something other than the bootstrap would be populating the registry and the
     positive test would be measuring that instead.
+
+    The failure REASON is asserted, not merely the exit code. A control that
+    accepts any non-zero exit is satisfied by an unrelated import error, a typo
+    in the script, or a `gridflow` that fails to import at all — none of which
+    say anything about the bootstrap. Pinning the registry's own message, and
+    the EMPTY available-list it prints, is what makes this control specific to
+    the omission it is supposed to demonstrate. (A non-empty `Available:` here
+    would itself be the finding: something other than `import_transformers()`
+    populated the registry.)
     """
     result = _run_in_fresh_interpreter(_TRANSFORMERS_RESOLVE_WITHOUT_BOOTSTRAP)
 
@@ -278,3 +287,13 @@ def test_the_negative_control_fails_without_the_transformer_bootstrap() -> None:
         "above is therefore vacuous"
     )
     assert "RESOLVED_ALL_THREE" not in result.stdout
+    assert (
+        "No transformer registered for neso_data_portal/daily_wind_availability" in result.stderr
+    ), (
+        "the subprocess failed for some reason OTHER than the missing bootstrap, so "
+        f"this control does not demonstrate what it claims\n{result.stdout}\n{result.stderr}"
+    )
+    assert "Available: []" in result.stderr, (
+        "the registry was non-empty without import_transformers() having run — "
+        "something else populates it, which would make the positive proof vacuous"
+    )
