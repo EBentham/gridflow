@@ -34,7 +34,9 @@ from gridflow.bronze.writer import BronzeWriter
 from gridflow.config.settings import load_settings
 from gridflow.connectors import base as connectors_base
 from gridflow.connectors.neso_data_portal.client import NesoDataPortalConnector
+from gridflow.connectors.neso_data_portal.endpoints import DATASETS
 from gridflow.silver.registry import get_transformer
+from gridflow.utils.time import settlement_period_to_utc
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
@@ -300,3 +302,259 @@ async def test_a_download_crossing_utc_midnight_still_lands_where_transform_look
         "the capture was ALSO readable from the wall-clock day, so the partition "
         "assertion above does not actually discriminate"
     )
+
+
+# --------------------------------------------------------------------------- #
+# T-27 -- the same full-path proof for the two B3a datasets
+#
+# Not a transformer-only test, for the reason this module's docstring gives:
+# the pieces can each pass while the COMPOSITION yields zero rows. Both of the
+# datasets below have a wider surface for that than `daily_wind_availability`
+# did -- a 34-column header contract that has to agree between the connector's
+# `DATASETS` entry and the transformer's, and (for the embedded forecast) an
+# `issue_time` that travels from a CKAN resource FILENAME, through the bronze
+# sidecar, into a silver column that is part of the entity key. Neither half
+# alone can see either of those break.
+# --------------------------------------------------------------------------- #
+
+HGM_DATASET = "historic_generation_mix"
+EMB_DATASET = "embedded_wind_solar_forecast"
+
+# Reused rather than re-invented, so the row counts asserted here are the SAME
+# numbers the transformer suite pins. Both fixtures' provenance (range-capture
+# truncation; hand-constructed DST days) is disclosed in
+# `tests/unit/test_neso_data_portal.py`'s T-16 and T-17 sections.
+HGM_CSV = (FIXTURE_DIR / "historic_generation_mix.csv").read_bytes()
+EMB_CSV = (FIXTURE_DIR / "embedded_forecast.csv").read_bytes()
+HGM_EXPECTED_ROWS = 9
+EMB_EXPECTED_ROWS = 20
+
+# The embedded forecast's issue instant, carried by the vendor's own filename
+# (`202608161825_embedded_forecast.csv`) in the package_show fixture. Asserted
+# END TO END: nothing else in the pipeline knows this value.
+EMB_ISSUE_TIME = datetime(2026, 8, 16, 18, 25, tzinfo=UTC)
+
+_B3A_DATASETS: dict[str, tuple[str, bytes, int]] = {
+    HGM_DATASET: ("package_show_historic_generation_mix.json", HGM_CSV, HGM_EXPECTED_ROWS),
+    EMB_DATASET: (
+        "package_show_embedded_wind_and_solar_forecasts.json",
+        EMB_CSV,
+        EMB_EXPECTED_ROWS,
+    ),
+}
+
+
+@pytest.fixture
+def short_data_dir(tmp_path_factory: pytest.TempPathFactory) -> Path:
+    """`tmp_data_dir`, but rooted somewhere deliberately SHORT.
+
+    Windows MAX_PATH, a harness limit rather than a product one.
+    `embedded_wind_solar_forecast`'s silver filename is 74 characters and
+    `storage.parquet.write_parquet` appends a 21-character `.tmp_<16 hex>`
+    before `os.replace`, so under the standard `tmp_path` fixture -- whose
+    directory embeds the test's own name -- the temporary path crosses 260 and
+    the rename fails with WinError 3. The real data root (`C:\\gridflow-data`)
+    is ~90 characters clear. Same reasoning, and same fix, as
+    `tests/unit/test_neso_data_portal.py::short_tmp_path`.
+    """
+    root = tmp_path_factory.mktemp("e")
+    for layer in ("bronze", "silver", "gold"):
+        (root / layer).mkdir()
+    return root
+
+
+def _package_show_for(dataset: str) -> dict[str, Any]:
+    payload: dict[str, Any] = json.loads(
+        (FIXTURE_DIR / _B3A_DATASETS[dataset][0]).read_text(encoding="utf-8")
+    )
+    return payload
+
+
+def _selected_resource(dataset: str) -> dict[str, Any]:
+    """The resource the connector's own D-04 exact-name rule will pick."""
+    wanted = DATASETS[dataset].resource_name
+    matches = [
+        resource
+        for resource in _package_show_for(dataset)["result"]["resources"]
+        if resource.get("name") == wanted
+    ]
+    assert len(matches) == 1, f"fixture does not carry exactly one {wanted!r} resource"
+    resource: dict[str, Any] = matches[0]
+    return resource
+
+
+def _presigned_for(dataset: str) -> str:
+    """A presigned URL of the real R2 shape, named for this resource's file."""
+    filename = str(_selected_resource(dataset)["url"]).rsplit("/", 1)[-1]
+    return (
+        f"{FILE_HOST}/dx-national-grid/national-grid/resources/x/{filename}"
+        f"?response-content-disposition=attachment%3B%20filename%3D{filename}"
+        "&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Expires=604800"
+        "&X-Amz-SignedHeaders=host&X-Amz-Date=20260816T185401Z"
+        "&X-Amz-Signature=b4f0da8dbcf4e5c46e06a16556fcc90257a632b4684f5d6d4c4d0da7565bceef"
+    )
+
+
+def _wire_dataset_legs(router: respx.MockRouter, dataset: str) -> None:
+    """Route the `package_show` JSON, the 302 redirector, and the CSV body."""
+    body = _B3A_DATASETS[dataset][1]
+    router.get(url__startswith=PACKAGE_SHOW_URL).mock(
+        return_value=httpx.Response(200, json=_package_show_for(dataset))
+    )
+    router.get(url__startswith=str(_selected_resource(dataset)["url"])).mock(
+        return_value=httpx.Response(
+            302,
+            headers=[("location", _presigned_for(dataset))],
+            content=b"<html>redirecting</html>",
+        )
+    )
+    router.get(url__startswith=FILE_HOST).mock(return_value=httpx.Response(200, content=body))
+
+
+async def _fetch_dataset(config: SourceConfig, dataset: str, start: datetime, end: datetime) -> Any:
+    async with NesoDataPortalConnector(config) as connector:
+        responses = await connector.fetch(dataset, start, end)
+    assert len(responses) == 1, "D-16: the window is not a selector; one fetch, one response"
+    return responses[0]
+
+
+def _silver_files(data_dir: Path, dataset: str, day: Any) -> list[Path]:
+    silver_dir = (
+        data_dir / "silver" / SOURCE / dataset / f"year={day.year}" / f"month={day.month:02d}"
+    )
+    return sorted(silver_dir.glob("*.parquet"))
+
+
+@respx.mock
+@pytest.mark.asyncio
+@pytest.mark.parametrize("dataset", [HGM_DATASET, EMB_DATASET])
+async def test_each_b3a_dataset_transforms_end_to_end(
+    router: respx.MockRouter,
+    short_data_dir: Path,
+    dataset: str,
+) -> None:
+    """The whole path per dataset, with the row count asserted as a LITERAL.
+
+    A composition break shows up as a silent zero-row run, which "no error"
+    passes. The expected count is stated rather than derived from the fixture at
+    runtime, so a transformer that dropped every second row would still fail
+    here.
+    """
+    expected_rows = _B3A_DATASETS[dataset][2]
+    _wire_dataset_legs(router, dataset)
+    start, end = _window()
+
+    response = await _fetch_dataset(_source_config(), dataset, start, end)
+    bronze_path = BronzeWriter(short_data_dir).write(response)
+
+    assert response.data_date == end.date()
+    assert bronze_path.name.startswith("raw_")
+    assert bronze_path.suffix == ".csv", (
+        "D-10: content_type is stamped from CKAN's format, not the presigned host's "
+        "application/octet-stream — a .bin body is invisible to the raw_*.csv glob"
+    )
+    assert _partition_parts(bronze_path) == _expected_partition(end.date())
+    assert bronze_path.with_suffix(".meta.json").exists()
+
+    transformer = get_transformer(SOURCE, dataset, short_data_dir)
+    rows_written = transformer.run(end.date(), run_id="t27")
+
+    assert rows_written == expected_rows
+    assert transformer.last_excluded_row_count == 0, (
+        "neither fixture carries an out-of-calendar settlement period, so a "
+        "non-zero count here means the D-27 filter is rejecting valid rows"
+    )
+
+    written = _silver_files(short_data_dir, dataset, end.date())
+    assert len(written) == 1
+    assert written[0].name.startswith(f"{dataset}_{end.date():%Y%m%d}_run"), (
+        "APPEND_ONLY must suffix the silver filename with the vintage scalar"
+    )
+
+    frame = pl.read_parquet(written[0])
+    assert frame.height == expected_rows
+    assert frame.schema["event_time"] == pl.Datetime("us", "UTC")
+    assert frame["event_time"].null_count() == 0
+    assert frame.schema["available_at"] == pl.Datetime("us", "UTC")
+    assert frame["source_run_id"].unique().to_list() == ["t27"]
+
+    # D-22: NESO's publication instant is the vintage axis, taken from the CKAN
+    # payload this test actually served rather than from whatever landed.
+    published = datetime.fromisoformat(str(_selected_resource(dataset)["last_modified"])).replace(
+        tzinfo=UTC
+    )
+    assert frame["published_at"].unique().to_list() == [published]
+    assert frame["available_at"].to_list() == frame["published_at"].to_list()
+
+
+@respx.mock
+@pytest.mark.asyncio
+@pytest.mark.parametrize("dataset", [HGM_DATASET, EMB_DATASET])
+async def test_re_running_each_b3a_transform_is_idempotent(
+    router: respx.MockRouter,
+    short_data_dir: Path,
+    dataset: str,
+) -> None:
+    """D-21: the run suffix comes from the bronze sidecar, so it is stable.
+
+    On the plain `read_bronze` branch the scalar would be `datetime.now(UTC)`
+    and every re-transform would mint a NEW Parquet file, quietly duplicating
+    every row in the base view -- which for `historic_generation_mix` means a
+    second full copy of 2009-present.
+    """
+    expected_rows = _B3A_DATASETS[dataset][2]
+    _wire_dataset_legs(router, dataset)
+    start, end = _window()
+
+    response = await _fetch_dataset(_source_config(), dataset, start, end)
+    BronzeWriter(short_data_dir).write(response)
+
+    transformer = get_transformer(SOURCE, dataset, short_data_dir)
+    assert transformer.run(end.date(), run_id="t27-first") == expected_rows
+    first = _silver_files(short_data_dir, dataset, end.date())
+
+    assert transformer.run(end.date(), run_id="t27-second") == expected_rows
+    second = _silver_files(short_data_dir, dataset, end.date())
+
+    assert len(second) == 1, f"a re-transform minted a second silver file: {second}"
+    assert first == second, "the silver path moved between two runs over the same bronze"
+
+
+@respx.mock
+@pytest.mark.asyncio
+async def test_the_embedded_forecasts_issue_time_survives_the_whole_path(
+    router: respx.MockRouter,
+    short_data_dir: Path,
+) -> None:
+    """Filename -> sidecar -> silver column, with nothing else able to supply it.
+
+    `issue_time` exists nowhere in the CSV body: it is a 12-digit token in the
+    CKAN resource's filename (D-15/D-23), written into the bronze sidecar by the
+    connector and parsed back out by the transformer. Every link is in a
+    different module, so only a full-path test can see the chain break -- and a
+    break would not be loud, it would be a run declined for "no issue token" or,
+    worse, a vintage stamped from the wrong clock.
+    """
+    _wire_dataset_legs(router, EMB_DATASET)
+    start, end = _window()
+
+    response = await _fetch_dataset(_source_config(), EMB_DATASET, start, end)
+    bronze_path = BronzeWriter(short_data_dir).write(response)
+
+    sidecar = json.loads(bronze_path.with_suffix(".meta.json").read_text(encoding="utf-8"))
+    assert sidecar["request_params"]["resource_filename"] == "202608161825_embedded_forecast.csv"
+
+    transformer = get_transformer(SOURCE, EMB_DATASET, short_data_dir)
+    assert transformer.run(end.date(), run_id="t27-issue") == EMB_EXPECTED_ROWS
+
+    frame = pl.read_parquet(_silver_files(short_data_dir, EMB_DATASET, end.date())[0])
+
+    assert frame.schema["issue_time"] == pl.Datetime("us", "UTC")
+    assert frame["issue_time"].unique().to_list() == [EMB_ISSUE_TIME]
+    assert "timestamp_utc" not in frame.columns, (
+        "D-26: emitting one would take event_time off the DST-fold-safe branch"
+    )
+    assert frame["event_time"].to_list() == [
+        settlement_period_to_utc(row["settlement_date"], row["settlement_period"])
+        for row in frame.iter_rows(named=True)
+    ]
