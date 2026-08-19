@@ -105,6 +105,16 @@ LATEST_VIEW_SPECS: dict[tuple[str, str], LatestViewSpec] = {
         key_columns=("settlement_date", "fuel_type"),
         optional_key_columns=("settlement_period",),
     ),
+    # D-21/D-24. Every NESO Data Portal capture is a whole-file snapshot, so
+    # successive captures COEXIST in the base view by design (APPEND_ONLY) and
+    # this projection is what returns one current row per BMU-day. The key is
+    # deliberately COARSER than the transformer's ENTITY_KEY_COLUMNS, which
+    # carries `published_at`: the entity key preserves every vintage, this key
+    # picks the winner among them (ordered by `available_at`, which D-22 makes
+    # NESO's own publication instant).
+    ("neso_data_portal", "daily_wind_availability"): LatestViewSpec(
+        key_columns=("bmu_id", "availability_date"),
+    ),
 }
 
 

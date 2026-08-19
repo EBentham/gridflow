@@ -19,6 +19,8 @@ import json
 import logging
 import pickle
 import socket
+import subprocess
+import sys
 import traceback
 from datetime import UTC, date, datetime, timedelta, timezone
 from pathlib import Path
@@ -59,12 +61,18 @@ from gridflow.schemas.common import BaseSchema
 from gridflow.silver.base import BaseSilverTransformer
 from gridflow.silver.csv_bronze import CsvHeaderDriftError, NotCsvBodyError
 from gridflow.silver.elexon.system_prices import SystemPriceTransformer
+from gridflow.silver.latest_views import LATEST_VIEW_SPECS
 from gridflow.silver.neso_data_portal._bronze import provenance_for
 from gridflow.silver.neso_data_portal.daily_wind_availability import (
     EXPECTED_COLUMNS,
     DailyWindAvailabilityTransformer,
 )
 from gridflow.silver.registry import get_transformer_class, list_transformers
+from gridflow.silver.schema_manifest import (
+    _DATE_COL_SQL_TYPES,
+    DESIGNATED_DATE_COLS,
+    get_silver_schema_manifest,
+)
 
 if TYPE_CHECKING:
     from collections.abc import AsyncIterator, Iterator
@@ -3446,3 +3454,171 @@ class TestDailyWindRunAndRegistration:
         assert transformer.last_validation_failure_count == 0
         assert transformer.last_excluded_row_count == 0
 
+
+# --------------------------------------------------------------------------- #
+# T-10 -- manifest, latest-view and entity-key registration
+#
+# The coverage assertion below closes the gap RESEARCH-integration S9.1 names:
+# a transformer can register, transform correctly and write silver while being
+# invisible to the manifest, the `_latest` projection and `gridflow quality`'s
+# duplicate check, because those three read SEPARATE registries that nothing
+# forces to agree with the transformer registry.
+#
+# It is REGISTRY-DRIVEN on purpose: B3a's two datasets are covered the moment
+# they register, with no edit here. `tests/unit/test_entity_key_completeness.py`
+# is deliberately NOT extended -- it is elexon-pinned, and the general
+# cross-source version of that gap is TODO-05.
+#
+# W-7 / F-16: the in-process half of this cannot see the failure that matters.
+# pytest collection imports this module, which registers the transformer, so an
+# omission from the manifest's OWN `_SILVER_IMPORTS` bootstrap is masked here
+# and only shows up in production. Hence the subprocess proof, with a negative
+# control so the positive cannot pass vacuously.
+# --------------------------------------------------------------------------- #
+
+_MANIFEST_COVERAGE_SCRIPT = """
+from gridflow.silver.schema_manifest import get_silver_schema_manifest
+from gridflow.silver.registry import list_transformers
+
+# Order matters: the manifest build is what runs the bootstrap, so the registry
+# is read AFTER it. Both sides therefore derive from the manifest's own
+# _SILVER_IMPORTS and from nothing this process imported by hand.
+entries = get_silver_schema_manifest(include_serving_aliases=False)
+manifest = {
+    (entry.source, entry.dataset)
+    for entry in entries
+    if entry.relation_kind == 'silver'
+}
+registered = set(list_transformers('neso_data_portal'))
+
+assert registered, (
+    'no neso_data_portal transformer is registered in a FRESH interpreter after '
+    'building the manifest -- schema_manifest._SILVER_IMPORTS is missing this '
+    'source, so every consumer that reaches the manifest without the pipeline '
+    'runner (the SDK, the schema exporters) silently omits it'
+)
+missing = registered - manifest
+assert not missing, f'registered but absent from the manifest: {sorted(missing)}'
+print('MANIFEST_COVERS', len(registered))
+"""
+
+# The negative control. Without it, "the datasets are in the manifest" could be
+# true because something else imported the package -- and the proof would be
+# measuring that instead of the bootstrap.
+_MANIFEST_COVERAGE_WITHOUT_ENTRY_SCRIPT = """
+from gridflow.silver import schema_manifest
+
+schema_manifest._SILVER_IMPORTS = tuple(
+    name for name in schema_manifest._SILVER_IMPORTS
+    if name != 'gridflow.silver.neso_data_portal'
+)
+entries = schema_manifest.get_silver_schema_manifest(include_serving_aliases=False)
+
+if any(entry.source == 'neso_data_portal' for entry in entries):
+    print('PRESENT_ANYWAY')
+else:
+    print('ABSENT')
+"""
+
+
+def _run_manifest_script(script: str) -> subprocess.CompletedProcess[str]:
+    """Run ``script`` in a brand-new interpreter with no prior gridflow imports."""
+    return subprocess.run(
+        [sys.executable, "-c", script],
+        cwd=Path(__file__).resolve().parents[2],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+
+class TestRegistrationCoverage:
+    """Every registered dataset of this source is reachable by every consumer."""
+
+    def test_the_registry_is_not_empty(self) -> None:
+        """Non-vacuity guard: every assertion below iterates this list, so an
+        empty registry would make all of them pass while proving nothing."""
+        assert list_transformers("neso_data_portal")
+
+    def test_every_registered_dataset_declares_an_entity_key(self) -> None:
+        """Without it `gridflow quality`'s duplicate check has no grain to key
+        on, so it silently checks nothing for this source."""
+        for source, dataset in list_transformers("neso_data_portal"):
+            cls = get_transformer_class(source, dataset)
+            assert cls is not None
+            assert cls.ENTITY_KEY_COLUMNS, f"{source}/{dataset} declares no ENTITY_KEY_COLUMNS"
+
+    def test_every_registered_dataset_has_a_designated_date_col(self) -> None:
+        """ADR-024. A missing entry is not a soft gap: `get_silver_schema_manifest()`
+        raises `ValueError`, so the whole manifest becomes unbuildable."""
+        for key in list_transformers("neso_data_portal"):
+            assert key in DESIGNATED_DATE_COLS, f"{key} has no DESIGNATED_DATE_COLS entry"
+            assert DESIGNATED_DATE_COLS[key] in _DATE_COL_SQL_TYPES, (
+                f"{key}'s date column has no registered SQL type, which also raises"
+            )
+
+    def test_every_registered_dataset_has_a_latest_view_spec(self) -> None:
+        """D-21 makes APPEND_ONLY uniform across this source, and an APPEND_ONLY
+        dataset without a `_latest` spec has NO selection surface at all: the
+        base view returns every retained vintage of a whole-file snapshot."""
+        for key in list_transformers("neso_data_portal"):
+            cls = get_transformer_class(*key)
+            assert cls is not None
+            assert cls.APPEND_ONLY is True, f"{key} departs from D-21's uniform APPEND_ONLY"
+            assert key in LATEST_VIEW_SPECS, f"{key} has no LATEST_VIEW_SPECS entry"
+
+    def test_each_latest_view_key_is_a_subset_of_its_entity_key(self) -> None:
+        """The `_latest` key picks ONE winning vintage per business key, so it is
+        the entity key MINUS the vintage axis -- never a disjoint set, which
+        would project a grain no transformer produces."""
+        for key in list_transformers("neso_data_portal"):
+            cls = get_transformer_class(*key)
+            assert cls is not None
+            spec = LATEST_VIEW_SPECS[key]
+            assert set(spec.key_columns) <= set(cls.ENTITY_KEY_COLUMNS), (
+                f"{key}: latest-view key {spec.key_columns} is not contained in the "
+                f"entity key {cls.ENTITY_KEY_COLUMNS}"
+            )
+
+    def test_the_manifest_builds_and_carries_every_registered_dataset(self) -> None:
+        """T-10's acceptance, in process: `get_silver_schema_manifest()` builds
+        without raising with the new source registered."""
+        entries = get_silver_schema_manifest(include_serving_aliases=False)
+        manifest = {
+            (entry.source, entry.dataset) for entry in entries if entry.relation_kind == "silver"
+        }
+
+        assert set(list_transformers("neso_data_portal")) <= manifest
+
+    def test_the_manifest_covers_this_source_in_a_fresh_interpreter(self) -> None:
+        """W-7 / F-16: the in-process assertion above cannot fail for the reason
+        that matters.
+
+        The manifest runs its OWN bootstrap (`_SILVER_IMPORTS`), independent of
+        `runner._TRANSFORMER_MODULES`. B1a wired only the runner. In a pytest
+        process the omission is invisible -- collection already imported the
+        package -- and in a fresh one the source silently vanishes from the
+        manifest, taking the SDK and the schema exporters with it.
+        """
+        result = _run_manifest_script(_MANIFEST_COVERAGE_SCRIPT)
+
+        assert result.returncode == 0, (
+            "the manifest did not cover neso_data_portal in a fresh interpreter -- is "
+            f"the schema_manifest._SILVER_IMPORTS entry missing?\n{result.stdout}\n{result.stderr}"
+        )
+        assert "MANIFEST_COVERS" in result.stdout
+
+    def test_the_negative_control_shows_the_coverage_depends_on_the_bootstrap(self) -> None:
+        """Strip the entry from `_SILVER_IMPORTS` and the source must DISAPPEAR.
+
+        This is what makes the proof above meaningful: if the datasets were still
+        present here, they would be arriving through some transitive import and
+        the positive test would be measuring that instead.
+        """
+        result = _run_manifest_script(_MANIFEST_COVERAGE_WITHOUT_ENTRY_SCRIPT)
+
+        assert result.returncode == 0, result.stderr
+        assert "ABSENT" in result.stdout, (
+            "neso_data_portal reached the manifest even with its _SILVER_IMPORTS entry "
+            "removed, so the fresh-interpreter proof does not actually depend on it"
+        )
