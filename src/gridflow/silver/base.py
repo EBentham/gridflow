@@ -111,6 +111,14 @@ class BronzeVouchReason(StrEnum):
     was present and truthy."""
     UNPARSEABLE_TIMESTAMP = "UNPARSEABLE_TIMESTAMP"
     """Every present-and-truthy key failed to parse into a datetime."""
+    UNUSABLE_PROVENANCE = "UNUSABLE_PROVENANCE"
+    """The sidecar vouched for a timestamp, but the source-specific provenance
+    the transformer requires was absent or unparseable, so ``read_bronze_file``
+    returned an empty frame and the body was declined (D-41).
+
+    A NEW reason rather than reusing ``NO_TIMESTAMP_KEY``, which would be
+    false: the timestamp key was present and fine. The exclusion is one level
+    further in -- the vouching succeeded and the READ did not."""
 
 
 class BronzeReadSelection(StrEnum):
@@ -498,7 +506,9 @@ class BaseSilverTransformer(ABC):
     last_unvouched_bronze: frozenset[tuple[Path, BronzeVouchReason]] = frozenset()
     """Bronze bodies EXCLUDED from the most recent ``run()`` because their own
     sidecar could not vouch for them (R2-g / ADR-028). Reset at the top of
-    every ``run()``; only the ``LOCKSTEP_BRONZE_READ`` branch ever populates it.
+    every ``run()``. Populated by the ``LOCKSTEP_BRONZE_READ`` branch and — as
+    of D-41 — by the ``VINTAGE_PER_BRONZE_FILE`` branch, which previously
+    dropped a whole vintage in silence at BOTH of its skips.
 
     Carries the ``(path, reason)`` ASSOCIATION deliberately, rather than a
     running integer or a path set beside a detached reason counter. Both of
@@ -526,6 +536,52 @@ class BaseSilverTransformer(ABC):
     ``last_partition_filter_all_dropped_count``: under exclusion the frame is
     empty, and only a failed dataset-level status stops a stale pre-existing
     Parquet being treated as current.
+    """
+    last_unaccounted_empty_frames: int = 0
+    """Frames whose ``transform()`` returned EMPTY for a reason nothing counted,
+    in the most recent ``run()`` (D-42). Reset at the top of every ``run()``.
+
+    An empty ``transform()`` output has two entirely different meanings and
+    they must not share a status:
+
+    - ACCOUNTED — the transformer declined rows and counted them
+      (``last_excluded_row_count``). Correct outcome: warnings.
+    - UNACCOUNTED — the frame emptied for a reason nothing counted. Measured,
+      not hypothetical: ``silver/elexon/system_prices.py`` returns an empty
+      frame on a missing required column with only a ``logger.error``, and
+      before D-42 that run reported ``success`` with zero rows.
+
+    The base class CLASSIFIES rather than trusts: ``_process_frame`` snapshots
+    ``last_excluded_row_count`` and ``last_unmapped_count`` immediately before
+    ``transform()`` and compares immediately after — those two are the only
+    accounting a transformer can move from inside ``transform()``, since the
+    validator's counter is incremented later on a frame an empty output never
+    reaches. Neither moved means unaccounted. This is a MECHANISM, not a
+    convention: a transformer that forgets to count is detected rather than
+    believed.
+
+    "Moved" is ``!=``, never ``>``: ``last_excluded_row_count`` accumulates,
+    but ``last_unmapped_count`` is ASSIGNED by the transformers that use it
+    (``silver/entsoe/*``), so ``>`` would misread an assignment landing on the
+    previous file's value.
+
+    The increment is GATED on ``VINTAGE_PER_BRONZE_FILE`` and that gate is
+    load-bearing: ``_process_frame`` has three call sites (vintage, lockstep,
+    plain), so an ungated increment would change reported status for every
+    transformer in the repo. Closing the same hole on the other two branches is
+    its own unit with its own blast-radius review across 60+ transformers.
+    """
+    last_total_unaccounted_exclusion: bool = False
+    """``True`` when the most recent ``run()`` examined at least one bronze
+    body, produced NO frame at all, and at least one of its empty frames was
+    UNACCOUNTED (D-42). Reset at the top of every ``run()``.
+
+    A sibling of :attr:`last_unvouched_total_exclusion` with its own meaning,
+    deliberately not a widening of it. ``run_transform`` turns a nonzero
+    accumulated total into a hard failure for the dataset, on the argument the
+    existing rungs already make: bronze demonstrably exists, zero rows were
+    produced, ``_write_silver`` never ran, so any pre-existing Parquet is still
+    on disk and only a ``failed`` status stops it passing as current.
     """
     LOCKSTEP_BRONZE_READ: ClassVar[bool] = False
     """Opt in to resolving the bronze read set and the vintage from ONE scan.
@@ -830,6 +886,9 @@ class BaseSilverTransformer(ABC):
         # previous date's exclusions.
         self.last_unvouched_bronze = frozenset()
         self.last_unvouched_total_exclusion = False
+        # D-42's pair, reset for the same reason and in the same place.
+        self.last_unaccounted_empty_frames = 0
+        self.last_total_unaccounted_exclusion = False
 
         resolved_run_id = run_id or f"adhoc-{datetime.now(UTC).isoformat()}"
         frames: list[pl.DataFrame] = []
@@ -855,30 +914,99 @@ class BaseSilverTransformer(ABC):
                 / f"{target_date.day:02d}"
             )
             date_dirs = [exact_dir] if exact_dir.exists() else []
-            for date_dir in date_dirs:
-                for raw_path in sorted(date_dir.glob(self.BRONZE_BODY_GLOB)):
-                    # The data glob also matches sidecars (raw_*.meta.json) — skip them.
-                    if raw_path.name.endswith(".meta.json"):
-                        continue
-                    available_at = self._timestamp_from_sidecar(raw_path.with_suffix(".meta.json"))
-                    if available_at is None:
-                        # Skip loudly: a now() fallback would mint a fresh
-                        # non-idempotent vintage file on every re-transform.
-                        logger.warning(
-                            "Skipping bronze file with no usable sidecar timestamp "
-                            "(cannot assign an honest vintage): %s",
-                            raw_path,
+            # D-41: this branch had NO file-level accounting at all — both of
+            # its skips dropped a whole vintage in silence, under a `success`
+            # status. Accumulated in LOCALS and published in the `finally`
+            # below, never assigned incrementally: `last_unvouched_bronze` is a
+            # frozenset (not mutable in place), and X-08/X-09/X-10 all leave
+            # this loop by exception, so a publication after the loop would
+            # discard the exclusions recorded for files 1..N-1 at exactly the
+            # moment the record matters most.
+            unvouched: list[tuple[Path, BronzeVouchReason]] = []
+            examined = 0
+            try:
+                for date_dir in date_dirs:
+                    for raw_path in sorted(date_dir.glob(self.BRONZE_BODY_GLOB)):
+                        # The data glob also matches sidecars (raw_*.meta.json) — skip
+                        # them. A sidecar is not a data body and is NOT examined.
+                        if raw_path.name.endswith(".meta.json"):
+                            continue
+                        examined += 1
+                        available_at = self._timestamp_from_sidecar(
+                            raw_path.with_suffix(".meta.json")
                         )
-                        continue
-                    raw_df = self.read_bronze_file(raw_path)
-                    if raw_df.is_empty():
-                        continue
-                    saw_bronze = True
-                    clean_df = self._process_frame(
-                        raw_df, target_date, resolved_run_id, available_at, window_plan
-                    )
-                    if clean_df is not None:
-                        frames.append(clean_df)
+                        if available_at is None:
+                            # Skip loudly: a now() fallback would mint a fresh
+                            # non-idempotent vintage file on every re-transform.
+                            logger.warning(
+                                "Skipping bronze file with no usable sidecar timestamp "
+                                "(cannot assign an honest vintage): %s",
+                                raw_path,
+                            )
+                            # D-41 skip (a). The richer classifier is invoked for
+                            # the REASON ONLY -- the accept/reject decision stays
+                            # `_timestamp_from_sidecar`, unchanged. The classifier
+                            # is documented as hardened beyond it, so calling it
+                            # for the decision would also change which files are
+                            # accepted, and this change is about reporting, not
+                            # about tightening acceptance. `reason` is provably
+                            # non-None here (a None reason means it vouched); the
+                            # fallback is narrowing, not a guess.
+                            classified = self._read_sidecar_timestamp(
+                                raw_path.with_suffix(".meta.json")
+                            )
+                            unvouched.append(
+                                (
+                                    raw_path,
+                                    classified.reason or BronzeVouchReason.NO_TIMESTAMP_KEY,
+                                )
+                            )
+                            continue
+                        raw_df = self.read_bronze_file(raw_path)
+                        if raw_df.is_empty():
+                            # D-41 skip (b): the sidecar vouched, but the
+                            # source-specific provenance the reader requires was
+                            # absent or unparseable. Master did not even log this
+                            # one.
+                            logger.warning(
+                                "Skipping bronze file that read as empty (its own "
+                                "provenance is unusable): %s",
+                                raw_path,
+                            )
+                            unvouched.append((raw_path, BronzeVouchReason.UNUSABLE_PROVENANCE))
+                            continue
+                        saw_bronze = True
+                        clean_df = self._process_frame(
+                            raw_df, target_date, resolved_run_id, available_at, window_plan
+                        )
+                        if clean_df is not None:
+                            frames.append(clean_df)
+            finally:
+                # D-42's publication rule. On the exception path the predicates
+                # are computed over what was examined BEFORE the failure, which
+                # is honest: they describe the run that actually happened.
+                self.last_unvouched_bronze = frozenset(unvouched)
+                # The predicate is over FILES declined at the two skips above —
+                # deliberately NOT over "was any frame processed". A body whose
+                # sidecar vouched, whose provenance was fine, and every row of
+                # which was row-excluded is a CONSUMED file, not an excluded
+                # one: it was read, consumed, and its rows were accounted by
+                # D-40. Since run_transform checks the total-exclusion rung
+                # BEFORE the warnings rung, the looser predicate would report
+                # `failed` for a run that must report warnings.
+                self.last_unvouched_total_exclusion = examined > 0 and len(unvouched) == examined
+                # Mirror the lockstep branch: a date whose bodies were all
+                # declined must not ALSO emit the generic "No bronze data"
+                # warning. Bronze demonstrably exists; that message would
+                # contradict the record this branch just produced.
+                saw_bronze = saw_bronze or bool(unvouched)
+                # `last_unaccounted_empty_frames` needs no publication step: it
+                # is incremented in place on the instance by `_process_frame`,
+                # so it is already durable across an exception. Only the derived
+                # FLAG is computed here.
+                self.last_total_unaccounted_exclusion = (
+                    examined > 0 and not frames and self.last_unaccounted_empty_frames > 0
+                )
         elif self.LOCKSTEP_BRONZE_READ:
             # ONE scan, ONE sidecar read per examined candidate, threaded as a
             # single value into BOTH the frame read and available_at. There is
@@ -1025,9 +1153,31 @@ class BaseSilverTransformer(ABC):
         if raw_df.is_empty():
             return None
 
+        # D-42: snapshot the only two counters a transformer can move from
+        # inside transform(). The validator's counter is incremented later, on
+        # a frame an empty output never reaches, so it cannot discriminate here.
+        excluded_before = self.last_excluded_row_count
+        unmapped_before = self.last_unmapped_count
         clean_df = self.transform(raw_df)
         if clean_df.is_empty():
             logger.warning(f"Transform produced 0 rows for {target_date}")
+            # `!=`, never `>`: last_excluded_row_count accumulates, but
+            # last_unmapped_count is ASSIGNED by the transformers that use it
+            # (silver/entsoe/*), so `>` would misread an assignment that landed
+            # on the previous file's value.
+            accounted = (
+                self.last_excluded_row_count != excluded_before
+                or self.last_unmapped_count != unmapped_before
+            )
+            # The VINTAGE_PER_BRONZE_FILE gate is LOAD-BEARING, not caution:
+            # this method has three call sites (vintage, lockstep, plain), so an
+            # ungated increment would flip reported status for every source in
+            # the repo. Placed at THIS exit specifically — empty-from-transform()
+            # must stay distinguishable from the window-filter empty below,
+            # where last_partition_filter_all_dropped_count already drives a
+            # hard failure; counting both would double-charge one outcome.
+            if self.VINTAGE_PER_BRONZE_FILE and not accounted:
+                self.last_unaccounted_empty_frames += 1
             return None
 
         if window_plan is not None:

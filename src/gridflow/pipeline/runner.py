@@ -181,6 +181,35 @@ def _describe_unvouched_bronze(
     )
 
 
+def _describe_unaccounted_frames(count: int) -> str:
+    """Render the unaccounted-empty-frame count, or ``""`` if there were none.
+
+    ONE renderer, appended to BOTH the warned and the failed report (D-42). A
+    value that is computed and folded but never shown is not accounted for —
+    that was the defect on the failed path, where the fold landed and then
+    nothing displayed it. The count has no ``DatasetResult`` field, so this
+    text is its only exposure.
+
+    Args:
+        count: Frames whose ``transform()`` returned empty for a reason nothing
+            counted, summed across the transformed date range.
+
+    Returns:
+        A leading-space-prefixed sentence carrying the exact token
+        ``unaccounted_empty_frames=<N>`` — the same ``f"{name}={count}"``
+        rendering :func:`_describe_unvouched_bronze` uses for its reasons, so a
+        test can assert a token instead of parsing prose. Empty at zero.
+    """
+    if not count:
+        return ""
+    return (
+        f" Also unaccounted_empty_frames={count}: a bronze body was read and its "
+        "transform() produced NO rows for a reason nothing counted (a missing "
+        "required column is the known case), so those rows are not in this silver "
+        "partition and no counter names them."
+    )
+
+
 class DatasetResolutionError(Exception):
     """Raised when no dataset can be resolved (no name and no ``--all`` flag).
 
@@ -1011,6 +1040,12 @@ def run_transform(
         # newly-seen path to its reason). See ADR-028.
         unvouched_bronze: set[tuple[Path, BronzeVouchReason]] = set()
         total_unvouched_total_exclusion = 0
+        # D-42. A FRAME count, deliberately never folded into rows_skipped or
+        # rows_invalid: those are ROW counts, and inflating a row count with a
+        # frame count is the overloading this layer already rejects for
+        # excluded FILES (see bronze_unvouched).
+        total_unaccounted_empty_frames = 0
+        total_unaccounted_exclusion = 0
         # `None` until `get_transformer` returns, so the `except` handler below
         # can tell "never constructed this date" apart from "constructed, then
         # `run()` raised" without risking a `transformer` left over from a
@@ -1046,11 +1081,14 @@ def run_transform(
                 total_all_dropped += transformer.last_partition_filter_all_dropped_count
                 unvouched_bronze |= transformer.last_unvouched_bronze
                 total_unvouched_total_exclusion += int(transformer.last_unvouched_total_exclusion)
+                total_unaccounted_empty_frames += transformer.last_unaccounted_empty_frames
+                total_unaccounted_exclusion += int(transformer.last_total_unaccounted_exclusion)
 
             # Deduplicate PATHS first, then derive the per-reason totals from
             # the surviving pairs, so both numbers describe distinct files.
             bronze_unvouched = len({path for path, _ in unvouched_bronze})
             unvouched_detail = _describe_unvouched_bronze(unvouched_bronze, dates)
+            frames_detail = _describe_unaccounted_frames(total_unaccounted_empty_frames)
             if total_all_dropped:
                 # No silver was written for the affected date(s) (base.py's
                 # _process_frame returns None before _write_silver when the
@@ -1070,12 +1108,16 @@ def run_transform(
                     "verify EVENT_WINDOW_FILTER classification and window "
                     "semantics before re-running. No silver was written for "
                     "the affected date(s); any pre-existing Parquet there is "
-                    "unchanged and must not be treated as current." + unvouched_detail
+                    "unchanged and must not be treated as current."
+                    + unvouched_detail
+                    + frames_detail
                     # This rung wins the STATUS and the MESSAGE, but it must
                     # not swallow the unvouched COUNT: a scheduler reads the
                     # highest-precedence failure first, and a permanent orphan
                     # hidden there would break the visibility contract on
-                    # exactly the path that matters most.
+                    # exactly the path that matters most. The unaccounted-frame
+                    # count is appended for the identical reason -- it has no
+                    # result field at all, so this text is its ONLY exposure.
                 )
                 tracker.fail(error_message)
                 logger.error("Transform hard-failed for %s/%s: %s", source, ds, error_message)
@@ -1109,6 +1151,7 @@ def run_transform(
                     "Parquet there is unchanged and must not be treated as current. "
                     "Bronze is left exactly as found (never repaired, never deleted)."
                     + unvouched_detail
+                    + frames_detail
                 )
                 tracker.fail(error_message)
                 logger.error("Transform hard-failed for %s/%s: %s", source, ds, error_message)
@@ -1123,12 +1166,53 @@ def run_transform(
                         error=error_message,
                     )
                 )
-            elif total_unmapped or total_validation_failures or bronze_unvouched:
-                if bronze_unvouched:
+            elif total_unaccounted_exclusion:
+                # D-42's rung, immediately after the unvouched-total rung and
+                # with the same message shape. Every bronze body examined for at
+                # least one date was read, and NONE produced a frame, with at
+                # least one emptying for a reason nothing counted -- the case
+                # `elexon/system_prices` hits today on a missing required
+                # column, where it reported `success` with zero rows. Same
+                # argument as the two rungs above: _write_silver never ran, so
+                # any pre-existing Parquet is still on disk and only a FAILED
+                # status stops it passing as current.
+                error_message = safe_error_message(
+                    f"{source}/{ds}: bronze was read for {total_unaccounted_exclusion} "
+                    "date(s) in the requested range but produced NO frame at all, and "
+                    "at least one transform() returned empty for a reason nothing "
+                    "counted. No silver was written for the affected date(s); any "
+                    "pre-existing Parquet there is unchanged and must not be treated "
+                    "as current. Bronze is left exactly as found."
+                    + unvouched_detail
+                    + frames_detail
+                )
+                tracker.fail(error_message)
+                logger.error("Transform hard-failed for %s/%s: %s", source, ds, error_message)
+                results.append(
+                    DatasetResult(
+                        source=source,
+                        dataset=ds,
+                        operation="transform",
+                        status="failed",
+                        rows_out=total_rows,
+                        bronze_unvouched=bronze_unvouched,
+                        error=error_message,
+                    )
+                )
+            elif (
+                total_unmapped
+                or total_validation_failures
+                or bronze_unvouched
+                or total_unaccounted_empty_frames
+            ):
+                if bronze_unvouched or total_unaccounted_empty_frames:
                     # THE one aggregated record per (source, dataset) per
                     # run_transform invocation, whatever the file count or the
                     # date-range length.
-                    logger.warning("Transform completed with warnings for %s", unvouched_detail)
+                    logger.warning(
+                        "Transform completed with warnings for %s",
+                        unvouched_detail + frames_detail,
+                    )
                 tracker.complete_with_warnings(
                     rows_out=total_rows,
                     rows_skipped=total_unmapped + total_validation_failures,
@@ -1172,15 +1256,40 @@ def run_transform(
             # loop already accumulated (I-7: counted, every run, indefinitely).
             # `transformer` may still be `None` -- `get_transformer` itself can
             # raise before any instance exists.
+            #
+            # D-42's CONSUMER half. Preserving the counters on the transformer
+            # is only half of it: the normal accumulation above sits INSIDE the
+            # per-date loop, so when `run()` raises, the failing date's counters
+            # are never folded. An unaccounted empty frame or a counted row
+            # exclusion from an earlier file would then vanish from the failed
+            # result -- correctly `failed`, never falsely successful, but
+            # counted and then dropped, which is the invariant this layer
+            # asserts. No double-count: the raising date never reached the
+            # accumulation, and earlier dates did not leave their values on the
+            # instance for a second pass, because `run()` resets every counter
+            # on entry. This snapshot is exactly the un-accumulated remainder --
+            # the same argument the `|=` above already rests on.
             if transformer is not None:
                 unvouched_bronze |= transformer.last_unvouched_bronze
+                total_unmapped += transformer.last_unmapped_count
+                total_validation_failures += (
+                    transformer.last_validation_failure_count + transformer.last_excluded_row_count
+                )
+                total_unaccounted_empty_frames += transformer.last_unaccounted_empty_frames
             bronze_unvouched = len({path for path, _ in unvouched_bronze})
+            # The frame count has NO result field, so folding it without
+            # rendering it would leave it exactly as invisible as before the
+            # fold. One renderer, both paths.
+            error_message += _describe_unaccounted_frames(total_unaccounted_empty_frames)
             results.append(
                 DatasetResult(
                     source=source,
                     dataset=ds,
                     operation="transform",
                     status="failed",
+                    rows_skipped=total_unmapped + total_validation_failures,
+                    rows_unmapped=total_unmapped,
+                    rows_invalid=total_validation_failures,
                     bronze_unvouched=bronze_unvouched,
                     error=error_message,
                 )
