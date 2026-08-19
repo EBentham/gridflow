@@ -114,6 +114,52 @@ else:
 """
 
 
+# T-29 (D-37, D-38). The proof above establishes that the PACKAGE is imported;
+# it says nothing about whether each transformer MODULE inside it added its own
+# `__init__.py` import line, which is the thing that fires
+# `register_transformer`. A missed line leaves that dataset silently
+# unregistered -- `get_transformer` raises in production, and no test in the
+# pytest process can see it because collection imports the modules directly.
+#
+# The COUNT assertion is the half that catches the omission a per-key
+# resolution loop would miss on its own: a fourth dataset registered without a
+# manifest/latest-view entry, or a stale module left importing itself after its
+# dataset was retired, both show up here as a number that is not three.
+_D02_DATASETS = (
+    "daily_wind_availability",
+    "historic_generation_mix",
+    "embedded_wind_solar_forecast",
+)
+
+_TRANSFORMERS_RESOLVE = f"""
+from pathlib import Path
+
+from gridflow.pipeline import runner
+from gridflow.silver.registry import get_transformer, list_transformers
+
+runner.import_transformers()
+
+for dataset in {_D02_DATASETS!r}:
+    transformer = get_transformer('neso_data_portal', dataset, Path('.'))
+    assert transformer.dataset == dataset, transformer.dataset
+    assert transformer.source == 'neso_data_portal', transformer.source
+
+registered = sorted(list_transformers('neso_data_portal'))
+assert len(registered) == 3, registered
+assert registered == sorted(('neso_data_portal', d) for d in {_D02_DATASETS!r}), registered
+print('RESOLVED_ALL_THREE')
+"""
+
+_TRANSFORMERS_RESOLVE_WITHOUT_BOOTSTRAP = """
+from pathlib import Path
+
+from gridflow.silver.registry import get_transformer
+
+get_transformer('neso_data_portal', 'daily_wind_availability', Path('.'))
+print('RESOLVED_ALL_THREE')
+"""
+
+
 def _run_in_fresh_interpreter(script: str) -> subprocess.CompletedProcess[str]:
     """Run ``script`` in a brand-new interpreter with no prior gridflow imports."""
     return subprocess.run(
@@ -195,3 +241,40 @@ def test_the_negative_control_shows_the_import_depends_on_the_bootstrap_entry() 
         "the package was imported even with its bootstrap entry removed, so the "
         "positive assertion above does not actually depend on _TRANSFORMER_MODULES"
     )
+
+
+def test_all_three_transformers_resolve_in_a_fresh_interpreter() -> None:
+    """T-29: every D-02 dataset is reachable through the production bootstrap.
+
+    This is the backstop D-38 names for its own rule. The package importing
+    cleanly (above) proves nothing about the three per-module import lines
+    inside it: a transformer whose line was never added registers nowhere, and
+    `get_transformer` raises only in production, because pytest collection
+    imports the modules directly and populates the registry by accident.
+
+    The count is asserted too, not just resolvability -- see `_D02_DATASETS`.
+    """
+    result = _run_in_fresh_interpreter(_TRANSFORMERS_RESOLVE)
+
+    assert result.returncode == 0, (
+        "one of the three neso_data_portal transformers did not resolve in a fresh "
+        "interpreter after import_transformers() — is a D-38 import line missing from "
+        f"gridflow/silver/neso_data_portal/__init__.py?\n{result.stdout}\n{result.stderr}"
+    )
+    assert "RESOLVED_ALL_THREE" in result.stdout
+
+
+def test_the_negative_control_fails_without_the_transformer_bootstrap() -> None:
+    """Without `import_transformers()` the same resolution must FAIL.
+
+    What makes the proof above meaningful: if a transformer resolved here too,
+    something other than the bootstrap would be populating the registry and the
+    positive test would be measuring that instead.
+    """
+    result = _run_in_fresh_interpreter(_TRANSFORMERS_RESOLVE_WITHOUT_BOOTSTRAP)
+
+    assert result.returncode != 0, (
+        "a transformer resolved WITHOUT import_transformers() — the positive proof "
+        "above is therefore vacuous"
+    )
+    assert "RESOLVED_ALL_THREE" not in result.stdout
