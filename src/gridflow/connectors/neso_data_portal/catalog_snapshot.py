@@ -40,6 +40,7 @@ import logging
 import os
 import re
 import time
+from collections.abc import Mapping
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Protocol
@@ -48,7 +49,7 @@ from gridflow.config.settings import load_settings
 from gridflow.connectors.neso_data_portal.client import NesoDataPortalConnector
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Iterable, Sequence
+    from collections.abc import Callable, Sequence
     from types import TracebackType
 
     from gridflow.connectors.neso_data_portal.client import CatalogDiscovery
@@ -58,7 +59,7 @@ __all__ = [
     "CATALOG_FILENAME",
     "CHECKSUMS_FILENAME",
     "MANIFEST_FILENAME",
-    "MEMBER_DOCUMENT_KEYS",
+    "MEMBER_BUILDERS",
     "PROVENANCE_DOCUMENT_KEYS",
     "PROVENANCE_FILENAME",
     "PROVENANCE_REQUEST_KEYS",
@@ -67,6 +68,7 @@ __all__ = [
     "SNAPSHOT_ID_FORMAT",
     "CatalogDiscoverer",
     "IncompleteProvenanceError",
+    "InvalidDocumentError",
     "ManifestAdvanceError",
     "RowSampleRejectedError",
     "SnapshotError",
@@ -102,28 +104,12 @@ PROVENANCE_REQUEST_KEYS: tuple[str, ...] = (
     "body_sha256",
 )
 
-MEMBER_DOCUMENT_KEYS: dict[str, tuple[str, ...]] = {
-    CATALOG_FILENAME: CATALOG_DOCUMENT_KEYS,
-    PROVENANCE_FILENAME: PROVENANCE_DOCUMENT_KEYS,
-}
-"""The shape of every required member — **written and verified from here**.
+"""The key tuples above are the writer's construction order, nothing more.
 
-The writer builds each document by zipping its values onto these key tuples and
-the verifier checks each parsed document against the same tuples, so the two
-cannot drift apart silently. A verifier that repeated the key literals would be
-a second copy of the contract, and the failure mode of a second copy is that it
-stops agreeing with the first without anything failing.
-"""
-
-REQUIRED_MEMBERS: tuple[str, ...] = tuple(MEMBER_DOCUMENT_KEYS)
-"""The members a snapshot must carry to be worth activating.
-
-``sha256sums.txt`` proves a directory is *self-consistent*, not that it is a
-snapshot: an empty marker in an empty directory verifies perfectly, so does any
-self-consistent subset, and so do two zero-byte members listed with the hash of
-emptiness. Verification therefore requires these members by name **and checks
-what is inside them** (Sol passes 1 and 2) — "present and correctly hashed" is
-not "valid", and every variant of that gap is the same defect.
+They are **not** a description of validity that a verifier could check against.
+What a valid document *is* lives in :func:`_catalog_document` and
+:func:`_provenance_document`, and the verifier learns it by calling them — see
+:data:`MEMBER_BUILDERS`.
 """
 
 SOURCE_NAME = "neso_data_portal"
@@ -161,6 +147,10 @@ class IncompleteProvenanceError(SnapshotError):
 
 class RowSampleRejectedError(SnapshotError):
     """A payload carried dataset rows, which may not be written to the vault."""
+
+
+class InvalidDocumentError(SnapshotError):
+    """A snapshot document is not one the writer could have produced."""
 
 
 class SnapshotVerificationError(SnapshotError):
@@ -230,14 +220,63 @@ def _iso_utc(moment: datetime) -> str:
     return moment.astimezone(UTC).isoformat().replace("+00:00", "Z")
 
 
+def _require_snapshot_id(value: object) -> str:
+    """Accept only an id :func:`_snapshot_id` could have produced.
+
+    Checked by **round trip**, not by pattern: the value is parsed with
+    :data:`SNAPSHOT_ID_FORMAT` and re-formatted through the same function the
+    writer uses, so anything the formatter would not emit is refused. A regex
+    would be a second description of the format, and a second description is
+    the thing that drifts.
+
+    Args:
+        value: The candidate id — a generated one on the way out, a parsed
+            document's ``snapshot_id`` or a directory name on the way in.
+
+    Returns:
+        The id, unchanged.
+
+    Raises:
+        InvalidDocumentError: The value is not a string, or is not the exact
+            rendering :func:`_snapshot_id` produces for the instant it names.
+    """
+    if not isinstance(value, str):
+        raise InvalidDocumentError(
+            f"snapshot id {value!r} is a {type(value).__name__}, not a string"
+        )
+    try:
+        moment = datetime.strptime(value, SNAPSHOT_ID_FORMAT).replace(tzinfo=UTC)
+    except ValueError as error:
+        raise InvalidDocumentError(
+            f"snapshot id {value!r} is not a UTC {SNAPSHOT_ID_FORMAT} instant, so it is not "
+            f"an id this materializer could have produced ({error})"
+        ) from error
+    if _snapshot_id(moment) != value:
+        raise InvalidDocumentError(
+            f"snapshot id {value!r} does not round-trip through the writer's own formatter "
+            f"(it re-renders as {_snapshot_id(moment)!r})"
+        )
+    return value
+
+
 # ---------------------------------------------------------------------------
 # Provenance — every field sourced from the trace, none defaulted (FM-14)
 # ---------------------------------------------------------------------------
 
 
 def _trace_field(index: int, trace: object, name: str) -> Any:
-    """Read one trace attribute, refusing to substitute a blank for an absence."""
-    value = getattr(trace, name, _MISSING)
+    """Read one trace field, refusing to substitute a blank for an absence.
+
+    Reads an attribute from a :class:`RequestTrace` on the way out, and a key
+    from a parsed ``provenance.json`` request on the way in. **One accessor is
+    what makes one validator possible**: the verifier feeds parsed records back
+    through :func:`_provenance_entry`, so every rejection the writer performs
+    is a rejection the verifier performs, without either side describing the
+    other's rules.
+    """
+    value = trace[name] if isinstance(trace, Mapping) and name in trace else _MISSING
+    if value is _MISSING and not isinstance(trace, Mapping):
+        value = getattr(trace, name, _MISSING)
     if value is _MISSING:
         raise IncompleteProvenanceError(
             f"request trace {index} carries no {name!r}. provenance.json has no other "
@@ -247,9 +286,34 @@ def _trace_field(index: int, trace: object, name: str) -> Any:
     return value
 
 
+def _parse_iso_utc(index: int, name: str, value: str) -> datetime:
+    """Parse a rendered provenance timestamp, refusing anything the writer would not emit."""
+    try:
+        moment = datetime.fromisoformat(value)
+    except ValueError as error:
+        raise IncompleteProvenanceError(
+            f"request trace {index} field {name!r} is {value!r}, which is not an ISO-8601 "
+            f"instant ({error})"
+        ) from error
+    if moment.utcoffset() is None or _iso_utc(moment) != value:
+        raise IncompleteProvenanceError(
+            f"request trace {index} field {name!r} is {value!r}, which is not the UTC form "
+            "this materializer writes"
+        )
+    return moment
+
+
 def _trace_utc(index: int, trace: object, name: str) -> datetime:
-    """Read one trace timestamp, requiring it to be tz-aware UTC."""
+    """Read one trace timestamp, requiring it to be tz-aware UTC.
+
+    A string is accepted only if it is exactly what :func:`_iso_utc` emits for
+    the instant it names — the same round-trip rule as the snapshot id. That is
+    what lets a rendered timestamp read back in be checked by the very code
+    that rendered it.
+    """
     value = _trace_field(index, trace, name)
+    if isinstance(value, str):
+        value = _parse_iso_utc(index, name, value)
     if not isinstance(value, datetime):
         raise IncompleteProvenanceError(
             f"request trace {index} field {name!r} is {type(value).__name__}, not a datetime"
@@ -340,15 +404,43 @@ def _provenance_entry(index: int, trace: object) -> dict[str, Any]:
     )
 
 
-def _provenance_document(snapshot_id: str, traces: Iterable[object]) -> dict[str, Any]:
-    """Build the whole ``provenance.json`` payload from the discovery traces."""
+def _provenance_document(snapshot_id: object, traces: object) -> dict[str, Any]:
+    """Build ``provenance.json`` from request traces — **and validate them**.
+
+    This is the only description of a valid provenance document in the module.
+    The writer calls it with ``CatalogDiscovery`` traces; the verifier calls it
+    with the request records parsed back off disk. Both therefore get every
+    rejection :func:`_provenance_entry` performs — an empty ``action``, a
+    non-mapping ``params`` or ``headers``, an unparseable or reversed
+    timestamp, a boolean ``status_code``, a malformed body hash — without the
+    verifier restating a single one of them (PHASE.md ruling 11).
+
+    Args:
+        snapshot_id: The id the document must name.
+        traces: Request traces, or the parsed ``requests`` list.
+
+    Returns:
+        The document the writer would write for these inputs.
+
+    Raises:
+        InvalidDocumentError: The id or the trace collection is not a shape the
+            writer could have been handed.
+        IncompleteProvenanceError: Any trace is incomplete or invalid (FM-14),
+            including the empty collection — which the writer refuses to
+            produce, and the verifier therefore refuses to accept.
+    """
+    identity = _require_snapshot_id(snapshot_id)
+    if not isinstance(traces, (list, tuple)):
+        raise InvalidDocumentError(
+            f"'requests' is a {type(traces).__name__}, not a list of request records"
+        )
     requests = [_provenance_entry(index, trace) for index, trace in enumerate(traces)]
     if not requests:
         raise IncompleteProvenanceError(
             "the discovery result carries no request traces at all; a snapshot without "
             "provenance is exactly what FM-14 exists to prevent"
         )
-    return dict(zip(PROVENANCE_DOCUMENT_KEYS, (snapshot_id, SOURCE_NAME, requests), strict=True))
+    return dict(zip(PROVENANCE_DOCUMENT_KEYS, (identity, SOURCE_NAME, requests), strict=True))
 
 
 # ---------------------------------------------------------------------------
@@ -476,15 +568,76 @@ def _log_incomplete_snapshots(snapshots_root: Path) -> None:
         )
 
 
-def _catalog_document(snapshot_id: str, packages: Sequence[dict[str, Any]]) -> dict[str, Any]:
-    """Build the ``catalog-snapshot.json`` payload from the discovered packages."""
+def _catalog_document(snapshot_id: object, packages: object) -> dict[str, Any]:
+    """Build ``catalog-snapshot.json`` from the packages — **and validate them**.
+
+    The only description of a valid catalogue document in the module. It owns
+    the metadata-only guard, so the guard runs on the way out *and* on the way
+    back in: a catalogue carrying dataset rows is refused by the verifier for
+    the same reason and through the same call the writer refuses it (PHASE.md
+    ruling 11). ``package_count`` is computed rather than trusted, so a
+    document whose count disagrees with its own packages simply is not the
+    document this function builds.
+
+    **An empty catalogue is valid**, deliberately: ``discover_catalog`` treats
+    zero packages reconciling against a declared count of zero as a legitimate
+    answer, so the writer can honestly produce one and a verifier that refused
+    it would fail on the real vault rather than on a bad snapshot. Provenance
+    is the asymmetric case — see :func:`_provenance_document`.
+
+    Args:
+        snapshot_id: The id the document must name.
+        packages: The discovered package payloads, or the parsed ``packages``.
+
+    Returns:
+        The document the writer would write for these inputs.
+
+    Raises:
+        InvalidDocumentError: The id or the package collection is not a shape
+            the writer could have been handed.
+        RowSampleRejectedError: A payload carried dataset rows.
+    """
+    identity = _require_snapshot_id(snapshot_id)
+    if not isinstance(packages, (list, tuple)):
+        raise InvalidDocumentError(
+            f"'packages' is a {type(packages).__name__}, not a list of package payloads"
+        )
+    _reject_row_samples(packages)
     return dict(
         zip(
             CATALOG_DOCUMENT_KEYS,
-            (snapshot_id, SOURCE_NAME, len(packages), list(packages)),
+            (identity, SOURCE_NAME, len(packages), list(packages)),
             strict=True,
         )
     )
+
+
+MEMBER_BUILDERS: dict[str, Callable[[dict[str, Any]], dict[str, Any]]] = {
+    CATALOG_FILENAME: lambda document: _catalog_document(
+        document.get("snapshot_id"), document.get("packages")
+    ),
+    PROVENANCE_FILENAME: lambda document: _provenance_document(
+        document.get("snapshot_id"), document.get("requests")
+    ),
+}
+"""How the verifier re-derives each member — **through the writer's own code**.
+
+``verify_snapshot`` parses a member, feeds its fields back through the function
+that built it, and requires the result to equal what is on disk. There is no
+second description of validity to drift: every rule the writer enforces is
+enforced on the way back in because it is literally the same call, and any
+document the writer could not have produced fails either by raising inside the
+builder or by not matching what the builder returns.
+"""
+
+REQUIRED_MEMBERS: tuple[str, ...] = tuple(MEMBER_BUILDERS)
+"""The members a snapshot must carry to be worth activating.
+
+``sha256sums.txt`` proves a directory is *self-consistent*, not that it is a
+snapshot: an empty marker over an empty directory verifies perfectly, so does
+any self-consistent subset, and so do two zero-byte members listed with the
+hash of emptiness (Sol passes 1 and 2).
+"""
 
 
 async def build_snapshot(
@@ -520,7 +673,6 @@ async def build_snapshot(
     snapshots_root = out_root / SNAPSHOTS_DIRNAME
     snapshot_dir = snapshots_root / snapshot_id
 
-    _reject_row_samples(discovery.packages)
     catalog = _catalog_document(snapshot_id, discovery.packages)
     provenance = _provenance_document(snapshot_id, discovery.traces)
 
@@ -569,18 +721,34 @@ def _member_error(directory: Path, name: str, defect: str) -> SnapshotVerificati
     return SnapshotVerificationError(f"snapshot {directory}: {name!r} {defect}")
 
 
-def _validate_member_document(directory: Path, name: str) -> dict[str, Any]:
-    """Parse one required member and check it against the shape the writer wrote.
+def _disagreeing_keys(recorded: dict[str, Any], rebuilt: dict[str, Any]) -> list[str]:
+    """Name the keys on which a member disagrees with what the writer builds."""
+    return sorted(
+        key
+        for key in set(recorded) | set(rebuilt)
+        if recorded.get(key, _MISSING) != rebuilt.get(key, _MISSING)
+    )
+
+
+def _revalidate_member(directory: Path, name: str) -> None:
+    """Parse one required member and re-derive it **through the writer's code**.
 
     Hash agreement proves the bytes have not changed since the marker was
     installed. It proves nothing about what those bytes *are*: zero-byte
     members listed with the hash of emptiness agree with their marker
-    perfectly. So each required member is parsed and checked against
-    :data:`MEMBER_DOCUMENT_KEYS` — the same tuples the writer builds from.
+    perfectly, and so does a catalogue full of dataset rows.
+
+    So the parsed document's own fields are handed back to the function that
+    built it (:data:`MEMBER_BUILDERS`) and the result must equal what is on
+    disk. Anything the writer would have rejected raises inside the builder;
+    anything the writer would have written differently fails the comparison.
+    **There is no second description of validity here to drift out of step**
+    (PHASE.md ruling 11).
 
     Raises:
-        SnapshotVerificationError: The member is empty, is not JSON, is not the
-            JSON object the writer writes, or does not carry exactly its keys.
+        SnapshotVerificationError: The member is empty, is not JSON, is not a
+            JSON object, was rejected by the writer's own validation, or is not
+            what the writer builds from its own fields.
     """
     raw = (directory / name).read_bytes()
     if not raw.strip():
@@ -598,80 +766,27 @@ def _validate_member_document(directory: Path, name: str) -> dict[str, Any]:
             f"is a JSON {type(document).__name__}, not the object the writer writes",
         )
 
-    expected = set(MEMBER_DOCUMENT_KEYS[name])
-    if set(document) != expected:
-        missing = sorted(expected - set(document))
-        unexpected = sorted(set(document) - expected)
+    if document.get("snapshot_id") != directory.name:
         raise _member_error(
             directory,
             name,
-            f"does not carry the keys the writer writes (missing {missing}, "
-            f"unexpected {unexpected})",
+            f"names snapshot {document.get('snapshot_id')!r}, but it sits in {directory.name!r}",
         )
 
-    identity = document["snapshot_id"]
-    if identity != directory.name:
+    try:
+        rebuilt = MEMBER_BUILDERS[name](document)
+    except SnapshotError as error:
         raise _member_error(
-            directory, name, f"names snapshot {identity!r}, but it sits in {directory.name!r}"
-        )
-    if document["source"] != SOURCE_NAME:
-        raise _member_error(directory, name, f"names source {document['source']!r}")
-    return document
+            directory, name, f"is not a document this materializer could have written: {error}"
+        ) from error
 
-
-def _validate_catalog_content(directory: Path, document: dict[str, Any]) -> None:
-    """Check ``catalog-snapshot.json``'s own internal agreement.
-
-    **An empty catalogue is accepted**, deliberately. ``discover_catalog``
-    treats a catalogue of zero packages reconciling against a declared count of
-    zero as a legitimate answer rather than an error, so ``build_snapshot`` can
-    honestly produce a zero-package snapshot; refusing it here would make the
-    verifier stricter than the writer, and a verifier that rejects what the
-    writer produces fails on the real vault rather than on a bad one.
-    """
-    packages = document["packages"]
-    count = document["package_count"]
-    if not isinstance(packages, list):
-        raise _member_error(
-            directory, CATALOG_FILENAME, f"'packages' is a {type(packages).__name__}, not a list"
-        )
-    if isinstance(count, bool) or not isinstance(count, int):
-        raise _member_error(directory, CATALOG_FILENAME, "'package_count' is not an integer")
-    if count != len(packages):
+    if rebuilt != document:
         raise _member_error(
             directory,
-            CATALOG_FILENAME,
-            f"claims {count} packages but carries {len(packages)}",
+            name,
+            "is not what the writer builds from its own fields; disagreeing keys: "
+            f"{_disagreeing_keys(document, rebuilt)}",
         )
-
-
-def _validate_provenance_content(directory: Path, document: dict[str, Any]) -> None:
-    """Check that ``provenance.json`` actually records requests.
-
-    ``build_snapshot`` refuses to write a provenance document with no requests
-    (FM-14), so an empty ``requests`` list on disk is not something the writer
-    can produce — unlike an empty catalogue, which it can.
-    """
-    requests = document["requests"]
-    if not isinstance(requests, list):
-        raise _member_error(
-            directory,
-            PROVENANCE_FILENAME,
-            f"'requests' is a {type(requests).__name__}, not a list",
-        )
-    if not requests:
-        raise _member_error(
-            directory, PROVENANCE_FILENAME, "records no requests, so it is evidence of nothing"
-        )
-    expected = set(PROVENANCE_REQUEST_KEYS)
-    for position, entry in enumerate(requests):
-        if not isinstance(entry, dict) or set(entry) != expected:
-            raise _member_error(
-                directory,
-                PROVENANCE_FILENAME,
-                f"request {position} does not carry the fields the writer writes "
-                f"({sorted(expected)})",
-            )
 
 
 def verify_snapshot(directory: Path) -> None:
@@ -735,10 +850,15 @@ def verify_snapshot(directory: Path) -> None:
                 f"{CHECKSUMS_FILENAME} records {digest}"
             )
 
-    catalog = _validate_member_document(directory, CATALOG_FILENAME)
-    provenance = _validate_member_document(directory, PROVENANCE_FILENAME)
-    _validate_catalog_content(directory, catalog)
-    _validate_provenance_content(directory, provenance)
+    try:
+        _require_snapshot_id(directory.name)
+    except InvalidDocumentError as error:
+        raise SnapshotVerificationError(
+            f"snapshot directory {directory.name!r} is not an id this materializer could "
+            f"have produced: {error}"
+        ) from error
+    for name in REQUIRED_MEMBERS:
+        _revalidate_member(directory, name)
 
 
 def _replace_with_retry(

@@ -948,7 +948,10 @@ class TestMemberContentsAreValidated:
         document["packages"] = []
         _restate(snapshot_dir, CATALOG_FILENAME, json.dumps(document).encode("utf-8"))
 
-        with pytest.raises(SnapshotVerificationError, match="claims 2 packages but carries 0"):
+        with pytest.raises(
+            SnapshotVerificationError,
+            match=r"disagreeing keys: \['package_count'\]",
+        ):
             verify_snapshot(snapshot_dir)
 
     def test_a_provenance_document_recording_no_requests_fails(
@@ -961,7 +964,7 @@ class TestMemberContentsAreValidated:
         document["requests"] = []
         _restate(snapshot_dir, PROVENANCE_FILENAME, json.dumps(document).encode("utf-8"))
 
-        with pytest.raises(SnapshotVerificationError, match="records no requests"):
+        with pytest.raises(SnapshotVerificationError, match="no request traces at all"):
             verify_snapshot(snapshot_dir)
 
     def test_a_provenance_request_missing_a_field_fails(
@@ -973,7 +976,7 @@ class TestMemberContentsAreValidated:
         del document["requests"][0]["body_sha256"]
         _restate(snapshot_dir, PROVENANCE_FILENAME, json.dumps(document).encode("utf-8"))
 
-        with pytest.raises(SnapshotVerificationError, match="request 0"):
+        with pytest.raises(SnapshotVerificationError, match="request trace 0 carries no"):
             verify_snapshot(snapshot_dir)
 
     def test_a_member_carrying_another_snapshots_id_fails_verification(
@@ -1023,23 +1026,182 @@ class TestTheVerifierAcceptsWhatTheWriterWrites:
         assert document["package_count"] == 0
         assert json.loads(_manifest_bytes(tmp_path))["snapshot_id"] == SNAPSHOT_ONE
 
-    def test_the_writer_emits_exactly_the_keys_the_verifier_requires(
+    def test_the_real_output_round_trips_through_the_writers_own_builders(
         self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        """One source of truth: if the writer's shape ever moves, it moves
-        because the shared tuples moved, and the verifier moves with it."""
+        """One source of truth (PHASE.md ruling 11): the verifier re-derives each
+        member by calling the function that wrote it, so this asserts the fixed
+        point directly — writer output fed back through the builder is itself."""
         _at(monkeypatch, MOMENT_ONE)
         snapshot_dir = _build(_discovery(), tmp_path)
 
         catalog = json.loads((snapshot_dir / CATALOG_FILENAME).read_bytes())
         provenance = json.loads((snapshot_dir / PROVENANCE_FILENAME).read_bytes())
 
-        assert set(catalog) == set(catalog_snapshot.CATALOG_DOCUMENT_KEYS)
-        assert set(provenance) == set(catalog_snapshot.PROVENANCE_DOCUMENT_KEYS)
-        for entry in provenance["requests"]:
-            assert set(entry) == set(catalog_snapshot.PROVENANCE_REQUEST_KEYS)
-        assert tuple(catalog_snapshot.MEMBER_DOCUMENT_KEYS) == catalog_snapshot.REQUIRED_MEMBERS
-        assert set(catalog_snapshot.MEMBER_DOCUMENT_KEYS) == {
-            CATALOG_FILENAME,
-            PROVENANCE_FILENAME,
-        }
+        assert catalog_snapshot.MEMBER_BUILDERS[CATALOG_FILENAME](catalog) == catalog
+        assert catalog_snapshot.MEMBER_BUILDERS[PROVENANCE_FILENAME](provenance) == provenance
+        assert tuple(catalog_snapshot.MEMBER_BUILDERS) == catalog_snapshot.REQUIRED_MEMBERS
+        assert set(catalog_snapshot.MEMBER_BUILDERS) == {CATALOG_FILENAME, PROVENANCE_FILENAME}
+
+
+# ---------------------------------------------------------------------------
+# Sol pass 3 — the verifier runs the writer's own validation (ruling 11)
+# ---------------------------------------------------------------------------
+
+
+def _rewrite_request(snapshot_dir: Path, field: str, value: Any) -> None:
+    """Set one field of the first recorded request, and re-record the digests."""
+    document = json.loads((snapshot_dir / PROVENANCE_FILENAME).read_bytes())
+    document["requests"][0][field] = value
+    _restate(snapshot_dir, PROVENANCE_FILENAME, json.dumps(document).encode("utf-8"))
+
+
+class TestTheWritersOwnRejectionsApplyOnTheWayIn:
+    """Sol pass 3, finding 1: a request entry with the right KEYS but invalid
+    VALUES was accepted, although ``_provenance_entry`` rejects every one of
+    these on the way out.
+
+    Each case is hash-consistent, so it passes membership and every digest
+    check; each is refused because verification now re-derives the document
+    through the writer's own builder rather than through a second description
+    of what valid means.
+    """
+
+    @pytest.mark.parametrize(
+        ("field", "value", "defect"),
+        [
+            ("action", "", "empty 'action'"),
+            ("params", ["rows", "50"], "not a mapping"),
+            ("headers", "date: today", "not a mapping"),
+            ("started_at", "not-a-timestamp", "not an ISO-8601 instant"),
+            ("started_at", "2026-08-16T18:52:00", "not the UTC form"),
+            ("finished_at", "2020-01-01T00:00:00Z", "before it started"),
+            ("status_code", True, "not an integer status"),
+            ("status_code", "200", "not an integer status"),
+            ("body_sha256", "deadbeef", "not a lowercase sha256 hex digest"),
+        ],
+    )
+    def test_an_invalid_request_value_fails_verification(
+        self,
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+        field: str,
+        value: Any,
+        defect: str,
+    ) -> None:
+        _at(monkeypatch, MOMENT_ONE)
+        snapshot_dir = _build(_discovery(), tmp_path)
+        _rewrite_request(snapshot_dir, field, value)
+
+        with pytest.raises(SnapshotVerificationError, match=defect):
+            verify_snapshot(snapshot_dir)
+
+    def test_an_invalid_request_value_cannot_be_advanced_to(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        _complete_and_advance(monkeypatch, tmp_path, MOMENT_ONE)
+        before = _manifest_bytes(tmp_path)
+
+        _at(monkeypatch, MOMENT_TWO)
+        second = _build(_discovery(), tmp_path)
+        _rewrite_request(second, "body_sha256", "deadbeef")
+
+        with pytest.raises(SnapshotVerificationError, match="sha256 hex digest"):
+            advance_manifest(tmp_path, second.name)
+
+        assert _manifest_bytes(tmp_path) == before
+        assert json.loads(before)["snapshot_id"] == SNAPSHOT_ONE
+
+
+class TestTheMetadataOnlyGuardAppliesOnTheWayIn:
+    """Sol pass 3, finding 2: a correctly-hashed catalogue carrying dataset rows
+    was activatable, although ``build_snapshot`` refuses to write one.
+
+    The guard now lives inside the catalogue builder, so the verifier runs it
+    by re-deriving the document — the same call, not a copy of it.
+    """
+
+    def test_a_catalogue_carrying_dataset_rows_fails_verification(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        _at(monkeypatch, MOMENT_ONE)
+        snapshot_dir = _build(_discovery(), tmp_path)
+        document = json.loads((snapshot_dir / CATALOG_FILENAME).read_bytes())
+        document["packages"] = [
+            {"name": "historic-generation-mix", "records": [{"DATETIME": "2026-08-16", "GAS": 1}]}
+        ]
+        document["package_count"] = 1
+        _restate(snapshot_dir, CATALOG_FILENAME, json.dumps(document).encode("utf-8"))
+
+        with pytest.raises(SnapshotVerificationError, match="carries dataset rows"):
+            verify_snapshot(snapshot_dir)
+
+    def test_a_catalogue_carrying_dataset_rows_cannot_be_advanced_to(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        _complete_and_advance(monkeypatch, tmp_path, MOMENT_ONE)
+        before = _manifest_bytes(tmp_path)
+
+        _at(monkeypatch, MOMENT_TWO)
+        second = _build(_discovery(), tmp_path)
+        document = json.loads((second / CATALOG_FILENAME).read_bytes())
+        document["packages"] = [{"name": "daily-wind-availability", "records": [{"MW": 1}]}]
+        document["package_count"] = 1
+        _restate(second, CATALOG_FILENAME, json.dumps(document).encode("utf-8"))
+
+        with pytest.raises(SnapshotVerificationError, match="carries dataset rows"):
+            advance_manifest(tmp_path, second.name)
+
+        assert _manifest_bytes(tmp_path) == before
+        assert json.loads(before)["snapshot_id"] == SNAPSHOT_ONE
+
+
+class TestTheSnapshotIdMustBeOneTheWriterCouldProduce:
+    """Sol pass 3, finding 3: the id was compared only to the directory name, so
+    a self-consistent snapshot under an arbitrary directory name was
+    activatable although ``build_snapshot`` can only emit UTC-formatted ids.
+
+    The id is now checked by round trip through the writer's own formatter.
+    """
+
+    def _snapshot_under(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch, directory_name: str
+    ) -> Path:
+        """Build a real snapshot, then move it under an arbitrary name and
+        restate both documents' ids so the directory is fully self-consistent."""
+        _at(monkeypatch, MOMENT_ONE)
+        built = _build(_discovery(), tmp_path)
+        renamed = built.parent / directory_name
+        built.rename(renamed)
+        for member in (CATALOG_FILENAME, PROVENANCE_FILENAME):
+            document = json.loads((renamed / member).read_bytes())
+            document["snapshot_id"] = directory_name
+            _restate(renamed, member, json.dumps(document).encode("utf-8"))
+        return renamed
+
+    def test_a_snapshot_under_a_non_utc_directory_name_fails_verification(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        renamed = self._snapshot_under(tmp_path, monkeypatch, "arbitrary-name")
+
+        with pytest.raises(SnapshotVerificationError, match="arbitrary-name"):
+            verify_snapshot(renamed)
+
+    def test_a_snapshot_under_a_non_utc_directory_name_cannot_be_advanced_to(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        renamed = self._snapshot_under(tmp_path, monkeypatch, "latest")
+
+        with pytest.raises(SnapshotVerificationError, match="latest"):
+            advance_manifest(tmp_path, renamed.name)
+
+        assert not (tmp_path / MANIFEST_FILENAME).exists()
+
+    def test_an_id_shaped_but_impossible_instant_is_refused(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Right length, right separators, not an instant the formatter emits."""
+        renamed = self._snapshot_under(tmp_path, monkeypatch, "20260899T185200Z")
+
+        with pytest.raises(SnapshotVerificationError, match="20260899T185200Z"):
+            verify_snapshot(renamed)
