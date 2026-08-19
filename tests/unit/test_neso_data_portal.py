@@ -4612,6 +4612,35 @@ class TestEmbeddedForecastExclusionAccounting:
             "documents its rows as still written"
         )
 
+    def test_two_vintages_accumulate_on_the_counter_itself(self, short_tmp_path: Path) -> None:
+        """The `+=` contract at its own level, before any fold.
+
+        The runner-level test below observes the same defect through
+        `rows_invalid`, but only after the fold has had a chance to hide or
+        double it. This asserts the number the transformer itself carries: two
+        bronze bodies, one declined row each, ONE reset in `run()`. An
+        assignment inside `transform()` leaves 1 here.
+        """
+        for name, filename, minute in (
+            ("first", "202608161825_embedded_forecast.csv", 25),
+            ("second", "202608161855_embedded_forecast.csv", 55),
+        ):
+            _seed_emb_bronze(
+                short_tmp_path,
+                ORDINARY_DAY,
+                name=name,
+                body=_emb_csv(_emb_row(ORDINARY_DAY, 48), _emb_row(ORDINARY_DAY, 49)),
+                resource_filename=filename,
+                written_at=datetime(2026, 8, 16, 18, minute, tzinfo=UTC),
+            )
+        transformer = EmbeddedWindSolarForecastTransformer(short_tmp_path)
+
+        rows = transformer.run(ORDINARY_DAY, run_id="t17-two-vintages")
+
+        assert rows == 2, "the kept row of each vintage is still written"
+        assert transformer.last_excluded_row_count == 2
+        assert transformer.last_validation_failure_count == 0
+
     def test_run_transform_reports_completed_with_warnings(
         self, short_tmp_path: Path, monkeypatch: pytest.MonkeyPatch
     ) -> None:
@@ -4638,7 +4667,10 @@ class TestEmbeddedForecastExclusionAccounting:
 
         assert result.status == "completed_with_warnings"
         assert result.rows_out == 1
-        assert result.rows_invalid >= 1
+        # EXACTLY 1, not `>= 1`. The seed's surviving row is valid, so the
+        # validator contributes provably 0 and the fold's whole value is the
+        # exclusion -- `>=` would equally pass a fold that double-counted it.
+        assert result.rows_invalid == 1
 
     def test_two_vintages_in_one_run_accumulate_to_two(
         self, short_tmp_path: Path, monkeypatch: pytest.MonkeyPatch
@@ -4672,7 +4704,7 @@ class TestEmbeddedForecastExclusionAccounting:
 
         assert result.status == "completed_with_warnings"
         assert result.rows_out == 2, "the kept row of each vintage is still written"
-        assert result.rows_invalid >= 2, (
+        assert result.rows_invalid == 2, (
             "one vintage's exclusion was lost -- the counter was assigned, not accumulated"
         )
 
