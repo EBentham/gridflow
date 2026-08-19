@@ -115,6 +115,15 @@ LATEST_VIEW_SPECS: dict[tuple[str, str], LatestViewSpec] = {
     ("neso_data_portal", "daily_wind_availability"): LatestViewSpec(
         key_columns=("bmu_id", "availability_date"),
     ),
+    # D-21/D-24. The resource's own CKAN `notes` says the data "is subject to
+    # change due to a data cleansing process", so two captures legitimately
+    # disagree about one instant and both are retained. This projection returns
+    # the most recently PUBLISHED value per instant, and it is the default
+    # consumer surface for this dataset: the base view holds one full copy of
+    # 2009-present per capture (D-30).
+    ("neso_data_portal", "historic_generation_mix"): LatestViewSpec(
+        key_columns=("timestamp_utc",),
+    ),
 }
 
 

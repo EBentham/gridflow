@@ -54,3 +54,61 @@ class NesoDailyWindAvailability(_NesoDataPortalBase, TimestampMixin):
     availability_date: date
     availability_mw: float
     published_at: datetime
+
+
+class NesoHistoricGenerationMix(_NesoDataPortalBase, TimestampMixin):
+    """Silver schema for ``historic_generation_mix`` (D-24).
+
+    ``timestamp_utc`` is the vendor's own ``DATETIME``, read as UTC. That
+    reading is DOCUMENTED rather than inferred: the UTC statement lives only in
+    the ``datastore_search`` field metadata
+    (``_probe/datastore_historic-generation-mix.json``,
+    ``DATETIME.info.description``), which a plain CSV download never exposes.
+    The transformer refuses any ``DATETIME`` that carries an offset instead of
+    re-reading it under the same assumption.
+
+    Every fuel/metric column is a plain ``float`` and every ``_pct`` column is
+    the vendor's OWN published percentage, carried rather than recomputed: a
+    recomputation would disagree with NESO's own figures at whatever rounding
+    NESO applied, and the vendor's number is the one a consumer can reconcile
+    against the portal.
+
+    ``published_at`` is REQUIRED for the same reason it is on
+    :class:`NesoDailyWindAvailability`: D-23 refuses to transform a body whose
+    vintage cannot be established, so a row without one cannot exist.
+    """
+
+    gas: float
+    coal: float
+    nuclear: float
+    wind: float
+    wind_emb: float
+    hydro: float
+    imports: float
+    biomass: float
+    other: float
+    solar: float
+    storage: float
+    generation: float
+    carbon_intensity: float
+    low_carbon: float
+    zero_carbon: float
+    renewable: float
+    fossil: float
+    gas_pct: float
+    coal_pct: float
+    nuclear_pct: float
+    wind_pct: float
+    wind_emb_pct: float
+    hydro_pct: float
+    imports_pct: float
+    biomass_pct: float
+    other_pct: float
+    solar_pct: float
+    storage_pct: float
+    generation_pct: float
+    low_carbon_pct: float
+    zero_carbon_pct: float
+    renewable_pct: float
+    fossil_pct: float
+    published_at: datetime

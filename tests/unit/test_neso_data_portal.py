@@ -62,10 +62,22 @@ from gridflow.silver.base import BaseSilverTransformer
 from gridflow.silver.csv_bronze import CsvHeaderDriftError, NotCsvBodyError
 from gridflow.silver.elexon.system_prices import SystemPriceTransformer
 from gridflow.silver.latest_views import LATEST_VIEW_SPECS
+from gridflow.silver.neso_data_portal import (
+    historic_generation_mix as historic_generation_mix_module,
+)
 from gridflow.silver.neso_data_portal._bronze import provenance_for
 from gridflow.silver.neso_data_portal.daily_wind_availability import (
     EXPECTED_COLUMNS,
     DailyWindAvailabilityTransformer,
+)
+from gridflow.silver.neso_data_portal.historic_generation_mix import (
+    COLUMN_MAPPING as HGM_COLUMN_MAPPING,
+)
+from gridflow.silver.neso_data_portal.historic_generation_mix import (
+    EXPECTED_COLUMNS as HISTORIC_GENERATION_MIX_COLUMNS,
+)
+from gridflow.silver.neso_data_portal.historic_generation_mix import (
+    HistoricGenerationMixTransformer,
 )
 from gridflow.silver.registry import get_transformer_class, list_transformers
 from gridflow.silver.schema_manifest import (
@@ -3622,3 +3634,354 @@ class TestRegistrationCoverage:
             "neso_data_portal reached the manifest even with its _SILVER_IMPORTS entry "
             "removed, so the fresh-interpreter proof does not actually depend on it"
         )
+
+
+# --------------------------------------------------------------------------- #
+# T-16 -- the `historic_generation_mix` transformer
+#
+# FIXTURE PROVENANCE, DISCLOSED. `tests/fixtures/neso_data_portal/
+# historic_generation_mix.csv` is the Stage-A capture
+# `_probe/sample_historic-generation-mix.csv` plus four hand-appended rows.
+#
+# The plan asked for "the first ~200 data rows" of that capture. It cannot
+# supply them: the probe was a RANGE request -- `Content-Range: bytes 0-1500/
+# <total>` in `_probe/sample_historic-generation-mix.headers` -- so the file
+# holds 1501 bytes, six data lines, and the SIXTH is cut mid-field (its
+# `FOSSIL_perc` is empty, which the strict Float64 cast would reject). The
+# fixture therefore carries the FIVE complete captured rows verbatim.
+#
+# The four appended rows are hand-authored at the 2026 DST transitions
+# (2026-03-29 and 2026-10-25, 46- and 50-period GB days), which the capture's
+# 2009-01-01 window cannot reach. They exist to pin that this series has NO
+# fold to be safe about: `DATETIME` is UTC, so successive half-hours stay
+# distinct across a transition that would collapse or duplicate a local-time
+# series. Their magnitudes are plausible but invented; nothing asserts on the
+# values themselves, only on dtypes, names, ordering and instants.
+# --------------------------------------------------------------------------- #
+
+HISTORIC_GENERATION_MIX_DATASET = "historic_generation_mix"
+HGM_FIXTURE_PATH = FIXTURE_DIR / "historic_generation_mix.csv"
+HGM_FIXTURE_BYTES = HGM_FIXTURE_PATH.read_bytes()
+HGM_FIXTURE_ROWS = 9
+
+HGM_PACKAGE = "historic-generation-mix"
+HGM_RESOURCE_ID = "f93d1835-75bc-43e5-84ad-12472b180a98"
+HGM_RESOURCE_FILENAME = "df_fuel_ckan.csv"
+# The real CKAN stamp for this resource, from `_probe/show_historic-generation-mix.json`
+# (D-15 reads it as UTC).
+HGM_CKAN_LAST_MODIFIED = "2026-08-16T18:21:07.098698"
+HGM_PUBLISHED_AT = datetime(2026, 8, 16, 18, 21, 7, 98698, tzinfo=UTC)
+
+HGM_HEADER = ",".join(HISTORIC_GENERATION_MIX_COLUMNS)
+
+
+def _hgm_row(datetime_value: str, *, gas: str = "8367.0") -> str:
+    """One 34-field data row: the given ``DATETIME`` plus 33 numeric fields."""
+    return ",".join([datetime_value, gas, *["1.0"] * 32])
+
+
+def _hgm_csv(*rows: str) -> bytes:
+    """The exact 34-column header plus the given data rows."""
+    return (HGM_HEADER + "\n" + "".join(f"{row}\n" for row in rows)).encode()
+
+
+def _hgm_sidecar_payload(
+    *,
+    written_at: datetime,
+    ckan_last_modified: str = HGM_CKAN_LAST_MODIFIED,
+) -> dict[str, Any]:
+    """A bronze sidecar carrying the D-12 provenance the connector writes."""
+    return {
+        "source": "neso_data_portal",
+        "dataset": HISTORIC_GENERATION_MIX_DATASET,
+        "written_at": written_at.isoformat(),
+        "data_date": written_at.date().isoformat(),
+        "request_url": (
+            f"{BASE_URL}/dataset/88313ae5-94e4-4ddc-a790-593554d8c6b9"
+            f"/resource/{HGM_RESOURCE_ID}/download/{HGM_RESOURCE_FILENAME}"
+        ),
+        "request_params": {
+            "package": HGM_PACKAGE,
+            "package_id": "88313ae5-94e4-4ddc-a790-593554d8c6b9",
+            "resource_id": HGM_RESOURCE_ID,
+            "resource_name": "Historic GB Generation Mix",
+            "resource_filename": HGM_RESOURCE_FILENAME,
+            "ckan_last_modified": ckan_last_modified,
+            "ckan_format": "CSV",
+            "body_sha256": "0" * 64,
+        },
+        "content_type": "text/csv",
+        "http_status": 200,
+    }
+
+
+def _seed_hgm_bronze(
+    data_dir: Path,
+    target_date: date,
+    *,
+    name: str = "20260816T182500Z_abcd1234",
+    body: bytes = HGM_FIXTURE_BYTES,
+    write_sidecar: bool = True,
+) -> Path:
+    """Write one `raw_*.csv` body plus its sidecar into the exact date partition."""
+    partition = (
+        data_dir
+        / "bronze"
+        / "neso_data_portal"
+        / HISTORIC_GENERATION_MIX_DATASET
+        / str(target_date.year)
+        / f"{target_date.month:02d}"
+        / f"{target_date.day:02d}"
+    )
+    partition.mkdir(parents=True, exist_ok=True)
+    body_path = partition / f"raw_{name}.csv"
+    body_path.write_bytes(body)
+    if write_sidecar:
+        payload = _hgm_sidecar_payload(written_at=datetime(2026, 8, 16, 18, 25, tzinfo=UTC))
+        (partition / f"raw_{name}.meta.json").write_text(json.dumps(payload, indent=2))
+    return body_path
+
+
+def _transform_hgm(tmp_path: Path, body: bytes = HGM_FIXTURE_BYTES) -> pl.DataFrame:
+    """Read one bronze body through the real reader and transform it."""
+    raw_path = _seed_hgm_bronze(tmp_path, BST_DATE, body=body)
+    transformer = HistoricGenerationMixTransformer(tmp_path)
+    return transformer.transform(transformer.read_bronze_file(raw_path))
+
+
+class TestHistoricGenerationMixReadBronze:
+    """D-19's exact-header contract, on the widest header this source has."""
+
+    def test_the_34_column_header_parses_and_carries_published_at(self, tmp_path: Path) -> None:
+        raw_path = _seed_hgm_bronze(tmp_path, BST_DATE)
+
+        frame = HistoricGenerationMixTransformer(tmp_path).read_bronze_file(raw_path)
+
+        assert len(HISTORIC_GENERATION_MIX_COLUMNS) == 34, (
+            "the header contract is 34 columns, counted from "
+            "_probe/sample_historic-generation-mix.csv (the plan's prose said 37 "
+            "through revision 13; revision 14's ERRATUM corrected it)"
+        )
+        assert frame.height == HGM_FIXTURE_ROWS
+        assert list(frame.columns) == [*HISTORIC_GENERATION_MIX_COLUMNS, "published_at"]
+        assert frame["published_at"].to_list() == [HGM_PUBLISHED_AT] * HGM_FIXTURE_ROWS
+
+    def test_a_dropped_column_raises_rather_than_being_absorbed(self, tmp_path: Path) -> None:
+        """34 columns is a lot of surface for a vendor to quietly narrow."""
+        header = ",".join(HISTORIC_GENERATION_MIX_COLUMNS[:-1])
+        body = (header + "\n" + ",".join(["2009-01-01T00:00:00", *["1.0"] * 32]) + "\n").encode()
+        raw_path = _seed_hgm_bronze(tmp_path, BST_DATE, body=body)
+
+        with pytest.raises(CsvHeaderDriftError):
+            HistoricGenerationMixTransformer(tmp_path).read_bronze_file(raw_path)
+
+    def test_a_renamed_column_raises_rather_than_being_absorbed(self, tmp_path: Path) -> None:
+        header = HGM_HEADER.replace("CARBON_INTENSITY", "CARBON_INTENSITY_GCO2")
+        body = (header + "\n" + _hgm_row("2009-01-01T00:00:00") + "\n").encode()
+        raw_path = _seed_hgm_bronze(tmp_path, BST_DATE, body=body)
+
+        with pytest.raises(CsvHeaderDriftError):
+            HistoricGenerationMixTransformer(tmp_path).read_bronze_file(raw_path)
+
+    def test_unusable_provenance_yields_an_empty_frame_rather_than_a_guess(
+        self, tmp_path: Path
+    ) -> None:
+        """D-23 -> `base.py`'s `UNUSABLE_PROVENANCE` skip, which D-41 accounts."""
+        raw_path = _seed_hgm_bronze(tmp_path, BST_DATE, write_sidecar=False)
+
+        assert HistoricGenerationMixTransformer(tmp_path).read_bronze_file(raw_path).is_empty()
+
+
+class TestHistoricGenerationMixTransform:
+    """D-24's column contract and the documented naive-is-UTC reading."""
+
+    def test_a_naive_datetime_becomes_tz_aware_utc(self, tmp_path: Path) -> None:
+        """The UTC claim is DOCUMENTED, not inferred: it exists only in the
+        `datastore_search` field metadata (`DATETIME.info.description` in
+        `_probe/datastore_historic-generation-mix.json`), which a plain CSV
+        download never exposes.
+        """
+        frame = _transform_hgm(tmp_path, _hgm_csv(_hgm_row("2009-06-01T05:00:00")))
+
+        assert frame.schema["timestamp_utc"] == pl.Datetime("us", "UTC")
+        assert frame["timestamp_utc"].to_list() == [datetime(2009, 6, 1, 5, 0, tzinfo=UTC)]
+
+    @pytest.mark.parametrize(
+        "value",
+        ["2009-06-01T05:00:00+01:00", "2009-06-01T05:00:00Z", "2009-06-01T05:00:00-0500"],
+    )
+    def test_an_offset_bearing_datetime_raises_rather_than_being_reinterpreted(
+        self, tmp_path: Path, value: str
+    ) -> None:
+        """Vendor drift guard. The naive-is-UTC reading is a documented CLAIM
+        about a naive stamp; a stamp that suddenly carries an offset is a
+        different vendor contract, and silently keeping the same reading would
+        shift every row by the offset with nothing to show for it.
+        """
+        with pytest.raises(ValueError, match="offset"):
+            _transform_hgm(tmp_path, _hgm_csv(_hgm_row(value)))
+
+    def test_fuel_and_metric_columns_are_float64(self, tmp_path: Path) -> None:
+        frame = _transform_hgm(tmp_path)
+
+        for column in ("gas", "coal", "nuclear", "wind_emb", "carbon_intensity", "storage"):
+            assert frame.schema[column] == pl.Float64, column
+
+    def test_perc_columns_are_retained_with_a_pct_suffix(self, tmp_path: Path) -> None:
+        """D-24 keeps the vendor's own percentages rather than recomputing them:
+        they are the vendor's published figures, and a recomputation would
+        silently disagree at the rounding NESO applied.
+        """
+        frame = _transform_hgm(tmp_path)
+
+        for column in ("gas_pct", "wind_emb_pct", "low_carbon_pct", "fossil_pct"):
+            assert column in frame.columns, column
+            assert frame.schema[column] == pl.Float64, column
+        assert not [name for name in frame.columns if name.endswith("_perc")], (
+            "the vendor's `_perc` spelling leaked into silver"
+        )
+
+    def test_every_vendor_column_reaches_silver_under_a_mapped_name(self, tmp_path: Path) -> None:
+        """The mapping is recorded once, so nothing can be dropped by spelling."""
+        frame = _transform_hgm(tmp_path)
+
+        assert len(HGM_COLUMN_MAPPING) == len(HISTORIC_GENERATION_MIX_COLUMNS)
+        assert set(HGM_COLUMN_MAPPING) == set(HISTORIC_GENERATION_MIX_COLUMNS)
+        assert set(HGM_COLUMN_MAPPING.values()) <= set(frame.columns)
+
+    def test_the_dst_transition_rows_stay_distinct_utc_instants(self, tmp_path: Path) -> None:
+        """Why the fixture reaches 2026 at all: a UTC series has no fold. The
+        spring-forward and autumn-back pairs must remain 30 real minutes apart,
+        which a local-time reading would collapse (spring) or duplicate (autumn).
+        """
+        frame = _transform_hgm(tmp_path)
+
+        instants = frame["timestamp_utc"].to_list()
+        assert datetime(2026, 3, 29, 0, 30, tzinfo=UTC) in instants
+        assert datetime(2026, 3, 29, 1, 0, tzinfo=UTC) in instants
+        assert datetime(2026, 10, 25, 0, 30, tzinfo=UTC) in instants
+        assert datetime(2026, 10, 25, 1, 0, tzinfo=UTC) in instants
+        assert len(set(instants)) == HGM_FIXTURE_ROWS
+
+    def test_output_is_uniquely_grained_by_timestamp_and_published_at(self, tmp_path: Path) -> None:
+        """D-24: `(timestamp_utc, published_at)`. One capture cannot carry two
+        truths for one instant at one publication instant -- and `published_at`
+        is in the key UNCONDITIONALLY, because APPEND_ONLY exists so successive
+        whole-file republications coexist.
+        """
+        frame = _transform_hgm(
+            tmp_path,
+            _hgm_csv(
+                _hgm_row("2009-01-01T00:00:00", gas="1.0"),
+                _hgm_row("2009-01-01T00:00:00", gas="2.0"),
+                _hgm_row("2009-01-01T00:30:00", gas="3.0"),
+            ),
+        )
+
+        assert frame.height == 2
+        assert (
+            frame.select(list(HistoricGenerationMixTransformer.ENTITY_KEY_COLUMNS))
+            .is_unique()
+            .all()
+        )
+        assert frame["gas"].to_list()[0] == 2.0
+
+    def test_a_non_numeric_value_raises_at_cast_rather_than_being_nulled(
+        self, tmp_path: Path
+    ) -> None:
+        """D-19's `strict=True`: a silently-nulled MW reads exactly like a
+        genuine vendor absence."""
+        with pytest.raises(pl.exceptions.InvalidOperationError):
+            _transform_hgm(tmp_path, _hgm_csv(_hgm_row("2009-01-01T00:00:00", gas="not-a-number")))
+
+    def test_no_output_column_is_a_naive_datetime(self, tmp_path: Path) -> None:
+        frame = _transform_hgm(tmp_path)
+
+        naive = [
+            name
+            for name, dtype in frame.schema.items()
+            if isinstance(dtype, pl.Datetime) and dtype.time_zone is None
+        ]
+        assert naive == []
+
+    def test_an_empty_frame_transforms_to_an_empty_frame(self, tmp_path: Path) -> None:
+        assert HistoricGenerationMixTransformer(tmp_path).transform(pl.DataFrame()).is_empty()
+
+    def test_it_never_touches_the_exclusion_counter(self, tmp_path: Path) -> None:
+        """D-40: this dataset declares no row invalid, so a clean run must not
+        report `completed_with_warnings`. The exclusion behaviour belongs to the
+        embedded forecast (D-27).
+        """
+        raw_path = _seed_hgm_bronze(tmp_path, BST_DATE)
+        transformer = HistoricGenerationMixTransformer(tmp_path)
+
+        transformer.transform(transformer.read_bronze_file(raw_path))
+
+        assert transformer.last_excluded_row_count == 0
+
+
+class TestHistoricGenerationMixRunAndRegistration:
+    """The class attributes, the registration, and one real `run()`."""
+
+    def test_the_class_attributes_match_d02_d21_and_d24(self) -> None:
+        cls = HistoricGenerationMixTransformer
+        assert (cls.source, cls.dataset) == ("neso_data_portal", HISTORIC_GENERATION_MIX_DATASET)
+        assert cls.APPEND_ONLY is True
+        assert cls.VINTAGE_PER_BRONZE_FILE is True
+        assert cls.BRONZE_BODY_GLOB == "raw_*.csv"
+        assert cls.DATASET_VERSION == "1.0.0"
+        assert cls.ENTITY_KEY_COLUMNS == ("timestamp_utc", "published_at")
+        assert (
+            DATASETS[HISTORIC_GENERATION_MIX_DATASET].expected_columns
+            == HISTORIC_GENERATION_MIX_COLUMNS
+        ), (
+            "the transformer's header contract drifted from the connector's, so a body "
+            "admitted at fetch time would be rejected at transform time (or worse)"
+        )
+
+    def test_the_transformer_is_registered_for_this_source(self) -> None:
+        """D-38: the `__init__.py` import line is what fires registration."""
+        key = ("neso_data_portal", HISTORIC_GENERATION_MIX_DATASET)
+        assert key in list_transformers("neso_data_portal")
+        assert get_transformer_class(*key) is HistoricGenerationMixTransformer
+
+    def test_the_module_docstring_cites_the_metadata_source_for_the_utc_claim(self) -> None:
+        """T-16's acceptance. The UTC statement is NOT in the CSV a download
+        yields; it lives only in the `datastore_search` field metadata. A reader
+        who cannot find that citation has no way to check the claim.
+        """
+        docstring = historic_generation_mix_module.__doc__
+        assert docstring is not None
+        assert "datastore_historic-generation-mix.json" in docstring
+        assert "DATETIME" in docstring
+
+    def test_run_writes_a_vintage_suffixed_silver_file_with_utc_bitemporal_columns(
+        self, tmp_path: Path
+    ) -> None:
+        _seed_hgm_bronze(tmp_path, BST_DATE)
+        transformer = HistoricGenerationMixTransformer(tmp_path)
+
+        rows = transformer.run(BST_DATE, run_id="t16")
+
+        assert rows == HGM_FIXTURE_ROWS
+        silver_dir = (
+            tmp_path
+            / "silver"
+            / "neso_data_portal"
+            / HISTORIC_GENERATION_MIX_DATASET
+            / "year=2026"
+            / "month=08"
+        )
+        written = sorted(silver_dir.glob("*.parquet"))
+        assert len(written) == 1
+        frame = pl.read_parquet(written[0])
+        assert frame.height == HGM_FIXTURE_ROWS
+        assert frame.schema["event_time"] == pl.Datetime("us", "UTC")
+        assert frame["event_time"].to_list() == frame["timestamp_utc"].to_list(), (
+            "D-24: `timestamp_utc` IS this dataset's event time"
+        )
+        assert frame["available_at"].to_list() == frame["published_at"].to_list(), (
+            "ADR-025 S3: NESO's publication instant is the vintage axis (D-22)"
+        )
+        assert transformer.last_validation_failure_count == 0
+        assert transformer.last_excluded_row_count == 0

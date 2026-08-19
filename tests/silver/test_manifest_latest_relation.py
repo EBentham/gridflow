@@ -36,12 +36,14 @@ from gridflow.silver.schema_manifest import (
 # census derived from the registry would agree with the registry by
 # construction and detect nothing. Maintaining it by hand is the designed
 # cost. Grew to four when the neso-data-portal phase registered the first
-# non-elexon APPEND_ONLY dataset (D-21; PHASE.md ruling 12).
+# non-elexon APPEND_ONLY dataset (D-21; PHASE.md ruling 12), and to five with
+# that phase's `historic_generation_mix` (B3a/T-16).
 _APPEND_ONLY_DATASETS: tuple[tuple[str, str], ...] = (
     ("elexon", "system_prices"),
     ("elexon", "remit"),
     ("elexon", "fou2t14d"),
     ("neso_data_portal", "daily_wind_availability"),
+    ("neso_data_portal", "historic_generation_mix"),
 )
 
 
@@ -235,9 +237,9 @@ def test_append_only_set_equals_latest_spec_set() -> None:
     spec_set = set(LATEST_VIEW_SPECS)
 
     # Non-vacuity guard: this invariant must never pass because both sides are
-    # empty (F16) -- four APPEND_ONLY datasets are registered today.
+    # empty (F16) -- five APPEND_ONLY datasets are registered today.
     assert len(append_only) > 0
-    assert len(append_only) == 4
+    assert len(append_only) == 5
 
     missing_specs = append_only - spec_set
     extra_specs = spec_set - append_only
@@ -258,6 +260,7 @@ _EXPECTED_APPEND_ONLY_DEPRECATED_ALIASES: dict[tuple[str, str], str | None] = {
     ("elexon", "remit"): "silver_remit",
     ("elexon", "fou2t14d"): "silver_fou2t14d",
     ("neso_data_portal", "daily_wind_availability"): "silver_daily_wind_availability",
+    ("neso_data_portal", "historic_generation_mix"): "silver_historic_generation_mix",
 }
 
 

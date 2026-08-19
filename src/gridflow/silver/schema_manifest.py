@@ -267,6 +267,11 @@ DESIGNATED_DATE_COLS: dict[tuple[str, str], str] = {
     # instant, correct for event ordering and wrong as the thing a consumer
     # filters a forecast day by.
     ("neso_data_portal", "daily_wind_availability"): "availability_date",
+    # D-24. The vendor's own half-hourly instant, read as UTC on the strength
+    # of the `datastore_search` field metadata (see the transformer's module
+    # docstring). This dataset has no settlement pair and no calendar date of
+    # its own -- the instant IS the grain.
+    ("neso_data_portal", "historic_generation_mix"): "timestamp_utc",
     ("open_meteo", "forecast_demand"): "timestamp_utc",
     ("open_meteo", "forecast_solar"): "timestamp_utc",
     ("open_meteo", "forecast_wind"): "timestamp_utc",
