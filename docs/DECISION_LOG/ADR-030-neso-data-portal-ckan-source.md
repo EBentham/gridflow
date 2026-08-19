@@ -595,8 +595,12 @@ empty-`transform()` exit in `_process_frame`, which returned `None` and reached
 `run_transform` as `success`.
 
 **What does not change**: rows written, vintages assigned and silver filenames are
-untouched, on this source and on every other. Only the reported status and its message
-move. The full fast suite passes unchanged and **no existing test assertion was edited** —
+untouched, on this source and on every other. What moves is the reported status, its
+message, and the structured accounting fields around them: skipped bodies now appear in
+`bronze_unvouched`, and exception-path failures for **every** source can carry non-zero
+`rows_skipped` / `rows_unmapped` / `rows_invalid` (the widening §"Consumer contract"
+describes above). Consumers of `DatasetResult` should review against that section, not
+this summary line. The full fast suite passes unchanged and **no existing test assertion was edited** —
 a standing tripwire for this unit required stopping and re-presenting if any existing test
 pinned `success` on a skipped-body or empty-body scenario, since a test pinning the silent
 behaviour would be evidence about intent this phase may not overrule unilaterally. None
