@@ -22,6 +22,8 @@ from __future__ import annotations
 import csv
 import io
 import json
+import logging
+import tracemalloc
 from datetime import UTC, date, datetime, time, timedelta
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
@@ -791,4 +793,144 @@ def test_local_fuelhh_parquet_agrees_in_magnitude_where_both_sources_exist() -> 
         f"overlapping half-hour(s): ratios {ratios}. The two sources measure "
         "differently, so a small spread is expected -- this is a unit/scale "
         "check, and a failure means one side is out by an order of magnitude"
+    )
+
+
+# --------------------------------------------------------------------------- #
+# T-19 -- large-file handling, at BOTH of D-19's call sites
+#
+# `historic_generation_mix` is a ~62 MB whole-file snapshot, and the repo's
+# first CSV bronze reader parses it TWICE per capture: once at fetch, as D-36's
+# admission rung (nothing enters immutable bronze unparsed), and once at
+# transform, from the stored bytes. A memory profile that only measured one of
+# them would miss the other entirely -- so this test drives one synthetic body
+# through the real connector and the real transformer, in that order.
+#
+# `@pytest.mark.slow`, so it is out of the default gate; it is run explicitly
+# by this unit's verify step.
+# --------------------------------------------------------------------------- #
+
+# Held to the real thing's order of magnitude. The connector admits it: D-24's
+# `max_download_bytes` for this dataset is 256 MiB.
+LARGE_BODY_TARGET_BYTES = 60 * 1024 * 1024
+
+# D-30 sized this path for a 62 MB body on an ordinary developer machine. The
+# budget is generous on purpose: this is a runaway detector -- a full
+# materialisation per column, a row-wise Python fallback -- not a tuning target.
+LARGE_BODY_PEAK_BUDGET_BYTES = int(1.5 * 1024**3)
+
+
+def _synthesise_generation_mix_csv(path: Path) -> tuple[bytes, int]:
+    """Write a ~60 MB body carrying the real 34-column header (D-24).
+
+    The `DATETIME` column steps a real half-hour per row from 2009-01-01 --
+    this dataset's actual first instant -- so every row is a distinct entity
+    key and the transformer's `unique()` cannot silently collapse the frame
+    into something small enough to make the measurement meaningless.
+
+    Args:
+        path: Where to write the synthetic body.
+
+    Returns:
+        The bytes, and the number of data rows they carry.
+    """
+    columns = DATASETS[HGM_DATASET].expected_columns
+    values = ",".join(f"{(index + 1) * 1.5:.1f}" for index in range(len(columns) - 1))
+    row_bytes = len(f"2009-01-01T00:00:00,{values}\n".encode())
+    row_count = LARGE_BODY_TARGET_BYTES // row_bytes
+
+    stamp = datetime(2009, 1, 1, tzinfo=UTC)
+    step = timedelta(minutes=30)
+    chunks: list[bytes] = [",".join(columns).encode(), b"\n"]
+    for _ in range(row_count):
+        chunks.append(f"{stamp:%Y-%m-%dT%H:%M:%S},{values}\n".encode())
+        stamp += step
+
+    body = b"".join(chunks)
+    path.write_bytes(body)
+    return body, row_count
+
+
+@respx.mock
+@pytest.mark.slow
+@pytest.mark.asyncio
+async def test_a_sixty_megabyte_body_survives_both_d19_parse_sites(
+    router: respx.MockRouter,
+    short_data_dir: Path,
+    tmp_path: Path,
+) -> None:
+    """Both parse sites complete, and neither materialises the file many times over.
+
+    Measured with `tracemalloc`, which sees PYTHON-heap allocations only:
+    Polars' own Arrow buffers are native and invisible to it, so the number
+    this asserts is dominated by the reader's UTF-8 validation copy and the
+    row-wise Pydantic validation pass. That is a real limit of the instrument
+    and is stated rather than papered over -- it still catches the failure this
+    check exists for (a per-row Python materialisation of a 350k-row frame),
+    which is exactly where the Python heap would explode.
+
+    Observed on this machine: peak growth ~180 MiB against a 1.5 GB budget, so
+    D-19's `schema_overrides` escape hatch was NOT needed and is not used.
+
+    The assertion, not the test, is skipped where the measurement is
+    unavailable -- if something upstream is already tracing, stopping its trace
+    to take our own would corrupt its numbers.
+    """
+    body, row_count = _synthesise_generation_mix_csv(tmp_path / "generation_mix_60mb.csv")
+    assert len(body) >= LARGE_BODY_TARGET_BYTES * 0.99, "the synthetic body is not ~60 MB"
+
+    _wire_dataset_legs_with_body(router, HGM_DATASET, body)
+    start, end = _window()
+
+    measuring = not tracemalloc.is_tracing()
+    if measuring:
+        tracemalloc.start()
+        tracemalloc.reset_peak()
+    baseline = tracemalloc.get_traced_memory()[0]
+
+    # Site 1: D-36's admission parse, inside fetch(), before any byte reaches
+    # immutable bronze.
+    response = await _fetch_dataset(_source_config(), HGM_DATASET, start, end)
+    bronze_path = BronzeWriter(short_data_dir).write(response)
+
+    # Site 2: `read_bronze_file`, from the stored bytes.
+    transformer = get_transformer(SOURCE, HGM_DATASET, short_data_dir)
+    rows_written = transformer.run(end.date(), run_id="t19")
+
+    peak_growth = tracemalloc.get_traced_memory()[1] - baseline
+    if measuring:
+        tracemalloc.stop()
+
+    # Recorded, not merely asserted: the plan asks which remedy was used, and a
+    # bare pass/fail cannot answer that. Visible with `-o log_cli=true
+    # --log-cli-level=INFO`.
+    logging.getLogger(__name__).info(
+        "T-19: %.0f MiB body, %d rows, peak Python-heap growth %.0f MiB "
+        "(budget %.1f GB, schema_overrides not used)",
+        len(body) / 1024**2,
+        row_count,
+        peak_growth / 1024**2,
+        LARGE_BODY_PEAK_BUDGET_BYTES / 1024**3,
+    )
+
+    assert bronze_path.stat().st_size == len(body), (
+        "bronze did not store the vendor's bytes verbatim, so the transform "
+        "leg below parsed something other than what was downloaded"
+    )
+    assert rows_written == row_count, (
+        f"the transform leg wrote {rows_written} of {row_count} rows -- a "
+        "large body was truncated or partially collapsed rather than failing"
+    )
+
+    if not measuring:
+        pytest.skip(
+            "tracemalloc was already tracing before this test started, so the "
+            "peak-growth ASSERTION is skipped (the two parse sites above still ran)"
+        )
+    assert peak_growth < LARGE_BODY_PEAK_BUDGET_BYTES, (
+        f"parsing a {len(body) / 1024**2:.0f} MiB body grew the Python heap by "
+        f"{peak_growth / 1024**2:.0f} MiB, over the "
+        f"{LARGE_BODY_PEAK_BUDGET_BYTES / 1024**3:.1f} GB budget. D-19's "
+        "prescribed remedy is `read_csv_bronze_body`'s `schema_overrides` "
+        "escape hatch, at BOTH call sites -- record which was used"
     )
