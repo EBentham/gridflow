@@ -26,3 +26,5 @@ Distinct from ``gridflow.silver.neso``, which is the Carbon Intensity source
 """
 
 from __future__ import annotations
+
+from gridflow.silver.neso_data_portal import daily_wind_availability  # noqa: F401

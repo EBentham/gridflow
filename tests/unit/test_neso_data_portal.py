@@ -59,6 +59,12 @@ from gridflow.schemas.common import BaseSchema
 from gridflow.silver.base import BaseSilverTransformer
 from gridflow.silver.csv_bronze import CsvHeaderDriftError, NotCsvBodyError
 from gridflow.silver.elexon.system_prices import SystemPriceTransformer
+from gridflow.silver.neso_data_portal._bronze import provenance_for
+from gridflow.silver.neso_data_portal.daily_wind_availability import (
+    EXPECTED_COLUMNS,
+    DailyWindAvailabilityTransformer,
+)
+from gridflow.silver.registry import get_transformer_class, list_transformers
 
 if TYPE_CHECKING:
     from collections.abc import AsyncIterator, Iterator
@@ -3061,3 +3067,382 @@ def test_excluded_rows_accumulate_across_two_vintages_in_one_run(
     assert (result.rows_invalid, result.rows_skipped) == (2, 2), (
         "one vintage's exclusions were lost -- the counter was assigned, not accumulated"
     )
+
+
+# --------------------------------------------------------------------------- #
+# T-09 -- the `daily_wind_availability` transformer
+#
+# FIXTURE PROVENANCE, DISCLOSED. Stage A captured no CSV sample for this
+# resource: `_probe/` holds sample bodies for the other four candidates only.
+# `tests/fixtures/neso_data_portal/daily_wind_availability.csv` is therefore
+# HAND-AUTHORED from the research-asserted header `BMU_ID, Date, MW`
+# (RESEARCH-vendor S3.2), with realistic BMU ids drawn verbatim from
+# `_probe/sample_national-demand-bmu.csv`. That is a guess about the vendor,
+# and it is a LOUD one: D-19's exact-header contract turns a wrong header into
+# a `CsvHeaderDriftError` at transform time AND -- via D-36's admission parse --
+# at fetch time, before a byte reaches immutable bronze, and T-24's live test
+# pins the real header against reality.
+# --------------------------------------------------------------------------- #
+
+DAILY_WIND_FIXTURE_PATH = FIXTURE_DIR / "daily_wind_availability.csv"
+DAILY_WIND_FIXTURE_BYTES = DAILY_WIND_FIXTURE_PATH.read_bytes()
+DAILY_WIND_FIXTURE_ROWS = 6
+
+# NESO's own naive CKAN stamp, read as UTC per D-15.
+CKAN_LAST_MODIFIED = "2026-08-16T18:20:11.953941"
+PUBLISHED_AT = datetime(2026, 8, 16, 18, 20, 11, 953941, tzinfo=UTC)
+
+# 2026-08-16 is BST, so its GB availability day starts at 23:00Z the day
+# BEFORE; 2026-01-15 is GMT, so its day starts at 00:00Z the same day (D-25).
+BST_DATE = date(2026, 8, 16)
+BST_DAY_START = datetime(2026, 8, 15, 23, 0, tzinfo=UTC)
+GMT_DATE = date(2026, 1, 15)
+GMT_DAY_START = datetime(2026, 1, 15, 0, 0, tzinfo=UTC)
+
+
+def _sidecar_payload(
+    *,
+    written_at: datetime,
+    ckan_last_modified: str | None = CKAN_LAST_MODIFIED,
+    resource_filename: str = "windavailability.csv",
+    drop: str | None = None,
+) -> dict[str, Any]:
+    """Build a bronze sidecar carrying the D-12 provenance the connector writes."""
+    request_params: dict[str, Any] = {
+        "package": "daily-wind-availability",
+        "package_id": DAILY_WIND_PACKAGE_ID,
+        "resource_id": DAILY_WIND_RESOURCE_ID,
+        "resource_name": "Daily Wind Availability",
+        "resource_filename": resource_filename,
+        "ckan_last_modified": "" if ckan_last_modified is None else ckan_last_modified,
+        "ckan_format": "CSV",
+        "body_sha256": "0" * 64,
+    }
+    if drop is not None:
+        del request_params[drop]
+    return {
+        "source": "neso_data_portal",
+        "dataset": DATASET,
+        "written_at": written_at.isoformat(),
+        "data_date": written_at.date().isoformat(),
+        "request_url": DAILY_WIND_RESOURCE_URL,
+        "request_params": request_params,
+        "content_type": "text/csv",
+        "http_status": 200,
+    }
+
+
+def _seed_daily_wind_bronze(
+    data_dir: Path,
+    target_date: date,
+    *,
+    name: str = "20260816T182500Z_abcd1234",
+    body: bytes = DAILY_WIND_FIXTURE_BYTES,
+    written_at: datetime | None = None,
+    sidecar: dict[str, Any] | None = None,
+    write_sidecar: bool = True,
+) -> Path:
+    """Write one `raw_*.csv` body plus its sidecar into the exact date partition."""
+    partition = (
+        data_dir
+        / "bronze"
+        / "neso_data_portal"
+        / DATASET
+        / str(target_date.year)
+        / f"{target_date.month:02d}"
+        / f"{target_date.day:02d}"
+    )
+    partition.mkdir(parents=True, exist_ok=True)
+    body_path = partition / f"raw_{name}.csv"
+    body_path.write_bytes(body)
+    if write_sidecar:
+        stamp = written_at or datetime(2026, 8, 16, 18, 25, tzinfo=UTC)
+        payload = sidecar if sidecar is not None else _sidecar_payload(written_at=stamp)
+        (partition / f"raw_{name}.meta.json").write_text(json.dumps(payload, indent=2))
+    return body_path
+
+
+def _csv(rows: str) -> bytes:
+    return ("BMU_ID,Date,MW\n" + rows).encode()
+
+
+def _transform_body(tmp_path: Path, body: bytes, *, target_date: date = BST_DATE) -> pl.DataFrame:
+    """Read one bronze body through the real reader and transform it."""
+    raw_path = _seed_daily_wind_bronze(tmp_path, target_date, body=body)
+    transformer = DailyWindAvailabilityTransformer(tmp_path)
+    return transformer.transform(transformer.read_bronze_file(raw_path))
+
+
+class TestDailyWindProvenanceReader:
+    """D-23: the one site that turns a sidecar into a vintage."""
+
+    def test_it_reads_every_d12_key_and_parses_ckan_time_as_utc(self, tmp_path: Path) -> None:
+        raw_path = _seed_daily_wind_bronze(tmp_path, BST_DATE)
+
+        provenance = provenance_for(raw_path)
+
+        assert provenance is not None
+        assert provenance.package == "daily-wind-availability"
+        assert provenance.resource_id == DAILY_WIND_RESOURCE_ID
+        assert provenance.resource_name == "Daily Wind Availability"
+        assert provenance.resource_filename == "windavailability.csv"
+        assert provenance.published_at == PUBLISHED_AT
+        assert provenance.published_at.tzinfo is not None
+        assert provenance.issue_time is None, (
+            "only the embedded forecast's filename carries a 12-digit issue token"
+        )
+
+    def test_a_missing_sidecar_is_none_and_a_warning_naming_the_file(
+        self, tmp_path: Path, caplog: pytest.LogCaptureFixture
+    ) -> None:
+        """FM-01: the body is durable before its sidecar, so this window is real."""
+        raw_path = _seed_daily_wind_bronze(tmp_path, BST_DATE, write_sidecar=False)
+
+        with caplog.at_level(logging.WARNING):
+            assert provenance_for(raw_path) is None
+
+        assert "raw_20260816T182500Z_abcd1234.meta.json" in caplog.text
+
+    @pytest.mark.parametrize(
+        ("sidecar_kwargs", "needle"),
+        [
+            ({"ckan_last_modified": None}, "ckan_last_modified"),
+            ({"ckan_last_modified": "not-a-timestamp"}, "unparseable ckan_last_modified"),
+            ({"drop": "ckan_last_modified"}, "ckan_last_modified"),
+            ({"drop": "resource_filename"}, "resource_filename"),
+        ],
+    )
+    def test_unusable_provenance_is_none_and_never_a_fetch_clock_substitute(
+        self,
+        tmp_path: Path,
+        caplog: pytest.LogCaptureFixture,
+        sidecar_kwargs: dict[str, Any],
+        needle: str,
+    ) -> None:
+        """FM-05: no fabricated ``published_at``, ever -- a loud skip instead."""
+        sidecar = _sidecar_payload(
+            written_at=datetime(2026, 8, 16, 18, 25, tzinfo=UTC), **sidecar_kwargs
+        )
+        raw_path = _seed_daily_wind_bronze(tmp_path, BST_DATE, sidecar=sidecar)
+
+        with caplog.at_level(logging.WARNING):
+            assert provenance_for(raw_path) is None
+
+        assert needle in caplog.text
+
+
+class TestDailyWindReadBronze:
+    """``read_bronze_file`` is the branch ``VINTAGE_PER_BRONZE_FILE`` uses."""
+
+    def test_it_yields_a_frame_carrying_published_at_from_the_sidecar(self, tmp_path: Path) -> None:
+        raw_path = _seed_daily_wind_bronze(tmp_path, BST_DATE)
+
+        frame = DailyWindAvailabilityTransformer(tmp_path).read_bronze_file(raw_path)
+
+        assert frame.height == DAILY_WIND_FIXTURE_ROWS
+        assert list(frame.columns) == [*EXPECTED_COLUMNS, "published_at"]
+        assert frame["published_at"].to_list() == [PUBLISHED_AT] * DAILY_WIND_FIXTURE_ROWS
+
+    def test_unusable_provenance_yields_an_empty_frame_rather_than_a_guess(
+        self, tmp_path: Path
+    ) -> None:
+        """D-23 -> `base.py`'s `UNUSABLE_PROVENANCE` skip, which D-41 accounts."""
+        raw_path = _seed_daily_wind_bronze(tmp_path, BST_DATE, write_sidecar=False)
+
+        assert DailyWindAvailabilityTransformer(tmp_path).read_bronze_file(raw_path).is_empty()
+
+    def test_a_drifted_vendor_header_raises_rather_than_being_absorbed(
+        self, tmp_path: Path
+    ) -> None:
+        """D-19: the header contract is exact and ordered, and it fails loud."""
+        raw_path = _seed_daily_wind_bronze(
+            tmp_path, BST_DATE, body=b"BMU_ID,Date,MWh\nABRTW-1,2026-08-16,120.5\n"
+        )
+
+        with pytest.raises(CsvHeaderDriftError):
+            DailyWindAvailabilityTransformer(tmp_path).read_bronze_file(raw_path)
+
+    def test_read_bronze_returns_exactly_what_the_per_file_loop_would_read(
+        self, tmp_path: Path
+    ) -> None:
+        """The ABC method is unused on this branch, so it is implemented HONESTLY.
+
+        A ``raise NotImplementedError`` would be a lie about a method the base
+        class declares; a loop over the same glob in the same partition is the
+        truthful implementation, and this pins that the two agree.
+        """
+        first = _seed_daily_wind_bronze(tmp_path, BST_DATE, name="first")
+        _seed_daily_wind_bronze(tmp_path, BST_DATE, name="second")
+        transformer = DailyWindAvailabilityTransformer(tmp_path)
+
+        combined = transformer.read_bronze(BST_DATE)
+
+        assert combined.height == 2 * DAILY_WIND_FIXTURE_ROWS
+        assert list(combined.columns) == list(transformer.read_bronze_file(first).columns)
+
+    def test_read_bronze_is_empty_for_a_date_with_no_partition(self, tmp_path: Path) -> None:
+        assert DailyWindAvailabilityTransformer(tmp_path).read_bronze(GMT_DATE).is_empty()
+
+
+class TestDailyWindTransform:
+    """D-24's column contract and D-25's derived instant."""
+
+    def test_it_maps_the_vendor_header_onto_the_d24_silver_columns(self, tmp_path: Path) -> None:
+        frame = _transform_body(tmp_path, DAILY_WIND_FIXTURE_BYTES)
+
+        assert {
+            "bmu_id",
+            "availability_date",
+            "availability_mw",
+            "timestamp_utc",
+            "published_at",
+        } <= set(frame.columns)
+        assert frame.schema["bmu_id"] == pl.Utf8
+        assert frame.schema["availability_date"] == pl.Date
+        assert frame.schema["availability_mw"] == pl.Float64
+        assert frame.schema["timestamp_utc"] == pl.Datetime("us", "UTC")
+        assert frame.schema["published_at"] == pl.Datetime("us", "UTC")
+
+    def test_bm_unit_ids_are_stored_verbatim_with_no_normalisation(self, tmp_path: Path) -> None:
+        """CLAUDE.md hard rule: BM unit ids are stored as-is."""
+        frame = _transform_body(
+            tmp_path, _csv("t_abru-1,2026-08-16,10.0\nABRTW-1 ,2026-08-16,11.0\n")
+        )
+
+        assert sorted(frame["bmu_id"].to_list()) == ["ABRTW-1 ", "t_abru-1"]
+
+    def test_a_bst_availability_date_yields_2300z_the_previous_day(self, tmp_path: Path) -> None:
+        """D-25: ``settlement_period_to_utc(availability_date, 1)``, not midnight UTC."""
+        frame = _transform_body(tmp_path, _csv("ABRTW-1,2026-08-16,120.5\n"))
+
+        assert frame["timestamp_utc"].to_list() == [BST_DAY_START]
+
+    def test_a_gmt_availability_date_yields_0000z_the_same_day(self, tmp_path: Path) -> None:
+        frame = _transform_body(tmp_path, _csv("ABRTW-1,2026-01-15,110.75\n"))
+
+        assert frame["timestamp_utc"].to_list() == [GMT_DAY_START]
+
+    def test_the_derived_instant_is_never_the_ingest_windows_end(self, tmp_path: Path) -> None:
+        """Why D-25 exists: with no ``timestamp_utc``, ``_event_time_expr`` falls
+        back to midnight of the TARGET DATE -- which, since D-13 partitions on the
+        ingest window's end, would stamp every row with the fetch window rather
+        than its own availability day.
+        """
+        target_date = date(2026, 8, 19)
+        frame = _transform_body(
+            tmp_path, _csv("ABRTW-1,2026-08-16,120.5\n"), target_date=target_date
+        )
+
+        assert frame["timestamp_utc"].to_list() == [BST_DAY_START]
+        assert frame["timestamp_utc"].to_list() != [
+            datetime(target_date.year, target_date.month, target_date.day, tzinfo=UTC)
+        ]
+
+    def test_output_is_uniquely_grained_by_the_entity_key(self, tmp_path: Path) -> None:
+        """D-24: ``(bmu_id, availability_date, published_at)``. One vendor response
+        cannot carry two truths for one key at one publication instant.
+        """
+        frame = _transform_body(
+            tmp_path,
+            _csv("ABRTW-1,2026-08-16,120.5\nABRTW-1,2026-08-16,131.0\nACHLW-1,2026-08-16,98\n"),
+        )
+
+        assert frame.height == 2
+        assert (
+            frame.select(list(DailyWindAvailabilityTransformer.ENTITY_KEY_COLUMNS))
+            .is_unique()
+            .all()
+        )
+        assert frame.filter(pl.col("bmu_id") == "ABRTW-1")["availability_mw"].to_list() == [131.0]
+
+    def test_a_non_numeric_mw_value_raises_at_cast_rather_than_being_nulled(
+        self, tmp_path: Path
+    ) -> None:
+        """D-19: ``strict=True``. A silently-nulled MW is a fabricated availability."""
+        with pytest.raises(pl.exceptions.InvalidOperationError):
+            _transform_body(tmp_path, _csv("ABRTW-1,2026-08-16,not-a-number\n"))
+
+    def test_a_non_iso_date_raises_at_cast(self, tmp_path: Path) -> None:
+        """The date format is part of the same hand-authored guess as the header,
+        so it must fail loud rather than null the authoritative date column.
+        """
+        with pytest.raises(pl.exceptions.InvalidOperationError):
+            _transform_body(tmp_path, _csv("ABRTW-1,16/08/2026,120.5\n"))
+
+    def test_no_output_column_is_a_naive_datetime(self, tmp_path: Path) -> None:
+        frame = _transform_body(tmp_path, DAILY_WIND_FIXTURE_BYTES)
+
+        naive = [
+            name
+            for name, dtype in frame.schema.items()
+            if isinstance(dtype, pl.Datetime) and dtype.time_zone is None
+        ]
+        assert naive == []
+
+    def test_an_empty_frame_transforms_to_an_empty_frame(self, tmp_path: Path) -> None:
+        assert DailyWindAvailabilityTransformer(tmp_path).transform(pl.DataFrame()).is_empty()
+
+    def test_it_never_touches_the_exclusion_counter(self, tmp_path: Path) -> None:
+        """D-40: this dataset excludes no row, so the counter must stay 0.
+
+        The exclusion behaviour belongs to B3a's embedded forecast (D-27). A
+        transformer that incremented it here would report
+        ``completed_with_warnings`` for a clean run.
+        """
+        raw_path = _seed_daily_wind_bronze(tmp_path, BST_DATE)
+        transformer = DailyWindAvailabilityTransformer(tmp_path)
+
+        transformer.transform(transformer.read_bronze_file(raw_path))
+
+        assert transformer.last_excluded_row_count == 0
+
+
+class TestDailyWindRunAndRegistration:
+    """The class attributes and the base-class contracts they have to satisfy."""
+
+    def test_the_class_attributes_match_d02_d21_and_d24(self) -> None:
+        cls = DailyWindAvailabilityTransformer
+        assert (cls.source, cls.dataset) == ("neso_data_portal", DATASET)
+        assert cls.APPEND_ONLY is True
+        assert cls.VINTAGE_PER_BRONZE_FILE is True
+        assert cls.BRONZE_BODY_GLOB == "raw_*.csv"
+        assert cls.DATASET_VERSION == "1.0.0"
+        assert cls.ENTITY_KEY_COLUMNS == ("bmu_id", "availability_date", "published_at")
+        assert DATASETS[DATASET].expected_columns == EXPECTED_COLUMNS, (
+            "the transformer's header contract drifted from the connector's, so a body "
+            "admitted at fetch time would be rejected at transform time (or worse)"
+        )
+
+    def test_the_transformer_is_registered_for_this_source(self) -> None:
+        """D-38: the ``__init__.py`` import line is what fires registration."""
+        assert ("neso_data_portal", DATASET) in list_transformers("neso_data_portal")
+        assert (
+            get_transformer_class("neso_data_portal", DATASET) is DailyWindAvailabilityTransformer
+        )
+
+    def test_run_writes_a_vintage_suffixed_silver_file_with_utc_bitemporal_columns(
+        self, tmp_path: Path
+    ) -> None:
+        """The ``published_at`` dtype contract at ``base.py:1681`` is exercised
+        here: a String or naive ``published_at`` raises ``TypeError`` inside
+        ``_add_bitemporal_columns`` rather than mistyping ``available_at``.
+        """
+        _seed_daily_wind_bronze(tmp_path, BST_DATE)
+        transformer = DailyWindAvailabilityTransformer(tmp_path)
+
+        rows = transformer.run(BST_DATE, run_id="t09")
+
+        assert rows == DAILY_WIND_FIXTURE_ROWS
+        silver_dir = tmp_path / "silver" / "neso_data_portal" / DATASET / "year=2026" / "month=08"
+        written = sorted(silver_dir.glob("*.parquet"))
+        assert len(written) == 1
+        frame = pl.read_parquet(written[0])
+        assert frame.schema["event_time"] == pl.Datetime("us", "UTC")
+        assert frame.schema["available_at"] == pl.Datetime("us", "UTC")
+        assert frame["available_at"].to_list() == frame["published_at"].to_list(), (
+            "ADR-025 S3: NESO's publication instant, not our capture instant, is the "
+            "vintage axis (D-22)"
+        )
+        assert transformer.last_validation_failure_count == 0
+        assert transformer.last_excluded_row_count == 0
+
