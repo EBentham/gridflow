@@ -32,6 +32,7 @@ import httpx
 import polars as pl
 import pytest
 import respx
+from typer.testing import CliRunner
 
 import gridflow.silver.neso_data_portal  # noqa: F401 -- registers the transformers
 from gridflow.bronze.writer import BronzeWriter
@@ -934,3 +935,359 @@ async def test_a_sixty_megabyte_body_survives_both_d19_parse_sites(
         "prescribed remedy is `read_csv_bronze_body`'s `schema_overrides` "
         "escape hatch, at BOTH call sites -- record which was used"
     )
+
+
+# --------------------------------------------------------------------------- #
+# T-20 -- DuckDB registration and the CLI surface, over all three datasets
+#
+# The claim under test is that this source needed NO source-specific code to
+# become queryable: `_register_views` walks the silver tree, `LATEST_VIEW_SPECS`
+# supplies the consumer projection, and `_entity_key_for` reads the
+# transformer's declared grain. Each of those is a registry lookup that a new
+# source can silently miss -- a missing `LATEST_VIEW_SPECS` entry costs no test
+# anywhere else, and its symptom is a base view that quietly serves every
+# vintage as though it were current.
+# --------------------------------------------------------------------------- #
+
+_ALL_DATASETS: dict[str, tuple[str, bytes, int]] = {
+    DATASET: ("package_show_daily_wind_availability.json", DAILY_WIND_CSV, EXPECTED_ROWS),
+    **_B3A_DATASETS,
+}
+
+
+def _payload_of(dataset: str) -> dict[str, Any]:
+    """The `package_show` capture for any of the three datasets."""
+    payload: dict[str, Any] = json.loads(
+        (FIXTURE_DIR / _ALL_DATASETS[dataset][0]).read_text(encoding="utf-8")
+    )
+    return payload
+
+
+def _resource_of(dataset: str) -> dict[str, Any]:
+    """The resource the connector's own D-04 exact-name rule will pick."""
+    wanted = DATASETS[dataset].resource_name
+    matches = [
+        resource
+        for resource in _payload_of(dataset)["result"]["resources"]
+        if resource.get("name") == wanted
+    ]
+    assert len(matches) == 1, f"fixture does not carry exactly one {wanted!r} resource"
+    resource: dict[str, Any] = matches[0]
+    return resource
+
+
+def _presigned_of(dataset: str) -> str:
+    """A presigned URL of the real R2 shape, named for this resource's file."""
+    filename = str(_resource_of(dataset)["url"]).rsplit("/", 1)[-1]
+    return (
+        f"{FILE_HOST}/dx-national-grid/national-grid/resources/x/{filename}"
+        f"?response-content-disposition=attachment%3B%20filename%3D{filename}"
+        "&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Expires=604800"
+        "&X-Amz-SignedHeaders=host&X-Amz-Date=20260816T185401Z"
+        "&X-Amz-Signature=b4f0da8dbcf4e5c46e06a16556fcc90257a632b4684f5d6d4c4d0da7565bceef"
+    )
+
+
+def _wire_every_dataset(router: respx.MockRouter) -> None:
+    """Route all three datasets' legs at once, dispatching on the request.
+
+    The per-dataset helpers above register one route per URL and respx matches
+    the FIRST route whose pattern fits, so three sequential `_wire_*` calls
+    would silently serve dataset one's payload for all three. These routes
+    dispatch on the CKAN `id` parameter and on the resource filename instead,
+    which is also how the real service tells them apart.
+    """
+    by_package = {DATASETS[dataset].package: dataset for dataset in _ALL_DATASETS}
+    by_filename = {
+        str(_resource_of(dataset)["url"]).rsplit("/", 1)[-1]: dataset for dataset in _ALL_DATASETS
+    }
+
+    def _serve_package_show(request: httpx.Request) -> httpx.Response:
+        package = request.url.params.get("id")
+        return httpx.Response(200, json=_payload_of(by_package[package]))
+
+    def _serve_redirect(request: httpx.Request) -> httpx.Response:
+        dataset = by_filename[request.url.path.rsplit("/", 1)[-1]]
+        return httpx.Response(
+            302,
+            headers=[("location", _presigned_of(dataset))],
+            content=b"<html>redirecting</html>",
+        )
+
+    def _serve_body(request: httpx.Request) -> httpx.Response:
+        dataset = by_filename[request.url.path.rsplit("/", 1)[-1]]
+        return httpx.Response(200, content=_ALL_DATASETS[dataset][1])
+
+    router.get(url__startswith=PACKAGE_SHOW_URL).mock(side_effect=_serve_package_show)
+    router.get(url__startswith=f"{BASE_URL}/dataset/").mock(side_effect=_serve_redirect)
+    router.get(url__startswith=FILE_HOST).mock(side_effect=_serve_body)
+
+
+async def _capture_and_transform(data_dir: Path, dataset: str, *, run_id: str) -> tuple[int, date]:
+    """One real capture through the real writer and the real transformer."""
+    start, end = _window()
+    response = await _fetch_dataset(_source_config(), dataset, start, end)
+    BronzeWriter(data_dir).write(response)
+    transformer = get_transformer(SOURCE, dataset, data_dir)
+    return transformer.run(end.date(), run_id=run_id), end.date()
+
+
+async def _populate_every_dataset(router: respx.MockRouter, data_dir: Path) -> date:
+    """Drive T-15's and T-27's captures for all three datasets into one tree."""
+    _wire_every_dataset(router)
+    day: date | None = None
+    for dataset, (_, _, expected_rows) in _ALL_DATASETS.items():
+        rows, day = await _capture_and_transform(data_dir, dataset, run_id="t20")
+        assert rows == expected_rows, f"{dataset}: seeded {rows} rows, expected {expected_rows}"
+    assert day is not None
+    return day
+
+
+def _catalogue(data_dir: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
+    """Initialise a DuckDB catalogue over `data_dir` and return its path."""
+    from gridflow.storage.duckdb import init_catalogue
+
+    # Gold SQL views reference silver tables absent from a tmp tree; stubbing
+    # keeps `init_catalogue` off its strict-mode loud-fail for a reason that has
+    # nothing to do with this source.
+    monkeypatch.setattr("gridflow.storage.duckdb._register_gold_views", lambda con: None)
+    db_path = data_dir / "gridflow.duckdb"
+    init_catalogue(db_path, data_dir)
+    return db_path
+
+
+@respx.mock
+@pytest.mark.asyncio
+async def test_every_dataset_registers_a_base_and_a_latest_duckdb_view(
+    router: respx.MockRouter,
+    short_data_dir: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Both views exist for all three, and `_latest` really is one row per key.
+
+    `_register_views` is generic -- it walks the silver tree -- so the base
+    view appears for any directory that exists. The `_latest` view does not: it
+    is registered only when `LATEST_VIEW_SPECS` carries an entry, and a missing
+    entry is invisible everywhere else. `schema_manifest` fails an APPEND_ONLY
+    dataset without one, which is the other half of the same guard; this
+    asserts the view is actually THERE, and at the declared grain.
+    """
+    from gridflow.silver.latest_views import LATEST_VIEW_SPECS
+    from gridflow.storage.duckdb import get_connection
+
+    await _populate_every_dataset(router, short_data_dir)
+    con = get_connection(_catalogue(short_data_dir, monkeypatch), read_only=True)
+    try:
+        for dataset, (_, _, expected_rows) in _ALL_DATASETS.items():
+            base_view = f"silver_{SOURCE}_{dataset}"
+            latest_view = f"{base_view}_latest"
+
+            base_rows = con.sql(f'SELECT count(*) FROM "{base_view}"').fetchone()
+            assert base_rows is not None and base_rows[0] == expected_rows, (
+                f"{base_view} did not register over the silver written above"
+            )
+
+            spec = LATEST_VIEW_SPECS.get((SOURCE, dataset))
+            assert spec is not None, (
+                f"{SOURCE}/{dataset} is APPEND_ONLY with no LATEST_VIEW_SPECS entry, "
+                "so consumers would read every retained vintage as though current"
+            )
+            keys = ", ".join(f'"{column}"' for column in spec.key_columns)
+            grain = con.sql(
+                f'SELECT count(*), count(DISTINCT ({keys})) FROM "{latest_view}"'
+            ).fetchone()
+            assert grain is not None
+            assert grain[0] == grain[1], (
+                f"{latest_view} returns {grain[0]} rows for {grain[1]} distinct "
+                f"{spec.key_columns} -- it is not the one-row-per-key projection "
+                "D-30 names as the consumer default"
+            )
+    finally:
+        con.close()
+
+
+@respx.mock
+@pytest.mark.asyncio
+async def test_the_entity_key_resolves_to_the_declared_d24_grain(
+    router: respx.MockRouter,
+    short_data_dir: Path,
+) -> None:
+    """`check_duplicates` must key on the dataset's real grain, not a legacy pair.
+
+    Before F-16 every dataset's duplicate check used a hardcoded
+    `(settlement_date, settlement_period)`. For this source that would be
+    wrong three different ways -- two datasets carry no settlement columns at
+    all, and the third's grain also includes `issue_time`. The fallback is
+    LOUD but it is still a fallback, so this asserts the declared key is what
+    resolves.
+    """
+    from gridflow.cli import _entity_key_for
+    from gridflow.silver.registry import get_transformer_class
+
+    await _populate_every_dataset(router, short_data_dir)
+
+    for dataset in _ALL_DATASETS:
+        frame = pl.read_parquet(_silver_files(short_data_dir, dataset, _window()[1].date())[0])
+        transformer_cls = get_transformer_class(SOURCE, dataset)
+        assert transformer_cls is not None
+
+        resolved = _entity_key_for(SOURCE, dataset, frame.columns)
+        assert resolved == list(transformer_cls.ENTITY_KEY_COLUMNS), (
+            f"{dataset}: the quality duplicate check would key on {resolved}, not "
+            f"the declared D-24 grain {transformer_cls.ENTITY_KEY_COLUMNS}"
+        )
+        assert "settlement_period" not in (resolved or []) or dataset == EMB_DATASET, (
+            "the legacy hardcoded pair leaked back in for a dataset that has no settlement grain"
+        )
+
+
+@respx.mock
+@pytest.mark.asyncio
+async def test_status_and_quality_run_over_the_new_source_with_no_source_branch(
+    router: respx.MockRouter,
+    short_data_dir: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    """Both operational commands work, and neither names this source.
+
+    "Runs without a source-specific branch" is asserted two ways, because
+    either alone is weak: the commands actually produce results for all three
+    datasets (behavioural), AND neither command's source text -- nor
+    `_register_views`' -- mentions `neso_data_portal` (structural). A future
+    special case would keep the first assertion green.
+    """
+    import inspect
+
+    import duckdb
+
+    from gridflow.cli import app, quality, status
+    from gridflow.storage.duckdb import _register_views
+
+    for function in (status, quality, _register_views):
+        assert SOURCE not in inspect.getsource(function), (
+            f"{function.__name__} carries a source-specific branch for {SOURCE}"
+        )
+
+    await _populate_every_dataset(router, short_data_dir)
+    db_path = _catalogue(short_data_dir, monkeypatch)
+
+    monkeypatch.setenv("GRIDFLOW_DATA_DIR", str(short_data_dir))
+    monkeypatch.setenv("GRIDFLOW_DUCKDB_PATH", str(db_path))
+    monkeypatch.setenv("GRIDFLOW_LOG_DIR", str(tmp_path / "logs"))
+
+    cli = CliRunner()
+    status_result = cli.invoke(app, ["status"])
+    assert status_result.exit_code == 0, status_result.output
+
+    quality_result = cli.invoke(app, ["quality", "--all"])
+    assert quality_result.exit_code == 0, quality_result.output
+
+    # The report lands in DuckDB, not on stdout, so assert on the table rather
+    # than on rendered text (which colour settings can reshape).
+    con = duckdb.connect(str(db_path), read_only=True)
+    try:
+        checked = con.execute(
+            "SELECT DISTINCT dataset FROM quality_reports WHERE source = ?", [SOURCE]
+        ).fetchall()
+    finally:
+        con.close()
+    assert {row[0] for row in checked} == set(_ALL_DATASETS), (
+        "gridflow quality did not produce results for every dataset of the new source"
+    )
+
+
+@respx.mock
+@pytest.mark.asyncio
+async def test_two_identical_captures_duplicate_in_the_base_view_only(
+    router: respx.MockRouter,
+    short_data_dir: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """FM-11, pinned as ACCEPTED behaviour rather than left to be discovered.
+
+    Polling faster than NESO republishes yields two bronze bodies with
+    identical rows and an identical `published_at`, but distinct sidecar
+    `written_at` scalars -- so two run-suffixed silver files, and exact
+    duplicate rows in the BASE view. That is the documented, accepted outcome
+    (the connector stays stateless; TODO-04 holds the deferred fix), and it is
+    exactly why D-30 names `_latest` as the consumer default.
+
+    The two captures are made a second apart on the connector's clock because
+    the bronze filename embeds `fetched_at` at SECOND resolution alongside the
+    body hash: two same-second captures of identical bytes resolve to one
+    filename and the duplication could not arise at all. Advancing the clock
+    reproduces the real hazard (two polls minutes apart) rather than inventing
+    one.
+
+    **Observed while writing this, and reported rather than asserted away:**
+    FM-11's prose says `gridflow quality`'s duplicate check surfaces these
+    loudly. It does not -- `cli.quality` applies `select_latest_vintage` before
+    the check, which collapses the tie to one row per coarse key, so the
+    entity-key check afterwards can never see them. The duplication is real and
+    visible in the base view; only the stated DETECTOR is wrong.
+    """
+    from gridflow.quality.checks import check_duplicates
+    from gridflow.silver.latest_views import LATEST_VIEW_SPECS, select_latest_vintage
+    from gridflow.storage.duckdb import get_connection
+
+    _wire_every_dataset(router)
+    start, end = _window()
+
+    first = await _fetch_dataset(_source_config(), DATASET, start, end)
+    bronze_first = BronzeWriter(short_data_dir).write(first)
+
+    later = first.fetched_at + timedelta(minutes=7)
+
+    class _LaterClock(datetime):
+        @classmethod
+        def now(cls, tz: Any = None) -> datetime:  # noqa: ARG003 - signature parity
+            return later
+
+    # Its OWN MonkeyPatch context, for the reason the FM-13 test gives: undoing
+    # the shared `monkeypatch` would un-stub the resolver this module opts into.
+    with pytest.MonkeyPatch.context() as clock:
+        clock.setattr(connectors_base, "datetime", _LaterClock)
+        second = await _fetch_dataset(_source_config(), DATASET, start, end)
+    bronze_second = BronzeWriter(short_data_dir).write(second)
+
+    assert bronze_first != bronze_second, "the second capture overwrote the first in bronze"
+    assert bronze_first.read_bytes() == bronze_second.read_bytes(), (
+        "precondition: the two captures must be byte-identical, or this is a "
+        "test about changed data rather than about redundant polling"
+    )
+
+    transformer = get_transformer(SOURCE, DATASET, short_data_dir)
+    assert transformer.run(end.date(), run_id="t20-fm11") == EXPECTED_ROWS * 2
+    assert len(_silver_files(short_data_dir, DATASET, end.date())) == 2, (
+        "the two vintages collapsed onto one silver path, so the accepted "
+        "duplication documented here no longer describes the code"
+    )
+
+    con = get_connection(_catalogue(short_data_dir, monkeypatch), read_only=True)
+    try:
+        base = con.sql(f'SELECT count(*) FROM "silver_{SOURCE}_{DATASET}"').fetchone()
+        latest = con.sql(f'SELECT count(*) FROM "silver_{SOURCE}_{DATASET}_latest"').fetchone()
+    finally:
+        con.close()
+
+    assert base is not None and base[0] == EXPECTED_ROWS * 2, (
+        "the base view no longer carries both vintages (FM-11 is documented as "
+        "ACCEPTED -- a change here is a decision, not a bug fix)"
+    )
+    assert latest is not None and latest[0] == EXPECTED_ROWS, (
+        "the _latest projection served duplicates, so D-30's consumer default "
+        "does not actually protect consumers from FM-11"
+    )
+
+    # The entity key SEES the duplication on the raw frame -- and does not once
+    # the latest-vintage projection has run. Both are pinned so the note in this
+    # docstring cannot rot into a claim nobody re-checked.
+    frame = pl.concat(
+        [pl.read_parquet(path) for path in _silver_files(short_data_dir, DATASET, end.date())],
+        how="vertical",
+    )
+    key = list(transformer.ENTITY_KEY_COLUMNS)
+    assert not check_duplicates(frame, key).passed
+    projected = select_latest_vintage(frame.lazy(), LATEST_VIEW_SPECS[(SOURCE, DATASET)]).collect()
+    assert check_duplicates(projected, key).passed
