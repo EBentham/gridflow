@@ -1291,3 +1291,278 @@ async def test_two_identical_captures_duplicate_in_the_base_view_only(
     assert not check_duplicates(frame, key).passed
     projected = select_latest_vintage(frame.lazy(), LATEST_VIEW_SPECS[(SOURCE, DATASET)]).collect()
     assert check_duplicates(projected, key).passed
+
+
+# --------------------------------------------------------------------------- #
+# T-21 -- the loud-skip regressions for FM-01 and FM-05
+#
+# Every case here asserts the run STATUS, not only the log. Revision 7 of the
+# plan called the silent-skip behaviour an accepted residual on the strength of
+# a log line; a WARNING nobody reads is not a signal, and a whole vintage could
+# disappear under a `success` status. So each case drives the REAL
+# `pipeline.runner.run_transform` and asserts `DatasetResult.status` alongside
+# the log record and the row count -- and the all-excluded case asserts
+# `failed`, which is the assertion a log-only test could never make.
+# --------------------------------------------------------------------------- #
+
+
+async def _two_identical_captures(
+    router: respx.MockRouter, data_dir: Path, dataset: str
+) -> tuple[Path, Path, date]:
+    """Two byte-identical bronze bodies for one date, minutes apart.
+
+    Two, not one, because the point of every case below is that ONE bad
+    sidecar must not suppress a whole date: without a healthy sibling the
+    partial-exclusion cases would be indistinguishable from the total one.
+
+    The connector's clock is advanced for the second capture because the bronze
+    filename embeds `fetched_at` at second resolution alongside the body hash --
+    two same-second captures of identical bytes resolve to one filename.
+    """
+    _wire_every_dataset(router)
+    start, end = _window()
+
+    first = await _fetch_dataset(_source_config(), dataset, start, end)
+    first_path = BronzeWriter(data_dir).write(first)
+
+    later = first.fetched_at + timedelta(minutes=11)
+
+    class _LaterClock(datetime):
+        @classmethod
+        def now(cls, tz: Any = None) -> datetime:  # noqa: ARG003 - signature parity
+            return later
+
+    with pytest.MonkeyPatch.context() as clock:
+        clock.setattr(connectors_base, "datetime", _LaterClock)
+        second = await _fetch_dataset(_source_config(), dataset, start, end)
+    second_path = BronzeWriter(data_dir).write(second)
+
+    assert first_path != second_path, "the second capture overwrote the first in bronze"
+    return first_path, second_path, end.date()
+
+
+def _sidecar_of(body: Path) -> Path:
+    return body.with_suffix(".meta.json")
+
+
+def _rewrite_request_params(body: Path, mutate: Any) -> None:
+    """Apply `mutate` to the sidecar's `request_params` object, in place."""
+    sidecar = _sidecar_of(body)
+    payload: dict[str, Any] = json.loads(sidecar.read_text(encoding="utf-8"))
+    mutate(payload["request_params"])
+    sidecar.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+
+
+def _run_transform_for(
+    data_dir: Path,
+    dataset: str,
+    day: date,
+    monkeypatch: pytest.MonkeyPatch,
+) -> Any:
+    """Drive the REAL `run_transform` over one date and return its DatasetResult.
+
+    A unit-level assertion on the transformer's counters would not prove the
+    STATUS changes, which is the whole point of D-41's acceptance gate.
+    """
+    from gridflow.config.settings import load_settings
+    from gridflow.pipeline import runner as pipeline_runner
+    from gridflow.storage.duckdb import get_connection, init_catalogue
+
+    db_path = data_dir / "gridflow.duckdb"
+    monkeypatch.setenv("GRIDFLOW_DATA_DIR", str(data_dir))
+    monkeypatch.setenv("GRIDFLOW_DUCKDB_PATH", str(db_path))
+    monkeypatch.setenv("GRIDFLOW_LOG_DIR", str(data_dir / "logs"))
+    monkeypatch.setattr("gridflow.storage.duckdb._register_gold_views", lambda con: None)
+
+    settings = load_settings()
+    pipeline_runner.import_transformers()
+    init_catalogue(db_path, data_dir)
+    con = get_connection(db_path)
+    try:
+        ctx = pipeline_runner.PipelineContext(con=con, settings=settings)
+        results = pipeline_runner.run_transform(
+            ctx,
+            SOURCE,
+            [dataset],
+            datetime(day.year, day.month, day.day, tzinfo=UTC),
+            datetime(day.year, day.month, day.day, tzinfo=UTC),
+        )
+    finally:
+        con.close()
+
+    assert len(results) == 1
+    return results[0]
+
+
+def _warnings_naming(caplog: pytest.LogCaptureFixture, path: Path) -> list[str]:
+    """Every WARNING-or-above record whose message names `path`."""
+    return [
+        record.getMessage()
+        for record in caplog.records
+        if record.levelno >= logging.WARNING and str(path) in record.getMessage()
+    ]
+
+
+@respx.mock
+@pytest.mark.asyncio
+@pytest.mark.parametrize("dataset", list(_ALL_DATASETS))
+async def test_a_body_whose_sidecar_vanished_is_skipped_loudly_and_reaches_the_status(
+    router: respx.MockRouter,
+    short_data_dir: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    caplog: pytest.LogCaptureFixture,
+    dataset: str,
+) -> None:
+    """FM-01: the crash window between the body write and its sidecar.
+
+    `bronze/writer.py` makes the body durable first, by call order, so a crash
+    in between leaves a body with no sidecar. It cannot be transformed -- there
+    is no honest vintage for it -- but the skip must not be silent: the file is
+    counted in `bronze_unvouched` and the run reports
+    `completed_with_warnings`, never `success`.
+    """
+    expected_rows = _ALL_DATASETS[dataset][2]
+    _, orphan, day = await _two_identical_captures(router, short_data_dir, dataset)
+    _sidecar_of(orphan).unlink()
+
+    with caplog.at_level(logging.WARNING):
+        result = _run_transform_for(short_data_dir, dataset, day, monkeypatch)
+
+    assert result.status == "completed_with_warnings", (
+        "a vanished vintage reported as plain success is exactly the defect D-41 exists to close"
+    )
+    assert result.bronze_unvouched == 1
+    assert result.rows_out == expected_rows, (
+        "the healthy sibling in the same directory did not transform, so one "
+        "bad sidecar suppressed the whole date"
+    )
+    assert _warnings_naming(caplog, orphan), f"nothing above DEBUG named the skipped body {orphan}"
+    assert len(_silver_files(short_data_dir, dataset, day)) == 1, (
+        "the skipped body produced a silver file, i.e. it was transformed with "
+        "a vintage that came from somewhere other than its own sidecar"
+    )
+
+
+@respx.mock
+@pytest.mark.asyncio
+@pytest.mark.parametrize("dataset", list(_ALL_DATASETS))
+async def test_a_sidecar_without_ckan_last_modified_is_skipped_and_fabricates_nothing(
+    router: respx.MockRouter,
+    short_data_dir: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    caplog: pytest.LogCaptureFixture,
+    dataset: str,
+) -> None:
+    """FM-05: the sidecar vouches on `written_at`, but has no vendor vintage.
+
+    This one gets PAST the base class's sidecar-timestamp rung -- `written_at`
+    is still there -- and is declined by the source's own provenance rule
+    instead. The assertion that matters most is the negative one: not one row
+    is emitted carrying a fetch-clock `published_at`. A substituted vintage
+    looks exactly like a real one once it is in silver.
+    """
+    expected_rows = _ALL_DATASETS[dataset][2]
+    _, broken, day = await _two_identical_captures(router, short_data_dir, dataset)
+    _rewrite_request_params(broken, lambda params: params.pop("ckan_last_modified"))
+
+    with caplog.at_level(logging.WARNING):
+        result = _run_transform_for(short_data_dir, dataset, day, monkeypatch)
+
+    assert result.status == "completed_with_warnings"
+    assert result.bronze_unvouched == 1
+    assert result.rows_out == expected_rows
+    assert _warnings_naming(caplog, broken), f"nothing above DEBUG named {broken}"
+
+    written = _silver_files(short_data_dir, dataset, day)
+    assert len(written) == 1
+    frame = pl.read_parquet(written[0])
+    vendor_instant = datetime.fromisoformat(str(_resource_of(dataset)["last_modified"])).replace(
+        tzinfo=UTC
+    )
+    assert frame["published_at"].unique().to_list() == [vendor_instant]
+    assert frame["available_at"].to_list() == frame["published_at"].to_list()
+    assert (datetime.now(UTC) - frame["published_at"].max()) > timedelta(hours=1), (  # type: ignore[operator]
+        "a published_at within the last hour is the fetch clock, not NESO's "
+        "publication instant -- the substitution FM-05 forbids"
+    )
+
+
+@respx.mock
+@pytest.mark.asyncio
+async def test_an_embedded_sidecar_without_an_issue_token_is_skipped(
+    router: respx.MockRouter,
+    short_data_dir: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """FM-05, this dataset's extra requirement: `issue_time` is part of the key.
+
+    `_bronze.provenance_for` parses the 12-digit token wherever one exists and
+    takes no view on which datasets must have one -- requiredness belongs to
+    the caller, and this is the caller that requires it. A fabricated
+    `issue_time` would mint a forecast vintage that never existed AND outrank
+    the real ones in the `_latest` projection, which is why the body is
+    declined rather than defaulted.
+    """
+    _, broken, day = await _two_identical_captures(router, short_data_dir, EMB_DATASET)
+    _rewrite_request_params(
+        broken,
+        lambda params: params.__setitem__("resource_filename", "embedded_forecast.csv"),
+    )
+
+    with caplog.at_level(logging.WARNING):
+        result = _run_transform_for(short_data_dir, EMB_DATASET, day, monkeypatch)
+
+    assert result.status == "completed_with_warnings"
+    assert result.bronze_unvouched == 1
+    assert result.rows_out == EMB_EXPECTED_ROWS
+    assert _warnings_naming(caplog, broken), f"nothing above DEBUG named {broken}"
+
+    written = _silver_files(short_data_dir, EMB_DATASET, day)
+    assert len(written) == 1
+    assert pl.read_parquet(written[0])["issue_time"].unique().to_list() == [EMB_ISSUE_TIME]
+
+
+@respx.mock
+@pytest.mark.asyncio
+@pytest.mark.parametrize("dataset", list(_ALL_DATASETS))
+@pytest.mark.parametrize("breakage", ["every-sidecar-deleted", "every-ckan-key-removed"])
+async def test_a_date_whose_every_sidecar_is_unusable_reports_failed(
+    router: respx.MockRouter,
+    short_data_dir: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    dataset: str,
+    breakage: str,
+) -> None:
+    """D-41's fourth case, and the one a log-only assertion cannot make.
+
+    A vintage that vanishes ENTIRELY must not be reported as a successful run
+    with zero rows: no silver was written, so any pre-existing Parquet for that
+    date is still on disk, and only a FAILED status stops it passing as
+    current. Both routes to the state are asserted independently -- the base
+    class's sidecar rung (no sidecar at all) and this source's own provenance
+    rung (sidecar present, vendor vintage gone) -- because they reach the
+    failure through different code and either could regress alone.
+    """
+    first, second, day = await _two_identical_captures(router, short_data_dir, dataset)
+    for body in (first, second):
+        if breakage == "every-sidecar-deleted":
+            _sidecar_of(body).unlink()
+        else:
+            _rewrite_request_params(body, lambda params: params.pop("ckan_last_modified"))
+
+    result = _run_transform_for(short_data_dir, dataset, day, monkeypatch)
+
+    assert result.status == "failed", (
+        "every candidate body for this date was excluded and the run still did "
+        "not report failed -- a whole vintage disappeared quietly"
+    )
+    assert "every examined bronze body was unvouched" in (result.error or ""), (
+        "the run failed for some OTHER reason -- an exception out of run() also "
+        "reports `failed`, so without this the case could pass while D-41's "
+        "total-exclusion rung was never reached: "
+        f"{result.error}"
+    )
+    assert result.bronze_unvouched == 2
+    assert result.rows_out == 0
+    assert _silver_files(short_data_dir, dataset, day) == []
