@@ -352,6 +352,14 @@ def backfill(
     all_datasets: bool = typer.Option(False, "--all", help="Backfill all datasets for source"),
 ) -> None:
     """Backfill historical data in chunks."""
+    # D-35: FIRST statement — before settings, before _resolve_datasets, before
+    # date parsing, before the chunk loop. The helper bootstraps the connector
+    # registry itself, so this does not depend on the import_connectors() call
+    # further down. No source name appears here: the CLI interrogates a declared
+    # capability through a generic helper, exactly as get_connector already
+    # resolves by string.
+    runner.assert_backfillable(source)
+
     from gridflow.config.settings import load_settings
     from gridflow.utils.logging import setup_logging
 

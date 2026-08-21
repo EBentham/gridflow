@@ -57,6 +57,44 @@ def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item
 
 
 @pytest.fixture
+def stub_neso_resolver(monkeypatch: pytest.MonkeyPatch) -> list[tuple[str, int]]:
+    """Stub the NESO connector's name resolver with one globally-routable answer.
+
+    Under D-39 §1a every send validates its target, and validation performs a
+    real host lookup. respx mocks HTTP, **not** name resolution, so without this
+    a mocked NESO fetch would resolve ``api.neso.energy`` for real — a live
+    network call in the default suite.
+
+    **Non-autouse, and defined here rather than in a test module, deliberately.**
+    It lives in the repo-root conftest so ``tests/integration/`` can reach it
+    too; it is inert by default so the other five sources' suites are
+    unaffected. Every NESO test module opts in with a module-level
+    ``pytestmark = pytest.mark.usefixtures("stub_neso_resolver")``; the live
+    module simply does not.
+
+    Returns:
+        The ``(host, port)`` pairs the stub was asked to resolve, so a test can
+        prove the helper was actually consulted — a refactor that bypasses it
+        would otherwise silently reintroduce real DNS while the suite stayed
+        green.
+    """
+    import ipaddress
+    from typing import Any
+
+    calls: list[tuple[str, int]] = []
+
+    async def _stub_resolver(host: str, port: int) -> list[Any]:
+        calls.append((host, port))
+        return [ipaddress.ip_address("93.184.216.34")]
+
+    monkeypatch.setattr(
+        "gridflow.connectors.neso_data_portal.client._resolve_host_addresses",
+        _stub_resolver,
+    )
+    return calls
+
+
+@pytest.fixture
 def tmp_data_dir(tmp_path: Path) -> Path:
     """Create a temporary data directory structure."""
     for layer in ["bronze", "silver", "gold"]:

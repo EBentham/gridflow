@@ -105,6 +105,32 @@ LATEST_VIEW_SPECS: dict[tuple[str, str], LatestViewSpec] = {
         key_columns=("settlement_date", "fuel_type"),
         optional_key_columns=("settlement_period",),
     ),
+    # D-21/D-24. Every NESO Data Portal capture is a whole-file snapshot, so
+    # successive captures COEXIST in the base view by design (APPEND_ONLY) and
+    # this projection is what returns one current row per BMU-day. The key is
+    # deliberately COARSER than the transformer's ENTITY_KEY_COLUMNS, which
+    # carries `published_at`: the entity key preserves every vintage, this key
+    # picks the winner among them (ordered by `available_at`, which D-22 makes
+    # NESO's own publication instant).
+    ("neso_data_portal", "daily_wind_availability"): LatestViewSpec(
+        key_columns=("bmu_id", "availability_date"),
+    ),
+    # D-21/D-24. The resource's own CKAN `notes` says the data "is subject to
+    # change due to a data cleansing process", so two captures legitimately
+    # disagree about one instant and both are retained. This projection returns
+    # the most recently PUBLISHED value per instant, and it is the default
+    # consumer surface for this dataset: the base view holds one full copy of
+    # 2009-present per capture (D-30).
+    ("neso_data_portal", "historic_generation_mix"): LatestViewSpec(
+        key_columns=("timestamp_utc",),
+    ),
+    # D-21/D-24. A rolling forecast republished several times a day, so the
+    # base view holds every issued vintage for a settlement period and this
+    # projection returns the current one. The key is the entity key MINUS
+    # `issue_time`, which is precisely the vintage axis it selects over.
+    ("neso_data_portal", "embedded_wind_solar_forecast"): LatestViewSpec(
+        key_columns=("settlement_date", "settlement_period"),
+    ),
 }
 
 

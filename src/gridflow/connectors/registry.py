@@ -17,6 +17,26 @@ def register_connector(source_name: str, connector_cls: type[BaseConnector]) -> 
     _REGISTRY[source_name] = connector_cls
 
 
+def get_connector_class(source_name: str) -> type[BaseConnector]:
+    """Return the registered connector CLASS, without instantiating it.
+
+    Class-level capability declarations (``SNAPSHOT_ONLY``) are interrogated
+    before a config is resolved, so there is nothing to instantiate with and
+    nothing to be gained by trying.
+
+    Raises:
+        ValueError: The source is not registered — usually because the caller
+            did not bootstrap the registry first.
+    """
+    if source_name not in _REGISTRY:
+        raise ValueError(
+            f"Unknown source: {source_name}. "
+            f"Available: {list(_REGISTRY.keys())}. "
+            f"Did you forget to register the connector?"
+        )
+    return _REGISTRY[source_name]
+
+
 def get_connector(source_name: str, config: SourceConfig) -> BaseConnector:
     """Create a connector instance for the given source."""
     if source_name not in _REGISTRY:

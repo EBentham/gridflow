@@ -261,6 +261,22 @@ DESIGNATED_DATE_COLS: dict[tuple[str, str], str] = {
     ("neso", "regional_regionid"): "timestamp_utc",
     ("neso", "regional_scotland"): "timestamp_utc",
     ("neso", "regional_wales"): "timestamp_utc",
+    # D-24. `availability_date` and not the derived `timestamp_utc`: the
+    # vendor's own date is the authoritative user-facing field, and
+    # `timestamp_utc` is SP1 of that GB availability day (D-25) -- a derived
+    # instant, correct for event ordering and wrong as the thing a consumer
+    # filters a forecast day by.
+    ("neso_data_portal", "daily_wind_availability"): "availability_date",
+    # D-24. The vendor's own half-hourly instant, read as UTC on the strength
+    # of the `datastore_search` field metadata (see the transformer's module
+    # docstring). This dataset has no settlement pair and no calendar date of
+    # its own -- the instant IS the grain.
+    ("neso_data_portal", "historic_generation_mix"): "timestamp_utc",
+    # D-24/D-26. The settlement DATE, not a derived instant: this dataset
+    # deliberately emits no `timestamp_utc` (emitting one would take
+    # `event_time` off the DST-fold-safe settlement-pair branch), and the
+    # settlement date is what a consumer filters a forecast day by.
+    ("neso_data_portal", "embedded_wind_solar_forecast"): "settlement_date",
     ("open_meteo", "forecast_demand"): "timestamp_utc",
     ("open_meteo", "forecast_solar"): "timestamp_utc",
     ("open_meteo", "forecast_wind"): "timestamp_utc",
@@ -367,17 +383,30 @@ _SERVING_ALIASES: tuple[_ServingAliasSpec, ...] = (
 _DATE_COL_SQL_TYPES: dict[str, DateColSqlType] = {
     "settlement_date": "DATE",
     "gas_day": "DATE",
+    # A calendar DATE, like `settlement_date` and unlike `timestamp_utc`:
+    # NESO's daily wind availability is stated for a GB availability DAY, and
+    # the derived instant lives in `timestamp_utc` (D-25).
+    "availability_date": "DATE",
     "timestamp_utc": "TIMESTAMPTZ",
     "implementation_datetime_utc": "TIMESTAMPTZ",
     "ingested_at": "TIMESTAMPTZ",
 }
 
+# This list is the manifest's OWN bootstrap and is independent of
+# `runner._TRANSFORMER_MODULES`: `get_silver_schema_manifest()` is reachable
+# without the pipeline runner ever being imported (the SDK and the schema
+# exporters call it directly). A source wired only into the runner is therefore
+# present in a pytest process -- collection imports its test module -- and
+# ABSENT in a fresh one, which is the F-16 shape: a production omission behind
+# a green test. Hence the subprocess-driven coverage assertion in
+# `tests/unit/test_neso_data_portal.py`.
 _SILVER_IMPORTS: tuple[str, ...] = (
     "gridflow.silver.elexon",
     "gridflow.silver.entsoe",
     "gridflow.silver.entsog",
     "gridflow.silver.gie",
     "gridflow.silver.neso",
+    "gridflow.silver.neso_data_portal",
     "gridflow.silver.openmeteo",
 )
 

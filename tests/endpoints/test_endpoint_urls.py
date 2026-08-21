@@ -33,6 +33,7 @@ ALSI_BASE = "https://alsi.gie.eu"
 OPENMETEO_ARCHIVE_BASE = "https://archive-api.open-meteo.com/v1"
 OPENMETEO_FORECAST_BASE = "https://api.open-meteo.com/v1"
 NESO_BASE = "https://api.carbonintensity.org.uk"
+NESO_DATA_PORTAL_BASE = "https://api.neso.energy"
 
 
 def _connector_config(source: str) -> SourceConfig:
@@ -856,6 +857,136 @@ class TestNesoEndpointDefinitions:
         assert chunks[0] == "/intensity/2026-02-01T00:00Z/2026-02-15T00:00Z"
         assert chunks[1] == "/intensity/2026-02-15T00:00Z/2026-03-01T00:00Z"
         assert chunks[2] == "/intensity/2026-03-01T00:00Z/2026-03-03T00:00Z"
+
+
+class TestNesoDataPortalEndpointDefinitions:
+    """Verify NESO Data Portal (CKAN) URL construction and config/code drift.
+
+    Distinct from ``TestNesoEndpointDefinitions`` above, which is the Carbon
+    Intensity API. This source is the data portal at ``api.neso.energy``.
+    """
+
+    def test_package_show_url_and_query_for_each_dataset(self):
+        """The action path and query are built by the connector's own helper —
+        derived here, not re-spelled, so a change to the builder shows up."""
+        from gridflow.connectors.neso_data_portal.endpoints import DATASETS, build_action_url
+
+        expected_packages = {
+            "daily_wind_availability": "daily-wind-availability",
+            "historic_generation_mix": "historic-generation-mix",
+            "embedded_wind_solar_forecast": "embedded-wind-and-solar-forecasts",
+        }
+
+        for dataset, spec in DATASETS.items():
+            path, params = build_action_url("package_show", id=spec.package)
+
+            assert path == "/api/3/action/package_show"
+            assert params == {"id": expected_packages[dataset]}
+            assert str(httpx.URL(NESO_DATA_PORTAL_BASE + path, params=params)) == (
+                f"{NESO_DATA_PORTAL_BASE}/api/3/action/package_show?id={expected_packages[dataset]}"
+            )
+
+    def test_dataset_keys_do_not_drift_between_code_and_config(self):
+        """CKAN identity lives in ``endpoints.py`` (D-28) while the runtime
+        dataset list lives in ``sources.yaml``. Nothing else couples them, so a
+        key added to one place only would leave a dataset that either cannot be
+        configured or cannot be fetched — this is the check that fails first.
+        """
+        from gridflow.connectors.neso_data_portal.endpoints import DATASETS
+
+        configured = load_settings().get_source_config("neso_data_portal").datasets
+
+        assert set(DATASETS) == set(configured), (
+            "neso_data_portal dataset keys differ between "
+            "connectors/neso_data_portal/endpoints.py::DATASETS and "
+            "config/sources.yaml"
+        )
+
+    def test_the_base_url_matches_config(self):
+        assert (
+            load_settings().get_source_config("neso_data_portal").base_url == NESO_DATA_PORTAL_BASE
+        )
+
+    def test_the_source_name_matches_the_registry_key(self):
+        from gridflow.connectors.neso_data_portal.client import NesoDataPortalConnector
+
+        assert NesoDataPortalConnector.source_name == "neso_data_portal"
+
+    def test_two_windows_with_different_starts_produce_identical_requests(self):
+        """D-16: the window is NOT a selector.
+
+        Every resource is a whole-file snapshot with no server-side date
+        filter, so two windows differing only in ``start`` must produce
+        byte-identical request URLs and params. Both end at ≈now — a
+        *historical* window is D-34's territory, not a URL-shape case.
+        """
+        import asyncio
+        import ipaddress
+        from datetime import timedelta
+
+        from gridflow.connectors.neso_data_portal import client as ndp_client
+        from gridflow.connectors.neso_data_portal.client import NesoDataPortalConnector
+
+        config = (
+            load_settings()
+            .get_source_config("neso_data_portal")
+            .model_copy(update={"rate_limit_per_second": 1000, "timeout": 5})
+        )
+        package_id = "3758a0ed-6c96-4e36-88d0-107f5020ddf3"
+        resource_url = (
+            f"{NESO_DATA_PORTAL_BASE}/dataset/{package_id}"
+            "/resource/7aa508eb-36f5-4298-820f-2fa6745ae2e7/download/windavailability.csv"
+        )
+        payload = {
+            "success": True,
+            "result": {
+                "id": package_id,
+                "name": "daily-wind-availability",
+                "resources": [
+                    {
+                        "id": "7aa508eb-36f5-4298-820f-2fa6745ae2e7",
+                        "name": "Daily Wind Availability",
+                        "format": "CSV",
+                        "url_type": "upload",
+                        "last_modified": "2026-08-16T18:20:11.953941",
+                        "url": resource_url,
+                    }
+                ],
+            },
+        }
+        body = b"BMU_ID,Date,MW\nT_ABC-1,2026-08-16,120.5\n"
+
+        async def _stub_resolver(host: str, port: int) -> list:
+            return [ipaddress.ip_address("93.184.216.34")]
+
+        def _capture(start_offset_hours: int) -> tuple[list[str], dict]:
+            end = datetime.now(UTC)
+            start = end - timedelta(hours=start_offset_hours)
+
+            async def _run():
+                async with NesoDataPortalConnector(config) as connector:
+                    return await connector.fetch("daily_wind_availability", start, end)
+
+            with respx.mock(assert_all_called=False) as router:
+                router.get(
+                    url__startswith=f"{NESO_DATA_PORTAL_BASE}/api/3/action/package_show"
+                ).mock(return_value=httpx.Response(200, json=payload))
+                router.get(url__startswith=resource_url).mock(
+                    return_value=httpx.Response(200, content=body)
+                )
+                (raw,) = asyncio.run(_run())
+                return [str(call.request.url) for call in router.calls], raw.request_params
+
+        original = ndp_client._resolve_host_addresses
+        ndp_client._resolve_host_addresses = _stub_resolver
+        try:
+            urls_24h, params_24h = _capture(24)
+            urls_96h, params_96h = _capture(96)
+        finally:
+            ndp_client._resolve_host_addresses = original
+
+        assert urls_24h == urls_96h, "the window leaked into the request URLs"
+        assert params_24h == params_96h, "the window leaked into the recorded provenance"
 
 
 # ============================================================================

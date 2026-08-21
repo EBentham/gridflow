@@ -739,3 +739,42 @@ sources:
         endpoint: "/regional/intensity/{from}/{to}/regionid/{regionid}"
         schedule: "hourly"
         max_query_days: 14
+
+  # NESO Open Data Portal (CKAN) — DISTINCT from `neso:` above, which is and
+  # remains the Carbon Intensity API. This source is the data portal at
+  # api.neso.energy, gridflow's first file-download vendor (ADR-030).
+  #
+  # CKAN identity — package slug, resource name, expected format,
+  # max_download_bytes — is deliberately NOT here (D-28). DatasetConfig and
+  # SourceConfig are declared with extra="ignore", so an unrecognised YAML key
+  # is dropped in silence; a package slug that silently vanished would fetch
+  # the wrong resource with no error anywhere. It lives in
+  # connectors/neso_data_portal/endpoints.py::DATASETS, as every other vendor
+  # keeps its endpoint table in code. Only fields the shared models already
+  # declare appear below.
+  neso_data_portal:
+    base_url: "https://api.neso.energy"
+    api_key_env: ""
+    api_key_header: ""
+    # NESO's published guidance is 1 CKAN request/second. This yields BOTH the
+    # inherited Semaphore(1) (a concurrency cap despite its name) and the
+    # connector's real 1.0 s minimum send interval (D-07).
+    rate_limit_per_second: 1
+    # The historic-generation-mix resource is ~62 MB in one whole-file GET.
+    timeout: 120
+    max_retries: 3
+    # Keyless: 24 live probes returned 2xx and NESO's guidance mentions no API
+    # key, so there is no key_map entry and no PipelineSettings field (D-29).
+    datasets:
+      daily_wind_availability:
+        endpoint: "/api/3/action/package_show"
+        schedule: "daily"
+        max_query_days: 1
+      historic_generation_mix:
+        endpoint: "/api/3/action/package_show"
+        schedule: "daily"
+        max_query_days: 1
+      embedded_wind_solar_forecast:
+        endpoint: "/api/3/action/package_show"
+        schedule: "daily"
+        max_query_days: 1

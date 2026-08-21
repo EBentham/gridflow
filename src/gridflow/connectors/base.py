@@ -6,7 +6,7 @@ import ssl
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import UTC, date, datetime
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, ClassVar
 
 import certifi
 import httpx
@@ -63,6 +63,27 @@ class BaseConnector(ABC):
     """Abstract base for all API connectors."""
 
     source_name: str  # Must be set by subclasses
+
+    SNAPSHOT_ONLY: ClassVar[bool] = False
+    """Declare ``True`` when this source serves only the vendor's CURRENT state.
+
+    What declaring it costs the source: **backfill, permanently**. Every
+    ``gridflow backfill`` invocation against it is refused before the chunk
+    loop, whatever the window and whatever ``--chunk-days``. There is no
+    override flag; a source that can serve history should not declare it.
+
+    Declare it when the vendor publishes whole-file snapshots with no
+    server-side date filter. A backfill there re-downloads the identical bytes
+    once per chunk, retains one duplicate vintage per chunk, and fires the whole
+    series at a vendor that may rate-limit or block — cost with no information.
+
+    Interrogated **generically**, through
+    :func:`gridflow.pipeline.runner.assert_backfillable`, which resolves the
+    connector class from the registry and reads this attribute. The CLI names no
+    source: a capability is a property of the connector, not a literal in a
+    command. Defaulting to ``False`` is what keeps every existing source
+    unaffected.
+    """
 
     last_skipped_units: int = 0
     """Count of sub-fetch units skipped in the most recent ``fetch()`` (CH-COR-01).

@@ -1,0 +1,22 @@
+{
+  "success": true,
+  "result": {
+    "id": "3758a0ed-6c96-4e36-88d0-107f5020ddf3",
+    "name": "daily-wind-availability",
+    "title": "Daily Wind Availability",
+    "license_id": "ESO",
+    "license_title": "NESO Open Data Licence",
+    "resources": [
+      {
+        "id": "7aa508eb-36f5-4298-820f-2fa6745ae2e7",
+        "name": "Daily Wind Availability",
+        "format": "CSV",
+        "url_type": "upload",
+        "url": "https://api.neso.energy/dataset/3758a0ed-6c96-4e36-88d0-107f5020ddf3/resource/7aa508eb-36f5-4298-820f-2fa6745ae2e7/download/windavailability.csv",
+        "last_modified": "2026-08-16T18:20:11.953941",
+        "size": null,
+        "datastore_active": true
+      }
+    ]
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "success": true,
+  "result": {
+    "id": "88313ae5-94e4-4ddc-a790-593554d8c6b9",
+    "name": "historic-generation-mix",
+    "title": "Historic generation mix and carbon intensity",
+    "license_id": "ESO",
+    "license_title": "NESO Open Data Licence",
+    "resources": [
+      {
+        "id": "f93d1835-75bc-43e5-84ad-12472b180a98",
+        "name": "Historic GB Generation Mix",
+        "format": "CSV",
+        "url_type": "upload",
+        "url": "https://api.neso.energy/dataset/88313ae5-94e4-4ddc-a790-593554d8c6b9/resource/f93d1835-75bc-43e5-84ad-12472b180a98/download/df_fuel_ckan.csv",
+        "last_modified": "2026-08-16T18:21:07.098698",
+        "size": null,
+        "datastore_active": true
+      }
+    ]
+  }
+}

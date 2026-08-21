@@ -32,10 +32,20 @@ from gridflow.silver.schema_manifest import (
     get_silver_schema_manifest,
 )
 
+# A HARDCODED census, deliberately: this module is a change-detector, and a
+# census derived from the registry would agree with the registry by
+# construction and detect nothing. Maintaining it by hand is the designed
+# cost. Grew to four when the neso-data-portal phase registered the first
+# non-elexon APPEND_ONLY dataset (D-21; PHASE.md ruling 12), then to five with
+# that phase's `historic_generation_mix` (B3a/T-16) and to six with its
+# `embedded_wind_solar_forecast` (B3a/T-17).
 _APPEND_ONLY_DATASETS: tuple[tuple[str, str], ...] = (
     ("elexon", "system_prices"),
     ("elexon", "remit"),
     ("elexon", "fou2t14d"),
+    ("neso_data_portal", "daily_wind_availability"),
+    ("neso_data_portal", "historic_generation_mix"),
+    ("neso_data_portal", "embedded_wind_solar_forecast"),
 )
 
 
@@ -229,9 +239,9 @@ def test_append_only_set_equals_latest_spec_set() -> None:
     spec_set = set(LATEST_VIEW_SPECS)
 
     # Non-vacuity guard: this invariant must never pass because both sides are
-    # empty (F16) -- three APPEND_ONLY datasets are registered today.
+    # empty (F16) -- six APPEND_ONLY datasets are registered today.
     assert len(append_only) > 0
-    assert len(append_only) == 3
+    assert len(append_only) == 6
 
     missing_specs = append_only - spec_set
     extra_specs = spec_set - append_only
@@ -241,10 +251,22 @@ def test_append_only_set_equals_latest_spec_set() -> None:
     )
 
 
+# Keyed by _APPEND_ONLY_DATASETS above, so this table is part of the SAME
+# hand-maintained census and grows with it (PHASE.md ruling 12, extended). Each
+# value is `_deprecated_aliases`'s documented rule -- `silver_{dataset}` when
+# the dataset name is unique across sources, else None -- and is verified
+# against the live manifest at edit time rather than copied from a failure
+# message.
 _EXPECTED_APPEND_ONLY_DEPRECATED_ALIASES: dict[tuple[str, str], str | None] = {
     ("elexon", "system_prices"): "silver_system_prices",
     ("elexon", "remit"): "silver_remit",
     ("elexon", "fou2t14d"): "silver_fou2t14d",
+    ("neso_data_portal", "daily_wind_availability"): "silver_daily_wind_availability",
+    ("neso_data_portal", "historic_generation_mix"): "silver_historic_generation_mix",
+    (
+        "neso_data_portal",
+        "embedded_wind_solar_forecast",
+    ): "silver_embedded_wind_solar_forecast",
 }
 
 
