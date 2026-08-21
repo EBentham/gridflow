@@ -286,7 +286,22 @@ def numeric_columns(df: pl.DataFrame) -> list[str]:
     ]
 
 
-def export_all(scope: set[tuple[str, str]] | None = None) -> list[dict[str, Any]]:
+def export_all(
+    scope: set[tuple[str, str]] | None = None, full_history: bool = False
+) -> list[dict[str, Any]]:
+    """Export chartable CSVs for the (scoped) catalogue.
+
+    Args:
+        scope: see ``load_catalogue``.
+        full_history: if True, skip the WINDOW_START..WINDOW_END filter and
+            export each relation's entire history instead. Added at T-23:
+            the fixed 1-5 Aug 2026 window was calibrated against the
+            2026-08-16 extract's vendors and does not overlap datasets whose
+            own history sits elsewhere (e.g. a forward-looking forecast
+            ingested on a later date, or a long archive). Only meaningful
+            combined with ``scope`` — a full-catalogue full-history run would
+            re-export years of Elexon/ENTSO-E data.
+    """
     con = duckdb.connect(str(DB_PATH), read_only=True)
     con.execute("SET TimeZone='UTC'")
     available = {
@@ -319,11 +334,14 @@ def export_all(scope: set[tuple[str, str]] | None = None) -> list[dict[str, Any]
                 continue
             rec["time_column"] = tcol
 
-            df = con.execute(
-                f'SELECT * FROM "{relation}" '
-                f'WHERE CAST("{tcol}" AS DATE) BETWEEN ? AND ? ORDER BY "{tcol}"',
-                [WINDOW_START, WINDOW_END],
-            ).pl()
+            if full_history:
+                df = con.execute(f'SELECT * FROM "{relation}" ORDER BY "{tcol}"').pl()
+            else:
+                df = con.execute(
+                    f'SELECT * FROM "{relation}" '
+                    f'WHERE CAST("{tcol}" AS DATE) BETWEEN ? AND ? ORDER BY "{tcol}"',
+                    [WINDOW_START, WINDOW_END],
+                ).pl()
 
             if df.is_empty():
                 rec |= {"status": "EMPTY", "rows": 0, "chartable": False}
@@ -499,8 +517,18 @@ def main() -> None:
     parser.add_argument(
         "--datasets", default=None, help="comma-separated dataset names under --source"
     )
+    parser.add_argument(
+        "--full-history",
+        action="store_true",
+        help=(
+            "export each relation's full history instead of the fixed "
+            "1-5 Aug 2026 window (requires --source; see export_all docstring)"
+        ),
+    )
     args = parser.parse_args()
     scope = _parse_scope(args.source, args.datasets)
+    if args.full_history and scope is None:
+        raise SystemExit("--full-history requires --source/--datasets")
 
     if args.phase in ("all", "fetch"):
         log("=== phase 1: ingest + transform ===")
@@ -509,7 +537,7 @@ def main() -> None:
         log("=== phase 2: register views ===")
         run_cli(["init"], 300)
         log("=== phase 3: export ===")
-        write_summary(export_all(scope), scoped=scope is not None)
+        write_summary(export_all(scope, full_history=args.full_history), scoped=scope is not None)
     log("done")
 
 
