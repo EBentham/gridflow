@@ -13,6 +13,43 @@ Writes to `C:\\data_to_seed_gridflow_charts` (`OUT_ROOT`, not part of this
 repo): per-dataset CSVs plus a `manifest.json` the front-end build's
 `--refresh-chart-data` step reads.
 
+KNOWN DEFECTS -- read before trusting a fresh run
+-------------------------------------------------
+Cross-model review (Codex GPT-5.6 Sol, 2026-08-21) raised these against the
+rescued script. NONE of them corrupted the 2026-08-21 `neso_data_portal`
+extract -- that run was verified row-for-row against silver (628/628 and
+3589/3589, zero rows dropped, dedup ratio 1.000) -- but every one is live for
+the NEXT run, especially over the wider catalogue. Filed, not fixed.
+
+1. `settlement_period` is in `METADATA_COLUMNS`, so it is excluded from the
+   dedup subset. Rows differing ONLY by settlement period collapse. This
+   contravenes the repo rule that settlement data is never deduplicated on
+   `(date, period)` alone. Fixing it means editing a frozenset that gates
+   every one of the ~163 datasets -- enumerate the callers first.
+2. A missing `_latest` relation falls back to the raw silver relation without
+   checking the dataset's update strategy, so APPEND_ONLY datasets can export
+   duplicate vintages while still reporting `chartable=true`. Same class as
+   the `export-csv` defect in the extract's own FINDINGS.md section 2.
+3. Every fetch checkpoint counts as completed regardless of status, so
+   `FETCH_ERROR` and vendor-parked datasets are never retried and a later run
+   can export stale pre-existing silver as fresh chart data.
+4. CSV and `manifest.json` writes go straight to their final paths. An
+   interrupted run can leave a truncated CSV referenced by the old manifest,
+   or a partially written manifest. The repo convention is `os.replace()`.
+5. `--datasets` without `--source` is silently treated as an unscoped run,
+   which fetches the whole catalogue and wholesale-overwrites the manifest --
+   the exact clobbering the scoping flags were added to prevent.
+6. Checkout, interpreter and DuckDB paths are hard-coded rather than resolved
+   through `PathBuilder`, so another checkout fails or, worse, reads an
+   unrelated database.
+7. `--full-history` materialises the whole relation in memory, then builds a
+   second frame to deduplicate it.
+8. A `--full-history` export still stamps the fixed 1-5 Aug window into
+   `manifest.json` and `SUMMARY.txt`, contradicting the series it just wrote.
+   (Observed: the 2026-08-21 manifest declares that window while holding
+   `historic_generation_mix` rows from 2009.) The front-end distiller reads
+   per-series start/end, not this window, so the rendered pages are correct.
+
 Design constraints this encodes, and why:
 
 * NOTHING fails the whole run. Each dataset gets a status record and the loop
