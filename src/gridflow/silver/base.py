@@ -273,6 +273,16 @@ forgetting to set a flag. ``_find_covering_bronze_partition`` itself is not
 modified — NESO and Open-Meteo/ALSI resolution (the other callers) are
 unaffected; ``tests/silver/test_partition_fallback.py``'s ``test_source``
 stub pins that the fallback stays intact for non-ENTSO-E sources.
+
+**P0-a-1 (v0.19).** ``neso`` is deliberately absent from this frozenset: it
+enforces its own exact-partition read at
+``GenericNesoJsonTransformer._bronze_files`` (``silver/neso/carbon_intensity.py``)
+instead of opting into this constant, because membership here would also
+gate ``_bronze_date_dirs`` and fabricate a vintage for the one
+``reference_dataset`` NESO transformer, and would assert this docstring's
+per-day-chunking invariant, which is true for entsoe/entsog but false for
+NESO's deliberate 14-day batching. See ADR-026's 2026-08-22 amendment for
+the full ruling (D-2).
 """
 
 _PUBLICATION_WINDOW_FILTER_SOURCES: frozenset[str] = frozenset({"elexon"})
