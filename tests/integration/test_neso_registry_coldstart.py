@@ -38,10 +38,16 @@ import json
 from pathlib import Path
 
 from gridflow.pipeline.runner import import_transformers
-from gridflow.silver.neso.carbon_intensity import GenericNesoJsonTransformer
 from gridflow.silver.registry import get_transformer, list_transformers
 
+# Deliberately NOT imported before import_transformers(): the neso module calls
+# register_neso_transformers() at import time, so importing it here would
+# populate the registry itself and the probe would stay green even if the
+# production bootstrap stopped importing gridflow.silver.neso -- the exact
+# false positive this cold-process test exists to prevent (Sol diff major 1).
 import_transformers()
+
+from gridflow.silver.neso.carbon_intensity import GenericNesoJsonTransformer
 
 rows = []
 for source, dataset in sorted(list_transformers()):

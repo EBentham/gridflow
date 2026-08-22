@@ -114,9 +114,12 @@ class GenericNesoJsonTransformer(BaseSilverTransformer):
         (per-day chunking) but FALSE for NESO, which deliberately batches up
         to 14 days per request (``_MAX_DAYS_PER_REQUEST``). Scoping the fix
         to this class instead buys the identical guarantee through NESO's
-        own generated-class base -- every current and future NESO dataset
-        is produced by ``_make_transformer_class`` from ``ENDPOINTS`` and so
-        inherits the exact-read automatically (pinned cold-process by
+        own transformer base -- every registered ``source == "neso"``
+        transformer is a ``GenericNesoJsonTransformer`` subclass (most via
+        ``_make_transformer_class`` from ``ENDPOINTS``; ``carbon_intensity``
+        via the special-cased ``CarbonIntensityTransformer``, which also
+        subclasses it), so each inherits the exact-read automatically
+        (pinned cold-process by
         ``tests/integration/test_neso_registry_coldstart.py``) -- without
         touching the shared frozenset's other caller or its stated
         invariant.
