@@ -655,6 +655,41 @@ def safe_error_message(message: str) -> str:
     return sanitize_url(message, value_chars=r"[^&\s)]")
 
 
+def describe_exception(exc: BaseException) -> str:
+    """Redacted, never-empty, single-line description of ``exc``.
+
+        ``str(exc)`` is empty for several exceptions worth diagnosing — notably
+        ``httpx.ConnectError('')``, which is what a dropped TLS handshake raises.
+        A bare ``safe_error_message(str(e))`` then stored and logged
+        ``"Ingest failed for open_meteo/historical_demand: "``, naming neither the
+        failure nor its class (measured, v1.7 P0-1 2026-08-23).
+
+        "Never empty" has to mean visibly non-empty, so whitespace is collapsed
+        before the truthiness test — a message of ``"   "`` or ``"
+    "`` is as
+        useless as ``""`` and must reach the class-name fallback (Sol review,
+        2026-08-23). Collapsing also flattens embedded newlines, keeping the
+        stored ``pipeline_runs.error_message`` and the log line to one row.
+
+        The class-name fallback is redacted on the same path as the message
+        rather than trusted: an exception type built dynamically from vendor
+        input could carry anything in ``__name__``, and this value is stored. A
+        type whose name redacts to nothing degrades to ``"<unprintable
+        exception>"`` rather than to an empty string.
+
+        Args:
+            exc: The caught exception.
+
+        Returns:
+            A redacted, whitespace-collapsed, non-empty single-line description.
+    """
+    for candidate in (str(exc), type(exc).__name__):
+        collapsed = " ".join(safe_error_message(candidate).split())
+        if collapsed:
+            return collapsed
+    return "<unprintable exception>"
+
+
 # --------------------------------------------------------------------------- #
 # Context
 # --------------------------------------------------------------------------- #
@@ -978,7 +1013,7 @@ def run_ingest(
                 )
             )
         except Exception as e:  # noqa: BLE001 — surfaced as a failed DatasetResult, never swallowed
-            error_message = safe_error_message(str(e))
+            error_message = describe_exception(e)
             tracker.fail(error_message)
             logger.error("Ingest failed for %s/%s: %s", source, ds, error_message)
             results.append(
@@ -1245,7 +1280,7 @@ def run_transform(
                     )
                 )
         except Exception as e:  # noqa: BLE001 — surfaced as a failed DatasetResult, never swallowed
-            error_message = safe_error_message(str(e))
+            error_message = describe_exception(e)
             tracker.fail(error_message)
             logger.error("Transform failed for %s/%s: %s", source, ds, error_message)
             # R2-g finding 1: a collision guard / read error raised from inside
@@ -1367,7 +1402,7 @@ def run_build(
                 )
             )
         except Exception as e:  # noqa: BLE001 — surfaced as a failed DatasetResult, never swallowed
-            error_message = safe_error_message(str(e))
+            error_message = describe_exception(e)
             tracker.fail(error_message)
             logger.exception("Build failed for %s", name)
             results.append(

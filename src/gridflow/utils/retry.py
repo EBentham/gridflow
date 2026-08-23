@@ -24,7 +24,31 @@ RETRY_POLICY = retry(
     # a thundering herd amplifying load on the struggling API. The random spread
     # staggers the retries instead.
     wait=wait_random_exponential(multiplier=1, max=60),
-    retry=retry_if_exception_type((httpx.TimeoutException, httpx.HTTPStatusError)),
+    # The transient network class is `TimeoutException` + `NetworkError`, NOT
+    # their common parent `TransportError`. `TransportError` also covers
+    # `UnsupportedProtocol` (a bad URL scheme) and `ProtocolError ->
+    # LocalProtocolError` (a malformed request WE built) — deterministic
+    # programming/config errors that must fail on the first attempt instead of
+    # sleeping through five (Sol review, 2026-08-23). `RemoteProtocolError` and
+    # `ProxyError` are arguably transient but were not observed; they stay out
+    # until something measures them.
+    #
+    # `NetworkError` is what the timeout-only predicate was missing: ConnectError,
+    # ReadError, WriteError, CloseError all raised on the first attempt and failed
+    # the whole dataset.
+    #
+    # Measured (v1.7 P0-1, 2026-08-23): the Open-Meteo ERA5 archive backfill lost
+    # ~half its chunks to `httpx.ConnectError('')` — an empty-message TLS-connect
+    # failure. `run_ingest` builds a fresh connector, httpx client, and event loop
+    # per chunk, so a 128-chunk backfill opens ~900 cold TLS connections to
+    # archive-api.open-meteo.com in quick succession and the host drops a large
+    # fraction of them. The identical windows fetched 6/6 clean through one
+    # long-lived client, which is what identified connection setup as the failure
+    # point rather than the request. After the fix the same run completed 128/128
+    # chunks: 176 retries absorbed, 0 dataset failures.
+    retry=retry_if_exception_type(
+        (httpx.TimeoutException, httpx.NetworkError, httpx.HTTPStatusError)
+    ),
     before_sleep=before_sleep_log(logger, logging.WARNING),
     reraise=True,
 )
