@@ -655,6 +655,21 @@ def safe_error_message(message: str) -> str:
     return sanitize_url(message, value_chars=r"[^&\s)]")
 
 
+def describe_exception(exc: BaseException) -> str:
+    """Redacted, never-empty one-line description of ``exc``.
+
+    ``str(exc)`` is empty for several exceptions worth diagnosing — notably
+    ``httpx.ConnectError('')``, which is what a dropped TLS handshake raises.
+    A bare ``safe_error_message(str(e))`` then stored and logged
+    ``"Ingest failed for open_meteo/historical_demand: "``, naming neither the
+    failure nor its class (measured, v1.7 P0-1 2026-08-23). Falling back to the
+    class name keeps the message diagnostic without widening what is exposed:
+    a type name carries no query parameters, so the redaction contract is
+    unchanged.
+    """
+    return safe_error_message(str(exc)) or type(exc).__name__
+
+
 # --------------------------------------------------------------------------- #
 # Context
 # --------------------------------------------------------------------------- #
@@ -978,7 +993,7 @@ def run_ingest(
                 )
             )
         except Exception as e:  # noqa: BLE001 — surfaced as a failed DatasetResult, never swallowed
-            error_message = safe_error_message(str(e))
+            error_message = describe_exception(e)
             tracker.fail(error_message)
             logger.error("Ingest failed for %s/%s: %s", source, ds, error_message)
             results.append(
@@ -1245,7 +1260,7 @@ def run_transform(
                     )
                 )
         except Exception as e:  # noqa: BLE001 — surfaced as a failed DatasetResult, never swallowed
-            error_message = safe_error_message(str(e))
+            error_message = describe_exception(e)
             tracker.fail(error_message)
             logger.error("Transform failed for %s/%s: %s", source, ds, error_message)
             # R2-g finding 1: a collision guard / read error raised from inside
@@ -1367,7 +1382,7 @@ def run_build(
                 )
             )
         except Exception as e:  # noqa: BLE001 — surfaced as a failed DatasetResult, never swallowed
-            error_message = safe_error_message(str(e))
+            error_message = describe_exception(e)
             tracker.fail(error_message)
             logger.exception("Build failed for %s", name)
             results.append(
