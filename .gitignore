@@ -58,3 +58,6 @@ docs/specs
 
 # Knowledge graph output
 graphify-out/
+
+# Codex relic — local only, never part of the repo
+AGENTS.md
