@@ -8,6 +8,50 @@ expansion) was paused before release and is intentionally absent.
 
 ## [Unreleased]
 
+## [v0.19] - 2026-08-23 — Silver Truth
+
+Deliberately small. Re-scoped mid-milestone to the work that blocks demand
+forecasting; everything else was parked rather than rushed.
+
+### Fixed
+- NESO silver read its bronze through a **covering-partition fallback**, which
+  duplicated rows 5× (#69, `41e3450`). NESO's connector batches a whole
+  multi-day window into ONE bronze partition keyed by the window's first day,
+  so the fallback re-read that same body from every date it covered and
+  re-emitted all of its rows into each date's own silver partition. The read is
+  now **exact-partition only** — each bronze body is read by exactly one target
+  date, its owner's — with the covering lookup retained as detection-only
+  logging. Extends ADR-026. Note this was not the mechanism the milestone
+  originally recorded: the first diagnosis was falsified by measurement before
+  any code was written, and the roadmap amended.
+- Local Python is now pinned to **3.12** (`.python-version`), matching the CI
+  pin. The local venv had drifted to 3.13, so a green local suite was never
+  evidence of CI parity; the fast suite passes identically on both
+  (2518 passed / 185 skipped / 265 deselected).
+
+### Data
+- The already-duplicated NESO silver on disk was rebuilt from immutable bronze:
+  **408,145 → 82,013 rows, 326,132 duplicate rows (79.9%) removed across 23
+  datasets, with the resulting row set proven identical to the pre-repair
+  distinct set** — nothing lost, nothing fabricated. Bronze was not touched.
+  Silver *file* counts legitimately drop (e.g. `regional_intensity` 5 files →
+  1) because a batched multi-day body now materialises once, under its owner
+  date; file counts are not a coverage measure for NESO.
+
+### What v0.19 does NOT claim
+- **The event-time contract is not closed.** The full 155-transformer contract
+  is **parked**. Six datasets still stamp `event_time` with the transform's run
+  date and two write silent nulls. What *was* established is narrower and
+  verified: the demand model consumes exactly one silver dataset,
+  `elexon/indo`, whose `event_time` is correct — so the demand path is sound
+  while the general defect remains open.
+- **F-10 / N-9 carry forward**, unchanged from v0.18: 23 of 28 ENTSO-E datasets
+  classified, 5 honestly UNKNOWN (one unclassifiable in principle — unwired).
+  Recorded as carried by ruling, not closed by inference.
+- GIE ALSI is a probable second instance of the same partition defect class and
+  remains **unmeasured** — a ruling, not an oversight: it is consumed by no
+  model, so it blocks nothing. Measure it before anything starts reading it.
+
 ## [v0.18] - 2026-08-16 — Retro Remediation
 
 ### Added
