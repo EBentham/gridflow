@@ -5,13 +5,14 @@ from __future__ import annotations
 import json
 import logging
 import os
-from datetime import UTC, date, datetime
+from datetime import UTC, date, datetime, timedelta
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from pathlib import Path
 
     from gridflow.schemas.common import BaseSchema
+    from gridflow.silver.partition_window import RequestWindow, WindowReason
 
 import polars as pl
 
@@ -24,8 +25,10 @@ from gridflow.schemas.neso import (
     RegionalIntensity,
 )
 from gridflow.silver.base import BaseSilverTransformer
+from gridflow.silver.partition_window import request_window_from_sidecar
 from gridflow.silver.registry import register_transformer
 from gridflow.storage.parquet import write_parquet
+from gridflow.storage.paths import PathBuilder
 
 logger = logging.getLogger(__name__)
 
@@ -82,6 +85,50 @@ class GenericNesoJsonTransformer(BaseSilverTransformer):
                 return _transform_regional(raw_df)
 
     def _bronze_files(self, target_date: date) -> list[Path]:
+        """Bronze bodies to read for ``target_date`` (P0-a-1: exact-read fix).
+
+        WHY exact-only. ``CarbonIntensityConnector.fetch`` batches every
+        multi-day window into ONE bronze partition keyed by the window's
+        FIRST day (``data_date=window_start.date()``,
+        ``connectors/neso/carbon_intensity.py``), not per calendar day the
+        way ``entsoe``/``entsog`` do. A NESO bronze body written under D0 is
+        the *sole* home of its rows; before this fix,
+        ``_bronze_path_for_date``'s covering-partition fallback re-read that
+        SAME body from every date it covered, and every read re-emitted ALL
+        of the body's rows into that date's own silver partition -- one
+        batched 5-day body producing 5 silver files each holding all 5 days'
+        rows (measured 5x / 80.0% duplication across 15 datasets,
+        2026-08-16). Reading the exact partition only, with no fallback,
+        means each bronze body is read by exactly one target date -- its
+        owner's.
+
+        WHY not ``_EXACT_PARTITION_ONLY_SOURCES`` (D-2). That frozenset
+        would give the same read effect but at a cost: its OTHER caller,
+        ``_bronze_date_dirs`` (feeding ``_available_at_from_bronze``), would
+        return ``[]`` for every date without an exact partition and fall
+        through to a FABRICATED ``datetime.now(UTC)`` vintage -- reachable
+        for ``intensity_factors`` (``reference_dataset=True``), whose own
+        ``_bronze_files`` override below ignores ``_bronze_path_for_date``
+        entirely and always returns a non-empty read. Membership would also
+        assert a docstring invariant that is true for entsoe/entsog
+        (per-day chunking) but FALSE for NESO, which deliberately batches up
+        to 14 days per request (``_MAX_DAYS_PER_REQUEST``). Scoping the fix
+        to this class instead buys the identical guarantee through NESO's
+        own transformer base -- every registered ``source == "neso"``
+        transformer is a ``GenericNesoJsonTransformer`` subclass (most via
+        ``_make_transformer_class`` from ``ENDPOINTS``; ``carbon_intensity``
+        via the special-cased ``CarbonIntensityTransformer``, which also
+        subclasses it), so each inherits the exact-read automatically
+        (pinned cold-process by
+        ``tests/integration/test_neso_registry_coldstart.py``) -- without
+        touching the shared frozenset's other caller or its stated
+        invariant.
+
+        Detection-only covering lookup (D-6). On an exact-partition miss,
+        ``_warn_if_covered_but_not_owned`` runs PURELY to classify and log
+        the miss -- it never returns bronze to read. Both arms of this
+        method return ``[]`` on a miss.
+        """
         if self.reference_dataset:
             if not self.bronze_dir.exists():
                 return []
@@ -91,14 +138,106 @@ class GenericNesoJsonTransformer(BaseSilverTransformer):
                 if not path.name.endswith(".meta.json")
             ][:1]
 
-        bronze_path = self._bronze_path_for_date(target_date)
-        if bronze_path is None:
-            return []
-        return [
+        exact_dir = PathBuilder(self.data_dir).bronze_date_dir(
+            self.source, self.dataset, target_date
+        )
+        if exact_dir.exists():
+            bodies = [
+                path
+                for path in sorted(exact_dir.glob("raw_*.json"))
+                if not path.name.endswith(".meta.json")
+            ]
+            if bodies:
+                return bodies
+
+        self._warn_if_covered_but_not_owned(target_date)
+        return []
+
+    def _warn_if_covered_but_not_owned(self, target_date: date) -> None:
+        """D-6: classify and log an exact-partition miss (never returns bronze).
+
+        Three arms, resolved per BODY, never from the partition's aggregate
+        envelope (Sol pass 5, major 3 -- ``partition_request_window`` must
+        appear nowhere in this method; two bodies with disjoint windows can
+        bridge a gap the envelope would falsely claim to contain).
+
+        (a) No covering directory found at all -- silent. ``base.py``'s
+            generic "No bronze data" line is correct and sufficient here.
+        (b1) A covering directory exists AND at least one body's OWN
+             resolved sidecar window covers ``target_date`` -- a definite
+             WARNING naming the owner date and the covering window.
+        (b2) A covering directory exists but no individual body's window
+             covers the day (some resolved-but-non-covering, some
+             unresolvable, or a mix) -- a hedged WARNING that states
+             ownership is NOT confirmed and may not exist.
+
+        Every body is examined (never returns on the first non-covering or
+        unresolvable member) so a (b2) hedge always carries complete
+        reason/count evidence -- unlike ``partition_request_window``, which
+        returns on the first invalid member.
+        """
+        covering_dir = self._find_covering_bronze_partition(target_date)
+        if covering_dir is None:
+            return  # arm (a): genuinely no bronze: base.py's own message stands.
+
+        day_start = datetime(target_date.year, target_date.month, target_date.day, tzinfo=UTC)
+        day_end = day_start + timedelta(days=1)
+
+        bodies = [
             path
-            for path in sorted(bronze_path.glob("raw_*.json"))
+            for path in sorted(covering_dir.glob("raw_*.json"))
             if not path.name.endswith(".meta.json")
         ]
+
+        owning_window: RequestWindow | None = None
+        non_covering = 0
+        reason_totals: dict[WindowReason, int] = {}
+        for body in bodies:
+            window, reason = request_window_from_sidecar(
+                body.with_suffix(".meta.json"),
+                "from_dt",
+                "to_dt",
+                expect_source=self.source,
+                expect_dataset=self.dataset,
+            )
+            if window is None:
+                reason_totals[reason] = reason_totals.get(reason, 0) + 1
+                continue
+            # Half-open containment on both sides, tz-aware throughout
+            # (RequestWindow bounds are guaranteed aware) -- a window ending
+            # exactly at day_start does not cover.
+            if window.start < day_end and window.end > day_start:
+                if owning_window is None:
+                    owning_window = window
+            else:
+                non_covering += 1
+
+        year, month, day = covering_dir.parts[-3:]
+        owner_date = date(int(year), int(month), int(day))
+
+        if owning_window is not None:
+            logger.warning(
+                f"NESO covered-but-not-owned: {self.source}/{self.dataset} target date "
+                f"{target_date} is covered by bronze owned by {owner_date} "
+                f"(window {owning_window.start.isoformat()} to "
+                f"{owning_window.end.isoformat()}), not by {target_date} itself. "
+                f"Re-transform the owner date: `gridflow transform neso {self.dataset} "
+                f"--start {owner_date} --end {owner_date} --reingest`."
+            )
+            return
+
+        reason_text = ", ".join(
+            f"{reason.value.lower()}={count}"
+            for reason, count in sorted(reason_totals.items(), key=lambda kv: kv[0].value)
+        )
+        detail = f"; unresolved reasons: {reason_text}" if reason_text else ""
+        logger.warning(
+            f"NESO covered-but-not-owned (unconfirmed): {self.source}/{self.dataset} "
+            f"target date {target_date} has a nearer prior bronze partition at "
+            f"{owner_date}, but no body's recorded request window confirms it covers "
+            f"{target_date} -- {non_covering} window(s) resolved but do not cover this "
+            f"date{detail}. Rows for {target_date} may not exist."
+        )
 
     def _write_silver(
         self,
