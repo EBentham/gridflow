@@ -73,7 +73,8 @@ uv network ops (lock/sync) need `--system-certs` on this machine (Avast TLS).
 - Bronze is immutable. Never edit bronze in place.
 
 **Process:**
-- Never commit to `main`. Feature branches only.
+- Never commit code to `main` — feature branches + PR. Docs-only commits (`*.md`,
+  `.planning/`, `docs/`) may land on `main` directly (guard exemption, 2026-09-01).
 - Conventional commits: `feat:`, `fix:`, `test:`, `refactor:`, `chore:`, `docs:`.
 - No live API ingestion (`gridflow ingest` against a real key) without explicit
   user confirmation.
