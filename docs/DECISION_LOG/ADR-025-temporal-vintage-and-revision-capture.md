@@ -164,6 +164,8 @@ Two capture models were considered:
 
 ### 3. Vintage semantics (P1.1) — `available_at = coalesce(published_at, ingest_time)`
 
+Extended by [ADR-031](ADR-031-vintage-policy-reconstruction.md): dated, labelled pre-cutover availability reconstruction and its disclosed revision-ordering residuals.
+
 - Introduce the derivation **`available_at = coalesce(published_at, ingest_time)`**
   at the silver-write boundary. When a transformer supplies a tz-aware UTC
   `published_at` (the vendor publication instant), it becomes `available_at`;

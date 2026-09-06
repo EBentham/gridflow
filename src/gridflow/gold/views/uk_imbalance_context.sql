@@ -21,6 +21,7 @@ SELECT
     sp.net_imbalance_volume,
     sp.price_derivation_code,
     sp.available_at,
+    to_json(sp)->>'vintage_policy' AS vintage_policy,
     ci.forecast_gco2_kwh   AS carbon_intensity_forecast_gco2_kwh,
     ci.actual_gco2_kwh     AS carbon_intensity_actual_gco2_kwh,
     ci.intensity_index
@@ -51,3 +52,5 @@ COMMENT ON COLUMN gold_uk_imbalance_context.carbon_intensity_actual_gco2_kwh IS
 -- design; that primitive is consumer-side (gridflow_models), not built here.
 COMMENT ON COLUMN gold_uk_imbalance_context.available_at IS
     'Winning system-price vintage''s provenance stamp (ADR-025 §3); does not gate the carbon-intensity columns. Filtering it is a fail-closed cutoff, NOT historical point-in-time selection — an as_of between vintages returns no row. Genuine PIT needs the all-vintage base view (silver_elexon_system_prices).';
+
+COMMENT ON COLUMN gold_uk_imbalance_context.vintage_policy IS 'Policy name / "ingest-clock" / "vendor"; NULL = legacy row, treat as unknown.';

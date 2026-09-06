@@ -20,7 +20,9 @@ from pathlib import Path
 
 import duckdb
 import polars as pl
+import pytest
 
+from gridflow.serving.client import GridflowClient
 from gridflow.silver.elexon.system_prices import SystemPriceTransformer
 from gridflow.storage.duckdb import _register_views
 from gridflow.storage.paths import PathBuilder
@@ -111,7 +113,7 @@ def _seed_silver(data_dir: Path) -> None:
     )
 
 
-def _seed_silver_two_vintages(data_dir: Path) -> None:
+def _seed_silver_two_vintages(data_dir: Path, *, labelled: bool = False) -> None:
     """Two run-suffixed parquet vintages in one partition (AC-4).
 
     Mirrors the real on-disk shape produced by ``APPEND_ONLY`` +
@@ -162,6 +164,11 @@ def _seed_silver_two_vintages(data_dir: Path) -> None:
             ],
         }
     )
+    if labelled:
+        vintage_a = vintage_a.with_columns(pl.lit("vendor").alias("vintage_policy"))
+        vintage_b = vintage_b.with_columns(
+            pl.lit("elexon-system_prices/vp-2026-09").alias("vintage_policy")
+        )
     partition = data_dir / "silver" / "elexon" / "system_prices" / "year=2024" / "month=01"
     _write_parquet(vintage_a, partition / "system_prices_20240115_runA.parquet")
     _write_parquet(vintage_b, partition / "system_prices_20240115_runB.parquet")
@@ -186,6 +193,40 @@ def _seed_silver_two_vintages(data_dir: Path) -> None:
         / "month=01"
         / "carbon_intensity_20240115.parquet",
     )
+
+
+@pytest.mark.parametrize("labelled", [True, False], ids=["policy", "legacy"])
+def test_winning_vintage_label_reaches_gold_and_serving(tmp_path: Path, labelled: bool) -> None:
+    """Retain the winning price label and stamp, including all-legacy schemas."""
+    data_dir = tmp_path / "data"
+    _seed_silver_two_vintages(data_dir, labelled=labelled)
+    con = _connection_with_view(data_dir)
+    try:
+        base = con.execute("SELECT * FROM silver_elexon_system_prices").pl()
+        assert ("vintage_policy" in base.columns) == labelled
+        if labelled:
+            assert set(base["vintage_policy"]) == {"vendor", "elexon-system_prices/vp-2026-09"}
+        gold = con.execute(
+            "SELECT * FROM gold_uk_imbalance_context ORDER BY settlement_period"
+        ).pl()
+        assert gold.columns[gold.columns.index("available_at") + 1] == "vintage_policy"
+        assert gold.schema["vintage_policy"] == pl.String
+        label = "elexon-system_prices/vp-2026-09" if labelled else None
+        assert gold["vintage_policy"].to_list() == [label, label]
+        assert gold["available_at"].to_list() == [datetime(2024, 1, 15, 18, tzinfo=UTC)] * 2
+        assert gold["system_sell_price"].to_list() == [45.5, 11.0]
+        comment = con.execute(
+            "SELECT comment FROM duckdb_columns() WHERE table_name = ? AND column_name = ?",
+            ["gold_uk_imbalance_context", "vintage_policy"],
+        ).fetchone()
+        assert comment is not None and "NULL = legacy row, treat as unknown" in comment[0]
+        client = GridflowClient.__new__(GridflowClient)
+        client._con = con
+        served = client.get_imbalance_context(date(2024, 1, 15), date(2024, 1, 15))
+        assert served["vintage_policy"].to_list() == [label, label]
+        assert served["available_at"].to_list() == gold["available_at"].to_list()
+    finally:
+        con.close()
 
 
 def test_view_join_does_not_fan_out_and_left_join_nulls(tmp_path: Path) -> None:

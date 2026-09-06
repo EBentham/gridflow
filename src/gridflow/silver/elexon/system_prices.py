@@ -4,13 +4,13 @@ from __future__ import annotations
 
 import json
 import logging
-from datetime import UTC, date, datetime
+from datetime import UTC, date, datetime, timedelta
 from typing import TYPE_CHECKING, Any, ClassVar
 
 import polars as pl
 
 from gridflow.schemas.elexon import ElexonSystemPrice
-from gridflow.silver.base import BaseSilverTransformer
+from gridflow.silver.base import BaseSilverTransformer, VintagePolicy
 from gridflow.silver.registry import register_transformer
 from gridflow.utils.time import settlement_period_to_utc
 
@@ -26,6 +26,20 @@ class SystemPriceTransformer(BaseSilverTransformer):
     source = "elexon"
     dataset = "system_prices"
     schema_cls = ElexonSystemPrice
+    VINTAGE_POLICY = VintagePolicy(
+        name="elexon-system_prices/vp-2026-09",
+        lag=timedelta(minutes=90),
+        dated=date(2026, 9, 6),
+        rule=(
+            "ASSUMPTION: period end +60 minutes (event time is period start; lag=90 minutes). "
+            "Proposed analytical allowance for price calculation beyond MID's assumed delay; "
+            "neither a vendor cadence nor a proven conservative bound. "
+            "TODO: verify DISEBSP initial-publication latency and revision timing. "
+            "ASSUMPTION cutover: 2026-07-31T00:00Z, where live silver begins "
+            "and the backfill target ends."
+        ),
+        applies_before=datetime(2026, 7, 31, tzinfo=UTC),
+    )
 
     # Run type precedence — higher number wins
     APPEND_ONLY: ClassVar[bool] = True

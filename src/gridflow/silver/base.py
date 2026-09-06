@@ -33,6 +33,41 @@ from gridflow.utils.time import settlement_period_to_utc
 
 logger = logging.getLogger(__name__)
 
+
+@dataclass(frozen=True)
+class VintagePolicy:
+    """Dated approximation of availability for events before a UTC cutover.
+
+    Attributes:
+        name: Versioned policy label, distinct from vendor and ingest-clock.
+        lag: Estimated delay from the transformer's event time.
+        dated: Date the assumption was recorded.
+        rule: Human-readable assumption, rationale, and verification caveats.
+        applies_before: Exclusive UTC event-time boundary for reconstruction.
+    """
+
+    name: str
+    lag: timedelta
+    dated: date
+    rule: str
+    applies_before: datetime
+
+    def __post_init__(self) -> None:
+        """Reject invalid declarations before any rows can be stamped."""
+        if not self.name.strip() or self.name in {"vendor", "ingest-clock"}:
+            raise ValueError("VintagePolicy name must be non-empty and not a reserved label")
+        if self.lag < timedelta(0):
+            raise ValueError("VintagePolicy lag must be non-negative")
+        if not (
+            self.applies_before.tzinfo == UTC
+            or (
+                self.applies_before.utcoffset() == timedelta(0)
+                and getattr(self.applies_before.tzinfo, "key", None) == "UTC"
+            )
+        ):
+            raise ValueError("VintagePolicy applies_before must be tz-aware UTC")
+
+
 _VALIDATION_SAMPLE_LIMIT = 5
 """Max distinct validation-error strings logged per ``run()`` (fail-soft; bounded)."""
 
@@ -647,6 +682,7 @@ class BaseSilverTransformer(ABC):
     milestone close (a Bobbo decision).**
     """
     DATASET_VERSION: ClassVar[str] = "1.0.0"
+    VINTAGE_POLICY: ClassVar[VintagePolicy | None] = None
     BRONZE_SIBLING_DATASETS: ClassVar[tuple[str, ...]] = ()
     APPEND_ONLY: ClassVar[bool] = False
     """Per-dataset opt-in for revision-preserving silver writes.
@@ -1652,7 +1688,8 @@ class BaseSilverTransformer(ABC):
         the transformer emitted a ``published_at`` column (the vendor publication
         vintage), it becomes ``available_at`` per row; rows with a null
         ``published_at`` fall back to the ingest/reingest scalar. Datasets that
-        emit no ``published_at`` column keep byte-identical ``available_at``.
+        emit no ``published_at`` column and declare no policy keep byte-identical
+        ``available_at``.
 
         ``vintage_column`` (keyword-only, default ``None``) makes only the
         FALLBACK arm of that coalesce per-row, for ``LOCKSTEP_BRONZE_READ``
@@ -1661,6 +1698,11 @@ class BaseSilverTransformer(ABC):
         ``None`` the emitted expression is character-for-character today's, so
         every existing caller and every non-opted-in transformer is untouched.
         A non-null vendor ``published_at`` still wins the coalesce either way.
+
+        With ``VINTAGE_POLICY``, ADR-031 replaces only the fallback for events
+        strictly before its cutover whose event time plus lag precedes ingest.
+        These rows carry the policy name; other rows carry vendor/ingest-clock.
+        Labels are lineage derived after measurement validation, not schema fields.
 
         Raises:
             TypeError: F-19 — ``published_at`` present but not a ``pl.Datetime``
@@ -1707,6 +1749,39 @@ class BaseSilverTransformer(ABC):
             )
         else:
             available_at_expr = ingest_stamp.alias("available_at")
+
+        policy = self.VINTAGE_POLICY
+        if policy is not None:
+            df = df.with_columns(self._event_time_expr(df, target_date))
+            reconstructed = pl.col("event_time") + policy.lag
+            use_policy = (
+                (pl.col("event_time") < policy.applies_before) & (reconstructed < ingest_stamp)
+            ).fill_null(False)
+            fallback = pl.when(use_policy).then(reconstructed).otherwise(ingest_stamp)
+            label = pl.when(use_policy).then(pl.lit(policy.name)).otherwise(pl.lit("ingest-clock"))
+            if "published_at" in df.columns:
+                available_at_expr = pl.coalesce(pl.col("published_at"), fallback)
+                label = (
+                    pl.when(pl.col("published_at").is_not_null())
+                    .then(pl.lit("vendor"))
+                    .otherwise(label)
+                )
+            else:
+                available_at_expr = fallback
+            result = df.with_columns(
+                available_at_expr.alias("available_at"),
+                pl.lit(run_id).alias("source_run_id"),
+                pl.lit(self.DATASET_VERSION).alias("dataset_version"),
+                label.alias("vintage_policy"),
+            )
+            labels = result["vintage_policy"]
+            if (
+                labels.dtype != pl.String
+                or labels.null_count()
+                or not labels.is_in([policy.name, "ingest-clock", "vendor"]).all()
+            ):
+                raise ValueError(f"{self.source}/{self.dataset}: invalid vintage_policy label")
+            return result
 
         return df.with_columns(
             [

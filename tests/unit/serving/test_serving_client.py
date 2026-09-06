@@ -397,7 +397,9 @@ def test_bitemporal_columns_excluded(catalogue: Path, method_name: str) -> None:
         df = getattr(client, method_name)("2024-01-01", "2024-12-31")
     finally:
         client.close()
-    retained = {"available_at"} if method_name == "get_system_prices" else set()
+    # V-a (ADR-031): vintage_policy travels with available_at — the label names
+    # the reconstruction that produced the stamp, so it is retained alongside it.
+    retained = {"available_at", "vintage_policy"} if method_name == "get_system_prices" else set()
     for excluded in _BITEMPORAL_EXCLUDE:
         if excluded in retained:
             assert excluded in df.columns, (

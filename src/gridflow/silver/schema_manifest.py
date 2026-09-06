@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING, Literal
 
 import polars as pl
 
-from gridflow.silver.base import BaseSilverTransformer
+from gridflow.silver.base import BaseSilverTransformer, VintagePolicy
 from gridflow.silver.latest_views import LATEST_VIEW_SPECS
 from gridflow.silver.registry import get_transformer, list_transformers
 
@@ -66,6 +66,8 @@ def _preferred_relation(
 
 
 if TYPE_CHECKING:
+    from datetime import date
+
     from pydantic import BaseModel
 
 RelationKind = Literal["silver", "gold", "serving_alias"]
@@ -75,6 +77,7 @@ ColumnsSource = Literal["pydantic_schema", "declared_dynamic", "gold_sql", "serv
 BITEMPORAL_EXCLUDE: tuple[str, ...] = (
     "event_time",
     "available_at",
+    "vintage_policy",
     "source_run_id",
     "dataset_version",
     "month",
@@ -287,6 +290,34 @@ DESIGNATED_DATE_COLS: dict[tuple[str, str], str] = {
 
 
 @dataclass(frozen=True)
+class VintagePolicySummary:
+    """Serializable reconstruction contract and legacy-label interpretation."""
+
+    name: str
+    rule: str
+    applies_before: str
+    lag_seconds: int
+    dated: date
+    legacy_rows: str = (
+        "Legacy rows read as null; models code filtering on the label must treat null "
+        "as unknown. An entirely legacy selection may lack the column; absence is also unknown."
+    )
+
+
+def _vintage_policy_summary(policy: VintagePolicy | None) -> VintagePolicySummary | None:
+    """Expose the declaration without requiring consumer-side rule copies."""
+    if policy is None:
+        return None
+    return VintagePolicySummary(
+        name=policy.name,
+        rule=policy.rule,
+        applies_before=policy.applies_before.isoformat(),
+        lag_seconds=int(policy.lag.total_seconds()),
+        dated=policy.dated,
+    )
+
+
+@dataclass(frozen=True)
 class SilverSchemaEntry:
     """One exported schema-contract row.
 
@@ -313,6 +344,7 @@ class SilverSchemaEntry:
         columns_source: How ``columns`` was obtained.
         bitemporal_columns: Bitemporal columns physically carried by the relation.
         partition_columns: Storage partition columns physically carried by the relation.
+        vintage_policy: Optional reconstruction rule; legacy null labels mean unknown.
     """
 
     source: str | None
@@ -327,6 +359,7 @@ class SilverSchemaEntry:
     columns_source: ColumnsSource
     bitemporal_columns: tuple[str, ...]
     partition_columns: tuple[str, ...]
+    vintage_policy: VintagePolicySummary | None = None
 
 
 @dataclass(frozen=True)
@@ -450,7 +483,8 @@ def get_silver_schema_manifest(
     aliases = _deprecated_aliases(registered)
     entries = [_silver_entry(source, dataset, aliases) for source, dataset in registered]
     if include_serving_aliases:
-        entries.extend(_serving_alias_entry(spec) for spec in _SERVING_ALIASES)
+        silver_entries = {entry.qualified_view: entry for entry in entries}
+        entries.extend(_serving_alias_entry(spec, silver_entries) for spec in _SERVING_ALIASES)
     return tuple(
         sorted(
             entries,
@@ -483,6 +517,8 @@ def silver_schema_manifest_frame(
         row["columns"] = list(entry.columns) if entry.columns is not None else None
         row["bitemporal_columns"] = list(entry.bitemporal_columns)
         row["partition_columns"] = list(entry.partition_columns)
+        if entry.vintage_policy is not None:
+            row["vintage_policy"]["dated"] = entry.vintage_policy.dated.isoformat()
         rows.append(row)
     return pl.DataFrame(rows)
 
@@ -515,12 +551,17 @@ def _silver_entry(
         date_col_sql_type=_date_col_sql_type(date_col),
         columns=columns,
         columns_source=columns_source,
-        bitemporal_columns=_SILVER_BITEMPORAL_COLUMNS,
+        bitemporal_columns=_SILVER_BITEMPORAL_COLUMNS
+        + (("vintage_policy",) if transformer.VINTAGE_POLICY is not None else ()),
         partition_columns=_transformer_partition_columns(transformer),
+        vintage_policy=_vintage_policy_summary(transformer.VINTAGE_POLICY),
     )
 
 
-def _serving_alias_entry(spec: _ServingAliasSpec) -> SilverSchemaEntry:
+def _serving_alias_entry(
+    spec: _ServingAliasSpec,
+    silver_entries: dict[str | None, SilverSchemaEntry],
+) -> SilverSchemaEntry:
     columns: tuple[str, ...] | None
     columns_source: ColumnsSource
     if spec.relation_kind == "gold":
@@ -541,6 +582,8 @@ def _serving_alias_entry(spec: _ServingAliasSpec) -> SilverSchemaEntry:
         if spec.relation_name.startswith("silver_")
         else None
     )
+    target = silver_entries.get(qualified_view)
+    policy = target.vintage_policy if target is not None else None
     return SilverSchemaEntry(
         source=spec.source,
         dataset=spec.dataset,
@@ -554,6 +597,7 @@ def _serving_alias_entry(spec: _ServingAliasSpec) -> SilverSchemaEntry:
         columns_source=columns_source,
         bitemporal_columns=(),
         partition_columns=(),
+        vintage_policy=policy,
     )
 
 

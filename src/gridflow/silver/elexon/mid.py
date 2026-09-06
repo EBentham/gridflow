@@ -4,13 +4,13 @@ from __future__ import annotations
 
 import json
 import logging
-from datetime import UTC, date, datetime
+from datetime import UTC, date, datetime, timedelta
 from typing import Any
 
 import polars as pl
 
 from gridflow.schemas.elexon import ElexonMID
-from gridflow.silver.base import BaseSilverTransformer
+from gridflow.silver.base import BaseSilverTransformer, VintagePolicy
 from gridflow.silver.registry import register_transformer
 from gridflow.utils.time import settlement_period_to_utc
 
@@ -23,6 +23,18 @@ class MIDTransformer(BaseSilverTransformer):
     source = "elexon"
     dataset = "mid"
     schema_cls = ElexonMID
+    VINTAGE_POLICY = VintagePolicy(
+        name="elexon-mid/vp-2026-09",
+        lag=timedelta(minutes=60),
+        dated=date(2026, 9, 6),
+        rule=(
+            "ASSUMPTION: period end +30 minutes (event time is period start; lag=60 minutes). "
+            "By analogy with INDO's measured 30-minute latency (99.6% of 87,261 rows). "
+            "TODO: verify MID publication cadence. "
+            "ASSUMPTION cutover: 2026-08-01T00:00Z."
+        ),
+        applies_before=datetime(2026, 8, 1, tzinfo=UTC),
+    )
     ENTITY_KEY_COLUMNS = (
         "settlement_date",
         "settlement_period",
