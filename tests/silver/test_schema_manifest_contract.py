@@ -2,7 +2,11 @@
 
 from __future__ import annotations
 
+import json
+from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
+
+import polars as pl
 
 # Registry side effects: importing subpackages registers their transformers.
 import gridflow.silver.elexon  # noqa: F401
@@ -19,6 +23,7 @@ from gridflow.silver.schema_manifest import (
     DESIGNATED_DATE_COLS,
     SilverSchemaEntry,
     get_silver_schema_manifest,
+    silver_schema_manifest_frame,
 )
 
 
@@ -139,3 +144,104 @@ def test_manifest_partition_columns_match_storage_layout() -> None:
 
 def test_bitemporal_exclude_is_public_authority() -> None:
     assert _BITEMPORAL_EXCLUDE is BITEMPORAL_EXCLUDE
+
+
+def test_vintage_policy_manifest_membership_and_alias() -> None:
+    expected = {
+        ("elexon", "mid"): ("elexon-mid/vp-2026-09", 3600, datetime(2026, 8, 1, tzinfo=UTC)),
+        ("elexon", "system_prices"): (
+            "elexon-system_prices/vp-2026-09",
+            5400,
+            datetime(2026, 7, 31, tzinfo=UTC),
+        ),
+        ("open_meteo", "historical_demand"): (
+            "open_meteo-historical_demand/vp-2026-09",
+            432000,
+            datetime(2026, 8, 1, tzinfo=UTC),
+        ),
+        ("open_meteo", "historical_wind"): (
+            "open_meteo-historical_wind/vp-2026-09",
+            432000,
+            datetime(2026, 8, 1, tzinfo=UTC),
+        ),
+        ("open_meteo", "historical_solar"): (
+            "open_meteo-historical_solar/vp-2026-09",
+            432000,
+            datetime(2026, 8, 1, tzinfo=UTC),
+        ),
+    }
+    for entry in _silver_entries():
+        key = (entry.source, entry.dataset)
+        assert ("vintage_policy" in entry.bitemporal_columns) == (key in expected)
+        assert (entry.vintage_policy is not None) == (key in expected)
+        if entry.vintage_policy is not None:
+            transformer = get_transformer(entry.source, entry.dataset, Path("__manifest_test__"))
+            policy = transformer.VINTAGE_POLICY
+            assert policy is not None
+            name, lag_seconds, cutover = expected[key]
+            assert (policy.name, policy.lag, policy.applies_before) == (
+                name,
+                timedelta(seconds=lag_seconds),
+                cutover,
+            )
+            assert policy.dated == date(2026, 9, 6)
+            assert entry.vintage_policy.name == name
+            assert entry.vintage_policy.lag_seconds == lag_seconds
+            assert entry.vintage_policy.dated == date(2026, 9, 6)
+            assert entry.vintage_policy.rule == policy.rule
+            assert entry.vintage_policy.applies_before == cutover.isoformat()
+            assert "null as unknown" in entry.vintage_policy.legacy_rows
+            assert "vintage_policy" not in (entry.columns or ())
+    alias = next(
+        entry
+        for entry in get_silver_schema_manifest()
+        if entry.relation_kind == "serving_alias" and entry.dataset == "system_prices"
+    )
+    base = _silver_entry("elexon", "system_prices")
+    assert alias.vintage_policy == base.vintage_policy
+    assert all(
+        entry.bitemporal_columns == ()
+        for entry in get_silver_schema_manifest()
+        if entry.relation_kind == "serving_alias"
+    )
+    assert "vintage_policy" in BITEMPORAL_EXCLUDE
+
+
+def test_vintage_policy_manifest_frame_is_serializable() -> None:
+    frame = silver_schema_manifest_frame()
+    assert isinstance(frame.schema["vintage_policy"], pl.Struct)
+    mid = frame.filter((pl.col("dataset") == "mid") & (pl.col("relation_kind") == "silver"))
+    assert mid["vintage_policy"][0]["name"] == "elexon-mid/vp-2026-09"
+    assert '"applies_before":"2026-08-01T00:00:00+00:00"' in mid.write_json()
+    expected = {
+        ("elexon", "mid"): ("elexon-mid/vp-2026-09", 3600, "2026-08-01T00:00:00+00:00"),
+        ("elexon", "system_prices"): (
+            "elexon-system_prices/vp-2026-09",
+            5400,
+            "2026-07-31T00:00:00+00:00",
+        ),
+        ("open_meteo", "historical_demand"): (
+            "open_meteo-historical_demand/vp-2026-09",
+            432000,
+            "2026-08-01T00:00:00+00:00",
+        ),
+        ("open_meteo", "historical_wind"): (
+            "open_meteo-historical_wind/vp-2026-09",
+            432000,
+            "2026-08-01T00:00:00+00:00",
+        ),
+        ("open_meteo", "historical_solar"): (
+            "open_meteo-historical_solar/vp-2026-09",
+            432000,
+            "2026-08-01T00:00:00+00:00",
+        ),
+    }
+    rows = frame.filter(pl.col("relation_kind") == "silver")
+    for row in [*rows.to_dicts(), *json.loads(rows.write_json())]:
+        policy = row["vintage_policy"]
+        if policy is not None:
+            assert (policy["name"], policy["lag_seconds"], policy["applies_before"]) == expected[
+                (row["source"], row["dataset"])
+            ]
+            assert type(policy["lag_seconds"]) is int
+            assert policy["dated"] == "2026-09-06"

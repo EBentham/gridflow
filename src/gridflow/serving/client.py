@@ -23,7 +23,7 @@ if TYPE_CHECKING:
 # authority now lives in gridflow.silver.schema_manifest because downstream
 # schema consumers need the same contract without copying literals.
 #
-# Not every relation carries all six, though: the cross-source gold SQL views
+# Not every relation carries all seven, though: the cross-source gold SQL views
 # are explicit-column SELECTs — gold_eu_gas_storage carries NONE of them, and
 # gold_uk_imbalance_context deliberately projects available_at as a PUBLIC
 # column (R1-A/F-01: the winning price vintage's provenance stamp, retained,
@@ -39,7 +39,9 @@ _BITEMPORAL_EXCLUDE = BITEMPORAL_EXCLUDE
 # available_at column cannot tell which vintage it is holding, so the two
 # system_prices-derived read paths retain it against the general bitemporal
 # EXCLUDE (see _present_bitemporal_exclude_clause's retain= parameter).
-_VINTAGE_VISIBLE: tuple[str, ...] = ("available_at",)
+# vintage_policy travels with available_at (V-a, ADR-031): the label says which
+# reconstruction stamped the row, so hiding one while showing the other misleads.
+_VINTAGE_VISIBLE: tuple[str, ...] = ("available_at", "vintage_policy")
 
 # WHY (N-5, D-8): one module-level constant per SDK serving handle, each
 # referenced at BOTH its _present_bitemporal_exclude_clause call and its FROM
@@ -108,7 +110,7 @@ class GridflowClient:
         Introspects the relation's columns via ``information_schema.columns`` and
         intersects them with :data:`_BITEMPORAL_EXCLUDE`, so only the bitemporal /
         partitioning columns ACTUALLY present are excluded. Silver parquet views
-        carry all six and get the full ``EXCLUDE (...)``; the cross-source gold SQL
+        carry all seven and get the full ``EXCLUDE (...)``; the cross-source gold SQL
         views carry none and get an empty string (a plain ``SELECT *``), avoiding
         the ``BinderException`` an unconditional EXCLUDE of absent columns raises.
 
