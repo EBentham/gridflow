@@ -1,4 +1,8 @@
-"""Shared silver seeds for strict registration of all gold SQL views."""
+"""Shared silver seeds for strict registration of all gold SQL views.
+
+Exposed as the ``seed_silver`` fixture: ``tests`` is not an importable package
+(no ``__init__.py``), so a ``from tests...`` import resolves only when the repo
+root happens to be on ``sys.path`` — it broke CI (PR #72)."""
 
 from __future__ import annotations
 
@@ -6,10 +10,12 @@ from datetime import date
 from typing import TYPE_CHECKING
 
 import polars as pl
+import pytest
 
 from gridflow.storage.paths import PathBuilder
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
     from pathlib import Path
 
 
@@ -18,7 +24,7 @@ def _write_parquet(df: pl.DataFrame, path: Path) -> None:
     df.write_parquet(path)
 
 
-def seed_silver(data_dir: Path, *, include_vintage_policy: bool = False) -> None:
+def _seed_silver(data_dir: Path, *, include_vintage_policy: bool = False) -> None:
     """Seed all silver inputs the real gold SQL views bind against.
 
     - ``gie_agsi/storage`` supplies ``gold_eu_gas_storage``.
@@ -95,3 +101,9 @@ def seed_silver(data_dir: Path, *, include_vintage_policy: bool = False) -> None
         ),
         PathBuilder(data_dir).silver_file("neso", "carbon_intensity", date(2024, 1, 15)),
     )
+
+
+@pytest.fixture
+def seed_silver() -> Callable[..., None]:
+    """Return the shared silver seeder (see module docstring for why a fixture)."""
+    return _seed_silver

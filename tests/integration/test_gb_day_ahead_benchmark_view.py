@@ -15,9 +15,9 @@ from gridflow.silver.elexon.mid import MIDTransformer
 from gridflow.silver.schema_manifest import get_silver_schema_manifest, silver_schema_manifest_frame
 from gridflow.storage.duckdb import init_catalogue, refresh_views
 from gridflow.storage.paths import PathBuilder
-from tests.integration.gold_fixtures import seed_silver
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
     from pathlib import Path
 
 _STAMP = datetime(2024, 10, 29, 12, tzinfo=UTC)
@@ -34,7 +34,9 @@ _COLUMNS = (
 
 
 @pytest.fixture(params=["absent", "present", "null"])
-def benchmark_catalogue(tmp_path: Path, request: pytest.FixtureRequest) -> tuple[Path, str | None]:
+def benchmark_catalogue(
+    tmp_path: Path, request: pytest.FixtureRequest, seed_silver: Callable[..., None]
+) -> tuple[Path, str | None]:
     """Build a real catalogue over two providers, including an autumn DST day."""
     paths = PathBuilder(tmp_path)
     seed_silver(tmp_path, include_vintage_policy=request.param != "absent")
@@ -175,7 +177,7 @@ def _mid_row(settlement_date: date, price: float, stamp: datetime) -> pl.DataFra
 @pytest.mark.parametrize("reverse_files", [False, True])
 @pytest.mark.parametrize("tied_stamps", [False, True])
 def test_benchmark_enforces_grain_across_overlapping_files(
-    tmp_path: Path, reverse_files: bool, tied_stamps: bool
+    tmp_path: Path, reverse_files: bool, tied_stamps: bool, seed_silver: Callable[..., None]
 ) -> None:
     """Latest stamp wins across partitions; equal stamps have a stable value tiebreak."""
     paths = PathBuilder(tmp_path)
@@ -202,7 +204,7 @@ def test_benchmark_enforces_grain_across_overlapping_files(
 
 
 def test_benchmark_refresh_preserves_nonempty_legacy_and_new_policy_partitions(
-    tmp_path: Path,
+    tmp_path: Path, seed_silver: Callable[..., None]
 ) -> None:
     """An existing legacy catalogue gains policy labels without losing old rows or NULLs."""
     paths = PathBuilder(tmp_path)

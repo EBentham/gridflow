@@ -21,17 +21,16 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from gridflow.storage.duckdb import get_connection, init_catalogue
-from tests.integration.gold_fixtures import seed_silver
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
     from pathlib import Path
 
     import pytest
 
 
 def test_gold_eu_gas_storage_registers_and_returns_rows(
-    tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, seed_silver: Callable[..., None]
 ) -> None:
     """The real catalogue registers gold_eu_gas_storage over the qualified view.
 
