@@ -88,8 +88,9 @@ uv network ops (lock/sync) need `--system-certs` on this machine (Avast TLS).
 `.claude/` is gitignored; these run on this machine only:
 
 - `guard.py` (PreToolUse Bash) — blocks commit-on-master, force-push,
-  `reset --hard`, and live `gridflow ingest` without `GRIDFLOW_ALLOW_INGEST=1`;
-  hard-halts bronze writes and out-of-repo `rm -rf`.
+  `reset --hard`, live `gridflow ingest` without `GRIDFLOW_ALLOW_INGEST=1`, and
+  shell writes/deletes whose target is a bronze path; hard-halts out-of-repo
+  `rm -rf`. Reading, querying and transforming data is never gated (2026-09-06).
 - `format.py` (PostToolUse) — ruff format + autofix on every edited `.py`.
 - `test_gate.py` (Stop) — a turn cannot end with a red fast suite
   (`-m "not live and not slow"`). Bypass: `GRIDFLOW_NO_TEST_GATE=1`.
