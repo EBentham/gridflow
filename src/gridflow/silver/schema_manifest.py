@@ -378,6 +378,13 @@ _SERVING_ALIASES: tuple[_ServingAliasSpec, ...] = (
         "gold",
         "settlement_date",
     ),
+    _ServingAliasSpec(
+        None,
+        "gb_day_ahead_benchmark",
+        "gold_gb_day_ahead_benchmark",
+        "gold",
+        "settlement_date",
+    ),
 )
 
 _DATE_COL_SQL_TYPES: dict[str, DateColSqlType] = {
