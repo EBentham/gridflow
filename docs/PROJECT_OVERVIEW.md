@@ -303,6 +303,24 @@ Views use `read_parquet('path/**/*.parquet', hive_partitioning=true)` so you can
 After relocating an existing data root, run the view refresh because Parquet
 view globs store absolute paths.
 
+The v0.20 GB day-ahead benchmark follows the `gold_uk_imbalance_context`
+serving pattern: `gold_gb_day_ahead_benchmark`, advertised by the manifest as
+`gb_day_ahead_benchmark`, reads silver `elexon/mid` for `APXMIDP` only. The view
+enforces one row per settlement date and period across overlapping silver partitions: latest
+`available_at` wins, with deterministic ties ordered by delivery timestamp,
+price, volume and policy (descending, NULLs last). The programme ruling
+(2026-09-05) chooses this market-index benchmark because ENTSO-E GB day-ahead is empty post-Brexit
+and direct auction data requires paid access. Call
+`GridflowClient.get_gb_day_ahead_benchmark(start, end)` with inclusive settlement
+dates for a Polars frame containing `benchmark_price_gbp_mwh`,
+`benchmark_volume_mwh`, UTC delivery time, the settlement pair, provider ID,
+`available_at`, and `vintage_policy` (NULL when absent from silver).
+MID has no publication timestamp and is not append-only, so availability is
+ingest-time until V-a lands. A historical `as_of` cutoff returns no backfilled
+rows ingested after that cutoff. The `available_at <= as_of`
+leakage barrier belongs in gridflow_models; this view does not reconstruct
+historical vintages or claim to be a direct auction-price feed.
+
 ---
 
 ## Key Dependencies
