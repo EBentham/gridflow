@@ -137,7 +137,7 @@ def test_qualified_view_is_the_base_of_its_own_relation_silver_backed_alias(
     assert dataset not in entry.qualified_view or dataset in ("system_prices",)
 
 
-@pytest.mark.parametrize("dataset", ["gas_storage", "imbalance_context"])
+@pytest.mark.parametrize("dataset", ["gas_storage", "imbalance_context", "gb_day_ahead_benchmark"])
 def test_qualified_view_is_the_base_of_its_own_relation_gold(dataset: str) -> None:
     """I-2 (I-2c arm): gold-backed rows keep qualified_view=None, unchanged."""
     entries = get_silver_schema_manifest(include_serving_aliases=True)

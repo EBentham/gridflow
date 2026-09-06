@@ -63,6 +63,7 @@ owned by >1 source get no alias. Prefer the qualified name in new code.
   silver_neso_carbon_intensity     NESO carbon intensity (half-hourly)
 
 Gold views (cross-source analytics):
+  gold_gb_day_ahead_benchmark GB day-ahead benchmark (Elexon MID APXMIDP)
   gold_uk_imbalance_context  UK prices + carbon intensity
   gold_eu_gas_storage        EU gas storage by country
   gold_system_marginal_price System marginal price features

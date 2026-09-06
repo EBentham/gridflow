@@ -53,6 +53,7 @@ _REL_FUEL_GENERATION = "silver_elexon_fuelhh"  # _SERVING_ALIASES["fuel_generati
 _REL_GAS_STORAGE = "gold_eu_gas_storage"  # _SERVING_ALIASES["gas_storage"]
 _REL_WEATHER = "silver_elexon_itsdo"  # _SERVING_ALIASES["weather"]
 _REL_IMBALANCE_CONTEXT = "gold_uk_imbalance_context"  # _SERVING_ALIASES["imbalance_context"]
+_REL_GB_DAY_AHEAD_BENCHMARK = "gold_gb_day_ahead_benchmark"
 
 
 class GridflowClient:
@@ -181,6 +182,33 @@ class GridflowClient:
         sql = (
             "SELECT *" + exclude + " "
             f"FROM {relation} "
+            "WHERE settlement_date BETWEEN ? AND ? "
+            "ORDER BY timestamp_utc"
+        )
+        return self._require_con().execute(sql, [str(start), str(end)]).pl()
+
+    def get_gb_day_ahead_benchmark(
+        self,
+        start: str | date,
+        end: str | date,
+    ) -> pl.DataFrame:
+        """Get the GB day-ahead benchmark from Elexon MID APXMIDP.
+
+        Args:
+            start: First settlement date, inclusive.
+            end: Last settlement date, inclusive.
+
+        Returns:
+            A Polars frame ordered by UTC delivery time, with prices in
+            GBP/MWh and volumes in MWh. Keeps ``available_at`` visible through
+            the bitemporal exclusion and includes the nullable ``vintage_policy``
+            label as a public column. MID availability is ingest-time; the
+            leakage barrier lives in gridflow_models.
+        """
+        relation = _REL_GB_DAY_AHEAD_BENCHMARK
+        exclude = self._present_bitemporal_exclude_clause(relation, retain=_VINTAGE_VISIBLE)
+        sql = (
+            "SELECT *" + exclude + " FROM " + relation + " "
             "WHERE settlement_date BETWEEN ? AND ? "
             "ORDER BY timestamp_utc"
         )

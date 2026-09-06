@@ -71,7 +71,7 @@ def _catalogue(tmp_path: Path) -> Path:
 
 
 # --------------------------------------------------------------------------- #
-# Arm 1 (I-8, I-9 arm 1): manifest row == client constant, for ALL FIVE handles
+# Arm 1 (I-8, I-9 arm 1): manifest row == client constant, for every handle
 # --------------------------------------------------------------------------- #
 
 # {alias dataset -> (client method name, client constant name)}. Deliberately
@@ -83,6 +83,10 @@ _HANDLE_MAP: dict[str, tuple[str, str]] = {
     "gas_storage": ("get_gas_storage", "_REL_GAS_STORAGE"),
     "weather": ("get_weather", "_REL_WEATHER"),
     "imbalance_context": ("get_imbalance_context", "_REL_IMBALANCE_CONTEXT"),
+    "gb_day_ahead_benchmark": (
+        "get_gb_day_ahead_benchmark",
+        "_REL_GB_DAY_AHEAD_BENCHMARK",
+    ),
 }
 
 # get_generation_by_fuel is a deprecated shim with no _SERVING_ALIASES row and
@@ -510,3 +514,31 @@ def test_imbalance_context_exclude_site_uses_its_constant(
     finally:
         client.close()
     assert "event_time" not in df.columns
+
+
+def test_benchmark_reads_and_excludes_via_its_constant(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Redirect both query sites, retain available_at and pass through public columns."""
+    db_path = _catalogue(tmp_path)
+    with duckdb.connect(str(db_path)) as con:
+        con.execute(
+            "CREATE TABLE gold_gb_day_ahead_benchmark AS "
+            "SELECT DATE '2024-01-15' AS settlement_date, "
+            "TIMESTAMPTZ '2024-01-15 00:00:00+00' AS timestamp_utc, 'real' AS marker"
+        )
+        con.execute(
+            "CREATE TABLE sentinel_rel_benchmark AS "
+            "SELECT settlement_date, timestamp_utc, 'sentinel' AS marker, "
+            "timestamp_utc AS event_time, "
+            "TIMESTAMPTZ '2024-01-16 12:00:00+00' AS available_at, "
+            "'ingest_time' AS vintage_policy FROM gold_gb_day_ahead_benchmark"
+        )
+    monkeypatch.setattr(client_module, "_REL_GB_DAY_AHEAD_BENCHMARK", "sentinel_rel_benchmark")
+    with GridflowClient(db_path) as client:
+        frame = client.get_gb_day_ahead_benchmark("2024-01-15", "2024-01-15")
+    assert frame["marker"].to_list() == ["sentinel"]
+    assert "event_time" not in frame.columns
+    assert frame["available_at"].null_count() == 0
+    # Public SELECT * pass-through; vintage_policy is not a bitemporal exclusion.
+    assert frame["vintage_policy"].to_list() == ["ingest_time"]
