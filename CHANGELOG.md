@@ -8,6 +8,51 @@ expansion) was paused before release and is intentionally absent.
 
 ## [Unreleased]
 
+## [v0.20] - 2026-09-06 — Backfill and Benchmark
+
+Made five years of GB power history usable for backtesting, and gave the
+day-ahead price a single canonical benchmark relation.
+
+### Added
+- **Vintage Policy** (ADR-031, proposed): an opt-in, dated, per-transformer
+  declaration of when a row *became knowable*, for datasets the vendor never
+  stamps. `VintagePolicy(name, lag, dated, rule, applies_before)` on
+  `BaseSilverTransformer`; when declared,
+  `available_at = coalesce(published_at, event_time + lag)` fires only for
+  rows with `event_time < applies_before` **and** `event_time + lag <
+  ingest_stamp`. Everything else keeps the honest ingest clock. Without the
+  policy a backfilled 2021 row is stamped "available" on the day it was
+  backfilled, so a point-in-time barrier admits nothing historical.
+- **Per-row `vintage_policy` label** on policy-bearing relations — the policy
+  name, `"ingest-clock"` or `"vendor"`, saying which arm produced each stamp.
+  It is a bitemporal lineage column (like `available_at`), not a schema field,
+  and it travels with `available_at` through the manifest, the serving client
+  and `gold_uk_imbalance_context`. Rows written before v0.20 read as null:
+  treat null as unknown. Five declarations ship, each dated and marked
+  ASSUMPTION where the vendor cadence is not documented: Elexon MID (60 min
+  from period start), Elexon system prices (90 min), Open-Meteo ERA5
+  historical demand/wind/solar (5 days). Forecast transformers opt out
+  explicitly.
+- **`gold_gb_day_ahead_benchmark`** — the GB day-ahead price benchmark, Elexon
+  MID filtered to `APXMIDP`, one row per settlement date and period enforced
+  in the view (silver holds the same key in two partitions, so the grain is
+  enforced rather than inherited). Serving alias `gb_day_ahead_benchmark` and
+  `GridflowClient.get_gb_day_ahead_benchmark`.
+
+### Data
+- Five-year backfill of the GB fundamentals family into silver, from a data
+  root holding only an August smoke ingest for most of it. Every dataset
+  verified for coverage, duplicate keys, DST period counts (46/50) and
+  `available_at` distribution against its declared policy. Numbers per dataset
+  are in the milestone's D-RESULTS record.
+
+### Known issues
+- Silver writes rows into a partition file named for the chunk's target date
+  without trimming rows that belong to a neighbouring date, so overlapping
+  ingest windows leave duplicate settlement keys in silver (values identical).
+  The gold views that matter collapse them; a shared-layer fix is filed as a
+  follow-up unit.
+
 ## [v0.19] - 2026-08-23 — Silver Truth
 
 Deliberately small. Re-scoped mid-milestone to the work that blocks demand
