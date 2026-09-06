@@ -76,9 +76,31 @@ All policies are dated **2026-09-06**, named
   `30-vendors/open-meteo/datasets/historical_demand.md:45`: "~5 days behind real
   time, ERA5 reanalysis cadence". **ASSUMPTION cutover: 2026-08-01T00:00Z**, the
   August smoke ingest. The vault was not accessed.
-- **MID ASSUMPTION — TODO: verify MID publication cadence.** Period end +30
-  minutes, by analogy with INDO's measured latency (99.6% of 87,261 rows).
-  **ASSUMPTION cutover: 2026-08-01T00:00Z**.
+- **MID — measured 2026-09-06, and the declared lag is a conservative upper
+  bound.** The value in code stays period end +30 minutes; it was originally
+  an analogy with INDO's measured latency (99.6% of 87,261 rows) and carried
+  `TODO: verify`. That TODO is now answered by observation rather than by
+  vendor documentation, which does not state a publication cadence for this
+  dataset.
+
+  At 15:01Z the public endpoint's latest available period was settlement
+  period 32, covering 14:30–15:00Z, which had ended one minute earlier.
+  Settlement period 33 was in progress and absent. Two conclusions follow.
+  MID is **not** published ahead of delivery, so treating it as knowable
+  before its period ends would be wrong. And its true latency after period
+  end is **at most about one minute**, far shorter than the declared +30.
+
+  The declared lag therefore errs in the safe direction: a consumer sees the
+  price roughly 30 minutes later than it truly became available, never
+  earlier, so the reconstruction cannot leak. Tightening it toward the
+  observed value would improve realism and is backlogged with the run-type
+  work, because it changes stamped bytes and needs a re-transform. Caveat
+  the evidence honestly: one observation, on one day, of the current
+  endpoint. **ASSUMPTION cutover: 2026-08-01T00:00Z** is unchanged.
+
+  Note for anyone repeating this check: settlement periods are numbered on
+  UK local time, so during BST the period's UTC start is one hour behind its
+  local label.
 - **DISEBSP ASSUMPTION — TODO: verify DISEBSP initial-publication latency and
   revision timing.** Proposed period end +60 minutes is an analytical allowance
   for price calculation beyond MID's assumed delay, neither a vendor cadence
