@@ -340,7 +340,10 @@ datasets:
         semantics: delivery period or target date midnight
       available_at:
         type: Datetime(us, UTC)
-        semantics: silver write time or sidecar-derived under --reingest
+        semantics: coalesce(published_at, reconstructed event_time + lag when event_time < applies_before, else ingest stamp) — see ADR-031.
+      vintage_policy:
+        type: Utf8
+        semantics: V-a Vintage Policy label (ADR-031) - policy name when reconstructed as event_time + lag, else ingest-clock / vendor
     business_columns:
       TODO_HUMAN_FILL_COLUMNS: true
     metadata_columns:
@@ -476,7 +479,10 @@ datasets:
         semantics: delivery period or target date midnight
       available_at:
         type: Datetime(us, UTC)
-        semantics: silver write time or sidecar-derived under --reingest
+        semantics: coalesce(published_at, reconstructed event_time + lag when event_time < applies_before, else ingest stamp) — see ADR-031.
+      vintage_policy:
+        type: Utf8
+        semantics: V-a Vintage Policy label (ADR-031) - policy name when reconstructed as event_time + lag, else ingest-clock / vendor
     business_columns:
       TODO_HUMAN_FILL_COLUMNS: true
     metadata_columns:
@@ -2886,7 +2892,10 @@ datasets:
         semantics: ERA5 archive hour start
       available_at:
         type: Datetime(us, UTC)
-        semantics: silver write time
+        semantics: coalesce(published_at, reconstructed event_time + lag when event_time < applies_before, else ingest stamp) — see ADR-031.
+      vintage_policy:
+        type: Utf8
+        semantics: V-a Vintage Policy label (ADR-031) - policy name when reconstructed as event_time + lag, else ingest-clock / vendor
     business_columns:
       timestamp_utc:
         type: Datetime(us, UTC)
@@ -2957,7 +2966,10 @@ datasets:
         semantics: ERA5 archive hour start
       available_at:
         type: Datetime(us, UTC)
-        semantics: silver write time
+        semantics: coalesce(published_at, reconstructed event_time + lag when event_time < applies_before, else ingest stamp) — see ADR-031.
+      vintage_policy:
+        type: Utf8
+        semantics: V-a Vintage Policy label (ADR-031) - policy name when reconstructed as event_time + lag, else ingest-clock / vendor
     business_columns:
       timestamp_utc:
         type: Datetime(us, UTC)
@@ -3026,7 +3038,10 @@ datasets:
         semantics: ERA5 archive hour start
       available_at:
         type: Datetime(us, UTC)
-        semantics: silver write time
+        semantics: coalesce(published_at, reconstructed event_time + lag when event_time < applies_before, else ingest stamp) — see ADR-031.
+      vintage_policy:
+        type: Utf8
+        semantics: V-a Vintage Policy label (ADR-031) - policy name when reconstructed as event_time + lag, else ingest-clock / vendor
     business_columns:
       timestamp_utc:
         type: Datetime(us, UTC)

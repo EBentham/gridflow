@@ -30,10 +30,21 @@ import gridflow.silver.entsog  # noqa: F401
 import gridflow.silver.gie  # noqa: F401
 import gridflow.silver.neso  # noqa: F401
 import gridflow.silver.openmeteo  # noqa: F401
-from gridflow.silver.registry import list_transformers
+from gridflow.silver.registry import get_transformer_class, list_transformers
 
 _REPO_ROOT = Path(__file__).resolve().parent.parent
 _SOURCES_YAML = _REPO_ROOT / "config" / "sources.yaml"
+_POLICY_AVAILABLE_AT_SEMANTICS = (
+    "coalesce(published_at, reconstructed event_time + lag when event_time < "
+    "applies_before, else ingest stamp) — see ADR-031."
+)
+_VINTAGE_POLICY_COLUMN = {
+    "type": "Utf8",
+    "semantics": (
+        "V-a Vintage Policy label (ADR-031) - policy name when reconstructed as "
+        "event_time + lag, else ingest-clock / vendor"
+    ),
+}
 
 # ---------------------------------------------------------------------------
 # Canonical Open-Meteo overrides — post-F15-B state (canonical names/units)
@@ -43,7 +54,11 @@ _OPEN_METEO_OVERRIDES: dict[tuple[str, str], dict[str, Any]] = {
     ("open_meteo", "historical_demand"): {
         "bitemporal_columns": {
             "event_time": {"type": "Datetime(us, UTC)", "semantics": "ERA5 archive hour start"},
-            "available_at": {"type": "Datetime(us, UTC)", "semantics": "silver write time"},
+            "available_at": {
+                "type": "Datetime(us, UTC)",
+                "semantics": _POLICY_AVAILABLE_AT_SEMANTICS,
+            },
+            "vintage_policy": _VINTAGE_POLICY_COLUMN.copy(),
         },
         "business_columns": {
             "timestamp_utc": {"type": "Datetime(us, UTC)", "semantics": "ERA5 hour start"},
@@ -79,7 +94,11 @@ _OPEN_METEO_OVERRIDES: dict[tuple[str, str], dict[str, Any]] = {
     ("open_meteo", "historical_wind"): {
         "bitemporal_columns": {
             "event_time": {"type": "Datetime(us, UTC)", "semantics": "ERA5 archive hour start"},
-            "available_at": {"type": "Datetime(us, UTC)", "semantics": "silver write time"},
+            "available_at": {
+                "type": "Datetime(us, UTC)",
+                "semantics": _POLICY_AVAILABLE_AT_SEMANTICS,
+            },
+            "vintage_policy": _VINTAGE_POLICY_COLUMN.copy(),
         },
         "business_columns": {
             "timestamp_utc": {"type": "Datetime(us, UTC)", "semantics": "ERA5 hour start"},
@@ -117,7 +136,11 @@ _OPEN_METEO_OVERRIDES: dict[tuple[str, str], dict[str, Any]] = {
     ("open_meteo", "historical_solar"): {
         "bitemporal_columns": {
             "event_time": {"type": "Datetime(us, UTC)", "semantics": "ERA5 archive hour start"},
-            "available_at": {"type": "Datetime(us, UTC)", "semantics": "silver write time"},
+            "available_at": {
+                "type": "Datetime(us, UTC)",
+                "semantics": _POLICY_AVAILABLE_AT_SEMANTICS,
+            },
+            "vintage_policy": _VINTAGE_POLICY_COLUMN.copy(),
         },
         "business_columns": {
             "timestamp_utc": {"type": "Datetime(us, UTC)", "semantics": "ERA5 hour start"},
@@ -282,7 +305,7 @@ def _load_cadence_map() -> dict[tuple[str, str], str]:
 
 def _skeleton_entry(source: str, dataset: str, cadence: str) -> dict[str, Any]:
     """Return a minimal skeleton entry for non-Open-Meteo transformers."""
-    return {
+    entry: dict[str, Any] = {
         "bitemporal_columns": {
             "event_time": {
                 "type": "Datetime(us, UTC)",
@@ -303,6 +326,11 @@ def _skeleton_entry(source: str, dataset: str, cadence: str) -> dict[str, Any]:
         "cadence": cadence,
         "notes": "Schema not yet curated. Run seed_canonical_schema.py after curation.",
     }
+    transformer_cls = get_transformer_class(source, dataset)
+    if transformer_cls is not None and transformer_cls.VINTAGE_POLICY is not None:
+        entry["bitemporal_columns"]["vintage_policy"] = _VINTAGE_POLICY_COLUMN.copy()
+        entry["bitemporal_columns"]["available_at"]["semantics"] = _POLICY_AVAILABLE_AT_SEMANTICS
+    return entry
 
 
 def build_canonical(output: Path) -> None:

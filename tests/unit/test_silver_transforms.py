@@ -174,13 +174,13 @@ class TestSystemPriceTransformer:
         assert set(result["system_sell_price"].to_list()) == {44.0, 45.5}
 
     def test_run_writes_one_file_per_bronze_vintage(self, tmp_path: Path):
-        """Distinct bronze sidecars produce distinct idempotent silver vintages."""
-        target_date = date(2024, 1, 15)
-        bronze_dir = tmp_path / "bronze" / "elexon" / "system_prices" / "2024" / "01" / "15"
+        """Live-era bronze sidecars produce distinct idempotent silver vintages."""
+        target_date = date(2026, 8, 15)
+        bronze_dir = tmp_path / "bronze" / "elexon" / "system_prices" / "2026" / "08" / "15"
         bronze_dir.mkdir(parents=True)
         vintages = [
-            ("first", datetime(2024, 1, 15, 8, tzinfo=UTC), 44.0),
-            ("second", datetime(2024, 1, 15, 12, tzinfo=UTC), 45.5),
+            ("first", datetime(2026, 8, 15, 8, tzinfo=UTC), 44.0),
+            ("second", datetime(2026, 8, 15, 12, tzinfo=UTC), 45.5),
         ]
         for name, written_at, sell_price in vintages:
             (bronze_dir / f"raw_{name}.json").write_text(
@@ -205,11 +205,11 @@ class TestSystemPriceTransformer:
         transformer = SystemPriceTransformer(tmp_path)
         assert transformer.run(target_date, run_id="vintages") == 2
 
-        silver_dir = tmp_path / "silver" / "elexon" / "system_prices" / "year=2024" / "month=01"
+        silver_dir = tmp_path / "silver" / "elexon" / "system_prices" / "year=2026" / "month=08"
         paths = sorted(silver_dir.glob("*.parquet"))
         assert [path.name for path in paths] == [
-            "system_prices_20240115_run2024-01-15T08-00-00-00-00.parquet",
-            "system_prices_20240115_run2024-01-15T12-00-00-00-00.parquet",
+            "system_prices_20260815_run2026-08-15T08-00-00-00-00.parquet",
+            "system_prices_20260815_run2026-08-15T12-00-00-00-00.parquet",
         ]
         assert [pl.read_parquet(path)["available_at"][0] for path in paths] == [
             vintage[1] for vintage in vintages

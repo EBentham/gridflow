@@ -34,6 +34,7 @@ class ForecastDemandWeather(HistoricalDemandWeather):
     """Forecast counterpart of ``HistoricalDemandWeather``."""
 
     dataset = "forecast_demand"
+    VINTAGE_POLICY = None
     BRONZE_DATASET_PREFIX = "forecast_demand"
     BRONZE_SIBLING_DATASETS: ClassVar[tuple[str, ...]] = tuple(
         f"forecast_demand__{loc.name}" for loc in DEMAND_LOCATIONS
@@ -49,6 +50,7 @@ class ForecastWindWeather(HistoricalWindWeather):
     """
 
     dataset = "forecast_wind"
+    VINTAGE_POLICY = None
     BRONZE_DATASET_PREFIX = "forecast_wind"
     HOURLY_VARS = WIND_FORECAST_VARS
     BRONZE_SIBLING_DATASETS: ClassVar[tuple[str, ...]] = tuple(
@@ -60,6 +62,7 @@ class ForecastSolarWeather(HistoricalSolarWeather):
     """Forecast counterpart of ``HistoricalSolarWeather``."""
 
     dataset = "forecast_solar"
+    VINTAGE_POLICY = None
     BRONZE_DATASET_PREFIX = "forecast_solar"
     BRONZE_SIBLING_DATASETS: ClassVar[tuple[str, ...]] = tuple(
         f"forecast_solar__{loc.name}" for loc in SOLAR_LOCATIONS

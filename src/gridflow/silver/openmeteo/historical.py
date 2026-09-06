@@ -18,7 +18,7 @@ from __future__ import annotations
 
 import json
 import logging
-from datetime import UTC, date, datetime
+from datetime import UTC, date, datetime, timedelta
 from typing import TYPE_CHECKING, Any, ClassVar
 
 import polars as pl
@@ -37,7 +37,7 @@ from gridflow.connectors.openmeteo.endpoints import (
     WeatherLocation,
 )
 from gridflow.schemas.weather import DemandWeather, SolarWeather, WindWeather
-from gridflow.silver.base import BaseSilverTransformer
+from gridflow.silver.base import BaseSilverTransformer, VintagePolicy
 from gridflow.silver.registry import register_transformer
 
 logger = logging.getLogger(__name__)
@@ -313,10 +313,27 @@ class BaseOpenMeteoTransformer(BaseSilverTransformer):
         return base + canonical_vars + derived + tail
 
 
+def _historical_vintage_policy(dataset: str) -> VintagePolicy:
+    """Declare the shared ERA5 assumption with a dataset-specific label."""
+    return VintagePolicy(
+        name=f"open_meteo-{dataset}/vp-2026-09",
+        lag=timedelta(days=5),
+        dated=date(2026, 9, 6),
+        rule=(
+            "ASSUMPTION: event time +5 days, based on ~5 days behind real time, "
+            "ERA5 reanalysis cadence (SPEC cites "
+            "30-vendors/open-meteo/datasets/historical_demand.md:45). "
+            "ASSUMPTION cutover: 2026-08-01T00:00Z, the August smoke ingest."
+        ),
+        applies_before=datetime(2026, 8, 1, tzinfo=UTC),
+    )
+
+
 class HistoricalDemandWeather(BaseOpenMeteoTransformer):
     """Historical (ERA5 archive) weather at the 7 UK demand population centres."""
 
     dataset = "historical_demand"
+    VINTAGE_POLICY: ClassVar[VintagePolicy | None] = _historical_vintage_policy(dataset)
     BRONZE_DATASET_PREFIX = "historical_demand"
     LOCATIONS = DEMAND_LOCATIONS
     HOURLY_VARS = DEMAND_HOURLY_VARS
@@ -339,6 +356,7 @@ class HistoricalWindWeather(BaseOpenMeteoTransformer):
     """
 
     dataset = "historical_wind"
+    VINTAGE_POLICY: ClassVar[VintagePolicy | None] = _historical_vintage_policy(dataset)
     BRONZE_DATASET_PREFIX = "historical_wind"
     LOCATIONS = WIND_LOCATIONS
     HOURLY_VARS = WIND_ARCHIVE_VARS
@@ -359,6 +377,7 @@ class HistoricalSolarWeather(BaseOpenMeteoTransformer):
     """
 
     dataset = "historical_solar"
+    VINTAGE_POLICY: ClassVar[VintagePolicy | None] = _historical_vintage_policy(dataset)
     BRONZE_DATASET_PREFIX = "historical_solar"
     LOCATIONS = SOLAR_LOCATIONS
     HOURLY_VARS = SOLAR_HOURLY_VARS
