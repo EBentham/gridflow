@@ -23,22 +23,13 @@ class FuelHHTransformer(BaseSilverTransformer):
     source = "elexon"
     dataset = "fuelhh"
     schema_cls = ElexonFuelHH
+    PARTITION_DATE_COLUMN: ClassVar[str | None] = "settlement_date"
     DATASET_VERSION: ClassVar[str] = "2.0.0"
     ENTITY_KEY_COLUMNS = (
         "settlement_date",
         "settlement_period",
         "fuel_type",
     )  # D-8: verbatim from unique() below
-    last_start_time_fallback_count: int = 0
-
-    def run(
-        self,
-        target_date: date,
-        run_id: str | None = None,
-        reingest: bool = False,
-    ) -> int:
-        self.last_start_time_fallback_count = 0
-        return super().run(target_date, run_id=run_id, reingest=reingest)
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         bronze_path = (
@@ -76,12 +67,8 @@ class FuelHHTransformer(BaseSilverTransformer):
             "settlementPeriod": "settlement_period",
             "fuelType": "fuel_type",
             "generation": "generation_mw",
-            "startTime": "start_time",
-            "startTimeOfHalfHrPeriod": "start_time",
         }
-        rename_map = {
-            k: v for k, v in column_mapping.items() if k in raw_df.columns and v != "start_time"
-        }
+        rename_map = {k: v for k, v in column_mapping.items() if k in raw_df.columns}
         if rename_map:
             raw_df = raw_df.rename(rename_map)
 
@@ -125,6 +112,8 @@ class FuelHHTransformer(BaseSilverTransformer):
             .dt.replace_time_zone("UTC")
             for c in start_cols
         ]
+        # WHY: renaming two vendor aliases onto one target raises; this
+        # precedence-preserving coalesce is the sole owner of start_time.
         start_expr = (
             pl.coalesce(parsed_starts)
             if parsed_starts

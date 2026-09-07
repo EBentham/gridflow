@@ -18,6 +18,7 @@ import polars as pl
 
 from gridflow.silver.elexon.remit import REMITTransformer
 from gridflow.storage.parquet import read_parquet
+from gridflow.storage.paths import PathBuilder
 
 if TYPE_CHECKING:
     import pytest
@@ -167,20 +168,13 @@ def test_default_atomic_replace_overwrites_single_file(tmp_data_dir: Path) -> No
 
     fixtures = Path(__file__).parent.parent / "fixtures" / "elexon"
     payload = json.loads((fixtures / "fuelhh_response.json").read_text())
-    bronze = (
-        tmp_data_dir
-        / "bronze"
-        / "elexon"
-        / "fuelhh"
-        / str(TARGET_DATE.year)
-        / f"{TARGET_DATE.month:02d}"
-        / f"{TARGET_DATE.day:02d}"
-    )
+    fuel_date = date(2024, 1, 15)
+    bronze = PathBuilder(tmp_data_dir).bronze_date_dir("elexon", "fuelhh", fuel_date)
     bronze.mkdir(parents=True, exist_ok=True)
     (bronze / "raw_fuelhh.json").write_text(json.dumps(payload))
 
-    FuelHHTransformer(tmp_data_dir).run(TARGET_DATE, run_id="run-1")
-    FuelHHTransformer(tmp_data_dir).run(TARGET_DATE, run_id="run-2")
+    FuelHHTransformer(tmp_data_dir).run(fuel_date, run_id="run-1")
+    FuelHHTransformer(tmp_data_dir).run(fuel_date, run_id="run-2")
 
     silver_dir = tmp_data_dir / "silver" / "elexon" / "fuelhh"
     parquet_files = _list_parquet_files(silver_dir)

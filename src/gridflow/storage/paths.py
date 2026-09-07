@@ -23,9 +23,16 @@ class PathBuilder:
     def bronze_dir(self, source: str, dataset: str) -> Path:
         return self.data_dir / "bronze" / source / dataset
 
-    def bronze_date_dir(self, source: str, dataset: str, target_date: date) -> Path:
+    def bronze_date_dir(
+        self,
+        source: str,
+        dataset: str,
+        target_date: date,
+        *,
+        dataset_dir: Path | None = None,
+    ) -> Path:
         return (
-            self.bronze_dir(source, dataset)
+            (dataset_dir if dataset_dir is not None else self.bronze_dir(source, dataset))
             / str(target_date.year)
             / f"{target_date.month:02d}"
             / f"{target_date.day:02d}"
@@ -40,16 +47,38 @@ class PathBuilder:
     def silver_dir(self, source: str, dataset: str) -> Path:
         return self.silver_root() / source / dataset
 
-    def silver_partition_dir(self, source: str, dataset: str, target_date: date) -> Path:
+    def silver_partition_dir(
+        self,
+        source: str,
+        dataset: str,
+        target_date: date,
+        *,
+        dataset_dir: Path | None = None,
+    ) -> Path:
         return (
-            self.silver_dir(source, dataset)
+            (dataset_dir if dataset_dir is not None else self.silver_dir(source, dataset))
             / f"year={target_date.year}"
             / f"month={target_date.month:02d}"
         )
 
-    def silver_file(self, source: str, dataset: str, target_date: date) -> Path:
+    def silver_file(
+        self,
+        source: str,
+        dataset: str,
+        target_date: date,
+        *,
+        dataset_dir: Path | None = None,
+    ) -> Path:
         filename = f"{dataset}_{target_date.strftime('%Y%m%d')}.parquet"
-        return self.silver_partition_dir(source, dataset, target_date) / filename
+        return (
+            self.silver_partition_dir(
+                source,
+                dataset,
+                target_date,
+                dataset_dir=dataset_dir,
+            )
+            / filename
+        )
 
     def silver_glob_pattern(self, source: str, dataset: str) -> str:
         """Return a glob pattern for all silver parquet files."""

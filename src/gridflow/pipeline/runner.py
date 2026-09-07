@@ -18,13 +18,12 @@ import logging
 from collections import Counter
 from contextlib import contextmanager
 from dataclasses import dataclass, field
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 from enum import StrEnum
 from typing import TYPE_CHECKING, assert_never
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
-    from datetime import date
     from pathlib import Path
 
     import duckdb
@@ -157,7 +156,8 @@ def _describe_unvouched_bronze(
 
     Args:
         unvouched: The union of ``(path, reason)`` pairs across every date.
-        dates: The transformed date range, for the reported window.
+        dates: The transformed destination range (used only when paths cannot
+            expose their exact source partitions).
 
     Returns:
         A leading-space-prefixed sentence for appending to a status message,
@@ -172,7 +172,22 @@ def _describe_unvouched_bronze(
         f"{path} ({reason})"
         for path, reason in sorted(reasons_by_path.items())[:_UNVOUCHED_SAMPLE_LIMIT]
     )
-    window = f"{dates[0]}..{dates[-1]}" if dates else "the requested range"
+    source_dates: list[str] = []
+    for path in reasons_by_path:
+        try:
+            source_dates.append(
+                date(
+                    int(path.parent.parent.parent.name),
+                    int(path.parent.parent.name),
+                    int(path.parent.name),
+                ).isoformat()
+            )
+        except (TypeError, ValueError):
+            continue
+    if source_dates:
+        window = f"source partitions {min(source_dates)}..{max(source_dates)}"
+    else:
+        window = f"destinations {dates[0]}..{dates[-1]}" if dates else "the examined range"
     return (
         f" Excluded {len(reasons_by_path)} unvouched bronze body(ies) across {window} "
         "(body present, sidecar missing or unusable) -- their rows are NOT in this "
@@ -191,8 +206,10 @@ def _describe_unaccounted_frames(count: int) -> str:
     text is its only exposure.
 
     Args:
-        count: Frames whose ``transform()`` returned empty for a reason nothing
-            counted, summed across the transformed date range.
+        count: Source-read frame occurrences whose ``transform()`` returned
+            empty for a reason nothing counted, summed across each declaring
+            destination's D-1/D covering set. Adjacent destinations may count
+            the same source body again; this is not a unique-body count.
 
     Returns:
         A leading-space-prefixed sentence carrying the exact token
@@ -243,9 +260,12 @@ class DatasetResult:
         status: ``"success"`` | ``"completed_with_warnings"`` | ``"failed"``.
         rows_in: Rows read (ingest: responses fetched).
         rows_out: Rows written.
-        rows_skipped: Rows/units dropped with a recoverable warning (the SUM of
-            ``rows_unmapped`` + ``rows_invalid`` for transforms; the skipped-unit
-            count for ingests).
+        rows_skipped: For transforms, the warning-accounting sum
+            ``rows_unmapped + rows_start_time_fallback + rows_invalid``. Some
+            affected rows are retained; these are not disjoint discarded-row
+            counts. For declaring transformers, fallback and validation terms
+            include repeated source reads across each D-1/D covering set. For
+            ingests, this is the skipped-unit count.
         rows_unmapped: Transform-only: rows kept with an ADR-022 enum sentinel.
         rows_invalid: Transform-only: rows the contract calls wrong. TWO
             dispositions, deliberately folded into one number (D-40): rows that
@@ -260,6 +280,26 @@ class DatasetResult:
             them, so summing them into a row counter would be a category error
             and would corrupt an existing contract. Nonzero implies
             ``status != "success"``, every run, until the state is resolved.
+        rows_start_time_fallback: Transform-only source-read row occurrences
+            that used settlement labels because raw start time was absent.
+        rows_partition_trimmed: Prepared source-read row occurrences owned by a
+            date other than destination D. Routine recoverable trims are kept
+            out of warning status and ``rows_skipped``.
+        rows_partition_trim_unrecoverable: Trim occurrences outside source S's
+            recoverable owner set ``{S, S+1}``; nonzero produces warnings.
+        partition_windows_unresolved: Source-window evaluations that could not
+            resolve across declaring destinations' D-1/D covering sets. This is
+            not a count of distinct unresolved partitions: adjacent destinations
+            may evaluate and count the same source partition again.
+
+        For declaring transformers, start-time fallback rows,
+        validation-failure rows, unaccounted-empty-frame diagnostics, ownership
+        trims, and unresolved-window evaluations are source-read occurrences
+        across each destination's D-1/D covering set. They include neighbour
+        rows or bodies that this destination does not write. Processing adjacent
+        destinations can count the same source row/body/window again. These are
+        neither unique affected entities nor counts of rows discarded from the
+        destination.
         error: Pre-redacted error message when ``status == "failed"``, else None.
     """
 
@@ -273,6 +313,10 @@ class DatasetResult:
     rows_unmapped: int = 0
     rows_invalid: int = 0
     bronze_unvouched: int = 0
+    rows_start_time_fallback: int = 0
+    rows_partition_trimmed: int = 0
+    rows_partition_trim_unrecoverable: int = 0
+    partition_windows_unresolved: int = 0
     error: str | None = None
 
     @property
@@ -1065,6 +1109,9 @@ def run_transform(
         total_rows = 0
         total_unmapped = 0
         total_start_time_fallback = 0
+        total_partition_trimmed = 0
+        total_partition_trim_unrecoverable = 0
+        total_partition_windows_unresolved = 0
         total_validation_failures = 0
         total_all_dropped = 0
         # A UNION of (path, reason) pairs, not a running integer: the ENTSO-G
@@ -1082,6 +1129,7 @@ def run_transform(
         # excluded FILES (see bronze_unvouched).
         total_unaccounted_empty_frames = 0
         total_unaccounted_exclusion = 0
+        source_exclusion_details: list[str] = []
         # `None` until `get_transformer` returns, so the `except` handler below
         # can tell "never constructed this date" apart from "constructed, then
         # `run()` raised" without risking a `transformer` left over from a
@@ -1092,46 +1140,71 @@ def run_transform(
             # CH3-02 (CH-PERF-02): per-date silver CSV is opt-in (default OFF).
             transformer.write_silver_csv = settings.pipeline.write_silver_csv
             for target_date in dates:
-                rows = transformer.run(target_date, run_id=tracker.run_id, reingest=reingest)
-                total_rows += rows
-                # Per-date warning counts; run() resets both each call, so
-                # accumulating never double-counts an empty/missing date.
-                total_unmapped += transformer.last_unmapped_count
-                total_start_time_fallback += getattr(
-                    transformer, "last_start_time_fallback_count", 0
-                )
-                # D-40: a row a transformer DECLARED INVALID AND REMOVED is
-                # invisible to _validate_against_schema (which runs on
-                # transform()'s output), so without this second term a run can
-                # drop rows loudly in the log and still report plain `success`.
-                # Both dispositions land in one reported total on purpose --
-                # see last_excluded_row_count's docstring for the conflation.
-                total_validation_failures += (
-                    transformer.last_validation_failure_count + transformer.last_excluded_row_count
-                )
-                # Sol re-review (2026-07-26): a 100%-out-of-window event-window
-                # drop is never a routine warning -- it means an in-scope
-                # dataset was misclassified into EVENT_WINDOW_FILTER, or is
-                # producing wholly out-of-scope vendor output. Deliberately
-                # NOT threaded together with total_unmapped/total_validation_
-                # failures (N-10 stays deferred; those are routine, this is
-                # exceptional and categorical) and checked FIRST, below, so
-                # it overrides the warnings path rather than blending into it.
-                total_all_dropped += transformer.last_partition_filter_all_dropped_count
-                unvouched_bronze |= transformer.last_unvouched_bronze
-                total_unvouched_total_exclusion += int(transformer.last_unvouched_total_exclusion)
-                total_unaccounted_empty_frames += transformer.last_unaccounted_empty_frames
-                total_unaccounted_exclusion += int(transformer.last_total_unaccounted_exclusion)
+                try:
+                    rows = transformer.run(
+                        target_date,
+                        run_id=tracker.run_id,
+                        reingest=reingest,
+                    )
+                    total_rows += rows
+                finally:
+                    # Every attempted destination is folded exactly once,
+                    # including a run() that raises after partial preparation.
+                    total_unmapped += transformer.last_unmapped_count
+                    total_start_time_fallback += transformer.last_start_time_fallback_count
+                    total_partition_trimmed += transformer.last_partition_trimmed_count
+                    total_partition_trim_unrecoverable += (
+                        transformer.last_partition_trim_unrecoverable_count
+                    )
+                    if transformer.PARTITION_DATE_COLUMN is not None:
+                        total_partition_windows_unresolved += (
+                            transformer.last_partition_filter_unresolved_count
+                        )
+                        logger.info(
+                            "Partition accounting source=%s dataset=%s destination=%s "
+                            "fallback=%d trimmed=%d unsafe=%d unresolved=%d "
+                            "ownership=%s exclusions=%s",
+                            source,
+                            ds,
+                            target_date,
+                            transformer.last_start_time_fallback_count,
+                            transformer.last_partition_trimmed_count,
+                            transformer.last_partition_trim_unrecoverable_count,
+                            transformer.last_partition_filter_unresolved_count,
+                            transformer.last_partition_trim_details,
+                            transformer.last_source_exclusion_details,
+                        )
+                    total_validation_failures += (
+                        transformer.last_validation_failure_count
+                        + transformer.last_excluded_row_count
+                    )
+                    total_all_dropped += transformer.last_partition_filter_all_dropped_count
+                    unvouched_bronze |= transformer.last_unvouched_bronze
+                    remaining_detail_slots = 50 - len(source_exclusion_details)
+                    if remaining_detail_slots > 0:
+                        source_exclusion_details.extend(
+                            transformer.last_source_exclusion_details[:remaining_detail_slots]
+                        )
+                    total_unvouched_total_exclusion += int(
+                        transformer.last_unvouched_total_exclusion
+                    )
+                    total_unaccounted_empty_frames += transformer.last_unaccounted_empty_frames
+                    total_unaccounted_exclusion += int(transformer.last_total_unaccounted_exclusion)
 
             # Deduplicate PATHS first, then derive the per-reason totals from
             # the surviving pairs, so both numbers describe distinct files.
             bronze_unvouched = len({path for path, _ in unvouched_bronze})
             unvouched_detail = _describe_unvouched_bronze(unvouched_bronze, dates)
             frames_detail = _describe_unaccounted_frames(total_unaccounted_empty_frames)
+            source_detail = (
+                " Source partition diagnostics (no output came from each listed "
+                f"partition/body): {'; '.join(source_exclusion_details)}."
+                if source_exclusion_details
+                else ""
+            )
             if total_all_dropped:
-                # No silver was written for the affected date(s) (base.py's
-                # _process_frame returns None before _write_silver when the
-                # filtered frame is empty) -- but any PRE-EXISTING Parquet
+                # Preparation returns None for an all-dropped frame, so run()
+                # performs no write for that frame. Any PRE-EXISTING Parquet
                 # from an earlier, correctly-classified run is left on disk
                 # untouched. Failing the WHOLE dataset-level result here
                 # (rather than reporting success/warnings for the date range)
@@ -1150,6 +1223,7 @@ def run_transform(
                     "unchanged and must not be treated as current."
                     + unvouched_detail
                     + frames_detail
+                    + source_detail
                     # This rung wins the STATUS and the MESSAGE, but it must
                     # not swallow the unvouched COUNT: a scheduler reads the
                     # highest-precedence failure first, and a permanent orphan
@@ -1167,7 +1241,16 @@ def run_transform(
                         operation="transform",
                         status="failed",
                         rows_out=total_rows,
+                        rows_skipped=(
+                            total_unmapped + total_start_time_fallback + total_validation_failures
+                        ),
+                        rows_unmapped=total_unmapped,
+                        rows_invalid=total_validation_failures,
                         bronze_unvouched=bronze_unvouched,
+                        rows_start_time_fallback=total_start_time_fallback,
+                        rows_partition_trimmed=total_partition_trimmed,
+                        rows_partition_trim_unrecoverable=total_partition_trim_unrecoverable,
+                        partition_windows_unresolved=total_partition_windows_unresolved,
                         error=error_message,
                     )
                 )
@@ -1191,6 +1274,7 @@ def run_transform(
                     "Bronze is left exactly as found (never repaired, never deleted)."
                     + unvouched_detail
                     + frames_detail
+                    + source_detail
                 )
                 tracker.fail(error_message)
                 logger.error("Transform hard-failed for %s/%s: %s", source, ds, error_message)
@@ -1201,7 +1285,16 @@ def run_transform(
                         operation="transform",
                         status="failed",
                         rows_out=total_rows,
+                        rows_skipped=(
+                            total_unmapped + total_start_time_fallback + total_validation_failures
+                        ),
+                        rows_unmapped=total_unmapped,
+                        rows_invalid=total_validation_failures,
                         bronze_unvouched=bronze_unvouched,
+                        rows_start_time_fallback=total_start_time_fallback,
+                        rows_partition_trimmed=total_partition_trimmed,
+                        rows_partition_trim_unrecoverable=total_partition_trim_unrecoverable,
+                        partition_windows_unresolved=total_partition_windows_unresolved,
                         error=error_message,
                     )
                 )
@@ -1224,6 +1317,7 @@ def run_transform(
                     "as current. Bronze is left exactly as found."
                     + unvouched_detail
                     + frames_detail
+                    + source_detail
                 )
                 tracker.fail(error_message)
                 logger.error("Transform hard-failed for %s/%s: %s", source, ds, error_message)
@@ -1234,7 +1328,16 @@ def run_transform(
                         operation="transform",
                         status="failed",
                         rows_out=total_rows,
+                        rows_skipped=(
+                            total_unmapped + total_start_time_fallback + total_validation_failures
+                        ),
+                        rows_unmapped=total_unmapped,
+                        rows_invalid=total_validation_failures,
                         bronze_unvouched=bronze_unvouched,
+                        rows_start_time_fallback=total_start_time_fallback,
+                        rows_partition_trimmed=total_partition_trimmed,
+                        rows_partition_trim_unrecoverable=total_partition_trim_unrecoverable,
+                        partition_windows_unresolved=total_partition_windows_unresolved,
                         error=error_message,
                     )
                 )
@@ -1244,6 +1347,8 @@ def run_transform(
                 or total_validation_failures
                 or bronze_unvouched
                 or total_unaccounted_empty_frames
+                or total_partition_trim_unrecoverable
+                or total_partition_windows_unresolved
             ):
                 if bronze_unvouched or total_unaccounted_empty_frames:
                     # THE one aggregated record per (source, dataset) per
@@ -1251,7 +1356,7 @@ def run_transform(
                     # date-range length.
                     logger.warning(
                         "Transform completed with warnings for %s",
-                        unvouched_detail + frames_detail,
+                        unvouched_detail + frames_detail + source_detail,
                     )
                 tracker.complete_with_warnings(
                     rows_out=total_rows,
@@ -1275,6 +1380,10 @@ def run_transform(
                         rows_unmapped=total_unmapped,
                         rows_invalid=total_validation_failures,
                         bronze_unvouched=bronze_unvouched,
+                        rows_start_time_fallback=total_start_time_fallback,
+                        rows_partition_trimmed=total_partition_trimmed,
+                        rows_partition_trim_unrecoverable=total_partition_trim_unrecoverable,
+                        partition_windows_unresolved=total_partition_windows_unresolved,
                     )
                 )
             else:
@@ -1286,60 +1395,46 @@ def run_transform(
                         operation="transform",
                         status="success",
                         rows_out=total_rows,
+                        rows_start_time_fallback=total_start_time_fallback,
+                        rows_partition_trimmed=total_partition_trimmed,
+                        rows_partition_trim_unrecoverable=total_partition_trim_unrecoverable,
+                        partition_windows_unresolved=total_partition_windows_unresolved,
                     )
                 )
         except Exception as e:  # noqa: BLE001 — surfaced as a failed DatasetResult, never swallowed
             error_message = describe_exception(e)
             tracker.fail(error_message)
             logger.error("Transform failed for %s/%s: %s", source, ds, error_message)
-            # R2-g finding 1: a collision guard / read error raised from inside
-            # `run()` -- AFTER it classified an orphan -- must not silently
-            # report `bronze_unvouched=0` here. The counters are instance state
-            # on the transformer and survive the exception; fold in whatever
-            # the failing call classified on top of what earlier dates in this
-            # loop already accumulated (I-7: counted, every run, indefinitely).
-            # `transformer` may still be `None` -- `get_transformer` itself can
-            # raise before any instance exists.
-            #
-            # D-42's CONSUMER half. Preserving the counters on the transformer
-            # is only half of it: the normal accumulation above sits INSIDE the
-            # per-date loop, so when `run()` raises, the failing date's counters
-            # are never folded. An unaccounted empty frame or a counted row
-            # exclusion from an earlier file would then vanish from the failed
-            # result -- correctly `failed`, never falsely successful, but
-            # counted and then dropped, which is the invariant this layer
-            # asserts. No double-count: the raising date never reached the
-            # accumulation, and earlier dates did not leave their values on the
-            # instance for a second pass, because `run()` resets every counter
-            # on entry. This snapshot is exactly the un-accumulated remainder --
-            # the same argument the `|=` above already rests on.
-            if transformer is not None:
-                unvouched_bronze |= transformer.last_unvouched_bronze
-                total_unmapped += transformer.last_unmapped_count
-                total_start_time_fallback += getattr(
-                    transformer, "last_start_time_fallback_count", 0
-                )
-                total_validation_failures += (
-                    transformer.last_validation_failure_count + transformer.last_excluded_row_count
-                )
-                total_unaccounted_empty_frames += transformer.last_unaccounted_empty_frames
+            # Per-date ``finally`` has already folded a raising run exactly
+            # once. Construction failures never enter that block and therefore
+            # cannot reuse stale instance counters.
             bronze_unvouched = len({path for path, _ in unvouched_bronze})
             # The frame count has NO result field, so folding it without
             # rendering it would leave it exactly as invisible as before the
             # fold. One renderer, both paths.
             error_message += _describe_unaccounted_frames(total_unaccounted_empty_frames)
+            if source_exclusion_details:
+                error_message += (
+                    " Source partition diagnostics (no output came from each listed "
+                    f"partition/body): {'; '.join(source_exclusion_details)}."
+                )
             results.append(
                 DatasetResult(
                     source=source,
                     dataset=ds,
                     operation="transform",
                     status="failed",
+                    rows_out=total_rows,
                     rows_skipped=(
                         total_unmapped + total_start_time_fallback + total_validation_failures
                     ),
                     rows_unmapped=total_unmapped,
                     rows_invalid=total_validation_failures,
                     bronze_unvouched=bronze_unvouched,
+                    rows_start_time_fallback=total_start_time_fallback,
+                    rows_partition_trimmed=total_partition_trimmed,
+                    rows_partition_trim_unrecoverable=total_partition_trim_unrecoverable,
+                    partition_windows_unresolved=total_partition_windows_unresolved,
                     error=error_message,
                 )
             )
