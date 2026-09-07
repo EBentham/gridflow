@@ -12,12 +12,28 @@ import polars as pl
 from gridflow.schemas.elexon import ElexonSystemPrice
 from gridflow.silver.base import BaseSilverTransformer, VintagePolicy
 from gridflow.silver.registry import register_transformer
+from gridflow.storage.paths import PathBuilder
 from gridflow.utils.time import settlement_period_to_utc
 
 if TYPE_CHECKING:
     from pathlib import Path
 
 logger = logging.getLogger(__name__)
+
+
+def _parse_publication_timestamp(value: object) -> datetime | None:
+    """Parse one vendor timestamp and normalize its instant to UTC."""
+    if value is None:
+        return None
+    if isinstance(value, datetime):
+        parsed = value
+    elif isinstance(value, str):
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    else:
+        raise TypeError(f"createdDateTime must be a datetime string, got {type(value).__name__}")
+    if parsed.tzinfo is None or parsed.utcoffset() is None:
+        raise ValueError("createdDateTime must be timezone-aware")
+    return parsed.astimezone(UTC)
 
 
 class SystemPriceTransformer(BaseSilverTransformer):
@@ -28,12 +44,14 @@ class SystemPriceTransformer(BaseSilverTransformer):
     schema_cls = ElexonSystemPrice
     PARTITION_DATE_COLUMN: ClassVar[str | None] = "settlement_date"
     PARTITION_SOURCE_OFFSETS: ClassVar[tuple[int, ...]] = (0,)
+    DATASET_VERSION = "2.0.0"
     VINTAGE_POLICY = VintagePolicy(
         name="elexon-system_prices/vp-2026-09",
         lag=timedelta(minutes=90),
         dated=date(2026, 9, 6),
         rule=(
-            "ASSUMPTION: period end +60 minutes (event time is period start; lag=90 minutes). "
+            "Missing-vendor fallback only. ASSUMPTION: period end +60 minutes "
+            "(event time is period start; lag=90 minutes). "
             "Proposed analytical allowance for price calculation beyond MID's assumed delay; "
             "neither a vendor cadence nor a proven conservative bound. "
             "TODO: verify DISEBSP initial-publication latency and revision timing. "
@@ -54,11 +72,8 @@ class SystemPriceTransformer(BaseSilverTransformer):
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         """Read all bronze JSON files for a given date."""
-        bronze_path = (
-            self.bronze_dir
-            / str(target_date.year)
-            / f"{target_date.month:02d}"
-            / f"{target_date.day:02d}"
+        bronze_path = PathBuilder(self.data_dir).bronze_date_dir(
+            self.source, self.dataset, target_date, dataset_dir=self.bronze_dir
         )
         if not bronze_path.exists():
             return pl.DataFrame()
@@ -93,7 +108,7 @@ class SystemPriceTransformer(BaseSilverTransformer):
         return pl.DataFrame(records) if records else pl.DataFrame()
 
     def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
-        """Normalise, validate, and deduplicate system price data."""
+        """Normalise and validate system price data without collapsing captures."""
         # Rename API fields to snake_case.
         #
         # `settlementRunType` (legacy field, when present) → `run_type`.
@@ -111,6 +126,7 @@ class SystemPriceTransformer(BaseSilverTransformer):
             "netImbalanceVolume": "net_imbalance_volume",
             "settlementRunType": "run_type",
             "priceDerivationCode": "price_derivation_code",
+            "createdDateTime": "published_at",
         }
 
         # Only rename columns that exist
@@ -148,6 +164,36 @@ class SystemPriceTransformer(BaseSilverTransformer):
         for optional_col in ("run_type", "price_derivation_code"):
             if optional_col not in raw_df.columns:
                 raw_df = raw_df.with_columns(pl.lit(None, dtype=pl.Utf8).alias(optional_col))
+
+        if "published_at" in raw_df.columns:
+            publication_fallbacks = raw_df["published_at"].null_count()
+            if raw_df.schema["published_at"] == pl.Null:
+                raw_df = raw_df.with_columns(
+                    pl.lit(None).cast(pl.Datetime("us", "UTC")).alias("published_at")
+                )
+            else:
+                raw_df = raw_df.with_columns(
+                    pl.col("published_at")
+                    .map_elements(
+                        _parse_publication_timestamp,
+                        return_dtype=pl.Datetime("us", "UTC"),
+                    )
+                    .alias("published_at")
+                )
+        else:
+            publication_fallbacks = raw_df.height
+            raw_df = raw_df.with_columns(
+                pl.lit(None).cast(pl.Datetime("us", "UTC")).alias("published_at")
+            )
+        self.last_publication_fallback_count += publication_fallbacks
+        logger.log(
+            logging.WARNING if publication_fallbacks else logging.INFO,
+            "%s/%s: publication_fallback_count=%d rows=%d",
+            self.source,
+            self.dataset,
+            publication_fallbacks,
+            raw_df.height,
+        )
 
         # Cast types (run_type / price_derivation_code always exist now).
         casts = [
@@ -198,6 +244,7 @@ class SystemPriceTransformer(BaseSilverTransformer):
             "net_imbalance_volume",
             "run_type",
             "price_derivation_code",
+            "published_at",
             "data_provider",
             "ingested_at",
         ]

@@ -18,11 +18,15 @@ import json
 import subprocess
 import sys
 from collections import Counter
+from contextlib import contextmanager
 from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import polars as pl
+
+if TYPE_CHECKING:
+    from collections.abc import Iterator
 
 from gridflow.pipeline.runner import import_transformers
 from gridflow.silver import base as silver_base
@@ -242,10 +246,19 @@ def _system_capture_multisets(
 ) -> tuple[
     Counter[tuple[Identity, datetime, str]],
     Counter[tuple[Identity, datetime, str]],
+    list[dict[str, object]],
 ]:
+    # L convention: raw vendor publication wins; only a missing value uses the
+    # two strict policy/capture fallback comparisons. Settlement identity is
+    # (date, period, run_type), and every capture occurrence is conserved.
     expected: Counter[tuple[Identity, datetime, str]] = Counter()
-    policy_cutover = datetime(2026, 7, 31, tzinfo=UTC)
-    policy_name = "elexon-system_prices/vp-2026-09"
+    publication_before_event: list[dict[str, object]] = []
+    policy = SystemPriceTransformer.VINTAGE_POLICY
+    assert policy is not None
+    # Pin the independently specified declaration before using it as bound data.
+    assert policy.name == "elexon-system_prices/vp-2026-09"
+    assert policy.lag == timedelta(minutes=90)
+    assert policy.applies_before == datetime(2026, 7, 31, tzinfo=UTC)
     destination = start
     while destination <= end:
         for body in _partition_files(input_root, "system_prices", destination):
@@ -256,10 +269,29 @@ def _system_capture_multisets(
                 key = _identity("system_prices", row)
                 if key[0] == destination:
                     event_time = settlement_period_to_utc(key[0], int(key[1]))
-                    reconstructed = event_time + timedelta(minutes=90)
-                    use_policy = event_time < policy_cutover and reconstructed < stamp
-                    effective_stamp = reconstructed if use_policy else stamp
-                    label = policy_name if use_policy else "ingest-clock"
+                    raw_publication = row.get("createdDateTime")
+                    if raw_publication is not None:
+                        published_at = datetime.fromisoformat(
+                            str(raw_publication).replace("Z", "+00:00")
+                        )
+                        if published_at.tzinfo is None or published_at.utcoffset() is None:
+                            raise ValueError(f"naive createdDateTime in {body}: {raw_publication}")
+                        effective_stamp = published_at.astimezone(UTC)
+                        label = "vendor"
+                        if effective_stamp < event_time:
+                            publication_before_event.append(
+                                {
+                                    "body": str(body),
+                                    "event_time": event_time,
+                                    "published_at": effective_stamp,
+                                    "raw": row,
+                                }
+                            )
+                    else:
+                        reconstructed = event_time + policy.lag
+                        use_policy = event_time < policy.applies_before and reconstructed < stamp
+                        effective_stamp = reconstructed if use_policy else stamp
+                        label = policy.name if use_policy else "ingest-clock"
                     expected[(key, effective_stamp, label)] += 1
         destination += timedelta(days=1)
     actual: Counter[tuple[Identity, datetime, str]] = Counter()
@@ -268,7 +300,7 @@ def _system_capture_multisets(
         label = row.get("vintage_policy")
         if isinstance(stamp, datetime) and isinstance(label, str) and start <= key[0] <= end:
             actual[(key, stamp.astimezone(UTC), label)] += 1
-    return expected, actual
+    return expected, actual, publication_before_event
 
 
 def _period_evidence(
@@ -319,6 +351,7 @@ def _run_transformer(
                 "destination": destination.isoformat(),
                 "rows": rows,
                 "fallback": transformer.last_start_time_fallback_count,
+                "publication_fallback": transformer.last_publication_fallback_count,
                 "routine_covering_set_trim": transformer.last_partition_trimmed_count,
                 "unsafe": transformer.last_partition_trim_unrecoverable_count,
                 "unresolved": transformer.last_partition_filter_unresolved_count,
@@ -350,7 +383,35 @@ def _availability_map(output_root: Path, dataset: str) -> dict[Identity, tuple[o
     }
 
 
+@contextmanager
+def _scoped_fixed_clocks() -> Iterator[None]:
+    """Bind deterministic clocks for the complete rebuild, then restore exactly."""
+    modules = (silver_base, fuelhh_module, mid_module, system_prices_module)
+    incoming = tuple(module.datetime for module in modules)
+    try:
+        for module in modules:
+            module.datetime = _FixedClock
+        yield
+    finally:
+        for module, original in zip(modules, incoming, strict=True):
+            module.datetime = original
+
+
 def rebuild(
+    input_root: Path,
+    output_root: Path,
+    dataset: str,
+    start: date,
+    end: date,
+    *,
+    run_controls: bool = False,
+) -> dict[str, Any]:
+    """Run the complete deterministic rebuild under scoped production clocks."""
+    with _scoped_fixed_clocks():
+        return _rebuild(input_root, output_root, dataset, start, end, run_controls=run_controls)
+
+
+def _rebuild(
     input_root: Path,
     output_root: Path,
     dataset: str,
@@ -364,11 +425,6 @@ def rebuild(
     output_root = output_root.resolve()
     _assert_containment(input_root, output_root)
     output_root.mkdir(parents=True, exist_ok=True)
-    silver_base.datetime = _FixedClock
-    fuelhh_module.datetime = _FixedClock
-    mid_module.datetime = _FixedClock
-    system_prices_module.datetime = _FixedClock
-
     original_write_parquet = silver_base.write_parquet
 
     def guarded_write_parquet(frame: pl.DataFrame, path: Path, compression: str = "zstd") -> Path:
@@ -534,7 +590,7 @@ def rebuild(
         manifest["discriminating_controls"] = controls
 
     if dataset == "system_prices":
-        expected_captures, actual_captures = _system_capture_multisets(
+        expected_captures, actual_captures, publication_before_event = _system_capture_multisets(
             input_root, output_root, start, end
         )
         capture_evidence = {
@@ -542,6 +598,7 @@ def rebuild(
             "actual_rows": sum(actual_captures.values()),
             "missing": sorted(map(str, (expected_captures - actual_captures).elements())),
             "extra": sorted(map(str, (actual_captures - expected_captures).elements())),
+            "publication_before_event": publication_before_event,
         }
         manifest["capture_multiset"] = capture_evidence
         if run_controls:
@@ -575,6 +632,14 @@ def rebuild(
                 raise RuntimeError("system_prices exact-D narrowing changed filenames or bytes")
         if expected_captures != actual_captures:
             raise RuntimeError(json.dumps({"capture_multiset": capture_evidence}, indent=2))
+        if publication_before_event:
+            raise RuntimeError(
+                json.dumps(
+                    {"publication_before_event": publication_before_event},
+                    default=str,
+                    indent=2,
+                )
+            )
 
     incomplete = [day for day, detail in periods.items() if not detail["complete"]]
     if expected != actual or misplaced or duplicates or incomplete:

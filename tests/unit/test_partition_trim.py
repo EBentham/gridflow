@@ -275,7 +275,7 @@ def test_p_t11_combined_availability_and_sidecar_less_own_rule(
         transformer.run(DESTINATION, run_id="fallback", reingest=True)
     frame = pl.read_parquet(PathBuilder(tmp_path).silver_file("elexon", "mid", DESTINATION))
     assert "sidecar-less-own fallback" in caplog.text
-    assert frame["vintage_policy"].unique().to_list() == ["elexon-mid/vp-2026-09"]
+    assert frame["vintage_policy"].unique().to_list() == ["elexon-mid/vp-2026-09b"]
     assert (frame["available_at"] >= frame["event_time"]).all()
 
     _write_sidecar(tmp_path, DESTINATION, "2024-01-15T03:00:00+00:00")
@@ -313,7 +313,7 @@ def test_p_t08_registry_opt_in_is_exact() -> None:
         ("elexon", "fuelhh"),
         ("elexon", "system_prices"),
     }
-    assert MIDTransformer.DATASET_VERSION == "1.0.0"
+    assert MIDTransformer.DATASET_VERSION == "1.1.0"
 
 
 def test_p_t09_source_window_plans_are_source_relative(tmp_path: Path) -> None:

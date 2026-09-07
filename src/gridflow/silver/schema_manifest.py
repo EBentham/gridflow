@@ -568,7 +568,8 @@ def _serving_alias_entry(
         columns = _gold_sql_columns(spec.relation_name)
         columns_source = "gold_sql"
     else:
-        columns = None
+        target = silver_entries.get(spec.relation_name.removesuffix("_latest"))
+        columns = target.columns if target is not None else None
         columns_source = "serving_alias"
 
     # I-2b/I-2c (D-3): qualified_view names the all-vintage base of THIS row's

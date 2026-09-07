@@ -1309,6 +1309,10 @@ def _echo_transform_results(source: str, results: list[DatasetResult]) -> None:
                     f", {r.rows_start_time_fallback} start-time fallback",
                 ),
                 (
+                    r.rows_publication_fallback,
+                    f", {r.rows_publication_fallback} publication fallback",
+                ),
+                (
                     r.rows_partition_trimmed,
                     f", {r.rows_partition_trimmed} routine covering-set trim",
                 ),
@@ -1319,6 +1323,10 @@ def _echo_transform_results(source: str, results: list[DatasetResult]) -> None:
                 (
                     r.partition_windows_unresolved,
                     f", {r.partition_windows_unresolved} partition window unresolved",
+                ),
+                (
+                    r.partition_retouch_warnings,
+                    f", {r.partition_retouch_warnings} re-touch window warning",
                 ),
             )
             if count

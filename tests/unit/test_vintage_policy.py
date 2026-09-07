@@ -80,7 +80,11 @@ def _raw(transformer: BaseSilverTransformer, event: datetime) -> pl.DataFrame:
 @pytest.mark.parametrize(
     "transformer_cls,reconstructed,label",
     [
-        (MIDTransformer, datetime(2021, 1, 15, 1, tzinfo=UTC), "elexon-mid/vp-2026-09"),
+        (
+            MIDTransformer,
+            datetime(2021, 1, 15, 0, 35, tzinfo=UTC),
+            "elexon-mid/vp-2026-09b",
+        ),
         (
             SystemPriceTransformer,
             datetime(2021, 1, 15, 1, 30, tzinfo=UTC),
@@ -250,7 +254,7 @@ def test_period_end_lags_across_dst(
     )
     transformed = transformer.transform(df)
     result = transformer._add_bitemporal_columns(transformed, day, "run", CAPTURE)
-    after_end = timedelta(minutes=30 if transformer_cls is MIDTransformer else 60)
+    after_end = timedelta(minutes=5 if transformer_cls is MIDTransformer else 60)
     assert (
         result["available_at"][0]
         == settlement_period_to_utc(day, period) + timedelta(minutes=30) + after_end

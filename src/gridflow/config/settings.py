@@ -97,6 +97,9 @@ class PipelineSettings(BaseSettings):
     data_dir: Path = Path("./data")
     log_dir: Path = Path("./logs")
     duckdb_path: Path = Path("./data/gridflow.duckdb")
+    # This generic default is unchanged; the runner separately warns when the
+    # effective transformed dates are insufficient for a dataset's declared
+    # positive partition-source offsets.
     default_lookback_hours: int = 24
     # Incremental ingest re-fetches from `watermark - incremental_overlap_hours`
     # to recover late/revised publications (run_type II->SF->R1) and any window

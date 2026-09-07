@@ -451,6 +451,7 @@ class BaseSilverTransformer(ABC):
     columns from being charged the previous date's count.
     """
     last_start_time_fallback_count: int = 0
+    last_publication_fallback_count: int = 0
     """Source-read row occurrences that used a settlement-label fallback.
 
     Declaring covering-set runs may count the same source row again for an adjacent
@@ -948,6 +949,7 @@ class BaseSilverTransformer(ABC):
         # both after each per-date run).
         self.last_unmapped_count = 0
         self.last_start_time_fallback_count = 0
+        self.last_publication_fallback_count = 0
         self.last_partition_trimmed_count = 0
         self.last_partition_trim_unrecoverable_count = 0
         self.last_partition_trim_details = ()
