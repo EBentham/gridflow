@@ -615,6 +615,8 @@ def status() -> None:
                 set_tbl_hide_dataframe_shape=True,
                 set_tbl_hide_column_data_types=True,
                 set_tbl_rows=50,
+                set_fmt_str_lengths=64,
+                set_tbl_width_chars=-1,
             ):
                 typer.echo(str(result))
     except Exception as e:

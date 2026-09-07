@@ -15,6 +15,7 @@ if TYPE_CHECKING:
     from pathlib import Path
 
 
+@pytest.mark.integration
 @pytest.mark.parametrize("seed_run", [True, False])
 def test_status_without_pandas_or_numpy(tmp_path: Path, seed_run: bool) -> None:
     """Render recent runs, and retain the empty message, without pandas/NumPy."""
@@ -44,7 +45,7 @@ def test_status_without_pandas_or_numpy(tmp_path: Path, seed_run: bool) -> None:
                 """,
                 [
                     "elexon",
-                    "fuelhh",
+                    "offered_transfer_capacity_continuous",
                     "ingest",
                     "success",
                     17,
@@ -96,7 +97,14 @@ raise SystemExit(result.exit_code)
             "duration_s",
         ):
             assert header in stdout
-        for value in ("elexon", "fuelhh", "ingest", "success", "17", "1.5"):
+        for value in (
+            "elexon",
+            "offered_transfer_capacity_continuous",
+            "ingest",
+            "success",
+            "17",
+            "1.5",
+        ):
             assert value in stdout
     else:
         assert "No pipeline runs in the last 24 hours." in stdout
