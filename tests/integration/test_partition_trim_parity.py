@@ -89,6 +89,13 @@ def test_p_t01_p_t07_fixture_rebuild_is_byte_stable_and_conserved(
 ) -> None:
     monkeypatch.setattr("gridflow.silver.base.datetime", _Clock)
     monkeypatch.setattr("gridflow.silver.elexon.mid.datetime", _Clock)
+    clock_modules = (
+        _MODULE.silver_base,
+        _MODULE.fuelhh_module,
+        _MODULE.mid_module,
+        _MODULE.system_prices_module,
+    )
+    incoming_clocks = tuple(module.datetime for module in clock_modules)
     input_root = tmp_path / "input"
     predecessor = DAY - timedelta(days=1)
     _write_mid_partition(
@@ -121,6 +128,7 @@ def test_p_t01_p_t07_fixture_rebuild_is_byte_stable_and_conserved(
 
     first = rebuild(input_root, tmp_path / "first", "mid", DAY, DAY)
     second = rebuild(input_root, tmp_path / "second", "mid", DAY, DAY)
+    assert tuple(module.datetime for module in clock_modules) == incoming_clocks
     first_hashes = {path: details["sha256"] for path, details in first["silver_files"].items()}
     second_hashes = {path: details["sha256"] for path, details in second["silver_files"].items()}
     assert first_hashes == second_hashes
@@ -137,6 +145,64 @@ def test_p_t01_p_t07_fixture_rebuild_is_byte_stable_and_conserved(
 def test_p_t19_harness_rejects_output_inside_input(tmp_path: Path) -> None:
     with pytest.raises(ValueError, match="separate"):
         rebuild(tmp_path, tmp_path / "output", "mid", DAY, DAY)
+
+
+def test_l_t06_rebuild_restores_exact_clock_bindings_on_early_exception(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    modules = (
+        _MODULE.silver_base,
+        _MODULE.fuelhh_module,
+        _MODULE.mid_module,
+        _MODULE.system_prices_module,
+    )
+    incoming = tuple(type(f"CallerClock{index}", (datetime,), {}) for index in range(4))
+    for module, clock in zip(modules, incoming, strict=True):
+        monkeypatch.setattr(module, "datetime", clock)
+    monkeypatch.setattr(
+        _MODULE,
+        "_run_transformer",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(RuntimeError("early clock probe")),
+    )
+
+    with pytest.raises(RuntimeError, match="early clock probe"):
+        rebuild(tmp_path / "input", tmp_path / "output", "mid", DAY, DAY)
+    assert tuple(module.datetime for module in modules) == incoming
+
+
+def test_l_t06_rebuild_restores_clocks_after_later_evidence_exception(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    input_root = tmp_path / "input"
+    _write_mid_partition(
+        input_root,
+        DAY,
+        [
+            {
+                "settlementDate": DAY.isoformat(),
+                "settlementPeriod": 1,
+                "dataProvider": "A",
+                "price": 10.0,
+                "volume": 1.0,
+            }
+        ],
+    )
+    modules = (
+        _MODULE.silver_base,
+        _MODULE.fuelhh_module,
+        _MODULE.mid_module,
+        _MODULE.system_prices_module,
+    )
+    incoming = tuple(module.datetime for module in modules)
+    monkeypatch.setattr(
+        _MODULE,
+        "_period_evidence",
+        lambda *_args: (_ for _ in ()).throw(RuntimeError("late clock probe")),
+    )
+
+    with pytest.raises(RuntimeError, match="late clock probe"):
+        rebuild(input_root, tmp_path / "output", "mid", DAY, DAY)
+    assert tuple(module.datetime for module in modules) == incoming
 
 
 def test_p_t17b_portable_real_window_successor_conservation_and_controls(

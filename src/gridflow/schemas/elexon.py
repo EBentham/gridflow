@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from enum import StrEnum
 
 from pydantic import Field, field_validator
@@ -45,6 +45,7 @@ class ElexonSystemPrice(BaseSchema):
     system_sell_price: float = Field(ge=-500, le=10000)  # GBP/MWh
     system_buy_price: float = Field(ge=-500, le=10000)
     net_imbalance_volume: float  # MWh
+    published_at: datetime | None = None
     run_type: str | None = Field(default=None, pattern=r"^(II|SF|R[1-3]|RF|DF)$")
     price_derivation_code: str | None = None
     data_provider: str = Field(default="elexon")
@@ -55,6 +56,13 @@ class ElexonSystemPrice(BaseSchema):
     def must_be_utc(cls, v: datetime) -> datetime:
         if v.tzinfo is None:
             raise ValueError("timestamp_utc must be timezone-aware (UTC)")
+        return v
+
+    @field_validator("published_at")
+    @classmethod
+    def publication_must_be_utc(cls, v: datetime | None) -> datetime | None:
+        if v is not None and (v.tzinfo is None or v.utcoffset() != timedelta(0)):
+            raise ValueError("published_at must be timezone-aware UTC")
         return v
 
 

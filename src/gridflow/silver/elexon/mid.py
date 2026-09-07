@@ -12,6 +12,7 @@ import polars as pl
 from gridflow.schemas.elexon import ElexonMID
 from gridflow.silver.base import BaseSilverTransformer, VintagePolicy
 from gridflow.silver.registry import register_transformer
+from gridflow.storage.paths import PathBuilder
 from gridflow.utils.time import settlement_period_to_utc
 
 logger = logging.getLogger(__name__)
@@ -26,12 +27,13 @@ class MIDTransformer(BaseSilverTransformer):
     PARTITION_DATE_COLUMN: ClassVar[str | None] = "settlement_date"
     PARTITION_SOURCE_OFFSETS: ClassVar[tuple[int, ...]] = (-1, 0)
     VINTAGE_POLICY = VintagePolicy(
-        name="elexon-mid/vp-2026-09",
-        lag=timedelta(minutes=60),
-        dated=date(2026, 9, 6),
+        name="elexon-mid/vp-2026-09b",
+        lag=timedelta(minutes=35),
+        dated=date(2026, 9, 7),
         rule=(
-            "ASSUMPTION: period end +30 minutes (event time is period start; lag=60 minutes). "
-            "By analogy with INDO's measured 30-minute latency (99.6% of 87,261 rows). "
+            "ASSUMPTION: 35 minutes from period start, equivalent to period end plus "
+            "a five-minute margin. An approximately one-minute current observation "
+            "motivates this assumption but does not prove a historical upper bound. "
             "TODO: verify MID publication cadence. "
             "ASSUMPTION cutover: 2026-08-01T00:00Z."
         ),
@@ -42,13 +44,11 @@ class MIDTransformer(BaseSilverTransformer):
         "settlement_period",
     )  # D-8: verbatim from unique() below
     OPTIONAL_ENTITY_KEY_COLUMNS = ("data_provider_id",)
+    DATASET_VERSION = "1.1.0"
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
-        bronze_path = (
-            self.bronze_dir
-            / str(target_date.year)
-            / f"{target_date.month:02d}"
-            / f"{target_date.day:02d}"
+        bronze_path = PathBuilder(self.data_dir).bronze_date_dir(
+            self.source, self.dataset, target_date, dataset_dir=self.bronze_dir
         )
         if not bronze_path.exists():
             return pl.DataFrame()

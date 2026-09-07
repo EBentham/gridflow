@@ -31,7 +31,7 @@ if TYPE_CHECKING:
     from gridflow.config.settings import GridflowConfig
     from gridflow.connectors.base import BaseConnector, RawResponse
     from gridflow.observability import WatermarkRead, WatermarkWrite
-    from gridflow.silver.base import BronzeVouchReason
+    from gridflow.silver.base import BaseSilverTransformer, BronzeVouchReason
 
 logger = logging.getLogger(__name__)
 
@@ -282,6 +282,13 @@ class DatasetResult:
             ``status != "success"``, every run, until the state is resolved.
         rows_start_time_fallback: Transform-only source-read row occurrences
             that used settlement labels because raw start time was absent.
+        rows_publication_fallback: Transform-only rows retained using policy or
+            ingest availability because vendor publication was absent. It is
+            deliberately excluded from ``rows_skipped`` because these rows are
+            valid and retained, unlike the historical start-time fallback term
+            already included in that warning-accounting sum.
+        partition_retouch_warnings: Dataset-window heuristic warnings. This is
+            an invocation count, not a row count.
         rows_partition_trimmed: Prepared source-read row occurrences owned by a
             date other than destination D. Routine recoverable trims are kept
             out of warning status and ``rows_skipped``.
@@ -314,9 +321,11 @@ class DatasetResult:
     rows_invalid: int = 0
     bronze_unvouched: int = 0
     rows_start_time_fallback: int = 0
+    rows_publication_fallback: int = 0
     rows_partition_trimmed: int = 0
     rows_partition_trim_unrecoverable: int = 0
     partition_windows_unresolved: int = 0
+    partition_retouch_warnings: int = 0
     error: str | None = None
 
     @property
@@ -1073,6 +1082,31 @@ def run_ingest(
     return results
 
 
+def _assess_partition_retouch_window(
+    transformer: BaseSilverTransformer,
+    dates: list[date],
+    end_date: date,
+) -> tuple[tuple[int, ...], tuple[date, ...]]:
+    """Assess the declared positive-offset re-touch heuristic.
+
+    A bounded historical single-date transform can warn by design: this pure
+    heuristic derives sufficiency only from transformer declarations and the
+    dates actually transformed, without guessing whether a window is live.
+    """
+    if transformer.PARTITION_DATE_COLUMN is None:
+        return (), ()
+    positive_offsets = tuple(
+        sorted({offset for offset in transformer.PARTITION_SOURCE_OFFSETS if offset > 0})
+    )
+    effective_dates = frozenset(dates)
+    missing = tuple(
+        required
+        for offset in positive_offsets
+        if (required := end_date - timedelta(days=offset)) not in effective_dates
+    )
+    return positive_offsets, missing
+
+
 def run_transform(
     ctx: PipelineContext,
     source: str,
@@ -1109,6 +1143,7 @@ def run_transform(
         total_rows = 0
         total_unmapped = 0
         total_start_time_fallback = 0
+        total_publication_fallback = 0
         total_partition_trimmed = 0
         total_partition_trim_unrecoverable = 0
         total_partition_windows_unresolved = 0
@@ -1129,6 +1164,7 @@ def run_transform(
         # excluded FILES (see bronze_unvouched).
         total_unaccounted_empty_frames = 0
         total_unaccounted_exclusion = 0
+        partition_retouch_warnings = 0
         source_exclusion_details: list[str] = []
         # `None` until `get_transformer` returns, so the `except` handler below
         # can tell "never constructed this date" apart from "constructed, then
@@ -1137,6 +1173,23 @@ def run_transform(
         transformer = None
         try:
             transformer = get_transformer(source, ds, settings.pipeline.data_dir)
+            positive_offsets, missing_owner_dates = _assess_partition_retouch_window(
+                transformer, dates, end_dt.date()
+            )
+            partition_retouch_warnings = int(bool(missing_owner_dates))
+            if missing_owner_dates:
+                logger.warning(
+                    "Transform window re-touch heuristic for %s/%s: effective_dates=%s "
+                    "positive_offsets=%s missing_owner_dates=%s. Start earlier or increase "
+                    "lookback so the missing owner dates are transformed. Historical "
+                    "single-date windows warn by design; this declaration-only heuristic "
+                    "does not infer whether the window is live.",
+                    source,
+                    ds,
+                    [value.isoformat() for value in dates],
+                    positive_offsets,
+                    [value.isoformat() for value in missing_owner_dates],
+                )
             # CH3-02 (CH-PERF-02): per-date silver CSV is opt-in (default OFF).
             transformer.write_silver_csv = settings.pipeline.write_silver_csv
             for target_date in dates:
@@ -1152,6 +1205,7 @@ def run_transform(
                     # including a run() that raises after partial preparation.
                     total_unmapped += transformer.last_unmapped_count
                     total_start_time_fallback += transformer.last_start_time_fallback_count
+                    total_publication_fallback += transformer.last_publication_fallback_count
                     total_partition_trimmed += transformer.last_partition_trimmed_count
                     total_partition_trim_unrecoverable += (
                         transformer.last_partition_trim_unrecoverable_count
@@ -1248,9 +1302,11 @@ def run_transform(
                         rows_invalid=total_validation_failures,
                         bronze_unvouched=bronze_unvouched,
                         rows_start_time_fallback=total_start_time_fallback,
+                        rows_publication_fallback=total_publication_fallback,
                         rows_partition_trimmed=total_partition_trimmed,
                         rows_partition_trim_unrecoverable=total_partition_trim_unrecoverable,
                         partition_windows_unresolved=total_partition_windows_unresolved,
+                        partition_retouch_warnings=partition_retouch_warnings,
                         error=error_message,
                     )
                 )
@@ -1292,9 +1348,11 @@ def run_transform(
                         rows_invalid=total_validation_failures,
                         bronze_unvouched=bronze_unvouched,
                         rows_start_time_fallback=total_start_time_fallback,
+                        rows_publication_fallback=total_publication_fallback,
                         rows_partition_trimmed=total_partition_trimmed,
                         rows_partition_trim_unrecoverable=total_partition_trim_unrecoverable,
                         partition_windows_unresolved=total_partition_windows_unresolved,
+                        partition_retouch_warnings=partition_retouch_warnings,
                         error=error_message,
                     )
                 )
@@ -1335,20 +1393,24 @@ def run_transform(
                         rows_invalid=total_validation_failures,
                         bronze_unvouched=bronze_unvouched,
                         rows_start_time_fallback=total_start_time_fallback,
+                        rows_publication_fallback=total_publication_fallback,
                         rows_partition_trimmed=total_partition_trimmed,
                         rows_partition_trim_unrecoverable=total_partition_trim_unrecoverable,
                         partition_windows_unresolved=total_partition_windows_unresolved,
+                        partition_retouch_warnings=partition_retouch_warnings,
                         error=error_message,
                     )
                 )
             elif (
                 total_unmapped
                 or total_start_time_fallback
+                or total_publication_fallback
                 or total_validation_failures
                 or bronze_unvouched
                 or total_unaccounted_empty_frames
                 or total_partition_trim_unrecoverable
                 or total_partition_windows_unresolved
+                or partition_retouch_warnings
             ):
                 if bronze_unvouched or total_unaccounted_empty_frames:
                     # THE one aggregated record per (source, dataset) per
@@ -1381,9 +1443,11 @@ def run_transform(
                         rows_invalid=total_validation_failures,
                         bronze_unvouched=bronze_unvouched,
                         rows_start_time_fallback=total_start_time_fallback,
+                        rows_publication_fallback=total_publication_fallback,
                         rows_partition_trimmed=total_partition_trimmed,
                         rows_partition_trim_unrecoverable=total_partition_trim_unrecoverable,
                         partition_windows_unresolved=total_partition_windows_unresolved,
+                        partition_retouch_warnings=partition_retouch_warnings,
                     )
                 )
             else:
@@ -1396,9 +1460,11 @@ def run_transform(
                         status="success",
                         rows_out=total_rows,
                         rows_start_time_fallback=total_start_time_fallback,
+                        rows_publication_fallback=total_publication_fallback,
                         rows_partition_trimmed=total_partition_trimmed,
                         rows_partition_trim_unrecoverable=total_partition_trim_unrecoverable,
                         partition_windows_unresolved=total_partition_windows_unresolved,
+                        partition_retouch_warnings=partition_retouch_warnings,
                     )
                 )
         except Exception as e:  # noqa: BLE001 — surfaced as a failed DatasetResult, never swallowed
@@ -1432,9 +1498,11 @@ def run_transform(
                     rows_invalid=total_validation_failures,
                     bronze_unvouched=bronze_unvouched,
                     rows_start_time_fallback=total_start_time_fallback,
+                    rows_publication_fallback=total_publication_fallback,
                     rows_partition_trimmed=total_partition_trimmed,
                     rows_partition_trim_unrecoverable=total_partition_trim_unrecoverable,
                     partition_windows_unresolved=total_partition_windows_unresolved,
+                    partition_retouch_warnings=partition_retouch_warnings,
                     error=error_message,
                 )
             )

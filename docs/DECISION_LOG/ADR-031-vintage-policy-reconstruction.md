@@ -8,15 +8,15 @@ ADR-018 (append-only filenames), ADR-026 (partition windows).
 
 ## Context
 
-MID, DISEBSP system prices, and the three Open-Meteo historical weather
-transformers emit no vendor publication timestamp. Backfilling a 2021 event in
-2026 currently makes its `available_at` a 2026 capture/transform instant. A models
-availability barrier for 2021–2025 therefore admits nothing.
+MID and the three Open-Meteo historical weather transformers emit no vendor
+publication timestamp. DISEBSP raw records carry `createdDateTime`, but silver
+omitted it until v0.21-L. Backfilling a 2021 event in 2026 therefore previously
+made its `available_at` a reconstructed or capture/transform instant.
 
-An unconditional minimum of ingest and event-plus-lag would also backdate honest
-live DISEBSP revision captures. Its feed has neither publication time nor run
-type; separate sidecars are the only reliable live vintage signal. The amended
-V-a spec adopts the review's exclusive event-time cutover to protect that era.
+The latest-settlement-run endpoint describes which settlement calculation is
+returned; that endpoint semantic is separate from the unresolved meaning of
+each record's `createdDateTime`. Vendor publication now wins when present. The
+existing exclusive-cutover policy remains only a logged missing-vendor fallback.
 
 ## Decision
 
@@ -63,49 +63,53 @@ The optional source-run tie-break in `_latest` is omitted.
 
 ## Dated assumptions
 
-All policies are dated **2026-09-06**, named
-`<source>-<dataset>/vp-2026-09`. The seat transcribes these rules to the vault.
+Policies carry their own declaration date and identity.
 
 | Dataset family | Assumed lag from event time | Exclusive assumed cutover |
 |---|---|---|
 | `open_meteo/historical_demand`, `historical_wind`, `historical_solar` | 5 days | 2026-08-01T00:00Z |
-| `elexon/mid` | 60 minutes (period end +30 minutes) | 2026-08-01T00:00Z |
-| `elexon/system_prices` | 90 minutes (period end +60 minutes) | 2026-07-31T00:00Z |
+| `elexon/mid` | 35 minutes (period end +5 minutes), `elexon-mid/vp-2026-09b`, dated 2026-09-07 | 2026-08-01T00:00Z |
+| `elexon/system_prices` | Vendor `createdDateTime`; 90-minute declared fallback, dated 2026-09-06 | 2026-07-31T00:00Z |
 
 - **Open-Meteo ASSUMPTION:** event time +5 days, based on SPEC's citation to
   `30-vendors/open-meteo/datasets/historical_demand.md:45`: "~5 days behind real
   time, ERA5 reanalysis cadence". **ASSUMPTION cutover: 2026-08-01T00:00Z**, the
   August smoke ingest. The vault was not accessed.
-- **MID — measured 2026-09-06, and the declared lag is a conservative upper
-  bound.** The value in code stays period end +30 minutes; it was originally
-  an analogy with INDO's measured latency (99.6% of 87,261 rows) and carried
-  `TODO: verify`. That TODO is now answered by observation rather than by
-  vendor documentation, which does not state a publication cadence for this
-  dataset.
+- **MID — measured 2026-09-06.** The declaration is
+  `elexon-mid/vp-2026-09b`, dated 2026-09-07. **ASSUMPTION: 35 minutes from
+  period start**, equivalent to period end plus a five-minute margin.
 
   At 15:01Z the public endpoint's latest available period was settlement
   period 32, covering 14:30–15:00Z, which had ended one minute earlier.
   Settlement period 33 was in progress and absent. Two conclusions follow.
-  MID is **not** published ahead of delivery, so treating it as knowable
-  before its period ends would be wrong. And its true latency after period
-  end is **at most about one minute**, far shorter than the declared +30.
-
-  The declared lag is later than the one observed first-publication latency;
-  it says nothing about historical latency or revised values. Tightening it
-  toward the observed value would improve realism and is backlogged with the
-  run-type work, because it changes stamped bytes and needs a re-transform.
-  Caveat the evidence honestly: one observation, on one day, of the current
-  endpoint. **ASSUMPTION cutover: 2026-08-01T00:00Z** is unchanged.
+  MID is **not** published ahead of delivery. The approximately one-minute
+  observation motivates the five-minute margin but does not prove a historical
+  upper bound. Current Insights MID publication latency remains undocumented.
+  Provider submission targets in
+  [BSCP01](https://bscdocs.elexon.co.uk/bsc-procedures/bscp-01-overview-of-trading-arrangements)
+  and the superseded BMRA requirement do not establish a current five-minute
+  availability bound. **TODO:** obtain current vendor documentation.
+  **ASSUMPTION cutover: 2026-08-01T00:00Z** is unchanged.
 
   Note for anyone repeating this check: settlement periods are numbered on
   UK local time, so during BST the period's UTC start is one hour behind its
   local label.
-- **DISEBSP ASSUMPTION — TODO: verify DISEBSP initial-publication latency and
-  revision timing.** Proposed period end +60 minutes is an analytical allowance
-  for price calculation beyond MID's assumed delay, neither a vendor cadence
-  nor a proven conservative bound. **ASSUMPTION cutover: 2026-07-31T00:00Z**, where
-  live silver begins and the backfill target ends. The seat takes the proposed
-  lag to Bobbo.
+- **DISEBSP vendor stamp and fallback.** `createdDateTime` is now preserved as
+  `published_at` and drives availability. The unchanged declared 90-minute
+  policy is used only when that field is missing, with an explicit counter and
+  warning. The [current OpenAPI](https://data.elexon.co.uk/swagger/v1/swagger.json)
+  documents latest-settlement-run messages. **TODO:** establish whether
+  `createdDateTime` identifies the initial calculation, latest/D+1 refresh, or
+  merely the record held.
+
+  [Elexon's February 2024 announcement](https://www.elexon.co.uk/bsc/article/indicative-settlement-price-data-now-available-on-the-insights-solution/)
+  documents the new D+1 refresh. Its timing matches the measured breakpoint;
+  direct attribution of these stamps is unconfirmed. **TODO:** vendor
+  confirmation and a pre-February backfill selection rule. Measured raw stamp
+  latency shifts from a median near 0.87 hours in 2021–2023 to about 24.74
+  hours in 2024–2026. Vendor stamping is therefore not uniformly conservative:
+  historical availability can move earlier while later years move substantially
+  later. The fallback cutover remains **2026-07-31T00:00Z**.
 
 ## Consequences
 
@@ -114,26 +118,27 @@ not recover historical publication or revision times: a later correction of an
 old event may be admitted earlier than its actual publication. Policy labels
 communicate that limitation; they are not proof of leakage-free history.
 
-Two disclosed residuals remain. First, two pre-cutover captures of the same
-period collapse to one `available_at` even with null `run_type`, as the
-integration test demonstrates. `_latest` then falls to the run-rank tie-break;
-with both run types null, that also ties, so the winning capture is unspecified.
-Distinct capture files survive, but their availability ordering does not.
-Second, re-ingesting a pre-cutover period after a late settlement revision
-(II→R1→R3) stamps each revision `event_time + lag`, making it visible earlier
-than it existed. This is the accepted approximation, including the boundary
-window roughly May through 2026-07-30 whose later runs land after cutover.
-The fix class is run-type-aware system-price lags, filed in
-`.planning/BACKLOG.md` for a Bobbo ruling, outside this unit.
+System-price vendor stamps resolve this defect without inventing run-type-aware
+availability. In the measured doubled-key cohort, the existing `_latest`
+projection selects the later stamp for all **85** keys. For **14** keys, the
+winning payload is identical at tied physical captures, so no deterministic
+filename winner is claimed. Capture files and multiplicity remain preserved;
+this projection is not a conservation deduplication rule.
+
+Residual 2c remains open: latest-settlement-run semantics do not establish what
+`createdDateTime` means, and neither the OpenAPI nor the D+1 announcement proves
+an initial-publication timestamp. The TODOs above remain required; this ADR does
+not declare that residual closed.
 
 Mixed legacy and labelled silver files rely on `union_by_name=true` when
 registering silver parquet views; missing labels read as NULL. The gold
 projection also tolerates an all-legacy tree with no label column at all.
 
-At/after cutover, DISEBSP keeps honest captures and live revision ordering, even
-when fetched months later. Fixed timedelta arithmetic on UTC period starts
-handles settlement periods 1..50 on DST days. Changes to a lag or cutover need
-a new dated policy identity and deliberate re-transformation.
+DISEBSP now orders known vintages by the vendor stamp independently of cutover;
+capture remains the fallback and append-only filename scalar. Fixed timedelta
+arithmetic on UTC period starts handles settlement periods 1..50 on DST days.
+Changes to a fallback lag or cutover need a new dated policy identity and
+deliberate re-transformation.
 
 Validation covers each policy transformer, both strict boundaries, vendor
 precedence, lockstep stamps, forecast opt-outs, DST periods, manifest export,

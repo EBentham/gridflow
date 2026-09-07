@@ -148,7 +148,11 @@ def test_bitemporal_exclude_is_public_authority() -> None:
 
 def test_vintage_policy_manifest_membership_and_alias() -> None:
     expected = {
-        ("elexon", "mid"): ("elexon-mid/vp-2026-09", 3600, datetime(2026, 8, 1, tzinfo=UTC)),
+        ("elexon", "mid"): (
+            "elexon-mid/vp-2026-09b",
+            2100,
+            datetime(2026, 8, 1, tzinfo=UTC),
+        ),
         ("elexon", "system_prices"): (
             "elexon-system_prices/vp-2026-09",
             5400,
@@ -184,10 +188,11 @@ def test_vintage_policy_manifest_membership_and_alias() -> None:
                 timedelta(seconds=lag_seconds),
                 cutover,
             )
-            assert policy.dated == date(2026, 9, 6)
+            expected_dated = date(2026, 9, 7) if key == ("elexon", "mid") else date(2026, 9, 6)
+            assert policy.dated == expected_dated
             assert entry.vintage_policy.name == name
             assert entry.vintage_policy.lag_seconds == lag_seconds
-            assert entry.vintage_policy.dated == date(2026, 9, 6)
+            assert entry.vintage_policy.dated == expected_dated
             assert entry.vintage_policy.rule == policy.rule
             assert entry.vintage_policy.applies_before == cutover.isoformat()
             assert "null as unknown" in entry.vintage_policy.legacy_rows
@@ -211,10 +216,14 @@ def test_vintage_policy_manifest_frame_is_serializable() -> None:
     frame = silver_schema_manifest_frame()
     assert isinstance(frame.schema["vintage_policy"], pl.Struct)
     mid = frame.filter((pl.col("dataset") == "mid") & (pl.col("relation_kind") == "silver"))
-    assert mid["vintage_policy"][0]["name"] == "elexon-mid/vp-2026-09"
+    assert mid["vintage_policy"][0]["name"] == "elexon-mid/vp-2026-09b"
     assert '"applies_before":"2026-08-01T00:00:00+00:00"' in mid.write_json()
     expected = {
-        ("elexon", "mid"): ("elexon-mid/vp-2026-09", 3600, "2026-08-01T00:00:00+00:00"),
+        ("elexon", "mid"): (
+            "elexon-mid/vp-2026-09b",
+            2100,
+            "2026-08-01T00:00:00+00:00",
+        ),
         ("elexon", "system_prices"): (
             "elexon-system_prices/vp-2026-09",
             5400,
@@ -244,4 +253,5 @@ def test_vintage_policy_manifest_frame_is_serializable() -> None:
                 (row["source"], row["dataset"])
             ]
             assert type(policy["lag_seconds"]) is int
-            assert policy["dated"] == "2026-09-06"
+            expected_dated = "2026-09-07" if row["dataset"] == "mid" else "2026-09-06"
+            assert policy["dated"] == expected_dated
