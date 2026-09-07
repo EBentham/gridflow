@@ -90,12 +90,11 @@ All policies are dated **2026-09-06**, named
   before its period ends would be wrong. And its true latency after period
   end is **at most about one minute**, far shorter than the declared +30.
 
-  The declared lag therefore errs in the safe direction: a consumer sees the
-  price roughly 30 minutes later than it truly became available, never
-  earlier, so the reconstruction cannot leak. Tightening it toward the
-  observed value would improve realism and is backlogged with the run-type
-  work, because it changes stamped bytes and needs a re-transform. Caveat
-  the evidence honestly: one observation, on one day, of the current
+  The declared lag is later than the one observed first-publication latency;
+  it says nothing about historical latency or revised values. Tightening it
+  toward the observed value would improve realism and is backlogged with the
+  run-type work, because it changes stamped bytes and needs a re-transform.
+  Caveat the evidence honestly: one observation, on one day, of the current
   endpoint. **ASSUMPTION cutover: 2026-08-01T00:00Z** is unchanged.
 
   Note for anyone repeating this check: settlement periods are numbered on

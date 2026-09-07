@@ -1064,6 +1064,7 @@ def run_transform(
         tracker = PipelineRunTracker(con, source, ds, "transform")
         total_rows = 0
         total_unmapped = 0
+        total_start_time_fallback = 0
         total_validation_failures = 0
         total_all_dropped = 0
         # A UNION of (path, reason) pairs, not a running integer: the ENTSO-G
@@ -1096,6 +1097,9 @@ def run_transform(
                 # Per-date warning counts; run() resets both each call, so
                 # accumulating never double-counts an empty/missing date.
                 total_unmapped += transformer.last_unmapped_count
+                total_start_time_fallback += getattr(
+                    transformer, "last_start_time_fallback_count", 0
+                )
                 # D-40: a row a transformer DECLARED INVALID AND REMOVED is
                 # invisible to _validate_against_schema (which runs on
                 # transform()'s output), so without this second term a run can
@@ -1236,6 +1240,7 @@ def run_transform(
                 )
             elif (
                 total_unmapped
+                or total_start_time_fallback
                 or total_validation_failures
                 or bronze_unvouched
                 or total_unaccounted_empty_frames
@@ -1250,7 +1255,9 @@ def run_transform(
                     )
                 tracker.complete_with_warnings(
                     rows_out=total_rows,
-                    rows_skipped=total_unmapped + total_validation_failures,
+                    rows_skipped=(
+                        total_unmapped + total_start_time_fallback + total_validation_failures
+                    ),
                 )
                 results.append(
                     DatasetResult(
@@ -1262,7 +1269,9 @@ def run_transform(
                         # rows_skipped keeps its ROW meaning -- excluded FILES
                         # are never summed into it (they have no known row
                         # count) and live in bronze_unvouched instead.
-                        rows_skipped=total_unmapped + total_validation_failures,
+                        rows_skipped=(
+                            total_unmapped + total_start_time_fallback + total_validation_failures
+                        ),
                         rows_unmapped=total_unmapped,
                         rows_invalid=total_validation_failures,
                         bronze_unvouched=bronze_unvouched,
@@ -1307,6 +1316,9 @@ def run_transform(
             if transformer is not None:
                 unvouched_bronze |= transformer.last_unvouched_bronze
                 total_unmapped += transformer.last_unmapped_count
+                total_start_time_fallback += getattr(
+                    transformer, "last_start_time_fallback_count", 0
+                )
                 total_validation_failures += (
                     transformer.last_validation_failure_count + transformer.last_excluded_row_count
                 )
@@ -1322,7 +1334,9 @@ def run_transform(
                     dataset=ds,
                     operation="transform",
                     status="failed",
-                    rows_skipped=total_unmapped + total_validation_failures,
+                    rows_skipped=(
+                        total_unmapped + total_start_time_fallback + total_validation_failures
+                    ),
                     rows_unmapped=total_unmapped,
                     rows_invalid=total_validation_failures,
                     bronze_unvouched=bronze_unvouched,
