@@ -8,7 +8,9 @@ from typing import TYPE_CHECKING
 import polars as pl
 
 from gridflow.pipeline import runner
+from gridflow.silver.base import _PublicationWindowPlan
 from gridflow.silver.elexon.mid import MIDTransformer
+from gridflow.silver.partition_window import IntervalSemantics, RequestWindow
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -123,7 +125,7 @@ def test_p_t14_unsafe_trim_warns_without_entering_rows_skipped(
     assert persisted == ("completed_with_warnings", 0)
 
 
-def test_p_t10_p_t16b_unresolved_windows_are_source_evaluation_occurrences(
+def test_p_t16b_unresolved_windows_are_source_evaluation_occurrences(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     inputs = {
@@ -155,6 +157,45 @@ def test_p_t10_p_t16b_unresolved_windows_are_source_evaluation_occurrences(
     assert result.partition_windows_unresolved == 2
     assert result.status == "completed_with_warnings"
     assert persisted[0] == "completed_with_warnings"
+
+
+def test_p_t13_all_dropped_neighbour_does_not_fail_healthy_destination(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    inputs = {
+        PREDECESSOR: pl.DataFrame([_row(PREDECESSOR, 1)]),
+        DESTINATION: pl.DataFrame([_row(DESTINATION, 1)]),
+    }
+
+    def factory(root: Path) -> MIDTransformer:
+        transformer = _transformer(root, monkeypatch, inputs)
+
+        def source_window(source_date: date) -> _PublicationWindowPlan:
+            window_start = (
+                datetime.combine(DESTINATION, datetime.min.time(), tzinfo=UTC)
+                if source_date == PREDECESSOR
+                else datetime.combine(source_date, datetime.min.time(), tzinfo=UTC)
+            )
+            return _PublicationWindowPlan(
+                column="timestamp_utc",
+                window=RequestWindow(
+                    start=window_start,
+                    end=window_start + timedelta(days=1),
+                    param_names=("periodStart", "periodEnd"),
+                ),
+                from_param="periodStart",
+                to_param="periodEnd",
+                interval_semantics=IntervalSemantics.HALF_OPEN,
+            )
+
+        monkeypatch.setattr(transformer, "_source_window_plan", source_window)
+        return transformer
+
+    result, persisted = _run(tmp_path, monkeypatch, factory)
+
+    assert result.status == "success"
+    assert result.rows_out == 1
+    assert persisted == ("success", 0)
 
 
 def test_p_t18_cli_clauses_are_conditional(capsys: pytest.CaptureFixture[str]) -> None:

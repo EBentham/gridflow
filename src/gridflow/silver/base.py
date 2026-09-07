@@ -554,9 +554,11 @@ class BaseSilverTransformer(ABC):
     start of every ``run()``; incremented ONLY on the HALF_OPEN
     (``EVENT_WINDOW_FILTER``) path when :func:`exclude_out_of_window` reports
     ``all_dropped=True`` — never on the CLOSED (Elexon) path, which keeps
-    D-5's refusal and its ``success`` status completely unchanged. The CLI
-    (``pipeline/runner.py::run_transform``) treats a nonzero accumulated
-    total as a HARD FAILURE for the whole date range, distinct from and
+    D-5's refusal and its ``success`` status completely unchanged. For a
+    partition-owning transformer, neighbour drops remain logged but are
+    removed from this counter so they cannot fail a healthy destination
+    (P-T13). The CLI (``pipeline/runner.py::run_transform``) treats a nonzero
+    accumulated total as a HARD FAILURE for the whole date range, distinct from and
     taking priority over the ``completed_with_warnings`` path that
     ``last_unmapped_count``/``last_validation_failure_count`` drive — a
     misclassified opt-in must stop the run, not blend into a routine
@@ -819,6 +821,11 @@ class BaseSilverTransformer(ABC):
         )
 
     def __init__(self, data_dir: Path):
+        if self.PARTITION_DATE_COLUMN is not None and self.LOCKSTEP_BRONZE_READ:
+            raise ValueError(
+                f"{type(self).__name__} cannot set both PARTITION_DATE_COLUMN "
+                "and LOCKSTEP_BRONZE_READ"
+            )
         self.data_dir = data_dir
         self.bronze_dir = data_dir / "bronze" / self.source / self.dataset
         self.silver_dir = data_dir / "silver" / self.source / self.dataset
@@ -1226,6 +1233,12 @@ class BaseSilverTransformer(ABC):
         """Prepare exact D-1/D plain inputs, combine, deduplicate, trim, and write once."""
         raw_inputs = [(source_date, self.read_bronze(source_date)) for source_date in source_dates]
         if all(raw_df.is_empty() for _, raw_df in raw_inputs):
+            logger.warning(
+                "No bronze data for %s/%s on %s",
+                self.source,
+                self.dataset,
+                destination_date,
+            )
             return 0
 
         own_input_nonempty = not raw_inputs[-1][1].is_empty()
@@ -1241,11 +1254,13 @@ class BaseSilverTransformer(ABC):
         prepared: list[tuple[date, pl.DataFrame]] = []
         fallback_total = 0
         own_unaccounted = 0
+        own_all_dropped = 0
         try:
             for source_date, raw_df in raw_inputs:
                 if raw_df.is_empty():
                     continue
                 unaccounted_before = self.last_unaccounted_empty_frames
+                all_dropped_before = self.last_partition_filter_all_dropped_count
                 self.last_start_time_fallback_count = 0
                 try:
                     clean_df = self._process_frame(
@@ -1265,10 +1280,14 @@ class BaseSilverTransformer(ABC):
                         )
                     if source_date == destination_date:
                         own_unaccounted += unaccounted_delta
+                        own_all_dropped += (
+                            self.last_partition_filter_all_dropped_count - all_dropped_before
+                        )
                 if clean_df is not None:
                     prepared.append((source_date, clean_df))
         finally:
             self.last_start_time_fallback_count = fallback_total
+            self.last_partition_filter_all_dropped_count = own_all_dropped
 
         own_prepared = any(source_date == destination_date for source_date, _ in prepared)
         self.last_total_unaccounted_exclusion = (
@@ -1340,6 +1359,7 @@ class BaseSilverTransformer(ABC):
         csv_frames: list[pl.DataFrame] = []
         total_rows = 0
         fallback_total = 0
+        own_all_dropped = 0
         try:
             for source_date in source_dates:
                 date_dir = PathBuilder(self.data_dir).bronze_date_dir(
@@ -1392,6 +1412,7 @@ class BaseSilverTransformer(ABC):
                         window_plan = self._source_window_plan(source_date)
                         window_resolved = True
                     unaccounted_before = self.last_unaccounted_empty_frames
+                    all_dropped_before = self.last_partition_filter_all_dropped_count
                     self.last_start_time_fallback_count = 0
                     try:
                         clean_df = self._process_frame(
@@ -1405,6 +1426,10 @@ class BaseSilverTransformer(ABC):
                         fallback_total += self.last_start_time_fallback_count
                         unaccounted_delta = self.last_unaccounted_empty_frames - unaccounted_before
                         source_stats[source_date]["unaccounted"] += unaccounted_delta
+                        if source_date == destination_date:
+                            own_all_dropped += (
+                                self.last_partition_filter_all_dropped_count - all_dropped_before
+                            )
                         if unaccounted_delta:
                             self._append_source_exclusion(
                                 f"source={source_date} destination={destination_date} "
@@ -1434,6 +1459,7 @@ class BaseSilverTransformer(ABC):
                     total_rows += owned.height
         finally:
             self.last_start_time_fallback_count = fallback_total
+            self.last_partition_filter_all_dropped_count = own_all_dropped
             self.last_unvouched_bronze = frozenset(unvouched)
             own = source_stats[destination_date]
             self.last_unvouched_total_exclusion = (
@@ -1443,6 +1469,13 @@ class BaseSilverTransformer(ABC):
                 own["examined"] > 0 and own["prepared"] == 0 and own["unaccounted"] > 0
             )
 
+        if not any(stats["examined"] for stats in source_stats.values()):
+            logger.warning(
+                "No bronze data for %s/%s on %s",
+                self.source,
+                self.dataset,
+                destination_date,
+            )
         if self.write_silver_csv and csv_frames:
             self._write_csv(pl.concat(csv_frames, how="diagonal"), destination_date)
         if total_rows:
@@ -1469,12 +1502,7 @@ class BaseSilverTransformer(ABC):
         trim: bool = True,
     ) -> pl.DataFrame:
         """Record foreign owners before deduplication and optionally select owner D."""
-        column = self.PARTITION_DATE_COLUMN
-        if column is None or column not in frame.columns:
-            raise ValueError(
-                f"{self.source}/{self.dataset}: declared partition ownership column "
-                f"{column!r} is missing from the prepared frame"
-            )
+        column = self._partition_owner_column(frame)
         owners = frame.get_column(column).cast(pl.Date, strict=False).to_list()
         counts: dict[date | None, int] = {}
         for owner in owners:
@@ -1513,14 +1541,19 @@ class BaseSilverTransformer(ABC):
         destination_date: date,
     ) -> pl.DataFrame:
         """Return only rows whose declared owner is destination D."""
+        column = self._partition_owner_column(frame)
+        owner_expr = pl.col(column).cast(pl.Date, strict=False) == pl.lit(destination_date)
+        return frame.filter(owner_expr.fill_null(False))
+
+    def _partition_owner_column(self, frame: pl.DataFrame) -> str:
+        """Return the declared ownership column, failing consistently if absent."""
         column = self.PARTITION_DATE_COLUMN
         if column is None or column not in frame.columns:
             raise ValueError(
                 f"{self.source}/{self.dataset}: declared partition ownership column "
                 f"{column!r} is missing from the prepared frame"
             )
-        owner_expr = pl.col(column).cast(pl.Date, strict=False) == pl.lit(destination_date)
-        return frame.filter(owner_expr.fill_null(False))
+        return column
 
     def _process_frame(
         self,
@@ -2222,11 +2255,18 @@ class BaseSilverTransformer(ABC):
             if not date_dir.exists():
                 continue
             for meta_path in sorted(date_dir.glob("raw_*.meta.json")):
-                timestamp = (
-                    self._read_sidecar_timestamp(meta_path).timestamp
-                    if source_dates is not None
-                    else self._timestamp_from_sidecar(meta_path)
-                )
+                if source_dates is not None:
+                    read = self._read_sidecar_timestamp(meta_path)
+                    if source_date != target_date:
+                        self._log_sidecar_parse_warnings(meta_path, read)
+                        if read.non_object_json:
+                            logger.warning(
+                                "Failed to parse bronze sidecar %s: JSON payload is not an object",
+                                meta_path,
+                            )
+                    timestamp = read.timestamp
+                else:
+                    timestamp = self._timestamp_from_sidecar(meta_path)
                 if timestamp is not None:
                     timestamps.append(timestamp)
                     own_has_timestamp = own_has_timestamp or source_date == target_date
@@ -2483,12 +2523,26 @@ class BaseSilverTransformer(ABC):
         :meth:`_read_sidecar_timestamp`. Same return value, same WARNING text
         at the same two conditions, in the same order -- and, deliberately,
         master's uncaught ``AttributeError`` on non-object JSON (N-18).
-        ``VINTAGE_PER_BRONZE_FILE`` and :meth:`_available_at_from_bronze` call
-        this for EVERY source, none of which opts into lockstep reads, so any
-        softening here would convert a loud fail-closed crash into fabricated
-        provenance or missing rows outside ENTSO-G.
+        ``VINTAGE_PER_BRONZE_FILE`` and legacy availability discovery call this
+        for every source. Declaring availability discovery is the deliberate
+        exception: when ``source_dates`` is supplied,
+        :meth:`_available_at_from_bronze` uses the hardened classifier directly
+        so an unusable neighbour can be ignored while its parse diagnostics are
+        still logged and the own-partition fallback remains conservative.
         """
         read = BaseSilverTransformer._read_sidecar_timestamp(meta_path)
+        BaseSilverTransformer._log_sidecar_parse_warnings(meta_path, read)
+        if read.non_object_json:
+            # N-18: master lands on `meta.get(key)` with a non-dict `meta` and
+            # raises. Reproduced through the payload itself so the exception
+            # type and message stay master's, byte for byte.
+            payload: Any = read.payload
+            payload.get(_SIDECAR_TIMESTAMP_KEYS[0])
+        return read.timestamp
+
+    @staticmethod
+    def _log_sidecar_parse_warnings(meta_path: Path, read: SidecarRead) -> None:
+        """Replay the legacy parse warnings carried by a classified sidecar read."""
         for diagnostic in read.diagnostics:
             if diagnostic.detail is None:
                 # Master's `_parse_timestamp` is silent for a present-but-
@@ -2500,13 +2554,6 @@ class BaseSilverTransformer(ABC):
                 )
             else:
                 logger.warning("Could not parse bronze sidecar timestamp: %s", diagnostic.detail)
-        if read.non_object_json:
-            # N-18: master lands on `meta.get(key)` with a non-dict `meta` and
-            # raises. Reproduced through the payload itself so the exception
-            # type and message stay master's, byte for byte.
-            payload: Any = read.payload
-            payload.get(_SIDECAR_TIMESTAMP_KEYS[0])
-        return read.timestamp
 
     @staticmethod
     def _coerce_sidecar_timestamp(raw_value: object) -> tuple[datetime | None, bool]:

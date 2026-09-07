@@ -41,7 +41,7 @@ def _write_mid_partition(root: Path, source_date: date, rows: list[dict[str, obj
     (partition / "raw_fixture.meta.json").write_text(json.dumps({"written_at": STAMP}))
 
 
-def test_p_t01_p_t07_p_t17_fixture_rebuild_is_byte_stable_and_conserved(
+def test_p_t01_p_t07_fixture_rebuild_is_byte_stable_and_conserved(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     monkeypatch.setattr("gridflow.silver.base.datetime", _Clock)

@@ -10,6 +10,7 @@ import polars as pl
 import pytest
 
 import gridflow.silver.elexon  # noqa: F401 - populate the registry
+from gridflow.silver.base import BaseSilverTransformer
 from gridflow.silver.elexon.fuelhh import FuelHHTransformer
 from gridflow.silver.elexon.mid import MIDTransformer
 from gridflow.silver.elexon.system_prices import SystemPriceTransformer
@@ -138,7 +139,9 @@ def test_p_t03_missing_or_empty_own_recovers_neighbour(
 
 
 def test_p_t04_p_t05_missing_predecessor_and_both_empty_reset(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    caplog: pytest.LogCaptureFixture,
 ) -> None:
     calls: list[date] = []
     inputs = {DESTINATION: pl.DataFrame([_mid_row(DESTINATION, 1, "P", 10.0)])}
@@ -160,10 +163,54 @@ def test_p_t04_p_t05_missing_predecessor_and_both_empty_reset(
         "_source_window_plan",
         lambda _source_date: pytest.fail("empty inputs must not resolve windows"),
     )
-    assert transformer.run(DESTINATION, run_id="empty") == 0
+    with caplog.at_level("WARNING", logger="gridflow.silver.base"):
+        assert transformer.run(DESTINATION, run_id="empty") == 0
     assert calls == [PREDECESSOR, DESTINATION]
+    assert f"No bronze data for elexon/mid on {DESTINATION}" in caplog.messages
     assert transformer.last_partition_trimmed_count == 0
     assert transformer.last_partition_filter_unresolved_count == 0
+
+
+def test_fuelhh_and_system_prices_never_read_before_predecessor(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    fuel_dates: list[date] = []
+    fuelhh = FuelHHTransformer(tmp_path / "fuelhh")
+    monkeypatch.setattr(
+        fuelhh,
+        "read_bronze",
+        lambda source_date: fuel_dates.append(source_date) or pl.DataFrame(),
+    )
+    assert fuelhh.run(DESTINATION, run_id="fuel-bound") == 0
+    assert min(fuel_dates) == PREDECESSOR
+    assert all(source_date >= PREDECESSOR for source_date in fuel_dates)
+
+    system_price_dates: list[date] = []
+    original_bronze_date_dir = PathBuilder.bronze_date_dir
+
+    def record_system_price_date(
+        paths: PathBuilder,
+        source: str,
+        dataset: str,
+        target_date: date,
+        *,
+        dataset_dir: Path | None = None,
+    ) -> Path:
+        if (source, dataset) == ("elexon", "system_prices"):
+            system_price_dates.append(target_date)
+        return original_bronze_date_dir(
+            paths,
+            source,
+            dataset,
+            target_date,
+            dataset_dir=dataset_dir,
+        )
+
+    monkeypatch.setattr(PathBuilder, "bronze_date_dir", record_system_price_date)
+    system_prices = SystemPriceTransformer(tmp_path / "system-prices")
+    assert system_prices.run(DESTINATION, run_id="prices-bound") == 0
+    assert min(system_price_dates) == PREDECESSOR
+    assert all(source_date >= PREDECESSOR for source_date in system_price_dates)
 
 
 def _write_sidecar(root: Path, source_date: date, stamp: object) -> None:
@@ -250,6 +297,108 @@ def test_p_t14_ledger_counts_recoverable_unsafe_and_unclassifiable(tmp_path: Pat
         transformer._record_partition_ownership(
             pl.DataFrame({"other": [1]}), source_date, DESTINATION
         )
+
+
+def test_partition_owner_missing_column_message_is_identical_at_both_call_sites(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    transformer = MIDTransformer(tmp_path)
+    frame = pl.DataFrame({"other": [1]})
+    expected = (
+        "elexon/mid: declared partition ownership column "
+        "'settlement_date' is missing from the prepared frame"
+    )
+    helper_calls = 0
+
+    def missing_owner_column(_frame: pl.DataFrame) -> str:
+        nonlocal helper_calls
+        helper_calls += 1
+        raise ValueError(expected)
+
+    monkeypatch.setattr(transformer, "_partition_owner_column", missing_owner_column)
+
+    for select in (
+        lambda: transformer._record_partition_ownership(
+            frame, PREDECESSOR, DESTINATION, trim=False
+        ),
+        lambda: transformer._select_partition_owner(frame, DESTINATION),
+    ):
+        with pytest.raises(ValueError) as exc_info:
+            select()
+        assert str(exc_info.value) == expected
+    assert helper_calls == 2
+
+
+def test_timestamp_from_sidecar_doc_names_declaring_path_exception() -> None:
+    doc = BaseSilverTransformer._timestamp_from_sidecar.__doc__ or ""
+    assert "Declaring availability discovery is the deliberate" in doc
+    assert "when ``source_dates`` is supplied" in doc
+    assert "call this for EVERY source" not in doc
+
+
+class _PartitionOwnedLockstepTransformer(BaseSilverTransformer):
+    source = "test"
+    dataset = "invalid_partition_lockstep"
+    PARTITION_DATE_COLUMN = "owner_date"
+    LOCKSTEP_BRONZE_READ = True
+
+    def read_bronze(self, target_date: date) -> pl.DataFrame:
+        return pl.DataFrame()
+
+    def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
+        return raw_df
+
+
+def test_partition_ownership_and_lockstep_read_are_mutually_exclusive(tmp_path: Path) -> None:
+    with pytest.raises(
+        ValueError,
+        match="cannot set both PARTITION_DATE_COLUMN and LOCKSTEP_BRONZE_READ",
+    ):
+        _PartitionOwnedLockstepTransformer(tmp_path)
+
+
+@pytest.mark.parametrize("sidecar_text", ["{not-json", "[]"])
+def test_declaring_reingest_logs_corrupt_neighbour_sidecar(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    caplog: pytest.LogCaptureFixture,
+    sidecar_text: str,
+) -> None:
+    predecessor_dir = PathBuilder(tmp_path).bronze_date_dir("elexon", "mid", PREDECESSOR)
+    predecessor_dir.mkdir(parents=True, exist_ok=True)
+    corrupt_sidecar = predecessor_dir / "raw_corrupt.meta.json"
+    corrupt_sidecar.write_text(sidecar_text)
+    _write_sidecar(tmp_path, DESTINATION, "2024-01-15T03:00:00+00:00")
+    transformer = _fixed_mid(
+        tmp_path,
+        monkeypatch,
+        {
+            PREDECESSOR: pl.DataFrame([_mid_row(DESTINATION, 1, "P", 10.0)]),
+            DESTINATION: pl.DataFrame([_mid_row(DESTINATION, 2, "P", 20.0)]),
+        },
+    )
+
+    with caplog.at_level("WARNING", logger="gridflow.silver.base"):
+        assert transformer.run(DESTINATION, run_id="corrupt-neighbour", reingest=True) == 2
+
+    assert any(
+        record.levelname == "WARNING"
+        and "Failed to parse bronze sidecar" in record.getMessage()
+        and str(corrupt_sidecar) in record.getMessage()
+        for record in caplog.records
+    )
+
+
+def test_per_body_declaring_run_warns_when_both_partitions_are_absent(
+    tmp_path: Path, caplog: pytest.LogCaptureFixture
+) -> None:
+    transformer = SystemPriceTransformer(tmp_path)
+
+    with caplog.at_level("WARNING", logger="gridflow.silver.base"):
+        assert transformer.run(DESTINATION, run_id="empty-per-body") == 0
+
+    assert f"No bronze data for elexon/system_prices on {DESTINATION}" in caplog.messages
 
 
 def test_p_t16_repeated_source_fallback_occurrences(
