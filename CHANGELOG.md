@@ -8,6 +8,71 @@ expansion) was paused before release and is intentionally absent.
 
 ## [Unreleased]
 
+## [v0.21] - 2026-09-07 — Silver Remediation
+
+Fixed three ways silver could disagree with the bronze it came from: a
+mislabelled settlement identity, the same row written into two files, and a
+publication instant reconstructed where the vendor supplied a real one.
+
+### Fixed
+- **FUELHH settlement identity comes from the vendor start instant.** Elexon's
+  publish-window responses return a day's **last** settlement period carrying
+  the *next* day's `settlementDate`. Silver derived `timestamp_utc` from that
+  label, so 5,202 rows over 289 days were stamped 24 hours late and 54 entity
+  keys collided with differing generation values. The transformer now derives
+  `(settlement_date, settlement_period, timestamp_utc)` from `startTime` /
+  `startTimeOfHalfHrPeriod` via `utc_to_settlement_period`; the label path is a
+  counted fallback (`DATASET_VERSION` 2.0.0).
+- **Silver files no longer contain rows another date owns.** A bronze partition
+  is a *capture* date and holds periods belonging to neighbouring settlement
+  dates, but `_write_silver` overwrote `<dataset>_<date>.parquet` from the
+  current frame alone, leaving the same entity key in two files — MID 3,652
+  duplicate keys on disk, FUELHH 4,502. A transformer now declares which
+  neighbouring partitions its silver file must read
+  (`PARTITION_SOURCE_OFFSETS`); each source partition's publication window is
+  applied **before** the union, and the frame is trimmed to the rows the
+  destination date owns, with a counted trim that is loud on anomalies.
+  Transformers that declare nothing take a no-op path and their output is
+  byte-identical.
+- **`gridflow status` no longer requires pandas.** It reached numpy through
+  DuckDB's `.fetchdf()`, neither of which is a declared dependency; it renders
+  through Polars.
+
+### Changed
+- **system_prices carries a true vendor vintage.** v0.20 recorded that DISEBSP
+  emits no publication instant and reconstructed `available_at` from a declared
+  90-minute lag. That premise inferred "no vendor stamp" from the absence of the
+  field *name* `publishTime`: the payload carries **`createdDateTime` on 94,415
+  of 94,415 raw rows**. It now maps to `published_at`, so `available_at` is the
+  vendor's own record time labelled `vendor`, and the Vintage Policy remains as
+  a counted fallback (`DATASET_VERSION` 2.0.0). This is **not** uniformly
+  conservative against the retired assumption: 2021-2023 rows become knowable
+  about 38 minutes earlier, 2024 onward about 23 hours later — the vendor's own
+  two regimes, recorded as an observation, not explained.
+- **MID's declared lag 60 → 35 minutes** under a new dated identity
+  `elexon-mid/vp-2026-09b` (`DATASET_VERSION` 1.1.0). It remains an ASSUMPTION
+  resting on a single observation; no vendor statement of Insights publication
+  cadence exists (BSCP01 gives providers a submission target, and the
+  15-minute figure lives only in a superseded 2017 BMRA URS).
+- ADR-031 amended and ADR-025 §3 marked superseded where it said system_prices
+  "cannot" carry a vendor stamp; both remain `status: proposed`.
+
+### Added
+- A guard that warns when the effective transform window cannot re-touch the
+  days a declaring transformer's positive partition offsets depend on — after
+  the trim, a settlement date's final GMT-season period is only final once the
+  next capture partition exists. The shipped defaults (24-hour lookback) heal
+  this daily; a much narrower window would not.
+
+### Data
+- Three full-history rebuilds from immutable bronze, each measured:
+  `elexon/fuelhh` 1,670,647 → 1,666,217 rows with duplicate keys 4,502 → **0**
+  and row conservation proven exactly against all 2,091 bronze bodies;
+  `elexon/system_prices` 94,388 → 94,415 rows, all vendor-stamped, 0 price
+  mismatches against bronze; `elexon/mid` 179,075 → 175,423 rows with duplicate
+  keys 3,652 → **0**. `gold_gb_day_ahead_benchmark` is unchanged at 87,876 rows
+  with the same 15 vendor gaps — no rebuild invented or destroyed a period.
+
 ## [v0.20] - 2026-09-06 — Backfill and Benchmark
 
 Made five years of GB power history usable for backtesting, and gave the
