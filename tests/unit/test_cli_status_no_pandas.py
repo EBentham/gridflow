@@ -46,8 +46,8 @@ def test_status_without_pandas_or_numpy(tmp_path: Path, seed_run: bool) -> None:
                 [
                     "elexon",
                     "offered_transfer_capacity_continuous",
-                    "ingest",
-                    "success",
+                    "transform",
+                    "completed_with_warnings",
                     17,
                     1.5,
                     datetime.now(UTC),
@@ -100,8 +100,8 @@ raise SystemExit(result.exit_code)
         for value in (
             "elexon",
             "offered_transfer_capacity_continuous",
-            "ingest",
-            "success",
+            "transform",
+            "completed_with_warnings",
             "17",
             "1.5",
         ):
