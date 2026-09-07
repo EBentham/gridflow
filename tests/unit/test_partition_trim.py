@@ -1,4 +1,4 @@
-"""Regression coverage for exact two-partition silver ownership."""
+"""Regression coverage for dataset-declared partition ownership covering sets."""
 
 from __future__ import annotations
 
@@ -23,6 +23,7 @@ if TYPE_CHECKING:
 
 DESTINATION = date(2024, 1, 15)
 PREDECESSOR = DESTINATION - timedelta(days=1)
+SUCCESSOR = DESTINATION + timedelta(days=1)
 FIXED_NOW = datetime(2026, 9, 7, 12, tzinfo=UTC)
 
 
@@ -121,6 +122,46 @@ def test_p_t01_p_t07_order_independent_complete_identity(
     assert parity_paths.silver_file("elexon", "mid", DESTINATION).read_bytes() == destination_bytes
 
 
+def test_p_t07_fuelhh_successor_is_lowest_collision_precedence(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Concat [D+1,D-1,D] makes D win, then D-1, with D+1 recovery-only."""
+    monkeypatch.setattr("gridflow.silver.base.datetime", _Clock)
+    monkeypatch.setattr("gridflow.silver.elexon.fuelhh.datetime", _Clock)
+
+    def row(generation: float) -> dict[str, object]:
+        return {
+            "settlementDate": DESTINATION.isoformat(),
+            "settlementPeriod": 1,
+            "startTime": "2024-01-15T00:00:00Z",
+            "publishTime": "2024-01-15T00:30:00Z",
+            "fuelType": "CCGT",
+            "generation": generation,
+        }
+
+    for label, values, expected in (
+        ("all", {SUCCESSOR: 1.0, PREDECESSOR: 2.0, DESTINATION: 3.0}, 3.0),
+        ("no-own", {SUCCESSOR: 1.0, PREDECESSOR: 2.0}, 2.0),
+        ("successor-only", {SUCCESSOR: 1.0}, 1.0),
+    ):
+        transformer = FuelHHTransformer(tmp_path / label)
+        monkeypatch.setattr(
+            transformer,
+            "read_bronze",
+            lambda source_date, values=values: (
+                pl.DataFrame([row(values[source_date])])
+                if source_date in values
+                else pl.DataFrame()
+            ),
+        )
+        monkeypatch.setattr(transformer, "_source_window_plan", lambda _source_date: None)
+        assert transformer.run(DESTINATION, run_id="collision") == 1
+        persisted = pl.read_parquet(
+            PathBuilder(tmp_path / label).silver_file("elexon", "fuelhh", DESTINATION)
+        )
+        assert persisted["generation_mw"].item() == expected
+
+
 @pytest.mark.parametrize("own", [None, pl.DataFrame()])
 def test_p_t03_missing_or_empty_own_recovers_neighbour(
     tmp_path: Path,
@@ -171,7 +212,7 @@ def test_p_t04_p_t05_missing_predecessor_and_both_empty_reset(
     assert transformer.last_partition_filter_unresolved_count == 0
 
 
-def test_fuelhh_and_system_prices_never_read_before_predecessor(
+def test_p_t08_declared_source_sets_are_exact_and_ordered(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     fuel_dates: list[date] = []
@@ -182,8 +223,7 @@ def test_fuelhh_and_system_prices_never_read_before_predecessor(
         lambda source_date: fuel_dates.append(source_date) or pl.DataFrame(),
     )
     assert fuelhh.run(DESTINATION, run_id="fuel-bound") == 0
-    assert min(fuel_dates) == PREDECESSOR
-    assert all(source_date >= PREDECESSOR for source_date in fuel_dates)
+    assert fuel_dates == [SUCCESSOR, PREDECESSOR, DESTINATION]
 
     system_price_dates: list[date] = []
     original_bronze_date_dir = PathBuilder.bronze_date_dir
@@ -209,8 +249,10 @@ def test_fuelhh_and_system_prices_never_read_before_predecessor(
     monkeypatch.setattr(PathBuilder, "bronze_date_dir", record_system_price_date)
     system_prices = SystemPriceTransformer(tmp_path / "system-prices")
     assert system_prices.run(DESTINATION, run_id="prices-bound") == 0
-    assert min(system_price_dates) == PREDECESSOR
-    assert all(source_date >= PREDECESSOR for source_date in system_price_dates)
+    assert system_price_dates == [DESTINATION]
+    assert MIDTransformer.PARTITION_SOURCE_OFFSETS == (-1, 0)
+    assert FuelHHTransformer.PARTITION_SOURCE_OFFSETS == (1, -1, 0)
+    assert SystemPriceTransformer.PARTITION_SOURCE_OFFSETS == (0,)
 
 
 def _write_sidecar(root: Path, source_date: date, stamp: object) -> None:
@@ -274,6 +316,73 @@ def test_p_t08_registry_opt_in_is_exact() -> None:
     assert MIDTransformer.DATASET_VERSION == "1.0.0"
 
 
+def test_p_t09_source_window_plans_are_source_relative(tmp_path: Path) -> None:
+    """Each FUELHH source resolves its own sidecar window, independent of destination."""
+    transformer = FuelHHTransformer(tmp_path)
+    expected: dict[date, tuple[datetime, datetime]] = {}
+    for index, source_date in enumerate((SUCCESSOR, PREDECESSOR, DESTINATION)):
+        start = datetime.combine(source_date, datetime.min.time(), tzinfo=UTC) + timedelta(
+            hours=index
+        )
+        end = start + timedelta(days=1)
+        partition = PathBuilder(tmp_path).bronze_date_dir("elexon", "fuelhh", source_date)
+        partition.mkdir(parents=True, exist_ok=True)
+        (partition / "raw_window.json").write_text("{}")
+        (partition / "raw_window.meta.json").write_text(
+            json.dumps(
+                {
+                    "source": "elexon",
+                    "dataset": "fuelhh",
+                    "data_date": source_date.isoformat(),
+                    "request_params": {
+                        "publishDateTimeFrom": start.isoformat(),
+                        "publishDateTimeTo": end.isoformat(),
+                    },
+                    "page": 1,
+                    "total_pages": 1,
+                }
+            )
+        )
+        expected[source_date] = (start, end)
+
+    for destination_order in ((DESTINATION, SUCCESSOR), (SUCCESSOR, DESTINATION)):
+        for _destination in destination_order:
+            for source_date in transformer._partition_source_dates(DESTINATION):
+                plan = transformer._source_window_plan(source_date)
+                assert plan is not None
+                assert (plan.window.start, plan.window.end) == expected[source_date]
+
+
+def test_p_t13_defective_successor_does_not_fail_healthy_own_source(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    good = {
+        "settlementDate": DESTINATION.isoformat(),
+        "settlementPeriod": 1,
+        "startTime": "2024-01-15T00:00:00Z",
+        "publishTime": "2024-01-15T00:30:00Z",
+        "fuelType": "CCGT",
+        "generation": 1.0,
+    }
+    transformer = FuelHHTransformer(tmp_path)
+    monkeypatch.setattr(
+        transformer,
+        "read_bronze",
+        lambda source_date: (
+            pl.DataFrame({"defective": [1]})
+            if source_date == SUCCESSOR
+            else pl.DataFrame([good])
+            if source_date == DESTINATION
+            else pl.DataFrame()
+        ),
+    )
+    monkeypatch.setattr(transformer, "_source_window_plan", lambda _source_date: None)
+
+    assert transformer.run(DESTINATION, run_id="healthy-own") == 1
+    assert transformer.last_unaccounted_empty_frames == 1
+    assert transformer.last_total_unaccounted_exclusion is False
+
+
 def test_p_t14_ledger_counts_recoverable_unsafe_and_unclassifiable(tmp_path: Path) -> None:
     transformer = MIDTransformer(tmp_path)
     source_date = PREDECESSOR
@@ -297,6 +406,37 @@ def test_p_t14_ledger_counts_recoverable_unsafe_and_unclassifiable(tmp_path: Pat
         transformer._record_partition_ownership(
             pl.DataFrame({"other": [1]}), source_date, DESTINATION
         )
+
+
+@pytest.mark.parametrize(
+    ("transformer_type", "source_date", "recoverable", "unsafe"),
+    [
+        (MIDTransformer, DESTINATION, (DESTINATION, SUCCESSOR), PREDECESSOR),
+        (
+            FuelHHTransformer,
+            DESTINATION,
+            (PREDECESSOR, DESTINATION, SUCCESSOR),
+            SUCCESSOR + timedelta(days=1),
+        ),
+        (SystemPriceTransformer, DESTINATION, (DESTINATION,), SUCCESSOR),
+    ],
+)
+def test_p_t14_dataset_specific_recoverability(
+    tmp_path: Path,
+    transformer_type: type[BaseSilverTransformer],
+    source_date: date,
+    recoverable: tuple[date, ...],
+    unsafe: date,
+) -> None:
+    transformer = transformer_type(tmp_path)
+    owners = (*recoverable, unsafe, None)
+    frame = pl.DataFrame({"settlement_date": owners}, schema={"settlement_date": pl.Date})
+
+    transformer._record_partition_ownership(frame, source_date, source_date, trim=False)
+
+    expected_trimmed = sum(owner != source_date for owner in owners)
+    assert transformer.last_partition_trimmed_count == expected_trimmed
+    assert transformer.last_partition_trim_unrecoverable_count == 2
 
 
 def test_partition_owner_missing_column_message_is_identical_at_both_call_sites(
@@ -468,7 +608,7 @@ def _write_system_price_body(
     body.with_suffix(".meta.json").write_text(json.dumps({"written_at": stamp.isoformat()}))
 
 
-def test_p_t12_system_prices_neighbour_is_trimmed_without_changing_own_capture(
+def test_p_t12_system_prices_reads_only_own_capture(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     monkeypatch.setattr("gridflow.silver.elexon.system_prices.datetime", _Clock)
@@ -498,7 +638,7 @@ def test_p_t12_system_prices_neighbour_is_trimmed_without_changing_own_capture(
         .glob("*.parquet")
     }
     assert candidate_files == baseline_files
-    assert candidate.last_partition_trimmed_count == 1
+    assert candidate.last_partition_trimmed_count == 0
     assert candidate.last_partition_trim_unrecoverable_count == 0
 
 

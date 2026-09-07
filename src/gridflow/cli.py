@@ -1310,7 +1310,7 @@ def _echo_transform_results(source: str, results: list[DatasetResult]) -> None:
                 ),
                 (
                     r.rows_partition_trimmed,
-                    f", {r.rows_partition_trimmed} partition-trimmed",
+                    f", {r.rows_partition_trimmed} routine covering-set trim",
                 ),
                 (
                     r.rows_partition_trim_unrecoverable,

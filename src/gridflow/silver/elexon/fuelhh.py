@@ -24,6 +24,7 @@ class FuelHHTransformer(BaseSilverTransformer):
     dataset = "fuelhh"
     schema_cls = ElexonFuelHH
     PARTITION_DATE_COLUMN: ClassVar[str | None] = "settlement_date"
+    PARTITION_SOURCE_OFFSETS: ClassVar[tuple[int, ...]] = (1, -1, 0)
     DATASET_VERSION: ClassVar[str] = "2.0.0"
     ENTITY_KEY_COLUMNS = (
         "settlement_date",

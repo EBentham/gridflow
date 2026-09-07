@@ -8,7 +8,8 @@ from typing import TYPE_CHECKING
 import polars as pl
 
 from gridflow.pipeline import runner
-from gridflow.silver.base import _PublicationWindowPlan
+from gridflow.silver.base import BaseSilverTransformer, _PublicationWindowPlan
+from gridflow.silver.elexon.fuelhh import FuelHHTransformer
 from gridflow.silver.elexon.mid import MIDTransformer
 from gridflow.silver.partition_window import IntervalSemantics, RequestWindow
 
@@ -36,9 +37,10 @@ def _row(owner: date, period: int) -> dict[str, object]:
 def _run(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
-    factory: Callable[[Path], MIDTransformer],
+    factory: Callable[[Path], BaseSilverTransformer],
     start: date = DESTINATION,
     end: date = DESTINATION,
+    dataset: str = "mid",
 ) -> tuple[runner.DatasetResult, tuple[str, int]]:
     from gridflow.config.settings import load_settings
     from gridflow.storage.duckdb import get_connection, init_catalogue
@@ -60,7 +62,7 @@ def _run(
         result = runner.run_transform(
             runner.PipelineContext(con=con, settings=settings),
             "elexon",
-            ["mid"],
+            [dataset],
             datetime.combine(start, datetime.min.time(), tzinfo=UTC),
             datetime.combine(end, datetime.min.time(), tzinfo=UTC),
         )[0]
@@ -159,6 +161,99 @@ def test_p_t16b_unresolved_windows_are_source_evaluation_occurrences(
     assert persisted[0] == "completed_with_warnings"
 
 
+def test_p_t02_runner_destination_list_is_unchanged_for_bst_and_gmt_recovery(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    calls: list[date] = []
+    successor = DESTINATION + timedelta(days=1)
+    inputs = {
+        PREDECESSOR: pl.DataFrame([_row(DESTINATION, 1)]),
+        DESTINATION: pl.DataFrame(
+            [
+                {
+                    "settlementDate": DESTINATION.isoformat(),
+                    "settlementPeriod": 48,
+                    "startTime": "2024-01-15T23:30:00Z",
+                    "publishTime": "2024-01-16T00:00:00Z",
+                    "fuelType": "CCGT",
+                    "generation": 1.0,
+                }
+            ]
+        ),
+    }
+
+    def mid_factory(root: Path) -> MIDTransformer:
+        transformer = _transformer(root, monkeypatch, inputs)
+        original = transformer.run
+
+        def observed(target_date: date, **kwargs: object) -> int:
+            calls.append(target_date)
+            return original(target_date, **kwargs)
+
+        monkeypatch.setattr(transformer, "run", observed)
+        return transformer
+
+    _run(tmp_path / "bst", monkeypatch, mid_factory)
+    assert calls == [DESTINATION]
+
+    fuel_inputs = {DESTINATION: inputs[DESTINATION]}
+
+    def fuel_factory(root: Path) -> FuelHHTransformer:
+        transformer = FuelHHTransformer(root)
+        monkeypatch.setattr(
+            transformer,
+            "read_bronze",
+            lambda source_date: fuel_inputs.get(source_date, pl.DataFrame()),
+        )
+        monkeypatch.setattr(transformer, "_source_window_plan", lambda _source_date: None)
+        original = transformer.run
+
+        def observed(target_date: date, **kwargs: object) -> int:
+            calls.append(target_date)
+            return original(target_date, **kwargs)
+
+        monkeypatch.setattr(transformer, "run", observed)
+        return transformer
+
+    calls.clear()
+    first, _ = _run(tmp_path / "gmt-first", monkeypatch, fuel_factory, dataset="fuelhh")
+    assert calls == [DESTINATION]
+    assert first.rows_out == 1
+
+    fuel_inputs[successor] = inputs[DESTINATION]
+    calls.clear()
+    healed, _ = _run(tmp_path / "gmt-healed", monkeypatch, fuel_factory, dataset="fuelhh")
+    assert calls == [DESTINATION]
+    assert healed.rows_out == 1
+
+
+def test_p_t15_prior_accounting_survives_a_later_raising_destination(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    first = PREDECESSOR
+    first_source = first - timedelta(days=1)
+
+    def factory(root: Path) -> MIDTransformer:
+        transformer = MIDTransformer(root)
+
+        def read(source_date: date) -> pl.DataFrame:
+            if source_date == DESTINATION:
+                raise RuntimeError("durability probe")
+            if source_date == first_source:
+                return pl.DataFrame([_row(first_source, 1), _row(first, 1)])
+            return pl.DataFrame([_row(first, 2)])
+
+        monkeypatch.setattr(transformer, "read_bronze", read)
+        monkeypatch.setattr(transformer, "_source_window_plan", lambda _source_date: None)
+        return transformer
+
+    result, persisted = _run(tmp_path, monkeypatch, factory, start=first, end=DESTINATION)
+    assert result.status == "failed"
+    assert result.rows_partition_trimmed == 1
+    assert "durability probe" in (result.error or "")
+    assert persisted[0] == "failed"
+
+
 def test_p_t13_all_dropped_neighbour_does_not_fail_healthy_destination(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -214,4 +309,4 @@ def test_p_t18_cli_clauses_are_conditional(capsys: pytest.CaptureFixture[str]) -
         rows_partition_trimmed=2,
     )
     _echo_transform_results("elexon", [counted])
-    assert "2 partition-trimmed" in capsys.readouterr().out
+    assert "2 routine covering-set trim" in capsys.readouterr().out

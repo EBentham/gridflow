@@ -208,7 +208,7 @@ def _describe_unaccounted_frames(count: int) -> str:
     Args:
         count: Source-read frame occurrences whose ``transform()`` returned
             empty for a reason nothing counted, summed across each declaring
-            destination's D-1/D covering set. Adjacent destinations may count
+            destination's dataset-declared covering set. Adjacent destinations may count
             the same source body again; this is not a unique-body count.
 
     Returns:
@@ -264,7 +264,7 @@ class DatasetResult:
             ``rows_unmapped + rows_start_time_fallback + rows_invalid``. Some
             affected rows are retained; these are not disjoint discarded-row
             counts. For declaring transformers, fallback and validation terms
-            include repeated source reads across each D-1/D covering set. For
+            include repeated source reads across each dataset-declared covering set. For
             ingests, this is the skipped-unit count.
         rows_unmapped: Transform-only: rows kept with an ADR-022 enum sentinel.
         rows_invalid: Transform-only: rows the contract calls wrong. TWO
@@ -286,16 +286,16 @@ class DatasetResult:
             date other than destination D. Routine recoverable trims are kept
             out of warning status and ``rows_skipped``.
         rows_partition_trim_unrecoverable: Trim occurrences outside source S's
-            recoverable owner set ``{S, S+1}``; nonzero produces warnings.
+            dataset-declared recoverable owner set; nonzero produces warnings.
         partition_windows_unresolved: Source-window evaluations that could not
-            resolve across declaring destinations' D-1/D covering sets. This is
+            resolve across declaring destinations' dataset-declared covering sets. This is
             not a count of distinct unresolved partitions: adjacent destinations
             may evaluate and count the same source partition again.
 
         For declaring transformers, start-time fallback rows,
         validation-failure rows, unaccounted-empty-frame diagnostics, ownership
         trims, and unresolved-window evaluations are source-read occurrences
-        across each destination's D-1/D covering set. They include neighbour
+        across each destination's dataset-declared covering set. They include neighbour
         rows or bodies that this destination does not write. Processing adjacent
         destinations can count the same source row/body/window again. These are
         neither unique affected entities nor counts of rows discarded from the

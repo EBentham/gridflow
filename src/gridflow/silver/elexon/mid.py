@@ -24,6 +24,7 @@ class MIDTransformer(BaseSilverTransformer):
     dataset = "mid"
     schema_cls = ElexonMID
     PARTITION_DATE_COLUMN: ClassVar[str | None] = "settlement_date"
+    PARTITION_SOURCE_OFFSETS: ClassVar[tuple[int, ...]] = (-1, 0)
     VINTAGE_POLICY = VintagePolicy(
         name="elexon-mid/vp-2026-09",
         lag=timedelta(minutes=60),

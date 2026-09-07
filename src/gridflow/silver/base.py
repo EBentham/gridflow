@@ -413,7 +413,9 @@ class BaseSilverTransformer(ABC):
     source: str
     dataset: str
     PARTITION_DATE_COLUMN: ClassVar[str | None] = None
-    """Opt in to exact D-1/D reads and destination-row ownership trimming."""
+    """Opt in to declared covering-set reads and destination-row ownership trimming."""
+    PARTITION_SOURCE_OFFSETS: ClassVar[tuple[int, ...]] = (0,)
+    """Ordered source-date offsets used by partition-owning transformers."""
     schema_cls: ClassVar[type[BaseModel] | None] = None
     """Opt-in Pydantic schema for full-frame silver validation (VTA-SCHEMA-01).
 
@@ -451,13 +453,13 @@ class BaseSilverTransformer(ABC):
     last_start_time_fallback_count: int = 0
     """Source-read row occurrences that used a settlement-label fallback.
 
-    Declaring D-1/D runs may count the same source row again for an adjacent
+    Declaring covering-set runs may count the same source row again for an adjacent
     destination. This is not a unique-entity or discarded-row count.
     """
     last_partition_trimmed_count: int = 0
     """Prepared source-read occurrences owned by a date other than destination D."""
     last_partition_trim_unrecoverable_count: int = 0
-    """Partition-trim occurrences outside the source covering set ``{T-1, T}``."""
+    """Partition-trim occurrences outside the dataset's declared covering set."""
     last_partition_trim_details: tuple[tuple[date, date, str, int], ...] = ()
     """Bounded ``(source, destination, owner, count)`` ownership diagnostics."""
     last_source_exclusion_details: tuple[str, ...] = ()
@@ -532,7 +534,7 @@ class BaseSilverTransformer(ABC):
     """Count of source-window evaluations that could not resolve (D-7e).
 
     For undeclared transformers this retains the current-partition meaning.
-    Declaring transformers evaluate each prepared D-1/D source: adjacent
+    Declaring transformers evaluate each prepared covering-set source: adjacent
     destinations may count the same defective partition again. This is not a
     distinct-partition count. Reset to 0 at every ``run()`` entry.
     """
@@ -604,7 +606,7 @@ class BaseSilverTransformer(ABC):
     last_unaccounted_empty_frames: int = 0
     """Frames whose ``transform()`` returned EMPTY for a reason nothing counted,
     in the most recent ``run()`` (D-42). Reset at the top of every ``run()``.
-    Declaring runs count source-read frame occurrences across D-1/D, so an
+    Declaring runs count source-read frame occurrences across covering sets, so an
     adjacent destination may count the same body again.
 
     An empty ``transform()`` output has two entirely different meanings and
@@ -1211,11 +1213,21 @@ class BaseSilverTransformer(ABC):
         run_id: str,
         reingest: bool,
     ) -> int:
-        """Run an opted-in transformer over exact D-1/D source partitions."""
-        source_dates = (destination_date - timedelta(days=1), destination_date)
+        """Run an opted-in transformer over its exact declared covering set."""
+        source_dates = self._partition_source_dates(destination_date)
         if self.VINTAGE_PER_BRONZE_FILE:
             return self._run_partition_owned_per_body(source_dates, destination_date, run_id)
         return self._run_partition_owned_plain(source_dates, destination_date, run_id, reingest)
+
+    def _partition_source_dates(self, owner_date: date) -> tuple[date, ...]:
+        """Translate the ordered dataset offsets into exact source dates for an owner."""
+        return tuple(
+            owner_date + timedelta(days=offset) for offset in self.PARTITION_SOURCE_OFFSETS
+        )
+
+    def _is_partition_owner_recoverable(self, source_date: date, owner_date: date) -> bool:
+        """Return whether source S belongs to the declared covering set for owner T."""
+        return source_date in self._partition_source_dates(owner_date)
 
     def _source_window_plan(self, source_date: date) -> _PublicationWindowPlan | None:
         """Resolve exactly one source-relative window plan for a prepared source."""
@@ -1225,12 +1237,12 @@ class BaseSilverTransformer(ABC):
 
     def _run_partition_owned_plain(
         self,
-        source_dates: tuple[date, date],
+        source_dates: tuple[date, ...],
         destination_date: date,
         run_id: str,
         reingest: bool,
     ) -> int:
-        """Prepare exact D-1/D plain inputs, combine, deduplicate, trim, and write once."""
+        """Prepare declared source inputs, combine, deduplicate, trim, and write once."""
         raw_inputs = [(source_date, self.read_bronze(source_date)) for source_date in source_dates]
         if all(raw_df.is_empty() for _, raw_df in raw_inputs):
             logger.warning(
@@ -1241,7 +1253,10 @@ class BaseSilverTransformer(ABC):
             )
             return 0
 
-        own_input_nonempty = not raw_inputs[-1][1].is_empty()
+        own_input_nonempty = any(
+            source_date == destination_date and not raw_df.is_empty()
+            for source_date, raw_df in raw_inputs
+        )
         available_at = (
             self._available_at_from_bronze(
                 destination_date,
@@ -1346,7 +1361,7 @@ class BaseSilverTransformer(ABC):
 
     def _run_partition_owned_per_body(
         self,
-        source_dates: tuple[date, date],
+        source_dates: tuple[date, ...],
         destination_date: date,
         run_id: str,
     ) -> int:
@@ -1511,9 +1526,8 @@ class BaseSilverTransformer(ABC):
             counts[owner] = counts.get(owner, 0) + 1
         for owner, count in counts.items():
             owner_text = owner.isoformat() if isinstance(owner, date) else "unclassifiable"
-            recoverable = isinstance(owner, date) and source_date in (
-                owner - timedelta(days=1),
-                owner,
+            recoverable = isinstance(owner, date) and self._is_partition_owner_recoverable(
+                source_date, owner
             )
             self.last_partition_trimmed_count += count
             if not recoverable:
@@ -2229,7 +2243,7 @@ class BaseSilverTransformer(ABC):
         """Reconstruct historical availability from bronze sidecar metadata.
 
         Supplying ``source_dates`` selects exact directories only. Declaring
-        transformers use this to derive one D-1/D stamp while honoring a
+        transformers use this to derive one covering-set stamp while honoring a
         sidecar-less nonempty own partition with the existing clock fallback.
         Calls without it retain the legacy covering-partition behavior.
         """
