@@ -177,6 +177,15 @@ Extended by [ADR-031](ADR-031-vintage-policy-reconstruction.md): dated, labelled
     `published_at`. `system_prices` itself **cannot**: the live DATE_PATH feed has
     no `publishTime`, so its `available_at` is honest ingest-time and the
     stamp-fidelity table records it as such.
+    **SUPERSEDED 2026-09-07 (v0.21 unit L, PR #79).** That "cannot" was wrong, and
+    was wrong when written: it inferred "no vendor stamp" from the absence of the
+    field *name* `publishTime`. DISEBSP carries `createdDateTime` on every raw row
+    (94,415 / 94,415), and `system_prices` now maps it to `published_at`, so its
+    `available_at` is a true vendor vintage labelled `vendor` under this ADR's own
+    §3 precedence. The v0.20 Vintage Policy (ADR-031) survives for this dataset only
+    as a counted fallback. The lesson is the general one: a premise of the form
+    "the vendor emits nothing here" is a claim about bytes and must be checked
+    against the bytes.
   - **ENTSO-E is the bulk** — the `with_published_at` helper
     (`silver/entsoe/_published_at.py`) exists but only ~4-5 of 26 transformers
     call it. P1.1 wires all of them (the parser already carries the document
