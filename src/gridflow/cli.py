@@ -583,6 +583,8 @@ def pipeline(
 @app.command()
 def status() -> None:
     """Show pipeline run history and data quality summary."""
+    import polars as pl
+
     from gridflow.config.settings import load_settings
     from gridflow.storage.duckdb import get_connection
 
@@ -602,13 +604,21 @@ def status() -> None:
             WHERE started_at > now() - INTERVAL '24 hours'
             ORDER BY started_at DESC
             LIMIT 20
-        """).fetchdf()
+        """).pl()
 
-        if result.empty:
+        if result.is_empty():
             typer.echo("No pipeline runs in the last 24 hours.")
         else:
             typer.echo("Last 24h Pipeline Runs:")
-            typer.echo(result.to_string(index=False))
+            with pl.Config(
+                set_ascii_tables=True,
+                set_tbl_hide_dataframe_shape=True,
+                set_tbl_hide_column_data_types=True,
+                set_tbl_rows=50,
+                set_fmt_str_lengths=64,
+                set_tbl_width_chars=-1,
+            ):
+                typer.echo(str(result))
     except Exception as e:
         typer.echo(f"Could not query pipeline runs: {e}")
 

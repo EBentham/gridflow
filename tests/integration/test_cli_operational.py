@@ -21,16 +21,12 @@ These characterize EXISTING behavior (GREEN-on-write): real CLI stdout + exit
 codes against a real tmp workspace, no mocks of the command internals.
 
 Note on ``status``: its happy path renders ``pipeline_runs`` via DuckDB
-``.fetchdf()`` (pandas). pandas is not a runtime dependency of this project, so
-when it is absent the render raises and ``status`` swallows it into a
-"Could not query pipeline runs" line (still exit 0). The populated-runs test
-asserts whichever branch the environment takes, so it is correct with or without
-pandas installed.
+``.pl()`` (Polars) — no pandas dependency, so the render never falls back to
+the "Could not query pipeline runs" line for this case.
 """
 
 from __future__ import annotations
 
-import importlib.util
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
@@ -45,8 +41,6 @@ if TYPE_CHECKING:
     from pathlib import Path
 
 runner = CliRunner()
-
-_HAS_PANDAS = importlib.util.find_spec("pandas") is not None
 
 
 def _isolated_env(data_dir: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
@@ -96,8 +90,7 @@ def test_status_no_catalogue_exits_1(tmp_path: Path, monkeypatch: pytest.MonkeyP
 
 @pytest.mark.integration
 def test_status_with_runs_reports(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """status over a catalogue holding a recent pipeline_run reports it (or, with
-    pandas absent, the graceful fallback line) — never crashes."""
+    """status over a catalogue holding a recent pipeline_run reports it."""
     data_dir = tmp_path / "data"
     data_dir.mkdir()
     db_path = _isolated_env(data_dir, tmp_path, monkeypatch)
@@ -132,14 +125,10 @@ def test_status_with_runs_reports(tmp_path: Path, monkeypatch: pytest.MonkeyPatc
     result = runner.invoke(app, ["status"])
 
     assert result.exit_code == 0, result.output
-    if _HAS_PANDAS:
-        # The render path (.fetchdf()) succeeds: the seeded run is shown.
-        assert "Last 24h Pipeline Runs:" in result.output
-        assert "elexon" in result.output
-        assert "fuelhh" in result.output
-    else:
-        # pandas absent -> .fetchdf() raises -> swallowed into the fallback line.
-        assert "Could not query pipeline runs" in result.output
+    assert "Last 24h Pipeline Runs:" in result.output
+    assert "elexon" in result.output
+    assert "fuelhh" in result.output
+    assert "Could not query pipeline runs" not in result.output
 
 
 # --------------------------------------------------------------------------- #
