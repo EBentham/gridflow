@@ -599,7 +599,7 @@ def status() -> None:
     try:
         result = con.sql("""
             SELECT source, dataset, operation, status,
-                   rows_out, ROUND(duration_seconds, 1) as duration_s
+                   rows_out, ROUND(duration_seconds::DOUBLE, 1) as duration_s
             FROM pipeline_runs
             WHERE started_at > now() - INTERVAL '24 hours'
             ORDER BY started_at DESC

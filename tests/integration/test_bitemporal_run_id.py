@@ -107,7 +107,15 @@ def test_cli_transform_stamps_source_run_id_matching_pipeline_run(
     finally:
         con.close()
 
-    assert runs == [(next(iter(run_ids)), "elexon", "fuelhh", "transform", "success")]
+    assert runs == [
+        (
+            next(iter(run_ids)),
+            "elexon",
+            "fuelhh",
+            "transform",
+            "completed_with_warnings",
+        )
+    ]
 
     init_catalogue(paths.duckdb_path, paths.data_dir)
     con = get_connection(paths.duckdb_path, read_only=True)
@@ -126,7 +134,7 @@ def test_cli_transform_stamps_source_run_id_matching_pipeline_run(
     assert all(row[0] for row in duckdb_rows)
     assert all(row[1] for row in duckdb_rows)
     assert {row[2] for row in duckdb_rows} == run_ids
-    assert {row[3] for row in duckdb_rows} == {"1.0.0"}
+    assert {row[3] for row in duckdb_rows} == {"2.0.0"}
 
 
 def test_cli_transform_reingest_uses_bronze_sidecar_available_at(
@@ -208,4 +216,12 @@ def test_script_silver_step_threads_run_id_and_reingest(
     finally:
         con.close()
 
-    assert runs == [(next(iter(run_ids)), "elexon", "fuelhh", "transform", "success")]
+    assert runs == [
+        (
+            next(iter(run_ids)),
+            "elexon",
+            "fuelhh",
+            "transform",
+            "completed_with_warnings",
+        )
+    ]

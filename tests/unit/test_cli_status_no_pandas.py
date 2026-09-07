@@ -49,7 +49,7 @@ def test_status_without_pandas_or_numpy(tmp_path: Path, seed_run: bool) -> None:
                     "transform",
                     "completed_with_warnings",
                     17,
-                    1.5,
+                    33.1,
                     datetime.now(UTC),
                 ],
             )
@@ -103,8 +103,15 @@ raise SystemExit(result.exit_code)
             "transform",
             "completed_with_warnings",
             "17",
-            "1.5",
+            "33.1",
         ):
             assert value in stdout
+        data_line = next(
+            line
+            for line in stdout.splitlines()
+            if "|" in line and "offered_transfer_capacity_continuous" in line
+        )
+        cells = [cell.strip() for cell in data_line.strip().strip("|").split("|")]
+        assert cells[-1] == "33.1"
     else:
         assert "No pipeline runs in the last 24 hours." in stdout

@@ -282,7 +282,7 @@ def test_fuelhh_run_writes_bitemporal_columns(tmp_data_dir: Path) -> None:
     df = _read_single_silver(tmp_data_dir, "elexon", "fuelhh")
 
     assert rows == len(df)
-    _assert_base_bitemporal_columns(df)
+    _assert_base_bitemporal_columns(df, expected_version="2.0.0")
     assert df["event_time"].to_list() == df["timestamp_utc"].to_list()
     assert (df["event_time"] <= df["available_at"]).all()
 

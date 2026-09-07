@@ -12,7 +12,7 @@ import polars as pl
 from gridflow.schemas.elexon import ElexonFuelHH
 from gridflow.silver.base import BaseSilverTransformer
 from gridflow.silver.registry import register_transformer
-from gridflow.utils.time import settlement_period_to_utc
+from gridflow.utils.time import settlement_period_to_utc, utc_to_settlement_period
 
 logger = logging.getLogger(__name__)
 
@@ -23,12 +23,22 @@ class FuelHHTransformer(BaseSilverTransformer):
     source = "elexon"
     dataset = "fuelhh"
     schema_cls = ElexonFuelHH
-    DATASET_VERSION: ClassVar[str] = "1.0.0"
+    DATASET_VERSION: ClassVar[str] = "2.0.0"
     ENTITY_KEY_COLUMNS = (
         "settlement_date",
         "settlement_period",
         "fuel_type",
     )  # D-8: verbatim from unique() below
+    last_start_time_fallback_count: int = 0
+
+    def run(
+        self,
+        target_date: date,
+        run_id: str | None = None,
+        reingest: bool = False,
+    ) -> int:
+        self.last_start_time_fallback_count = 0
+        return super().run(target_date, run_id=run_id, reingest=reingest)
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         bronze_path = (
@@ -57,6 +67,7 @@ class FuelHHTransformer(BaseSilverTransformer):
         return pl.DataFrame(rows)
 
     def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
+        self.last_start_time_fallback_count = 0
         if raw_df.is_empty():
             return pl.DataFrame()
 
@@ -65,9 +76,12 @@ class FuelHHTransformer(BaseSilverTransformer):
             "settlementPeriod": "settlement_period",
             "fuelType": "fuel_type",
             "generation": "generation_mw",
+            "startTime": "start_time",
             "startTimeOfHalfHrPeriod": "start_time",
         }
-        rename_map = {k: v for k, v in column_mapping.items() if k in raw_df.columns}
+        rename_map = {
+            k: v for k, v in column_mapping.items() if k in raw_df.columns and v != "start_time"
+        }
         if rename_map:
             raw_df = raw_df.rename(rename_map)
 
@@ -97,15 +111,67 @@ class FuelHHTransformer(BaseSilverTransformer):
             ]
         )
 
-        df = df.with_columns(
-            pl.struct(["settlement_date", "settlement_period"])
-            .map_elements(
-                lambda row: settlement_period_to_utc(
-                    row["settlement_date"], row["settlement_period"]
-                ),
-                return_dtype=pl.Datetime("us", "UTC"),
+        start_cols = [
+            c for c in ("startTime", "startTimeOfHalfHrPeriod", "start_time") if c in df.columns
+        ]
+        parsed_starts = [
+            pl.col(c)
+            .cast(pl.String, strict=False)
+            .str.to_datetime(
+                format="%Y-%m-%dT%H:%M:%SZ",
+                time_unit="us",
+                strict=False,
             )
-            .alias("timestamp_utc")
+            .dt.replace_time_zone("UTC")
+            for c in start_cols
+        ]
+        start_expr = (
+            pl.coalesce(parsed_starts)
+            if parsed_starts
+            else pl.lit(None, dtype=pl.Datetime("us", "UTC"))
+        )
+        df = df.with_columns(start_expr.alias("start_time"))
+
+        self.last_start_time_fallback_count = df["start_time"].null_count()
+        logger.log(
+            logging.WARNING if self.last_start_time_fallback_count else logging.INFO,
+            "%s/%s: start_time_fallback_count=%d rows=%d",
+            self.source,
+            self.dataset,
+            self.last_start_time_fallback_count,
+            df.height,
+        )
+
+        def resolve_settlement(row: dict[str, Any]) -> dict[str, Any]:
+            ts = row["start_time"]
+            if ts is None:
+                settlement_date = row["settlement_date"]
+                settlement_period = row["settlement_period"]
+                ts = settlement_period_to_utc(settlement_date, settlement_period)
+            else:
+                settlement_date, settlement_period = utc_to_settlement_period(ts)
+            return {
+                "timestamp_utc": ts,
+                "settlement_date": settlement_date,
+                "settlement_period": settlement_period,
+            }
+
+        resolved_dtype = pl.Struct(
+            {
+                "timestamp_utc": pl.Datetime("us", "UTC"),
+                "settlement_date": pl.Date,
+                "settlement_period": pl.Int64,
+            }
+        )
+        df = (
+            df.with_columns(
+                pl.struct("start_time", "settlement_date", "settlement_period")
+                .map_elements(resolve_settlement, return_dtype=resolved_dtype)
+                .alias("_resolved_settlement")
+            )
+            .drop("settlement_date", "settlement_period")
+            .unnest("_resolved_settlement")
+            .with_columns(pl.col("settlement_period").cast(pl.Int32))
         )
 
         # G5-W2.2 (2026-05): the rename map above already produces
