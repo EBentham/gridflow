@@ -115,7 +115,13 @@ class PipelineRunTracker:
         rows_out: int = 0,
         rows_skipped: int = 0,
     ) -> None:
-        """Record successful completion of a pipeline run."""
+        """Record successful completion of a pipeline run.
+
+        For transforms, ``rows_skipped`` is the warning-accounting sum of
+        unmapped, start-time-fallback, and invalid occurrences. Some affected
+        rows are retained; the terms are not disjoint discarded-row counts.
+        Declaring transformers may count repeated D-1/D source reads.
+        """
         now = datetime.now(UTC)
         duration = (now - self.started_at).total_seconds()
         try:
@@ -152,9 +158,12 @@ class PipelineRunTracker:
 
         Identical to :meth:`complete` except the terminal ``status`` is
         ``'completed_with_warnings'`` rather than ``'success'``. Used when a
-        transform finished and wrote rows but encountered >=1 unmapped enum code
-        (ADR-022): the rows survive with a sentinel label, ``rows_skipped`` carries
-        the unmapped count, and the run is distinguished from both a clean
+        transform finished but encountered a recoverable warning. For transforms,
+        ``rows_skipped`` is the warning-accounting sum of unmapped,
+        start-time-fallback, and invalid occurrences. Some affected rows are
+        retained, the terms are not disjoint discarded-row counts, and declaring
+        transformers may count repeated D-1/D source reads. The run is distinguished
+        from both a clean
         ``'success'`` and a hard ``'failed'``. ``pipeline_runs.status`` is an
         unconstrained VARCHAR, so this needs no schema change.
         """

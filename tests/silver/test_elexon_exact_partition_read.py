@@ -163,8 +163,8 @@ def _seed_minimal_partition(bronze_dir: Path) -> None:
     )
 
 
-def test_no_elexon_transformer_reads_outside_its_exact_partition(tmp_path: Path) -> None:
-    """G-1: seeding bronze at D-1 only must never leak into ``run(D)``."""
+def test_undeclared_elexon_transformers_read_only_their_exact_partition(tmp_path: Path) -> None:
+    """G-1 remains binding outside the three explicit D-1/D ownership opt-ins."""
     registered = list_transformers("elexon")
     assert registered, "elexon transformers must be registered before this test runs"
 
@@ -178,12 +178,19 @@ def test_no_elexon_transformer_reads_outside_its_exact_partition(tmp_path: Path)
         case_dir = tmp_path / source / dataset
         _seed_minimal_partition(PathBuilder(case_dir).bronze_date_dir(source, dataset, prior_date))
         transformer = get_transformer(source, dataset, case_dir)
+        if transformer.PARTITION_DATE_COLUMN is not None:
+            continue
         rows = transformer.run(target_date, run_id="g1-gate")
         assert rows == 0, f"{source}/{dataset} leaked rows from a prior-day partition"
         assert not PathBuilder(case_dir).silver_file(source, dataset, target_date).exists()
         checked += 1
 
-    assert checked == len(registered) - len(_COVERING_FALLBACK_EXEMPT)
+    declarations = sum(
+        get_transformer(source, dataset, tmp_path / "declarations").PARTITION_DATE_COLUMN
+        is not None
+        for source, dataset in registered
+    )
+    assert checked == len(registered) - len(_COVERING_FALLBACK_EXEMPT) - declarations
 
 
 def test_every_elexon_dataset_is_filtered_or_exempt_with_a_reason() -> None:

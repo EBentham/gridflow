@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 import logging
 from datetime import UTC, date, datetime, timedelta
-from typing import Any
+from typing import Any, ClassVar
 
 import polars as pl
 
@@ -23,6 +23,8 @@ class MIDTransformer(BaseSilverTransformer):
     source = "elexon"
     dataset = "mid"
     schema_cls = ElexonMID
+    PARTITION_DATE_COLUMN: ClassVar[str | None] = "settlement_date"
+    PARTITION_SOURCE_OFFSETS: ClassVar[tuple[int, ...]] = (-1, 0)
     VINTAGE_POLICY = VintagePolicy(
         name="elexon-mid/vp-2026-09",
         lag=timedelta(minutes=60),

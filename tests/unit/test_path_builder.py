@@ -18,6 +18,15 @@ class TestPathBuilder:
         result = self.pb.bronze_date_dir("elexon", "system_prices", date(2024, 1, 15))
         assert result == Path("/data/bronze/elexon/system_prices/2024/01/15")
 
+    def test_bronze_date_dir_honours_dataset_directory_override(self):
+        result = self.pb.bronze_date_dir(
+            "elexon",
+            "system_prices",
+            date(2024, 1, 15),
+            dataset_dir=Path("/read-only/bronze/system_prices"),
+        )
+        assert result == Path("/read-only/bronze/system_prices/2024/01/15")
+
     def test_silver_dir(self):
         result = self.pb.silver_dir("elexon", "system_prices")
         assert result == Path("/data/silver/elexon/system_prices")
@@ -35,6 +44,17 @@ class TestPathBuilder:
             "/data/silver/elexon/system_prices/year=2024/month=01/system_prices_20240115.parquet"
         )
         assert result == expected
+
+    def test_silver_file_honours_dataset_directory_override(self):
+        result = self.pb.silver_file(
+            "elexon",
+            "system_prices",
+            date(2024, 1, 15),
+            dataset_dir=Path("/temporary/silver/system_prices"),
+        )
+        assert result == Path(
+            "/temporary/silver/system_prices/year=2024/month=01/system_prices_20240115.parquet"
+        )
 
     def test_gold_dir(self):
         result = self.pb.gold_dir("system_marginal_price")

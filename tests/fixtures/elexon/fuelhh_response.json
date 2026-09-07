@@ -3,30 +3,35 @@
     {
       "settlementDate": "2024-01-15",
       "settlementPeriod": 1,
+      "startTime": "2024-01-15T00:00:00Z",
       "fuelType": "CCGT",
       "generation": 12500.5
     },
     {
       "settlementDate": "2024-01-15",
       "settlementPeriod": 1,
+      "startTime": "2024-01-15T00:00:00Z",
       "fuelType": "WIND",
       "generation": 4200.0
     },
     {
       "settlementDate": "2024-01-15",
       "settlementPeriod": 1,
+      "startTime": "2024-01-15T00:00:00Z",
       "fuelType": "NUCLEAR",
       "generation": 6800.0
     },
     {
       "settlementDate": "2024-01-15",
       "settlementPeriod": 2,
+      "startTime": "2024-01-15T00:30:00Z",
       "fuelType": "CCGT",
       "generation": 12600.0
     },
     {
       "settlementDate": "2024-01-15",
       "settlementPeriod": 2,
+      "startTime": "2024-01-15T00:30:00Z",
       "fuelType": "WIND",
       "generation": 4100.0
     }

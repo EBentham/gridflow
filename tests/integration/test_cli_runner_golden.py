@@ -20,7 +20,7 @@ from __future__ import annotations
 
 import json
 import re
-from datetime import UTC, date, datetime
+from datetime import UTC, date, datetime, timedelta
 from typing import TYPE_CHECKING, Any
 
 import duckdb
@@ -69,23 +69,41 @@ def _isolated_env(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     return db_path
 
 
-def _write_fuelhh_bronze(data_dir: Path, target: date = date(2024, 1, 15)) -> None:
+def _write_fuelhh_bronze(
+    data_dir: Path,
+    target: date = date(2024, 1, 15),
+    *,
+    include_start_time: bool = True,
+) -> None:
     """Drop one real fuelhh response into the bronze partition for ``target``."""
     from pathlib import Path as _Path
 
+    from gridflow.storage.paths import PathBuilder
+
     fixtures = _Path(__file__).parent.parent / "fixtures" / "elexon"
-    bronze_dir = (
-        data_dir
-        / "bronze"
-        / "elexon"
-        / "fuelhh"
-        / str(target.year)
-        / f"{target.month:02d}"
-        / f"{target.day:02d}"
-    )
+    bronze_dir = PathBuilder(data_dir).bronze_date_dir("elexon", "fuelhh", target)
     bronze_dir.mkdir(parents=True, exist_ok=True)
     payload = json.loads((fixtures / "fuelhh_response.json").read_text())
+    if not include_start_time:
+        for row in payload["data"]:
+            row.pop("startTime", None)
     (bronze_dir / "raw_test.json").write_text(json.dumps(payload))
+    (bronze_dir / "raw_test.meta.json").write_text(
+        json.dumps(
+            {
+                "source": "elexon",
+                "dataset": "fuelhh",
+                "written_at": "2024-01-15T12:00:00+00:00",
+                "data_date": target.isoformat(),
+                "request_params": {
+                    "publishDateTimeFrom": f"{target.isoformat()}T00:00:00Z",
+                    "publishDateTimeTo": (f"{(target + timedelta(days=1)).isoformat()}T00:00:00Z"),
+                },
+                "page": 1,
+                "total_pages": 1,
+            }
+        )
+    )
 
 
 class _FakeConnector:
@@ -209,6 +227,30 @@ def test_transform_success(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> N
     assert "elexon/fuelhh:" in result.output
     assert "rows transformed" in result.output
     assert "Transform complete" in result.output
+
+
+def test_transform_fuelhh_fallback_variant_is_counted_and_rendered(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The explicit no-start fixture remains retained, warned, and visible."""
+    data_dir = tmp_path / "data"
+    db_path = _isolated_env(tmp_path, monkeypatch)
+    _write_fuelhh_bronze(data_dir, include_start_time=False)
+
+    result = runner.invoke(
+        app,
+        ["transform", "elexon", "fuelhh", "--start", "2024-01-15", "--end", "2024-01-15"],
+    )
+    assert result.exit_code == 0, result.output
+    assert "5 start-time fallback" in result.output
+    assert "completed_with_warnings" in result.output
+    with duckdb.connect(str(db_path), read_only=True) as con:
+        status, rows_out, rows_skipped = con.execute(
+            "SELECT status, rows_out, rows_skipped FROM pipeline_runs "
+            "WHERE source = ? AND dataset = ? ORDER BY started_at DESC LIMIT 1",
+            ["elexon", "fuelhh"],
+        ).fetchone()
+    assert (status, rows_out, rows_skipped) == ("completed_with_warnings", 5, 5)
 
 
 def test_transform_failure_exits_1(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:

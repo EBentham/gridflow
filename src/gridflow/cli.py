@@ -1301,6 +1301,28 @@ def _echo_ingest_results(source: str, results: list[DatasetResult]) -> None:
 def _echo_transform_results(source: str, results: list[DatasetResult]) -> None:
     """Echo per-dataset transform result lines (preserves cli.transform formatting)."""
     for r in results:
+        accounting = "".join(
+            clause
+            for count, clause in (
+                (
+                    r.rows_start_time_fallback,
+                    f", {r.rows_start_time_fallback} start-time fallback",
+                ),
+                (
+                    r.rows_partition_trimmed,
+                    f", {r.rows_partition_trimmed} routine covering-set trim",
+                ),
+                (
+                    r.rows_partition_trim_unrecoverable,
+                    f", {r.rows_partition_trim_unrecoverable} unsafe partition trim",
+                ),
+                (
+                    r.partition_windows_unresolved,
+                    f", {r.partition_windows_unresolved} partition window unresolved",
+                ),
+            )
+            if count
+        )
         if r.status == "completed_with_warnings":
             # Excluded bronze bodies are a FILE count, appended only when
             # nonzero so the existing line is unchanged for every other
@@ -1311,12 +1333,12 @@ def _echo_transform_results(source: str, results: list[DatasetResult]) -> None:
             typer.echo(
                 f"  {source}/{r.dataset}: {r.rows_out} rows transformed, "
                 f"{r.rows_unmapped} unmapped, {r.rows_invalid} schema-invalid"
-                f"{unvouched} (completed_with_warnings)"
+                f"{unvouched}{accounting} (completed_with_warnings)"
             )
         elif r.status == "success":
-            typer.echo(f"  {source}/{r.dataset}: {r.rows_out} rows transformed")
+            typer.echo(f"  {source}/{r.dataset}: {r.rows_out} rows transformed{accounting}")
         else:
-            typer.echo(f"  {source}/{r.dataset}: FAILED - {r.error}", err=True)
+            typer.echo(f"  {source}/{r.dataset}: FAILED - {r.error}{accounting}", err=True)
 
 
 def _echo_build_results(results: list[DatasetResult]) -> None:

@@ -26,6 +26,8 @@ class SystemPriceTransformer(BaseSilverTransformer):
     source = "elexon"
     dataset = "system_prices"
     schema_cls = ElexonSystemPrice
+    PARTITION_DATE_COLUMN: ClassVar[str | None] = "settlement_date"
+    PARTITION_SOURCE_OFFSETS: ClassVar[tuple[int, ...]] = (0,)
     VINTAGE_POLICY = VintagePolicy(
         name="elexon-system_prices/vp-2026-09",
         lag=timedelta(minutes=90),

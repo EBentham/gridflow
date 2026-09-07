@@ -126,3 +126,15 @@ agent behaviour, and there the prohibition is absolute.
 *Migrated from the vault (`quant-vault/00-active/decisions/2026-07-26-bronze-retention-silver-rebuild.md`)
 to this repo on 2026-08-03 under v0.18 N-8 — bronze retention is gridflow-internal, so this ADR
 is its canonical home; the vault copy is reduced to a pointer in the same unit.*
+
+## Amendment (2026-09-07, v0.21-P) — destination ownership covering sets
+
+Cross-referencing ADR-026, `PARTITION_DATE_COLUMN` declares destination-row ownership for
+MID, FUELHH, and system_prices. Rebuilding destination D requires the dataset's declared
+covering set, with each source's existing publication-window processing before ownership
+selection: FUELHH needs both range halos (D-1 and D+1), MID needs only the predecessor
+(D-1), and system_prices needs only the requested dates (no neighbour). MID/FUELHH
+deduplicate combined prepared rows and overwrite D; system_prices preserves owned per-body
+captures. Missing bronze cannot be reconstructed by relabelling another partition, and
+bronze remains immutable. Undeclared transformers retain their existing derivation
+contracts.
