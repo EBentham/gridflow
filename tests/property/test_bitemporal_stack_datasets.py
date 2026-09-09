@@ -189,8 +189,12 @@ def test_bmunits_silver_has_bitemporal_columns(tmp_data_dir: Path) -> None:
     assert rows > 0
 
     df = _read_silver(tmp_data_dir, "elexon", "bmunits_reference")
-    assert BMUnitsTransformer.DATASET_VERSION == "1.0.0"
-    _assert_bitemporal_columns(df, expected_version="1.0.0")
+    # 1.1.0 (ADR-032): keyless vendor rows are dropped and logged rather than
+    # aborting the transform, so absence from this dataset no longer implies
+    # the vendor did not send the unit. The stamp is how a consumer tells the
+    # two regimes apart, which is why this lockstep assertion exists.
+    assert BMUnitsTransformer.DATASET_VERSION == "1.1.0"
+    _assert_bitemporal_columns(df, expected_version="1.1.0")
 
 
 def test_installed_capacity_units_silver_has_bitemporal_columns(

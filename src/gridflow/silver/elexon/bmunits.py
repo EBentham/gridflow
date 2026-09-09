@@ -28,23 +28,39 @@ class BMUnitsTransformer(BaseSilverTransformer):
     is retained for backward compatibility as the local processing
     timestamp. Under ``--reingest`` the two diverge.
 
-    Fail-hard on a null/empty ``bm_unit_id`` (C-7, ruled by Bobbo
-    2026-08-16): ``bm_unit_id`` is this transformer's entity key
-    (``ENTITY_KEY_COLUMNS = ("bm_unit_id",)``). A null-key row cannot be
-    joined by any downstream consumer, and because the dedup below is
-    ``keep="last"`` on that same key, two null-key rows would silently
-    collapse into one. Fail-closed on a null primary key is therefore the
-    literal reading of the ruling -- not a bypassable warning. Consequence,
-    stated explicitly because it is deliberate: one malformed vendor row now
-    aborts the entire ``bmunits_reference`` transform, and this is a
-    reference dataset other joins depend on. That is the accepted cost of
-    the fail-hard ruling; do not soften it, do not add a bypass flag.
+    Null, empty or whitespace-only ``bm_unit_id`` -- C-7 (ruled fail-hard by
+    Bobbo 2026-08-16; the whitespace arm added here, see the predicate comment),
+    NARROWED by Bobbo 2026-09-09 (ADR-032). ``bm_unit_id`` is this
+    transformer's entity key (``ENTITY_KEY_COLUMNS = ("bm_unit_id",)``), so a
+    null-key row still must never reach silver: it cannot be joined by any
+    downstream consumer, and because the dedup below is ``keep="last"`` on
+    that same key, two null-key rows would silently collapse into one.
+
+    What changed is the disposition, not the guarantee. Keyless rows are now
+    **dropped and logged at ERROR with their vendor identities**, instead of
+    aborting the whole transform. C-7 protects the silver key space; it was
+    never meant to require the vendor to be complete. This is not a bypass
+    flag -- there is no way for a caller to let a keyless row through, and if
+    *every* row is keyless the transform still raises, because that is a
+    broken payload rather than a vendor gap.
+
+    Rationale is in ADR-032; the measurement behind it is
+    ``gridflow_models/.planning/phases/v1.9-S2-realised-residual-perfect-prog/
+    BMUNITS-NULL-KEY-VERIFICATION.md``: 90 of 3060 rows keyless on
+    2026-09-01, confirmed still null on a live 2026-09-09 call, and dropping
+    them costs zero join coverage (every one of the 2467 distinct units in
+    ``pn`` silver and all 386 in ``boal`` resolves against a keyed row).
+    Bronze retains every dropped row, so nothing is destroyed.
     """
 
     source = "elexon"
     dataset = "bmunits_reference"
     schema_cls = ElexonBMUnit
-    DATASET_VERSION: ClassVar[str] = "1.0.0"
+    # 1.1.0: keyless vendor rows are dropped and logged rather than aborting
+    # the transform (C-7 narrowed, ADR-032). A unit's absence from this dataset
+    # no longer implies the vendor did not send it -- the version stamp is how a
+    # consumer tells the two regimes apart.
+    DATASET_VERSION: ClassVar[str] = "1.1.0"
     ENTITY_KEY_COLUMNS = ("bm_unit_id",)  # D-8: verbatim from unique() below
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
@@ -97,25 +113,73 @@ class BMUnitsTransformer(BaseSilverTransformer):
 
         df = raw_df.with_columns(pl.col("bm_unit_id").cast(pl.Utf8))
 
-        # C-7 (fail-hard, ruled 2026-08-16): bm_unit_id is ENTITY_KEY_COLUMNS.
-        # A null-key row cannot be joined downstream, and the keep="last"
-        # dedup a few lines below would silently collapse two null-key rows
-        # into one -- so abort here, before dedup, rather than let a
-        # malformed vendor row corrupt this reference dataset.
-        null_bm_unit_id = df.filter(pl.col("bm_unit_id").is_null() | (pl.col("bm_unit_id") == ""))
-        if not null_bm_unit_id.is_empty():
-            if "national_grid_bm_unit" in null_bm_unit_id.columns:
-                sample = null_bm_unit_id["national_grid_bm_unit"].to_list()[:10]
+        # C-7 (ruled 2026-08-16), NARROWED 2026-09-09 -- see ADR-032 and the
+        # class docstring. bm_unit_id is ENTITY_KEY_COLUMNS: a null-key row
+        # cannot be joined downstream, and the keep="last" dedup a few lines
+        # below would silently collapse two null-key rows into one. So it must
+        # not reach silver -- but a vendor gap in a reference dataset should
+        # not take down a dataset other joins depend on. Drop the keyless rows
+        # here, before dedup, and log every identity so the drop is auditable
+        # rather than silent.
+        # `strip_chars()` widens C-7's original `== ""` to catch a whitespace-only
+        # key. Deliberate, and it is this change that makes it necessary: under
+        # fail-hard a single null aborted the whole transform, so in the real
+        # payload NO row reached silver and a " " key was unreachable in
+        # practice. Dropping the nulls and writing the rest makes it reachable --
+        # it would become its own entity key, join against nothing, and two such
+        # rows would collapse under the keep="last" dedup below, which is the
+        # exact hazard C-7 exists to prevent. Measured no-op on today's data:
+        # 0 whitespace-only and 0 padded keys in 3060 bronze rows.
+        is_keyless = pl.col("bm_unit_id").is_null() | (pl.col("bm_unit_id").str.strip_chars() == "")
+        keyless = df.filter(is_keyless)
+        if not keyless.is_empty():
+            if "national_grid_bm_unit" in keyless.columns:
+                # A row keyless in BOTH identity fields has no vendor identity at
+                # all; say so rather than logging the literal string "None",
+                # which reads as a unit named None.
+                identities = sorted(
+                    "<no national_grid_bm_unit>" if v is None else str(v)
+                    for v in keyless["national_grid_bm_unit"].to_list()
+                )
             else:
-                sample = ["<national_grid_bm_unit column absent from this payload>"]
+                identities = ["<national_grid_bm_unit column absent from this payload>"]
+            df = df.filter(~is_keyless)
+            # D-40: rows DECLARED INVALID AND REMOVED must reach the run status
+            # through rows_invalid (runner.py:271-275, :1232-1234), so the drop
+            # lands as completed_with_warnings rather than a silent success. The
+            # ERROR log below carries the identities; this carries the count to
+            # every consumer that reads TransformResult instead of stderr.
+            # `+=`, never `=`, matching the repo-wide idiom -- run() resets it
+            # (base.py:959). Reference: neso_data_portal/
+            # embedded_wind_solar_forecast.py:318.
+            self.last_excluded_row_count += keyless.height
+            # ERROR, not WARNING: this is vendor data loss. Full identities, not
+            # a sample -- a fill-forward will need to know exactly which units
+            # went missing, and the count alone cannot say which.
+            logger.error(
+                "%s/%s: dropped %d of %d row(s) with a null, empty or whitespace-only "
+                "bm_unit_id (ENTITY_KEY_COLUMNS). A null-key row cannot be joined "
+                "by any downstream consumer and would collapse under the keep='last' "
+                "dedup, so it is excluded from silver rather than aborting the "
+                "transform (C-7 as narrowed by ADR-032). Bronze retains every "
+                "dropped row. Affected national_grid_bm_unit: %s",
+                self.source,
+                self.dataset,
+                keyless.height,
+                keyless.height + df.height,
+                identities,
+            )
+
+        # A payload in which NOTHING is keyed is a broken feed, not a vendor
+        # gap -- C-7's fail-closed still applies there.
+        if df.is_empty():
             raise ValueError(
-                f"{self.source}/{self.dataset}: {null_bm_unit_id.height} row(s) have a "
-                "null or empty-string bm_unit_id, this transformer's entity key "
-                "(ENTITY_KEY_COLUMNS). A null-key row cannot be joined by any "
-                'downstream consumer, and the keep="last" dedup below would silently '
-                "collapse two null-key rows into one -- failing closed on a malformed "
-                "vendor row rather than corrupting this reference dataset. Affected "
-                f"national_grid_bm_unit sample: {sample}."
+                f"{self.source}/{self.dataset}: every one of the "
+                f"{keyless.height} row(s) in this payload has a null, empty or "
+                "whitespace-only bm_unit_id, this transformer's entity key. That is "
+                "a broken feed rather than a vendor gap, so the transform fails "
+                "closed rather than writing an empty reference dataset over a "
+                "good one."
             )
 
         if "registered_capacity_mw" in df.columns:
