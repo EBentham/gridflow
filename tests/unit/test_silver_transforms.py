@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import logging
 from datetime import UTC, date, datetime
 from pathlib import Path
 
@@ -989,14 +990,23 @@ class TestBMUnitsTransformer:
         raw = pl.DataFrame([{"fuelType": "GAS", "name": "No ID"}])
         assert self.t.transform(raw).is_empty()
 
-    def test_null_bm_unit_id_fails_hard(self):
-        """C-7 (ruled fail-hard 2026-08-16): a null bm_unit_id is this
-        transformer's entity key (ENTITY_KEY_COLUMNS). A null-key row cannot
-        be joined by any downstream consumer, and keep="last" dedup on that
-        same key would silently collapse two null-key rows into one -- so
-        the transform must abort rather than let it through."""
+    def test_null_bm_unit_id_is_dropped_not_admitted(self):
+        """C-7 (ruled 2026-08-16) NARROWED 2026-09-09 (ADR-032): a null
+        bm_unit_id is this transformer's entity key (ENTITY_KEY_COLUMNS), so
+        it still must never reach silver -- it cannot be joined by any
+        downstream consumer, and keep="last" dedup on that same key would
+        silently collapse two null-key rows into one. What changed is the
+        disposition: the row is dropped, not aborted on, so one keyless
+        vendor row no longer takes down a reference dataset other joins
+        depend on."""
         raw = pl.DataFrame(
             [
+                {
+                    "bmUnit": "T_DRAXX-1",
+                    "nationalGridBmUnit": "DRAXX-1",
+                    "name": "Drax 1",
+                    "fuelType": "BIOMASS",
+                },
                 {
                     "bmUnit": None,
                     "nationalGridBmUnit": "WTGRW-1",
@@ -1005,14 +1015,22 @@ class TestBMUnitsTransformer:
                 },
             ]
         )
-        with pytest.raises(ValueError, match="bm_unit_id"):
-            self.t.transform(raw)
+        result = self.t.transform(raw)
+        assert result["bm_unit_id"].to_list() == ["T_DRAXX-1"]
+        assert "WTGRW-1" not in result["national_grid_bm_unit"].to_list()
 
-    def test_empty_string_bm_unit_id_fails_hard(self):
+    def test_empty_string_bm_unit_id_is_dropped_not_admitted(self):
         """C-7 covers empty-string as well as null -- both are unusable
-        entity keys, not merely a JSON-null representation."""
+        entity keys, not merely a JSON-null representation. Both are dropped
+        under ADR-032, not merely the JSON-null one."""
         raw = pl.DataFrame(
             [
+                {
+                    "bmUnit": "T_DRAXX-1",
+                    "nationalGridBmUnit": "DRAXX-1",
+                    "name": "Drax 1",
+                    "fuelType": "BIOMASS",
+                },
                 {
                     "bmUnit": "",
                     "nationalGridBmUnit": "WTGRW-1",
@@ -1021,8 +1039,79 @@ class TestBMUnitsTransformer:
                 },
             ]
         )
-        with pytest.raises(ValueError, match="bm_unit_id"):
+        result = self.t.transform(raw)
+        assert result["bm_unit_id"].to_list() == ["T_DRAXX-1"]
+
+    def test_dropped_keyless_rows_are_logged_with_full_identities(self, caplog):
+        """The drop must be auditable, never silent: ADR-032 turns a hard
+        failure into data loss, and the ERROR log is the only signal that the
+        vendor gap exists or has grown. Full identities, not a sample -- the
+        flagged fill-forward follow-up needs to know exactly which units went
+        missing."""
+        raw = pl.DataFrame(
+            [
+                {"bmUnit": "T_DRAXX-1", "nationalGridBmUnit": "DRAXX-1", "fuelType": "BIOMASS"},
+                {"bmUnit": None, "nationalGridBmUnit": "WTGRW-1", "fuelType": "WIND"},
+                {"bmUnit": None, "nationalGridBmUnit": "ACHYW-1", "fuelType": "WIND"},
+            ]
+        )
+        with caplog.at_level(logging.ERROR):
             self.t.transform(raw)
+
+        errors = [r for r in caplog.records if r.levelno >= logging.ERROR]
+        assert errors, "a keyless drop must log at ERROR"
+        msg = errors[-1].getMessage()
+        assert "dropped 2 of 3" in msg
+        # Every identity, not a truncated sample.
+        assert "ACHYW-1" in msg and "WTGRW-1" in msg
+
+    def test_all_rows_keyless_still_fails_closed(self):
+        """ADR-032 narrows C-7 for a vendor GAP, not for a broken feed. If
+        nothing in the payload is keyed, writing the result would replace a
+        good reference dataset with an empty one -- so the transform still
+        raises."""
+        raw = pl.DataFrame(
+            [
+                {"bmUnit": None, "nationalGridBmUnit": "WTGRW-1", "fuelType": "WIND"},
+                {"bmUnit": "", "nationalGridBmUnit": "ACHYW-1", "fuelType": "WIND"},
+            ]
+        )
+        with pytest.raises(ValueError, match="every one of the"):
+            self.t.transform(raw)
+
+    def test_keyless_row_cannot_collapse_a_keyed_row_under_dedup(self):
+        """The concrete corruption C-7 was written to prevent, asserted
+        directly: two keyless rows must not survive to the keep="last" dedup
+        and collapse into one, and a keyless row must never overwrite a real
+        registered unit. Motivated by the measured payload, where 7 of the
+        keyless rows are shadow duplicates of units that ARE keyed."""
+        raw = pl.DataFrame(
+            [
+                {
+                    "bmUnit": "T_IRNAB-1",
+                    "nationalGridBmUnit": "IRNAB-1",
+                    "name": "Iron Acton",
+                    "fuelType": "OTHER",
+                },
+                {
+                    "bmUnit": None,
+                    "nationalGridBmUnit": "T_IRNAB-1",
+                    "name": None,
+                    "fuelType": "OTHER",
+                },
+                {
+                    "bmUnit": None,
+                    "nationalGridBmUnit": "HAMHB-1",
+                    "name": None,
+                    "fuelType": "OTHER",
+                },
+            ]
+        )
+        result = self.t.transform(raw)
+        assert len(result) == 1
+        assert result["bm_unit_id"].to_list() == ["T_IRNAB-1"]
+        # The real unit survives intact -- not overwritten by the all-null shadow.
+        assert result["bm_unit_name"].to_list() == ["Iron Acton"]
 
 
 # === New transformer tests ===
