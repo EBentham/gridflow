@@ -548,3 +548,82 @@ def test_the_failed_path_still_reports_an_unaccounted_empty_frame(
     assert result.status == "failed"
     assert result.error is not None
     assert "unaccounted_empty_frames=1" in result.error
+
+
+# --------------------------------------------------------------------------- #
+# D-40 / ADR-032: the bmunits keyless drop must reach the reported STATUS
+# --------------------------------------------------------------------------- #
+
+
+def _bmunits_partition(data_dir: Path) -> Path:
+    path = data_dir / "bronze" / "elexon" / "bmunits_reference" / "2024" / "01" / "15"
+    path.mkdir(parents=True, exist_ok=True)
+    return path
+
+
+def _bmunit_row(elexon_key: str | None, nget: str) -> dict[str, Any]:
+    """One vendor BM-unit record; ``elexon_key=None`` is the keyless shape."""
+    return {"elexonBmUnit": elexon_key, "nationalGridBmUnit": nget, "fuelType": "WIND"}
+
+
+def test_bmunits_keyless_drop_lands_as_warnings_not_a_silent_success(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """ADR-032 narrowed C-7 from fail-hard to drop-and-log, trading a loud
+    failure for data loss. D-40 is what keeps that loss visible: the count must
+    travel ``last_excluded_row_count`` -> ``rows_invalid`` -> status, so the run
+    lands ``completed_with_warnings``.
+
+    Asserted through the REAL ``run_transform``, not on the transformer's
+    counter: a unit assertion on the counter cannot prove the reported status,
+    and the status is the entire claim. Before the fix, a production run that
+    dropped 90 of 3060 rows reported ``success`` with ``rows_invalid=0``.
+    """
+
+    def seed(data_dir: Path) -> None:
+        _write_body(
+            _bmunits_partition(data_dir),
+            "keyless",
+            [
+                _bmunit_row("T_DRAXX-1", "DRAXX-1"),
+                _bmunit_row(None, "WTGRW-1"),
+                _bmunit_row("", "ACHYW-1"),
+            ],
+        )
+
+    result = _run_transform(
+        tmp_path, monkeypatch, seed, source="elexon", dataset="bmunits_reference"
+    )
+
+    assert result.status == "completed_with_warnings", (
+        "a drop that reports success makes the data loss invisible to every "
+        "consumer that reads DatasetResult rather than scraping stderr"
+    )
+    assert result.rows_invalid == 2
+    assert result.rows_out == 1
+
+
+def test_bmunits_without_keyless_rows_still_reports_plain_success(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The control for the test above.
+
+    Without it, an increment that fired unconditionally -- or a status rule that
+    warned on every bmunits run -- would pass the positive case and make the
+    warning meaningless.
+    """
+
+    def seed(data_dir: Path) -> None:
+        _write_body(
+            _bmunits_partition(data_dir),
+            "all_keyed",
+            [_bmunit_row("T_DRAXX-1", "DRAXX-1"), _bmunit_row("T_COSO-1", "COSO-1")],
+        )
+
+    result = _run_transform(
+        tmp_path, monkeypatch, seed, source="elexon", dataset="bmunits_reference"
+    )
+
+    assert result.status == "success"
+    assert result.rows_invalid == 0
+    assert result.rows_out == 2

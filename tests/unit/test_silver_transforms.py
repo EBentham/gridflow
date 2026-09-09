@@ -1071,14 +1071,17 @@ class TestBMUnitsTransformer:
         missing = [name for name in keyless_names if name not in msg]
         assert not missing, f"identities truncated, missing: {missing}"
 
-    def test_dropped_keyless_rows_reach_the_run_status_as_excluded(self, caplog):
-        """D-40: a row DECLARED INVALID AND REMOVED must reach the run status
-        through last_excluded_row_count -> rows_invalid (runner.py:271-275), so
-        the transform lands as completed_with_warnings rather than a silent
-        success. The ERROR log is NOT the only channel, and this transformer is
-        neither VINTAGE_PER_BRONZE_FILE nor PARTITION_DATE_COLUMN-bearing, so
-        the D-42 empty-frame net cannot cover for it -- this counter is the only
-        structured signal it has."""
+    def test_dropped_keyless_rows_increment_the_excluded_counter(self, caplog):
+        """D-40, PRODUCER half only: `transform()` accumulates the drop into
+        `last_excluded_row_count`.
+
+        Deliberately named for what it checks. This asserts the counter and
+        NOTHING about the reported status -- a unit call to `transform()` never
+        reaches `run_transform`, so it cannot prove the
+        counter -> rows_invalid -> completed_with_warnings chain. That chain is
+        the actual claim of ADR-032's accounting, and it is pinned end-to-end in
+        tests/unit/test_silver_base_exclusion_accounting.py::
+        test_bmunits_keyless_drop_lands_as_warnings_not_a_silent_success."""
         raw = pl.DataFrame(
             [
                 {"bmUnit": "T_DRAXX-1", "nationalGridBmUnit": "DRAXX-1", "fuelType": "BIOMASS"},
