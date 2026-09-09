@@ -120,7 +120,16 @@ class BMUnitsTransformer(BaseSilverTransformer):
         # not take down a dataset other joins depend on. Drop the keyless rows
         # here, before dedup, and log every identity so the drop is auditable
         # rather than silent.
-        is_keyless = pl.col("bm_unit_id").is_null() | (pl.col("bm_unit_id") == "")
+        # `strip_chars()` widens C-7's original `== ""` to catch a whitespace-only
+        # key. Deliberate, and it is this change that makes it necessary: under
+        # fail-hard a single null aborted the whole transform, so in the real
+        # payload NO row reached silver and a " " key was unreachable in
+        # practice. Dropping the nulls and writing the rest makes it reachable --
+        # it would become its own entity key, join against nothing, and two such
+        # rows would collapse under the keep="last" dedup below, which is the
+        # exact hazard C-7 exists to prevent. Measured no-op on today's data:
+        # 0 whitespace-only and 0 padded keys in 3060 bronze rows.
+        is_keyless = pl.col("bm_unit_id").is_null() | (pl.col("bm_unit_id").str.strip_chars() == "")
         keyless = df.filter(is_keyless)
         if not keyless.is_empty():
             if "national_grid_bm_unit" in keyless.columns:

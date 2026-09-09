@@ -1052,7 +1052,11 @@ class TestBMUnitsTransformer:
         logged `sample = [...][:10]`, so a test with 2 or 3 rows would still
         pass if that truncation were reintroduced -- which would leave the one
         property this test exists to guard completely unpinned."""
-        keyless_names = [f"KEYLESS-{i:02d}" for i in range(15)]
+        # Derived, not hard-coded in three places: the ONE fact this test needs
+        # is that the fixture exceeds the retired truncation width, so state it
+        # once and let the assertions follow from it.
+        retired_truncation_width = 10
+        keyless_names = [f"KEYLESS-{i:02d}" for i in range(retired_truncation_width + 5)]
         raw = pl.DataFrame(
             [{"bmUnit": "T_DRAXX-1", "nationalGridBmUnit": "DRAXX-1", "fuelType": "BIOMASS"}]
             + [
@@ -1060,16 +1064,49 @@ class TestBMUnitsTransformer:
                 for name in keyless_names
             ]
         )
+        assert len(keyless_names) > retired_truncation_width, "fixture too small to guard"
+
         with caplog.at_level(logging.ERROR):
             self.t.transform(raw)
 
         errors = [r for r in caplog.records if r.levelno >= logging.ERROR]
         assert errors, "a keyless drop must log at ERROR"
         msg = errors[-1].getMessage()
-        assert "dropped 15 of 16" in msg
+        assert f"dropped {len(keyless_names)} of {len(keyless_names) + 1}" in msg
         # EVERY identity -- a [:10] truncation fails here on the last five.
         missing = [name for name in keyless_names if name not in msg]
         assert not missing, f"identities truncated, missing: {missing}"
+
+    def test_whitespace_only_bm_unit_id_is_dropped(self):
+        """A whitespace-only key is as unusable as a null one, and THIS change
+        is what makes closing it necessary: under C-7's fail-hard a single null
+        aborted the transform, so in the real payload no row reached silver and
+        a " " key was unreachable in practice. Dropping the nulls and writing
+        the rest makes it reachable -- it would become its own entity key, join
+        against nothing, and two such rows would collapse under the keep="last"
+        dedup, which is the precise hazard C-7 exists to prevent."""
+        raw = pl.DataFrame(
+            [
+                {"bmUnit": "T_DRAXX-1", "nationalGridBmUnit": "DRAXX-1", "fuelType": "BIOMASS"},
+                {"bmUnit": "   ", "nationalGridBmUnit": "PADDED-1", "fuelType": "WIND"},
+                {"bmUnit": "\t\n", "nationalGridBmUnit": "PADDED-2", "fuelType": "WIND"},
+            ]
+        )
+        result = self.t.transform(raw)
+        assert result["bm_unit_id"].to_list() == ["T_DRAXX-1"]
+        assert self.t.last_excluded_row_count == 2
+
+    def test_a_padded_but_real_bm_unit_id_is_kept_unchanged(self):
+        """The control for the widening: `strip_chars` decides whether a key is
+        EMPTY, it must not rewrite a key that has content. A padded real key is
+        kept, and kept verbatim -- silently trimming an entity key would be a
+        far worse defect than the one being closed."""
+        raw = pl.DataFrame(
+            [{"bmUnit": " T_DRAXX-1 ", "nationalGridBmUnit": "DRAXX-1", "fuelType": "BIOMASS"}]
+        )
+        result = self.t.transform(raw)
+        assert result["bm_unit_id"].to_list() == [" T_DRAXX-1 "]
+        assert self.t.last_excluded_row_count == 0
 
     def test_dropped_keyless_rows_increment_the_excluded_counter(self, caplog):
         """D-40, PRODUCER half only: `transform()` accumulates the drop into

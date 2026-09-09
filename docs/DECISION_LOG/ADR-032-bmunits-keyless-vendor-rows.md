@@ -86,6 +86,18 @@ a key. The stamp is how a consumer tells the two regimes apart.
 - **A percentage threshold** (fail if more than N% is keyless). Not adopted: it
   would introduce a magic number nobody has ruled on. The ERROR log with its
   count is the signal that the gap has grown; revisit if it ever does.
+- **Leaving C-7's `== ""` predicate untouched.** Rejected. The predicate was
+  written before this change and tolerates a whitespace-only key, but that hole
+  was unreachable in practice under fail-hard: any null aborted the transform,
+  so in the real payload *no* row reached silver. Dropping the nulls and writing
+  the rest makes it reachable — a `" "` key would become its own entity key,
+  join against nothing, and two such rows would collapse under the `keep="last"`
+  dedup, which is the exact hazard C-7 exists to prevent. The predicate is
+  therefore widened to `strip_chars() == ""`. Measured as a **no-op on today's
+  data: 0 whitespace-only and 0 padded keys in the 3060-row bronze body** — so
+  it closes a future hazard without changing any current row. A padded but real
+  key is kept **verbatim**; `strip_chars` decides emptiness only and never
+  rewrites an entity key.
 
 ## Consequences
 
