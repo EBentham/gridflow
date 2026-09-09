@@ -49,8 +49,8 @@ Findings that bear on this decision:
 Ruled by Bobbo in chat, 2026-09-09 (`gridflow_models/.planning/RULINGS.md`
 #497): *"just drop the rows for now."*
 
-`BMUnitsTransformer.transform` **drops** rows with a null or empty-string
-`bm_unit_id` and logs every dropped `national_grid_bm_unit` at **ERROR** with a
+`BMUnitsTransformer.transform` **drops** rows with a null, empty or
+whitespace-only `bm_unit_id` and logs every dropped `national_grid_bm_unit` at **ERROR** with a
 `dropped N of M` count, instead of raising. The drop happens before the dedup,
 so the collapse C-7 guards against remains impossible.
 

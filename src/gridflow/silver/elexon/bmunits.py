@@ -28,7 +28,8 @@ class BMUnitsTransformer(BaseSilverTransformer):
     is retained for backward compatibility as the local processing
     timestamp. Under ``--reingest`` the two diverge.
 
-    Null/empty ``bm_unit_id`` -- C-7 (ruled fail-hard by Bobbo 2026-08-16),
+    Null, empty or whitespace-only ``bm_unit_id`` -- C-7 (ruled fail-hard by
+    Bobbo 2026-08-16; the whitespace arm added here, see the predicate comment),
     NARROWED by Bobbo 2026-09-09 (ADR-032). ``bm_unit_id`` is this
     transformer's entity key (``ENTITY_KEY_COLUMNS = ("bm_unit_id",)``), so a
     null-key row still must never reach silver: it cannot be joined by any
@@ -156,7 +157,7 @@ class BMUnitsTransformer(BaseSilverTransformer):
             # a sample -- a fill-forward will need to know exactly which units
             # went missing, and the count alone cannot say which.
             logger.error(
-                "%s/%s: dropped %d of %d row(s) with a null or empty-string "
+                "%s/%s: dropped %d of %d row(s) with a null, empty or whitespace-only "
                 "bm_unit_id (ENTITY_KEY_COLUMNS). A null-key row cannot be joined "
                 "by any downstream consumer and would collapse under the keep='last' "
                 "dedup, so it is excluded from silver rather than aborting the "
@@ -174,8 +175,8 @@ class BMUnitsTransformer(BaseSilverTransformer):
         if df.is_empty():
             raise ValueError(
                 f"{self.source}/{self.dataset}: every one of the "
-                f"{keyless.height} row(s) in this payload has a null or "
-                "empty-string bm_unit_id, this transformer's entity key. That is "
+                f"{keyless.height} row(s) in this payload has a null, empty or "
+                "whitespace-only bm_unit_id, this transformer's entity key. That is "
                 "a broken feed rather than a vendor gap, so the transform fails "
                 "closed rather than writing an empty reference dataset over a "
                 "good one."
