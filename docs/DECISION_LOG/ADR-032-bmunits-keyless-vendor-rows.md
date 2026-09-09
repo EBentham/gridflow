@@ -90,9 +90,25 @@ a key. The stamp is how a consumer tells the two regimes apart.
 ## Consequences
 
 - `bmunits_reference` becomes buildable, unblocking `gridflow_models` v1.9 S-2.
-- **This trades a loud failure for quiet data loss.** The ERROR log is the only
-  remaining signal, which is why it carries full identities rather than a
-  sample, and why it is ERROR rather than WARNING.
+- **This trades a loud failure for quiet data loss**, so the loss must stay
+  visible through **two** channels, not one:
+  - `last_excluded_row_count` carries the **count** into the run status. D-40
+    folds it into `rows_invalid` (`pipeline/runner.py:271-275`, `:1232-1234`),
+    which promotes the transform to `completed_with_warnings` rather than
+    `success`. This matters more than it looks: `BMUnitsTransformer` is neither
+    `VINTAGE_PER_BRONZE_FILE` nor `PARTITION_DATE_COLUMN`-bearing, so the D-42
+    empty-frame net (`silver/base.py:1622-1633`) cannot cover for it — this
+    counter is the transformer's **only** structured channel.
+  - The ERROR log carries **which units** went missing — full identities rather
+    than a sample, because the count alone cannot tell a fill-forward what to
+    fill.
+
+  An earlier draft of this ADR claimed the ERROR log was the *only* remaining
+  signal. That was wrong, and it was load-bearing: it argued the trade was
+  acceptable while declining a designed, tested, runner-consumed channel that
+  already existed. Corrected here (diff review REVIEW-DIFF-1 BLOCKER-2) rather
+  than left in the record, because a decision log that freezes a false premise
+  is worse than no entry.
 - A `bmunits_reference` row's absence is now ambiguous without reading
   `dataset_version`.
 - Bronze retains every dropped row (ADR-029), so the drop is fully reversible

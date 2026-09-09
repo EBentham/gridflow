@@ -1044,15 +1044,20 @@ class TestBMUnitsTransformer:
 
     def test_dropped_keyless_rows_are_logged_with_full_identities(self, caplog):
         """The drop must be auditable, never silent: ADR-032 turns a hard
-        failure into data loss, and the ERROR log is the only signal that the
-        vendor gap exists or has grown. Full identities, not a sample -- the
-        flagged fill-forward follow-up needs to know exactly which units went
-        missing."""
+        failure into data loss, and the ERROR log is what carries WHICH units
+        went missing (the count reaches the run status separately, via
+        last_excluded_row_count).
+
+        Deliberately more than 10 keyless rows: the predecessor of this code
+        logged `sample = [...][:10]`, so a test with 2 or 3 rows would still
+        pass if that truncation were reintroduced -- which would leave the one
+        property this test exists to guard completely unpinned."""
+        keyless_names = [f"KEYLESS-{i:02d}" for i in range(15)]
         raw = pl.DataFrame(
-            [
-                {"bmUnit": "T_DRAXX-1", "nationalGridBmUnit": "DRAXX-1", "fuelType": "BIOMASS"},
-                {"bmUnit": None, "nationalGridBmUnit": "WTGRW-1", "fuelType": "WIND"},
-                {"bmUnit": None, "nationalGridBmUnit": "ACHYW-1", "fuelType": "WIND"},
+            [{"bmUnit": "T_DRAXX-1", "nationalGridBmUnit": "DRAXX-1", "fuelType": "BIOMASS"}]
+            + [
+                {"bmUnit": None, "nationalGridBmUnit": name, "fuelType": "WIND"}
+                for name in keyless_names
             ]
         )
         with caplog.at_level(logging.ERROR):
@@ -1061,9 +1066,67 @@ class TestBMUnitsTransformer:
         errors = [r for r in caplog.records if r.levelno >= logging.ERROR]
         assert errors, "a keyless drop must log at ERROR"
         msg = errors[-1].getMessage()
-        assert "dropped 2 of 3" in msg
-        # Every identity, not a truncated sample.
-        assert "ACHYW-1" in msg and "WTGRW-1" in msg
+        assert "dropped 15 of 16" in msg
+        # EVERY identity -- a [:10] truncation fails here on the last five.
+        missing = [name for name in keyless_names if name not in msg]
+        assert not missing, f"identities truncated, missing: {missing}"
+
+    def test_dropped_keyless_rows_reach_the_run_status_as_excluded(self, caplog):
+        """D-40: a row DECLARED INVALID AND REMOVED must reach the run status
+        through last_excluded_row_count -> rows_invalid (runner.py:271-275), so
+        the transform lands as completed_with_warnings rather than a silent
+        success. The ERROR log is NOT the only channel, and this transformer is
+        neither VINTAGE_PER_BRONZE_FILE nor PARTITION_DATE_COLUMN-bearing, so
+        the D-42 empty-frame net cannot cover for it -- this counter is the only
+        structured signal it has."""
+        raw = pl.DataFrame(
+            [
+                {"bmUnit": "T_DRAXX-1", "nationalGridBmUnit": "DRAXX-1", "fuelType": "BIOMASS"},
+                {"bmUnit": None, "nationalGridBmUnit": "WTGRW-1", "fuelType": "WIND"},
+                {"bmUnit": "", "nationalGridBmUnit": "ACHYW-1", "fuelType": "WIND"},
+            ]
+        )
+        assert self.t.last_excluded_row_count == 0
+        with caplog.at_level(logging.ERROR):
+            result = self.t.transform(raw)
+
+        assert len(result) == 1
+        assert self.t.last_excluded_row_count == 2
+
+    def test_a_row_keyless_in_both_identity_fields_is_named_not_stringified(self, caplog):
+        """A row with neither an elexonBmUnit nor a nationalGridBmUnit has no
+        vendor identity at all. Logging it as the literal "None" reads as a unit
+        actually named None, which is worse than saying it is unidentifiable."""
+        raw = pl.DataFrame(
+            [
+                {"bmUnit": "T_DRAXX-1", "nationalGridBmUnit": "DRAXX-1", "fuelType": "BIOMASS"},
+                {"bmUnit": None, "nationalGridBmUnit": None, "fuelType": "WIND"},
+            ]
+        )
+        with caplog.at_level(logging.ERROR):
+            self.t.transform(raw)
+
+        msg = [r for r in caplog.records if r.levelno >= logging.ERROR][-1].getMessage()
+        assert "<no national_grid_bm_unit>" in msg
+        assert "'None'" not in msg
+
+    def test_keyless_drop_without_a_national_grid_column_still_reports(self, caplog):
+        """The identity column is optional in the payload. When it is absent the
+        drop must still be logged and still be counted -- the fallback branch
+        must not be the one path where a silent drop is possible."""
+        raw = pl.DataFrame(
+            [
+                {"bmUnit": "T_DRAXX-1", "fuelType": "BIOMASS"},
+                {"bmUnit": None, "fuelType": "WIND"},
+            ]
+        )
+        with caplog.at_level(logging.ERROR):
+            result = self.t.transform(raw)
+
+        assert len(result) == 1
+        assert self.t.last_excluded_row_count == 1
+        msg = [r for r in caplog.records if r.levelno >= logging.ERROR][-1].getMessage()
+        assert "national_grid_bm_unit column absent" in msg
 
     def test_all_rows_keyless_still_fails_closed(self):
         """ADR-032 narrows C-7 for a vendor GAP, not for a broken feed. If
@@ -1076,7 +1139,7 @@ class TestBMUnitsTransformer:
                 {"bmUnit": "", "nationalGridBmUnit": "ACHYW-1", "fuelType": "WIND"},
             ]
         )
-        with pytest.raises(ValueError, match="every one of the"):
+        with pytest.raises(ValueError, match=r"every one of the 2 row\(s\)"):
             self.t.transform(raw)
 
     def test_keyless_row_cannot_collapse_a_keyed_row_under_dedup(self):

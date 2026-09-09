@@ -124,13 +124,28 @@ class BMUnitsTransformer(BaseSilverTransformer):
         keyless = df.filter(is_keyless)
         if not keyless.is_empty():
             if "national_grid_bm_unit" in keyless.columns:
-                identities = sorted(str(v) for v in keyless["national_grid_bm_unit"].to_list())
+                # A row keyless in BOTH identity fields has no vendor identity at
+                # all; say so rather than logging the literal string "None",
+                # which reads as a unit named None.
+                identities = sorted(
+                    "<no national_grid_bm_unit>" if v is None else str(v)
+                    for v in keyless["national_grid_bm_unit"].to_list()
+                )
             else:
                 identities = ["<national_grid_bm_unit column absent from this payload>"]
             df = df.filter(~is_keyless)
-            # ERROR, not WARNING: this is vendor data loss, and the count is the
-            # only signal that the gap has grown. Full identities, not a sample --
-            # a fill-forward will need to know exactly which units went missing.
+            # D-40: rows DECLARED INVALID AND REMOVED must reach the run status
+            # through rows_invalid (runner.py:271-275, :1232-1234), so the drop
+            # lands as completed_with_warnings rather than a silent success. The
+            # ERROR log below carries the identities; this carries the count to
+            # every consumer that reads TransformResult instead of stderr.
+            # `+=`, never `=`, matching the repo-wide idiom -- run() resets it
+            # (base.py:959). Reference: neso_data_portal/
+            # embedded_wind_solar_forecast.py:318.
+            self.last_excluded_row_count += keyless.height
+            # ERROR, not WARNING: this is vendor data loss. Full identities, not
+            # a sample -- a fill-forward will need to know exactly which units
+            # went missing, and the count alone cannot say which.
             logger.error(
                 "%s/%s: dropped %d of %d row(s) with a null or empty-string "
                 "bm_unit_id (ENTITY_KEY_COLUMNS). A null-key row cannot be joined "
