@@ -5,8 +5,8 @@ from __future__ import annotations
 import json
 import logging
 import re
-from datetime import UTC, date, datetime
-from typing import TYPE_CHECKING, Any, cast
+from datetime import UTC, date, datetime, timedelta
+from typing import TYPE_CHECKING, Any, Literal, cast
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -532,9 +532,14 @@ class UnavailabilityTransformer(AgsiJsonTransformer):
 
     dataset = "unavailability"
     fallback_to_latest_partition = False
+    # 1.1.0: a partition holds only the outages overlapping its day. Under 1.0.0
+    # every partition held the full bronze outage set (live start/end keys were
+    # never read), so the stamp is how a consumer tells the two regimes apart.
+    DATASET_VERSION = "1.1.0"
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         rows: list[dict[str, Any]] = []
+        undated_count = 0
         for path in self._bronze_files(target_date):
             try:
                 payload = json.loads(path.read_text())
@@ -542,8 +547,21 @@ class UnavailabilityTransformer(AgsiJsonTransformer):
                 logger.warning("Failed to parse AGSI bronze file %s: %s", path, exc)
                 continue
             for record in self._records_from_payload(payload):
-                if _unavailability_record_overlaps(record, target_date):
-                    rows.append(record)
+                classification = _classify_unavailability_record(record, target_date)
+                if classification == "outside":
+                    continue
+                if classification == "undated":
+                    undated_count += 1
+                rows.append(record)
+        if undated_count:
+            logger.warning(
+                "%s/%s: %d record(s) had no parseable start/end for target_date %s; "
+                "kept (fail-open hedge) rather than dropped",
+                self.source,
+                self.dataset,
+                undated_count,
+                target_date,
+            )
         return pl.DataFrame(rows, infer_schema_length=None) if rows else pl.DataFrame()
 
     def _bronze_files(self, target_date: date) -> list[Path]:
@@ -701,17 +719,82 @@ def _filter_news_records_to_target_date(
     return kept
 
 
-def _unavailability_record_overlaps(record: dict[str, Any], target_date: date) -> bool:
+_UNAVAILABILITY_START_KEYS = ("event_start", "start_at", "gas_day_start", "start")
+_UNAVAILABILITY_END_KEYS = ("event_end", "end_at", "gas_day_end", "end")
+
+
+def _classify_unavailability_record(
+    record: dict[str, Any], target_date: date
+) -> Literal["overlap", "outside", "undated"]:
+    """Classify an AGSI unavailability record against the calendar day ``target_date``.
+
+    Handles both record shapes: the live API's ``start``/``end``
+    (``"YYYY-MM-DD HH:MM:SS"``, naive) and the fixture's
+    ``eventStart``/``eventEnd`` (ISO 8601 with offset). The outage window
+    ``[start, end)`` overlaps the day ``[target_date 00:00, +1 day)``. A
+    date-only end covers that whole day. A missing bound is open-ended on
+    that side. A record whose bounds are all missing, or any present bound
+    fails to parse, is ``"undated"``: callers keep it and warn, never drop it.
+
+    Args:
+        record: One raw AGSI unavailability record (either shape).
+        target_date: The silver partition day.
+
+    Returns:
+        ``"overlap"``, ``"outside"`` or ``"undated"``.
+    """
     row = _normalise_row(record)
-    event_start = _safe_date(_first(row, "event_start", "start_at", "gas_day_start"))
-    event_end = _safe_date(_first(row, "event_end", "end_at", "gas_day_end"))
-    if event_start is None and event_end is None:
-        return True
-    # At least one bound is set (None-None handled above); coalescing an open-ended
-    # window collapses it to a point, so both are non-None here.
-    start = cast("date", event_start or event_end)
-    end = cast("date", event_end or event_start)
-    return start <= target_date <= end
+    raw_start = _first(row, *_UNAVAILABILITY_START_KEYS)
+    raw_end = _first(row, *_UNAVAILABILITY_END_KEYS)
+    start = _unavailability_bound(raw_start, is_end=False)
+    end = _unavailability_bound(raw_end, is_end=True)
+    if (raw_start is not None and start is None) or (raw_end is not None and end is None):
+        return "undated"
+    if start is None and end is None:
+        return "undated"
+
+    day_start = datetime(target_date.year, target_date.month, target_date.day)
+    day_end = day_start + timedelta(days=1)
+    if start is None:
+        overlaps = cast("datetime", end) > day_start
+    elif end is None:
+        overlaps = start < day_end
+    elif end <= start:
+        # Zero-length or inverted window: anchor the record on its start.
+        overlaps = day_start <= start < day_end
+    else:
+        overlaps = start < day_end and end > day_start
+    return "overlap" if overlaps else "outside"
+
+
+def _unavailability_bound(value: Any, *, is_end: bool) -> datetime | None:
+    """Parse an unavailability window bound to a naive wall-clock datetime.
+
+    Offset-aware values are converted to UTC. Naive values are kept as the
+    vendor's wall clock: AGSI does not state their timezone, and comparing
+    them at day granularity does not depend on it. A date-only end is
+    exclusive at the following midnight, so the named day is covered.
+    """
+    if value is None or value == "":
+        return None
+    if isinstance(value, datetime):
+        parsed = value
+    elif isinstance(value, date):
+        parsed = datetime(value.year, value.month, value.day)
+        return parsed + timedelta(days=1) if is_end else parsed
+    else:
+        text = str(value).strip()
+        try:
+            if len(text) == 10:
+                day = date.fromisoformat(text)
+                parsed = datetime(day.year, day.month, day.day)
+                return parsed + timedelta(days=1) if is_end else parsed
+            parsed = datetime.fromisoformat(text.replace("Z", "+00:00"))
+        except ValueError:
+            return None
+    if parsed.tzinfo is not None:
+        parsed = parsed.astimezone(UTC).replace(tzinfo=None)
+    return parsed
 
 
 def _metadata_request_window_contains(path: Path, target_date: date) -> bool:
