@@ -68,7 +68,9 @@ def _live(n: int, name: str, *, url_type: str = "upload", lm: str = LM) -> dict[
     }
 
 
-def _registry_packages(*, with_beta: bool = True) -> list[dict[str, Any]]:
+def _registry_packages(
+    *, with_beta: bool = True, with_register: bool = False
+) -> list[dict[str, Any]]:
     families = [family("alpha_series"), family("alpha_dump")]
     resources = [
         resource(_rid(1), "Alpha One", "alpha_series"),
@@ -78,6 +80,9 @@ def _registry_packages(*, with_beta: bool = True) -> list[dict[str, Any]]:
     if with_beta:
         families.append(family("alpha_beta"))
         resources.append(resource(_rid(4), "Alpha Beta", "alpha_beta"))
+    if with_register:
+        families.append(family("alpha_register", archetype="REG", empty_allowed=True))
+        resources.append(resource(_rid(5), "Alpha Register", "alpha_register"))
     return [package("pkg-alpha", PKG, families, resources)]
 
 
@@ -342,6 +347,66 @@ class TestAccounting:
         assert result.status == "failed"
         assert result.error is not None and "all 2 attempted member(s) failed" in result.error
         assert marks["alpha_series"].value is None
+
+
+class TestEmptyCaptureAccounting:
+    """RULINGS 480: header-only reaches the runner as a capture only where empty is allowed.
+
+    A register that becomes empty is real state (ROADMAP row 28): its header-only
+    capture is evidence and the frontier advances. Every other family refuses
+    the body before the runner sees a capture (A6).
+    """
+
+    @pytest.fixture
+    def register_registry(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
+        directory = write_registry(
+            tmp_path / "registry",
+            _registry_packages(with_register=True),
+            frozen=LEGACY_LEDGER,
+        )
+        install_registry(monkeypatch, directory)
+        return directory
+
+    @pytest.mark.parametrize("body", [b"DATE,VALUE\n", b'"DA\nTE",VALUE\r\n,\r\n'])
+    def test_header_only_in_a_non_empty_family_never_reaches_the_runner_as_a_capture(
+        self,
+        router: respx.MockRouter,
+        data_dir: Path,
+        register_registry: Path,
+        monkeypatch: pytest.MonkeyPatch,
+        body: bytes,
+    ) -> None:
+        _wire(router, [_live(1, "Alpha One")], {_rid(1): body})
+        captured: list[RawResponse] = []
+        real_publish = BronzeWriter.publish_capture
+
+        def _spy(self: BronzeWriter, response: RawResponse, *, extension: str) -> Path:
+            captured.append(response)
+            return real_publish(self, response, extension=extension)
+
+        monkeypatch.setattr(BronzeWriter, "publish_capture", _spy)
+        (result,), marks = _ingest(data_dir, monkeypatch, ["alpha_series"])
+        assert captured == [], "a header-only body reached the runner as a capture"
+        assert (result.status, result.rows_in) == ("failed", 0)
+        assert result.error is not None
+        assert marks["alpha_series"].value is None
+        assert list(data_dir.rglob("raw_*")) == []
+
+    def test_header_only_register_is_evidence_and_advances_the_frontier(
+        self,
+        router: respx.MockRouter,
+        data_dir: Path,
+        register_registry: Path,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        _wire(router, [_live(5, "Alpha Register")], {_rid(5): b'"REG\nID",NAME\r\n'})
+        end = datetime.now(UTC) - timedelta(minutes=2)
+        (result,), marks = _ingest(data_dir, monkeypatch, ["alpha_register"], end=end)
+        assert (result.status, result.rows_in, result.rows_out) == ("success", 1, 1)
+        assert marks["alpha_register"].value == end
+        (sidecar,) = data_dir.rglob("raw_*.meta.json")
+        meta = json.loads(sidecar.read_text(encoding="utf-8"))
+        assert meta["request_params"]["empty_capture"] is True
 
 
 class TestEcho:
