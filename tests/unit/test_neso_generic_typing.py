@@ -358,6 +358,30 @@ class TestIssueTime:
         out = _run(rec, table, ctx=_ctx(resource_filename="202610070930_f.csv"))
         assert out["issue_time"].to_list() == [datetime(2026, 10, 7, 9, 30, tzinfo=UTC)]
 
+    def test_filename_token_with_an_offset_is_converted_not_relabelled(self) -> None:
+        """Detects a parsed ``%z`` offset overwritten with UTC: ``-0500`` at
+        09:30 was stamped 09:30Z instead of 14:30Z, so ``published_at`` and
+        ``available_at`` ran five hours early (REVIEW-DIFF-1 correctness #2)."""
+        issue = {
+            "kind": "filename_token",
+            "pattern": r"^(\d{12}[+-]\d{4})_f\.csv$",
+            "format": "%Y%m%d%H%M%z",
+        }
+        rec = _rec(
+            epochs=[epoch(sp_columns(), issue=issue)],
+            entity_key=("settlement_date", "settlement_period", "unit", "issue_time"),
+            vintage="issue_time_evidenced",
+            vintage_evidence="the token is the vendor issue instant",
+        )
+        out = _run(
+            rec,
+            _table(SP_HEADER, [["2026-10-07", "1", "A", "1"]]),
+            ctx=_ctx(resource_filename="202610070930-0500_f.csv", published_at=None),
+        )
+        expected = [datetime(2026, 10, 7, 14, 30, tzinfo=UTC)]
+        assert out["issue_time"].to_list() == expected
+        assert out["published_at"].to_list() == expected
+
 
 class TestPublishedAt:
     """T-B2-3 (function level): ``published_at`` per vintage recipe."""

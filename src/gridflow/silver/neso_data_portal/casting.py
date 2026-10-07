@@ -210,9 +210,17 @@ def _issue_time(epoch: HeaderEpoch, ctx: CaptureContext) -> pl.Expr:
         token: datetime | None = None
         if match is not None:
             try:
-                token = datetime.strptime(match.group(1), issue.format).replace(tzinfo=UTC)
+                parsed = datetime.strptime(match.group(1), issue.format)
             except ValueError:
                 token = None
+            else:
+                # A %z format parses an aware instant: convert it, never relabel
+                # its wall clock as UTC. A naive token is UTC by the recipe.
+                token = (
+                    parsed.astimezone(UTC)
+                    if parsed.tzinfo is not None
+                    else parsed.replace(tzinfo=UTC)
+                )
         if token is None:
             raise IssueTimeError(
                 f"{ctx.capture_id}: resource_filename {ctx.resource_filename!r} yields no "
