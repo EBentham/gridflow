@@ -521,6 +521,10 @@ class TestAdmission:
             (b"\xef\xbb\xbf  <!DOCTYPE html>", "CSV"),
             (b"%PDF-1.4", "CSV"),
             (b"PK\x03\x04", "PDF"),
+            # REVIEW-DIFF-1 #3: a JSON array is a JSON envelope too.
+            (b'[\n{"error":"denied"}\n]\n', "CSV"),
+            (b'\xef\xbb\xbf [{"success": false, "error": {"message": "x"}}]', "CSV"),
+            (b"[]", "CSV"),
         ],
     )
     def test_refused_bodies(self, body: bytes, fmt: str) -> None:
@@ -528,6 +532,34 @@ class TestAdmission:
             client_module._admit_member_body(
                 body, declared_format=fmt, filename="x.csv", empty_allowed=True, label="t"
             )
+
+    def test_bracket_led_csv_that_is_not_json_is_admitted(self) -> None:
+        """Only a body that parses as a JSON array is refused, never a ``[``-led CSV header."""
+        assert client_module._admit_member_body(
+            b"[Date],[MW]\n2026-10-07,1\n",
+            declared_format="CSV",
+            filename="x.csv",
+            empty_allowed=False,
+            label="t",
+        ) == ("csv", False)
+
+    def test_json_array_error_body_never_reaches_bronze(
+        self,
+        router: respx.MockRouter,
+        data_dir: Path,
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        _registry(tmp_path, monkeypatch)
+        _wire(
+            router,
+            _payload([_live(1, FFFD_NAME)]),
+            {_rid(1): b'[\n{"error":"denied"}\n]\n'},
+        )
+        events, paths = _consume(data_dir, "alpha_series")
+        assert _present(events) == ["failed"]
+        assert "NesoUnexpectedBodyError" in events[-1].detail
+        assert paths == []
 
     def test_zero_byte_body_is_refused_for_every_format(self) -> None:
         for fmt in ("CSV", "PDF", "XLSX", "TXT"):

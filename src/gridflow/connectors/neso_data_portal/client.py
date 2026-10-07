@@ -1787,6 +1787,20 @@ def _is_geojson(body: bytes) -> bool:
     return isinstance(payload, dict) and payload.get("type") in _GEOJSON_TYPES
 
 
+def _is_json_array(body: bytes) -> bool:
+    """Whether ``body`` parses as a JSON array (an error envelope, not CSV).
+
+    Parsed rather than keyed on a leading ``[`` so a CSV whose header starts
+    with ``[`` (``[Date],[MW]``) is still admitted (P-7 refuses only
+    signature-incompatible bodies). Non-JSON fails at the first bad token.
+    """
+    try:
+        payload = json.loads(body.removeprefix(_UTF8_BOM).decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        return False
+    return isinstance(payload, list)
+
+
 def _is_header_only(body: bytes) -> bool:
     """A CSV body with a header line and nothing data-bearing after it (P-7)."""
     text = body.removeprefix(_UTF8_BOM)
@@ -1830,7 +1844,11 @@ def _admit_member_body(
             f"{signature or 'binary/unknown'}; admitted classes are {sorted(allowed)}"
         )
     head = _text_head(body)
-    if fmt == "CSV" and signature == "TEXT" and head[:1] in (b"<", b"{"):
+    if (
+        fmt == "CSV"
+        and signature == "TEXT"
+        and (head[:1] in (b"<", b"{") or (head[:1] == b"[" and _is_json_array(body)))
+    ):
         raise NesoUnexpectedBodyError(
             f"{label}: a CSV resource returned markup or a JSON envelope, not CSV"
         )

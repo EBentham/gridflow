@@ -52,7 +52,8 @@ sweep.
 
 **Admission (P-7).** A member body is admitted by its leading bytes, per CKAN format
 (PK, PDF, PNG, OLE2, SQLite, GeoJSON, text). A CSV text body that is markup or a JSON
-envelope, or a TXT body that is markup, is refused; encoding is not checked. The extension
+envelope (led by `<` or `{`, or parsing as a JSON array), or a TXT body that is markup, is
+refused; a `[`-led CSV that is not JSON is admitted; encoding is not checked. The extension
 comes from the redirector filename when its signature class allows it, else the format's
 default, never `.bin`. Zero bytes are refused; a header-only CSV is captured, marked
 `empty_capture: true`, only in families that allow empty captures (registers).
