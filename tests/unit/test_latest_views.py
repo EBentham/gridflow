@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import json
 from datetime import UTC, date, datetime
-from typing import TYPE_CHECKING
+from pathlib import Path
+from typing import TYPE_CHECKING, Any
 
 import duckdb
 import polars as pl
@@ -16,8 +18,6 @@ from gridflow.silver.latest_views import (
 )
 
 if TYPE_CHECKING:
-    from pathlib import Path
-
     import pytest
 
 _SP_SPEC = LATEST_VIEW_SPECS[("elexon", "system_prices")]
@@ -348,3 +348,119 @@ class TestGoldReadsLatestSurface:
         assert df.height == 1, "one row per settlement period, not per vintage"
         assert df["system_sell_price"].to_list() == [45.5], "latest vintage must win"
         assert df["spread"].to_list() == [10.0]
+
+
+# --------------------------------------------------------------------------- #
+# T-B8-3: byte pin of every pre-existing projection and the catalogue (P-10/P-11)
+# --------------------------------------------------------------------------- #
+
+_PIN_GOLDEN = Path(__file__).resolve().parents[1] / "fixtures" / "latest_views_golden.json"
+_PIN_SPECS: tuple[tuple[str, str], ...] = (
+    ("elexon", "system_prices"),
+    ("elexon", "remit"),
+    ("elexon", "fou2t14d"),
+    ("neso_data_portal", "daily_wind_availability"),
+    ("neso_data_portal", "historic_generation_mix"),
+    ("neso_data_portal", "embedded_wind_solar_forecast"),
+)
+"""The ``LATEST_VIEW_SPECS`` keys that existed at master ``d7cf513``."""
+_BUILTIN_VIEW_PREFIXES = ("duckdb_", "sqlite_", "pragma_")
+
+
+def _pin_columns(spec: Any) -> set[str]:
+    columns = set(spec.key_columns) | set(spec.optional_key_columns) | set(spec.order_columns)
+    if spec.rank_column is not None:
+        columns.add(spec.rank_column)
+    return columns
+
+
+def _pin_seed(data_dir: Path) -> None:
+    """Write one small Parquet per pinned dataset plus one plain dataset."""
+    from gridflow.storage.paths import PathBuilder
+
+    paths = PathBuilder(data_dir)
+    stamp = datetime(2024, 1, 15, 8, tzinfo=UTC)
+    for source, dataset in _PIN_SPECS:
+        spec = LATEST_VIEW_SPECS[(source, dataset)]
+        values: dict[str, Any] = {}
+        for column in sorted(_pin_columns(spec)):
+            if column == "available_at" or column == "timestamp_utc":
+                values[column] = [stamp]
+            elif column in {"settlement_date", "availability_date"}:
+                values[column] = [date(2024, 1, 15)]
+            elif column in {"settlement_period", "revision_number"}:
+                values[column] = [1]
+            else:
+                values[column] = ["x"]
+        values["value"] = [1.0]
+        path = paths.silver_file(source, dataset, date(2024, 1, 15))
+        path.parent.mkdir(parents=True, exist_ok=True)
+        pl.DataFrame(values).write_parquet(path)
+    plain = paths.silver_file("elexon", "mid", date(2024, 1, 15))
+    plain.parent.mkdir(parents=True, exist_ok=True)
+    pl.DataFrame({"settlement_date": [date(2024, 1, 15)], "price": [1.0]}).write_parquet(plain)
+
+
+def catalogue_pin(base: Path, monkeypatch: pytest.MonkeyPatch | None = None) -> dict[str, Any]:
+    """Return every pinned ``latest_view_sql`` and the catalogue's view set.
+
+    Args:
+        base: An empty scratch directory.
+        monkeypatch: Used to stub gold-view registration under pytest; the
+            golden-capture script passes ``None`` and stubs it directly.
+
+    Returns:
+        ``{"sql": {key: ddl}, "views": [[name, definition], ...]}`` with the
+        data root replaced by ``<DATA>``.
+    """
+    from gridflow.storage import duckdb as duckdb_storage
+
+    sql = {
+        f"{source}/{dataset}": latest_view_sql(
+            f"silver_{source}_{dataset}",
+            f"silver_{source}_{dataset}_latest",
+            LATEST_VIEW_SPECS[(source, dataset)],
+            _pin_columns(LATEST_VIEW_SPECS[(source, dataset)]),
+        )
+        for source, dataset in _PIN_SPECS
+    }
+    data_dir = base / "data"
+    _pin_seed(data_dir)
+    db_path = base / "pin.duckdb"
+    if monkeypatch is not None:
+        monkeypatch.setattr(duckdb_storage, "_register_gold_views", lambda con: None)
+    duckdb_storage.init_catalogue(db_path, data_dir)
+    con = duckdb.connect(str(db_path), read_only=True)
+    try:
+        rows = con.execute(
+            "SELECT table_name, view_definition FROM information_schema.views "
+            "WHERE table_schema = 'main' ORDER BY table_name"
+        ).fetchall()
+    finally:
+        con.close()
+    root = str(data_dir).replace("\\", "/")
+    views = [
+        [name, definition.replace(root, "<DATA>")]
+        for name, definition in rows
+        if not name.startswith(_BUILTIN_VIEW_PREFIXES)
+    ]
+    return {"sql": sql, "views": views}
+
+
+class TestPreExistingProjectionsAreByteUnchanged:
+    """T-B8-3: the generic engine's spec fields and pass must not move a byte."""
+
+    def test_sql_and_catalogue_equal_the_d7cf513_golden(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Detects any change to an existing ``_latest`` DDL or registered view.
+
+        The golden was captured by :func:`catalogue_pin` on master ``d7cf513``.
+        """
+        actual = catalogue_pin(tmp_path, monkeypatch)
+        expected = json.loads(_PIN_GOLDEN.read_text(encoding="utf-8"))
+        assert actual == expected
+
+    def test_the_pin_covers_every_pre_existing_spec(self) -> None:
+        """Detects a pre-existing spec escaping the pin (non-vacuity)."""
+        assert set(_PIN_SPECS) <= set(LATEST_VIEW_SPECS)

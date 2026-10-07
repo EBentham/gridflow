@@ -46,8 +46,12 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from typing import TYPE_CHECKING, Literal
 
 import polars as pl
+
+if TYPE_CHECKING:
+    from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -77,6 +81,21 @@ class LatestViewSpec:
     v0.17 PR-A). Optional keys tighten the grain when the column exists and are
     dropped when it doesn't.
     """
+    mode: Literal["key_latest", "whole_capture"] = "key_latest"
+    """``key_latest`` returns one row per key; ``whole_capture`` returns every row
+    of the newest COMPLETE capture (ADR-034 P-10), so a valid-empty newest
+    capture yields zero rows."""
+    tiebreak_columns: tuple[str, ...] = ()
+    """Final ``DESC NULLS LAST`` ordering terms after the rank (ADR-034 P-10).
+
+    Unlike ``order_columns`` these are REQUIRED: a relation missing any of them
+    skips the selection (the view fails closed), because a tie-break that
+    silently disappears makes the winner depend on scan order. Empty for every
+    pre-existing spec, whose SQL is byte-identical (T-B8-3)."""
+    completion_relation: str | None = None
+    """``whole_capture`` only: the relation of completion records to select from."""
+    completion_family: str | None = None
+    """``whole_capture`` only: the completion records' ``family`` value."""
 
 
 # BSC settlement-run precedence (II < SF < R1 < R2 < R3 < RF < DF). Secondary
@@ -168,6 +187,14 @@ class _Selection:
     key_columns: tuple[str, ...]
     order_columns: tuple[str, ...]
     has_rank: bool
+    tiebreak_columns: tuple[str, ...] = ()
+
+
+_WHOLE_CAPTURE_ORDER: tuple[str, ...] = ("available_at", "capture_written_at", "bronze_capture_id")
+"""The completion records' winner order for ``whole_capture`` (all DESC NULLS LAST)."""
+
+_AS_OF_SQL = "CAST($as_of AS TIMESTAMPTZ)"
+"""The as-of bound: an ISO string parameter cast in SQL (no ``pytz`` needed, C-7)."""
 
 
 def _resolve_selection(spec: LatestViewSpec, available_columns: set[str]) -> _Selection | None:
@@ -182,7 +209,10 @@ def _resolve_selection(spec: LatestViewSpec, available_columns: set[str]) -> _Se
 
     Skip (return ``None``) only when:
       (a) a required key column (``spec.key_columns``) is missing, or
-      (b) NEITHER any ``order_columns`` member NOR ``rank_column`` is present.
+      (b) NEITHER any ``order_columns`` member NOR ``rank_column`` is present, or
+      (c) any ``tiebreak_columns`` member is missing (ADR-034 P-10), or
+      (d) a ``whole_capture`` spec's relation has no ``bronze_capture_id`` or the
+          spec names no completion relation/family.
 
     A present rank column counts as a usable ordering term ON ITS OWN (Sol
     finding 6): a rank-only schema — e.g.
@@ -203,6 +233,15 @@ def _resolve_selection(spec: LatestViewSpec, available_columns: set[str]) -> _Se
         rank column is present and usable — or ``None`` when the selection is
         impossible.
     """
+    if spec.mode == "whole_capture":
+        if (
+            "bronze_capture_id" not in available_columns
+            or spec.completion_relation is None
+            or spec.completion_family is None
+        ):
+            return None
+        return _Selection(key_columns=(), order_columns=(), has_rank=False)
+
     missing_keys = [c for c in spec.key_columns if c not in available_columns]
     if missing_keys:
         return None
@@ -211,11 +250,82 @@ def _resolve_selection(spec: LatestViewSpec, available_columns: set[str]) -> _Se
     has_rank = spec.rank_column is not None and spec.rank_column in available_columns
     if not order_columns and not has_rank:
         return None
+    if any(c not in available_columns for c in spec.tiebreak_columns):
+        return None
 
     key_columns = tuple(spec.key_columns) + tuple(
         c for c in spec.optional_key_columns if c in available_columns
     )
-    return _Selection(key_columns=key_columns, order_columns=order_columns, has_rank=has_rank)
+    return _Selection(
+        key_columns=key_columns,
+        order_columns=order_columns,
+        has_rank=has_rank,
+        tiebreak_columns=spec.tiebreak_columns,
+    )
+
+
+def latest_select_sql(
+    base_view: str,
+    spec: LatestViewSpec,
+    available_columns: set[str],
+    *,
+    as_of_param: bool,
+) -> str | None:
+    """Render the latest-vintage ``SELECT`` over ``base_view`` (ADR-034 P-10).
+
+    With ``as_of_param=True`` the statement takes one named parameter,
+    ``$as_of`` (an ISO-8601 string), and applies ``available_at <= as_of``
+    BEFORE selection: a ``WHERE`` ahead of ``QUALIFY`` for ``key_latest``,
+    inside the eligible-completions filter for ``whole_capture``. No
+    registered view carries the parameter (:func:`latest_view_sql` renders
+    with ``as_of_param=False``).
+
+    Args:
+        base_view: Existing source-qualified silver view name.
+        spec: Key and precedence definition.
+        available_columns: Columns of ``base_view``.
+        as_of_param: Emit the ``$as_of`` bound.
+
+    Returns:
+        The ``SELECT`` text, or ``None`` on the shared skip decision.
+    """
+    selection = _resolve_selection(spec, available_columns)
+    if selection is None:
+        return None
+    if as_of_param and spec.mode == "key_latest" and "available_at" not in available_columns:
+        return None
+    base = _quote_identifier(base_view)
+    if spec.mode == "whole_capture":
+        assert spec.completion_relation is not None and spec.completion_family is not None
+        capture = _quote_identifier("bronze_capture_id")
+        bound = f" AND c.{_quote_identifier('available_at')} <= {_AS_OF_SQL}" if as_of_param else ""
+        order = ", ".join(f"c.{_quote_identifier(c)} DESC NULLS LAST" for c in _WHOLE_CAPTURE_ORDER)
+        return (
+            f"SELECT * FROM {base} WHERE {capture} IN ("
+            f"SELECT c.{capture} FROM {_quote_identifier(spec.completion_relation)} AS c "
+            f"LEFT JOIN (SELECT {capture}, COUNT(*) AS n FROM {base} GROUP BY {capture}) AS b "
+            f"ON b.{capture} = c.{capture} "
+            f"WHERE c.{_quote_identifier('family')} = "
+            f"{_quote_string_literal(spec.completion_family)} AND ("
+            f"(c.{_quote_identifier('outcome')} = 'valid_empty' "
+            f"AND c.{_quote_identifier('row_count')} = 0) OR "
+            f"(c.{_quote_identifier('outcome')} = 'populated' "
+            f"AND b.n = c.{_quote_identifier('row_count')})){bound} "
+            f"ORDER BY {order} LIMIT 1)"
+        )
+
+    order_terms = [f"{_quote_identifier(c)} DESC NULLS LAST" for c in selection.order_columns]
+    if selection.has_rank:
+        order_terms.append(f"{_rank_case_sql(spec)} DESC")
+    order_terms.extend(
+        f"{_quote_identifier(c)} DESC NULLS LAST" for c in selection.tiebreak_columns
+    )
+    keys = ", ".join(_quote_identifier(c) for c in selection.key_columns)
+    where = f" WHERE {_quote_identifier('available_at')} <= {_AS_OF_SQL}" if as_of_param else ""
+    return (
+        f"SELECT * FROM {base}{where} "
+        f"QUALIFY ROW_NUMBER() OVER (PARTITION BY {keys} ORDER BY {', '.join(order_terms)}) = 1"
+    )
 
 
 def latest_view_sql(
@@ -239,18 +349,33 @@ def latest_view_sql(
         missing key column, or no usable order/rank column at all) — caller
         logs and skips; ``storage.duckdb`` DROPs the view fail-closed.
     """
-    selection = _resolve_selection(spec, available_columns)
-    if selection is None:
-        # The decision itself came from _resolve_selection (called once,
-        # above); this recomputation is ONLY to pick which warning message to
-        # log — the missing-key and no-order-column messages carry different
-        # context and existing tests pin their exact text.
+    select = latest_select_sql(base_view, spec, available_columns, as_of_param=False)
+    if select is None:
+        # The decision itself came from _resolve_selection; this recomputation
+        # is ONLY to pick which warning message to log — the missing-key and
+        # no-order-column messages carry different context and existing tests
+        # pin their exact text.
         missing_keys = [c for c in spec.key_columns if c not in available_columns]
-        if missing_keys:
+        missing_ties = [c for c in spec.tiebreak_columns if c not in available_columns]
+        if spec.mode == "whole_capture":
+            logger.warning(
+                "Skipping %s: whole-capture selection needs bronze_capture_id on %s and a "
+                "completion relation",
+                latest_view,
+                base_view,
+            )
+        elif missing_keys:
             logger.warning(
                 "Skipping %s: key column(s) %s absent from %s",
                 latest_view,
                 missing_keys,
+                base_view,
+            )
+        elif missing_ties:
+            logger.warning(
+                "Skipping %s: tie-break column(s) %s absent from %s",
+                latest_view,
+                missing_ties,
                 base_view,
             )
         else:
@@ -258,40 +383,54 @@ def latest_view_sql(
                 "Skipping %s: no vintage-order column present on %s", latest_view, base_view
             )
         return None
-
-    order_terms = [f"{_quote_identifier(c)} DESC NULLS LAST" for c in selection.order_columns]
-    if selection.has_rank:
-        order_terms.append(f"{_rank_case_sql(spec)} DESC")
-
-    keys = ", ".join(_quote_identifier(c) for c in selection.key_columns)
-    return (
-        f"CREATE OR REPLACE VIEW {_quote_identifier(latest_view)} AS "
-        f"SELECT * FROM {_quote_identifier(base_view)} "
-        f"QUALIFY ROW_NUMBER() OVER (PARTITION BY {keys} ORDER BY {', '.join(order_terms)}) = 1"
-    )
+    return f"CREATE OR REPLACE VIEW {_quote_identifier(latest_view)} AS {select}"
 
 
-def select_latest_vintage(lf: pl.LazyFrame, spec: LatestViewSpec) -> pl.LazyFrame:
+def select_latest_vintage(
+    lf: pl.LazyFrame,
+    spec: LatestViewSpec,
+    as_of: datetime | None = None,
+    *,
+    completions: pl.LazyFrame | None = None,
+) -> pl.LazyFrame:
     """Apply the latest-vintage selection to a Polars frame (SQL-view mirror).
 
     Makes the SAME selection and the SAME skip decision as
-    :func:`latest_view_sql` (both delegate to :func:`_resolve_selection`,
-    parity-tested) — they diverge only in how they REACT to a skip: this
-    function returns the frame unchanged (all vintages) with a warning,
-    rather than dropping anything, so downstream checks (the quality CLI)
-    then see the raw vintages and surface the drift loudly rather than
-    crashing the whole run.
+    :func:`latest_view_sql` / :func:`latest_select_sql` (all delegate to
+    :func:`_resolve_selection`, parity-tested) — they diverge only in how they
+    REACT to a skip: this function returns the frame unchanged (all vintages)
+    with a warning, rather than dropping anything, so downstream checks (the
+    quality CLI) then see the raw vintages and surface the drift loudly rather
+    than crashing the whole run.
 
     Args:
         lf: Frame carrying all vintages of one dataset.
         spec: Key and precedence definition.
+        as_of: When set, only rows (and, for ``whole_capture``, completion
+            records) with ``available_at <= as_of`` take part, applied BEFORE
+            selection (ADR-034 P-10, RULINGS 466).
+        completions: The completion records (``whole_capture`` only).
 
     Returns:
-        One row per ``spec.key_columns``, the winning vintage first by
-        ``order_columns`` (DESC, nulls last) then by the optional rank.
+        ``key_latest``: one row per ``spec.key_columns``, the winning vintage
+        first by ``order_columns`` (DESC, nulls last), then the optional rank,
+        then ``tiebreak_columns``. ``whole_capture``: every row of the newest
+        complete capture, or none.
+
+    Raises:
+        ValueError: A ``whole_capture`` spec without ``completions``.
     """
+    if spec.mode == "whole_capture" and completions is None:
+        raise ValueError("a whole_capture selection needs the completion records")
     schema_columns = set(lf.collect_schema().names())
     selection = _resolve_selection(spec, schema_columns)
+    if (
+        selection is not None
+        and as_of is not None
+        and spec.mode == "key_latest"
+        and "available_at" not in schema_columns
+    ):
+        selection = None
     if selection is None:
         # The decision itself came from _resolve_selection (called once,
         # above); this recomputation is ONLY to pick which warning message to
@@ -305,6 +444,12 @@ def select_latest_vintage(lf: pl.LazyFrame, spec: LatestViewSpec) -> pl.LazyFram
             logger.warning("Latest-vintage selection skipped: no vintage-order column present")
         return lf
 
+    if spec.mode == "whole_capture":
+        assert completions is not None
+        return _whole_capture(lf, spec, as_of, completions)
+
+    if as_of is not None:
+        lf = lf.filter(pl.col("available_at") <= as_of)
     sort_columns = list(selection.order_columns)
     rank_alias = "_vintage_rank"
     drop_rank = False
@@ -319,9 +464,36 @@ def select_latest_vintage(lf: pl.LazyFrame, spec: LatestViewSpec) -> pl.LazyFram
         )
         sort_columns.append(rank_alias)
         drop_rank = True
+    sort_columns.extend(selection.tiebreak_columns)
 
     key_columns = list(selection.key_columns)
     out = lf.sort(sort_columns, descending=True, nulls_last=True).unique(
         subset=key_columns, keep="first", maintain_order=True
     )
     return out.drop(rank_alias) if drop_rank else out
+
+
+def _whole_capture(
+    lf: pl.LazyFrame,
+    spec: LatestViewSpec,
+    as_of: datetime | None,
+    completions: pl.LazyFrame,
+) -> pl.LazyFrame:
+    """The Polars mirror of :func:`latest_select_sql`'s whole-capture branch."""
+    counts = lf.group_by("bronze_capture_id").agg(pl.len().alias("__n"))
+    eligible = (
+        completions.filter(pl.col("family") == spec.completion_family)
+        .join(counts, on="bronze_capture_id", how="left")
+        .filter(
+            ((pl.col("outcome") == "valid_empty") & (pl.col("row_count") == 0))
+            | ((pl.col("outcome") == "populated") & (pl.col("__n") == pl.col("row_count")))
+        )
+    )
+    if as_of is not None:
+        eligible = eligible.filter(pl.col("available_at") <= as_of)
+    winner = (
+        eligible.sort(list(_WHOLE_CAPTURE_ORDER), descending=True, nulls_last=True)
+        .head(1)
+        .select("bronze_capture_id")
+    )
+    return lf.join(winner, on="bronze_capture_id", how="semi")
