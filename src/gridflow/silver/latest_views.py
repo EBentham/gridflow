@@ -321,10 +321,13 @@ def latest_select_sql(
         f"{_quote_identifier(c)} DESC NULLS LAST" for c in selection.tiebreak_columns
     )
     keys = ", ".join(_quote_identifier(c) for c in selection.key_columns)
+    # An empty key (e.g. an entity key of only ``issue_time``) is one partition:
+    # the window must omit PARTITION BY, which takes at least one expression.
+    partition = f"PARTITION BY {keys} " if keys else ""
     where = f" WHERE {_quote_identifier('available_at')} <= {_AS_OF_SQL}" if as_of_param else ""
     return (
         f"SELECT * FROM {base}{where} "
-        f"QUALIFY ROW_NUMBER() OVER (PARTITION BY {keys} ORDER BY {', '.join(order_terms)}) = 1"
+        f"QUALIFY ROW_NUMBER() OVER ({partition}ORDER BY {', '.join(order_terms)}) = 1"
     )
 
 
@@ -476,9 +479,12 @@ def select_latest_vintage(
     sort_columns.extend(selection.tiebreak_columns)
 
     key_columns = list(selection.key_columns)
-    out = lf.sort(sort_columns, descending=True, nulls_last=True).unique(
-        subset=key_columns, keep="first", maintain_order=True
-    )
+    ordered = lf.sort(sort_columns, descending=True, nulls_last=True)
+    if key_columns:
+        out = ordered.unique(subset=key_columns, keep="first", maintain_order=True)
+    else:
+        # Mirrors the SQL's unpartitioned window: one winner over the frame.
+        out = ordered.head(1)
     return out.drop(rank_alias) if drop_rank else out
 
 

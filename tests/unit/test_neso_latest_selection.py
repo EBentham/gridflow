@@ -566,6 +566,35 @@ class TestNoRunTypeColumn:
         assert frame.select("settlement_period", "unit").is_unique().all()
 
 
+class TestIssueOnlyEntityKey:
+    def test_an_entity_key_of_only_issue_time_registers_one_latest_row(
+        self, data: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Detects ``PARTITION BY`` rendered with no expression: an entity key of
+        only ``issue_time`` leaves an empty selection key, and the catalogue
+        raised a ``ParserException`` creating its ``_latest`` (REVIEW-DIFF-1
+        correctness #3). Both renderers return the newest issue's one row, and
+        the as-of read the one available then."""
+        issued = column(
+            "Issued", "issued", "datetime", format="%Y-%m-%dT%H:%M", zone="UTC", nullable=False
+        )
+        issue_epoch = epoch(
+            [issued, column("Value", "value", "float64")],
+            issue={"kind": "data_column", "column": "issued"},
+        )
+        rec = record(epochs=[issue_epoch], temporal={"kind": "none"}, entity_key=("issue_time",))
+        generated = _install(monkeypatch, data, {"gen_issue": {"record": rec}})
+        assert generated.specs[(SOURCE, "gen_issue")].key_columns == ()
+        header = b"Issued,Value\n"
+        first = _capture(data, "gen_issue", 1, header + b"2026-10-07T06:00,1.5\n", _t(8))
+        second = _capture(data, "gen_issue", 1, header + b"2026-10-07T07:00,2.5\n", _t(12))
+        generated.transformers["gen_issue"](data).run(DAY, run_id="r")
+        db = data / "cat.duckdb"
+        init_catalogue(db, data)
+        assert _both_as_of(db, data, "gen_issue", None) == [second]
+        assert _both_as_of(db, data, "gen_issue", _t(9)) == [first]
+
+
 def _whole_family(empty_allowed: bool = True) -> dict[str, Any]:
     return {"record": record(latest="whole_capture"), "empty_allowed": empty_allowed}
 
