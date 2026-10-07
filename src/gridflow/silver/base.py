@@ -2619,10 +2619,18 @@ class BaseSilverTransformer(ABC):
         ``(dataset, target_date)`` and overwrites it on each run via
         :func:`write_parquet`'s atomic temp-then-rename. The ``APPEND_ONLY =
         True`` branch suffixes the filename with the ISO ``available_at``
-        timestamp so re-ingest with a sidecar-derived ``available_at`` is
-        idempotent (two reingest passes produce the same path and the second
-        cleanly replaces the first), while distinct live runs produce
-        distinct files. See ``docs/DECISION_LOG/ADR-018``.
+        argument so re-ingest with a sidecar-derived value is idempotent (two
+        reingest passes produce the same path and the second cleanly replaces
+        the first), while distinct live runs produce distinct files. See
+        ``docs/DECISION_LOG/ADR-018``.
+
+        The suffix is the ``available_at`` *argument*, which is not necessarily
+        the rows' ``available_at`` column. For ``VINTAGE_PER_BRONZE_FILE``
+        sources the argument is the bronze sidecar timestamp
+        (:meth:`_timestamp_from_sidecar`; ``written_at`` for NESO CSV bodies),
+        a per-file capture stamp; the
+        column may carry a different, vendor-derived instant (NESO embedded
+        forecast: file suffix 21:43:41 vs column 21:25:03).
         """
         out_dir = PathBuilder(self.data_dir).silver_partition_dir(
             self.source,

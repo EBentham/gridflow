@@ -1,8 +1,12 @@
 """Silver transformer for NESO's Embedded Solar and Wind Forecast (D-24).
 
-A rolling day-ahead forecast of GB *embedded* (distribution-connected, and so
+A rolling forecast of GB *embedded* (distribution-connected, and so
 invisible to transmission metering) wind and solar output, republished as a
-whole file several times a day under a **date-stamped filename**. Like its two
+whole file under a **date-stamped filename**. NESO's package notes for
+``embedded-wind-and-solar-forecasts`` describe it as a forecast from within day
+up to 14 days ahead, updated hourly (BACKLOG 16c; this module previously called
+it a day-ahead forecast republished several times a day, which understated both
+the horizon and the cadence). Like its two
 siblings it is ``APPEND_ONLY`` + ``VINTAGE_PER_BRONZE_FILE`` (D-21): each
 capture is a distinct forecast vintage for the same settlement periods, and
 ``silver_neso_data_portal_embedded_wind_solar_forecast_latest`` — one row per
