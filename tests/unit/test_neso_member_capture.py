@@ -615,6 +615,66 @@ class TestEmptyCapture:
             b"A,B\n1,\n", declared_format="CSV", filename="x.csv", empty_allowed=False, label="t"
         ) == ("csv", False)
 
+    _QUOTED_NEWLINE_HEADERS = (b'"A\nB",C\n', b'"A\r\nB",C\r\n', b'\xef\xbb\xbf"A\nB",C')
+
+    @pytest.mark.parametrize("body", _QUOTED_NEWLINE_HEADERS)
+    def test_quoted_newline_header_only_is_refused_where_empty_is_forbidden(
+        self, body: bytes
+    ) -> None:
+        """REVIEW-DIFF-1 #2: the header ends at the logical CSV record, not the first newline."""
+        with pytest.raises(NesoEmptyResourceError):
+            client_module._admit_member_body(
+                body, declared_format="CSV", filename="x.csv", empty_allowed=False, label="t"
+            )
+
+    @pytest.mark.parametrize("body", _QUOTED_NEWLINE_HEADERS)
+    def test_quoted_newline_header_only_is_marked_where_empty_is_allowed(self, body: bytes) -> None:
+        assert client_module._admit_member_body(
+            body, declared_format="CSV", filename="x.csv", empty_allowed=True, label="t"
+        ) == ("csv", True)
+
+    @pytest.mark.parametrize("body", [b'"A\nB",C\n1,2\n', b'"A\r\nB",C\r\n"x\ny",2\r\n'])
+    def test_a_data_record_after_a_quoted_newline_header_is_not_empty(self, body: bytes) -> None:
+        assert client_module._admit_member_body(
+            body, declared_format="CSV", filename="x.csv", empty_allowed=False, label="t"
+        ) == ("csv", False)
+
+    def test_blank_lines_before_a_data_record_are_not_empty(self) -> None:
+        assert client_module._admit_member_body(
+            b"A,B\n\n\n1,2\n",
+            declared_format="CSV",
+            filename="x.csv",
+            empty_allowed=False,
+            label="t",
+        ) == ("csv", False)
+
+    def test_quoted_newline_header_only_register_is_captured_and_marked(
+        self,
+        router: respx.MockRouter,
+        data_dir: Path,
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        _registry(tmp_path, monkeypatch)
+        _wire(router, _payload([_live(5, "Alpha Register")]), {_rid(5): b'"A\r\nB",C\r\n'})
+        events, (path,) = _consume(data_dir, "alpha_register")
+        assert [e.outcome for e in events] == ["captured"]
+        assert _meta(path)["request_params"]["empty_capture"] is True
+
+    def test_quoted_newline_header_only_in_a_non_empty_family_fails(
+        self,
+        router: respx.MockRouter,
+        data_dir: Path,
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        _registry(tmp_path, monkeypatch)
+        _wire(router, _payload([_live(1, FFFD_NAME)]), {_rid(1): b'"A\nB",C\n'})
+        events, paths = _consume(data_dir, "alpha_series")
+        assert _present(events) == ["failed"]
+        assert "NesoEmptyResourceError" in events[-1].detail
+        assert paths == []
+
     def test_legacy_header_only_still_raises_through_fetch(self, router: respx.MockRouter) -> None:
         payload = json.loads((FIXTURES / "package_show_daily_wind_availability.json").read_text())
         url = payload["result"]["resources"][0]["url"]

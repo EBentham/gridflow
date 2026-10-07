@@ -45,6 +45,7 @@ about the mechanism being sufficient.
 from __future__ import annotations
 
 import asyncio
+import csv
 import hashlib
 import ipaddress
 import json
@@ -1801,11 +1802,52 @@ def _is_json_array(body: bytes) -> bool:
     return isinstance(payload, list)
 
 
+class _PhysicalLines:
+    """A body's physical lines (newline kept), decoded one at a time on demand.
+
+    ``consumed`` is the byte offset after the last line handed out, so a
+    caller can map a ``csv.reader`` record boundary back onto the bytes
+    without decoding or copying the whole body (the A9 memory gate).
+    Decoding replaces undecodable bytes: encoding is unit E's to measure, and
+    the bytes that delimit CSV records are ASCII in UTF-8 and cp1252 alike.
+    """
+
+    def __init__(self, body: bytes) -> None:
+        self._body = body
+        self.consumed = 0
+
+    def __iter__(self) -> _PhysicalLines:
+        return self
+
+    def __next__(self) -> str:
+        start = self.consumed
+        if start >= len(self._body):
+            raise StopIteration
+        newline = self._body.find(b"\n", start)
+        self.consumed = len(self._body) if newline < 0 else newline + 1
+        return self._body[start : self.consumed].decode("utf-8", errors="replace")
+
+
 def _is_header_only(body: bytes) -> bool:
-    """A CSV body with a header line and nothing data-bearing after it (P-7)."""
-    text = body.removeprefix(_UTF8_BOM)
-    newline = text.find(b"\n")
-    rest = b"" if newline < 0 else text[newline + 1 :]
+    """A CSV body with a header record and nothing data-bearing after it (P-7).
+
+    The header is the first *logical* CSV record, read by the stdlib reader,
+    so a quoted header cell that spans a newline stays inside the header
+    (REVIEW-DIFF-1 #2). The reader is advanced once and pulls lines lazily, so
+    only the header's lines are parsed; the remainder keeps P-7's rule (only
+    ASCII whitespace, ``,`` and ``"``). A header the reader cannot parse
+    (a field over the csv size limit) is not header-only: admission fails
+    open to a capture (A4). Residual: an unterminated opening quote makes the
+    whole body one record, so it reads as header-only: refused where empty
+    captures are forbidden, captured and marked empty in an ``empty_allowed``
+    family.
+    """
+    lines = _PhysicalLines(body.removeprefix(_UTF8_BOM))
+    try:
+        next(csv.reader(lines), None)
+    except csv.Error:
+        return False
+    rest = body.removeprefix(_UTF8_BOM)[lines.consumed :]
     return not rest.translate(None, _HEADER_ONLY_NOISE)
 
 

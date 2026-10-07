@@ -56,8 +56,13 @@ envelope (led by `<` or `{`, or parsing as a JSON array), or a TXT body that is 
 refused; a `[`-led CSV that is not JSON is admitted; encoding is not checked. The extension
 comes from the redirector filename when its signature class allows it, else the format's
 default, never `.bin`. Zero bytes are refused; a header-only CSV is captured, marked
-`empty_capture: true`, only in families that allow empty captures (registers).
-`record_count` stays `None`.
+`empty_capture: true`, only in families that allow empty captures (registers), and refused
+everywhere else. The header is the first logical CSV record, read by the stdlib `csv`
+reader, so a quoted header cell spanning a newline stays in the header; only that record is
+parsed, and what follows it is header-only when it holds nothing but ASCII whitespace, `,`
+and `"`. A header the reader cannot parse (a field over the csv size limit) counts as
+non-empty. Residual: an unterminated opening quote makes the whole body one record, so it
+reads as header-only. `record_count` stays `None`.
 
 **Publication (P-9).** `BronzeWriter.publish_capture` names a capture
 `raw_<ts>_<resource_id>_<sha8>.<ext>` and publishes each file through a unique temp, fsync
