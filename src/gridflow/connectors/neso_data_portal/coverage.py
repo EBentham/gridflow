@@ -27,6 +27,7 @@ from typing import TYPE_CHECKING, Any
 
 from gridflow.connectors.neso_data_portal import captures as captures_module
 from gridflow.connectors.neso_data_portal import registry as registry_module
+from gridflow.connectors.neso_data_portal.files import replace_atomically
 
 if TYPE_CHECKING:
     from gridflow.connectors.neso_data_portal.captures import Capture, UnusableCapture
@@ -232,7 +233,9 @@ def main(argv: list[str] | None = None) -> int:
     report = build_report(snapshot, data_dir, verify_sha=args.verify_sha)
     _print_report(report)
     if args.json is not None:
-        args.json.write_text(json.dumps(report.as_dict(), indent=2) + "\n", encoding="utf-8")
+        replace_atomically(
+            args.json, (json.dumps(report.as_dict(), indent=2) + "\n").encode("utf-8")
+        )
     return 0 if report.clean else 1
 
 

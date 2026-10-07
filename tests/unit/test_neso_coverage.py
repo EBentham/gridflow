@@ -2,9 +2,15 @@
 
 from __future__ import annotations
 
+import builtins
+import errno
+import io
 import json
-from typing import TYPE_CHECKING, Any
+import os
+from pathlib import Path
+from typing import Any
 
+import pytest
 from _neso_registry_support import (
     edit_sidecar,
     family,
@@ -17,11 +23,6 @@ from _neso_registry_support import (
 
 from gridflow.connectors.neso_data_portal import captures, coverage
 from gridflow.connectors.neso_data_portal.captures import scan_dataset
-
-if TYPE_CHECKING:
-    from pathlib import Path
-
-    import pytest
 
 PKG_A = "aaaaaaaa-0000-4000-8000-000000000000"
 R1 = "aaaaaaaa-0000-4000-8000-000000000001"
@@ -223,3 +224,80 @@ def test_usage_errors_exit_2(tmp_path: Path) -> None:
     not_snapshot = tmp_path / "list.json"
     not_snapshot.write_text("[]", encoding="utf-8")
     assert coverage.main(["--snapshot", str(not_snapshot), "--data-dir", str(tmp_path)]) == 2
+
+
+class _DiskFull:
+    """Writes a short prefix, then fails as a full disk would."""
+
+    def __init__(self, handle: Any) -> None:
+        self._handle = handle
+
+    def __enter__(self) -> _DiskFull:
+        return self
+
+    def __exit__(self, *exc: object) -> None:
+        self._handle.close()
+
+    def close(self) -> None:
+        self._handle.close()
+
+    def write(self, data: bytes | str) -> int:
+        self._handle.write(data[:64])
+        self._handle.flush()
+        raise OSError(errno.ENOSPC, "No space left on device")
+
+
+def _report_dir_with_existing_report(tmp_path: Path) -> tuple[Path, bytes]:
+    out_dir = tmp_path / "out"
+    out_dir.mkdir()
+    previous = (json.dumps({"previous": "x" * 3200}, indent=2) + "\n").encode("utf-8")
+    report = out_dir / "report.json"
+    report.write_bytes(previous)
+    return report, previous
+
+
+def test_json_report_replaces_an_existing_report_and_leaves_no_temp(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _install(tmp_path, monkeypatch)
+    data_dir = tmp_path / "data"
+    _capture(data_dir, "alpha_series")
+    report, _previous = _report_dir_with_existing_report(tmp_path)
+    assert _run(_snapshot(tmp_path, [R1]), data_dir, "--json", str(report)) == 0
+    assert json.loads(report.read_text(encoding="utf-8"))["counts"]["captured"] == 1
+    assert [p.name for p in report.parent.iterdir()] == ["report.json"]
+
+
+def test_a_failed_json_write_leaves_the_previous_report_intact(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A disk-full ``--json`` write must not truncate the report it replaces."""
+    _install(tmp_path, monkeypatch)
+    data_dir = tmp_path / "data"
+    _capture(data_dir, "alpha_series")
+    snapshot = _snapshot(tmp_path, [R1])
+    report, previous = _report_dir_with_existing_report(tmp_path)
+    out_dir = report.parent.resolve()
+    real_open = io.open
+
+    def failing_open(file: Any, mode: str = "r", *args: Any, **kwargs: Any) -> Any:
+        handle = real_open(file, mode, *args, **kwargs)
+        if (
+            "w" in mode
+            and isinstance(file, (str, os.PathLike))
+            and Path(file).resolve().parent == out_dir
+        ):
+            return _DiskFull(handle)
+        return handle
+
+    monkeypatch.setattr(io, "open", failing_open)
+    monkeypatch.setattr(builtins, "open", failing_open)
+
+    with pytest.raises(OSError, match="No space left"):
+        _run(snapshot, data_dir, "--json", str(report))
+
+    monkeypatch.undo()
+    assert report.read_bytes() == previous, (
+        f"report truncated to {len(report.read_bytes())} of {len(previous)} bytes"
+    )
+    assert [p.name for p in report.parent.iterdir()] == ["report.json"]

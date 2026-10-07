@@ -14,13 +14,12 @@ follows, sorted, one per line.
 from __future__ import annotations
 
 import argparse
-import os
 import sys
 from pathlib import Path
 from typing import TYPE_CHECKING
-from uuid import uuid4
 
 from gridflow.connectors.neso_data_portal import registry as registry_module
+from gridflow.connectors.neso_data_portal.files import replace_atomically
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -87,22 +86,6 @@ def _default_sources_path() -> Path:
     return _find_config_dir() / "sources.yaml"
 
 
-def _replace_atomically(path: Path, data: bytes) -> None:
-    """Publish ``data`` at ``path`` so a failed write leaves the original intact.
-
-    ``sources.yaml`` configures every source, so it is never truncated in
-    place: the bytes go to a sibling temp file (same volume, so ``os.replace``
-    is atomic on Windows too) and only a complete file replaces the target.
-    Bytes, not text, so the file's CRLF/LF convention survives unchanged.
-    """
-    tmp = path.with_name(f".{path.name}.tmp_{uuid4().hex[:16]}")
-    try:
-        tmp.write_bytes(data)
-        os.replace(tmp, path)
-    finally:
-        tmp.unlink(missing_ok=True)
-
-
 def _yaml_command(path: Path, *, write: bool) -> int:
     keys = registry_module.load_registry().families
     current = path.read_bytes().decode("utf-8")
@@ -115,7 +98,8 @@ def _yaml_command(path: Path, *, write: bool) -> int:
         print(f"{path}: neso_data_portal datasets agree with the registry ({len(keys)} keys)")
         return 0
     if write:
-        _replace_atomically(path, expected.encode("utf-8"))
+        # Bytes, so the file's CRLF/LF convention that regenerate preserved survives.
+        replace_atomically(path, expected.encode("utf-8"))
         print(f"{path}: regenerated {len(keys)} neso_data_portal datasets")
         return 0
     print(
