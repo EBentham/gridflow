@@ -20,6 +20,10 @@ class PathBuilder:
 
     # --- Bronze ---
 
+    def bronze_source_dir(self, source: str) -> Path:
+        """Return the bronze root of one source (every dataset directory below it)."""
+        return self.data_dir / "bronze" / source
+
     def bronze_dir(self, source: str, dataset: str) -> Path:
         return self.data_dir / "bronze" / source / dataset
 
