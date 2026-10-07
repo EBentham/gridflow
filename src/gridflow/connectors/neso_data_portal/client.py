@@ -52,25 +52,30 @@ import logging
 import socket
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
-from time import monotonic
 from typing import TYPE_CHECKING, Any, ClassVar, final
 from uuid import uuid4
 
 import httpx
 
 from gridflow.connectors.base import BaseConnector, RawResponse, _make_ssl_context
+from gridflow.connectors.neso_data_portal import captures as captures_module
 from gridflow.connectors.neso_data_portal import endpoints
+from gridflow.connectors.neso_data_portal import pacer as pacer_module
+from gridflow.connectors.neso_data_portal import registry as registry_module
 from gridflow.connectors.neso_data_portal.endpoints import (
     DATASETS,
     CkanDataset,
     build_action_url,
 )
+from gridflow.connectors.neso_data_portal.pacer import Lane, RunPacer
 from gridflow.connectors.registry import register_connector
 from gridflow.silver.csv_bronze import read_csv_bronze_body
+from gridflow.storage.paths import PathBuilder
 from gridflow.utils.retry import RETRY_POLICY
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
+    from pathlib import Path
 
     from gridflow.config.settings import SourceConfig
 
@@ -500,22 +505,59 @@ class NesoDataPortalConnector(BaseConnector):
     chunk loop.
     """
 
-    def __init__(self, config: SourceConfig) -> None:
+    def __init__(self, config: SourceConfig, *, pacer: RunPacer | None = None) -> None:
+        """Build an unentered connector.
+
+        Args:
+            config: The source configuration.
+            pacer: The pacer every send is admitted by. Defaults to the
+                process-wide, unbound :func:`~.pacer.shared_pacer`, so every
+                instance in the process shares one interval (ADR-033 P-12).
+                :meth:`bind_data_dir` swaps in the bound one.
+        """
         super().__init__(config)
-        self._rate_limit_lock: asyncio.Lock | None = None
-        self._last_request_at: float = 0.0
+        self._pacer: RunPacer = pacer if pacer is not None else pacer_module.shared_pacer(config)
         self._issued_send_tokens: set[str] = set()
+        self._entered_once = False
+        self._bronze_root: Path | None = None
+
+    def bind_data_dir(self, data_dir: Path) -> None:
+        """Bind this connector to a data root before its first send (ADR-033 P-5).
+
+        Runs P-4's runtime freeze pin (every bronze directory of this source is
+        a registry key), then swaps in the process-wide pacer bound to
+        ``<data_dir>/state/neso_data_portal/pacer.lock`` (P-12), and records the
+        bronze root the capture index reads.
+
+        Raises:
+            RuntimeError: Called after this instance was entered: a send may
+                already have escaped the bound pacer and its lock.
+            RegistryFreezeError: A bronze directory is not a registry key.
+            NesoPacerBusyError: Another bound NESO process holds the lock.
+        """
+        if self._entered_once:
+            raise RuntimeError(
+                "bind_data_dir must be called before the connector is first entered; "
+                "an earlier session may have sent outside the bound pacer"
+            )
+        paths = PathBuilder(data_dir)
+        captures_module.assert_bronze_dirs_registered(data_dir, registry_module.load_registry())
+        self._pacer = pacer_module.shared_pacer(self.config, paths.state_dir(self.source_name))
+        self._bronze_root = paths.bronze_source_dir(self.source_name)
 
     async def __aenter__(self) -> NesoDataPortalConnector:
-        """Build the client with redirects DISABLED and initialise pacing state.
+        """Build the client with redirects DISABLED.
 
         ``follow_redirects=False`` at the client level is D-08's first half:
         redirects are handled manually, one validated hop at a time, so each hop
         is a separate throttled send that has passed the target policy.
+
+        Pacing state is NOT reset here (ADR-033 P-12): it lives in the shared
+        pacer, so a dataset handoff or a recreated connector cannot shorten the
+        interval.
         """
+        self._entered_once = True
         self._semaphore = asyncio.Semaphore(self.config.rate_limit_per_second)
-        self._rate_limit_lock = asyncio.Lock()
-        self._last_request_at = 0.0
         self._issued_send_tokens = set()
         self._client = httpx.AsyncClient(
             base_url=self.config.base_url,
@@ -627,30 +669,17 @@ class NesoDataPortalConnector(BaseConnector):
     async def _throttle_request(self) -> None:
         """Pace outbound sends to the vendor's published 1 req/s guidance.
 
-        Copied from ``connectors/entsoe/client.py:411-426`` — **copied, not
-        hoisted into ``BaseConnector``**, because hoisting would change the
-        request pacing of all six existing sources for the benefit of one.
-        ``rate_limit_per_second: 1`` in YAML then yields both the inherited
-        ``Semaphore(1)`` (a concurrency cap despite its name) and a real 1.0 s
-        minimum interval, which is the part that honours the guidance.
+        Admission is the shared :class:`~.pacer.RunPacer`'s CKAN lane
+        (ADR-033 P-12), so the interval holds across connector instances,
+        dataset handoffs and, once bound, processes. Not hoisted into
+        ``BaseConnector``: that would change the pacing of every other source.
 
         Gates **every** outbound send without exception: each CKAN action call,
         the redirector request, each redirect hop, and each retry attempt —
         because it sits inside :meth:`_send`, which is what ``RETRY_POLICY``
-        decorates.
+        decorates, directly before the transport call.
         """
-        if self.config.rate_limit_per_second <= 0:
-            return
-        lock = self._rate_limit_lock
-        if lock is None:
-            return
-
-        min_interval = 1.0 / self.config.rate_limit_per_second
-        async with lock:
-            elapsed = monotonic() - self._last_request_at
-            if elapsed < min_interval:
-                await asyncio.sleep(min_interval - elapsed)
-            self._last_request_at = monotonic()
+        await self._pacer.acquire(Lane.CKAN)
 
     async def _assert_safe_target(self, url: SafeUrl) -> None:
         """Raise unless ``url`` satisfies D-08's target policy.

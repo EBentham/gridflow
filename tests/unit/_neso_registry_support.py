@@ -7,6 +7,7 @@ P-1's one seam: :func:`install_registry` monkeypatches
 
 from __future__ import annotations
 
+import contextlib
 import hashlib
 import json
 from datetime import UTC, datetime
@@ -16,6 +17,7 @@ from gridflow.connectors.neso_data_portal import endpoints
 from gridflow.connectors.neso_data_portal import registry as registry_module
 
 if TYPE_CHECKING:
+    from collections.abc import Iterator
     from pathlib import Path
 
     import pytest
@@ -208,3 +210,26 @@ def edit_sidecar(sidecar: Path, mutate: Any) -> None:
     meta = json.loads(sidecar.read_text(encoding="utf-8"))
     mutate(meta)
     sidecar.write_text(json.dumps(meta, indent=2), encoding="utf-8")
+
+
+@contextlib.contextmanager
+def ingest_context(data_dir: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator[Any]:
+    """Yield a real ``PipelineContext`` over a tmp data dir and DuckDB catalogue."""
+    from gridflow.config.settings import load_settings
+    from gridflow.pipeline import runner as pipeline_runner
+    from gridflow.storage.duckdb import get_connection, init_catalogue
+
+    db_path = data_dir / "gridflow.duckdb"
+    monkeypatch.setenv("GRIDFLOW_DATA_DIR", str(data_dir))
+    monkeypatch.setenv("GRIDFLOW_DUCKDB_PATH", str(db_path))
+    monkeypatch.setenv("GRIDFLOW_LOG_DIR", str(data_dir / "logs"))
+    monkeypatch.setattr("gridflow.storage.duckdb._register_gold_views", lambda con: None)
+    for layer in ("bronze", "silver", "gold"):
+        (data_dir / layer).mkdir(parents=True, exist_ok=True)
+    settings = load_settings()
+    init_catalogue(db_path, data_dir)
+    con = get_connection(db_path)
+    try:
+        yield pipeline_runner.PipelineContext(con=con, settings=settings)
+    finally:
+        con.close()

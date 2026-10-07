@@ -108,6 +108,12 @@ class PathBuilder:
         """Return a glob pattern for all gold parquet files."""
         return str(self.gold_dir(gold_dataset) / "**" / "[!.]*.parquet")
 
+    # --- Operational state (outside every medallion layer) ---
+
+    def state_dir(self, source: str) -> Path:
+        """Return a source's operational-state directory (e.g. its pacer lock)."""
+        return self.data_dir / "state" / source
+
     # --- DuckDB ---
 
     def duckdb_path(self) -> Path:

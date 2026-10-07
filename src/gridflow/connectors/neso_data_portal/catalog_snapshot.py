@@ -996,8 +996,15 @@ def _default_out_root() -> Path | None:
 
 
 def _default_connector_session() -> ConnectorSession:
-    """Build the real connector from the loaded configuration."""
-    return NesoDataPortalConnector(load_settings().sources[SOURCE_NAME])
+    """Build the real connector from the loaded configuration, bound (ADR-033 P-12).
+
+    Binding takes the process-wide pacer lock under the data root, so a
+    snapshot run and an ingest run can never send to NESO concurrently.
+    """
+    settings = load_settings()
+    connector = NesoDataPortalConnector(settings.sources[SOURCE_NAME])
+    connector.bind_data_dir(settings.pipeline.data_dir)
+    return connector
 
 
 def _build_parser() -> argparse.ArgumentParser:
