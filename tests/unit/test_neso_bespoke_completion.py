@@ -7,10 +7,13 @@ a valid output or re-transforms the body exactly as the per-file branch does.
 
 from __future__ import annotations
 
+import json
 import shutil
+import subprocess
+import sys
 from datetime import UTC, date, datetime
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import polars as pl
 import pytest
@@ -42,7 +45,7 @@ from gridflow.silver.neso_data_portal.embedded_wind_solar_forecast import (
 from gridflow.silver.neso_data_portal.historic_generation_mix import (
     HistoricGenerationMixTransformer,
 )
-from gridflow.silver.registry import get_transformer_class, list_transformers, post_run_hooks
+from gridflow.silver.registry import get_transformer_class, list_transformers
 
 if TYPE_CHECKING:
     from gridflow.silver.base import BaseSilverTransformer
@@ -94,17 +97,54 @@ def _capture_id(data: Path, body: Path) -> str:
     return body.relative_to(data).as_posix()
 
 
+_WIRING_SCRIPT = """
+import json
+from gridflow.pipeline import runner
+from gridflow.silver.registry import get_transformer_class, post_run_hooks
+
+runner.import_transformers()
+out = {}
+for key in (
+    "daily_wind_availability", "historic_generation_mix", "embedded_wind_solar_forecast"
+):
+    cls = get_transformer_class("neso_data_portal", key)
+    hooks = post_run_hooks("neso_data_portal", key)
+    out[key] = {
+        "cls": None if cls is None else f"{cls.__module__}.{cls.__qualname__}",
+        "hooks": [f"{h.__module__}.{h.__qualname__}" for h in hooks],
+    }
+print(json.dumps(out))
+"""
+
+
+def _qualified(obj: Any) -> str:
+    return f"{obj.__module__}.{obj.__qualname__}"
+
+
 class TestIdentityPins:
     def test_c_5_the_three_keep_their_bespoke_classes_and_gain_a_hook(self) -> None:
-        """C-5: no wrapper class; completion arrives through a hook only."""
-        pipeline_runner.import_transformers()
+        """C-5: no wrapper class; completion arrives through a hook only.
+
+        Detects the runner's bootstrap no longer registering the NESO
+        transformers or their hooks. Runs in a fresh interpreter, because this
+        module's own imports already register both and would mask a broken
+        ``import_transformers`` (REVIEW-DIFF-1 tests #2)."""
+        result = subprocess.run(
+            [sys.executable, "-c", _WIRING_SCRIPT],
+            cwd=Path(__file__).resolve().parents[2],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        assert result.returncode == 0, result.stderr
+        wiring = json.loads(result.stdout.strip().splitlines()[-1])
+        hook = _qualified(record_bespoke_completions)
         for key, cls in (
             (DWA, DailyWindAvailabilityTransformer),
             ("historic_generation_mix", HistoricGenerationMixTransformer),
             ("embedded_wind_solar_forecast", EmbeddedWindSolarForecastTransformer),
         ):
-            assert get_transformer_class("neso_data_portal", key) is cls
-            assert post_run_hooks("neso_data_portal", key) == (record_bespoke_completions,)
+            assert wiring[key] == {"cls": _qualified(cls), "hooks": [hook]}, key
 
 
 class TestHook:
