@@ -1,0 +1,69 @@
+{
+  "package": "fes-whole-system-gas-supply-emissions-data-table-ws2",
+  "package_id": "cd6e42b0-13de-4f2a-bd0d-08e31bdde67f",
+  "group": "future-energy-scenarios",
+  "archetype": "SCN",
+  "refresh": "adhoc",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "fes_ws2_gas_emissions",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SCN",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "5f8f7293-4894-40c5-8f5c-e096b19e8198",
+      "name": "Whole System & Gas Supply - Emissions (WS2) 2023",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_ws2_gas_emissions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_ws2_gas_emissions"
+      }
+    },
+    {
+      "id": "31188b9d-620d-497b-80c0-83fa4fa70320",
+      "name": "Whole System & Gas Supply - Emissions (WS2) 2024",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_ws2_gas_emissions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_ws2_gas_emissions"
+      }
+    },
+    {
+      "id": "a80a94cc-b349-412c-83a0-0f5f9eaf4e7e",
+      "name": "Whole System & Gas Supply - Emissions (WS2) 2025",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_ws2_gas_emissions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_ws2_gas_emissions"
+      }
+    },
+    {
+      "id": "3aba22fd-1934-4654-a33a-f3273c973560",
+      "name": "Whole System & Gas Supply - Emissions (WS2) 2026",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_ws2_gas_emissions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_ws2_gas_emissions"
+      }
+    }
+  ]
+}

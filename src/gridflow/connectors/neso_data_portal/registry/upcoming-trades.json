@@ -1,0 +1,36 @@
+{
+  "package": "upcoming-trades",
+  "package_id": "932245c1-2322-4515-bf5e-ea2093ba1333",
+  "group": "trade-data",
+  "archetype": "REG",
+  "refresh": "daily",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "upcoming_trades",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "REG",
+      "refresh": "daily",
+      "empty_allowed": true,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "0b7e84ec-eded-4458-b111-d29ba4508e85",
+      "name": "Upcoming Trades",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "upcoming_trades",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "upcoming_trades"
+      }
+    }
+  ]
+}

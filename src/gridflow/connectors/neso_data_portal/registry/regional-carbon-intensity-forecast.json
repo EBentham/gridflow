@@ -1,0 +1,57 @@
+{
+  "package": "regional-carbon-intensity-forecast",
+  "package_id": "bf3d723b-b4ae-4ec7-9fc9-e584c651a9da",
+  "group": "carbon-intensity1",
+  "archetype": "FC",
+  "refresh": "intraday",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "regional_ci_forecast",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "FC",
+      "refresh": "intraday",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "regional_ci_forecast_files",
+      "kind": "files",
+      "legacy": false,
+      "archetype": "FC",
+      "refresh": "intraday",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "c16b0e19-c02a-44a8-ba05-4db2c0545a2a",
+      "name": "Regional Carbon Intensity Forecast",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "regional_ci_forecast",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "regional_ci_forecast"
+      }
+    },
+    {
+      "id": "1d817f4c-a126-45c8-baf0-218bf57d37be",
+      "name": "Regional Carbon Intensity Forecast Methodology",
+      "format": "PDF",
+      "url_type": "upload",
+      "family": "regional_ci_forecast_files",
+      "disposition": {
+        "kind": "DOC"
+      }
+    }
+  ]
+}

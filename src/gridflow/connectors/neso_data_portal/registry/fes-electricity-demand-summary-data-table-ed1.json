@@ -1,0 +1,110 @@
+{
+  "package": "fes-electricity-demand-summary-data-table-ed1",
+  "package_id": "2c15c755-d8fe-4229-9169-3b6dd7c88fec",
+  "group": "future-energy-scenarios",
+  "archetype": "SCN",
+  "refresh": "adhoc",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "fes_ed1_electricity_demand",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SCN",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "fes_ed1_electricity_demand_files",
+      "kind": "files",
+      "legacy": false,
+      "archetype": "SCN",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "de41fa7f-5bd6-4da4-aff1-aede85d7b651",
+      "name": "Electricity Demand Summary (ED1) 2023",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_ed1_electricity_demand",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_ed1_electricity_demand"
+      }
+    },
+    {
+      "id": "0a127297-b33a-48fa-bf7b-e02fd350d1be",
+      "name": "Electricity Demand Definitions Data table (ED2) 2023 - Version 2",
+      "format": "PDF",
+      "url_type": "upload",
+      "family": "fes_ed1_electricity_demand_files",
+      "disposition": {
+        "kind": "DOC"
+      }
+    },
+    {
+      "id": "9514d486-5fa8-4bbb-80d3-59668e1eeb5f",
+      "name": "Electricity Demand Summary (ED1) 2024",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_ed1_electricity_demand",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_ed1_electricity_demand"
+      }
+    },
+    {
+      "id": "2651d72a-a62d-4fe6-a283-408398e853e8",
+      "name": "Electricity Demand Definitions Data table (ED2) 2024",
+      "format": "PDF",
+      "url_type": "upload",
+      "family": "fes_ed1_electricity_demand_files",
+      "disposition": {
+        "kind": "DOC"
+      }
+    },
+    {
+      "id": "300c07b9-baeb-4411-bc40-987cbb4aec0b",
+      "name": "Electricity Demand Summary (ED1) 2025",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_ed1_electricity_demand",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_ed1_electricity_demand"
+      }
+    },
+    {
+      "id": "93761974-17f5-43da-a690-71faaab610a5",
+      "name": " Electricity Demand Definitions Data table (ED2) 2025",
+      "format": "PDF",
+      "url_type": "upload",
+      "family": "fes_ed1_electricity_demand_files",
+      "disposition": {
+        "kind": "DOC"
+      }
+    },
+    {
+      "id": "2769bcac-e2ae-45b9-a9d6-0e2c3e6312c7",
+      "name": "Electricity Demand Summary (ED1) 2026",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_ed1_electricity_demand",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_ed1_electricity_demand"
+      }
+    }
+  ]
+}

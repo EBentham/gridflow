@@ -1,0 +1,69 @@
+{
+  "package": "fes-whole-system-gas-supply-data-table-ws1",
+  "package_id": "8cbe76c7-6971-40ed-8e0c-2d8c8520cd0c",
+  "group": "future-energy-scenarios",
+  "archetype": "SCN",
+  "refresh": "adhoc",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "fes_ws1_gas_supply",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SCN",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "b04e227d-f329-4ccf-8e25-821ea6ea03ca",
+      "name": "Whole System & Gas Supply (WS1) 2023",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_ws1_gas_supply",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_ws1_gas_supply"
+      }
+    },
+    {
+      "id": "fa5697c5-9810-480f-b4c5-ab41dc53777a",
+      "name": "Whole System & Gas Supply (WS1) 2024",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_ws1_gas_supply",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_ws1_gas_supply"
+      }
+    },
+    {
+      "id": "ebf4f503-0a13-45e6-89ad-b707748613b6",
+      "name": "Whole System & Gas Supply (WS1) 2025",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_ws1_gas_supply",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_ws1_gas_supply"
+      }
+    },
+    {
+      "id": "0dd30611-5b9f-452d-bd34-966737d14fca",
+      "name": "Whole System & Gas Supply (WS1) 2026",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_ws1_gas_supply",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_ws1_gas_supply"
+      }
+    }
+  ]
+}

@@ -1,0 +1,189 @@
+{
+  "package": "outturn-voltage-costs",
+  "package_id": "8df6dd77-315f-465e-a8d9-ce0492853050",
+  "group": "constraint-management",
+  "archetype": "SER",
+  "refresh": "monthly",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "outturn_voltage_costs_historical",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SER",
+      "refresh": "monthly",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "outturn_voltage_costs_main",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SER",
+      "refresh": "monthly",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "outturn_voltage_costs_files",
+      "kind": "files",
+      "legacy": false,
+      "archetype": "SER",
+      "refresh": "monthly",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "fae5a592-deb4-4c66-8d51-d6ef450ccd95",
+      "name": "Historical Outturn Voltage Costs 2014-2015",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "outturn_voltage_costs_historical",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "outturn_voltage_costs_historical"
+      }
+    },
+    {
+      "id": "035ab58a-7b96-4e10-bf51-cf3a7e64f6a0",
+      "name": "Historical Outturn Voltage Costs 2015-2016",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "outturn_voltage_costs_historical",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "outturn_voltage_costs_historical"
+      }
+    },
+    {
+      "id": "f9a80c9d-586b-4139-8371-436cc07d1ef3",
+      "name": "Historical Outturn Voltage Costs 2016-2017",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "outturn_voltage_costs_historical",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "outturn_voltage_costs_historical"
+      }
+    },
+    {
+      "id": "118a9d4e-17a3-4606-bb30-4ed1d2abe722",
+      "name": "Historical Outturn Voltage Costs 2017-2018",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "outturn_voltage_costs_historical",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "outturn_voltage_costs_historical"
+      }
+    },
+    {
+      "id": "27454f2f-591d-4222-a288-cc2f0fcc4250",
+      "name": "Historical Outturn Voltage Costs 2018-2019",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "outturn_voltage_costs_historical",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "outturn_voltage_costs_historical"
+      }
+    },
+    {
+      "id": "1b02d2ec-8d0f-4244-9828-9eac5d9c3c67",
+      "name": "Historical Outturn Voltage Costs 2019-2020",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "outturn_voltage_costs_historical",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "outturn_voltage_costs_historical"
+      }
+    },
+    {
+      "id": "1b47a532-9f22-49c1-ae2a-d84dcc6d7408",
+      "name": "Historical Outturn Voltage Costs 2020-2021",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "outturn_voltage_costs_historical",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "outturn_voltage_costs_historical"
+      }
+    },
+    {
+      "id": "bb3b4ea5-39f4-4fe4-b0e2-5b341908b186",
+      "name": "Historical Outturn Voltage Costs 2021-2022",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "outturn_voltage_costs_historical",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "outturn_voltage_costs_historical"
+      }
+    },
+    {
+      "id": "81a7db68-0a24-4ce9-a374-f0ffced588b0",
+      "name": "Historical Outturn Voltage Costs 2022-2023",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "outturn_voltage_costs_historical",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "outturn_voltage_costs_historical"
+      }
+    },
+    {
+      "id": "6165d7d4-54cf-4e47-91e4-b487e8225e5a",
+      "name": "Historical Outturn Voltage Costs 2023-2024",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "outturn_voltage_costs_historical",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "outturn_voltage_costs_historical"
+      }
+    },
+    {
+      "id": "3eced73f-b7e6-4974-8d3c-3ebd48eba74c",
+      "name": "Historical Outturn Voltage Costs 2024-2025",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "outturn_voltage_costs_historical",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "outturn_voltage_costs_historical"
+      }
+    },
+    {
+      "id": "ec0669de-e67a-4601-831e-3d3f4ed6406e",
+      "name": "Network Diagram",
+      "format": "PDF",
+      "url_type": "upload",
+      "family": "outturn_voltage_costs_files",
+      "disposition": {
+        "kind": "DOC"
+      }
+    },
+    {
+      "id": "073f9ffa-05d5-47e5-8835-e1ac31b7656d",
+      "name": "Outturn Voltage Costs 2025-2026",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "outturn_voltage_costs_main",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "outturn_voltage_costs_main"
+      }
+    }
+  ]
+}

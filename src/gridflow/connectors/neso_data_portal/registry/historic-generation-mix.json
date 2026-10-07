@@ -1,0 +1,36 @@
+{
+  "package": "historic-generation-mix",
+  "package_id": "88313ae5-94e4-4ddc-a790-593554d8c6b9",
+  "group": "carbon-intensity1",
+  "archetype": "SER",
+  "refresh": "daily",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "historic_generation_mix",
+      "kind": "tabular",
+      "legacy": true,
+      "archetype": "SER",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 268435456,
+      "name_regex": null,
+      "transformer": "bespoke"
+    }
+  ],
+  "resources": [
+    {
+      "id": "f93d1835-75bc-43e5-84ad-12472b180a98",
+      "name": "Historic GB Generation Mix",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "historic_generation_mix",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "historic_generation_mix"
+      }
+    }
+  ]
+}

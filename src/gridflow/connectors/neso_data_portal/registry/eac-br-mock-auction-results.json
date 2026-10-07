@@ -1,0 +1,102 @@
+{
+  "package": "eac-br-mock-auction-results",
+  "package_id": "c9843f08-bb12-461d-9741-69729fe887a0",
+  "group": "ancillary-services",
+  "archetype": "EVT",
+  "refresh": "frozen",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "eac_br_mock_results_buy_orders",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "frozen",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "eac_br_mock_results_by_unit",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "frozen",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "eac_br_mock_results_summary",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "frozen",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "eac_br_mock_results_sell_orders",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "frozen",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "7f5a3d87-a3fb-4c5b-88f0-ecba2401834d",
+      "name": "NESO Mock Balancing-Reserve Results By Unit 2023-2024",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "eac_br_mock_results_by_unit",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "eac_br_mock_results_by_unit"
+      }
+    },
+    {
+      "id": "e3ad918b-f10b-49c7-93ba-b7e81fe6feea",
+      "name": "NESO Mock Balancing-Reserve Buy Orders 2023-2024",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "eac_br_mock_results_buy_orders",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "eac_br_mock_results_buy_orders"
+      }
+    },
+    {
+      "id": "b73e34ca-28fc-4fb2-9275-d5f546d6f33a",
+      "name": "NESO Mock Balancing-Reserve Sell Orders 2023-2024",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "eac_br_mock_results_sell_orders",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "eac_br_mock_results_sell_orders"
+      }
+    },
+    {
+      "id": "a285483f-d830-4ae2-8b6d-98c05f6d21f3",
+      "name": "NESO Mock Balancing-Reserve Results Summary 2023-2024",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "eac_br_mock_results_summary",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "eac_br_mock_results_summary"
+      }
+    }
+  ]
+}

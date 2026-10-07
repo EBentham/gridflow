@@ -1,0 +1,135 @@
+{
+  "package": "system-inertia-cost",
+  "package_id": "59f20804-9c9e-4f70-a809-c4c48a4f4c6e",
+  "group": "system",
+  "archetype": "SER",
+  "refresh": "adhoc",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "system_inertia_cost",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SER",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "28dc603e-3472-45cd-8e7b-998efc674084",
+      "name": "GB System Inertia Costs 2017",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "system_inertia_cost",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "system_inertia_cost"
+      }
+    },
+    {
+      "id": "1146f7af-9f3b-4a8a-a37d-3003c727bfbf",
+      "name": "GB System Inertia Costs 2018",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "system_inertia_cost",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "system_inertia_cost"
+      }
+    },
+    {
+      "id": "620491fa-ae1b-45b3-baa0-6e87c2d574cf",
+      "name": "GB System Inertia Costs 2019",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "system_inertia_cost",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "system_inertia_cost"
+      }
+    },
+    {
+      "id": "130c9f71-cbce-4027-b5b8-13cba14df0dd",
+      "name": "GB System Inertia Costs 2020",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "system_inertia_cost",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "system_inertia_cost"
+      }
+    },
+    {
+      "id": "3518e47e-ffb3-4561-aff1-4a102fcb242d",
+      "name": "GB System Inertia Costs 2021",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "system_inertia_cost",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "system_inertia_cost"
+      }
+    },
+    {
+      "id": "8a3a4233-e9aa-45c2-b0c4-28b8d614165b",
+      "name": "GB System Inertia Costs 2022",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "system_inertia_cost",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "system_inertia_cost"
+      }
+    },
+    {
+      "id": "3cc32e61-bf87-471c-bf00-abb356d3f8c8",
+      "name": "GB System Inertia Costs 2023",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "system_inertia_cost",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "system_inertia_cost"
+      }
+    },
+    {
+      "id": "91947c0c-bbbf-4d55-a29d-dc610d91d075",
+      "name": "GB System Inertia Costs 2024",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "system_inertia_cost",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "system_inertia_cost"
+      }
+    },
+    {
+      "id": "a6a52241-1774-48d8-935f-2bef0d843e18",
+      "name": "GB System Inertia Costs 2025",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "system_inertia_cost",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "system_inertia_cost"
+      }
+    },
+    {
+      "id": "6295f4ed-b43d-4a80-8ca9-c27c9fa16517",
+      "name": "GB System Inertia Costs 2026",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "system_inertia_cost",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "system_inertia_cost"
+      }
+    }
+  ]
+}

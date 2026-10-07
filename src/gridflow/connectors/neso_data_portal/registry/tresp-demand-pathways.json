@@ -1,0 +1,167 @@
+{
+  "package": "tresp-demand-pathways",
+  "package_id": "e5e8eb8e-9fbd-4355-b4ad-9bbf00569d15",
+  "group": "demand",
+  "archetype": "SCN",
+  "refresh": "adhoc",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "tresp_demand_pathways_gsp",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SCN",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "tresp_demand_pathways_resp_region",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SCN",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "tresp_demand_pathways_la_england",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SCN",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "tresp_demand_pathways_la_scotland",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SCN",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "tresp_demand_pathways_la_wales",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SCN",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "tresp_demand_pathways_files",
+      "kind": "files",
+      "legacy": false,
+      "archetype": "SCN",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "d616d330-4829-4f8a-b74b-00a57b41bc20",
+      "name": "tRESP Demand Pathways per Grid Supply Point Area",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "tresp_demand_pathways_gsp",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "tresp_demand_pathways_gsp"
+      }
+    },
+    {
+      "id": "cb1f1b31-1fde-40ab-86c9-34a3e1bdb665",
+      "name": "tRESP Demand Pathways per RESP Nation and Region",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "tresp_demand_pathways_resp_region",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "tresp_demand_pathways_resp_region"
+      }
+    },
+    {
+      "id": "c3a261a4-94e9-4d75-b0de-d3805b0b5ae8",
+      "name": "tRESP Indicative Demand Pathways per Local Authority for England",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "tresp_demand_pathways_la_england",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "tresp_demand_pathways_la_england"
+      }
+    },
+    {
+      "id": "67d699eb-c5e9-42cd-a57a-74fcc52bcea9",
+      "name": "tRESP Indicative Demand Pathways per Local Authority for Scotland",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "tresp_demand_pathways_la_scotland",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "tresp_demand_pathways_la_scotland"
+      }
+    },
+    {
+      "id": "ccb3dfc8-ab4a-4f32-b944-8eced2e87bff",
+      "name": "tRESP Indicative Demand Pathways per Local Authority for Wales",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "tresp_demand_pathways_la_wales",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "tresp_demand_pathways_la_wales"
+      }
+    },
+    {
+      "id": "59a5ec35-8fec-4b84-ba8c-236d97823178",
+      "name": "tRESP Grid Supply Point (GSP) Areas",
+      "format": "GPKG",
+      "url_type": "upload",
+      "family": "tresp_demand_pathways_files",
+      "disposition": {
+        "kind": "GIS"
+      }
+    },
+    {
+      "id": "4fdf4204-784f-4bab-aa81-f80480673dab",
+      "name": "RESP Nations and Regions Areas",
+      "format": "GPKG",
+      "url_type": "upload",
+      "family": "tresp_demand_pathways_files",
+      "disposition": {
+        "kind": "GIS"
+      }
+    },
+    {
+      "id": "11c36b60-eee5-45e9-b0da-6240e6e60d1c",
+      "name": "Lists of tRESP Pathways Building Blocks and of tRESP GSP areas with names",
+      "format": "XLSX",
+      "url_type": "upload",
+      "family": "tresp_demand_pathways_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    }
+  ]
+}

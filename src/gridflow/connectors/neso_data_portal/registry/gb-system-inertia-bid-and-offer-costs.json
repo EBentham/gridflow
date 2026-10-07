@@ -1,0 +1,36 @@
+{
+  "package": "gb-system-inertia-bid-and-offer-costs",
+  "package_id": "23d66321-9c65-4825-9d62-94b6b24a1207",
+  "group": "balancing",
+  "archetype": "SER",
+  "refresh": "frozen",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "inertia_bid_offer_costs",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SER",
+      "refresh": "frozen",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "8da765a1-004f-46a5-8b3f-0e5b1787fcb1",
+      "name": "GB System Inertia Costs – combined bids and offers",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "inertia_bid_offer_costs",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "inertia_bid_offer_costs"
+      }
+    }
+  ]
+}

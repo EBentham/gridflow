@@ -1,0 +1,156 @@
+{
+  "package": "thermal-constraint-costs",
+  "package_id": "f0055054-c55c-4068-a01c-61da4334e58f",
+  "group": "constraint-management",
+  "archetype": "SER",
+  "refresh": "weekly",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "thermal_constraint_costs",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SER",
+      "refresh": "weekly",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "thermal_constraint_costs_files",
+      "kind": "files",
+      "legacy": false,
+      "archetype": "SER",
+      "refresh": "weekly",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "d195f1d8-7d9e-46f1-96a6-4251e75e9bd0",
+      "name": "Thermal Constraint Costs 19-20",
+      "format": "XLSX",
+      "url_type": "upload",
+      "family": "thermal_constraint_costs_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "a4302916-85af-4a4d-8171-1bdf8f0697a7",
+      "name": "Thermal Constraint Costs 20-21",
+      "format": "XLSX",
+      "url_type": "upload",
+      "family": "thermal_constraint_costs_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "57673696-39ac-4f65-81a2-983577ff7249",
+      "name": "Network Diagram England & Wales",
+      "format": "PNG",
+      "url_type": "upload",
+      "family": "thermal_constraint_costs_files",
+      "disposition": {
+        "kind": "DOC"
+      }
+    },
+    {
+      "id": "2f3e8b4e-a46b-4e14-8a58-9f6a0891d855",
+      "name": "Network Diagram Scotland",
+      "format": "PNG",
+      "url_type": "upload",
+      "family": "thermal_constraint_costs_files",
+      "disposition": {
+        "kind": "DOC"
+      }
+    },
+    {
+      "id": "29d824c5-9ea9-4520-943d-3e61913cd8ff",
+      "name": "Constraint Map",
+      "format": "PNG",
+      "url_type": "upload",
+      "family": "thermal_constraint_costs_files",
+      "disposition": {
+        "kind": "DOC"
+      }
+    },
+    {
+      "id": "4357dd3b-5c7a-4caa-8d1a-8cf848521143",
+      "name": "Thermal Constraint Costs Data 21-22",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "thermal_constraint_costs",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "thermal_constraint_costs"
+      }
+    },
+    {
+      "id": "476b8d39-5eda-425c-9756-73ddfd36dc4d",
+      "name": "Thermal Constraint Costs Data 22-23",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "thermal_constraint_costs",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "thermal_constraint_costs"
+      }
+    },
+    {
+      "id": "75c9c564-af38-4421-a461-a612a6921212",
+      "name": "Thermal Constraint Costs Data 23-24",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "thermal_constraint_costs",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "thermal_constraint_costs"
+      }
+    },
+    {
+      "id": "27df75fd-6233-466c-beed-3e6e2261e6b1",
+      "name": "Thermal Constraint Costs Data 24-25",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "thermal_constraint_costs",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "thermal_constraint_costs"
+      }
+    },
+    {
+      "id": "407f3e9d-5c38-4a64-98f5-923dc4d64fb2",
+      "name": "Thermal Constraint Costs Data 25-26",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "thermal_constraint_costs",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "thermal_constraint_costs"
+      }
+    },
+    {
+      "id": "c730b788-4328-43dc-9f84-27fd3adeda59",
+      "name": "Thermal Constraint Costs Data 26-27",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "thermal_constraint_costs",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "thermal_constraint_costs"
+      }
+    }
+  ]
+}

@@ -1,0 +1,135 @@
+{
+  "package": "system-inertia",
+  "package_id": "8f3cd0ce-6636-469e-b582-55eadfeaa1d9",
+  "group": "system",
+  "archetype": "SER",
+  "refresh": "weekly",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "system_inertia",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SER",
+      "refresh": "weekly",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "096d2e9f-fc94-439c-899a-31a67650bda7",
+      "name": "GB System Inertia - 2017-2018",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "system_inertia",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "system_inertia"
+      }
+    },
+    {
+      "id": "1e48b665-684d-4372-925a-2beedb520cdf",
+      "name": "GB System Inertia - 2018-2019",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "system_inertia",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "system_inertia"
+      }
+    },
+    {
+      "id": "2f2dbaa1-3047-4e48-85f2-ec24e669678f",
+      "name": "GB System Inertia - 2019-2020",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "system_inertia",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "system_inertia"
+      }
+    },
+    {
+      "id": "f198d0bd-2b7d-493c-af9d-b2b9cbb4353b",
+      "name": "GB System Inertia - 2020-2021",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "system_inertia",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "system_inertia"
+      }
+    },
+    {
+      "id": "55161fb4-1396-46e2-9250-2e2b9df904bf",
+      "name": "GB System Inertia - 2021-2022",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "system_inertia",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "system_inertia"
+      }
+    },
+    {
+      "id": "b42a4fe0-32e4-47ed-9697-5fe101b75970",
+      "name": "GB System Inertia - 2022-2023",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "system_inertia",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "system_inertia"
+      }
+    },
+    {
+      "id": "5bd6ec4d-a2df-4c94-9b27-fdf8cf04d7dd",
+      "name": "GB System Inertia - 2023-2024",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "system_inertia",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "system_inertia"
+      }
+    },
+    {
+      "id": "7a12d0bd-448d-42a9-b333-4a32761dbad4",
+      "name": "GB System Inertia - 2024-2025",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "system_inertia",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "system_inertia"
+      }
+    },
+    {
+      "id": "936daa4f-fca4-4c6a-968a-884f3d77bafe",
+      "name": "GB System Inertia - 2025-2026",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "system_inertia",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "system_inertia"
+      }
+    },
+    {
+      "id": "3ff8b466-5c16-4713-abfe-ad332298f15f",
+      "name": "GB System Inertia - 2026-2027",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "system_inertia",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "system_inertia"
+      }
+    }
+  ]
+}

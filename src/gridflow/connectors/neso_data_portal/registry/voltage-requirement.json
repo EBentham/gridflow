@@ -1,0 +1,77 @@
+{
+  "package": "voltage-requirement",
+  "package_id": "9f4acccb-bf79-452b-aa77-a680ae728722",
+  "group": "constraint-management",
+  "archetype": "FC",
+  "refresh": "weekly",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "voltage_requirement",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "FC",
+      "refresh": "weekly",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "voltage_requirement_files",
+      "kind": "files",
+      "legacy": false,
+      "archetype": "FC",
+      "refresh": "weekly",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "633e7e26-2b4f-47b0-80de-f39882a2c227",
+      "name": "Voltage Deep Dive",
+      "format": "PDF",
+      "url_type": "upload",
+      "family": "voltage_requirement_files",
+      "disposition": {
+        "kind": "DOC"
+      }
+    },
+    {
+      "id": "c28b35c9-34da-49a7-bb7e-90d88799c4a4",
+      "name": "Introduction to voltage management",
+      "format": "PDF",
+      "url_type": "upload",
+      "family": "voltage_requirement_files",
+      "disposition": {
+        "kind": "DOC"
+      }
+    },
+    {
+      "id": "1cf7b77b-3750-49e5-8d57-6b25ccbc1007",
+      "name": "Week ahead overnight voltage requirement group map",
+      "format": "PDF",
+      "url_type": "upload",
+      "family": "voltage_requirement_files",
+      "disposition": {
+        "kind": "DOC"
+      }
+    },
+    {
+      "id": "00881643-7a5e-4eed-b144-06423a88202b",
+      "name": "Week Ahead Overnight Voltage Requirement 20-26",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "voltage_requirement",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "voltage_requirement"
+      }
+    }
+  ]
+}

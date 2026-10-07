@@ -1,0 +1,36 @@
+{
+  "package": "daily-opmr",
+  "package_id": "8e0c417f-ee54-4c8b-8ed2-0d64b042c6ed",
+  "group": "generation",
+  "archetype": "FC",
+  "refresh": "daily",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "daily_opmr",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "FC",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "0eede912-8820-4c66-a58a-f7436d36b95f",
+      "name": "Daily Operational Planning Margin Requirement",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "daily_opmr",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "daily_opmr"
+      }
+    }
+  ]
+}

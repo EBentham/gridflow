@@ -1,0 +1,36 @@
+{
+  "package": "stor-windows",
+  "package_id": "d7371697-0a03-43a9-a3f3-572d06b25e59",
+  "group": "ancillary-services",
+  "archetype": "REG",
+  "refresh": "adhoc",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "stor_windows",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "REG",
+      "refresh": "adhoc",
+      "empty_allowed": true,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "90d4a1a4-d311-4a22-9138-84cb7ead2599",
+      "name": "STOR Windows",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "stor_windows",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "stor_windows"
+      }
+    }
+  ]
+}

@@ -1,0 +1,102 @@
+{
+  "package": "demand-flexibility-service-live-events",
+  "package_id": "328b830b-4a8e-4dce-a14b-be91ed926b95",
+  "group": "dfs",
+  "archetype": "EVT",
+  "refresh": "frozen",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "dfs_live_events_service_requirement",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "frozen",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "dfs_live_events_utilisation_report",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "frozen",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "dfs_live_events_service_update_industry",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "frozen",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "dfs_live_events_utilisation_report_sum",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "frozen",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "663f3f82-fec8-4c9a-a837-df5db8690a6f",
+      "name": "DFS Service Requirement - LIVE",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "dfs_live_events_service_requirement",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "dfs_live_events_service_requirement"
+      }
+    },
+    {
+      "id": "a59a9d56-af4b-4044-b0c8-6379ce1213f8",
+      "name": "Service Update Industry Notifications - LIVE",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "dfs_live_events_service_update_industry",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "dfs_live_events_service_update_industry"
+      }
+    },
+    {
+      "id": "4e87244e-2479-4e6e-84c2-698dffaca41f",
+      "name": "DFS Utilisation Report - LIVE",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "dfs_live_events_utilisation_report",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "dfs_live_events_utilisation_report"
+      }
+    },
+    {
+      "id": "011f1a15-f63f-4a95-b1eb-453e5ffcd176",
+      "name": "Utilisation Report Summary - LIVE",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "dfs_live_events_utilisation_report_sum",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "dfs_live_events_utilisation_report_sum"
+      }
+    }
+  ]
+}

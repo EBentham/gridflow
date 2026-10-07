@@ -1,0 +1,134 @@
+{
+  "package": "obligatory-reactive-power-service-orps-utilisation",
+  "package_id": "7e142b03-8650-4f46-8420-7ce1e84e1e5b",
+  "group": "ancillary-services",
+  "archetype": "SER",
+  "refresh": "monthly",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "orps_utilisation_historic_reactive",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SER",
+      "refresh": "monthly",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "orps_utilisation_reactive_default",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SER",
+      "refresh": "monthly",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "orps_utilisation_reactive",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SER",
+      "refresh": "monthly",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "orps_utilisation_files",
+      "kind": "files",
+      "legacy": false,
+      "archetype": "SER",
+      "refresh": "monthly",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "d91e4fd2-1f27-4d0b-8473-b4b19af7f3dc",
+      "name": "Reactive Utilisation-Nov-2021",
+      "format": "XLSX",
+      "url_type": "upload",
+      "family": "orps_utilisation_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "e2e6f74c-ebca-48b3-b2ae-e4652d296dca",
+      "name": "Reactive Default Payment Rate - Oct - 2026",
+      "format": "PDF",
+      "url_type": "upload",
+      "family": "orps_utilisation_files",
+      "disposition": {
+        "kind": "DOC"
+      }
+    },
+    {
+      "id": "0a74a789-d9fc-46cc-9554-e4e04c1e8014",
+      "name": "Obligatory Reactive Power Guide",
+      "format": "PDF",
+      "url_type": "upload",
+      "family": "orps_utilisation_files",
+      "disposition": {
+        "kind": "DOC"
+      }
+    },
+    {
+      "id": "3ee65326-3729-421d-b667-b2164501e4a5",
+      "name": "Historic Reactive Utilisation Data - Apr-2013 - March 2020",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "orps_utilisation_historic_reactive",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "orps_utilisation_historic_reactive"
+      }
+    },
+    {
+      "id": "a61c6c26-62ec-41e1-ae25-ed95f4562274",
+      "name": "Reactive Utilisation Data - Apr-2020 - Dec-2024",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "orps_utilisation_reactive",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "orps_utilisation_reactive"
+      }
+    },
+    {
+      "id": "b00df5b1-4179-44e3-b556-28a836ad619f",
+      "name": "Reactive Default Payment Rate - Oct - 2026",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "orps_utilisation_reactive_default",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "orps_utilisation_reactive_default"
+      }
+    },
+    {
+      "id": "528b03d2-4008-4b65-a732-a001cd835a3b",
+      "name": "Reactive Utilisation Data",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "orps_utilisation_reactive",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "orps_utilisation_reactive"
+      }
+    }
+  ]
+}

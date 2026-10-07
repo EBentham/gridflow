@@ -1,0 +1,146 @@
+{
+  "package": "balancing-services-adjustment-data-forward-contracts",
+  "package_id": "ca51d03a-53e8-4397-aee1-2f40f9973b96",
+  "group": "ancillary-services",
+  "archetype": "EVT",
+  "refresh": "daily",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "bsad_forward_contracts",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "30ba12a9-9a9e-4dbb-a69e-ad256d274b04",
+      "name": "BSAD Forward Contracts 2016-17",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "bsad_forward_contracts",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "bsad_forward_contracts"
+      }
+    },
+    {
+      "id": "16fe508d-27da-4282-b8af-1fa519b6f480",
+      "name": "BSAD Forward Contracts 2017-18",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "bsad_forward_contracts",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "bsad_forward_contracts"
+      }
+    },
+    {
+      "id": "0e7f8536-b449-4f04-a5f5-d08e8121c8c4",
+      "name": "BSAD Forward Contracts 2018-19",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "bsad_forward_contracts",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "bsad_forward_contracts"
+      }
+    },
+    {
+      "id": "7ce8164f-0f0c-4940-b821-ca232e2eefaf",
+      "name": "BSAD Forward Contracts 2019-20",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "bsad_forward_contracts",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "bsad_forward_contracts"
+      }
+    },
+    {
+      "id": "5d0f2119-1ba6-4d7d-8db5-ea4e23720aa9",
+      "name": "BSAD Forward Contracts 2020-21",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "bsad_forward_contracts",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "bsad_forward_contracts"
+      }
+    },
+    {
+      "id": "c435e464-f4d5-4ec2-b8f5-693416e22baa",
+      "name": "BSAD Forward Contracts 2021-22",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "bsad_forward_contracts",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "bsad_forward_contracts"
+      }
+    },
+    {
+      "id": "38f74f2c-f735-46fb-8e26-32545011a310",
+      "name": "BSAD Forward Contracts 2022-23",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "bsad_forward_contracts",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "bsad_forward_contracts"
+      }
+    },
+    {
+      "id": "56e8e727-3ef9-4b0a-bd06-756cbf5df2fc",
+      "name": "BSAD Forward Contracts 2023-24",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "bsad_forward_contracts",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "bsad_forward_contracts"
+      }
+    },
+    {
+      "id": "93f9bdde-1fd9-4619-99e2-d1c5e38239e1",
+      "name": "BSAD Forward Contracts 2024-25",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "bsad_forward_contracts",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "bsad_forward_contracts"
+      }
+    },
+    {
+      "id": "9382cd2a-656d-4a0a-a82e-eb26cd8bf7f7",
+      "name": "BSAD Forward Contracts 2025-26",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "bsad_forward_contracts",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "bsad_forward_contracts"
+      }
+    },
+    {
+      "id": "449c73a6-a7fd-4166-91f0-3dd1a0e0bb14",
+      "name": "BSAD Forward Contracts 2026-27",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "bsad_forward_contracts",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "bsad_forward_contracts"
+      }
+    }
+  ]
+}

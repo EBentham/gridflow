@@ -1,0 +1,91 @@
+{
+  "package": "building-heat-model",
+  "package_id": "14d99094-165e-4de1-9452-137c2835b102",
+  "group": "future-energy-scenarios",
+  "archetype": "SCN",
+  "refresh": "adhoc",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "building_heat_model_example_output_half",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SCN",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "building_heat_model_list_input",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SCN",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "building_heat_model_files",
+      "kind": "files",
+      "legacy": false,
+      "archetype": "SCN",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "b809e59a-e681-4ecb-af07-80997abbbd6f",
+      "name": "List of input parameters used for generating the example profiles",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "building_heat_model_list_input",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "building_heat_model_list_input"
+      }
+    },
+    {
+      "id": "27522340-008d-4c82-97c1-17eeb7ed1b6a",
+      "name": "Example output half-hourly demand profiles",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "building_heat_model_example_output_half",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "building_heat_model_example_output_half"
+      }
+    },
+    {
+      "id": "78516fb0-9fd1-40cc-9db0-39cca2d78ac9",
+      "name": "Building Heat Model Excel tool",
+      "format": "XLSM",
+      "url_type": "upload",
+      "family": "building_heat_model_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "ff46632d-4e8e-4b19-80f4-2838399dfc92",
+      "name": "Model User Guide",
+      "format": "PPT",
+      "url_type": "upload",
+      "family": "building_heat_model_files",
+      "disposition": {
+        "kind": "DOC"
+      }
+    }
+  ]
+}

@@ -1,0 +1,82 @@
+{
+  "package": "levelised-cost-of-green-hydrogen",
+  "package_id": "36f600ae-56cb-41b4-adee-6dbd05df6668",
+  "group": "future-energy-scenarios",
+  "archetype": "SCN",
+  "refresh": "adhoc",
+  "eligibility": {
+    "status": "held",
+    "question": "third-party origin cited in package notes; licence carve-out",
+    "unit": "N"
+  },
+  "families": [
+    {
+      "key": "lcoh_capex_opex_input_assumptions_pem",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SCN",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "lcoh_levelised_cost_blue_hydrogen",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SCN",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "lcoh_levelised_cost_green_hydrogen",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SCN",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "3f3b1bf0-4664-494f-a501-a39adabecd0d",
+      "name": "Levelised cost of blue hydrogen modelling, 2025 to 2050",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "lcoh_levelised_cost_blue_hydrogen",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "lcoh_levelised_cost_blue_hydrogen"
+      }
+    },
+    {
+      "id": "cc2dad0c-393c-4ae0-ae67-a98703169ad4",
+      "name": "Levelised cost of green hydrogen modelling, 2025 to 2050",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "lcoh_levelised_cost_green_hydrogen",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "lcoh_levelised_cost_green_hydrogen"
+      }
+    },
+    {
+      "id": "88cfa584-db79-4573-a0c0-c14086257f8f",
+      "name": "Capex and opex input assumptions for PEM and Alkaline electrolyser systems",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "lcoh_capex_opex_input_assumptions_pem",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "lcoh_capex_opex_input_assumptions_pem"
+      }
+    }
+  ]
+}

@@ -1,0 +1,91 @@
+{
+  "package": "balancing-reserve-auction-requirement-forecast",
+  "package_id": "6b31e0f0-f711-461c-84bb-4ed4775a9992",
+  "group": "ancillary-services",
+  "archetype": "FC",
+  "refresh": "daily",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "br_auction_requirement_fc_da_archive",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "FC",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "br_auction_requirement_fc_da",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "FC",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "br_auction_requirement_fc_medium_term",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "FC",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "fb2e0eea-b1c0-4ba3-a817-0561182a6e26",
+      "name": "Balancing Reserve Requirements Medium term forecast (Archive)",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "br_auction_requirement_fc_medium_term",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "br_auction_requirement_fc_medium_term"
+      }
+    },
+    {
+      "id": "a9470515-c1de-4c4b-9597-2d78bf24c29f",
+      "name": "Balancing Reserve Requirements Medium term forecast",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "br_auction_requirement_fc_medium_term",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "br_auction_requirement_fc_medium_term"
+      }
+    },
+    {
+      "id": "b9ce03d0-c189-44ef-92e4-c02e91feb65d",
+      "name": "Balancing Reserve Day ahead auction requirement forecast (Archive)",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "br_auction_requirement_fc_da_archive",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "br_auction_requirement_fc_da_archive"
+      }
+    },
+    {
+      "id": "019f6fba-4f17-4056-9ef8-31df44ff2e30",
+      "name": "Balancing Reserve Day ahead auction requirements forecast",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "br_auction_requirement_fc_da",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "br_auction_requirement_fc_da"
+      }
+    }
+  ]
+}

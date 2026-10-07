@@ -1,0 +1,102 @@
+{
+  "package": "future-energy-scenario-electricity-supply-data-table-es1",
+  "package_id": "549b0667-b533-4748-95bd-f6e13933a47d",
+  "group": "future-energy-scenarios",
+  "archetype": "SCN",
+  "refresh": "adhoc",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "fes_es1_electricity_supply",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SCN",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "40f40b39-5eba-4479-94b1-328ea9b8eefe",
+      "name": "Electricity Supply Data table (ES1) 2020",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_es1_electricity_supply",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_es1_electricity_supply"
+      }
+    },
+    {
+      "id": "bca9679e-9860-4efd-9145-220d7dc4b912",
+      "name": "Electricity Supply Data table (ES1) 2021",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_es1_electricity_supply",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_es1_electricity_supply"
+      }
+    },
+    {
+      "id": "90c4a0e8-22fd-4bda-b5bd-14a540893a98",
+      "name": "Electricity Supply Data table (ES1) 2022",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_es1_electricity_supply",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_es1_electricity_supply"
+      }
+    },
+    {
+      "id": "86812136-3f52-43e5-8f7c-7e4f6d5f95fc",
+      "name": "Electricity Supply Data table (ES1) 2023",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_es1_electricity_supply",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_es1_electricity_supply"
+      }
+    },
+    {
+      "id": "8c8a436d-408a-441b-8c7a-84249805772c",
+      "name": "Electricity Supply Data table (ES1) 2024",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_es1_electricity_supply",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_es1_electricity_supply"
+      }
+    },
+    {
+      "id": "6c78a777-b885-4bb6-bc35-8100f9e137a2",
+      "name": "Electricity Supply Data table (ES1) 2025",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_es1_electricity_supply",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_es1_electricity_supply"
+      }
+    },
+    {
+      "id": "b3bf8ac0-d27a-447c-975c-208ae92c0fa5",
+      "name": "Electricity Supply Data table (ES1) 2026",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_es1_electricity_supply",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_es1_electricity_supply"
+      }
+    }
+  ]
+}

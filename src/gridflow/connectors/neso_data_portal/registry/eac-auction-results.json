@@ -1,0 +1,707 @@
+{
+  "package": "eac-auction-results",
+  "package_id": "291e3c28-75f2-4a8f-b5f5-008bebaac368",
+  "group": "ancillary-services",
+  "archetype": "EVT",
+  "refresh": "daily",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "eac_results_buy_orders",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "eac_results_buy_orders_fy",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "eac_results_daily_buy_orders",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "eac_results_daily_by_unit",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "eac_results_daily_summary",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "eac_results_daily_sell_orders",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "eac_results_by_unit",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "eac_results_by_unit_fy",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "eac_results_summary",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "eac_results_summary_fy",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "eac_results_sell_orders",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "a63ab354-7e68-44c2-ad96-c6f920c30e85",
+      "name": "NESO Response-Reserve Results By Unit",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "eac_results_by_unit",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "eac_results_by_unit"
+      }
+    },
+    {
+      "id": "1cf68f59-8eb8-4f1d-bccf-11b5a47b24e5",
+      "name": "NESO Response-Reserve Buy Orders",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "eac_results_buy_orders",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "eac_results_buy_orders"
+      }
+    },
+    {
+      "id": "13b511df-d6ec-4143-afb1-0ecc6fd19810",
+      "name": "NESO Response-Reserve Sell Orders",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "eac_results_sell_orders",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "eac_results_sell_orders"
+      }
+    },
+    {
+      "id": "596f29ac-0387-4ba4-a6d3-95c243140707",
+      "name": "NESO Response-Reserve Results Summary",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "eac_results_summary",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "eac_results_summary"
+      }
+    },
+    {
+      "id": "7505ec16-e1e7-432e-8abd-a554e03e4f02",
+      "name": "NESO Response-Reserve Results By Unit FY2023 (Archive)",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "eac_results_by_unit_fy",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "eac_results_by_unit_fy"
+      }
+    },
+    {
+      "id": "3780a81e-bee4-43e2-9ebe-ef85d2ba18de",
+      "name": "NESO Response-Reserve Sell Orders 202311 (Archive)",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "eac_results_sell_orders",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "eac_results_sell_orders"
+      }
+    },
+    {
+      "id": "7a2d64a5-3233-4ee2-92fd-240db03717f1",
+      "name": "NESO Response-Reserve Buy Orders FY2023 (Archive)",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "eac_results_buy_orders_fy",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "eac_results_buy_orders_fy"
+      }
+    },
+    {
+      "id": "be5c6b0d-a335-4859-93f2-389585b4e9a1",
+      "name": "NESO Response-Reserve Results Summary FY2023 (Archive)",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "eac_results_summary_fy",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "eac_results_summary_fy"
+      }
+    },
+    {
+      "id": "66bde1bc-1e81-4d91-b022-ae0f072020b6",
+      "name": "NESO Response-Reserve Sell Orders 202312 (Archive)",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "eac_results_sell_orders",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "eac_results_sell_orders"
+      }
+    },
+    {
+      "id": "5901ba21-44e3-4f22-922b-e759f9930f92",
+      "name": "NESO Response-Reserve Sell Orders 202401 (Archive)",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "eac_results_sell_orders",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "eac_results_sell_orders"
+      }
+    },
+    {
+      "id": "301443b5-2629-482f-8904-d73cdffffc69",
+      "name": "NESO Response-Reserve Sell Orders 202402 (Archive)",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "eac_results_sell_orders",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "eac_results_sell_orders"
+      }
+    },
+    {
+      "id": "f588ba39-c449-4879-93f5-e771b85c93dc",
+      "name": "NESO Response-Reserve Sell Orders 202403 (Archive)",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "eac_results_sell_orders",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "eac_results_sell_orders"
+      }
+    },
+    {
+      "id": "85690ec6-741b-4853-840c-7afe70da3e79",
+      "name": "NESO Response-Reserve Sell Orders 202404 (Archive)",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "eac_results_sell_orders",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "eac_results_sell_orders"
+      }
+    },
+    {
+      "id": "1b31276c-31a1-46ce-8579-52c4444ccc95",
+      "name": "NESO Response-Reserve Sell Orders 202405 (Archive)",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "eac_results_sell_orders",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "eac_results_sell_orders"
+      }
+    },
+    {
+      "id": "fb1ed018-e6c3-4032-a08a-7abd4d4fb150",
+      "name": "NESO Response-Reserve Sell Orders 202406 (Archive)",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "eac_results_sell_orders",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "eac_results_sell_orders"
+      }
+    },
+    {
+      "id": "91f2ad1c-c592-4bbb-8c3b-d5ace1d7a32a",
+      "name": "NESO Response-Reserve Sell Orders 202407 (Archive)",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "eac_results_sell_orders",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "eac_results_sell_orders"
+      }
+    },
+    {
+      "id": "f62d283f-66e0-4e71-8e8e-b58c31bf8746",
+      "name": "NESO Response-Reserve Sell Orders 202408 (Archive)",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "eac_results_sell_orders",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "eac_results_sell_orders"
+      }
+    },
+    {
+      "id": "3aa319e4-21bb-4f69-be63-05144ddca6b4",
+      "name": "NESO Response-Reserve Sell Orders 202409 (Archive)",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "eac_results_sell_orders",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "eac_results_sell_orders"
+      }
+    },
+    {
+      "id": "7cee44eb-0668-489c-9a0f-fef5f5d7fa50",
+      "name": "NESO Response-Reserve Sell Orders 202410 (Archive)",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "eac_results_sell_orders",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "eac_results_sell_orders"
+      }
+    },
+    {
+      "id": "39c7648c-d43b-4ef9-b689-a82619245cda",
+      "name": "NESO Response-Reserve Sell Orders 202411 (Archive)",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "eac_results_sell_orders",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "eac_results_sell_orders"
+      }
+    },
+    {
+      "id": "0a6325b9-1b78-4ee2-a1a0-647aa3b6d014",
+      "name": "NESO Response-Reserve Sell Orders 202412 (Archive)",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "eac_results_sell_orders",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "eac_results_sell_orders"
+      }
+    },
+    {
+      "id": "3c03d431-7f94-4009-903d-8a4df1aea9f4",
+      "name": "NESO Response-Reserve Sell Orders 202501 (Archive)",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "eac_results_sell_orders",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "eac_results_sell_orders"
+      }
+    },
+    {
+      "id": "5997f602-24f1-4f44-aa36-c7b898229d60",
+      "name": "NESO Response-Reserve Sell Orders 202502 (Archive)",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "eac_results_sell_orders",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "eac_results_sell_orders"
+      }
+    },
+    {
+      "id": "02c3ede4-6909-4c7b-9b77-511c774decb2",
+      "name": "NESO Response-Reserve Sell Orders 202503 (Archive)",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "eac_results_sell_orders",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "eac_results_sell_orders"
+      }
+    },
+    {
+      "id": "57340708-6f3a-429b-8ede-682df3c86709",
+      "name": "NESO Response-Reserve Sell Orders 202504 (Archive)",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "eac_results_sell_orders",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "eac_results_sell_orders"
+      }
+    },
+    {
+      "id": "069a047e-5b0a-4d27-83fa-f45e451661e3",
+      "name": "NESO Response-Reserve Sell Orders 202505 (Archive)",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "eac_results_sell_orders",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "eac_results_sell_orders"
+      }
+    },
+    {
+      "id": "e0b50ef5-b37f-46ad-8eb2-17ab0eedb6d1",
+      "name": "NESO Response-Reserve Sell Orders 202506 (Archive)",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "eac_results_sell_orders",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "eac_results_sell_orders"
+      }
+    },
+    {
+      "id": "81a9700a-6fcd-4c26-ab3b-965d771bfa2c",
+      "name": "NESO Response-Reserve Sell Orders 202507 (Archive)",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "eac_results_sell_orders",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "eac_results_sell_orders"
+      }
+    },
+    {
+      "id": "d4bc27fe-45a1-43c4-b469-f5f1ba5824ed",
+      "name": "NESO Response-Reserve Sell Orders 202508 (Archive)",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "eac_results_sell_orders",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "eac_results_sell_orders"
+      }
+    },
+    {
+      "id": "f8db9239-1f96-42ad-bab9-d2ef60c52e1e",
+      "name": "NESO Response-Reserve Sell Orders 202509 (Archive)",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "eac_results_sell_orders",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "eac_results_sell_orders"
+      }
+    },
+    {
+      "id": "a6ce3d85-4cdd-4276-b23b-01b160f49164",
+      "name": "NESO Response-Reserve Sell Orders 202510 (Archive)",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "eac_results_sell_orders",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "eac_results_sell_orders"
+      }
+    },
+    {
+      "id": "8adbb902-6029-4af7-b8dd-e1e500aaaa51",
+      "name": "NESO Response-Reserve Sell Orders 202511 (Archive)",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "eac_results_sell_orders",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "eac_results_sell_orders"
+      }
+    },
+    {
+      "id": "eaa6961f-87c2-483a-94a2-7d6247c7e994",
+      "name": "NESO Response-Reserve Sell Orders 202512 (Archive)",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "eac_results_sell_orders",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "eac_results_sell_orders"
+      }
+    },
+    {
+      "id": "b155f068-e10f-4c6e-8960-a2cb2806ae13",
+      "name": "NESO Response-Reserve Sell Orders 202601 (Archive)",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "eac_results_sell_orders",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "eac_results_sell_orders"
+      }
+    },
+    {
+      "id": "4e5c9a3c-77c6-4709-abdd-236353451771",
+      "name": "NESO Response-Reserve Sell Orders 202602 (Archive)",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "eac_results_sell_orders",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "eac_results_sell_orders"
+      }
+    },
+    {
+      "id": "5531d313-cab5-4f02-9eda-d0242a62d984",
+      "name": "NESO Response-Reserve Sell Orders 202603 (Archive)",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "eac_results_sell_orders",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "eac_results_sell_orders"
+      }
+    },
+    {
+      "id": "ab130833-3ce4-4361-90fb-69fa3cf30f15",
+      "name": "NESO Response-Reserve Results Summary FY2024 (Archive)",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "eac_results_summary_fy",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "eac_results_summary_fy"
+      }
+    },
+    {
+      "id": "c6f09570-58f9-4e04-81c3-2c99af2fded0",
+      "name": "NESO Response-Reserve Buy Orders FY2024 (Archive)",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "eac_results_buy_orders_fy",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "eac_results_buy_orders_fy"
+      }
+    },
+    {
+      "id": "2fc9dd7e-5274-40e3-abf4-6d31b30f21c6",
+      "name": "NESO Response-Reserve Results By Unit FY2024 (Archive)",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "eac_results_by_unit_fy",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "eac_results_by_unit_fy"
+      }
+    },
+    {
+      "id": "be55ee51-b79e-47da-b71e-a0f8865d9d66",
+      "name": "NESO Response-Reserve Results Summary FY2025 (Archive)",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "eac_results_summary_fy",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "eac_results_summary_fy"
+      }
+    },
+    {
+      "id": "270a5e1d-ea44-43a0-82b1-703fdaa354ac",
+      "name": "NESO Response-Reserve Buy Orders FY2025 (Archive)",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "eac_results_buy_orders_fy",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "eac_results_buy_orders_fy"
+      }
+    },
+    {
+      "id": "c312358e-87da-480e-88cc-d45c1dce1b41",
+      "name": "NESO Response-Reserve Results By Unit FY2025 (Archive)",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "eac_results_by_unit_fy",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "eac_results_by_unit_fy"
+      }
+    },
+    {
+      "id": "3c51a666-1c33-450e-a6eb-c9b4a0c91584",
+      "name": "NESO Response-Reserve Daily Results Summary",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "eac_results_daily_summary",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "eac_results_daily_summary"
+      }
+    },
+    {
+      "id": "8ba48f26-d73e-4094-a90d-ba075eb739c1",
+      "name": "NESO Response-Reserve Daily Sell Orders",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "eac_results_daily_sell_orders",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "eac_results_daily_sell_orders"
+      }
+    },
+    {
+      "id": "e638cf3d-bed1-42ae-a984-8fe3c556febf",
+      "name": "NESO Response-Reserve Daily Buy Orders",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "eac_results_daily_buy_orders",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "eac_results_daily_buy_orders"
+      }
+    },
+    {
+      "id": "07f0dd8b-4471-4e2e-9ed6-d21b0ce1f6f5",
+      "name": "NESO Response-Reserve Daily Results By Unit",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "eac_results_daily_by_unit",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "eac_results_daily_by_unit"
+      }
+    },
+    {
+      "id": "45d867bb-eccb-4a60-8618-74316aafde5a",
+      "name": "NESO Response-Reserve Sell Orders 202604 (Archive)",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "eac_results_sell_orders",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "eac_results_sell_orders"
+      }
+    },
+    {
+      "id": "654c9fcd-9d0b-42c5-bac7-9fa245b5f99d",
+      "name": "NESO Response-Reserve Sell Orders 202605 (Archive)",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "eac_results_sell_orders",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "eac_results_sell_orders"
+      }
+    },
+    {
+      "id": "85272de8-2fd7-4578-ae4b-55da74629841",
+      "name": "NESO Response-Reserve Sell Orders 202606 (Archive)",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "eac_results_sell_orders",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "eac_results_sell_orders"
+      }
+    },
+    {
+      "id": "fc52a1fa-6ce5-4c35-a661-be1b49c1c48f",
+      "name": "NESO Response-Reserve Sell Orders 202607 (Archive)",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "eac_results_sell_orders",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "eac_results_sell_orders"
+      }
+    },
+    {
+      "id": "aeef326a-9379-4263-a7cd-63c5e4fb0911",
+      "name": "NESO Response-Reserve Sell Orders 202608 (Archive)",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "eac_results_sell_orders",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "eac_results_sell_orders"
+      }
+    },
+    {
+      "id": "06f4396f-d222-477d-85ad-916ac0662630",
+      "name": "NESO Response-Reserve Sell Orders 202609 (Archive)",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "eac_results_sell_orders",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "eac_results_sell_orders"
+      }
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "package": "demand-profile-dates",
+  "package_id": "11a2a8d3-3d65-4545-af02-be85e54db078",
+  "group": "demand",
+  "archetype": "FC",
+  "refresh": "daily",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "demand_profile_dates",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "FC",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "48862d1a-f285-4709-a48c-1c0e8e7b37c3",
+      "name": "Demand Profile Dates",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "demand_profile_dates",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "demand_profile_dates"
+      }
+    }
+  ]
+}

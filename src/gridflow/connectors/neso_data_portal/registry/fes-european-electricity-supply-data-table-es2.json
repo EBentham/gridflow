@@ -1,0 +1,69 @@
+{
+  "package": "fes-european-electricity-supply-data-table-es2",
+  "package_id": "bd83ce0b-7b1e-4ff2-89e8-12d524c34d99",
+  "group": "future-energy-scenarios",
+  "archetype": "SCN",
+  "refresh": "adhoc",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "fes_es2_european_supply",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SCN",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "6563801b-6da4-46e7-b147-3d81c0237779",
+      "name": "European Electricity Supply Data Table (ES2) 2023",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_es2_european_supply",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_es2_european_supply"
+      }
+    },
+    {
+      "id": "7902b197-ada0-47ae-bd2e-db566a8d0fab",
+      "name": "European Electricity Supply Data Table (ES2) 2024",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_es2_european_supply",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_es2_european_supply"
+      }
+    },
+    {
+      "id": "fbfdc6c6-52b6-4e3a-96b9-f4e7941f61ec",
+      "name": " European Electricity Supply Data Table (ES2) 2025",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_es2_european_supply",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_es2_european_supply"
+      }
+    },
+    {
+      "id": "e8ed65c6-6785-4e2b-84a5-696057f103c9",
+      "name": "European Electricity Supply Data Table (ES2) 2026",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_es2_european_supply",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_es2_european_supply"
+      }
+    }
+  ]
+}

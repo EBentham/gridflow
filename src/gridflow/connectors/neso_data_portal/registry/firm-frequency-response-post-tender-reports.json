@@ -1,0 +1,1098 @@
+{
+  "package": "firm-frequency-response-post-tender-reports",
+  "package_id": "1162a519-b66d-48f6-96ae-1a69ff17951f",
+  "group": "ancillary-services",
+  "archetype": "EVT",
+  "refresh": "frozen",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "ffr_post_tender_reports_csv",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "frozen",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "ffr_post_tender_reports_csv_ext",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "frozen",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "ffr_post_tender_reports_ext",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "frozen",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "ffr_post_tender_reports_files",
+      "kind": "files",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "frozen",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "bf1bbc9a-ace7-4ec0-a0d5-aa6313fade21",
+      "name": "Post Tender Report - TR122 Feb-20",
+      "format": "XLSX",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "e692dc29-e94c-4be7-8067-4fc6af8bab22",
+      "name": "Post Tender Report - TR121 Jan-20",
+      "format": "XLSX",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "653110b8-4311-4489-81d3-dd6c01043b4e",
+      "name": "Post Tender Report - TR120 Dec-19",
+      "format": "XLSX",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "0544683b-0d5e-41a3-ba42-270b2d689fdf",
+      "name": "Post Tender Report - TR119 Nov-19",
+      "format": "XLSX",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "d397ffa6-2b7c-4b8f-8cc1-36b267ea6ac1",
+      "name": "Post Tender Report - TR118 Oct-19",
+      "format": "XLSX",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "8c1dc03e-1463-4a52-94d9-b659ff2127c5",
+      "name": "Post Tender Report - TR117 Sep-19",
+      "format": "XLSX",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "1eb0314b-54dc-45f4-80f7-f32e7edda972",
+      "name": "Post Tender Report - TR116 Aug-19",
+      "format": "XLSX",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "1c1c7788-a0c0-40c9-97fc-03be099995e5",
+      "name": "Post Tender Report - TR115 Jul-19",
+      "format": "XLSX",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "93802a8f-19ee-4c6b-9fe4-3783085eb0f9",
+      "name": "Post Tender Report - TR114 Jun-19",
+      "format": "XLSX",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "aa3c7d58-9ed5-460a-bcba-415567abf9fb",
+      "name": "Post Tender Report - TR113 May-19",
+      "format": "XLSX",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "dbaa2bb4-ab77-4297-90f2-a7f27e96f7fb",
+      "name": "Post Tender Report - TR112 Apr-19",
+      "format": "XLSX",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "d16afe87-cce1-43f2-a36b-d7707ae648d7",
+      "name": "Post Tender Report - TR111 Mar-19",
+      "format": "XLSX",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "50488f63-b71b-4647-b2d9-95efbddddf17",
+      "name": "Post Tender Report - TR110 Feb-19",
+      "format": "XLSX",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "27ad6287-1d56-493f-a45f-a6707dc02e14",
+      "name": "Post Tender Report - TR109 Jan-19",
+      "format": "XLSX",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "31854ad2-0e98-48ab-8893-dc9b9d473091",
+      "name": "Post Tender Report - TR108 Dec-18",
+      "format": "XLSX",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "2e49daa5-90eb-4157-bcef-6fcf29e75085",
+      "name": "Post Tender Report - TR123 Mar-20",
+      "format": "XLSX",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "93dac57b-a373-4fed-ab9f-338336a685e6",
+      "name": "Post Tender Report- TR124 Apr- 20",
+      "format": "XLSX",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "4bea886e-3aad-4a8d-9bec-1c8e770739b0",
+      "name": "Post Tender Report- TR125 May 2020- EXT",
+      "format": "XLSX",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "9137187c-8626-4d28-a538-3dd9eb395644",
+      "name": "Post Tender Report - TR126 June 2020",
+      "format": "XLSX",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "68529290-7992-4891-90bc-68fa9bcb5aeb",
+      "name": "Post Tender Report - TR127 July 2020",
+      "format": "XLSX",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "16773f53-c0f9-4b8c-aaee-ad819e93d405",
+      "name": "Post Tender Report - TR127 July 2020 - Amended",
+      "format": "XLSX",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "6e6b47ea-afae-4366-bdce-d961bdcb21fe",
+      "name": "Post Tender Report TR128 August 2020",
+      "format": "XLSX",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "5a1f039a-c6c8-43a2-9ae4-069a0a0b32b2",
+      "name": "Post Tender Report TR129 September 2020",
+      "format": "XLSX",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "4b4a2e83-094c-4566-90c1-98366469b504",
+      "name": "Post Tender Report TR130 October 2020",
+      "format": "XLSX",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "c325243e-2a5d-4585-9d56-2207d781d7a2",
+      "name": "Post Tender Report TR131 November 2020 - EXT",
+      "format": "XLSX",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "ce75bd6e-5c16-41b5-bf7f-ebf3b44508f3",
+      "name": "Post Tender Report TR132 December 2020 EXT",
+      "format": "XLSX",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "0f72be2e-71d3-4a6e-a19d-c627dd25c3bb",
+      "name": "Post Tender Report TR133 January 2021 - EXT",
+      "format": "XLSX",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "36c2cf05-c72b-4d18-91bd-dc2104f6103e",
+      "name": "Post Tender Report TR134 February 2021- EXT",
+      "format": "XLSX",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "7912d65a-451a-4dea-b8eb-4bc5c7af254b",
+      "name": "Post Tender Report TR136 April 2021- EXT",
+      "format": "XLSX",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "eaddd8aa-6cd1-403c-943e-4ffa6ce9ec9b",
+      "name": "Post Tender Report TR135 March 2021- EXT",
+      "format": "XLSX",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "a85e6149-3893-48f6-953a-0a10e796ce8e",
+      "name": "Post Tender Report TR136 April 2021 EXT- Amended ",
+      "format": "XLSX",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "6e4f83e8-28d8-42f3-8e95-52928e58fb20",
+      "name": "Post Tender Report TR137 May 2021 EXT ",
+      "format": "XLSX",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "bc47f2cb-695e-450e-a800-cad8cfecaaf1",
+      "name": "Post Tender Report TR138 June 2021 EXT ",
+      "format": "XLSX",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "a5b3f43d-35f9-4384-b35c-a2d78d7bb4ba",
+      "name": "Post Tender Report TR139 July 2021 EXT ",
+      "format": "XLSX",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "9347c45d-bffd-40ee-aa1e-593b41bde9a4",
+      "name": "Post Tender Report TR139 July 2021 CSV- EXT ",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_csv_ext",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "ffr_post_tender_reports_csv_ext"
+      }
+    },
+    {
+      "id": "fe695206-4729-46f2-a82e-b05ed8552da8",
+      "name": "Post Tender Report TR140 August 2021 CSV- EXT ",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_csv_ext",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "ffr_post_tender_reports_csv_ext"
+      }
+    },
+    {
+      "id": "d96d15ed-8705-42f5-a65d-f63468516e08",
+      "name": "Post Tender Report TR140 August 2021 EXT ",
+      "format": "XLSX",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "5e0afd6e-ab83-480a-938b-e0da0223fcbc",
+      "name": "Post Tender Report TR141 September 2021 CSV-  EXT ",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_csv_ext",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "ffr_post_tender_reports_csv_ext"
+      }
+    },
+    {
+      "id": "4df9b9b7-db93-4c98-93e0-1b57b8c256c7",
+      "name": "Post Tender Report TR141 September 2021 EXT ",
+      "format": "XLSX",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "1882b277-6349-4513-9939-b39e1992620b",
+      "name": "Post Tender Report TR142 October 2021 EXT ",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_ext",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "ffr_post_tender_reports_ext"
+      }
+    },
+    {
+      "id": "89134181-f1f0-4605-894f-859e1d19eb7b",
+      "name": "Post Tender Report TR142 October 2021 EXT xlms",
+      "format": "XLSX",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "990dd811-e65a-4361-87fc-9d07d6c0af45",
+      "name": "Post Tender Report TR143 November 2021 EXT ",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_ext",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "ffr_post_tender_reports_ext"
+      }
+    },
+    {
+      "id": "a2888ffb-f2bc-455c-8d2c-8e70b194914e",
+      "name": "Post Tender Report TR143 November 2021.xlms. EXT ",
+      "format": "XLSM",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "ceefff8c-7f61-41dd-b567-42774ca487bc",
+      "name": "Post Tender Report TR144 December 2021 CSV",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_csv",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "ffr_post_tender_reports_csv"
+      }
+    },
+    {
+      "id": "6cd10acf-2524-4c3f-8509-f657eeae73e5",
+      "name": "Post Tender Report TR144 December 2021 EXT ",
+      "format": "XLSX",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "61ee31ac-1f2d-4744-add3-bac7878c6010",
+      "name": "Post Tender Report TR145 January 2022 CSV EXT ",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_csv_ext",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "ffr_post_tender_reports_csv_ext"
+      }
+    },
+    {
+      "id": "29014d2b-7ae3-4689-8dba-9e3a181b26e9",
+      "name": "Post Tender Report TR145 January 2022 EXT ",
+      "format": "XLSM",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "66e127dc-5e95-49b5-bc55-915269d09e1a",
+      "name": "Post Tender Report TR146 February 2022 CSV- EXT ",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_csv_ext",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "ffr_post_tender_reports_csv_ext"
+      }
+    },
+    {
+      "id": "85ec5689-e1ab-4d12-8268-a84bd579beac",
+      "name": "Post Tender Report TR146 February 2022 EXT ",
+      "format": "XLSM",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "c99081fb-0211-4a1a-9eed-53497f64a6ea",
+      "name": "Post Tender Report TR147 March 2022 CSV EXT ",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_csv_ext",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "ffr_post_tender_reports_csv_ext"
+      }
+    },
+    {
+      "id": "8ec9b10f-01e2-44ca-a3cb-2e9557a46410",
+      "name": "Post Tender Report TR147 March 2022 EXT ",
+      "format": "XLSM",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "fc994d78-f7d0-4a29-9ea7-31121931d04c",
+      "name": "Post Tender Report TR148 April 2022 CSV EXT ",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_csv_ext",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "ffr_post_tender_reports_csv_ext"
+      }
+    },
+    {
+      "id": "c72a9877-e718-4b98-a942-ec61d3891e05",
+      "name": "Post Tender Report TR148 April 2022 EXT ",
+      "format": "XLSM",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "a32e86a6-6bd3-422c-996a-7245dcb9b6ee",
+      "name": "Post Tender Report TR149 May 2022 CSV EXT ",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_csv_ext",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "ffr_post_tender_reports_csv_ext"
+      }
+    },
+    {
+      "id": "46313224-61d2-4c48-b59c-5973328ad5c3",
+      "name": "Post Tender Report TR149 May 2022 EXT ",
+      "format": "XLSM",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "36164e1d-c6d5-4a58-85b1-74c3a01b0a9b",
+      "name": "Post Tender Report TR150  June 2022CSV  EXT ",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_csv_ext",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "ffr_post_tender_reports_csv_ext"
+      }
+    },
+    {
+      "id": "e5c028dd-265e-4684-a419-cee906617e11",
+      "name": "Post Tender Report TR150 June 2022 EXT ",
+      "format": "XLSX",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "fcc91d6f-e35a-4878-a77d-d2882d01c357",
+      "name": "Post Tender Report TR151 July 2022 CSV EXT ",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_csv_ext",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "ffr_post_tender_reports_csv_ext"
+      }
+    },
+    {
+      "id": "0ad0f7f5-314e-4d7a-b6df-84a7b77c9908",
+      "name": "Post Tender Report TR151 July 2022 EXT ",
+      "format": "XLSM",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "7ed768cf-aa45-4577-bc7f-c1b64e534812",
+      "name": "Post Tender Report TR152 August 2022 CSV EXT ",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_csv_ext",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "ffr_post_tender_reports_csv_ext"
+      }
+    },
+    {
+      "id": "08ac3a6c-6f9e-4b6b-8389-38af6c1c9a46",
+      "name": "Post Tender Report TR152 August 2022 EXT ",
+      "format": "XLSM",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "854e29a9-3b94-41e0-8bbc-24ec270ae6fd",
+      "name": "Post Tender Report TR153 September 2022 EXT ",
+      "format": "XLSM",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "178b6c47-6b27-403e-9715-87f41b48a84b",
+      "name": "Post Tender Report TR153 September 2022 CSV- EXT ",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_csv_ext",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "ffr_post_tender_reports_csv_ext"
+      }
+    },
+    {
+      "id": "7e48c1ce-b4cf-43fa-afe9-4e6730474944",
+      "name": "Post Tender Report TR154 October 2022 CSV- EXT ",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_csv_ext",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "ffr_post_tender_reports_csv_ext"
+      }
+    },
+    {
+      "id": "e4da45cc-fb8f-41e4-81f8-e61b6f413ae6",
+      "name": "Post Tender Report TR154 October 2022 EXT ",
+      "format": "XLSM",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "904d2bf0-8396-43c4-8b8a-cafe105fc47c",
+      "name": "Post Tender Report TR155 November 2022 CSV-  EXT ",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_csv_ext",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "ffr_post_tender_reports_csv_ext"
+      }
+    },
+    {
+      "id": "244c9023-a68d-4a28-a4f3-7f492905ad99",
+      "name": "Post Tender Report TR155 November 2022-  EXT ",
+      "format": "XLSM",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "fd84c085-4ff8-45b4-b2ee-43ad2b052d9f",
+      "name": "Post Tender Report TR156 December 2022 CSV - EXT ",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_csv_ext",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "ffr_post_tender_reports_csv_ext"
+      }
+    },
+    {
+      "id": "1d0def5b-18b4-4184-9896-db328a443df2",
+      "name": "Post Tender Report TR156 December 2022- EXT ",
+      "format": "XLSM",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "bd7cbfb7-a8cb-4b84-bd69-42abff36af0d",
+      "name": "Post Tender Report TR157 January 2023 CSV EXT ",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_csv_ext",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "ffr_post_tender_reports_csv_ext"
+      }
+    },
+    {
+      "id": "8540c6b2-75e6-4e16-8113-0723a4a642b5",
+      "name": "Post Tender Report TR157 January 2023 EXT ",
+      "format": "XLSM",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "e15891f5-fd65-437f-823f-2906f238d0af",
+      "name": "Post Tender Report TR158 February 2023 CSV EXT ",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_csv_ext",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "ffr_post_tender_reports_csv_ext"
+      }
+    },
+    {
+      "id": "987467c5-a5fe-4d4c-a2c6-7e59a458e7af",
+      "name": "Post Tender Report TR158 February 2023 EXT ",
+      "format": "XLSM",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "41c9403d-9618-4eb9-be69-45b9923bcf3f",
+      "name": "Post Tender Report TR159 March 2023 CSV EXT ",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_csv_ext",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "ffr_post_tender_reports_csv_ext"
+      }
+    },
+    {
+      "id": "ed783d99-dc3c-4deb-a847-c9d96295dcd4",
+      "name": "Post Tender Report TR159 March 2023 EXT ",
+      "format": "XLSM",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "5aa12080-f439-42ab-a806-cf2781750a29",
+      "name": "Post Tender Report TR160 April 2023 EXT ",
+      "format": "XLSM",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "a99bc100-352b-433a-83fc-5514affbbc0e",
+      "name": "Post Tender Report TR160 April 2023 CSV EXT ",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_csv_ext",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "ffr_post_tender_reports_csv_ext"
+      }
+    },
+    {
+      "id": "3d71f7d1-3dd7-40b1-b5f4-708da72a4f67",
+      "name": "Post Tender Report TR161 May 2023 CSV EXT ",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_csv_ext",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "ffr_post_tender_reports_csv_ext"
+      }
+    },
+    {
+      "id": "634c7528-e461-49cf-ba7b-0fe20702717f",
+      "name": "Post Tender Report TR161 May 2023 EXT ",
+      "format": "XLSM",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "9a707d8f-36dc-4caf-9dfb-5c620e729d75",
+      "name": "Post Tender Report TR162 June 2023  EXT ",
+      "format": "XLSM",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "fd57201c-24f6-4d42-8be2-177dd4b36229",
+      "name": "Post Tender Report TR162 JUNE 2023 CSV EXT ",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_csv_ext",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "ffr_post_tender_reports_csv_ext"
+      }
+    },
+    {
+      "id": "c3526774-2055-4fe9-b657-e829c9d65939",
+      "name": "Post Tender Report TR163 July 2023 EXT ",
+      "format": "XLSM",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "fbb1ce86-b2f7-405d-94ac-6cef6f14cceb",
+      "name": "Post Tender Report TR163 July 2023 CSV EXT ",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_csv_ext",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "ffr_post_tender_reports_csv_ext"
+      }
+    },
+    {
+      "id": "2bfa2ab3-7f4e-44d7-a9ab-7342c4b9cd34",
+      "name": "Post Tender Report TR164 August 2023 CSV EXT ",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_csv_ext",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "ffr_post_tender_reports_csv_ext"
+      }
+    },
+    {
+      "id": "152ba991-4299-4801-9100-a80d7a0a079a",
+      "name": "Post Tender Report TR164 August 2023 EXT ",
+      "format": "XLSM",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "bec39c50-563c-4ed6-8100-8b519dcbf1ef",
+      "name": "Post Tender Report TR165 September 2023 CSV EXT ",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_csv_ext",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "ffr_post_tender_reports_csv_ext"
+      }
+    },
+    {
+      "id": "2e561c2b-0d70-44e7-ac0b-c99b3fe6ccdb",
+      "name": "Post Tender Report TR165 September 2023 EXT ",
+      "format": "XLSM",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "59dfabd4-a395-4ddc-a261-2f546a8a3b52",
+      "name": "Post Tender Report TR166 October 2023 CSV EXT ",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_csv_ext",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "ffr_post_tender_reports_csv_ext"
+      }
+    },
+    {
+      "id": "8bb5bf74-8f5e-44c7-a231-42d1323bfa73",
+      "name": "Post Tender Report TR166 October 2023 EXT ",
+      "format": "XLSM",
+      "url_type": "upload",
+      "family": "ffr_post_tender_reports_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    }
+  ]
+}

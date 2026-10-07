@@ -1,0 +1,36 @@
+{
+  "package": "interconnector-register",
+  "package_id": "a7cca714-9dbb-42b1-99c8-4bc7211605a8",
+  "group": "connection-registers",
+  "archetype": "REG",
+  "refresh": "daily",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "interconnector_register",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "REG",
+      "refresh": "daily",
+      "empty_allowed": true,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "64f7908f-f787-4977-93e1-5342a5f1357f",
+      "name": "Interconnector Register",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "interconnector_register",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "interconnector_register"
+      }
+    }
+  ]
+}

@@ -1,0 +1,69 @@
+{
+  "package": "fes-natural-gas-demand-definitions-ed4",
+  "package_id": "af30ab4c-eb46-487c-80bd-84a57d7d5f18",
+  "group": "future-energy-scenarios",
+  "archetype": "SCN",
+  "refresh": "adhoc",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "fes_ed4_gas_demand_defs",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SCN",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "60a8299f-9ba1-4663-9ece-8005a8a42fa2",
+      "name": "Natural Gas demand definitions (ED4) 2023",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_ed4_gas_demand_defs",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_ed4_gas_demand_defs"
+      }
+    },
+    {
+      "id": "a014dfba-0728-448a-a2cc-d34fec0703af",
+      "name": "Natural Gas demand definitions (ED4) 2024",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_ed4_gas_demand_defs",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_ed4_gas_demand_defs"
+      }
+    },
+    {
+      "id": "74485527-6c09-4c1a-bf8c-8569810eb918",
+      "name": "Natural Gas demand definitions (ED4) 2025",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_ed4_gas_demand_defs",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_ed4_gas_demand_defs"
+      }
+    },
+    {
+      "id": "b5ae9932-2ce9-42f0-a820-15a13f0eedd0",
+      "name": "Natural Gas demand definitions (ED4) 2026",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_ed4_gas_demand_defs",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_ed4_gas_demand_defs"
+      }
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "package": "contract-transfer-of-obligation",
+  "package_id": "cb295f83-bfb8-4aa0-9b92-0a6791342c7e",
+  "group": "ancillary-services",
+  "archetype": "EVT",
+  "refresh": "adhoc",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "contract_transfer_obligation",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "dbd7f746-07c9-4804-8ab2-9bec2d7ef0ec",
+      "name": "Contract Transfer of Obligation 2025-2026",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "contract_transfer_obligation",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "contract_transfer_obligation"
+      }
+    }
+  ]
+}

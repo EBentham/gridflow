@@ -1,0 +1,79 @@
+{
+  "package": "1-day-ahead-demand-forecast",
+  "package_id": "8fbc8a09-06af-4c90-886f-d3025d38a349",
+  "group": "demand",
+  "archetype": "FC",
+  "refresh": "intraday",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "demand_forecast_1d_day_ahead_national",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "FC",
+      "refresh": "intraday",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "demand_forecast_1d_historic_day_ahead",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "FC",
+      "refresh": "intraday",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "demand_forecast_1d_files",
+      "kind": "files",
+      "legacy": false,
+      "archetype": "FC",
+      "refresh": "intraday",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "aec5601a-7f3e-4c4c-bf56-d8e4184d3c5b",
+      "name": "Day Ahead National Demand Forecast",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "demand_forecast_1d_day_ahead_national",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "demand_forecast_1d_day_ahead_national"
+      }
+    },
+    {
+      "id": "bcc91aed-76fd-4114-86b8-7c83de23b35c",
+      "name": "Demand Curve - Sample",
+      "format": "PNG",
+      "url_type": "upload",
+      "family": "demand_forecast_1d_files",
+      "disposition": {
+        "kind": "DOC"
+      }
+    },
+    {
+      "id": "9847e7bb-986e-49be-8138-717b25933fbb",
+      "name": "Historic Day Ahead Demand Forecasts",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "demand_forecast_1d_historic_day_ahead",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "demand_forecast_1d_historic_day_ahead"
+      }
+    }
+  ]
+}

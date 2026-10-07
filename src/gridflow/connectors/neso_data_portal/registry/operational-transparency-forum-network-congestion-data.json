@@ -1,0 +1,36 @@
+{
+  "package": "operational-transparency-forum-network-congestion-data",
+  "package_id": "a30dacc7-af6e-465b-ad96-eb2383376ac9",
+  "group": "constraint-management",
+  "archetype": "FC",
+  "refresh": "weekly",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "otf_network_congestion",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "FC",
+      "refresh": "weekly",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "aa9d4303-b7ec-4881-be07-16bad8824ab6",
+      "name": "Network congestion Forecast and Actual data",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "otf_network_congestion",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "otf_network_congestion"
+      }
+    }
+  ]
+}

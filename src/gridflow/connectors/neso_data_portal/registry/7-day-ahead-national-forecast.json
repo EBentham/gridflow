@@ -1,0 +1,79 @@
+{
+  "package": "7-day-ahead-national-forecast",
+  "package_id": "2b90a483-f59d-455b-be6d-3cb4c13a85d0",
+  "group": "demand",
+  "archetype": "FC",
+  "refresh": "daily",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "national_forecast_7d_day_ahead_demand",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "FC",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "national_forecast_7d_historic_day_ahead",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "FC",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "national_forecast_7d_files",
+      "kind": "files",
+      "legacy": false,
+      "archetype": "FC",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "70d3d674-15a6-4e41-83b4-410440c0b0b9",
+      "name": "7 Day Ahead Demand Forecast",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "national_forecast_7d_day_ahead_demand",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "national_forecast_7d_day_ahead_demand"
+      }
+    },
+    {
+      "id": "2be09dad-2569-4fca-b4a9-92219e89c063",
+      "name": "Demand Curve - Sample",
+      "format": "PNG",
+      "url_type": "upload",
+      "family": "national_forecast_7d_files",
+      "disposition": {
+        "kind": "DOC"
+      }
+    },
+    {
+      "id": "6f7408b4-47fd-4ae7-b1e5-f095a3a5a2dc",
+      "name": "Historic 7 Day Ahead Demand Forecasts",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "national_forecast_7d_historic_day_ahead",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "national_forecast_7d_historic_day_ahead"
+      }
+    }
+  ]
+}

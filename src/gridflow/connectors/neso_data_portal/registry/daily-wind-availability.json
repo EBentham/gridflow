@@ -1,0 +1,36 @@
+{
+  "package": "daily-wind-availability",
+  "package_id": "3758a0ed-6c96-4e36-88d0-107f5020ddf3",
+  "group": "generation",
+  "archetype": "FC",
+  "refresh": "daily",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "daily_wind_availability",
+      "kind": "tabular",
+      "legacy": true,
+      "archetype": "FC",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 8388608,
+      "name_regex": null,
+      "transformer": "bespoke"
+    }
+  ],
+  "resources": [
+    {
+      "id": "7aa508eb-36f5-4298-820f-2fa6745ae2e7",
+      "name": "Daily Wind Availability",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "daily_wind_availability",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "daily_wind_availability"
+      }
+    }
+  ]
+}

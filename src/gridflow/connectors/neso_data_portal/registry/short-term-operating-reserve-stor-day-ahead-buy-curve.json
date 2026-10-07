@@ -1,0 +1,57 @@
+{
+  "package": "short-term-operating-reserve-stor-day-ahead-buy-curve",
+  "package_id": "0eb97ab8-61bd-4ac2-9619-10d80ae50e77",
+  "group": "ancillary-services",
+  "archetype": "EVT",
+  "refresh": "frozen",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "stor_da_buy_curve",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "frozen",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "stor_da_buy_curve_files",
+      "kind": "files",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "frozen",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "1eacef3e-c7e5-4ce2-a1e3-c667f39c0a17",
+      "name": "STOR Day Ahead Buy Curve Hash",
+      "format": "TXT",
+      "url_type": "upload",
+      "family": "stor_da_buy_curve_files",
+      "disposition": {
+        "kind": "DOC"
+      }
+    },
+    {
+      "id": "8abc71ba-4484-4683-be68-5bc241b6ae7a",
+      "name": "STOR DA Auction Buy Curve Report",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "stor_da_buy_curve",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "stor_da_buy_curve"
+      }
+    }
+  ]
+}

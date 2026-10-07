@@ -1,0 +1,36 @@
+{
+  "package": "data-portal-planned-changes-known-issues",
+  "package_id": "a10cb561-1be2-4567-880d-5bbac1ee9f4f",
+  "group": "plans-reports-analysis",
+  "archetype": "REG",
+  "refresh": "adhoc",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "portal_known_issues",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "REG",
+      "refresh": "adhoc",
+      "empty_allowed": true,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "23021dfa-a3b8-4f62-93bc-b60186c53fa4",
+      "name": "Planned Changes and Issues Log",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "portal_known_issues",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "portal_known_issues"
+      }
+    }
+  ]
+}

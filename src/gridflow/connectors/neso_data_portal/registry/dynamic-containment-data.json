@@ -1,0 +1,124 @@
+{
+  "package": "dynamic-containment-data",
+  "package_id": "aca07dcb-f807-409c-a4ec-da5dc052b8ba",
+  "group": "ancillary-services",
+  "archetype": "EVT",
+  "refresh": "frozen",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "dynamic_containment_dc_dr_dm_block",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "frozen",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "dynamic_containment_dc_dr_dm_linear",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "frozen",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "dynamic_containment_dc_dr_dm_results",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "frozen",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "dynamic_containment_dc_dr_dm_results_sum",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "frozen",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "dynamic_containment_masterdata",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "frozen",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "0b8dbc3c-e05e-44a4-b855-7dd1aa079c68",
+      "name": "Dynamic Containment Masterdata",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "dynamic_containment_masterdata",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "dynamic_containment_masterdata"
+      }
+    },
+    {
+      "id": "888e5029-f786-41d2-bc15-cbfd1d285e96",
+      "name": "DC, DR & DM Results Summary Master Data 2021-2023",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "dynamic_containment_dc_dr_dm_results_sum",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "dynamic_containment_dc_dr_dm_results_sum"
+      }
+    },
+    {
+      "id": "ddc4afde-d2bd-424d-891c-56ad49c13d1a",
+      "name": "DC, DR & DM Results By Unit Master Data 2021-2023",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "dynamic_containment_dc_dr_dm_results",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "dynamic_containment_dc_dr_dm_results"
+      }
+    },
+    {
+      "id": "26aefbcc-fce0-403f-80e1-4a26af3fe84b",
+      "name": "DC, DR & DM Linear Orders Master Data 2021-2023",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "dynamic_containment_dc_dr_dm_linear",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "dynamic_containment_dc_dr_dm_linear"
+      }
+    },
+    {
+      "id": "6fd8e042-be27-4c67-ad59-5acdd2a7b0fd",
+      "name": "DC, DR & DM Block Orders Master Data 2021-2023",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "dynamic_containment_dc_dr_dm_block",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "dynamic_containment_dc_dr_dm_block"
+      }
+    }
+  ]
+}

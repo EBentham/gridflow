@@ -1,0 +1,125 @@
+{
+  "package": "balancing-services-contract-enactment",
+  "package_id": "1a03230c-94c6-4816-bb93-e4450f31aa17",
+  "group": "trade-data",
+  "archetype": "EVT",
+  "refresh": "daily",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "bs_contract_enactment_balancing",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "bs_contract_enactment_balancing_service",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "bs_contract_enactment_files",
+      "kind": "files",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "f75a1dcb-de6e-4c20-8407-e37d5e67cf79",
+      "name": "Balancing Service Contract Enactment 21-22 (Pre June 2021)",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "bs_contract_enactment_balancing_service",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "bs_contract_enactment_balancing_service"
+      }
+    },
+    {
+      "id": "84837a48-8f5d-40d8-bc9f-53dd5e519447",
+      "name": "Balancing Contract Enactment FY 21-22",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "bs_contract_enactment_balancing",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "bs_contract_enactment_balancing"
+      }
+    },
+    {
+      "id": "ed753a4b-1b8c-4b07-9997-b5c0e09da041",
+      "name": "Balancing Contract Enactment FY 22-23",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "bs_contract_enactment_balancing",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "bs_contract_enactment_balancing"
+      }
+    },
+    {
+      "id": "3ca7b6d5-d211-479f-8d5f-4bca92add3c9",
+      "name": "Balancing Contract Enactment FY 23-24",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "bs_contract_enactment_balancing",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "bs_contract_enactment_balancing"
+      }
+    },
+    {
+      "id": "46ec41f3-1307-4faa-90e0-4b05a7710681",
+      "name": "Balancing Contract Enactment (Archived files)",
+      "format": "ZIP",
+      "url_type": "upload",
+      "family": "bs_contract_enactment_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "b13cfa5e-53e3-41de-ace6-a5d3997b532c",
+      "name": "Balancing Contract Enactment FY 25-26",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "bs_contract_enactment_balancing",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "bs_contract_enactment_balancing"
+      }
+    },
+    {
+      "id": "183ecdfb-56e0-487d-8262-468ce1c78ed4",
+      "name": "Balancing Contract Enactment FY 26-27",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "bs_contract_enactment_balancing",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "bs_contract_enactment_balancing"
+      }
+    }
+  ]
+}

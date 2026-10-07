@@ -1,0 +1,36 @@
+{
+  "package": "aahedc-tariffs",
+  "package_id": "43d94335-c97f-4939-a8b9-607d2cfb3734",
+  "group": "network-charges",
+  "archetype": "TAR",
+  "refresh": "adhoc",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "aahedc_tariffs",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "TAR",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "ffd29cc8-3c55-4e83-aa0e-73212d4fedba",
+      "name": "Assistance for Areas of High Electricity Distribution Costs (AAHEDC) Tariffs",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "aahedc_tariffs",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "aahedc_tariffs"
+      }
+    }
+  ]
+}

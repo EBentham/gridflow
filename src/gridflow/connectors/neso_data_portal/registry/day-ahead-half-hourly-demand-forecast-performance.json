@@ -1,0 +1,36 @@
+{
+  "package": "day-ahead-half-hourly-demand-forecast-performance",
+  "package_id": "5281b494-5566-42dd-bf1a-9ce38642fabf",
+  "group": "demand",
+  "archetype": "SER",
+  "refresh": "monthly",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "da_demand_fc_performance",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SER",
+      "refresh": "monthly",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "08e41551-80f8-4e28-a416-ea473a695db9",
+      "name": "Day Ahead Half Hourly Demand Forecast Performance",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "da_demand_fc_performance",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "da_demand_fc_performance"
+      }
+    }
+  ]
+}

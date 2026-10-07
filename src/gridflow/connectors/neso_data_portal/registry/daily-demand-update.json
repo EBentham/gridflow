@@ -1,0 +1,57 @@
+{
+  "package": "daily-demand-update",
+  "package_id": "7a12172a-939c-404c-b581-a6128b74f588",
+  "group": "demand",
+  "archetype": "SER",
+  "refresh": "daily",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "daily_demand_update",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SER",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "daily_demand_update_files",
+      "kind": "files",
+      "legacy": false,
+      "archetype": "SER",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "177f6fa4-ae49-4182-81ea-0c6b35f26ca6",
+      "name": "Demand Data Update",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "daily_demand_update",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "daily_demand_update"
+      }
+    },
+    {
+      "id": "974b8c00-9058-4883-bf34-268e53ed9d15",
+      "name": "Frequently Asked Questions (FAQ)",
+      "format": "DOC",
+      "url_type": "upload",
+      "family": "daily_demand_update_files",
+      "disposition": {
+        "kind": "DOC"
+      }
+    }
+  ]
+}

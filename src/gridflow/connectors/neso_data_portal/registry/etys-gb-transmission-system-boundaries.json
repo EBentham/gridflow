@@ -1,0 +1,37 @@
+{
+  "package": "etys-gb-transmission-system-boundaries",
+  "package_id": "997f4820-1ad4-499b-b1fe-4b8d3d7fbc72",
+  "group": "system",
+  "archetype": "FILE",
+  "refresh": "adhoc",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "etys_boundaries_files",
+      "kind": "files",
+      "legacy": false,
+      "archetype": "FILE",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "e914fcec-1dc9-4f1f-97e7-59c0d9521bea",
+      "name": "ETYS 2024 GB Transmission System Boundaries",
+      "format": "ZIP",
+      "url_type": "upload",
+      "family": "etys_boundaries_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    }
+  ]
+}

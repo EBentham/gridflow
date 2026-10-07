@@ -1,0 +1,47 @@
+{
+  "package": "non-bm-ancillary-service-dispatch-platform-asdp-window-prices",
+  "package_id": "27ad5028-7df5-43f6-b001-05eb36a5d2e8",
+  "group": "ancillary-services",
+  "archetype": "EVT",
+  "refresh": "frozen",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "asdp_window_prices",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "frozen",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "91749b29-d98a-4565-b126-bd021253b3af",
+      "name": "Non BM Window Price Change_2025",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "asdp_window_prices",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "asdp_window_prices"
+      }
+    },
+    {
+      "id": "832e6702-3007-4424-9146-8d35db8b2fe4",
+      "name": "Non BM Window Price Change_2026",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "asdp_window_prices",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "asdp_window_prices"
+      }
+    }
+  ]
+}

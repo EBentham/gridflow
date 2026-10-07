@@ -1,0 +1,36 @@
+{
+  "package": "obp-non-bm-reserve-instructions",
+  "package_id": "0ba217bb-846b-470e-9717-ff152d97d009",
+  "group": "ancillary-services",
+  "archetype": "EVT",
+  "refresh": "daily",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "obp_reserve_instructions",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "dad63c1b-8a8e-47de-9922-7880384ef104",
+      "name": "Non-BM Instructions from OBP",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "obp_reserve_instructions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "obp_reserve_instructions"
+      }
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "package": "obp-non-bm-physical-notifications",
+  "package_id": "73edf630-fe9e-45a6-a2be-fa0d31a8ec1d",
+  "group": "ancillary-services",
+  "archetype": "EVT",
+  "refresh": "daily",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "obp_physical_notifications",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "dfe1d229-e973-43c6-b5eb-c28ad59d7136",
+      "name": "Non-BM Physical Notifications",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "obp_physical_notifications",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "obp_physical_notifications"
+      }
+    }
+  ]
+}

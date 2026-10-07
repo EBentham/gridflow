@@ -1,0 +1,36 @@
+{
+  "package": "slow-reserve-requirement-forecast",
+  "package_id": "87d77cd4-f3c8-4fda-973b-91149ee7a0e6",
+  "group": "ancillary-services",
+  "archetype": "FC",
+  "refresh": "monthly",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "slow_reserve_requirement_fc",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "FC",
+      "refresh": "monthly",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "ccde1a9e-1885-4271-84a3-bb064194bce9",
+      "name": "Slow Reserve Requirement Forecast",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "slow_reserve_requirement_fc",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "slow_reserve_requirement_fc"
+      }
+    }
+  ]
+}

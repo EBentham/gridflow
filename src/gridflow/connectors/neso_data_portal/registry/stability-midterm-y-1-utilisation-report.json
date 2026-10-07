@@ -1,0 +1,36 @@
+{
+  "package": "stability-midterm-y-1-utilisation-report",
+  "package_id": "84abeae2-be21-4755-bbfc-3792f5315a36",
+  "group": "system",
+  "archetype": "SER",
+  "refresh": "monthly",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "stability_midterm_y1",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SER",
+      "refresh": "monthly",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "e0c86d21-8ad1-4ba3-a112-b2bbcf5277ce",
+      "name": "Stability midterm (Y-1) utilisation report 25/26",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "stability_midterm_y1",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "stability_midterm_y1"
+      }
+    }
+  ]
+}

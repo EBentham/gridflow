@@ -1,0 +1,36 @@
+{
+  "package": "monthly-utilisation-data-of-voltage-contracted-units",
+  "package_id": "f8386ee1-4e9c-474d-afbf-6339852c898b",
+  "group": "system",
+  "archetype": "SER",
+  "refresh": "monthly",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "voltage_units_utilisation",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SER",
+      "refresh": "monthly",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "e13539d0-eed0-4561-82a4-4517c14253c1",
+      "name": "Monthly Utilisation Data of Voltage 2026 Contracted Units",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "voltage_units_utilisation",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "voltage_units_utilisation"
+      }
+    }
+  ]
+}

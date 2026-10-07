@@ -1,0 +1,69 @@
+{
+  "package": "fes-flexibility-data-table-data-table-flx1",
+  "package_id": "2e3275e2-dd6a-4c2e-8cfb-eeb9b4320dcb",
+  "group": "future-energy-scenarios",
+  "archetype": "SCN",
+  "refresh": "adhoc",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "fes_flx1_flexibility",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SCN",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "e86745fd-1ef2-4112-a14c-84682a387b68",
+      "name": "Flexibility data table (FLX1) 2023",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_flx1_flexibility",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_flx1_flexibility"
+      }
+    },
+    {
+      "id": "c7d7a19d-255f-4585-b53b-487891aeda54",
+      "name": "Flexibility data table (FLX1) 2024",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_flx1_flexibility",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_flx1_flexibility"
+      }
+    },
+    {
+      "id": "299bc6c8-7608-4946-ab0a-5bc22129c897",
+      "name": "Flexibility data table (FLX1) 2025",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_flx1_flexibility",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_flx1_flexibility"
+      }
+    },
+    {
+      "id": "0ff1a94f-224d-4863-8137-7d9a0d2cd7f8",
+      "name": "Flexibility data table (FLX1) 2026",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_flx1_flexibility",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_flx1_flexibility"
+      }
+    }
+  ]
+}

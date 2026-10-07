@@ -1,0 +1,36 @@
+{
+  "package": "country-carbon-intensity-forecast",
+  "package_id": "d8084aa3-8c9e-425c-bf0d-51e0441fc241",
+  "group": "carbon-intensity1",
+  "archetype": "FC",
+  "refresh": "intraday",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "country_ci_forecast",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "FC",
+      "refresh": "intraday",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "e032e7aa-dea5-4695-80d6-19739142021d",
+      "name": "Country Carbon Intensity Forecast",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "country_ci_forecast",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "country_ci_forecast"
+      }
+    }
+  ]
+}

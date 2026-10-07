@@ -1,0 +1,61 @@
+{
+  "package": "ssep-onshore-publication-zone-shapefile",
+  "package_id": "dc958942-c5bf-428d-974d-24d7d1d1f370",
+  "group": "strategic-energy-planning",
+  "archetype": "FILE",
+  "refresh": "adhoc",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "ssep_publication_zones_files",
+      "kind": "files",
+      "legacy": false,
+      "archetype": "FILE",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "aa824951-880f-44cc-ac5c-7b5569dd1423",
+      "name": "Strategic Spatial Energy Plan (SSEP) Onshore Publication Zone Shapefile",
+      "format": "ZIP",
+      "url_type": "upload",
+      "family": "ssep_publication_zones_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "6a9ce615-b791-46fd-8a8f-dd7b1c847c10",
+      "name": "Strategic Spatial Energy Plan (SSEP) Offshore Publication Zone Shapefile",
+      "format": "ZIP",
+      "url_type": "upload",
+      "family": "ssep_publication_zones_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "d5b5e32e-e605-4823-b29c-312ab12f37cd",
+      "name": "Strategic Spatial Energy Plan (SSEP) Economic Zones Shapefile",
+      "format": "ZIP",
+      "url_type": "upload",
+      "family": "ssep_publication_zones_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "package": "transmission-entry-capacity-tec-register",
+  "package_id": "cbd45e54-e6e2-4a38-99f1-8de6fd96d7c1",
+  "group": "connection-registers",
+  "archetype": "REG",
+  "refresh": "daily",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "tec_register",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "REG",
+      "refresh": "daily",
+      "empty_allowed": true,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "17becbab-e3e8-473f-b303-3806f43a6a10",
+      "name": "TEC Register",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "tec_register",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "tec_register"
+      }
+    }
+  ]
+}

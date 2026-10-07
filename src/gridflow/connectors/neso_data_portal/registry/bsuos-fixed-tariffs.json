@@ -1,0 +1,36 @@
+{
+  "package": "bsuos-fixed-tariffs",
+  "package_id": "6c862622-48ff-4025-b998-d4d3db9e984d",
+  "group": "balancing",
+  "archetype": "TAR",
+  "refresh": "adhoc",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "bsuos_fixed_tariffs",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "TAR",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "4dfa533f-bec6-491b-a3f1-7ce92449bc9a",
+      "name": " Balancing Services Use of System Charges (BSUoS) Tariffs",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "bsuos_fixed_tariffs",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "bsuos_fixed_tariffs"
+      }
+    }
+  ]
+}

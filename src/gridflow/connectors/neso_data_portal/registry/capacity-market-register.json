@@ -1,0 +1,190 @@
+{
+  "package": "capacity-market-register",
+  "package_id": "0b3ab475-5622-4465-8825-9d35d03bb28b",
+  "group": "electricity-market-reform",
+  "archetype": "REG",
+  "refresh": "weekly",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "capacity_market_auction_cost",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "REG",
+      "refresh": "weekly",
+      "empty_allowed": true,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "capacity_market_auction_static",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "REG",
+      "refresh": "weekly",
+      "empty_allowed": true,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "capacity_market_de_rating_factors",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "REG",
+      "refresh": "weekly",
+      "empty_allowed": true,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "capacity_market_unit_cmu",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "REG",
+      "refresh": "weekly",
+      "empty_allowed": true,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "capacity_market_unit_cmu_history",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "REG",
+      "refresh": "weekly",
+      "empty_allowed": true,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "capacity_market_component_history",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "REG",
+      "refresh": "weekly",
+      "empty_allowed": true,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "capacity_market_component_history_pre",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "REG",
+      "refresh": "weekly",
+      "empty_allowed": true,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "capacity_market_components",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "REG",
+      "refresh": "weekly",
+      "empty_allowed": true,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "790f5fa0-f8eb-4d82-b98d-0d34d3e404e8",
+      "name": "Components",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "capacity_market_components",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "capacity_market_components"
+      }
+    },
+    {
+      "id": "25a5fa2e-873d-41c5-8aaf-fbc2b06d79e6",
+      "name": "Capacity Market Unit (CMU)",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "capacity_market_unit_cmu",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "capacity_market_unit_cmu"
+      }
+    },
+    {
+      "id": "015453e0-c73c-416a-901d-623f914c8e70",
+      "name": "Component History - Pre Aggregation",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "capacity_market_component_history_pre",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "capacity_market_component_history_pre"
+      }
+    },
+    {
+      "id": "cd034839-73e7-4c37-b4e5-6ebea25627d8",
+      "name": "Capacity Market Unit (CMU) History",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "capacity_market_unit_cmu_history",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "capacity_market_unit_cmu_history"
+      }
+    },
+    {
+      "id": "b1b58919-eaa4-40ea-80df-3d3e526f8223",
+      "name": "Capacity Market Auction Capacity and Cost",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "capacity_market_auction_cost",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "capacity_market_auction_cost"
+      }
+    },
+    {
+      "id": "d94ff98d-39ba-40d6-9672-7433de0631ac",
+      "name": "Capacity Market De-Rating Factors",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "capacity_market_de_rating_factors",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "capacity_market_de_rating_factors"
+      }
+    },
+    {
+      "id": "784fa703-1460-42cd-a8bb-fba4dcabac8d",
+      "name": "Capacity Market Auction Static Data",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "capacity_market_auction_static",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "capacity_market_auction_static"
+      }
+    },
+    {
+      "id": "62bca39c-d4f0-4cd6-b2ff-8ef42dca7f23",
+      "name": "Component History",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "capacity_market_component_history",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "capacity_market_component_history"
+      }
+    }
+  ]
+}

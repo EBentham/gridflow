@@ -1,0 +1,135 @@
+{
+  "package": "constraint-breakdown",
+  "package_id": "fb56b46e-cef3-4eb8-9294-0ca19769b7eb",
+  "group": "balancing",
+  "archetype": "SER",
+  "refresh": "weekly",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "constraint_breakdown",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SER",
+      "refresh": "weekly",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "3651e9e3-52a8-46b6-a675-3a4c2aedc813",
+      "name": "Constraint Breakdown 2017-2018",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "constraint_breakdown",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "constraint_breakdown"
+      }
+    },
+    {
+      "id": "26af8438-1824-4436-9bbd-d397a9a517e2",
+      "name": "Constraint Breakdown 2018-2019",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "constraint_breakdown",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "constraint_breakdown"
+      }
+    },
+    {
+      "id": "c4d2be3a-4c05-4fac-be7e-56368ca46142",
+      "name": "Constraint Breakdown 2019-2020",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "constraint_breakdown",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "constraint_breakdown"
+      }
+    },
+    {
+      "id": "87088ac4-72d5-48ff-9ee1-f2a99e18277a",
+      "name": "Constraint Breakdown 2020-2021",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "constraint_breakdown",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "constraint_breakdown"
+      }
+    },
+    {
+      "id": "419337fb-f609-45e3-9097-798a41b4b3de",
+      "name": "Constraint Breakdown 2021-2022",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "constraint_breakdown",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "constraint_breakdown"
+      }
+    },
+    {
+      "id": "efb633ae-f6d7-444b-8759-449ac0539dd0",
+      "name": "Constraint Breakdown 2022-2023",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "constraint_breakdown",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "constraint_breakdown"
+      }
+    },
+    {
+      "id": "24d067d8-1328-452a-9720-21cb691e491e",
+      "name": "Constraint Breakdown 2023-2024",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "constraint_breakdown",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "constraint_breakdown"
+      }
+    },
+    {
+      "id": "748557ef-2bb3-41c0-8181-5f1a148c1ff4",
+      "name": "Constraint Breakdown 2024-2025",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "constraint_breakdown",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "constraint_breakdown"
+      }
+    },
+    {
+      "id": "6afe1c2b-6d70-4e76-8e74-0952b0a2beab",
+      "name": "Constraint Breakdown 2025-2026",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "constraint_breakdown",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "constraint_breakdown"
+      }
+    },
+    {
+      "id": "4136a8e2-07c5-4784-8096-28999447a16e",
+      "name": "Constraint Breakdown 2026-2027",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "constraint_breakdown",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "constraint_breakdown"
+      }
+    }
+  ]
+}

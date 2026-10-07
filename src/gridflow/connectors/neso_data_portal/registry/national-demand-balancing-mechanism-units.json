@@ -1,0 +1,36 @@
+{
+  "package": "national-demand-balancing-mechanism-units",
+  "package_id": "1999ccfb-5f8c-4921-b408-d92ab5c61c2b",
+  "group": "demand",
+  "archetype": "REG",
+  "refresh": "adhoc",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "national_demand_bmus",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "REG",
+      "refresh": "adhoc",
+      "empty_allowed": true,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "7e1e84cf-89f4-4c69-a72a-d778087c22a4",
+      "name": "National Demand Balancing Mechanism Units",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "national_demand_bmus",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "national_demand_bmus"
+      }
+    }
+  ]
+}

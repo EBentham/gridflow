@@ -1,0 +1,91 @@
+{
+  "package": "super-stable-export-limit-contract-enactment",
+  "package_id": "5bfdf87b-a7fc-4be1-9982-606e9b8fa904",
+  "group": "trade-data",
+  "archetype": "EVT",
+  "refresh": "daily",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "ssel_contract_enactment",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "835d50b9-2d7c-4318-bd04-c7f94b149041",
+      "name": "Super Stable Export Limit Contract Enactment 20-21",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "ssel_contract_enactment",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "ssel_contract_enactment"
+      }
+    },
+    {
+      "id": "bf9ca254-e9de-4aa2-841a-fb34566de38a",
+      "name": "Super Stable Export Limit Contract Enactment FY 21-22",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "ssel_contract_enactment",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "ssel_contract_enactment"
+      }
+    },
+    {
+      "id": "34f185bc-087a-41b2-b514-305e31158e5a",
+      "name": "Super Stable Export Limit Contract Enactment FY 22-23",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "ssel_contract_enactment",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "ssel_contract_enactment"
+      }
+    },
+    {
+      "id": "817036a8-10af-442e-93d4-8f21ae038b52",
+      "name": "Super Stable Export Limit Contract Enactment FY 23-24",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "ssel_contract_enactment",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "ssel_contract_enactment"
+      }
+    },
+    {
+      "id": "43078fd2-7583-4b0a-b398-e48de3817515",
+      "name": "Super Stable Export Limit Contract Enactment FY 24-25",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "ssel_contract_enactment",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "ssel_contract_enactment"
+      }
+    },
+    {
+      "id": "8e7168fa-8617-4d83-9696-d6bf1f09c9c5",
+      "name": "Super Stable Export Limit Contract Enactment FY 25-26",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "ssel_contract_enactment",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "ssel_contract_enactment"
+      }
+    }
+  ]
+}

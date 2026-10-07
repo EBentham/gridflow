@@ -1,0 +1,36 @@
+{
+  "package": "day-ahead-power-exchange-prices-nordpool",
+  "package_id": "8e3cc601-1fab-4325-82ca-d8a0daeddf73",
+  "group": "trade-data",
+  "archetype": "SER",
+  "refresh": "daily",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "nordpool_da_prices",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SER",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "4f27eea5-7038-4f73-9740-e3e4ad47c26a",
+      "name": " N2EX GB Day-Ahead Price",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "nordpool_da_prices",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "nordpool_da_prices"
+      }
+    }
+  ]
+}

@@ -1,0 +1,193 @@
+{
+  "package": "optional-downward-flexibility-management-odfm-market-information",
+  "package_id": "23ec7a9f-6220-4d1e-9099-e9195a2ed177",
+  "group": "ancillary-services",
+  "archetype": "EVT",
+  "refresh": "frozen",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "odfm_market_information_results",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "frozen",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "odfm_market_information_instructed",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "frozen",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "odfm_market_information_load_factors",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "frozen",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "odfm_market_information_files",
+      "kind": "files",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "frozen",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "b435a5d1-9d94-477e-bf50-b99a7693d65c",
+      "name": "Market Information Report for 10.05.20",
+      "format": "PDF",
+      "url_type": "upload",
+      "family": "odfm_market_information_files",
+      "disposition": {
+        "kind": "DOC"
+      }
+    },
+    {
+      "id": "cfd349e9-7f36-480d-abb5-a740d8a6ea16",
+      "name": "Market Information Results 2020",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "odfm_market_information_results",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "odfm_market_information_results"
+      }
+    },
+    {
+      "id": "a79a55d8-206f-43bc-94c6-4fda04b33cae",
+      "name": "Requirements paper",
+      "format": "PDF",
+      "url_type": "upload",
+      "family": "odfm_market_information_files",
+      "disposition": {
+        "kind": "DOC"
+      }
+    },
+    {
+      "id": "5ebec109-4cbf-4792-88d6-18feef004f9c",
+      "name": "Market Information Report for 22.05.20",
+      "format": "PDF",
+      "url_type": "upload",
+      "family": "odfm_market_information_files",
+      "disposition": {
+        "kind": "DOC"
+      }
+    },
+    {
+      "id": "8348d8b3-3156-4e40-bdd5-ac5215564735",
+      "name": "Market Information Report for 23.05.20",
+      "format": "PDF",
+      "url_type": "upload",
+      "family": "odfm_market_information_files",
+      "disposition": {
+        "kind": "DOC"
+      }
+    },
+    {
+      "id": "0ffd097f-b4c9-42e9-954f-0f68c6773577",
+      "name": "Market Information Report for 24.05.20",
+      "format": "PDF",
+      "url_type": "upload",
+      "family": "odfm_market_information_files",
+      "disposition": {
+        "kind": "DOC"
+      }
+    },
+    {
+      "id": "14958cfe-d8a3-4319-ace1-60351c2b7056",
+      "name": "Market Information Report - General Information",
+      "format": "PDF",
+      "url_type": "upload",
+      "family": "odfm_market_information_files",
+      "disposition": {
+        "kind": "DOC"
+      }
+    },
+    {
+      "id": "f0a52698-5f80-4fb7-ad64-ede99015195f",
+      "name": "ODFM Instructed Volume for 05-07-2020",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "odfm_market_information_instructed",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "odfm_market_information_instructed"
+      }
+    },
+    {
+      "id": "5c507a16-d2f3-44df-b1bb-98acc0d74e1c",
+      "name": "ODFM Instructed Volume for 05-07-2020 V2",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "odfm_market_information_instructed",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "odfm_market_information_instructed"
+      }
+    },
+    {
+      "id": "b6f57985-df24-4207-83fa-2f1dc6a949f8",
+      "name": "Market Information Report for 05.07.20",
+      "format": "PDF",
+      "url_type": "upload",
+      "family": "odfm_market_information_files",
+      "disposition": {
+        "kind": "DOC"
+      }
+    },
+    {
+      "id": "e6146148-c862-49f6-9c7f-52dc2b3e7086",
+      "name": "ODFM Load Factors",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "odfm_market_information_load_factors",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "odfm_market_information_load_factors"
+      }
+    },
+    {
+      "id": "430861fa-3ffc-4e8b-80b1-06e3ebe19007",
+      "name": "ODFM Requirement - Summer 2021",
+      "format": "PDF",
+      "url_type": "upload",
+      "family": "odfm_market_information_files",
+      "disposition": {
+        "kind": "DOC"
+      }
+    },
+    {
+      "id": "45e60798-da66-4734-bf9e-178efd49657c",
+      "name": "Market Information Results 2021",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "odfm_market_information_results",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "odfm_market_information_results"
+      }
+    }
+  ]
+}
