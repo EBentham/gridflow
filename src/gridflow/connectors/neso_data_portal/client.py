@@ -59,6 +59,7 @@ from uuid import uuid4
 import httpx
 
 from gridflow.connectors.base import BaseConnector, RawResponse, _make_ssl_context
+from gridflow.connectors.neso_data_portal import endpoints
 from gridflow.connectors.neso_data_portal.endpoints import (
     DATASETS,
     CkanDataset,
@@ -1446,8 +1447,8 @@ class NesoDataPortalConnector(BaseConnector):
         ]
 
     def list_datasets(self) -> list[str]:
-        """Return the dataset keys this connector serves."""
-        return list(DATASETS)
+        """Return every registry family key this connector serves (P-3)."""
+        return list(endpoints.FAMILIES)
 
 
 def _declared_content_length(response: httpx.Response) -> int | None:

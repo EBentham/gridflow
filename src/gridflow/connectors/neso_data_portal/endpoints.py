@@ -1,4 +1,10 @@
-"""CKAN dataset table for the NESO Open Data Portal (D-28, D-03, D-24).
+"""CKAN dataset tables for the NESO Open Data Portal (D-28, D-03, D-24; ADR-033).
+
+Since ADR-033 both tables are **generated from the registry**
+(``registry/<package>.json``): :data:`FAMILIES` holds every gridflow dataset
+key, and :data:`DATASETS` is the legacy view of the three keys onboarded before
+the registry, which keep their bespoke transformers and the in-code header
+contracts below. Nothing here lists a key by hand any more.
 
 CKAN identity lives **in code, not in YAML** (D-28). ``DatasetConfig`` and
 ``SourceConfig`` are declared with ``extra="ignore"``, so an unrecognised YAML
@@ -11,19 +17,33 @@ Resource selection is by **exact ``resources[].name`` string match** (D-04) and
 never by UUID or by a hardcoded download URL: the raw filenames are date-stamped
 and change on every refresh (``embedded-register-14-august-2026.csv``), and the
 ``url`` field is a 302 redirector to a presigned URL with a 7-day expiry. The
-UUIDs below are deliberately absent — they are recorded as fetch-time
-provenance only (D-12).
+registry records resource UUIDs as capture identity and coverage evidence;
+they are never a selector (D-03, D-12).
 """
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
+from typing import TYPE_CHECKING, Literal
 
-__all__ = ["CKAN_ACTION_PREFIX", "DATASETS", "CkanDataset", "build_action_url"]
+from gridflow.connectors.neso_data_portal import registry as registry_module
+
+if TYPE_CHECKING:
+    from gridflow.connectors.neso_data_portal.registry import Registry
+
+__all__ = [
+    "CKAN_ACTION_PREFIX",
+    "DATASETS",
+    "FAMILIES",
+    "CkanDataset",
+    "FamilySpec",
+    "build_action_url",
+    "build_datasets",
+    "build_families",
+]
 
 CKAN_ACTION_PREFIX = "/api/3/action"
-
-_MIB = 1024 * 1024
 
 
 @dataclass(frozen=True)
@@ -98,38 +118,123 @@ _HISTORIC_GENERATION_MIX_COLUMNS: tuple[str, ...] = (
 )
 
 
-DATASETS: dict[str, CkanDataset] = {
-    "daily_wind_availability": CkanDataset(
-        package="daily-wind-availability",
-        resource_name="Daily Wind Availability",
-        expected_format="CSV",
-        expected_columns=("BMU_ID", "Date", "MW"),
-        max_download_bytes=8 * _MIB,
-    ),
-    "historic_generation_mix": CkanDataset(
-        package="historic-generation-mix",
-        resource_name="Historic GB Generation Mix",
-        expected_format="CSV",
-        expected_columns=_HISTORIC_GENERATION_MIX_COLUMNS,
-        max_download_bytes=256 * _MIB,
-    ),
-    "embedded_wind_solar_forecast": CkanDataset(
-        package="embedded-wind-and-solar-forecasts",
-        resource_name="Embedded Solar and Wind Forecast",
-        expected_format="CSV",
-        expected_columns=(
-            "DATE_GMT",
-            "TIME_GMT",
-            "SETTLEMENT_DATE",
-            "SETTLEMENT_PERIOD",
-            "EMBEDDED_WIND_FORECAST",
-            "EMBEDDED_WIND_CAPACITY",
-            "EMBEDDED_SOLAR_FORECAST",
-            "EMBEDDED_SOLAR_CAPACITY",
-        ),
-        max_download_bytes=8 * _MIB,
+# The in-code header contracts of the three legacy keys, enforced at fetch
+# time by D-36's admission parse and again at transform time. The registry
+# carries membership and caps; it does not carry header contracts.
+_LEGACY_EXPECTED_COLUMNS: dict[str, tuple[str, ...]] = {
+    "daily_wind_availability": ("BMU_ID", "Date", "MW"),
+    "historic_generation_mix": _HISTORIC_GENERATION_MIX_COLUMNS,
+    "embedded_wind_solar_forecast": (
+        "DATE_GMT",
+        "TIME_GMT",
+        "SETTLEMENT_DATE",
+        "SETTLEMENT_PERIOD",
+        "EMBEDDED_WIND_FORECAST",
+        "EMBEDDED_WIND_CAPACITY",
+        "EMBEDDED_SOLAR_FORECAST",
+        "EMBEDDED_SOLAR_CAPACITY",
     ),
 }
+
+# Master's DATASETS order, kept so the generated dict iterates identically.
+_LEGACY_ORDER: tuple[str, ...] = (
+    "daily_wind_availability",
+    "historic_generation_mix",
+    "embedded_wind_solar_forecast",
+)
+
+
+@dataclass(frozen=True)
+class FamilySpec:
+    """One registry family, flattened for the connector (P-3).
+
+    Attributes:
+        package: The CKAN package slug the family's resources live in.
+        key: The gridflow dataset key.
+        kind: ``tabular`` (CSV resources) or ``files`` (everything else).
+        legacy: One of the three keys onboarded before the registry.
+        empty_allowed: A header-only CSV member is captured, marked empty (P-7).
+        max_download_bytes: The streaming size cap per member (A9).
+        names: The exact ``(name, FORMAT)`` pairs seeded under the key.
+        name_regex: An optional anchored selector for future members; matched
+            with ``re.fullmatch`` only, and only for a format already seeded.
+    """
+
+    package: str
+    key: str
+    kind: Literal["tabular", "files"]
+    legacy: bool
+    empty_allowed: bool
+    max_download_bytes: int
+    names: frozenset[tuple[str, str]]
+    name_regex: str | None
+
+    @property
+    def formats(self) -> frozenset[str]:
+        """The upper-case CKAN formats of the family's seeded resources."""
+        return frozenset(fmt for _name, fmt in self.names)
+
+    def selects(self, name: str, fmt: str) -> bool:
+        """Whether a live resource ``(name, fmt)`` is a member (P-6).
+
+        Names are compared as stored: no strip, no case-fold, no
+        normalisation, no fuzzy match.
+        """
+        upper = fmt.upper()
+        if (name, upper) in self.names:
+            return True
+        if self.name_regex is None or upper not in self.formats:
+            return False
+        return re.fullmatch(self.name_regex, name) is not None
+
+
+def build_families(registry: Registry) -> dict[str, FamilySpec]:
+    """Flatten every registry family into a :class:`FamilySpec`, keyed by key."""
+    return {
+        key: FamilySpec(
+            package=package.package,
+            key=key,
+            kind=family.kind,
+            legacy=family.legacy,
+            empty_allowed=family.empty_allowed,
+            max_download_bytes=family.max_download_bytes,
+            names=registry.family_names(key),
+            name_regex=family.name_regex,
+        )
+        for key, (package, family) in registry.families.items()
+    }
+
+
+def build_datasets(families: dict[str, FamilySpec]) -> dict[str, CkanDataset]:
+    """Generate the legacy :class:`CkanDataset` view from the legacy families.
+
+    Raises:
+        RuntimeError: A legacy family is missing or does not hold exactly one
+            seeded member; its single exact name is its selector (D-04).
+    """
+    datasets: dict[str, CkanDataset] = {}
+    for key in _LEGACY_ORDER:
+        family = families.get(key)
+        if family is None or not family.legacy:
+            raise RuntimeError(f"registry has no legacy family {key!r}")
+        if len(family.names) != 1:
+            raise RuntimeError(
+                f"legacy family {key!r} must hold exactly one member, has {sorted(family.names)}"
+            )
+        ((resource_name, expected_format),) = family.names
+        datasets[key] = CkanDataset(
+            package=family.package,
+            resource_name=resource_name,
+            expected_format=expected_format,
+            expected_columns=_LEGACY_EXPECTED_COLUMNS[key],
+            max_download_bytes=family.max_download_bytes,
+        )
+    return datasets
+
+
+FAMILIES: dict[str, FamilySpec] = build_families(registry_module.load_registry())
+
+DATASETS: dict[str, CkanDataset] = build_datasets(FAMILIES)
 
 
 def build_action_url(action: str, **params: str) -> tuple[str, dict[str, str]]:

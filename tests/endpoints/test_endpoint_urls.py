@@ -892,15 +892,22 @@ class TestNesoDataPortalEndpointDefinitions:
         key added to one place only would leave a dataset that either cannot be
         configured or cannot be fetched — this is the check that fails first.
         """
-        from gridflow.connectors.neso_data_portal.endpoints import DATASETS
+        from gridflow.connectors.neso_data_portal.endpoints import DATASETS, FAMILIES
 
         configured = load_settings().get_source_config("neso_data_portal").datasets
 
-        assert set(DATASETS) == set(configured), (
-            "neso_data_portal dataset keys differ between "
-            "connectors/neso_data_portal/endpoints.py::DATASETS and "
+        # ADR-033 widens the contract: every registry family is configured,
+        # and DATASETS is the legacy view of exactly the three bespoke keys.
+        assert set(FAMILIES) == set(configured), (
+            "neso_data_portal dataset keys differ between the registry "
+            "(connectors/neso_data_portal/endpoints.py::FAMILIES) and "
             "config/sources.yaml"
         )
+        assert set(DATASETS) == {
+            "daily_wind_availability",
+            "historic_generation_mix",
+            "embedded_wind_solar_forecast",
+        }
 
     def test_the_base_url_matches_config(self):
         assert (

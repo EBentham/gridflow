@@ -484,3 +484,203 @@ def test_leading_space_name_round_trips_through_the_loader(name: str) -> None:
         name,
     )
     _assert_ok(result)
+
+
+class TestGeneratedDatasets:
+    """R-3: the generated legacy ``DATASETS`` equal master's three literals."""
+
+    def test_generated_datasets_equal_masters_literals(self) -> None:
+        _assert_ok(
+            _run(
+                """
+                from gridflow.connectors.neso_data_portal.endpoints import DATASETS, CkanDataset
+                MIB = 1024 * 1024
+                HGM = (
+                    "DATETIME", "GAS", "COAL", "NUCLEAR", "WIND", "WIND_EMB", "HYDRO",
+                    "IMPORTS", "BIOMASS", "OTHER", "SOLAR", "STORAGE", "GENERATION",
+                    "CARBON_INTENSITY", "LOW_CARBON", "ZERO_CARBON", "RENEWABLE", "FOSSIL",
+                    "GAS_perc", "COAL_perc", "NUCLEAR_perc", "WIND_perc", "WIND_EMB_perc",
+                    "HYDRO_perc", "IMPORTS_perc", "BIOMASS_perc", "OTHER_perc",
+                    "SOLAR_perc", "STORAGE_perc", "GENERATION_perc", "LOW_CARBON_perc",
+                    "ZERO_CARBON_perc", "RENEWABLE_perc", "FOSSIL_perc",
+                )
+                master = {
+                    "daily_wind_availability": CkanDataset(
+                        package="daily-wind-availability",
+                        resource_name="Daily Wind Availability",
+                        expected_format="CSV",
+                        expected_columns=("BMU_ID", "Date", "MW"),
+                        max_download_bytes=8 * MIB,
+                    ),
+                    "historic_generation_mix": CkanDataset(
+                        package="historic-generation-mix",
+                        resource_name="Historic GB Generation Mix",
+                        expected_format="CSV",
+                        expected_columns=HGM,
+                        max_download_bytes=256 * MIB,
+                    ),
+                    "embedded_wind_solar_forecast": CkanDataset(
+                        package="embedded-wind-and-solar-forecasts",
+                        resource_name="Embedded Solar and Wind Forecast",
+                        expected_format="CSV",
+                        expected_columns=(
+                            "DATE_GMT", "TIME_GMT", "SETTLEMENT_DATE", "SETTLEMENT_PERIOD",
+                            "EMBEDDED_WIND_FORECAST", "EMBEDDED_WIND_CAPACITY",
+                            "EMBEDDED_SOLAR_FORECAST", "EMBEDDED_SOLAR_CAPACITY",
+                        ),
+                        max_download_bytes=8 * MIB,
+                    ),
+                }
+                assert len(HGM) == 34
+                assert list(DATASETS) == list(master), list(DATASETS)
+                for key, expected in master.items():
+                    assert DATASETS[key] == expected, (key, DATASETS[key])
+                print('OK')
+                """
+            )
+        )
+
+    def test_negative_control_a_legacy_family_with_two_members_is_refused(self) -> None:
+        _assert_ok(
+            _run(
+                """
+                import dataclasses
+                from gridflow.connectors.neso_data_portal import endpoints
+                families = dict(endpoints.FAMILIES)
+                dwa = families["daily_wind_availability"]
+                families["daily_wind_availability"] = dataclasses.replace(
+                    dwa, names=dwa.names | {("Daily Wind Availability 2", "CSV")}
+                )
+                try:
+                    endpoints.build_datasets(families)
+                except RuntimeError:
+                    print('OK')
+                else:
+                    raise AssertionError('a two-member legacy family generated a CkanDataset')
+                """
+            )
+        )
+
+
+# Master's three entries, byte-for-byte (P-3): the generated block opens with them.
+_LEGACY_YAML_LINES = [
+    "      daily_wind_availability:",
+    '        endpoint: "/api/3/action/package_show"',
+    '        schedule: "daily"',
+    "        max_query_days: 1",
+    "      historic_generation_mix:",
+    '        endpoint: "/api/3/action/package_show"',
+    '        schedule: "daily"',
+    "        max_query_days: 1",
+    "      embedded_wind_solar_forecast:",
+    '        endpoint: "/api/3/action/package_show"',
+    '        schedule: "daily"',
+    "        max_query_days: 1",
+]
+_GENERATED_SUFFIX = (
+    ': {endpoint: "/api/3/action/package_show", schedule: "daily", max_query_days: 1}'
+)
+
+
+def _yaml_check(*extra: str) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "gridflow.connectors.neso_data_portal.registry",
+            "yaml",
+            "--check",
+            *extra,
+        ],
+        cwd=PROJECT_ROOT,
+        capture_output=True,
+        text=True,
+        timeout=120,
+        check=False,
+    )
+
+
+class TestAgreement:
+    """R-9: sources.yaml, FAMILIES and list_datasets() agree with the registry."""
+
+    _SOURCES = PROJECT_ROOT / "config" / "sources.yaml"
+
+    def test_yaml_check_is_clean_on_the_committed_file(self) -> None:
+        result = _yaml_check()
+        assert result.returncode == 0, result.stdout + result.stderr
+
+    def test_negative_control_a_dropped_generated_line_is_drift(self, tmp_path: Path) -> None:
+        text = self._SOURCES.read_bytes().decode("utf-8")
+        dropped = "      aahedc_tariffs" + _GENERATED_SUFFIX
+        assert dropped in text
+        copy = tmp_path / "sources.yaml"
+        copy.write_bytes(text.replace(dropped, "", 1).encode("utf-8"))
+        result = _yaml_check("--path", str(copy))
+        assert result.returncode == 1, result.stdout + result.stderr
+
+    def test_keys_agree_and_legacy_lines_are_byte_identical(self) -> None:
+        lines = self._SOURCES.read_bytes().decode("utf-8").replace("\r\n", "\n").split("\n")
+        begin = lines.index("      # >>> generated: neso_data_portal datasets")
+        end = lines.index("      # <<< generated")
+        # Only the two marker lines are new around master's entries.
+        assert lines[begin - 1] == "    datasets:", lines[begin - 1]
+        assert lines[begin + 1 : begin + 13] == _LEGACY_YAML_LINES
+        generated = lines[begin + 13 : end]
+        assert all(line.endswith(_GENERATED_SUFFIX) for line in generated)
+        assert generated == sorted(generated)
+        assert all(not line.strip() for line in lines[end + 1 :]), lines[end + 1 :]
+        _assert_ok(
+            _run(
+                """
+                from gridflow.config.settings import load_settings
+                from gridflow.connectors.neso_data_portal.endpoints import FAMILIES
+                from gridflow.connectors.neso_data_portal.client import NesoDataPortalConnector
+                config = load_settings().get_source_config('neso_data_portal')
+                configured = set(config.datasets)
+                assert len(FAMILIES) == 310, len(FAMILIES)
+                assert configured == set(FAMILIES), sorted(configured ^ set(FAMILIES))[:5]
+                listed = NesoDataPortalConnector(config).list_datasets()
+                assert listed == list(FAMILIES)
+                print('OK')
+                """
+            )
+        )
+
+
+class TestRegistrations:
+    """R-10: bespoke families are exactly the registered transformers; data ships."""
+
+    def test_registered_transformers_equal_bespoke_families(self) -> None:
+        _assert_ok(
+            _run(
+                """
+                from gridflow.connectors.neso_data_portal.registry import load_registry
+                from gridflow.pipeline.runner import import_transformers
+                from gridflow.silver.registry import list_transformers
+                import_transformers()
+                registered = {d for _s, d in list_transformers('neso_data_portal')}
+                bespoke = {
+                    k for k, (_p, f) in load_registry().families.items()
+                    if f.transformer == 'bespoke'
+                }
+                assert registered == bespoke, (registered, bespoke)
+                assert bespoke == {'daily_wind_availability', 'historic_generation_mix',
+                                   'embedded_wind_solar_forecast'}
+                print('OK')
+                """
+            )
+        )
+
+    def test_package_data_is_reachable_through_importlib_resources(self) -> None:
+        _assert_ok(
+            _run(
+                """
+                from importlib.resources import files
+                root = files('gridflow.connectors.neso_data_portal.registry')
+                names = {item.name for item in root.iterdir() if item.name.endswith('.json')}
+                assert '_frozen_keys.json' in names and '_adjudications.json' in names
+                assert len([n for n in names if not n.startswith('_')]) == 131, len(names)
+                print('OK')
+                """
+            )
+        )
