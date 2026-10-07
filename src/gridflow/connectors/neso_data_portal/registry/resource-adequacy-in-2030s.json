@@ -1,0 +1,80 @@
+{
+  "package": "resource-adequacy-in-2030s",
+  "package_id": "531e616c-7192-443f-bee0-ed067d55b182",
+  "group": "future-energy-scenarios",
+  "archetype": "SCN",
+  "refresh": "adhoc",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "resource_adequacy_2030s_peak_demand",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SCN",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "resource_adequacy_2030s_portfolio",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SCN",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "resource_adequacy_2030s_results",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SCN",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "c2bba528-b75a-42c5-bb98-3af3a5b3f720",
+      "name": "Portfolio Capacities",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "resource_adequacy_2030s_portfolio",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "resource_adequacy_2030s_portfolio"
+      }
+    },
+    {
+      "id": "5ca210f2-96cb-4fcd-939d-a9f34b2b8174",
+      "name": "Peak Demand",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "resource_adequacy_2030s_peak_demand",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "resource_adequacy_2030s_peak_demand"
+      }
+    },
+    {
+      "id": "71221dca-c792-4fb6-b6b4-893f392d893a",
+      "name": "Resource Adequacy Results",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "resource_adequacy_2030s_results",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "resource_adequacy_2030s_results"
+      }
+    }
+  ]
+}

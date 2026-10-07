@@ -1,0 +1,67 @@
+{
+  "package": "24-months-ahead-constraint-limits",
+  "package_id": "d515b4a9-60a1-489c-a126-004efc04f121",
+  "group": "constraint-management",
+  "archetype": "FC",
+  "refresh": "monthly",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "constraint_limits_24m",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "FC",
+      "refresh": "monthly",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "constraint_limits_24m_files",
+      "kind": "files",
+      "legacy": false,
+      "archetype": "FC",
+      "refresh": "monthly",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "3c359e33-3dac-4bdd-87d1-efbf4cbc2f07",
+      "name": "24 Months ahead constraint limits ",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "constraint_limits_24m",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "constraint_limits_24m"
+      }
+    },
+    {
+      "id": "bf4e1174-9aa7-4c0d-b444-5d22785053eb",
+      "name": "Scotland network constraint diagram",
+      "format": "PDF",
+      "url_type": "upload",
+      "family": "constraint_limits_24m_files",
+      "disposition": {
+        "kind": "DOC"
+      }
+    },
+    {
+      "id": "a9bafbd9-b393-4a5b-bc6f-09d6cdeea583",
+      "name": "E&W network constraint diagram",
+      "format": "PDF",
+      "url_type": "upload",
+      "family": "constraint_limits_24m_files",
+      "disposition": {
+        "kind": "DOC"
+      }
+    }
+  ]
+}

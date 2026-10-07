@@ -1,0 +1,57 @@
+{
+  "package": "carbon-intensity-of-balancing-actions",
+  "package_id": "5d3a7f30-020b-4bf2-9f56-1a7522ece994",
+  "group": "carbon-intensity1",
+  "archetype": "SER",
+  "refresh": "daily",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "ci_balancing_actions",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SER",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "ci_balancing_actions_files",
+      "kind": "files",
+      "legacy": false,
+      "archetype": "SER",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "86fb2746-4f5f-4a22-85bd-dbb63b75a791",
+      "name": "Carbon Intensity Balancing Actions Methodology",
+      "format": "PDF",
+      "url_type": "upload",
+      "family": "ci_balancing_actions_files",
+      "disposition": {
+        "kind": "DOC"
+      }
+    },
+    {
+      "id": "0b7edf10-4328-4b85-a0af-e6daa6bb8428",
+      "name": "Carbon Intensity of Balancing Actions",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "ci_balancing_actions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "ci_balancing_actions"
+      }
+    }
+  ]
+}

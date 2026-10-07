@@ -1,0 +1,36 @@
+{
+  "package": "long-term-forecasts-for-dc-dm-dr-requirements",
+  "package_id": "a1256c20-f657-4186-b288-e2c238a394c0",
+  "group": "ancillary-services",
+  "archetype": "FC",
+  "refresh": "monthly",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "dc_dm_dr_long_term_fc",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "FC",
+      "refresh": "monthly",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "5162c4d1-6d72-497b-a2ad-3a2449bc8952",
+      "name": "DX Future Requirement",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "dc_dm_dr_long_term_fc",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "dc_dm_dr_long_term_fc"
+      }
+    }
+  ]
+}

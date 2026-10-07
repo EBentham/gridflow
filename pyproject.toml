@@ -40,6 +40,9 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.setuptools.package-data]
+"gridflow.connectors.neso_data_portal.registry" = ["*.json"]
+
 [tool.ruff]
 target-version = "py311"
 line-length = 100

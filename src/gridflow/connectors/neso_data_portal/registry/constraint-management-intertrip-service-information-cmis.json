@@ -1,0 +1,80 @@
+{
+  "package": "constraint-management-intertrip-service-information-cmis",
+  "package_id": "7c20761d-3aab-4e9f-926e-6117fa8c4524",
+  "group": "constraint-management",
+  "archetype": "EVT",
+  "refresh": "monthly",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "cmis_intertrip",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "monthly",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "60b4055c-d87e-4ebe-8d21-e023f506e461",
+      "name": "Constraint Management Intertrip Arming 2022-2023",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "cmis_intertrip",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "cmis_intertrip"
+      }
+    },
+    {
+      "id": "38c6a5cd-388d-4275-b404-361c6eb102b3",
+      "name": "Constraint Management Intertrip Arming 2023-2024",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "cmis_intertrip",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "cmis_intertrip"
+      }
+    },
+    {
+      "id": "2f0777a3-719c-4ffe-96c2-61117a5ec468",
+      "name": "Constraint Management Intertrip Arming 2024-2025",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "cmis_intertrip",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "cmis_intertrip"
+      }
+    },
+    {
+      "id": "c6f0c279-87c9-4123-a4d1-b2d6d98b43a7",
+      "name": "Constraint Management Intertrip Arming 2025-2026",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "cmis_intertrip",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "cmis_intertrip"
+      }
+    },
+    {
+      "id": "60a1c0c6-4821-4e38-bc87-c6b4d510be6d",
+      "name": "Constraint Management Intertrip Arming 2026-2027",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "cmis_intertrip",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "cmis_intertrip"
+      }
+    }
+  ]
+}

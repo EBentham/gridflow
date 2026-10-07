@@ -1,0 +1,149 @@
+{
+  "package": "gis-boundaries-for-gb-grid-supply-points",
+  "package_id": "2810092e-d4b2-472f-b955-d8bea01f9ec0",
+  "group": "system",
+  "archetype": "FILE",
+  "refresh": "adhoc",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "gis_grid_supply_points",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "REG",
+      "refresh": "adhoc",
+      "empty_allowed": true,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "gis_grid_supply_points_files",
+      "kind": "files",
+      "legacy": false,
+      "archetype": "FILE",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "506d99a3-d4f5-4dd8-9586-652047682ccc",
+      "name": "GSP Regions 20181031 with ESRI Shape file",
+      "format": "ZIP",
+      "url_type": "upload",
+      "family": "gis_grid_supply_points_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "a3ed5711-407a-42a9-a63a-011615eea7e0",
+      "name": "GSP Regions 20181031 with GeoJson",
+      "format": "GEOJSON",
+      "url_type": "upload",
+      "family": "gis_grid_supply_points_files",
+      "disposition": {
+        "kind": "GIS"
+      }
+    },
+    {
+      "id": "bbe2cc72-a6c6-46e6-8f4e-48b879467368",
+      "name": "GSP - Gnode - Direct Connect - Region Lookup 20181031",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "gis_grid_supply_points",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "gis_grid_supply_points"
+      }
+    },
+    {
+      "id": "08534dae-5408-4e31-8639-b579c8f1c50b",
+      "name": "GSP Regions 20220314 (GeoJSON)",
+      "format": "GEOJSON",
+      "url_type": "upload",
+      "family": "gis_grid_supply_points_files",
+      "disposition": {
+        "kind": "GIS"
+      }
+    },
+    {
+      "id": "8100d4f2-9a55-41cb-bc3c-c190de7aa0dc",
+      "name": "GSP Regions 20220314 (ESRI Shapefile)",
+      "format": "ZIP",
+      "url_type": "upload",
+      "family": "gis_grid_supply_points_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "c798be82-d2eb-470c-a921-05f1ed91c727",
+      "name": "GSP Regions 20250102",
+      "format": "ZIP",
+      "url_type": "upload",
+      "family": "gis_grid_supply_points_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "d95e8c1b-9cd9-41dd-aacb-4b53b8c07c20",
+      "name": "GSP Regions 20250109",
+      "format": "ZIP",
+      "url_type": "upload",
+      "family": "gis_grid_supply_points_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "857f8af8-e41b-4f1b-9962-2b441cd31eea",
+      "name": "GSP Regions changelog",
+      "format": "TXT",
+      "url_type": "upload",
+      "family": "gis_grid_supply_points_files",
+      "disposition": {
+        "kind": "DOC"
+      }
+    },
+    {
+      "id": "c5647312-afab-4a58-8158-2f1efed1d7fc",
+      "name": "GSP Regions 20251204",
+      "format": "ZIP",
+      "url_type": "upload",
+      "family": "gis_grid_supply_points_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "5dfab3dd-f192-40ab-b97f-b365a594293c",
+      "name": "GSP Regions 20260209",
+      "format": "ZIP",
+      "url_type": "upload",
+      "family": "gis_grid_supply_points_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    }
+  ]
+}

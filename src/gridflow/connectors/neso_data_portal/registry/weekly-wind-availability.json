@@ -1,0 +1,36 @@
+{
+  "package": "weekly-wind-availability",
+  "package_id": "542b7b69-7fbc-412c-affc-074ef58495c8",
+  "group": "generation",
+  "archetype": "FC",
+  "refresh": "weekly",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "weekly_wind_availability",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "FC",
+      "refresh": "weekly",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "bb375594-dd0b-462b-9063-51e93c607e41",
+      "name": "Weekly Wind Availability",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "weekly_wind_availability",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "weekly_wind_availability"
+      }
+    }
+  ]
+}

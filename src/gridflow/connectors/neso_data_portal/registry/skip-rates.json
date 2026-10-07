@@ -1,0 +1,982 @@
+{
+  "package": "skip-rates",
+  "package_id": "c7f21d91-4e93-4162-9caa-ad9165db9c5e",
+  "group": "balancing",
+  "archetype": "SER",
+  "refresh": "daily",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "skip_rates_in_merit_psa_dsf_unit",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SER",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "skip_rates_exclusion_reasons",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SER",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "skip_rates_in_merit_all_bm",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SER",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "skip_rates_in_merit_psa",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SER",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "skip_rates_stage6_acceptance",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SER",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "skip_rates_summary",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SER",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "skip_rates_behind_constraints_bmu",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SER",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "skip_rates_behind_constraints_cons",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SER",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "skip_rates_stage5_dsf_technology",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SER",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "skip_rates_stage6_psa",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SER",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "skip_rates_stage5_psa_technology",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SER",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "70d39639-4504-46b2-bae9-37428e96063d",
+      "name": "Skip Rate - In Merit All Balancing Mechanism - January 2025",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "skip_rates_in_merit_all_bm",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "skip_rates_in_merit_all_bm"
+      }
+    },
+    {
+      "id": "ec422c87-a316-47bf-95a2-4e0cd07114dc",
+      "name": "Skip Rate - In Merit All Balancing Mechanism - December 2024",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "skip_rates_in_merit_all_bm",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "skip_rates_in_merit_all_bm"
+      }
+    },
+    {
+      "id": "dbc0479f-0606-47d4-98fe-49923378d9f6",
+      "name": "Skip Rate - In Merit All Balancing Mechanism - February 2025",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "skip_rates_in_merit_all_bm",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "skip_rates_in_merit_all_bm"
+      }
+    },
+    {
+      "id": "3a4863d1-220e-43e5-9049-94db1045d92c",
+      "name": "Skip Rate - In Merit Post System Action - January 2025",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "skip_rates_in_merit_psa",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "skip_rates_in_merit_psa"
+      }
+    },
+    {
+      "id": "70531959-ccc0-4453-aebb-0fbbb7e4c308",
+      "name": "Skip Rate - In Merit Post System Action - March 2025",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "skip_rates_in_merit_psa",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "skip_rates_in_merit_psa"
+      }
+    },
+    {
+      "id": "f8ec048d-7cd8-4eef-9323-f34311dd913c",
+      "name": "Skip Rate - In Merit Post System Action - December 2024",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "skip_rates_in_merit_psa",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "skip_rates_in_merit_psa"
+      }
+    },
+    {
+      "id": "9ba454f6-5b45-4e54-be41-a1e3a9ba3520",
+      "name": "Skip Rate - In Merit Post System Action - February 2025",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "skip_rates_in_merit_psa",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "skip_rates_in_merit_psa"
+      }
+    },
+    {
+      "id": "19dcbf5b-2868-4cce-aeb4-068d42bc17d2",
+      "name": "Skip Rate - In Merit All Balancing Mechanism - March 2025",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "skip_rates_in_merit_all_bm",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "skip_rates_in_merit_all_bm"
+      }
+    },
+    {
+      "id": "c66e6ad7-98c1-46a1-8f6f-376876d9f9ed",
+      "name": "Skip Rate - In Merit All Balancing Mechanism - April 2025",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "skip_rates_in_merit_all_bm",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "skip_rates_in_merit_all_bm"
+      }
+    },
+    {
+      "id": "e3c6852a-2814-4f03-9998-639e85881cf6",
+      "name": "Skip Rate - In Merit Post System Action - April 2025",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "skip_rates_in_merit_psa",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "skip_rates_in_merit_psa"
+      }
+    },
+    {
+      "id": "c53434d5-9bd2-4702-8b64-bd111c43d3fe",
+      "name": "Skip Rate - In Merit Post System Action - May 2025",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "skip_rates_in_merit_psa",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "skip_rates_in_merit_psa"
+      }
+    },
+    {
+      "id": "fd68196f-349e-4d6e-a4fc-fb8e538c600e",
+      "name": "Skip Rate - In Merit All Balancing Mechanism - May 2025",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "skip_rates_in_merit_all_bm",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "skip_rates_in_merit_all_bm"
+      }
+    },
+    {
+      "id": "d6fdf8bd-a2d5-4f91-81f9-2542e1fa7586",
+      "name": "Skip Rate - In Merit All Balancing Mechanism - June 2025",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "skip_rates_in_merit_all_bm",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "skip_rates_in_merit_all_bm"
+      }
+    },
+    {
+      "id": "a9105348-c2c4-4a16-8a11-b061747f5832",
+      "name": "Skip Rate - In Merit Post System Action - June 2025",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "skip_rates_in_merit_psa",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "skip_rates_in_merit_psa"
+      }
+    },
+    {
+      "id": "7337899d-1bda-4a50-a82d-49c2140b094a",
+      "name": "Skip Rate - In Merit All Balancing Mechanism - July 2025",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "skip_rates_in_merit_all_bm",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "skip_rates_in_merit_all_bm"
+      }
+    },
+    {
+      "id": "ffb84e07-85ec-4c2e-a643-934cf6354b32",
+      "name": "Skip Rate - In Merit Post System Action - July 2025",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "skip_rates_in_merit_psa",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "skip_rates_in_merit_psa"
+      }
+    },
+    {
+      "id": "ea2951b0-79d7-4575-a7d9-7d522ca2422c",
+      "name": "Skip Rate - Exclusion Reasons - August 2025",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "skip_rates_exclusion_reasons",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "skip_rates_exclusion_reasons"
+      }
+    },
+    {
+      "id": "5fed7209-7f33-4b19-9858-84a967df0351",
+      "name": "Skip Rate - Exclusion Reasons - July 2025",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "skip_rates_exclusion_reasons",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "skip_rates_exclusion_reasons"
+      }
+    },
+    {
+      "id": "d9fca2ec-54f1-4b8c-9a78-7c84617f0d9d",
+      "name": "Skip Rate - In Merit All Balancing Mechanism - August 2025",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "skip_rates_in_merit_all_bm",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "skip_rates_in_merit_all_bm"
+      }
+    },
+    {
+      "id": "9884e31f-a513-4770-a0ae-d66e46d696dc",
+      "name": "Skip Rate - In Merit Post System Action - August 2025",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "skip_rates_in_merit_psa",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "skip_rates_in_merit_psa"
+      }
+    },
+    {
+      "id": "007c5786-bd34-4a09-8bdf-be5d63eda16a",
+      "name": "Stage 5 PSA Skip Rate by Technology",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "skip_rates_stage5_psa_technology",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "skip_rates_stage5_psa_technology"
+      }
+    },
+    {
+      "id": "c20e81a0-1c82-4e03-913e-9e73d6daca6b",
+      "name": "Skip Rate - Exclusion Reasons - December 2024",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "skip_rates_exclusion_reasons",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "skip_rates_exclusion_reasons"
+      }
+    },
+    {
+      "id": "fa3df861-bbdd-4d60-8e84-9b7f9351ba48",
+      "name": "Skip Rate - Exclusion Reasons - January 2025",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "skip_rates_exclusion_reasons",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "skip_rates_exclusion_reasons"
+      }
+    },
+    {
+      "id": "16e874cf-7b26-4fea-bf39-aa153f552e20",
+      "name": "Skip Rate - Exclusion Reasons - February 2025",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "skip_rates_exclusion_reasons",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "skip_rates_exclusion_reasons"
+      }
+    },
+    {
+      "id": "1b310928-3800-4402-9ee2-29e6815fa5a9",
+      "name": "Skip Rate - Exclusion Reasons - March 2025",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "skip_rates_exclusion_reasons",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "skip_rates_exclusion_reasons"
+      }
+    },
+    {
+      "id": "a3d3e2ea-f099-483c-a61c-a4fb883db52b",
+      "name": "Skip Rate - Exclusion Reasons - April 2025",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "skip_rates_exclusion_reasons",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "skip_rates_exclusion_reasons"
+      }
+    },
+    {
+      "id": "8eed92f7-5450-476e-bfce-06af1385d75a",
+      "name": "Skip Rate - Exclusion Reasons - May 2025",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "skip_rates_exclusion_reasons",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "skip_rates_exclusion_reasons"
+      }
+    },
+    {
+      "id": "f6a6beb1-1117-4798-b5c4-68e6d60ccb0b",
+      "name": "Skip Rate - Exclusion Reasons - June 2025",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "skip_rates_exclusion_reasons",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "skip_rates_exclusion_reasons"
+      }
+    },
+    {
+      "id": "51ae34f6-10bb-409e-8feb-6d07e8c4fbed",
+      "name": "Skip Rate - Exclusion Reasons - September 2025",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "skip_rates_exclusion_reasons",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "skip_rates_exclusion_reasons"
+      }
+    },
+    {
+      "id": "9a90687c-265b-4f58-820f-43870c9a5256",
+      "name": "Skip Rate - Exclusion Reasons - October 2025",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "skip_rates_exclusion_reasons",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "skip_rates_exclusion_reasons"
+      }
+    },
+    {
+      "id": "f2f15724-8780-4ff4-904a-f36915a4f98e",
+      "name": "Skip Rate - In Merit Post System Action - November 2025",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "skip_rates_in_merit_psa",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "skip_rates_in_merit_psa"
+      }
+    },
+    {
+      "id": "eb166d7b-5a59-4bdf-9e38-b0ab4d530fe2",
+      "name": "Skip Rate - In Merit Post System Action - October 2025",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "skip_rates_in_merit_psa",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "skip_rates_in_merit_psa"
+      }
+    },
+    {
+      "id": "6549a9d8-d61c-4929-983e-dec122e8d13c",
+      "name": "Skip Rate - In Merit Post System Action - September 2025",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "skip_rates_in_merit_psa",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "skip_rates_in_merit_psa"
+      }
+    },
+    {
+      "id": "426f4ead-8d24-4196-9425-c42c6788f617",
+      "name": "Skip Rate - In Merit All Balancing Mechanism - October 2025",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "skip_rates_in_merit_all_bm",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "skip_rates_in_merit_all_bm"
+      }
+    },
+    {
+      "id": "7c90cdbb-ce59-4ab9-b41a-d05a912fd587",
+      "name": "Skip Rate - In Merit All Balancing Mechanism - November 2025",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "skip_rates_in_merit_all_bm",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "skip_rates_in_merit_all_bm"
+      }
+    },
+    {
+      "id": "413a8f68-855c-4cc2-95a2-916001753bf7",
+      "name": "Skip Rate - In Merit All Balancing Mechanism - September 2025",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "skip_rates_in_merit_all_bm",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "skip_rates_in_merit_all_bm"
+      }
+    },
+    {
+      "id": "1db68aaf-7d1b-4041-8556-a71383159944",
+      "name": "Skip Rate - Exclusion Reasons - November 2025",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "skip_rates_exclusion_reasons",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "skip_rates_exclusion_reasons"
+      }
+    },
+    {
+      "id": "be364fbd-9ac3-4dd9-a0fd-6d2a80c4251c",
+      "name": "Skip Rate - In Merit All Balancing Mechanism - December 2025",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "skip_rates_in_merit_all_bm",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "skip_rates_in_merit_all_bm"
+      }
+    },
+    {
+      "id": "cba84b51-1a29-43a6-b643-73670a71bb7f",
+      "name": "Skip Rate - Exclusion Reasons - December 2025",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "skip_rates_exclusion_reasons",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "skip_rates_exclusion_reasons"
+      }
+    },
+    {
+      "id": "a4db6822-66cf-40f4-92a7-9712703b4575",
+      "name": "Skip Rate - In Merit Post System Action - December 2025",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "skip_rates_in_merit_psa",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "skip_rates_in_merit_psa"
+      }
+    },
+    {
+      "id": "32072115-34bd-4838-92ab-96803e1b692d",
+      "name": "Stage 6 PSA Skip Rate",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "skip_rates_stage6_psa",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "skip_rates_stage6_psa"
+      }
+    },
+    {
+      "id": "98d84000-6639-440c-ae2c-4a9a6c86a865",
+      "name": "Skip Rate - In Merit All Balancing Mechanism - January 2026",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "skip_rates_in_merit_all_bm",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "skip_rates_in_merit_all_bm"
+      }
+    },
+    {
+      "id": "84868db8-cbd8-42d0-8972-b6b5da6187c8",
+      "name": "Skip Rate - In Merit Post System Action - January 2026",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "skip_rates_in_merit_psa",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "skip_rates_in_merit_psa"
+      }
+    },
+    {
+      "id": "c81b5b16-3650-45f5-8dce-2765c840f50a",
+      "name": "Skip Rate - Exclusion Reasons - January 2026",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "skip_rates_exclusion_reasons",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "skip_rates_exclusion_reasons"
+      }
+    },
+    {
+      "id": "51371db9-ef87-487c-b97e-bcacc6856374",
+      "name": "Skip Rate - In Merit All Balancing Mechanism - February 2026",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "skip_rates_in_merit_all_bm",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "skip_rates_in_merit_all_bm"
+      }
+    },
+    {
+      "id": "4b0599e1-5022-4335-9193-49b75dd85b21",
+      "name": "Skip Rate - In Merit Post System Action - February 2026",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "skip_rates_in_merit_psa",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "skip_rates_in_merit_psa"
+      }
+    },
+    {
+      "id": "4da36ea5-ea48-45ef-ab50-29751bff476b",
+      "name": "Skip Rate - Exclusion Reasons - February 2026",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "skip_rates_exclusion_reasons",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "skip_rates_exclusion_reasons"
+      }
+    },
+    {
+      "id": "235e5cf1-745a-46e3-9e64-f7c8532abdc1",
+      "name": "Skip Rate - Stage 6 Acceptance",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "skip_rates_stage6_acceptance",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "skip_rates_stage6_acceptance"
+      }
+    },
+    {
+      "id": "bb251d50-126a-4fbc-a0b8-bf137a900801",
+      "name": "Skip Rate - In Merit All Balancing Mechanism - March 2026",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "skip_rates_in_merit_all_bm",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "skip_rates_in_merit_all_bm"
+      }
+    },
+    {
+      "id": "a04c4c6e-0526-42b4-99d0-eb114beba8a2",
+      "name": "Skip Rate - In Merit Post System Action - March 2026",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "skip_rates_in_merit_psa",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "skip_rates_in_merit_psa"
+      }
+    },
+    {
+      "id": "be20790b-f860-4d8e-bdcc-8ec4311b2058",
+      "name": "Skip Rate - Exclusion Reasons - March 2026",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "skip_rates_exclusion_reasons",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "skip_rates_exclusion_reasons"
+      }
+    },
+    {
+      "id": "61c8f88d-87d4-4dc8-8ff8-89e4cdfb226f",
+      "name": "Skip Rate - In Merit All Balancing Mechanism - April 2026",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "skip_rates_in_merit_all_bm",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "skip_rates_in_merit_all_bm"
+      }
+    },
+    {
+      "id": "973563c8-295a-4d08-bd72-ef529b82bf9a",
+      "name": "Skip Rate - In Merit Post System Action - April 2026",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "skip_rates_in_merit_psa",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "skip_rates_in_merit_psa"
+      }
+    },
+    {
+      "id": "5fc6319d-0ceb-4bad-99d6-653ef23cbed0",
+      "name": "Skip Rate - Exclusion Reasons - April 2026",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "skip_rates_exclusion_reasons",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "skip_rates_exclusion_reasons"
+      }
+    },
+    {
+      "id": "e4129210-ea22-4a36-aa2f-ff7bd6147675",
+      "name": "Skip Rate - Summary",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "skip_rates_summary",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "skip_rates_summary"
+      }
+    },
+    {
+      "id": "0c358c48-72f6-4f65-a738-2fa4ce182692",
+      "name": "Skip Rate - In Merit All Balancing Mechanism - May 2026",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "skip_rates_in_merit_all_bm",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "skip_rates_in_merit_all_bm"
+      }
+    },
+    {
+      "id": "f3a834c0-71c5-4efb-909e-5b7dd2f2c11f",
+      "name": "Skip Rate - In Merit Post System Action - May 2026",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "skip_rates_in_merit_psa",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "skip_rates_in_merit_psa"
+      }
+    },
+    {
+      "id": "6f4319a1-ee65-442a-8081-f6e71713ba7f",
+      "name": "Skip Rate - Exclusion Reasons - May 2026",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "skip_rates_exclusion_reasons",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "skip_rates_exclusion_reasons"
+      }
+    },
+    {
+      "id": "83ad3fa4-5a79-4119-9511-4005b4f3c584",
+      "name": "Skip Rate - In Merit All Balancing Mechanism - June 2026",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "skip_rates_in_merit_all_bm",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "skip_rates_in_merit_all_bm"
+      }
+    },
+    {
+      "id": "96a1a331-bd61-498b-8880-d9a02a58df0e",
+      "name": "Skip Rate - In Merit Post System Action - June 2026",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "skip_rates_in_merit_psa",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "skip_rates_in_merit_psa"
+      }
+    },
+    {
+      "id": "f2879df1-32d2-4faf-b4e4-28d33059960b",
+      "name": "Skip Rate - Exclusion Reasons - June 2026",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "skip_rates_exclusion_reasons",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "skip_rates_exclusion_reasons"
+      }
+    },
+    {
+      "id": "8de48b80-48d7-4648-b812-9f91c992f559",
+      "name": "Stage 5 DSF Technology-Specific Skip Rate",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "skip_rates_stage5_dsf_technology",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "skip_rates_stage5_dsf_technology"
+      }
+    },
+    {
+      "id": "d02ef4f9-b2cf-4d0c-b851-521ba6976d44",
+      "name": "In Merit PSA for Demand Side Flexibility Unit",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "skip_rates_in_merit_psa_dsf_unit",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "skip_rates_in_merit_psa_dsf_unit"
+      }
+    },
+    {
+      "id": "c12fdef0-0b18-439d-a16c-c97fbd93c45d",
+      "name": "Skip Rate - In Merit All Balancing Mechanism - July 2026",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "skip_rates_in_merit_all_bm",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "skip_rates_in_merit_all_bm"
+      }
+    },
+    {
+      "id": "85a2af4e-d3de-4f11-80cf-309e39b94b59",
+      "name": "Skip Rate - In Merit Post System Action - July 2026",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "skip_rates_in_merit_psa",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "skip_rates_in_merit_psa"
+      }
+    },
+    {
+      "id": "db88ded4-bb64-4b5a-851d-bdd6eabb397d",
+      "name": "Skip Rate - Exclusion Reasons - July 2026",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "skip_rates_exclusion_reasons",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "skip_rates_exclusion_reasons"
+      }
+    },
+    {
+      "id": "ce31e61b-ebc5-4c6f-846f-d5a971e019a0",
+      "name": "Skip Rate - In Merit All Balancing Mechanism - August 2026",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "skip_rates_in_merit_all_bm",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "skip_rates_in_merit_all_bm"
+      }
+    },
+    {
+      "id": "80f792cd-8985-4f94-b073-8756b0b4211c",
+      "name": "Skip Rate - In Merit Post System Action - August 2026",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "skip_rates_in_merit_psa",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "skip_rates_in_merit_psa"
+      }
+    },
+    {
+      "id": "a82a2a20-6f08-4d7d-a2ed-221527ba75c2",
+      "name": "Skip Rate - Exclusion Reasons - August 2026",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "skip_rates_exclusion_reasons",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "skip_rates_exclusion_reasons"
+      }
+    },
+    {
+      "id": "ca3587a2-ae0d-47db-b0a1-4d681af8bced",
+      "name": "Skip Rate - In Merit All Balancing Mechanism - September 2026",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "skip_rates_in_merit_all_bm",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "skip_rates_in_merit_all_bm"
+      }
+    },
+    {
+      "id": "38421f3d-8949-4dcf-81cf-0295a8688086",
+      "name": "Skip Rate - In Merit Post System Action - September 2026",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "skip_rates_in_merit_psa",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "skip_rates_in_merit_psa"
+      }
+    },
+    {
+      "id": "1679aa42-0184-4564-8bf5-406f6b0bc594",
+      "name": "Skip Rate - Exclusion Reasons - September 2026",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "skip_rates_exclusion_reasons",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "skip_rates_exclusion_reasons"
+      }
+    },
+    {
+      "id": "a88adc4c-d3a6-440d-946b-4e5a3e7ea1c5",
+      "name": "Skips Behind Constraints - In Merit Constraint-Level",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "skip_rates_behind_constraints_cons",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "skip_rates_behind_constraints_cons"
+      }
+    },
+    {
+      "id": "26f3a3de-e5fd-43e5-9d8a-d89a9c786812",
+      "name": "Skips Behind Constraints - In Merit BMU-Level",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "skip_rates_behind_constraints_bmu",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "skip_rates_behind_constraints_bmu"
+      }
+    },
+    {
+      "id": "fb15911f-ddda-4b87-8334-471430c0e70f",
+      "name": "Skip Rate - In Merit All Balancing Mechanism - October 2026",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "skip_rates_in_merit_all_bm",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "skip_rates_in_merit_all_bm"
+      }
+    },
+    {
+      "id": "b9806162-b605-4502-ac44-a419d2b010e5",
+      "name": "Skip Rate - In Merit Post System Action - October 2026",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "skip_rates_in_merit_psa",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "skip_rates_in_merit_psa"
+      }
+    },
+    {
+      "id": "f8110eb8-f4ad-4288-87d5-37ab434b55b5",
+      "name": "Skip Rate - Exclusion Reasons - October 2026",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "skip_rates_exclusion_reasons",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "skip_rates_exclusion_reasons"
+      }
+    }
+  ]
+}

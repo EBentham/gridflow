@@ -1,0 +1,332 @@
+{
+  "package": "historic-demand-data",
+  "package_id": "8f2fe0af-871c-488d-8bad-960426f24601",
+  "group": "demand",
+  "archetype": "SER",
+  "refresh": "daily",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "historic_demand",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SER",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "historic_demand_files",
+      "kind": "files",
+      "legacy": false,
+      "archetype": "SER",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "243ca76a-eefe-419d-a4b5-397073deb100",
+      "name": "Frequently Asked Questions (FAQ)",
+      "format": "DOC",
+      "url_type": "upload",
+      "family": "historic_demand_files",
+      "disposition": {
+        "kind": "DOC"
+      }
+    },
+    {
+      "id": "ed8a37cb-65ac-4581-8dbc-a3130780da3a",
+      "name": "Historic Demand Data 2009",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "historic_demand",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "historic_demand"
+      }
+    },
+    {
+      "id": "b3eae4a5-8c3c-4df1-b9de-7db243ac3a09",
+      "name": "Historic Demand Data 2010",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "historic_demand",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "historic_demand"
+      }
+    },
+    {
+      "id": "01522076-2691-4140-bfb8-c62284752efd",
+      "name": "Historic Demand Data 2011",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "historic_demand",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "historic_demand"
+      }
+    },
+    {
+      "id": "4bf713a2-ea0c-44d3-a09a-63fc6a634b00",
+      "name": "Historic Demand Data 2012",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "historic_demand",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "historic_demand"
+      }
+    },
+    {
+      "id": "2ff7aaff-8b42-4c1b-b234-9446573a1e27",
+      "name": "Historic Demand Data 2013",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "historic_demand",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "historic_demand"
+      }
+    },
+    {
+      "id": "b9005225-49d3-40d1-921c-03ee2d83a2ff",
+      "name": "Historic Demand Data 2014",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "historic_demand",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "historic_demand"
+      }
+    },
+    {
+      "id": "cc505e45-65ae-4819-9b90-1fbb06880293",
+      "name": "Historic Demand Data 2015",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "historic_demand",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "historic_demand"
+      }
+    },
+    {
+      "id": "3bb75a28-ab44-4a0b-9b1c-9be9715d3c44",
+      "name": "Historic Demand Data 2016",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "historic_demand",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "historic_demand"
+      }
+    },
+    {
+      "id": "2f0f75b8-39c5-46ff-a914-ae38088ed022",
+      "name": "Historic Demand Data 2017",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "historic_demand",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "historic_demand"
+      }
+    },
+    {
+      "id": "fcb12133-0db0-4f27-a4a5-1669fd9f6d33",
+      "name": "Historic Demand Data 2018",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "historic_demand",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "historic_demand"
+      }
+    },
+    {
+      "id": "dd9de980-d724-415a-b344-d8ae11321432",
+      "name": "Historic Demand Data 2019",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "historic_demand",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "historic_demand"
+      }
+    },
+    {
+      "id": "33ba6857-2a55-479f-9308-e5c4c53d4381",
+      "name": "Historic Demand Data 2020",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "historic_demand",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "historic_demand"
+      }
+    },
+    {
+      "id": "18c69c42-f20d-46f0-84e9-e279045befc6",
+      "name": "Historic Demand Data 2021",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "historic_demand",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "historic_demand"
+      }
+    },
+    {
+      "id": "bb44a1b5-75b1-4db2-8491-257f23385006",
+      "name": "Historic Demand Data 2022",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "historic_demand",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "historic_demand"
+      }
+    },
+    {
+      "id": "bf5ab335-9b40-4ea4-b93a-ab4af7bce003",
+      "name": "Historic Demand Data 2023",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "historic_demand",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "historic_demand"
+      }
+    },
+    {
+      "id": "f6d02c0f-957b-48cb-82ee-09003f2ba759",
+      "name": "Historic Demand Data 2024",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "historic_demand",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "historic_demand"
+      }
+    },
+    {
+      "id": "b2bde559-3455-4021-b179-dfe60c0337b0",
+      "name": "Historic Demand Data 2025",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "historic_demand",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "historic_demand"
+      }
+    },
+    {
+      "id": "e8608e9a-f56c-457f-b9e7-bfffcfd19731",
+      "name": "Historic Demand Data 2001",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "historic_demand",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "historic_demand"
+      }
+    },
+    {
+      "id": "4daaac31-ae56-461e-8efe-6b33e147225a",
+      "name": "Historic Demand Data 2002",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "historic_demand",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "historic_demand"
+      }
+    },
+    {
+      "id": "30650247-acbf-414d-8ae2-2aa4aac57537",
+      "name": "Historic Demand Data 2003",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "historic_demand",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "historic_demand"
+      }
+    },
+    {
+      "id": "5f5c076c-d3a3-4f33-a137-501cc3d2ca9b",
+      "name": "Historic Demand Data 2004",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "historic_demand",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "historic_demand"
+      }
+    },
+    {
+      "id": "42a41acd-53b6-450d-af1b-4a92a352895c",
+      "name": "Historic Demand Data 2005",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "historic_demand",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "historic_demand"
+      }
+    },
+    {
+      "id": "949bb4a4-8374-4730-89ef-302d82428d2c",
+      "name": "Historic Demand Data 2006",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "historic_demand",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "historic_demand"
+      }
+    },
+    {
+      "id": "c0da767c-447d-48d1-93fd-ca3955d078ae",
+      "name": "Historic Demand Data 2007",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "historic_demand",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "historic_demand"
+      }
+    },
+    {
+      "id": "ec63adc8-e8a1-45cc-a593-5953b1ede7b1",
+      "name": "Historic Demand Data 2008",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "historic_demand",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "historic_demand"
+      }
+    },
+    {
+      "id": "8a4a771c-3929-4e56-93ad-cdf13219dea5",
+      "name": "Historic Demand Data 2026",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "historic_demand",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "historic_demand"
+      }
+    }
+  ]
+}

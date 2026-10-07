@@ -1,0 +1,58 @@
+{
+  "package": "14-days-ahead-wind-forecasts",
+  "package_id": "2f134a4e-92e5-43b8-96c3-0dd7d92fcc52",
+  "group": "generation",
+  "archetype": "FC",
+  "refresh": "intraday",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "wind_forecast_14d_day_ahead_bmu",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "FC",
+      "refresh": "intraday",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "wind_forecast_14d_days_ahead",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "FC",
+      "refresh": "intraday",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "93c3048e-1dab-4057-a2a9-417540583929",
+      "name": "14 Days Ahead Wind Forecast",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "wind_forecast_14d_days_ahead",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "wind_forecast_14d_days_ahead"
+      }
+    },
+    {
+      "id": "342aae25-d3a6-436c-b168-db8b247ccb83",
+      "name": "14 Day Ahead Wind BMU Forecast",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "wind_forecast_14d_day_ahead_bmu",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "wind_forecast_14d_day_ahead_bmu"
+      }
+    }
+  ]
+}

@@ -1,0 +1,58 @@
+{
+  "package": "transmission-losses",
+  "package_id": "ec5a1356-f6dd-40a1-b714-dbdad3ed00af",
+  "group": "demand",
+  "archetype": "SER",
+  "refresh": "monthly",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "transmission_losses_financial_year",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SER",
+      "refresh": "monthly",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "transmission_losses_main",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SER",
+      "refresh": "monthly",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "fddc307d-fc5a-458d-809f-2ad9a697b142",
+      "name": "Transmission Losses",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "transmission_losses_main",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "transmission_losses_main"
+      }
+    },
+    {
+      "id": "c0cd9512-4f8a-468e-8823-7c8238dcb9b9",
+      "name": "Financial Year Losses",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "transmission_losses_financial_year",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "transmission_losses_financial_year"
+      }
+    }
+  ]
+}

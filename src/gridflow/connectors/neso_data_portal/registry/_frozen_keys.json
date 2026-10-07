@@ -1,0 +1,14 @@
+[
+  {
+    "key": "daily_wind_availability",
+    "package": "daily-wind-availability"
+  },
+  {
+    "key": "embedded_wind_solar_forecast",
+    "package": "embedded-wind-and-solar-forecasts"
+  },
+  {
+    "key": "historic_generation_mix",
+    "package": "historic-generation-mix"
+  }
+]

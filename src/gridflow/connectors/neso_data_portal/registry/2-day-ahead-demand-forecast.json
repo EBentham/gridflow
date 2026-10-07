@@ -1,0 +1,79 @@
+{
+  "package": "2-day-ahead-demand-forecast",
+  "package_id": "836df27e-e92c-45bf-80c0-a197e7c0ece3",
+  "group": "demand",
+  "archetype": "FC",
+  "refresh": "intraday",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "demand_forecast_2d_day_ahead",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "FC",
+      "refresh": "intraday",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "demand_forecast_2d_historic_day_ahead",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "FC",
+      "refresh": "intraday",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "demand_forecast_2d_files",
+      "kind": "files",
+      "legacy": false,
+      "archetype": "FC",
+      "refresh": "intraday",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "cda26f27-4bb6-4632-9fb5-2d029ca605e1",
+      "name": "2 Day Ahead Demand Forecast",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "demand_forecast_2d_day_ahead",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "demand_forecast_2d_day_ahead"
+      }
+    },
+    {
+      "id": "607621c1-20c1-4b29-81e1-16156d04b13f",
+      "name": "Demand Curve - Sample",
+      "format": "PNG",
+      "url_type": "upload",
+      "family": "demand_forecast_2d_files",
+      "disposition": {
+        "kind": "DOC"
+      }
+    },
+    {
+      "id": "24abd271-5936-45c7-85f4-2a6b450ef6b7",
+      "name": "Historic 2 Day Ahead Demand Forecasts",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "demand_forecast_2d_historic_day_ahead",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "demand_forecast_2d_historic_day_ahead"
+      }
+    }
+  ]
+}

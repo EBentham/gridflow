@@ -1,0 +1,158 @@
+{
+  "package": "daily-balancing-costs-balancing-services-use-of-system",
+  "package_id": "d13d78fc-60d9-4f4d-87b6-e25a20f669c0",
+  "group": "balancing",
+  "archetype": "SER",
+  "refresh": "weekly",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "daily_balancing_costs",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SER",
+      "refresh": "weekly",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "daily_balancing_costs_files",
+      "kind": "files",
+      "legacy": false,
+      "archetype": "SER",
+      "refresh": "weekly",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "a84e4ccb-18e2-474e-a34a-47b835772f17",
+      "name": "Daily Balancing Costs 2017-2018",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "daily_balancing_costs",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "daily_balancing_costs"
+      }
+    },
+    {
+      "id": "2be31033-829f-4030-94d6-58f2fdf76312",
+      "name": "Daily Balancing Costs 2018-2019",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "daily_balancing_costs",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "daily_balancing_costs"
+      }
+    },
+    {
+      "id": "723dd577-985b-4ceb-ab98-95a5df32584f",
+      "name": "Daily Balancing Costs 2019-2020",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "daily_balancing_costs",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "daily_balancing_costs"
+      }
+    },
+    {
+      "id": "7bcd8e25-c148-4cdb-b46f-394f88b92db5",
+      "name": "Daily Balancing Costs 2020-2021",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "daily_balancing_costs",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "daily_balancing_costs"
+      }
+    },
+    {
+      "id": "8d89e8ee-85d7-4395-813e-a9233b3bdb7c",
+      "name": "Daily Balancing Costs 2021-2022",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "daily_balancing_costs",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "daily_balancing_costs"
+      }
+    },
+    {
+      "id": "2a48ee67-a7f5-4d29-b223-a92f1d289224",
+      "name": "Daily Balancing Costs 2022-2023",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "daily_balancing_costs",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "daily_balancing_costs"
+      }
+    },
+    {
+      "id": "5eb3f06d-26ed-4e04-81a0-ce8c02ecd11e",
+      "name": "Daily Balancing Costs 2023-2024",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "daily_balancing_costs",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "daily_balancing_costs"
+      }
+    },
+    {
+      "id": "527a5f40-942b-416b-99df-81a51c30d041",
+      "name": "Daily Balancing Costs 2024-2025",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "daily_balancing_costs",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "daily_balancing_costs"
+      }
+    },
+    {
+      "id": "bfd081bc-9642-4ed6-9f37-60c5cbe26bef",
+      "name": "Missing Settlement Periods since January 2017",
+      "format": "XLSX",
+      "url_type": "upload",
+      "family": "daily_balancing_costs_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "46183ba7-48df-4318-9b4b-06828348d46e",
+      "name": "Daily Balancing Costs 2025-2026",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "daily_balancing_costs",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "daily_balancing_costs"
+      }
+    },
+    {
+      "id": "1d040751-f77f-4641-9130-d49f8cbfe54f",
+      "name": "Daily Balancing Costs 2026-2027",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "daily_balancing_costs",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "daily_balancing_costs"
+      }
+    }
+  ]
+}

@@ -1,0 +1,58 @@
+{
+  "package": "ifa2",
+  "package_id": "860c8221-c656-4af3-800a-281b9e500489",
+  "group": "interconnectors",
+  "archetype": "FC",
+  "refresh": "daily",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "ifa2_ifa_da_id_weekly_itls",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "FC",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "ifa2_ifa_itl",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "FC",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "19725dae-1d69-423e-8d5b-0f4dc8220b6b",
+      "name": "Archived IFA2 DA & ID Weekly ITLs",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "ifa2_ifa_da_id_weekly_itls",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "ifa2_ifa_da_id_weekly_itls"
+      }
+    },
+    {
+      "id": "f9ff9381-6eb1-40cd-903b-ca7282b9f2a9",
+      "name": "IFA2 ITL Data",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "ifa2_ifa_itl",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "ifa2_ifa_itl"
+      }
+    }
+  ]
+}

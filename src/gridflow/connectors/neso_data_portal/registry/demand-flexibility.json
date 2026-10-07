@@ -1,0 +1,135 @@
+{
+  "package": "demand-flexibility",
+  "package_id": "829e325f-8926-40ab-9dd6-8b7aea6cb244",
+  "group": "dfs",
+  "archetype": "EVT",
+  "refresh": "adhoc",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "demand_flexibility_industry_notification",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "demand_flexibility_service_requirement",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "demand_flexibility_utilisation_report",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "demand_flexibility_utilisation_summary",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "f5605e2b-b677-424c-8df7-d0ce4ee03cef",
+      "name": "DFS Service Requirement (Archive 2025/2026)",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "demand_flexibility_service_requirement",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "demand_flexibility_service_requirement"
+      }
+    },
+    {
+      "id": "3d042450-b556-450f-a4b5-cdb075cdf9c1",
+      "name": "DFS Industry Notification (Archive 2025/2026)",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "demand_flexibility_industry_notification",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "demand_flexibility_industry_notification"
+      }
+    },
+    {
+      "id": "cc36fff5-5f6f-4fde-8932-c935d982ecd8",
+      "name": "DFS Utilisation Report (Archive 2025/2026)",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "demand_flexibility_utilisation_report",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "demand_flexibility_utilisation_report"
+      }
+    },
+    {
+      "id": "25698259-0b66-42f0-ac59-ef0df5245812",
+      "name": "DFS Utilisation Report Summary (Archive 2025/2026)",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "demand_flexibility_utilisation_summary",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "demand_flexibility_utilisation_summary"
+      }
+    },
+    {
+      "id": "3635fd80-49d7-4d02-964d-cc8c08d50302",
+      "name": "DFS Service Requirement",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "demand_flexibility_service_requirement",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "demand_flexibility_service_requirement"
+      }
+    },
+    {
+      "id": "705e573c-ddac-4675-b410-82916b35c4fe",
+      "name": "DFS Utilisation Report Summary",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "demand_flexibility_utilisation_summary",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "demand_flexibility_utilisation_summary"
+      }
+    },
+    {
+      "id": "3ebf77d7-05df-466e-a023-dc45a90efeea",
+      "name": "DFS Utilisation Report",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "demand_flexibility_utilisation_report",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "demand_flexibility_utilisation_report"
+      }
+    }
+  ]
+}

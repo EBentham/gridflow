@@ -1,0 +1,91 @@
+{
+  "package": "school-holiday-percentages",
+  "package_id": "c0e9769c-0a6b-460d-a6e6-c66515317a64",
+  "group": "demand",
+  "archetype": "SER",
+  "refresh": "adhoc",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "school_holiday_percentages",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SER",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "f2c25078-5721-4abd-b9e3-0fd6d839bb04",
+      "name": "School Holiday Percentages 2024/25",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "school_holiday_percentages",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "school_holiday_percentages"
+      }
+    },
+    {
+      "id": "4b640366-af9a-4785-b12f-ff2274e369c0",
+      "name": "School Holiday Percentages 2023/24",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "school_holiday_percentages",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "school_holiday_percentages"
+      }
+    },
+    {
+      "id": "8a9a21e2-91d9-40e0-ac99-68f5e3f1a732",
+      "name": "School Holiday Percentages 2022/23",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "school_holiday_percentages",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "school_holiday_percentages"
+      }
+    },
+    {
+      "id": "48f922ef-b18f-4193-868c-e95c1f271b5c",
+      "name": "School Holiday Percentages 2021/22",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "school_holiday_percentages",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "school_holiday_percentages"
+      }
+    },
+    {
+      "id": "73c68bc9-d08b-4173-bfef-6ba1ac0684a9",
+      "name": "School Holiday Percentages 2025/26",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "school_holiday_percentages",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "school_holiday_percentages"
+      }
+    },
+    {
+      "id": "5e4bb837-a43b-4709-91e6-ddf8ca9a660a",
+      "name": "School Holiday Percentages 2026/27",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "school_holiday_percentages",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "school_holiday_percentages"
+      }
+    }
+  ]
+}

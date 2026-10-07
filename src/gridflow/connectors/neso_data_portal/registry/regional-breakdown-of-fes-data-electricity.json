@@ -1,0 +1,410 @@
+{
+  "package": "regional-breakdown-of-fes-data-electricity",
+  "package_id": "963525d6-5d83-4448-a99c-663f1c76330a",
+  "group": "future-energy-scenarios",
+  "archetype": "SCN",
+  "refresh": "adhoc",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "fes_regional_gsp_info",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SCN",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "fes_regional_demand_active_power",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SCN",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "fes_regional_storage_gt_1mw",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SCN",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "fes_regional_storage_lt_1mw",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SCN",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "fes_regional_dsr",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SCN",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "fes_regional_storage_gt_1mw_pre2023",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SCN",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "fes_regional_storage_lt_1mw_pre2023",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SCN",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "fes_regional_dg_gt_1mw",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SCN",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "fes_regional_dg_lt_1mw",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SCN",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "41fb4ca1-7b59-4fce-b480-b46682f346c9",
+      "name": "FES 2021 Grid Supply Point Info",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_regional_gsp_info",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_regional_gsp_info"
+      }
+    },
+    {
+      "id": "b954c63f-c108-4e71-9b43-b249d0d92a1b",
+      "name": "Regional Breakdown of 2021 FES: Demands from distributed storage sites greater than 1 MW",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_regional_storage_gt_1mw_pre2023",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_regional_storage_gt_1mw_pre2023"
+      }
+    },
+    {
+      "id": "f0db3dc8-4e8f-40e0-9def-58e0bca11e47",
+      "name": "Regional Breakdown of 2021 FES: Demands from distributed storage sites less than 1 MW",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_regional_storage_lt_1mw_pre2023",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_regional_storage_lt_1mw_pre2023"
+      }
+    },
+    {
+      "id": "e05c34ec-1a0b-496c-b098-e35d4f998dc9",
+      "name": "Regional Breakdown of 2021 FES: Distributed generation less than 1 MW",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_regional_dg_lt_1mw",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_regional_dg_lt_1mw"
+      }
+    },
+    {
+      "id": "fc6e9d6e-0995-447a-8819-2099c845ad7e",
+      "name": "Regional Breakdown of 2021 FES: Distributed generation greater than 1 MW",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_regional_dg_gt_1mw",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_regional_dg_gt_1mw"
+      }
+    },
+    {
+      "id": "180d9908-7c4a-4db7-b6f1-92067209854c",
+      "name": "Regional Breakdown of 2021 FES: Demand Side Response (DSR)",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_regional_dsr",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_regional_dsr"
+      }
+    },
+    {
+      "id": "3360c832-acc3-4656-8a38-f0bdf57bde88",
+      "name": "Regional Breakdown of 2021 FES: Demand (Active Power)",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_regional_demand_active_power",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_regional_demand_active_power"
+      }
+    },
+    {
+      "id": "000d08b9-12d9-4396-95f8-6b3677664836",
+      "name": "FES 2022 Grid Supply Point Info",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_regional_gsp_info",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_regional_gsp_info"
+      }
+    },
+    {
+      "id": "ae5e3faf-b264-478e-82a5-fe0eb3101bba",
+      "name": "Regional Breakdown of 2022 FES: Demands from distributed storage sites greater than 1 MW",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_regional_storage_gt_1mw_pre2023",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_regional_storage_gt_1mw_pre2023"
+      }
+    },
+    {
+      "id": "3b32009a-55cb-4493-9dd0-a1fdd61d5d28",
+      "name": "Regional Breakdown of 2022 FES: Demand Side Response (DSR)",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_regional_dsr",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_regional_dsr"
+      }
+    },
+    {
+      "id": "162bdb05-1d05-46f8-b3cd-55a86ef65b8e",
+      "name": "Regional Breakdown of 2022 FES: Distributed generation greater than 1 MW",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_regional_dg_gt_1mw",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_regional_dg_gt_1mw"
+      }
+    },
+    {
+      "id": "8cd8a80a-9c36-436c-9014-8666c77e95d7",
+      "name": "Regional Breakdown of 2022 FES: Distributed generation less than 1 MW",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_regional_dg_lt_1mw",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_regional_dg_lt_1mw"
+      }
+    },
+    {
+      "id": "08f1f7f3-0448-4e80-aeb6-0ef082d86e8f",
+      "name": "Regional Breakdown of 2022 FES: Demands from distributed storage sites less than 1 MW",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_regional_storage_lt_1mw_pre2023",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_regional_storage_lt_1mw_pre2023"
+      }
+    },
+    {
+      "id": "6a1d99c2-a3c5-4ae0-b66a-21e4c15a9ae6",
+      "name": "Regional Breakdown of 2022 FES: Demand (Active Power)",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_regional_demand_active_power",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_regional_demand_active_power"
+      }
+    },
+    {
+      "id": "a6138c38-d173-4040-b853-de659c660e38",
+      "name": "Regional Breakdown of 2023 FES: Demand Side Response (DSR)",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_regional_dsr",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_regional_dsr"
+      }
+    },
+    {
+      "id": "66d309b9-0202-48ad-a7dc-eeafd9f53a65",
+      "name": "Regional Breakdown of 2023 FES: Demand (Active Power)",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_regional_demand_active_power",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_regional_demand_active_power"
+      }
+    },
+    {
+      "id": "805e20e4-6a8b-4113-9d2d-09efa0a4bbb9",
+      "name": "FES 2023 Grid Supply Point Info",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_regional_gsp_info",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_regional_gsp_info"
+      }
+    },
+    {
+      "id": "0465e5a3-ff3a-4e95-ac66-f59afd54cfe3",
+      "name": "Regional Breakdown of 2023 FES: Demand from distributed storage sites greater than 1 MW",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_regional_storage_gt_1mw",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_regional_storage_gt_1mw"
+      }
+    },
+    {
+      "id": "86f90e3f-2a48-4bfc-80a9-9ff65c353d6e",
+      "name": "Regional Breakdown of 2023 FES: Demand from distributed storage sites less than 1 MW",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_regional_storage_lt_1mw",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_regional_storage_lt_1mw"
+      }
+    },
+    {
+      "id": "4b4ec273-69b0-4bcd-bd50-b777af6f1052",
+      "name": "Regional Breakdown of 2023 FES: Distributed generation less than 1 MW",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_regional_dg_lt_1mw",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_regional_dg_lt_1mw"
+      }
+    },
+    {
+      "id": "922a4355-ec87-4744-95ef-bdba58610f06",
+      "name": "Regional Breakdown of 2023 FES: Distributed generation greater than 1 MW",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_regional_dg_gt_1mw",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_regional_dg_gt_1mw"
+      }
+    },
+    {
+      "id": "7bd643c0-6aad-41ac-aa59-92b68992d9a4",
+      "name": "Regional Breakdown of 2024 FES: Demand (Active Power)",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_regional_demand_active_power",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_regional_demand_active_power"
+      }
+    },
+    {
+      "id": "21c2b09c-24ff-4837-a3b1-b6aea88f8124",
+      "name": "FES 2024 Grid Supply Point Info",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_regional_gsp_info",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_regional_gsp_info"
+      }
+    },
+    {
+      "id": "eba5fd0a-ea22-4c00-84c2-35260e328736",
+      "name": "Regional Breakdown of 2024 FES: Demand from distributed storage sites greater than 1 MW",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_regional_storage_gt_1mw",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_regional_storage_gt_1mw"
+      }
+    },
+    {
+      "id": "0a1fce9e-8711-4017-bdef-867c0ab040a1",
+      "name": "Regional Breakdown of 2024 FES: Demand from distributed storage sites less than 1 MW",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_regional_storage_lt_1mw",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_regional_storage_lt_1mw"
+      }
+    },
+    {
+      "id": "c50eb94e-2e6a-43c6-b72a-ed9ae590b88b",
+      "name": "Regional Breakdown of 2024 FES: Distributed generation greater than 1 MW",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_regional_dg_gt_1mw",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_regional_dg_gt_1mw"
+      }
+    },
+    {
+      "id": "31ad4fd0-f67e-47f6-89bc-1bebda19eb25",
+      "name": "Regional Breakdown of 2024 FES: Distributed generation less than 1 MW",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_regional_dg_lt_1mw",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_regional_dg_lt_1mw"
+      }
+    }
+  ]
+}

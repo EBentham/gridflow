@@ -1,0 +1,190 @@
+{
+  "package": "historic-gtma-grid-trade-master-agreement-trades-data",
+  "package_id": "8e511255-6cd7-41c0-868e-8d4d29bced0b",
+  "group": "trade-data",
+  "archetype": "EVT",
+  "refresh": "daily",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "gtma_trades_fy",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "gtma_trades_data",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "gtma_trades_data_pre",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "bde33bcf-efc6-4e4a-bc7c-452b7424ea45",
+      "name": "Historic GTMA Trades Data - Apr 2015 - March 2016",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "gtma_trades_data",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "gtma_trades_data"
+      }
+    },
+    {
+      "id": "b24d619b-f6ea-41e6-87ab-569960594d3f",
+      "name": "Historic GTMA Trades Data - Apr 2016 - March 2017",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "gtma_trades_data",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "gtma_trades_data"
+      }
+    },
+    {
+      "id": "6f2772a4-ac7a-4eb7-a8ee-59ca6a03e205",
+      "name": "Historic GTMA Trades Data - Apr 2017 - March 2018",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "gtma_trades_data",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "gtma_trades_data"
+      }
+    },
+    {
+      "id": "58f3079a-1440-4a70-b227-f4e661defee7",
+      "name": "Historic GTMA Trades Data - Apr 2018 - March 2019",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "gtma_trades_data",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "gtma_trades_data"
+      }
+    },
+    {
+      "id": "6a03c415-475f-4005-bf55-b9108291c511",
+      "name": "Historic GTMA Trades Data - Apr 2019 - March 2020",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "gtma_trades_data",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "gtma_trades_data"
+      }
+    },
+    {
+      "id": "8e14ae8e-2091-4abc-a2e6-a4b82e5519ab",
+      "name": "Historic GTMA Trades Data - Apr 2020 - March 2021",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "gtma_trades_data",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "gtma_trades_data"
+      }
+    },
+    {
+      "id": "8cf964b6-b94c-4d35-88f4-312834aa6e8c",
+      "name": "Historic GTMA Trades Data - Apr 2021 - Mar 2022 (Pre June 2021)",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "gtma_trades_data_pre",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "gtma_trades_data_pre"
+      }
+    },
+    {
+      "id": "11a2f532-a7ce-46f8-9d82-88b3289daa82",
+      "name": "Historic GTMA Trades FY 21-22",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "gtma_trades_fy",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "gtma_trades_fy"
+      }
+    },
+    {
+      "id": "83b1d432-f8b4-4393-a8fd-bcaeb6bd7620",
+      "name": "Historic GTMA Trades FY 22-23",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "gtma_trades_fy",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "gtma_trades_fy"
+      }
+    },
+    {
+      "id": "f659641a-668f-446c-92c5-72d387121330",
+      "name": "Historic GTMA Trades FY 23-24",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "gtma_trades_fy",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "gtma_trades_fy"
+      }
+    },
+    {
+      "id": "2d5bf30f-68ae-4340-a583-52e6af7fb7e8",
+      "name": "Historic GTMA Trades FY 24-25",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "gtma_trades_fy",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "gtma_trades_fy"
+      }
+    },
+    {
+      "id": "bd8a822f-b065-489c-bbdd-d3099b179f20",
+      "name": "Historic GTMA Trades FY 25-26",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "gtma_trades_fy",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "gtma_trades_fy"
+      }
+    },
+    {
+      "id": "e7a8abae-4e96-48b0-b9d7-54651da0cdb5",
+      "name": "Historic GTMA Trades FY 26-27",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "gtma_trades_fy",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "gtma_trades_fy"
+      }
+    }
+  ]
+}

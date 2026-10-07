@@ -1,0 +1,36 @@
+{
+  "package": "24-months-ahead-constraint-cost-forecast",
+  "package_id": "51bb8f5a-3c95-4f7f-9a72-3b36cb7f1dc0",
+  "group": "constraint-management",
+  "archetype": "FC",
+  "refresh": "monthly",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "constraint_cost_fc_24m",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "FC",
+      "refresh": "monthly",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "28b85d3f-a1cc-4bb9-80af-600f2cca266a",
+      "name": "24 Months Ahead Constraint Cost Forecast",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "constraint_cost_fc_24m",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "constraint_cost_fc_24m"
+      }
+    }
+  ]
+}

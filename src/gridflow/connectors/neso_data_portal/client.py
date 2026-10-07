@@ -49,29 +49,38 @@ import hashlib
 import ipaddress
 import json
 import logging
+import re
 import socket
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
-from time import monotonic
 from typing import TYPE_CHECKING, Any, ClassVar, final
 from uuid import uuid4
 
 import httpx
 
-from gridflow.connectors.base import BaseConnector, RawResponse, _make_ssl_context
+from gridflow.bronze.sanitize import sanitize_url
+from gridflow.connectors.base import BaseConnector, MemberEvent, RawResponse, _make_ssl_context
+from gridflow.connectors.neso_data_portal import captures as captures_module
+from gridflow.connectors.neso_data_portal import endpoints
+from gridflow.connectors.neso_data_portal import pacer as pacer_module
+from gridflow.connectors.neso_data_portal import registry as registry_module
 from gridflow.connectors.neso_data_portal.endpoints import (
     DATASETS,
     CkanDataset,
     build_action_url,
 )
+from gridflow.connectors.neso_data_portal.pacer import Lane, RunPacer
 from gridflow.connectors.registry import register_connector
-from gridflow.silver.csv_bronze import read_csv_bronze_body
+from gridflow.silver.csv_bronze import CsvBronzeError, read_csv_bronze_body
+from gridflow.storage.paths import PathBuilder
 from gridflow.utils.retry import RETRY_POLICY
 
 if TYPE_CHECKING:
-    from collections.abc import Sequence
+    from collections.abc import AsyncIterator, Sequence
+    from pathlib import Path
 
     from gridflow.config.settings import SourceConfig
+    from gridflow.connectors.neso_data_portal.endpoints import FamilySpec
 
 logger = logging.getLogger(__name__)
 
@@ -220,6 +229,15 @@ class NesoUnexpectedEncodingError(NesoDataPortalError):
 
 class NesoTruncatedBodyError(NesoDataPortalError):
     """The transfer ended early, or fell short of a declared ``Content-Length``."""
+
+
+class NesoUnexpectedBodyError(NesoDataPortalError):
+    """A member body's signature is not one its CKAN format admits (ADR-033 P-7).
+
+    An HTML interstitial or a JSON error envelope served under a ``PDF`` or
+    ``CSV`` resource would otherwise reach immutable bronze under a trusted
+    extension.
+    """
 
 
 class NesoFutureWindowError(NesoDataPortalError):
@@ -499,22 +517,59 @@ class NesoDataPortalConnector(BaseConnector):
     chunk loop.
     """
 
-    def __init__(self, config: SourceConfig) -> None:
+    def __init__(self, config: SourceConfig, *, pacer: RunPacer | None = None) -> None:
+        """Build an unentered connector.
+
+        Args:
+            config: The source configuration.
+            pacer: The pacer every send is admitted by. Defaults to the
+                process-wide, unbound :func:`~.pacer.shared_pacer`, so every
+                instance in the process shares one interval (ADR-033 P-12).
+                :meth:`bind_data_dir` swaps in the bound one.
+        """
         super().__init__(config)
-        self._rate_limit_lock: asyncio.Lock | None = None
-        self._last_request_at: float = 0.0
+        self._pacer: RunPacer = pacer if pacer is not None else pacer_module.shared_pacer(config)
         self._issued_send_tokens: set[str] = set()
+        self._entered_once = False
+        self._bronze_root: Path | None = None
+
+    def bind_data_dir(self, data_dir: Path) -> None:
+        """Bind this connector to a data root before its first send (ADR-033 P-5).
+
+        Runs P-4's runtime freeze pin (every bronze directory of this source is
+        a registry key), then swaps in the process-wide pacer bound to
+        ``<data_dir>/state/neso_data_portal/pacer.lock`` (P-12), and records the
+        bronze root the capture index reads.
+
+        Raises:
+            RuntimeError: Called after this instance was entered: a send may
+                already have escaped the bound pacer and its lock.
+            RegistryFreezeError: A bronze directory is not a registry key.
+            NesoPacerBusyError: Another bound NESO process holds the lock.
+        """
+        if self._entered_once:
+            raise RuntimeError(
+                "bind_data_dir must be called before the connector is first entered; "
+                "an earlier session may have sent outside the bound pacer"
+            )
+        paths = PathBuilder(data_dir)
+        captures_module.assert_bronze_dirs_registered(data_dir, registry_module.load_registry())
+        self._pacer = pacer_module.shared_pacer(self.config, paths.state_dir(self.source_name))
+        self._bronze_root = paths.bronze_source_dir(self.source_name)
 
     async def __aenter__(self) -> NesoDataPortalConnector:
-        """Build the client with redirects DISABLED and initialise pacing state.
+        """Build the client with redirects DISABLED.
 
         ``follow_redirects=False`` at the client level is D-08's first half:
         redirects are handled manually, one validated hop at a time, so each hop
         is a separate throttled send that has passed the target policy.
+
+        Pacing state is NOT reset here (ADR-033 P-12): it lives in the shared
+        pacer, so a dataset handoff or a recreated connector cannot shorten the
+        interval.
         """
+        self._entered_once = True
         self._semaphore = asyncio.Semaphore(self.config.rate_limit_per_second)
-        self._rate_limit_lock = asyncio.Lock()
-        self._last_request_at = 0.0
         self._issued_send_tokens = set()
         self._client = httpx.AsyncClient(
             base_url=self.config.base_url,
@@ -626,30 +681,17 @@ class NesoDataPortalConnector(BaseConnector):
     async def _throttle_request(self) -> None:
         """Pace outbound sends to the vendor's published 1 req/s guidance.
 
-        Copied from ``connectors/entsoe/client.py:411-426`` — **copied, not
-        hoisted into ``BaseConnector``**, because hoisting would change the
-        request pacing of all six existing sources for the benefit of one.
-        ``rate_limit_per_second: 1`` in YAML then yields both the inherited
-        ``Semaphore(1)`` (a concurrency cap despite its name) and a real 1.0 s
-        minimum interval, which is the part that honours the guidance.
+        Admission is the shared :class:`~.pacer.RunPacer`'s CKAN lane
+        (ADR-033 P-12), so the interval holds across connector instances,
+        dataset handoffs and, once bound, processes. Not hoisted into
+        ``BaseConnector``: that would change the pacing of every other source.
 
         Gates **every** outbound send without exception: each CKAN action call,
         the redirector request, each redirect hop, and each retry attempt —
         because it sits inside :meth:`_send`, which is what ``RETRY_POLICY``
-        decorates.
+        decorates, directly before the transport call.
         """
-        if self.config.rate_limit_per_second <= 0:
-            return
-        lock = self._rate_limit_lock
-        if lock is None:
-            return
-
-        min_interval = 1.0 / self.config.rate_limit_per_second
-        async with lock:
-            elapsed = monotonic() - self._last_request_at
-            if elapsed < min_interval:
-                await asyncio.sleep(min_interval - elapsed)
-            self._last_request_at = monotonic()
+        await self._pacer.acquire(Lane.CKAN)
 
     async def _assert_safe_target(self, url: SafeUrl) -> None:
         """Raise unless ``url`` satisfies D-08's target policy.
@@ -729,8 +771,8 @@ class NesoDataPortalConnector(BaseConnector):
         return sent_to.join(location)
 
     async def _read_capped_body(
-        self, response: httpx.Response, spec: CkanDataset, target: SafeUrl
-    ) -> bytes:
+        self, response: httpx.Response, max_bytes: int, target: SafeUrl
+    ) -> tuple[bytes, int | None]:
         """Read a streamed body under a hard size cap, and prove it is complete.
 
         In D-39 §4's order, which is not arbitrary: a declared oversize is
@@ -743,10 +785,11 @@ class NesoDataPortalConnector(BaseConnector):
 
         Args:
             response: An open, streamed 2xx response.
-            spec: The dataset's contract, for ``max_download_bytes``.
+            max_bytes: The dataset's or family's ``max_download_bytes``.
 
         Returns:
-            The complete raw body.
+            The complete raw body, and the response's well-formed
+            ``Content-Length`` (``None`` when absent or unparseable).
 
         Raises:
             NesoResponseTooLargeError: A declared length above the cap, or a
@@ -760,10 +803,10 @@ class NesoDataPortalConnector(BaseConnector):
                 ``Content-Length``.
         """
         declared = _declared_content_length(response)
-        if declared is not None and declared > spec.max_download_bytes:
+        if declared is not None and declared > max_bytes:
             raise NesoResponseTooLargeError(
                 f"refusing {target}: declared Content-Length {declared} B "
-                f"exceeds the {spec.max_download_bytes} B cap"
+                f"exceeds the {max_bytes} B cap"
             )
 
         encoding = response.headers.get("content-encoding", "").strip().lower()
@@ -778,10 +821,9 @@ class NesoDataPortalConnector(BaseConnector):
         try:
             async for chunk in response.aiter_raw():
                 total += len(chunk)
-                if total > spec.max_download_bytes:
+                if total > max_bytes:
                     raise NesoResponseTooLargeError(
-                        f"aborting {target}: body exceeded the "
-                        f"{spec.max_download_bytes} B cap after {total} B"
+                        f"aborting {target}: body exceeded the {max_bytes} B cap after {total} B"
                     )
                 chunks.append(chunk)
         except httpx.RemoteProtocolError as exc:
@@ -793,7 +835,7 @@ class NesoDataPortalConnector(BaseConnector):
             raise NesoTruncatedBodyError(
                 f"{target} declared Content-Length {declared} B but delivered {total} B"
             )
-        return b"".join(chunks)
+        return b"".join(chunks), declared
 
     # ------------------------------------------------------------------
     # CKAN two-stage fetch
@@ -1161,9 +1203,9 @@ class NesoDataPortalConnector(BaseConnector):
         self,
         resource: dict[str, Any],
         redirector: SafeUrl,
-        spec: CkanDataset,
+        max_bytes: int,
         dataset: str,
-    ) -> tuple[bytes, str, int]:
+    ) -> tuple[bytes, str, int, int | None]:
         """Download one resource through its redirector, validating every hop.
 
         Each iteration builds a **fresh** GET, which regenerates ``Host`` from
@@ -1173,15 +1215,18 @@ class NesoDataPortalConnector(BaseConnector):
         is a chunked ``text/html`` payload nobody reads, and without an explicit
         close a streamed 3xx leaks its connection.
 
+        Admission is the caller's: the legacy path applies
+        :meth:`_assert_admissible_csv`, the member path :func:`_admit_member_body`.
+
         Returns:
-            The body bytes, the **redirector** URL and the OBSERVED final HTTP
-            status — never the presigned
-            target, which carries ``X-Amz-Signature`` and a 7-day expiry and
-            must not reach an irreproducible bronze sidecar (D-11).
+            The body bytes, the **redirector** URL, the OBSERVED final HTTP
+            status — never the presigned target, which carries
+            ``X-Amz-Signature`` and a 7-day expiry and must not reach an
+            irreproducible bronze sidecar (D-11) — and the final response's
+            declared ``Content-Length``.
 
         Raises:
             NesoRedirectLoopError: The chain exceeded :data:`_MAX_REDIRECT_HOPS`.
-            NesoEmptyResourceError: The body carried no data row (D-14).
         """
         if self._client is None:
             raise RuntimeError("Connector not initialized. Use 'async with' context manager.")
@@ -1193,6 +1238,7 @@ class NesoDataPortalConnector(BaseConnector):
         request = self._client.build_request("GET", target.unsafe_raw(), headers=_FILE_LEG_HEADERS)
         body: bytes | None = None
         final_status: int | None = None
+        declared: int | None = None
         for _ in range(_MAX_REDIRECT_HOPS + 1):
             response = await self._send(request, target, stream=True)
             try:
@@ -1217,7 +1263,7 @@ class NesoDataPortalConnector(BaseConnector):
                         "alternative representation cannot be admitted to bronze"
                     )
                 final_status = response.status_code
-                body = await self._read_capped_body(response, spec, target)
+                body, declared = await self._read_capped_body(response, max_bytes, target)
                 break
             finally:
                 await response.aclose()
@@ -1227,8 +1273,7 @@ class NesoDataPortalConnector(BaseConnector):
                 f"{dataset}: {redirector} exceeded {_MAX_REDIRECT_HOPS} redirect hops"
             )
 
-        self._assert_admissible_csv(body, spec, dataset, str(redirector))
-        return body, str(redirector), final_status
+        return body, str(redirector), final_status, declared
 
     def _assert_admissible_csv(
         self,
@@ -1409,6 +1454,11 @@ class NesoDataPortalConnector(BaseConnector):
         """
         spec = DATASETS.get(dataset)
         if spec is None:
+            if dataset in endpoints.FAMILIES:
+                raise ValueError(
+                    f"neso_data_portal dataset {dataset!r} is captured through iter_members "
+                    "(bounded) only; fetch() serves the three legacy keys"
+                )
             raise ValueError(
                 f"unknown neso_data_portal dataset {dataset!r}; available: {sorted(DATASETS)}"
             )
@@ -1418,9 +1468,10 @@ class NesoDataPortalConnector(BaseConnector):
 
         package_payload = await self._package_show(spec.package)
         resource, redirector = self._select_resource(package_payload, spec, dataset)
-        body, redirector_url, http_status = await self._download_resource(
-            resource, redirector, spec, dataset
+        body, redirector_url, http_status, _declared = await self._download_resource(
+            resource, redirector, spec.max_download_bytes, dataset
         )
+        self._assert_admissible_csv(body, spec, dataset, redirector_url)
 
         return [
             RawResponse(
@@ -1434,7 +1485,7 @@ class NesoDataPortalConnector(BaseConnector):
                 source=self.source_name,
                 dataset=dataset,
                 request_url=redirector_url,
-                request_params=_provenance_params(spec, package_payload, resource, body),
+                request_params=_provenance_params(spec.package, package_payload, resource, body),
                 api_version="3",
                 # The status actually observed on the final leg, never a
                 # constant: this is written to the immutable bronze sidecar,
@@ -1445,9 +1496,487 @@ class NesoDataPortalConnector(BaseConnector):
             )
         ]
 
+    # ------------------------------------------------------------------
+    # Member capture (ADR-033 P-5..P-8)
+    # ------------------------------------------------------------------
+
+    async def iter_members(
+        self, dataset: str, start: datetime, end: datetime
+    ) -> AsyncIterator[MemberEvent]:
+        """Capture one family, one member at a time (ADR-033 P-5).
+
+        One ``package_show``, then selection (P-6), then the newest-capture
+        index (P-10), then per member in payload order: a ``datastore`` member
+        is ``deferred`` (unit D's leg; nothing is sent), a member whose newest
+        usable capture carries the live ``last_modified`` is ``unchanged``,
+        and every other member is downloaded, admitted (P-7) and yielded as
+        ``captured``. A per-member failure is a ``failed`` event and the family
+        continues. Only one body is alive at a time: the consumer publishes
+        each capture before the next download starts.
+
+        Args:
+            dataset: A registry family key.
+            start: Window start, tz-aware UTC (D-34).
+            end: Window end, tz-aware UTC; ``end.date()`` is the partition.
+
+        Yields:
+            One :class:`MemberEvent` per member, plus one ``absent`` event per
+            listed member the live package no longer serves.
+
+        Raises:
+            ValueError: Unknown family, or a malformed window.
+            RuntimeError: :meth:`bind_data_dir` was not called.
+            NesoResourceSelectionError: No member at all, or a listed member
+                matched twice (definitive-absent, ADR-023).
+        """
+        family = endpoints.FAMILIES.get(dataset)
+        if family is None:
+            raise ValueError(f"unknown neso_data_portal dataset {dataset!r}")
+        if self._bronze_root is None:
+            raise RuntimeError(
+                "iter_members needs bind_data_dir() first: the unchanged-member skip reads "
+                "the bound bronze tree"
+            )
+        self.last_skipped_units = 0
+        self._assert_window_admissible(dataset, start, end)
+
+        package_payload = await self._package_show(family.package)
+        live = package_payload.get("resources")
+        if not isinstance(live, list):
+            raise NesoResourceSelectionError(
+                f"{dataset}: CKAN package {family.package!r} carried no resources list"
+            )
+        registry = registry_module.load_registry()
+        self._warn_unassigned(family.package, live)
+
+        legacy_spec = DATASETS.get(dataset) if family.legacy else None
+        absent: list[MemberEvent] = []
+        if legacy_spec is not None:
+            resource, _redirector = self._select_resource(package_payload, legacy_spec, dataset)
+            members = [resource]
+        else:
+            members, absent = _select_members(live, family, registry, dataset)
+
+        scan = captures_module.scan_dataset(self._bronze_root / dataset, registry)
+        newest = captures_module.newest_by_resource(scan.captures)
+        del scan
+
+        for event in absent:
+            logger.warning("neso_data_portal/%s: %s", dataset, event.detail)
+            yield event
+
+        for resource in members:
+            resource_id = str(resource.get("id", ""))
+            if resource.get("url_type") == "datastore":
+                yield MemberEvent(
+                    resource_id, "deferred", detail="datastore member; captured by the dump leg"
+                )
+                continue
+            capture = newest.get(resource_id)
+            live_modified = resource.get("last_modified")
+            if (
+                capture is not None
+                and isinstance(live_modified, str)
+                and live_modified
+                and capture.ckan_last_modified == live_modified
+            ):
+                yield MemberEvent(
+                    resource_id,
+                    "unchanged",
+                    detail=f"newest capture {capture.sidecar.name} carries last_modified "
+                    f"{live_modified}",
+                )
+                continue
+            try:
+                response, extension = await self._capture_member(
+                    package_payload, resource, family, legacy_spec, dataset, end
+                )
+            except (NesoDataPortalError, CsvBronzeError, httpx.HTTPError, OSError) as exc:
+                yield MemberEvent(resource_id, "failed", detail=_safe_detail(exc))
+                continue
+            event = MemberEvent(resource_id, "captured", response, extension)
+            del response
+            yield event
+            del event
+
+    async def _capture_member(
+        self,
+        package_payload: dict[str, Any],
+        resource: dict[str, Any],
+        family: FamilySpec,
+        legacy_spec: CkanDataset | None,
+        dataset: str,
+        end: datetime,
+    ) -> tuple[RawResponse, str]:
+        """Download and admit one upload member; return its response and extension."""
+        redirector = self._assert_redirector_url(package_payload, resource, dataset)
+        max_bytes = (
+            legacy_spec.max_download_bytes if legacy_spec is not None else family.max_download_bytes
+        )
+        body, redirector_url, http_status, declared = await self._download_resource(
+            resource, redirector, max_bytes, dataset
+        )
+        if legacy_spec is not None:
+            self._assert_admissible_csv(body, legacy_spec, dataset, redirector_url)
+            extension, empty_capture = "csv", False
+        else:
+            extension, empty_capture = _admit_member_body(
+                body,
+                declared_format=str(resource.get("format", "")),
+                filename=_resource_filename(resource),
+                empty_allowed=family.empty_allowed,
+                label=f"{dataset}: {redirector_url}",
+            )
+        request_params = _provenance_params(family.package, package_payload, resource, body)
+        request_params.update(
+            {
+                "capture_family": dataset,
+                "url_type": str(resource.get("url_type", "")),
+                "empty_capture": empty_capture,
+                "declared_content_length": declared,
+            }
+        )
+        response = RawResponse(
+            body=body,
+            content_type=_CONTENT_TYPES[extension],
+            source=self.source_name,
+            dataset=dataset,
+            request_url=redirector_url,
+            request_params=request_params,
+            api_version="3",
+            http_status=http_status,
+            data_date=end.date(),
+        )
+        return response, extension
+
+    def _warn_unassigned(self, package: str, live: list[Any]) -> None:
+        """Log, once per process, each live resource no family of ``package`` claims."""
+        families = [spec for spec in endpoints.FAMILIES.values() if spec.package == package]
+        for item in live:
+            if not isinstance(item, dict):
+                continue
+            name, fmt = str(item.get("name", "")), str(item.get("format", ""))
+            key = (package, str(item.get("id", "")))
+            if key in _WARNED_UNASSIGNED or any(spec.selects(name, fmt) for spec in families):
+                continue
+            _WARNED_UNASSIGNED.add(key)
+            logger.warning(
+                "neso_data_portal: resource %s %r (%s) in package %r is unassigned and was "
+                "not fetched; a registry commit is needed to file it under a family",
+                key[1],
+                name,
+                fmt,
+                package,
+            )
+
     def list_datasets(self) -> list[str]:
-        """Return the dataset keys this connector serves."""
-        return list(DATASETS)
+        """Return every registry family key this connector serves (P-3)."""
+        return list(endpoints.FAMILIES)
+
+
+# Every (package, resource id) already warned as unassigned in this process (P-6).
+_WARNED_UNASSIGNED: set[tuple[str, str]] = set()
+
+_CONTENT_TYPES: dict[str, str] = {
+    "csv": "text/csv",
+    "txt": "text/plain",
+    "xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "xlsm": "application/vnd.ms-excel.sheet.macroEnabled.12",
+    "xls": "application/vnd.ms-excel",
+    "zip": "application/zip",
+    "docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "pptx": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+    "doc": "application/msword",
+    "ppt": "application/vnd.ms-powerpoint",
+    "pdf": "application/pdf",
+    "png": "image/png",
+    "gpkg": "application/geopackage+sqlite3",
+    "geojson": "application/geo+json",
+}
+
+# P-7: the body signature classes, what each CKAN format admits, the extensions
+# each class may carry, and the per-format default when the filename's suffix
+# is not one of them.
+_OLE2_MAGIC = b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1"
+_GEOJSON_TYPES = frozenset(
+    {
+        "FeatureCollection",
+        "Feature",
+        "Point",
+        "MultiPoint",
+        "LineString",
+        "MultiLineString",
+        "Polygon",
+        "MultiPolygon",
+        "GeometryCollection",
+    }
+)
+_ALLOWED_CLASSES: dict[str, frozenset[str]] = {
+    "CSV": frozenset({"TEXT", "PK"}),
+    "XLSX": frozenset({"PK"}),
+    "XLSM": frozenset({"PK"}),
+    "ZIP": frozenset({"PK"}),
+    "DOC": frozenset({"PK", "OLE2"}),
+    "PPT": frozenset({"PK", "OLE2"}),
+    "PDF": frozenset({"PDF"}),
+    "PNG": frozenset({"PNG"}),
+    "GEOJSON": frozenset({"GEOJSON"}),
+    "GPKG": frozenset({"SQLITE"}),
+    "TXT": frozenset({"TEXT"}),
+}
+_CLASS_EXTENSIONS: dict[str, frozenset[str]] = {
+    "PK": frozenset({"xlsx", "xlsm", "zip", "docx", "pptx"}),
+    "OLE2": frozenset({"doc", "ppt", "xls"}),
+    "PDF": frozenset({"pdf"}),
+    "PNG": frozenset({"png"}),
+    "SQLITE": frozenset({"gpkg"}),
+    "GEOJSON": frozenset({"geojson"}),
+    "TEXT": frozenset({"csv", "txt"}),
+}
+_DEFAULT_EXTENSIONS: dict[tuple[str, str], str] = {
+    ("CSV", "TEXT"): "csv",
+    ("CSV", "PK"): "zip",
+    ("XLSX", "PK"): "xlsx",
+    ("XLSM", "PK"): "xlsm",
+    ("ZIP", "PK"): "zip",
+    ("DOC", "PK"): "docx",
+    ("DOC", "OLE2"): "doc",
+    ("PPT", "PK"): "pptx",
+    ("PPT", "OLE2"): "ppt",
+    ("PDF", "PDF"): "pdf",
+    ("PNG", "PNG"): "png",
+    ("GPKG", "SQLITE"): "gpkg",
+    ("GEOJSON", "GEOJSON"): "geojson",
+    ("TXT", "TEXT"): "txt",
+}
+_UTF8_BOM = b"\xef\xbb\xbf"
+_CSV_STRUCTURE = re.compile(rb'[,"\r\n]')
+_DATA_BYTE = re.compile(rb'[^ \t\r\n\x0b\x0c,"]')
+
+
+def _signature_class(body: bytes) -> str | None:
+    """Classify ``body`` by its leading bytes (P-7); ``None`` if it is none of them."""
+    if body.startswith(b"PK\x03\x04") or (len(body) == 22 and body.startswith(b"PK\x05\x06")):
+        return "PK"
+    if body.startswith(b"%PDF-"):
+        return "PDF"
+    if body.startswith(b"\x89PNG\r\n\x1a\n"):
+        return "PNG"
+    if body.startswith(_OLE2_MAGIC):
+        return "OLE2"
+    if body.startswith(b"SQLite format 3\x00"):
+        return "SQLITE"
+    if _text_head(body).startswith(b"{") and _is_geojson(body):
+        return "GEOJSON"
+    if b"\x00" not in body[:8192]:
+        return "TEXT"
+    return None
+
+
+def _text_head(body: bytes) -> bytes:
+    """The body after a UTF-8 BOM and leading ASCII whitespace (first 64 bytes)."""
+    head = body[:4096]
+    if head.startswith(_UTF8_BOM):
+        head = head[len(_UTF8_BOM) :]
+    return head.lstrip()[:64]
+
+
+def _is_geojson(body: bytes) -> bool:
+    try:
+        payload = json.loads(body.removeprefix(_UTF8_BOM).decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        return False
+    return isinstance(payload, dict) and payload.get("type") in _GEOJSON_TYPES
+
+
+def _is_json_array(body: bytes) -> bool:
+    """Whether ``body`` parses as a JSON array (an error envelope, not CSV).
+
+    Parsed rather than keyed on a leading ``[`` so a CSV whose header starts
+    with ``[`` (``[Date],[MW]``) is still admitted (P-7 refuses only
+    signature-incompatible bodies). Non-JSON fails at the first bad token.
+    """
+    try:
+        payload = json.loads(body.removeprefix(_UTF8_BOM).decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        return False
+    return isinstance(payload, list)
+
+
+def _header_end(body: bytes, start: int) -> int:
+    """Byte offset just past the first CSV record of ``body[start:]`` (P-7).
+
+    Scans the bytes with CSV's own record grammar rather than a line split, so
+    no terminator form can misplace the boundary: an unquoted CR, LF or CRLF
+    ends the record, and a ``"`` opens a quoted field only at a field start
+    (as the stdlib reader treats it), inside which terminators and doubled
+    ``""`` are field text. The delimiting bytes are ASCII in UTF-8 and cp1252
+    alike, so nothing is decoded or copied (the A9 memory gate) and nothing
+    can fail to parse. An unterminated quote runs to the end of the body.
+    """
+    size = len(body)
+    position = field_start = start
+    while True:
+        match = _CSV_STRUCTURE.search(body, position)
+        if match is None:
+            return size
+        at = match.start()
+        token = body[at : at + 1]
+        if token == b",":
+            position = field_start = at + 1
+        elif token == b'"':
+            position = at + 1
+            if at != field_start:
+                continue
+            while True:
+                close = body.find(b'"', position)
+                if close < 0:
+                    return size
+                if body[close + 1 : close + 2] == b'"':
+                    position = close + 2
+                    continue
+                position = close + 1
+                break
+        else:
+            return at + 1
+
+
+def _is_header_only(body: bytes) -> bool:
+    """A CSV body with a header record and nothing data-bearing after it (P-7).
+
+    The header is the first CSV record, bounded by :func:`_header_end` under
+    every terminator CSV accepts and with quoted terminators kept inside it
+    (REVIEW-DIFF-1 #2, REVIEW-DIFF-2). The remainder keeps P-7's rule: only
+    ASCII whitespace, ``,`` and ``"``. There is no parse step that can fail,
+    so no body is admitted as non-empty for want of a parse. Residual: an
+    unterminated opening quote makes the whole body one record, so it reads as
+    header-only: refused where empty captures are forbidden, captured and
+    marked empty in an ``empty_allowed`` family.
+    """
+    start = len(_UTF8_BOM) if body.startswith(_UTF8_BOM) else 0
+    return _DATA_BYTE.search(body, _header_end(body, start)) is None
+
+
+def _resource_filename(resource: dict[str, Any]) -> str:
+    url = str(resource.get("url", ""))
+    return url.rstrip("/").rsplit("/", 1)[-1] if url else ""
+
+
+def _admit_member_body(
+    body: bytes,
+    *,
+    declared_format: str,
+    filename: str,
+    empty_allowed: bool,
+    label: str,
+) -> tuple[str, bool]:
+    """Admit one member body by signature (ADR-033 P-7); return ``(extension, empty)``.
+
+    Encoding is deliberately not checked: strict UTF-8 is unit E's to measure,
+    and refusing a cp1252 file would lose a capture.
+
+    Raises:
+        NesoEmptyResourceError: A zero-byte body, or a header-only CSV in a
+            family that does not allow empty captures.
+        NesoUnexpectedBodyError: The signature is not one the format admits, or
+            a text body is markup or a JSON envelope.
+    """
+    fmt = declared_format.upper()
+    if not body:
+        raise NesoEmptyResourceError(f"{label} returned an empty body; nothing to capture")
+    signature = _signature_class(body)
+    allowed = _ALLOWED_CLASSES.get(fmt, frozenset())
+    if signature is None or signature not in allowed:
+        raise NesoUnexpectedBodyError(
+            f"{label}: a {fmt or '<no format>'} resource returned a body whose signature is "
+            f"{signature or 'binary/unknown'}; admitted classes are {sorted(allowed)}"
+        )
+    head = _text_head(body)
+    if (
+        fmt == "CSV"
+        and signature == "TEXT"
+        and (head[:1] in (b"<", b"{") or (head[:1] == b"[" and _is_json_array(body)))
+    ):
+        raise NesoUnexpectedBodyError(
+            f"{label}: a CSV resource returned markup or a JSON envelope, not CSV"
+        )
+    if fmt == "TXT" and head[:1] == b"<":
+        raise NesoUnexpectedBodyError(f"{label}: a TXT resource returned markup")
+
+    suffix = filename.rsplit(".", 1)[-1].lower() if "." in filename else ""
+    extension = (
+        suffix if suffix in _CLASS_EXTENSIONS[signature] else _DEFAULT_EXTENSIONS[(fmt, signature)]
+    )
+
+    empty = False
+    if fmt == "CSV" and signature == "TEXT" and _is_header_only(body):
+        if not empty_allowed:
+            raise NesoEmptyResourceError(
+                f"{label} returned a header-only body with no data rows, and its family "
+                "does not allow empty captures"
+            )
+        empty = True
+    return extension, empty
+
+
+def _select_members(
+    live: list[Any],
+    family: FamilySpec,
+    registry: Any,
+    dataset: str,
+) -> tuple[list[dict[str, Any]], list[MemberEvent]]:
+    """P-6: the family's live members in payload order, and its absent listed members.
+
+    Raises:
+        NesoResourceSelectionError: No live member at all, or one listed
+            ``(name, format)`` matched by two live resources.
+    """
+    members = [
+        item
+        for item in live
+        if isinstance(item, dict)
+        and family.selects(str(item.get("name", "")), str(item.get("format", "")))
+    ]
+    matched: dict[tuple[str, str], int] = {}
+    for item in members:
+        pair = (str(item.get("name", "")), str(item.get("format", "")).upper())
+        if pair in family.names:
+            matched[pair] = matched.get(pair, 0) + 1
+    ambiguous = sorted(pair for pair, count in matched.items() if count > 1)
+    if ambiguous:
+        raise NesoResourceSelectionError(
+            f"{dataset}: listed member(s) {ambiguous!r} match more than one live resource in "
+            f"CKAN package {family.package!r}; refusing to guess"
+        )
+    if not members:
+        actual = [str(item.get("name")) for item in live if isinstance(item, dict)]
+        raise NesoResourceSelectionError(
+            f"{dataset}: no live resource in CKAN package {family.package!r} is a member; "
+            f"the package returned {actual!r}"
+        )
+    package_entry, _family_entry = registry.families[dataset]
+    seeded = {
+        (resource.name, resource.format): resource.id
+        for resource in package_entry.resources
+        if resource.family == dataset
+    }
+    absent = [
+        MemberEvent(
+            seeded.get(pair, ""),
+            "absent",
+            detail=f"listed member {pair[0]!r} ({pair[1]}) is not in the live package",
+        )
+        for pair in sorted(family.names)
+        if pair not in matched
+    ]
+    return members, absent
+
+
+def _safe_detail(exc: BaseException) -> str:
+    """One credential-free line naming ``exc`` (connector errors render SafeUrl)."""
+    message = " ".join(str(exc).split())
+    text = f"{type(exc).__name__}: {message}" if message else type(exc).__name__
+    return sanitize_url(text, value_chars=r"[^&\s)]")
 
 
 def _declared_content_length(response: httpx.Response) -> int | None:
@@ -1462,7 +1991,7 @@ def _declared_content_length(response: httpx.Response) -> int | None:
 
 
 def _provenance_params(
-    spec: CkanDataset,
+    package: str,
     package_payload: dict[str, Any],
     resource: dict[str, Any],
     body: bytes,
@@ -1478,7 +2007,7 @@ def _provenance_params(
     url = str(resource.get("url", ""))
     filename = url.rstrip("/").rsplit("/", 1)[-1] if url else ""
     return {
-        "package": spec.package,
+        "package": package,
         "package_id": str(package_payload.get("id", "")),
         "resource_id": str(resource.get("id", "")),
         "resource_name": str(resource.get("name", "")),

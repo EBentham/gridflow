@@ -1,0 +1,2082 @@
+{
+  "package": "brit-ned",
+  "package_id": "1a9fa49a-dea1-4468-9a8c-7800db9d3ff4",
+  "group": "interconnectors",
+  "archetype": "FC",
+  "refresh": "weekly",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "brit_ned",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "FC",
+      "refresh": "weekly",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "10432bfd-2102-4eda-8c6d-bed2a4df676b",
+      "name": "BritNed DA & ID Weekly ITLs 20221012",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "c5282013-ee05-4da6-ad46-ff59ff443bfe",
+      "name": "BritNed DA & ID Weekly ITLs 20221019",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "2248834b-c822-494a-8f1c-ee3cf04705c7",
+      "name": "BritNed DA & ID Weekly ITLs 20221026",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "eebd1509-b977-43cb-a37e-71ec597a71f0",
+      "name": "BritNed DA & ID Weekly ITLs 20221102",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "ecda7923-78d7-4865-af9e-0121ebf5c2fb",
+      "name": "BritNed DA & ID Weekly ITLs 20221109",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "2a4bc449-649d-4d28-b41e-616fc9fa9215",
+      "name": "BritNed DA & ID Weekly ITLs 20221116",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "b51a8d55-62ff-4a47-bc14-a238b3048a25",
+      "name": "BritNed DA & ID Weekly ITLs 20221123",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "aea7e92f-1e5a-48fb-9215-6716f4aab4e1",
+      "name": "BritNed DA & ID Weekly ITLs 20221130",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "87ae5355-b450-453a-a8b2-2930cf0f2246",
+      "name": "BritNed DA & ID Weekly ITLs 20221207",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "b9e7f19e-07dc-43af-a67a-68e9588616ee",
+      "name": "BritNed DA & ID Weekly ITLs 20221214",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "171662b8-4ae0-44ea-8ffa-15d64e0f8562",
+      "name": "BritNed DA & ID Weekly ITLs 20221221",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "6245d8d5-74a1-43bd-97b2-95d4b3d391c5",
+      "name": "BritNed DA & ID Weekly ITLs 20221228",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "9206c32f-35cb-447f-aec9-8ebf25a4e704",
+      "name": "BritNed DA & ID Weekly ITLs 20230104",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "ddd2abc9-3ef4-4859-bd28-b434bcc7f6ee",
+      "name": "BritNed DA & ID Weekly ITLs 20230111",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "c6782dcf-1f83-4a21-8b5f-404f787a940d",
+      "name": "BritNed DA & ID Weekly ITLs 20230118",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "8be33510-58f8-4a07-8128-827c6439552a",
+      "name": "BritNed DA & ID Weekly ITLs 20230125",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "c36f5f3d-c396-4c77-91e0-b1b7b40eec3e",
+      "name": "BritNed DA & ID Weekly ITLs 20230201",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "d6f1a8e4-1ea9-423c-a5a6-c20f33c59c06",
+      "name": "BritNed DA & ID Weekly ITLs 20230208",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "885e6cb7-a000-48cc-a4b8-1028f0f4688e",
+      "name": "BritNed DA & ID Weekly ITLs 20230215",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "d2f2f4f1-30cd-4261-8797-cd0391b2543e",
+      "name": "BritNed DA & ID Weekly ITLs 20230222",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "3363713c-bae7-4e79-84e3-45bf48ac6410",
+      "name": "BritNed DA & ID Weekly ITLs 20230301",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "8a53a413-22db-439c-ad64-7673871edce5",
+      "name": "BritNed DA & ID Weekly ITLs 20230308",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "16c97f2d-26ec-47a0-b4fd-f8cc50d67d58",
+      "name": "BritNed DA & ID Weekly ITLs 20230315",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "54df8302-2da2-42f9-b5ba-97b4d9d117d5",
+      "name": "BritNed DA & ID Weekly ITLs 20230322",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "5580a4a3-3ab7-4a55-9c12-95f59668b489",
+      "name": "BritNed DA & ID Weekly ITLs 20230329",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "bdbaada6-309f-4888-8c99-b3f14bd97eb6",
+      "name": "BritNed DA & ID Weekly ITLs 20230405",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "d1355935-d61d-47ff-8d84-04f2fd903acf",
+      "name": "BritNed DA & ID Weekly ITLs 20230412",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "b0738ef5-e0e6-4f93-a303-4b45f08a18ea",
+      "name": "BritNed DA & ID Weekly ITLs 20230419",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "2cd81edd-7d8f-462c-a8e9-14dc8beff357",
+      "name": "BritNed DA & ID Weekly ITLs 20230426",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "333b4f84-e23f-46c5-b47f-b2827d54353f",
+      "name": "BritNed DA & ID Weekly ITLs 20230503",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "bd268477-8923-49fc-9d61-d41c164eb8a0",
+      "name": "BritNed DA & ID Weekly ITLs 20230510",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "212d8723-3741-4aa4-8201-091f3fd90f26",
+      "name": "BritNed DA & ID Weekly ITLs 20230517",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "f8a603c6-24e7-416e-8e71-a02b480e9d08",
+      "name": "BritNed DA & ID Weekly ITLs 20230524",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "8992630e-28b0-430d-930a-c0b80bde2ade",
+      "name": "BritNed DA & ID Weekly ITLs 20230531",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "513ca6a4-a53e-4996-9cff-a20ac8266bb7",
+      "name": "BritNed DA & ID Weekly ITLs 20230607",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "e3559f12-f7a7-4d04-9b7b-3504648f1874",
+      "name": "BritNed DA & ID Weekly ITLs 20230614",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "fb1ced15-5ffe-4d39-9cda-18ebac127399",
+      "name": "BritNed DA & ID Weekly ITLs 20230621",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "4b5666f2-708e-4af2-a1c8-acfd618cbcd4",
+      "name": "BritNed DA & ID Weekly ITLs 20230628",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "6b5a3135-0611-4a9e-946b-f770976eaec7",
+      "name": "BritNed DA & ID Weekly ITLs 20230705",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "e305d44e-c6ae-488c-8828-8f1c887463fa",
+      "name": "BritNed DA & ID Weekly ITLs 20230712",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "788b330c-6165-48d4-a870-8f2b1f55a5fe",
+      "name": "BritNed DA & ID Weekly ITLs 20230719",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "c8063e95-057e-4f87-8aef-8b3bb7566e64",
+      "name": "BritNed DA & ID Weekly ITLs 20230726",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "9ed998b2-0fc8-4cf0-8c4a-77bb7d8dc44f",
+      "name": "BritNed DA & ID Weekly ITLs 20230802",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "669c7c73-6d66-475c-87f5-c7a64014b3bf",
+      "name": "BritNed DA & ID Weekly ITLs 20230809",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "e211afc5-fd21-4091-984b-6da1423842d4",
+      "name": "BritNed DA & ID Weekly ITLs 20230816",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "980dc005-ce8f-49eb-95c6-ec9642d85689",
+      "name": "BritNed DA & ID Weekly ITLs 20230823",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "4f4d9df4-8db6-41e0-bcdc-b1a1f14e27fc",
+      "name": "BritNed DA & ID Weekly ITLs 20230830",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "f328325d-ad71-43b8-993c-220fbe9d38bb",
+      "name": "BritNed DA & ID Weekly ITLs 20230906",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "67fd41a6-3c5a-44e7-934d-83d72d81586f",
+      "name": "BritNed DA & ID Weekly ITLs 20230913",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "1337e91d-d28b-4206-a343-df71a0922e03",
+      "name": "BritNed DA & ID Weekly ITLs 20230920",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "3805fbe4-b62c-4c00-8984-e88a1d9cd37c",
+      "name": "BritNed DA & ID Weekly ITLs 20230927",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "130ec3a1-dd67-4dac-9d00-df7fb5990b05",
+      "name": "BritNed DA & ID Weekly ITLs 20231004",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "f1b7062f-7fb4-4464-aeeb-cc321481cc1e",
+      "name": "BritNed DA & ID Weekly ITLs 20231011",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "374d496a-0312-438a-bfa2-294cf0c7c8de",
+      "name": "BritNed DA & ID Weekly ITLs 20231018",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "abe4cee6-06ce-4557-95bf-f2581778c185",
+      "name": "BritNed DA & ID Weekly ITLs 20231101",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "e06f5075-f129-4a9a-b7d6-529ef3ad3122",
+      "name": "BritNed DA & ID Weekly ITLs 20231108",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "48f556c5-33bb-4ac1-bcf6-24d001aacada",
+      "name": "BritNed DA & ID Weekly ITLs 20231115",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "e0d90a91-5cbe-47a2-9c55-dc8e531b2088",
+      "name": "BritNed DA & ID Weekly ITLs 20231122",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "f8ad75af-f3d1-447c-8c49-e55ee3ec4f93",
+      "name": "BritNed DA & ID Weekly ITLs 20231129",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "30d8a0d9-6ff3-4552-9204-65cd89eb5f65",
+      "name": "BritNed DA & ID Weekly ITLs 20231206",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "08987582-d94e-42e3-8124-54b853c92944",
+      "name": "BritNed DA & ID Weekly ITLs 20231213",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "88998f41-1ce7-4c7c-9781-4a6a0465ab5a",
+      "name": "BritNed DA & ID Weekly ITLs 20231220",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "bcd4c323-d8d7-4c37-bcd4-4651cb062aa1",
+      "name": "BritNed DA & ID Weekly ITLs 20231227",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "1a9363a1-d052-4faa-b69a-d1872c542fc1",
+      "name": "BritNed DA & ID Weekly ITLs 20240103",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "aa06b618-91de-4596-afb6-8bb12137d86c",
+      "name": "BritNed DA & ID Weekly ITLs 20240110",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "aa0477c1-c80c-4208-91fd-5bbc2b4a3d98",
+      "name": "BritNed DA & ID Weekly ITLs 20240117",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "bbd48f9d-8a63-4fbf-9954-5185552b0520",
+      "name": "BritNed DA & ID Weekly ITLs 20240124",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "1e67fdb3-31d4-421d-9fc9-c212b41a8ab0",
+      "name": "BritNed DA & ID Weekly ITLs 20240131",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "8d286f18-3395-45ff-85da-aa7f8f66911c",
+      "name": "BritNed DA & ID Weekly ITLs 20240207",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "b7c0daed-9e35-42ff-87aa-93b1fbd91cd7",
+      "name": "BritNed DA & ID Weekly ITLs 20240214",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "fb901593-b6d6-4215-aabb-b60340cf7b1f",
+      "name": "BritNed DA & ID Weekly ITLs 20240221",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "5b6bae77-3bef-4bec-9a8f-5762d3ad1b9b",
+      "name": "BritNed DA & ID Weekly ITLs 20240228",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "95ebbde2-0f3b-4609-9435-769633c160f6",
+      "name": "BritNed DA & ID Weekly ITLs 20240306",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "6c51f881-6b72-49e4-88ad-2fc4ee97ecb3",
+      "name": "BritNed DA & ID Weekly ITLs 20240313",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "a38ba431-7670-4076-9a5a-82f142f11bdc",
+      "name": "BritNed DA & ID Weekly ITLs 20240320",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "3d152205-5023-4a46-86a8-2b6b07a0fb9b",
+      "name": "BritNed DA & ID Weekly ITLs 20240327",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "870495e8-8f95-4817-8615-c40ca5ebef4e",
+      "name": "BritNed DA & ID Weekly ITLs 20240403",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "8b36e933-304a-44ad-9500-5792819db0d3",
+      "name": "BritNed DA & ID Weekly ITLs 20240417",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "cf3dcf59-ab29-4630-ba6c-6b73dc769a62",
+      "name": "BritNed DA & ID Weekly ITLs 20240424",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "32783822-9e65-4b27-abe5-6350262ec7b2",
+      "name": "BritNed DA & ID Weekly ITLs 20240501",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "eb108e97-2d7b-4d38-8f62-7286cc94b549",
+      "name": "BritNed DA & ID Weekly ITLs 20240508",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "9e78d6a3-1814-4db3-9a27-e604807c92e9",
+      "name": "BritNed DA & ID Weekly ITLs 20240515",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "0c32f871-1a47-4378-a5fd-303d02d890b9",
+      "name": "BritNed DA & ID Weekly ITLs 20240522",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "e7325260-c1f3-468c-96e8-4778893d3ce0",
+      "name": "BritNed DA & ID Weekly ITLs 20240529",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "e946d60d-ae23-4990-a1a8-91cb36ee010a",
+      "name": "BritNed DA & ID Weekly ITLs 20240605",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "3d9036a4-1459-4439-9db1-c4479f97901b",
+      "name": "BritNed DA & ID Weekly ITLs 20240612",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "13a175f1-31ae-4126-b2d4-10ec8bc63a9a",
+      "name": "BritNed DA & ID Weekly ITLs 20240619",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "2af98846-e08a-43e6-b1f0-326e30a4d470",
+      "name": "BritNed DA & ID Weekly ITLs 20240626",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "4de159de-1aee-42e0-b00f-f4d3a128f5b3",
+      "name": "BritNed DA & ID Weekly ITLs 20240807",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "51ff0c0e-c896-4774-aa6f-17b8835fe55f",
+      "name": "BritNed DA & ID Weekly ITLs 20240814",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "5335579f-da7b-474e-b4ec-6fb826af040f",
+      "name": "BritNed DA & ID Weekly ITLs 20240821",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "dc46e9bb-906b-49dc-8ac1-05e77a81ec6a",
+      "name": "BritNed DA & ID Weekly ITLs 20240828",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "0a546c80-0d5b-4217-a2d8-44c3c391bb04",
+      "name": "BritNed DA & ID Weekly ITLs 20240904",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "e89a9770-f1e5-43c2-92f8-3b090c059654",
+      "name": "BritNed DA & ID Weekly ITLs 20240911",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "d7749448-914a-49fb-8641-ef1fde6e60f0",
+      "name": "BritNed DA & ID Weekly ITLs 20240918",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "91df114c-6c0a-4217-a963-8608f0ec619e",
+      "name": "BritNed DA & ID Weekly ITLs 20240925",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "037acebf-f343-4dce-b9da-1a537c15555f",
+      "name": "BritNed DA & ID Weekly ITLs 20241002",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "d721fb6d-616c-4339-83be-dc8eb50ad286",
+      "name": "BritNed DA & ID Weekly ITLs 20241009",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "811bec71-f099-4474-ba5e-2f9932b39cc2",
+      "name": "BritNed DA & ID Weekly ITLs 20241016",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "7ac2608d-9878-46f2-a075-0b40a87e0a63",
+      "name": "BritNed DA & ID Weekly ITLs 20241023",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "7c80487f-dc26-430b-abbf-8c2823ed3dcc",
+      "name": "BritNed DA & ID Weekly ITLs 20241030",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "f3371462-fd35-426e-8652-dd0a5ad69d3b",
+      "name": "BritNed DA & ID Weekly ITLs 20241106",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "105be229-893d-4a04-a3e4-2e97d9d15cd9",
+      "name": "BritNed DA & ID Weekly ITLs 20241113",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "7de2143d-f0b5-4d9e-9a20-588a392ed060",
+      "name": "BritNed DA & ID Weekly ITLs 20241120",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "dbc1d975-607e-4814-b29e-4701d8fa7b7f",
+      "name": "BritNed DA & ID Weekly ITLs 20241127",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "f5b7cc82-86ca-4e21-bc20-6fee78d525df",
+      "name": "BritNed DA & ID Weekly ITLs 20241204",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "3b0da3b7-595f-421b-a77e-92f289599905",
+      "name": "BritNed DA & ID Weekly ITLs 20250129",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "7bbdc91f-9dad-40d9-8d6e-ac7c5ad9d05e",
+      "name": "BritNed DA & ID Weekly ITLs 20250205",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "7f97b143-c569-4132-9ebf-e17b58585f9f",
+      "name": "BritNed DA & ID Weekly ITLs 20250212",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "f44a333a-f36f-4f57-882a-e520fc067ef5",
+      "name": "BritNed DA & ID Weekly ITLs 20250219",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "850f4805-a839-450c-bf2c-1b76090f637c",
+      "name": "BritNed DA & ID Weekly ITLs 20250226",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "d8d0f00c-a9e6-400a-a1a1-0d4acec0cbcc",
+      "name": "BritNed DA & ID Weekly ITLs 20250305",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "5c49a1ab-bed9-43e2-9e69-c9c37a16602b",
+      "name": "BritNed DA & ID Weekly ITLs 20250312",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "25c5f049-8317-4add-b9c9-0e22b749b795",
+      "name": "BritNed DA & ID Weekly ITLs 20250319",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "5909b052-12e3-4385-9c55-da30b3066968",
+      "name": "BritNed DA & ID Weekly ITLs 20250326",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "95f31f4e-7465-4359-b135-bbec23a1cfe1",
+      "name": "BritNed DA & ID Weekly ITLs 20250407",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "8db596d3-720c-414b-bb96-3dc9bbf16d24",
+      "name": "BritNed DA & ID Weekly ITLs 20250411",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "9fcbabfc-7689-437b-99f2-86c05742e77a",
+      "name": "BritNed DA & ID Weekly ITLs 20250416",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "b9bbedd1-6290-4242-bac7-17957a4f3ef0",
+      "name": "BritNed DA & ID Weekly ITLs 20250423",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "04f0d266-ba9c-4e7c-8bdd-f3fe0b45cd7f",
+      "name": "BritNed DA & ID Weekly ITLs 20250430",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "0cde599a-bc16-4486-80da-127c83c68e14",
+      "name": "BritNed DA & ID Weekly ITLs 20250507",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "13c35840-4152-460d-b7f8-38d4fa303728",
+      "name": "BritNed DA & ID Weekly ITLs 20250514",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "29ab02fe-8b4e-4def-ba86-2ae4fb5f26b0",
+      "name": "BritNed DA & ID Weekly ITLs 20250524",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "59b7d9d1-4a71-4be3-ada0-437dbd4b2740",
+      "name": "BritNed DA & ID Weekly ITLs 20250528",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "0c0f6a94-5cef-45d3-8ca7-0b7ce09e5e80",
+      "name": "BritNed DA & ID Weekly ITLs 20250604",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "89e3ec54-aa42-44a6-a106-d0d298f2d835",
+      "name": "BritNed DA & ID Weekly ITLs 20250611",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "ad4523df-6d1d-4974-9198-dcd1269188f8",
+      "name": "BritNed DA & ID Weekly ITLs 20250618",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "6df4e87a-185e-494f-bab1-e204cf813313",
+      "name": "BritNed DA & ID Weekly ITLs 20250627",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "35cf39bd-e393-4a76-9c2d-c084cd71ad7e",
+      "name": "BritNed DA & ID Weekly ITLs 20250702",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "707022a4-a31f-4c74-9bd9-5b2a9e4bf26a",
+      "name": "BritNed DA & ID Weekly ITLs 20250709",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "dabc55d0-c686-4ea9-9e1d-7bc0262a87e7",
+      "name": "BritNed DA & ID Weekly ITLs 20250716",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "a99e3c5d-681c-4bcf-9af4-4dd049f25f38",
+      "name": "BritNed DA & ID Weekly ITLs 20250723",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "68be7816-7bbb-4788-8884-25aaa9a26062",
+      "name": "BritNed DA & ID Weekly ITLs 20250730",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "c17e88aa-8c74-49d4-90bb-679d6c7751f7",
+      "name": "BritNed DA & ID Weekly ITLs 20250806",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "d3d6ab02-78b5-40d1-ace3-7f7b14caf453",
+      "name": "BritNed DA & ID Weekly ITLs 20250813",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "ada92d9f-400c-40f9-a0f6-d4a6e49c6ad2",
+      "name": "BritNed DA & ID Weekly ITLs 20250820",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "15faa1da-22b6-4506-922c-0b5cc988e145",
+      "name": "BritNed DA & ID Weekly ITLs 20250903",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "993b15d3-0bf8-4c9a-851a-4966b0f46926",
+      "name": "BritNed DA & ID Weekly ITLs 20250917 ",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "115d7d3a-8ba6-4e31-8223-f91ae4ecdc8b",
+      "name": "BritNed DA & ID Weekly ITLs 20251001",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "8fe7d5aa-a3b5-4c7e-a703-74310bd91e2d",
+      "name": "BritNed DA & ID Weekly ITLs 20251015",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "248a3ace-ac3c-4497-8987-8a976d31787f",
+      "name": "BritNed DA & ID Weekly ITLs 20251022",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "675190fe-973f-402b-aeaf-5682aa8874c9",
+      "name": "BritNed DA & ID Weekly ITLs 20251029",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "50ef90de-bcda-45bd-8cd8-b8f9bc0788ea",
+      "name": "BritNed DA & ID Weekly ITLs 20251105",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "70389475-9452-4379-bf21-d3e4500be684",
+      "name": "BritNed DA & ID Weekly ITLs 20251112",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "452837b6-afb5-41b5-847e-88c859cb44c3",
+      "name": "BritNed DA & ID Weekly ITLs 20251119",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "309bd7ee-689b-488d-8263-e5113cae408e",
+      "name": "BritNed DA & ID Weekly ITLs 20251126",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "5c0d23ce-1f82-48c9-9671-af159fbd1803",
+      "name": "BritNed DA & ID Weekly ITLs 20251203",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "c2db2c5d-5278-477c-9a62-7e6e8371bbc7",
+      "name": "BritNed DA & ID Weekly ITLs 20251210",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "91714ac5-147f-43f7-a155-e279fd20810d",
+      "name": "BritNed DA & ID Weekly ITLs 20251217",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "f43260c8-c559-4415-a369-0eb4b9c4e6b2",
+      "name": "BritNed DA & ID Weekly ITLs 20251229",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "3e546d9e-32fc-4cbd-bd51-214b106907e6",
+      "name": "BritNed DA & ID Weekly ITLs 20251231",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "40c995da-2fd8-49d2-b1a1-c82902469299",
+      "name": "BritNed DA & ID Weekly ITLs 20260107",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "e2a26c5b-51a3-427c-b28f-d336d8ba4192",
+      "name": "BritNed DA & ID Weekly ITLs 20260114",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "1e8e15d5-6ca2-4b83-8f27-87c6f6fea446",
+      "name": "BritNed DA & ID Weekly ITLs 20260121",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "d824d533-002f-4828-96d6-85de239f8536",
+      "name": "BritNed DA & ID Weekly ITLs 20260128",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "b2494ee9-2a64-4a6d-ac90-7878f6fffde5",
+      "name": "BritNed DA & ID Weekly ITLs 20260215",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "bfeb12dc-ab49-4dc2-b29b-995ae4f9df5e",
+      "name": "BritNed DA & ID Weekly ITLs 20260218",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "7e524a5b-5e5e-4d88-b7ca-ab64e14a4f15",
+      "name": "BritNed DA & ID Weekly ITLs 20260225",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "759eac2e-5c58-4ec0-990d-eb3f52e666b8",
+      "name": "BritNed DA & ID Weekly ITLs 20260304",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "00c2173e-5d58-48f5-8541-5fbdac98c30c",
+      "name": "BritNed DA & ID Weekly ITLs 20260311",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "9e0a2ae0-d386-4b0d-83c8-0ab129c1b52b",
+      "name": "BritNed DA & ID Weekly ITLs 20260318",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "fdc1cfe6-f77f-496e-b866-d648cd35f26d",
+      "name": "BritNed DA & ID Weekly ITLs 20260325",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "7dbb4e3c-8439-4f9c-a49d-7db2e0fa0235",
+      "name": "BritNed DA & ID Weekly ITLs 20260331",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "774b8573-8e5b-4279-9d24-c33a76416163",
+      "name": "BritNed DA & ID Weekly ITLs 20260408",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "14301751-92fa-4382-bbc7-2d9fe434e90a",
+      "name": "BritNed DA & ID Weekly ITLs 20260415",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "9f7619c7-1893-4ffb-825c-b160f3cba6cc",
+      "name": "BritNed DA & ID Weekly ITLs 20260422",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "a2394a00-5bee-4eb4-ba2e-f617e78961b0",
+      "name": "BritNed DA & ID Weekly ITLs 20260429",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "43de6df5-c171-4a4f-a3f1-6d91816d34fe",
+      "name": "BritNed DA & ID Weekly ITLs 20260506",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "977452d9-56d3-4921-b8b5-2f5c9a8a0445",
+      "name": "BritNed DA & ID Weekly ITLs 20260513",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "bf82899e-34f4-44f1-a859-8f79641757ed",
+      "name": "BritNed DA & ID Weekly ITLs 20260520",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "7cf3b007-4f9d-4213-b7c9-482c69acab00",
+      "name": "BritNed DA & ID Weekly ITLs 20260527",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "30787e04-45aa-48fc-adcb-6d98ddb79077",
+      "name": "BritNed DA & ID Weekly ITLs 20260603",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "92a3f59f-f436-4df7-8c50-7e1fa4c845fd",
+      "name": "BritNed DA & ID Weekly ITLs 20260610",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "2f8723e7-1fd8-4231-911c-27058734b9c0",
+      "name": "BritNed DA & ID Weekly ITLs 20260617 ",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "a6a6da9c-1138-4498-bae0-b5f8387fa2d9",
+      "name": "BritNed DA & ID Weekly ITLs 20260624",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "1cfd3828-cead-4b64-abcb-875af2031f4b",
+      "name": "BritNed DA & ID Weekly ITLs 20260701",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "a205cc2e-d30f-4054-a980-d5f49d567ad7",
+      "name": "BritNed DA & ID Weekly ITLs 20260708",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "36b889bb-db21-4f65-8961-0813188fd730",
+      "name": "BritNed DA & ID Weekly ITLs 20260715",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "dd34b346-0af1-4913-b31b-aa05abbbe5d5",
+      "name": "BritNed DA & ID Weekly ITLs 20260722",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "bdb4a2ee-ee6e-4956-b7c0-c4fda3bd0e85",
+      "name": "BritNed DA & ID Weekly ITLs 20260729",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "f2256391-5e7d-4895-80d5-d1faa61e270c",
+      "name": "BritNed DA & ID Weekly ITLs 20260805",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "09680097-27b1-4de1-8418-56e1d5dce4ab",
+      "name": "BritNed DA & ID Weekly ITLs 20260812",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "a3f3be57-dced-4282-8f42-94b341e18ff9",
+      "name": "BritNed DA & ID Weekly ITLs 20260819",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "5f640ce3-67e4-4be9-898d-681f0c85d5a1",
+      "name": "BritNed DA & ID Weekly ITLs 20260826",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "0c1d1ac5-09da-4519-b39b-19557989ee7e",
+      "name": "BritNed DA & ID Weekly ITLs 20260902",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "261e6fb2-ccfa-4718-ba21-66e64e363339",
+      "name": "BritNed DA & ID Weekly ITLs 20260916",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    },
+    {
+      "id": "27f2e375-5a0b-484e-938f-4d4c0206d9c0",
+      "name": "BritNed DA & ID Weekly ITLs 20260923",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "brit_ned",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "brit_ned"
+      }
+    }
+  ]
+}

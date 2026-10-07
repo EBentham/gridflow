@@ -1,0 +1,36 @@
+{
+  "package": "weekly-opmr",
+  "package_id": "025b9417-83a0-445b-a818-414ea49cf7c3",
+  "group": "generation",
+  "archetype": "FC",
+  "refresh": "weekly",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "weekly_opmr",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "FC",
+      "refresh": "weekly",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "c08419f5-a28d-4e35-87a4-676d7eb05713",
+      "name": "Weekly Operational Planning Margin Requirement (OPMR)",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "weekly_opmr",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "weekly_opmr"
+      }
+    }
+  ]
+}

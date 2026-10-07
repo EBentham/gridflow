@@ -1,0 +1,124 @@
+{
+  "package": "monthly-operational-metered-wind-output",
+  "package_id": "7f7fa642-6eff-4b8f-9e8b-7ede1ba50e20",
+  "group": "generation",
+  "archetype": "SER",
+  "refresh": "monthly",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "metered_wind_output_monthly",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SER",
+      "refresh": "monthly",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "bf03c648-98d8-40f3-b5d9-e174cb2c1f81",
+      "name": "Monthly Operational Metered Wind Output 2018-2019",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "metered_wind_output_monthly",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "metered_wind_output_monthly"
+      }
+    },
+    {
+      "id": "c36868d9-9d43-47ce-ac3e-de69f0bb6222",
+      "name": "Monthly Operational Metered Wind Output 2019-2020",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "metered_wind_output_monthly",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "metered_wind_output_monthly"
+      }
+    },
+    {
+      "id": "043d5423-f877-4d28-864e-210dc68711d4",
+      "name": "Monthly Operational Metered Wind Output 2020-2021",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "metered_wind_output_monthly",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "metered_wind_output_monthly"
+      }
+    },
+    {
+      "id": "e5df03f3-a25b-4df4-a95c-8a709815924b",
+      "name": "Monthly Operational Metered Wind Output 2021-2022",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "metered_wind_output_monthly",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "metered_wind_output_monthly"
+      }
+    },
+    {
+      "id": "f732e9bb-b573-46a7-8767-3affbbb29b45",
+      "name": "Monthly Operational Metered Wind Output 2022-2023",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "metered_wind_output_monthly",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "metered_wind_output_monthly"
+      }
+    },
+    {
+      "id": "c47155bc-71b8-4b0a-aba3-0e2d1295daea",
+      "name": "Monthly Operational Metered Wind Output 2023-2024",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "metered_wind_output_monthly",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "metered_wind_output_monthly"
+      }
+    },
+    {
+      "id": "3ac8c742-d601-4b6c-9779-e69cea94e134",
+      "name": "Monthly Operational Metered Wind Output 2024-2025",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "metered_wind_output_monthly",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "metered_wind_output_monthly"
+      }
+    },
+    {
+      "id": "7622b040-977a-45a6-924e-f158df6c29f0",
+      "name": "Monthly Operational Metered Wind Output 2025-2026",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "metered_wind_output_monthly",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "metered_wind_output_monthly"
+      }
+    },
+    {
+      "id": "c9bc94c4-6d8c-49ff-afff-67c0030bec05",
+      "name": "Monthly Operational Metered Wind Output 2026-2027",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "metered_wind_output_monthly",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "metered_wind_output_monthly"
+      }
+    }
+  ]
+}

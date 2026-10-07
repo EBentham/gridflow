@@ -1,0 +1,36 @@
+{
+  "package": "long-term-2-52-weeks-ahead-national-demand-forecast",
+  "package_id": "edd6190a-66d4-480d-a125-88d32bd11c91",
+  "group": "demand",
+  "archetype": "FC",
+  "refresh": "adhoc",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "demand_forecast_2_52w",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "FC",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "903302b4-b577-4228-a347-b9917568b4e1",
+      "name": "Long term demand forecast",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "demand_forecast_2_52w",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "demand_forecast_2_52w"
+      }
+    }
+  ]
+}

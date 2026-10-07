@@ -1,0 +1,256 @@
+{
+  "package": "local-authority-level-spatial-heat-model-outputs-fes",
+  "package_id": "bfa95333-542e-4625-b5d0-17ced50a89ed",
+  "group": "future-energy-scenarios",
+  "archetype": "SCN",
+  "refresh": "adhoc",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "fes_la_heat_model_domestic",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SCN",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "fes_la_heat_model_residential",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SCN",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "c3dd66ab-cb07-4e4d-bbab-d79074ea1713",
+      "name": "FES 22 local authority outputs 2020 domestic all scenarios",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_la_heat_model_domestic",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_la_heat_model_domestic"
+      }
+    },
+    {
+      "id": "52baf0e4-b02b-4f69-8cd5-ca52c97bf872",
+      "name": "FES 22 local authority outputs 2025 domestic all scenarios",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_la_heat_model_domestic",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_la_heat_model_domestic"
+      }
+    },
+    {
+      "id": "f41f65e2-9f55-496b-afaa-76efcee4cda2",
+      "name": "FES 22 local authority outputs 2030 domestic all scenarios",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_la_heat_model_domestic",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_la_heat_model_domestic"
+      }
+    },
+    {
+      "id": "7cec6380-1ad5-44e6-a0d4-246c43456498",
+      "name": "FES 22 local authority outputs 2035 domestic all scenarios",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_la_heat_model_domestic",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_la_heat_model_domestic"
+      }
+    },
+    {
+      "id": "73f57682-bf0e-4bb6-8471-191f7cb75417",
+      "name": "FES 22 local authority outputs 2040 domestic all scenarios",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_la_heat_model_domestic",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_la_heat_model_domestic"
+      }
+    },
+    {
+      "id": "e60da220-afb8-4a9e-9327-552a3c8df549",
+      "name": "FES 22 local authority outputs 2045 domestic all scenarios",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_la_heat_model_domestic",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_la_heat_model_domestic"
+      }
+    },
+    {
+      "id": "3a9451a1-9e79-4fda-a570-79544b30f44e",
+      "name": "FES 22 local authority outputs 2050 domestic all scenarios",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_la_heat_model_domestic",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_la_heat_model_domestic"
+      }
+    },
+    {
+      "id": "31d45b63-e70d-4cf1-a912-918bf3de58d5",
+      "name": "FES 2024 local authority outputs 2020 residential all scenarios",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_la_heat_model_residential",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_la_heat_model_residential"
+      }
+    },
+    {
+      "id": "556a0c77-58f1-4b27-8b8d-105ab2236d25",
+      "name": "FES 2024 local authority outputs 2025 residential all scenarios",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_la_heat_model_residential",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_la_heat_model_residential"
+      }
+    },
+    {
+      "id": "1910373f-ccfb-49b3-bd18-bc0fe560b818",
+      "name": "FES 2024 local authority outputs 2030 residential all scenarios",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_la_heat_model_residential",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_la_heat_model_residential"
+      }
+    },
+    {
+      "id": "549772c3-54e7-40ed-8536-2e5d7e4af4ef",
+      "name": "FES 2024 local authority outputs 2035 residential all scenarios",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_la_heat_model_residential",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_la_heat_model_residential"
+      }
+    },
+    {
+      "id": "3c889f7e-4254-4822-9e2d-6bc58baf111e",
+      "name": "FES 2024 local authority outputs 2040 residential all scenarios",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_la_heat_model_residential",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_la_heat_model_residential"
+      }
+    },
+    {
+      "id": "c62bba09-78e9-4a98-8b41-a387d5004306",
+      "name": "FES 2024 local authority outputs 2045 residential all scenarios",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_la_heat_model_residential",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_la_heat_model_residential"
+      }
+    },
+    {
+      "id": "010d5cb3-2907-4ccd-949f-a3ec726b5109",
+      "name": "FES 2024 local authority outputs 2050 residential all scenarios",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_la_heat_model_residential",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_la_heat_model_residential"
+      }
+    },
+    {
+      "id": "e2215328-bd74-47c2-a22f-3878bb0fbbd5",
+      "name": "FES 2025 local authority outputs 2025 residential all scenarios",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_la_heat_model_residential",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_la_heat_model_residential"
+      }
+    },
+    {
+      "id": "d71b4155-1ee3-492e-9446-4b99b19a8e63",
+      "name": "FES 2025 local authority outputs 2030 residential all scenarios",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_la_heat_model_residential",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_la_heat_model_residential"
+      }
+    },
+    {
+      "id": "eb7be505-5886-4983-94ce-bf1d43c09066",
+      "name": "FES 2025 local authority outputs 2035 residential all scenarios",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_la_heat_model_residential",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_la_heat_model_residential"
+      }
+    },
+    {
+      "id": "e4d69fcb-0d43-49dd-9faa-23f4ee37e983",
+      "name": "FES 2025 local authority outputs 2040 residential all scenarios",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_la_heat_model_residential",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_la_heat_model_residential"
+      }
+    },
+    {
+      "id": "459b8436-17d9-40f1-bb8a-83139b9599c4",
+      "name": "FES 2025 local authority outputs 2045 residential all scenarios",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_la_heat_model_residential",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_la_heat_model_residential"
+      }
+    },
+    {
+      "id": "593f1c8c-b278-4405-9164-21dfacd70a6d",
+      "name": "FES 2025 local authority outputs 2050 residential all scenarios",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_la_heat_model_residential",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_la_heat_model_residential"
+      }
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "package": "national-carbon-intensity-forecast",
+  "package_id": "f406810a-1a36-48d2-b542-1dfb1348096e",
+  "group": "carbon-intensity1",
+  "archetype": "FC",
+  "refresh": "intraday",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "national_ci_forecast",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "FC",
+      "refresh": "intraday",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "national_ci_forecast_files",
+      "kind": "files",
+      "legacy": false,
+      "archetype": "FC",
+      "refresh": "intraday",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "0e5fde43-2de7-4fb4-833d-c7bca3b658b0",
+      "name": "National Carbon Intensity Forecast",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "national_ci_forecast",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "national_ci_forecast"
+      }
+    },
+    {
+      "id": "36638178-e993-4d34-afdc-4ada83993585",
+      "name": "National Carbon Intensity Forecast Methodology",
+      "format": "PDF",
+      "url_type": "upload",
+      "family": "national_ci_forecast_files",
+      "disposition": {
+        "kind": "DOC"
+      }
+    }
+  ]
+}

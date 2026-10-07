@@ -1,0 +1,124 @@
+{
+  "package": "tresp-generation-pathways",
+  "package_id": "7f30dbc0-5d71-412a-b4f3-7e852ff7dfa7",
+  "group": "generation",
+  "archetype": "SCN",
+  "refresh": "adhoc",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "tresp_generation_pathways_gsp",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SCN",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "tresp_generation_pathways_resp_region",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SCN",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "tresp_generation_pathways_la_england",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SCN",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "tresp_generation_pathways_la_scotland",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SCN",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "tresp_generation_pathways_la_wales",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SCN",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "62275682-ed2c-44e8-aede-8404b19f3d67",
+      "name": "tRESP Indicative Generation Pathways per Local Authority for Wales",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "tresp_generation_pathways_la_wales",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "tresp_generation_pathways_la_wales"
+      }
+    },
+    {
+      "id": "38379002-1fcf-461a-beb1-2b15b555f994",
+      "name": "tRESP Indicative Generation Pathways per Local Authority for Scotland",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "tresp_generation_pathways_la_scotland",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "tresp_generation_pathways_la_scotland"
+      }
+    },
+    {
+      "id": "d20aec73-01df-486d-a1aa-390c9cab2976",
+      "name": "tRESP Indicative Generation Pathways per Local Authority for England",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "tresp_generation_pathways_la_england",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "tresp_generation_pathways_la_england"
+      }
+    },
+    {
+      "id": "f295b8b5-8022-433d-b07f-b75b729fb199",
+      "name": "tRESP Generation Pathways per RESP Nation and Region",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "tresp_generation_pathways_resp_region",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "tresp_generation_pathways_resp_region"
+      }
+    },
+    {
+      "id": "970b7a25-6086-4b07-b109-b01ae43ae78c",
+      "name": "tRESP Generation Pathways per Grid Supply Point Area",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "tresp_generation_pathways_gsp",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "tresp_generation_pathways_gsp"
+      }
+    }
+  ]
+}

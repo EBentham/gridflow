@@ -1,0 +1,69 @@
+{
+  "package": "fes-road-transport-summary-data-table-ed5",
+  "package_id": "28303fe9-62d4-46c5-ad15-a1d0e59f98cb",
+  "group": "future-energy-scenarios",
+  "archetype": "SCN",
+  "refresh": "adhoc",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "fes_ed5_road_transport",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SCN",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "076c5c72-ecea-47c9-81b6-e93fe824d5d4",
+      "name": "Road Transport Summary (ED5) 2023",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_ed5_road_transport",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_ed5_road_transport"
+      }
+    },
+    {
+      "id": "7189f5d3-aed3-41b7-962f-fdb9fe11cbb7",
+      "name": "Road Transport Summary (ED5) 2024",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_ed5_road_transport",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_ed5_road_transport"
+      }
+    },
+    {
+      "id": "ce76da34-6eb0-43a1-8e93-3cc833d6d1b4",
+      "name": "Road Transport Summary (ED5) 2025",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_ed5_road_transport",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_ed5_road_transport"
+      }
+    },
+    {
+      "id": "1b59c48f-f51a-4e32-a9e7-baca0b78a042",
+      "name": "Road Transport Summary (ED5) 2026",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_ed5_road_transport",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_ed5_road_transport"
+      }
+    }
+  ]
+}

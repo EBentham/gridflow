@@ -1,0 +1,58 @@
+{
+  "package": "static-firm-frequency-response-auction-results",
+  "package_id": "75457796-f9de-49c2-8e64-81f97131c56a",
+  "group": "ancillary-services",
+  "archetype": "EVT",
+  "refresh": "daily",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "sffr_auction_results_buy_orders",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "sffr_auction_results_main",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "f9f4b295-6de6-4379-9211-b0b2117a0c48",
+      "name": "Static Firm Frequency Response Auction Buy Orders",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "sffr_auction_results_buy_orders",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "sffr_auction_results_buy_orders"
+      }
+    },
+    {
+      "id": "76bc5d39-c39f-490b-984e-58eb8ff296ef",
+      "name": "Static Firm Frequency Response Auction Results",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "sffr_auction_results_main",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "sffr_auction_results_main"
+      }
+    }
+  ]
+}

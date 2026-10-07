@@ -1,0 +1,795 @@
+{
+  "package": "non-bm-ancillary-service-dispatch-platform-asdp-instructions",
+  "package_id": "67c7829e-3d2b-47fe-963a-8846eb1de37b",
+  "group": "ancillary-services",
+  "archetype": "EVT",
+  "refresh": "frozen",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "asdp_instructions",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "frozen",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "6f037ebe-110d-4099-ab82-0ac3185e3f18",
+      "name": "Non BM Dispatch Cease Instructions_Jun_2020",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "asdp_instructions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "asdp_instructions"
+      }
+    },
+    {
+      "id": "5d741b13-85c4-44bd-82ba-50dca68ff4f1",
+      "name": "Non BM Dispatch Cease Instructions_Jul_2020",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "asdp_instructions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "asdp_instructions"
+      }
+    },
+    {
+      "id": "a16abb3c-36bd-448f-9263-b25d90ca08a0",
+      "name": "Non BM Dispatch Cease Instructions_Aug_2020",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "asdp_instructions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "asdp_instructions"
+      }
+    },
+    {
+      "id": "339bbc15-2e83-4928-a07f-e09b6d60edfc",
+      "name": "Non BM Dispatch Cease Instructions_Oct_2020",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "asdp_instructions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "asdp_instructions"
+      }
+    },
+    {
+      "id": "568b4255-b66f-4aa8-a704-36a5e65b5563",
+      "name": "Non BM Dispatch Cease Instructions_Nov_2020",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "asdp_instructions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "asdp_instructions"
+      }
+    },
+    {
+      "id": "0acd8a9f-025b-4e4f-b69c-fda1bf9007ae",
+      "name": "Non BM Dispatch Cease Instructions_Dec_2020",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "asdp_instructions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "asdp_instructions"
+      }
+    },
+    {
+      "id": "75acd396-3895-4538-998b-ed4c45574c40",
+      "name": "Non BM Dispatch Cease Instructions_Jan_2021",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "asdp_instructions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "asdp_instructions"
+      }
+    },
+    {
+      "id": "98a05e0c-eb08-427c-a440-b084d30af78e",
+      "name": "Non BM Dispatch Cease Instructions_Feb_2021",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "asdp_instructions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "asdp_instructions"
+      }
+    },
+    {
+      "id": "d1fce430-c387-413d-99c7-e3f0fc6f5458",
+      "name": "Non BM Dispatch Cease Instructions_Mar_2021",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "asdp_instructions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "asdp_instructions"
+      }
+    },
+    {
+      "id": "02b3937a-4ba1-46a5-9082-bf7b4fd995cf",
+      "name": "Non BM Dispatch Cease Instructions_Apr_2021",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "asdp_instructions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "asdp_instructions"
+      }
+    },
+    {
+      "id": "47e35617-1df4-46d4-9900-874f034792b1",
+      "name": "Non BM Dispatch Cease Instructions_May_2021",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "asdp_instructions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "asdp_instructions"
+      }
+    },
+    {
+      "id": "e843280c-7c36-44e5-97b8-b6403d338bbc",
+      "name": "Non BM Dispatch Cease Instructions_Jun_2021",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "asdp_instructions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "asdp_instructions"
+      }
+    },
+    {
+      "id": "2522c3cd-9f5a-402a-8a0c-9410ad187bb8",
+      "name": "Non BM Dispatch Cease Instructions_Jul_2021",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "asdp_instructions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "asdp_instructions"
+      }
+    },
+    {
+      "id": "b87d78c8-a961-4b6b-8f64-7e0ccb4156f2",
+      "name": "Non BM Dispatch Cease Instructions_Aug_2021",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "asdp_instructions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "asdp_instructions"
+      }
+    },
+    {
+      "id": "15d4c539-f523-4406-957a-334ad15859ec",
+      "name": "Non BM Dispatch Cease Instructions_Sep_2021",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "asdp_instructions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "asdp_instructions"
+      }
+    },
+    {
+      "id": "4766f3e3-18ff-4703-8528-f4ea4606eeb1",
+      "name": "Non BM Dispatch Cease Instructions_Oct_2021",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "asdp_instructions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "asdp_instructions"
+      }
+    },
+    {
+      "id": "90ba1625-d99b-4ec6-8356-ad69af4e6b20",
+      "name": "Non BM Dispatch Cease Instructions_Nov_2021",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "asdp_instructions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "asdp_instructions"
+      }
+    },
+    {
+      "id": "b2df172c-dbfe-4c96-9e33-7e2c0e64a0c4",
+      "name": "Non BM Dispatch Cease Instructions_Dec_2021",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "asdp_instructions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "asdp_instructions"
+      }
+    },
+    {
+      "id": "3c9e6c70-5cff-42e6-8c9e-ca7f51111ba8",
+      "name": "Non BM Dispatch Cease Instructions_Jan_2022",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "asdp_instructions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "asdp_instructions"
+      }
+    },
+    {
+      "id": "fb7bc149-2a9b-4b80-86e7-e2c5c1e37271",
+      "name": "Non BM Dispatch Cease Instructions_Feb_2022",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "asdp_instructions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "asdp_instructions"
+      }
+    },
+    {
+      "id": "6835dd89-6845-48ec-a8a2-041c6924dc02",
+      "name": "Non BM Dispatch Cease Instructions_Mar_2022",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "asdp_instructions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "asdp_instructions"
+      }
+    },
+    {
+      "id": "bf629b2f-b93b-4d4a-8dd7-c50156c3a8ab",
+      "name": "Non BM Dispatch Cease Instructions_Apr_2022",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "asdp_instructions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "asdp_instructions"
+      }
+    },
+    {
+      "id": "b97f5a01-96bb-46ec-80c5-62d5ba010fe7",
+      "name": "Non BM Dispatch Cease Instructions_May_2022",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "asdp_instructions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "asdp_instructions"
+      }
+    },
+    {
+      "id": "00936338-b75c-4ada-b812-6d84e03ae650",
+      "name": "Non BM Dispatch Cease Instructions_Jun_2022",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "asdp_instructions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "asdp_instructions"
+      }
+    },
+    {
+      "id": "d6aa3dd3-42d7-426d-905b-0f24afd26d60",
+      "name": "Non BM Dispatch Cease Instructions_Jul_2022",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "asdp_instructions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "asdp_instructions"
+      }
+    },
+    {
+      "id": "1b02bcab-e050-4725-bfc1-b5d034aaef37",
+      "name": "Non BM Dispatch Cease Instructions_Aug_2022",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "asdp_instructions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "asdp_instructions"
+      }
+    },
+    {
+      "id": "c3d32954-7b6b-472f-9d22-a96580a97fc2",
+      "name": "Non BM Dispatch Cease Instructions_Sep_2022",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "asdp_instructions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "asdp_instructions"
+      }
+    },
+    {
+      "id": "33858909-ad26-4a3c-b1d1-af5b8df7cac2",
+      "name": "Non BM Dispatch Cease Instructions_Oct_2022",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "asdp_instructions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "asdp_instructions"
+      }
+    },
+    {
+      "id": "8229a89a-77fe-44db-a0e6-a02aff2ad048",
+      "name": "Non BM Dispatch Cease Instructions_Nov_2022",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "asdp_instructions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "asdp_instructions"
+      }
+    },
+    {
+      "id": "e647c7e0-4ecf-4fcc-b177-5e6e2473e8ac",
+      "name": "Non BM Dispatch Cease Instructions_Dec_2022",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "asdp_instructions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "asdp_instructions"
+      }
+    },
+    {
+      "id": "aa138e72-3e25-4787-8369-40f2b9abb980",
+      "name": "Non BM Dispatch Cease Instructions_Jan_2023",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "asdp_instructions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "asdp_instructions"
+      }
+    },
+    {
+      "id": "b3cd38dd-9d42-4a15-975a-f047b1452830",
+      "name": "Non BM Dispatch Cease Instructions_Feb_2023",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "asdp_instructions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "asdp_instructions"
+      }
+    },
+    {
+      "id": "f42d3568-e5d5-49ff-85fa-5307ef5a1a9e",
+      "name": "Non BM Dispatch Cease Instructions_Mar_2023",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "asdp_instructions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "asdp_instructions"
+      }
+    },
+    {
+      "id": "1f8eb6f2-6c3f-41ae-bc47-9d546a564988",
+      "name": "Non BM Dispatch Cease Instructions_Apr_2023",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "asdp_instructions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "asdp_instructions"
+      }
+    },
+    {
+      "id": "7d42751b-69d7-4886-b323-348bc280ec70",
+      "name": "Non BM Dispatch Cease Instructions_May_2023",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "asdp_instructions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "asdp_instructions"
+      }
+    },
+    {
+      "id": "022b285b-99b5-4daf-984b-67af79d034a9",
+      "name": "Non BM Dispatch Cease Instructions_Jun_2023",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "asdp_instructions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "asdp_instructions"
+      }
+    },
+    {
+      "id": "b6de945d-deed-4181-a97c-ba795d41a550",
+      "name": "Non BM Dispatch Cease Instructions_Jul_2023",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "asdp_instructions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "asdp_instructions"
+      }
+    },
+    {
+      "id": "edd4f419-14d1-4f48-a9e6-1e0a87b99561",
+      "name": "Non BM Dispatch Cease Instructions_Aug_2023",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "asdp_instructions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "asdp_instructions"
+      }
+    },
+    {
+      "id": "f352265b-01c4-4f45-b0e4-bef889b74d23",
+      "name": "Non BM Dispatch Cease Instructions_Sep_2023",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "asdp_instructions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "asdp_instructions"
+      }
+    },
+    {
+      "id": "2057abe9-465d-4ca0-84d1-ec67e9cdb7c8",
+      "name": "Non BM Dispatch Cease Instructions_Oct_2023",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "asdp_instructions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "asdp_instructions"
+      }
+    },
+    {
+      "id": "9d03620d-e526-4c2e-8917-0d990efe71c9",
+      "name": "Non BM Dispatch Cease Instructions_Nov_2023",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "asdp_instructions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "asdp_instructions"
+      }
+    },
+    {
+      "id": "3050db3d-0930-4462-8275-47413788fc7f",
+      "name": "Non BM Dispatch Cease Instructions_Dec_2023",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "asdp_instructions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "asdp_instructions"
+      }
+    },
+    {
+      "id": "f9de917d-9fc1-4ae6-9bfd-38f2c4e03ad7",
+      "name": "Non BM Dispatch Cease Instructions_Jan_2024",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "asdp_instructions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "asdp_instructions"
+      }
+    },
+    {
+      "id": "f393b6dd-a53e-479b-9487-ef6be9b54c7c",
+      "name": "Non BM Dispatch Cease Instructions_Feb_2024",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "asdp_instructions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "asdp_instructions"
+      }
+    },
+    {
+      "id": "634f9b03-e2e2-4d5a-a1b3-1eeae249dad3",
+      "name": "Non BM Dispatch Cease Instructions_Mar_2024",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "asdp_instructions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "asdp_instructions"
+      }
+    },
+    {
+      "id": "cbe93aea-a869-40a9-8115-ec32c690300c",
+      "name": "Non BM Dispatch Cease Instructions_Apr_2024",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "asdp_instructions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "asdp_instructions"
+      }
+    },
+    {
+      "id": "c6ec4a0d-bf02-41fd-b31d-d341d183a281",
+      "name": "Non BM Dispatch Cease Instructions_May_2024",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "asdp_instructions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "asdp_instructions"
+      }
+    },
+    {
+      "id": "3d943305-737e-4da3-af80-d02da7ab89e7",
+      "name": "Non BM Dispatch Cease Instructions_Jun_2024",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "asdp_instructions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "asdp_instructions"
+      }
+    },
+    {
+      "id": "8fbe008a-cbb7-4244-accd-52eb48484589",
+      "name": "Non BM Dispatch Cease Instructions_Jul_2024",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "asdp_instructions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "asdp_instructions"
+      }
+    },
+    {
+      "id": "a5ce745a-8555-4c50-94fa-d7db3bd2b8af",
+      "name": "Non BM Dispatch Cease Instructions_Aug_2024",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "asdp_instructions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "asdp_instructions"
+      }
+    },
+    {
+      "id": "9cec00cf-8ade-4a81-b2ef-f3ecf51e7c97",
+      "name": "Non BM Dispatch Cease Instructions_Sep_2024",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "asdp_instructions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "asdp_instructions"
+      }
+    },
+    {
+      "id": "6d3919d5-21be-4427-8757-e43fda9db4b6",
+      "name": "Non BM Dispatch Cease Instructions_Oct_2024",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "asdp_instructions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "asdp_instructions"
+      }
+    },
+    {
+      "id": "43a3ba39-6a69-4951-8f31-b36f24a752eb",
+      "name": "Non BM Dispatch Cease Instructions_Nov_2024",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "asdp_instructions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "asdp_instructions"
+      }
+    },
+    {
+      "id": "57d05910-1b81-4eaa-b87d-46e6ad7a483a",
+      "name": "Non BM Dispatch Cease Instructions_Dec_2024",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "asdp_instructions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "asdp_instructions"
+      }
+    },
+    {
+      "id": "6661b52e-89b7-4011-8900-e2ded58b215f",
+      "name": "Non BM Dispatch Cease Instructions_Jan_2025",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "asdp_instructions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "asdp_instructions"
+      }
+    },
+    {
+      "id": "fa6aa4e7-9c1a-439b-8d56-bfb3dfff9568",
+      "name": "Non BM Dispatch Cease Instructions_Feb_2025",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "asdp_instructions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "asdp_instructions"
+      }
+    },
+    {
+      "id": "ed60b6bf-b771-4eb5-8633-46d816f05703",
+      "name": "Non BM Dispatch Cease Instructions_Mar_2025",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "asdp_instructions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "asdp_instructions"
+      }
+    },
+    {
+      "id": "302141a1-6c74-4c2f-a1dc-298e485d59d9",
+      "name": "Non BM Dispatch Cease Instructions_Apr_2025",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "asdp_instructions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "asdp_instructions"
+      }
+    },
+    {
+      "id": "fa096fbf-9e57-4e9e-bbc0-8371e8541bf9",
+      "name": "Non BM Dispatch Cease Instructions_May_2025",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "asdp_instructions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "asdp_instructions"
+      }
+    },
+    {
+      "id": "51f4ada0-407e-49f4-bca8-ffe67c5beb9a",
+      "name": "Non BM Dispatch Cease Instructions_Jun_2025",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "asdp_instructions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "asdp_instructions"
+      }
+    },
+    {
+      "id": "c2e53d15-8041-4ec3-9d55-69e15895ab49",
+      "name": "Non BM Dispatch Cease Instructions_Jul_2025",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "asdp_instructions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "asdp_instructions"
+      }
+    },
+    {
+      "id": "0a4e2125-5e97-4c28-b707-056c7f295419",
+      "name": "Non BM Dispatch Cease Instructions_Aug_2025",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "asdp_instructions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "asdp_instructions"
+      }
+    },
+    {
+      "id": "7b3a9ead-c041-4a62-97b1-6cb0587baf58",
+      "name": "Non BM Dispatch Cease Instructions_Sep_2025",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "asdp_instructions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "asdp_instructions"
+      }
+    },
+    {
+      "id": "35a4fac5-ee33-475a-adab-25ad14da60b0",
+      "name": "Non BM Dispatch Cease Instructions_Oct_2025",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "asdp_instructions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "asdp_instructions"
+      }
+    },
+    {
+      "id": "cc57a85a-8f7e-4f45-9957-ae086d48b1c3",
+      "name": "Non BM Dispatch Cease Instructions_Nov_2025",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "asdp_instructions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "asdp_instructions"
+      }
+    },
+    {
+      "id": "bfbce47e-7ef8-4777-91cb-9b547d222829",
+      "name": "Non BM Dispatch Cease Instructions_Dec_2025",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "asdp_instructions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "asdp_instructions"
+      }
+    },
+    {
+      "id": "4c1e607e-d006-4d1a-a753-2c94d23b10c5",
+      "name": "Non BM Dispatch Cease Instructions_Jan_2026",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "asdp_instructions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "asdp_instructions"
+      }
+    },
+    {
+      "id": "2043a615-ad1c-44ed-9a36-11fbbcef5128",
+      "name": "Non BM Dispatch Cease Instructions_Feb_2026",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "asdp_instructions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "asdp_instructions"
+      }
+    },
+    {
+      "id": "ba09543b-79e0-46c7-a229-089d83df6304",
+      "name": "Non BM Dispatch Cease Instructions_Mar_2026",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "asdp_instructions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "asdp_instructions"
+      }
+    },
+    {
+      "id": "099bd868-d0af-4157-85c6-4508ddbd8a64",
+      "name": "Non BM Dispatch Cease Instructions_Apr_2026",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "asdp_instructions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "asdp_instructions"
+      }
+    }
+  ]
+}

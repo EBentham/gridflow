@@ -1,0 +1,113 @@
+{
+  "package": "fes-natural-gas-residential-and-non-domestic-i-c-heat-demand-summary-data-table-ed3",
+  "package_id": "2fd7b713-9a85-45d8-87d8-cb3f01fd0e89",
+  "group": "future-energy-scenarios",
+  "archetype": "SCN",
+  "refresh": "adhoc",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "fes_ed3_heat_demand_sum_ed",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SCN",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "fes_ed3_heat_demand_natural_gas",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SCN",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "fes_ed3_heat_demand_natural_gas_sum_ed",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SCN",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "1f1de28d-eff7-4c5b-83fa-33cd7ad1bd39",
+      "name": "Natural Gas and Residential Heat Demand Summary (ED3) 2023",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_ed3_heat_demand_natural_gas",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_ed3_heat_demand_natural_gas"
+      }
+    },
+    {
+      "id": "fb452e53-881c-4d4e-a236-a5b6b50f2840",
+      "name": "Natural Gas and Residential Heat Demand Summary (ED3) 2024",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_ed3_heat_demand_natural_gas",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_ed3_heat_demand_natural_gas"
+      }
+    },
+    {
+      "id": "2019e900-11eb-40ce-ae54-a49a2abb5d4b",
+      "name": "Heat Demand Summary (ED7) 2025",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_ed3_heat_demand_sum_ed",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_ed3_heat_demand_sum_ed"
+      }
+    },
+    {
+      "id": "f33e8ded-d302-40c4-be10-c7ca3a04b401",
+      "name": " Natural Gas Demand Summary (ED3) 2025",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_ed3_heat_demand_natural_gas_sum_ed",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_ed3_heat_demand_natural_gas_sum_ed"
+      }
+    },
+    {
+      "id": "c3d4acaf-5cd5-47f8-81a9-a4c10e16d55a",
+      "name": "Natural Gas Demand Summary (ED3) 2026",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_ed3_heat_demand_natural_gas_sum_ed",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_ed3_heat_demand_natural_gas_sum_ed"
+      }
+    },
+    {
+      "id": "9394f025-8454-4db0-b73c-083e301a1e74",
+      "name": "Heat Demand Summary (ED7) 2026",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_ed3_heat_demand_sum_ed",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_ed3_heat_demand_sum_ed"
+      }
+    }
+  ]
+}

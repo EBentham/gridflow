@@ -1,0 +1,36 @@
+{
+  "package": "short-term-operating-reserve-stor-day-ahead-auction-results",
+  "package_id": "fb4a9900-9438-47ae-9788-06f490353a89",
+  "group": "ancillary-services",
+  "archetype": "EVT",
+  "refresh": "frozen",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "stor_da_auction_results",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "frozen",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "844a1a65-0a3c-4704-b327-d1685d0c397b",
+      "name": "STOR DA Auction Results ",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "stor_da_auction_results",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "stor_da_auction_results"
+      }
+    }
+  ]
+}

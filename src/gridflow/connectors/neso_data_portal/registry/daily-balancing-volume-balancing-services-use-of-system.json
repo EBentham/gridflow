@@ -1,0 +1,158 @@
+{
+  "package": "daily-balancing-volume-balancing-services-use-of-system",
+  "package_id": "252b7bd1-7452-41bf-9b60-540cb1c0751a",
+  "group": "balancing",
+  "archetype": "SER",
+  "refresh": "weekly",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "daily_balancing_volume",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SER",
+      "refresh": "weekly",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "daily_balancing_volume_files",
+      "kind": "files",
+      "legacy": false,
+      "archetype": "SER",
+      "refresh": "weekly",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "a9b63a05-da9a-4a49-bcf4-13326720ce80",
+      "name": "Daily Balancing Volume 2017-2018",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "daily_balancing_volume",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "daily_balancing_volume"
+      }
+    },
+    {
+      "id": "0481067a-8a0e-465a-85a1-79482fca9307",
+      "name": "Daily Balancing Volume 2018-2019",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "daily_balancing_volume",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "daily_balancing_volume"
+      }
+    },
+    {
+      "id": "e1043731-cc07-4e41-89a4-596316a663e8",
+      "name": "Daily Balancing Volume 2019-2020",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "daily_balancing_volume",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "daily_balancing_volume"
+      }
+    },
+    {
+      "id": "b097d727-5adf-4c7c-98e5-4f8914b0f524",
+      "name": "Daily Balancing Volume 2020-2021",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "daily_balancing_volume",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "daily_balancing_volume"
+      }
+    },
+    {
+      "id": "539cc579-37e1-4b6f-94e5-c26f9ec9be70",
+      "name": "Daily Balancing Volume 2021-2022",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "daily_balancing_volume",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "daily_balancing_volume"
+      }
+    },
+    {
+      "id": "0cb9b169-a14a-4d1f-b08a-273b21519465",
+      "name": "Daily Balancing Volume 2022-2023",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "daily_balancing_volume",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "daily_balancing_volume"
+      }
+    },
+    {
+      "id": "66984a1a-4b02-4dd7-9183-425babf23b02",
+      "name": "Daily Balancing Volume 2023-2024",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "daily_balancing_volume",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "daily_balancing_volume"
+      }
+    },
+    {
+      "id": "62760005-e3bc-4a27-8207-2a2c035055d0",
+      "name": "Daily Balancing Volume 2024-2025",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "daily_balancing_volume",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "daily_balancing_volume"
+      }
+    },
+    {
+      "id": "5cb7f9f2-0c76-4c5c-90f9-8720de1fc85f",
+      "name": "Missing Settlement Periods since January 2017",
+      "format": "XLSX",
+      "url_type": "upload",
+      "family": "daily_balancing_volume_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "ef47829c-4916-4a6d-8554-257b6241026a",
+      "name": "Daily Balancing Volume 2025-2026",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "daily_balancing_volume",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "daily_balancing_volume"
+      }
+    },
+    {
+      "id": "e781da74-6c35-4296-81dd-250cee869c19",
+      "name": "Daily Balancing Volume 2026-2027",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "daily_balancing_volume",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "daily_balancing_volume"
+      }
+    }
+  ]
+}

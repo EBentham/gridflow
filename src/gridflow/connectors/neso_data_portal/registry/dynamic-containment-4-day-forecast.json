@@ -1,0 +1,58 @@
+{
+  "package": "dynamic-containment-4-day-forecast",
+  "package_id": "c8cd1e99-bc7e-454c-8ac1-ebd9264f4d0f",
+  "group": "ancillary-services",
+  "archetype": "FC",
+  "refresh": "daily",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "dc_forecast_4d",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "FC",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "dc_forecast_4d_history",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "FC",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "1b85a3f3-80f0-49cf-9b0e-49648fa0cae6",
+      "name": "Dynamic Containment - 4 Day forecast",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "dc_forecast_4d",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "dc_forecast_4d"
+      }
+    },
+    {
+      "id": "d5c3b48a-a0a9-4d57-a02a-ac0af09a6298",
+      "name": "Dynamic Containment 4 Day Forecast - History",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "dc_forecast_4d_history",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "dc_forecast_4d_history"
+      }
+    }
+  ]
+}

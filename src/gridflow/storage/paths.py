@@ -20,6 +20,10 @@ class PathBuilder:
 
     # --- Bronze ---
 
+    def bronze_source_dir(self, source: str) -> Path:
+        """Return the bronze root of one source (every dataset directory below it)."""
+        return self.data_dir / "bronze" / source
+
     def bronze_dir(self, source: str, dataset: str) -> Path:
         return self.data_dir / "bronze" / source / dataset
 
@@ -103,6 +107,12 @@ class PathBuilder:
     def gold_glob_pattern(self, gold_dataset: str) -> str:
         """Return a glob pattern for all gold parquet files."""
         return str(self.gold_dir(gold_dataset) / "**" / "[!.]*.parquet")
+
+    # --- Operational state (outside every medallion layer) ---
+
+    def state_dir(self, source: str) -> Path:
+        """Return a source's operational-state directory (e.g. its pacer lock)."""
+        return self.data_dir / "state" / source
 
     # --- DuckDB ---
 

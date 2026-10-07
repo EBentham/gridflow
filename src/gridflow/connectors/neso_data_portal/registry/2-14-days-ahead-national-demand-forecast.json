@@ -1,0 +1,80 @@
+{
+  "package": "2-14-days-ahead-national-demand-forecast",
+  "package_id": "633daec6-3e70-444a-88b0-c4cef9419d40",
+  "group": "demand",
+  "archetype": "FC",
+  "refresh": "daily",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "national_demand_fc_2_14d_days_ahead",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "FC",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "national_demand_fc_2_14d_days_ahead_half",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "FC",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "national_demand_fc_2_14d_historic_day",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "FC",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "4dd712a2-ee2c-455d-a9c0-9d3564c80fa0",
+      "name": "Historic 2-14 Day Ahead Demand Forecasts",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "national_demand_fc_2_14d_historic_day",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "national_demand_fc_2_14d_historic_day"
+      }
+    },
+    {
+      "id": "9af18ed4-efc8-4779-bef5-c0927fee9b0a",
+      "name": "2-14 Days Ahead Cardinal Point Forecast",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "national_demand_fc_2_14d_days_ahead",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "national_demand_fc_2_14d_days_ahead"
+      }
+    },
+    {
+      "id": "7c0411cd-2714-4bb5-a408-adb065edf34d",
+      "name": "2-14 Days Ahead Half Hourly Forecast",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "national_demand_fc_2_14d_days_ahead_half",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "national_demand_fc_2_14d_days_ahead_half"
+      }
+    }
+  ]
+}

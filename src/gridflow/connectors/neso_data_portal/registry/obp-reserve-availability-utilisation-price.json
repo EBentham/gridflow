@@ -1,0 +1,36 @@
+{
+  "package": "obp-reserve-availability-utilisation-price",
+  "package_id": "769ec53a-9940-4df3-a867-6fa62d483097",
+  "group": "ancillary-services",
+  "archetype": "EVT",
+  "refresh": "daily",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "obp_reserve_avail_price",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "6bfe7df0-60aa-462d-94cd-44ac0a4abb2c",
+      "name": " Non-BM Reserve Availability MW and Utilisation Price",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "obp_reserve_avail_price",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "obp_reserve_avail_price"
+      }
+    }
+  ]
+}

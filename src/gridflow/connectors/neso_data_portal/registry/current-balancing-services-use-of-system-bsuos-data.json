@@ -1,0 +1,293 @@
+{
+  "package": "current-balancing-services-use-of-system-bsuos-data",
+  "package_id": "d6a4bf54-c63f-4014-a716-49fd3878ca52",
+  "group": "balancing",
+  "archetype": "SER",
+  "refresh": "daily",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "current_bsuos_ii",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SER",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "current_bsuos_rf",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SER",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "current_bsuos_sf",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SER",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "current_bsuos_historic_ii",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SER",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "current_bsuos_historic_rf",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SER",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "current_bsuos_historic_sf",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SER",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "current_bsuos_files",
+      "kind": "files",
+      "legacy": false,
+      "archetype": "SER",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "3372646d-419f-4599-97a9-6bb4e7e32862",
+      "name": "Historic II BSUoS Data",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "current_bsuos_historic_ii",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "current_bsuos_historic_ii"
+      }
+    },
+    {
+      "id": "d151c80a-f6a8-4b79-9387-1a68cd445af5",
+      "name": "Historic II BSUoS Data 2023-2024",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "current_bsuos_historic_ii",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "current_bsuos_historic_ii"
+      }
+    },
+    {
+      "id": "241b40c3-1f20-4607-b329-0466d215871d",
+      "name": "Historic SF BSUoS Data",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "current_bsuos_historic_sf",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "current_bsuos_historic_sf"
+      }
+    },
+    {
+      "id": "2e8b2ea6-cdb5-4936-8636-4ab5a3f7e350",
+      "name": "Historic RF BSUoS Data",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "current_bsuos_historic_rf",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "current_bsuos_historic_rf"
+      }
+    },
+    {
+      "id": "a68fecf2-99a0-407a-90bb-2a6ebc39d9aa",
+      "name": "Historic SF BSUoS Data 2023-2024",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "current_bsuos_historic_sf",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "current_bsuos_historic_sf"
+      }
+    },
+    {
+      "id": "88dcf101-1358-4d78-934f-527484d8789d",
+      "name": "CMP381 II BSUoS Data",
+      "format": "XLSX",
+      "url_type": "upload",
+      "family": "current_bsuos_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "ead98e64-b345-450a-9c45-c6eae9cc1bbe",
+      "name": "CMP381 SF BSUoS Data",
+      "format": "XLSX",
+      "url_type": "upload",
+      "family": "current_bsuos_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "6ae55c11-7b79-4ea4-9775-1a0b3ccb5275",
+      "name": "CMP395 II BSUoS Data",
+      "format": "XLSX",
+      "url_type": "upload",
+      "family": "current_bsuos_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "1feb6b1e-549a-4af2-869a-e90b0a7a9c76",
+      "name": "CMP395 SF BSUoS Data",
+      "format": "XLSX",
+      "url_type": "upload",
+      "family": "current_bsuos_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "0eda5e28-1dc6-48da-8663-c00e12f2a1e2",
+      "name": "Current II BSUoS Data",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "current_bsuos_ii",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "current_bsuos_ii"
+      }
+    },
+    {
+      "id": "f0060fd0-1fc9-4288-a0b3-4af9b592b0cf",
+      "name": "Current SF BSUoS Data",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "current_bsuos_sf",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "current_bsuos_sf"
+      }
+    },
+    {
+      "id": "26b0f410-27d4-448a-9437-45277818b838",
+      "name": "Current RF BSUoS Data",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "current_bsuos_rf",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "current_bsuos_rf"
+      }
+    },
+    {
+      "id": "ea47c8e4-caa3-49c7-a442-e9644d330f63",
+      "name": "Historic II BSUoS Data 2024-2025",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "current_bsuos_historic_ii",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "current_bsuos_historic_ii"
+      }
+    },
+    {
+      "id": "320cdc0d-457f-4849-a0fc-bf6bdd4e21e5",
+      "name": "Historic SF BSUoS Data 2024-2025",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "current_bsuos_historic_sf",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "current_bsuos_historic_sf"
+      }
+    },
+    {
+      "id": "47642de9-0738-47df-b230-94a097b61ae7",
+      "name": "Historic RF BSUoS Data 2023-2024",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "current_bsuos_historic_rf",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "current_bsuos_historic_rf"
+      }
+    },
+    {
+      "id": "45e87b67-ed5d-49ea-a149-2b37f467e542",
+      "name": "Historic II BSUoS Data 2025-2026",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "current_bsuos_historic_ii",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "current_bsuos_historic_ii"
+      }
+    },
+    {
+      "id": "927aac83-c218-476c-9c20-29cf20cee448",
+      "name": "Historic SF BSUoS Data 2025-2026",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "current_bsuos_historic_sf",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "current_bsuos_historic_sf"
+      }
+    },
+    {
+      "id": "544ad552-65e6-47f9-b89c-0b9929dbb869",
+      "name": "Historic RF BSUoS Data 2024-2025",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "current_bsuos_historic_rf",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "current_bsuos_historic_rf"
+      }
+    }
+  ]
+}

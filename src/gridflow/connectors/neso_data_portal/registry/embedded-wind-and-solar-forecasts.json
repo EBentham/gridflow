@@ -1,0 +1,156 @@
+{
+  "package": "embedded-wind-and-solar-forecasts",
+  "package_id": "91c0c70e-0ef5-4116-b6fa-7ad084b5e0e8",
+  "group": "generation",
+  "archetype": "FC",
+  "refresh": "intraday",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "embedded_wind_solar_forecast",
+      "kind": "tabular",
+      "legacy": true,
+      "archetype": "FC",
+      "refresh": "intraday",
+      "empty_allowed": false,
+      "max_download_bytes": 8388608,
+      "name_regex": null,
+      "transformer": "bespoke"
+    },
+    {
+      "key": "embedded_wind_solar_forecast_archive",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "FC",
+      "refresh": "intraday",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "embedded_wind_solar_forecast_files",
+      "kind": "files",
+      "legacy": false,
+      "archetype": "FC",
+      "refresh": "intraday",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "db6c038f-98af-4570-ab60-24d71ebd0ae5",
+      "name": "Embedded Solar and Wind Forecast",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "embedded_wind_solar_forecast",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "embedded_wind_solar_forecast"
+      }
+    },
+    {
+      "id": "3808c680-b5c0-4eab-aac4-7abb6345e65b",
+      "name": "Embedded Definition",
+      "format": "DOC",
+      "url_type": "upload",
+      "family": "embedded_wind_solar_forecast_files",
+      "disposition": {
+        "kind": "DOC"
+      }
+    },
+    {
+      "id": "bc4d1093-ecf2-46d8-b207-7a0e3e8fb957",
+      "name": "Embedded Solar and Wind Forecast Archive 2019",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "embedded_wind_solar_forecast_archive",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "embedded_wind_solar_forecast_archive"
+      }
+    },
+    {
+      "id": "8a7249d4-ee67-45aa-9641-a3e063f54dba",
+      "name": "Embedded Solar and Wind Forecast Archive 2020",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "embedded_wind_solar_forecast_archive",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "embedded_wind_solar_forecast_archive"
+      }
+    },
+    {
+      "id": "794107f5-8567-4b32-ae3a-6817fec73e5c",
+      "name": "Embedded Solar and Wind Forecast Archive 2021",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "embedded_wind_solar_forecast_archive",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "embedded_wind_solar_forecast_archive"
+      }
+    },
+    {
+      "id": "07b0b42c-5152-4fc5-bcd1-e10ec8ec07de",
+      "name": "Embedded Solar and Wind Forecast Archive 2022",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "embedded_wind_solar_forecast_archive",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "embedded_wind_solar_forecast_archive"
+      }
+    },
+    {
+      "id": "26c9ef64-ce43-4e22-b984-ef013636aacb",
+      "name": "Embedded Solar and Wind Forecast Archive 2023",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "embedded_wind_solar_forecast_archive",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "embedded_wind_solar_forecast_archive"
+      }
+    },
+    {
+      "id": "06abd00a-ef6b-488b-9b6d-5e08fdc0c890",
+      "name": "Embedded Solar and Wind Forecast Archive 2024",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "embedded_wind_solar_forecast_archive",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "embedded_wind_solar_forecast_archive"
+      }
+    },
+    {
+      "id": "fc13df13-2dad-4a1c-b9e3-4569efba4955",
+      "name": "Embedded Solar and Wind Forecast Archive 2025",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "embedded_wind_solar_forecast_archive",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "embedded_wind_solar_forecast_archive"
+      }
+    },
+    {
+      "id": "31861619-0b86-47ba-bac2-d008a760af54",
+      "name": "Embedded Solar and Wind Forecast Archive 2026",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "embedded_wind_solar_forecast_archive",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "embedded_wind_solar_forecast_archive"
+      }
+    }
+  ]
+}

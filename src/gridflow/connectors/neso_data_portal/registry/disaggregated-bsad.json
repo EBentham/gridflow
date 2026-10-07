@@ -1,0 +1,179 @@
+{
+  "package": "disaggregated-bsad",
+  "package_id": "4878d09f-8938-4e8f-8f3e-538b3355861a",
+  "group": "ancillary-services",
+  "archetype": "EVT",
+  "refresh": "daily",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "disaggregated_bsad",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "a01c3587-0e29-4e8b-81e6-37a32776fd8a",
+      "name": "Disaggregated BSAD 2013-14",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "disaggregated_bsad",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "disaggregated_bsad"
+      }
+    },
+    {
+      "id": "56b1346d-b0b7-4382-b1f6-8c20f614498e",
+      "name": "Disaggregated BSAD 2014-15",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "disaggregated_bsad",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "disaggregated_bsad"
+      }
+    },
+    {
+      "id": "d635d2b5-13ed-479b-ab84-1b62b0bf57c5",
+      "name": "Disaggregated BSAD 2015-16",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "disaggregated_bsad",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "disaggregated_bsad"
+      }
+    },
+    {
+      "id": "67b9dc17-9680-465c-8811-d0701608a9de",
+      "name": "Disaggregated BSAD 2016-17",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "disaggregated_bsad",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "disaggregated_bsad"
+      }
+    },
+    {
+      "id": "b6cb5312-ec16-4c4b-924b-9154f051e772",
+      "name": "Disaggregated BSAD 2017-18",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "disaggregated_bsad",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "disaggregated_bsad"
+      }
+    },
+    {
+      "id": "c64c285c-764b-4e95-9e04-a9379f8f84be",
+      "name": "Disaggregated BSAD 2018-19",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "disaggregated_bsad",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "disaggregated_bsad"
+      }
+    },
+    {
+      "id": "48fbc6ea-381e-40d6-9633-d1be09a89a0b",
+      "name": "Disaggregated BSAD 2019-20",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "disaggregated_bsad",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "disaggregated_bsad"
+      }
+    },
+    {
+      "id": "17325b59-ee73-4d7b-a05b-f2be04f1c2f8",
+      "name": "Disaggregated BSAD 2020-21",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "disaggregated_bsad",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "disaggregated_bsad"
+      }
+    },
+    {
+      "id": "cbf4e22a-d18e-4998-a7aa-da36261c4430",
+      "name": "Disaggregated BSAD 2021-22",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "disaggregated_bsad",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "disaggregated_bsad"
+      }
+    },
+    {
+      "id": "b1167b32-75e8-436b-8b04-f1e586ffe60b",
+      "name": "Disaggregated BSAD 2022-23",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "disaggregated_bsad",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "disaggregated_bsad"
+      }
+    },
+    {
+      "id": "aba2f13c-39ed-4991-a28b-288c94f1b800",
+      "name": "Disaggregated BSAD 2023-24",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "disaggregated_bsad",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "disaggregated_bsad"
+      }
+    },
+    {
+      "id": "bc7cf2a8-6e25-4dad-ac2d-b9a97e968317",
+      "name": "Disaggregated BSAD 2024-25",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "disaggregated_bsad",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "disaggregated_bsad"
+      }
+    },
+    {
+      "id": "f99c6391-507b-4eaa-beb8-a26fdfa809de",
+      "name": "Disaggregated BSAD 2025-26",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "disaggregated_bsad",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "disaggregated_bsad"
+      }
+    },
+    {
+      "id": "2be1a4d1-6b10-4c62-a01c-924942a3748f",
+      "name": "Disaggregated BSAD 2026-27",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "disaggregated_bsad",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "disaggregated_bsad"
+      }
+    }
+  ]
+}

@@ -1,0 +1,190 @@
+{
+  "package": "eac-mock-auction-results",
+  "package_id": "8a6f23d7-8489-49ac-9b0a-566fb53d32f8",
+  "group": "ancillary-services",
+  "archetype": "EVT",
+  "refresh": "weekly",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "eac_mock_results_buy_orders",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "weekly",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "eac_mock_results_daily_buy_orders",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "weekly",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "eac_mock_results_daily_by_unit",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "weekly",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "eac_mock_results_daily_summary",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "weekly",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "eac_mock_results_daily_sell_orders",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "weekly",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "eac_mock_results_by_unit",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "weekly",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "eac_mock_results_summary",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "weekly",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "eac_mock_results_sell_orders",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "weekly",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "955cf89f-232e-4b9c-8414-6351080f49fa",
+      "name": "NESO Mock Response-Reserve Results By Unit 2025-2026",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "eac_mock_results_by_unit",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "eac_mock_results_by_unit"
+      }
+    },
+    {
+      "id": "700a73ff-38e9-45ff-a674-085bcbfc9faf",
+      "name": "NESO Mock Response-Reserve Buy Orders 2025-2026",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "eac_mock_results_buy_orders",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "eac_mock_results_buy_orders"
+      }
+    },
+    {
+      "id": "3b18345a-1933-44d7-abd9-062a2e695ccd",
+      "name": "NESO Mock Response-Reserve Sell Orders 2025-2026",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "eac_mock_results_sell_orders",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "eac_mock_results_sell_orders"
+      }
+    },
+    {
+      "id": "454216d8-61f3-40b6-b787-4dff035ce3c3",
+      "name": "NESO Mock Response-Reserve Results Summary 2025-2026",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "eac_mock_results_summary",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "eac_mock_results_summary"
+      }
+    },
+    {
+      "id": "6a051ca2-715b-4966-9c16-58e52254f10b",
+      "name": "NESO Mock Response-Reserve Daily Results By Unit",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "eac_mock_results_daily_by_unit",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "eac_mock_results_daily_by_unit"
+      }
+    },
+    {
+      "id": "f994f9bb-a2f3-48ff-a776-0b343806d978",
+      "name": "NESO Mock Response-Reserve Daily Buy Orders",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "eac_mock_results_daily_buy_orders",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "eac_mock_results_daily_buy_orders"
+      }
+    },
+    {
+      "id": "f67a53d7-d46d-4550-8947-0c60328b2347",
+      "name": "NESO Mock Response-Reserve Daily Results Summary",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "eac_mock_results_daily_summary",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "eac_mock_results_daily_summary"
+      }
+    },
+    {
+      "id": "c4d0341d-806d-4e53-9ae8-2c54df740ba3",
+      "name": "NESO Mock Response-Reserve Daily Sell Orders",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "eac_mock_results_daily_sell_orders",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "eac_mock_results_daily_sell_orders"
+      }
+    }
+  ]
+}

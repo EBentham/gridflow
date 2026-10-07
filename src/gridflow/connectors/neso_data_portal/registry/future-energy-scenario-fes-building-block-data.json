@@ -1,0 +1,190 @@
+{
+  "package": "future-energy-scenario-fes-building-block-data",
+  "package_id": "30df2649-99cf-4f84-9128-6c58fc1ea72a",
+  "group": "future-energy-scenarios",
+  "archetype": "SCN",
+  "refresh": "adhoc",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "fes_building_blocks_block_definitions",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SCN",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "fes_building_blocks_block_licence_area",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SCN",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "fes_building_blocks_main",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SCN",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "bff7061d-fbd3-4d8a-a95b-876affc2033d",
+      "name": "FES 2020 Building Blocks - Version 1.3",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_building_blocks_main",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_building_blocks_main"
+      }
+    },
+    {
+      "id": "9fb5211f-9689-4d6f-a73e-cf28f03c5885",
+      "name": "Building Block Definitions 2020",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_building_blocks_block_definitions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_building_blocks_block_definitions"
+      }
+    },
+    {
+      "id": "5f93098e-1d52-44bf-a375-d3edfb89f8a5",
+      "name": "FES 2021 Building Blocks - Version 8.0",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_building_blocks_main",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_building_blocks_main"
+      }
+    },
+    {
+      "id": "0dce4330-7dfe-4db6-97c9-443e82246cbc",
+      "name": "Building Block Definitions 2021",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_building_blocks_block_definitions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_building_blocks_block_definitions"
+      }
+    },
+    {
+      "id": "e5ab7ecb-0ab1-4fe7-833c-1fe905b086f8",
+      "name": "Building Block Definitions 2022",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_building_blocks_block_definitions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_building_blocks_block_definitions"
+      }
+    },
+    {
+      "id": "36fd3aa9-6e42-418f-b1bb-a31bbfcf2008",
+      "name": "FES 2022 Building Blocks - Version 4.0",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_building_blocks_main",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_building_blocks_main"
+      }
+    },
+    {
+      "id": "8d57568c-2534-4682-ab1d-72fcf2d14998",
+      "name": "FES 2023 Building Blocks - Version 1.1",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_building_blocks_main",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_building_blocks_main"
+      }
+    },
+    {
+      "id": "f400d905-4159-4bcb-8e7d-f28528545d89",
+      "name": "Building Block Definitions 2023",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_building_blocks_block_definitions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_building_blocks_block_definitions"
+      }
+    },
+    {
+      "id": "be1f002b-bd8b-4f8d-9e1d-72d680336e26",
+      "name": "FES 2024 Building Blocks - Version 1.1",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_building_blocks_main",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_building_blocks_main"
+      }
+    },
+    {
+      "id": "0ec29244-277e-41d1-bca7-17f12b71eb60",
+      "name": "Building Block Licence Area Name Mapping 2024",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_building_blocks_block_licence_area",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_building_blocks_block_licence_area"
+      }
+    },
+    {
+      "id": "778a505c-1972-463b-b4bf-53e33c4d3470",
+      "name": "Building Block Definitions 2024",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_building_blocks_block_definitions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_building_blocks_block_definitions"
+      }
+    },
+    {
+      "id": "cc3118da-cbbe-49e8-a8ee-9bdd89a8bf9c",
+      "name": "Building Block Definitions 2025",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_building_blocks_block_definitions",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_building_blocks_block_definitions"
+      }
+    },
+    {
+      "id": "73f69d8f-e9cb-4a2d-8538-baf03b5eadef",
+      "name": "FES 2025 Building Blocks",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_building_blocks_main",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_building_blocks_main"
+      }
+    }
+  ]
+}

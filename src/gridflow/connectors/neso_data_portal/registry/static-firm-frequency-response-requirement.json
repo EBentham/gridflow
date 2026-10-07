@@ -1,0 +1,36 @@
+{
+  "package": "static-firm-frequency-response-requirement",
+  "package_id": "1f641071-ffc1-4fca-b83e-2c30772530a3",
+  "group": "ancillary-services",
+  "archetype": "FC",
+  "refresh": "monthly",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "sffr_requirement",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "FC",
+      "refresh": "monthly",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "bf236101-7167-4351-9fa0-c0b2e7c85747",
+      "name": "Static Firm Frequency Response Requirement",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "sffr_requirement",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "sffr_requirement"
+      }
+    }
+  ]
+}

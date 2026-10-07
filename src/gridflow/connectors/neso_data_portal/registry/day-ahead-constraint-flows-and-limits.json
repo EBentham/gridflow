@@ -1,0 +1,67 @@
+{
+  "package": "day-ahead-constraint-flows-and-limits",
+  "package_id": "cf3cbc92-2d5d-4c2b-bd29-e11a21070b26",
+  "group": "constraint-management",
+  "archetype": "FC",
+  "refresh": "daily",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "da_constraint_flows_limits",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "FC",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "da_constraint_flows_limits_files",
+      "kind": "files",
+      "legacy": false,
+      "archetype": "FC",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "bb6d6ec6-16d9-4be5-b32c-1a70c09fd871",
+      "name": "Network Diagram England & Wales",
+      "format": "PDF",
+      "url_type": "upload",
+      "family": "da_constraint_flows_limits_files",
+      "disposition": {
+        "kind": "DOC"
+      }
+    },
+    {
+      "id": "38a18ec1-9e40-465d-93fb-301e80fd1352",
+      "name": "Day Ahead Constraint Flows and Limits",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "da_constraint_flows_limits",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "da_constraint_flows_limits"
+      }
+    },
+    {
+      "id": "3eb74046-3ffa-40c3-a541-b3cb00a44b1f",
+      "name": "Network Diagram Scotland",
+      "format": "PDF",
+      "url_type": "upload",
+      "family": "da_constraint_flows_limits_files",
+      "disposition": {
+        "kind": "DOC"
+      }
+    }
+  ]
+}

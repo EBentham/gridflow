@@ -1,0 +1,179 @@
+{
+  "package": "day-ahead-wind-forecast",
+  "package_id": "fbe3701d-1487-443e-abe9-47a6c01ecce2",
+  "group": "generation",
+  "archetype": "FC",
+  "refresh": "intraday",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "da_wind_forecast_day_ahead_bmu",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "FC",
+      "refresh": "intraday",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "da_wind_forecast_day_ahead",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "FC",
+      "refresh": "intraday",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "da_wind_forecast_historic_day_ahead_bmu",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "FC",
+      "refresh": "intraday",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "da_wind_forecast_historic_day_ahead",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "FC",
+      "refresh": "intraday",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "b2f03146-f05d-4824-a663-3a4f36090c71",
+      "name": "Day Ahead Wind Forecast",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "da_wind_forecast_day_ahead",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "da_wind_forecast_day_ahead"
+      }
+    },
+    {
+      "id": "7524ec65-f782-4258-aaf8-5b926c17b966",
+      "name": "Historic Day Ahead Wind Forecasts",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "da_wind_forecast_historic_day_ahead",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "da_wind_forecast_historic_day_ahead"
+      }
+    },
+    {
+      "id": "90e581e9-2d7f-4eaa-8fe0-6e323ee0f5f7",
+      "name": "Day Ahead Wind BMU Forecast",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "da_wind_forecast_day_ahead_bmu",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "da_wind_forecast_day_ahead_bmu"
+      }
+    },
+    {
+      "id": "22625e0b-f63b-4d0e-9bbd-54383fc3e931",
+      "name": "Historic Day Ahead Wind BMU Forecasts 2024",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "da_wind_forecast_historic_day_ahead_bmu",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "da_wind_forecast_historic_day_ahead_bmu"
+      }
+    },
+    {
+      "id": "81413643-508e-4358-8414-c87e7c4bcc43",
+      "name": "Historic Day Ahead Wind BMU Forecasts 2025",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "da_wind_forecast_historic_day_ahead_bmu",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "da_wind_forecast_historic_day_ahead_bmu"
+      }
+    },
+    {
+      "id": "9c26224d-ba6f-4fff-a21f-6f0090d8ac7d",
+      "name": "Historic Day Ahead Wind BMU Forecasts 2018",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "da_wind_forecast_historic_day_ahead_bmu",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "da_wind_forecast_historic_day_ahead_bmu"
+      }
+    },
+    {
+      "id": "11bc4219-0524-468d-8378-bba06c6114c4",
+      "name": "Historic Day Ahead Wind BMU Forecasts 2019",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "da_wind_forecast_historic_day_ahead_bmu",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "da_wind_forecast_historic_day_ahead_bmu"
+      }
+    },
+    {
+      "id": "ae7cd368-7fcf-47ab-a835-27a6ee7a679e",
+      "name": "Historic Day Ahead Wind BMU Forecasts 2020",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "da_wind_forecast_historic_day_ahead_bmu",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "da_wind_forecast_historic_day_ahead_bmu"
+      }
+    },
+    {
+      "id": "53587966-5b79-4a8c-8029-efe1c3d13601",
+      "name": "Historic Day Ahead Wind BMU Forecasts 2021",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "da_wind_forecast_historic_day_ahead_bmu",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "da_wind_forecast_historic_day_ahead_bmu"
+      }
+    },
+    {
+      "id": "411cfef3-2297-49b0-8426-476d913ba310",
+      "name": "Historic Day Ahead Wind BMU Forecasts 2022",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "da_wind_forecast_historic_day_ahead_bmu",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "da_wind_forecast_historic_day_ahead_bmu"
+      }
+    },
+    {
+      "id": "b8a784ac-f6fe-4f93-a965-ce6a32df0963",
+      "name": "Historic Day Ahead Wind BMU Forecasts 2023",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "da_wind_forecast_historic_day_ahead_bmu",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "da_wind_forecast_historic_day_ahead_bmu"
+      }
+    }
+  ]
+}

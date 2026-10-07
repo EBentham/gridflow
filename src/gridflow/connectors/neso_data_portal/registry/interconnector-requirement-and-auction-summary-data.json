@@ -1,0 +1,57 @@
+{
+  "package": "interconnector-requirement-and-auction-summary-data",
+  "package_id": "fdcb1853-4279-4fc9-acb2-d603965eab12",
+  "group": "trade-data",
+  "archetype": "EVT",
+  "refresh": "adhoc",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "ic_requirement_auction",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "ic_requirement_auction_files",
+      "kind": "files",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "6a928369-bed3-445f-af8a-69cdb2cc5089",
+      "name": "Interconnector Requirements and Auction Summary",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "ic_requirement_auction",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "ic_requirement_auction"
+      }
+    },
+    {
+      "id": "74b56acb-e1ea-4c40-9f8a-2f4226630b2a",
+      "name": "Interconnector trading restrictions for NESO",
+      "format": "PDF",
+      "url_type": "upload",
+      "family": "ic_requirement_auction_files",
+      "disposition": {
+        "kind": "DOC"
+      }
+    }
+  ]
+}

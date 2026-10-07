@@ -1,0 +1,92 @@
+{
+  "package": "index-linked-contract-volume",
+  "package_id": "ba632bb7-0bf8-4370-bfee-df3236aff285",
+  "group": "trade-data",
+  "archetype": "EVT",
+  "refresh": "frozen",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "index_linked_contract_volume",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "frozen",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "index_linked_contract_volume_files",
+      "kind": "files",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "frozen",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "8f694d01-68a5-41b9-9542-dd27c42fdbbf",
+      "name": "Index Linked Contract Enactment FY 21-22",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "index_linked_contract_volume",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "index_linked_contract_volume"
+      }
+    },
+    {
+      "id": "ff292de9-59aa-45cc-85ce-e21fed09f5ff",
+      "name": "Index Linked Contract Enactment FY 22-23",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "index_linked_contract_volume",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "index_linked_contract_volume"
+      }
+    },
+    {
+      "id": "dff083d2-666b-4e23-9b46-9edd9298f0d3",
+      "name": "Index Linked Contract Enactment FY 23-24",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "index_linked_contract_volume",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "index_linked_contract_volume"
+      }
+    },
+    {
+      "id": "9b72a2f5-db92-40ca-aa95-b9f1c56f7373",
+      "name": "Index Linked Contract Enactment FY 24-25",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "index_linked_contract_volume",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "index_linked_contract_volume"
+      }
+    },
+    {
+      "id": "6e27b1d9-ae9a-4c13-8fe3-272d939ce984",
+      "name": "Index Linked Contract Enactment  (Archived files)",
+      "format": "ZIP",
+      "url_type": "upload",
+      "family": "index_linked_contract_volume_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    }
+  ]
+}

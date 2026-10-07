@@ -1,0 +1,102 @@
+{
+  "package": "eac-br-auction-results",
+  "package_id": "94c65383-a108-468f-aad4-1d96380be93f",
+  "group": "ancillary-services",
+  "archetype": "EVT",
+  "refresh": "frozen",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "eac_br_results_buy_orders",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "frozen",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "eac_br_results_by_unit",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "frozen",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "eac_br_results_summary",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "frozen",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "eac_br_results_sell_orders",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "frozen",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "5d8e47be-e262-4398-89b0-6f93f636faf6",
+      "name": "NESO Balancing-Reserve Results By Unit 2023-2024",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "eac_br_results_by_unit",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "eac_br_results_by_unit"
+      }
+    },
+    {
+      "id": "8a549d29-52cd-4016-a04e-c01a3e31bd3a",
+      "name": "NESO Balancing-Reserve Buy Orders 2023-2024",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "eac_br_results_buy_orders",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "eac_br_results_buy_orders"
+      }
+    },
+    {
+      "id": "3f53c38b-d287-41af-b4c8-769abb6e707a",
+      "name": "NESO Balancing-Reserve Sell Orders 2023-2024",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "eac_br_results_sell_orders",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "eac_br_results_sell_orders"
+      }
+    },
+    {
+      "id": "1b3f2ee1-74a0-4939-a5a3-f01f19e663e4",
+      "name": "NESO Balancing-Reserve Results Summary 2023-2024",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "eac_br_results_summary",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "eac_br_results_summary"
+      }
+    }
+  ]
+}

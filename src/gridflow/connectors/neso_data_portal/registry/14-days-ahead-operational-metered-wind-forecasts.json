@@ -1,0 +1,58 @@
+{
+  "package": "14-days-ahead-operational-metered-wind-forecasts",
+  "package_id": "ca6fc361-9099-4ab2-ac02-c959431e84bc",
+  "group": "generation",
+  "archetype": "FC",
+  "refresh": "daily",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "metered_wind_forecast_14d",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "FC",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "metered_wind_forecast_14d_windfarm",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "FC",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "b1ae17c2-cc5e-4254-9bbf-3eddcf30d033",
+      "name": "14 Day Ahead Operational Metered Wind Forecast",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "metered_wind_forecast_14d",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "metered_wind_forecast_14d"
+      }
+    },
+    {
+      "id": "31e6d895-af48-41bd-a4db-28a78c7e9c4b",
+      "name": "14 Day Ahead Operational Metered Windfarm-Level Wind Forecast",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "metered_wind_forecast_14d_windfarm",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "metered_wind_forecast_14d_windfarm"
+      }
+    }
+  ]
+}

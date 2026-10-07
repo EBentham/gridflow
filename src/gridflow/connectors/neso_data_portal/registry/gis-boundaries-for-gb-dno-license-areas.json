@@ -1,0 +1,91 @@
+{
+  "package": "gis-boundaries-for-gb-dno-license-areas",
+  "package_id": "0e377f16-95e9-4c15-a1fc-49e06a39cfa0",
+  "group": "system",
+  "archetype": "FILE",
+  "refresh": "adhoc",
+  "eligibility": {
+    "status": "held",
+    "question": "third-party origin cited in package notes; licence carve-out",
+    "unit": "N"
+  },
+  "families": [
+    {
+      "key": "gis_dno_license_areas_files",
+      "kind": "files",
+      "legacy": false,
+      "archetype": "FILE",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "46a7b674-49f9-4ad6-b778-df48f6736222",
+      "name": "GB DNO Licence Areas 20200506 with ESRI Shape File",
+      "format": "ZIP",
+      "url_type": "upload",
+      "family": "gis_dno_license_areas_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "af79a476-33b0-42a3-8c6d-1c578d844cc3",
+      "name": "GB DNO Licence Areas 20200506",
+      "format": "PDF",
+      "url_type": "upload",
+      "family": "gis_dno_license_areas_files",
+      "disposition": {
+        "kind": "DOC"
+      }
+    },
+    {
+      "id": "e96db306-aaa8-45be-aecd-65b34d38923a",
+      "name": "GB DNO Licence Areas 20200506 with GeoJson",
+      "format": "GEOJSON",
+      "url_type": "upload",
+      "family": "gis_dno_license_areas_files",
+      "disposition": {
+        "kind": "GIS"
+      }
+    },
+    {
+      "id": "668df251-b8a5-4ac3-8427-20b93b2f5f67",
+      "name": "GB DNO Licence Areas 20240503 with ESRI Shape File",
+      "format": "ZIP",
+      "url_type": "upload",
+      "family": "gis_dno_license_areas_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "1c6a7dc0-1b6c-443a-bc67-5f7125649434",
+      "name": "GB DNO Licence Areas 20240503 with GeoJson",
+      "format": "GEOJSON",
+      "url_type": "upload",
+      "family": "gis_dno_license_areas_files",
+      "disposition": {
+        "kind": "GIS"
+      }
+    },
+    {
+      "id": "26d1b3b3-2ea7-4681-bbd0-8fc7f574c6db",
+      "name": "GB DNO Licence Areas 20240503",
+      "format": "PNG",
+      "url_type": "upload",
+      "family": "gis_dno_license_areas_files",
+      "disposition": {
+        "kind": "DOC"
+      }
+    }
+  ]
+}

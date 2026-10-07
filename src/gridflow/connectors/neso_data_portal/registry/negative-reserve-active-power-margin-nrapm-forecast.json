@@ -1,0 +1,102 @@
+{
+  "package": "negative-reserve-active-power-margin-nrapm-forecast",
+  "package_id": "64151a33-3075-437d-bf11-fc00f297520e",
+  "group": "generation",
+  "archetype": "FC",
+  "refresh": "daily",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "nrapm_forecast_national_daily_days",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "FC",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "nrapm_forecast_scotland_daily_days",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "FC",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "nrapm_forecast_weekly_week_national",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "FC",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "nrapm_forecast_weekly_week_scotland",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "FC",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "4c391daa-14e2-4991-a476-5539033ebb3d",
+      "name": "National Daily 2-14 days NRAPM Forecast",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "nrapm_forecast_national_daily_days",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "nrapm_forecast_national_daily_days"
+      }
+    },
+    {
+      "id": "c2861f81-b400-4456-870e-d51a4b530331",
+      "name": "Scotland Daily 2-14 days NRAPM Forecast",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "nrapm_forecast_scotland_daily_days",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "nrapm_forecast_scotland_daily_days"
+      }
+    },
+    {
+      "id": "42377a3d-e202-475f-9069-dcd4d1fae952",
+      "name": "Weekly 2-52 week National NRAPM Forecast",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "nrapm_forecast_weekly_week_national",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "nrapm_forecast_weekly_week_national"
+      }
+    },
+    {
+      "id": "88f3e766-fff2-418c-aef2-4b627d2cdabd",
+      "name": "Weekly 2-52 week Scotland NRAPM forecast",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "nrapm_forecast_weekly_week_scotland",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "nrapm_forecast_weekly_week_scotland"
+      }
+    }
+  ]
+}

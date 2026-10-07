@@ -1,0 +1,47 @@
+{
+  "package": "gis-boundaries-for-gb-generation-charging-zones",
+  "package_id": "f72029e7-3056-4021-9493-01c58a667d7a",
+  "group": "network-charges",
+  "archetype": "FILE",
+  "refresh": "frozen",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "gis_gen_charging_zones_files",
+      "kind": "files",
+      "legacy": false,
+      "archetype": "FILE",
+      "refresh": "frozen",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "102b90d8-db66-42d1-a305-1108b3384e62",
+      "name": "GB Generation Charging Zones with ESRI Shape File",
+      "format": "ZIP",
+      "url_type": "upload",
+      "family": "gis_gen_charging_zones_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "539a04ea-8bf3-4366-a277-49812c651cfb",
+      "name": "GB Generation Charging Zones with GeoJSON",
+      "format": "GEOJSON",
+      "url_type": "upload",
+      "family": "gis_gen_charging_zones_files",
+      "disposition": {
+        "kind": "GIS"
+      }
+    }
+  ]
+}

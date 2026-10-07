@@ -1,0 +1,58 @@
+{
+  "package": "viking",
+  "package_id": "53a942cc-f9ab-4ad3-a274-5beed51635ec",
+  "group": "interconnectors",
+  "archetype": "FC",
+  "refresh": "daily",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "viking_link_ntc",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "FC",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "viking_ntc",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "FC",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "f4ee9a34-1bb5-405e-b4a0-bacb193fb188",
+      "name": "Viking Link NTC Data",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "viking_link_ntc",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "viking_link_ntc"
+      }
+    },
+    {
+      "id": "0d20456e-85cc-47a9-b476-e2d8e7c1b8eb",
+      "name": "Archived Viking NTC Data",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "viking_ntc",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "viking_ntc"
+      }
+    }
+  ]
+}

@@ -1,0 +1,124 @@
+{
+  "package": "stability-pathfinder-service-information",
+  "package_id": "ae59b12b-4cfe-40a0-844f-1d139c63d893",
+  "group": "system",
+  "archetype": "SER",
+  "refresh": "weekly",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "stability_pathfinder_availability_report",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SER",
+      "refresh": "weekly",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "stability_pathfinder_utilisation_report",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SER",
+      "refresh": "weekly",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "52af0f68-e1c3-45dd-ae7f-54f68e32e0c6",
+      "name": "Stability Pathfinder Utilisation Report 2023-2024",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "stability_pathfinder_utilisation_report",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "stability_pathfinder_utilisation_report"
+      }
+    },
+    {
+      "id": "a4fd8208-3e36-4f9c-bdc7-435c3734a2da",
+      "name": "Stability Pathfinder Availability Report 2023-2024",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "stability_pathfinder_availability_report",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "stability_pathfinder_availability_report"
+      }
+    },
+    {
+      "id": "bacc45e5-11ac-4bac-88ef-6872f499db97",
+      "name": "Stability Pathfinder Availability Report 2024-2025",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "stability_pathfinder_availability_report",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "stability_pathfinder_availability_report"
+      }
+    },
+    {
+      "id": "f43f5d61-b51f-45f9-a7e7-66f2959d38b5",
+      "name": "Stability Pathfinder Utilisation Report 2024-2025",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "stability_pathfinder_utilisation_report",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "stability_pathfinder_utilisation_report"
+      }
+    },
+    {
+      "id": "fc08cdba-1a86-460b-85c4-3d8c0d3d4e42",
+      "name": "Stability Pathfinder Utilisation Report 2025-2026",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "stability_pathfinder_utilisation_report",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "stability_pathfinder_utilisation_report"
+      }
+    },
+    {
+      "id": "1264f36f-27ce-4ed9-aab1-393c7612d6bc",
+      "name": "Stability Pathfinder Availability Report 2025-2026",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "stability_pathfinder_availability_report",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "stability_pathfinder_availability_report"
+      }
+    },
+    {
+      "id": "690a9e42-20e2-4b0e-b74f-f3e37cac4bac",
+      "name": "Stability Pathfinder Availability Report 2026-2027",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "stability_pathfinder_availability_report",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "stability_pathfinder_availability_report"
+      }
+    },
+    {
+      "id": "75996c0a-70fb-4ddb-a345-bb1e8d39de35",
+      "name": "Stability Pathfinder Utilisation Report 2026-2027",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "stability_pathfinder_utilisation_report",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "stability_pathfinder_utilisation_report"
+      }
+    }
+  ]
+}

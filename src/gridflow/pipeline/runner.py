@@ -28,9 +28,10 @@ if TYPE_CHECKING:
 
     import duckdb
 
+    from gridflow.bronze.writer import BronzeWriter
     from gridflow.config.settings import GridflowConfig
-    from gridflow.connectors.base import BaseConnector, RawResponse
-    from gridflow.observability import WatermarkRead, WatermarkWrite
+    from gridflow.connectors.base import BaseConnector, MemberCaptureConnector, RawResponse
+    from gridflow.observability import PipelineRunTracker, WatermarkRead, WatermarkWrite
     from gridflow.silver.base import BaseSilverTransformer, BronzeVouchReason
 
 logger = logging.getLogger(__name__)
@@ -308,6 +309,9 @@ class DatasetResult:
         neither unique affected entities nor counts of rows discarded from the
         destination.
         error: Pre-redacted error message when ``status == "failed"``, else None.
+        members_unchanged: Ingest-only, member-capture sources (ADR-033 P-10):
+            members skipped because their newest capture is current. Nothing
+            was fetched for them and they carry no frontier evidence.
     """
 
     source: str
@@ -327,6 +331,7 @@ class DatasetResult:
     partition_windows_unresolved: int = 0
     partition_retouch_warnings: int = 0
     error: str | None = None
+    members_unchanged: int = 0
 
     @property
     def ok(self) -> bool:
@@ -879,6 +884,204 @@ def _watermark_record_message(
     return f"{source}/{dataset}: " + "; ".join(parts)
 
 
+@dataclass
+class MemberTally:
+    """Per-dataset member outcomes of a bounded capture (ADR-033 P-5)."""
+
+    captured: int = 0
+    unchanged: int = 0
+    deferred: int = 0
+    absent: int = 0
+    failed: int = 0
+
+
+async def _capture_members(
+    connector: MemberCaptureConnector,
+    writer: BronzeWriter,
+    source: str,
+    dataset: str,
+    start: datetime,
+    end: datetime,
+) -> MemberTally:
+    """Consume ``iter_members`` and publish each capture before the next download.
+
+    Only the tally survives a member: each event, and with it its body, is
+    released before the next one is requested (ADR-033 A9). A publication
+    ``OSError`` — a name collision included — counts the member as failed and
+    leaves any existing artifact untouched.
+
+    Raises:
+        MemberCaptureError: Every attempted member failed and none was
+            captured or found unchanged.
+    """
+    from gridflow.connectors.base import MemberCaptureError
+
+    tally = MemberTally()
+    first_failure = ""
+    async with connector:
+        async for event in connector.iter_members(dataset, start, end):
+            outcome = event.outcome
+            if outcome == "captured":
+                if event.response is None or event.extension is None:
+                    raise MemberCaptureError(
+                        f"{source}/{dataset}: captured event for {event.resource_id} "
+                        "carried no response"
+                    )
+                try:
+                    writer.publish_capture(event.response, extension=event.extension)
+                except OSError as exc:
+                    tally.failed += 1
+                    detail = describe_exception(exc)
+                    first_failure = first_failure or f"{event.resource_id}: {detail}"
+                    logger.warning(
+                        "%s/%s: member %s not published: %s",
+                        source,
+                        dataset,
+                        event.resource_id,
+                        detail,
+                    )
+                else:
+                    tally.captured += 1
+            elif outcome == "failed":
+                tally.failed += 1
+                first_failure = first_failure or f"{event.resource_id}: {event.detail}"
+                logger.warning(
+                    "%s/%s: member %s failed: %s",
+                    source,
+                    dataset,
+                    event.resource_id,
+                    event.detail,
+                )
+            elif outcome == "unchanged":
+                tally.unchanged += 1
+            elif outcome == "deferred":
+                tally.deferred += 1
+            else:
+                tally.absent += 1
+            del event
+
+    if tally.failed and not tally.captured and not tally.unchanged:
+        raise MemberCaptureError(
+            f"{source}/{dataset}: all {tally.failed} attempted member(s) failed; first: "
+            f"{first_failure}"
+        )
+    if tally.unchanged and not (tally.captured or tally.failed or tally.deferred or tally.absent):
+        logger.info(
+            "%s/%s: all %d member(s) unchanged since their newest capture; nothing "
+            "captured; frontier unchanged",
+            source,
+            dataset,
+            tally.unchanged,
+        )
+    return tally
+
+
+def _record_ingest_outcome(
+    con: duckdb.DuckDBPyConnection,
+    tracker: PipelineRunTracker,
+    *,
+    source: str,
+    dataset: str,
+    window: IncrementalWindow,
+    incremental: bool,
+    write_watermark: bool,
+    end_dt: datetime,
+    n_fetched: int,
+    has_evidence: bool,
+    skipped: int,
+    members_unchanged: int = 0,
+) -> DatasetResult:
+    """Decide the watermark write, emit the record, close the tracker (one site).
+
+    Shared by both ingest branches. ``n_fetched`` is the response count of a
+    ``fetch()`` or the captured-member count; ``has_evidence`` is whether any
+    of them is data-bearing evidence for the frontier.
+    """
+    from gridflow.observability import WatermarkOutcome, advance_watermark, read_watermark
+
+    write_outcome: WatermarkWrite | None = None
+    explicit_denial: WindowReason | None = None
+    explicit_frontier_error: str | None = None
+    expected_snapshot = window.snapshot
+
+    if write_watermark and has_evidence and not skipped and window.advance_permitted:
+        if window.snapshot is not None:
+            # Incremental: CAS against the single snapshot the D-14
+            # predicate was evaluated against.
+            write_outcome = advance_watermark(
+                con, source, dataset, end_dt, expected=window.snapshot
+            )
+        else:
+            # Explicit / repair path (D-22): its own snapshot, its own
+            # right bound (D-23) — `resolve_incremental_window` is never
+            # entered on this path.
+            now_at_decision = datetime.now(UTC)
+            if end_dt > now_at_decision:
+                explicit_denial = WindowReason.FUTURE_END
+            else:
+                snap = read_watermark(con, source, dataset)  # the ONE read on this path
+                if snap.status == "unreadable":
+                    explicit_denial = WindowReason.FRONTIER_UNREADABLE
+                    explicit_frontier_error = safe_error_message(
+                        snap.error or "watermark read failed (no detail)"
+                    )
+                else:
+                    expected_snapshot = snap
+                    write_outcome = advance_watermark(con, source, dataset, end_dt, expected=snap)
+
+    incremental_denied = incremental and not window.advance_permitted
+    condition = window.reason if incremental_denied else explicit_denial
+    frontier_error = window.frontier_error or explicit_frontier_error
+    write_problem = write_outcome is not None and write_outcome.outcome in (
+        WatermarkOutcome.CAS_MISMATCH,
+        WatermarkOutcome.WRITE_FAILED,
+    )
+    is_warning = bool(condition is not None or skipped or write_problem)
+
+    message = _watermark_record_message(
+        source=source,
+        dataset=dataset,
+        window=window,
+        condition=condition,
+        frontier_error=frontier_error,
+        expected_snapshot=expected_snapshot,
+        write_outcome=write_outcome,
+        skipped=skipped,
+        end_dt=end_dt,
+    )
+    # D-17 emission scope: the incremental path emits unconditionally
+    # (one record per pair per run, `window.snapshot is not None`); the
+    # explicit path stays silent on a clean advance/NO_OP, emitting only
+    # when a WARNING-class condition fired — preserving today's operator
+    # experience on healthy explicit ingests and backfills.
+    if window.snapshot is not None or is_warning:
+        if is_warning:
+            logger.warning(message)
+        else:
+            logger.info(message)
+
+    if is_warning:
+        tracker.complete_with_warnings(
+            rows_in=n_fetched,
+            rows_out=n_fetched,
+            rows_skipped=skipped,
+        )
+        status = "completed_with_warnings"
+    else:
+        tracker.complete(rows_in=n_fetched, rows_out=n_fetched)
+        status = "success"
+    return DatasetResult(
+        source=source,
+        dataset=dataset,
+        operation="ingest",
+        status=status,
+        rows_in=n_fetched,
+        rows_out=n_fetched,
+        rows_skipped=skipped,
+        members_unchanged=members_unchanged,
+    )
+
+
 def run_ingest(
     ctx: PipelineContext,
     source: str,
@@ -906,13 +1109,9 @@ def run_ingest(
         One :class:`DatasetResult` per dataset, in input order.
     """
     from gridflow.bronze.writer import BronzeWriter
+    from gridflow.connectors.base import MemberCaptureConnector
     from gridflow.connectors.registry import get_connector
-    from gridflow.observability import (
-        PipelineRunTracker,
-        WatermarkOutcome,
-        advance_watermark,
-        read_watermark,
-    )
+    from gridflow.observability import PipelineRunTracker
 
     con = ctx.con
     settings = ctx.settings
@@ -937,6 +1136,31 @@ def run_ingest(
         tracker = PipelineRunTracker(con, source, ds, "ingest")
         try:
             connector = get_connector(source, source_config)
+
+            if isinstance(connector, MemberCaptureConnector):
+                # ADR-033 P-5: bounded, member-at-a-time capture. Each capture is
+                # published before the next download, so memory holds one body.
+                connector.bind_data_dir(settings.pipeline.data_dir)
+                tally = asyncio.run(
+                    _capture_members(connector, writer, source, ds, ds_start, end_dt)
+                )
+                results.append(
+                    _record_ingest_outcome(
+                        con,
+                        tracker,
+                        source=source,
+                        dataset=ds,
+                        window=window,
+                        incremental=incremental,
+                        write_watermark=write_watermark,
+                        end_dt=end_dt,
+                        n_fetched=tally.captured,
+                        has_evidence=tally.captured > 0,
+                        skipped=tally.failed + tally.deferred + tally.absent,
+                        members_unchanged=tally.unchanged,
+                    )
+                )
+                continue
 
             async def _do_fetch(
                 connector: BaseConnector = connector,
@@ -981,88 +1205,19 @@ def run_ingest(
             # `!= 0` (not `> 0`) so `record_count is None` (unstamped/unknown)
             # still passes as evidence -- only a CONFIRMED zero is excluded.
             data_responses = [r for r in responses if r.http_status < 400 and r.record_count != 0]
-            write_outcome: WatermarkWrite | None = None
-            explicit_denial: WindowReason | None = None
-            explicit_frontier_error: str | None = None
-            expected_snapshot = window.snapshot
-
-            if write_watermark and data_responses and not skipped and window.advance_permitted:
-                if window.snapshot is not None:
-                    # Incremental: CAS against the single snapshot the D-14
-                    # predicate was evaluated against.
-                    write_outcome = advance_watermark(
-                        con, source, ds, end_dt, expected=window.snapshot
-                    )
-                else:
-                    # Explicit / repair path (D-22): its own snapshot, its own
-                    # right bound (D-23) — `resolve_incremental_window` is never
-                    # entered on this path.
-                    now_at_decision = datetime.now(UTC)
-                    if end_dt > now_at_decision:
-                        explicit_denial = WindowReason.FUTURE_END
-                    else:
-                        snap = read_watermark(con, source, ds)  # the ONE read on this path
-                        if snap.status == "unreadable":
-                            explicit_denial = WindowReason.FRONTIER_UNREADABLE
-                            explicit_frontier_error = safe_error_message(
-                                snap.error or "watermark read failed (no detail)"
-                            )
-                        else:
-                            expected_snapshot = snap
-                            write_outcome = advance_watermark(
-                                con, source, ds, end_dt, expected=snap
-                            )
-
-            incremental_denied = incremental and not window.advance_permitted
-            condition = window.reason if incremental_denied else explicit_denial
-            frontier_error = window.frontier_error or explicit_frontier_error
-            write_problem = write_outcome is not None and write_outcome.outcome in (
-                WatermarkOutcome.CAS_MISMATCH,
-                WatermarkOutcome.WRITE_FAILED,
-            )
-            is_warning = bool(condition is not None or skipped or write_problem)
-
-            message = _watermark_record_message(
-                source=source,
-                dataset=ds,
-                window=window,
-                condition=condition,
-                frontier_error=frontier_error,
-                expected_snapshot=expected_snapshot,
-                write_outcome=write_outcome,
-                skipped=skipped,
-                end_dt=end_dt,
-            )
-            # D-17 emission scope: the incremental path emits unconditionally
-            # (one record per pair per run, `window.snapshot is not None`); the
-            # explicit path stays silent on a clean advance/NO_OP, emitting only
-            # when a WARNING-class condition fired — preserving today's operator
-            # experience on healthy explicit ingests and backfills.
-            if window.snapshot is not None or is_warning:
-                if is_warning:
-                    logger.warning(message)
-                else:
-                    logger.info(message)
-
-            if is_warning:
-                tracker.complete_with_warnings(
-                    rows_in=len(responses),
-                    rows_out=len(responses),
-                    rows_skipped=skipped,
-                )
-                status = "completed_with_warnings"
-            else:
-                tracker.complete(rows_in=len(responses), rows_out=len(responses))
-                status = "success"
             results.append(
-                DatasetResult(
+                _record_ingest_outcome(
+                    con,
+                    tracker,
                     source=source,
                     dataset=ds,
-                    operation="ingest",
-                    status=status,
-                    rows_in=len(responses),
-                    rows_out=len(responses),
-                    rows_skipped=skipped,
+                    window=window,
+                    incremental=incremental,
+                    write_watermark=write_watermark,
+                    end_dt=end_dt,
+                    n_fetched=len(responses),
+                    has_evidence=bool(data_responses),
+                    skipped=skipped,
                 )
             )
         except Exception as e:  # noqa: BLE001 — surfaced as a failed DatasetResult, never swallowed

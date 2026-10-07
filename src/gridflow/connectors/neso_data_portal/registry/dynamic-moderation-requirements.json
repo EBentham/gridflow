@@ -1,0 +1,36 @@
+{
+  "package": "dynamic-moderation-requirements",
+  "package_id": "c6e7dc26-64c3-4651-a664-16a8512768ab",
+  "group": "ancillary-services",
+  "archetype": "FC",
+  "refresh": "adhoc",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "dm_requirements",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "FC",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "2aae8747-776d-4fe5-af9c-adcf38f1af8a",
+      "name": "Indicative DM Requirements",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "dm_requirements",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "dm_requirements"
+      }
+    }
+  ]
+}

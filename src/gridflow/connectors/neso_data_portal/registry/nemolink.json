@@ -1,0 +1,91 @@
+{
+  "package": "nemolink",
+  "package_id": "24b229de-2806-45a6-89a9-88097d67e5f2",
+  "group": "interconnectors",
+  "archetype": "FC",
+  "refresh": "daily",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "nemolink_nemo_da_id_weekly_ntcs",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "FC",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "nemolink_intraday",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "FC",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "nemolink_ntc",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "FC",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "7d43e2a0-1c22-4e05-895d-756bae210756",
+      "name": "NemoLink NTC Data",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "nemolink_ntc",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "nemolink_ntc"
+      }
+    },
+    {
+      "id": "f169676e-67ec-4f2f-befd-1863c713179c",
+      "name": "Archived NemoLink NTC Data",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "nemolink_ntc",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "nemolink_ntc"
+      }
+    },
+    {
+      "id": "ed977959-ccec-4cb6-b26f-c528863a243b",
+      "name": "Archived Nemo DA & ID Weekly NTCs",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "nemolink_nemo_da_id_weekly_ntcs",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "nemolink_nemo_da_id_weekly_ntcs"
+      }
+    },
+    {
+      "id": "aae5acff-fd30-4c46-b996-a10e50cf4d50",
+      "name": "NemoLink-Intraday1-20240127-001",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "nemolink_intraday",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "nemolink_intraday"
+      }
+    }
+  ]
+}

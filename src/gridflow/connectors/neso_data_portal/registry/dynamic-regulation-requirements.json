@@ -1,0 +1,36 @@
+{
+  "package": "dynamic-regulation-requirements",
+  "package_id": "bcc9b338-00a4-4858-a1ed-0b7728048462",
+  "group": "ancillary-services",
+  "archetype": "FC",
+  "refresh": "adhoc",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "dr_requirements",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "FC",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "d6c576b9-91d5-4c48-bf6d-300c7d7aa6ad",
+      "name": "Indicative DR Requirements",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "dr_requirements",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "dr_requirements"
+      }
+    }
+  ]
+}

@@ -1,0 +1,146 @@
+{
+  "package": "ancillary-services-important-industry-notifications",
+  "package_id": "fc8dadc7-235d-44b0-bab2-320dc76095de",
+  "group": "ancillary-services",
+  "archetype": "EVT",
+  "refresh": "adhoc",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "as_industry_notifications_balancing",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "as_industry_notifications_dc_dm_dr",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "as_industry_notifications_quick_reserve",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "as_industry_notifications_sffr_important",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "as_industry_notifications_slow_reserve",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "as_industry_notifications_stor_important",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "5d6c5cf8-7f18-43d9-ab8c-ba3f88352f30",
+      "name": "DC, DM, DR Important Industry Notifications",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "as_industry_notifications_dc_dm_dr",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "as_industry_notifications_dc_dm_dr"
+      }
+    },
+    {
+      "id": "1dbebd85-6b42-4d8f-8542-16a83d17dc14",
+      "name": "STOR Important Industry Notifications",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "as_industry_notifications_stor_important",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "as_industry_notifications_stor_important"
+      }
+    },
+    {
+      "id": "9b51636d-fca5-4d00-946b-4e19770f1904",
+      "name": "SFFR Important Industry Notifications",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "as_industry_notifications_sffr_important",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "as_industry_notifications_sffr_important"
+      }
+    },
+    {
+      "id": "13f8f6b1-690b-4695-993e-dbc26f9bbe54",
+      "name": "Balancing Reserve Important Industry Notifications",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "as_industry_notifications_balancing",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "as_industry_notifications_balancing"
+      }
+    },
+    {
+      "id": "a72085a8-e167-406d-8504-ed72d7e142af",
+      "name": "Quick Reserve Important Industry Notifications",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "as_industry_notifications_quick_reserve",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "as_industry_notifications_quick_reserve"
+      }
+    },
+    {
+      "id": "11a90fe4-27c1-46b5-9619-016f2752413d",
+      "name": "Slow Reserve Important Industry Notification",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "as_industry_notifications_slow_reserve",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "as_industry_notifications_slow_reserve"
+      }
+    }
+  ]
+}

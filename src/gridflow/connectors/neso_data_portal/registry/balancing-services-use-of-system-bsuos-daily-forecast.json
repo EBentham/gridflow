@@ -1,0 +1,80 @@
+{
+  "package": "balancing-services-use-of-system-bsuos-daily-forecast",
+  "package_id": "a8368560-87ac-4d31-85b7-625322430456",
+  "group": "balancing",
+  "archetype": "FC",
+  "refresh": "frozen",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "bsuos_daily_forecast",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "FC",
+      "refresh": "frozen",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "ac191a63-a67a-4b3b-ac8c-fdfcea79d042",
+      "name": "Daily BSUoS Forecast 2018-19",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "bsuos_daily_forecast",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "bsuos_daily_forecast"
+      }
+    },
+    {
+      "id": "c1be6c7c-c36d-46cb-8038-098075599bb0",
+      "name": "Daily BSUoS Forecast 2019-20",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "bsuos_daily_forecast",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "bsuos_daily_forecast"
+      }
+    },
+    {
+      "id": "586d0e6b-cc03-4312-9df3-407438715eb2",
+      "name": "Daily BSUoS Forecast 2020-21",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "bsuos_daily_forecast",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "bsuos_daily_forecast"
+      }
+    },
+    {
+      "id": "25e4acc4-e1b3-48f5-af8c-8d6f84291791",
+      "name": "Daily BSUoS Forecast 2021-22",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "bsuos_daily_forecast",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "bsuos_daily_forecast"
+      }
+    },
+    {
+      "id": "b98095a8-310a-4fee-8d51-e20531c49465",
+      "name": "Daily BSUoS Forecast 2022-23",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "bsuos_daily_forecast",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "bsuos_daily_forecast"
+      }
+    }
+  ]
+}

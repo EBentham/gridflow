@@ -1,0 +1,36 @@
+{
+  "package": "embedded-register",
+  "package_id": "4b0e109c-aa23-45ac-86c1-0bda557d1aab",
+  "group": "connection-registers",
+  "archetype": "REG",
+  "refresh": "daily",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "embedded_register",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "REG",
+      "refresh": "daily",
+      "empty_allowed": true,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "68b6f3a1-e1bf-403b-9062-0269fc758d77",
+      "name": "Embedded Register",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "embedded_register",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "embedded_register"
+      }
+    }
+  ]
+}

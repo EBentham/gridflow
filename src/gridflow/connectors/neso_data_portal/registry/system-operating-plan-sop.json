@@ -1,0 +1,67 @@
+{
+  "package": "system-operating-plan-sop",
+  "package_id": "99442aab-b184-44f5-8495-fc0b82869d46",
+  "group": "system",
+  "archetype": "FC",
+  "refresh": "daily",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "system_operating_plan",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "FC",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "system_operating_plan_files",
+      "kind": "files",
+      "legacy": false,
+      "archetype": "FC",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "596fbeb4-77be-48a4-89b7-f442e73e54c0",
+      "name": "Glossary of terms used in System Operating Plan",
+      "format": "PDF",
+      "url_type": "upload",
+      "family": "system_operating_plan_files",
+      "disposition": {
+        "kind": "DOC"
+      }
+    },
+    {
+      "id": "8be74d9e-9f41-4ab7-8606-2c06d60cb63d",
+      "name": "An Introduction to System Operator Plans",
+      "format": "PDF",
+      "url_type": "upload",
+      "family": "system_operating_plan_files",
+      "disposition": {
+        "kind": "DOC"
+      }
+    },
+    {
+      "id": "e51f2721-00ab-4182-9cae-3c973e854aa8",
+      "name": "System Operating Plan - Data Table",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "system_operating_plan",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "system_operating_plan"
+      }
+    }
+  ]
+}

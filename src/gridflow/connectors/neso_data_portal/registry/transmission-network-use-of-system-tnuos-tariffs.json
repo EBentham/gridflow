@@ -1,0 +1,190 @@
+{
+  "package": "transmission-network-use-of-system-tnuos-tariffs",
+  "package_id": "eaef4708-1100-4ad9-98d5-d892f3c9a56c",
+  "group": "network-charges",
+  "archetype": "TAR",
+  "refresh": "adhoc",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "tnuos_tariffs_embedded_export",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "TAR",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "tnuos_tariffs_half_hourly_hh_demand",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "TAR",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "tnuos_tariffs_local_offshore_generator",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "TAR",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "tnuos_tariffs_local_substation_tariff",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "TAR",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "tnuos_tariffs_non_half_hourly_nhh_demand",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "TAR",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "tnuos_tariffs_onshore_generator",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "TAR",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "tnuos_tariffs_onshore_local_circuit",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "TAR",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "tnuos_tariffs_transmission_demand",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "TAR",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "4e8dd130-5283-4f22-8c05-84e4d3280eb3",
+      "name": "Non Half-Hourly (NHH) Demand Tariffs",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "tnuos_tariffs_non_half_hourly_nhh_demand",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "tnuos_tariffs_non_half_hourly_nhh_demand"
+      }
+    },
+    {
+      "id": "6abe8416-149c-4c78-b65b-059eea19957a",
+      "name": "Half-Hourly (HH) Demand Tariffs",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "tnuos_tariffs_half_hourly_hh_demand",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "tnuos_tariffs_half_hourly_hh_demand"
+      }
+    },
+    {
+      "id": "af4501a0-6b96-4088-926c-7c7b0c499b08",
+      "name": "Embedded Export Tariffs",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "tnuos_tariffs_embedded_export",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "tnuos_tariffs_embedded_export"
+      }
+    },
+    {
+      "id": "01f36b32-4ad3-47fa-a645-7f7a47f1b0ae",
+      "name": "Onshore Local Circuit Tariffs",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "tnuos_tariffs_onshore_local_circuit",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "tnuos_tariffs_onshore_local_circuit"
+      }
+    },
+    {
+      "id": "ffc0adb8-5426-474e-94a3-a5f3f01a0cdb",
+      "name": "Onshore Generator Tariffs",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "tnuos_tariffs_onshore_generator",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "tnuos_tariffs_onshore_generator"
+      }
+    },
+    {
+      "id": "98569a29-940d-4bb7-8dc4-01e46187039a",
+      "name": "Local Offshore Generator Tariffs",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "tnuos_tariffs_local_offshore_generator",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "tnuos_tariffs_local_offshore_generator"
+      }
+    },
+    {
+      "id": "dcca94fd-343e-4d4e-8c5d-66009dec4ad3",
+      "name": "Transmission Demand Residual (TDR) Tariffs",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "tnuos_tariffs_transmission_demand",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "tnuos_tariffs_transmission_demand"
+      }
+    },
+    {
+      "id": "e697e9be-c068-482d-ae35-01f60bcb6700",
+      "name": "Local Substation TNUoS Tariff",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "tnuos_tariffs_local_substation_tariff",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "tnuos_tariffs_local_substation_tariff"
+      }
+    }
+  ]
+}

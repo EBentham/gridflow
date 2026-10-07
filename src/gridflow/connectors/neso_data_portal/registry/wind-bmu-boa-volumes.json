@@ -1,0 +1,124 @@
+{
+  "package": "wind-bmu-boa-volumes",
+  "package_id": "102638b9-6214-4db6-9115-86b5e879d1ce",
+  "group": "generation",
+  "archetype": "SER",
+  "refresh": "daily",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "wind_bmu_boa_volumes",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SER",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "1edaa5fe-86fe-41b4-95b9-55e9ec45fab0",
+      "name": "Wind BOA Volumes 2023/24",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "wind_bmu_boa_volumes",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "wind_bmu_boa_volumes"
+      }
+    },
+    {
+      "id": "d3fbf6c1-7688-4486-8716-b5af0c895a5a",
+      "name": "Wind BOA Volumes 2024/25",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "wind_bmu_boa_volumes",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "wind_bmu_boa_volumes"
+      }
+    },
+    {
+      "id": "28183033-4464-4b3a-a0ff-0efdc5cd6c7a",
+      "name": "Wind BOA Volumes 2018/19",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "wind_bmu_boa_volumes",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "wind_bmu_boa_volumes"
+      }
+    },
+    {
+      "id": "6ef6f5f2-2852-4f66-931c-29f8e5b46ddf",
+      "name": "Wind BOA Volumes 2019/20",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "wind_bmu_boa_volumes",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "wind_bmu_boa_volumes"
+      }
+    },
+    {
+      "id": "b8670a89-36cd-4a19-b00d-2129ab15d3b2",
+      "name": "Wind BOA Volumes 2020/21",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "wind_bmu_boa_volumes",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "wind_bmu_boa_volumes"
+      }
+    },
+    {
+      "id": "094ad551-630a-4302-b259-800a27122cfb",
+      "name": "Wind BOA Volumes 2021/22",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "wind_bmu_boa_volumes",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "wind_bmu_boa_volumes"
+      }
+    },
+    {
+      "id": "62da8915-4b87-4d77-a8f5-89084de1830d",
+      "name": "Wind BOA Volumes 2022/23",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "wind_bmu_boa_volumes",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "wind_bmu_boa_volumes"
+      }
+    },
+    {
+      "id": "45598dcd-ea9c-4911-95f2-7946c5f3b034",
+      "name": "Wind BOA Volumes 2026/27",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "wind_bmu_boa_volumes",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "wind_bmu_boa_volumes"
+      }
+    },
+    {
+      "id": "7bf83942-3590-4fe5-9980-49a9546e30a9",
+      "name": "Wind BOA Volumes 2025/26",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "wind_bmu_boa_volumes",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "wind_bmu_boa_volumes"
+      }
+    }
+  ]
+}

@@ -1,0 +1,69 @@
+{
+  "package": "fes-road-transport-notes-data-table-ed6",
+  "package_id": "5a3b9d32-5da8-4237-8468-dfb7bb4ebe78",
+  "group": "future-energy-scenarios",
+  "archetype": "SCN",
+  "refresh": "adhoc",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "fes_ed6_road_transport_notes",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SCN",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "30012023-6c0b-4da5-bd77-4f2b244a950d",
+      "name": "Road Transport Notes (ED6) 2023",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_ed6_road_transport_notes",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_ed6_road_transport_notes"
+      }
+    },
+    {
+      "id": "7fe93ddc-7a88-478b-8f60-4531c15bd538",
+      "name": "Road Transport Notes (ED6) 2024",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_ed6_road_transport_notes",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_ed6_road_transport_notes"
+      }
+    },
+    {
+      "id": "43add83b-bf94-493b-8f5d-de7fdbefc5bb",
+      "name": "Road Transport Notes (ED6) 2025",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_ed6_road_transport_notes",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_ed6_road_transport_notes"
+      }
+    },
+    {
+      "id": "06601add-c47b-427c-bdde-845b270e72e1",
+      "name": "Road Transport Notes (ED6) 2026",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "fes_ed6_road_transport_notes",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "fes_ed6_road_transport_notes"
+      }
+    }
+  ]
+}

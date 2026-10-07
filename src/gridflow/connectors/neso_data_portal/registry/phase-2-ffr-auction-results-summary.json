@@ -1,0 +1,337 @@
+{
+  "package": "phase-2-ffr-auction-results-summary",
+  "package_id": "2d649d03-fb37-46a2-ae82-9e651438b559",
+  "group": "ancillary-services",
+  "archetype": "EVT",
+  "refresh": "frozen",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "ffr_phase2_auction_phase_block_order",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "frozen",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "ffr_phase2_auction_phase_blockorders",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "frozen",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "ffr_phase2_auction_phase_linear_orders",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "frozen",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "ffr_phase2_auction_phase_linearorders",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "frozen",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "ffr_phase2_auction_phase_results_unit",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "frozen",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "ffr_phase2_auction_phase_results_sum",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "frozen",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "ffr_phase2_auction_phase_resultsbyunit",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "frozen",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "ffr_phase2_auction_phase_resultsum",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "frozen",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "ffr_phase2_auction_files",
+      "kind": "files",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "frozen",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "e988552e-8bc1-43db-af15-cff01e40d83c",
+      "name": "BlockOrders 2019-11-22 to 2019-11-29",
+      "format": "ZIP",
+      "url_type": "upload",
+      "family": "ffr_phase2_auction_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "7ab29f1c-4da1-4f36-b611-cb74f62737fc",
+      "name": "LinearOrders 2019-11-22 to 2020-01-03",
+      "format": "ZIP",
+      "url_type": "upload",
+      "family": "ffr_phase2_auction_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "a99410bb-5501-4292-a308-eb7c16b1b3f4",
+      "name": "ResultByUnit 2019-11-22 to 2019-11-29",
+      "format": "ZIP",
+      "url_type": "upload",
+      "family": "ffr_phase2_auction_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "3928f192-97a5-4b4f-9234-0dcc9ad071a0",
+      "name": "ResultSummary 2019-11-22 to 2019-11-29",
+      "format": "ZIP",
+      "url_type": "upload",
+      "family": "ffr_phase2_auction_files",
+      "disposition": {
+        "kind": "HOLD",
+        "reason": "non-CSV classification",
+        "unit": "X-R"
+      }
+    },
+    {
+      "id": "979329c3-5587-4b08-a900-5520b58b2d8f",
+      "name": "Phase 2 FFR Auction BlockOrders Masterdata 2019-2020",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "ffr_phase2_auction_phase_blockorders",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "ffr_phase2_auction_phase_blockorders"
+      }
+    },
+    {
+      "id": "47ceb316-e284-4e14-bb67-76067a8f9562",
+      "name": "Phase 2 FFR Auction LinearOrders Masterdata-2019-2020",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "ffr_phase2_auction_phase_linearorders",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "ffr_phase2_auction_phase_linearorders"
+      }
+    },
+    {
+      "id": "15d7fa42-1c8d-4a79-86f8-890cf9228794",
+      "name": "Phase 2 FFR Auction ResultsByUnit Masterdata-2019-2020",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "ffr_phase2_auction_phase_resultsbyunit",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "ffr_phase2_auction_phase_resultsbyunit"
+      }
+    },
+    {
+      "id": "8b5fa222-f39f-4eea-9475-728ea8365ff3",
+      "name": "Phase 2 FFR Auction ResultSummary Masterdata-2019-2020",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "ffr_phase2_auction_phase_resultsum",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "ffr_phase2_auction_phase_resultsum"
+      }
+    },
+    {
+      "id": "c074d827-ad03-4b11-b22e-8bbc96be3bab",
+      "name": "Phase 2 FFR Auction BlockOrders Masterdata 2020-2021",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "ffr_phase2_auction_phase_blockorders",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "ffr_phase2_auction_phase_blockorders"
+      }
+    },
+    {
+      "id": "404a1de1-5fe9-4569-815a-394e83af96eb",
+      "name": "Phase 2 FFR Auction LinearOrders Masterdata 2020-2021",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "ffr_phase2_auction_phase_linearorders",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "ffr_phase2_auction_phase_linearorders"
+      }
+    },
+    {
+      "id": "52faffc9-e804-44d8-b222-dd0821d79e7d",
+      "name": "Phase 2 FFR Auction ResultsByUnit Masterdata 2020-2021",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "ffr_phase2_auction_phase_resultsbyunit",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "ffr_phase2_auction_phase_resultsbyunit"
+      }
+    },
+    {
+      "id": "279572a9-21c9-4e1e-a7c8-7aed233f8936",
+      "name": "Phase 2 FFR Auction ResultSummary Masterdata 2020-2021",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "ffr_phase2_auction_phase_resultsum",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "ffr_phase2_auction_phase_resultsum"
+      }
+    },
+    {
+      "id": "920105e5-a5e3-4bed-83ce-ab6901cc1b84",
+      "name": "Phase 2 FFR Auction ResultSummary Masterdata 2021-2022",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "ffr_phase2_auction_phase_resultsum",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "ffr_phase2_auction_phase_resultsum"
+      }
+    },
+    {
+      "id": "feafb7ab-7db6-406e-a46f-bbcf6ed92ba1",
+      "name": "Phase 2 FFR Auction ResultsByUnit Masterdata 2021-2022",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "ffr_phase2_auction_phase_resultsbyunit",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "ffr_phase2_auction_phase_resultsbyunit"
+      }
+    },
+    {
+      "id": "eb394ce7-20c6-4434-a263-470b2896fd7b",
+      "name": "Phase 2 FFR Auction LinearOrders Masterdata 2021-2022",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "ffr_phase2_auction_phase_linearorders",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "ffr_phase2_auction_phase_linearorders"
+      }
+    },
+    {
+      "id": "89467af0-a577-4bba-9955-f8c380a78923",
+      "name": "Phase 2 FFR Auction BlockOrders Masterdata 2021-2022",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "ffr_phase2_auction_phase_blockorders",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "ffr_phase2_auction_phase_blockorders"
+      }
+    },
+    {
+      "id": "a9659701-f0d4-40d2-91f1-31f4bac0619d",
+      "name": "Phase 2: FFR Auction Results Summary 26.11.2021",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "ffr_phase2_auction_phase_results_sum",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "ffr_phase2_auction_phase_results_sum"
+      }
+    },
+    {
+      "id": "87ee8fc4-11ae-4575-b734-99548aab2d98",
+      "name": "Phase 2: FFR Auction Results by Unit 26.11.2021",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "ffr_phase2_auction_phase_results_unit",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "ffr_phase2_auction_phase_results_unit"
+      }
+    },
+    {
+      "id": "5cce4cb6-c270-488f-96c7-9f5cd7476898",
+      "name": "Phase 2: FFR Auction Linear Orders 26.11.2021",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "ffr_phase2_auction_phase_linear_orders",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "ffr_phase2_auction_phase_linear_orders"
+      }
+    },
+    {
+      "id": "edfb5b8f-4415-45e6-b378-57020c41e96b",
+      "name": "Phase 2: FFR Auction Block Order 26.11.2021",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "ffr_phase2_auction_phase_block_order",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "ffr_phase2_auction_phase_block_order"
+      }
+    }
+  ]
+}

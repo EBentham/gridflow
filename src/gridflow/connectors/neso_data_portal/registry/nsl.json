@@ -1,0 +1,47 @@
+{
+  "package": "nsl",
+  "package_id": "7bf2e43d-1a24-4a0e-95b0-6ba4eba3daa9",
+  "group": "interconnectors",
+  "archetype": "FC",
+  "refresh": "daily",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "nsl",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "FC",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "9db51c01-922d-413d-8b67-3938fdc14bdb",
+      "name": "NSL NTC Data",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "nsl",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "nsl"
+      }
+    },
+    {
+      "id": "33646e05-1af1-41b5-a056-9e95fb9f0534",
+      "name": "Archived NSL NTC Data",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "nsl",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "nsl"
+      }
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "package": "quick-reserve-auction-requirement-forecast",
+  "package_id": "7247a5da-563e-4159-b8c1-e388e39ff5a2",
+  "group": "ancillary-services",
+  "archetype": "FC",
+  "refresh": "monthly",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "qr_auction_requirement_fc",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "FC",
+      "refresh": "monthly",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "f012de08-b258-408b-bc41-f885e183f97f",
+      "name": "Quick Reserve Auction Requirement Forecast",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "qr_auction_requirement_fc",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "qr_auction_requirement_fc"
+      }
+    }
+  ]
+}

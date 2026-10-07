@@ -1,0 +1,102 @@
+{
+  "package": "demand-flexibility-service",
+  "package_id": "e5277fca-2a2b-4836-933b-f24a676b9ed8",
+  "group": "dfs",
+  "archetype": "EVT",
+  "refresh": "frozen",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "dfs_industry_notification",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "frozen",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "dfs_service_requirements",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "frozen",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "dfs_utilisation_report",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "frozen",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    },
+    {
+      "key": "dfs_utilisation_report_sum",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "frozen",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "94b4d470-a54e-41d7-ae6e-be158db9b9d4",
+      "name": "DFS Industry Notification",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "dfs_industry_notification",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "dfs_industry_notification"
+      }
+    },
+    {
+      "id": "7914dd99-fe1c-41ba-9989-5784531c58bb",
+      "name": "DFS Service Requirements",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "dfs_service_requirements",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "dfs_service_requirements"
+      }
+    },
+    {
+      "id": "ed7019b0-32b7-425c-a2fb-5ba9e32733fb",
+      "name": "DFS Utilisation Report",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "dfs_utilisation_report",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "dfs_utilisation_report"
+      }
+    },
+    {
+      "id": "71a9cb04-8935-4e3a-bdd6-17f6fff0a7c6",
+      "name": "DFS Utilisation Report Summary",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "dfs_utilisation_report_sum",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "dfs_utilisation_report_sum"
+      }
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "package": "eleclink",
+  "package_id": "46daeb44-95a7-4032-8a22-914c896ed261",
+  "group": "interconnectors",
+  "archetype": "FC",
+  "refresh": "daily",
+  "eligibility": {
+    "status": "eligible"
+  },
+  "families": [
+    {
+      "key": "eleclink",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "FC",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "1f748d48-1daf-4f1a-a5f1-d581e86a2190",
+      "name": "ElecLink NTC Data",
+      "format": "CSV",
+      "url_type": "datastore",
+      "family": "eleclink",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "eleclink"
+      }
+    },
+    {
+      "id": "991a79f8-2e8c-4f42-b308-e3fb0346700d",
+      "name": "Archived ElecLink NTC Data",
+      "format": "CSV",
+      "url_type": "upload",
+      "family": "eleclink",
+      "disposition": {
+        "kind": "SILVER",
+        "key": "eleclink"
+      }
+    }
+  ]
+}
