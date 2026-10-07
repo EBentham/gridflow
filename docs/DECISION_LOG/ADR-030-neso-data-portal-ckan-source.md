@@ -641,6 +641,8 @@ did.
 
 Carried from the phase plan; none is a blocker for what shipped.
 
+- TODO-04 closed by ADR-033; D-04 amended by ADR-033 D-04′.
+
 - **TODO-01** — `/datastore/dump/<resource_id>`'s rate-limit class is unstated by NESO
   (guidance names only `datastore_search`/`datastore_search_sql` under 2 req/min). Not on
   this phase's path (all three resources are `url_type: upload`). Required before any
