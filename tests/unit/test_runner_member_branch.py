@@ -367,7 +367,10 @@ class TestEmptyCaptureAccounting:
         install_registry(monkeypatch, directory)
         return directory
 
-    @pytest.mark.parametrize("body", [b"DATE,VALUE\n", b'"DA\nTE",VALUE\r\n,\r\n'])
+    @pytest.mark.parametrize(
+        "body",
+        [b"DATE,VALUE\n", b'"DA\nTE",VALUE\r\n,\r\n', b"DATE,VALUE\r,\r", b'"DA\r\nTE",VALUE\r,\r'],
+    )
     def test_header_only_in_a_non_empty_family_never_reaches_the_runner_as_a_capture(
         self,
         router: respx.MockRouter,

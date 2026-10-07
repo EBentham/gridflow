@@ -45,11 +45,11 @@ about the mechanism being sufficient.
 from __future__ import annotations
 
 import asyncio
-import csv
 import hashlib
 import ipaddress
 import json
 import logging
+import re
 import socket
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
@@ -1750,7 +1750,8 @@ _DEFAULT_EXTENSIONS: dict[tuple[str, str], str] = {
     ("TXT", "TEXT"): "txt",
 }
 _UTF8_BOM = b"\xef\xbb\xbf"
-_HEADER_ONLY_NOISE = b' \t\r\n\x0b\x0c,"'
+_CSV_STRUCTURE = re.compile(rb'[,"\r\n]')
+_DATA_BYTE = re.compile(rb'[^ \t\r\n\x0b\x0c,"]')
 
 
 def _signature_class(body: bytes) -> str | None:
@@ -1802,53 +1803,58 @@ def _is_json_array(body: bytes) -> bool:
     return isinstance(payload, list)
 
 
-class _PhysicalLines:
-    """A body's physical lines (newline kept), decoded one at a time on demand.
+def _header_end(body: bytes, start: int) -> int:
+    """Byte offset just past the first CSV record of ``body[start:]`` (P-7).
 
-    ``consumed`` is the byte offset after the last line handed out, so a
-    caller can map a ``csv.reader`` record boundary back onto the bytes
-    without decoding or copying the whole body (the A9 memory gate).
-    Decoding replaces undecodable bytes: encoding is unit E's to measure, and
-    the bytes that delimit CSV records are ASCII in UTF-8 and cp1252 alike.
+    Scans the bytes with CSV's own record grammar rather than a line split, so
+    no terminator form can misplace the boundary: an unquoted CR, LF or CRLF
+    ends the record, and a ``"`` opens a quoted field only at a field start
+    (as the stdlib reader treats it), inside which terminators and doubled
+    ``""`` are field text. The delimiting bytes are ASCII in UTF-8 and cp1252
+    alike, so nothing is decoded or copied (the A9 memory gate) and nothing
+    can fail to parse. An unterminated quote runs to the end of the body.
     """
-
-    def __init__(self, body: bytes) -> None:
-        self._body = body
-        self.consumed = 0
-
-    def __iter__(self) -> _PhysicalLines:
-        return self
-
-    def __next__(self) -> str:
-        start = self.consumed
-        if start >= len(self._body):
-            raise StopIteration
-        newline = self._body.find(b"\n", start)
-        self.consumed = len(self._body) if newline < 0 else newline + 1
-        return self._body[start : self.consumed].decode("utf-8", errors="replace")
+    size = len(body)
+    position = field_start = start
+    while True:
+        match = _CSV_STRUCTURE.search(body, position)
+        if match is None:
+            return size
+        at = match.start()
+        token = body[at : at + 1]
+        if token == b",":
+            position = field_start = at + 1
+        elif token == b'"':
+            position = at + 1
+            if at != field_start:
+                continue
+            while True:
+                close = body.find(b'"', position)
+                if close < 0:
+                    return size
+                if body[close + 1 : close + 2] == b'"':
+                    position = close + 2
+                    continue
+                position = close + 1
+                break
+        else:
+            return at + 1
 
 
 def _is_header_only(body: bytes) -> bool:
     """A CSV body with a header record and nothing data-bearing after it (P-7).
 
-    The header is the first *logical* CSV record, read by the stdlib reader,
-    so a quoted header cell that spans a newline stays inside the header
-    (REVIEW-DIFF-1 #2). The reader is advanced once and pulls lines lazily, so
-    only the header's lines are parsed; the remainder keeps P-7's rule (only
-    ASCII whitespace, ``,`` and ``"``). A header the reader cannot parse
-    (a field over the csv size limit) is not header-only: admission fails
-    open to a capture (A4). Residual: an unterminated opening quote makes the
-    whole body one record, so it reads as header-only: refused where empty
-    captures are forbidden, captured and marked empty in an ``empty_allowed``
-    family.
+    The header is the first CSV record, bounded by :func:`_header_end` under
+    every terminator CSV accepts and with quoted terminators kept inside it
+    (REVIEW-DIFF-1 #2, REVIEW-DIFF-2). The remainder keeps P-7's rule: only
+    ASCII whitespace, ``,`` and ``"``. There is no parse step that can fail,
+    so no body is admitted as non-empty for want of a parse. Residual: an
+    unterminated opening quote makes the whole body one record, so it reads as
+    header-only: refused where empty captures are forbidden, captured and
+    marked empty in an ``empty_allowed`` family.
     """
-    lines = _PhysicalLines(body.removeprefix(_UTF8_BOM))
-    try:
-        next(csv.reader(lines), None)
-    except csv.Error:
-        return False
-    rest = body.removeprefix(_UTF8_BOM)[lines.consumed :]
-    return not rest.translate(None, _HEADER_ONLY_NOISE)
+    start = len(_UTF8_BOM) if body.startswith(_UTF8_BOM) else 0
+    return _DATA_BYTE.search(body, _header_end(body, start)) is None
 
 
 def _resource_filename(resource: dict[str, Any]) -> str:

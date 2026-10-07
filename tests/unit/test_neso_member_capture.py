@@ -639,6 +639,48 @@ class TestEmptyCapture:
             body, declared_format="CSV", filename="x.csv", empty_allowed=False, label="t"
         ) == ("csv", False)
 
+    # Every record terminator CSV accepts (CR, LF, CRLF, and a mix), with quoted
+    # terminators inside the header. The mixed rows were red against both earlier
+    # detectors: the first-LF split (REVIEW-DIFF-1 #2) and the LF-only line feed
+    # into csv.reader whose parse error read as data (REVIEW-DIFF-2).
+    _TERMINATOR_HEADER_ONLY = (
+        b"A,B\r,\r",
+        b"A,B\r",
+        b"\xef\xbb\xbfA,B\r,,\r",
+        b'"A\rB",C\r',
+        b'"A\r\nB",C\r,\r',
+        b'"A\nB",C\r\n,\r',
+        b'"A""\rB",C\n,,\n',
+    )
+
+    @pytest.mark.parametrize("body", _TERMINATOR_HEADER_ONLY)
+    def test_header_only_is_refused_under_every_record_terminator(self, body: bytes) -> None:
+        with pytest.raises(NesoEmptyResourceError):
+            client_module._admit_member_body(
+                body, declared_format="CSV", filename="x.csv", empty_allowed=False, label="t"
+            )
+
+    @pytest.mark.parametrize("body", _TERMINATOR_HEADER_ONLY)
+    def test_header_only_is_marked_under_every_record_terminator(self, body: bytes) -> None:
+        assert client_module._admit_member_body(
+            body, declared_format="CSV", filename="x.csv", empty_allowed=True, label="t"
+        ) == ("csv", True)
+
+    @pytest.mark.parametrize(
+        "body",
+        [
+            b"A,B\r1,2\r",
+            b'"A\rB",C\r"x\ry",2\r',
+            b'"A\r\nB",C\r1,2\n',
+            b'5" pipe,size\n1,2\n',
+            b"A,B\r\r\r1,2\r",
+        ],
+    )
+    def test_a_data_record_is_not_empty_under_every_record_terminator(self, body: bytes) -> None:
+        assert client_module._admit_member_body(
+            body, declared_format="CSV", filename="x.csv", empty_allowed=False, label="t"
+        ) == ("csv", False)
+
     def test_blank_lines_before_a_data_record_are_not_empty(self) -> None:
         assert client_module._admit_member_body(
             b"A,B\n\n\n1,2\n",
