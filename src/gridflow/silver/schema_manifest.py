@@ -72,7 +72,9 @@ if TYPE_CHECKING:
     from pydantic import BaseModel
 
 RelationKind = Literal["silver", "gold", "serving_alias"]
-ColumnsSource = Literal["pydantic_schema", "declared_dynamic", "gold_sql", "serving_alias"]
+ColumnsSource = Literal[
+    "pydantic_schema", "declared_dynamic", "gold_sql", "serving_alias", "frozen_record"
+]
 
 BITEMPORAL_EXCLUDE: tuple[str, ...] = (
     "event_time",
@@ -527,9 +529,9 @@ def _silver_entry(
     dataset: str,
     aliases: dict[tuple[str, str], str | None],
 ) -> SilverSchemaEntry:
-    date_col = _date_col_for(source, dataset)
     base_view = f"silver_{source}_{dataset}"
     transformer = get_transformer(source, dataset, Path("__schema_manifest__"))
+    date_col, date_sql_type = _designated_date(transformer, source, dataset)
     relation_name = _preferred_relation(transformer, source, dataset, base_view)
     columns, columns_source = _transformer_columns(transformer)
     return SilverSchemaEntry(
@@ -540,7 +542,7 @@ def _silver_entry(
         qualified_view=base_view,
         deprecated_alias=aliases[(source, dataset)],
         designated_date_col=date_col,
-        date_col_sql_type=_date_col_sql_type(date_col),
+        date_col_sql_type=date_sql_type,
         columns=columns,
         columns_source=columns_source,
         bitemporal_columns=_SILVER_BITEMPORAL_COLUMNS
@@ -594,6 +596,22 @@ def _serving_alias_entry(
     )
 
 
+def _designated_date(
+    transformer: BaseSilverTransformer, source: str, dataset: str
+) -> tuple[str, DateColSqlType]:
+    """The designated date column and its SQL type of one silver dataset.
+
+    A generated NESO family carries both on its class (ADR-034 P-12) and never
+    appears in ``DESIGNATED_DATE_COLS``; every other dataset is looked up there.
+    """
+    from gridflow.silver.neso_data_portal.generic import GenericNesoTransformer
+
+    if isinstance(transformer, GenericNesoTransformer):
+        return transformer.GENERATED_DATE_COLUMN, transformer.GENERATED_DATE_SQL_TYPE
+    date_col = _date_col_for(source, dataset)
+    return date_col, _date_col_sql_type(date_col)
+
+
 def _date_col_for(source: str, dataset: str) -> str:
     key = (source, dataset)
     date_col = DESIGNATED_DATE_COLS.get(key)
@@ -622,6 +640,11 @@ def _deprecated_aliases(registered: list[tuple[str, str]]) -> dict[tuple[str, st
 def _transformer_columns(
     transformer: BaseSilverTransformer,
 ) -> tuple[tuple[str, ...] | None, ColumnsSource]:
+    from gridflow.silver.neso_data_portal.casting import record_columns
+    from gridflow.silver.neso_data_portal.generic import GenericNesoTransformer
+
+    if isinstance(transformer, GenericNesoTransformer):
+        return record_columns(transformer.RECORD), "frozen_record"
     schema_cls: type[BaseModel] | None = transformer.schema_cls
     if schema_cls is None:
         return None, "declared_dynamic"

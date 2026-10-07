@@ -57,6 +57,7 @@ logger = logging.getLogger(__name__)
 __all__ = [
     "BESPOKE_ENGINE",
     "COMPLETION_COLUMNS",
+    "COMPLETION_DUCKDB_COLUMNS",
     "COMPLETION_RELATION",
     "COMPLETION_SCHEMA",
     "CaptureContext",
@@ -66,6 +67,7 @@ __all__ = [
     "bespoke_versions",
     "capture_context",
     "capture_id_for",
+    "completion_dir",
     "completion_path",
     "completion_row",
     "failure_path",
@@ -107,6 +109,26 @@ COMPLETION_COLUMNS: tuple[tuple[str, pl.DataType], ...] = (
 """The one ordered ``(name, dtype)`` schema of a completion record (P-7)."""
 
 COMPLETION_SCHEMA = pl.Schema(COMPLETION_COLUMNS)
+
+COMPLETION_DUCKDB_COLUMNS: tuple[tuple[str, str], ...] = (
+    ("family", "VARCHAR"),
+    ("bronze_capture_id", "VARCHAR"),
+    ("source_key", "VARCHAR"),
+    ("partition_date", "DATE"),
+    ("resource_id", "VARCHAR"),
+    ("body_sha256", "VARCHAR"),
+    ("capture_written_at", "TIMESTAMPTZ"),
+    ("published_at", "TIMESTAMPTZ"),
+    ("available_at", "TIMESTAMPTZ"),
+    ("outcome", "VARCHAR"),
+    ("row_count", "BIGINT"),
+    ("rows_excluded", "BIGINT"),
+    ("output_path", "VARCHAR"),
+    ("children", "VARCHAR[]"),
+    ("record_version", "VARCHAR"),
+    ("engine_version", "VARCHAR"),
+)
+""":data:`COMPLETION_COLUMNS` in DuckDB types (E24), for the typed-empty relation."""
 
 
 class CaptureContextError(Exception):
@@ -396,6 +418,11 @@ def is_valid(row: dict[str, Any], data_dir: Path, versions: Versions) -> bool:
     )
 
 
+def completion_dir(data_dir: Path) -> Path:
+    """The directory holding every family's completion records."""
+    return PathBuilder(data_dir).state_dir(SOURCE) / "completion"
+
+
 def scan_completions(data_dir: Path, family: str | None = None) -> pl.LazyFrame:
     """Return every completion record (of ``family``), typed by :data:`COMPLETION_COLUMNS`.
 
@@ -406,11 +433,10 @@ def scan_completions(data_dir: Path, family: str | None = None) -> pl.LazyFrame:
     Returns:
         A lazy frame of that schema; empty when no record exists.
     """
-    paths = PathBuilder(data_dir)
     root = (
-        paths.completion_dir(SOURCE, family)
+        PathBuilder(data_dir).completion_dir(SOURCE, family)
         if family is not None
-        else paths.state_dir(SOURCE) / "completion"
+        else completion_dir(data_dir)
     )
     files = sorted(root.rglob("[!.]*.parquet")) if root.is_dir() else []
     if not files:

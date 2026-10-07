@@ -688,6 +688,8 @@ def quality(
     )
     from gridflow.quality.reporter import QualityReporter
     from gridflow.silver.latest_views import LATEST_VIEW_SPECS, select_latest_vintage
+    from gridflow.silver.owned_relations import RegisteredRelationsTransformer
+    from gridflow.silver.registry import get_transformer_class
     from gridflow.storage.parquet import scan_parquet_dir
     from gridflow.utils.logging import setup_logging
 
@@ -730,7 +732,14 @@ def quality(
             # latest-vintage surface (ADR-025 P0.3) so duplicate/gap checks see
             # one row per entity key, not one per vintage.
             spec = LATEST_VIEW_SPECS.get((src, ds))
-            if spec is not None:
+            if spec is not None and spec.mode == "whole_capture":
+                owner = get_transformer_class(src, ds)
+                if owner is None or not issubclass(owner, RegisteredRelationsTransformer):
+                    raise RuntimeError(f"{src}/{ds}: a whole-capture spec without its owner class")
+                lf = select_latest_vintage(
+                    lf, spec, completions=owner.completions(settings.pipeline.data_dir)
+                )
+            elif spec is not None:
                 lf = select_latest_vintage(lf, spec)
             df = lf.collect()
             if df.is_empty():

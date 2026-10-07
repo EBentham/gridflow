@@ -37,7 +37,7 @@ from gridflow.connectors.neso_data_portal.registry import (
 )
 from gridflow.connectors.neso_data_portal.registry.record import has_issue_time
 from gridflow.silver import registry as silver_registry
-from gridflow.silver.base import BaseSilverTransformer, BronzeVouchReason, append_only_run_stamp
+from gridflow.silver.base import BronzeVouchReason, append_only_run_stamp
 from gridflow.silver.latest_views import _SETTLEMENT_RUN_RANK, LATEST_VIEW_SPECS, LatestViewSpec
 from gridflow.silver.neso_data_portal.casting import (
     ExclusionTally,
@@ -47,18 +47,25 @@ from gridflow.silver.neso_data_portal.casting import (
     type_child,
 )
 from gridflow.silver.neso_data_portal.completion import (
+    COMPLETION_DUCKDB_COLUMNS,
     COMPLETION_RELATION,
     NesoCaptureFailedError,
     Versions,
     capture_context,
     capture_id_for,
+    completion_dir,
     completion_row,
     is_valid,
     read_completion,
     record_completion,
+    scan_completions,
     write_failure,
 )
 from gridflow.silver.neso_data_portal.readers import read_children
+from gridflow.silver.owned_relations import (
+    RegisteredRelationsTransformer,
+    SupportRelation,
+)
 from gridflow.storage.parquet import write_parquet
 from gridflow.storage.paths import PathBuilder
 
@@ -155,7 +162,7 @@ def families_of(capture: Capture, dir_key: str, registry: Registry) -> dict[str,
     return {key: tuple(children) for key, children in out.items()}
 
 
-class GenericNesoTransformer(BaseSilverTransformer):
+class GenericNesoTransformer(RegisteredRelationsTransformer):
     """Base of every generated NESO transformer (P-6). Subclassed per family.
 
     ``read_bronze`` and ``transform`` are not used: the engine reads, types and
@@ -175,6 +182,25 @@ class GenericNesoTransformer(BaseSilverTransformer):
     def versions(cls) -> Versions:
         """The versions this family's completion records must carry."""
         return Versions(cls.RECORD.version, ENGINE_VERSION, cls.DATASET_VERSION, generic=True)
+
+    @classmethod
+    def output_columns(cls) -> list[tuple[str, str]]:
+        """See :func:`output_columns` (P-11's typed-empty base view)."""
+        return output_columns(cls.RECORD)
+
+    @classmethod
+    def support_relations(cls, data_dir: Path) -> tuple[SupportRelation, ...]:
+        """The completion relation every ``_latest`` of the engine may read (P-11)."""
+        return (
+            SupportRelation(
+                COMPLETION_RELATION, completion_dir(data_dir), COMPLETION_DUCKDB_COLUMNS
+            ),
+        )
+
+    @classmethod
+    def completions(cls, data_dir: Path) -> pl.LazyFrame:
+        """Every completion record under ``data_dir`` (the quality CLI's input)."""
+        return scan_completions(data_dir)
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         """Not used (ADR-034 P-6): the engine reads per capture in ``run_captures``."""

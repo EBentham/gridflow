@@ -9,20 +9,33 @@ divergence between the catalogue and Polars readers is caught where it starts.
 from __future__ import annotations
 
 import random
+import shutil
 from datetime import UTC, date, datetime, timedelta
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import duckdb
 import polars as pl
 import pytest
+from _neso_generic_support import install_generated, write_capture
+from _neso_registry_support import column, epoch, family, package, record, resource, sp_columns
 
 from gridflow.silver.latest_views import (
     _SETTLEMENT_RUN_RANK,
+    LATEST_VIEW_SPECS,
     LatestViewSpec,
     latest_select_sql,
     latest_view_sql,
     select_latest_vintage,
 )
+from gridflow.silver.neso_data_portal.completion import (
+    COMPLETION_RELATION,
+    completion_path,
+    scan_completions,
+)
+from gridflow.storage.duckdb import init_catalogue, refresh_views
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 TS = pl.Datetime("us", "UTC")
 TIE = ("capture_written_at", "bronze_capture_id")
@@ -332,3 +345,369 @@ class TestRendererParity:
         assert sql is not None and "$as_of" not in sql
         whole = latest_view_sql("base", "base_latest", WHOLE_SPEC, set(_rows().columns))
         assert whole is not None and "$as_of" not in whole
+
+
+# --------------------------------------------------------------------------- #
+# Over the engine's real outputs and the catalogue (P-6 + P-10 + P-11)
+# --------------------------------------------------------------------------- #
+
+SOURCE = "neso_data_portal"
+PKG = "dddddddd-0000-4000-8000-000000000000"
+DAY = date(2026, 10, 7)
+SP_HEADER = b"SettlementDate,SettlementPeriod,Unit,Value\n"
+ISSUE_KEY = ("settlement_date", "settlement_period", "unit", "issue_time")
+ISSUE_HEADER = b"SettlementDate,SettlementPeriod,Unit,Value,Issued\n"
+
+
+@pytest.fixture
+def data(tmp_path_factory: pytest.TempPathFactory, monkeypatch: pytest.MonkeyPatch) -> Path:
+    """A short data root; gold views are out of scope for these catalogues."""
+    monkeypatch.setattr("gridflow.storage.duckdb._register_gold_views", lambda con: None)
+    return tmp_path_factory.mktemp("s")
+
+
+def _issue_epoch() -> dict[str, Any]:
+    issued = column(
+        "Issued", "issued", "datetime", format="%Y-%m-%dT%H:%M", zone="UTC", nullable=False
+    )
+    return epoch([*sp_columns(), issued], issue={"kind": "data_column", "column": "issued"})
+
+
+def _install(
+    monkeypatch: pytest.MonkeyPatch, data: Path, families: dict[str, dict[str, Any]]
+) -> Any:
+    """Install one package holding one resource per ``key -> family kwargs``."""
+    entries = []
+    resources = []
+    for index, (key, kwargs) in enumerate(families.items(), start=1):
+        entries.append(family(key, **kwargs))
+        resources.append(resource(f"dddddddd-0000-4000-8000-00000000000{index}", key.title(), key))
+    document = package("pkg-gen", PKG, entries, resources)
+    _registry, generated = install_generated(monkeypatch, data / "_registry", [document])
+    return generated
+
+
+def _capture(
+    data: Path,
+    key: str,
+    index: int,
+    body: bytes,
+    written: datetime,
+    *,
+    lm: datetime | None = None,
+    **kwargs: Any,
+) -> str:
+    stamp = lm if lm is not None else written
+    path, _sidecar = write_capture(
+        data,
+        key,
+        package_slug="pkg-gen",
+        package_id=PKG,
+        resource_id=f"dddddddd-0000-4000-8000-00000000000{index}",
+        resource_name=key.title(),
+        body=body,
+        written_at=written,
+        ckan_last_modified=kwargs.pop("ckan_last_modified", stamp.replace(tzinfo=None).isoformat()),
+        partition=DAY,
+        **kwargs,
+    )
+    return path.relative_to(data).as_posix()
+
+
+def _query(db: Path, sql: str, params: dict[str, Any] | None = None) -> pl.DataFrame:
+    con = duckdb.connect(str(db), read_only=True)
+    try:
+        return con.execute(sql, params).pl() if params else con.execute(sql).pl()
+    finally:
+        con.close()
+
+
+def _ids(frame: pl.DataFrame) -> list[str]:
+    return sorted(frame["bronze_capture_id"].to_list())
+
+
+def _sql_as_of(db: Path, key: str, as_of: datetime | None) -> list[str]:
+    """``_latest`` when ``as_of`` is None, else P-10's parameterised select."""
+    view = f"silver_{SOURCE}_{key}"
+    if as_of is None:
+        return _ids(_query(db, f'SELECT * FROM "{view}_latest"'))
+    columns = set(_query(db, f'SELECT * FROM "{view}" LIMIT 0').columns)
+    select = latest_select_sql(view, LATEST_VIEW_SPECS[(SOURCE, key)], columns, as_of_param=True)
+    assert select is not None
+    return _ids(_query(db, select, {"as_of": as_of.isoformat()}))
+
+
+def _polars_as_of(data: Path, key: str, as_of: datetime | None) -> list[str]:
+    files = sorted((data / "silver" / SOURCE / key).rglob("[!.]*.parquet"))
+    if not files:
+        return []
+    spec = LATEST_VIEW_SPECS[(SOURCE, key)]
+    completions = scan_completions(data) if spec.mode == "whole_capture" else None
+    lf = pl.scan_parquet(files, hive_partitioning=False)
+    return _ids(select_latest_vintage(lf, spec, as_of, completions=completions).collect())
+
+
+def _both_as_of(db: Path, data: Path, key: str, as_of: datetime | None) -> list[str]:
+    sql = _sql_as_of(db, key, as_of)
+    assert sql == _polars_as_of(data, key, as_of), (key, as_of)
+    return sql
+
+
+class TestCorrectionLeakage:
+    """T-B3-1: an original (08:30) and its correction (12:00) of one issue."""
+
+    FAMILIES: dict[str, dict[str, Any]] = {  # noqa: RUF012
+        "gen_pub": {"record": record(epochs=[_issue_epoch()], entity_key=ISSUE_KEY)},
+        "gen_fb": {
+            "record": record(
+                epochs=[_issue_epoch()], entity_key=ISSUE_KEY, vintage="capture_fallback"
+            )
+        },
+        "gen_none": {"record": record()},
+    }
+
+    def test_as_of_before_the_correction_never_sees_it(
+        self, data: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Detects the correction leaking into an as-of before it existed, for a
+        non-null ``published_at``, a null one (``capture_fallback``), and an
+        issue-``none`` family, in the catalogue and in Polars alike."""
+        generated = _install(monkeypatch, data, self.FAMILIES)
+        originals: dict[str, str] = {}
+        corrections: dict[str, str] = {}
+        for index, key in enumerate(self.FAMILIES, start=1):
+            issue_row = b",2026-10-07T06:00" if key != "gen_none" else b""
+            header = ISSUE_HEADER if key != "gen_none" else SP_HEADER
+            fallback = key == "gen_fb"
+            originals[key] = _capture(
+                data,
+                key,
+                index,
+                header + b"2026-10-07,1,A,1.5" + issue_row + b"\n",
+                _t(8, 30),
+                lm=_t(8, 25),
+                **({"ckan_last_modified": ""} if fallback else {}),
+            )
+            corrections[key] = _capture(
+                data,
+                key,
+                index,
+                header + b"2026-10-07,1,A,9.5" + issue_row + b"\n",
+                _t(12),
+                lm=_t(11, 55),
+                **({"ckan_last_modified": ""} if fallback else {}),
+            )
+            generated.transformers[key](data).run(DAY, run_id="r")
+        published = scan_completions(data).collect()
+        assert published.filter(pl.col("family") == "gen_fb")["published_at"].null_count() == 2
+        assert published.filter(pl.col("family") == "gen_pub")["published_at"].null_count() == 0
+        db = data / "cat.duckdb"
+        init_catalogue(db, data)
+        for key in self.FAMILIES:
+            assert _both_as_of(db, data, key, _t(9)) == [originals[key]]
+            assert _both_as_of(db, data, key, None) == [corrections[key]]
+
+
+class TestNoRunTypeColumn:
+    def test_t_b3_6_a_record_without_a_run_type_registers_its_latest(
+        self, data: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Detects a ``None`` reaching the tie-break or the catalogue for a
+        record with no ``run_type_column``."""
+        generated = _install(monkeypatch, data, {"gen": {"record": record()}})
+        spec = generated.specs[(SOURCE, "gen")]
+        assert None not in spec.tiebreak_columns and spec.rank_column is None
+        _capture(data, "gen", 1, SP_HEADER + b"2026-10-07,1,A,1\n2026-10-07,2,A,2\n", _t(8))
+        _capture(data, "gen", 1, SP_HEADER + b"2026-10-07,1,A,3\n", _t(9))
+        generated.transformers["gen"](data).run(DAY, run_id="r")
+        db = data / "cat.duckdb"
+        init_catalogue(db, data)
+        latest = _query(db, f'SELECT * FROM "silver_{SOURCE}_gen_latest"')
+        assert latest.height == 2
+        files = sorted((data / "silver" / SOURCE / "gen").rglob("*.parquet"))
+        polars = select_latest_vintage(pl.scan_parquet(files, hive_partitioning=False), spec)
+        frame = polars.collect().sort("settlement_period")
+        assert frame["value"].to_list() == [3.0, 2.0]
+        assert frame.select("settlement_period", "unit").is_unique().all()
+
+
+def _whole_family(empty_allowed: bool = True) -> dict[str, Any]:
+    return {"record": record(latest="whole_capture"), "empty_allowed": empty_allowed}
+
+
+class TestEmptyCaptureAsOf:
+    def test_t_b4_4_populated_empty_populated_as_of(
+        self, data: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """T-B4-2's state: as-of 09:00 -> capture 1, 11:00 -> none, latest -> 3."""
+        generated = _install(monkeypatch, data, {"whole": _whole_family()})
+        body = SP_HEADER + b"2026-10-07,1,A,1\n2026-10-07,2,A,2\n"
+        first = _capture(data, "whole", 1, body, _t(8))
+        _capture(data, "whole", 1, SP_HEADER, _t(10), empty_capture=True)
+        third = _capture(data, "whole", 1, body, _t(12))
+        generated.transformers["whole"](data).run(DAY, run_id="r")
+        db = data / "cat.duckdb"
+        init_catalogue(db, data)
+        assert _both_as_of(db, data, "whole", _t(9)) == [first, first]
+        assert _both_as_of(db, data, "whole", _t(11)) == []
+        assert _both_as_of(db, data, "whole", None) == [third, third]
+
+
+def _relations(db: Path) -> set[str]:
+    return set(
+        _query(db, "SELECT table_name FROM information_schema.tables WHERE table_schema = 'main'")[
+            "table_name"
+        ].to_list()
+    )
+
+
+def _described(db: Path, relation: str) -> list[tuple[str, str]]:
+    frame = _query(
+        db,
+        "SELECT column_name, data_type FROM information_schema.columns "
+        "WHERE table_schema = 'main' AND table_name = $name ORDER BY ordinal_position",
+        {"name": relation},
+    )
+    return list(zip(frame["column_name"].to_list(), frame["data_type"].to_list(), strict=True))
+
+
+class TestRelationExistence:
+    """T-B4-6: I-1's state matrix under pytest strict mode.
+
+    In every state ``init_catalogue`` raises nothing; the base view, ``_latest``
+    and the completion relation of both families exist; and each ``_latest``
+    equals Polars ``select_latest_vintage`` over the same state.
+    """
+
+    BODY = SP_HEADER + b"2026-10-07,1,A,1\n2026-10-07,2,A,2\n"
+    FAMILIES: dict[str, dict[str, Any]] = {  # noqa: RUF012
+        "keyed": {"record": record(), "empty_allowed": True},
+        "whole": _whole_family(),
+    }
+
+    def _check(self, data: Path, *, refresh: bool = False) -> dict[str, list[str]]:
+        db = data / "cat.duckdb"
+        (refresh_views if refresh else init_catalogue)(db, data)
+        relations = _relations(db)
+        assert COMPLETION_RELATION in relations
+        out = {}
+        for key in self.FAMILIES:
+            base = f"silver_{SOURCE}_{key}"
+            assert {base, f"{base}_latest"} <= relations
+            out[key] = _both_as_of(db, data, key, None)
+        return out
+
+    def _run(self, generated: Any, data: Path) -> None:
+        for key in self.FAMILIES:
+            generated.transformers[key](data).run(DAY, run_id="r")
+
+    def _wipe_silver(self, data: Path) -> None:
+        shutil.rmtree(data / "silver")
+
+    def test_a_fresh_catalogue(self, data: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+        _install(monkeypatch, data, self.FAMILIES)
+        assert self._check(data) == {"keyed": [], "whole": []}
+
+    def test_b_empty_first_then_populated(
+        self, data: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        generated = _install(monkeypatch, data, self.FAMILIES)
+        for index, key in enumerate(self.FAMILIES, start=1):
+            _capture(data, key, index, SP_HEADER, _t(8), empty_capture=True)
+        self._run(generated, data)
+        assert not (data / "silver").exists()
+        assert self._check(data) == {"keyed": [], "whole": []}
+        populated = {
+            key: _capture(data, key, index, self.BODY, _t(9))
+            for index, key in enumerate(self.FAMILIES, start=1)
+        }
+        self._run(generated, data)
+        after = self._check(data, refresh=True)
+        assert after == {key: [capture, capture] for key, capture in populated.items()}
+
+    def test_c_populated_then_empty_then_silver_wiped(
+        self, data: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """REVIEW-PLAN-2's mixed ledger: the valid-empty capture still wins."""
+        generated = _install(monkeypatch, data, self.FAMILIES)
+        for index, key in enumerate(self.FAMILIES, start=1):
+            _capture(data, key, index, self.BODY, _t(8))
+            _capture(data, key, index, SP_HEADER, _t(10), empty_capture=True)
+        self._run(generated, data)
+        self._wipe_silver(data)
+        assert self._check(data) == {"keyed": [], "whole": []}
+
+    def test_d_populated_only_then_silver_wiped(
+        self, data: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Zero rows; reconcile's half of (d) lives in ``test_neso_reconcile``."""
+        generated = _install(monkeypatch, data, self.FAMILIES)
+        for index, key in enumerate(self.FAMILIES, start=1):
+            _capture(data, key, index, self.BODY, _t(8))
+        self._run(generated, data)
+        self._wipe_silver(data)
+        assert self._check(data) == {"keyed": [], "whole": []}
+
+    def test_e_an_output_without_a_completion_beside_an_older_complete_one(
+        self, data: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        generated = _install(monkeypatch, data, self.FAMILIES)
+        older: dict[str, str] = {}
+        newer: dict[str, str] = {}
+        for index, key in enumerate(self.FAMILIES, start=1):
+            older[key] = _capture(data, key, index, self.BODY, _t(8))
+            newer[key] = _capture(data, key, index, self.BODY.replace(b",1\n", b",7\n"), _t(9))
+        self._run(generated, data)
+        for key in self.FAMILIES:
+            completion_path(data, key, newer[key]).unlink()
+        got = self._check(data)
+        assert got["whole"] == [older["whole"], older["whole"]]
+        # key_latest reads rows, not the ledger: the newer rows still win per key.
+        assert got["keyed"] == [newer["keyed"], newer["keyed"]]
+
+    def test_schema_parity_typed_empty_equals_glob_backed(
+        self, data: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Detects a typed-empty relation whose ordered (name, type) list differs
+        from the glob view's after one real output, incl. a null-typed
+        ``source_run_id`` (P-6); likewise the completion relation."""
+        generated = _install(monkeypatch, data, self.FAMILIES)
+        db = data / "cat.duckdb"
+        init_catalogue(db, data)
+        relations = [f"silver_{SOURCE}_{key}" for key in self.FAMILIES] + [COMPLETION_RELATION]
+        empty = {relation: _described(db, relation) for relation in relations}
+        for index, key in enumerate(self.FAMILIES, start=1):
+            _capture(data, key, index, self.BODY, _t(8))
+        self._run(generated, data)
+        refresh_views(db, data)
+        for relation in relations:
+            assert _query(db, f'SELECT count(*) AS n FROM "{relation}"')["n"][0] > 0
+            assert _described(db, relation) == empty[relation], relation
+
+
+class TestQualityCli:
+    def test_quality_reads_a_whole_capture_family_through_its_completions(
+        self, data: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Detects ``gridflow quality`` crashing on (or reading every vintage of)
+        a whole-capture family: it must see only the newest complete capture."""
+        from typer.testing import CliRunner
+
+        from gridflow.cli import app
+
+        generated = _install(monkeypatch, data, {"whole": _whole_family()})
+        _capture(data, "whole", 1, SP_HEADER + b"2026-10-07,1,A,1\n2026-10-07,2,A,2\n", _t(8))
+        _capture(data, "whole", 1, SP_HEADER + b"2026-10-07,1,A,5\n", _t(12))
+        generated.transformers["whole"](data).run(DAY, run_id="r")
+        db = data / "q.duckdb"
+        monkeypatch.setenv("GRIDFLOW_DATA_DIR", str(data))
+        monkeypatch.setenv("GRIDFLOW_DUCKDB_PATH", str(db))
+        monkeypatch.setenv("GRIDFLOW_LOG_DIR", str(data / "logs"))
+        result = CliRunner().invoke(app, ["quality", "--source", SOURCE])
+        assert result.exit_code == 0, result.output
+        report = _query(
+            db,
+            "SELECT metric FROM quality_reports WHERE dataset = 'whole' "
+            "AND check_name = 'row_count'",
+        )
+        assert report["metric"].to_list() == [1.0]

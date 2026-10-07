@@ -7,12 +7,18 @@ import os
 import re
 import time
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import duckdb
 
 from gridflow.silver.latest_views import LATEST_VIEW_SPECS, latest_view_sql
 from gridflow.storage.parquet import sweep_orphan_temp_files
 from gridflow.storage.paths import PathBuilder
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+    from gridflow.silver.owned_relations import RegisteredRelationsTransformer
 
 logger = logging.getLogger(__name__)
 _SAFE_PARQUET_GLOB = "**/[!.]*.parquet"
@@ -160,15 +166,21 @@ def init_catalogue(db_path: Path, data_dir: Path) -> None:
 
 def _register_views(con: duckdb.DuckDBPyConnection, silver_root: Path, gold_root: Path) -> None:
     """Register DuckDB views pointing to Parquet files on disk."""
+    # ADR-034 P-11: generated families register through the silver bootstrap,
+    # which `gridflow init` would otherwise never import (E9).
+    from gridflow.silver.schema_manifest import _ensure_silver_transformers_registered
+
+    _ensure_silver_transformers_registered()
+    owners = _registered_relation_owners()
 
     # Silver views — source-qualified (C1-4): silver_{source}_{dataset}. Two
     # sources sharing a dataset directory name (e.g. a future bare ``forecast``)
     # would otherwise collapse to one view under CREATE OR REPLACE in
     # nondeterministic iterdir() order, silently shadowing one source's data.
+    # Track which source(s) own each dataset NAME so the alias pass can tell
+    # single-source names (safe to alias) from collision names (must NOT).
+    dataset_sources: dict[str, set[str]] = {}
     if silver_root.exists():
-        # Track which source(s) own each dataset NAME so the alias pass can tell
-        # single-source names (safe to alias) from collision names (must NOT).
-        dataset_sources: dict[str, set[str]] = {}
         for source_dir in silver_root.iterdir():
             if not source_dir.is_dir():
                 continue
@@ -176,6 +188,9 @@ def _register_views(con: duckdb.DuckDBPyConnection, silver_root: Path, gold_root
                 if not dataset_dir.is_dir():
                     continue
                 dataset_sources.setdefault(dataset_dir.name, set()).add(source_dir.name)
+                if (source_dir.name, dataset_dir.name) in owners:
+                    # The owned-relations pass below registers this dataset.
+                    continue
                 view_name = f"silver_{source_dir.name}_{dataset_dir.name}"
                 pattern = str(dataset_dir / _SAFE_PARQUET_GLOB).replace("\\", "/")
                 _try_create_view(con, view_name, pattern)
@@ -197,6 +212,10 @@ def _register_views(con: duckdb.DuckDBPyConnection, silver_root: Path, gold_root
                         # built must not linger as a binder-error trap.
                         con.execute(f"DROP VIEW IF EXISTS {_quote_identifier(latest_name)}")
 
+    if owners:
+        _register_owned_relations(con, silver_root.parent, owners)
+
+    if silver_root.exists():
         _register_silver_aliases(con, dataset_sources)
 
     # Gold views
@@ -207,6 +226,96 @@ def _register_views(con: duckdb.DuckDBPyConnection, silver_root: Path, gold_root
             view_name = f"gold_{dataset_dir.name}"
             pattern = str(dataset_dir / _SAFE_PARQUET_GLOB).replace("\\", "/")
             _try_create_view(con, view_name, pattern)
+
+
+def _registered_relation_owners() -> dict[tuple[str, str], type[RegisteredRelationsTransformer]]:
+    """Every registered class whose relations exist by registration (P-11's set G)."""
+    from gridflow.silver.owned_relations import RegisteredRelationsTransformer
+    from gridflow.silver.registry import get_transformer_class, list_transformers
+
+    out: dict[tuple[str, str], type[RegisteredRelationsTransformer]] = {}
+    for key in list_transformers():
+        cls = get_transformer_class(*key)
+        if cls is not None and issubclass(cls, RegisteredRelationsTransformer):
+            out[key] = cls
+    return out
+
+
+def _typed_empty_view(
+    con: duckdb.DuckDBPyConnection, view_name: str, columns: Sequence[tuple[str, str]]
+) -> None:
+    """``CREATE OR REPLACE VIEW`` of zero rows with the given ``(name, type)`` columns.
+
+    Names are record identifiers or engine constants, quoted; types come from
+    a fixed map. No data value enters the DDL.
+    """
+    select = ", ".join(
+        f"CAST(NULL AS {sql_type}) AS {_quote_identifier(name)}" for name, sql_type in columns
+    )
+    con.execute(
+        f"CREATE OR REPLACE VIEW {_quote_identifier(view_name)} AS SELECT {select} WHERE FALSE"
+    )
+    logger.info("Registered typed-empty view: %s", view_name)
+
+
+def _has_parquet(directory: Path) -> bool:
+    """Whether ``directory`` holds at least one non-hidden Parquet file (E23)."""
+    return directory.is_dir() and any(directory.rglob("[!.]*.parquet"))
+
+
+def _register_view_or_empty(
+    con: duckdb.DuckDBPyConnection,
+    view_name: str,
+    directory: Path,
+    columns: Sequence[tuple[str, str]],
+) -> None:
+    # The file test exists only so _try_create_view never gets a glob that
+    # matches nothing (E23); it never decides whether the relation exists.
+    if _has_parquet(directory):
+        _try_create_view(con, view_name, str(directory / _SAFE_PARQUET_GLOB).replace("\\", "/"))
+    else:
+        _typed_empty_view(con, view_name, columns)
+
+
+def _register_owned_relations(
+    con: duckdb.DuckDBPyConnection,
+    data_dir: Path,
+    owners: dict[tuple[str, str], type[RegisteredRelationsTransformer]],
+) -> None:
+    """Register every owner's relations, unconditionally (ADR-034 I-1).
+
+    Support relations first (a ``_latest`` may read them), once per name; then
+    per owner its base view and its ``_latest``. Each base or support view is
+    over its Parquet when any exists, else typed-empty. Relation EXISTENCE has
+    one input, registration; what the relations return is the selection over
+    whatever silver and the ledger hold, and any disagreement between the two
+    is reconcile's to report, never the catalogue's.
+    """
+    paths = PathBuilder(data_dir)
+    seen: set[str] = set()
+    for key in sorted(owners):
+        for support in owners[key].support_relations(data_dir):
+            if support.name not in seen:
+                seen.add(support.name)
+                _register_view_or_empty(con, support.name, support.directory, support.columns)
+
+    for source, dataset in sorted(owners):
+        cls = owners[(source, dataset)]
+        view_name = f"silver_{source}_{dataset}"
+        _register_view_or_empty(
+            con, view_name, paths.silver_dir(source, dataset), cls.output_columns()
+        )
+        latest_name = f"{view_name}_latest"
+        spec = LATEST_VIEW_SPECS.get((source, dataset))
+        sql = None
+        if spec is not None and _view_exists(con, view_name):
+            sql = latest_view_sql(
+                view_name, latest_name, spec, available_columns=_view_columns(con, view_name)
+            )
+        if sql is not None:
+            con.execute(sql)
+        else:
+            con.execute(f"DROP VIEW IF EXISTS {_quote_identifier(latest_name)}")
 
 
 def _register_silver_aliases(
