@@ -400,6 +400,15 @@ def gas_day_event_time_expr(column: str = "gas_day") -> pl.Expr:
     )
 
 
+def append_only_run_stamp(available_at: datetime) -> str:
+    """Format an APPEND_ONLY filename's ``run`` suffix (ADR-018), the one site.
+
+    ``_write_silver`` names a vintage file with it, and the NESO completion
+    ledger (ADR-034 P-6/P-8) derives the same name to find or claim a file.
+    """
+    return available_at.isoformat().replace(":", "-").replace("+", "-")
+
+
 class BaseSilverTransformer(ABC):
     """Base class for bronze -> silver transformations.
 
@@ -2659,7 +2668,7 @@ class BaseSilverTransformer(ABC):
             dataset_dir=self.silver_dir,
         )
         if self.APPEND_ONLY:
-            run_stamp = available_at.isoformat().replace(":", "-").replace("+", "-")
+            run_stamp = append_only_run_stamp(available_at)
             filename = f"{self.dataset}_{target_date.strftime('%Y%m%d')}_run{run_stamp}.parquet"
             final_path = out_dir / filename
         else:

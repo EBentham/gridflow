@@ -47,6 +47,7 @@ __all__ = [
     "ExclusionTally",
     "HeaderEpochError",
     "IssueTimeError",
+    "epoch_for",
     "TypedChild",
     "finish_capture",
     "record_columns",
@@ -154,7 +155,8 @@ def record_columns(record: SchemaRecord) -> tuple[str, ...]:
     return tuple(record_dtypes(record))
 
 
-def _epoch_for(record: SchemaRecord, header: tuple[str, ...]) -> HeaderEpoch:
+def epoch_for(record: SchemaRecord, header: tuple[str, ...]) -> HeaderEpoch:
+    """Return the epoch whose header equals ``header`` exactly (P-4 step 1)."""
     for epoch in record.epochs:
         if epoch.header == header:
             return epoch
@@ -244,7 +246,7 @@ def type_child(table: ChildTable, record: SchemaRecord, ctx: CaptureContext) -> 
         polars.exceptions.PolarsError: A value outside the declared null
             tokens did not cast (D-41: the capture fails, nothing is coerced).
     """
-    epoch = _epoch_for(record, table.header)
+    epoch = epoch_for(record, table.header)
     frame = table.frame
     tokened = [_null_tokens(spec) for spec in epoch.columns if spec.null_tokens]
     if tokened:

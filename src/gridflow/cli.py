@@ -1338,7 +1338,11 @@ def _echo_transform_results(source: str, results: list[DatasetResult]) -> None:
             )
             if count
         )
-        if r.status == "completed_with_warnings":
+        if r.skip_reason is not None:
+            # ADR-034 P-13: an ingest-only family. Ahead of the status branches
+            # so a skip never reads as "0 rows transformed".
+            typer.echo(f"  {source}/{r.dataset}: skipped ({r.skip_reason})")
+        elif r.status == "completed_with_warnings":
             # Excluded bronze bodies are a FILE count, appended only when
             # nonzero so the existing line is unchanged for every other
             # warning shape (ADR-028).

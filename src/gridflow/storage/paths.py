@@ -114,6 +114,18 @@ class PathBuilder:
         """Return a source's operational-state directory (e.g. its pacer lock)."""
         return self.data_dir / "state" / source
 
+    def completion_dir(self, source: str, dataset: str) -> Path:
+        """Return a dataset's completion-ledger directory (ADR-034 P-7).
+
+        Under ``state/``, which ``gridflow reset`` never touches, so a
+        valid-empty completion survives a silver-only wipe.
+        """
+        return self.state_dir(source) / "completion" / dataset
+
+    def completion_failure_dir(self, source: str, dataset: str) -> Path:
+        """Return a dataset's completion-failure record directory (ADR-034 P-7)."""
+        return self.state_dir(source) / "completion_failures" / dataset
+
     # --- DuckDB ---
 
     def duckdb_path(self) -> Path:

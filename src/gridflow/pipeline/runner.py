@@ -312,6 +312,9 @@ class DatasetResult:
         members_unchanged: Ingest-only, member-capture sources (ADR-033 P-10):
             members skipped because their newest capture is current. Nothing
             was fetched for them and they carry no frontier evidence.
+        skip_reason: Transform-only: why the dataset was skipped without a
+            transform (ADR-034 P-13: a family with no frozen schema record, or
+            a non-tabular family); ``None`` when it ran.
     """
 
     source: str
@@ -332,6 +335,7 @@ class DatasetResult:
     partition_retouch_warnings: int = 0
     error: str | None = None
     members_unchanged: int = 0
+    skip_reason: str | None = None
 
     @property
     def ok(self) -> bool:
@@ -1285,7 +1289,7 @@ def run_transform(
         One :class:`DatasetResult` per dataset, in input order.
     """
     from gridflow.observability import PipelineRunTracker
-    from gridflow.silver.registry import get_transformer
+    from gridflow.silver.registry import get_transformer, ingest_only_reason, post_run_hooks
     from gridflow.utils.time import date_range
 
     con = ctx.con
@@ -1295,6 +1299,28 @@ def run_transform(
 
     for ds in datasets:
         tracker = PipelineRunTracker(con, source, ds, "transform")
+        skip = ingest_only_reason(source, ds)
+        if skip is not None:
+            # ADR-034 P-13: a family with no frozen record is skipped LOUDLY
+            # (warnings), a non-tabular family quietly (success). Only keys
+            # registered ingest-only reach here, so every other source is
+            # untouched.
+            reason, warn = skip
+            logger.warning("Transform skipped for %s/%s: %s", source, ds, reason)
+            if warn:
+                tracker.complete_with_warnings(rows_out=0)
+            else:
+                tracker.complete(rows_out=0)
+            results.append(
+                DatasetResult(
+                    source=source,
+                    dataset=ds,
+                    operation="transform",
+                    status="completed_with_warnings" if warn else "success",
+                    skip_reason=reason,
+                )
+            )
+            continue
         total_rows = 0
         total_unmapped = 0
         total_start_time_fallback = 0
@@ -1355,6 +1381,10 @@ def run_transform(
                         reingest=reingest,
                     )
                     total_rows += rows
+                    # ADR-034 P-8: inside the same try, so a raising hook
+                    # fails the dataset exactly as a raising run() does.
+                    for hook in post_run_hooks(source, ds):
+                        hook(transformer, target_date)
                 finally:
                     # Every attempted destination is folded exactly once,
                     # including a run() that raises after partial preparation.
