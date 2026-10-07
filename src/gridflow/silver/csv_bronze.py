@@ -33,11 +33,17 @@ Design rules, all from D-19:
 - **Every column is read as ``Utf8``** (``infer_schema_length=0``). The
   transformer casts explicitly with ``strict=True``, matching the
   ``BaseSchema(strict=True)`` convention in ``schemas/common.py``.
+- **Rows with no content are dropped.** NESO's files can end with a line holding
+  only ``\\r`` (``...6 \\n \\r \\n``), which Polars reads as a row whose every
+  cell is null. That is a vendor line terminator, not data and not a validation
+  failure, so it is dropped here (and counted in an INFO log) before it can
+  reach silver as a null-key row.
 """
 
 from __future__ import annotations
 
 import io
+import logging
 
 import polars as pl
 
@@ -47,6 +53,8 @@ __all__ = [
     "NotCsvBodyError",
     "read_csv_bronze_body",
 ]
+
+logger = logging.getLogger(__name__)
 
 _UTF8_BOM = b"\xef\xbb\xbf"
 
@@ -95,7 +103,11 @@ def read_csv_bronze_body(
         body yields an empty frame rather than an error — the connector's
         definitive-absent guard (D-14) is what makes that unreachable in
         practice, and crashing here would turn a vendor edge case into a
-        transform-time traceback.
+        transform-time traceback. Rows in which every cell is null or
+        empty/whitespace-only (NESO's trailing lone-``\\r`` line) are dropped
+        and counted in one INFO record naming ``source_label``; nothing is
+        logged when none drop. Any row with at least one non-blank cell is
+        kept with its values untouched.
 
     Raises:
         NotCsvBodyError: The body is empty, starts (after whitespace) with
@@ -132,7 +144,34 @@ def read_csv_bronze_body(
     # The contract passed against stripped names, so this is a whitespace
     # normalisation and never a rename: the caller is handed the column names
     # it declared, so a downstream cast-by-name cannot miss on a stray space.
-    return frame.rename(dict(zip(frame.columns, expected_columns, strict=True)))
+    frame = frame.rename(dict(zip(frame.columns, expected_columns, strict=True)))
+    return _drop_blank_rows(frame, source_label)
+
+
+def _drop_blank_rows(frame: pl.DataFrame, source_label: str) -> pl.DataFrame:
+    """Drop rows whose every cell is null or empty/whitespace-only.
+
+    Only the blank test strips; kept rows are returned exactly as parsed.
+    """
+    if frame.width == 0 or frame.height == 0:
+        return frame
+    blank_cells = [
+        pl.col(name).str.strip_chars().fill_null("").eq("")
+        if dtype == pl.Utf8
+        else pl.col(name).is_null()
+        for name, dtype in frame.schema.items()
+    ]
+    is_blank_row = pl.all_horizontal(blank_cells)
+    kept = frame.filter(~is_blank_row)
+    dropped = frame.height - kept.height
+    if dropped:
+        logger.info(
+            "dropped %d blank row(s) (every cell null or empty) from %s: "
+            "vendor line terminator, not data",
+            dropped,
+            source_label,
+        )
+    return kept
 
 
 def _assert_header_contract(

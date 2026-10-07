@@ -9,6 +9,8 @@ a path at transform time) rather than assuming either.
 
 from __future__ import annotations
 
+import logging
+
 import polars as pl
 import pytest
 
@@ -138,3 +140,80 @@ class TestHeaderContract:
 
         with pytest.raises(CsvHeaderDriftError):
             read_csv_bronze_body(body, expected_columns=EXPECTED, source_label="unit://reordered")
+
+
+class TestBlankRowHygiene:
+    """NESO's trailing lone ``\r`` line is a vendor terminator, not a data row.
+
+    Polars reads it as a row whose every cell is null; fail-soft validation then
+    wrote it to silver (``daily_wind_availability``: 1 null ``bmu_id`` in 3,589).
+    """
+
+    LOGGER = "gridflow.silver.csv_bronze"
+
+    def test_trailing_lone_cr_line_is_dropped_and_logged_once(
+        self, caplog: pytest.LogCaptureFixture
+    ) -> None:
+        body = CLEAN_LF + b"\r\n"
+
+        with caplog.at_level(logging.INFO, logger=self.LOGGER):
+            df = read_csv_bronze_body(body, expected_columns=EXPECTED, source_label="unit://cr")
+
+        assert df.height == 2
+        assert df.null_count().sum_horizontal().item() == 0
+        records = [r for r in caplog.records if r.name == self.LOGGER]
+        assert len(records) == 1
+        assert "unit://cr" in records[0].getMessage()
+        assert " 1 " in records[0].getMessage()
+
+    def test_two_trailing_blank_lines_log_a_count_of_two(
+        self, caplog: pytest.LogCaptureFixture
+    ) -> None:
+        body = CLEAN_LF + b"\r\n\r\n"
+
+        with caplog.at_level(logging.INFO, logger=self.LOGGER):
+            df = read_csv_bronze_body(body, expected_columns=EXPECTED, source_label="unit://cr2")
+
+        assert df.height == 2
+        records = [r for r in caplog.records if r.name == self.LOGGER]
+        assert len(records) == 1
+        assert " 2 " in records[0].getMessage()
+
+    def test_whitespace_only_row_is_dropped(self) -> None:
+        df = read_csv_bronze_body(
+            CLEAN_LF + b" , ,\n", expected_columns=EXPECTED, source_label="unit://ws"
+        )
+
+        assert df.height == 2
+
+    def test_row_with_one_non_blank_cell_is_kept_untouched(
+        self, caplog: pytest.LogCaptureFixture
+    ) -> None:
+        body = CLEAN_LF + b",,7\n T_X ,,\n"
+
+        with caplog.at_level(logging.INFO, logger=self.LOGGER):
+            df = read_csv_bronze_body(body, expected_columns=EXPECTED, source_label="unit://part")
+
+        assert df.height == 4
+        assert df.row(2) == (None, None, "7")
+        assert df.row(3) == (" T_X ", None, None)
+        assert not [r for r in caplog.records if r.name == self.LOGGER]
+
+    def test_header_only_body_with_blank_line_is_still_an_empty_frame(self) -> None:
+        df = read_csv_bronze_body(
+            b"BMU_ID,Date,MW\n\r\n", expected_columns=EXPECTED, source_label="unit://h-only"
+        )
+
+        assert df.height == 0
+        assert df.columns == list(EXPECTED)
+        assert set(df.schema.values()) == {pl.Utf8}
+
+    def test_body_without_trailing_blank_line_is_unchanged_and_silent(
+        self, caplog: pytest.LogCaptureFixture
+    ) -> None:
+        with caplog.at_level(logging.DEBUG, logger=self.LOGGER):
+            df = read_csv_bronze_body(CLEAN_LF, expected_columns=EXPECTED, source_label="unit://ok")
+
+        assert df.height == 2
+        assert df.row(1) == ("T_ABC-2", "2026-08-16", "98")
+        assert not [r for r in caplog.records if r.name == self.LOGGER]
