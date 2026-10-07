@@ -31,7 +31,17 @@ from importlib import resources as importlib_resources
 from pathlib import Path
 from typing import TYPE_CHECKING, Annotated, Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import Field, ValidationError
+
+from gridflow.connectors.neso_data_portal.registry.record import (
+    Eligibility,
+    Eligible,
+    Held,
+    RecordError,
+    SchemaRecord,
+    _Frozen,
+    validate_record,
+)
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -41,12 +51,18 @@ __all__ = [
     "KEY_PATTERN",
     "LEGACY_KEYS",
     "Adjudication",
+    "ChildEntry",
+    "CoveredEvidence",
+    "Eligibility",
+    "Eligible",
     "FamilyEntry",
     "FrozenKey",
+    "Held",
     "PackageEntry",
     "Registry",
     "RegistryError",
     "ResourceEntry",
+    "SchemaRecord",
     "dump_json",
     "frozen_key_violations",
     "key_collisions",
@@ -72,27 +88,6 @@ Refresh = Literal["daily", "adhoc", "frozen", "monthly", "weekly", "intraday"]
 
 class RegistryError(Exception):
     """The registry on disk is malformed or internally inconsistent."""
-
-
-class _Frozen(BaseModel):
-    model_config = ConfigDict(extra="forbid", frozen=True)
-
-
-class Eligible(_Frozen):
-    """The package may be published."""
-
-    status: Literal["eligible"]
-
-
-class Held(_Frozen):
-    """The package is held from publication pending a research unit."""
-
-    status: Literal["held"]
-    question: str
-    unit: str
-
-
-Eligibility = Annotated[Eligible | Held, Field(discriminator="status")]
 
 
 class SilverDisposition(_Frozen):
@@ -122,11 +117,34 @@ class HoldDisposition(_Frozen):
     unit: str
 
 
+class CoveredEvidence(_Frozen):
+    """What a COVERED grant was proven against (ADR-034 P-14 ``stale_covered``).
+
+    Attributes:
+        covered_capture: The covered resource's capture id the proof used.
+        covering_capture: The covering resource's capture id the proof used.
+        covered_record_version: The covered side's record version at proof.
+        covering_record_version: The covering side's record version at proof.
+        inventory_sha256: The container child-inventory digest at proof.
+    """
+
+    covered_capture: str
+    covering_capture: str
+    covered_record_version: str
+    covering_record_version: str
+    inventory_sha256: str
+
+
 class CoveredDisposition(_Frozen):
-    """Proven value-equivalent to another resource (unused by unit A)."""
+    """Proven value-equivalent to another resource.
+
+    ``evidence`` is required by V-12; it is optional in the model only so the
+    rule can name itself in the load error.
+    """
 
     kind: Literal["COVERED"]
     by: str
+    evidence: CoveredEvidence | None = None
 
 
 Disposition = Annotated[
@@ -147,10 +165,18 @@ class FamilyEntry(_Frozen):
     max_download_bytes: int = Field(gt=0)
     name_regex: str | None = None
     transformer: Literal["bespoke"] | None = None
+    record: SchemaRecord | None = None
+
+
+class ChildEntry(_Frozen):
+    """One member of a container resource's child inventory (ADR-034 P-1)."""
+
+    child: str = Field(min_length=1)
+    disposition: Disposition
 
 
 class ResourceEntry(_Frozen):
-    """One CKAN resource, its family and its disposition."""
+    """One CKAN resource, its family, its disposition and its children."""
 
     id: str
     name: str
@@ -158,6 +184,7 @@ class ResourceEntry(_Frozen):
     url_type: Literal["upload", "datastore"]
     family: str
     disposition: Disposition
+    children: tuple[ChildEntry, ...] = ()
 
 
 class PackageEntry(_Frozen):
@@ -309,20 +336,95 @@ def _validate_package(name: str, entry: PackageEntry) -> dict[str, frozenset[tup
                 f"registry file {name}: (name, format) {pair!r} repeats within the package"
             )
         seen_pairs.add(pair)
-        disposition = resource.disposition
-        if isinstance(disposition, SilverDisposition):
-            if disposition.key != resource.family:
+        _validate_children(name, resource)
+        for disposition in _dispositions(resource):
+            if isinstance(disposition, CoveredDisposition) and disposition.evidence is None:
                 raise RegistryError(
-                    f"registry file {name}: resource {resource.id} is SILVER under key "
-                    f"{disposition.key!r} but belongs to family {resource.family!r}"
-                )
-            if owner.kind != "tabular":
-                raise RegistryError(
-                    f"registry file {name}: resource {resource.id} is SILVER in the "
-                    f"non-tabular family {resource.family!r}"
+                    f"registry file {name}: family {resource.family!r}: V-12: resource "
+                    f"{resource.id} has a COVERED grant without evidence"
                 )
         names[resource.family].add(pair)
+    _validate_records(name, entry)
     return {key: frozenset(pairs) for key, pairs in names.items()}
+
+
+def _dispositions(resource: ResourceEntry) -> tuple[Disposition, ...]:
+    """The resource's own disposition, then each child's."""
+    return (resource.disposition, *(child.disposition for child in resource.children))
+
+
+def _validate_children(name: str, resource: ResourceEntry) -> None:
+    children = [child.child for child in resource.children]
+    if len(set(children)) != len(children):
+        raise RegistryError(
+            f"registry file {name}: resource {resource.id} repeats a child in its inventory"
+        )
+
+
+def _validate_records(name: str, entry: PackageEntry) -> None:
+    """Run every record's V-1..V-10 and V-13 checks (ADR-034 P-1)."""
+    with_record = {family.key: family.record is not None for family in entry.families}
+    for family in entry.families:
+        if family.record is None:
+            continue
+        url_types = frozenset(
+            resource.url_type
+            for resource in entry.resources
+            if resource.family == family.key
+            or any(
+                isinstance(d, SilverDisposition) and d.key == family.key
+                for d in _dispositions(resource)
+            )
+        )
+        try:
+            validate_record(
+                family.record,
+                key=family.key,
+                kind=family.kind,
+                legacy=family.legacy,
+                package_families=with_record,
+                family_url_types=url_types,
+            )
+        except RecordError as exc:
+            raise RegistryError(f"registry file {name}: family {family.key!r}: {exc}") from exc
+
+
+def _validate_silver_targets(
+    file_names: dict[str, str],
+    packages: list[PackageEntry],
+    families: dict[str, tuple[PackageEntry, FamilyEntry]],
+) -> None:
+    """V-11, after every file is loaded: each SILVER names a tabular owner.
+
+    ``SILVER(k)`` on a resource (or a container child) of family ``f`` is
+    valid iff ``k == f``, or ``k``'s record lists ``f`` in ``siblings`` (the
+    sibling read); ``k`` must be a declared tabular family.
+    """
+    for entry in packages:
+        name = file_names[entry.package]
+        for resource in entry.resources:
+            for disposition in _dispositions(resource):
+                if not isinstance(disposition, SilverDisposition):
+                    continue
+                target = families.get(disposition.key)
+                if target is None:
+                    raise RegistryError(
+                        f"registry file {name}: family {resource.family!r}: V-11: resource "
+                        f"{resource.id} is SILVER under the undeclared key {disposition.key!r}"
+                    )
+                _package, owner = target
+                sibling_read = owner.record is not None and resource.family in owner.record.siblings
+                if disposition.key != resource.family and not sibling_read:
+                    raise RegistryError(
+                        f"registry file {name}: family {resource.family!r}: V-11: resource "
+                        f"{resource.id} is SILVER under key {disposition.key!r}, which is "
+                        "neither its family nor a family that lists it as a sibling"
+                    )
+                if owner.kind != "tabular":
+                    raise RegistryError(
+                        f"registry file {name}: family {resource.family!r}: resource "
+                        f"{resource.id} is SILVER in the non-tabular family {disposition.key!r}"
+                    )
 
 
 @cache
@@ -332,6 +434,7 @@ def _load(path: Path | None) -> Registry:
     resources: dict[str, tuple[PackageEntry, ResourceEntry]] = {}
     names: dict[str, frozenset[tuple[str, str]]] = {}
     slugs: set[str] = set()
+    file_names: dict[str, str] = {}
 
     for name, item in _entries(path):
         if name.startswith("_"):
@@ -344,6 +447,7 @@ def _load(path: Path | None) -> Registry:
         if entry.package in slugs:
             raise RegistryError(f"registry file {name}: package {entry.package!r} repeats")
         slugs.add(entry.package)
+        file_names[entry.package] = name
         package_names = _validate_package(name, entry)
         for family in entry.families:
             if family.key in families:
@@ -362,6 +466,7 @@ def _load(path: Path | None) -> Registry:
         names.update(package_names)
         packages.append(entry)
 
+    _validate_silver_targets(file_names, packages, families)
     packages.sort(key=lambda entry: entry.package)
     return Registry(
         root=path,
@@ -385,7 +490,9 @@ def load_registry(path: Path | None = None) -> Registry:
         RegistryError: A file is unreadable, fails the schema, or the files
             disagree with each other (a key or resource id declared twice, a
             resource naming an undeclared family, a SILVER resource outside its
-            own tabular family, an invalid key, a non-compiling ``name_regex``).
+            own tabular family or a recorded sibling owner (V-11), an invalid
+            key, a non-compiling ``name_regex``, a frozen schema record breaking
+            V-1..V-10 or V-13, a COVERED grant without evidence (V-12)).
     """
     return _load(None if path is None else Path(path))
 

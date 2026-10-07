@@ -11,6 +11,7 @@ from typing import TYPE_CHECKING, Literal
 import polars as pl
 
 from gridflow.silver.base import BaseSilverTransformer, VintagePolicy
+from gridflow.silver.date_columns import DATE_COL_SQL_TYPES, DateColSqlType
 from gridflow.silver.latest_views import LATEST_VIEW_SPECS
 from gridflow.silver.registry import get_transformer, list_transformers
 
@@ -71,7 +72,6 @@ if TYPE_CHECKING:
     from pydantic import BaseModel
 
 RelationKind = Literal["silver", "gold", "serving_alias"]
-DateColSqlType = Literal["DATE", "TIMESTAMPTZ"]
 ColumnsSource = Literal["pydantic_schema", "declared_dynamic", "gold_sql", "serving_alias"]
 
 BITEMPORAL_EXCLUDE: tuple[str, ...] = (
@@ -420,17 +420,9 @@ _SERVING_ALIASES: tuple[_ServingAliasSpec, ...] = (
     ),
 )
 
-_DATE_COL_SQL_TYPES: dict[str, DateColSqlType] = {
-    "settlement_date": "DATE",
-    "gas_day": "DATE",
-    # A calendar DATE, like `settlement_date` and unlike `timestamp_utc`:
-    # NESO's daily wind availability is stated for a GB availability DAY, and
-    # the derived instant lives in `timestamp_utc` (D-25).
-    "availability_date": "DATE",
-    "timestamp_utc": "TIMESTAMPTZ",
-    "implementation_datetime_utc": "TIMESTAMPTZ",
-    "ingested_at": "TIMESTAMPTZ",
-}
+# Moved verbatim to the leaf `silver/date_columns.py` (ADR-034 P-12) so the
+# NESO registry's V-13 can read it without importing this module.
+_DATE_COL_SQL_TYPES: dict[str, DateColSqlType] = DATE_COL_SQL_TYPES
 
 # This list is the manifest's OWN bootstrap and is independent of
 # `runner._TRANSFORMER_MODULES`: `get_silver_schema_manifest()` is reachable
