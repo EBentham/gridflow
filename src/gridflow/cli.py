@@ -1287,13 +1287,20 @@ _import_transformers = runner.import_transformers
 def _echo_ingest_results(source: str, results: list[DatasetResult]) -> None:
     """Echo per-dataset ingest result lines (preserves cli.ingest formatting)."""
     for r in results:
+        # Member-capture sources only; the clause is absent at 0, so every other
+        # source's line is byte-identical.
+        unchanged = (
+            f", {r.members_unchanged} unchanged since newest capture"
+            if r.members_unchanged > 0
+            else ""
+        )
         if r.status == "completed_with_warnings":
             typer.echo(
-                f"  {source}/{r.dataset}: {r.rows_in} responses ingested, "
+                f"  {source}/{r.dataset}: {r.rows_in} responses ingested{unchanged}, "
                 f"{r.rows_skipped} unit(s) skipped (completed_with_warnings)"
             )
         elif r.status == "success":
-            typer.echo(f"  {source}/{r.dataset}: {r.rows_in} responses ingested")
+            typer.echo(f"  {source}/{r.dataset}: {r.rows_in} responses ingested{unchanged}")
         else:
             typer.echo(f"  {source}/{r.dataset}: FAILED - {r.error}", err=True)
 

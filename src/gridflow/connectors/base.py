@@ -84,6 +84,10 @@ class MemberEvent:
     detail: str = ""
 
 
+class MemberCaptureError(Exception):
+    """A bounded capture in which every attempted member failed (ADR-033 P-5)."""
+
+
 @runtime_checkable
 class MemberCaptureConnector(Protocol):
     """A connector whose datasets are families of independently captured members.
@@ -93,6 +97,14 @@ class MemberCaptureConnector(Protocol):
     by one body whatever the family size (ADR-033 A9). ``fetch()`` remains the
     contract for every other connector.
     """
+
+    async def __aenter__(self) -> Any:
+        """Open the session the members are fetched in."""
+        ...
+
+    async def __aexit__(self, *exc: Any) -> None:
+        """Close the session."""
+        ...
 
     def bind_data_dir(self, data_dir: Path) -> None:
         """Bind to the data root before the first send."""

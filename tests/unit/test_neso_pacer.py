@@ -488,3 +488,52 @@ class TestInProcess:
         asyncio.run(_run())
         assert len(stamps) == 3
         assert all(gap >= 1.0 for gap in _gaps(sorted(stamps))), stamps
+
+
+class TestRunIngestBinds:
+    """Q-5 (run_ingest half): the ingest entry point binds under the data dir."""
+
+    def test_run_ingest_binds_before_the_first_send(
+        self,
+        router: respx.MockRouter,
+        monkeypatch: pytest.MonkeyPatch,
+        tmp_path_factory: pytest.TempPathFactory,
+    ) -> None:
+        from gridflow.pipeline import runner as pipeline_runner
+
+        bound: list[tuple[Path, Path | None]] = []
+        real_bind = NesoDataPortalConnector.bind_data_dir
+
+        def _spy(self: NesoDataPortalConnector, data_dir: Path) -> None:
+            real_bind(self, data_dir)
+            bound.append((Path(data_dir), self._pacer.state_dir))
+
+        monkeypatch.setattr(NesoDataPortalConnector, "bind_data_dir", _spy)
+        payload = _legacy_payload("package_show_daily_wind_availability.json")
+        url = payload["result"]["resources"][0]["url"]
+        sends: list[int] = []
+
+        def _handler(request: httpx.Request) -> httpx.Response:
+            sends.append(len(bound))
+            if "package_show" in str(request.url):
+                return httpx.Response(200, json=payload)
+            if str(request.url).startswith(url):
+                return httpx.Response(
+                    200, content=(FIXTURES / "daily_wind_availability.csv").read_bytes()
+                )
+            return httpx.Response(404)
+
+        router.route(url__regex=r".*").mock(side_effect=_handler)
+        data_dir = tmp_path_factory.mktemp("q5i")
+        end = datetime.now(UTC) - timedelta(minutes=1)
+        with ingest_context(data_dir, monkeypatch) as ctx:
+            source = ctx.settings.sources["neso_data_portal"]
+            ctx.settings.sources["neso_data_portal"] = source.model_copy(
+                update={"rate_limit_per_second": 1000}
+            )
+            (result,) = pipeline_runner.run_ingest(
+                ctx, "neso_data_portal", ["daily_wind_availability"], end - timedelta(hours=1), end
+            )
+        assert result.status == "success", result
+        assert bound == [(data_dir, data_dir / "state" / "neso_data_portal")]
+        assert sends and all(count == 1 for count in sends), "a send preceded the bind"
