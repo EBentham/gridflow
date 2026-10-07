@@ -305,22 +305,66 @@ def _family_gaps(
     }
     failures = _failures(data_dir, key)
 
+    # ``duplicated`` is found first because it vetoes the drain for its capture:
+    # the drain never touches a duplicated pair, so the capture's other gaps
+    # (``missing``, orphaned (b), ...) are reported but not drainable.
+    duplicated: set[str] = set()
+    outputs: list[tuple[str, date | None, list[str]]] = []
+    if generic:
+        for capture_id, holders in sorted(_output_ids(data_dir, key).items()):
+            day = _partition_or_none(Path(capture_id))
+            if day is not None and day > cutoff:
+                continue
+            outputs.append((capture_id, day, holders))
+            if len(holders) > 1:
+                duplicated.add(capture_id)
+                gaps.append(
+                    Gap("duplicated", key, day, capture_id, f"outputs {', '.join(holders)}")
+                )
+    else:
+        transformer = cls(data_dir)
+        for day in sorted({pair.partition_date for pair in expected.values()}):
+            _unique, collisions = bespoke_targets(transformer, day)
+            for path, group in collisions:
+                for capture in group:
+                    capture_id = capture_id_for(capture.body, data_dir)
+                    duplicated.add(capture_id)
+                    gaps.append(
+                        Gap(
+                            "duplicated",
+                            key,
+                            day,
+                            capture_id,
+                            f"shares output path {path.name} with {len(group) - 1} other(s)",
+                        )
+                    )
+
     for capture_id in sorted(expected):
         pair = expected[capture_id]
         row = ledger.get(capture_id)
         if row is not None and is_valid(row, data_dir, versions):
             continue
+        drainable = capture_id not in duplicated
         failure = failures.get(capture_id)
         if failure is not None:
             detail = f"{failure.get('error_class', '?')}: {failure.get('message', '')}"
-            gaps.append(Gap("failed", key, pair.partition_date, capture_id, detail, True))
+            gaps.append(Gap("failed", key, pair.partition_date, capture_id, detail, drainable))
         elif row is not None:
             detail = f"completion fails the validity predicate ({row['outcome']})"
             gaps.append(
-                Gap("missing_or_invalid_output", key, pair.partition_date, capture_id, detail, True)
+                Gap(
+                    "missing_or_invalid_output",
+                    key,
+                    pair.partition_date,
+                    capture_id,
+                    detail,
+                    drainable,
+                )
             )
         else:
-            gaps.append(Gap("missing", key, pair.partition_date, capture_id, "no completion", True))
+            gaps.append(
+                Gap("missing", key, pair.partition_date, capture_id, "no completion", drainable)
+            )
 
     for capture_id in sorted(set(ledger) - set(expected)):
         gaps.append(
@@ -333,41 +377,18 @@ def _family_gaps(
             )
         )
 
-    if generic:
-        for capture_id, holders in sorted(_output_ids(data_dir, key).items()):
-            day = _partition_or_none(Path(capture_id))
-            if day is not None and day > cutoff:
-                continue
-            if len(holders) > 1:
-                gaps.append(
-                    Gap("duplicated", key, day, capture_id, f"outputs {', '.join(holders)}")
+    for capture_id, day, holders in outputs:
+        if capture_id not in ledger:
+            gaps.append(
+                Gap(
+                    "orphaned",
+                    key,
+                    day,
+                    capture_id,
+                    f"b: output without a completion ({holders[0]})",
+                    capture_id in expected and capture_id not in duplicated,
                 )
-            if capture_id not in ledger:
-                gaps.append(
-                    Gap(
-                        "orphaned",
-                        key,
-                        day,
-                        capture_id,
-                        f"b: output without a completion ({holders[0]})",
-                        capture_id in expected,
-                    )
-                )
-    else:
-        transformer = cls(data_dir)
-        for day in sorted({pair.partition_date for pair in expected.values()}):
-            _unique, collisions = bespoke_targets(transformer, day)
-            for path, group in collisions:
-                for capture in group:
-                    gaps.append(
-                        Gap(
-                            "duplicated",
-                            key,
-                            day,
-                            capture_id_for(capture.body, data_dir),
-                            f"shares output path {path.name} with {len(group) - 1} other(s)",
-                        )
-                    )
+            )
     return gaps, expected
 
 

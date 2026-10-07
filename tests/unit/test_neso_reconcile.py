@@ -283,6 +283,33 @@ class TestDrain:
         assert any(line.startswith(f"GAP orphaned fam_one 2026-10-07 {ghost} a:") for line in lines)
         assert list((data / "silver").rglob("*.parquet")) == []
 
+    def test_a_duplicated_capture_without_a_completion_is_never_drained(
+        self, data: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+    ) -> None:
+        """Detects the drain dispatching a ``duplicated`` capture through its
+        other gaps: with no completion it is also ``missing`` and orphaned (b),
+        and the drain re-transformed and recorded it (REVIEW-DIFF-1 tests #1).
+        P-14: the drain never touches ``duplicated``."""
+        _registry, generated = _install(monkeypatch, data, {"fam_one": {"record": record()}})
+        capture = _capture(data, "fam_one", 1, BODY, _t(8))
+        _generic(generated)(data).run(DAY, run_id="r")
+        (output,) = (data / "silver").rglob("*.parquet")
+        shutil.copyfile(output, output.with_name(f"copy_{output.name}"))
+        completion_path(data, "fam_one", capture).unlink()
+        code, lines = _cli(capsys, "fam_one", "--cutoff", CUTOFF)
+        assert code == 1
+        assert sorted(line.split()[1] for line in _gaps(lines)) == [
+            "duplicated",
+            "missing",
+            "orphaned",
+        ]
+        before = _state(data)
+        code, lines = _cli(capsys, "fam_one", "--cutoff", CUTOFF, "--drain")
+        assert code == 1
+        assert not [line for line in lines if line.startswith("SUMMARY drained")]
+        assert _state(data) == before
+        assert read_completion(data, "fam_one", capture) is None
+
     def test_t_b5_5_a_silver_wipe_reports_populated_not_valid_empty(
         self, data: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
     ) -> None:
@@ -537,3 +564,52 @@ class TestBespoke:
         assert output.stat().st_mtime_ns == mtime
         ledger = read_completion(data, self.DWA, capture_id)
         assert ledger is not None and ledger["engine_version"] == "bespoke"
+
+    def test_a_bespoke_stamp_collision_is_reported_and_never_drained(
+        self, data: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Detects the drain adopting a collided bespoke pair through its
+        ``missing`` gaps: P-8 records neither capture of a shared output path,
+        and the drain must not record them either (REVIEW-DIFF-1 tests #1)."""
+        from pathlib import Path as _Path
+
+        fixture = (
+            _Path(__file__).resolve().parents[1]
+            / "fixtures"
+            / "neso_data_portal"
+            / "daily_wind_availability.csv"
+        )
+        day = date(2026, 8, 16)
+        ids = []
+        for rid, body in (
+            ("7aa508eb-36f5-4298-820f-2fa6745ae2e7", fixture.read_bytes()),
+            (
+                "7aa508eb-36f5-4298-820f-2fa6745ae2e8",
+                fixture.read_bytes().replace(b"120.5", b"121.5"),
+            ),
+        ):
+            path, _sidecar = write_capture(
+                data,
+                self.DWA,
+                package_slug="daily-wind-availability",
+                package_id="3758a0ed-6c96-4e36-88d0-107f5020ddf3",
+                resource_id=rid,
+                resource_name="Daily Wind Availability",
+                body=body,
+                written_at=datetime(2026, 8, 16, 18, 25, tzinfo=UTC),
+                ckan_last_modified="2026-08-16T18:25:00",
+                partition=day,
+            )
+            ids.append(path.relative_to(data).as_posix())
+        DailyWindAvailabilityTransformer(data).run(day, run_id="r")
+        registry = registry_module.load_registry()
+        cutoff = date(2026, 8, 31)
+        report = reconcile(data, registry, [self.DWA], cutoff)
+        categories = sorted((g.category, g.capture_id) for g in report.gaps)
+        assert categories == sorted(
+            [*(("duplicated", i) for i in ids), *(("missing", i) for i in ids)]
+        )
+        assert not [g for g in report.gaps if g.drainable]
+        after = drain(data, registry, [self.DWA], cutoff, lambda: None)
+        assert after.drained == ()
+        assert all(read_completion(data, self.DWA, i) is None for i in ids)
