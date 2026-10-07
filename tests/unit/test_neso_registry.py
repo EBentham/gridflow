@@ -14,12 +14,17 @@ tests read the committed, trimmed fixture derived from it.
 
 from __future__ import annotations
 
+import builtins
+import errno
+import io
 import json
+import os
 import shutil
 import subprocess
 import sys
 import textwrap
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -617,6 +622,74 @@ class TestAgreement:
         copy.write_bytes(text.replace(dropped, "", 1).encode("utf-8"))
         result = _yaml_check("--path", str(copy))
         assert result.returncode == 1, result.stdout + result.stderr
+
+    def _drifted_copy(self, tmp_path: Path) -> tuple[Path, bytes]:
+        text = self._SOURCES.read_bytes().decode("utf-8")
+        dropped = "      aahedc_tariffs" + _GENERATED_SUFFIX
+        assert dropped in text
+        copy = tmp_path / "sources.yaml"
+        drifted = text.replace(dropped, "", 1).encode("utf-8")
+        copy.write_bytes(drifted)
+        return copy, drifted
+
+    def test_write_regenerates_a_drifted_copy_and_leaves_no_temp(self, tmp_path: Path) -> None:
+        from gridflow.connectors.neso_data_portal.registry.__main__ import main
+
+        copy, _drifted = self._drifted_copy(tmp_path)
+        assert main(["yaml", "--write", "--path", str(copy)]) == 0
+        assert copy.read_bytes() == self._SOURCES.read_bytes()
+        assert [p.name for p in tmp_path.iterdir()] == ["sources.yaml"]
+
+    def test_a_failed_write_leaves_the_original_intact(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """A disk-full write must not truncate the file that configures every source."""
+        from gridflow.connectors.neso_data_portal.registry.__main__ import main
+
+        copy, drifted = self._drifted_copy(tmp_path)
+        real_open = io.open
+
+        class _DiskFull:
+            """Writes a short prefix, then fails as a full disk would."""
+
+            def __init__(self, handle: Any) -> None:
+                self._handle = handle
+
+            def __enter__(self) -> _DiskFull:
+                return self
+
+            def __exit__(self, *exc: object) -> None:
+                self._handle.close()
+
+            def close(self) -> None:
+                self._handle.close()
+
+            def write(self, data: bytes) -> int:
+                self._handle.write(data[:64])
+                self._handle.flush()
+                raise OSError(errno.ENOSPC, "No space left on device")
+
+        def failing_open(file: Any, mode: str = "r", *args: Any, **kwargs: Any) -> Any:
+            handle = real_open(file, mode, *args, **kwargs)
+            if (
+                "w" in mode
+                and isinstance(file, (str, os.PathLike))
+                and Path(file).resolve().parent == tmp_path.resolve()
+            ):
+                return _DiskFull(handle)
+            return handle
+
+        monkeypatch.setattr(io, "open", failing_open)
+        monkeypatch.setattr(builtins, "open", failing_open)
+
+        with pytest.raises(OSError, match="No space left"):
+            main(["yaml", "--write", "--path", str(copy)])
+
+        monkeypatch.undo()
+        assert copy.read_bytes() == drifted, (
+            f"sources.yaml truncated to {len(copy.read_bytes())} of {len(drifted)} bytes"
+        )
+        assert [p.name for p in tmp_path.iterdir()] == ["sources.yaml"]
 
     def test_keys_agree_and_legacy_lines_are_byte_identical(self) -> None:
         lines = self._SOURCES.read_bytes().decode("utf-8").replace("\r\n", "\n").split("\n")
