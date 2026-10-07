@@ -79,6 +79,11 @@ REGISTRY: dict[str, _RegistryEntry] = {
             "discarded and is not a row count of record"
         ),
     ),
+    "neso_data_portal/client.py:_capture_member": _RegistryEntry(
+        "EXEMPT",
+        1,
+        reason=("record_count None by design; the empty marker lives in the sidecar (ADR-033 P-7)"),
+    ),
     "neso/carbon_intensity.py:fetch": _RegistryEntry(
         "EXEMPT",
         1,

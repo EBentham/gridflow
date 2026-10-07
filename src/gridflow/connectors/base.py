@@ -6,12 +6,15 @@ import ssl
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import UTC, date, datetime
-from typing import TYPE_CHECKING, Any, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar, Literal, Protocol, runtime_checkable
 
 import certifi
 import httpx
 
 if TYPE_CHECKING:
+    from collections.abc import AsyncIterator
+    from pathlib import Path
+
     from gridflow.config.settings import SourceConfig
 
 
@@ -57,6 +60,49 @@ class RawResponse:
     # freeze. Deliberately absent from the bronze sidecar (D-7): it is an
     # in-process signal only, never written to the immutable bronze metadata.
     record_count: int | None = None
+
+
+@dataclass(frozen=True)
+class MemberEvent:
+    """The outcome of one family member in a bounded capture (ADR-033 P-5).
+
+    Attributes:
+        resource_id: The vendor resource the event is about.
+        outcome: ``captured`` (``response`` set, publish it), ``unchanged``
+            (its newest capture is current; nothing fetched), ``deferred``
+            (another leg captures it; nothing sent), ``absent`` (a listed
+            member the vendor no longer serves), or ``failed``.
+        response: The captured response, for ``captured`` only.
+        extension: The admitted bronze extension, for ``captured`` only.
+        detail: Credential-free text for anything but ``captured``.
+    """
+
+    resource_id: str
+    outcome: Literal["captured", "unchanged", "deferred", "absent", "failed"]
+    response: RawResponse | None = None
+    extension: str | None = None
+    detail: str = ""
+
+
+@runtime_checkable
+class MemberCaptureConnector(Protocol):
+    """A connector whose datasets are families of independently captured members.
+
+    ``run_ingest`` consumes :meth:`iter_members` one member at a time and
+    publishes each capture before the next download, so memory stays bounded
+    by one body whatever the family size (ADR-033 A9). ``fetch()`` remains the
+    contract for every other connector.
+    """
+
+    def bind_data_dir(self, data_dir: Path) -> None:
+        """Bind to the data root before the first send."""
+        ...
+
+    def iter_members(
+        self, dataset: str, start: datetime, end: datetime
+    ) -> AsyncIterator[MemberEvent]:
+        """Yield one :class:`MemberEvent` per family member."""
+        ...
 
 
 class BaseConnector(ABC):
