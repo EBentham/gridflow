@@ -19,7 +19,7 @@ from __future__ import annotations
 import json
 import logging
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import date, datetime
 from typing import TYPE_CHECKING, Any
 
 from gridflow.storage.paths import PathBuilder
@@ -67,7 +67,9 @@ class Capture:
         resource_id: The CKAN resource UUID — capture identity, not a selector.
         package: The CKAN package slug from the sidecar.
         resource_name: The resource name the capture was selected by.
-        ckan_last_modified: CKAN's ``last_modified`` string at capture time.
+        ckan_last_modified: CKAN's ``last_modified`` string at capture time;
+            ``None`` only under ``require_provenance=False`` for a capture
+            that carries none (a dump, ADR-034 P-2).
         written_at: When the capture became durable, tz-aware.
         body_sha256: The recorded body digest.
         body_size_bytes: The recorded body size.
@@ -78,7 +80,7 @@ class Capture:
     resource_id: str
     package: str
     resource_name: str
-    ckan_last_modified: str
+    ckan_last_modified: str | None
     written_at: datetime
     body_sha256: str
     body_size_bytes: int
@@ -156,11 +158,16 @@ def _parse_written_at(value: Any) -> datetime | None:
     return parsed
 
 
+_IDENTITY_KEYS = ("package", "resource_id", "resource_name", "resource_filename")
+"""The D-12 ``request_params`` keys other than ``ckan_last_modified`` (ADR-034 P-2)."""
+
+
 def _usable_reason(
     meta: Any,
     bodies: list[Path],
     dataset_key: str,
     registry: Registry,
+    require_provenance: bool = True,
 ) -> str | None:
     """The usable rule (P-10, amended by REVIEW-PLAN-3 M1). ``None`` = usable.
 
@@ -176,6 +183,13 @@ def _usable_reason(
        deliberately NOT required to be a seeded id: NESO may recreate a
        resource under a new UUID (ADR-030 D-03), and selection follows the
        name, so the capture it produced must remain a skip basis.
+
+    With ``require_provenance=False`` (silver and reconcile, ADR-034 P-2)
+    clause 3 becomes "the ``request_params`` D-12 keys other than
+    ``ckan_last_modified`` are non-empty strings" and clause 4 reads
+    ``package`` and ``resource_name`` from ``request_params``, so a capture
+    with no ``last_modified`` (a dump) stays visible. The default reproduces
+    unit A's rule exactly.
     """
     if not isinstance(meta, dict):
         return "sidecar is not a JSON object"
@@ -191,30 +205,38 @@ def _usable_reason(
     if actual != declared:
         return f"body is {actual} B but the sidecar records {declared} B"
 
-    # Imported lazily: the silver package import loads the three transformers.
-    from gridflow.silver.neso_data_portal._bronze import provenance_for
+    params = meta.get("request_params")
+    if require_provenance:
+        # Imported lazily: the silver package import loads the three transformers.
+        from gridflow.silver.neso_data_portal._bronze import provenance_for
 
-    provenance = provenance_for(bodies[0])
-    if provenance is None:
-        return "provenance_for rejected the sidecar (D-23; see its WARNING)"
+        provenance = provenance_for(bodies[0])
+        if provenance is None:
+            return "provenance_for rejected the sidecar (D-23; see its WARNING)"
+        package_slug, resource_name = provenance.package, provenance.resource_name
+    else:
+        if not isinstance(params, dict):
+            return "request_params is not an object"
+        for key in _IDENTITY_KEYS:
+            value = params.get(key)
+            if not isinstance(value, str) or not value:
+                return f"request_params.{key} is missing or empty"
+        package_slug, resource_name = params["package"], params["resource_name"]
 
     entry = registry.families.get(dataset_key)
     if entry is None:
         return f"directory {dataset_key!r} is not a registry family"
     package, _family = entry
-    if provenance.package != package.package:
+    if package_slug != package.package:
         return (
-            f"package {provenance.package!r} is not family {dataset_key!r}'s package "
-            f"{package.package!r}"
+            f"package {package_slug!r} is not family {dataset_key!r}'s package {package.package!r}"
         )
-    params = meta.get("request_params")
     ckan_format = params.get("ckan_format") if isinstance(params, dict) else None
     if not isinstance(ckan_format, str) or not ckan_format:
         return "request_params.ckan_format is missing or empty"
-    if not registry.family_selects(dataset_key, provenance.resource_name, ckan_format):
+    if not registry.family_selects(dataset_key, resource_name, ckan_format):
         return (
-            f"family {dataset_key!r} does not select resource "
-            f"({provenance.resource_name!r}, {ckan_format!r})"
+            f"family {dataset_key!r} does not select resource ({resource_name!r}, {ckan_format!r})"
         )
     return None
 
@@ -229,12 +251,23 @@ def _raw_resource_id(meta: Any) -> str | None:
     return value if isinstance(value, str) and value else None
 
 
-def scan_dataset(dataset_dir: Path, registry: Registry) -> ScanResult:
+def scan_dataset(
+    dataset_dir: Path,
+    registry: Registry,
+    *,
+    partition: date | None = None,
+    require_provenance: bool = True,
+) -> ScanResult:
     """Classify every file under one ``bronze/neso_data_portal/<key>/`` tree.
 
     Args:
         dataset_dir: The dataset directory; its name is the family key.
         registry: The loaded registry.
+        partition: Restrict the walk to that bronze date directory
+            (``YYYY/MM/DD``); ``None`` walks the whole tree.
+        require_provenance: Unit A's usable rule when ``True`` (the default);
+            ``False`` admits a capture without ``ckan_last_modified`` (see
+            :func:`_usable_reason`).
 
     Returns:
         Usable captures, unusable sidecars with reasons, orphans and temps.
@@ -243,11 +276,16 @@ def scan_dataset(dataset_dir: Path, registry: Registry) -> ScanResult:
     unusable: list[UnusableCapture] = []
     orphans: list[Path] = []
     temps: list[Path] = []
-    if not dataset_dir.is_dir():
+    root = (
+        dataset_dir
+        if partition is None
+        else dataset_dir / f"{partition.year}" / f"{partition.month:02d}" / f"{partition.day:02d}"
+    )
+    if not root.is_dir():
         return ScanResult((), (), (), ())
 
     by_dir: dict[Path, list[Path]] = {}
-    for path in sorted(dataset_dir.rglob("*")):
+    for path in sorted(root.rglob("*")):
         if path.is_file():
             by_dir.setdefault(path.parent, []).append(path)
 
@@ -270,7 +308,7 @@ def scan_dataset(dataset_dir: Path, registry: Registry) -> ScanResult:
             except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
                 unusable.append(UnusableCapture(sidecar, f"sidecar unreadable ({exc})", None))
                 continue
-            reason = _usable_reason(meta, siblings, dataset_dir.name, registry)
+            reason = _usable_reason(meta, siblings, dataset_dir.name, registry, require_provenance)
             if reason is not None:
                 unusable.append(UnusableCapture(sidecar, reason, _raw_resource_id(meta)))
                 continue
@@ -284,7 +322,7 @@ def scan_dataset(dataset_dir: Path, registry: Registry) -> ScanResult:
                     resource_id=str(params["resource_id"]),
                     package=str(params["package"]),
                     resource_name=str(params["resource_name"]),
-                    ckan_last_modified=str(params["ckan_last_modified"]),
+                    ckan_last_modified=_last_modified(params),
                     written_at=written_at,
                     body_sha256=str(meta.get("body_sha256", "")),
                     body_size_bytes=int(meta["body_size_bytes"]),
@@ -300,6 +338,11 @@ def scan_dataset(dataset_dir: Path, registry: Registry) -> ScanResult:
             item.reason,
         )
     return ScanResult(tuple(captures), tuple(unusable), tuple(orphans), tuple(temps))
+
+
+def _last_modified(params: dict[str, Any]) -> str | None:
+    value = params.get("ckan_last_modified")
+    return value if isinstance(value, str) and value else None
 
 
 def newest_by_resource(captures: Iterable[Capture]) -> dict[str, Capture]:
