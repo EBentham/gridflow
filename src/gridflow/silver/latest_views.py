@@ -418,7 +418,9 @@ def select_latest_vintage(
         complete capture, or none.
 
     Raises:
-        ValueError: A ``whole_capture`` spec without ``completions``.
+        ValueError: A ``whole_capture`` spec without ``completions``, or an
+            ``as_of`` read whose selection is skipped (returning the unbounded
+            frame would leak rows published after ``as_of``).
     """
     if spec.mode == "whole_capture" and completions is None:
         raise ValueError("a whole_capture selection needs the completion records")
@@ -442,6 +444,13 @@ def select_latest_vintage(
             )
         else:
             logger.warning("Latest-vintage selection skipped: no vintage-order column present")
+        if as_of is not None:
+            # The skip reaction returns every vintage, including rows published
+            # after ``as_of``: a point-in-time read must fail closed instead.
+            raise ValueError(
+                "latest-vintage selection skipped, so the as-of bound cannot be applied; "
+                f"columns present: {sorted(schema_columns)}"
+            )
         return lf
 
     if spec.mode == "whole_capture":

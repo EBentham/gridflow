@@ -149,6 +149,41 @@ class TestAsOfBeforeSelection:
         assert _both(frame, KEY_SPEC, as_of=_t(9)) == ["c1"]
         assert _both(frame, KEY_SPEC) == ["c2"]
 
+    @pytest.mark.parametrize(
+        ("spec", "dropped"),
+        [
+            (KEY_SPEC, "capture_written_at"),
+            (KEY_SPEC, "available_at"),
+            (KEY_SPEC, "unit"),
+            (WHOLE_SPEC, "bronze_capture_id"),
+        ],
+    )
+    def test_a_skipped_selection_never_returns_rows_past_as_of(
+        self, spec: LatestViewSpec, dropped: str
+    ) -> None:
+        """Detects the skip reaction leaking through an as-of read: a skipped
+        selection returned the unbounded frame, so the 13:00 row came back for
+        an as-of of 12:00 (REVIEW-DIFF-1 correctness #1). Without ``as_of`` the
+        skip reaction (frame unchanged) is kept."""
+        frame = _rows(
+            {"available_at": _t(8), "capture_written_at": _t(8), "bronze_capture_id": "c1"},
+            {"available_at": _t(13), "capture_written_at": _t(13), "bronze_capture_id": "c2"},
+        ).drop(dropped)
+        completions = _completions(
+            {
+                "bronze_capture_id": "c1",
+                "outcome": "populated",
+                "row_count": 1,
+                "available_at": _t(8),
+                "capture_written_at": _t(8),
+            }
+        ).lazy()
+        with pytest.raises(ValueError, match="as-of bound cannot be applied"):
+            select_latest_vintage(frame.lazy(), spec, _t(12), completions=completions).collect()
+        if dropped != "available_at":  # still a selection (by issue_time) without as_of
+            unbounded = select_latest_vintage(frame.lazy(), spec, completions=completions)
+            assert unbounded.collect().height == 2
+
 
 class TestTieBreak:
     def test_t_b3_3_equal_available_at_resolves_by_capture_then_id(self) -> None:
