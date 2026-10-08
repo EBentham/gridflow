@@ -289,6 +289,37 @@ class TestKeys:
         assert result.returncode == 0, result.stderr
         assert "COLLIDES" in result.stdout and "system_prices" in result.stdout, result.stdout
 
+    def test_t_kc1_a_recorded_family_registered_under_its_own_source_does_not_collide(
+        self, tmp_path: Path
+    ) -> None:
+        """T-KC1: a generic transformer under ``neso_data_portal`` is not a collision.
+
+        Detects ``key_collisions`` reporting a recorded (non-legacy) family
+        whose generated transformer registers under ``neso_data_portal`` by
+        design (ADR-034 P-15): on master every non-legacy key collided with
+        any registration, its own source included.
+        """
+        directory = tmp_path / "registry"
+        directory.mkdir()
+        _write_package(directory, _synthetic_package())
+        result = _run(
+            """
+            import sys
+            from pathlib import Path
+            from gridflow.connectors.neso_data_portal.registry import (
+                key_collisions, load_registry,
+            )
+            registry = load_registry(Path(sys.argv[1]))
+            own = key_collisions(registry, [('neso_data_portal', 'synthetic_family')])
+            foreign = key_collisions(registry, [('elexon', 'synthetic_family')])
+            assert not own, own
+            assert foreign and 'elexon' in foreign[0], foreign
+            print('OK')
+            """,
+            str(directory),
+        )
+        _assert_ok(result)
+
 
 class TestOwnerFacts:
     """R-5: the owner-ruled facts A1 requires the registry to carry."""
