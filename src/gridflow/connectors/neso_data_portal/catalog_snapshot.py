@@ -45,14 +45,20 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Protocol
 
+import httpx
+
 from gridflow.config.settings import load_settings
-from gridflow.connectors.neso_data_portal.client import NesoDataPortalConnector
+from gridflow.connectors.neso_data_portal.client import (
+    NesoDataPortalConnector,
+    NesoDataPortalError,
+)
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Sequence
     from types import TracebackType
 
-    from gridflow.connectors.neso_data_portal.client import CatalogDiscovery
+    from gridflow.connectors.neso_data_portal.client import CatalogDiscovery, RequestTrace
+    from gridflow.connectors.neso_data_portal.registry import Registry
 
 __all__ = [
     "CATALOG_DOCUMENT_KEYS",
@@ -67,6 +73,8 @@ __all__ = [
     "SNAPSHOTS_DIRNAME",
     "SNAPSHOT_ID_FORMAT",
     "CatalogDiscoverer",
+    "FieldInfoSession",
+    "FieldInfoSource",
     "IncompleteProvenanceError",
     "InvalidDocumentError",
     "ManifestAdvanceError",
@@ -75,6 +83,7 @@ __all__ = [
     "SnapshotVerificationError",
     "SnapshotWriteError",
     "advance_manifest",
+    "build_field_info",
     "build_snapshot",
     "main",
     "verify_snapshot",
@@ -182,6 +191,31 @@ class ConnectorSession(Protocol):
     """An async context manager yielding a :class:`CatalogDiscoverer`."""
 
     async def __aenter__(self) -> CatalogDiscoverer:
+        """Open the session."""
+        ...
+
+    async def __aexit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc: BaseException | None,
+        traceback: TracebackType | None,
+    ) -> None:
+        """Close the session."""
+        ...
+
+
+class FieldInfoSource(Protocol):
+    """Anything that can answer ``datastore_search`` field info (ADR-035 P-11)."""
+
+    async def datastore_fields(self, resource_id: str) -> tuple[Any, RequestTrace]:
+        """Return one resource's ``datastore_search`` result and its request trace."""
+        ...
+
+
+class FieldInfoSession(Protocol):
+    """An async context manager yielding a :class:`FieldInfoSource`."""
+
+    async def __aenter__(self) -> FieldInfoSource:
         """Open the session."""
         ...
 
@@ -983,6 +1017,218 @@ def advance_manifest(out_root: Path, snapshot_id: str) -> None:
 
 
 # ---------------------------------------------------------------------------
+# Field-info mode: datastore_search with limit=0 (ADR-035 P-11)
+# ---------------------------------------------------------------------------
+
+FIELD_INFO_DIRNAME = "field-info"
+FIELD_INFO_RUN_FILENAME = "field-info-run.json"
+FIELD_INFO_SELECTED_BY = (
+    "the family's datastore_active resource in the snapshot with the maximum "
+    "(metadata_modified, id)"
+)
+
+
+def _field_info_document(
+    *,
+    family: str,
+    package: str,
+    resource_id: str,
+    snapshot_id: str,
+    result: object,
+    trace: object,
+) -> dict[str, Any]:
+    """Build one family's field-info evidence file from an allowlist (ADR-035 P-11).
+
+    Deliberately not :func:`_catalog_document`: a ``datastore_search`` result
+    always carries a ``records`` key (E14), so the response is checked for rows
+    first and then only allowlisted keys are copied. ``_links`` is dropped, and
+    the row-sample guard still runs over the finished document.
+
+    Raises:
+        RowSampleRejectedError: The result carried rows, or a non-zero
+            ``limit``, or is not a result object.
+        IncompleteProvenanceError: The request trace is incomplete.
+    """
+    if not isinstance(result, Mapping):
+        raise RowSampleRejectedError(
+            f"field info for {family} ({resource_id}) is not a datastore_search result object"
+        )
+    records = result.get("records", [])
+    if records != []:
+        raise RowSampleRejectedError(
+            f"field info for {family} ({resource_id}) carries data rows; the field-info mode "
+            "records field metadata only, so the response is refused, not stripped"
+        )
+    limit = result.get("limit", 0)
+    if isinstance(limit, bool) or limit != 0:
+        raise RowSampleRejectedError(
+            f"field info for {family} ({resource_id}) answered with limit {limit!r}, not 0; "
+            "a response that could carry rows is refused"
+        )
+    document = {
+        "family": family,
+        "package": package,
+        "resource_id": resource_id,
+        "selected_by": FIELD_INFO_SELECTED_BY,
+        "snapshot_id": snapshot_id,
+        "fields": result.get("fields"),
+        "total": result.get("total"),
+        "include_total": result.get("include_total"),
+        "records_format": result.get("records_format"),
+        "records_returned": 0,
+        "request": _provenance_entry(0, trace),
+    }
+    _reject_row_samples(document, "field_info")
+    return document
+
+
+def _field_info_targets(
+    snapshot_dir: Path, registry: Registry, families: Sequence[str] | None
+) -> list[tuple[str, str, str]]:
+    """The field-info population: ``(family, package, resource id)`` per family.
+
+    Every registry family with at least one resource whose snapshot entry is
+    ``datastore_active: true``, narrowed to ``families`` when given; one
+    resource each, the maximum ``(metadata_modified, id)``.
+
+    Raises:
+        InvalidDocumentError: A named family is not a registry family.
+    """
+    catalog = json.loads((snapshot_dir / CATALOG_FILENAME).read_bytes())
+    active: dict[str, dict[str, Any]] = {}
+    for package_payload in catalog.get("packages", []):
+        for entry in package_payload.get("resources", []) or []:
+            if isinstance(entry, dict) and entry.get("datastore_active") is True:
+                active[str(entry.get("id", ""))] = entry
+    if families is not None:
+        unknown = sorted(set(families) - set(registry.families))
+        if unknown:
+            raise InvalidDocumentError(f"--family names keys the registry lacks: {unknown}")
+    chosen: dict[str, tuple[str, str, str]] = {}
+    ranks: dict[str, tuple[str, str]] = {}
+    for resource_id, (package_entry, resource_entry) in registry.resources.items():
+        entry = active.get(resource_id)
+        key = resource_entry.family
+        if entry is None or (families is not None and key not in families):
+            continue
+        rank = (str(entry.get("metadata_modified", "")), resource_id)
+        if key not in ranks or rank > ranks[key]:
+            ranks[key] = rank
+            chosen[key] = (key, package_entry.package, resource_id)
+    return [chosen[key] for key in sorted(chosen)]
+
+
+async def build_field_info(
+    source: FieldInfoSource,
+    out_root: Path,
+    snapshot_dir: Path,
+    targets: Sequence[tuple[str, str, str]],
+) -> tuple[Path, dict[str, str]]:
+    """Fetch and write field info for every target, checksums last (ADR-035 P-11).
+
+    Each ``<family>.json`` is written as soon as its call completes; the run
+    record follows, and ``sha256sums.txt`` is installed last, so an
+    interrupted run leaves a directory that is incomplete by definition and
+    is named by the next run. Nothing outside ``out_root`` is written.
+
+    Returns:
+        The run directory and each family's outcome (``ok`` or ``failed``).
+
+    Raises:
+        Exception: Anything but a connector, HTTP or row refusal propagates
+            and leaves no ``sha256sums.txt``.
+    """
+    field_root = out_root / FIELD_INFO_DIRNAME
+    _log_incomplete_snapshots(field_root)
+    run_dir = field_root / _snapshot_id(_utcnow())
+    run_dir.mkdir(parents=True, exist_ok=False)
+    snapshot_id = snapshot_dir.name
+    outcomes: dict[str, str] = {}
+    run_families: list[dict[str, str]] = []
+    for family, package, resource_id in targets:
+        detail = ""
+        try:
+            result, trace = await source.datastore_fields(resource_id)
+            document = _field_info_document(
+                family=family,
+                package=package,
+                resource_id=resource_id,
+                snapshot_id=snapshot_id,
+                result=result,
+                trace=trace,
+            )
+        except (NesoDataPortalError, httpx.HTTPError, RowSampleRejectedError) as error:
+            outcome = "failed"
+            detail = f"{type(error).__name__}: {' '.join(str(error).split())}"
+            logger.warning("field info for %s (%s) failed: %s", family, resource_id, detail)
+        else:
+            outcome = "ok"
+            _write_json(run_dir / f"{family}.json", document)
+        outcomes[family] = outcome
+        run_families.append(
+            {"family": family, "resource_id": resource_id, "outcome": outcome, "detail": detail}
+        )
+    _write_json(
+        run_dir / FIELD_INFO_RUN_FILENAME,
+        {"snapshot_id": snapshot_id, "families": run_families},
+    )
+    _write_checksums(run_dir)
+    return run_dir, outcomes
+
+
+def _resolve_snapshot_dir(out_root: Path, snapshot: Path | None) -> Path:
+    """The snapshot field-info reads: ``--snapshot`` or the manifest's active one.
+
+    Raises:
+        SnapshotVerificationError: There is no readable manifest to resolve from.
+    """
+    if snapshot is not None:
+        return snapshot
+    manifest = out_root / MANIFEST_FILENAME
+    try:
+        document = json.loads(manifest.read_bytes())
+    except (OSError, json.JSONDecodeError) as error:
+        raise SnapshotVerificationError(
+            f"no readable {MANIFEST_FILENAME} under {out_root} to resolve the snapshot from "
+            f"({error}); pass --snapshot"
+        ) from error
+    snapshot_id = document.get("snapshot_id") if isinstance(document, dict) else None
+    try:
+        identity = _require_snapshot_id(snapshot_id)
+    except InvalidDocumentError as error:
+        raise SnapshotVerificationError(f"{manifest} names no valid snapshot: {error}") from error
+    return out_root / SNAPSHOTS_DIRNAME / identity
+
+
+async def _run_field_info(
+    session_factory: Callable[[], FieldInfoSession],
+    out_root: Path,
+    snapshot_dir: Path,
+    families: Sequence[str] | None,
+    *,
+    dry_run: bool,
+) -> int:
+    """Verify the snapshot, choose the population, then fetch (or list) field info."""
+    from gridflow.connectors.neso_data_portal import registry as registry_module
+
+    verify_snapshot(snapshot_dir)
+    targets = _field_info_targets(snapshot_dir, registry_module.load_registry(), families)
+    if dry_run:
+        for family, _package, resource_id in targets:
+            logger.info("dry run: would request field info for %s (%s)", family, resource_id)
+        logger.info("dry run: %d families; nothing sent, nothing written", len(targets))
+        return 0
+    async with session_factory() as source:
+        run_dir, outcomes = await build_field_info(source, out_root, snapshot_dir, targets)
+    failed = sorted(family for family, outcome in outcomes.items() if outcome != "ok")
+    if failed:
+        logger.error("field info failed for %d families (%s): %s", len(failed), run_dir, failed)
+        return 1
+    logger.info("wrote field info for %d families to %s", len(outcomes), run_dir)
+    return 0
+
+
+# ---------------------------------------------------------------------------
 # Command line
 # ---------------------------------------------------------------------------
 
@@ -1031,6 +1277,27 @@ def _build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Discover, guard and validate provenance, but write nothing.",
     )
+    parser.add_argument(
+        "--field-info",
+        action="store_true",
+        help=(
+            "Record datastore field info (datastore_search, limit=0) for every registry "
+            "family with a datastore-active resource in the snapshot, under "
+            f"<out>/{FIELD_INFO_DIRNAME}/<run id>/. Never advances the manifest (ADR-035)."
+        ),
+    )
+    parser.add_argument(
+        "--snapshot",
+        type=Path,
+        default=None,
+        help="With --field-info: the snapshot directory; defaults to the manifest's.",
+    )
+    parser.add_argument(
+        "--family",
+        action="append",
+        default=None,
+        help="With --field-info: restrict to this registry family key (repeatable).",
+    )
     return parser
 
 
@@ -1045,21 +1312,37 @@ async def _run(
     return snapshot_dir
 
 
+def _default_field_info_session() -> FieldInfoSession:
+    """Build the real connector for field info, bound like the snapshot session.
+
+    Binding takes the process-wide pacer lock, so a field-info run can never
+    send while an ingest does, and its first datastore-lane request follows
+    the lock by at least one datastore interval (ADR-033 P-12, ADR-035 P-11).
+    """
+    settings = load_settings()
+    connector = NesoDataPortalConnector(settings.sources[SOURCE_NAME])
+    connector.bind_data_dir(settings.pipeline.data_dir)
+    return connector
+
+
 def main(
     argv: Sequence[str] | None = None,
     *,
     session_factory: Callable[[], ConnectorSession] | None = None,
+    field_info_session_factory: Callable[[], FieldInfoSession] | None = None,
 ) -> int:
-    """Run the materializer.
+    """Run the materializer, or the field-info mode with ``--field-info``.
 
     Args:
         argv: Command-line arguments, defaulting to ``sys.argv[1:]``.
         session_factory: Seam for the connector session, so the command can be
             driven offline against a stub.
+        field_info_session_factory: The same seam for ``--field-info``.
 
     Returns:
         ``0`` on success; ``1`` on any snapshot failure, which is named in the
-        log rather than swallowed (FM-09 requires a non-zero exit).
+        log rather than swallowed (FM-09 requires a non-zero exit), or on any
+        family whose field info failed.
     """
     parser = _build_parser()
     args = parser.parse_args(argv)
@@ -1067,6 +1350,29 @@ def main(
     out_root: Path | None = args.out if args.out is not None else _default_out_root()
     if out_root is None:
         parser.error(f"--out is required when {VAULT_DIR_ENV} is unset")
+    if not args.field_info and (args.snapshot is not None or args.family):
+        parser.error("--snapshot and --family apply only with --field-info")
+
+    if args.field_info:
+        field_factory = (
+            field_info_session_factory
+            if field_info_session_factory is not None
+            else _default_field_info_session
+        )
+        try:
+            snapshot_dir = _resolve_snapshot_dir(Path(out_root), args.snapshot)
+            return asyncio.run(
+                _run_field_info(
+                    field_factory,
+                    Path(out_root),
+                    snapshot_dir,
+                    args.family,
+                    dry_run=args.dry_run,
+                )
+            )
+        except SnapshotError as error:
+            logger.error("NESO field info failed: %s", error)
+            return 1
 
     factory = session_factory if session_factory is not None else _default_connector_session
     try:

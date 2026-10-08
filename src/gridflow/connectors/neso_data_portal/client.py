@@ -1098,6 +1098,32 @@ class NesoDataPortalConnector(BaseConnector):
 
         return CatalogDiscovery(packages=tuple(packages), traces=tuple(traces))
 
+    async def datastore_fields(self, resource_id: str) -> tuple[Any, RequestTrace]:
+        """Ask ``datastore_search`` for one resource's field info and no rows (ADR-035 P-11).
+
+        The parameters are built here (``limit=0``) and sent on the datastore
+        lane; no ``_links`` URL in a response is ever followed. Row refusal is
+        the caller's (the field-info evidence builder), so a vendor that ignores
+        ``limit`` is refused before anything is written.
+
+        Args:
+            resource_id: A canonical lowercase resource UUID.
+
+        Returns:
+            The envelope's ``result`` and the request trace.
+
+        Raises:
+            NesoDatastoreMemberError: ``resource_id`` is not canonical.
+            CkanActionError: The envelope reported failure.
+        """
+        if not endpoints.is_canonical_resource_id(resource_id):
+            raise NesoDatastoreMemberError(
+                f"datastore resource id {resource_id!r} is not a canonical lowercase UUID"
+            )
+        return await self._ckan_action(
+            "datastore_search", lane=Lane.DATASTORE, resource_id=resource_id, limit="0"
+        )
+
     def _select_resource(
         self,
         package_payload: dict[str, Any],
