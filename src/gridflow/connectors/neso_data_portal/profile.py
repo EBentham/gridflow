@@ -19,7 +19,11 @@ the header Polars parses (as ``readers.read_csv_body`` does), a bounded sample
 (``--sample-rows``) that classifies value shapes, then two streaming passes
 over the full body: (1) rows, all-blank rows, null and blank counts, value
 lengths; (2) cast failures for the shapes' candidate dtypes, candidate-key and
-full-row duplicates, and settlement-period coverage. A body never enters
+full-row duplicates, and settlement-period coverage. Cast failures are counted
+on each cell as the silver engine casts it (unstripped; only all-blank rows,
+which its reader drops, are skipped), so a drafted dtype with zero failures
+casts at transform time. Shapes are classified on stripped values, as
+evidence only. A body never enters
 Python whole (I-1). A ragged or unparseable body is recorded as
 ``parse_error`` and the run continues.
 
@@ -399,21 +403,25 @@ def _second_pass(
     raw_of = dict(zip(profile.header, profile.raw, strict=True))
     lazy = pl.scan_csv(profile.capture.body, infer_schema=False, encoding=profile.encoding)
     exprs: list[pl.Expr] = [pl.len().alias("__rows"), _hash_unique(profile.raw).alias("__full")]
+    blank_row = pl.all_horizontal(
+        [pl.col(c).is_null() | (pl.col(c).str.strip_chars() == "") for c in profile.raw]
+    )
     for index, vendor in enumerate(profile.header):
         value = _clean(raw_of[vendor])
+        # Casts are measured on the cell exactly as the silver engine casts it:
+        # unstripped, with only the rows its reader drops (all-blank) skipped.
+        cell = pl.when(~blank_row).then(pl.col(raw_of[vendor]))
         exprs += [
-            (value.is_not_null() & value.cast(pl.Int64, strict=False).is_null())
+            (cell.is_not_null() & cell.cast(pl.Int64, strict=False).is_null())
             .sum()
             .alias(f"i{index}"),
-            (value.is_not_null() & value.cast(pl.Float64, strict=False).is_null())
+            (cell.is_not_null() & cell.cast(pl.Float64, strict=False).is_null())
             .sum()
             .alias(f"f{index}"),
         ]
         for f_index, fmt in enumerate(formats.get(vendor, [])):
-            parsed = value.str.strptime(pl.Date, fmt, strict=False)
-            exprs.append(
-                (value.is_not_null() & parsed.is_null()).sum().alias(f"d{index}_{f_index}")
-            )
+            parsed = cell.str.strptime(pl.Date, fmt, strict=False)
+            exprs.append((cell.is_not_null() & parsed.is_null()).sum().alias(f"d{index}_{f_index}"))
         if vendor in slash:
             parts = value.str.extract_groups(_SLASH_PARTS)
             exprs += [

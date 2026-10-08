@@ -23,6 +23,9 @@ from _neso_registry_support import family, install_registry, package, resource, 
 from gridflow.connectors.neso_data_portal import profile
 from gridflow.connectors.neso_data_portal import registry as registry_module
 from gridflow.connectors.neso_data_portal.registry import SchemaRecord
+from gridflow.connectors.neso_data_portal.registry.record import ColumnSpec
+from gridflow.silver.csv_bronze import read_csv_bronze_body
+from gridflow.silver.neso_data_portal import casting
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 BATCHES = PROJECT_ROOT / "docs" / "neso_data_portal" / "batches.json"
@@ -300,6 +303,65 @@ class TestFormats:
         assert _column(document, "Bad")["dtype"] == "TODO: " + conflict[0]["id"]
         eligibility = document["proposal"]["record_draft"]["eligibility"]
         assert eligibility["status"] == "held" and eligibility["unit"] == "B1"
+
+
+PADDED = b"Num,Free,Iso\r\n1,2,2024-01-01\r\n0.00 , 3,2024-01-02 \r\n ,4,2024-01-03\r\n , , \r\n"
+
+
+class TestEngineCastSemantics:
+    """Cast failures are measured on the values the silver engine casts (review fix 1 #2)."""
+
+    def test_padded_and_whitespace_cells_count_as_cast_failures(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Detects cast failures measured on stripped values.
+
+        The engine casts each cell exactly as parsed (no strip; only all-blank rows
+        are dropped first), so ``"0.00 "`` and a whitespace-only cell fail a strict
+        float cast there. A profiler that strips first reports zero failures and
+        drafts a dtype that raises at transform time.
+        """
+        world = World(tmp_path, monkeypatch)
+        world.capture("fam_t", PADDED, _t(1))
+        directory = tmp_path / "o"
+        assert world.run(directory) == 0
+        document = _family(directory, "fam_t")
+        columns = document["epochs"][0]["columns"]
+        assert columns["Num"]["cast_failures"]["float64"] == 2
+        assert columns["Free"]["cast_failures"]["int64"] == 1
+        assert columns["Free"]["cast_failures"]["float64"] == 1
+        assert columns["Iso"]["cast_failures"]["%Y-%m-%d"] == 1
+        conflict = _todos(document, "type_conflict")
+        assert [t["field"] for t in conflict] == ["column 'Num'.dtype"]
+        assert _column(document, "Num")["dtype"] == "TODO: " + conflict[0]["id"]
+        assert _column(document, "Free")["dtype"] == "string"
+        assert _column(document, "Iso")["dtype"] == "string"
+
+    def test_every_concretely_drafted_column_casts_under_the_engine(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Detects a drafted dtype/format that the engine's strict cast rejects.
+
+        Every column the profiler drafts without a TODO must cast, as drafted,
+        through the engine's own reader and cast on the same body.
+        """
+        world = World(tmp_path, monkeypatch)
+        body = world.capture("fam_t", PADDED, _t(1))
+        directory = tmp_path / "o"
+        assert world.run(directory) == 0
+        draft = _family(directory, "fam_t")["proposal"]["record_draft"]
+        frame = read_csv_bronze_body(
+            body.read_bytes(),
+            expected_columns=tuple(draft["epochs"][0]["header"]),
+            source_label=str(body),
+        )
+        settled = [
+            ColumnSpec.model_validate(column)
+            for column in draft["epochs"][0]["columns"]
+            if not any(str(v).startswith("TODO:") for v in column.values())
+        ]
+        assert settled
+        frame.select([casting._cast(spec).alias(spec.name) for spec in settled])
 
 
 class TestSettlementPeriods:
