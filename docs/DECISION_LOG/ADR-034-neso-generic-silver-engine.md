@@ -134,3 +134,5 @@ and 2.98 GB for 5.
 
 **Forward pointer:** ADR-036 freezes the first records (the six pilot families) and adds
 the offline profiler that proposes the rest.
+
+Forward pointer: ADR-037 supersedes the registry-side inventory digest and the capture-id COVERED pins.
