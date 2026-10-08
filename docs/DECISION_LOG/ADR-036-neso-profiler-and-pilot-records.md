@@ -28,7 +28,10 @@ at most `--sample-rows` rows that classifies value shapes **before** the measuri
 then two streaming passes over the full body: nulls, blanks, rows and all-blank rows; then
 cast failures for the shapes' candidate dtypes, candidate-key and full-row duplicates
 (hashed `n_unique`, so a collision can only make a unique key look duplicated) and
-settlement-period coverage. **I-1:** no body is read whole into Python and `read_csv`
+settlement-period coverage. Cast failures are counted on each cell exactly as the silver
+engine casts it (unstripped; only the all-blank rows its reader drops are skipped), so a
+drafted dtype with zero failures casts at transform time; shapes are classified on
+stripped values, as evidence only. **I-1:** no body is read whole into Python and `read_csv`
 always carries `n_rows`. A ragged or binary body is `parse_error` data, never coerced and
 never an abort. Outputs (`families/<key>.json`, then `summary.json`, then the report) go
 through `replace_atomically`, are byte-deterministic and carry no host or clock value.
@@ -74,6 +77,9 @@ target is checked first; a page without `skeleton: true` is never overwritten.
 - **R-3** dtypes from field-info physical types (`numeric`→`float64`, `int4`→`int64`,
   `text`→`string`, `date`→`date` with the bronze format, `timestamp`→`string`). The one
   exception, `forecast_month`, is a `text` column with the documented `MMM-YY` format.
+  A settlement-period column (`da_demand_fc_performance.settlement_period`) is `int64`
+  bounded `min 1`, `max 50`, so an out-of-range period is excluded and counted, never
+  written; the profiler drafts the same bounds on any `int64` settlement-period column.
 - **R-4** `vintage: ckan_last_modified` (all six are uploads).
 - **R-5** `version "1"`, `reader "csv"`, `encoding "utf-8"`, `issue {kind: none}`.
 
