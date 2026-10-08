@@ -115,9 +115,18 @@ def record(
     run_type_column: str | None = None,
     siblings: tuple[str, ...] = (),
     vintage_evidence: str | None = None,
+    xlsx: dict[str, Any] | None = None,
+    zip_member: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    """One frozen ``SchemaRecord``; the defaults are a valid sp_pair family."""
-    return {
+    """One frozen ``SchemaRecord``; the defaults are a valid sp_pair family.
+
+    A ``zip_member`` record without a ``zip_member`` spec gets the permissive
+    ``{"member_pattern": ".+", "inner": "csv"}`` (V-14), so unit B's container
+    records keep loading.
+    """
+    if reader == "zip_member" and zip_member is None:
+        zip_member = {"member_pattern": ".+", "inner": "csv"}
+    document: dict[str, Any] = {
         "version": version,
         "reader": reader,
         "encoding": encoding,
@@ -136,6 +145,11 @@ def record(
         "vintage": vintage,
         "vintage_evidence": vintage_evidence,
     }
+    if xlsx is not None:
+        document["xlsx"] = xlsx
+    if zip_member is not None:
+        document["zip_member"] = zip_member
+    return document
 
 
 def resource(

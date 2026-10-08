@@ -511,3 +511,87 @@ class TestDumpVintageRule:
         resources = [resource(R1, "Series", "gen_series", url_type="datastore")]
         loaded = _load(tmp_path / "b", record(vintage="capture_fallback"), resources=resources)
         assert loaded.families["gen_series"][1].record is not None
+
+
+class TestReaderSpecs:
+    """V-14 (ADR-037 P-2): the reader specs match the reader; E's records load unchanged."""
+
+    XLSX = {"header_row": 8, "columns": "A:J"}
+
+    def test_controls_load(self, tmp_path: Path) -> None:
+        loaded = _load(tmp_path / "a", record(reader="xlsx", xlsx=self.XLSX))
+        rec = loaded.families["gen_series"][1].record
+        assert rec is not None and rec.xlsx is not None
+        assert rec.xlsx.bounds == (1, 10)
+        csv_member = {"member_pattern": r"[^/]+\.csv", "inner": "csv"}
+        assert _load(tmp_path / "b", record(reader="zip_member", zip_member=csv_member))
+        xlsx_member = {"member_pattern": ".+", "inner": "xlsx"}
+        rec2 = record(reader="zip_member", zip_member=xlsx_member, xlsx=self.XLSX)
+        assert _load(tmp_path / "c", rec2)
+        last = {"header_row": 2, "columns": "A:AA", "last_row": 3}
+        assert _load(tmp_path / "d", record(reader="xlsx", xlsx=last))
+
+    @pytest.mark.parametrize(
+        ("kwargs", "label"),
+        [
+            ({"reader": "csv", "xlsx": {"header_row": 1, "columns": "A:B"}}, "csv+xlsx"),
+            (
+                {"reader": "csv", "zip_member": {"member_pattern": ".+", "inner": "csv"}},
+                "csv+zip",
+            ),
+            ({"reader": "xlsx"}, "xlsx without spec"),
+            (
+                {
+                    "reader": "xlsx",
+                    "xlsx": {"header_row": 1, "columns": "A:B"},
+                    "zip_member": {"member_pattern": ".+", "inner": "xlsx"},
+                },
+                "xlsx+zip",
+            ),
+            (
+                {
+                    "reader": "zip_member",
+                    "zip_member": {"member_pattern": ".+", "inner": "xlsx"},
+                },
+                "inner xlsx without xlsx",
+            ),
+            (
+                {
+                    "reader": "zip_member",
+                    "zip_member": {"member_pattern": ".+", "inner": "csv"},
+                    "xlsx": {"header_row": 1, "columns": "A:B"},
+                },
+                "inner csv with xlsx",
+            ),
+            (
+                {"reader": "xlsx", "xlsx": {"header_row": 3, "columns": "A:B", "last_row": 3}},
+                "last_row not after header_row",
+            ),
+        ],
+    )
+    def test_v14_refusals(self, tmp_path: Path, kwargs: dict[str, Any], label: str) -> None:
+        _refused(tmp_path, "V-14", record(**kwargs))
+
+    def test_zip_member_without_spec_is_refused(self, tmp_path: Path) -> None:
+        rec = record(reader="zip_member")
+        del rec["zip_member"]
+        _refused(tmp_path, "V-14", rec)
+
+    @pytest.mark.parametrize(
+        "spec",
+        [
+            {"header_row": 0, "columns": "A:B"},
+            {"header_row": 1, "columns": "a:b"},
+            {"header_row": 1, "columns": "A"},
+            {"header_row": 1, "columns": "AAAA:B"},
+            {"header_row": 1, "columns": "C:B"},
+        ],
+    )
+    def test_malformed_xlsx_specs_are_rejected(self, tmp_path: Path, spec: dict[str, Any]) -> None:
+        with pytest.raises(RegistryError, match="xlsx"):
+            _load(tmp_path, record(reader="xlsx", xlsx=spec))
+
+    def test_member_pattern_must_compile(self, tmp_path: Path) -> None:
+        spec = {"member_pattern": "(", "inner": "csv"}
+        with pytest.raises(RegistryError, match="member_pattern does not compile"):
+            _load(tmp_path, record(reader="zip_member", zip_member=spec))
