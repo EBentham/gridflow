@@ -33,14 +33,12 @@ from gridflow.connectors.neso_data_portal import registry as registry_module
 from gridflow.connectors.neso_data_portal.files import replace_atomically
 from gridflow.connectors.neso_data_portal.registry.record import CHILD_SEPARATOR
 from gridflow.silver.neso_data_portal.containers import (
-    Container,
     ContainerReadError,
     open_container,
     read_entry,
 )
 
 if TYPE_CHECKING:
-    import zipfile
     from collections.abc import Iterator, Sequence
 
     from gridflow.connectors.neso_data_portal.registry import Registry
@@ -193,29 +191,28 @@ def _gpkg(data: bytes, prefix: str) -> list[LayerFacts]:
     return layers
 
 
-def _shapefile(
-    container: Container, shp: zipfile.ZipInfo, by_name: dict[str, zipfile.ZipInfo], prefix: str
-) -> LayerFacts:
-    stem = shp.filename[: -len(".shp")]
-    shx = by_name.get(f"{stem}.shx".lower())
-    if shx is None:
-        raise GisFactsError(f"{_join(prefix, shp.filename)}: no .shx beside the .shp")
-    index_size = len(read_entry(container, shx)) - _SHX_HEADER
+def _shapefile(shp: str, entries: dict[str, tuple[str, bytes]], prefix: str) -> LayerFacts:
+    stem = shp[: -len(".shp")]
+    index = entries.get(f"{stem}.shx".lower())
+    if index is None:
+        raise GisFactsError(f"{_join(prefix, shp)}: no .shx beside the .shp")
+    shx_name, shx_data = index
+    index_size = len(shx_data) - _SHX_HEADER
     if index_size < 0 or index_size % _SHX_RECORD:
-        raise GisFactsError(f"{_join(prefix, shx.filename)}: not a shapefile index")
-    header = read_entry(container, shp)
+        raise GisFactsError(f"{_join(prefix, shx_name)}: not a shapefile index")
+    header = entries[shp.lower()][1]
     if len(header) < 68:
-        raise GisFactsError(f"{_join(prefix, shp.filename)}: truncated .shp header")
+        raise GisFactsError(f"{_join(prefix, shp)}: truncated .shp header")
     min_x, min_y, max_x, max_y = struct.unpack_from("<4d", header, 36)
-    prj = by_name.get(f"{stem}.prj".lower())
+    prj = entries.get(f"{stem}.prj".lower())
     crs: str | None = None
     source = "no .prj"
     if prj is not None:
-        match = _QUOTED.search(read_entry(container, prj).decode("utf-8", errors="replace"))
+        match = _QUOTED.search(prj[1].decode("utf-8", errors="replace"))
         crs = match.group(1) if match else None
         source = ".prj" if crs is not None else ".prj without a quoted name"
     return LayerFacts(
-        _join(prefix, shp.filename),
+        _join(prefix, shp),
         "shapefile",
         index_size // _SHX_RECORD,
         (min_x, min_y, max_x, max_y),
@@ -229,21 +226,24 @@ def _zip(data: bytes, prefix: str, depth: int) -> list[LayerFacts]:
         raise GisFactsError(f"{prefix}: archive nested deeper than {MAX_DEPTH}")
     try:
         container = open_container(data, prefix or "body")
-        by_name = {info.filename.lower(): info for info in container.files()}
-        layers: list[LayerFacts] = []
-        for info in container.files():
-            suffix = PurePosixPath(info.filename).suffix.lower()
-            path = _join(prefix, info.filename)
-            if suffix == ".shp":
-                layers.append(_shapefile(container, info, by_name, prefix))
-            elif suffix == ".zip":
-                layers.extend(_zip(read_entry(container, info), path, depth + 1))
-            elif suffix == ".geojson":
-                layers.append(_geojson(read_entry(container, info), path))
-            elif suffix == ".gpkg":
-                layers.extend(_gpkg(read_entry(container, info), path))
+        # Every entry is verified before any fact is derived, so a corrupt member
+        # the facts never look at (a .dbf, a readme) still refuses the archive.
+        verified = [(info.filename, read_entry(container, info)) for info in container.files()]
     except ContainerReadError as exc:
         raise GisFactsError(f"{prefix or 'body'}: {exc}") from exc
+    by_name = {name.lower(): (name, content) for name, content in verified}
+    layers: list[LayerFacts] = []
+    for name, content in verified:
+        suffix = PurePosixPath(name).suffix.lower()
+        path = _join(prefix, name)
+        if suffix == ".shp":
+            layers.append(_shapefile(name, by_name, prefix))
+        elif suffix == ".zip":
+            layers.extend(_zip(content, path, depth + 1))
+        elif suffix == ".geojson":
+            layers.append(_geojson(content, path))
+        elif suffix == ".gpkg":
+            layers.extend(_gpkg(content, path))
     return layers
 
 

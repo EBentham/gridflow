@@ -13,6 +13,7 @@ import struct
 import subprocess
 import sys
 import textwrap
+import zlib
 from pathlib import Path
 from typing import Any
 
@@ -20,6 +21,7 @@ import pytest
 from _container_support import (
     FIXTURES,
     forbid_zipfile_reads,  # noqa: F401 - a fixture
+    patch_headers,
     zip_bytes,
 )
 
@@ -207,6 +209,28 @@ class TestShapefileZip:
         ]
         with pytest.raises(GisFactsError, match="not a shapefile index"):
             layer_facts(zip_bytes(entries), "zip")
+
+    @pytest.mark.parametrize("member", ["a.dbf", "readme.txt"])
+    def test_a_corrupt_member_the_facts_never_read_refuses_the_archive(self, member: str) -> None:
+        body = zip_bytes([*_shapefile("a", 1, (0.0, 0.0, 1.0, 1.0)), ("readme.txt", b"notes")])
+        body = patch_headers(body, member, crc=0xDEADBEEF)
+        with pytest.raises(GisFactsError, match="body"):
+            layer_facts(body, "zip")
+
+    def test_a_corrupt_member_of_a_nested_archive_refuses_the_archive(self) -> None:
+        inner = patch_headers(
+            zip_bytes(_shapefile("b", 1, (0.0, 0.0, 1.0, 1.0))), "b.dbf", crc=0xDEADBEEF
+        )
+        body = zip_bytes([*_shapefile("a", 1, (0.0, 0.0, 1.0, 1.0)), ("inner.zip", inner)])
+        with pytest.raises(GisFactsError, match="inner.zip"):
+            layer_facts(body, "zip")
+
+    def test_a_corrupt_dbf_in_the_real_archive_is_refused(self) -> None:
+        """Sol REVIEW-DIFF-1 #1: the committed archive with its DBF CRC changed."""
+        data = (PROJECT_ROOT / FIXTURES / "tnuos_gen_zones.zip").read_bytes()
+        corrupt = patch_headers(data, "TNUoSGenZones.dbf", crc=zlib.crc32(b"not the dbf"))
+        with pytest.raises(GisFactsError):
+            layer_facts(corrupt, "zip")
 
     def test_t_x1_6_real_shapefile_archive(self) -> None:
         """T-X1-6 (facts): the committed TNUoS generation-zones archive."""
