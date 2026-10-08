@@ -118,3 +118,6 @@ evidence and test; the P-5 evidence keys accumulate the paired observations it n
   them missing meanwhile.
 - **Same-origin hops only.** If NESO moves dump delivery to another host, every dump fails
   loud (`NesoDumpRedirectError`) until a decision widens P-3.
+
+**Forward pointer:** ADR-036 freezes the first records (the six pilot families) and adds
+the offline profiler that proposes the rest.
