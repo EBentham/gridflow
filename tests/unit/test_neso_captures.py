@@ -311,3 +311,55 @@ class TestSilverScanOptions:
         only = scan_dataset(dataset, registry, partition=date(2026, 10, 8))
         assert [c.body.parent.name for c in only.captures] == ["08"]
         assert scan_dataset(dataset, registry, partition=date(2026, 10, 9)).captures == ()
+
+
+def _as_dump(meta: dict[str, Any]) -> None:
+    """Reshape a test sidecar as the dump leg writes one: no CKAN file stamp."""
+    meta["request_params"]["url_type"] = "datastore"
+    meta["request_params"]["ckan_last_modified"] = ""
+    meta["request_params"]["resource_filename"] = meta["request_params"]["resource_id"]
+
+
+class TestDatastoreUsableRule:
+    """T-D3-2 (ADR-035 P-6): a dump never needs ``last_modified`` to be usable."""
+
+    def test_d3_2_strict_scan_admits_a_null_last_modified_dump(
+        self, tmp_path: Path, registry: Registry
+    ) -> None:
+        """Detects a dump capture hidden from coverage and the dedup basis (red: E6, strict 0)."""
+        _body, sidecar = _alpha_capture(tmp_path / "bronze")
+        edit_sidecar(sidecar, _as_dump)
+        scan = scan_dataset(tmp_path / "bronze" / "alpha_series", registry)
+        assert scan.unusable == ()
+        (capture,) = scan.captures
+        assert capture.url_type == "datastore"
+        assert capture.ckan_last_modified is None
+
+    def test_d3_2_upload_with_unparseable_last_modified_stays_unusable(
+        self, tmp_path: Path, registry: Registry
+    ) -> None:
+        """Detects the widening leaking into uploads (A's strict rule must hold)."""
+        _body, sidecar = _alpha_capture(tmp_path / "bronze")
+        edit_sidecar(sidecar, _set_params("ckan_last_modified", "not-a-time"))
+        scan = scan_dataset(tmp_path / "bronze" / "alpha_series", registry)
+        assert scan.captures == ()
+        assert "provenance_for" in scan.unusable[0].reason
+
+    def test_d3_2_dump_missing_resource_name_is_unusable(
+        self, tmp_path: Path, registry: Registry
+    ) -> None:
+        """Detects the identity form being skipped for a dump."""
+        _body, sidecar = _alpha_capture(tmp_path / "bronze")
+        edit_sidecar(sidecar, _as_dump)
+        edit_sidecar(sidecar, _drop_param("resource_name"))
+        scan = scan_dataset(tmp_path / "bronze" / "alpha_series", registry)
+        assert scan.captures == ()
+        assert "resource_name" in scan.unusable[0].reason
+
+    def test_d3_2_upload_capture_carries_its_url_type(
+        self, tmp_path: Path, registry: Registry
+    ) -> None:
+        """Detects ``Capture.url_type`` not being populated from the sidecar."""
+        _alpha_capture(tmp_path / "bronze")
+        (capture,) = scan_dataset(tmp_path / "bronze" / "alpha_series", registry).captures
+        assert capture.url_type == "upload"

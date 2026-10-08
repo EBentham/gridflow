@@ -537,3 +537,121 @@ class TestRunIngestBinds:
         assert result.status == "success", result
         assert bound == [(data_dir, data_dir / "state" / "neso_data_portal")]
         assert sends and all(count == 1 for count in sends), "a send preceded the bind"
+
+
+_DUMP_RID = "aaaaaaaa-0000-4000-8000-000000000010"
+
+
+async def _dump_send(connector: NesoDataPortalConnector) -> None:
+    """One datastore-lane send through the primitive, as the dump leg makes it."""
+    from gridflow.connectors.neso_data_portal.client import SafeUrl
+    from gridflow.connectors.neso_data_portal.endpoints import build_dump_path
+
+    assert connector._client is not None
+    request = connector._client.build_request("GET", build_dump_path(_DUMP_RID))
+    response = await connector._send(
+        request, SafeUrl.verified(request.url), stream=True, lane=Lane.DATASTORE
+    )
+    await response.aclose()
+
+
+class TestDatastoreLanePlumbing:
+    """T-D2-1 / T-D2-2 (ADR-035 P-1): the lane reaches the pacer; CKAN call shapes are frozen."""
+
+    def test_d2_1_datastore_sends_are_30s_apart_and_ckan_is_not_delayed(
+        self, router: respx.MockRouter
+    ) -> None:
+        """Detects a datastore send admitted on the CKAN lane (red on master: no ``lane``)."""
+        clock = FakeClock()
+        pacer = RunPacer(1.0, 30.0, monotonic=clock.monotonic, sleep=clock.sleep)
+        stamps: list[tuple[str, float]] = []
+
+        def _handler(request: httpx.Request) -> httpx.Response:
+            kind = "dump" if "/datastore/dump/" in str(request.url) else "ckan"
+            stamps.append((kind, clock.now))
+            if kind == "dump":
+                return httpx.Response(200, content=b"A,B\n1,2\n")
+            return httpx.Response(200, json={"success": True, "result": {"id": "p"}})
+
+        router.route(url__regex=r".*").mock(side_effect=_handler)
+
+        async def _run() -> None:
+            async with NesoDataPortalConnector(_config(), pacer=pacer) as connector:
+                await _dump_send(connector)
+                await connector._package_show("x")
+                await _dump_send(connector)
+
+        asyncio.run(_run())
+        assert stamps == [("dump", 0.0), ("ckan", 0.0), ("dump", 30.0)], stamps
+
+    def test_d2_2_ckan_sequence_still_paces_at_one_second(self, router: respx.MockRouter) -> None:
+        """Detects the CKAN path moving onto another lane or interval (I-1)."""
+        clock = FakeClock()
+        pacer = RunPacer(1.0, 30.0, monotonic=clock.monotonic, sleep=clock.sleep)
+        stamps: list[float] = []
+        router.route(url__regex=r".*").mock(side_effect=_package_show_handler(stamps, clock))
+
+        async def _run() -> None:
+            async with NesoDataPortalConnector(_config(), pacer=pacer) as connector:
+                for _ in range(3):
+                    await connector._package_show("x")
+
+        asyncio.run(_run())
+        assert stamps == [0.0, 1.0, 2.0], stamps
+
+
+class TestDumpAndFieldInfoShareTheLane:
+    """T-D2-5 / T-D2-6 (ADR-035 P-11): dumps and field info share one datastore lane."""
+
+    def test_d2_5_dump_field_info_dump_in_one_process(self, router: respx.MockRouter) -> None:
+        """Detects ``datastore_search`` admitted outside the datastore lane."""
+        clock = FakeClock()
+        pacer = RunPacer(1.0, 30.0, monotonic=clock.monotonic, sleep=clock.sleep)
+        stamps: list[tuple[str, float]] = []
+
+        def _handler(request: httpx.Request) -> httpx.Response:
+            if "datastore_search" in str(request.url):
+                stamps.append(("fields", clock.now))
+                result = {"fields": [], "records": [], "limit": 0}
+                return httpx.Response(200, json={"success": True, "result": result})
+            stamps.append(("dump", clock.now))
+            return httpx.Response(200, content=b"A,B\n1,2\n")
+
+        router.route(url__regex=r".*").mock(side_effect=_handler)
+
+        async def _run() -> None:
+            async with NesoDataPortalConnector(_config(), pacer=pacer) as connector:
+                await connector._download_dump(_DUMP_RID, 1 << 20, "x")
+                await connector.datastore_fields(_DUMP_RID)
+                await connector._download_dump(_DUMP_RID, 1 << 20, "x")
+
+        asyncio.run(_run())
+        assert stamps == [("dump", 0.0), ("fields", 30.0), ("dump", 60.0)], stamps
+
+    def test_d2_6_dump_then_field_info_across_processes(
+        self, tmp_path_factory: pytest.TempPathFactory
+    ) -> None:
+        """Detects a field-info process sending inside the dump process's datastore interval."""
+        data_dir = tmp_path_factory.mktemp("d26")
+        env = {"NESO_PACER_LANE": "datastore"}
+        b = _spawn("B", data_dir, **env)
+        a = _spawn("A", data_dir, **env)
+        try:
+            _read_tag(b, "READY")
+            a_sends = [float(_read_tag(a, "SEND")) for _ in range(3)]
+            a.terminate()  # dies inside the third dump, holding the lock
+            a.wait(timeout=30)
+            assert b.stdin is not None
+            b.stdin.write("go\n")
+            b.stdin.flush()
+            lock = float(_read_tag(b, "LOCK"))
+            admit = float(_read_tag(b, "ADMIT"))
+            b_send = float(_read_tag(b, "SEND"))
+            b.wait(timeout=60)
+        finally:
+            for proc in (a, b):
+                if proc.poll() is None:
+                    proc.kill()
+        assert all(gap >= 2.0 - 0.05 for gap in _gaps(a_sends)), a_sends
+        assert admit - lock >= 2.0, admit - lock
+        assert b_send >= a_sends[-1] + 2.0 - 0.05, (b_send - a_sends[-1], a_sends)

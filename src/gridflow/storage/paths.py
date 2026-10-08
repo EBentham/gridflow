@@ -126,6 +126,16 @@ class PathBuilder:
         """Return a dataset's completion-failure record directory (ADR-034 P-7)."""
         return self.state_dir(source) / "completion_failures" / dataset
 
+    def dump_check_dir(self, source: str, dataset: str) -> Path:
+        """Return a dataset's datastore dump check-stamp directory (ADR-035 P-7).
+
+        Under ``state/``, outside every medallion layer: a stamp records that a
+        frozen-class dump was fetched and found byte-identical to its newest
+        capture, which wrote no bronze. Stamps are disposable; deleting one
+        only makes its member due sooner.
+        """
+        return self.state_dir(source) / "dump_checks" / dataset
+
     # --- DuckDB ---
 
     def duckdb_path(self) -> Path:

@@ -69,7 +69,9 @@ class MemberEvent:
     Attributes:
         resource_id: The vendor resource the event is about.
         outcome: ``captured`` (``response`` set, publish it), ``unchanged``
-            (its newest capture is current; nothing fetched), ``deferred``
+            (its newest capture is current: nothing fetched, or a dump
+            fetched and byte-identical to it, or a frozen-class dump not yet
+            due; ADR-035), ``deferred``
             (another leg captures it; nothing sent), ``absent`` (a listed
             member the vendor no longer serves), or ``failed``.
         response: The captured response, for ``captured`` only.

@@ -783,23 +783,39 @@ class TestFailuresAndDeferral:
         assert "X-Amz" not in events[1].detail
         assert len(paths) == 1
 
-    def test_datastore_member_is_deferred_with_no_request(
+    def test_datastore_member_is_captured_through_the_dump_leg(
         self,
         router: respx.MockRouter,
         data_dir: Path,
         tmp_path: Path,
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
+        """T-D0-1 (ADR-035, supersedes M-7's deferral): a dump member is captured.
+
+        Detects the dump leg still deferring, or fetching anything but the
+        built dump URL. The pacer is zero-interval so no test waits 30 s.
+        """
+        pacer = pacer_module.RunPacer(0.0, 0.0)
+
+        def _shared(config: SourceConfig, state_dir: Path | None = None) -> Any:
+            if state_dir is not None:
+                pacer.bind(state_dir)
+            return pacer
+
+        monkeypatch.setattr(pacer_module, "shared_pacer", _shared)
         _registry(tmp_path, monkeypatch)
         live = [_live(10, "Alpha Live Dump", url_type="datastore")]
-        _wire(router, _payload(live), {})
-        events, paths = _consume(data_dir, "alpha_notes")
+        _wire(router, _payload(live), {_rid(10): CSV_BODY})
+        try:
+            events, paths = _consume(data_dir, "alpha_notes")
+        finally:
+            pacer.close()
         assert [(e.resource_id, e.outcome) for e in events] == [
             (_rid(3), "absent"),
-            (_rid(10), "deferred"),
+            (_rid(10), "captured"),
         ]
-        assert paths == []
-        assert _file_leg_calls(router) == []
+        assert len(paths) == 1
+        assert _file_leg_calls(router) == [f"{BASE_URL}/datastore/dump/{_rid(10)}"]
 
 
 _LEGACY = [

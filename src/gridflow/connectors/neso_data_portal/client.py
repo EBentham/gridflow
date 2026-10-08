@@ -53,7 +53,7 @@ import re
 import socket
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
-from typing import TYPE_CHECKING, Any, ClassVar, final
+from typing import TYPE_CHECKING, Any, ClassVar, NamedTuple, final
 from uuid import uuid4
 
 import httpx
@@ -62,6 +62,7 @@ from gridflow.bronze.sanitize import sanitize_url
 from gridflow.connectors.base import BaseConnector, MemberEvent, RawResponse, _make_ssl_context
 from gridflow.connectors.neso_data_portal import captures as captures_module
 from gridflow.connectors.neso_data_portal import endpoints
+from gridflow.connectors.neso_data_portal import files as files_module
 from gridflow.connectors.neso_data_portal import pacer as pacer_module
 from gridflow.connectors.neso_data_portal import registry as registry_module
 from gridflow.connectors.neso_data_portal.endpoints import (
@@ -80,6 +81,7 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     from gridflow.config.settings import SourceConfig
+    from gridflow.connectors.neso_data_portal.captures import Capture
     from gridflow.connectors.neso_data_portal.endpoints import FamilySpec
 
 logger = logging.getLogger(__name__)
@@ -99,6 +101,12 @@ _VALIDATED_MARKER = "gridflow_neso_send_token"
 _FILE_LEG_HEADERS = {"Accept-Encoding": "identity"}
 
 _MAX_REDIRECT_HOPS = 3
+
+# ADR-035 P-7 (decision 11): a frozen-class dump is re-checked at most weekly,
+# on gridflow's own clock (``end`` dates), never on a CKAN field.
+_FROZEN_CADENCE = timedelta(days=7)
+
+_REHASH_CHUNK = 1024 * 1024
 
 # CKAN's own default page size, and what the Stage-A capture used: 129 packages
 # in three pages of 50/50/29. Ours to choose, and we send it explicitly rather
@@ -237,6 +245,23 @@ class NesoUnexpectedBodyError(NesoDataPortalError):
     An HTML interstitial or a JSON error envelope served under a ``PDF`` or
     ``CSV`` resource would otherwise reach immutable bronze under a trusted
     extension.
+    """
+
+
+class NesoDatastoreMemberError(NesoDataPortalError):
+    """A live datastore member is not one the registry seeds as a CSV dump (ADR-035 P-2).
+
+    The dump URL is built only from a resource id the registry seeds as a
+    ``datastore`` resource of the family being captured; anything else fails
+    loud before any send, until a registry commit seeds it.
+    """
+
+
+class NesoDumpRedirectError(NesoDataPortalError):
+    """A dump download redirected off the ``base_url`` origin (ADR-035 P-3).
+
+    Raised before the off-origin hop is sent. Not an ``httpx`` error, so it is
+    never retried.
     """
 
 
@@ -532,6 +557,7 @@ class NesoDataPortalConnector(BaseConnector):
         self._issued_send_tokens: set[str] = set()
         self._entered_once = False
         self._bronze_root: Path | None = None
+        self._data_paths: PathBuilder | None = None
 
     def bind_data_dir(self, data_dir: Path) -> None:
         """Bind this connector to a data root before its first send (ADR-033 P-5).
@@ -539,7 +565,8 @@ class NesoDataPortalConnector(BaseConnector):
         Runs P-4's runtime freeze pin (every bronze directory of this source is
         a registry key), then swaps in the process-wide pacer bound to
         ``<data_dir>/state/neso_data_portal/pacer.lock`` (P-12), and records the
-        bronze root the capture index reads.
+        bronze root the capture index reads and the data paths the dump leg's
+        check stamps live under (ADR-035 P-7).
 
         Raises:
             RuntimeError: Called after this instance was entered: a send may
@@ -556,6 +583,7 @@ class NesoDataPortalConnector(BaseConnector):
         captures_module.assert_bronze_dirs_registered(data_dir, registry_module.load_registry())
         self._pacer = pacer_module.shared_pacer(self.config, paths.state_dir(self.source_name))
         self._bronze_root = paths.bronze_source_dir(self.source_name)
+        self._data_paths = paths
 
     async def __aenter__(self) -> NesoDataPortalConnector:
         """Build the client with redirects DISABLED.
@@ -586,7 +614,12 @@ class NesoDataPortalConnector(BaseConnector):
 
     @RETRY_POLICY
     async def _send(
-        self, request: httpx.Request, target: SafeUrl, *, stream: bool = False
+        self,
+        request: httpx.Request,
+        target: SafeUrl,
+        *,
+        stream: bool = False,
+        lane: Lane = Lane.CKAN,
     ) -> httpx.Response:
         """Send one request. **The only network-I/O site in this package.**
 
@@ -612,6 +645,10 @@ class NesoDataPortalConnector(BaseConnector):
                 with a fresh single-use attestation token.
             stream: ``True`` for the file leg, so the body is consumed by
                 :meth:`_read_capped_body` rather than buffered by httpx.
+            lane: The pacer lane this send is admitted on (ADR-035). A
+                parameter of the retried primitive, so every retry attempt and
+                every redirect hop is admitted on the caller's lane. The CKAN
+                lane calls :meth:`_throttle_request` with no argument (I-1).
 
         Returns:
             A 2xx response, or a 3xx that carries a ``Location``. **The caller
@@ -644,7 +681,10 @@ class NesoDataPortalConnector(BaseConnector):
         request.extensions[_VALIDATED_MARKER] = token
 
         async with self._semaphore:
-            await self._throttle_request()
+            if lane is Lane.CKAN:
+                await self._throttle_request()
+            else:
+                await self._throttle_request(lane)
             try:
                 response = await self._client.send(request, stream=stream, follow_redirects=False)
             except httpx.RemoteProtocolError as exc:
@@ -678,20 +718,22 @@ class NesoDataPortalConnector(BaseConnector):
             ) from None
         return response
 
-    async def _throttle_request(self) -> None:
-        """Pace outbound sends to the vendor's published 1 req/s guidance.
+    async def _throttle_request(self, lane: Lane = Lane.CKAN) -> None:
+        """Pace outbound sends to the vendor's published guidance, per lane.
 
-        Admission is the shared :class:`~.pacer.RunPacer`'s CKAN lane
-        (ADR-033 P-12), so the interval holds across connector instances,
-        dataset handoffs and, once bound, processes. Not hoisted into
-        ``BaseConnector``: that would change the pacing of every other source.
+        Admission is the shared :class:`~.pacer.RunPacer` (ADR-033 P-12): the
+        CKAN lane (1 req/s) by default, and the datastore lane (2 req/min) for
+        dump downloads and ``datastore_search`` calls (ADR-035). The interval
+        holds across connector instances, dataset handoffs and, once bound,
+        processes. Not hoisted into ``BaseConnector``: that would change the
+        pacing of every other source.
 
         Gates **every** outbound send without exception: each CKAN action call,
         the redirector request, each redirect hop, and each retry attempt —
         because it sits inside :meth:`_send`, which is what ``RETRY_POLICY``
         decorates, directly before the transport call.
         """
-        await self._pacer.acquire(Lane.CKAN)
+        await self._pacer.acquire(lane)
 
     async def _assert_safe_target(self, url: SafeUrl) -> None:
         """Raise unless ``url`` satisfies D-08's target policy.
@@ -841,7 +883,9 @@ class NesoDataPortalConnector(BaseConnector):
     # CKAN two-stage fetch
     # ------------------------------------------------------------------
 
-    async def _ckan_action(self, action: str, **params: str) -> tuple[Any, RequestTrace]:
+    async def _ckan_action(
+        self, action: str, *, lane: Lane = Lane.CKAN, **params: str
+    ) -> tuple[Any, RequestTrace]:
         """Call one CKAN action, returning its ``result`` and a request trace.
 
         **One envelope check, every action.** NESO returns action errors as HTTP
@@ -857,6 +901,9 @@ class NesoDataPortalConnector(BaseConnector):
 
         Args:
             action: The CKAN action name.
+            lane: The pacer lane; :attr:`Lane.DATASTORE` only for
+                ``datastore_search`` (ADR-035). The CKAN lane keeps master's
+                ``_send(request, target)`` call shape (I-1).
             **params: Query parameters, sent as constructed against ``base_url``
                 — never a URL taken from a response body (D-39 §1a).
 
@@ -865,8 +912,11 @@ class NesoDataPortalConnector(BaseConnector):
             the call.
 
         Raises:
-            CkanActionError: A redirect (action calls are not redirected), a
-                non-JSON body, or ``success: false``.
+            CkanActionError: A redirect (action calls are not redirected; the
+                target is named by origin only), a non-JSON body, or
+                ``success: false``.
+            NesoUnsafeRedirectError: A redirect whose ``Location`` does not
+                resolve; the value is not echoed.
         """
         if self._client is None:
             raise RuntimeError("Connector not initialized. Use 'async with' context manager.")
@@ -876,12 +926,19 @@ class NesoDataPortalConnector(BaseConnector):
         target = SafeUrl.verified(request.url)
 
         started_at = datetime.now(UTC)
-        response = await self._send(request, target)
+        if lane is Lane.CKAN:
+            response = await self._send(request, target)
+        else:
+            response = await self._send(request, target, lane=lane)
         try:
             if response.has_redirect_location:
+                # The Location is vendor-controlled and may be a signed URL or a
+                # bearer path, so it is named through SafeUrl.opaque (origin
+                # only): this message reaches logs and field-info-run.json.
+                hop = self._resolve_redirect_target(response, target)
                 raise CkanActionError(
-                    f"CKAN {action} {query!r} answered with a redirect to "
-                    f"{response.headers.get('location')!r}; action calls are not redirected"
+                    f"CKAN {action} {query!r} answered with a redirect to {hop}; "
+                    "action calls are not redirected"
                 )
             body = response.content
             trace = RequestTrace(
@@ -1047,6 +1104,32 @@ class NesoDataPortalConnector(BaseConnector):
             )
 
         return CatalogDiscovery(packages=tuple(packages), traces=tuple(traces))
+
+    async def datastore_fields(self, resource_id: str) -> tuple[Any, RequestTrace]:
+        """Ask ``datastore_search`` for one resource's field info and no rows (ADR-035 P-11).
+
+        The parameters are built here (``limit=0``) and sent on the datastore
+        lane; no ``_links`` URL in a response is ever followed. Row refusal is
+        the caller's (the field-info evidence builder), so a vendor that ignores
+        ``limit`` is refused before anything is written.
+
+        Args:
+            resource_id: A canonical lowercase resource UUID.
+
+        Returns:
+            The envelope's ``result`` and the request trace.
+
+        Raises:
+            NesoDatastoreMemberError: ``resource_id`` is not canonical.
+            CkanActionError: The envelope reported failure.
+        """
+        if not endpoints.is_canonical_resource_id(resource_id):
+            raise NesoDatastoreMemberError(
+                f"datastore resource id {resource_id!r} is not a canonical lowercase UUID"
+            )
+        return await self._ckan_action(
+            "datastore_search", lane=Lane.DATASTORE, resource_id=resource_id, limit="0"
+        )
 
     def _select_resource(
         self,
@@ -1274,6 +1357,78 @@ class NesoDataPortalConnector(BaseConnector):
             )
 
         return body, str(redirector), final_status, declared
+
+    async def _download_dump(self, resource_id: str, max_bytes: int, dataset: str) -> _DumpBody:
+        """Download one datastore dump on the datastore lane (ADR-035 P-3).
+
+        The target is built from the registry-seeded id alone (D-39); no URL
+        from the payload is ever read. Every send (each hop and each retry) is
+        admitted on :attr:`Lane.DATASTORE`. A redirect is followed only to the
+        ``base_url`` origin; an off-origin ``Location`` is refused before that
+        hop is sent.
+
+        The hop is resolved against the request this method built rather than
+        through :meth:`_resolve_redirect_target`, because building the next
+        request from a :class:`SafeUrl` would need a new ``unsafe_raw`` call
+        site, which the D-39 pin forbids. Both are the same RFC 3986 join.
+
+        Returns:
+            The body, the BUILT dump URL (never a hop), the observed status, and
+            the final response's ``Content-Length`` and ``Last-Modified``.
+
+        Raises:
+            NesoDumpRedirectError: A ``Location`` outside the ``base_url`` origin.
+            NesoUnsafeRedirectError: A ``Location`` that is not a resolvable URL.
+            NesoUnexpectedStatusError: A 2xx that is not a complete-file 200.
+            NesoRedirectLoopError: More than :data:`_MAX_REDIRECT_HOPS` hops.
+        """
+        if self._client is None:
+            raise RuntimeError("Connector not initialized. Use 'async with' context manager.")
+
+        request = self._client.build_request(
+            "GET", endpoints.build_dump_path(resource_id), headers=_FILE_LEG_HEADERS
+        )
+        target = SafeUrl.verified(request.url)
+        built = target
+        base = httpx.URL(self.config.base_url)
+        origin = (base.scheme, base.host, base.port or 443)
+        for _ in range(_MAX_REDIRECT_HOPS + 1):
+            response = await self._send(request, target, stream=True, lane=Lane.DATASTORE)
+            try:
+                if response.has_redirect_location:
+                    location = response.headers.get("location", "")
+                    try:
+                        hop = request.url.join(location)
+                    except (httpx.InvalidURL, ValueError):
+                        raise NesoUnsafeRedirectError(
+                            f"{target} returned a Location header that is not a resolvable URL"
+                        ) from None
+                    if (hop.scheme, hop.host, hop.port or 443) != origin:
+                        raise NesoDumpRedirectError(
+                            f"{dataset}: dump {resource_id} redirected to {SafeUrl.opaque(hop)}, "
+                            f"outside the {SafeUrl.opaque(base)} origin; the hop was not sent"
+                        )
+                    target = SafeUrl.opaque(hop)
+                    request = self._client.build_request("GET", hop, headers=_FILE_LEG_HEADERS)
+                    continue
+                if response.status_code != 200:
+                    raise NesoUnexpectedStatusError(
+                        f"{dataset}: dump {resource_id} answered HTTP {response.status_code}, "
+                        "which is not a complete-file 200 response; no Range request was made"
+                    )
+                body, declared = await self._read_capped_body(response, max_bytes, target)
+                return _DumpBody(
+                    body=body,
+                    request_url=str(built),
+                    http_status=response.status_code,
+                    declared_length=declared,
+                    last_modified_header=response.headers.get("last-modified"),
+                )
+            finally:
+                await response.aclose()
+        raise NesoRedirectLoopError(
+            f"{dataset}: dump {built} exceeded {_MAX_REDIRECT_HOPS} redirect hops"
+        )
 
     def _assert_admissible_csv(
         self,
@@ -1507,12 +1662,14 @@ class NesoDataPortalConnector(BaseConnector):
 
         One ``package_show``, then selection (P-6), then the newest-capture
         index (P-10), then per member in payload order: a ``datastore`` member
-        is ``deferred`` (unit D's leg; nothing is sent), a member whose newest
-        usable capture carries the live ``last_modified`` is ``unchanged``,
-        and every other member is downloaded, admitted (P-7) and yielded as
-        ``captured``. A per-member failure is a ``failed`` event and the family
-        continues. Only one body is alive at a time: the consumer publishes
-        each capture before the next download starts.
+        goes through the dump leg (:meth:`_dump_member`, ADR-035) and is
+        ``captured``, or ``unchanged`` when its body is byte-identical to its
+        newest capture or a frozen-class dump is not yet due; an upload member
+        whose newest usable capture carries the live ``last_modified`` is
+        ``unchanged``; every other member is downloaded, admitted (P-7) and
+        yielded as ``captured``. A per-member failure is a ``failed`` event and
+        the family continues. Only one body is alive at a time: the consumer
+        publishes each capture before the next download starts.
 
         Args:
             dataset: A registry family key.
@@ -1559,6 +1716,11 @@ class NesoDataPortalConnector(BaseConnector):
 
         scan = captures_module.scan_dataset(self._bronze_root / dataset, registry)
         newest = captures_module.newest_by_resource(scan.captures)
+        # ADR-035 P-8 (ii)/(iii): read before the scan is dropped.
+        unusable_ids = frozenset(
+            item.resource_id for item in scan.unusable if item.resource_id is not None
+        )
+        unattributed_unusable = any(item.resource_id is None for item in scan.unusable)
         del scan
 
         for event in absent:
@@ -1568,14 +1730,26 @@ class NesoDataPortalConnector(BaseConnector):
         for resource in members:
             resource_id = str(resource.get("id", ""))
             if resource.get("url_type") == "datastore":
-                yield MemberEvent(
-                    resource_id, "deferred", detail="datastore member; captured by the dump leg"
+                basis_blocked = resource_id in unusable_ids or unattributed_unusable
+                dump_event = await self._dump_member(
+                    package_payload,
+                    resource,
+                    family,
+                    dataset,
+                    registry,
+                    None if basis_blocked else newest.get(resource_id),
+                    end,
                 )
+                yield dump_event
+                del dump_event
                 continue
             capture = newest.get(resource_id)
             live_modified = resource.get("last_modified")
+            # A dump capture is never the skip basis for an upload (ADR-035 P-6):
+            # its last_modified is not a file stamp (decision 9).
             if (
                 capture is not None
+                and capture.url_type != "datastore"
                 and isinstance(live_modified, str)
                 and live_modified
                 and capture.ckan_last_modified == live_modified
@@ -1648,6 +1822,144 @@ class NesoDataPortalConnector(BaseConnector):
             data_date=end.date(),
         )
         return response, extension
+
+    def _dump_member_target(self, resource: dict[str, Any], dataset: str, registry: Any) -> str:
+        """Return the resource id a dump may be built from (ADR-035 P-2), or raise.
+
+        "The registry's resource id" is literal: the live id must be canonical,
+        seeded in the registry under ``dataset`` as a ``datastore`` resource,
+        and its live format must be CSV. A dump recreated under a new UUID fails
+        loud here until a registry commit seeds it.
+
+        Raises:
+            NesoDatastoreMemberError: Any of those conditions fails. Nothing has
+                been sent.
+        """
+        resource_id = str(resource.get("id", ""))
+        if not endpoints.is_canonical_resource_id(resource_id):
+            raise NesoDatastoreMemberError(
+                f"{dataset}: datastore member id {resource_id!r} is not a canonical lowercase "
+                "UUID; no dump path is built from it"
+            )
+        seeded = registry.resources.get(resource_id)
+        if seeded is None:
+            raise NesoDatastoreMemberError(
+                f"{dataset}: datastore member {resource_id} is not seeded in the registry; a "
+                "registry commit must seed it before its dump is fetched (ADR-035)"
+            )
+        _package_entry, entry = seeded
+        if entry.family != dataset:
+            raise NesoDatastoreMemberError(
+                f"{dataset}: datastore member {resource_id} is seeded under family "
+                f"{entry.family!r}, not {dataset!r}"
+            )
+        if entry.url_type != "datastore":
+            raise NesoDatastoreMemberError(
+                f"{dataset}: member {resource_id} is live as a datastore resource but seeded "
+                f"as {entry.url_type!r}"
+            )
+        live_format = str(resource.get("format", ""))
+        if live_format.upper() != "CSV":
+            raise NesoDatastoreMemberError(
+                f"{dataset}: datastore member {resource_id} declares format {live_format!r}; "
+                "a datastore dump is CSV"
+            )
+        return resource_id
+
+    async def _dump_member(
+        self,
+        package_payload: dict[str, Any],
+        resource: dict[str, Any],
+        family: FamilySpec,
+        dataset: str,
+        registry: Any,
+        candidate: Capture | None,
+        end: datetime,
+    ) -> MemberEvent:
+        """Capture, suppress or skip one datastore member (ADR-035 P-9).
+
+        In order: the registry gate (P-2), the dedup basis (P-8, computed once
+        and read by both the cadence and the suppression), the frozen-class
+        cadence (P-7), then download (P-3), admission (P-4), content-hash
+        suppression (P-8, stamping a frozen family) and provenance (P-5).
+
+        Args:
+            package_payload: The live ``package_show`` result.
+            resource: The live datastore resource.
+            family: The family being captured.
+            dataset: The family key.
+            registry: The loaded registry.
+            candidate: The newest usable capture of this resource, or ``None``
+                when there is none or an unusable sidecar blocks the basis
+                (P-8 (i)-(iii)).
+            end: The window end; ``end.date()`` is the partition and the
+                cadence clock.
+
+        Returns:
+            One ``captured``, ``unchanged`` or ``failed`` event.
+        """
+        resource_id = str(resource.get("id", ""))
+        try:
+            rid = self._dump_member_target(resource, dataset, registry)
+        except NesoDatastoreMemberError as exc:
+            return MemberEvent(resource_id, "failed", detail=_safe_detail(exc))
+
+        basis = _verified_basis(candidate, dataset)
+        stamp_path = self._dump_stamp_path(dataset, rid) if family.refresh == "frozen" else None
+        if stamp_path is not None:
+            not_due = _frozen_not_due(basis, stamp_path, rid, end, dataset)
+            if not_due is not None:
+                return MemberEvent(rid, "unchanged", detail=not_due)
+
+        try:
+            dump = await self._download_dump(rid, family.max_download_bytes, dataset)
+            extension, empty_capture = _admit_member_body(
+                dump.body,
+                declared_format="CSV",
+                filename=f"{rid}.csv",
+                empty_allowed=family.empty_allowed,
+                label=f"{dataset}: dump {rid}",
+            )
+            if extension != "csv":
+                raise NesoUnexpectedBodyError(
+                    f"{dataset}: dump {rid} returned a {extension} body; a datastore dump is "
+                    "CSV text"
+                )
+        except (NesoDataPortalError, CsvBronzeError, httpx.HTTPError, OSError) as exc:
+            return MemberEvent(rid, "failed", detail=_safe_detail(exc))
+
+        request_params = _dump_provenance_params(
+            family.package,
+            package_payload,
+            resource,
+            dump,
+            dataset=dataset,
+            empty_capture=empty_capture,
+        )
+        if basis is not None and request_params["body_sha256"] == basis.body_sha256:
+            if stamp_path is not None:
+                _write_dump_stamp(stamp_path, rid, basis.body_sha256, end, dataset)
+            return MemberEvent(
+                rid, "unchanged", detail=f"dump body identical to newest capture {basis.body.name}"
+            )
+        response = RawResponse(
+            body=dump.body,
+            content_type=_CONTENT_TYPES["csv"],
+            source=self.source_name,
+            dataset=dataset,
+            request_url=dump.request_url,
+            request_params=request_params,
+            api_version="3",
+            http_status=dump.http_status,
+            data_date=end.date(),
+        )
+        return MemberEvent(rid, "captured", response, "csv")
+
+    def _dump_stamp_path(self, dataset: str, resource_id: str) -> Path:
+        """The check-stamp file of one dump member (ADR-035 P-7)."""
+        if self._data_paths is None:
+            raise RuntimeError("the dump leg needs bind_data_dir() first")
+        return self._data_paths.dump_check_dir(self.source_name, dataset) / f"{resource_id}.json"
 
     def _warn_unassigned(self, package: str, live: list[Any]) -> None:
         """Log, once per process, each live resource no family of ``package`` claims."""
@@ -1988,6 +2300,198 @@ def _declared_content_length(response: httpx.Response) -> int | None:
         return int(raw)
     except ValueError:
         return None
+
+
+class _DumpBody(NamedTuple):
+    """One downloaded datastore dump and what its final response said (ADR-035 P-3)."""
+
+    body: bytes
+    request_url: str
+    http_status: int
+    declared_length: int | None
+    last_modified_header: str | None
+
+
+def _verified_basis(candidate: Capture | None, dataset: str) -> Capture | None:
+    """P-8 (iv): ``candidate`` only if its body on disk still hashes to its record.
+
+    A streamed re-hash in 1 MiB chunks. A mismatch or a read error means no
+    basis, so the member is due and an identical body is captured: the dedup
+    fails open toward capture.
+    """
+    if candidate is None:
+        return None
+    digest = hashlib.sha256()
+    try:
+        with candidate.body.open("rb") as handle:
+            for chunk in iter(lambda: handle.read(_REHASH_CHUNK), b""):
+                digest.update(chunk)
+    except OSError as exc:
+        logger.warning(
+            "neso_data_portal/%s: cannot re-hash %s (%s); it is not a dedup basis",
+            dataset,
+            candidate.body.name,
+            exc,
+        )
+        return None
+    if digest.hexdigest() != candidate.body_sha256:
+        logger.warning(
+            "neso_data_portal/%s: %s no longer hashes to its recorded body_sha256; it is not "
+            "a dedup basis",
+            dataset,
+            candidate.body.name,
+        )
+        return None
+    return candidate
+
+
+def _read_dump_stamp(
+    stamp_path: Path, resource_id: str, body_sha256: str, dataset: str
+) -> datetime | None:
+    """Return an honoured check stamp's ``verified_at``, else ``None`` (ADR-035 P-7).
+
+    Honoured only when the file is a JSON object naming this resource and this
+    basis hash, with a tz-aware ``verified_at``. Anything else is ignored, with
+    a warning when the file exists.
+    """
+    try:
+        raw = stamp_path.read_bytes()
+    except FileNotFoundError:
+        return None
+    except OSError as exc:
+        logger.warning(
+            "neso_data_portal/%s: check stamp %s is unreadable (%s); ignored",
+            dataset,
+            stamp_path.name,
+            exc,
+        )
+        return None
+    problem: str | None = None
+    verified_at: datetime | None = None
+    try:
+        document: Any = json.loads(raw)
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        problem = "is not JSON"
+    else:
+        if not isinstance(document, dict):
+            problem = "is not a JSON object"
+        elif document.get("resource_id") != resource_id:
+            problem = "names another resource"
+        elif document.get("body_sha256") != body_sha256:
+            problem = "records another basis hash"
+        else:
+            verified_at = _parse_aware(document.get("verified_at"))
+            if verified_at is None:
+                problem = "has no tz-aware verified_at"
+    if problem is not None:
+        logger.warning(
+            "neso_data_portal/%s: check stamp %s %s; ignored", dataset, stamp_path.name, problem
+        )
+    return verified_at
+
+
+def _parse_aware(value: Any) -> datetime | None:
+    """Parse an ISO-8601 string to a tz-aware datetime; ``None`` for anything else."""
+    if not isinstance(value, str):
+        return None
+    try:
+        parsed = datetime.fromisoformat(value)
+    except ValueError:
+        return None
+    return parsed if parsed.utcoffset() is not None else None
+
+
+def _frozen_not_due(
+    basis: Capture | None, stamp_path: Path, resource_id: str, end: datetime, dataset: str
+) -> str | None:
+    """The frozen-class due rule (ADR-035 P-7); the not-due detail, or ``None`` if due.
+
+    Not due iff a verified basis exists and the latest of its ``written_at``
+    and an honoured stamp's ``verified_at``, ignoring any dated after
+    ``end.date()``, falls inside the 7-day cadence measured in ``end`` dates.
+    No CKAN field enters the rule.
+    """
+    if basis is None:
+        return None
+    end_date = end.astimezone(UTC).date()
+    candidates: list[tuple[datetime, str]] = [(basis.written_at, f"capture {basis.body.name}")]
+    verified_at = _read_dump_stamp(stamp_path, resource_id, basis.body_sha256, dataset)
+    if verified_at is not None:
+        candidates.append((verified_at, "check stamp"))
+    admissible = [item for item in candidates if item[0].astimezone(UTC).date() <= end_date]
+    if not admissible:
+        return None
+    latest, label = max(admissible, key=lambda item: item[0])
+    latest_date = latest.astimezone(UTC).date()
+    if latest_date <= end_date - _FROZEN_CADENCE:
+        return None
+    return (
+        f"not due: frozen-class dump, last verified {latest_date.isoformat()} ({label}), "
+        "inside the 7-day cadence (decision 11)"
+    )
+
+
+def _write_dump_stamp(
+    stamp_path: Path, resource_id: str, body_sha256: str, end: datetime, dataset: str
+) -> None:
+    """Record a byte-identical frozen-class check (ADR-035 P-7); never raises.
+
+    A failed write only leaves the clock older, so the member is due sooner.
+    """
+    document = {
+        "body_sha256": body_sha256,
+        "resource_id": resource_id,
+        "verified_at": end.astimezone(UTC).isoformat(),
+    }
+    data = (json.dumps(document, sort_keys=True) + "\n").encode("utf-8")
+    try:
+        stamp_path.parent.mkdir(parents=True, exist_ok=True)
+        files_module.replace_atomically(stamp_path, data)
+    except OSError as exc:
+        logger.warning(
+            "neso_data_portal/%s: could not write check stamp %s (%s); the member is due "
+            "on the next run",
+            dataset,
+            stamp_path.name,
+            exc,
+        )
+
+
+def _dump_provenance_params(
+    package: str,
+    package_payload: dict[str, Any],
+    resource: dict[str, Any],
+    dump: _DumpBody,
+    *,
+    dataset: str,
+    empty_capture: bool,
+) -> dict[str, Any]:
+    """Build a dump capture's ``request_params`` (ADR-035 P-5).
+
+    D-12's keys from :func:`_provenance_params`, with ``ckan_last_modified``
+    as the CKAN string or ``""`` (never ``"None"``) and ``resource_filename``
+    as the resource id (a dump has no vendor filename); then A's member keys,
+    and two evidence keys for the open class-3 questions:
+    ``ckan_metadata_modified`` and ``response_last_modified``.
+    """
+    params = _provenance_params(package, package_payload, resource, dump.body)
+    last_modified = resource.get("last_modified")
+    metadata_modified = resource.get("metadata_modified")
+    params["ckan_last_modified"] = last_modified if isinstance(last_modified, str) else ""
+    params["resource_filename"] = str(resource.get("id", ""))
+    params.update(
+        {
+            "capture_family": dataset,
+            "url_type": "datastore",
+            "empty_capture": empty_capture,
+            "declared_content_length": dump.declared_length,
+            "ckan_metadata_modified": (
+                metadata_modified if isinstance(metadata_modified, str) else ""
+            ),
+            "response_last_modified": dump.last_modified_header,
+        }
+    )
+    return params
 
 
 def _provenance_params(
