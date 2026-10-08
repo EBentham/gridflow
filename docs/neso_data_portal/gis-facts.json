@@ -1,0 +1,578 @@
+[
+  {
+    "body_sha256": "bf2e5c64a0c0bb4627beb70e2ab155795cc00645e78a4ac5f0eb3b907cdd6501",
+    "capture_id": "bronze/neso_data_portal/gis_grid_supply_points_files/2026/10/08/raw_20261008T110417Z_08534dae-5408-4e31-8639-b579c8f1c50b_bf2e5c64.geojson",
+    "layers": [
+      {
+        "bbox": [
+          5257.746900001002,
+          5180.0,
+          655964.9758,
+          1220372.9999999986
+        ],
+        "crs": "urn:ogc:def:crs:EPSG::27700",
+        "crs_source": "crs member",
+        "feature_count": 333,
+        "kind": "geojson",
+        "path": ""
+      }
+    ],
+    "package": "gis-boundaries-for-gb-grid-supply-points",
+    "resource_id": "08534dae-5408-4e31-8639-b579c8f1c50b"
+  },
+  {
+    "body_sha256": "18fa9cffdb7c4db1e1eedd09676edd1d82087ac7ae9a3b32ccc383686101c8b2",
+    "capture_id": "bronze/neso_data_portal/gis_gen_charging_zones_files/2026/10/08/raw_20261008T110401Z_102b90d8-db66-42d1-a305-1108b3384e62_18fa9cff.zip",
+    "layers": [
+      {
+        "bbox": [
+          -6.963220489449052,
+          0.0,
+          1.7641537971959256,
+          58.65245217705044
+        ],
+        "crs": "GCS_WGS_1984",
+        "crs_source": ".prj",
+        "feature_count": 28,
+        "kind": "shapefile",
+        "path": "TNUoSGenZones.shp"
+      }
+    ],
+    "package": "gis-boundaries-for-gb-generation-charging-zones",
+    "resource_id": "102b90d8-db66-42d1-a305-1108b3384e62"
+  },
+  {
+    "body_sha256": "871d0b42c05fef95e2f3d4db2393be969489fbca45079bf83d96d160643ca5c2",
+    "capture_id": "bronze/neso_data_portal/gis_dno_license_areas_files/2026/10/08/raw_20261008T110355Z_1c6a7dc0-1b6c-443a-bc67-5f7125649434_871d0b42.geojson",
+    "layers": [
+      {
+        "bbox": [
+          5257.746900001002,
+          5179.999999999767,
+          655964.9758000015,
+          1220372.9999999986
+        ],
+        "crs": "urn:ogc:def:crs:EPSG::27700",
+        "crs_source": "crs member",
+        "feature_count": 14,
+        "kind": "geojson",
+        "path": ""
+      }
+    ],
+    "package": "gis-boundaries-for-gb-dno-license-areas",
+    "resource_id": "1c6a7dc0-1b6c-443a-bc67-5f7125649434"
+  },
+  {
+    "body_sha256": "1d7a9c70d3c9890310a463cad58f336d4b1d02361bf0838f9750cfa6914180b5",
+    "capture_id": "bronze/neso_data_portal/gis_dno_license_areas_files/2026/10/08/raw_20261008T110343Z_46a7b674-49f9-4ad6-b778-df48f6736222_1d7a9c70.zip",
+    "layers": [
+      {
+        "bbox": [
+          5257.746900001002,
+          5179.999999999767,
+          655964.9758000015,
+          1220372.9999999986
+        ],
+        "crs": "British_National_Grid",
+        "crs_source": ".prj",
+        "feature_count": 14,
+        "kind": "shapefile",
+        "path": "DNO_License_Areas_20200506.shp"
+      }
+    ],
+    "package": "gis-boundaries-for-gb-dno-license-areas",
+    "resource_id": "46a7b674-49f9-4ad6-b778-df48f6736222"
+  },
+  {
+    "body_sha256": "81335bcf0ebb78d18ab31b9b3b73876cd1290687f36deb47f547b57d4166f364",
+    "capture_id": "bronze/neso_data_portal/tresp_demand_pathways_files/2026/10/08/raw_20261008T113944Z_4fdf4204-784f-4bab-aa81-f80480673dab_81335bcf.gpkg",
+    "layers": [
+      {
+        "bbox": [
+          5512.99849999975,
+          5336.96600000001,
+          655653.85,
+          1220301.502
+        ],
+        "crs": "EPSG:27700",
+        "crs_source": "gpkg_spatial_ref_sys",
+        "feature_count": 11,
+        "kind": "gpkg",
+        "path": "resp_boundaries_202511_bfc_27700"
+      }
+    ],
+    "package": "tresp-demand-pathways",
+    "resource_id": "4fdf4204-784f-4bab-aa81-f80480673dab"
+  },
+  {
+    "body_sha256": "390fd7d893702ce8d5906313613207a3eb474e646fdd59369acc7d586eff3d4f",
+    "capture_id": "bronze/neso_data_portal/gis_grid_supply_points_files/2026/10/08/raw_20261008T110411Z_506d99a3-d4f5-4dd8-9586-652047682ccc_390fd7d8.zip",
+    "layers": [
+      {
+        "bbox": [
+          5257.746900002006,
+          5179.999999996697,
+          655964.9758000036,
+          1220372.9999999972
+        ],
+        "crs": "British_National_Grid",
+        "crs_source": ".prj",
+        "feature_count": 329,
+        "kind": "shapefile",
+        "path": "GSP_regions_20181031.shp"
+      }
+    ],
+    "package": "gis-boundaries-for-gb-grid-supply-points",
+    "resource_id": "506d99a3-d4f5-4dd8-9586-652047682ccc"
+  },
+  {
+    "body_sha256": "1a07757853b13eddb67f98f8e1b143cfc2413a34c45fcfa12f9c1209ad107ef7",
+    "capture_id": "bronze/neso_data_portal/gis_gen_charging_zones_files/2026/10/08/raw_20261008T110404Z_539a04ea-8bf3-4366-a277-49812c651cfb_1a077578.geojson",
+    "layers": [
+      {
+        "bbox": [
+          -6.963220489449052,
+          49.946448656095164,
+          1.764153797195926,
+          58.65245217705044
+        ],
+        "crs": "urn:ogc:def:crs:OGC:1.3:CRS84",
+        "crs_source": "crs member",
+        "feature_count": 28,
+        "kind": "geojson",
+        "path": ""
+      }
+    ],
+    "package": "gis-boundaries-for-gb-generation-charging-zones",
+    "resource_id": "539a04ea-8bf3-4366-a277-49812c651cfb"
+  },
+  {
+    "body_sha256": "78d7850edfbbf12a964546e20ec99d0c7ee9b5a49a0d6de70373b6d171ac168f",
+    "capture_id": "bronze/neso_data_portal/tresp_demand_pathways_files/2026/10/08/raw_20261008T113941Z_59a5ec35-8fec-4b84-ba8c-236d97823178_78d7850e.gpkg",
+    "layers": [
+      {
+        "bbox": [
+          5257.746900001002,
+          6614.868999999453,
+          678215.5990350958,
+          1220372.999999998
+        ],
+        "crs": "EPSG:27700",
+        "crs_source": "gpkg_spatial_ref_sys",
+        "feature_count": 235,
+        "kind": "gpkg",
+        "path": "tRESP_gsp_areas"
+      }
+    ],
+    "package": "tresp-demand-pathways",
+    "resource_id": "59a5ec35-8fec-4b84-ba8c-236d97823178"
+  },
+  {
+    "body_sha256": "f4212403cb2f1a986dd640793217b284693d2a2ffd71f09191a9bb368277ef7d",
+    "capture_id": "bronze/neso_data_portal/gis_grid_supply_points_files/2026/10/08/raw_20261008T110436Z_5dfab3dd-f192-40ab-b97f-b365a594293c_f4212403.zip",
+    "layers": [
+      {
+        "bbox": [
+          -8.654726880980673,
+          49.87417088306407,
+          1.768353299986799,
+          60.86143560275777
+        ],
+        "crs": "EPSG:4326",
+        "crs_source": "gpkg_spatial_ref_sys",
+        "feature_count": 362,
+        "kind": "gpkg",
+        "path": "Proj_4326/GSP_regions_4326_20260209.gpkg::gsp_regions"
+      },
+      {
+        "bbox": [
+          -8.65472688,
+          49.87417088,
+          1.7683533,
+          60.8614356
+        ],
+        "crs": "urn:ogc:def:crs:OGC:1.3:CRS84",
+        "crs_source": "crs member",
+        "feature_count": 362,
+        "kind": "geojson",
+        "path": "Proj_4326/GSP_regions_4326_20260209.geojson"
+      },
+      {
+        "bbox": [
+          5257.746900001002,
+          6614.868999999453,
+          655964.9758,
+          1220372.999999999
+        ],
+        "crs": "EPSG:27700",
+        "crs_source": "gpkg_spatial_ref_sys",
+        "feature_count": 362,
+        "kind": "gpkg",
+        "path": "Proj_27700/GSP_regions_27700_20260209.gpkg::gsp_regions"
+      },
+      {
+        "bbox": [
+          5257.7469,
+          6614.869,
+          655964.9758,
+          1220373.0
+        ],
+        "crs": "urn:ogc:def:crs:EPSG::27700",
+        "crs_source": "crs member",
+        "feature_count": 362,
+        "kind": "geojson",
+        "path": "Proj_27700/GSP_regions_27700_20260209.geojson"
+      }
+    ],
+    "package": "gis-boundaries-for-gb-grid-supply-points",
+    "resource_id": "5dfab3dd-f192-40ab-b97f-b365a594293c"
+  },
+  {
+    "body_sha256": "83f5cb9241f9d493bde404a9712d82bbd2fc9e780b1a5e0f5c96c4c3ac3dd358",
+    "capture_id": "bronze/neso_data_portal/gis_dno_license_areas_files/2026/10/08/raw_20261008T110351Z_668df251-b8a5-4ac3-8427-20b93b2f5f67_83f5cb92.zip",
+    "layers": [
+      {
+        "bbox": [
+          5257.746900001002,
+          5179.999999999767,
+          655964.9758000015,
+          1220372.9999999986
+        ],
+        "crs": "British_National_Grid",
+        "crs_source": ".prj",
+        "feature_count": 14,
+        "kind": "shapefile",
+        "path": "GB DNO License Areas 20240503 as ESRI Shape File.shp"
+      }
+    ],
+    "package": "gis-boundaries-for-gb-dno-license-areas",
+    "resource_id": "668df251-b8a5-4ac3-8427-20b93b2f5f67"
+  },
+  {
+    "body_sha256": "51abd72e24dd95938f747749aeec1fafa7eb4b32517e1fae0bbf3bb8b49aeecd",
+    "capture_id": "bronze/neso_data_portal/ssep_publication_zones_files/2026/10/08/raw_20261008T112658Z_6a9ce615-b791-46fd-8a8f-dd7b1c847c10_51abd72e.zip",
+    "layers": [
+      {
+        "bbox": [
+          -366362.5137,
+          -243836.70659999922,
+          750946.9402000001,
+          1557813.3973000012
+        ],
+        "crs": "British_National_Grid",
+        "crs_source": ".prj",
+        "feature_count": 19,
+        "kind": "shapefile",
+        "path": "offshore_publication_zones_v5_clipped_to_coastline/marine_publication_zones_v5_clipped_to_coastline.shp"
+      }
+    ],
+    "package": "ssep-onshore-publication-zone-shapefile",
+    "resource_id": "6a9ce615-b791-46fd-8a8f-dd7b1c847c10"
+  },
+  {
+    "body_sha256": "5427bfd6d4da2b3aa11b569a457bed04e105270a1658343ed9a1bdf27737abbe",
+    "capture_id": "bronze/neso_data_portal/gis_grid_supply_points_files/2026/10/08/raw_20261008T110420Z_8100d4f2-9a55-41cb-bc3c-c190de7aa0dc_5427bfd6.zip",
+    "layers": [
+      {
+        "bbox": [
+          5257.746900001002,
+          5180.0,
+          655964.9758,
+          1220372.9999999986
+        ],
+        "crs": "British_National_Grid",
+        "crs_source": ".prj",
+        "feature_count": 333,
+        "kind": "shapefile",
+        "path": "GSP_regions_20220314.shp"
+      }
+    ],
+    "package": "gis-boundaries-for-gb-grid-supply-points",
+    "resource_id": "8100d4f2-9a55-41cb-bc3c-c190de7aa0dc"
+  },
+  {
+    "body_sha256": "f4d8a4b1982d30edaa3736ac8a74f5b1428f81e04d74a98f1435ee192fa0e7e6",
+    "capture_id": "bronze/neso_data_portal/gis_grid_supply_points_files/2026/10/08/raw_20261008T110414Z_a3ed5711-407a-42a9-a63a-011615eea7e0_f4d8a4b1.geojson",
+    "layers": [
+      {
+        "bbox": [
+          5257.746900002006,
+          5179.999999996697,
+          655964.9758000036,
+          1220372.9999999972
+        ],
+        "crs": "urn:ogc:def:crs:EPSG::27700",
+        "crs_source": "crs member",
+        "feature_count": 329,
+        "kind": "geojson",
+        "path": ""
+      }
+    ],
+    "package": "gis-boundaries-for-gb-grid-supply-points",
+    "resource_id": "a3ed5711-407a-42a9-a63a-011615eea7e0"
+  },
+  {
+    "body_sha256": "7d5fd8e694d6964ede97e6275a7531dcfed57d51fa89edaa6460b3cb0261b02b",
+    "capture_id": "bronze/neso_data_portal/ssep_publication_zones_files/2026/10/08/raw_20261008T112656Z_aa824951-880f-44cc-ac5c-7b5569dd1423_7d5fd8e6.zip",
+    "layers": [
+      {
+        "bbox": [
+          54247.034099999815,
+          7054.101999999955,
+          655653.8635,
+          1218618.0724999998
+        ],
+        "crs": "British_National_Grid",
+        "crs_source": ".prj",
+        "feature_count": 19,
+        "kind": "shapefile",
+        "path": "onshore_publication_zones_v4_MASTER_SIMPLIFIED/onshore_publication_zones_v4_MASTER_SIMPLIFIED.shp"
+      }
+    ],
+    "package": "ssep-onshore-publication-zone-shapefile",
+    "resource_id": "aa824951-880f-44cc-ac5c-7b5569dd1423"
+  },
+  {
+    "body_sha256": "cf83cfe21dd76c0c3eb0f17501f1c368a7a3d51c07b96f2cacc87fff4af89e26",
+    "capture_id": "bronze/neso_data_portal/gis_grid_supply_points_files/2026/10/08/raw_20261008T110433Z_c5647312-afab-4a58-8158-2f1efed1d7fc_cf83cfe2.zip",
+    "layers": [
+      {
+        "bbox": [
+          -8.654726880980673,
+          49.874170883064075,
+          1.7683532999867995,
+          60.86143560275777
+        ],
+        "crs": "GCS_WGS_1984",
+        "crs_source": ".prj",
+        "feature_count": 353,
+        "kind": "shapefile",
+        "path": "Proj_4326/GSP_regions_4326_20251204.zip::GSP_regions_4326_20251204.shp"
+      },
+      {
+        "bbox": [
+          -8.65472688,
+          49.87417088,
+          1.7683533,
+          60.8614356
+        ],
+        "crs": "urn:ogc:def:crs:OGC:1.3:CRS84",
+        "crs_source": "crs member",
+        "feature_count": 353,
+        "kind": "geojson",
+        "path": "Proj_4326/GSP_regions_4326_20251204.geojson"
+      },
+      {
+        "bbox": [
+          5257.746900001002,
+          6614.868999999453,
+          655964.9758,
+          1220372.9999999986
+        ],
+        "crs": "British_National_Grid",
+        "crs_source": ".prj",
+        "feature_count": 353,
+        "kind": "shapefile",
+        "path": "Proj_27700/GSP_regions_27700_20251204.zip::GSP_regions_27700_20251204.shp"
+      },
+      {
+        "bbox": [
+          5257.7469,
+          6614.869,
+          655964.9758,
+          1220373.0
+        ],
+        "crs": "urn:ogc:def:crs:EPSG::27700",
+        "crs_source": "crs member",
+        "feature_count": 353,
+        "kind": "geojson",
+        "path": "Proj_27700/GSP_regions_27700_20251204.geojson"
+      }
+    ],
+    "package": "gis-boundaries-for-gb-grid-supply-points",
+    "resource_id": "c5647312-afab-4a58-8158-2f1efed1d7fc"
+  },
+  {
+    "body_sha256": "e3d0e75305f7e49ef4a261d631381f2c0fc0d52aa5e8fc554f7e54870ab45b15",
+    "capture_id": "bronze/neso_data_portal/gis_grid_supply_points_files/2026/10/08/raw_20261008T110424Z_c798be82-d2eb-470c-a921-05f1ed91c727_e3d0e753.zip",
+    "layers": [
+      {
+        "bbox": [
+          -8.654726880980673,
+          49.874170883064075,
+          1.7683532999867995,
+          60.86143560275777
+        ],
+        "crs": "GCS_WGS_1984",
+        "crs_source": ".prj",
+        "feature_count": 340,
+        "kind": "shapefile",
+        "path": "Proj_4326/GSP_regions_20250102.zip::GSP_regions_20250102.shp"
+      },
+      {
+        "bbox": [
+          -8.65472688,
+          49.87417088,
+          1.7683533,
+          60.8614356
+        ],
+        "crs": "urn:ogc:def:crs:OGC:1.3:CRS84",
+        "crs_source": "crs member",
+        "feature_count": 340,
+        "kind": "geojson",
+        "path": "Proj_4326/GSP_regions_4326_20250102.geojson"
+      },
+      {
+        "bbox": [
+          5257.746900001002,
+          6614.868999999453,
+          655964.9758,
+          1220372.9999999986
+        ],
+        "crs": "British_National_Grid",
+        "crs_source": ".prj",
+        "feature_count": 340,
+        "kind": "shapefile",
+        "path": "Proj_27700/GSP_regions_20250102.zip::GSP_regions_20250102.shp"
+      },
+      {
+        "bbox": [
+          5257.7469,
+          6614.869,
+          655964.9758,
+          1220373.0
+        ],
+        "crs": "urn:ogc:def:crs:EPSG::27700",
+        "crs_source": "crs member",
+        "feature_count": 340,
+        "kind": "geojson",
+        "path": "Proj_27700/GSP_regions_27700_20250102.geojson"
+      }
+    ],
+    "package": "gis-boundaries-for-gb-grid-supply-points",
+    "resource_id": "c798be82-d2eb-470c-a921-05f1ed91c727"
+  },
+  {
+    "body_sha256": "2e978527e2daf32ae5032ede6abddb5211ff986fa443dc240e78044f52ff9270",
+    "capture_id": "bronze/neso_data_portal/ssep_publication_zones_files/2026/10/08/raw_20261008T112701Z_d5b5e32e-e605-4823-b29c-312ab12f37cd_2e978527.zip",
+    "layers": [
+      {
+        "bbox": [
+          5257.746899999678,
+          6614.869000000879,
+          655964.9758000001,
+          1220373.0
+        ],
+        "crs": "British_National_Grid",
+        "crs_source": ".prj",
+        "feature_count": 17,
+        "kind": "shapefile",
+        "path": "ssep_economic_zones_MASTER/ssep_economic_zones_MASTER.shp"
+      }
+    ],
+    "package": "ssep-onshore-publication-zone-shapefile",
+    "resource_id": "d5b5e32e-e605-4823-b29c-312ab12f37cd"
+  },
+  {
+    "body_sha256": "3385f2612416f79851932a4a371ea91bf87b314f204452e9f51d825aa490022e",
+    "capture_id": "bronze/neso_data_portal/gis_grid_supply_points_files/2026/10/08/raw_20261008T110426Z_d95e8c1b-9cd9-41dd-aacb-4b53b8c07c20_3385f261.zip",
+    "layers": [
+      {
+        "bbox": [
+          -8.654726880980673,
+          49.874170883064075,
+          1.7683532999867995,
+          60.86143560275777
+        ],
+        "crs": "GCS_WGS_1984",
+        "crs_source": ".prj",
+        "feature_count": 349,
+        "kind": "shapefile",
+        "path": "Proj_4326/GSP_regions_20250109.zip::GSP_regions_20250109.shp"
+      },
+      {
+        "bbox": [
+          -8.65472688,
+          49.87417088,
+          1.7683533,
+          60.8614356
+        ],
+        "crs": "urn:ogc:def:crs:OGC:1.3:CRS84",
+        "crs_source": "crs member",
+        "feature_count": 349,
+        "kind": "geojson",
+        "path": "Proj_4326/GSP_regions_4326_20250109.geojson"
+      },
+      {
+        "bbox": [
+          5257.7469,
+          6614.869,
+          655964.9758,
+          1220373.0
+        ],
+        "crs": "urn:ogc:def:crs:EPSG::27700",
+        "crs_source": "crs member",
+        "feature_count": 349,
+        "kind": "geojson",
+        "path": "Proj_27700/GSP_regions_27700_20250109.geojson"
+      },
+      {
+        "bbox": [
+          5257.746900001002,
+          6614.868999999453,
+          655964.9758,
+          1220372.9999999986
+        ],
+        "crs": "British_National_Grid",
+        "crs_source": ".prj",
+        "feature_count": 349,
+        "kind": "shapefile",
+        "path": "Proj_27700/GSP_regions_20250109.zip::GSP_regions_20250109.shp"
+      }
+    ],
+    "package": "gis-boundaries-for-gb-grid-supply-points",
+    "resource_id": "d95e8c1b-9cd9-41dd-aacb-4b53b8c07c20"
+  },
+  {
+    "body_sha256": "0e6dbd110a5d87cd53982dc0a5fdf80badb3c86d5ab10c8c4702fcbbc02f6433",
+    "capture_id": "bronze/neso_data_portal/etys_boundaries_files/2026/10/08/raw_20261008T105253Z_e914fcec-1dc9-4f1f-97e7-59c0d9521bea_0e6dbd11.zip",
+    "layers": [
+      {
+        "bbox": [
+          -815124.4696802108,
+          6482471.494731223,
+          333571.19147581735,
+          8247249.603765618
+        ],
+        "crs": "WGS_1984_Web_Mercator_Auxiliary_Sphere",
+        "crs_source": ".prj",
+        "feature_count": 34,
+        "kind": "shapefile",
+        "path": "ETYS boundary GIS data Mar25.shp"
+      }
+    ],
+    "package": "etys-gb-transmission-system-boundaries",
+    "resource_id": "e914fcec-1dc9-4f1f-97e7-59c0d9521bea"
+  },
+  {
+    "body_sha256": "fca19fbc551376a84f402e4ceef02fff1452fcbf9d9d91c0e5884d611456710b",
+    "capture_id": "bronze/neso_data_portal/gis_dno_license_areas_files/2026/10/08/raw_20261008T110348Z_e96db306-aaa8-45be-aecd-65b34d38923a_fca19fbc.geojson",
+    "layers": [
+      {
+        "bbox": [
+          5257.746900001002,
+          5179.999999999767,
+          655964.9758000015,
+          1220372.9999999986
+        ],
+        "crs": "urn:ogc:def:crs:EPSG::27700",
+        "crs_source": "crs member",
+        "feature_count": 14,
+        "kind": "geojson",
+        "path": ""
+      }
+    ],
+    "package": "gis-boundaries-for-gb-dno-license-areas",
+    "resource_id": "e96db306-aaa8-45be-aecd-65b34d38923a"
+  }
+]
