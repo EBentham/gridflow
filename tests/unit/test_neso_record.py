@@ -458,3 +458,32 @@ class TestSeededRegistry:
             document = json.loads(item.read_text(encoding="utf-8"))
             assert all("record" not in fam for fam in document["families"]), item.name
             assert all("children" not in res for res in document["resources"]), item.name
+
+
+class TestDumpVintageRule:
+    """T-D3-3 (ADR-035 P-10): a family holding a dump takes ``capture_fallback`` only."""
+
+    @staticmethod
+    def _evidenced() -> dict[str, Any]:
+        issue = {"kind": "filename_token", "pattern": r"^(\d{12})_f\.csv$", "format": "%Y%m%d%H%M"}
+        return record(
+            epochs=[epoch(sp_columns(), issue=issue)],
+            entity_key=("settlement_date", "settlement_period", "unit", "issue_time"),
+            vintage="issue_time_evidenced",
+            vintage_evidence="the filename token is the vendor issue instant",
+        )
+
+    def test_d3_3_datastore_family_with_issue_time_evidenced_is_refused(
+        self, tmp_path: Path
+    ) -> None:
+        """Detects a dump family loading with a vendor clock nothing evidences (red on master)."""
+        resources = [resource(R1, "Series", "gen_series", url_type="datastore")]
+        message = _refused(tmp_path, "V-8", self._evidenced(), resources=resources)
+        assert "capture_fallback" in message and "ADR-035" in message
+
+    def test_d3_3_controls_load(self, tmp_path: Path) -> None:
+        """The same record loads on an upload family; ``capture_fallback`` loads on a dump."""
+        assert _load(tmp_path / "a", self._evidenced()).families["gen_series"][1].record
+        resources = [resource(R1, "Series", "gen_series", url_type="datastore")]
+        loaded = _load(tmp_path / "b", record(vintage="capture_fallback"), resources=resources)
+        assert loaded.families["gen_series"][1].record is not None

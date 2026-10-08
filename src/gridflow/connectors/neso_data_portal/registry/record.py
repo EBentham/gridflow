@@ -427,6 +427,12 @@ def validate_record(
         raise _fail("V-8", "whole_capture selection cannot take issue_time_evidenced")
     if record.vintage == "ckan_last_modified" and "datastore" in family_url_types:
         raise _fail("V-8", "a family holding a datastore resource cannot take ckan_last_modified")
+    if record.vintage == "issue_time_evidenced" and "datastore" in family_url_types:
+        raise _fail(
+            "V-8",
+            "a family holding a datastore resource takes capture_fallback until unit D's "
+            "evidence switches it (ADR-035)",
+        )
 
     for sibling in record.siblings:
         if sibling == key or sibling not in package_families:

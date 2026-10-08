@@ -1283,3 +1283,40 @@ class TestDumpVintage:
         assert ledger["outcome"].to_list() == ["populated", "populated"]
         assert sorted(ledger["row_count"].to_list()) == [1, 2]
         assert reconcile(data_dir, registry, [FAMILY], end.date()).gaps == ()
+
+    def test_d3_5_a_lagging_registry_cannot_date_a_dump(
+        self,
+        router: respx.MockRouter,
+        clock: FakeClock,
+        data_dir: Path,
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        """T-D3-5: detects a dump capture read under ``issue_time_evidenced`` (P-10 run time)."""
+        from _neso_registry_support import epoch, record, sp_columns
+
+        from gridflow.connectors.neso_data_portal.registry import SchemaRecord
+        from gridflow.silver.neso_data_portal.completion import (
+            CaptureContextError,
+            capture_context,
+        )
+
+        registry = _install(tmp_path, monkeypatch)
+        server = _Server(router, clock, [_live()])
+        server.serve(DUMP_URL, BODY_P)
+        _consume(data_dir)
+        (capture,) = scan_dataset(data_dir / "bronze" / SOURCE / FAMILY, registry).captures
+        issue = {"kind": "filename_token", "pattern": r"^(\d{12})_f\.csv$", "format": "%Y%m%d%H%M"}
+        lagging = SchemaRecord.model_validate(
+            record(
+                epochs=[epoch(sp_columns(), issue=issue)],
+                entity_key=("settlement_date", "settlement_period", "unit", "issue_time"),
+                vintage="issue_time_evidenced",
+                vintage_evidence="a lagging registry",
+            )
+        )
+        with pytest.raises(CaptureContextError, match="datastore"):
+            capture_context(capture, lagging, data_dir)
+        fallback = SchemaRecord.model_validate(record(vintage="capture_fallback"))
+        context = capture_context(capture, fallback, data_dir)
+        assert context.published_at is None and context.url_type == "datastore"

@@ -226,8 +226,9 @@ def capture_context(capture: Capture, record: SchemaRecord, data_dir: Path) -> C
         The capture's context.
 
     Raises:
-        CaptureContextError: Under ``ckan_last_modified``, a ``datastore``
-            sidecar (decision 9) or a ``last_modified`` that
+        CaptureContextError: A ``datastore`` sidecar under any vintage but
+            ``capture_fallback`` (decision 9, ADR-035 P-10), or, under
+            ``ckan_last_modified``, a ``last_modified`` that
             ``provenance_for`` rejects.
     """
     meta: Any = json.loads(capture.sidecar.read_text(encoding="utf-8"))
@@ -236,12 +237,14 @@ def capture_context(capture: Capture, record: SchemaRecord, data_dir: Path) -> C
     raw_url_type = params.get("url_type")
     url_type = raw_url_type if isinstance(raw_url_type, str) else None
     published_at: datetime | None = None
+    if url_type == "datastore" and record.vintage != "capture_fallback":
+        # ADR-035 P-10: guards a registry that lags a live url_type change.
+        raise CaptureContextError(
+            f"{capture_id}: a datastore capture has no file last_modified and no evidenced "
+            f"issue time; the record's vintage {record.vintage} cannot apply, only "
+            "capture_fallback (decision 9, ADR-035)"
+        )
     if record.vintage == "ckan_last_modified":
-        if url_type == "datastore":
-            raise CaptureContextError(
-                f"{capture_id}: a datastore capture has no file last_modified; the record's "
-                "vintage ckan_last_modified cannot apply (decision 9)"
-            )
         provenance = provenance_for(capture.body)
         if provenance is None:
             raise CaptureContextError(
