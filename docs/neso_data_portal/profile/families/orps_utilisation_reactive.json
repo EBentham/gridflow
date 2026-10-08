@@ -1,0 +1,6408 @@
+{
+  "archetype": "SER",
+  "batch": "AS-3",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/orps_utilisation_reactive/2026/10/08/raw_20261008T111558Z_a61c6c26-62ec-41e1-ae25-ed95f4562274_b9e76522.csv",
+      "ckan_last_modified": "2025-02-14T13:27:21.557694",
+      "cr": 0,
+      "crlf": 244,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "a61c6c26-62ec-41e1-ae25-ed95f4562274",
+      "rows": 243,
+      "sampled": false,
+      "size": 259336,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:15:58.937852+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/orps_utilisation_reactive/2026/10/08/raw_20261008T111602Z_528b03d2-4008-4b65-a732-a001cd835a3b_e6a485d3.csv",
+      "ckan_last_modified": "2026-10-07T15:58:09.723806",
+      "cr": 0,
+      "crlf": 19131,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "528b03d2-4008-4b65-a732-a001cd835a3b",
+      "rows": 19130,
+      "sampled": false,
+      "size": 852298,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:16:02.015210+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 1,
+      "columns": {
+        "Apr 20 - LAG": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 156
+          },
+          "examples": [
+            "198",
+            "4038.75",
+            "466.7"
+          ],
+          "max_len": 7,
+          "null_count": 54,
+          "shapes": {
+            "decimal": 156,
+            "int": 33
+          }
+        },
+        "Apr 20 - TOTAL": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 168
+          },
+          "examples": [
+            "4513.7",
+            "38141.28",
+            "2677.1"
+          ],
+          "max_len": 8,
+          "null_count": 54,
+          "shapes": {
+            "decimal": 168,
+            "int": 21
+          }
+        },
+        "Apr 20 -LEAD": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 166
+          },
+          "examples": [
+            "4315.7",
+            "34102.53",
+            "2210.4"
+          ],
+          "max_len": 9,
+          "null_count": 54,
+          "shapes": {
+            "decimal": 166,
+            "int": 23
+          }
+        },
+        "Apr 21 - LAG": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 171
+          },
+          "examples": [
+            "3331.69",
+            "5756.49",
+            "192.7"
+          ],
+          "max_len": 8,
+          "null_count": 45,
+          "shapes": {
+            "decimal": 171,
+            "int": 27
+          }
+        },
+        "Apr 21 - TOTAL": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 177
+          },
+          "examples": [
+            "10898.21",
+            "44357.13",
+            "990.7"
+          ],
+          "max_len": 8,
+          "null_count": 45,
+          "shapes": {
+            "decimal": 177,
+            "int": 21
+          }
+        },
+        "Apr 21 -LEAD": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 178
+          },
+          "examples": [
+            "7566.52",
+            "38600.64",
+            "798"
+          ],
+          "max_len": 8,
+          "null_count": 45,
+          "shapes": {
+            "decimal": 178,
+            "int": 20
+          }
+        },
+        "Apr 22 - LAG": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 164
+          },
+          "examples": [
+            "1206.47",
+            "5078.61",
+            "3651.8"
+          ],
+          "max_len": 8,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 164,
+            "int": 72
+          }
+        },
+        "Apr 22 - LEAD": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 183
+          },
+          "examples": [
+            "3660.2",
+            "28101.06",
+            "14721"
+          ],
+          "max_len": 8,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 183,
+            "int": 53
+          }
+        },
+        "Apr 22 - Total": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 188
+          },
+          "examples": [
+            "4866.67",
+            "33179.67",
+            "18372.8"
+          ],
+          "max_len": 8,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 188,
+            "int": 48
+          }
+        },
+        "Apr 23 - LAG": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 181
+          },
+          "examples": [
+            "438.77",
+            "11075.04",
+            "918.8"
+          ],
+          "max_len": 8,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 181,
+            "int": 55
+          }
+        },
+        "Apr 23 - LEAD": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 188
+          },
+          "examples": [
+            "6512.53",
+            "20488.32",
+            "43580"
+          ],
+          "max_len": 9,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 188,
+            "int": 48
+          }
+        },
+        "Apr 23 - Total": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 195
+          },
+          "examples": [
+            "6951.3",
+            "31563.36",
+            "44498.8"
+          ],
+          "max_len": 9,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 195,
+            "int": 41
+          }
+        },
+        "Apr 24 - LAG": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 197
+          },
+          "examples": [
+            "163.96",
+            "5212.44",
+            "835.1"
+          ],
+          "max_len": 8,
+          "null_count": 6,
+          "shapes": {
+            "decimal": 197,
+            "int": 40
+          }
+        },
+        "Apr 24 - LEAD": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 206
+          },
+          "examples": [
+            "1230.87",
+            "29438.19",
+            "54115.2"
+          ],
+          "max_len": 9,
+          "null_count": 6,
+          "shapes": {
+            "decimal": 206,
+            "int": 31
+          }
+        },
+        "Apr 24 - Total": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 214
+          },
+          "examples": [
+            "1394.83",
+            "34650.63",
+            "54950.3"
+          ],
+          "max_len": 9,
+          "null_count": 6,
+          "shapes": {
+            "decimal": 214,
+            "int": 23
+          }
+        },
+        "Aug 20 - LAG": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 152
+          },
+          "examples": [
+            "1245.7",
+            "4244.94",
+            "5356.2"
+          ],
+          "max_len": 7,
+          "null_count": 54,
+          "shapes": {
+            "decimal": 152,
+            "int": 37
+          }
+        },
+        "Aug 20 - TOTAL": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 157
+          },
+          "examples": [
+            "16408.7",
+            "31731.57",
+            "17841.5"
+          ],
+          "max_len": 8,
+          "null_count": 54,
+          "shapes": {
+            "decimal": 157,
+            "int": 32
+          }
+        },
+        "Aug 20 -LEAD": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 156
+          },
+          "examples": [
+            "15163",
+            "27486.63",
+            "12485.3"
+          ],
+          "max_len": 8,
+          "null_count": 54,
+          "shapes": {
+            "decimal": 156,
+            "int": 33
+          }
+        },
+        "Aug 21 - LAG": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 166
+          },
+          "examples": [
+            "0",
+            "1533.42",
+            "4014.6"
+          ],
+          "max_len": 8,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 166,
+            "int": 70
+          }
+        },
+        "Aug 21 - TOTAL": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 174
+          },
+          "examples": [
+            "0",
+            "70759.17",
+            "11884.9"
+          ],
+          "max_len": 9,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 174,
+            "int": 62
+          }
+        },
+        "Aug 21 -LEAD": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 173
+          },
+          "examples": [
+            "0",
+            "69225.75",
+            "7870.3"
+          ],
+          "max_len": 9,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 173,
+            "int": 63
+          }
+        },
+        "Aug 22 - LAG": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 170
+          },
+          "examples": [
+            "487.89",
+            "0",
+            "1752.3"
+          ],
+          "max_len": 7,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 170,
+            "int": 66
+          }
+        },
+        "Aug 22 - LEAD": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 178
+          },
+          "examples": [
+            "14999.71",
+            "0",
+            "48202.7"
+          ],
+          "max_len": 9,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 178,
+            "int": 58
+          }
+        },
+        "Aug 22 - Total": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 176
+          },
+          "examples": [
+            "15487.6",
+            "0",
+            "49955"
+          ],
+          "max_len": 9,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 176,
+            "int": 60
+          }
+        },
+        "Aug 23 - LAG": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 173
+          },
+          "examples": [
+            "1399.06",
+            "3664.62",
+            "361.9"
+          ],
+          "max_len": 8,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 173,
+            "int": 63
+          }
+        },
+        "Aug 23 - LEAD": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 174
+          },
+          "examples": [
+            "11530.5",
+            "54080.01",
+            "4194.6"
+          ],
+          "max_len": 9,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 174,
+            "int": 62
+          }
+        },
+        "Aug 23 - Total": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 182
+          },
+          "examples": [
+            "12929.56",
+            "57744.63",
+            "4556.5"
+          ],
+          "max_len": 8,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 182,
+            "int": 54
+          }
+        },
+        "Aug 24 - LAG": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 186
+          },
+          "examples": [
+            "0",
+            "2063.85",
+            "496.94"
+          ],
+          "max_len": 8,
+          "null_count": 6,
+          "shapes": {
+            "decimal": 186,
+            "int": 51
+          }
+        },
+        "Aug 24 - LEAD": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 193
+          },
+          "examples": [
+            "0",
+            "1412.25",
+            "6870.52"
+          ],
+          "max_len": 9,
+          "null_count": 6,
+          "shapes": {
+            "decimal": 193,
+            "int": 44
+          }
+        },
+        "Aug 24 - Total": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 197
+          },
+          "examples": [
+            "0",
+            "3476.1",
+            "6870.52"
+          ],
+          "max_len": 9,
+          "null_count": 6,
+          "shapes": {
+            "decimal": 197,
+            "int": 40
+          }
+        },
+        "Company": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 243,
+            "int64": 243
+          },
+          "examples": [
+            "NATP",
+            "CDCL",
+            "CLAN"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "text": 243
+          }
+        },
+        "Dec 20 - LAG": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 172
+          },
+          "examples": [
+            "1787.8",
+            "9774.63",
+            "8960.2"
+          ],
+          "max_len": 8,
+          "null_count": 45,
+          "shapes": {
+            "decimal": 172,
+            "int": 26
+          }
+        },
+        "Dec 20 - TOTAL": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 181
+          },
+          "examples": [
+            "7757",
+            "26427.33",
+            "14434.2"
+          ],
+          "max_len": 8,
+          "null_count": 45,
+          "shapes": {
+            "decimal": 181,
+            "int": 17
+          }
+        },
+        "Dec 20 -LEAD": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 176
+          },
+          "examples": [
+            "5969.2",
+            "16652.7",
+            "5474"
+          ],
+          "max_len": 8,
+          "null_count": 45,
+          "shapes": {
+            "decimal": 176,
+            "int": 22
+          }
+        },
+        "Dec 21 - LAG": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 171
+          },
+          "examples": [
+            "1191.84",
+            "5945.85",
+            "10526.1"
+          ],
+          "max_len": 8,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 171,
+            "int": 65
+          }
+        },
+        "Dec 21 - LEAD": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 185
+          },
+          "examples": [
+            "12598.61",
+            "30840.3",
+            "7290.3"
+          ],
+          "max_len": 8,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 185,
+            "int": 51
+          }
+        },
+        "Dec 21 - Total": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 185
+          },
+          "examples": [
+            "13790.45",
+            "36786.15",
+            "17816.4"
+          ],
+          "max_len": 8,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 185,
+            "int": 51
+          }
+        },
+        "Dec 22 - LAG": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 187
+          },
+          "examples": [
+            "1300.49",
+            "17508.96",
+            "4.5"
+          ],
+          "max_len": 8,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 187,
+            "int": 49
+          }
+        },
+        "Dec 22 - LEAD": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 194
+          },
+          "examples": [
+            "6799.88",
+            "22060.17",
+            "6.5"
+          ],
+          "max_len": 8,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 194,
+            "int": 42
+          }
+        },
+        "Dec 22 - Total": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 195
+          },
+          "examples": [
+            "8100.37",
+            "39569.13",
+            "11"
+          ],
+          "max_len": 9,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 195,
+            "int": 41
+          }
+        },
+        "Dec 23 - LAG": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 191
+          },
+          "examples": [
+            "859.7",
+            "8088.57",
+            "4533.3"
+          ],
+          "max_len": 8,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 191,
+            "int": 45
+          }
+        },
+        "Dec 23 - LEAD": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 206
+          },
+          "examples": [
+            "5070.07",
+            "13341.06",
+            "33695.2"
+          ],
+          "max_len": 8,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 206,
+            "int": 30
+          }
+        },
+        "Dec 23 - Total": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 215
+          },
+          "examples": [
+            "5929.77",
+            "21429.63",
+            "38228.5"
+          ],
+          "max_len": 8,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 215,
+            "int": 21
+          }
+        },
+        "Dec 24 - LAG": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 186
+          },
+          "examples": [
+            "0",
+            "4637.88",
+            "5213.7"
+          ],
+          "max_len": 8,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 186,
+            "int": 57
+          }
+        },
+        "Dec 24 - LEAD": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 188
+          },
+          "examples": [
+            "0",
+            "4364.1",
+            "11288.4"
+          ],
+          "max_len": 9,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 188,
+            "int": 55
+          }
+        },
+        "Dec 24 - Total": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 199
+          },
+          "examples": [
+            "0",
+            "9001.98",
+            "16502.1"
+          ],
+          "max_len": 9,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 199,
+            "int": 44
+          }
+        },
+        "Default/Market": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 243,
+            "int64": 243
+          },
+          "examples": [
+            "D"
+          ],
+          "max_len": 1,
+          "null_count": 0,
+          "shapes": {
+            "text": 243
+          }
+        },
+        "Feb 21 - LAG": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 175
+          },
+          "examples": [
+            "758.57",
+            "17085.06",
+            "7952.2"
+          ],
+          "max_len": 8,
+          "null_count": 45,
+          "shapes": {
+            "decimal": 175,
+            "int": 23
+          }
+        },
+        "Feb 21 - TOTAL": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 180
+          },
+          "examples": [
+            "6551.64",
+            "28682.55",
+            "18634"
+          ],
+          "max_len": 8,
+          "null_count": 45,
+          "shapes": {
+            "decimal": 180,
+            "int": 18
+          }
+        },
+        "Feb 21 -LEAD": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 172
+          },
+          "examples": [
+            "5793.07",
+            "11597.49",
+            "10681.8"
+          ],
+          "max_len": 8,
+          "null_count": 45,
+          "shapes": {
+            "decimal": 172,
+            "int": 26
+          }
+        },
+        "Feb 22 - LAG": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 170
+          },
+          "examples": [
+            "1140.77",
+            "8539.02",
+            "5079.2"
+          ],
+          "max_len": 8,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 170,
+            "int": 66
+          }
+        },
+        "Feb 22 - LEAD": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 182
+          },
+          "examples": [
+            "4967.34",
+            "14799.96",
+            "6516.6"
+          ],
+          "max_len": 8,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 182,
+            "int": 54
+          }
+        },
+        "Feb 22 - Total": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 189
+          },
+          "examples": [
+            "6108.11",
+            "23338.98",
+            "11595.8"
+          ],
+          "max_len": 8,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 189,
+            "int": 47
+          }
+        },
+        "Feb 23 - LAG": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 185
+          },
+          "examples": [
+            "2158.19",
+            "6130.35",
+            "880.7"
+          ],
+          "max_len": 8,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 185,
+            "int": 51
+          }
+        },
+        "Feb 23 - LEAD": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 187
+          },
+          "examples": [
+            "3176.51",
+            "35417.61",
+            "9925.6"
+          ],
+          "max_len": 8,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 187,
+            "int": 49
+          }
+        },
+        "Feb 23 - Total": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 194
+          },
+          "examples": [
+            "5334.7",
+            "41547.96",
+            "10806.3"
+          ],
+          "max_len": 8,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 194,
+            "int": 42
+          }
+        },
+        "Feb 24 - LAG": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 196
+          },
+          "examples": [
+            "1048.35",
+            "5149.26",
+            "3202"
+          ],
+          "max_len": 8,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 196,
+            "int": 40
+          }
+        },
+        "Feb 24 - LEAD": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 208
+          },
+          "examples": [
+            "3079.2",
+            "28717.65",
+            "34537.2"
+          ],
+          "max_len": 9,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 208,
+            "int": 28
+          }
+        },
+        "Feb 24 - Total": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 219
+          },
+          "examples": [
+            "4127.55",
+            "33866.91",
+            "37739.2"
+          ],
+          "max_len": 9,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 219,
+            "int": 17
+          }
+        },
+        "Jan 21 - LAG": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 171
+          },
+          "examples": [
+            "1005.41",
+            "7927.74",
+            "5133"
+          ],
+          "max_len": 8,
+          "null_count": 45,
+          "shapes": {
+            "decimal": 171,
+            "int": 27
+          }
+        },
+        "Jan 21 - TOTAL": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 181
+          },
+          "examples": [
+            "10514.44",
+            "16722.9",
+            "10523"
+          ],
+          "max_len": 8,
+          "null_count": 45,
+          "shapes": {
+            "decimal": 181,
+            "int": 17
+          }
+        },
+        "Jan 21 -LEAD": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 175
+          },
+          "examples": [
+            "9509.03",
+            "8795.16",
+            "5390"
+          ],
+          "max_len": 8,
+          "null_count": 45,
+          "shapes": {
+            "decimal": 175,
+            "int": 23
+          }
+        },
+        "Jan 22 - LAG": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 176
+          },
+          "examples": [
+            "1482.63",
+            "6996.6",
+            "12858.3"
+          ],
+          "max_len": 8,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 176,
+            "int": 60
+          }
+        },
+        "Jan 22 - LEAD": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 187
+          },
+          "examples": [
+            "11008",
+            "20944.17",
+            "6274.1"
+          ],
+          "max_len": 8,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 187,
+            "int": 49
+          }
+        },
+        "Jan 22 - Total": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 188
+          },
+          "examples": [
+            "12490.63",
+            "27940.77",
+            "19132.4"
+          ],
+          "max_len": 8,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 188,
+            "int": 48
+          }
+        },
+        "Jan 23 - LAG": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 182
+          },
+          "examples": [
+            "671.35",
+            "17310.87",
+            "29.8"
+          ],
+          "max_len": 8,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 182,
+            "int": 54
+          }
+        },
+        "Jan 23 - LEAD": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 186
+          },
+          "examples": [
+            "3504.31",
+            "18406.53",
+            "12.3"
+          ],
+          "max_len": 9,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 186,
+            "int": 50
+          }
+        },
+        "Jan 23 - Total": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 193
+          },
+          "examples": [
+            "4175.66",
+            "35717.4",
+            "42.1"
+          ],
+          "max_len": 9,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 193,
+            "int": 43
+          }
+        },
+        "Jan 24 - LAG": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 194
+          },
+          "examples": [
+            "196.28",
+            "1221.12",
+            "1940.8"
+          ],
+          "max_len": 8,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 194,
+            "int": 42
+          }
+        },
+        "Jan 24 - LEAD": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 203
+          },
+          "examples": [
+            "3023.95",
+            "11040.75",
+            "30228.7"
+          ],
+          "max_len": 9,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 203,
+            "int": 33
+          }
+        },
+        "Jan 24 - Total": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 208
+          },
+          "examples": [
+            "3220.23",
+            "12261.87",
+            "32169.5"
+          ],
+          "max_len": 8,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 208,
+            "int": 28
+          }
+        },
+        "Jul 20 - LAG": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 156
+          },
+          "examples": [
+            "746.4",
+            "2766.24",
+            "6193.1"
+          ],
+          "max_len": 8,
+          "null_count": 54,
+          "shapes": {
+            "decimal": 156,
+            "int": 33
+          }
+        },
+        "Jul 20 - TOTAL": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 165
+          },
+          "examples": [
+            "7599.7",
+            "22004.28",
+            "14434.6"
+          ],
+          "max_len": 8,
+          "null_count": 54,
+          "shapes": {
+            "decimal": 165,
+            "int": 24
+          }
+        },
+        "Jul 20 -LEAD": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 158
+          },
+          "examples": [
+            "6853.3",
+            "19238.04",
+            "8241.5"
+          ],
+          "max_len": 8,
+          "null_count": 54,
+          "shapes": {
+            "decimal": 158,
+            "int": 31
+          }
+        },
+        "Jul 21 - LAG": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 162
+          },
+          "examples": [
+            "0",
+            "1249.56",
+            "5265.9"
+          ],
+          "max_len": 8,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 162,
+            "int": 74
+          }
+        },
+        "Jul 21 - TOTAL": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 175
+          },
+          "examples": [
+            "0",
+            "37584",
+            "24098.4"
+          ],
+          "max_len": 9,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 175,
+            "int": 61
+          }
+        },
+        "Jul 21 -LEAD": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 166
+          },
+          "examples": [
+            "0",
+            "36334.44",
+            "18832.5"
+          ],
+          "max_len": 9,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 166,
+            "int": 70
+          }
+        },
+        "Jul 22 - LAG": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 173
+          },
+          "examples": [
+            "2201.14",
+            "0",
+            "821.3"
+          ],
+          "max_len": 8,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 173,
+            "int": 63
+          }
+        },
+        "Jul 22 - LEAD": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 183
+          },
+          "examples": [
+            "19940.96",
+            "0",
+            "6241.4"
+          ],
+          "max_len": 9,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 183,
+            "int": 53
+          }
+        },
+        "Jul 22 - Total": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 186
+          },
+          "examples": [
+            "22142.1",
+            "0",
+            "7062.7"
+          ],
+          "max_len": 9,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 186,
+            "int": 50
+          }
+        },
+        "July 23 - LAG": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 175
+          },
+          "examples": [
+            "3398.65",
+            "4066.92",
+            "0"
+          ],
+          "max_len": 8,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 175,
+            "int": 61
+          }
+        },
+        "July 23 - LEAD": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 176
+          },
+          "examples": [
+            "8429.63",
+            "53056.98",
+            "0"
+          ],
+          "max_len": 9,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 176,
+            "int": 60
+          }
+        },
+        "July 23 - Total": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 181
+          },
+          "examples": [
+            "11828.28",
+            "57123.9",
+            "0"
+          ],
+          "max_len": 9,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 181,
+            "int": 55
+          }
+        },
+        "July 24 - LAG": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 184
+          },
+          "examples": [
+            "0",
+            "2548.89",
+            "237.35"
+          ],
+          "max_len": 8,
+          "null_count": 6,
+          "shapes": {
+            "decimal": 184,
+            "int": 53
+          }
+        },
+        "July 24 - LEAD": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 187
+          },
+          "examples": [
+            "0",
+            "29959.74",
+            "594.85"
+          ],
+          "max_len": 9,
+          "null_count": 6,
+          "shapes": {
+            "decimal": 187,
+            "int": 50
+          }
+        },
+        "July 24 - Total": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 197
+          },
+          "examples": [
+            "0",
+            "32508.63",
+            "832.2"
+          ],
+          "max_len": 9,
+          "null_count": 6,
+          "shapes": {
+            "decimal": 197,
+            "int": 40
+          }
+        },
+        "Jun 20 - LAG": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 150
+          },
+          "examples": [
+            "369",
+            "5464.26",
+            "1734.7"
+          ],
+          "max_len": 8,
+          "null_count": 54,
+          "shapes": {
+            "decimal": 150,
+            "int": 39
+          }
+        },
+        "Jun 20 - TOTAL": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 164
+          },
+          "examples": [
+            "15466.4",
+            "33176.43",
+            "13966.2"
+          ],
+          "max_len": 9,
+          "null_count": 54,
+          "shapes": {
+            "decimal": 164,
+            "int": 25
+          }
+        },
+        "Jun 20 -LEAD": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 162
+          },
+          "examples": [
+            "15097.4",
+            "27712.17",
+            "12231.5"
+          ],
+          "max_len": 8,
+          "null_count": 54,
+          "shapes": {
+            "decimal": 162,
+            "int": 27
+          }
+        },
+        "Jun 21 - LAG": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 161
+          },
+          "examples": [
+            "0",
+            "2768.22",
+            "5293.7"
+          ],
+          "max_len": 8,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 161,
+            "int": 75
+          }
+        },
+        "Jun 21 - TOTAL": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 172
+          },
+          "examples": [
+            "0",
+            "37928.79",
+            "24036.3"
+          ],
+          "max_len": 8,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 172,
+            "int": 64
+          }
+        },
+        "Jun 21 -LEAD": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 168
+          },
+          "examples": [
+            "0",
+            "35160.57",
+            "18742.6"
+          ],
+          "max_len": 8,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 168,
+            "int": 68
+          }
+        },
+        "Jun 22 - LAG": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 174
+          },
+          "examples": [
+            "474.89",
+            "6444.81",
+            "0"
+          ],
+          "max_len": 8,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 174,
+            "int": 62
+          }
+        },
+        "Jun 22 - LEAD": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 181
+          },
+          "examples": [
+            "13728.15",
+            "11291.04",
+            "0"
+          ],
+          "max_len": 8,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 181,
+            "int": 55
+          }
+        },
+        "Jun 22 - Total": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 182
+          },
+          "examples": [
+            "14203.04",
+            "17735.85",
+            "0"
+          ],
+          "max_len": 8,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 182,
+            "int": 54
+          }
+        },
+        "June 23 - LAG": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 171
+          },
+          "examples": [
+            "0",
+            "1677.15",
+            "272.2"
+          ],
+          "max_len": 8,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 171,
+            "int": 65
+          }
+        },
+        "June 23 - LEAD": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 179
+          },
+          "examples": [
+            "0",
+            "36486",
+            "5243.2"
+          ],
+          "max_len": 9,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 179,
+            "int": 57
+          }
+        },
+        "June 23 - Total": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 179
+          },
+          "examples": [
+            "0",
+            "38163.15",
+            "5515.4"
+          ],
+          "max_len": 9,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 179,
+            "int": 57
+          }
+        },
+        "June 24 - LAG": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 186
+          },
+          "examples": [
+            "528.86",
+            "2881.98",
+            "0"
+          ],
+          "max_len": 8,
+          "null_count": 6,
+          "shapes": {
+            "decimal": 186,
+            "int": 51
+          }
+        },
+        "June 24 - LEAD": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 191
+          },
+          "examples": [
+            "2098.15",
+            "27797.49",
+            "0"
+          ],
+          "max_len": 9,
+          "null_count": 6,
+          "shapes": {
+            "decimal": 191,
+            "int": 46
+          }
+        },
+        "June 24 - Total": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 198
+          },
+          "examples": [
+            "2627.01",
+            "30679.47",
+            "0"
+          ],
+          "max_len": 9,
+          "null_count": 6,
+          "shapes": {
+            "decimal": 198,
+            "int": 39
+          }
+        },
+        "Location": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 243,
+            "int64": 243
+          },
+          "examples": [
+            "M",
+            "N",
+            "S"
+          ],
+          "max_len": 2,
+          "null_count": 0,
+          "shapes": {
+            "text": 243
+          }
+        },
+        "Mar 21 - LAG": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 174
+          },
+          "examples": [
+            "526.13",
+            "5694.84",
+            "3531.7"
+          ],
+          "max_len": 8,
+          "null_count": 45,
+          "shapes": {
+            "decimal": 174,
+            "int": 24
+          }
+        },
+        "Mar 21 - TOTAL": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 183
+          },
+          "examples": [
+            "8761.6",
+            "31314.51",
+            "13960.5"
+          ],
+          "max_len": 8,
+          "null_count": 45,
+          "shapes": {
+            "decimal": 183,
+            "int": 15
+          }
+        },
+        "Mar 21 -LEAD": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 175
+          },
+          "examples": [
+            "8235.47",
+            "25619.67",
+            "10428.8"
+          ],
+          "max_len": 8,
+          "null_count": 45,
+          "shapes": {
+            "decimal": 175,
+            "int": 23
+          }
+        },
+        "Mar 22 - LAG": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 178
+          },
+          "examples": [
+            "236.58",
+            "1055.7",
+            "5340.8"
+          ],
+          "max_len": 8,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 178,
+            "int": 58
+          }
+        },
+        "Mar 22 - LEAD": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 183
+          },
+          "examples": [
+            "3725.14",
+            "15908.31",
+            "18869.1"
+          ],
+          "max_len": 8,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 183,
+            "int": 53
+          }
+        },
+        "Mar 22 - Total": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 193
+          },
+          "examples": [
+            "3961.72",
+            "16964.01",
+            "24209.9"
+          ],
+          "max_len": 8,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 193,
+            "int": 43
+          }
+        },
+        "Mar 23 - LAG": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 180
+          },
+          "examples": [
+            "902.25",
+            "5946.66",
+            "3124.4"
+          ],
+          "max_len": 8,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 180,
+            "int": 56
+          }
+        },
+        "Mar 23 - LEAD": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 189
+          },
+          "examples": [
+            "5543.79",
+            "28054.17",
+            "39741"
+          ],
+          "max_len": 9,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 189,
+            "int": 47
+          }
+        },
+        "Mar 23 - Total": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 195
+          },
+          "examples": [
+            "6446.04",
+            "34000.83",
+            "42865.4"
+          ],
+          "max_len": 9,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 195,
+            "int": 41
+          }
+        },
+        "Mar 24 - LAG": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 205
+          },
+          "examples": [
+            "398.73",
+            "7918.47",
+            "5457.3"
+          ],
+          "max_len": 8,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 205,
+            "int": 31
+          }
+        },
+        "Mar 24 - LEAD": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 218
+          },
+          "examples": [
+            "5035.93",
+            "23540.49",
+            "39102.2"
+          ],
+          "max_len": 9,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 218,
+            "int": 18
+          }
+        },
+        "Mar 24 - Total": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 215
+          },
+          "examples": [
+            "5434.66",
+            "31458.96",
+            "44559.5"
+          ],
+          "max_len": 8,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 215,
+            "int": 21
+          }
+        },
+        "May 20 - LAG": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 151
+          },
+          "examples": [
+            "1316.9",
+            "4079.16",
+            "0"
+          ],
+          "max_len": 8,
+          "null_count": 54,
+          "shapes": {
+            "decimal": 151,
+            "int": 38
+          }
+        },
+        "May 20 - TOTAL": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 164
+          },
+          "examples": [
+            "4343.5",
+            "36060.3",
+            "0"
+          ],
+          "max_len": 9,
+          "null_count": 54,
+          "shapes": {
+            "decimal": 164,
+            "int": 25
+          }
+        },
+        "May 20 -LEAD": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 159
+          },
+          "examples": [
+            "3026.6",
+            "31981.14",
+            "0"
+          ],
+          "max_len": 9,
+          "null_count": 54,
+          "shapes": {
+            "decimal": 159,
+            "int": 30
+          }
+        },
+        "May 21 - LAG": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 160
+          },
+          "examples": [
+            "3307.84",
+            "3419.55",
+            "3736.4"
+          ],
+          "max_len": 8,
+          "null_count": 52,
+          "shapes": {
+            "decimal": 160,
+            "int": 31
+          }
+        },
+        "May 21 - TOTAL": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 170
+          },
+          "examples": [
+            "8708.66",
+            "32058.09",
+            "7092"
+          ],
+          "max_len": 8,
+          "null_count": 52,
+          "shapes": {
+            "decimal": 170,
+            "int": 21
+          }
+        },
+        "May 21 -LEAD": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 169
+          },
+          "examples": [
+            "5400.82",
+            "28638.54",
+            "3355.6"
+          ],
+          "max_len": 8,
+          "null_count": 52,
+          "shapes": {
+            "decimal": 169,
+            "int": 22
+          }
+        },
+        "May 22 - LAG": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 168
+          },
+          "examples": [
+            "1543.07",
+            "5580.18",
+            "7413.4"
+          ],
+          "max_len": 8,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 168,
+            "int": 68
+          }
+        },
+        "May 22 - LEAD": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 173
+          },
+          "examples": [
+            "14351.32",
+            "8509.14",
+            "4398.1"
+          ],
+          "max_len": 9,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 173,
+            "int": 63
+          }
+        },
+        "May 22 - Total": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 178
+          },
+          "examples": [
+            "15894.39",
+            "14089.32",
+            "11811.5"
+          ],
+          "max_len": 9,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 178,
+            "int": 58
+          }
+        },
+        "May 23 - LAG": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 181
+          },
+          "examples": [
+            "9.68",
+            "2479.59",
+            "43.4"
+          ],
+          "max_len": 8,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 181,
+            "int": 55
+          }
+        },
+        "May 23 - LEAD": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 191
+          },
+          "examples": [
+            "562.96",
+            "51037.29",
+            "4787.6"
+          ],
+          "max_len": 9,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 191,
+            "int": 45
+          }
+        },
+        "May 23 - Total": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 193
+          },
+          "examples": [
+            "572.64",
+            "53516.88",
+            "4831"
+          ],
+          "max_len": 9,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 193,
+            "int": 43
+          }
+        },
+        "May 24 - LAG": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 187
+          },
+          "examples": [
+            "214.42",
+            "3304.17",
+            "1766.1"
+          ],
+          "max_len": 8,
+          "null_count": 6,
+          "shapes": {
+            "decimal": 187,
+            "int": 50
+          }
+        },
+        "May 24 - LEAD": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 194
+          },
+          "examples": [
+            "2394.78",
+            "60389.55",
+            "6434.3"
+          ],
+          "max_len": 9,
+          "null_count": 6,
+          "shapes": {
+            "decimal": 194,
+            "int": 43
+          }
+        },
+        "May 24 - Total": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 205
+          },
+          "examples": [
+            "2609.2",
+            "63693.72",
+            "8200.4"
+          ],
+          "max_len": 9,
+          "null_count": 6,
+          "shapes": {
+            "decimal": 205,
+            "int": 32
+          }
+        },
+        "Nov  21 - LAG": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 185
+          },
+          "examples": [
+            "1039.34",
+            "4015.8",
+            "7152.7"
+          ],
+          "max_len": 8,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 185,
+            "int": 51
+          }
+        },
+        "Nov  21 - TOTAL": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 188
+          },
+          "examples": [
+            "14241.48",
+            "37018.26",
+            "19589"
+          ],
+          "max_len": 9,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 188,
+            "int": 48
+          }
+        },
+        "Nov 20 - LAG": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 167
+          },
+          "examples": [
+            "3738.5",
+            "4928.49",
+            "4564.9"
+          ],
+          "max_len": 8,
+          "null_count": 45,
+          "shapes": {
+            "decimal": 167,
+            "int": 31
+          }
+        },
+        "Nov 20 - TOTAL": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 174
+          },
+          "examples": [
+            "18267.2",
+            "24149.16",
+            "10803.7"
+          ],
+          "max_len": 8,
+          "null_count": 45,
+          "shapes": {
+            "decimal": 174,
+            "int": 24
+          }
+        },
+        "Nov 20 -LEAD": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 172
+          },
+          "examples": [
+            "14528.7",
+            "19220.67",
+            "6238.8"
+          ],
+          "max_len": 8,
+          "null_count": 45,
+          "shapes": {
+            "decimal": 172,
+            "int": 26
+          }
+        },
+        "Nov 21 -LEAD": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 188
+          },
+          "examples": [
+            "13202.14",
+            "33002.46",
+            "12436.3"
+          ],
+          "max_len": 8,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 188,
+            "int": 48
+          }
+        },
+        "Nov 22 - LAG": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 175
+          },
+          "examples": [
+            "1072.18",
+            "29177.73",
+            "975.7"
+          ],
+          "max_len": 8,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 175,
+            "int": 61
+          }
+        },
+        "Nov 22 - LEAD": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 187
+          },
+          "examples": [
+            "2882.99",
+            "8021.16",
+            "12964.6"
+          ],
+          "max_len": 9,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 187,
+            "int": 49
+          }
+        },
+        "Nov 22 - Total": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 187
+          },
+          "examples": [
+            "3955.17",
+            "37198.89",
+            "13940.3"
+          ],
+          "max_len": 8,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 187,
+            "int": 49
+          }
+        },
+        "Nov 23 - LAG": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 195
+          },
+          "examples": [
+            "567.12",
+            "8757.72",
+            "3148.8"
+          ],
+          "max_len": 8,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 195,
+            "int": 41
+          }
+        },
+        "Nov 23 - LEAD": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 200
+          },
+          "examples": [
+            "5893.99",
+            "27961.83",
+            "24684.5"
+          ],
+          "max_len": 9,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 200,
+            "int": 36
+          }
+        },
+        "Nov 23 - Total": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 203
+          },
+          "examples": [
+            "6461.11",
+            "36719.55",
+            "27833.3"
+          ],
+          "max_len": 9,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 203,
+            "int": 33
+          }
+        },
+        "Nov 24 - LAG": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 182
+          },
+          "examples": [
+            "280.65",
+            "6477.48",
+            "2185.5"
+          ],
+          "max_len": 8,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 182,
+            "int": 61
+          }
+        },
+        "Nov 24 - LEAD": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 195
+          },
+          "examples": [
+            "8337.29",
+            "82.08",
+            "9854.8"
+          ],
+          "max_len": 8,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 195,
+            "int": 48
+          }
+        },
+        "Nov 24 - Total": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 203
+          },
+          "examples": [
+            "8617.94",
+            "6559.56",
+            "12040.3"
+          ],
+          "max_len": 8,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 203,
+            "int": 40
+          }
+        },
+        "Oct 20 - LAG": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 162
+          },
+          "examples": [
+            "1711",
+            "5268.6",
+            "6955.4"
+          ],
+          "max_len": 8,
+          "null_count": 45,
+          "shapes": {
+            "decimal": 162,
+            "int": 36
+          }
+        },
+        "Oct 20 - TOTAL": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 169
+          },
+          "examples": [
+            "9105.8",
+            "23560.38",
+            "12920.6"
+          ],
+          "max_len": 8,
+          "null_count": 45,
+          "shapes": {
+            "decimal": 169,
+            "int": 29
+          }
+        },
+        "Oct 20 -LEAD": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 166
+          },
+          "examples": [
+            "7394.8",
+            "18291.78",
+            "5965.2"
+          ],
+          "max_len": 8,
+          "null_count": 45,
+          "shapes": {
+            "decimal": 166,
+            "int": 32
+          }
+        },
+        "Oct 21 - LAG": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 169
+          },
+          "examples": [
+            "794",
+            "3867.3",
+            "7951.4"
+          ],
+          "max_len": 8,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 169,
+            "int": 67
+          }
+        },
+        "Oct 21 - TOTAL": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 189
+          },
+          "examples": [
+            "8963.81",
+            "23705.82",
+            "20194.7"
+          ],
+          "max_len": 9,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 189,
+            "int": 47
+          }
+        },
+        "Oct 21 -LEAD": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 187
+          },
+          "examples": [
+            "8169.81",
+            "19838.52",
+            "12243.3"
+          ],
+          "max_len": 9,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 187,
+            "int": 49
+          }
+        },
+        "Oct 22 - LAG": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 175
+          },
+          "examples": [
+            "1122.44",
+            "12170.16",
+            "2329.4"
+          ],
+          "max_len": 8,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 175,
+            "int": 61
+          }
+        },
+        "Oct 22 - LEAD": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 187
+          },
+          "examples": [
+            "6660.09",
+            "13456.53",
+            "61760.7"
+          ],
+          "max_len": 9,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 187,
+            "int": 49
+          }
+        },
+        "Oct 22 - Total": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 189
+          },
+          "examples": [
+            "7782.53",
+            "25626.69",
+            "64090.1"
+          ],
+          "max_len": 9,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 189,
+            "int": 47
+          }
+        },
+        "Oct 23 - LAG": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 188
+          },
+          "examples": [
+            "167.65",
+            "3471.66",
+            "5420.2"
+          ],
+          "max_len": 8,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 188,
+            "int": 48
+          }
+        },
+        "Oct 23 - LEAD": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 192
+          },
+          "examples": [
+            "1449.08",
+            "22609.35",
+            "35384.2"
+          ],
+          "max_len": 9,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 192,
+            "int": 44
+          }
+        },
+        "Oct 23 - Total": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 202
+          },
+          "examples": [
+            "1616.73",
+            "26081.01",
+            "40804.4"
+          ],
+          "max_len": 9,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 202,
+            "int": 34
+          }
+        },
+        "Oct 24 - LAG": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 184
+          },
+          "examples": [
+            "319.1",
+            "3417.48",
+            "328.3"
+          ],
+          "max_len": 8,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 184,
+            "int": 59
+          }
+        },
+        "Oct 24 - LEAD": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 199
+          },
+          "examples": [
+            "2793.81",
+            "3567.42",
+            "341.3"
+          ],
+          "max_len": 9,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 199,
+            "int": 44
+          }
+        },
+        "Oct 24 - Total": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 203
+          },
+          "examples": [
+            "3112.91",
+            "6984.9",
+            "669.6"
+          ],
+          "max_len": 9,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 203,
+            "int": 40
+          }
+        },
+        "Sep 20 - LAG": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 163
+          },
+          "examples": [
+            "1592.6",
+            "3649.86",
+            "6223.8"
+          ],
+          "max_len": 8,
+          "null_count": 54,
+          "shapes": {
+            "decimal": 163,
+            "int": 26
+          }
+        },
+        "Sep 20 - TOTAL": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 167
+          },
+          "examples": [
+            "8109.2",
+            "36409.41",
+            "16582.2"
+          ],
+          "max_len": 8,
+          "null_count": 54,
+          "shapes": {
+            "decimal": 167,
+            "int": 22
+          }
+        },
+        "Sep 20 -LEAD": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 161
+          },
+          "examples": [
+            "6516.6",
+            "32759.55",
+            "10358.4"
+          ],
+          "max_len": 8,
+          "null_count": 54,
+          "shapes": {
+            "decimal": 161,
+            "int": 28
+          }
+        },
+        "Sep 21 - LAG": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 170
+          },
+          "examples": [
+            "0",
+            "1963.26",
+            "5115.3"
+          ],
+          "max_len": 8,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 170,
+            "int": 66
+          }
+        },
+        "Sep 21 - TOTAL": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 174
+          },
+          "examples": [
+            "0",
+            "55559.97",
+            "29862.6"
+          ],
+          "max_len": 8,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 174,
+            "int": 62
+          }
+        },
+        "Sep 21 -LEAD": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 178
+          },
+          "examples": [
+            "0",
+            "53596.71",
+            "24747.3"
+          ],
+          "max_len": 8,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 178,
+            "int": 58
+          }
+        },
+        "Sep 22 - LAG": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 171
+          },
+          "examples": [
+            "2481.74",
+            "637.11",
+            "6139"
+          ],
+          "max_len": 8,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 171,
+            "int": 65
+          }
+        },
+        "Sep 22 - LEAD": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 185
+          },
+          "examples": [
+            "7227.31",
+            "340.56",
+            "18020.9"
+          ],
+          "max_len": 9,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 185,
+            "int": 51
+          }
+        },
+        "Sep 22 - Total": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 180
+          },
+          "examples": [
+            "9709.05",
+            "977.67",
+            "24159.9"
+          ],
+          "max_len": 9,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 180,
+            "int": 56
+          }
+        },
+        "Sep 23 - LAG": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 172
+          },
+          "examples": [
+            "138.82",
+            "4606.02",
+            "434"
+          ],
+          "max_len": 8,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 172,
+            "int": 64
+          }
+        },
+        "Sep 23 - LEAD": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 185
+          },
+          "examples": [
+            "11062.7",
+            "33324.57",
+            "4037.9"
+          ],
+          "max_len": 9,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 185,
+            "int": 51
+          }
+        },
+        "Sep 23 - Total": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 189
+          },
+          "examples": [
+            "11201.52",
+            "37930.59",
+            "4471.9"
+          ],
+          "max_len": 9,
+          "null_count": 7,
+          "shapes": {
+            "decimal": 189,
+            "int": 47
+          }
+        },
+        "Sep 24 - LAG": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 180
+          },
+          "examples": [
+            "39.33",
+            "6088.32",
+            "0"
+          ],
+          "max_len": 8,
+          "null_count": 6,
+          "shapes": {
+            "decimal": 180,
+            "int": 57
+          }
+        },
+        "Sep 24 - LEAD": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 189
+          },
+          "examples": [
+            "487.55",
+            "292.5",
+            "0"
+          ],
+          "max_len": 9,
+          "null_count": 6,
+          "shapes": {
+            "decimal": 189,
+            "int": 48
+          }
+        },
+        "Sep 24 - Total": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 196
+          },
+          "examples": [
+            "526.88",
+            "6380.82",
+            "0"
+          ],
+          "max_len": 9,
+          "null_count": 6,
+          "shapes": {
+            "decimal": 196,
+            "int": 41
+          }
+        },
+        "Unit": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 243,
+            "int64": 243
+          },
+          "examples": [
+            "KLYNA01Z",
+            "CDCL_01Z",
+            "LAGA_01Z"
+          ],
+          "max_len": 9,
+          "null_count": 0,
+          "shapes": {
+            "text": 243
+          }
+        },
+        "id": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1",
+            "2",
+            "3"
+          ],
+          "max_len": 3,
+          "null_count": 0,
+          "shapes": {
+            "int": 243
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "Company": {
+            "description": "Conatains Company names",
+            "title": "Company ",
+            "type": "text",
+            "unit": "String"
+          },
+          "Default/Market": {
+            "description": "Contains the D/M",
+            "title": "Default/Market",
+            "type": "text",
+            "unit": "String"
+          },
+          "Location": {
+            "description": "Contains the unit location",
+            "title": "Location",
+            "type": "text",
+            "unit": "String"
+          },
+          "Unit": {
+            "description": "Conatains Units",
+            "title": "Unit",
+            "type": "text",
+            "unit": "String"
+          }
+        },
+        "field_info_not_in_header": [
+          "LAG",
+          "LEAD",
+          "Month-Year",
+          "TOTAL"
+        ],
+        "header_not_in_field_info": [
+          "id",
+          "Apr 20 -LEAD",
+          "Apr 20 - LAG",
+          "Apr 20 - TOTAL",
+          "May 20 -LEAD",
+          "May 20 - LAG",
+          "May 20 - TOTAL",
+          "Jun 20 -LEAD",
+          "Jun 20 - LAG",
+          "Jun 20 - TOTAL",
+          "Jul 20 -LEAD",
+          "Jul 20 - LAG",
+          "Jul 20 - TOTAL",
+          "Aug 20 -LEAD",
+          "Aug 20 - LAG",
+          "Aug 20 - TOTAL",
+          "Sep 20 -LEAD",
+          "Sep 20 - LAG",
+          "Sep 20 - TOTAL",
+          "Oct 20 -LEAD",
+          "Oct 20 - LAG",
+          "Oct 20 - TOTAL",
+          "Nov 20 -LEAD",
+          "Nov 20 - LAG",
+          "Nov 20 - TOTAL",
+          "Dec 20 -LEAD",
+          "Dec 20 - LAG",
+          "Dec 20 - TOTAL",
+          "Jan 21 -LEAD",
+          "Jan 21 - LAG",
+          "Jan 21 - TOTAL",
+          "Feb 21 -LEAD",
+          "Feb 21 - LAG",
+          "Feb 21 - TOTAL",
+          "Mar 21 -LEAD",
+          "Mar 21 - LAG",
+          "Mar 21 - TOTAL",
+          "Apr 21 -LEAD",
+          "Apr 21 - LAG",
+          "Apr 21 - TOTAL",
+          "May 21 -LEAD",
+          "May 21 - LAG",
+          "May 21 - TOTAL",
+          "Jun 21 -LEAD",
+          "Jun 21 - LAG",
+          "Jun 21 - TOTAL",
+          "Jul 21 -LEAD",
+          "Jul 21 - LAG",
+          "Jul 21 - TOTAL",
+          "Aug 21 -LEAD",
+          "Aug 21 - LAG",
+          "Aug 21 - TOTAL",
+          "Sep 21 -LEAD",
+          "Sep 21 - LAG",
+          "Sep 21 - TOTAL",
+          "Oct 21 -LEAD",
+          "Oct 21 - LAG",
+          "Oct 21 - TOTAL",
+          "Nov 21 -LEAD",
+          "Nov  21 - LAG",
+          "Nov  21 - TOTAL",
+          "Dec 21 - LEAD",
+          "Dec 21 - LAG",
+          "Dec 21 - Total",
+          "Jan 22 - LEAD",
+          "Jan 22 - LAG",
+          "Jan 22 - Total",
+          "Feb 22 - LEAD",
+          "Feb 22 - LAG",
+          "Feb 22 - Total",
+          "Mar 22 - LEAD",
+          "Mar 22 - LAG",
+          "Mar 22 - Total",
+          "Apr 22 - LEAD",
+          "Apr 22 - LAG",
+          "Apr 22 - Total",
+          "May 22 - LEAD",
+          "May 22 - LAG",
+          "May 22 - Total",
+          "Jun 22 - LEAD",
+          "Jun 22 - LAG",
+          "Jun 22 - Total",
+          "Jul 22 - LEAD",
+          "Jul 22 - LAG",
+          "Jul 22 - Total",
+          "Aug 22 - LEAD",
+          "Aug 22 - LAG",
+          "Aug 22 - Total",
+          "Sep 22 - LEAD",
+          "Sep 22 - LAG",
+          "Sep 22 - Total",
+          "Oct 22 - LEAD",
+          "Oct 22 - LAG",
+          "Oct 22 - Total",
+          "Nov 22 - LEAD",
+          "Nov 22 - LAG",
+          "Nov 22 - Total",
+          "Dec 22 - LEAD",
+          "Dec 22 - LAG",
+          "Dec 22 - Total",
+          "Jan 23 - LEAD",
+          "Jan 23 - LAG",
+          "Jan 23 - Total",
+          "Feb 23 - LEAD",
+          "Feb 23 - LAG",
+          "Feb 23 - Total",
+          "Mar 23 - LEAD",
+          "Mar 23 - LAG",
+          "Mar 23 - Total",
+          "Apr 23 - LEAD",
+          "Apr 23 - LAG",
+          "Apr 23 - Total",
+          "May 23 - LEAD",
+          "May 23 - LAG",
+          "May 23 - Total",
+          "June 23 - LEAD",
+          "June 23 - LAG",
+          "June 23 - Total",
+          "July 23 - LEAD",
+          "July 23 - LAG",
+          "July 23 - Total",
+          "Aug 23 - LEAD",
+          "Aug 23 - LAG",
+          "Aug 23 - Total",
+          "Sep 23 - LEAD",
+          "Sep 23 - LAG",
+          "Sep 23 - Total",
+          "Oct 23 - LEAD",
+          "Oct 23 - LAG",
+          "Oct 23 - Total",
+          "Nov 23 - LEAD",
+          "Nov 23 - LAG",
+          "Nov 23 - Total",
+          "Dec 23 - LEAD",
+          "Dec 23 - LAG",
+          "Dec 23 - Total",
+          "Jan 24 - LEAD",
+          "Jan 24 - LAG",
+          "Jan 24 - Total",
+          "Feb 24 - LEAD",
+          "Feb 24 - LAG",
+          "Feb 24 - Total",
+          "Mar 24 - LEAD",
+          "Mar 24 - LAG",
+          "Mar 24 - Total",
+          "Apr 24 - LEAD",
+          "Apr 24 - LAG",
+          "Apr 24 - Total",
+          "May 24 - LEAD",
+          "May 24 - LAG",
+          "May 24 - Total",
+          "June 24 - LEAD",
+          "June 24 - LAG",
+          "June 24 - Total",
+          "July 24 - LEAD",
+          "July 24 - LAG",
+          "July 24 - Total",
+          "Aug 24 - LEAD",
+          "Aug 24 - LAG",
+          "Aug 24 - Total",
+          "Sep 24 - LEAD",
+          "Sep 24 - LAG",
+          "Sep 24 - Total",
+          "Oct 24 - LEAD",
+          "Oct 24 - LAG",
+          "Oct 24 - Total",
+          "Nov 24 - LEAD",
+          "Nov 24 - LAG",
+          "Nov 24 - Total",
+          "Dec 24 - LEAD",
+          "Dec 24 - LAG",
+          "Dec 24 - Total"
+        ]
+      },
+      "first_written_at": "2026-10-08T11:15:58.937852+00:00",
+      "header": [
+        "id",
+        "Company",
+        "Unit",
+        "Default/Market",
+        "Location",
+        "Apr 20 -LEAD",
+        "Apr 20 - LAG",
+        "Apr 20 - TOTAL",
+        "May 20 -LEAD",
+        "May 20 - LAG",
+        "May 20 - TOTAL",
+        "Jun 20 -LEAD",
+        "Jun 20 - LAG",
+        "Jun 20 - TOTAL",
+        "Jul 20 -LEAD",
+        "Jul 20 - LAG",
+        "Jul 20 - TOTAL",
+        "Aug 20 -LEAD",
+        "Aug 20 - LAG",
+        "Aug 20 - TOTAL",
+        "Sep 20 -LEAD",
+        "Sep 20 - LAG",
+        "Sep 20 - TOTAL",
+        "Oct 20 -LEAD",
+        "Oct 20 - LAG",
+        "Oct 20 - TOTAL",
+        "Nov 20 -LEAD",
+        "Nov 20 - LAG",
+        "Nov 20 - TOTAL",
+        "Dec 20 -LEAD",
+        "Dec 20 - LAG",
+        "Dec 20 - TOTAL",
+        "Jan 21 -LEAD",
+        "Jan 21 - LAG",
+        "Jan 21 - TOTAL",
+        "Feb 21 -LEAD",
+        "Feb 21 - LAG",
+        "Feb 21 - TOTAL",
+        "Mar 21 -LEAD",
+        "Mar 21 - LAG",
+        "Mar 21 - TOTAL",
+        "Apr 21 -LEAD",
+        "Apr 21 - LAG",
+        "Apr 21 - TOTAL",
+        "May 21 -LEAD",
+        "May 21 - LAG",
+        "May 21 - TOTAL",
+        "Jun 21 -LEAD",
+        "Jun 21 - LAG",
+        "Jun 21 - TOTAL",
+        "Jul 21 -LEAD",
+        "Jul 21 - LAG",
+        "Jul 21 - TOTAL",
+        "Aug 21 -LEAD",
+        "Aug 21 - LAG",
+        "Aug 21 - TOTAL",
+        "Sep 21 -LEAD",
+        "Sep 21 - LAG",
+        "Sep 21 - TOTAL",
+        "Oct 21 -LEAD",
+        "Oct 21 - LAG",
+        "Oct 21 - TOTAL",
+        "Nov 21 -LEAD",
+        "Nov  21 - LAG",
+        "Nov  21 - TOTAL",
+        "Dec 21 - LEAD",
+        "Dec 21 - LAG",
+        "Dec 21 - Total",
+        "Jan 22 - LEAD",
+        "Jan 22 - LAG",
+        "Jan 22 - Total",
+        "Feb 22 - LEAD",
+        "Feb 22 - LAG",
+        "Feb 22 - Total",
+        "Mar 22 - LEAD",
+        "Mar 22 - LAG",
+        "Mar 22 - Total",
+        "Apr 22 - LEAD",
+        "Apr 22 - LAG",
+        "Apr 22 - Total",
+        "May 22 - LEAD",
+        "May 22 - LAG",
+        "May 22 - Total",
+        "Jun 22 - LEAD",
+        "Jun 22 - LAG",
+        "Jun 22 - Total",
+        "Jul 22 - LEAD",
+        "Jul 22 - LAG",
+        "Jul 22 - Total",
+        "Aug 22 - LEAD",
+        "Aug 22 - LAG",
+        "Aug 22 - Total",
+        "Sep 22 - LEAD",
+        "Sep 22 - LAG",
+        "Sep 22 - Total",
+        "Oct 22 - LEAD",
+        "Oct 22 - LAG",
+        "Oct 22 - Total",
+        "Nov 22 - LEAD",
+        "Nov 22 - LAG",
+        "Nov 22 - Total",
+        "Dec 22 - LEAD",
+        "Dec 22 - LAG",
+        "Dec 22 - Total",
+        "Jan 23 - LEAD",
+        "Jan 23 - LAG",
+        "Jan 23 - Total",
+        "Feb 23 - LEAD",
+        "Feb 23 - LAG",
+        "Feb 23 - Total",
+        "Mar 23 - LEAD",
+        "Mar 23 - LAG",
+        "Mar 23 - Total",
+        "Apr 23 - LEAD",
+        "Apr 23 - LAG",
+        "Apr 23 - Total",
+        "May 23 - LEAD",
+        "May 23 - LAG",
+        "May 23 - Total",
+        "June 23 - LEAD",
+        "June 23 - LAG",
+        "June 23 - Total",
+        "July 23 - LEAD",
+        "July 23 - LAG",
+        "July 23 - Total",
+        "Aug 23 - LEAD",
+        "Aug 23 - LAG",
+        "Aug 23 - Total",
+        "Sep 23 - LEAD",
+        "Sep 23 - LAG",
+        "Sep 23 - Total",
+        "Oct 23 - LEAD",
+        "Oct 23 - LAG",
+        "Oct 23 - Total",
+        "Nov 23 - LEAD",
+        "Nov 23 - LAG",
+        "Nov 23 - Total",
+        "Dec 23 - LEAD",
+        "Dec 23 - LAG",
+        "Dec 23 - Total",
+        "Jan 24 - LEAD",
+        "Jan 24 - LAG",
+        "Jan 24 - Total",
+        "Feb 24 - LEAD",
+        "Feb 24 - LAG",
+        "Feb 24 - Total",
+        "Mar 24 - LEAD",
+        "Mar 24 - LAG",
+        "Mar 24 - Total",
+        "Apr 24 - LEAD",
+        "Apr 24 - LAG",
+        "Apr 24 - Total",
+        "May 24 - LEAD",
+        "May 24 - LAG",
+        "May 24 - Total",
+        "June 24 - LEAD",
+        "June 24 - LAG",
+        "June 24 - Total",
+        "July 24 - LEAD",
+        "July 24 - LAG",
+        "July 24 - Total",
+        "Aug 24 - LEAD",
+        "Aug 24 - LAG",
+        "Aug 24 - Total",
+        "Sep 24 - LEAD",
+        "Sep 24 - LAG",
+        "Sep 24 - Total",
+        "Oct 24 - LEAD",
+        "Oct 24 - LAG",
+        "Oct 24 - Total",
+        "Nov 24 - LEAD",
+        "Nov 24 - LAG",
+        "Nov 24 - Total",
+        "Dec 24 - LEAD",
+        "Dec 24 - LAG",
+        "Dec 24 - Total"
+      ],
+      "last_written_at": "2026-10-08T11:15:58.937852+00:00",
+      "resource_ids": [
+        "a61c6c26-62ec-41e1-ae25-ed95f4562274"
+      ],
+      "rows": 243,
+      "settlement_periods": []
+    },
+    {
+      "captures": 1,
+      "columns": {
+        "Company": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 19130,
+            "int64": 19130
+          },
+          "examples": [
+            "NATP",
+            "CDCL",
+            "CLAN"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "text": 19130
+          }
+        },
+        "Default/Market": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 19130,
+            "int64": 19130
+          },
+          "examples": [
+            "D"
+          ],
+          "max_len": 1,
+          "null_count": 0,
+          "shapes": {
+            "text": 19130
+          }
+        },
+        "LAG": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 13691
+          },
+          "examples": [
+            "198",
+            "4038.75",
+            "466.7"
+          ],
+          "max_len": 9,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 13691,
+            "int": 5439
+          }
+        },
+        "LEAD": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 14271
+          },
+          "examples": [
+            "4315.7",
+            "34102.53",
+            "2210.4"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 14271,
+            "int": 4859
+          }
+        },
+        "Location": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 19130,
+            "int64": 19130
+          },
+          "examples": [
+            "M",
+            "N",
+            "S"
+          ],
+          "max_len": 2,
+          "null_count": 0,
+          "shapes": {
+            "text": 19130
+          }
+        },
+        "Month-Year": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%b-%y": 0,
+            "float64": 19130,
+            "int64": 19130
+          },
+          "examples": [
+            "Apr-20",
+            "May-20",
+            "Jun-20"
+          ],
+          "max_len": 6,
+          "null_count": 0,
+          "shapes": {
+            "month_label": 19130
+          }
+        },
+        "TOTAL": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 14637
+          },
+          "examples": [
+            "4513.7",
+            "38141.28",
+            "2677.1"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 14637,
+            "int": 4493
+          }
+        },
+        "Unit": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 19130,
+            "int64": 19130
+          },
+          "examples": [
+            "KLYNA01Z",
+            "CDCL_01Z",
+            "LAGA_01Z"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "text": 19130
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "Company": {
+            "description": "Conatains Company names",
+            "title": "Company ",
+            "type": "text",
+            "unit": "String"
+          },
+          "Default/Market": {
+            "description": "Contains the D/M",
+            "title": "Default/Market",
+            "type": "text",
+            "unit": "String"
+          },
+          "LAG": {
+            "description": "Contains the Lag values of the units",
+            "title": "LAG",
+            "type": "numeric",
+            "unit": "Number"
+          },
+          "LEAD": {
+            "description": "Contains the lead values of the units",
+            "title": "LEAD",
+            "type": "numeric",
+            "unit": "Number"
+          },
+          "Location": {
+            "description": "Contains the unit location",
+            "title": "Location",
+            "type": "text",
+            "unit": "String"
+          },
+          "Month-Year": {
+            "description": "Contains the Monthyear",
+            "title": "Year- Month",
+            "type": "text",
+            "unit": null
+          },
+          "TOTAL": {
+            "description": "Contains the Total values of the units",
+            "title": "TOTAL",
+            "type": "numeric",
+            "unit": "Number"
+          },
+          "Unit": {
+            "description": "Conatains Units",
+            "title": "Unit",
+            "type": "text",
+            "unit": "String"
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T11:16:02.015210+00:00",
+      "header": [
+        "Company",
+        "Unit",
+        "Default/Market",
+        "Location",
+        "Month-Year",
+        "LEAD",
+        "LAG",
+        "TOTAL"
+      ],
+      "last_written_at": "2026-10-08T11:16:02.015210+00:00",
+      "resource_ids": [
+        "528b03d2-4008-4b65-a732-a001cd835a3b"
+      ],
+      "rows": 19130,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [
+    "multi_epoch"
+  ],
+  "key": "orps_utilisation_reactive",
+  "keys": {
+    "candidates": [],
+    "full_row_max_duplicates": 1
+  },
+  "other_captures": 0,
+  "package": "obligatory-reactive-power-service-orps-utilisation",
+  "proposal": {
+    "flags": [
+      "multi_epoch",
+      "text_declared_date_shaped:Month-Year"
+    ],
+    "record_draft": {
+      "eligibility": {
+        "question": "id: a numeric column with no vendor unit; Apr 20 -LEAD: a numeric column with no vendor unit; Apr 20 - LAG: a numeric column with no vendor unit; Apr 20 - TOTAL: a numeric column with no vendor unit; May 20 -LEAD: a numeric column with no vendor unit; May 20 - LAG: a numeric column with no vendor unit; May 20 - TOTAL: a numeric column with no vendor unit; Jun 20 -LEAD: a numeric column with no vendor unit; Jun 20 - LAG: a numeric column with no vendor unit; Jun 20 - TOTAL: a numeric column with no vendor unit; Jul 20 -LEAD: a numeric column with no vendor unit; Jul 20 - LAG: a numeric column with no vendor unit; Jul 20 - TOTAL: a numeric column with no vendor unit; Aug 20 -LEAD: a numeric column with no vendor unit; Aug 20 - LAG: a numeric column with no vendor unit; Aug 20 - TOTAL: a numeric column with no vendor unit; Sep 20 -LEAD: a numeric column with no vendor unit; Sep 20 - LAG: a numeric column with no vendor unit; Sep 20 - TOTAL: a numeric column with no vendor unit; Oct 20 -LEAD: a numeric column with no vendor unit; Oct 20 - LAG: a numeric column with no vendor unit; Oct 20 - TOTAL: a numeric column with no vendor unit; Nov 20 -LEAD: a numeric column with no vendor unit; Nov 20 - LAG: a numeric column with no vendor unit; Nov 20 - TOTAL: a numeric column with no vendor unit; Dec 20 -LEAD: a numeric column with no vendor unit; Dec 20 - LAG: a numeric column with no vendor unit; Dec 20 - TOTAL: a numeric column with no vendor unit; Jan 21 -LEAD: a numeric column with no vendor unit; Jan 21 - LAG: a numeric column with no vendor unit; Jan 21 - TOTAL: a numeric column with no vendor unit; Feb 21 -LEAD: a numeric column with no vendor unit; Feb 21 - LAG: a numeric column with no vendor unit; Feb 21 - TOTAL: a numeric column with no vendor unit; Mar 21 -LEAD: a numeric column with no vendor unit; Mar 21 - LAG: a numeric column with no vendor unit; Mar 21 - TOTAL: a numeric column with no vendor unit; Apr 21 -LEAD: a numeric column with no vendor unit; Apr 21 - LAG: a numeric column with no vendor unit; Apr 21 - TOTAL: a numeric column with no vendor unit; May 21 -LEAD: a numeric column with no vendor unit; May 21 - LAG: a numeric column with no vendor unit; May 21 - TOTAL: a numeric column with no vendor unit; Jun 21 -LEAD: a numeric column with no vendor unit; Jun 21 - LAG: a numeric column with no vendor unit; Jun 21 - TOTAL: a numeric column with no vendor unit; Jul 21 -LEAD: a numeric column with no vendor unit; Jul 21 - LAG: a numeric column with no vendor unit; Jul 21 - TOTAL: a numeric column with no vendor unit; Aug 21 -LEAD: a numeric column with no vendor unit; Aug 21 - LAG: a numeric column with no vendor unit; Aug 21 - TOTAL: a numeric column with no vendor unit; Sep 21 -LEAD: a numeric column with no vendor unit; Sep 21 - LAG: a numeric column with no vendor unit; Sep 21 - TOTAL: a numeric column with no vendor unit; Oct 21 -LEAD: a numeric column with no vendor unit; Oct 21 - LAG: a numeric column with no vendor unit; Oct 21 - TOTAL: a numeric column with no vendor unit; Nov 21 -LEAD: a numeric column with no vendor unit; Nov  21 - LAG: a numeric column with no vendor unit; Nov  21 - TOTAL: a numeric column with no vendor unit; Dec 21 - LEAD: a numeric column with no vendor unit; Dec 21 - LAG: a numeric column with no vendor unit; Dec 21 - Total: a numeric column with no vendor unit; Jan 22 - LEAD: a numeric column with no vendor unit; Jan 22 - LAG: a numeric column with no vendor unit; Jan 22 - Total: a numeric column with no vendor unit; Feb 22 - LEAD: a numeric column with no vendor unit; Feb 22 - LAG: a numeric column with no vendor unit; Feb 22 - Total: a numeric column with no vendor unit; Mar 22 - LEAD: a numeric column with no vendor unit; Mar 22 - LAG: a numeric column with no vendor unit; Mar 22 - Total: a numeric column with no vendor unit; Apr 22 - LEAD: a numeric column with no vendor unit; Apr 22 - LAG: a numeric column with no vendor unit; Apr 22 - Total: a numeric column with no vendor unit; May 22 - LEAD: a numeric column with no vendor unit; May 22 - LAG: a numeric column with no vendor unit; May 22 - Total: a numeric column with no vendor unit; Jun 22 - LEAD: a numeric column with no vendor unit; Jun 22 - LAG: a numeric column with no vendor unit; Jun 22 - Total: a numeric column with no vendor unit; Jul 22 - LEAD: a numeric column with no vendor unit; Jul 22 - LAG: a numeric column with no vendor unit; Jul 22 - Total: a numeric column with no vendor unit; Aug 22 - LEAD: a numeric column with no vendor unit; Aug 22 - LAG: a numeric column with no vendor unit; Aug 22 - Total: a numeric column with no vendor unit; Sep 22 - LEAD: a numeric column with no vendor unit; Sep 22 - LAG: a numeric column with no vendor unit; Sep 22 - Total: a numeric column with no vendor unit; Oct 22 - LEAD: a numeric column with no vendor unit; Oct 22 - LAG: a numeric column with no vendor unit; Oct 22 - Total: a numeric column with no vendor unit; Nov 22 - LEAD: a numeric column with no vendor unit; Nov 22 - LAG: a numeric column with no vendor unit; Nov 22 - Total: a numeric column with no vendor unit; Dec 22 - LEAD: a numeric column with no vendor unit; Dec 22 - LAG: a numeric column with no vendor unit; Dec 22 - Total: a numeric column with no vendor unit; Jan 23 - LEAD: a numeric column with no vendor unit; Jan 23 - LAG: a numeric column with no vendor unit; Jan 23 - Total: a numeric column with no vendor unit; Feb 23 - LEAD: a numeric column with no vendor unit; Feb 23 - LAG: a numeric column with no vendor unit; Feb 23 - Total: a numeric column with no vendor unit; Mar 23 - LEAD: a numeric column with no vendor unit; Mar 23 - LAG: a numeric column with no vendor unit; Mar 23 - Total: a numeric column with no vendor unit; Apr 23 - LEAD: a numeric column with no vendor unit; Apr 23 - LAG: a numeric column with no vendor unit; Apr 23 - Total: a numeric column with no vendor unit; May 23 - LEAD: a numeric column with no vendor unit; May 23 - LAG: a numeric column with no vendor unit; May 23 - Total: a numeric column with no vendor unit; June 23 - LEAD: a numeric column with no vendor unit; June 23 - LAG: a numeric column with no vendor unit; June 23 - Total: a numeric column with no vendor unit; July 23 - LEAD: a numeric column with no vendor unit; July 23 - LAG: a numeric column with no vendor unit; July 23 - Total: a numeric column with no vendor unit; Aug 23 - LEAD: a numeric column with no vendor unit; Aug 23 - LAG: a numeric column with no vendor unit; Aug 23 - Total: a numeric column with no vendor unit; Sep 23 - LEAD: a numeric column with no vendor unit; Sep 23 - LAG: a numeric column with no vendor unit; Sep 23 - Total: a numeric column with no vendor unit; Oct 23 - LEAD: a numeric column with no vendor unit; Oct 23 - LAG: a numeric column with no vendor unit; Oct 23 - Total: a numeric column with no vendor unit; Nov 23 - LEAD: a numeric column with no vendor unit; Nov 23 - LAG: a numeric column with no vendor unit; Nov 23 - Total: a numeric column with no vendor unit; Dec 23 - LEAD: a numeric column with no vendor unit; Dec 23 - LAG: a numeric column with no vendor unit; Dec 23 - Total: a numeric column with no vendor unit; Jan 24 - LEAD: a numeric column with no vendor unit; Jan 24 - LAG: a numeric column with no vendor unit; Jan 24 - Total: a numeric column with no vendor unit; Feb 24 - LEAD: a numeric column with no vendor unit; Feb 24 - LAG: a numeric column with no vendor unit; Feb 24 - Total: a numeric column with no vendor unit; Mar 24 - LEAD: a numeric column with no vendor unit; Mar 24 - LAG: a numeric column with no vendor unit; Mar 24 - Total: a numeric column with no vendor unit; Apr 24 - LEAD: a numeric column with no vendor unit; Apr 24 - LAG: a numeric column with no vendor unit; Apr 24 - Total: a numeric column with no vendor unit; May 24 - LEAD: a numeric column with no vendor unit; May 24 - LAG: a numeric column with no vendor unit; May 24 - Total: a numeric column with no vendor unit; June 24 - LEAD: a numeric column with no vendor unit; June 24 - LAG: a numeric column with no vendor unit; June 24 - Total: a numeric column with no vendor unit; July 24 - LEAD: a numeric column with no vendor unit; July 24 - LAG: a numeric column with no vendor unit; July 24 - Total: a numeric column with no vendor unit; Aug 24 - LEAD: a numeric column with no vendor unit; Aug 24 - LAG: a numeric column with no vendor unit; Aug 24 - Total: a numeric column with no vendor unit; Sep 24 - LEAD: a numeric column with no vendor unit; Sep 24 - LAG: a numeric column with no vendor unit; Sep 24 - Total: a numeric column with no vendor unit; Oct 24 - LEAD: a numeric column with no vendor unit; Oct 24 - LAG: a numeric column with no vendor unit; Oct 24 - Total: a numeric column with no vendor unit; Nov 24 - LEAD: a numeric column with no vendor unit; Nov 24 - LAG: a numeric column with no vendor unit; Nov 24 - Total: a numeric column with no vendor unit; Dec 24 - LEAD: a numeric column with no vendor unit; Dec 24 - LAG: a numeric column with no vendor unit; Dec 24 - Total: a numeric column with no vendor unit",
+        "status": "held",
+        "unit": "AS-3"
+      },
+      "encoding": "utf-8",
+      "entity_key": [
+        "company",
+        "unit",
+        "default_market",
+        "location",
+        "month_year",
+        "lead",
+        "lag",
+        "total"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "int64",
+              "name": "id",
+              "nullable": true,
+              "source": "id"
+            },
+            {
+              "dtype": "string",
+              "name": "company",
+              "nullable": true,
+              "source": "Company"
+            },
+            {
+              "dtype": "string",
+              "name": "unit",
+              "nullable": true,
+              "source": "Unit"
+            },
+            {
+              "dtype": "string",
+              "name": "default_market",
+              "nullable": true,
+              "source": "Default/Market"
+            },
+            {
+              "dtype": "string",
+              "name": "location",
+              "nullable": true,
+              "source": "Location"
+            },
+            {
+              "dtype": "float64",
+              "name": "apr_20_lead",
+              "nullable": true,
+              "source": "Apr 20 -LEAD"
+            },
+            {
+              "dtype": "float64",
+              "name": "apr_20_lag",
+              "nullable": true,
+              "source": "Apr 20 - LAG"
+            },
+            {
+              "dtype": "float64",
+              "name": "apr_20_total",
+              "nullable": true,
+              "source": "Apr 20 - TOTAL"
+            },
+            {
+              "dtype": "float64",
+              "name": "may_20_lead",
+              "nullable": true,
+              "source": "May 20 -LEAD"
+            },
+            {
+              "dtype": "float64",
+              "name": "may_20_lag",
+              "nullable": true,
+              "source": "May 20 - LAG"
+            },
+            {
+              "dtype": "float64",
+              "name": "may_20_total",
+              "nullable": true,
+              "source": "May 20 - TOTAL"
+            },
+            {
+              "dtype": "float64",
+              "name": "jun_20_lead",
+              "nullable": true,
+              "source": "Jun 20 -LEAD"
+            },
+            {
+              "dtype": "float64",
+              "name": "jun_20_lag",
+              "nullable": true,
+              "source": "Jun 20 - LAG"
+            },
+            {
+              "dtype": "float64",
+              "name": "jun_20_total",
+              "nullable": true,
+              "source": "Jun 20 - TOTAL"
+            },
+            {
+              "dtype": "float64",
+              "name": "jul_20_lead",
+              "nullable": true,
+              "source": "Jul 20 -LEAD"
+            },
+            {
+              "dtype": "float64",
+              "name": "jul_20_lag",
+              "nullable": true,
+              "source": "Jul 20 - LAG"
+            },
+            {
+              "dtype": "float64",
+              "name": "jul_20_total",
+              "nullable": true,
+              "source": "Jul 20 - TOTAL"
+            },
+            {
+              "dtype": "float64",
+              "name": "aug_20_lead",
+              "nullable": true,
+              "source": "Aug 20 -LEAD"
+            },
+            {
+              "dtype": "float64",
+              "name": "aug_20_lag",
+              "nullable": true,
+              "source": "Aug 20 - LAG"
+            },
+            {
+              "dtype": "float64",
+              "name": "aug_20_total",
+              "nullable": true,
+              "source": "Aug 20 - TOTAL"
+            },
+            {
+              "dtype": "float64",
+              "name": "sep_20_lead",
+              "nullable": true,
+              "source": "Sep 20 -LEAD"
+            },
+            {
+              "dtype": "float64",
+              "name": "sep_20_lag",
+              "nullable": true,
+              "source": "Sep 20 - LAG"
+            },
+            {
+              "dtype": "float64",
+              "name": "sep_20_total",
+              "nullable": true,
+              "source": "Sep 20 - TOTAL"
+            },
+            {
+              "dtype": "float64",
+              "name": "oct_20_lead",
+              "nullable": true,
+              "source": "Oct 20 -LEAD"
+            },
+            {
+              "dtype": "float64",
+              "name": "oct_20_lag",
+              "nullable": true,
+              "source": "Oct 20 - LAG"
+            },
+            {
+              "dtype": "float64",
+              "name": "oct_20_total",
+              "nullable": true,
+              "source": "Oct 20 - TOTAL"
+            },
+            {
+              "dtype": "float64",
+              "name": "nov_20_lead",
+              "nullable": true,
+              "source": "Nov 20 -LEAD"
+            },
+            {
+              "dtype": "float64",
+              "name": "nov_20_lag",
+              "nullable": true,
+              "source": "Nov 20 - LAG"
+            },
+            {
+              "dtype": "float64",
+              "name": "nov_20_total",
+              "nullable": true,
+              "source": "Nov 20 - TOTAL"
+            },
+            {
+              "dtype": "float64",
+              "name": "dec_20_lead",
+              "nullable": true,
+              "source": "Dec 20 -LEAD"
+            },
+            {
+              "dtype": "float64",
+              "name": "dec_20_lag",
+              "nullable": true,
+              "source": "Dec 20 - LAG"
+            },
+            {
+              "dtype": "float64",
+              "name": "dec_20_total",
+              "nullable": true,
+              "source": "Dec 20 - TOTAL"
+            },
+            {
+              "dtype": "float64",
+              "name": "jan_21_lead",
+              "nullable": true,
+              "source": "Jan 21 -LEAD"
+            },
+            {
+              "dtype": "float64",
+              "name": "jan_21_lag",
+              "nullable": true,
+              "source": "Jan 21 - LAG"
+            },
+            {
+              "dtype": "float64",
+              "name": "jan_21_total",
+              "nullable": true,
+              "source": "Jan 21 - TOTAL"
+            },
+            {
+              "dtype": "float64",
+              "name": "feb_21_lead",
+              "nullable": true,
+              "source": "Feb 21 -LEAD"
+            },
+            {
+              "dtype": "float64",
+              "name": "feb_21_lag",
+              "nullable": true,
+              "source": "Feb 21 - LAG"
+            },
+            {
+              "dtype": "float64",
+              "name": "feb_21_total",
+              "nullable": true,
+              "source": "Feb 21 - TOTAL"
+            },
+            {
+              "dtype": "float64",
+              "name": "mar_21_lead",
+              "nullable": true,
+              "source": "Mar 21 -LEAD"
+            },
+            {
+              "dtype": "float64",
+              "name": "mar_21_lag",
+              "nullable": true,
+              "source": "Mar 21 - LAG"
+            },
+            {
+              "dtype": "float64",
+              "name": "mar_21_total",
+              "nullable": true,
+              "source": "Mar 21 - TOTAL"
+            },
+            {
+              "dtype": "float64",
+              "name": "apr_21_lead",
+              "nullable": true,
+              "source": "Apr 21 -LEAD"
+            },
+            {
+              "dtype": "float64",
+              "name": "apr_21_lag",
+              "nullable": true,
+              "source": "Apr 21 - LAG"
+            },
+            {
+              "dtype": "float64",
+              "name": "apr_21_total",
+              "nullable": true,
+              "source": "Apr 21 - TOTAL"
+            },
+            {
+              "dtype": "float64",
+              "name": "may_21_lead",
+              "nullable": true,
+              "source": "May 21 -LEAD"
+            },
+            {
+              "dtype": "float64",
+              "name": "may_21_lag",
+              "nullable": true,
+              "source": "May 21 - LAG"
+            },
+            {
+              "dtype": "float64",
+              "name": "may_21_total",
+              "nullable": true,
+              "source": "May 21 - TOTAL"
+            },
+            {
+              "dtype": "float64",
+              "name": "jun_21_lead",
+              "nullable": true,
+              "source": "Jun 21 -LEAD"
+            },
+            {
+              "dtype": "float64",
+              "name": "jun_21_lag",
+              "nullable": true,
+              "source": "Jun 21 - LAG"
+            },
+            {
+              "dtype": "float64",
+              "name": "jun_21_total",
+              "nullable": true,
+              "source": "Jun 21 - TOTAL"
+            },
+            {
+              "dtype": "float64",
+              "name": "jul_21_lead",
+              "nullable": true,
+              "source": "Jul 21 -LEAD"
+            },
+            {
+              "dtype": "float64",
+              "name": "jul_21_lag",
+              "nullable": true,
+              "source": "Jul 21 - LAG"
+            },
+            {
+              "dtype": "float64",
+              "name": "jul_21_total",
+              "nullable": true,
+              "source": "Jul 21 - TOTAL"
+            },
+            {
+              "dtype": "float64",
+              "name": "aug_21_lead",
+              "nullable": true,
+              "source": "Aug 21 -LEAD"
+            },
+            {
+              "dtype": "float64",
+              "name": "aug_21_lag",
+              "nullable": true,
+              "source": "Aug 21 - LAG"
+            },
+            {
+              "dtype": "float64",
+              "name": "aug_21_total",
+              "nullable": true,
+              "source": "Aug 21 - TOTAL"
+            },
+            {
+              "dtype": "float64",
+              "name": "sep_21_lead",
+              "nullable": true,
+              "source": "Sep 21 -LEAD"
+            },
+            {
+              "dtype": "float64",
+              "name": "sep_21_lag",
+              "nullable": true,
+              "source": "Sep 21 - LAG"
+            },
+            {
+              "dtype": "float64",
+              "name": "sep_21_total",
+              "nullable": true,
+              "source": "Sep 21 - TOTAL"
+            },
+            {
+              "dtype": "float64",
+              "name": "oct_21_lead",
+              "nullable": true,
+              "source": "Oct 21 -LEAD"
+            },
+            {
+              "dtype": "float64",
+              "name": "oct_21_lag",
+              "nullable": true,
+              "source": "Oct 21 - LAG"
+            },
+            {
+              "dtype": "float64",
+              "name": "oct_21_total",
+              "nullable": true,
+              "source": "Oct 21 - TOTAL"
+            },
+            {
+              "dtype": "float64",
+              "name": "nov_21_lead",
+              "nullable": true,
+              "source": "Nov 21 -LEAD"
+            },
+            {
+              "dtype": "float64",
+              "name": "nov_21_lag",
+              "nullable": true,
+              "source": "Nov  21 - LAG"
+            },
+            {
+              "dtype": "float64",
+              "name": "nov_21_total",
+              "nullable": true,
+              "source": "Nov  21 - TOTAL"
+            },
+            {
+              "dtype": "float64",
+              "name": "dec_21_lead",
+              "nullable": true,
+              "source": "Dec 21 - LEAD"
+            },
+            {
+              "dtype": "float64",
+              "name": "dec_21_lag",
+              "nullable": true,
+              "source": "Dec 21 - LAG"
+            },
+            {
+              "dtype": "float64",
+              "name": "dec_21_total",
+              "nullable": true,
+              "source": "Dec 21 - Total"
+            },
+            {
+              "dtype": "float64",
+              "name": "jan_22_lead",
+              "nullable": true,
+              "source": "Jan 22 - LEAD"
+            },
+            {
+              "dtype": "float64",
+              "name": "jan_22_lag",
+              "nullable": true,
+              "source": "Jan 22 - LAG"
+            },
+            {
+              "dtype": "float64",
+              "name": "jan_22_total",
+              "nullable": true,
+              "source": "Jan 22 - Total"
+            },
+            {
+              "dtype": "float64",
+              "name": "feb_22_lead",
+              "nullable": true,
+              "source": "Feb 22 - LEAD"
+            },
+            {
+              "dtype": "float64",
+              "name": "feb_22_lag",
+              "nullable": true,
+              "source": "Feb 22 - LAG"
+            },
+            {
+              "dtype": "float64",
+              "name": "feb_22_total",
+              "nullable": true,
+              "source": "Feb 22 - Total"
+            },
+            {
+              "dtype": "float64",
+              "name": "mar_22_lead",
+              "nullable": true,
+              "source": "Mar 22 - LEAD"
+            },
+            {
+              "dtype": "float64",
+              "name": "mar_22_lag",
+              "nullable": true,
+              "source": "Mar 22 - LAG"
+            },
+            {
+              "dtype": "float64",
+              "name": "mar_22_total",
+              "nullable": true,
+              "source": "Mar 22 - Total"
+            },
+            {
+              "dtype": "float64",
+              "name": "apr_22_lead",
+              "nullable": true,
+              "source": "Apr 22 - LEAD"
+            },
+            {
+              "dtype": "float64",
+              "name": "apr_22_lag",
+              "nullable": true,
+              "source": "Apr 22 - LAG"
+            },
+            {
+              "dtype": "float64",
+              "name": "apr_22_total",
+              "nullable": true,
+              "source": "Apr 22 - Total"
+            },
+            {
+              "dtype": "float64",
+              "name": "may_22_lead",
+              "nullable": true,
+              "source": "May 22 - LEAD"
+            },
+            {
+              "dtype": "float64",
+              "name": "may_22_lag",
+              "nullable": true,
+              "source": "May 22 - LAG"
+            },
+            {
+              "dtype": "float64",
+              "name": "may_22_total",
+              "nullable": true,
+              "source": "May 22 - Total"
+            },
+            {
+              "dtype": "float64",
+              "name": "jun_22_lead",
+              "nullable": true,
+              "source": "Jun 22 - LEAD"
+            },
+            {
+              "dtype": "float64",
+              "name": "jun_22_lag",
+              "nullable": true,
+              "source": "Jun 22 - LAG"
+            },
+            {
+              "dtype": "float64",
+              "name": "jun_22_total",
+              "nullable": true,
+              "source": "Jun 22 - Total"
+            },
+            {
+              "dtype": "float64",
+              "name": "jul_22_lead",
+              "nullable": true,
+              "source": "Jul 22 - LEAD"
+            },
+            {
+              "dtype": "float64",
+              "name": "jul_22_lag",
+              "nullable": true,
+              "source": "Jul 22 - LAG"
+            },
+            {
+              "dtype": "float64",
+              "name": "jul_22_total",
+              "nullable": true,
+              "source": "Jul 22 - Total"
+            },
+            {
+              "dtype": "float64",
+              "name": "aug_22_lead",
+              "nullable": true,
+              "source": "Aug 22 - LEAD"
+            },
+            {
+              "dtype": "float64",
+              "name": "aug_22_lag",
+              "nullable": true,
+              "source": "Aug 22 - LAG"
+            },
+            {
+              "dtype": "float64",
+              "name": "aug_22_total",
+              "nullable": true,
+              "source": "Aug 22 - Total"
+            },
+            {
+              "dtype": "float64",
+              "name": "sep_22_lead",
+              "nullable": true,
+              "source": "Sep 22 - LEAD"
+            },
+            {
+              "dtype": "float64",
+              "name": "sep_22_lag",
+              "nullable": true,
+              "source": "Sep 22 - LAG"
+            },
+            {
+              "dtype": "float64",
+              "name": "sep_22_total",
+              "nullable": true,
+              "source": "Sep 22 - Total"
+            },
+            {
+              "dtype": "float64",
+              "name": "oct_22_lead",
+              "nullable": true,
+              "source": "Oct 22 - LEAD"
+            },
+            {
+              "dtype": "float64",
+              "name": "oct_22_lag",
+              "nullable": true,
+              "source": "Oct 22 - LAG"
+            },
+            {
+              "dtype": "float64",
+              "name": "oct_22_total",
+              "nullable": true,
+              "source": "Oct 22 - Total"
+            },
+            {
+              "dtype": "float64",
+              "name": "nov_22_lead",
+              "nullable": true,
+              "source": "Nov 22 - LEAD"
+            },
+            {
+              "dtype": "float64",
+              "name": "nov_22_lag",
+              "nullable": true,
+              "source": "Nov 22 - LAG"
+            },
+            {
+              "dtype": "float64",
+              "name": "nov_22_total",
+              "nullable": true,
+              "source": "Nov 22 - Total"
+            },
+            {
+              "dtype": "float64",
+              "name": "dec_22_lead",
+              "nullable": true,
+              "source": "Dec 22 - LEAD"
+            },
+            {
+              "dtype": "float64",
+              "name": "dec_22_lag",
+              "nullable": true,
+              "source": "Dec 22 - LAG"
+            },
+            {
+              "dtype": "float64",
+              "name": "dec_22_total",
+              "nullable": true,
+              "source": "Dec 22 - Total"
+            },
+            {
+              "dtype": "float64",
+              "name": "jan_23_lead",
+              "nullable": true,
+              "source": "Jan 23 - LEAD"
+            },
+            {
+              "dtype": "float64",
+              "name": "jan_23_lag",
+              "nullable": true,
+              "source": "Jan 23 - LAG"
+            },
+            {
+              "dtype": "float64",
+              "name": "jan_23_total",
+              "nullable": true,
+              "source": "Jan 23 - Total"
+            },
+            {
+              "dtype": "float64",
+              "name": "feb_23_lead",
+              "nullable": true,
+              "source": "Feb 23 - LEAD"
+            },
+            {
+              "dtype": "float64",
+              "name": "feb_23_lag",
+              "nullable": true,
+              "source": "Feb 23 - LAG"
+            },
+            {
+              "dtype": "float64",
+              "name": "feb_23_total",
+              "nullable": true,
+              "source": "Feb 23 - Total"
+            },
+            {
+              "dtype": "float64",
+              "name": "mar_23_lead",
+              "nullable": true,
+              "source": "Mar 23 - LEAD"
+            },
+            {
+              "dtype": "float64",
+              "name": "mar_23_lag",
+              "nullable": true,
+              "source": "Mar 23 - LAG"
+            },
+            {
+              "dtype": "float64",
+              "name": "mar_23_total",
+              "nullable": true,
+              "source": "Mar 23 - Total"
+            },
+            {
+              "dtype": "float64",
+              "name": "apr_23_lead",
+              "nullable": true,
+              "source": "Apr 23 - LEAD"
+            },
+            {
+              "dtype": "float64",
+              "name": "apr_23_lag",
+              "nullable": true,
+              "source": "Apr 23 - LAG"
+            },
+            {
+              "dtype": "float64",
+              "name": "apr_23_total",
+              "nullable": true,
+              "source": "Apr 23 - Total"
+            },
+            {
+              "dtype": "float64",
+              "name": "may_23_lead",
+              "nullable": true,
+              "source": "May 23 - LEAD"
+            },
+            {
+              "dtype": "float64",
+              "name": "may_23_lag",
+              "nullable": true,
+              "source": "May 23 - LAG"
+            },
+            {
+              "dtype": "float64",
+              "name": "may_23_total",
+              "nullable": true,
+              "source": "May 23 - Total"
+            },
+            {
+              "dtype": "float64",
+              "name": "june_23_lead",
+              "nullable": true,
+              "source": "June 23 - LEAD"
+            },
+            {
+              "dtype": "float64",
+              "name": "june_23_lag",
+              "nullable": true,
+              "source": "June 23 - LAG"
+            },
+            {
+              "dtype": "float64",
+              "name": "june_23_total",
+              "nullable": true,
+              "source": "June 23 - Total"
+            },
+            {
+              "dtype": "float64",
+              "name": "july_23_lead",
+              "nullable": true,
+              "source": "July 23 - LEAD"
+            },
+            {
+              "dtype": "float64",
+              "name": "july_23_lag",
+              "nullable": true,
+              "source": "July 23 - LAG"
+            },
+            {
+              "dtype": "float64",
+              "name": "july_23_total",
+              "nullable": true,
+              "source": "July 23 - Total"
+            },
+            {
+              "dtype": "float64",
+              "name": "aug_23_lead",
+              "nullable": true,
+              "source": "Aug 23 - LEAD"
+            },
+            {
+              "dtype": "float64",
+              "name": "aug_23_lag",
+              "nullable": true,
+              "source": "Aug 23 - LAG"
+            },
+            {
+              "dtype": "float64",
+              "name": "aug_23_total",
+              "nullable": true,
+              "source": "Aug 23 - Total"
+            },
+            {
+              "dtype": "float64",
+              "name": "sep_23_lead",
+              "nullable": true,
+              "source": "Sep 23 - LEAD"
+            },
+            {
+              "dtype": "float64",
+              "name": "sep_23_lag",
+              "nullable": true,
+              "source": "Sep 23 - LAG"
+            },
+            {
+              "dtype": "float64",
+              "name": "sep_23_total",
+              "nullable": true,
+              "source": "Sep 23 - Total"
+            },
+            {
+              "dtype": "float64",
+              "name": "oct_23_lead",
+              "nullable": true,
+              "source": "Oct 23 - LEAD"
+            },
+            {
+              "dtype": "float64",
+              "name": "oct_23_lag",
+              "nullable": true,
+              "source": "Oct 23 - LAG"
+            },
+            {
+              "dtype": "float64",
+              "name": "oct_23_total",
+              "nullable": true,
+              "source": "Oct 23 - Total"
+            },
+            {
+              "dtype": "float64",
+              "name": "nov_23_lead",
+              "nullable": true,
+              "source": "Nov 23 - LEAD"
+            },
+            {
+              "dtype": "float64",
+              "name": "nov_23_lag",
+              "nullable": true,
+              "source": "Nov 23 - LAG"
+            },
+            {
+              "dtype": "float64",
+              "name": "nov_23_total",
+              "nullable": true,
+              "source": "Nov 23 - Total"
+            },
+            {
+              "dtype": "float64",
+              "name": "dec_23_lead",
+              "nullable": true,
+              "source": "Dec 23 - LEAD"
+            },
+            {
+              "dtype": "float64",
+              "name": "dec_23_lag",
+              "nullable": true,
+              "source": "Dec 23 - LAG"
+            },
+            {
+              "dtype": "float64",
+              "name": "dec_23_total",
+              "nullable": true,
+              "source": "Dec 23 - Total"
+            },
+            {
+              "dtype": "float64",
+              "name": "jan_24_lead",
+              "nullable": true,
+              "source": "Jan 24 - LEAD"
+            },
+            {
+              "dtype": "float64",
+              "name": "jan_24_lag",
+              "nullable": true,
+              "source": "Jan 24 - LAG"
+            },
+            {
+              "dtype": "float64",
+              "name": "jan_24_total",
+              "nullable": true,
+              "source": "Jan 24 - Total"
+            },
+            {
+              "dtype": "float64",
+              "name": "feb_24_lead",
+              "nullable": true,
+              "source": "Feb 24 - LEAD"
+            },
+            {
+              "dtype": "float64",
+              "name": "feb_24_lag",
+              "nullable": true,
+              "source": "Feb 24 - LAG"
+            },
+            {
+              "dtype": "float64",
+              "name": "feb_24_total",
+              "nullable": true,
+              "source": "Feb 24 - Total"
+            },
+            {
+              "dtype": "float64",
+              "name": "mar_24_lead",
+              "nullable": true,
+              "source": "Mar 24 - LEAD"
+            },
+            {
+              "dtype": "float64",
+              "name": "mar_24_lag",
+              "nullable": true,
+              "source": "Mar 24 - LAG"
+            },
+            {
+              "dtype": "float64",
+              "name": "mar_24_total",
+              "nullable": true,
+              "source": "Mar 24 - Total"
+            },
+            {
+              "dtype": "float64",
+              "name": "apr_24_lead",
+              "nullable": true,
+              "source": "Apr 24 - LEAD"
+            },
+            {
+              "dtype": "float64",
+              "name": "apr_24_lag",
+              "nullable": true,
+              "source": "Apr 24 - LAG"
+            },
+            {
+              "dtype": "float64",
+              "name": "apr_24_total",
+              "nullable": true,
+              "source": "Apr 24 - Total"
+            },
+            {
+              "dtype": "float64",
+              "name": "may_24_lead",
+              "nullable": true,
+              "source": "May 24 - LEAD"
+            },
+            {
+              "dtype": "float64",
+              "name": "may_24_lag",
+              "nullable": true,
+              "source": "May 24 - LAG"
+            },
+            {
+              "dtype": "float64",
+              "name": "may_24_total",
+              "nullable": true,
+              "source": "May 24 - Total"
+            },
+            {
+              "dtype": "float64",
+              "name": "june_24_lead",
+              "nullable": true,
+              "source": "June 24 - LEAD"
+            },
+            {
+              "dtype": "float64",
+              "name": "june_24_lag",
+              "nullable": true,
+              "source": "June 24 - LAG"
+            },
+            {
+              "dtype": "float64",
+              "name": "june_24_total",
+              "nullable": true,
+              "source": "June 24 - Total"
+            },
+            {
+              "dtype": "float64",
+              "name": "july_24_lead",
+              "nullable": true,
+              "source": "July 24 - LEAD"
+            },
+            {
+              "dtype": "float64",
+              "name": "july_24_lag",
+              "nullable": true,
+              "source": "July 24 - LAG"
+            },
+            {
+              "dtype": "float64",
+              "name": "july_24_total",
+              "nullable": true,
+              "source": "July 24 - Total"
+            },
+            {
+              "dtype": "float64",
+              "name": "aug_24_lead",
+              "nullable": true,
+              "source": "Aug 24 - LEAD"
+            },
+            {
+              "dtype": "float64",
+              "name": "aug_24_lag",
+              "nullable": true,
+              "source": "Aug 24 - LAG"
+            },
+            {
+              "dtype": "float64",
+              "name": "aug_24_total",
+              "nullable": true,
+              "source": "Aug 24 - Total"
+            },
+            {
+              "dtype": "float64",
+              "name": "sep_24_lead",
+              "nullable": true,
+              "source": "Sep 24 - LEAD"
+            },
+            {
+              "dtype": "float64",
+              "name": "sep_24_lag",
+              "nullable": true,
+              "source": "Sep 24 - LAG"
+            },
+            {
+              "dtype": "float64",
+              "name": "sep_24_total",
+              "nullable": true,
+              "source": "Sep 24 - Total"
+            },
+            {
+              "dtype": "float64",
+              "name": "oct_24_lead",
+              "nullable": true,
+              "source": "Oct 24 - LEAD"
+            },
+            {
+              "dtype": "float64",
+              "name": "oct_24_lag",
+              "nullable": true,
+              "source": "Oct 24 - LAG"
+            },
+            {
+              "dtype": "float64",
+              "name": "oct_24_total",
+              "nullable": true,
+              "source": "Oct 24 - Total"
+            },
+            {
+              "dtype": "float64",
+              "name": "nov_24_lead",
+              "nullable": true,
+              "source": "Nov 24 - LEAD"
+            },
+            {
+              "dtype": "float64",
+              "name": "nov_24_lag",
+              "nullable": true,
+              "source": "Nov 24 - LAG"
+            },
+            {
+              "dtype": "float64",
+              "name": "nov_24_total",
+              "nullable": true,
+              "source": "Nov 24 - Total"
+            },
+            {
+              "dtype": "float64",
+              "name": "dec_24_lead",
+              "nullable": true,
+              "source": "Dec 24 - LEAD"
+            },
+            {
+              "dtype": "float64",
+              "name": "dec_24_lag",
+              "nullable": true,
+              "source": "Dec 24 - LAG"
+            },
+            {
+              "dtype": "float64",
+              "name": "dec_24_total",
+              "nullable": true,
+              "source": "Dec 24 - Total"
+            }
+          ],
+          "header": [
+            "id",
+            "Company",
+            "Unit",
+            "Default/Market",
+            "Location",
+            "Apr 20 -LEAD",
+            "Apr 20 - LAG",
+            "Apr 20 - TOTAL",
+            "May 20 -LEAD",
+            "May 20 - LAG",
+            "May 20 - TOTAL",
+            "Jun 20 -LEAD",
+            "Jun 20 - LAG",
+            "Jun 20 - TOTAL",
+            "Jul 20 -LEAD",
+            "Jul 20 - LAG",
+            "Jul 20 - TOTAL",
+            "Aug 20 -LEAD",
+            "Aug 20 - LAG",
+            "Aug 20 - TOTAL",
+            "Sep 20 -LEAD",
+            "Sep 20 - LAG",
+            "Sep 20 - TOTAL",
+            "Oct 20 -LEAD",
+            "Oct 20 - LAG",
+            "Oct 20 - TOTAL",
+            "Nov 20 -LEAD",
+            "Nov 20 - LAG",
+            "Nov 20 - TOTAL",
+            "Dec 20 -LEAD",
+            "Dec 20 - LAG",
+            "Dec 20 - TOTAL",
+            "Jan 21 -LEAD",
+            "Jan 21 - LAG",
+            "Jan 21 - TOTAL",
+            "Feb 21 -LEAD",
+            "Feb 21 - LAG",
+            "Feb 21 - TOTAL",
+            "Mar 21 -LEAD",
+            "Mar 21 - LAG",
+            "Mar 21 - TOTAL",
+            "Apr 21 -LEAD",
+            "Apr 21 - LAG",
+            "Apr 21 - TOTAL",
+            "May 21 -LEAD",
+            "May 21 - LAG",
+            "May 21 - TOTAL",
+            "Jun 21 -LEAD",
+            "Jun 21 - LAG",
+            "Jun 21 - TOTAL",
+            "Jul 21 -LEAD",
+            "Jul 21 - LAG",
+            "Jul 21 - TOTAL",
+            "Aug 21 -LEAD",
+            "Aug 21 - LAG",
+            "Aug 21 - TOTAL",
+            "Sep 21 -LEAD",
+            "Sep 21 - LAG",
+            "Sep 21 - TOTAL",
+            "Oct 21 -LEAD",
+            "Oct 21 - LAG",
+            "Oct 21 - TOTAL",
+            "Nov 21 -LEAD",
+            "Nov  21 - LAG",
+            "Nov  21 - TOTAL",
+            "Dec 21 - LEAD",
+            "Dec 21 - LAG",
+            "Dec 21 - Total",
+            "Jan 22 - LEAD",
+            "Jan 22 - LAG",
+            "Jan 22 - Total",
+            "Feb 22 - LEAD",
+            "Feb 22 - LAG",
+            "Feb 22 - Total",
+            "Mar 22 - LEAD",
+            "Mar 22 - LAG",
+            "Mar 22 - Total",
+            "Apr 22 - LEAD",
+            "Apr 22 - LAG",
+            "Apr 22 - Total",
+            "May 22 - LEAD",
+            "May 22 - LAG",
+            "May 22 - Total",
+            "Jun 22 - LEAD",
+            "Jun 22 - LAG",
+            "Jun 22 - Total",
+            "Jul 22 - LEAD",
+            "Jul 22 - LAG",
+            "Jul 22 - Total",
+            "Aug 22 - LEAD",
+            "Aug 22 - LAG",
+            "Aug 22 - Total",
+            "Sep 22 - LEAD",
+            "Sep 22 - LAG",
+            "Sep 22 - Total",
+            "Oct 22 - LEAD",
+            "Oct 22 - LAG",
+            "Oct 22 - Total",
+            "Nov 22 - LEAD",
+            "Nov 22 - LAG",
+            "Nov 22 - Total",
+            "Dec 22 - LEAD",
+            "Dec 22 - LAG",
+            "Dec 22 - Total",
+            "Jan 23 - LEAD",
+            "Jan 23 - LAG",
+            "Jan 23 - Total",
+            "Feb 23 - LEAD",
+            "Feb 23 - LAG",
+            "Feb 23 - Total",
+            "Mar 23 - LEAD",
+            "Mar 23 - LAG",
+            "Mar 23 - Total",
+            "Apr 23 - LEAD",
+            "Apr 23 - LAG",
+            "Apr 23 - Total",
+            "May 23 - LEAD",
+            "May 23 - LAG",
+            "May 23 - Total",
+            "June 23 - LEAD",
+            "June 23 - LAG",
+            "June 23 - Total",
+            "July 23 - LEAD",
+            "July 23 - LAG",
+            "July 23 - Total",
+            "Aug 23 - LEAD",
+            "Aug 23 - LAG",
+            "Aug 23 - Total",
+            "Sep 23 - LEAD",
+            "Sep 23 - LAG",
+            "Sep 23 - Total",
+            "Oct 23 - LEAD",
+            "Oct 23 - LAG",
+            "Oct 23 - Total",
+            "Nov 23 - LEAD",
+            "Nov 23 - LAG",
+            "Nov 23 - Total",
+            "Dec 23 - LEAD",
+            "Dec 23 - LAG",
+            "Dec 23 - Total",
+            "Jan 24 - LEAD",
+            "Jan 24 - LAG",
+            "Jan 24 - Total",
+            "Feb 24 - LEAD",
+            "Feb 24 - LAG",
+            "Feb 24 - Total",
+            "Mar 24 - LEAD",
+            "Mar 24 - LAG",
+            "Mar 24 - Total",
+            "Apr 24 - LEAD",
+            "Apr 24 - LAG",
+            "Apr 24 - Total",
+            "May 24 - LEAD",
+            "May 24 - LAG",
+            "May 24 - Total",
+            "June 24 - LEAD",
+            "June 24 - LAG",
+            "June 24 - Total",
+            "July 24 - LEAD",
+            "July 24 - LAG",
+            "July 24 - Total",
+            "Aug 24 - LEAD",
+            "Aug 24 - LAG",
+            "Aug 24 - Total",
+            "Sep 24 - LEAD",
+            "Sep 24 - LAG",
+            "Sep 24 - Total",
+            "Oct 24 - LEAD",
+            "Oct 24 - LAG",
+            "Oct 24 - Total",
+            "Nov 24 - LEAD",
+            "Nov 24 - LAG",
+            "Nov 24 - Total",
+            "Dec 24 - LEAD",
+            "Dec 24 - LAG",
+            "Dec 24 - Total"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        },
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "company",
+              "nullable": true,
+              "source": "Company"
+            },
+            {
+              "dtype": "string",
+              "name": "unit",
+              "nullable": true,
+              "source": "Unit"
+            },
+            {
+              "dtype": "string",
+              "name": "default_market",
+              "nullable": true,
+              "source": "Default/Market"
+            },
+            {
+              "dtype": "string",
+              "name": "location",
+              "nullable": true,
+              "source": "Location"
+            },
+            {
+              "dtype": "date",
+              "format": "%b-%y",
+              "name": "month_year",
+              "nullable": true,
+              "source": "Month-Year"
+            },
+            {
+              "dtype": "float64",
+              "name": "lead",
+              "nullable": true,
+              "source": "LEAD"
+            },
+            {
+              "dtype": "float64",
+              "name": "lag",
+              "nullable": true,
+              "source": "LAG"
+            },
+            {
+              "dtype": "float64",
+              "name": "total",
+              "nullable": true,
+              "source": "TOTAL"
+            }
+          ],
+          "header": [
+            "Company",
+            "Unit",
+            "Default/Market",
+            "Location",
+            "Month-Year",
+            "LEAD",
+            "LAG",
+            "TOTAL"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T173",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "held",
+        "field": "column 'id'.unit",
+        "id": "T01",
+        "kind": "unit",
+        "question": "id: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Apr 20 -LEAD'.unit",
+        "id": "T02",
+        "kind": "unit",
+        "question": "Apr 20 -LEAD: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Apr 20 - LAG'.unit",
+        "id": "T03",
+        "kind": "unit",
+        "question": "Apr 20 - LAG: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Apr 20 - TOTAL'.unit",
+        "id": "T04",
+        "kind": "unit",
+        "question": "Apr 20 - TOTAL: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'May 20 -LEAD'.unit",
+        "id": "T05",
+        "kind": "unit",
+        "question": "May 20 -LEAD: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'May 20 - LAG'.unit",
+        "id": "T06",
+        "kind": "unit",
+        "question": "May 20 - LAG: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'May 20 - TOTAL'.unit",
+        "id": "T07",
+        "kind": "unit",
+        "question": "May 20 - TOTAL: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Jun 20 -LEAD'.unit",
+        "id": "T08",
+        "kind": "unit",
+        "question": "Jun 20 -LEAD: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Jun 20 - LAG'.unit",
+        "id": "T09",
+        "kind": "unit",
+        "question": "Jun 20 - LAG: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Jun 20 - TOTAL'.unit",
+        "id": "T10",
+        "kind": "unit",
+        "question": "Jun 20 - TOTAL: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Jul 20 -LEAD'.unit",
+        "id": "T11",
+        "kind": "unit",
+        "question": "Jul 20 -LEAD: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Jul 20 - LAG'.unit",
+        "id": "T12",
+        "kind": "unit",
+        "question": "Jul 20 - LAG: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Jul 20 - TOTAL'.unit",
+        "id": "T13",
+        "kind": "unit",
+        "question": "Jul 20 - TOTAL: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Aug 20 -LEAD'.unit",
+        "id": "T14",
+        "kind": "unit",
+        "question": "Aug 20 -LEAD: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Aug 20 - LAG'.unit",
+        "id": "T15",
+        "kind": "unit",
+        "question": "Aug 20 - LAG: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Aug 20 - TOTAL'.unit",
+        "id": "T16",
+        "kind": "unit",
+        "question": "Aug 20 - TOTAL: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Sep 20 -LEAD'.unit",
+        "id": "T17",
+        "kind": "unit",
+        "question": "Sep 20 -LEAD: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Sep 20 - LAG'.unit",
+        "id": "T18",
+        "kind": "unit",
+        "question": "Sep 20 - LAG: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Sep 20 - TOTAL'.unit",
+        "id": "T19",
+        "kind": "unit",
+        "question": "Sep 20 - TOTAL: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Oct 20 -LEAD'.unit",
+        "id": "T20",
+        "kind": "unit",
+        "question": "Oct 20 -LEAD: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Oct 20 - LAG'.unit",
+        "id": "T21",
+        "kind": "unit",
+        "question": "Oct 20 - LAG: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Oct 20 - TOTAL'.unit",
+        "id": "T22",
+        "kind": "unit",
+        "question": "Oct 20 - TOTAL: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Nov 20 -LEAD'.unit",
+        "id": "T23",
+        "kind": "unit",
+        "question": "Nov 20 -LEAD: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Nov 20 - LAG'.unit",
+        "id": "T24",
+        "kind": "unit",
+        "question": "Nov 20 - LAG: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Nov 20 - TOTAL'.unit",
+        "id": "T25",
+        "kind": "unit",
+        "question": "Nov 20 - TOTAL: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Dec 20 -LEAD'.unit",
+        "id": "T26",
+        "kind": "unit",
+        "question": "Dec 20 -LEAD: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Dec 20 - LAG'.unit",
+        "id": "T27",
+        "kind": "unit",
+        "question": "Dec 20 - LAG: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Dec 20 - TOTAL'.unit",
+        "id": "T28",
+        "kind": "unit",
+        "question": "Dec 20 - TOTAL: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Jan 21 -LEAD'.unit",
+        "id": "T29",
+        "kind": "unit",
+        "question": "Jan 21 -LEAD: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Jan 21 - LAG'.unit",
+        "id": "T30",
+        "kind": "unit",
+        "question": "Jan 21 - LAG: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Jan 21 - TOTAL'.unit",
+        "id": "T31",
+        "kind": "unit",
+        "question": "Jan 21 - TOTAL: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Feb 21 -LEAD'.unit",
+        "id": "T32",
+        "kind": "unit",
+        "question": "Feb 21 -LEAD: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Feb 21 - LAG'.unit",
+        "id": "T33",
+        "kind": "unit",
+        "question": "Feb 21 - LAG: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Feb 21 - TOTAL'.unit",
+        "id": "T34",
+        "kind": "unit",
+        "question": "Feb 21 - TOTAL: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Mar 21 -LEAD'.unit",
+        "id": "T35",
+        "kind": "unit",
+        "question": "Mar 21 -LEAD: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Mar 21 - LAG'.unit",
+        "id": "T36",
+        "kind": "unit",
+        "question": "Mar 21 - LAG: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Mar 21 - TOTAL'.unit",
+        "id": "T37",
+        "kind": "unit",
+        "question": "Mar 21 - TOTAL: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Apr 21 -LEAD'.unit",
+        "id": "T38",
+        "kind": "unit",
+        "question": "Apr 21 -LEAD: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Apr 21 - LAG'.unit",
+        "id": "T39",
+        "kind": "unit",
+        "question": "Apr 21 - LAG: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Apr 21 - TOTAL'.unit",
+        "id": "T40",
+        "kind": "unit",
+        "question": "Apr 21 - TOTAL: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'May 21 -LEAD'.unit",
+        "id": "T41",
+        "kind": "unit",
+        "question": "May 21 -LEAD: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'May 21 - LAG'.unit",
+        "id": "T42",
+        "kind": "unit",
+        "question": "May 21 - LAG: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'May 21 - TOTAL'.unit",
+        "id": "T43",
+        "kind": "unit",
+        "question": "May 21 - TOTAL: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Jun 21 -LEAD'.unit",
+        "id": "T44",
+        "kind": "unit",
+        "question": "Jun 21 -LEAD: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Jun 21 - LAG'.unit",
+        "id": "T45",
+        "kind": "unit",
+        "question": "Jun 21 - LAG: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Jun 21 - TOTAL'.unit",
+        "id": "T46",
+        "kind": "unit",
+        "question": "Jun 21 - TOTAL: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Jul 21 -LEAD'.unit",
+        "id": "T47",
+        "kind": "unit",
+        "question": "Jul 21 -LEAD: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Jul 21 - LAG'.unit",
+        "id": "T48",
+        "kind": "unit",
+        "question": "Jul 21 - LAG: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Jul 21 - TOTAL'.unit",
+        "id": "T49",
+        "kind": "unit",
+        "question": "Jul 21 - TOTAL: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Aug 21 -LEAD'.unit",
+        "id": "T50",
+        "kind": "unit",
+        "question": "Aug 21 -LEAD: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Aug 21 - LAG'.unit",
+        "id": "T51",
+        "kind": "unit",
+        "question": "Aug 21 - LAG: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Aug 21 - TOTAL'.unit",
+        "id": "T52",
+        "kind": "unit",
+        "question": "Aug 21 - TOTAL: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Sep 21 -LEAD'.unit",
+        "id": "T53",
+        "kind": "unit",
+        "question": "Sep 21 -LEAD: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Sep 21 - LAG'.unit",
+        "id": "T54",
+        "kind": "unit",
+        "question": "Sep 21 - LAG: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Sep 21 - TOTAL'.unit",
+        "id": "T55",
+        "kind": "unit",
+        "question": "Sep 21 - TOTAL: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Oct 21 -LEAD'.unit",
+        "id": "T56",
+        "kind": "unit",
+        "question": "Oct 21 -LEAD: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Oct 21 - LAG'.unit",
+        "id": "T57",
+        "kind": "unit",
+        "question": "Oct 21 - LAG: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Oct 21 - TOTAL'.unit",
+        "id": "T58",
+        "kind": "unit",
+        "question": "Oct 21 - TOTAL: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Nov 21 -LEAD'.unit",
+        "id": "T59",
+        "kind": "unit",
+        "question": "Nov 21 -LEAD: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Nov  21 - LAG'.unit",
+        "id": "T60",
+        "kind": "unit",
+        "question": "Nov  21 - LAG: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Nov  21 - TOTAL'.unit",
+        "id": "T61",
+        "kind": "unit",
+        "question": "Nov  21 - TOTAL: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Dec 21 - LEAD'.unit",
+        "id": "T62",
+        "kind": "unit",
+        "question": "Dec 21 - LEAD: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Dec 21 - LAG'.unit",
+        "id": "T63",
+        "kind": "unit",
+        "question": "Dec 21 - LAG: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Dec 21 - Total'.unit",
+        "id": "T64",
+        "kind": "unit",
+        "question": "Dec 21 - Total: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Jan 22 - LEAD'.unit",
+        "id": "T65",
+        "kind": "unit",
+        "question": "Jan 22 - LEAD: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Jan 22 - LAG'.unit",
+        "id": "T66",
+        "kind": "unit",
+        "question": "Jan 22 - LAG: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Jan 22 - Total'.unit",
+        "id": "T67",
+        "kind": "unit",
+        "question": "Jan 22 - Total: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Feb 22 - LEAD'.unit",
+        "id": "T68",
+        "kind": "unit",
+        "question": "Feb 22 - LEAD: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Feb 22 - LAG'.unit",
+        "id": "T69",
+        "kind": "unit",
+        "question": "Feb 22 - LAG: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Feb 22 - Total'.unit",
+        "id": "T70",
+        "kind": "unit",
+        "question": "Feb 22 - Total: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Mar 22 - LEAD'.unit",
+        "id": "T71",
+        "kind": "unit",
+        "question": "Mar 22 - LEAD: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Mar 22 - LAG'.unit",
+        "id": "T72",
+        "kind": "unit",
+        "question": "Mar 22 - LAG: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Mar 22 - Total'.unit",
+        "id": "T73",
+        "kind": "unit",
+        "question": "Mar 22 - Total: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Apr 22 - LEAD'.unit",
+        "id": "T74",
+        "kind": "unit",
+        "question": "Apr 22 - LEAD: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Apr 22 - LAG'.unit",
+        "id": "T75",
+        "kind": "unit",
+        "question": "Apr 22 - LAG: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Apr 22 - Total'.unit",
+        "id": "T76",
+        "kind": "unit",
+        "question": "Apr 22 - Total: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'May 22 - LEAD'.unit",
+        "id": "T77",
+        "kind": "unit",
+        "question": "May 22 - LEAD: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'May 22 - LAG'.unit",
+        "id": "T78",
+        "kind": "unit",
+        "question": "May 22 - LAG: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'May 22 - Total'.unit",
+        "id": "T79",
+        "kind": "unit",
+        "question": "May 22 - Total: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Jun 22 - LEAD'.unit",
+        "id": "T80",
+        "kind": "unit",
+        "question": "Jun 22 - LEAD: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Jun 22 - LAG'.unit",
+        "id": "T81",
+        "kind": "unit",
+        "question": "Jun 22 - LAG: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Jun 22 - Total'.unit",
+        "id": "T82",
+        "kind": "unit",
+        "question": "Jun 22 - Total: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Jul 22 - LEAD'.unit",
+        "id": "T83",
+        "kind": "unit",
+        "question": "Jul 22 - LEAD: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Jul 22 - LAG'.unit",
+        "id": "T84",
+        "kind": "unit",
+        "question": "Jul 22 - LAG: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Jul 22 - Total'.unit",
+        "id": "T85",
+        "kind": "unit",
+        "question": "Jul 22 - Total: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Aug 22 - LEAD'.unit",
+        "id": "T86",
+        "kind": "unit",
+        "question": "Aug 22 - LEAD: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Aug 22 - LAG'.unit",
+        "id": "T87",
+        "kind": "unit",
+        "question": "Aug 22 - LAG: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Aug 22 - Total'.unit",
+        "id": "T88",
+        "kind": "unit",
+        "question": "Aug 22 - Total: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Sep 22 - LEAD'.unit",
+        "id": "T89",
+        "kind": "unit",
+        "question": "Sep 22 - LEAD: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Sep 22 - LAG'.unit",
+        "id": "T90",
+        "kind": "unit",
+        "question": "Sep 22 - LAG: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Sep 22 - Total'.unit",
+        "id": "T91",
+        "kind": "unit",
+        "question": "Sep 22 - Total: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Oct 22 - LEAD'.unit",
+        "id": "T92",
+        "kind": "unit",
+        "question": "Oct 22 - LEAD: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Oct 22 - LAG'.unit",
+        "id": "T93",
+        "kind": "unit",
+        "question": "Oct 22 - LAG: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Oct 22 - Total'.unit",
+        "id": "T94",
+        "kind": "unit",
+        "question": "Oct 22 - Total: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Nov 22 - LEAD'.unit",
+        "id": "T95",
+        "kind": "unit",
+        "question": "Nov 22 - LEAD: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Nov 22 - LAG'.unit",
+        "id": "T96",
+        "kind": "unit",
+        "question": "Nov 22 - LAG: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Nov 22 - Total'.unit",
+        "id": "T97",
+        "kind": "unit",
+        "question": "Nov 22 - Total: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Dec 22 - LEAD'.unit",
+        "id": "T98",
+        "kind": "unit",
+        "question": "Dec 22 - LEAD: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Dec 22 - LAG'.unit",
+        "id": "T99",
+        "kind": "unit",
+        "question": "Dec 22 - LAG: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Dec 22 - Total'.unit",
+        "id": "T100",
+        "kind": "unit",
+        "question": "Dec 22 - Total: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Jan 23 - LEAD'.unit",
+        "id": "T101",
+        "kind": "unit",
+        "question": "Jan 23 - LEAD: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Jan 23 - LAG'.unit",
+        "id": "T102",
+        "kind": "unit",
+        "question": "Jan 23 - LAG: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Jan 23 - Total'.unit",
+        "id": "T103",
+        "kind": "unit",
+        "question": "Jan 23 - Total: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Feb 23 - LEAD'.unit",
+        "id": "T104",
+        "kind": "unit",
+        "question": "Feb 23 - LEAD: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Feb 23 - LAG'.unit",
+        "id": "T105",
+        "kind": "unit",
+        "question": "Feb 23 - LAG: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Feb 23 - Total'.unit",
+        "id": "T106",
+        "kind": "unit",
+        "question": "Feb 23 - Total: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Mar 23 - LEAD'.unit",
+        "id": "T107",
+        "kind": "unit",
+        "question": "Mar 23 - LEAD: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Mar 23 - LAG'.unit",
+        "id": "T108",
+        "kind": "unit",
+        "question": "Mar 23 - LAG: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Mar 23 - Total'.unit",
+        "id": "T109",
+        "kind": "unit",
+        "question": "Mar 23 - Total: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Apr 23 - LEAD'.unit",
+        "id": "T110",
+        "kind": "unit",
+        "question": "Apr 23 - LEAD: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Apr 23 - LAG'.unit",
+        "id": "T111",
+        "kind": "unit",
+        "question": "Apr 23 - LAG: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Apr 23 - Total'.unit",
+        "id": "T112",
+        "kind": "unit",
+        "question": "Apr 23 - Total: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'May 23 - LEAD'.unit",
+        "id": "T113",
+        "kind": "unit",
+        "question": "May 23 - LEAD: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'May 23 - LAG'.unit",
+        "id": "T114",
+        "kind": "unit",
+        "question": "May 23 - LAG: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'May 23 - Total'.unit",
+        "id": "T115",
+        "kind": "unit",
+        "question": "May 23 - Total: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'June 23 - LEAD'.unit",
+        "id": "T116",
+        "kind": "unit",
+        "question": "June 23 - LEAD: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'June 23 - LAG'.unit",
+        "id": "T117",
+        "kind": "unit",
+        "question": "June 23 - LAG: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'June 23 - Total'.unit",
+        "id": "T118",
+        "kind": "unit",
+        "question": "June 23 - Total: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'July 23 - LEAD'.unit",
+        "id": "T119",
+        "kind": "unit",
+        "question": "July 23 - LEAD: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'July 23 - LAG'.unit",
+        "id": "T120",
+        "kind": "unit",
+        "question": "July 23 - LAG: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'July 23 - Total'.unit",
+        "id": "T121",
+        "kind": "unit",
+        "question": "July 23 - Total: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Aug 23 - LEAD'.unit",
+        "id": "T122",
+        "kind": "unit",
+        "question": "Aug 23 - LEAD: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Aug 23 - LAG'.unit",
+        "id": "T123",
+        "kind": "unit",
+        "question": "Aug 23 - LAG: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Aug 23 - Total'.unit",
+        "id": "T124",
+        "kind": "unit",
+        "question": "Aug 23 - Total: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Sep 23 - LEAD'.unit",
+        "id": "T125",
+        "kind": "unit",
+        "question": "Sep 23 - LEAD: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Sep 23 - LAG'.unit",
+        "id": "T126",
+        "kind": "unit",
+        "question": "Sep 23 - LAG: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Sep 23 - Total'.unit",
+        "id": "T127",
+        "kind": "unit",
+        "question": "Sep 23 - Total: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Oct 23 - LEAD'.unit",
+        "id": "T128",
+        "kind": "unit",
+        "question": "Oct 23 - LEAD: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Oct 23 - LAG'.unit",
+        "id": "T129",
+        "kind": "unit",
+        "question": "Oct 23 - LAG: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Oct 23 - Total'.unit",
+        "id": "T130",
+        "kind": "unit",
+        "question": "Oct 23 - Total: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Nov 23 - LEAD'.unit",
+        "id": "T131",
+        "kind": "unit",
+        "question": "Nov 23 - LEAD: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Nov 23 - LAG'.unit",
+        "id": "T132",
+        "kind": "unit",
+        "question": "Nov 23 - LAG: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Nov 23 - Total'.unit",
+        "id": "T133",
+        "kind": "unit",
+        "question": "Nov 23 - Total: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Dec 23 - LEAD'.unit",
+        "id": "T134",
+        "kind": "unit",
+        "question": "Dec 23 - LEAD: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Dec 23 - LAG'.unit",
+        "id": "T135",
+        "kind": "unit",
+        "question": "Dec 23 - LAG: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Dec 23 - Total'.unit",
+        "id": "T136",
+        "kind": "unit",
+        "question": "Dec 23 - Total: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Jan 24 - LEAD'.unit",
+        "id": "T137",
+        "kind": "unit",
+        "question": "Jan 24 - LEAD: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Jan 24 - LAG'.unit",
+        "id": "T138",
+        "kind": "unit",
+        "question": "Jan 24 - LAG: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Jan 24 - Total'.unit",
+        "id": "T139",
+        "kind": "unit",
+        "question": "Jan 24 - Total: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Feb 24 - LEAD'.unit",
+        "id": "T140",
+        "kind": "unit",
+        "question": "Feb 24 - LEAD: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Feb 24 - LAG'.unit",
+        "id": "T141",
+        "kind": "unit",
+        "question": "Feb 24 - LAG: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Feb 24 - Total'.unit",
+        "id": "T142",
+        "kind": "unit",
+        "question": "Feb 24 - Total: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Mar 24 - LEAD'.unit",
+        "id": "T143",
+        "kind": "unit",
+        "question": "Mar 24 - LEAD: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Mar 24 - LAG'.unit",
+        "id": "T144",
+        "kind": "unit",
+        "question": "Mar 24 - LAG: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Mar 24 - Total'.unit",
+        "id": "T145",
+        "kind": "unit",
+        "question": "Mar 24 - Total: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Apr 24 - LEAD'.unit",
+        "id": "T146",
+        "kind": "unit",
+        "question": "Apr 24 - LEAD: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Apr 24 - LAG'.unit",
+        "id": "T147",
+        "kind": "unit",
+        "question": "Apr 24 - LAG: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Apr 24 - Total'.unit",
+        "id": "T148",
+        "kind": "unit",
+        "question": "Apr 24 - Total: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'May 24 - LEAD'.unit",
+        "id": "T149",
+        "kind": "unit",
+        "question": "May 24 - LEAD: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'May 24 - LAG'.unit",
+        "id": "T150",
+        "kind": "unit",
+        "question": "May 24 - LAG: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'May 24 - Total'.unit",
+        "id": "T151",
+        "kind": "unit",
+        "question": "May 24 - Total: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'June 24 - LEAD'.unit",
+        "id": "T152",
+        "kind": "unit",
+        "question": "June 24 - LEAD: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'June 24 - LAG'.unit",
+        "id": "T153",
+        "kind": "unit",
+        "question": "June 24 - LAG: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'June 24 - Total'.unit",
+        "id": "T154",
+        "kind": "unit",
+        "question": "June 24 - Total: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'July 24 - LEAD'.unit",
+        "id": "T155",
+        "kind": "unit",
+        "question": "July 24 - LEAD: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'July 24 - LAG'.unit",
+        "id": "T156",
+        "kind": "unit",
+        "question": "July 24 - LAG: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'July 24 - Total'.unit",
+        "id": "T157",
+        "kind": "unit",
+        "question": "July 24 - Total: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Aug 24 - LEAD'.unit",
+        "id": "T158",
+        "kind": "unit",
+        "question": "Aug 24 - LEAD: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Aug 24 - LAG'.unit",
+        "id": "T159",
+        "kind": "unit",
+        "question": "Aug 24 - LAG: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Aug 24 - Total'.unit",
+        "id": "T160",
+        "kind": "unit",
+        "question": "Aug 24 - Total: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Sep 24 - LEAD'.unit",
+        "id": "T161",
+        "kind": "unit",
+        "question": "Sep 24 - LEAD: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Sep 24 - LAG'.unit",
+        "id": "T162",
+        "kind": "unit",
+        "question": "Sep 24 - LAG: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Sep 24 - Total'.unit",
+        "id": "T163",
+        "kind": "unit",
+        "question": "Sep 24 - Total: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Oct 24 - LEAD'.unit",
+        "id": "T164",
+        "kind": "unit",
+        "question": "Oct 24 - LEAD: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Oct 24 - LAG'.unit",
+        "id": "T165",
+        "kind": "unit",
+        "question": "Oct 24 - LAG: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Oct 24 - Total'.unit",
+        "id": "T166",
+        "kind": "unit",
+        "question": "Oct 24 - Total: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Nov 24 - LEAD'.unit",
+        "id": "T167",
+        "kind": "unit",
+        "question": "Nov 24 - LEAD: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Nov 24 - LAG'.unit",
+        "id": "T168",
+        "kind": "unit",
+        "question": "Nov 24 - LAG: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Nov 24 - Total'.unit",
+        "id": "T169",
+        "kind": "unit",
+        "question": "Nov 24 - Total: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Dec 24 - LEAD'.unit",
+        "id": "T170",
+        "kind": "unit",
+        "question": "Dec 24 - LEAD: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Dec 24 - LAG'.unit",
+        "id": "T171",
+        "kind": "unit",
+        "question": "Dec 24 - LAG: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Dec 24 - Total'.unit",
+        "id": "T172",
+        "kind": "unit",
+        "question": "Dec 24 - Total: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T173",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: Month-Year"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T174",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['company', 'unit', 'default_market', 'location', 'month_year', 'lead', 'lag', 'total'] (no candidate measured unique, so every column); without one, latest stays whole_capture"
+      },
+      {
+        "consequence": "none",
+        "field": "epochs",
+        "id": "T175",
+        "kind": "multi_epoch",
+        "question": "2 header epochs; review each in its batch"
+      }
+    ]
+  },
+  "refresh": "monthly",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update Frequency",
+        "value": "Monthly"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Ancillary services",
+    "title": "Obligatory Reactive Power Service (ORPS)"
+  }
+}

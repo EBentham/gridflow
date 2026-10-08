@@ -1,0 +1,847 @@
+{
+  "archetype": "FC",
+  "batch": "CON",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/otf_network_congestion/2026/10/08/raw_20261008T111609Z_aa9d4303-b7ec-4881-be07-16bad8824ab6_dae26846.csv",
+      "ckan_last_modified": "2026-10-07T10:43:02.910511",
+      "cr": 0,
+      "crlf": 54,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "aa9d4303-b7ec-4881-be07-16bad8824ab6",
+      "rows": 53,
+      "sampled": false,
+      "size": 5706,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:16:09.107077+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 1,
+      "columns": {
+        "B15 - Actual": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "5700",
+            "4650",
+            "5900"
+          ],
+          "max_len": 4,
+          "null_count": 26,
+          "shapes": {
+            "int": 27
+          }
+        },
+        "B15 - Forecast": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "7017",
+            "6067",
+            "5550"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 53
+          }
+        },
+        "B6 - Actual": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "5000",
+            "4800",
+            "5100"
+          ],
+          "max_len": 4,
+          "null_count": 26,
+          "shapes": {
+            "int": 27
+          }
+        },
+        "B6 - Forecast": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "4800",
+            "4160",
+            "4100"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 53
+          }
+        },
+        "B6a - Actual": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "3500",
+            "8000",
+            "3800"
+          ],
+          "max_len": 4,
+          "null_count": 26,
+          "shapes": {
+            "int": 27
+          }
+        },
+        "B6a - Forecast": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "6083",
+            "4900",
+            "4850"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 53
+          }
+        },
+        "B7 - Actual": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "6000",
+            "5550",
+            "6350"
+          ],
+          "max_len": 4,
+          "null_count": 26,
+          "shapes": {
+            "int": 27
+          }
+        },
+        "B7 - Forecast": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "7167",
+            "5700",
+            "7550"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 53
+          }
+        },
+        "B9 - Actual": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "10600",
+            "10100",
+            "11300"
+          ],
+          "max_len": 5,
+          "null_count": 26,
+          "shapes": {
+            "int": 27
+          }
+        },
+        "B9 - Forecast": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "9833",
+            "10167",
+            "10200"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "int": 53
+          }
+        },
+        "DRESHEX - Actual": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "6600",
+            "7400",
+            "6550"
+          ],
+          "max_len": 4,
+          "null_count": 26,
+          "shapes": {
+            "int": 27
+          }
+        },
+        "DRESHEX - Forecast": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "6033",
+            "5900",
+            "5700"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 53
+          }
+        },
+        "Date": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%Y-%m-%d": 0,
+            "float64": 53,
+            "int64": 53
+          },
+          "examples": [
+            "2026-04-11",
+            "2026-04-18",
+            "2026-04-25"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "iso_date": 53
+          }
+        },
+        "EC5 - Actual": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "5000"
+          ],
+          "max_len": 4,
+          "null_count": 26,
+          "shapes": {
+            "int": 27
+          }
+        },
+        "EC5 - Forecast": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "5000",
+            "3250",
+            "2400"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 53
+          }
+        },
+        "GMSNOW - Actual": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "2050",
+            "1600",
+            "1900"
+          ],
+          "max_len": 4,
+          "null_count": 26,
+          "shapes": {
+            "int": 27
+          }
+        },
+        "GMSNOW - Forecast": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "2667",
+            "2200",
+            "1500"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 53
+          }
+        },
+        "LE1 - Actual": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "6650",
+            "6850",
+            "6300"
+          ],
+          "max_len": 4,
+          "null_count": 26,
+          "shapes": {
+            "int": 27
+          }
+        },
+        "LE1 - Forecast": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "4900",
+            "6350",
+            "3750"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 53
+          }
+        },
+        "Min of B4 B5 - Actual": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1850",
+            "1900",
+            "1700"
+          ],
+          "max_len": 4,
+          "null_count": 26,
+          "shapes": {
+            "int": 27
+          }
+        },
+        "Min of B4 B5 - Forecast": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "2000",
+            "1700",
+            "1900"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 53
+          }
+        },
+        "SC - Actual": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "7300",
+            "5050",
+            "4900"
+          ],
+          "max_len": 4,
+          "null_count": 26,
+          "shapes": {
+            "int": 27
+          }
+        },
+        "SC - Forecast": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "5550",
+            "4600",
+            "4300"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 53
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "B15 - Actual": {
+            "description": "Actual  B15 boundary constraint limit",
+            "title": " B15 - Actual",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "B15 - Forecast": {
+            "description": "forecasted ( YA/MT)  B15 boundary constraint limit",
+            "title": "B15 -Forecast ",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "B6 - Actual": {
+            "description": "Actual  B6 boundary constraint limit",
+            "title": "B6 - Actual",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "B6 - Forecast": {
+            "description": "forecasted ( YA/MT)  B6 boundary constraint limit",
+            "title": "B6 - Forecast",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "B6a - Actual": {
+            "description": "Actual  B6a boundary constraint limit",
+            "title": "B6a - Actual",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "B6a - Forecast": {
+            "description": "forecasted ( YA/MT)  B6a boundary constraint limit",
+            "title": " B6a - Forecast",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "B7 - Actual": {
+            "description": "Actual  B7 boundary constraint limit",
+            "title": "B7 - Actual ",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "B7 - Forecast": {
+            "description": "forecasted ( YA/MT)  B7 boundary constraint limit",
+            "title": "B7 - Forecast ",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "B9 - Actual": {
+            "description": "Actual  B9 boundary constraint limit",
+            "title": "B9 - Actual ",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "B9 - Forecast": {
+            "description": "forecasted ( YA/MT)  B9 boundary constraint limit",
+            "title": "B9 - Forecast",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "DRESHEX - Actual": {
+            "description": "Actual  DRESHEX boundary constraint limit",
+            "title": "DRESHEX - Actual",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "DRESHEX - Forecast": {
+            "description": "forecasted ( YA/MT)  DRESHEX boundary constraint limit",
+            "title": "DRESHEX - Forecast",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "Date": {
+            "description": null,
+            "title": "Date\t\t",
+            "type": "date",
+            "unit": null
+          },
+          "EC5 - Actual": {
+            "description": "Actual  EC5 boundary constraint limit",
+            "title": "EC5 - Actual",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "EC5 - Forecast": {
+            "description": "forecasted ( YA/MT)  EC5 boundary constraint limit",
+            "title": "EC5 - Forecast",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "GMSNOW - Actual": {
+            "description": "Actual GMSNOW boundary constraint limit",
+            "title": "GMSNOW - Actual",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "GMSNOW - Forecast": {
+            "description": "forecasted ( YA/MT)  GMSNOW boundary constraint limit",
+            "title": "GMSNOW - Forecast ",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "LE1 - Actual": {
+            "description": "Actual  LE1 boundary constraint limit",
+            "title": "LE1 - Actual",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "LE1 - Forecast": {
+            "description": "forecasted ( YA/MT)  LE1 boundary constraint limit",
+            "title": "LE1 - Forecast",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "Min of B4 B5 - Actual": {
+            "description": "minimum of Actual  B4/B5 boundary constraint limit",
+            "title": "Min of B4 B5 - Actual ",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "Min of B4 B5 - Forecast": {
+            "description": "minimum of forecasted ( YA/MT)  B4/B5 boundary constraint limit",
+            "title": "Min of B4 B5 - Forecast",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "SC - Actual": {
+            "description": "Actual  SC boundary constraint limit",
+            "title": "SC - Actual ",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "SC - Forecast": {
+            "description": "forecasted ( YA/MT)  SC boundary constraint limit",
+            "title": "SC-Forecast",
+            "type": "numeric",
+            "unit": "MW"
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T11:16:09.107077+00:00",
+      "header": [
+        "Date",
+        "Min of B4 B5 - Actual",
+        "B6 - Actual",
+        "B6a - Actual",
+        "B7 - Actual",
+        "GMSNOW - Actual",
+        "LE1 - Actual",
+        "B9 - Actual",
+        "DRESHEX - Actual",
+        "EC5 - Actual",
+        "B15 - Actual",
+        "SC - Actual",
+        "Min of B4 B5 - Forecast",
+        "B6 - Forecast",
+        "B6a - Forecast",
+        "B7 - Forecast",
+        "GMSNOW - Forecast",
+        "LE1 - Forecast",
+        "B9 - Forecast",
+        "DRESHEX - Forecast",
+        "EC5 - Forecast",
+        "B15 - Forecast",
+        "SC - Forecast"
+      ],
+      "last_written_at": "2026-10-08T11:16:09.107077+00:00",
+      "resource_ids": [
+        "aa9d4303-b7ec-4881-be07-16bad8824ab6"
+      ],
+      "rows": 53,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [],
+  "key": "otf_network_congestion",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Date"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 1,
+        "columns": [
+          "LE1 - Forecast",
+          "B15 - Forecast"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Min of B4 B5 - Forecast",
+          "B6 - Forecast",
+          "LE1 - Forecast"
+        ],
+        "max_duplicates": 0
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "operational-transparency-forum-network-congestion-data",
+  "proposal": {
+    "flags": [],
+    "record_draft": {
+      "encoding": "utf-8",
+      "entity_key": [
+        "date"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "date",
+              "format": "%Y-%m-%d",
+              "name": "date",
+              "nullable": true,
+              "source": "Date"
+            },
+            {
+              "dtype": "float64",
+              "name": "min_of_b4_b5_actual",
+              "nullable": true,
+              "source": "Min of B4 B5 - Actual"
+            },
+            {
+              "dtype": "float64",
+              "name": "b6_actual",
+              "nullable": true,
+              "source": "B6 - Actual"
+            },
+            {
+              "dtype": "float64",
+              "name": "b6a_actual",
+              "nullable": true,
+              "source": "B6a - Actual"
+            },
+            {
+              "dtype": "float64",
+              "name": "b7_actual",
+              "nullable": true,
+              "source": "B7 - Actual"
+            },
+            {
+              "dtype": "float64",
+              "name": "gmsnow_actual",
+              "nullable": true,
+              "source": "GMSNOW - Actual"
+            },
+            {
+              "dtype": "float64",
+              "name": "le1_actual",
+              "nullable": true,
+              "source": "LE1 - Actual"
+            },
+            {
+              "dtype": "float64",
+              "name": "b9_actual",
+              "nullable": true,
+              "source": "B9 - Actual"
+            },
+            {
+              "dtype": "float64",
+              "name": "dreshex_actual",
+              "nullable": true,
+              "source": "DRESHEX - Actual"
+            },
+            {
+              "dtype": "float64",
+              "name": "ec5_actual",
+              "nullable": true,
+              "source": "EC5 - Actual"
+            },
+            {
+              "dtype": "float64",
+              "name": "b15_actual",
+              "nullable": true,
+              "source": "B15 - Actual"
+            },
+            {
+              "dtype": "float64",
+              "name": "sc_actual",
+              "nullable": true,
+              "source": "SC - Actual"
+            },
+            {
+              "dtype": "float64",
+              "name": "min_of_b4_b5_forecast",
+              "nullable": true,
+              "source": "Min of B4 B5 - Forecast"
+            },
+            {
+              "dtype": "float64",
+              "name": "b6_forecast",
+              "nullable": true,
+              "source": "B6 - Forecast"
+            },
+            {
+              "dtype": "float64",
+              "name": "b6a_forecast",
+              "nullable": true,
+              "source": "B6a - Forecast"
+            },
+            {
+              "dtype": "float64",
+              "name": "b7_forecast",
+              "nullable": true,
+              "source": "B7 - Forecast"
+            },
+            {
+              "dtype": "float64",
+              "name": "gmsnow_forecast",
+              "nullable": true,
+              "source": "GMSNOW - Forecast"
+            },
+            {
+              "dtype": "float64",
+              "name": "le1_forecast",
+              "nullable": true,
+              "source": "LE1 - Forecast"
+            },
+            {
+              "dtype": "float64",
+              "name": "b9_forecast",
+              "nullable": true,
+              "source": "B9 - Forecast"
+            },
+            {
+              "dtype": "float64",
+              "name": "dreshex_forecast",
+              "nullable": true,
+              "source": "DRESHEX - Forecast"
+            },
+            {
+              "dtype": "float64",
+              "name": "ec5_forecast",
+              "nullable": true,
+              "source": "EC5 - Forecast"
+            },
+            {
+              "dtype": "float64",
+              "name": "b15_forecast",
+              "nullable": true,
+              "source": "B15 - Forecast"
+            },
+            {
+              "dtype": "float64",
+              "name": "sc_forecast",
+              "nullable": true,
+              "source": "SC - Forecast"
+            }
+          ],
+          "header": [
+            "Date",
+            "Min of B4 B5 - Actual",
+            "B6 - Actual",
+            "B6a - Actual",
+            "B7 - Actual",
+            "GMSNOW - Actual",
+            "LE1 - Actual",
+            "B9 - Actual",
+            "DRESHEX - Actual",
+            "EC5 - Actual",
+            "B15 - Actual",
+            "SC - Actual",
+            "Min of B4 B5 - Forecast",
+            "B6 - Forecast",
+            "B6a - Forecast",
+            "B7 - Forecast",
+            "GMSNOW - Forecast",
+            "LE1 - Forecast",
+            "B9 - Forecast",
+            "DRESHEX - Forecast",
+            "EC5 - Forecast",
+            "B15 - Forecast",
+            "SC - Forecast"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T01",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T01",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: Date"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T02",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['date'] (measured unique in 1 capture(s)); without one, latest stays whole_capture"
+      }
+    ]
+  },
+  "refresh": "weekly",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update frequency",
+        "value": "Weekly"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Constraint management",
+    "title": "Operational Transparency Forum - Network congestion data"
+  }
+}

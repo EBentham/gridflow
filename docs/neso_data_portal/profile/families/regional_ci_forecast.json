@@ -1,0 +1,598 @@
+{
+  "archetype": "FC",
+  "batch": "CI",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/regional_ci_forecast/2026/10/08/raw_20261008T111657Z_c16b0e19-c02a-44a8-ba05-4db2c0545a2a_0b435a16.csv",
+      "ckan_last_modified": "2026-10-08T11:11:10.800726",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 136191,
+      "parse_error": null,
+      "resource_id": "c16b0e19-c02a-44a8-ba05-4db2c0545a2a",
+      "rows": 136190,
+      "sampled": true,
+      "size": 13180555,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:16:58.010587+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 1,
+      "columns": {
+        "East England": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 134537
+          },
+          "examples": [
+            "58.0",
+            "61.0",
+            "60.0"
+          ],
+          "max_len": 5,
+          "null_count": 1311,
+          "shapes": {
+            "decimal": 48895
+          }
+        },
+        "East Midlands": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 134537
+          },
+          "examples": [
+            "325.0",
+            "340.0",
+            "337.0"
+          ],
+          "max_len": 5,
+          "null_count": 1311,
+          "shapes": {
+            "decimal": 48895
+          }
+        },
+        "London": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 134537
+          },
+          "examples": [
+            "49.0",
+            "69.0",
+            "68.0"
+          ],
+          "max_len": 5,
+          "null_count": 1311,
+          "shapes": {
+            "decimal": 48895
+          }
+        },
+        "North East England": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 134537
+          },
+          "examples": [
+            "24.0",
+            "30.0",
+            "31.0"
+          ],
+          "max_len": 5,
+          "null_count": 1311,
+          "shapes": {
+            "decimal": 48895
+          }
+        },
+        "North Scotland": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 134537
+          },
+          "examples": [
+            "30.0",
+            "44.0",
+            "45.0"
+          ],
+          "max_len": 5,
+          "null_count": 1311,
+          "shapes": {
+            "decimal": 48895
+          }
+        },
+        "North Wales and Merseyside": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 134537
+          },
+          "examples": [
+            "157.0",
+            "183.0",
+            "180.0"
+          ],
+          "max_len": 5,
+          "null_count": 1311,
+          "shapes": {
+            "decimal": 48895
+          }
+        },
+        "North West England": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 134537
+          },
+          "examples": [
+            "38.0",
+            "41.0",
+            "39.0"
+          ],
+          "max_len": 5,
+          "null_count": 1311,
+          "shapes": {
+            "decimal": 48895
+          }
+        },
+        "South East England": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 134537
+          },
+          "examples": [
+            "73.0",
+            "70.0",
+            "69.0"
+          ],
+          "max_len": 5,
+          "null_count": 1311,
+          "shapes": {
+            "decimal": 48895
+          }
+        },
+        "South England": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 134537
+          },
+          "examples": [
+            "116.0",
+            "152.0",
+            "150.0"
+          ],
+          "max_len": 5,
+          "null_count": 1311,
+          "shapes": {
+            "decimal": 48895
+          }
+        },
+        "South Scotland": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 134537
+          },
+          "examples": [
+            "11.0",
+            "7.0",
+            "8.0"
+          ],
+          "max_len": 5,
+          "null_count": 1311,
+          "shapes": {
+            "decimal": 48895
+          }
+        },
+        "South Wales": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 134537
+          },
+          "examples": [
+            "271.0",
+            "157.0",
+            "155.0"
+          ],
+          "max_len": 5,
+          "null_count": 1311,
+          "shapes": {
+            "decimal": 48895
+          }
+        },
+        "South West England": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 134537
+          },
+          "examples": [
+            "72.0",
+            "90.0",
+            "89.0"
+          ],
+          "max_len": 5,
+          "null_count": 1311,
+          "shapes": {
+            "decimal": 48895
+          }
+        },
+        "West Midlands": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 134537
+          },
+          "examples": [
+            "40.0",
+            "39.0",
+            "38.0"
+          ],
+          "max_len": 5,
+          "null_count": 1311,
+          "shapes": {
+            "decimal": 48895
+          }
+        },
+        "Yorkshire": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 134537
+          },
+          "examples": [
+            "319.0",
+            "298.0",
+            "295.0"
+          ],
+          "max_len": 5,
+          "null_count": 1311,
+          "shapes": {
+            "decimal": 48895
+          }
+        },
+        "datetime": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 136190,
+            "int64": 136190
+          },
+          "examples": [
+            "2018-09-17T23:00:00",
+            "2018-09-17T23:30:00",
+            "2018-09-18T00:00:00"
+          ],
+          "max_len": 19,
+          "null_count": 0,
+          "shapes": {
+            "naive_datetime": 50000
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "East England": {
+            "description": "Forecast DNO region carbon intensity, predicted using machine learning models and metered generation. Forecast values are given in gCO2/kWh.",
+            "title": "East England Carbon Intensity Forecast",
+            "type": "numeric",
+            "unit": "gCO2/kWh"
+          },
+          "East Midlands": {
+            "description": "Forecast DNO region carbon intensity, predicted using machine learning models and metered generation. Forecast values are given in gCO2/kWh.",
+            "title": "East Midlands Carbon Intensity Forecast",
+            "type": "numeric",
+            "unit": "gCO2/kWh"
+          },
+          "London": {
+            "description": "Forecast DNO region carbon intensity, predicted using machine learning models and metered generation. Forecast values are given in gCO2/kWh.",
+            "title": "London Carbon Intensity Forecast",
+            "type": "numeric",
+            "unit": "gCO2/kWh"
+          },
+          "North East England": {
+            "description": "Forecast DNO region carbon intensity, predicted using machine learning models and metered generation. Forecast values are given in gCO2/kWh.",
+            "title": "North East England Carbon Intensity Forecast",
+            "type": "numeric",
+            "unit": "gCO2/kWh"
+          },
+          "North Scotland": {
+            "description": "Forecast DNO region carbon intensity, predicted using machine learning models and metered generation. Forecast values are given in gCO2/kWh.",
+            "title": "North Scotland Carbon Intensity Forecast",
+            "type": "numeric",
+            "unit": "gCO2/kWh"
+          },
+          "North Wales and Merseyside": {
+            "description": "Forecast DNO region carbon intensity, predicted using machine learning models and metered generation. Forecast values are given in gCO2/kWh.",
+            "title": "North Wales and Merseyside Carbon Intensity Forecast",
+            "type": "numeric",
+            "unit": "gCO2/kWh"
+          },
+          "North West England": {
+            "description": "Forecast DNO region carbon intensity, predicted using machine learning models and metered generation. Forecast values are given in gCO2/kWh.",
+            "title": "North West England Carbon Intensity Forecast",
+            "type": "numeric",
+            "unit": "gCO2/kWh"
+          },
+          "South East England": {
+            "description": "Forecast DNO region carbon intensity, predicted using machine learning models and metered generation. Forecast values are given in gCO2/kWh.",
+            "title": "South East England Carbon Intensity Forecast",
+            "type": "numeric",
+            "unit": "gCO2/kWh"
+          },
+          "South England": {
+            "description": "Forecast DNO region carbon intensity, predicted using machine learning models and metered generation. Forecast values are given in gCO2/kWh.",
+            "title": "South England Carbon Intensity Forecast",
+            "type": "numeric",
+            "unit": "gCO2/kWh"
+          },
+          "South Scotland": {
+            "description": "Forecast DNO region carbon intensity, predicted using machine learning models and metered generation. Forecast values are given in gCO2/kWh.",
+            "title": "South Scotland Carbon Intensity Forecast",
+            "type": "numeric",
+            "unit": "gCO2/kWh"
+          },
+          "South Wales": {
+            "description": "Forecast DNO region carbon intensity, predicted using machine learning models and metered generation. Forecast values are given in gCO2/kWh.",
+            "title": "South Wales Carbon Intensity Forecast",
+            "type": "numeric",
+            "unit": "gCO2/kWh"
+          },
+          "South West England": {
+            "description": "Forecast DNO region carbon intensity, predicted using machine learning models and metered generation. Forecast values are given in gCO2/kWh.",
+            "title": "South West England Carbon Intensity Forecast",
+            "type": "numeric",
+            "unit": "gCO2/kWh"
+          },
+          "West Midlands": {
+            "description": "Forecast DNO region carbon intensity, predicted using machine learning models and metered generation. Forecast values are given in gCO2/kWh.",
+            "title": "West Midlands Carbon Intensity Forecast",
+            "type": "numeric",
+            "unit": "gCO2/kWh"
+          },
+          "Yorkshire": {
+            "description": "Forecast DNO region carbon intensity, predicted using machine learning models and metered generation. Forecast values are given in gCO2/kWh.",
+            "title": "Yorkshire Carbon Intensity Forecast",
+            "type": "numeric",
+            "unit": "gCO2/kWh"
+          },
+          "datetime": {
+            "description": "Timestamp of record, given in UTC (Coordinated Universal Time).",
+            "title": "Date & Time",
+            "type": "timestamp",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T11:16:58.010587+00:00",
+      "header": [
+        "datetime",
+        "North Scotland",
+        "South Scotland",
+        "North West England",
+        "North East England",
+        "Yorkshire",
+        "North Wales and Merseyside",
+        "South Wales",
+        "West Midlands",
+        "East Midlands",
+        "East England",
+        "South West England",
+        "South England",
+        "London",
+        "South East England"
+      ],
+      "last_written_at": "2026-10-08T11:16:58.010587+00:00",
+      "resource_ids": [
+        "c16b0e19-c02a-44a8-ba05-4db2c0545a2a"
+      ],
+      "rows": 136190,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [
+    "sampled"
+  ],
+  "key": "regional_ci_forecast",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 1,
+        "columns": [
+          "datetime"
+        ],
+        "max_duplicates": 0
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "regional-carbon-intensity-forecast",
+  "proposal": {
+    "flags": [
+      "sampled"
+    ],
+    "record_draft": {
+      "eligibility": {
+        "question": "datetime: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)",
+        "status": "held",
+        "unit": "CI"
+      },
+      "encoding": "utf-8",
+      "entity_key": [
+        "datetime"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "datetime",
+              "nullable": true,
+              "source": "datetime"
+            },
+            {
+              "dtype": "float64",
+              "name": "north_scotland",
+              "nullable": true,
+              "source": "North Scotland"
+            },
+            {
+              "dtype": "float64",
+              "name": "south_scotland",
+              "nullable": true,
+              "source": "South Scotland"
+            },
+            {
+              "dtype": "float64",
+              "name": "north_west_england",
+              "nullable": true,
+              "source": "North West England"
+            },
+            {
+              "dtype": "float64",
+              "name": "north_east_england",
+              "nullable": true,
+              "source": "North East England"
+            },
+            {
+              "dtype": "float64",
+              "name": "yorkshire",
+              "nullable": true,
+              "source": "Yorkshire"
+            },
+            {
+              "dtype": "float64",
+              "name": "north_wales_and_merseyside",
+              "nullable": true,
+              "source": "North Wales and Merseyside"
+            },
+            {
+              "dtype": "float64",
+              "name": "south_wales",
+              "nullable": true,
+              "source": "South Wales"
+            },
+            {
+              "dtype": "float64",
+              "name": "west_midlands",
+              "nullable": true,
+              "source": "West Midlands"
+            },
+            {
+              "dtype": "float64",
+              "name": "east_midlands",
+              "nullable": true,
+              "source": "East Midlands"
+            },
+            {
+              "dtype": "float64",
+              "name": "east_england",
+              "nullable": true,
+              "source": "East England"
+            },
+            {
+              "dtype": "float64",
+              "name": "south_west_england",
+              "nullable": true,
+              "source": "South West England"
+            },
+            {
+              "dtype": "float64",
+              "name": "south_england",
+              "nullable": true,
+              "source": "South England"
+            },
+            {
+              "dtype": "float64",
+              "name": "london",
+              "nullable": true,
+              "source": "London"
+            },
+            {
+              "dtype": "float64",
+              "name": "south_east_england",
+              "nullable": true,
+              "source": "South East England"
+            }
+          ],
+          "header": [
+            "datetime",
+            "North Scotland",
+            "South Scotland",
+            "North West England",
+            "North East England",
+            "Yorkshire",
+            "North Wales and Merseyside",
+            "South Wales",
+            "West Midlands",
+            "East Midlands",
+            "East England",
+            "South West England",
+            "South England",
+            "London",
+            "South East England"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T02",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "held",
+        "field": "column 'datetime'",
+        "id": "T01",
+        "kind": "time_semantics",
+        "question": "datetime: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T02",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: datetime"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T03",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['datetime'] (measured unique in 1 capture(s)); without one, latest stays whole_capture"
+      }
+    ]
+  },
+  "refresh": "intraday",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update Frequency",
+        "value": "Hourly"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Carbon intensity",
+    "title": "Regional Carbon Intensity Forecast"
+  }
+}

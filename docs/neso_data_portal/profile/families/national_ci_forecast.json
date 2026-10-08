@@ -1,0 +1,257 @@
+{
+  "archetype": "FC",
+  "batch": "CI",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/national_ci_forecast/2026/10/08/raw_20261008T111249Z_0e5fde43-2de7-4fb4-833d-c7bca3b658b0_8beca58c.csv",
+      "ckan_last_modified": "2026-10-08T11:11:23.285254",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 155160,
+      "parse_error": null,
+      "resource_id": "0e5fde43-2de7-4fb4-833d-c7bca3b658b0",
+      "rows": 155159,
+      "sampled": true,
+      "size": 5874687,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:12:49.931686+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 1,
+      "columns": {
+        "actual": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 149987
+          },
+          "examples": [
+            "157.0",
+            "164.0",
+            "171.0"
+          ],
+          "max_len": 5,
+          "null_count": 3732,
+          "shapes": {
+            "decimal": 49560
+          }
+        },
+        "datetime": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 155159,
+            "int64": 155159
+          },
+          "examples": [
+            "2018-01-01T00:00:00",
+            "2018-01-01T00:30:00",
+            "2018-01-01T01:00:00"
+          ],
+          "max_len": 19,
+          "null_count": 0,
+          "shapes": {
+            "naive_datetime": 50000
+          }
+        },
+        "forecast": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 150715
+          },
+          "examples": [
+            "154.0",
+            "159.0",
+            "169.0"
+          ],
+          "max_len": 7,
+          "null_count": 2901,
+          "shapes": {
+            "decimal": 49998
+          }
+        },
+        "index": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 152258,
+            "int64": 152258
+          },
+          "examples": [
+            "low",
+            "moderate",
+            "high"
+          ],
+          "max_len": 9,
+          "null_count": 2901,
+          "shapes": {
+            "text": 49998
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "actual": {
+            "description": "Actual national carbon intensity, estimated from metered generation. Actual values are given in gCO2/kWh.",
+            "title": "Actual Carbon Intensity",
+            "type": "numeric",
+            "unit": "gCO2/kWh"
+          },
+          "datetime": {
+            "description": "Timestamp of record, given in UTC (Coordinated Universal Time).",
+            "title": "Date & Time",
+            "type": "timestamp",
+            "unit": null
+          },
+          "forecast": {
+            "description": "Forecast national carbon intensity, predicted using machine learning models. Forecast values are given in gCO2/kWh.",
+            "title": "Forecast Carbon Intensity",
+            "type": "numeric",
+            "unit": "gCO2/kWh"
+          },
+          "index": {
+            "description": "Index describing the relative level of the carbon intensity.",
+            "title": "Index",
+            "type": "text",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T11:12:49.931686+00:00",
+      "header": [
+        "datetime",
+        "forecast",
+        "actual",
+        "index"
+      ],
+      "last_written_at": "2026-10-08T11:12:49.931686+00:00",
+      "resource_ids": [
+        "0e5fde43-2de7-4fb4-833d-c7bca3b658b0"
+      ],
+      "rows": 155159,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [
+    "sampled"
+  ],
+  "key": "national_ci_forecast",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 1,
+        "columns": [
+          "datetime"
+        ],
+        "max_duplicates": 0
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "national-carbon-intensity-forecast",
+  "proposal": {
+    "flags": [
+      "sampled"
+    ],
+    "record_draft": {
+      "eligibility": {
+        "question": "datetime: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)",
+        "status": "held",
+        "unit": "CI"
+      },
+      "encoding": "utf-8",
+      "entity_key": [
+        "datetime"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "datetime",
+              "nullable": true,
+              "source": "datetime"
+            },
+            {
+              "dtype": "float64",
+              "name": "forecast",
+              "nullable": true,
+              "source": "forecast"
+            },
+            {
+              "dtype": "float64",
+              "name": "actual",
+              "nullable": true,
+              "source": "actual"
+            },
+            {
+              "dtype": "string",
+              "name": "index",
+              "nullable": true,
+              "source": "index"
+            }
+          ],
+          "header": [
+            "datetime",
+            "forecast",
+            "actual",
+            "index"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T02",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "held",
+        "field": "column 'datetime'",
+        "id": "T01",
+        "kind": "time_semantics",
+        "question": "datetime: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T02",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: datetime"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T03",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['datetime'] (measured unique in 1 capture(s)); without one, latest stays whole_capture"
+      }
+    ]
+  },
+  "refresh": "intraday",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update Frequency",
+        "value": "Hourly"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Carbon intensity",
+    "title": "National Carbon Intensity Forecast"
+  }
+}

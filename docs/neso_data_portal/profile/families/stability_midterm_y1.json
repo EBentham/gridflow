@@ -1,0 +1,341 @@
+{
+  "archetype": "SER",
+  "batch": "SYS-1",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/stability_midterm_y1/2026/10/08/raw_20261008T112705Z_e0c86d21-8ad1-4ba3-a112-b2bbcf5277ce_998df585.csv",
+      "ckan_last_modified": "2026-09-28T16:54:21.377483",
+      "cr": 0,
+      "crlf": 62,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "e0c86d21-8ad1-4ba3-a112-b2bbcf5277ce",
+      "rows": 61,
+      "sampled": false,
+      "size": 3950,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:27:05.641643+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 1,
+      "columns": {
+        "BMU ID": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 61,
+            "int64": 61
+          },
+          "examples": [
+            "CRUA-4",
+            "DEEPS-1",
+            "CRUA-2"
+          ],
+          "max_len": 7,
+          "null_count": 0,
+          "shapes": {
+            "text": 61
+          }
+        },
+        "Hours Utilised": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 61,
+            "int64": 61
+          },
+          "examples": [
+            "01:11:00",
+            "01:12:00",
+            "00:16:00"
+          ],
+          "max_len": 9,
+          "null_count": 0,
+          "shapes": {
+            "text": 61
+          }
+        },
+        "Inertia (in MVA.s)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "483",
+            "3052",
+            "496"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 61
+          }
+        },
+        "Month & Year": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%b-%y": 0,
+            "float64": 61,
+            "int64": 61
+          },
+          "examples": [
+            "Oct-25",
+            "Nov-25",
+            "Apr-26"
+          ],
+          "max_len": 6,
+          "null_count": 0,
+          "shapes": {
+            "month_label": 61
+          }
+        },
+        "Utilisation End Datetime": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 61,
+            "int64": 61
+          },
+          "examples": [
+            "04/10/2025 22:23",
+            "25/10/2025 03:15",
+            "10/11/2025 16:17"
+          ],
+          "max_len": 16,
+          "null_count": 0,
+          "shapes": {
+            "text": 61
+          }
+        },
+        "Utilisation Start Datetime": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 61,
+            "int64": 61
+          },
+          "examples": [
+            "04/10/2025 21:12",
+            "25/10/2025 02:03",
+            "10/11/2025 16:01"
+          ],
+          "max_len": 16,
+          "null_count": 0,
+          "shapes": {
+            "text": 61
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "BMU ID": {
+            "description": "Unique ID for the Balancing Mechanism Units",
+            "title": "BMU ID\t\t",
+            "type": "text",
+            "unit": "BMUID-1"
+          },
+          "Hours Utilised": {
+            "description": "The duration of utilisation of the unit.",
+            "title": "Hours Utilised\t\t",
+            "type": "text",
+            "unit": "Hours and Minutes"
+          },
+          "Inertia (in MVA.s)": {
+            "description": "Contracted Inertia of the utilised unit",
+            "title": "Inertia (in MVA.s)\t\t",
+            "type": "numeric",
+            "unit": "MVA.s"
+          },
+          "Month & Year": {
+            "description": "The month and year of the utilisation period",
+            "title": "Month & Year\t\t",
+            "type": "text",
+            "unit": null
+          },
+          "Utilisation End Datetime": {
+            "description": "The ending date and time of the utilisation period. Time values are all given in GMT",
+            "title": "Utilisation End Datetime\t\t",
+            "type": "timestamp",
+            "unit": null
+          },
+          "Utilisation Start Datetime": {
+            "description": "The starting date and time of the utilisation period. Time values are all given in GMT",
+            "title": "Utilisation Start Datetime\t\t",
+            "type": "timestamp",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T11:27:05.641643+00:00",
+      "header": [
+        "BMU ID",
+        "Inertia (in MVA.s)",
+        "Month & Year",
+        "Utilisation Start Datetime",
+        "Utilisation End Datetime",
+        "Hours Utilised"
+      ],
+      "last_written_at": "2026-10-08T11:27:05.641643+00:00",
+      "resource_ids": [
+        "e0c86d21-8ad1-4ba3-a112-b2bbcf5277ce"
+      ],
+      "rows": 61,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [],
+  "key": "stability_midterm_y1",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Utilisation Start Datetime"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Hours Utilised"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 1,
+        "columns": [
+          "BMU ID",
+          "Utilisation End Datetime"
+        ],
+        "max_duplicates": 0
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "stability-midterm-y-1-utilisation-report",
+  "proposal": {
+    "flags": [
+      "text_declared_date_shaped:Month & Year"
+    ],
+    "record_draft": {
+      "eligibility": {
+        "question": "Utilisation Start Datetime: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced); Utilisation End Datetime: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)",
+        "status": "held",
+        "unit": "SYS-1"
+      },
+      "encoding": "utf-8",
+      "entity_key": [
+        "utilisation_start_datetime"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "bmu_id",
+              "nullable": true,
+              "source": "BMU ID"
+            },
+            {
+              "dtype": "float64",
+              "name": "inertia_in_mva_s",
+              "nullable": true,
+              "source": "Inertia (in MVA.s)"
+            },
+            {
+              "dtype": "date",
+              "format": "%b-%y",
+              "name": "month_year",
+              "nullable": true,
+              "source": "Month & Year"
+            },
+            {
+              "dtype": "string",
+              "name": "utilisation_start_datetime",
+              "nullable": true,
+              "source": "Utilisation Start Datetime"
+            },
+            {
+              "dtype": "string",
+              "name": "utilisation_end_datetime",
+              "nullable": true,
+              "source": "Utilisation End Datetime"
+            },
+            {
+              "dtype": "string",
+              "name": "hours_utilised",
+              "nullable": true,
+              "source": "Hours Utilised"
+            }
+          ],
+          "header": [
+            "BMU ID",
+            "Inertia (in MVA.s)",
+            "Month & Year",
+            "Utilisation Start Datetime",
+            "Utilisation End Datetime",
+            "Hours Utilised"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T03",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "held",
+        "field": "column 'Utilisation Start Datetime'",
+        "id": "T01",
+        "kind": "time_semantics",
+        "question": "Utilisation Start Datetime: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Utilisation End Datetime'",
+        "id": "T02",
+        "kind": "time_semantics",
+        "question": "Utilisation End Datetime: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T03",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: Month & Year, Utilisation Start Datetime, Utilisation End Datetime"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T04",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['utilisation_start_datetime'] (measured unique in 1 capture(s)); without one, latest stays whole_capture"
+      }
+    ]
+  },
+  "refresh": "monthly",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update frequency",
+        "value": "Monthly"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "System",
+    "title": "Stability midterm (Y-1) utilisation report"
+  }
+}

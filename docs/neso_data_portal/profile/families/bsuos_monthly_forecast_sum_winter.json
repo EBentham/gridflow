@@ -1,0 +1,632 @@
+{
+  "archetype": "FC",
+  "batch": "BAL-2",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/bsuos_monthly_forecast_sum_winter/2026/10/08/raw_20261008T091229Z_839c1a80-ce74-4cd4-b634-197a54974b29_9d8980ef.csv",
+      "ckan_last_modified": "2022-08-31T06:43:14.180827",
+      "cp1252_clean": true,
+      "cr": 0,
+      "crlf": 25,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "839c1a80-ce74-4cd4-b634-197a54974b29",
+      "rows": 24,
+      "sampled": false,
+      "size": 1890,
+      "url_type": "upload",
+      "utf8": false,
+      "written_at": "2026-10-08T09:12:29.458939+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 1,
+      "columns": {
+        "ALoMCP £m": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 8
+          },
+          "examples": [
+            "1.02",
+            "0.99",
+            "0.92"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 8,
+            "int": 16
+          }
+        },
+        "Balancing Costs (Central) £m": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 21
+          },
+          "examples": [
+            "357",
+            "392.8",
+            "454.5"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 21,
+            "int": 3
+          }
+        },
+        "CMP381 Deferred Costs £m": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 8
+          },
+          "examples": [
+            "4.09",
+            "3.96",
+            "3.69"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 8,
+            "int": 16
+          }
+        },
+        "Constraints_£m": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 21
+          },
+          "examples": [
+            "202.2",
+            "196",
+            "252.6"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 21,
+            "int": 3
+          }
+        },
+        "Energy_Imbalance_£m": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 20
+          },
+          "examples": [
+            "10.2",
+            "10.7",
+            "10.3"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 20,
+            "int": 4
+          }
+        },
+        "Estimated BSUoS Volume (TWh)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 23
+          },
+          "examples": [
+            "32.9",
+            "33.8",
+            "40.3"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 23,
+            "int": 1
+          }
+        },
+        "Estimated Internal BSUoS & ESO Incentive £m": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 24
+          },
+          "examples": [
+            "32.58",
+            "31.53",
+            "29.43"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 24
+          }
+        },
+        "Frequency_Control_£m": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 22
+          },
+          "examples": [
+            "45.1",
+            "52.6",
+            "48.1"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 22,
+            "int": 2
+          }
+        },
+        "Month": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%b-%y": 0,
+            "float64": 24,
+            "int64": 24
+          },
+          "examples": [
+            "Aug-22",
+            "Sep-22",
+            "Oct-22"
+          ],
+          "max_len": 6,
+          "null_count": 0,
+          "shapes": {
+            "month_label": 24
+          }
+        },
+        "Negative_Reserve_£m": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 20
+          },
+          "examples": [
+            "2",
+            "2.1",
+            "1.9"
+          ],
+          "max_len": 3,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 20,
+            "int": 4
+          }
+        },
+        "Other_£m": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 20
+          },
+          "examples": [
+            "16",
+            "16.9",
+            "15.7"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 20,
+            "int": 4
+          }
+        },
+        "Positive_Reserve_£m": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 23
+          },
+          "examples": [
+            "77.1",
+            "110.1",
+            "121.4"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 23,
+            "int": 1
+          }
+        },
+        "Restoration_£m": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 24
+          },
+          "examples": [
+            "4.4"
+          ],
+          "max_len": 3,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 24
+          }
+        },
+        "Winter Contingency Cost (Central) �m": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 6
+          },
+          "examples": [
+            "0",
+            "54.51",
+            "52.75"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 6,
+            "int": 18
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "Estimated BSUoS Volume (TWh)": {
+            "description": "The total volume over which the BSUoS charge is payable",
+            "title": "Estimated BSUoS Volume ",
+            "type": "numeric",
+            "unit": "TWh"
+          },
+          "Month": {
+            "description": "The month Balancing Services Use of System (BSUoS) forecasted for.",
+            "title": "Month",
+            "type": "text",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [
+          "ALoMCP Â£m",
+          "Balancing Costs (Central) Â£m",
+          "CMP381 Deferred Costs Â£m",
+          "Constraints_Â£m",
+          "Energy_Imbalance_Â£m",
+          "Estimated Internal BSUoS & ESO Incentive Â£m",
+          "Frequency_Control_Â£m",
+          "Negative_Reserve_Â£m",
+          "Other_Â£m",
+          "Positive_Reserve_Â£m",
+          "Restoration_Â£m",
+          "Winter Contingency Cost (Central) £m"
+        ],
+        "header_not_in_field_info": [
+          "Energy_Imbalance_£m",
+          "Positive_Reserve_£m",
+          "Negative_Reserve_£m",
+          "Frequency_Control_£m",
+          "Other_£m",
+          "Constraints_£m",
+          "Restoration_£m",
+          "Balancing Costs (Central) £m",
+          "Estimated Internal BSUoS & ESO Incentive £m",
+          "ALoMCP £m",
+          "CMP381 Deferred Costs £m",
+          "Winter Contingency Cost (Central) �m"
+        ]
+      },
+      "first_written_at": "2026-10-08T09:12:29.458939+00:00",
+      "header": [
+        "Month",
+        "Energy_Imbalance_£m",
+        "Positive_Reserve_£m",
+        "Negative_Reserve_£m",
+        "Frequency_Control_£m",
+        "Other_£m",
+        "Constraints_£m",
+        "Restoration_£m",
+        "Balancing Costs (Central) £m",
+        "Estimated Internal BSUoS & ESO Incentive £m",
+        "ALoMCP £m",
+        "CMP381 Deferred Costs £m",
+        "Winter Contingency Cost (Central) �m",
+        "Estimated BSUoS Volume (TWh)"
+      ],
+      "last_written_at": "2026-10-08T09:12:29.458939+00:00",
+      "resource_ids": [
+        "839c1a80-ce74-4cd4-b634-197a54974b29"
+      ],
+      "rows": 24,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [
+    "not_utf8"
+  ],
+  "key": "bsuos_monthly_forecast_sum_winter",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Month"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Positive_Reserve_£m"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Frequency_Control_£m"
+        ],
+        "max_duplicates": 0
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "bsuos-monthly-forecast",
+  "proposal": {
+    "flags": [
+      "not_utf8",
+      "text_declared_date_shaped:Month"
+    ],
+    "record_draft": {
+      "eligibility": {
+        "question": "Energy_Imbalance_£m: a numeric column with no vendor unit; Positive_Reserve_£m: a numeric column with no vendor unit; Negative_Reserve_£m: a numeric column with no vendor unit; Frequency_Control_£m: a numeric column with no vendor unit; Other_£m: a numeric column with no vendor unit; Constraints_£m: a numeric column with no vendor unit; Restoration_£m: a numeric column with no vendor unit; Balancing Costs (Central) £m: a numeric column with no vendor unit; Estimated Internal BSUoS & ESO Incentive £m: a numeric column with no vendor unit; ALoMCP £m: a numeric column with no vendor unit; CMP381 Deferred Costs £m: a numeric column with no vendor unit; Winter Contingency Cost (Central) �m: a numeric column with no vendor unit",
+        "status": "held",
+        "unit": "BAL-2"
+      },
+      "encoding": "TODO: T13",
+      "entity_key": [
+        "month_vendor"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "date",
+              "format": "%b-%y",
+              "name": "month_vendor",
+              "nullable": true,
+              "source": "Month"
+            },
+            {
+              "dtype": "float64",
+              "name": "energy_imbalance_m",
+              "nullable": true,
+              "source": "Energy_Imbalance_£m"
+            },
+            {
+              "dtype": "float64",
+              "name": "positive_reserve_m",
+              "nullable": true,
+              "source": "Positive_Reserve_£m"
+            },
+            {
+              "dtype": "float64",
+              "name": "negative_reserve_m",
+              "nullable": true,
+              "source": "Negative_Reserve_£m"
+            },
+            {
+              "dtype": "float64",
+              "name": "frequency_control_m",
+              "nullable": true,
+              "source": "Frequency_Control_£m"
+            },
+            {
+              "dtype": "float64",
+              "name": "other_m",
+              "nullable": true,
+              "source": "Other_£m"
+            },
+            {
+              "dtype": "float64",
+              "name": "constraints_m",
+              "nullable": true,
+              "source": "Constraints_£m"
+            },
+            {
+              "dtype": "float64",
+              "name": "restoration_m",
+              "nullable": true,
+              "source": "Restoration_£m"
+            },
+            {
+              "dtype": "float64",
+              "name": "balancing_costs_central_m",
+              "nullable": true,
+              "source": "Balancing Costs (Central) £m"
+            },
+            {
+              "dtype": "float64",
+              "name": "estimated_internal_bsuos_eso_incentive_m",
+              "nullable": true,
+              "source": "Estimated Internal BSUoS & ESO Incentive £m"
+            },
+            {
+              "dtype": "float64",
+              "name": "alomcp_m",
+              "nullable": true,
+              "source": "ALoMCP £m"
+            },
+            {
+              "dtype": "float64",
+              "name": "cmp381_deferred_costs_m",
+              "nullable": true,
+              "source": "CMP381 Deferred Costs £m"
+            },
+            {
+              "dtype": "float64",
+              "name": "winter_contingency_cost_central_m",
+              "nullable": true,
+              "source": "Winter Contingency Cost (Central) �m"
+            },
+            {
+              "dtype": "float64",
+              "name": "estimated_bsuos_volume_twh",
+              "nullable": true,
+              "source": "Estimated BSUoS Volume (TWh)"
+            }
+          ],
+          "header": [
+            "Month",
+            "Energy_Imbalance_£m",
+            "Positive_Reserve_£m",
+            "Negative_Reserve_£m",
+            "Frequency_Control_£m",
+            "Other_£m",
+            "Constraints_£m",
+            "Restoration_£m",
+            "Balancing Costs (Central) £m",
+            "Estimated Internal BSUoS & ESO Incentive £m",
+            "ALoMCP £m",
+            "CMP381 Deferred Costs £m",
+            "Winter Contingency Cost (Central) �m",
+            "Estimated BSUoS Volume (TWh)"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T14",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "held",
+        "field": "column 'Energy_Imbalance_£m'.unit",
+        "id": "T01",
+        "kind": "unit",
+        "question": "Energy_Imbalance_£m: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Positive_Reserve_£m'.unit",
+        "id": "T02",
+        "kind": "unit",
+        "question": "Positive_Reserve_£m: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Negative_Reserve_£m'.unit",
+        "id": "T03",
+        "kind": "unit",
+        "question": "Negative_Reserve_£m: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Frequency_Control_£m'.unit",
+        "id": "T04",
+        "kind": "unit",
+        "question": "Frequency_Control_£m: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Other_£m'.unit",
+        "id": "T05",
+        "kind": "unit",
+        "question": "Other_£m: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Constraints_£m'.unit",
+        "id": "T06",
+        "kind": "unit",
+        "question": "Constraints_£m: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Restoration_£m'.unit",
+        "id": "T07",
+        "kind": "unit",
+        "question": "Restoration_£m: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Balancing Costs (Central) £m'.unit",
+        "id": "T08",
+        "kind": "unit",
+        "question": "Balancing Costs (Central) £m: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Estimated Internal BSUoS & ESO Incentive £m'.unit",
+        "id": "T09",
+        "kind": "unit",
+        "question": "Estimated Internal BSUoS & ESO Incentive £m: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'ALoMCP £m'.unit",
+        "id": "T10",
+        "kind": "unit",
+        "question": "ALoMCP £m: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'CMP381 Deferred Costs £m'.unit",
+        "id": "T11",
+        "kind": "unit",
+        "question": "CMP381 Deferred Costs £m: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Winter Contingency Cost (Central) �m'.unit",
+        "id": "T12",
+        "kind": "unit",
+        "question": "Winter Contingency Cost (Central) �m: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "blocked",
+        "field": "encoding",
+        "id": "T13",
+        "kind": "encoding",
+        "question": "a capture is not valid UTF-8 (see cp1252_clean); the vendor's encoding is unevidenced"
+      },
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T14",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: Month"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T15",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['month_vendor'] (measured unique in 1 capture(s)); without one, latest stays whole_capture"
+      }
+    ]
+  },
+  "refresh": "monthly",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update Frequency",
+        "value": "Monthly"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Balancing costs",
+    "title": "Monthly Balancing Services Use of System (BSUoS) Forecast Data"
+  }
+}

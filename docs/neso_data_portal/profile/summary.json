@@ -1,0 +1,4297 @@
+{
+  "batches": {
+    "AS-1": {
+      "distinct_headers": 9,
+      "families_with_csv": 9,
+      "over_15": false,
+      "packages": 6
+    },
+    "AS-2": {
+      "distinct_headers": 12,
+      "families_with_csv": 12,
+      "over_15": false,
+      "packages": 6
+    },
+    "AS-3": {
+      "distinct_headers": 23,
+      "families_with_csv": 21,
+      "over_15": true,
+      "packages": 6
+    },
+    "AS-4": {
+      "distinct_headers": 20,
+      "families_with_csv": 15,
+      "over_15": true,
+      "packages": 6
+    },
+    "AS-5": {
+      "distinct_headers": 20,
+      "families_with_csv": 17,
+      "over_15": true,
+      "packages": 6
+    },
+    "BAL-1": {
+      "distinct_headers": 16,
+      "families_with_csv": 11,
+      "over_15": true,
+      "packages": 6
+    },
+    "BAL-2": {
+      "distinct_headers": 48,
+      "families_with_csv": 29,
+      "over_15": true,
+      "packages": 5
+    },
+    "CI": {
+      "distinct_headers": 13,
+      "families_with_csv": 13,
+      "over_15": false,
+      "packages": 6
+    },
+    "CON": {
+      "distinct_headers": 7,
+      "families_with_csv": 6,
+      "over_15": false,
+      "packages": 6
+    },
+    "DEM-1": {
+      "distinct_headers": 14,
+      "families_with_csv": 11,
+      "over_15": false,
+      "packages": 6
+    },
+    "DEM-2": {
+      "distinct_headers": 5,
+      "families_with_csv": 5,
+      "over_15": false,
+      "packages": 4
+    },
+    "DFS": {
+      "distinct_headers": 20,
+      "families_with_csv": 17,
+      "over_15": true,
+      "packages": 5
+    },
+    "DONE": {
+      "distinct_headers": 2,
+      "families_with_csv": 2,
+      "over_15": false,
+      "packages": 2
+    },
+    "DONE+EF": {
+      "distinct_headers": 2,
+      "families_with_csv": 2,
+      "over_15": false,
+      "packages": 1
+    },
+    "FILE": {
+      "distinct_headers": 1,
+      "families_with_csv": 1,
+      "over_15": false,
+      "packages": 5
+    },
+    "GEN-1": {
+      "distinct_headers": 14,
+      "families_with_csv": 14,
+      "over_15": false,
+      "packages": 6
+    },
+    "GEN-2": {
+      "distinct_headers": 3,
+      "families_with_csv": 3,
+      "over_15": false,
+      "packages": 3
+    },
+    "H": {
+      "distinct_headers": 1,
+      "families_with_csv": 1,
+      "over_15": false,
+      "packages": 1
+    },
+    "IC-1": {
+      "distinct_headers": 14,
+      "families_with_csv": 11,
+      "over_15": false,
+      "packages": 6
+    },
+    "IC-2": {
+      "distinct_headers": 7,
+      "families_with_csv": 3,
+      "over_15": false,
+      "packages": 3
+    },
+    "PILOT": {
+      "distinct_headers": 6,
+      "families_with_csv": 6,
+      "over_15": false,
+      "packages": 6
+    },
+    "SCN-1": {
+      "distinct_headers": 45,
+      "families_with_csv": 24,
+      "over_15": true,
+      "packages": 6
+    },
+    "SCN-2": {
+      "distinct_headers": 20,
+      "families_with_csv": 8,
+      "over_15": true,
+      "packages": 6
+    },
+    "SCN-3": {
+      "distinct_headers": 18,
+      "families_with_csv": 12,
+      "over_15": true,
+      "packages": 6
+    },
+    "SYS-1": {
+      "distinct_headers": 8,
+      "families_with_csv": 7,
+      "over_15": false,
+      "packages": 6
+    },
+    "TRD": {
+      "distinct_headers": 10,
+      "families_with_csv": 9,
+      "over_15": false,
+      "packages": 6
+    }
+  },
+  "families": {
+    "aahedc_tariffs": {
+      "batch": "BAL-2",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "aahedc-tariffs",
+      "rows_newest": 9,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 0,
+        "none": 2
+      }
+    },
+    "aggregated_bsad": {
+      "batch": "AS-4",
+      "csv_captures": 13,
+      "epochs": 3,
+      "flags": [
+        "multi_epoch",
+        "not_utf8"
+      ],
+      "other_captures": 0,
+      "package": "aggregated-bsad",
+      "rows_newest": 9168,
+      "todos_by_consequence": {
+        "blocked": 1,
+        "held": 19,
+        "none": 4
+      }
+    },
+    "as_industry_notifications_balancing": {
+      "batch": "AS-2",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [
+        "sibling_candidate:as_industry_notifications_dc_dm_dr,as_industry_notifications_sffr_important,as_industry_notifications_stor_important"
+      ],
+      "other_captures": 0,
+      "package": "ancillary-services-important-industry-notifications",
+      "rows_newest": 13,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 3,
+        "none": 2
+      }
+    },
+    "as_industry_notifications_dc_dm_dr": {
+      "batch": "AS-2",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [
+        "sibling_candidate:as_industry_notifications_balancing,as_industry_notifications_sffr_important,as_industry_notifications_stor_important"
+      ],
+      "other_captures": 0,
+      "package": "ancillary-services-important-industry-notifications",
+      "rows_newest": 28,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 3,
+        "none": 2
+      }
+    },
+    "as_industry_notifications_quick_reserve": {
+      "batch": "AS-2",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [
+        "sibling_candidate:as_industry_notifications_slow_reserve"
+      ],
+      "other_captures": 0,
+      "package": "ancillary-services-important-industry-notifications",
+      "rows_newest": 13,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 3,
+        "none": 2
+      }
+    },
+    "as_industry_notifications_sffr_important": {
+      "batch": "AS-2",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [
+        "sibling_candidate:as_industry_notifications_balancing,as_industry_notifications_dc_dm_dr,as_industry_notifications_stor_important"
+      ],
+      "other_captures": 0,
+      "package": "ancillary-services-important-industry-notifications",
+      "rows_newest": 1,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 3,
+        "none": 2
+      }
+    },
+    "as_industry_notifications_slow_reserve": {
+      "batch": "AS-2",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [
+        "sibling_candidate:as_industry_notifications_quick_reserve"
+      ],
+      "other_captures": 0,
+      "package": "ancillary-services-important-industry-notifications",
+      "rows_newest": 4,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 3,
+        "none": 2
+      }
+    },
+    "as_industry_notifications_stor_important": {
+      "batch": "AS-2",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [
+        "sibling_candidate:as_industry_notifications_balancing,as_industry_notifications_dc_dm_dr,as_industry_notifications_sffr_important"
+      ],
+      "other_captures": 0,
+      "package": "ancillary-services-important-industry-notifications",
+      "rows_newest": 9,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 3,
+        "none": 2
+      }
+    },
+    "asdp_instructions": {
+      "batch": "AS-5",
+      "csv_captures": 70,
+      "epochs": 2,
+      "flags": [
+        "multi_epoch"
+      ],
+      "other_captures": 0,
+      "package": "non-bm-ancillary-service-dispatch-platform-asdp-instructions",
+      "rows_newest": 944,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 10,
+        "none": 4
+      }
+    },
+    "asdp_window_prices": {
+      "batch": "AS-5",
+      "csv_captures": 2,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "non-bm-ancillary-service-dispatch-platform-asdp-window-prices",
+      "rows_newest": 13309,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 5,
+        "none": 3
+      }
+    },
+    "br_auction_requirement_fc_da": {
+      "batch": "AS-1",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [
+        "sibling_candidate:br_auction_requirement_fc_da_archive,br_auction_requirement_fc_medium_term"
+      ],
+      "other_captures": 0,
+      "package": "balancing-reserve-auction-requirement-forecast",
+      "rows_newest": 48,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 2,
+        "none": 2
+      }
+    },
+    "br_auction_requirement_fc_da_archive": {
+      "batch": "AS-1",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [
+        "sibling_candidate:br_auction_requirement_fc_da,br_auction_requirement_fc_medium_term"
+      ],
+      "other_captures": 0,
+      "package": "balancing-reserve-auction-requirement-forecast",
+      "rows_newest": 46414,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 2,
+        "none": 2
+      }
+    },
+    "br_auction_requirement_fc_medium_term": {
+      "batch": "AS-1",
+      "csv_captures": 2,
+      "epochs": 1,
+      "flags": [
+        "sibling_candidate:br_auction_requirement_fc_da,br_auction_requirement_fc_da_archive"
+      ],
+      "other_captures": 0,
+      "package": "balancing-reserve-auction-requirement-forecast",
+      "rows_newest": 672,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 2,
+        "none": 2
+      }
+    },
+    "brit_ned": {
+      "batch": "IC-2",
+      "csv_captures": 187,
+      "epochs": 5,
+      "flags": [
+        "multi_epoch",
+        "not_utf8"
+      ],
+      "other_captures": 0,
+      "package": "brit-ned",
+      "rows_newest": 168,
+      "todos_by_consequence": {
+        "blocked": 1,
+        "held": 6,
+        "none": 3
+      }
+    },
+    "bs_contract_enactment_balancing": {
+      "batch": "TRD",
+      "csv_captures": 5,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "balancing-services-contract-enactment",
+      "rows_newest": 2,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 3,
+        "none": 3
+      }
+    },
+    "bs_contract_enactment_balancing_service": {
+      "batch": "TRD",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "balancing-services-contract-enactment",
+      "rows_newest": 79,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 2,
+        "none": 3
+      }
+    },
+    "bsad_forward_contracts": {
+      "batch": "AS-4",
+      "csv_captures": 11,
+      "epochs": 2,
+      "flags": [
+        "multi_epoch"
+      ],
+      "other_captures": 0,
+      "package": "balancing-services-adjustment-data-forward-contracts",
+      "rows_newest": 9168,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 8,
+        "none": 4
+      }
+    },
+    "bsuos_daily_forecast": {
+      "batch": "BAL-2",
+      "csv_captures": 5,
+      "epochs": 1,
+      "flags": [
+        "not_utf8"
+      ],
+      "other_captures": 0,
+      "package": "balancing-services-use-of-system-bsuos-daily-forecast",
+      "rows_newest": 17516,
+      "todos_by_consequence": {
+        "blocked": 2,
+        "held": 3,
+        "none": 2
+      }
+    },
+    "bsuos_fixed_tariffs": {
+      "batch": "BAL-1",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "bsuos-fixed-tariffs",
+      "rows_newest": 17,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 0,
+        "none": 2
+      }
+    },
+    "bsuos_monthly_forecast_actual_sum": {
+      "batch": "BAL-2",
+      "csv_captures": 22,
+      "epochs": 2,
+      "flags": [
+        "duplicate_header",
+        "multi_epoch",
+        "not_utf8",
+        "sibling_candidate:bsuos_monthly_forecast_fc_summary"
+      ],
+      "other_captures": 0,
+      "package": "bsuos-monthly-forecast",
+      "rows_newest": 12,
+      "todos_by_consequence": {
+        "blocked": 2,
+        "held": 5,
+        "none": 3
+      }
+    },
+    "bsuos_monthly_forecast_fc_summary": {
+      "batch": "BAL-2",
+      "csv_captures": 75,
+      "epochs": 14,
+      "flags": [
+        "duplicate_header",
+        "multi_epoch",
+        "not_utf8",
+        "sibling_candidate:bsuos_monthly_forecast_actual_sum",
+        "sibling_candidate:bsuos_monthly_forecast_fc_summary_pct",
+        "sibling_candidate:bsuos_monthly_forecast_fc_summary_pct,bsuos_monthly_forecast_summary"
+      ],
+      "other_captures": 0,
+      "package": "bsuos-monthly-forecast",
+      "rows_newest": 24,
+      "todos_by_consequence": {
+        "blocked": 4,
+        "held": 127,
+        "none": 3
+      }
+    },
+    "bsuos_monthly_forecast_fc_summary_pct": {
+      "batch": "BAL-2",
+      "csv_captures": 12,
+      "epochs": 2,
+      "flags": [
+        "duplicate_header",
+        "multi_epoch",
+        "not_utf8",
+        "sibling_candidate:bsuos_monthly_forecast_fc_summary",
+        "sibling_candidate:bsuos_monthly_forecast_fc_summary,bsuos_monthly_forecast_summary"
+      ],
+      "other_captures": 0,
+      "package": "bsuos-monthly-forecast",
+      "rows_newest": 24,
+      "todos_by_consequence": {
+        "blocked": 2,
+        "held": 35,
+        "none": 3
+      }
+    },
+    "bsuos_monthly_forecast_impact_on_due": {
+      "batch": "BAL-2",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [
+        "not_utf8",
+        "sibling_candidate:bsuos_monthly_forecast_including_new,bsuos_monthly_forecast_summary,bsuos_monthly_forecast_summary_pct"
+      ],
+      "other_captures": 0,
+      "package": "bsuos-monthly-forecast",
+      "rows_newest": 36,
+      "todos_by_consequence": {
+        "blocked": 1,
+        "held": 1,
+        "none": 2
+      }
+    },
+    "bsuos_monthly_forecast_including_new": {
+      "batch": "BAL-2",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [
+        "not_utf8",
+        "sibling_candidate:bsuos_monthly_forecast_impact_on_due,bsuos_monthly_forecast_summary,bsuos_monthly_forecast_summary_pct"
+      ],
+      "other_captures": 0,
+      "package": "bsuos-monthly-forecast",
+      "rows_newest": 36,
+      "todos_by_consequence": {
+        "blocked": 1,
+        "held": 1,
+        "none": 2
+      }
+    },
+    "bsuos_monthly_forecast_sum_winter": {
+      "batch": "BAL-2",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [
+        "not_utf8"
+      ],
+      "other_captures": 0,
+      "package": "bsuos-monthly-forecast",
+      "rows_newest": 24,
+      "todos_by_consequence": {
+        "blocked": 1,
+        "held": 12,
+        "none": 2
+      }
+    },
+    "bsuos_monthly_forecast_summary": {
+      "batch": "BAL-2",
+      "csv_captures": 18,
+      "epochs": 5,
+      "flags": [
+        "duplicate_header",
+        "multi_epoch",
+        "not_utf8",
+        "sibling_candidate:bsuos_monthly_forecast_fc_summary,bsuos_monthly_forecast_fc_summary_pct",
+        "sibling_candidate:bsuos_monthly_forecast_impact_on_due,bsuos_monthly_forecast_including_new,bsuos_monthly_forecast_summary_pct"
+      ],
+      "other_captures": 0,
+      "package": "bsuos-monthly-forecast",
+      "rows_newest": 36,
+      "todos_by_consequence": {
+        "blocked": 2,
+        "held": 24,
+        "none": 3
+      }
+    },
+    "bsuos_monthly_forecast_summary_pct": {
+      "batch": "BAL-2",
+      "csv_captures": 12,
+      "epochs": 1,
+      "flags": [
+        "not_utf8",
+        "sibling_candidate:bsuos_monthly_forecast_impact_on_due,bsuos_monthly_forecast_including_new,bsuos_monthly_forecast_summary"
+      ],
+      "other_captures": 0,
+      "package": "bsuos-monthly-forecast",
+      "rows_newest": 36,
+      "todos_by_consequence": {
+        "blocked": 1,
+        "held": 1,
+        "none": 2
+      }
+    },
+    "building_heat_model_example_output_half": {
+      "batch": "SCN-3",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "building-heat-model",
+      "rows_newest": 96,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 4,
+        "none": 2
+      }
+    },
+    "building_heat_model_list_input": {
+      "batch": "SCN-3",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "building-heat-model",
+      "rows_newest": 269,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 0,
+        "none": 2
+      }
+    },
+    "capacity_market_auction_cost": {
+      "batch": "CI",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "capacity-market-register",
+      "rows_newest": 192,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 0,
+        "none": 2
+      }
+    },
+    "capacity_market_auction_static": {
+      "batch": "CI",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "capacity-market-register",
+      "rows_newest": 27,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 0,
+        "none": 2
+      }
+    },
+    "capacity_market_component_history": {
+      "batch": "CI",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [
+        "sibling_candidate:capacity_market_component_history_pre"
+      ],
+      "other_captures": 0,
+      "package": "capacity-market-register",
+      "rows_newest": 7460,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 0,
+        "none": 2
+      }
+    },
+    "capacity_market_component_history_pre": {
+      "batch": "CI",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [
+        "sampled",
+        "sibling_candidate:capacity_market_component_history"
+      ],
+      "other_captures": 0,
+      "package": "capacity-market-register",
+      "rows_newest": 1918503,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 0,
+        "none": 2
+      }
+    },
+    "capacity_market_components": {
+      "batch": "CI",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "capacity-market-register",
+      "rows_newest": 29849,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 1,
+        "none": 2
+      }
+    },
+    "capacity_market_de_rating_factors": {
+      "batch": "CI",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "capacity-market-register",
+      "rows_newest": 890,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 1,
+        "none": 2
+      }
+    },
+    "capacity_market_unit_cmu": {
+      "batch": "CI",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "capacity-market-register",
+      "rows_newest": 18200,
+      "todos_by_consequence": {
+        "blocked": 1,
+        "held": 0,
+        "none": 2
+      }
+    },
+    "capacity_market_unit_cmu_history": {
+      "batch": "CI",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [
+        "sampled"
+      ],
+      "other_captures": 0,
+      "package": "capacity-market-register",
+      "rows_newest": 72166,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 0,
+        "none": 2
+      }
+    },
+    "ci_balancing_actions": {
+      "batch": "CI",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [
+        "sampled"
+      ],
+      "other_captures": 0,
+      "package": "carbon-intensity-of-balancing-actions",
+      "rows_newest": 96163,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 1,
+        "none": 2
+      }
+    },
+    "cmis_intertrip": {
+      "batch": "CON",
+      "csv_captures": 5,
+      "epochs": 2,
+      "flags": [
+        "multi_epoch"
+      ],
+      "other_captures": 0,
+      "package": "constraint-management-intertrip-service-information-cmis",
+      "rows_newest": 83,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 5,
+        "none": 3
+      }
+    },
+    "constraint_breakdown": {
+      "batch": "BAL-1",
+      "csv_captures": 10,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "constraint-breakdown",
+      "rows_newest": 184,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 0,
+        "none": 2
+      }
+    },
+    "constraint_cost_fc_24m": {
+      "batch": "PILOT",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "24-months-ahead-constraint-cost-forecast",
+      "rows_newest": 24,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 0,
+        "none": 2
+      }
+    },
+    "constraint_limits_24m": {
+      "batch": "CON",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "24-months-ahead-constraint-limits",
+      "rows_newest": 105,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 2,
+        "none": 2
+      }
+    },
+    "contract_transfer_obligation": {
+      "batch": "AS-2",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "contract-transfer-of-obligation",
+      "rows_newest": 12,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 2,
+        "none": 2
+      }
+    },
+    "country_ci_forecast": {
+      "batch": "CI",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [
+        "sampled"
+      ],
+      "other_captures": 0,
+      "package": "country-carbon-intensity-forecast",
+      "rows_newest": 141009,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 1,
+        "none": 2
+      }
+    },
+    "current_bsuos_historic_ii": {
+      "batch": "BAL-1",
+      "csv_captures": 4,
+      "epochs": 3,
+      "flags": [
+        "multi_epoch",
+        "sampled",
+        "sibling_candidate:current_bsuos_historic_rf,current_bsuos_historic_sf"
+      ],
+      "other_captures": 0,
+      "package": "current-balancing-services-use-of-system-bsuos-data",
+      "rows_newest": 17520,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 18,
+        "none": 3
+      }
+    },
+    "current_bsuos_historic_rf": {
+      "batch": "BAL-1",
+      "csv_captures": 3,
+      "epochs": 2,
+      "flags": [
+        "multi_epoch",
+        "sampled",
+        "sibling_candidate:current_bsuos_historic_ii,current_bsuos_historic_sf",
+        "sibling_candidate:current_bsuos_historic_sf"
+      ],
+      "other_captures": 0,
+      "package": "current-balancing-services-use-of-system-bsuos-data",
+      "rows_newest": 17520,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 7,
+        "none": 3
+      }
+    },
+    "current_bsuos_historic_sf": {
+      "batch": "BAL-1",
+      "csv_captures": 4,
+      "epochs": 2,
+      "flags": [
+        "multi_epoch",
+        "sampled",
+        "sibling_candidate:current_bsuos_historic_ii,current_bsuos_historic_rf",
+        "sibling_candidate:current_bsuos_historic_rf"
+      ],
+      "other_captures": 0,
+      "package": "current-balancing-services-use-of-system-bsuos-data",
+      "rows_newest": 17520,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 11,
+        "none": 3
+      }
+    },
+    "current_bsuos_ii": {
+      "batch": "BAL-1",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [
+        "sibling_candidate:current_bsuos_rf,current_bsuos_sf"
+      ],
+      "other_captures": 0,
+      "package": "current-balancing-services-use-of-system-bsuos-data",
+      "rows_newest": 8736,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 2,
+        "none": 2
+      }
+    },
+    "current_bsuos_rf": {
+      "batch": "BAL-1",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [
+        "sibling_candidate:current_bsuos_ii,current_bsuos_sf"
+      ],
+      "other_captures": 0,
+      "package": "current-balancing-services-use-of-system-bsuos-data",
+      "rows_newest": 6672,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 2,
+        "none": 2
+      }
+    },
+    "current_bsuos_sf": {
+      "batch": "BAL-1",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [
+        "sibling_candidate:current_bsuos_ii,current_bsuos_rf"
+      ],
+      "other_captures": 0,
+      "package": "current-balancing-services-use-of-system-bsuos-data",
+      "rows_newest": 8016,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 2,
+        "none": 2
+      }
+    },
+    "da_constraint_flows_limits": {
+      "batch": "CON",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [
+        "sampled"
+      ],
+      "other_captures": 0,
+      "package": "day-ahead-constraint-flows-and-limits",
+      "rows_newest": 733649,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 2,
+        "none": 2
+      }
+    },
+    "da_demand_fc_performance": {
+      "batch": "PILOT",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [
+        "sampled"
+      ],
+      "other_captures": 0,
+      "package": "day-ahead-half-hourly-demand-forecast-performance",
+      "rows_newest": 96786,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 3,
+        "none": 2
+      }
+    },
+    "da_wind_forecast_day_ahead": {
+      "batch": "GEN-1",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "day-ahead-wind-forecast",
+      "rows_newest": 48,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 2,
+        "none": 2
+      }
+    },
+    "da_wind_forecast_day_ahead_bmu": {
+      "batch": "GEN-1",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "day-ahead-wind-forecast",
+      "rows_newest": 11088,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 2,
+        "none": 2
+      }
+    },
+    "da_wind_forecast_historic_day_ahead": {
+      "batch": "GEN-1",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [
+        "sampled"
+      ],
+      "other_captures": 0,
+      "package": "day-ahead-wind-forecast",
+      "rows_newest": 148825,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 3,
+        "none": 2
+      }
+    },
+    "da_wind_forecast_historic_day_ahead_bmu": {
+      "batch": "GEN-1",
+      "csv_captures": 8,
+      "epochs": 1,
+      "flags": [
+        "sampled"
+      ],
+      "other_captures": 0,
+      "package": "day-ahead-wind-forecast",
+      "rows_newest": 2994880,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 3,
+        "none": 3
+      }
+    },
+    "daily_balancing_costs": {
+      "batch": "BAL-1",
+      "csv_captures": 10,
+      "epochs": 2,
+      "flags": [
+        "multi_epoch"
+      ],
+      "other_captures": 0,
+      "package": "daily-balancing-costs-balancing-services-use-of-system",
+      "rows_newest": 8826,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 2,
+        "none": 3
+      }
+    },
+    "daily_balancing_volume": {
+      "batch": "BAL-1",
+      "csv_captures": 10,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "daily-balancing-volume-balancing-services-use-of-system",
+      "rows_newest": 8826,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 1,
+        "none": 2
+      }
+    },
+    "daily_demand_update": {
+      "batch": "DEM-1",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "daily-demand-update",
+      "rows_newest": 2160,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 1,
+        "none": 2
+      }
+    },
+    "daily_opmr": {
+      "batch": "GEN-1",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "daily-opmr",
+      "rows_newest": 26828,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 0,
+        "none": 2
+      }
+    },
+    "daily_wind_availability": {
+      "batch": "DONE",
+      "csv_captures": 2,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "daily-wind-availability",
+      "rows_newest": 3654,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 0,
+        "none": 2
+      }
+    },
+    "dc_dm_dr_long_term_fc": {
+      "batch": "AS-1",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "long-term-forecasts-for-dc-dm-dr-requirements",
+      "rows_newest": 4212,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 2,
+        "none": 2
+      }
+    },
+    "dc_forecast_4d": {
+      "batch": "AS-1",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "dynamic-containment-4-day-forecast",
+      "rows_newest": 8,
+      "todos_by_consequence": {
+        "blocked": 1,
+        "held": 0,
+        "none": 2
+      }
+    },
+    "dc_forecast_4d_history": {
+      "batch": "AS-1",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "dynamic-containment-4-day-forecast",
+      "rows_newest": 12932,
+      "todos_by_consequence": {
+        "blocked": 1,
+        "held": 0,
+        "none": 2
+      }
+    },
+    "demand_flexibility_industry_notification": {
+      "batch": "DFS",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "demand-flexibility",
+      "rows_newest": 191,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 0,
+        "none": 2
+      }
+    },
+    "demand_flexibility_service_requirement": {
+      "batch": "DFS",
+      "csv_captures": 2,
+      "epochs": 2,
+      "flags": [
+        "multi_epoch"
+      ],
+      "other_captures": 0,
+      "package": "demand-flexibility",
+      "rows_newest": 1238,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 1,
+        "none": 3
+      }
+    },
+    "demand_flexibility_utilisation_report": {
+      "batch": "DFS",
+      "csv_captures": 2,
+      "epochs": 2,
+      "flags": [
+        "multi_epoch"
+      ],
+      "other_captures": 0,
+      "package": "demand-flexibility",
+      "rows_newest": 14663,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 19,
+        "none": 3
+      }
+    },
+    "demand_flexibility_utilisation_summary": {
+      "batch": "DFS",
+      "csv_captures": 2,
+      "epochs": 2,
+      "flags": [
+        "multi_epoch"
+      ],
+      "other_captures": 0,
+      "package": "demand-flexibility",
+      "rows_newest": 1230,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 1,
+        "none": 3
+      }
+    },
+    "demand_forecast_1d_day_ahead_national": {
+      "batch": "DEM-1",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "1-day-ahead-demand-forecast",
+      "rows_newest": 12,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 3,
+        "none": 2
+      }
+    },
+    "demand_forecast_1d_historic_day_ahead": {
+      "batch": "DEM-1",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [
+        "sampled"
+      ],
+      "other_captures": 0,
+      "package": "1-day-ahead-demand-forecast",
+      "rows_newest": 58561,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 3,
+        "none": 2
+      }
+    },
+    "demand_forecast_2_52w": {
+      "batch": "PILOT",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "long-term-2-52-weeks-ahead-national-demand-forecast",
+      "rows_newest": 65,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 3,
+        "none": 2
+      }
+    },
+    "demand_forecast_2d_day_ahead": {
+      "batch": "DEM-1",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "2-day-ahead-demand-forecast",
+      "rows_newest": 12,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 3,
+        "none": 2
+      }
+    },
+    "demand_forecast_2d_historic_day_ahead": {
+      "batch": "DEM-1",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "2-day-ahead-demand-forecast",
+      "rows_newest": 14608,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 1,
+        "none": 2
+      }
+    },
+    "demand_profile_dates": {
+      "batch": "DEM-2",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "demand-profile-dates",
+      "rows_newest": 3224,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 0,
+        "none": 2
+      }
+    },
+    "dfs_industry_notification": {
+      "batch": "DFS",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "demand-flexibility-service",
+      "rows_newest": 30,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 0,
+        "none": 2
+      }
+    },
+    "dfs_live_events_service_requirement": {
+      "batch": "DFS",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "demand-flexibility-service-live-events",
+      "rows_newest": 5,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 1,
+        "none": 2
+      }
+    },
+    "dfs_live_events_service_update_industry": {
+      "batch": "DFS",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "demand-flexibility-service-live-events",
+      "rows_newest": 7,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 0,
+        "none": 2
+      }
+    },
+    "dfs_live_events_utilisation_report": {
+      "batch": "DFS",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "demand-flexibility-service-live-events",
+      "rows_newest": 170,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 0,
+        "none": 2
+      }
+    },
+    "dfs_live_events_utilisation_report_sum": {
+      "batch": "DFS",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "demand-flexibility-service-live-events",
+      "rows_newest": 5,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 0,
+        "none": 2
+      }
+    },
+    "dfs_service_requirements": {
+      "batch": "DFS",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "demand-flexibility-service",
+      "rows_newest": 32,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 0,
+        "none": 2
+      }
+    },
+    "dfs_test_events_service_requirement": {
+      "batch": "DFS",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "demand-flexibility-service-test-events",
+      "rows_newest": 40,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 0,
+        "none": 2
+      }
+    },
+    "dfs_test_events_service_update_industry": {
+      "batch": "DFS",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "demand-flexibility-service-test-events",
+      "rows_newest": 40,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 0,
+        "none": 2
+      }
+    },
+    "dfs_test_events_utilisation_report": {
+      "batch": "DFS",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "demand-flexibility-service-test-events",
+      "rows_newest": 739,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 0,
+        "none": 2
+      }
+    },
+    "dfs_test_events_utilisation_report_sum": {
+      "batch": "DFS",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "demand-flexibility-service-test-events",
+      "rows_newest": 40,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 0,
+        "none": 2
+      }
+    },
+    "dfs_utilisation_report": {
+      "batch": "DFS",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "demand-flexibility-service",
+      "rows_newest": 1220,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 0,
+        "none": 2
+      }
+    },
+    "dfs_utilisation_report_sum": {
+      "batch": "DFS",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "demand-flexibility-service",
+      "rows_newest": 32,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 0,
+        "none": 2
+      }
+    },
+    "disaggregated_bsad": {
+      "batch": "AS-4",
+      "csv_captures": 14,
+      "epochs": 3,
+      "flags": [
+        "multi_epoch",
+        "not_utf8",
+        "sampled"
+      ],
+      "other_captures": 0,
+      "package": "disaggregated-bsad",
+      "rows_newest": 71517,
+      "todos_by_consequence": {
+        "blocked": 1,
+        "held": 8,
+        "none": 4
+      }
+    },
+    "dm_requirements": {
+      "batch": "AS-1",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "dynamic-moderation-requirements",
+      "rows_newest": 78,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 0,
+        "none": 2
+      }
+    },
+    "dr_requirements": {
+      "batch": "AS-1",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "dynamic-regulation-requirements",
+      "rows_newest": 78,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 0,
+        "none": 2
+      }
+    },
+    "dynamic_containment_dc_dr_dm_block": {
+      "batch": "AS-4",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [
+        "sampled"
+      ],
+      "other_captures": 0,
+      "package": "dynamic-containment-data",
+      "rows_newest": 728794,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 8,
+        "none": 3
+      }
+    },
+    "dynamic_containment_dc_dr_dm_linear": {
+      "batch": "AS-4",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "dynamic-containment-data",
+      "rows_newest": 23154,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 7,
+        "none": 3
+      }
+    },
+    "dynamic_containment_dc_dr_dm_results": {
+      "batch": "AS-4",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [
+        "sampled"
+      ],
+      "other_captures": 0,
+      "package": "dynamic-containment-data",
+      "rows_newest": 397662,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 3,
+        "none": 3
+      }
+    },
+    "dynamic_containment_dc_dr_dm_results_sum": {
+      "batch": "AS-4",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "dynamic-containment-data",
+      "rows_newest": 23424,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 3,
+        "none": 3
+      }
+    },
+    "dynamic_containment_masterdata": {
+      "batch": "AS-4",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "dynamic-containment-data",
+      "rows_newest": 10388,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 4,
+        "none": 2
+      }
+    },
+    "eac_br_mock_results_buy_orders": {
+      "batch": "AS-4",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "eac-br-mock-auction-results",
+      "rows_newest": 3696,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 8,
+        "none": 3
+      }
+    },
+    "eac_br_mock_results_by_unit": {
+      "batch": "AS-4",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "eac-br-mock-auction-results",
+      "rows_newest": 7074,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 2,
+        "none": 3
+      }
+    },
+    "eac_br_mock_results_sell_orders": {
+      "batch": "AS-4",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "eac-br-mock-auction-results",
+      "rows_newest": 23263,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 9,
+        "none": 3
+      }
+    },
+    "eac_br_mock_results_summary": {
+      "batch": "AS-4",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "eac-br-mock-auction-results",
+      "rows_newest": 1632,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 3,
+        "none": 3
+      }
+    },
+    "eac_br_results_buy_orders": {
+      "batch": "AS-4",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [
+        "sampled"
+      ],
+      "other_captures": 0,
+      "package": "eac-br-auction-results",
+      "rows_newest": 98592,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 8,
+        "none": 3
+      }
+    },
+    "eac_br_results_by_unit": {
+      "batch": "AS-4",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [
+        "sampled"
+      ],
+      "other_captures": 0,
+      "package": "eac-br-auction-results",
+      "rows_newest": 621111,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 2,
+        "none": 3
+      }
+    },
+    "eac_br_results_summary": {
+      "batch": "AS-4",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [
+        "sampled"
+      ],
+      "other_captures": 0,
+      "package": "eac-br-auction-results",
+      "rows_newest": 57216,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 3,
+        "none": 3
+      }
+    },
+    "eac_mock_results_buy_orders": {
+      "batch": "AS-3",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "eac-mock-auction-results",
+      "rows_newest": 16938,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 8,
+        "none": 3
+      }
+    },
+    "eac_mock_results_by_unit": {
+      "batch": "AS-3",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "eac-mock-auction-results",
+      "rows_newest": 13073,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 2,
+        "none": 3
+      }
+    },
+    "eac_mock_results_sell_orders": {
+      "batch": "AS-3",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "eac-mock-auction-results",
+      "rows_newest": 30869,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 11,
+        "none": 3
+      }
+    },
+    "eac_mock_results_summary": {
+      "batch": "AS-3",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "eac-mock-auction-results",
+      "rows_newest": 7128,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 4,
+        "none": 3
+      }
+    },
+    "eac_results_buy_orders": {
+      "batch": "AS-3",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [
+        "sampled",
+        "sibling_candidate:eac_results_buy_orders_fy,eac_results_daily_buy_orders"
+      ],
+      "other_captures": 0,
+      "package": "eac-auction-results",
+      "rows_newest": 139306,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 8,
+        "none": 3
+      }
+    },
+    "eac_results_buy_orders_fy": {
+      "batch": "AS-3",
+      "csv_captures": 3,
+      "epochs": 1,
+      "flags": [
+        "sampled",
+        "sibling_candidate:eac_results_buy_orders,eac_results_daily_buy_orders"
+      ],
+      "other_captures": 0,
+      "package": "eac-auction-results",
+      "rows_newest": 198154,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 8,
+        "none": 2
+      }
+    },
+    "eac_results_by_unit": {
+      "batch": "AS-3",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [
+        "sampled",
+        "sibling_candidate:eac_results_by_unit_fy,eac_results_daily_by_unit"
+      ],
+      "other_captures": 0,
+      "package": "eac-auction-results",
+      "rows_newest": 1444630,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 2,
+        "none": 3
+      }
+    },
+    "eac_results_by_unit_fy": {
+      "batch": "AS-3",
+      "csv_captures": 3,
+      "epochs": 1,
+      "flags": [
+        "sampled",
+        "sibling_candidate:eac_results_by_unit,eac_results_daily_by_unit"
+      ],
+      "other_captures": 0,
+      "package": "eac-auction-results",
+      "rows_newest": 1176445,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 2,
+        "none": 2
+      }
+    },
+    "eac_results_daily_buy_orders": {
+      "batch": "AS-3",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [
+        "sibling_candidate:eac_results_buy_orders,eac_results_buy_orders_fy"
+      ],
+      "other_captures": 0,
+      "package": "eac-auction-results",
+      "rows_newest": 720,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 8,
+        "none": 2
+      }
+    },
+    "eac_results_daily_by_unit": {
+      "batch": "AS-3",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [
+        "sibling_candidate:eac_results_by_unit,eac_results_by_unit_fy"
+      ],
+      "other_captures": 0,
+      "package": "eac-auction-results",
+      "rows_newest": 7925,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 2,
+        "none": 2
+      }
+    },
+    "eac_results_daily_sell_orders": {
+      "batch": "AS-3",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [
+        "sampled",
+        "sibling_candidate:eac_results_sell_orders"
+      ],
+      "other_captures": 0,
+      "package": "eac-auction-results",
+      "rows_newest": 73098,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 11,
+        "none": 2
+      }
+    },
+    "eac_results_daily_summary": {
+      "batch": "AS-3",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [
+        "sibling_candidate:eac_results_summary,eac_results_summary_fy"
+      ],
+      "other_captures": 0,
+      "package": "eac-auction-results",
+      "rows_newest": 324,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 4,
+        "none": 2
+      }
+    },
+    "eac_results_sell_orders": {
+      "batch": "AS-3",
+      "csv_captures": 36,
+      "epochs": 2,
+      "flags": [
+        "multi_epoch",
+        "sampled",
+        "sibling_candidate:eac_results_daily_sell_orders"
+      ],
+      "other_captures": 0,
+      "package": "eac-auction-results",
+      "rows_newest": 2244190,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 20,
+        "none": 4
+      }
+    },
+    "eac_results_summary": {
+      "batch": "AS-3",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [
+        "sampled",
+        "sibling_candidate:eac_results_daily_summary,eac_results_summary_fy"
+      ],
+      "other_captures": 0,
+      "package": "eac-auction-results",
+      "rows_newest": 61884,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 4,
+        "none": 3
+      }
+    },
+    "eac_results_summary_fy": {
+      "batch": "AS-3",
+      "csv_captures": 3,
+      "epochs": 1,
+      "flags": [
+        "sampled",
+        "sibling_candidate:eac_results_daily_summary,eac_results_summary"
+      ],
+      "other_captures": 0,
+      "package": "eac-auction-results",
+      "rows_newest": 62864,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 4,
+        "none": 2
+      }
+    },
+    "eleclink": {
+      "batch": "IC-1",
+      "csv_captures": 2,
+      "epochs": 2,
+      "flags": [
+        "multi_epoch"
+      ],
+      "other_captures": 0,
+      "package": "eleclink",
+      "rows_newest": 8472,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 6,
+        "none": 4
+      }
+    },
+    "embedded_register": {
+      "batch": "PILOT",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "embedded-register",
+      "rows_newest": 561,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 1,
+        "none": 2
+      }
+    },
+    "embedded_wind_solar_forecast": {
+      "batch": "DONE+EF",
+      "csv_captures": 2,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "embedded-wind-and-solar-forecasts",
+      "rows_newest": 656,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 2,
+        "none": 2
+      }
+    },
+    "embedded_wind_solar_forecast_archive": {
+      "batch": "DONE+EF",
+      "csv_captures": 7,
+      "epochs": 1,
+      "flags": [
+        "sampled"
+      ],
+      "other_captures": 0,
+      "package": "embedded-wind-and-solar-forecasts",
+      "rows_newest": 4208758,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 3,
+        "none": 3
+      }
+    },
+    "fes_building_blocks_block_definitions": {
+      "batch": "SCN-1",
+      "csv_captures": 6,
+      "epochs": 5,
+      "flags": [
+        "duplicate_header",
+        "multi_epoch"
+      ],
+      "other_captures": 0,
+      "package": "future-energy-scenario-fes-building-block-data",
+      "rows_newest": 66,
+      "todos_by_consequence": {
+        "blocked": 1,
+        "held": 0,
+        "none": 3
+      }
+    },
+    "fes_building_blocks_block_licence_area": {
+      "batch": "SCN-1",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "future-energy-scenario-fes-building-block-data",
+      "rows_newest": 19,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 0,
+        "none": 2
+      }
+    },
+    "fes_building_blocks_main": {
+      "batch": "SCN-1",
+      "csv_captures": 6,
+      "epochs": 6,
+      "flags": [
+        "multi_epoch",
+        "sampled"
+      ],
+      "other_captures": 0,
+      "package": "future-energy-scenario-fes-building-block-data",
+      "rows_newest": 48019,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 15,
+        "none": 3
+      }
+    },
+    "fes_ed1_electricity_demand": {
+      "batch": "SCN-1",
+      "csv_captures": 4,
+      "epochs": 4,
+      "flags": [
+        "multi_epoch"
+      ],
+      "other_captures": 0,
+      "package": "fes-electricity-demand-summary-data-table-ed1",
+      "rows_newest": 35,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 75,
+        "none": 3
+      }
+    },
+    "fes_ed3_heat_demand_natural_gas": {
+      "batch": "SCN-2",
+      "csv_captures": 2,
+      "epochs": 2,
+      "flags": [
+        "multi_epoch"
+      ],
+      "other_captures": 0,
+      "package": "fes-natural-gas-residential-and-non-domestic-i-c-heat-demand-summary-data-table-ed3",
+      "rows_newest": 1223,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 62,
+        "none": 3
+      }
+    },
+    "fes_ed3_heat_demand_natural_gas_sum_ed": {
+      "batch": "SCN-2",
+      "csv_captures": 2,
+      "epochs": 2,
+      "flags": [
+        "multi_epoch"
+      ],
+      "other_captures": 0,
+      "package": "fes-natural-gas-residential-and-non-domestic-i-c-heat-demand-summary-data-table-ed3",
+      "rows_newest": 11,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 28,
+        "none": 3
+      }
+    },
+    "fes_ed3_heat_demand_sum_ed": {
+      "batch": "SCN-2",
+      "csv_captures": 2,
+      "epochs": 2,
+      "flags": [
+        "multi_epoch"
+      ],
+      "other_captures": 0,
+      "package": "fes-natural-gas-residential-and-non-domestic-i-c-heat-demand-summary-data-table-ed3",
+      "rows_newest": 249,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 24,
+        "none": 3
+      }
+    },
+    "fes_ed4_gas_demand_defs": {
+      "batch": "SCN-2",
+      "csv_captures": 4,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "fes-natural-gas-demand-definitions-ed4",
+      "rows_newest": 11,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 1,
+        "none": 2
+      }
+    },
+    "fes_ed5_road_transport": {
+      "batch": "SCN-2",
+      "csv_captures": 4,
+      "epochs": 4,
+      "flags": [
+        "multi_epoch"
+      ],
+      "other_captures": 0,
+      "package": "fes-road-transport-summary-data-table-ed5",
+      "rows_newest": 63,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 65,
+        "none": 3
+      }
+    },
+    "fes_ed6_road_transport_notes": {
+      "batch": "SCN-2",
+      "csv_captures": 4,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "fes-road-transport-notes-data-table-ed6",
+      "rows_newest": 26,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 0,
+        "none": 2
+      }
+    },
+    "fes_es1_electricity_supply": {
+      "batch": "SCN-1",
+      "csv_captures": 7,
+      "epochs": 7,
+      "flags": [
+        "duplicate_header",
+        "multi_epoch"
+      ],
+      "other_captures": 0,
+      "package": "future-energy-scenario-electricity-supply-data-table-es1",
+      "rows_newest": 125,
+      "todos_by_consequence": {
+        "blocked": 13,
+        "held": 51,
+        "none": 3
+      }
+    },
+    "fes_es2_european_supply": {
+      "batch": "SCN-2",
+      "csv_captures": 4,
+      "epochs": 4,
+      "flags": [
+        "multi_epoch"
+      ],
+      "other_captures": 0,
+      "package": "fes-european-electricity-supply-data-table-es2",
+      "rows_newest": 11,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 84,
+        "none": 3
+      }
+    },
+    "fes_flx1_flexibility": {
+      "batch": "SCN-2",
+      "csv_captures": 4,
+      "epochs": 4,
+      "flags": [
+        "multi_epoch"
+      ],
+      "other_captures": 0,
+      "package": "fes-flexibility-data-table-data-table-flx1",
+      "rows_newest": 36,
+      "todos_by_consequence": {
+        "blocked": 13,
+        "held": 42,
+        "none": 3
+      }
+    },
+    "fes_la_heat_model_domestic": {
+      "batch": "SCN-3",
+      "csv_captures": 7,
+      "epochs": 3,
+      "flags": [
+        "multi_epoch"
+      ],
+      "other_captures": 0,
+      "package": "local-authority-level-spatial-heat-model-outputs-fes",
+      "rows_newest": 1482,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 80,
+        "none": 3
+      }
+    },
+    "fes_la_heat_model_residential": {
+      "batch": "SCN-3",
+      "csv_captures": 13,
+      "epochs": 2,
+      "flags": [
+        "multi_epoch"
+      ],
+      "other_captures": 0,
+      "package": "local-authority-level-spatial-heat-model-outputs-fes",
+      "rows_newest": 1484,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 30,
+        "none": 3
+      }
+    },
+    "fes_regional_demand_active_power": {
+      "batch": "SCN-1",
+      "csv_captures": 4,
+      "epochs": 1,
+      "flags": [
+        "sampled"
+      ],
+      "other_captures": 0,
+      "package": "regional-breakdown-of-fes-data-electricity",
+      "rows_newest": 257964,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 1,
+        "none": 2
+      }
+    },
+    "fes_regional_dg_gt_1mw": {
+      "batch": "SCN-1",
+      "csv_captures": 4,
+      "epochs": 2,
+      "flags": [
+        "duplicate_header",
+        "multi_epoch",
+        "sampled",
+        "sibling_candidate:fes_regional_dg_lt_1mw,fes_regional_storage_lt_1mw"
+      ],
+      "other_captures": 0,
+      "package": "regional-breakdown-of-fes-data-electricity",
+      "rows_newest": 75106,
+      "todos_by_consequence": {
+        "blocked": 1,
+        "held": 2,
+        "none": 3
+      }
+    },
+    "fes_regional_dg_lt_1mw": {
+      "batch": "SCN-1",
+      "csv_captures": 4,
+      "epochs": 1,
+      "flags": [
+        "sampled",
+        "sibling_candidate:fes_regional_dg_gt_1mw,fes_regional_storage_lt_1mw"
+      ],
+      "other_captures": 0,
+      "package": "regional-breakdown-of-fes-data-electricity",
+      "rows_newest": 156324,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 0,
+        "none": 2
+      }
+    },
+    "fes_regional_dsr": {
+      "batch": "SCN-1",
+      "csv_captures": 3,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "regional-breakdown-of-fes-data-electricity",
+      "rows_newest": 42456,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 1,
+        "none": 2
+      }
+    },
+    "fes_regional_gsp_info": {
+      "batch": "SCN-1",
+      "csv_captures": 4,
+      "epochs": 1,
+      "flags": [
+        "not_utf8"
+      ],
+      "other_captures": 0,
+      "package": "regional-breakdown-of-fes-data-electricity",
+      "rows_newest": 373,
+      "todos_by_consequence": {
+        "blocked": 3,
+        "held": 0,
+        "none": 2
+      }
+    },
+    "fes_regional_storage_gt_1mw": {
+      "batch": "SCN-1",
+      "csv_captures": 2,
+      "epochs": 1,
+      "flags": [
+        "sibling_candidate:fes_regional_storage_gt_1mw_pre2023"
+      ],
+      "other_captures": 0,
+      "package": "regional-breakdown-of-fes-data-electricity",
+      "rows_newest": 10627,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 1,
+        "none": 2
+      }
+    },
+    "fes_regional_storage_gt_1mw_pre2023": {
+      "batch": "SCN-1",
+      "csv_captures": 2,
+      "epochs": 2,
+      "flags": [
+        "duplicate_header",
+        "multi_epoch",
+        "sibling_candidate:fes_regional_storage_gt_1mw"
+      ],
+      "other_captures": 0,
+      "package": "regional-breakdown-of-fes-data-electricity",
+      "rows_newest": 14245,
+      "todos_by_consequence": {
+        "blocked": 1,
+        "held": 1,
+        "none": 3
+      }
+    },
+    "fes_regional_storage_lt_1mw": {
+      "batch": "SCN-1",
+      "csv_captures": 2,
+      "epochs": 2,
+      "flags": [
+        "multi_epoch",
+        "sibling_candidate:fes_regional_dg_gt_1mw,fes_regional_dg_lt_1mw",
+        "sibling_candidate:fes_regional_storage_lt_1mw_pre2023"
+      ],
+      "other_captures": 0,
+      "package": "regional-breakdown-of-fes-data-electricity",
+      "rows_newest": 31248,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 2,
+        "none": 3
+      }
+    },
+    "fes_regional_storage_lt_1mw_pre2023": {
+      "batch": "SCN-1",
+      "csv_captures": 2,
+      "epochs": 1,
+      "flags": [
+        "sibling_candidate:fes_regional_storage_lt_1mw"
+      ],
+      "other_captures": 0,
+      "package": "regional-breakdown-of-fes-data-electricity",
+      "rows_newest": 46990,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 1,
+        "none": 2
+      }
+    },
+    "fes_ws1_gas_supply": {
+      "batch": "SCN-3",
+      "csv_captures": 4,
+      "epochs": 2,
+      "flags": [
+        "multi_epoch"
+      ],
+      "other_captures": 0,
+      "package": "fes-whole-system-gas-supply-data-table-ws1",
+      "rows_newest": 52,
+      "todos_by_consequence": {
+        "blocked": 27,
+        "held": 35,
+        "none": 3
+      }
+    },
+    "fes_ws2_gas_emissions": {
+      "batch": "SCN-3",
+      "csv_captures": 4,
+      "epochs": 3,
+      "flags": [
+        "multi_epoch"
+      ],
+      "other_captures": 0,
+      "package": "fes-whole-system-gas-supply-emissions-data-table-ws2",
+      "rows_newest": 18,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 48,
+        "none": 3
+      }
+    },
+    "ffr_phase2_auction_phase_block_order": {
+      "batch": "AS-5",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [
+        "sibling_candidate:ffr_phase2_auction_phase_blockorders"
+      ],
+      "other_captures": 0,
+      "package": "phase-2-ffr-auction-results-summary",
+      "rows_newest": 379,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 8,
+        "none": 2
+      }
+    },
+    "ffr_phase2_auction_phase_blockorders": {
+      "batch": "AS-5",
+      "csv_captures": 3,
+      "epochs": 1,
+      "flags": [
+        "sampled",
+        "sibling_candidate:ffr_phase2_auction_phase_block_order"
+      ],
+      "other_captures": 0,
+      "package": "phase-2-ffr-auction-results-summary",
+      "rows_newest": 23071,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 8,
+        "none": 2
+      }
+    },
+    "ffr_phase2_auction_phase_linear_orders": {
+      "batch": "AS-5",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [
+        "sibling_candidate:ffr_phase2_auction_phase_linearorders"
+      ],
+      "other_captures": 0,
+      "package": "phase-2-ffr-auction-results-summary",
+      "rows_newest": 84,
+      "todos_by_consequence": {
+        "blocked": 4,
+        "held": 7,
+        "none": 2
+      }
+    },
+    "ffr_phase2_auction_phase_linearorders": {
+      "batch": "AS-5",
+      "csv_captures": 3,
+      "epochs": 1,
+      "flags": [
+        "sibling_candidate:ffr_phase2_auction_phase_linear_orders"
+      ],
+      "other_captures": 0,
+      "package": "phase-2-ffr-auction-results-summary",
+      "rows_newest": 2940,
+      "todos_by_consequence": {
+        "blocked": 4,
+        "held": 7,
+        "none": 2
+      }
+    },
+    "ffr_phase2_auction_phase_results_sum": {
+      "batch": "AS-5",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [
+        "sibling_candidate:ffr_phase2_auction_phase_resultsum"
+      ],
+      "other_captures": 0,
+      "package": "phase-2-ffr-auction-results-summary",
+      "rows_newest": 84,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 3,
+        "none": 2
+      }
+    },
+    "ffr_phase2_auction_phase_results_unit": {
+      "batch": "AS-5",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [
+        "sibling_candidate:ffr_phase2_auction_phase_resultsbyunit"
+      ],
+      "other_captures": 0,
+      "package": "phase-2-ffr-auction-results-summary",
+      "rows_newest": 201,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 3,
+        "none": 2
+      }
+    },
+    "ffr_phase2_auction_phase_resultsbyunit": {
+      "batch": "AS-5",
+      "csv_captures": 3,
+      "epochs": 1,
+      "flags": [
+        "sibling_candidate:ffr_phase2_auction_phase_results_unit"
+      ],
+      "other_captures": 0,
+      "package": "phase-2-ffr-auction-results-summary",
+      "rows_newest": 19256,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 3,
+        "none": 2
+      }
+    },
+    "ffr_phase2_auction_phase_resultsum": {
+      "batch": "AS-5",
+      "csv_captures": 3,
+      "epochs": 1,
+      "flags": [
+        "sibling_candidate:ffr_phase2_auction_phase_results_sum"
+      ],
+      "other_captures": 0,
+      "package": "phase-2-ffr-auction-results-summary",
+      "rows_newest": 2940,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 3,
+        "none": 2
+      }
+    },
+    "ffr_post_tender_reports_csv": {
+      "batch": "AS-5",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [
+        "sibling_candidate:ffr_post_tender_reports_csv_ext,ffr_post_tender_reports_ext"
+      ],
+      "other_captures": 0,
+      "package": "firm-frequency-response-post-tender-reports",
+      "rows_newest": 240,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 8,
+        "none": 2
+      }
+    },
+    "ffr_post_tender_reports_csv_ext": {
+      "batch": "AS-5",
+      "csv_captures": 25,
+      "epochs": 2,
+      "flags": [
+        "multi_epoch",
+        "sibling_candidate:ffr_post_tender_reports_csv,ffr_post_tender_reports_ext"
+      ],
+      "other_captures": 0,
+      "package": "firm-frequency-response-post-tender-reports",
+      "rows_newest": 179,
+      "todos_by_consequence": {
+        "blocked": 3,
+        "held": 16,
+        "none": 3
+      }
+    },
+    "ffr_post_tender_reports_ext": {
+      "batch": "AS-5",
+      "csv_captures": 2,
+      "epochs": 1,
+      "flags": [
+        "sibling_candidate:ffr_post_tender_reports_csv,ffr_post_tender_reports_csv_ext"
+      ],
+      "other_captures": 0,
+      "package": "firm-frequency-response-post-tender-reports",
+      "rows_newest": 201,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 10,
+        "none": 2
+      }
+    },
+    "gis_grid_supply_points": {
+      "batch": "FILE",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "gis-boundaries-for-gb-grid-supply-points",
+      "rows_newest": 380,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 8,
+        "none": 2
+      }
+    },
+    "gtma_trades_data": {
+      "batch": "TRD",
+      "csv_captures": 6,
+      "epochs": 1,
+      "flags": [
+        "sampled",
+        "sibling_candidate:gtma_trades_data_pre"
+      ],
+      "other_captures": 0,
+      "package": "historic-gtma-grid-trade-master-agreement-trades-data",
+      "rows_newest": 55542,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 2,
+        "none": 2
+      }
+    },
+    "gtma_trades_data_pre": {
+      "batch": "TRD",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [
+        "sibling_candidate:gtma_trades_data"
+      ],
+      "other_captures": 0,
+      "package": "historic-gtma-grid-trade-master-agreement-trades-data",
+      "rows_newest": 7470,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 2,
+        "none": 2
+      }
+    },
+    "gtma_trades_fy": {
+      "batch": "TRD",
+      "csv_captures": 6,
+      "epochs": 1,
+      "flags": [
+        "sampled"
+      ],
+      "other_captures": 0,
+      "package": "historic-gtma-grid-trade-master-agreement-trades-data",
+      "rows_newest": 20551,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 3,
+        "none": 3
+      }
+    },
+    "historic_demand": {
+      "batch": "DEM-1",
+      "csv_captures": 26,
+      "epochs": 4,
+      "flags": [
+        "multi_epoch"
+      ],
+      "other_captures": 0,
+      "package": "historic-demand-data",
+      "rows_newest": 12478,
+      "todos_by_consequence": {
+        "blocked": 18,
+        "held": 4,
+        "none": 3
+      }
+    },
+    "historic_generation_mix": {
+      "batch": "DONE",
+      "csv_captures": 4,
+      "epochs": 1,
+      "flags": [
+        "sampled"
+      ],
+      "other_captures": 0,
+      "package": "historic-generation-mix",
+      "rows_newest": 311485,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 18,
+        "none": 2
+      }
+    },
+    "ic_requirement_auction": {
+      "batch": "TRD",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "interconnector-requirement-and-auction-summary-data",
+      "rows_newest": 28328,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 4,
+        "none": 3
+      }
+    },
+    "ifa2_ifa_da_id_weekly_itls": {
+      "batch": "IC-1",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "ifa2",
+      "rows_newest": 7680,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 0,
+        "none": 2
+      }
+    },
+    "ifa2_ifa_itl": {
+      "batch": "IC-1",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "ifa2",
+      "rows_newest": 7752,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 2,
+        "none": 3
+      }
+    },
+    "ifa_da_id_weekly_itls": {
+      "batch": "IC-1",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "ifa",
+      "rows_newest": 11401,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 0,
+        "none": 2
+      }
+    },
+    "ifa_itl": {
+      "batch": "IC-1",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "ifa",
+      "rows_newest": 11566,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 2,
+        "none": 3
+      }
+    },
+    "index_linked_contract_volume": {
+      "batch": "TRD",
+      "csv_captures": 4,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "index-linked-contract-volume",
+      "rows_newest": 1,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 3,
+        "none": 3
+      }
+    },
+    "inertia_bid_offer_costs": {
+      "batch": "BAL-1",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "gb-system-inertia-bid-and-offer-costs",
+      "rows_newest": 1096,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 0,
+        "none": 2
+      }
+    },
+    "interconnector_register": {
+      "batch": "PILOT",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "interconnector-register",
+      "rows_newest": 35,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 2,
+        "none": 2
+      }
+    },
+    "lcoh_capex_opex_input_assumptions_pem": {
+      "batch": "SCN-3",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "levelised-cost-of-green-hydrogen",
+      "rows_newest": 36,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 2,
+        "none": 2
+      }
+    },
+    "lcoh_levelised_cost_blue_hydrogen": {
+      "batch": "SCN-3",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "levelised-cost-of-green-hydrogen",
+      "rows_newest": 120,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 2,
+        "none": 2
+      }
+    },
+    "lcoh_levelised_cost_green_hydrogen": {
+      "batch": "SCN-3",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [
+        "sampled"
+      ],
+      "other_captures": 0,
+      "package": "levelised-cost-of-green-hydrogen",
+      "rows_newest": 424080,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 0,
+        "none": 2
+      }
+    },
+    "metered_wind_forecast_14d": {
+      "batch": "GEN-1",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "14-days-ahead-operational-metered-wind-forecasts",
+      "rows_newest": 670,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 3,
+        "none": 2
+      }
+    },
+    "metered_wind_forecast_14d_windfarm": {
+      "batch": "GEN-1",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [
+        "sampled"
+      ],
+      "other_captures": 0,
+      "package": "14-days-ahead-operational-metered-wind-forecasts",
+      "rows_newest": 182240,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 2,
+        "none": 2
+      }
+    },
+    "metered_wind_output_monthly": {
+      "batch": "GEN-2",
+      "csv_captures": 9,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "monthly-operational-metered-wind-output",
+      "rows_newest": 8785,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 0,
+        "none": 2
+      }
+    },
+    "national_ci_forecast": {
+      "batch": "CI",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [
+        "sampled"
+      ],
+      "other_captures": 0,
+      "package": "national-carbon-intensity-forecast",
+      "rows_newest": 155159,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 1,
+        "none": 2
+      }
+    },
+    "national_demand_bmus": {
+      "batch": "DEM-2",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "national-demand-balancing-mechanism-units",
+      "rows_newest": 1001,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 0,
+        "none": 2
+      }
+    },
+    "national_demand_fc_2_14d_days_ahead": {
+      "batch": "DEM-1",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "2-14-days-ahead-national-demand-forecast",
+      "rows_newest": 156,
+      "todos_by_consequence": {
+        "blocked": 1,
+        "held": 3,
+        "none": 2
+      }
+    },
+    "national_demand_fc_2_14d_days_ahead_half": {
+      "batch": "DEM-1",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "2-14-days-ahead-national-demand-forecast",
+      "rows_newest": 624,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 2,
+        "none": 2
+      }
+    },
+    "national_demand_fc_2_14d_historic_day": {
+      "batch": "DEM-1",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [
+        "sampled"
+      ],
+      "other_captures": 0,
+      "package": "2-14-days-ahead-national-demand-forecast",
+      "rows_newest": 370700,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 4,
+        "none": 2
+      }
+    },
+    "national_forecast_7d_day_ahead_demand": {
+      "batch": "DEM-1",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "7-day-ahead-national-forecast",
+      "rows_newest": 12,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 3,
+        "none": 2
+      }
+    },
+    "national_forecast_7d_historic_day_ahead": {
+      "batch": "DEM-1",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "7-day-ahead-national-forecast",
+      "rows_newest": 15703,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 4,
+        "none": 2
+      }
+    },
+    "nemolink_intraday": {
+      "batch": "IC-1",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "nemolink",
+      "rows_newest": 24,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 0,
+        "none": 3
+      }
+    },
+    "nemolink_nemo_da_id_weekly_ntcs": {
+      "batch": "IC-1",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "nemolink",
+      "rows_newest": 1344,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 0,
+        "none": 2
+      }
+    },
+    "nemolink_ntc": {
+      "batch": "IC-1",
+      "csv_captures": 2,
+      "epochs": 2,
+      "flags": [
+        "multi_epoch"
+      ],
+      "other_captures": 0,
+      "package": "nemolink",
+      "rows_newest": 11280,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 6,
+        "none": 4
+      }
+    },
+    "nordpool_da_prices": {
+      "batch": "IC-2",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "day-ahead-power-exchange-prices-nordpool",
+      "rows_newest": 44256,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 0,
+        "none": 3
+      }
+    },
+    "nrapm_forecast_national_daily_days": {
+      "batch": "GEN-1",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "negative-reserve-active-power-margin-nrapm-forecast",
+      "rows_newest": 26,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 0,
+        "none": 2
+      }
+    },
+    "nrapm_forecast_scotland_daily_days": {
+      "batch": "GEN-1",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "negative-reserve-active-power-margin-nrapm-forecast",
+      "rows_newest": 26,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 0,
+        "none": 2
+      }
+    },
+    "nrapm_forecast_weekly_week_national": {
+      "batch": "GEN-1",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "negative-reserve-active-power-margin-nrapm-forecast",
+      "rows_newest": 55,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 2,
+        "none": 2
+      }
+    },
+    "nrapm_forecast_weekly_week_scotland": {
+      "batch": "GEN-1",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "negative-reserve-active-power-margin-nrapm-forecast",
+      "rows_newest": 55,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 2,
+        "none": 2
+      }
+    },
+    "nsl": {
+      "batch": "IC-1",
+      "csv_captures": 2,
+      "epochs": 2,
+      "flags": [
+        "multi_epoch"
+      ],
+      "other_captures": 0,
+      "package": "nsl",
+      "rows_newest": 16632,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 6,
+        "none": 4
+      }
+    },
+    "obp_physical_notifications": {
+      "batch": "AS-3",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [
+        "sampled"
+      ],
+      "other_captures": 0,
+      "package": "obp-non-bm-physical-notifications",
+      "rows_newest": 495086,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 2,
+        "none": 2
+      }
+    },
+    "obp_reserve_avail_price": {
+      "batch": "AS-3",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [
+        "sampled"
+      ],
+      "other_captures": 0,
+      "package": "obp-reserve-availability-utilisation-price",
+      "rows_newest": 150309,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 3,
+        "none": 2
+      }
+    },
+    "obp_reserve_instructions": {
+      "batch": "AS-3",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "obp-non-bm-reserve-instructions",
+      "rows_newest": 422,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 5,
+        "none": 2
+      }
+    },
+    "odfm_market_information_instructed": {
+      "batch": "AS-5",
+      "csv_captures": 2,
+      "epochs": 2,
+      "flags": [
+        "duplicate_header",
+        "multi_epoch"
+      ],
+      "other_captures": 0,
+      "package": "optional-downward-flexibility-management-odfm-market-information",
+      "rows_newest": 49,
+      "todos_by_consequence": {
+        "blocked": 1,
+        "held": 4,
+        "none": 3
+      }
+    },
+    "odfm_market_information_load_factors": {
+      "batch": "AS-5",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "optional-downward-flexibility-management-odfm-market-information",
+      "rows_newest": 240,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 43,
+        "none": 2
+      }
+    },
+    "odfm_market_information_results": {
+      "batch": "AS-5",
+      "csv_captures": 2,
+      "epochs": 1,
+      "flags": [
+        "not_utf8"
+      ],
+      "other_captures": 0,
+      "package": "optional-downward-flexibility-management-odfm-market-information",
+      "rows_newest": 35574,
+      "todos_by_consequence": {
+        "blocked": 2,
+        "held": 2,
+        "none": 2
+      }
+    },
+    "orps_utilisation_historic_reactive": {
+      "batch": "AS-3",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "obligatory-reactive-power-service-orps-utilisation",
+      "rows_newest": 295,
+      "todos_by_consequence": {
+        "blocked": 202,
+        "held": 0,
+        "none": 2
+      }
+    },
+    "orps_utilisation_reactive": {
+      "batch": "AS-3",
+      "csv_captures": 2,
+      "epochs": 2,
+      "flags": [
+        "multi_epoch"
+      ],
+      "other_captures": 0,
+      "package": "obligatory-reactive-power-service-orps-utilisation",
+      "rows_newest": 19130,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 172,
+        "none": 3
+      }
+    },
+    "orps_utilisation_reactive_default": {
+      "batch": "AS-3",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "obligatory-reactive-power-service-orps-utilisation",
+      "rows_newest": 228,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 1,
+        "none": 2
+      }
+    },
+    "otf_network_congestion": {
+      "batch": "CON",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "operational-transparency-forum-network-congestion-data",
+      "rows_newest": 53,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 0,
+        "none": 2
+      }
+    },
+    "outturn_voltage_costs_historical": {
+      "batch": "SYS-1",
+      "csv_captures": 11,
+      "epochs": 1,
+      "flags": [
+        "sibling_candidate:outturn_voltage_costs_main"
+      ],
+      "other_captures": 0,
+      "package": "outturn-voltage-costs",
+      "rows_newest": 228,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 0,
+        "none": 2
+      }
+    },
+    "outturn_voltage_costs_main": {
+      "batch": "SYS-1",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [
+        "sibling_candidate:outturn_voltage_costs_historical"
+      ],
+      "other_captures": 0,
+      "package": "outturn-voltage-costs",
+      "rows_newest": 38,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 0,
+        "none": 2
+      }
+    },
+    "portal_known_issues": {
+      "batch": "CI",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "data-portal-planned-changes-known-issues",
+      "rows_newest": 241,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 4,
+        "none": 2
+      }
+    },
+    "qr_auction_requirement_fc": {
+      "batch": "AS-1",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "quick-reserve-auction-requirement-forecast",
+      "rows_newest": 1874,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 2,
+        "none": 2
+      }
+    },
+    "regional_ci_forecast": {
+      "batch": "CI",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [
+        "sampled"
+      ],
+      "other_captures": 0,
+      "package": "regional-carbon-intensity-forecast",
+      "rows_newest": 136190,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 1,
+        "none": 2
+      }
+    },
+    "resource_adequacy_2030s_peak_demand": {
+      "batch": "SCN-3",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "resource-adequacy-in-2030s",
+      "rows_newest": 102,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 0,
+        "none": 2
+      }
+    },
+    "resource_adequacy_2030s_portfolio": {
+      "batch": "SCN-3",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "resource-adequacy-in-2030s",
+      "rows_newest": 315,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 0,
+        "none": 2
+      }
+    },
+    "resource_adequacy_2030s_results": {
+      "batch": "SCN-3",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "resource-adequacy-in-2030s",
+      "rows_newest": 1462,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 0,
+        "none": 2
+      }
+    },
+    "school_holiday_percentages": {
+      "batch": "DEM-2",
+      "csv_captures": 6,
+      "epochs": 1,
+      "flags": [
+        "sampled"
+      ],
+      "other_captures": 0,
+      "package": "school-holiday-percentages",
+      "rows_newest": 72243,
+      "todos_by_consequence": {
+        "blocked": 1,
+        "held": 2,
+        "none": 2
+      }
+    },
+    "sffr_auction_results_buy_orders": {
+      "batch": "AS-2",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "static-firm-frequency-response-auction-results",
+      "rows_newest": 7722,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 2,
+        "none": 2
+      }
+    },
+    "sffr_auction_results_main": {
+      "batch": "AS-2",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [
+        "sampled"
+      ],
+      "other_captures": 0,
+      "package": "static-firm-frequency-response-auction-results",
+      "rows_newest": 229631,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 4,
+        "none": 2
+      }
+    },
+    "sffr_requirement": {
+      "batch": "AS-2",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "static-firm-frequency-response-requirement",
+      "rows_newest": 39,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 0,
+        "none": 2
+      }
+    },
+    "skip_rates_behind_constraints_bmu": {
+      "batch": "BAL-2",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "skip-rates",
+      "rows_newest": 5871,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 0,
+        "none": 2
+      }
+    },
+    "skip_rates_behind_constraints_cons": {
+      "batch": "BAL-2",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "skip-rates",
+      "rows_newest": 236,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 0,
+        "none": 2
+      }
+    },
+    "skip_rates_exclusion_reasons": {
+      "batch": "BAL-2",
+      "csv_captures": 23,
+      "epochs": 1,
+      "flags": [
+        "sampled"
+      ],
+      "other_captures": 0,
+      "package": "skip-rates",
+      "rows_newest": 319032,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 3,
+        "none": 2
+      }
+    },
+    "skip_rates_in_merit_all_bm": {
+      "batch": "BAL-2",
+      "csv_captures": 23,
+      "epochs": 1,
+      "flags": [
+        "sampled",
+        "sibling_candidate:skip_rates_in_merit_psa,skip_rates_in_merit_psa_dsf_unit,skip_rates_stage6_psa"
+      ],
+      "other_captures": 0,
+      "package": "skip-rates",
+      "rows_newest": 1369735,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 3,
+        "none": 2
+      }
+    },
+    "skip_rates_in_merit_psa": {
+      "batch": "BAL-2",
+      "csv_captures": 23,
+      "epochs": 1,
+      "flags": [
+        "sampled",
+        "sibling_candidate:skip_rates_in_merit_all_bm,skip_rates_in_merit_psa_dsf_unit,skip_rates_stage6_psa"
+      ],
+      "other_captures": 0,
+      "package": "skip-rates",
+      "rows_newest": 1281481,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 3,
+        "none": 2
+      }
+    },
+    "skip_rates_in_merit_psa_dsf_unit": {
+      "batch": "BAL-2",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [
+        "sampled",
+        "sibling_candidate:skip_rates_in_merit_all_bm,skip_rates_in_merit_psa,skip_rates_stage6_psa"
+      ],
+      "other_captures": 0,
+      "package": "skip-rates",
+      "rows_newest": 431215,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 3,
+        "none": 2
+      }
+    },
+    "skip_rates_stage5_dsf_technology": {
+      "batch": "BAL-2",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "skip-rates",
+      "rows_newest": 7202,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 1,
+        "none": 2
+      }
+    },
+    "skip_rates_stage5_psa_technology": {
+      "batch": "BAL-2",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [
+        "sampled"
+      ],
+      "other_captures": 0,
+      "package": "skip-rates",
+      "rows_newest": 132139,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 1,
+        "none": 2
+      }
+    },
+    "skip_rates_stage6_acceptance": {
+      "batch": "BAL-2",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [
+        "sampled"
+      ],
+      "other_captures": 0,
+      "package": "skip-rates",
+      "rows_newest": 2909408,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 2,
+        "none": 2
+      }
+    },
+    "skip_rates_stage6_psa": {
+      "batch": "BAL-2",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [
+        "sampled",
+        "sibling_candidate:skip_rates_in_merit_all_bm,skip_rates_in_merit_psa,skip_rates_in_merit_psa_dsf_unit"
+      ],
+      "other_captures": 0,
+      "package": "skip-rates",
+      "rows_newest": 5535746,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 3,
+        "none": 2
+      }
+    },
+    "skip_rates_summary": {
+      "batch": "BAL-2",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [
+        "sampled"
+      ],
+      "other_captures": 0,
+      "package": "skip-rates",
+      "rows_newest": 190368,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 1,
+        "none": 2
+      }
+    },
+    "slow_reserve_requirement_fc": {
+      "batch": "AS-2",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "slow-reserve-requirement-forecast",
+      "rows_newest": 1874,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 2,
+        "none": 2
+      }
+    },
+    "ssel_contract_enactment": {
+      "batch": "TRD",
+      "csv_captures": 6,
+      "epochs": 2,
+      "flags": [
+        "multi_epoch"
+      ],
+      "other_captures": 0,
+      "package": "super-stable-export-limit-contract-enactment",
+      "rows_newest": 1,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 8,
+        "none": 4
+      }
+    },
+    "stability_midterm_y1": {
+      "batch": "SYS-1",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "stability-midterm-y-1-utilisation-report",
+      "rows_newest": 61,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 2,
+        "none": 2
+      }
+    },
+    "stability_pathfinder_availability_report": {
+      "batch": "SYS-1",
+      "csv_captures": 4,
+      "epochs": 1,
+      "flags": [
+        "sampled"
+      ],
+      "other_captures": 0,
+      "package": "stability-pathfinder-service-information",
+      "rows_newest": 132011,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 2,
+        "none": 2
+      }
+    },
+    "stability_pathfinder_utilisation_report": {
+      "batch": "SYS-1",
+      "csv_captures": 4,
+      "epochs": 1,
+      "flags": [
+        "sampled"
+      ],
+      "other_captures": 0,
+      "package": "stability-pathfinder-service-information",
+      "rows_newest": 123987,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 5,
+        "none": 2
+      }
+    },
+    "stor_da_auction_results": {
+      "batch": "AS-5",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [
+        "sampled"
+      ],
+      "other_captures": 0,
+      "package": "short-term-operating-reserve-stor-day-ahead-auction-results",
+      "rows_newest": 121480,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 3,
+        "none": 2
+      }
+    },
+    "stor_da_buy_curve": {
+      "batch": "DFS",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "short-term-operating-reserve-stor-day-ahead-buy-curve",
+      "rows_newest": 5475,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 2,
+        "none": 2
+      }
+    },
+    "stor_windows": {
+      "batch": "AS-2",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "stor-windows",
+      "rows_newest": 1826,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 1,
+        "none": 2
+      }
+    },
+    "system_frequency": {
+      "batch": "H",
+      "csv_captures": 152,
+      "epochs": 1,
+      "flags": [
+        "not_utf8",
+        "parse_error",
+        "sampled"
+      ],
+      "other_captures": 0,
+      "package": "system-frequency-data",
+      "rows_newest": 2678400,
+      "todos_by_consequence": {
+        "blocked": 2,
+        "held": 1,
+        "none": 2
+      }
+    },
+    "system_inertia": {
+      "batch": "SYS-1",
+      "csv_captures": 10,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "system-inertia",
+      "rows_newest": 4788,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 1,
+        "none": 2
+      }
+    },
+    "system_inertia_cost": {
+      "batch": "SYS-1",
+      "csv_captures": 10,
+      "epochs": 2,
+      "flags": [
+        "multi_epoch"
+      ],
+      "other_captures": 0,
+      "package": "system-inertia-cost",
+      "rows_newest": 1,
+      "todos_by_consequence": {
+        "blocked": 1,
+        "held": 1,
+        "none": 3
+      }
+    },
+    "system_operating_plan": {
+      "batch": "IC-2",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "system-operating-plan-sop",
+      "rows_newest": 10322,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 5,
+        "none": 3
+      }
+    },
+    "tec_register": {
+      "batch": "PILOT",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "transmission-entry-capacity-tec-register",
+      "rows_newest": 2196,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 0,
+        "none": 2
+      }
+    },
+    "thermal_constraint_costs": {
+      "batch": "CON",
+      "csv_captures": 6,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "thermal-constraint-costs",
+      "rows_newest": 1104,
+      "todos_by_consequence": {
+        "blocked": 1,
+        "held": 0,
+        "none": 2
+      }
+    },
+    "tnuos_tariffs_embedded_export": {
+      "batch": "BAL-2",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "transmission-network-use-of-system-tnuos-tariffs",
+      "rows_newest": 602,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 2,
+        "none": 2
+      }
+    },
+    "tnuos_tariffs_half_hourly_hh_demand": {
+      "batch": "BAL-2",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "transmission-network-use-of-system-tnuos-tariffs",
+      "rows_newest": 602,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 2,
+        "none": 2
+      }
+    },
+    "tnuos_tariffs_local_offshore_generator": {
+      "batch": "BAL-2",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "transmission-network-use-of-system-tnuos-tariffs",
+      "rows_newest": 1346,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 1,
+        "none": 2
+      }
+    },
+    "tnuos_tariffs_local_substation_tariff": {
+      "batch": "BAL-2",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "transmission-network-use-of-system-tnuos-tariffs",
+      "rows_newest": 84,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 2,
+        "none": 2
+      }
+    },
+    "tnuos_tariffs_non_half_hourly_nhh_demand": {
+      "batch": "BAL-2",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "transmission-network-use-of-system-tnuos-tariffs",
+      "rows_newest": 602,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 2,
+        "none": 2
+      }
+    },
+    "tnuos_tariffs_onshore_generator": {
+      "batch": "BAL-2",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "transmission-network-use-of-system-tnuos-tariffs",
+      "rows_newest": 1161,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 2,
+        "none": 2
+      }
+    },
+    "tnuos_tariffs_onshore_local_circuit": {
+      "batch": "BAL-2",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "transmission-network-use-of-system-tnuos-tariffs",
+      "rows_newest": 4647,
+      "todos_by_consequence": {
+        "blocked": 1,
+        "held": 1,
+        "none": 2
+      }
+    },
+    "tnuos_tariffs_transmission_demand": {
+      "batch": "BAL-2",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "transmission-network-use-of-system-tnuos-tariffs",
+      "rows_newest": 462,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 0,
+        "none": 2
+      }
+    },
+    "transmission_losses_financial_year": {
+      "batch": "DEM-2",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "transmission-losses",
+      "rows_newest": 13,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 0,
+        "none": 2
+      }
+    },
+    "transmission_losses_main": {
+      "batch": "DEM-2",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "transmission-losses",
+      "rows_newest": 161,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 0,
+        "none": 2
+      }
+    },
+    "tresp_demand_pathways_gsp": {
+      "batch": "SCN-1",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [
+        "sampled"
+      ],
+      "other_captures": 0,
+      "package": "tresp-demand-pathways",
+      "rows_newest": 160776,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 2,
+        "none": 2
+      }
+    },
+    "tresp_demand_pathways_la_england": {
+      "batch": "SCN-1",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [
+        "sampled",
+        "sibling_candidate:tresp_demand_pathways_la_scotland,tresp_demand_pathways_la_wales"
+      ],
+      "other_captures": 0,
+      "package": "tresp-demand-pathways",
+      "rows_newest": 206016,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 2,
+        "none": 2
+      }
+    },
+    "tresp_demand_pathways_la_scotland": {
+      "batch": "SCN-1",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [
+        "sibling_candidate:tresp_demand_pathways_la_england,tresp_demand_pathways_la_wales"
+      ],
+      "other_captures": 0,
+      "package": "tresp-demand-pathways",
+      "rows_newest": 22272,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 2,
+        "none": 2
+      }
+    },
+    "tresp_demand_pathways_la_wales": {
+      "batch": "SCN-1",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [
+        "sibling_candidate:tresp_demand_pathways_la_england,tresp_demand_pathways_la_scotland"
+      ],
+      "other_captures": 0,
+      "package": "tresp-demand-pathways",
+      "rows_newest": 15312,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 2,
+        "none": 2
+      }
+    },
+    "tresp_demand_pathways_resp_region": {
+      "batch": "SCN-1",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "tresp-demand-pathways",
+      "rows_newest": 7656,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 2,
+        "none": 2
+      }
+    },
+    "tresp_generation_pathways_gsp": {
+      "batch": "SCN-1",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [
+        "sampled"
+      ],
+      "other_captures": 0,
+      "package": "tresp-generation-pathways",
+      "rows_newest": 308154,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 2,
+        "none": 2
+      }
+    },
+    "tresp_generation_pathways_la_england": {
+      "batch": "SCN-1",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [
+        "sampled",
+        "sibling_candidate:tresp_generation_pathways_la_scotland,tresp_generation_pathways_la_wales"
+      ],
+      "other_captures": 0,
+      "package": "tresp-generation-pathways",
+      "rows_newest": 394864,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 2,
+        "none": 2
+      }
+    },
+    "tresp_generation_pathways_la_scotland": {
+      "batch": "SCN-1",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [
+        "sibling_candidate:tresp_generation_pathways_la_england,tresp_generation_pathways_la_wales"
+      ],
+      "other_captures": 0,
+      "package": "tresp-generation-pathways",
+      "rows_newest": 42688,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 2,
+        "none": 2
+      }
+    },
+    "tresp_generation_pathways_la_wales": {
+      "batch": "SCN-1",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [
+        "sibling_candidate:tresp_generation_pathways_la_england,tresp_generation_pathways_la_scotland"
+      ],
+      "other_captures": 0,
+      "package": "tresp-generation-pathways",
+      "rows_newest": 29348,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 2,
+        "none": 2
+      }
+    },
+    "tresp_generation_pathways_resp_region": {
+      "batch": "SCN-1",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "tresp-generation-pathways",
+      "rows_newest": 14674,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 2,
+        "none": 2
+      }
+    },
+    "upcoming_trades": {
+      "batch": "TRD",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "upcoming-trades",
+      "rows_newest": 28,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 2,
+        "none": 3
+      }
+    },
+    "viking_link_ntc": {
+      "batch": "IC-1",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "viking",
+      "rows_newest": 19775,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 2,
+        "none": 3
+      }
+    },
+    "viking_ntc": {
+      "batch": "IC-1",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "viking",
+      "rows_newest": 6456,
+      "todos_by_consequence": {
+        "blocked": 1,
+        "held": 1,
+        "none": 2
+      }
+    },
+    "voltage_requirement": {
+      "batch": "CON",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "voltage-requirement",
+      "rows_newest": 5221,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 2,
+        "none": 2
+      }
+    },
+    "weekly_opmr": {
+      "batch": "GEN-1",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [
+        "sampled"
+      ],
+      "other_captures": 0,
+      "package": "weekly-opmr",
+      "rows_newest": 314712,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 2,
+        "none": 2
+      }
+    },
+    "weekly_wind_availability": {
+      "batch": "GEN-2",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "weekly-wind-availability",
+      "rows_newest": 43556,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 0,
+        "none": 2
+      }
+    },
+    "wind_bmu_boa_volumes": {
+      "batch": "GEN-2",
+      "csv_captures": 9,
+      "epochs": 1,
+      "flags": [
+        "sampled"
+      ],
+      "other_captures": 0,
+      "package": "wind-bmu-boa-volumes",
+      "rows_newest": 277345,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 1,
+        "none": 2
+      }
+    },
+    "wind_forecast_14d_day_ahead_bmu": {
+      "batch": "GEN-1",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [
+        "sampled"
+      ],
+      "other_captures": 0,
+      "package": "14-days-ahead-wind-forecasts",
+      "rows_newest": 155232,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 2,
+        "none": 2
+      }
+    },
+    "wind_forecast_14d_days_ahead": {
+      "batch": "GEN-1",
+      "csv_captures": 1,
+      "epochs": 1,
+      "flags": [],
+      "other_captures": 0,
+      "package": "14-days-ahead-wind-forecasts",
+      "rows_newest": 672,
+      "todos_by_consequence": {
+        "blocked": 0,
+        "held": 3,
+        "none": 2
+      }
+    }
+  },
+  "inputs": {
+    "field_info": "20261008T114228Z",
+    "sample_rows": 50000,
+    "snapshot_id": "20261006T195819Z"
+  },
+  "totals": {
+    "csv_captures": 1242,
+    "distinct_headers": 358,
+    "files_family_csv_captures": 0,
+    "measured_families": 269,
+    "multi_epoch_families": 44,
+    "non_csv_captures": 141,
+    "not_utf8_captures": 140,
+    "parse_failures": 39,
+    "sibling_candidate_groups": 28,
+    "todos_by_consequence": {
+      "blocked": 323,
+      "held": 1743,
+      "none": 624
+    },
+    "unusable_captures": 0
+  },
+  "unusable": []
+}

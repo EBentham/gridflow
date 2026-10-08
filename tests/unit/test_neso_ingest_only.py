@@ -15,6 +15,7 @@ from _neso_registry_support import ingest_context
 
 from gridflow.cli import _echo_transform_results
 from gridflow.config.settings import load_settings
+from gridflow.connectors.neso_data_portal.registry import load_registry
 from gridflow.pipeline import runner as pipeline_runner
 
 if TYPE_CHECKING:
@@ -61,4 +62,7 @@ def test_t_b1_13_every_configured_key_transforms_without_failure(
         results = pipeline_runner.run_transform(ctx, SOURCE, keys, DAY, DAY)
     failed = [(r.dataset, r.error) for r in results if r.status == "failed"]
     assert failed == []
-    assert sum(r.skip_reason is not None for r in results) == 307
+    families = load_registry().families
+    recorded = {key for key, (_package, family) in families.items() if family.record is not None}
+    assert sum(r.skip_reason is not None for r in results) == 310 - 3 - len(recorded)
+    assert not [r.dataset for r in results if r.dataset in recorded and r.skip_reason is not None]

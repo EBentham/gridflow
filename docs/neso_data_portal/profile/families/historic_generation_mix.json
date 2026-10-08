@@ -1,0 +1,1352 @@
+{
+  "archetype": "SER",
+  "batch": "DONE",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/historic_generation_mix/2026/08/20/raw_20260820T214337Z_8e6a0d61.csv",
+      "ckan_last_modified": "2026-08-20T21:23:11.254734",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 309162,
+      "parse_error": null,
+      "resource_id": "f93d1835-75bc-43e5-84ad-12472b180a98",
+      "rows": 309161,
+      "sampled": true,
+      "size": 62125558,
+      "url_type": null,
+      "utf8": true,
+      "written_at": "2026-08-20T21:43:37.208973+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/historic_generation_mix/2026/09/06/raw_20260906T125143Z_14bcd3ef.csv",
+      "ckan_last_modified": "2026-09-05T22:15:25.379336",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 309932,
+      "parse_error": null,
+      "resource_id": "f93d1835-75bc-43e5-84ad-12472b180a98",
+      "rows": 309931,
+      "sampled": true,
+      "size": 62480805,
+      "url_type": null,
+      "utf8": true,
+      "written_at": "2026-09-06T12:51:43.238795+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/historic_generation_mix/2026/09/26/raw_20260926T182820Z_daf7180c.csv",
+      "ckan_last_modified": "2026-09-26T18:19:36.497453",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 310932,
+      "parse_error": null,
+      "resource_id": "f93d1835-75bc-43e5-84ad-12472b180a98",
+      "rows": 310931,
+      "sampled": true,
+      "size": 62683577,
+      "url_type": null,
+      "utf8": true,
+      "written_at": "2026-09-26T18:28:20.704505+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/historic_generation_mix/2026/10/08/raw_20261008T081251Z_f93d1835-75bc-43e5-84ad-12472b180a98_3595df30.csv",
+      "ckan_last_modified": "2026-10-08T07:25:07.622974",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 311486,
+      "parse_error": null,
+      "resource_id": "f93d1835-75bc-43e5-84ad-12472b180a98",
+      "rows": 311485,
+      "sampled": true,
+      "size": 62796182,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T08:12:51.629927+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 4,
+      "columns": {
+        "BIOMASS": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1241508
+          },
+          "examples": [
+            "0.0"
+          ],
+          "max_len": 6,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 200000
+          }
+        },
+        "BIOMASS_perc": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1241508
+          },
+          "examples": [
+            "0.0"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 200000
+          }
+        },
+        "CARBON_INTENSITY": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1241508
+          },
+          "examples": [
+            "524.0",
+            "526.0",
+            "527.0"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 200000
+          }
+        },
+        "COAL": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1241508
+          },
+          "examples": [
+            "15037.0",
+            "15095.0",
+            "15088.0"
+          ],
+          "max_len": 7,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 200000
+          }
+        },
+        "COAL_perc": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1241508
+          },
+          "examples": [
+            "44.8",
+            "44.9",
+            "45.1"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 200000
+          }
+        },
+        "DATETIME": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 1241508,
+            "int64": 1241508
+          },
+          "examples": [
+            "2009-01-01T00:00:00",
+            "2009-01-01T00:30:00",
+            "2009-01-01T01:00:00"
+          ],
+          "max_len": 19,
+          "null_count": 0,
+          "shapes": {
+            "naive_datetime": 200000
+          }
+        },
+        "FOSSIL": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1241508
+          },
+          "examples": [
+            "23404.0",
+            "23590.0",
+            "23560.0"
+          ],
+          "max_len": 7,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 200000
+          }
+        },
+        "FOSSIL_perc": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1241508
+          },
+          "examples": [
+            "69.7",
+            "70.0",
+            "70.1"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 200000
+          }
+        },
+        "GAS": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1241508
+          },
+          "examples": [
+            "8367.0",
+            "8495.0",
+            "8471.0"
+          ],
+          "max_len": 7,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 200000
+          }
+        },
+        "GAS_perc": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1241508
+          },
+          "examples": [
+            "24.9",
+            "25.2",
+            "25.0"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 200000
+          }
+        },
+        "GENERATION": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1241508
+          },
+          "examples": [
+            "33577.0",
+            "33704.0",
+            "33603.0"
+          ],
+          "max_len": 7,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 200000
+          }
+        },
+        "GENERATION_perc": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1241508
+          },
+          "examples": [
+            "100.0"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 200000
+          }
+        },
+        "HYDRO": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 149655
+          },
+          "examples": [
+            "246",
+            "245",
+            "236"
+          ],
+          "max_len": 6,
+          "null_count": 0,
+          "shapes": {
+            "int": 200000
+          }
+        },
+        "HYDRO_perc": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1241508
+          },
+          "examples": [
+            "0.7",
+            "0.8",
+            "0.9"
+          ],
+          "max_len": 3,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 200000
+          }
+        },
+        "IMPORTS": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1241508
+          },
+          "examples": [
+            "2518.0",
+            "2495.0",
+            "2465.0"
+          ],
+          "max_len": 6,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 200000
+          }
+        },
+        "IMPORTS_perc": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1241508
+          },
+          "examples": [
+            "7.5",
+            "7.4",
+            "7.3"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 200000
+          }
+        },
+        "LOW_CARBON": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1241508
+          },
+          "examples": [
+            "7655.0",
+            "7618.0",
+            "7578.0"
+          ],
+          "max_len": 7,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 200000
+          }
+        },
+        "LOW_CARBON_perc": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1241508
+          },
+          "examples": [
+            "22.8",
+            "22.6",
+            "22.7"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 200000
+          }
+        },
+        "NUCLEAR": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1241508
+          },
+          "examples": [
+            "7099.0",
+            "7088.0",
+            "7074.0"
+          ],
+          "max_len": 6,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 200000
+          }
+        },
+        "NUCLEAR_perc": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1241508
+          },
+          "examples": [
+            "21.1",
+            "21.0",
+            "21.2"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 200000
+          }
+        },
+        "OTHER": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1241508
+          },
+          "examples": [
+            "0.0"
+          ],
+          "max_len": 6,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 200000
+          }
+        },
+        "OTHER_perc": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1241508
+          },
+          "examples": [
+            "0.0"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 200000
+          }
+        },
+        "RENEWABLE": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1241508
+          },
+          "examples": [
+            "556.0",
+            "531.0",
+            "504.0"
+          ],
+          "max_len": 7,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 200000
+          }
+        },
+        "RENEWABLE_perc": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1241508
+          },
+          "examples": [
+            "1.7",
+            "1.6",
+            "1.5"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 200000
+          }
+        },
+        "SOLAR": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1241508
+          },
+          "examples": [
+            "0.0"
+          ],
+          "max_len": 7,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 200000
+          }
+        },
+        "SOLAR_perc": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1241508
+          },
+          "examples": [
+            "0.0"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 200000
+          }
+        },
+        "STORAGE": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 149655
+          },
+          "examples": [
+            "0",
+            "254",
+            "350"
+          ],
+          "max_len": 6,
+          "null_count": 0,
+          "shapes": {
+            "int": 200000
+          }
+        },
+        "STORAGE_perc": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1241508
+          },
+          "examples": [
+            "0.0",
+            "0.8",
+            "1.0"
+          ],
+          "max_len": 3,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 200000
+          }
+        },
+        "WIND": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1241508
+          },
+          "examples": [
+            "248.0",
+            "229.0",
+            "207.0"
+          ],
+          "max_len": 7,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 200000
+          }
+        },
+        "WIND_EMB": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1241508
+          },
+          "examples": [
+            "62.0",
+            "57.0",
+            "52.0"
+          ],
+          "max_len": 6,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 200000
+          }
+        },
+        "WIND_EMB_perc": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1241508
+          },
+          "examples": [
+            "0.2",
+            "0.1",
+            "0.0"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 200000
+          }
+        },
+        "WIND_perc": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1241508
+          },
+          "examples": [
+            "0.7",
+            "0.6",
+            "0.5"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 200000
+          }
+        },
+        "ZERO_CARBON": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1241508
+          },
+          "examples": [
+            "7593.0",
+            "7561.0",
+            "7527.0"
+          ],
+          "max_len": 7,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 200000
+          }
+        },
+        "ZERO_CARBON_perc": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1241508
+          },
+          "examples": [
+            "24.5",
+            "24.3",
+            "24.2"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 200000
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "BIOMASS": {
+            "description": "Amount of generation delivered by this fuel type",
+            "title": "Biomass",
+            "type": "numeric",
+            "unit": null
+          },
+          "BIOMASS_perc": {
+            "description": "Fuel Type as a percentage for biomass generation.",
+            "title": "Biomass percentage",
+            "type": "numeric",
+            "unit": "%"
+          },
+          "CARBON_INTENSITY": {
+            "description": "The carbon intensity of electricity is a measure of how much Carbon dioxide emissions are produced per kilowatt hour of electricity consumed.",
+            "title": "CARBON INTENSITY",
+            "type": "numeric",
+            "unit": null
+          },
+          "COAL": {
+            "description": "Amount of generation delivered by this fuel type",
+            "title": "Coal",
+            "type": "numeric",
+            "unit": null
+          },
+          "COAL_perc": {
+            "description": "Fuel Type as a percentage for coal generation.",
+            "title": "Coal percentage",
+            "type": "numeric",
+            "unit": "%"
+          },
+          "DATETIME": {
+            "description": "Date and time of the historic generation mix and carbon intensity, given in UTC (Coordinated Universal Time",
+            "title": "Date & Time",
+            "type": "timestamp",
+            "unit": "ISO 8601"
+          },
+          "FOSSIL": {
+            "description": "Fossil generation e.g. coal, natural gas",
+            "title": "FOSSIL",
+            "type": "numeric",
+            "unit": null
+          },
+          "FOSSIL_perc": {
+            "description": "Fuel Type as a percentage for Fossil generation e.g. coal, natural gas",
+            "title": "Fossil percentage",
+            "type": "numeric",
+            "unit": "%"
+          },
+          "GAS": {
+            "description": "Amount of generation delivered by this fuel type",
+            "title": "GAS",
+            "type": "numeric",
+            "unit": null
+          },
+          "GAS_perc": {
+            "description": "Fuel Type as a percentage for gas generation.",
+            "title": "Gas percentage",
+            "type": "numeric",
+            "unit": "%"
+          },
+          "GENERATION": {
+            "description": "Sum of gas, coal, nuclear, wind, wind embedded, hydro, imports, biomass, others, solar and storage.",
+            "title": "Generation",
+            "type": "numeric",
+            "unit": null
+          },
+          "GENERATION_perc": {
+            "description": "Fuel Type as a percentage for Sum of gas, coal, nuclear, wind, hydro and imports",
+            "title": "Generation percentage",
+            "type": "numeric",
+            "unit": "%"
+          },
+          "HYDRO": {
+            "description": "Amount of generation delivered by this fuel type",
+            "title": "Hydro",
+            "type": "numeric",
+            "unit": null
+          },
+          "HYDRO_perc": {
+            "description": "Fuel Type as a percentage for hydro generation.",
+            "title": "Hydro percentage",
+            "type": "numeric",
+            "unit": "%"
+          },
+          "IMPORTS": {
+            "description": "Interconnector Imports",
+            "title": "Imports",
+            "type": "numeric",
+            "unit": null
+          },
+          "IMPORTS_perc": {
+            "description": "Fuel Type as a percentage for interconnector imports",
+            "title": "Imports percentage",
+            "type": "numeric",
+            "unit": "%"
+          },
+          "LOW_CARBON": {
+            "description": "Low carbon generation e.g. wind, solar, hydro, nuclear, biomass",
+            "title": "Low Carbon",
+            "type": "numeric",
+            "unit": null
+          },
+          "LOW_CARBON_perc": {
+            "description": "Fuel Type as a percentage for low carbon generation e.g. wind, solar, hydro, nuclear, biomass",
+            "title": "Low Carbon percentage",
+            "type": "numeric",
+            "unit": "%"
+          },
+          "NUCLEAR": {
+            "description": "Amount of generation delivered by this fuel type",
+            "title": "Nuclear",
+            "type": "numeric",
+            "unit": null
+          },
+          "NUCLEAR_perc": {
+            "description": "Fuel Type as a percentage for nuclear generation.",
+            "title": "Nuclear percentage",
+            "type": "numeric",
+            "unit": "%"
+          },
+          "OTHER": {
+            "description": "Amount of generation delivered by other fuel types",
+            "title": "Other",
+            "type": "numeric",
+            "unit": null
+          },
+          "OTHER_perc": {
+            "description": "Fuel Type as a percentage for other generation.",
+            "title": "Other percentage",
+            "type": "numeric",
+            "unit": "%"
+          },
+          "RENEWABLE": {
+            "description": "Renewable generation e.g Wind, Hydro, Solar",
+            "title": "RENEWABLE",
+            "type": "numeric",
+            "unit": null
+          },
+          "RENEWABLE_perc": {
+            "description": "Fuel Type as a percentage for Renewable generation e.g Wind, Hydro, Solar",
+            "title": "Renewable percentage",
+            "type": "numeric",
+            "unit": "%"
+          },
+          "SOLAR": {
+            "description": null,
+            "title": "Solar",
+            "type": "numeric",
+            "unit": null
+          },
+          "SOLAR_perc": {
+            "description": "Fuel Type as a percentage for solar generation.",
+            "title": "Solar percentage",
+            "type": "numeric",
+            "unit": "%"
+          },
+          "STORAGE": {
+            "description": "Amount of generation delivered by this fuel type",
+            "title": "Storage",
+            "type": "numeric",
+            "unit": null
+          },
+          "STORAGE_perc": {
+            "description": "Fuel Type as a percentage for storage",
+            "title": "Storage percentage",
+            "type": "numeric",
+            "unit": "%"
+          },
+          "WIND": {
+            "description": "Amount of generation delivered by this fuel type",
+            "title": "Wind",
+            "type": "numeric",
+            "unit": null
+          },
+          "WIND_EMB": {
+            "description": null,
+            "title": "Wind EMB",
+            "type": "numeric",
+            "unit": null
+          },
+          "WIND_EMB_perc": {
+            "description": null,
+            "title": "Wind EMB percentage",
+            "type": "numeric",
+            "unit": "%"
+          },
+          "WIND_perc": {
+            "description": "Fuel Type as a percentage for wind generation.",
+            "title": "Wind percentage",
+            "type": "numeric",
+            "unit": "%"
+          },
+          "ZERO_CARBON": {
+            "description": "Zero carbon generation e.g. wind, solar, hydro, nuclear",
+            "title": "Zero Carbon",
+            "type": "numeric",
+            "unit": null
+          },
+          "ZERO_CARBON_perc": {
+            "description": "Fuel Type as a percentage for zero carbon generation e.g. wind, solar, hydro, nuclear",
+            "title": "Zero Carbon percentage",
+            "type": "numeric",
+            "unit": "%"
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-08-20T21:43:37.208973+00:00",
+      "header": [
+        "DATETIME",
+        "GAS",
+        "COAL",
+        "NUCLEAR",
+        "WIND",
+        "WIND_EMB",
+        "HYDRO",
+        "IMPORTS",
+        "BIOMASS",
+        "OTHER",
+        "SOLAR",
+        "STORAGE",
+        "GENERATION",
+        "CARBON_INTENSITY",
+        "LOW_CARBON",
+        "ZERO_CARBON",
+        "RENEWABLE",
+        "FOSSIL",
+        "GAS_perc",
+        "COAL_perc",
+        "NUCLEAR_perc",
+        "WIND_perc",
+        "WIND_EMB_perc",
+        "HYDRO_perc",
+        "IMPORTS_perc",
+        "BIOMASS_perc",
+        "OTHER_perc",
+        "SOLAR_perc",
+        "STORAGE_perc",
+        "GENERATION_perc",
+        "LOW_CARBON_perc",
+        "ZERO_CARBON_perc",
+        "RENEWABLE_perc",
+        "FOSSIL_perc"
+      ],
+      "last_written_at": "2026-10-08T08:12:51.629927+00:00",
+      "resource_ids": [
+        "f93d1835-75bc-43e5-84ad-12472b180a98"
+      ],
+      "rows": 1241508,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [
+    "sampled"
+  ],
+  "key": "historic_generation_mix",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 4,
+        "columns": [
+          "DATETIME"
+        ],
+        "max_duplicates": 0
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "historic-generation-mix",
+  "proposal": {
+    "flags": [
+      "sampled"
+    ],
+    "record_draft": {
+      "eligibility": {
+        "question": "DATETIME: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced); GAS: a numeric column with no vendor unit; COAL: a numeric column with no vendor unit; NUCLEAR: a numeric column with no vendor unit; WIND: a numeric column with no vendor unit; WIND_EMB: a numeric column with no vendor unit; HYDRO: a numeric column with no vendor unit; IMPORTS: a numeric column with no vendor unit; BIOMASS: a numeric column with no vendor unit; OTHER: a numeric column with no vendor unit; SOLAR: a numeric column with no vendor unit; STORAGE: a numeric column with no vendor unit; GENERATION: a numeric column with no vendor unit; CARBON_INTENSITY: a numeric column with no vendor unit; LOW_CARBON: a numeric column with no vendor unit; ZERO_CARBON: a numeric column with no vendor unit; RENEWABLE: a numeric column with no vendor unit; FOSSIL: a numeric column with no vendor unit",
+        "status": "held",
+        "unit": "DONE"
+      },
+      "encoding": "utf-8",
+      "entity_key": [
+        "datetime"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "datetime",
+              "nullable": true,
+              "source": "DATETIME"
+            },
+            {
+              "dtype": "float64",
+              "name": "gas",
+              "nullable": true,
+              "source": "GAS"
+            },
+            {
+              "dtype": "float64",
+              "name": "coal",
+              "nullable": true,
+              "source": "COAL"
+            },
+            {
+              "dtype": "float64",
+              "name": "nuclear",
+              "nullable": true,
+              "source": "NUCLEAR"
+            },
+            {
+              "dtype": "float64",
+              "name": "wind",
+              "nullable": true,
+              "source": "WIND"
+            },
+            {
+              "dtype": "float64",
+              "name": "wind_emb",
+              "nullable": true,
+              "source": "WIND_EMB"
+            },
+            {
+              "dtype": "float64",
+              "name": "hydro",
+              "nullable": true,
+              "source": "HYDRO"
+            },
+            {
+              "dtype": "float64",
+              "name": "imports",
+              "nullable": true,
+              "source": "IMPORTS"
+            },
+            {
+              "dtype": "float64",
+              "name": "biomass",
+              "nullable": true,
+              "source": "BIOMASS"
+            },
+            {
+              "dtype": "float64",
+              "name": "other",
+              "nullable": true,
+              "source": "OTHER"
+            },
+            {
+              "dtype": "float64",
+              "name": "solar",
+              "nullable": true,
+              "source": "SOLAR"
+            },
+            {
+              "dtype": "float64",
+              "name": "storage",
+              "nullable": true,
+              "source": "STORAGE"
+            },
+            {
+              "dtype": "float64",
+              "name": "generation",
+              "nullable": true,
+              "source": "GENERATION"
+            },
+            {
+              "dtype": "float64",
+              "name": "carbon_intensity",
+              "nullable": true,
+              "source": "CARBON_INTENSITY"
+            },
+            {
+              "dtype": "float64",
+              "name": "low_carbon",
+              "nullable": true,
+              "source": "LOW_CARBON"
+            },
+            {
+              "dtype": "float64",
+              "name": "zero_carbon",
+              "nullable": true,
+              "source": "ZERO_CARBON"
+            },
+            {
+              "dtype": "float64",
+              "name": "renewable",
+              "nullable": true,
+              "source": "RENEWABLE"
+            },
+            {
+              "dtype": "float64",
+              "name": "fossil",
+              "nullable": true,
+              "source": "FOSSIL"
+            },
+            {
+              "dtype": "float64",
+              "name": "gas_perc",
+              "nullable": true,
+              "source": "GAS_perc"
+            },
+            {
+              "dtype": "float64",
+              "name": "coal_perc",
+              "nullable": true,
+              "source": "COAL_perc"
+            },
+            {
+              "dtype": "float64",
+              "name": "nuclear_perc",
+              "nullable": true,
+              "source": "NUCLEAR_perc"
+            },
+            {
+              "dtype": "float64",
+              "name": "wind_perc",
+              "nullable": true,
+              "source": "WIND_perc"
+            },
+            {
+              "dtype": "float64",
+              "name": "wind_emb_perc",
+              "nullable": true,
+              "source": "WIND_EMB_perc"
+            },
+            {
+              "dtype": "float64",
+              "name": "hydro_perc",
+              "nullable": true,
+              "source": "HYDRO_perc"
+            },
+            {
+              "dtype": "float64",
+              "name": "imports_perc",
+              "nullable": true,
+              "source": "IMPORTS_perc"
+            },
+            {
+              "dtype": "float64",
+              "name": "biomass_perc",
+              "nullable": true,
+              "source": "BIOMASS_perc"
+            },
+            {
+              "dtype": "float64",
+              "name": "other_perc",
+              "nullable": true,
+              "source": "OTHER_perc"
+            },
+            {
+              "dtype": "float64",
+              "name": "solar_perc",
+              "nullable": true,
+              "source": "SOLAR_perc"
+            },
+            {
+              "dtype": "float64",
+              "name": "storage_perc",
+              "nullable": true,
+              "source": "STORAGE_perc"
+            },
+            {
+              "dtype": "float64",
+              "name": "generation_perc",
+              "nullable": true,
+              "source": "GENERATION_perc"
+            },
+            {
+              "dtype": "float64",
+              "name": "low_carbon_perc",
+              "nullable": true,
+              "source": "LOW_CARBON_perc"
+            },
+            {
+              "dtype": "float64",
+              "name": "zero_carbon_perc",
+              "nullable": true,
+              "source": "ZERO_CARBON_perc"
+            },
+            {
+              "dtype": "float64",
+              "name": "renewable_perc",
+              "nullable": true,
+              "source": "RENEWABLE_perc"
+            },
+            {
+              "dtype": "float64",
+              "name": "fossil_perc",
+              "nullable": true,
+              "source": "FOSSIL_perc"
+            }
+          ],
+          "header": [
+            "DATETIME",
+            "GAS",
+            "COAL",
+            "NUCLEAR",
+            "WIND",
+            "WIND_EMB",
+            "HYDRO",
+            "IMPORTS",
+            "BIOMASS",
+            "OTHER",
+            "SOLAR",
+            "STORAGE",
+            "GENERATION",
+            "CARBON_INTENSITY",
+            "LOW_CARBON",
+            "ZERO_CARBON",
+            "RENEWABLE",
+            "FOSSIL",
+            "GAS_perc",
+            "COAL_perc",
+            "NUCLEAR_perc",
+            "WIND_perc",
+            "WIND_EMB_perc",
+            "HYDRO_perc",
+            "IMPORTS_perc",
+            "BIOMASS_perc",
+            "OTHER_perc",
+            "SOLAR_perc",
+            "STORAGE_perc",
+            "GENERATION_perc",
+            "LOW_CARBON_perc",
+            "ZERO_CARBON_perc",
+            "RENEWABLE_perc",
+            "FOSSIL_perc"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T19",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "held",
+        "field": "column 'DATETIME'",
+        "id": "T01",
+        "kind": "time_semantics",
+        "question": "DATETIME: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'GAS'.unit",
+        "id": "T02",
+        "kind": "unit",
+        "question": "GAS: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'COAL'.unit",
+        "id": "T03",
+        "kind": "unit",
+        "question": "COAL: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'NUCLEAR'.unit",
+        "id": "T04",
+        "kind": "unit",
+        "question": "NUCLEAR: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'WIND'.unit",
+        "id": "T05",
+        "kind": "unit",
+        "question": "WIND: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'WIND_EMB'.unit",
+        "id": "T06",
+        "kind": "unit",
+        "question": "WIND_EMB: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'HYDRO'.unit",
+        "id": "T07",
+        "kind": "unit",
+        "question": "HYDRO: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'IMPORTS'.unit",
+        "id": "T08",
+        "kind": "unit",
+        "question": "IMPORTS: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'BIOMASS'.unit",
+        "id": "T09",
+        "kind": "unit",
+        "question": "BIOMASS: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'OTHER'.unit",
+        "id": "T10",
+        "kind": "unit",
+        "question": "OTHER: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'SOLAR'.unit",
+        "id": "T11",
+        "kind": "unit",
+        "question": "SOLAR: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'STORAGE'.unit",
+        "id": "T12",
+        "kind": "unit",
+        "question": "STORAGE: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'GENERATION'.unit",
+        "id": "T13",
+        "kind": "unit",
+        "question": "GENERATION: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'CARBON_INTENSITY'.unit",
+        "id": "T14",
+        "kind": "unit",
+        "question": "CARBON_INTENSITY: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'LOW_CARBON'.unit",
+        "id": "T15",
+        "kind": "unit",
+        "question": "LOW_CARBON: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'ZERO_CARBON'.unit",
+        "id": "T16",
+        "kind": "unit",
+        "question": "ZERO_CARBON: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'RENEWABLE'.unit",
+        "id": "T17",
+        "kind": "unit",
+        "question": "RENEWABLE: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'FOSSIL'.unit",
+        "id": "T18",
+        "kind": "unit",
+        "question": "FOSSIL: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T19",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: DATETIME"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T20",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['datetime'] (measured unique in 4 capture(s)); without one, latest stays whole_capture"
+      }
+    ]
+  },
+  "refresh": "daily",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update Frequency",
+        "value": "Hourly"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Carbon intensity",
+    "title": "Historic generation mix and carbon intensity"
+  }
+}

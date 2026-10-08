@@ -1,0 +1,3203 @@
+{
+  "archetype": "SCN",
+  "batch": "SCN-3",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/fes_ws1_gas_supply/2026/10/08/raw_20261008T105802Z_b04e227d-f329-4ccf-8e25-821ea6ea03ca_9b408650.csv",
+      "ckan_last_modified": "2023-07-10T03:30:11.101381",
+      "cr": 0,
+      "crlf": 548,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "b04e227d-f329-4ccf-8e25-821ea6ea03ca",
+      "rows": 547,
+      "sampled": false,
+      "size": 84644,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:58:02.247022+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/fes_ws1_gas_supply/2026/10/08/raw_20261008T105806Z_fa5697c5-9810-480f-b4c5-ab41dc53777a_6dafbd6b.csv",
+      "ckan_last_modified": "2024-07-15T06:19:57.831578",
+      "cr": 0,
+      "crlf": 538,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "fa5697c5-9810-480f-b4c5-ab41dc53777a",
+      "rows": 537,
+      "sampled": false,
+      "size": 115812,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:58:06.175269+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/fes_ws1_gas_supply/2026/10/08/raw_20261008T105808Z_ebf4f503-0a13-45e6-89ad-b707748613b6_d2b55ccd.csv",
+      "ckan_last_modified": "2025-12-10T16:57:40.652852",
+      "cr": 0,
+      "crlf": 658,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "ebf4f503-0a13-45e6-89ad-b707748613b6",
+      "rows": 657,
+      "sampled": false,
+      "size": 112615,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:58:08.633236+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/fes_ws1_gas_supply/2026/10/08/raw_20261008T105811Z_0dd30611-5b9f-452d-bd34-966737d14fca_01da6a23.csv",
+      "ckan_last_modified": "2026-09-16T14:49:53.687177",
+      "cr": 0,
+      "crlf": 53,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "0dd30611-5b9f-452d-bd34-966737d14fca",
+      "rows": 52,
+      "sampled": false,
+      "size": 9840,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:58:11.248826+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 2,
+      "columns": {
+        "2020": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 79
+          },
+          "examples": [
+            "0",
+            "33.59",
+            "0.3"
+          ],
+          "max_len": 8,
+          "null_count": 354,
+          "shapes": {
+            "decimal": 79,
+            "int": 166
+          }
+        },
+        "2021": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 153
+          },
+          "examples": [
+            "21.65",
+            "0",
+            "38"
+          ],
+          "max_len": 8,
+          "null_count": 254,
+          "shapes": {
+            "decimal": 152,
+            "int": 192,
+            "text": 1
+          }
+        },
+        "2022": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 206
+          },
+          "examples": [
+            "19.85",
+            "0",
+            "44.97"
+          ],
+          "max_len": 8,
+          "null_count": 254,
+          "shapes": {
+            "decimal": 205,
+            "int": 139,
+            "text": 1
+          }
+        },
+        "2023": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 206
+          },
+          "examples": [
+            "9.87",
+            "0",
+            "45.79"
+          ],
+          "max_len": 11,
+          "null_count": 254,
+          "shapes": {
+            "decimal": 206,
+            "int": 139
+          }
+        },
+        "2024": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 212
+          },
+          "examples": [
+            "9.38",
+            "0",
+            "46.16"
+          ],
+          "max_len": 11,
+          "null_count": 253,
+          "shapes": {
+            "decimal": 210,
+            "int": 134,
+            "text": 2
+          }
+        },
+        "2025": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 229
+          },
+          "examples": [
+            "9.02",
+            "0",
+            "45.03"
+          ],
+          "max_len": 11,
+          "null_count": 253,
+          "shapes": {
+            "decimal": 228,
+            "int": 117,
+            "text": 1
+          }
+        },
+        "2026": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 235
+          },
+          "examples": [
+            "11.02",
+            "0",
+            "45.74"
+          ],
+          "max_len": 10,
+          "null_count": 253,
+          "shapes": {
+            "decimal": 234,
+            "int": 111,
+            "text": 1
+          }
+        },
+        "2027": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 240
+          },
+          "examples": [
+            "10.97",
+            "0",
+            "44.11"
+          ],
+          "max_len": 11,
+          "null_count": 253,
+          "shapes": {
+            "decimal": 238,
+            "int": 106,
+            "text": 2
+          }
+        },
+        "2028": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 242
+          },
+          "examples": [
+            "0.35",
+            "0",
+            "44.96"
+          ],
+          "max_len": 11,
+          "null_count": 253,
+          "shapes": {
+            "decimal": 241,
+            "int": 104,
+            "text": 1
+          }
+        },
+        "2029": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 215
+          },
+          "examples": [
+            "0.29",
+            "0",
+            "43.93"
+          ],
+          "max_len": 8,
+          "null_count": 291,
+          "shapes": {
+            "decimal": 214,
+            "int": 93,
+            "text": 1
+          }
+        },
+        "2030": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 225
+          },
+          "examples": [
+            "0.22",
+            "0",
+            "41.61"
+          ],
+          "max_len": 8,
+          "null_count": 291,
+          "shapes": {
+            "decimal": 225,
+            "int": 83
+          }
+        },
+        "2031": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 225
+          },
+          "examples": [
+            "0.24",
+            "7.38",
+            "41.61"
+          ],
+          "max_len": 8,
+          "null_count": 291,
+          "shapes": {
+            "decimal": 225,
+            "int": 83
+          }
+        },
+        "2032": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 222
+          },
+          "examples": [
+            "0.21",
+            "15.51",
+            "39.66"
+          ],
+          "max_len": 8,
+          "null_count": 291,
+          "shapes": {
+            "decimal": 222,
+            "int": 86
+          }
+        },
+        "2033": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 227
+          },
+          "examples": [
+            "0.19",
+            "31.01",
+            "39.11"
+          ],
+          "max_len": 8,
+          "null_count": 291,
+          "shapes": {
+            "decimal": 227,
+            "int": 81
+          }
+        },
+        "2034": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 227
+          },
+          "examples": [
+            "0.12",
+            "55.28",
+            "35.75"
+          ],
+          "max_len": 8,
+          "null_count": 291,
+          "shapes": {
+            "decimal": 227,
+            "int": 81
+          }
+        },
+        "2035": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 229
+          },
+          "examples": [
+            "0.11",
+            "62.7",
+            "35.23"
+          ],
+          "max_len": 8,
+          "null_count": 291,
+          "shapes": {
+            "decimal": 229,
+            "int": 79
+          }
+        },
+        "2036": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 226
+          },
+          "examples": [
+            "0.11",
+            "78.01",
+            "35.13"
+          ],
+          "max_len": 8,
+          "null_count": 291,
+          "shapes": {
+            "decimal": 226,
+            "int": 82
+          }
+        },
+        "2037": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 174
+          },
+          "examples": [
+            "0.09",
+            "82.97",
+            "33.46"
+          ],
+          "max_len": 6,
+          "null_count": 343,
+          "shapes": {
+            "decimal": 174,
+            "int": 82
+          }
+        },
+        "2038": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 174
+          },
+          "examples": [
+            "0.08",
+            "89.74",
+            "32.78"
+          ],
+          "max_len": 6,
+          "null_count": 343,
+          "shapes": {
+            "decimal": 174,
+            "int": 82
+          }
+        },
+        "2039": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 170
+          },
+          "examples": [
+            "0.08",
+            "89.74",
+            "32.51"
+          ],
+          "max_len": 6,
+          "null_count": 343,
+          "shapes": {
+            "decimal": 170,
+            "int": 86
+          }
+        },
+        "2040": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 176
+          },
+          "examples": [
+            "0.07",
+            "89.74",
+            "31.3"
+          ],
+          "max_len": 6,
+          "null_count": 343,
+          "shapes": {
+            "decimal": 176,
+            "int": 80
+          }
+        },
+        "2041": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 174
+          },
+          "examples": [
+            "0.05",
+            "89.74",
+            "25.79"
+          ],
+          "max_len": 6,
+          "null_count": 343,
+          "shapes": {
+            "decimal": 174,
+            "int": 82
+          }
+        },
+        "2042": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 175
+          },
+          "examples": [
+            "0.05",
+            "89.74",
+            "25.28"
+          ],
+          "max_len": 6,
+          "null_count": 343,
+          "shapes": {
+            "decimal": 175,
+            "int": 81
+          }
+        },
+        "2043": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 179
+          },
+          "examples": [
+            "0.03",
+            "89.74",
+            "25.05"
+          ],
+          "max_len": 6,
+          "null_count": 343,
+          "shapes": {
+            "decimal": 179,
+            "int": 77
+          }
+        },
+        "2044": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 174
+          },
+          "examples": [
+            "0.02",
+            "89.74",
+            "24.64"
+          ],
+          "max_len": 6,
+          "null_count": 343,
+          "shapes": {
+            "decimal": 174,
+            "int": 82
+          }
+        },
+        "2045": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 177
+          },
+          "examples": [
+            "0.01",
+            "89.74",
+            "24.2"
+          ],
+          "max_len": 6,
+          "null_count": 343,
+          "shapes": {
+            "decimal": 177,
+            "int": 79
+          }
+        },
+        "2046": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 172
+          },
+          "examples": [
+            "0.01",
+            "89.74",
+            "24.27"
+          ],
+          "max_len": 6,
+          "null_count": 343,
+          "shapes": {
+            "decimal": 172,
+            "int": 84
+          }
+        },
+        "2047": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 173
+          },
+          "examples": [
+            "0.01",
+            "89.74",
+            "23.92"
+          ],
+          "max_len": 6,
+          "null_count": 343,
+          "shapes": {
+            "decimal": 173,
+            "int": 83
+          }
+        },
+        "2048": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 169
+          },
+          "examples": [
+            "0.01",
+            "89.74",
+            "24.03"
+          ],
+          "max_len": 6,
+          "null_count": 343,
+          "shapes": {
+            "decimal": 169,
+            "int": 87
+          }
+        },
+        "2049": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 170
+          },
+          "examples": [
+            "0.01",
+            "118.65",
+            "23.97"
+          ],
+          "max_len": 6,
+          "null_count": 343,
+          "shapes": {
+            "decimal": 170,
+            "int": 86
+          }
+        },
+        "2050": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 301
+          },
+          "examples": [
+            "0.01",
+            "128.59",
+            "24.08"
+          ],
+          "max_len": 7,
+          "null_count": 91,
+          "shapes": {
+            "decimal": 301,
+            "int": 207
+          }
+        },
+        "Category": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 599,
+            "int64": 599
+          },
+          "examples": [
+            "Demand",
+            "Supply",
+            "Capacity"
+          ],
+          "max_len": 9,
+          "null_count": 0,
+          "shapes": {
+            "text": 599
+          }
+        },
+        "Category Lookup": {
+          "blank_count": 4,
+          "cast_failures": {
+            "float64": 267,
+            "int64": 267
+          },
+          "examples": [
+            "Industrial & Commercial",
+            "Methane Reformation with CCUS",
+            "Networked Electrolysis"
+          ],
+          "max_len": 37,
+          "null_count": 332,
+          "shapes": {
+            "text": 263
+          }
+        },
+        "Feedstock": {
+          "blank_count": 4,
+          "cast_failures": {
+            "float64": 256,
+            "int64": 256
+          },
+          "examples": [
+            "MSW, C&I (biogenic)",
+            "Forest residues",
+            "Agri residues"
+          ],
+          "max_len": 27,
+          "null_count": 343,
+          "shapes": {
+            "text": 252
+          }
+        },
+        "Fuel": {
+          "blank_count": 3,
+          "cast_failures": {
+            "float64": 397,
+            "int64": 397
+          },
+          "examples": [
+            "Biomass",
+            "CCSBiomass",
+            "Waste"
+          ],
+          "max_len": 26,
+          "null_count": 202,
+          "shapes": {
+            "text": 394
+          }
+        },
+        "Fuel Type": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 599,
+            "int64": 599
+          },
+          "examples": [
+            "Bioenergy",
+            "Hydrogen",
+            "Natural Gas"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "text": 599
+          }
+        },
+        "Scenario": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 599,
+            "int64": 599
+          },
+          "examples": [
+            "Consumer Transformation",
+            "System Transformation",
+            "Leading the Way"
+          ],
+          "max_len": 24,
+          "null_count": 0,
+          "shapes": {
+            "text": 599
+          }
+        },
+        "Sector": {
+          "blank_count": 4,
+          "cast_failures": {
+            "float64": 572,
+            "int64": 572
+          },
+          "examples": [
+            "Power Generation",
+            "Residential Heat",
+            "Industrial"
+          ],
+          "max_len": 37,
+          "null_count": 27,
+          "shapes": {
+            "text": 568
+          }
+        },
+        "Units": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 599,
+            "int64": 599
+          },
+          "examples": [
+            "TWh",
+            "GW",
+            "bcm/yr"
+          ],
+          "max_len": 6,
+          "null_count": 0,
+          "shapes": {
+            "text": 599
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "2020": {
+            "description": "Year of data for data item",
+            "title": "2020",
+            "type": "numeric",
+            "unit": null
+          },
+          "2021": {
+            "description": "Year of data for data item",
+            "title": "2021",
+            "type": "numeric",
+            "unit": null
+          },
+          "2022": {
+            "description": "Year of data for data item",
+            "title": "2022",
+            "type": "numeric",
+            "unit": null
+          },
+          "2023": {
+            "description": "Year of data for data item",
+            "title": "2023",
+            "type": "numeric",
+            "unit": null
+          },
+          "2024": {
+            "description": "Year of data for data item",
+            "title": "2024",
+            "type": "numeric",
+            "unit": null
+          },
+          "2025": {
+            "description": "Year of data for data item",
+            "title": "2025",
+            "type": "numeric",
+            "unit": null
+          },
+          "2026": {
+            "description": "Year of data for data item",
+            "title": "2026",
+            "type": "numeric",
+            "unit": null
+          },
+          "2027": {
+            "description": "Year of data for data item",
+            "title": "2027",
+            "type": "numeric",
+            "unit": null
+          },
+          "2028": {
+            "description": "Year of data for data item",
+            "title": "2028",
+            "type": "numeric",
+            "unit": null
+          },
+          "2029": {
+            "description": "Year of data for data item",
+            "title": "2029",
+            "type": "numeric",
+            "unit": null
+          },
+          "2030": {
+            "description": "Year of data for data item",
+            "title": "2030",
+            "type": "numeric",
+            "unit": null
+          },
+          "2031": {
+            "description": "Year of data for data item",
+            "title": "2031",
+            "type": "numeric",
+            "unit": null
+          },
+          "2032": {
+            "description": "Year of data for data item",
+            "title": "2032",
+            "type": "numeric",
+            "unit": null
+          },
+          "2033": {
+            "description": "Year of data for data item",
+            "title": "2033",
+            "type": "numeric",
+            "unit": null
+          },
+          "2034": {
+            "description": "Year of data for data item",
+            "title": "2034",
+            "type": "numeric",
+            "unit": null
+          },
+          "2035": {
+            "description": "Year of data for data item",
+            "title": "2035",
+            "type": "numeric",
+            "unit": null
+          },
+          "2036": {
+            "description": "Year of data for data item",
+            "title": "2036",
+            "type": "numeric",
+            "unit": null
+          },
+          "2037": {
+            "description": "Year of data for data item",
+            "title": "2037",
+            "type": "numeric",
+            "unit": null
+          },
+          "2038": {
+            "description": "Year of data for data item",
+            "title": "2038",
+            "type": "numeric",
+            "unit": null
+          },
+          "2039": {
+            "description": "Year of data for data item",
+            "title": "2039",
+            "type": "numeric",
+            "unit": null
+          },
+          "2040": {
+            "description": "Year of data for data item",
+            "title": "2040",
+            "type": "numeric",
+            "unit": null
+          },
+          "2041": {
+            "description": "Year of data for data item",
+            "title": "2041",
+            "type": "numeric",
+            "unit": null
+          },
+          "2042": {
+            "description": "Year of data for data item",
+            "title": "2042",
+            "type": "numeric",
+            "unit": null
+          },
+          "2043": {
+            "description": "Year of data for data item",
+            "title": "2043",
+            "type": "numeric",
+            "unit": null
+          },
+          "2044": {
+            "description": "Year of data for data item",
+            "title": "2044",
+            "type": "numeric",
+            "unit": null
+          },
+          "2045": {
+            "description": "Year of data for data item",
+            "title": "2045",
+            "type": "numeric",
+            "unit": null
+          },
+          "2046": {
+            "description": "Year of data for data item",
+            "title": "2046",
+            "type": "numeric",
+            "unit": null
+          },
+          "2047": {
+            "description": "Year of data for data item",
+            "title": "2047",
+            "type": "numeric",
+            "unit": null
+          },
+          "2048": {
+            "description": "Year of data for data item",
+            "title": "2048",
+            "type": "numeric",
+            "unit": null
+          },
+          "2049": {
+            "description": "Year of data for data item",
+            "title": "2049",
+            "type": "numeric",
+            "unit": null
+          },
+          "2050": {
+            "description": "Year of data for data item",
+            "title": "2050",
+            "type": "numeric",
+            "unit": null
+          },
+          "Category": {
+            "description": "Overall category of focus for data point",
+            "title": "Category",
+            "type": "text",
+            "unit": null
+          },
+          "Category Lookup": {
+            "description": "Search categories",
+            "title": "Category Lookup",
+            "type": "text",
+            "unit": null
+          },
+          "Feedstock": {
+            "description": "Raw material used to make usable fuel",
+            "title": "Feedstock",
+            "type": "text",
+            "unit": null
+          },
+          "Fuel": {
+            "description": "Fuel used by data point",
+            "title": "Fuel",
+            "type": "text",
+            "unit": null
+          },
+          "Fuel Type": {
+            "description": "Fuel type used by the data point",
+            "title": "Fuel Type",
+            "type": "text",
+            "unit": null
+          },
+          "Scenario": {
+            "description": "FES Scenario",
+            "title": "Scenario",
+            "type": "text",
+            "unit": null
+          },
+          "Sector": {
+            "description": "Sector of industry",
+            "title": "Sector",
+            "type": "text",
+            "unit": null
+          },
+          "Units": {
+            "description": "Unit used to measure the data point",
+            "title": "Units",
+            "type": "text",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T10:58:02.247022+00:00",
+      "header": [
+        "Fuel Type",
+        "Scenario",
+        "Units",
+        "Category",
+        "Sector",
+        "Fuel",
+        "Feedstock",
+        "Category Lookup",
+        "2020",
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025",
+        "2026",
+        "2027",
+        "2028",
+        "2029",
+        "2030",
+        "2031",
+        "2032",
+        "2033",
+        "2034",
+        "2035",
+        "2036",
+        "2037",
+        "2038",
+        "2039",
+        "2040",
+        "2041",
+        "2042",
+        "2043",
+        "2044",
+        "2045",
+        "2046",
+        "2047",
+        "2048",
+        "2049",
+        "2050"
+      ],
+      "last_written_at": "2026-10-08T10:58:11.248826+00:00",
+      "resource_ids": [
+        "0dd30611-5b9f-452d-bd34-966737d14fca",
+        "b04e227d-f329-4ccf-8e25-821ea6ea03ca"
+      ],
+      "rows": 599,
+      "settlement_periods": []
+    },
+    {
+      "captures": 2,
+      "columns": {
+        "2020": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 270
+          },
+          "examples": [
+            "0",
+            "33.58633",
+            "0.301676"
+          ],
+          "max_len": 9,
+          "null_count": 773,
+          "shapes": {
+            "decimal": 270,
+            "int": 151
+          }
+        },
+        "2021": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 288
+          },
+          "examples": [
+            "0",
+            "29.33698",
+            "0.30496"
+          ],
+          "max_len": 11,
+          "null_count": 755,
+          "shapes": {
+            "decimal": 283,
+            "int": 151,
+            "text": 5
+          }
+        },
+        "2022": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 326
+          },
+          "examples": [
+            "0",
+            "0.02",
+            "0.01"
+          ],
+          "max_len": 11,
+          "null_count": 723,
+          "shapes": {
+            "decimal": 321,
+            "int": 145,
+            "text": 5
+          }
+        },
+        "2023": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 264,
+            "int64": 672
+          },
+          "examples": [
+            "84.59202778",
+            "40.74380417",
+            "84.55713056"
+          ],
+          "max_len": 11,
+          "null_count": 369,
+          "shapes": {
+            "decimal": 403,
+            "int": 153,
+            "text": 269
+          }
+        },
+        "2024": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 264,
+            "int64": 681
+          },
+          "examples": [
+            "79.32378056",
+            "42.46216111",
+            "79.90411389"
+          ],
+          "max_len": 11,
+          "null_count": 364,
+          "shapes": {
+            "decimal": 407,
+            "int": 149,
+            "text": 274
+          }
+        },
+        "2025": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 264,
+            "int64": 697
+          },
+          "examples": [
+            "84.03408056",
+            "42.30641389",
+            "86.30882222"
+          ],
+          "max_len": 11,
+          "null_count": 364,
+          "shapes": {
+            "decimal": 428,
+            "int": 133,
+            "text": 269
+          }
+        },
+        "2026": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 264,
+            "int64": 715
+          },
+          "examples": [
+            "74.90345833",
+            "43.56625972",
+            "72.93844444"
+          ],
+          "max_len": 11,
+          "null_count": 364,
+          "shapes": {
+            "decimal": 450,
+            "int": 115,
+            "text": 265
+          }
+        },
+        "2027": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 264,
+            "int64": 730
+          },
+          "examples": [
+            "54.09689444",
+            "42.37975833",
+            "57.06653056"
+          ],
+          "max_len": 11,
+          "null_count": 364,
+          "shapes": {
+            "decimal": 466,
+            "int": 100,
+            "text": 264
+          }
+        },
+        "2028": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 264,
+            "int64": 734
+          },
+          "examples": [
+            "34.66534722",
+            "41.07522639",
+            "37.45363056"
+          ],
+          "max_len": 11,
+          "null_count": 364,
+          "shapes": {
+            "decimal": 470,
+            "int": 96,
+            "text": 264
+          }
+        },
+        "2029": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 264,
+            "int64": 741
+          },
+          "examples": [
+            "39.98875",
+            "38.42784444",
+            "41.65721944"
+          ],
+          "max_len": 11,
+          "null_count": 364,
+          "shapes": {
+            "decimal": 477,
+            "int": 89,
+            "text": 264
+          }
+        },
+        "2030": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 264,
+            "int64": 717
+          },
+          "examples": [
+            "42.32066111",
+            "35.69052361",
+            "43.78734444"
+          ],
+          "max_len": 11,
+          "null_count": 417,
+          "shapes": {
+            "decimal": 453,
+            "int": 60,
+            "text": 264
+          }
+        },
+        "2031": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 264,
+            "int64": 719
+          },
+          "examples": [
+            "48.72264722",
+            "31.33923611",
+            "50.459225"
+          ],
+          "max_len": 11,
+          "null_count": 417,
+          "shapes": {
+            "decimal": 455,
+            "int": 58,
+            "text": 264
+          }
+        },
+        "2032": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 264,
+            "int64": 717
+          },
+          "examples": [
+            "57.78085833",
+            "31.44571389",
+            "49.57401944"
+          ],
+          "max_len": 11,
+          "null_count": 417,
+          "shapes": {
+            "decimal": 453,
+            "int": 60,
+            "text": 264
+          }
+        },
+        "2033": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 264,
+            "int64": 717
+          },
+          "examples": [
+            "65.25612778",
+            "28.71818194",
+            "48.56218056"
+          ],
+          "max_len": 11,
+          "null_count": 417,
+          "shapes": {
+            "decimal": 453,
+            "int": 60,
+            "text": 264
+          }
+        },
+        "2034": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 264,
+            "int64": 715
+          },
+          "examples": [
+            "78.79211111",
+            "27.09294861",
+            "55.72869167"
+          ],
+          "max_len": 11,
+          "null_count": 417,
+          "shapes": {
+            "decimal": 451,
+            "int": 62,
+            "text": 264
+          }
+        },
+        "2035": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 264,
+            "int64": 717
+          },
+          "examples": [
+            "76.80551667",
+            "27.09613472",
+            "69.34568333"
+          ],
+          "max_len": 11,
+          "null_count": 417,
+          "shapes": {
+            "decimal": 453,
+            "int": 60,
+            "text": 264
+          }
+        },
+        "2036": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 264,
+            "int64": 660
+          },
+          "examples": [
+            "70.75031111",
+            "25.46189861",
+            "79.21138333"
+          ],
+          "max_len": 11,
+          "null_count": 475,
+          "shapes": {
+            "decimal": 396,
+            "int": 59,
+            "text": 264
+          }
+        },
+        "2037": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 264,
+            "int64": 662
+          },
+          "examples": [
+            "69.19742778",
+            "22.86854722",
+            "85.98473889"
+          ],
+          "max_len": 11,
+          "null_count": 475,
+          "shapes": {
+            "decimal": 398,
+            "int": 57,
+            "text": 264
+          }
+        },
+        "2038": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 264,
+            "int64": 660
+          },
+          "examples": [
+            "74.92216667",
+            "21.52916389",
+            "85.52801944"
+          ],
+          "max_len": 11,
+          "null_count": 475,
+          "shapes": {
+            "decimal": 396,
+            "int": 59,
+            "text": 264
+          }
+        },
+        "2039": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 264,
+            "int64": 661
+          },
+          "examples": [
+            "73.52700833",
+            "23.29876111",
+            "86.72109444"
+          ],
+          "max_len": 11,
+          "null_count": 475,
+          "shapes": {
+            "decimal": 397,
+            "int": 58,
+            "text": 264
+          }
+        },
+        "2040": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 264,
+            "int64": 665
+          },
+          "examples": [
+            "103.702925",
+            "21.33539028",
+            "87.39164722"
+          ],
+          "max_len": 11,
+          "null_count": 475,
+          "shapes": {
+            "decimal": 401,
+            "int": 54,
+            "text": 264
+          }
+        },
+        "2041": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 264,
+            "int64": 667
+          },
+          "examples": [
+            "103.0177556",
+            "22.21612778",
+            "92.11576667"
+          ],
+          "max_len": 11,
+          "null_count": 475,
+          "shapes": {
+            "decimal": 403,
+            "int": 52,
+            "text": 264
+          }
+        },
+        "2042": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 264,
+            "int64": 665
+          },
+          "examples": [
+            "102.149575",
+            "22.0514125",
+            "88.77879167"
+          ],
+          "max_len": 11,
+          "null_count": 475,
+          "shapes": {
+            "decimal": 401,
+            "int": 54,
+            "text": 264
+          }
+        },
+        "2043": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 264,
+            "int64": 666
+          },
+          "examples": [
+            "101.6962028",
+            "21.58050139",
+            "90.12253889"
+          ],
+          "max_len": 11,
+          "null_count": 475,
+          "shapes": {
+            "decimal": 402,
+            "int": 53,
+            "text": 264
+          }
+        },
+        "2044": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 264,
+            "int64": 663
+          },
+          "examples": [
+            "103.0097556",
+            "20.40959722",
+            "91.97015556"
+          ],
+          "max_len": 11,
+          "null_count": 475,
+          "shapes": {
+            "decimal": 399,
+            "int": 56,
+            "text": 264
+          }
+        },
+        "2045": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 264,
+            "int64": 666
+          },
+          "examples": [
+            "112.4220056",
+            "19.21484722",
+            "93.16171944"
+          ],
+          "max_len": 11,
+          "null_count": 475,
+          "shapes": {
+            "decimal": 402,
+            "int": 53,
+            "text": 264
+          }
+        },
+        "2046": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 264,
+            "int64": 665
+          },
+          "examples": [
+            "112.6229722",
+            "19.91208472",
+            "94.04376667"
+          ],
+          "max_len": 11,
+          "null_count": 475,
+          "shapes": {
+            "decimal": 401,
+            "int": 54,
+            "text": 264
+          }
+        },
+        "2047": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 264,
+            "int64": 665
+          },
+          "examples": [
+            "113.7428667",
+            "18.68624306",
+            "95.05490556"
+          ],
+          "max_len": 11,
+          "null_count": 475,
+          "shapes": {
+            "decimal": 401,
+            "int": 54,
+            "text": 264
+          }
+        },
+        "2048": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 264,
+            "int64": 665
+          },
+          "examples": [
+            "113.3024944",
+            "18.48980139",
+            "95.61303611"
+          ],
+          "max_len": 11,
+          "null_count": 475,
+          "shapes": {
+            "decimal": 401,
+            "int": 54,
+            "text": 264
+          }
+        },
+        "2049": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 264,
+            "int64": 664
+          },
+          "examples": [
+            "112.5575722",
+            "17.10375972",
+            "100.2863722"
+          ],
+          "max_len": 11,
+          "null_count": 475,
+          "shapes": {
+            "decimal": 400,
+            "int": 55,
+            "text": 264
+          }
+        },
+        "2050": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 849
+          },
+          "examples": [
+            "111.3216667",
+            "16.68813472",
+            "103.6212583"
+          ],
+          "max_len": 11,
+          "null_count": 111,
+          "shapes": {
+            "decimal": 849,
+            "int": 234
+          }
+        },
+        "Category": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 1194,
+            "int64": 1194
+          },
+          "examples": [
+            "Demand",
+            "Supply",
+            "Capacity"
+          ],
+          "max_len": 9,
+          "null_count": 0,
+          "shapes": {
+            "text": 1194
+          }
+        },
+        "Category Lookup": {
+          "blank_count": 8,
+          "cast_failures": {
+            "float64": 440,
+            "int64": 440
+          },
+          "examples": [
+            "Industrial & Commercial",
+            "Methane Reformation with CCUS",
+            "Networked Electrolysis"
+          ],
+          "max_len": 37,
+          "null_count": 754,
+          "shapes": {
+            "text": 432
+          }
+        },
+        "Feedstock": {
+          "blank_count": 8,
+          "cast_failures": {
+            "float64": 636,
+            "int64": 636
+          },
+          "examples": [
+            "MSW, C&I (biogenic)",
+            "Forest residues",
+            "Agri residues"
+          ],
+          "max_len": 27,
+          "null_count": 558,
+          "shapes": {
+            "text": 628
+          }
+        },
+        "Fuel": {
+          "blank_count": 6,
+          "cast_failures": {
+            "float64": 907,
+            "int64": 907
+          },
+          "examples": [
+            "Biomass",
+            "Waste",
+            "bioLPG"
+          ],
+          "max_len": 26,
+          "null_count": 287,
+          "shapes": {
+            "text": 901
+          }
+        },
+        "Fuel Type": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 1194,
+            "int64": 1194
+          },
+          "examples": [
+            "Bioenergy",
+            "Hydrogen",
+            "Natural Gas"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "text": 1194
+          }
+        },
+        "Pathway": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 1194,
+            "int64": 1194
+          },
+          "examples": [
+            "Electric Engagement",
+            "Hydrogen Evolution",
+            "Holistic Transition"
+          ],
+          "max_len": 19,
+          "null_count": 0,
+          "shapes": {
+            "text": 1194
+          }
+        },
+        "Sector": {
+          "blank_count": 8,
+          "cast_failures": {
+            "float64": 1167,
+            "int64": 1167
+          },
+          "examples": [
+            "Power Generation",
+            "Residential",
+            "Industrial"
+          ],
+          "max_len": 37,
+          "null_count": 27,
+          "shapes": {
+            "text": 1159
+          }
+        },
+        "Units": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 1194,
+            "int64": 1194
+          },
+          "examples": [
+            "TWh",
+            "GW",
+            "bcm/yr"
+          ],
+          "max_len": 6,
+          "null_count": 0,
+          "shapes": {
+            "text": 1194
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "2020": {
+            "description": "Year of data for data item",
+            "title": "2020",
+            "type": "numeric",
+            "unit": null
+          },
+          "2021": {
+            "description": "Year of data for data item",
+            "title": "2021",
+            "type": "numeric",
+            "unit": null
+          },
+          "2022": {
+            "description": "Year of data for data item",
+            "title": "2022",
+            "type": "numeric",
+            "unit": null
+          },
+          "2023": {
+            "description": "Year of data for data item",
+            "title": "2023",
+            "type": "numeric",
+            "unit": null
+          },
+          "2024": {
+            "description": "Year of data for data item",
+            "title": "2024",
+            "type": "numeric",
+            "unit": null
+          },
+          "2025": {
+            "description": "Year of data for data item",
+            "title": "2025",
+            "type": "numeric",
+            "unit": null
+          },
+          "2026": {
+            "description": "Year of data for data item",
+            "title": "2026",
+            "type": "numeric",
+            "unit": null
+          },
+          "2027": {
+            "description": "Year of data for data item",
+            "title": "2027",
+            "type": "numeric",
+            "unit": null
+          },
+          "2028": {
+            "description": "Year of data for data item",
+            "title": "2028",
+            "type": "numeric",
+            "unit": null
+          },
+          "2029": {
+            "description": "Year of data for data item",
+            "title": "2029",
+            "type": "numeric",
+            "unit": null
+          },
+          "2030": {
+            "description": "Year of data for data item",
+            "title": "2030",
+            "type": "numeric",
+            "unit": null
+          },
+          "2031": {
+            "description": "Year of data for data item",
+            "title": "2031",
+            "type": "numeric",
+            "unit": null
+          },
+          "2032": {
+            "description": "Year of data for data item",
+            "title": "2032",
+            "type": "numeric",
+            "unit": null
+          },
+          "2033": {
+            "description": "Year of data for data item",
+            "title": "2033",
+            "type": "numeric",
+            "unit": null
+          },
+          "2034": {
+            "description": "Year of data for data item",
+            "title": "2034",
+            "type": "numeric",
+            "unit": null
+          },
+          "2035": {
+            "description": "Year of data for data item",
+            "title": "2035",
+            "type": "numeric",
+            "unit": null
+          },
+          "2036": {
+            "description": "Year of data for data item",
+            "title": "2036",
+            "type": "numeric",
+            "unit": null
+          },
+          "2037": {
+            "description": "Year of data for data item",
+            "title": "2037",
+            "type": "numeric",
+            "unit": null
+          },
+          "2038": {
+            "description": "Year of data for data item",
+            "title": "2038",
+            "type": "numeric",
+            "unit": null
+          },
+          "2039": {
+            "description": "Year of data for data item",
+            "title": "2039",
+            "type": "numeric",
+            "unit": null
+          },
+          "2040": {
+            "description": "Year of data for data item",
+            "title": "2040",
+            "type": "numeric",
+            "unit": null
+          },
+          "2041": {
+            "description": "Year of data for data item",
+            "title": "2041",
+            "type": "numeric",
+            "unit": null
+          },
+          "2042": {
+            "description": "Year of data for data item",
+            "title": "2042",
+            "type": "numeric",
+            "unit": null
+          },
+          "2043": {
+            "description": "Year of data for data item",
+            "title": "2043",
+            "type": "numeric",
+            "unit": null
+          },
+          "2044": {
+            "description": "Year of data for data item",
+            "title": "2044",
+            "type": "numeric",
+            "unit": null
+          },
+          "2045": {
+            "description": "Year of data for data item",
+            "title": "2045",
+            "type": "numeric",
+            "unit": null
+          },
+          "2046": {
+            "description": "Year of data for data item",
+            "title": "2046",
+            "type": "numeric",
+            "unit": null
+          },
+          "2047": {
+            "description": "Year of data for data item",
+            "title": "2047",
+            "type": "numeric",
+            "unit": null
+          },
+          "2048": {
+            "description": "Year of data for data item",
+            "title": "2048",
+            "type": "numeric",
+            "unit": null
+          },
+          "2049": {
+            "description": "Year of data for data item",
+            "title": "2049",
+            "type": "numeric",
+            "unit": null
+          },
+          "2050": {
+            "description": "Year of data for data item",
+            "title": "2050",
+            "type": "numeric",
+            "unit": null
+          },
+          "Category": {
+            "description": "Overall category of focus for data point",
+            "title": "Category",
+            "type": "text",
+            "unit": null
+          },
+          "Category Lookup": {
+            "description": "Search categories",
+            "title": "Category Lookup",
+            "type": "text",
+            "unit": null
+          },
+          "Feedstock": {
+            "description": "Raw material used to make usable fuel",
+            "title": "Feedstock",
+            "type": "text",
+            "unit": null
+          },
+          "Fuel": {
+            "description": "Fuel used by data point",
+            "title": "Fuel",
+            "type": "text",
+            "unit": null
+          },
+          "Fuel Type": {
+            "description": "Fuel type used by the data point",
+            "title": "Fuel Type",
+            "type": "text",
+            "unit": null
+          },
+          "Sector": {
+            "description": "Sector of industry",
+            "title": "Sector",
+            "type": "text",
+            "unit": null
+          },
+          "Units": {
+            "description": "Unit used to measure the data point",
+            "title": "Units",
+            "type": "text",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [
+          "Scenario"
+        ],
+        "header_not_in_field_info": [
+          "Pathway"
+        ]
+      },
+      "first_written_at": "2026-10-08T10:58:06.175269+00:00",
+      "header": [
+        "Fuel Type",
+        "Pathway",
+        "Units",
+        "Category",
+        "Sector",
+        "Fuel",
+        "Feedstock",
+        "Category Lookup",
+        "2020",
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025",
+        "2026",
+        "2027",
+        "2028",
+        "2029",
+        "2030",
+        "2031",
+        "2032",
+        "2033",
+        "2034",
+        "2035",
+        "2036",
+        "2037",
+        "2038",
+        "2039",
+        "2040",
+        "2041",
+        "2042",
+        "2043",
+        "2044",
+        "2045",
+        "2046",
+        "2047",
+        "2048",
+        "2049",
+        "2050"
+      ],
+      "last_written_at": "2026-10-08T10:58:08.633236+00:00",
+      "resource_ids": [
+        "ebf4f503-0a13-45e6-89ad-b707748613b6",
+        "fa5697c5-9810-480f-b4c5-ab41dc53777a"
+      ],
+      "rows": 1194,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [
+    "multi_epoch"
+  ],
+  "key": "fes_ws1_gas_supply",
+  "keys": {
+    "candidates": [],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "fes-whole-system-gas-supply-data-table-ws1",
+  "proposal": {
+    "flags": [
+      "multi_epoch"
+    ],
+    "record_draft": {
+      "eligibility": {
+        "question": "2020: a numeric column with no vendor unit; 2021: a numeric column with no vendor unit; 2022: a numeric column with no vendor unit; 2023: a numeric column with no vendor unit; 2024: a numeric column with no vendor unit; 2025: a numeric column with no vendor unit; 2026: a numeric column with no vendor unit; 2027: a numeric column with no vendor unit; 2028: a numeric column with no vendor unit; 2029: a numeric column with no vendor unit; 2030: a numeric column with no vendor unit; 2031: a numeric column with no vendor unit; 2032: a numeric column with no vendor unit; 2033: a numeric column with no vendor unit; 2034: a numeric column with no vendor unit; 2035: a numeric column with no vendor unit; 2036: a numeric column with no vendor unit; 2037: a numeric column with no vendor unit; 2038: a numeric column with no vendor unit; 2039: a numeric column with no vendor unit; 2040: a numeric column with no vendor unit; 2041: a numeric column with no vendor unit; 2042: a numeric column with no vendor unit; 2043: a numeric column with no vendor unit; 2044: a numeric column with no vendor unit; 2045: a numeric column with no vendor unit; 2046: a numeric column with no vendor unit; 2047: a numeric column with no vendor unit; 2048: a numeric column with no vendor unit; 2049: a numeric column with no vendor unit; 2050: a numeric column with no vendor unit; 2020: a numeric column with no vendor unit; 2021: a numeric column with no vendor unit; 2022: a numeric column with no vendor unit; 2050: a numeric column with no vendor unit",
+        "status": "held",
+        "unit": "SCN-3"
+      },
+      "encoding": "utf-8",
+      "entity_key": [
+        "fuel_type",
+        "scenario",
+        "units",
+        "category",
+        "sector",
+        "fuel",
+        "feedstock",
+        "category_lookup",
+        "c_2020",
+        "c_2021",
+        "c_2022",
+        "c_2023",
+        "c_2024",
+        "c_2025",
+        "c_2026",
+        "c_2027",
+        "c_2028",
+        "c_2029",
+        "c_2030",
+        "c_2031",
+        "c_2032",
+        "c_2033",
+        "c_2034",
+        "c_2035",
+        "c_2036",
+        "c_2037",
+        "c_2038",
+        "c_2039",
+        "c_2040",
+        "c_2041",
+        "c_2042",
+        "c_2043",
+        "c_2044",
+        "c_2045",
+        "c_2046",
+        "c_2047",
+        "c_2048",
+        "c_2049",
+        "c_2050"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "fuel_type",
+              "nullable": true,
+              "source": "Fuel Type"
+            },
+            {
+              "dtype": "string",
+              "name": "scenario",
+              "nullable": true,
+              "source": "Scenario"
+            },
+            {
+              "dtype": "string",
+              "name": "units",
+              "nullable": true,
+              "source": "Units"
+            },
+            {
+              "dtype": "string",
+              "name": "category",
+              "nullable": true,
+              "source": "Category"
+            },
+            {
+              "dtype": "string",
+              "name": "sector",
+              "nullable": true,
+              "source": "Sector"
+            },
+            {
+              "dtype": "string",
+              "name": "fuel",
+              "nullable": true,
+              "source": "Fuel"
+            },
+            {
+              "dtype": "string",
+              "name": "feedstock",
+              "nullable": true,
+              "source": "Feedstock"
+            },
+            {
+              "dtype": "string",
+              "name": "category_lookup",
+              "nullable": true,
+              "source": "Category Lookup"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2020",
+              "nullable": true,
+              "source": "2020"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2021",
+              "nullable": true,
+              "source": "2021"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2022",
+              "nullable": true,
+              "source": "2022"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2023",
+              "nullable": true,
+              "source": "2023"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2024",
+              "nullable": true,
+              "source": "2024"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2025",
+              "nullable": true,
+              "source": "2025"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2026",
+              "nullable": true,
+              "source": "2026"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2027",
+              "nullable": true,
+              "source": "2027"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2028",
+              "nullable": true,
+              "source": "2028"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2029",
+              "nullable": true,
+              "source": "2029"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2030",
+              "nullable": true,
+              "source": "2030"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2031",
+              "nullable": true,
+              "source": "2031"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2032",
+              "nullable": true,
+              "source": "2032"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2033",
+              "nullable": true,
+              "source": "2033"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2034",
+              "nullable": true,
+              "source": "2034"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2035",
+              "nullable": true,
+              "source": "2035"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2036",
+              "nullable": true,
+              "source": "2036"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2037",
+              "nullable": true,
+              "source": "2037"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2038",
+              "nullable": true,
+              "source": "2038"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2039",
+              "nullable": true,
+              "source": "2039"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2040",
+              "nullable": true,
+              "source": "2040"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2041",
+              "nullable": true,
+              "source": "2041"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2042",
+              "nullable": true,
+              "source": "2042"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2043",
+              "nullable": true,
+              "source": "2043"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2044",
+              "nullable": true,
+              "source": "2044"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2045",
+              "nullable": true,
+              "source": "2045"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2046",
+              "nullable": true,
+              "source": "2046"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2047",
+              "nullable": true,
+              "source": "2047"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2048",
+              "nullable": true,
+              "source": "2048"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2049",
+              "nullable": true,
+              "source": "2049"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2050",
+              "nullable": true,
+              "source": "2050"
+            }
+          ],
+          "header": [
+            "Fuel Type",
+            "Scenario",
+            "Units",
+            "Category",
+            "Sector",
+            "Fuel",
+            "Feedstock",
+            "Category Lookup",
+            "2020",
+            "2021",
+            "2022",
+            "2023",
+            "2024",
+            "2025",
+            "2026",
+            "2027",
+            "2028",
+            "2029",
+            "2030",
+            "2031",
+            "2032",
+            "2033",
+            "2034",
+            "2035",
+            "2036",
+            "2037",
+            "2038",
+            "2039",
+            "2040",
+            "2041",
+            "2042",
+            "2043",
+            "2044",
+            "2045",
+            "2046",
+            "2047",
+            "2048",
+            "2049",
+            "2050"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        },
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "fuel_type",
+              "nullable": true,
+              "source": "Fuel Type"
+            },
+            {
+              "dtype": "string",
+              "name": "pathway",
+              "nullable": true,
+              "source": "Pathway"
+            },
+            {
+              "dtype": "string",
+              "name": "units",
+              "nullable": true,
+              "source": "Units"
+            },
+            {
+              "dtype": "string",
+              "name": "category",
+              "nullable": true,
+              "source": "Category"
+            },
+            {
+              "dtype": "string",
+              "name": "sector",
+              "nullable": true,
+              "source": "Sector"
+            },
+            {
+              "dtype": "string",
+              "name": "fuel",
+              "nullable": true,
+              "source": "Fuel"
+            },
+            {
+              "dtype": "string",
+              "name": "feedstock",
+              "nullable": true,
+              "source": "Feedstock"
+            },
+            {
+              "dtype": "string",
+              "name": "category_lookup",
+              "nullable": true,
+              "source": "Category Lookup"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2020",
+              "nullable": true,
+              "source": "2020"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2021",
+              "nullable": true,
+              "source": "2021"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2022",
+              "nullable": true,
+              "source": "2022"
+            },
+            {
+              "dtype": "TODO: T35",
+              "name": "c_2023",
+              "nullable": true,
+              "source": "2023"
+            },
+            {
+              "dtype": "TODO: T36",
+              "name": "c_2024",
+              "nullable": true,
+              "source": "2024"
+            },
+            {
+              "dtype": "TODO: T37",
+              "name": "c_2025",
+              "nullable": true,
+              "source": "2025"
+            },
+            {
+              "dtype": "TODO: T38",
+              "name": "c_2026",
+              "nullable": true,
+              "source": "2026"
+            },
+            {
+              "dtype": "TODO: T39",
+              "name": "c_2027",
+              "nullable": true,
+              "source": "2027"
+            },
+            {
+              "dtype": "TODO: T40",
+              "name": "c_2028",
+              "nullable": true,
+              "source": "2028"
+            },
+            {
+              "dtype": "TODO: T41",
+              "name": "c_2029",
+              "nullable": true,
+              "source": "2029"
+            },
+            {
+              "dtype": "TODO: T42",
+              "name": "c_2030",
+              "nullable": true,
+              "source": "2030"
+            },
+            {
+              "dtype": "TODO: T43",
+              "name": "c_2031",
+              "nullable": true,
+              "source": "2031"
+            },
+            {
+              "dtype": "TODO: T44",
+              "name": "c_2032",
+              "nullable": true,
+              "source": "2032"
+            },
+            {
+              "dtype": "TODO: T45",
+              "name": "c_2033",
+              "nullable": true,
+              "source": "2033"
+            },
+            {
+              "dtype": "TODO: T46",
+              "name": "c_2034",
+              "nullable": true,
+              "source": "2034"
+            },
+            {
+              "dtype": "TODO: T47",
+              "name": "c_2035",
+              "nullable": true,
+              "source": "2035"
+            },
+            {
+              "dtype": "TODO: T48",
+              "name": "c_2036",
+              "nullable": true,
+              "source": "2036"
+            },
+            {
+              "dtype": "TODO: T49",
+              "name": "c_2037",
+              "nullable": true,
+              "source": "2037"
+            },
+            {
+              "dtype": "TODO: T50",
+              "name": "c_2038",
+              "nullable": true,
+              "source": "2038"
+            },
+            {
+              "dtype": "TODO: T51",
+              "name": "c_2039",
+              "nullable": true,
+              "source": "2039"
+            },
+            {
+              "dtype": "TODO: T52",
+              "name": "c_2040",
+              "nullable": true,
+              "source": "2040"
+            },
+            {
+              "dtype": "TODO: T53",
+              "name": "c_2041",
+              "nullable": true,
+              "source": "2041"
+            },
+            {
+              "dtype": "TODO: T54",
+              "name": "c_2042",
+              "nullable": true,
+              "source": "2042"
+            },
+            {
+              "dtype": "TODO: T55",
+              "name": "c_2043",
+              "nullable": true,
+              "source": "2043"
+            },
+            {
+              "dtype": "TODO: T56",
+              "name": "c_2044",
+              "nullable": true,
+              "source": "2044"
+            },
+            {
+              "dtype": "TODO: T57",
+              "name": "c_2045",
+              "nullable": true,
+              "source": "2045"
+            },
+            {
+              "dtype": "TODO: T58",
+              "name": "c_2046",
+              "nullable": true,
+              "source": "2046"
+            },
+            {
+              "dtype": "TODO: T59",
+              "name": "c_2047",
+              "nullable": true,
+              "source": "2047"
+            },
+            {
+              "dtype": "TODO: T60",
+              "name": "c_2048",
+              "nullable": true,
+              "source": "2048"
+            },
+            {
+              "dtype": "TODO: T61",
+              "name": "c_2049",
+              "nullable": true,
+              "source": "2049"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2050",
+              "nullable": true,
+              "source": "2050"
+            }
+          ],
+          "header": [
+            "Fuel Type",
+            "Pathway",
+            "Units",
+            "Category",
+            "Sector",
+            "Fuel",
+            "Feedstock",
+            "Category Lookup",
+            "2020",
+            "2021",
+            "2022",
+            "2023",
+            "2024",
+            "2025",
+            "2026",
+            "2027",
+            "2028",
+            "2029",
+            "2030",
+            "2031",
+            "2032",
+            "2033",
+            "2034",
+            "2035",
+            "2036",
+            "2037",
+            "2038",
+            "2039",
+            "2040",
+            "2041",
+            "2042",
+            "2043",
+            "2044",
+            "2045",
+            "2046",
+            "2047",
+            "2048",
+            "2049",
+            "2050"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T63",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "held",
+        "field": "column '2020'.unit",
+        "id": "T01",
+        "kind": "unit",
+        "question": "2020: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2021'.unit",
+        "id": "T02",
+        "kind": "unit",
+        "question": "2021: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2022'.unit",
+        "id": "T03",
+        "kind": "unit",
+        "question": "2022: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2023'.unit",
+        "id": "T04",
+        "kind": "unit",
+        "question": "2023: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2024'.unit",
+        "id": "T05",
+        "kind": "unit",
+        "question": "2024: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2025'.unit",
+        "id": "T06",
+        "kind": "unit",
+        "question": "2025: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2026'.unit",
+        "id": "T07",
+        "kind": "unit",
+        "question": "2026: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2027'.unit",
+        "id": "T08",
+        "kind": "unit",
+        "question": "2027: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2028'.unit",
+        "id": "T09",
+        "kind": "unit",
+        "question": "2028: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2029'.unit",
+        "id": "T10",
+        "kind": "unit",
+        "question": "2029: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2030'.unit",
+        "id": "T11",
+        "kind": "unit",
+        "question": "2030: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2031'.unit",
+        "id": "T12",
+        "kind": "unit",
+        "question": "2031: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2032'.unit",
+        "id": "T13",
+        "kind": "unit",
+        "question": "2032: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2033'.unit",
+        "id": "T14",
+        "kind": "unit",
+        "question": "2033: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2034'.unit",
+        "id": "T15",
+        "kind": "unit",
+        "question": "2034: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2035'.unit",
+        "id": "T16",
+        "kind": "unit",
+        "question": "2035: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2036'.unit",
+        "id": "T17",
+        "kind": "unit",
+        "question": "2036: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2037'.unit",
+        "id": "T18",
+        "kind": "unit",
+        "question": "2037: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2038'.unit",
+        "id": "T19",
+        "kind": "unit",
+        "question": "2038: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2039'.unit",
+        "id": "T20",
+        "kind": "unit",
+        "question": "2039: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2040'.unit",
+        "id": "T21",
+        "kind": "unit",
+        "question": "2040: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2041'.unit",
+        "id": "T22",
+        "kind": "unit",
+        "question": "2041: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2042'.unit",
+        "id": "T23",
+        "kind": "unit",
+        "question": "2042: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2043'.unit",
+        "id": "T24",
+        "kind": "unit",
+        "question": "2043: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2044'.unit",
+        "id": "T25",
+        "kind": "unit",
+        "question": "2044: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2045'.unit",
+        "id": "T26",
+        "kind": "unit",
+        "question": "2045: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2046'.unit",
+        "id": "T27",
+        "kind": "unit",
+        "question": "2046: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2047'.unit",
+        "id": "T28",
+        "kind": "unit",
+        "question": "2047: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2048'.unit",
+        "id": "T29",
+        "kind": "unit",
+        "question": "2048: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2049'.unit",
+        "id": "T30",
+        "kind": "unit",
+        "question": "2049: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2050'.unit",
+        "id": "T31",
+        "kind": "unit",
+        "question": "2050: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2020'.unit",
+        "id": "T32",
+        "kind": "unit",
+        "question": "2020: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2021'.unit",
+        "id": "T33",
+        "kind": "unit",
+        "question": "2021: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2022'.unit",
+        "id": "T34",
+        "kind": "unit",
+        "question": "2022: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "blocked",
+        "field": "column '2023'.dtype",
+        "id": "T35",
+        "kind": "type_conflict",
+        "question": "2023: field-info declares numeric but 264 value(s) do not cast to float64"
+      },
+      {
+        "consequence": "blocked",
+        "field": "column '2024'.dtype",
+        "id": "T36",
+        "kind": "type_conflict",
+        "question": "2024: field-info declares numeric but 264 value(s) do not cast to float64"
+      },
+      {
+        "consequence": "blocked",
+        "field": "column '2025'.dtype",
+        "id": "T37",
+        "kind": "type_conflict",
+        "question": "2025: field-info declares numeric but 264 value(s) do not cast to float64"
+      },
+      {
+        "consequence": "blocked",
+        "field": "column '2026'.dtype",
+        "id": "T38",
+        "kind": "type_conflict",
+        "question": "2026: field-info declares numeric but 264 value(s) do not cast to float64"
+      },
+      {
+        "consequence": "blocked",
+        "field": "column '2027'.dtype",
+        "id": "T39",
+        "kind": "type_conflict",
+        "question": "2027: field-info declares numeric but 264 value(s) do not cast to float64"
+      },
+      {
+        "consequence": "blocked",
+        "field": "column '2028'.dtype",
+        "id": "T40",
+        "kind": "type_conflict",
+        "question": "2028: field-info declares numeric but 264 value(s) do not cast to float64"
+      },
+      {
+        "consequence": "blocked",
+        "field": "column '2029'.dtype",
+        "id": "T41",
+        "kind": "type_conflict",
+        "question": "2029: field-info declares numeric but 264 value(s) do not cast to float64"
+      },
+      {
+        "consequence": "blocked",
+        "field": "column '2030'.dtype",
+        "id": "T42",
+        "kind": "type_conflict",
+        "question": "2030: field-info declares numeric but 264 value(s) do not cast to float64"
+      },
+      {
+        "consequence": "blocked",
+        "field": "column '2031'.dtype",
+        "id": "T43",
+        "kind": "type_conflict",
+        "question": "2031: field-info declares numeric but 264 value(s) do not cast to float64"
+      },
+      {
+        "consequence": "blocked",
+        "field": "column '2032'.dtype",
+        "id": "T44",
+        "kind": "type_conflict",
+        "question": "2032: field-info declares numeric but 264 value(s) do not cast to float64"
+      },
+      {
+        "consequence": "blocked",
+        "field": "column '2033'.dtype",
+        "id": "T45",
+        "kind": "type_conflict",
+        "question": "2033: field-info declares numeric but 264 value(s) do not cast to float64"
+      },
+      {
+        "consequence": "blocked",
+        "field": "column '2034'.dtype",
+        "id": "T46",
+        "kind": "type_conflict",
+        "question": "2034: field-info declares numeric but 264 value(s) do not cast to float64"
+      },
+      {
+        "consequence": "blocked",
+        "field": "column '2035'.dtype",
+        "id": "T47",
+        "kind": "type_conflict",
+        "question": "2035: field-info declares numeric but 264 value(s) do not cast to float64"
+      },
+      {
+        "consequence": "blocked",
+        "field": "column '2036'.dtype",
+        "id": "T48",
+        "kind": "type_conflict",
+        "question": "2036: field-info declares numeric but 264 value(s) do not cast to float64"
+      },
+      {
+        "consequence": "blocked",
+        "field": "column '2037'.dtype",
+        "id": "T49",
+        "kind": "type_conflict",
+        "question": "2037: field-info declares numeric but 264 value(s) do not cast to float64"
+      },
+      {
+        "consequence": "blocked",
+        "field": "column '2038'.dtype",
+        "id": "T50",
+        "kind": "type_conflict",
+        "question": "2038: field-info declares numeric but 264 value(s) do not cast to float64"
+      },
+      {
+        "consequence": "blocked",
+        "field": "column '2039'.dtype",
+        "id": "T51",
+        "kind": "type_conflict",
+        "question": "2039: field-info declares numeric but 264 value(s) do not cast to float64"
+      },
+      {
+        "consequence": "blocked",
+        "field": "column '2040'.dtype",
+        "id": "T52",
+        "kind": "type_conflict",
+        "question": "2040: field-info declares numeric but 264 value(s) do not cast to float64"
+      },
+      {
+        "consequence": "blocked",
+        "field": "column '2041'.dtype",
+        "id": "T53",
+        "kind": "type_conflict",
+        "question": "2041: field-info declares numeric but 264 value(s) do not cast to float64"
+      },
+      {
+        "consequence": "blocked",
+        "field": "column '2042'.dtype",
+        "id": "T54",
+        "kind": "type_conflict",
+        "question": "2042: field-info declares numeric but 264 value(s) do not cast to float64"
+      },
+      {
+        "consequence": "blocked",
+        "field": "column '2043'.dtype",
+        "id": "T55",
+        "kind": "type_conflict",
+        "question": "2043: field-info declares numeric but 264 value(s) do not cast to float64"
+      },
+      {
+        "consequence": "blocked",
+        "field": "column '2044'.dtype",
+        "id": "T56",
+        "kind": "type_conflict",
+        "question": "2044: field-info declares numeric but 264 value(s) do not cast to float64"
+      },
+      {
+        "consequence": "blocked",
+        "field": "column '2045'.dtype",
+        "id": "T57",
+        "kind": "type_conflict",
+        "question": "2045: field-info declares numeric but 264 value(s) do not cast to float64"
+      },
+      {
+        "consequence": "blocked",
+        "field": "column '2046'.dtype",
+        "id": "T58",
+        "kind": "type_conflict",
+        "question": "2046: field-info declares numeric but 264 value(s) do not cast to float64"
+      },
+      {
+        "consequence": "blocked",
+        "field": "column '2047'.dtype",
+        "id": "T59",
+        "kind": "type_conflict",
+        "question": "2047: field-info declares numeric but 264 value(s) do not cast to float64"
+      },
+      {
+        "consequence": "blocked",
+        "field": "column '2048'.dtype",
+        "id": "T60",
+        "kind": "type_conflict",
+        "question": "2048: field-info declares numeric but 264 value(s) do not cast to float64"
+      },
+      {
+        "consequence": "blocked",
+        "field": "column '2049'.dtype",
+        "id": "T61",
+        "kind": "type_conflict",
+        "question": "2049: field-info declares numeric but 264 value(s) do not cast to float64"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2050'.unit",
+        "id": "T62",
+        "kind": "unit",
+        "question": "2050: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T63",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: none"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T64",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['fuel_type', 'scenario', 'units', 'category', 'sector', 'fuel', 'feedstock', 'category_lookup', 'c_2020', 'c_2021', 'c_2022', 'c_2023', 'c_2024', 'c_2025', 'c_2026', 'c_2027', 'c_2028', 'c_2029', 'c_2030', 'c_2031', 'c_2032', 'c_2033', 'c_2034', 'c_2035', 'c_2036', 'c_2037', 'c_2038', 'c_2039', 'c_2040', 'c_2041', 'c_2042', 'c_2043', 'c_2044', 'c_2045', 'c_2046', 'c_2047', 'c_2048', 'c_2049', 'c_2050'] (no candidate measured unique, so every column); without one, latest stays whole_capture"
+      },
+      {
+        "consequence": "none",
+        "field": "epochs",
+        "id": "T65",
+        "kind": "multi_epoch",
+        "question": "2 header epochs; review each in its batch"
+      }
+    ]
+  },
+  "refresh": "adhoc",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update frequency",
+        "value": "Ad hoc"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "FES: Pathways to Net Zero",
+    "title": "FES: Pathways to Net Zero – Whole System & Gas Supply Data table (WS1)"
+  }
+}

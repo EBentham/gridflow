@@ -1,0 +1,977 @@
+{
+  "archetype": "EVT",
+  "batch": "AS-5",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/ffr_phase2_auction_phase_blockorders/2026/10/08/raw_20261008T105840Z_979329c3-5587-4b08-a900-5520b58b2d8f_01e68080.csv",
+      "ckan_last_modified": "2021-03-31T09:28:52.708950",
+      "cr": 0,
+      "crlf": 12447,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "979329c3-5587-4b08-a900-5520b58b2d8f",
+      "rows": 12446,
+      "sampled": false,
+      "size": 2082226,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:58:40.780562+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/ffr_phase2_auction_phase_blockorders/2026/10/08/raw_20261008T105843Z_c074d827-ad03-4b11-b22e-8bbc96be3bab_e9b8f15a.csv",
+      "ckan_last_modified": "2022-03-18T12:08:37.494234",
+      "cr": 0,
+      "crlf": 50146,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "c074d827-ad03-4b11-b22e-8bbc96be3bab",
+      "rows": 50145,
+      "sampled": true,
+      "size": 8874187,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:58:43.329082+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/ffr_phase2_auction_phase_blockorders/2026/10/08/raw_20261008T105846Z_89467af0-a577-4bba-9955-f8c380a78923_74f11546.csv",
+      "ckan_last_modified": "2021-11-26T11:18:31.140573",
+      "cr": 0,
+      "crlf": 23072,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "89467af0-a577-4bba-9955-f8c380a78923",
+      "rows": 23071,
+      "sampled": false,
+      "size": 4089601,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:58:46.830914+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 3,
+      "columns": {
+        "Bid Validity": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 3,
+            "int64": 3
+          },
+          "examples": [
+            "Offered volume is over tested volume"
+          ],
+          "max_len": 36,
+          "null_count": 85659,
+          "shapes": {
+            "text": 3
+          }
+        },
+        "BiddingLevelName": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 85662,
+            "int64": 85662
+          },
+          "examples": [
+            "DLH",
+            "LFS"
+          ],
+          "max_len": 3,
+          "null_count": 0,
+          "shapes": {
+            "text": 85517
+          }
+        },
+        "BlockCode": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 85662,
+            "int64": 85662
+          },
+          "examples": [
+            "C01",
+            "C02"
+          ],
+          "max_len": 3,
+          "null_count": 0,
+          "shapes": {
+            "text": 85517
+          }
+        },
+        "BlockCodePRM": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 76699,
+            "int64": 85662
+          },
+          "examples": [
+            "NA",
+            "1E+14",
+            "1.00E+14"
+          ],
+          "max_len": 8,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 8191,
+            "text": 77326
+          }
+        },
+        "ClearingPrice": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 80396
+          },
+          "examples": [
+            "6.07",
+            "7.91",
+            "6.92"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 80251,
+            "int": 5266
+          }
+        },
+        "DeliveryEnd": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 85662,
+            "int64": 85662
+          },
+          "examples": [
+            "07/12/2019 19:00",
+            "07/12/2019 23:00",
+            "08/12/2019 19:00"
+          ],
+          "max_len": 16,
+          "null_count": 0,
+          "shapes": {
+            "text": 85517
+          }
+        },
+        "DeliveryStart": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 85662,
+            "int64": 85662
+          },
+          "examples": [
+            "07/12/2019 15:00",
+            "07/12/2019 19:00",
+            "08/12/2019 15:00"
+          ],
+          "max_len": 16,
+          "null_count": 0,
+          "shapes": {
+            "text": 85517
+          }
+        },
+        "EFA": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "5",
+            "6",
+            "11"
+          ],
+          "max_len": 2,
+          "null_count": 0,
+          "shapes": {
+            "int": 85517
+          }
+        },
+        "ExecutedVolume": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "-19",
+            "0",
+            "-10"
+          ],
+          "max_len": 3,
+          "null_count": 0,
+          "shapes": {
+            "int": 85517
+          }
+        },
+        "Invalid": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 85662,
+            "int64": 85662
+          },
+          "examples": [
+            "FALSE",
+            "TRUE"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "text": 85517
+          }
+        },
+        "MAR": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1",
+            "0"
+          ],
+          "max_len": 1,
+          "null_count": 0,
+          "shapes": {
+            "int": 85517
+          }
+        },
+        "MarketName": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 85662,
+            "int64": 85662
+          },
+          "examples": [
+            "DLH",
+            "LFS"
+          ],
+          "max_len": 3,
+          "null_count": 0,
+          "shapes": {
+            "text": 85517
+          }
+        },
+        "MemberName": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 85662,
+            "int64": 85662
+          },
+          "examples": [
+            "FLEXITRICITY LIMITED",
+            "LIMEJUMP LTD",
+            "EDF ENERGY CUSTOMERS LIMITED"
+          ],
+          "max_len": 46,
+          "null_count": 0,
+          "shapes": {
+            "text": 85517
+          }
+        },
+        "OrderEntryTime": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 85662,
+            "int64": 85662
+          },
+          "examples": [
+            "05/12/2019 15:47",
+            "05/12/2019 16:17",
+            "05/12/2019 11:21"
+          ],
+          "max_len": 16,
+          "null_count": 0,
+          "shapes": {
+            "text": 85517
+          }
+        },
+        "OrderEntryUser": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 85662,
+            "int64": 85662
+          },
+          "examples": [
+            "ESO-103-A",
+            "ESO-116-A",
+            "ESO-112-A"
+          ],
+          "max_len": 9,
+          "null_count": 0,
+          "shapes": {
+            "text": 85517
+          }
+        },
+        "OrderID": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 85662
+          },
+          "examples": [
+            "1E+14",
+            "1.00E+14"
+          ],
+          "max_len": 8,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 71831,
+            "text": 13686
+          }
+        },
+        "OrderPeriodID": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 85662
+          },
+          "examples": [
+            "1E+14",
+            "1.00E+14"
+          ],
+          "max_len": 8,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 71831,
+            "text": 13686
+          }
+        },
+        "Paradoxically": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 85662,
+            "int64": 85662
+          },
+          "examples": [
+            "No",
+            "PRB"
+          ],
+          "max_len": 3,
+          "null_count": 0,
+          "shapes": {
+            "text": 85517
+          }
+        },
+        "Portfolio": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 85662,
+            "int64": 85662
+          },
+          "examples": [
+            "AG-EFLX01",
+            "AG-BLIM02",
+            "AG-HLIM01"
+          ],
+          "max_len": 9,
+          "null_count": 0,
+          "shapes": {
+            "text": 85517
+          }
+        },
+        "Price": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 73889
+          },
+          "examples": [
+            "4",
+            "998",
+            "8.01"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 73760,
+            "int": 11757
+          }
+        },
+        "SettlementCurrency": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 85662,
+            "int64": 85662
+          },
+          "examples": [
+            "GBP"
+          ],
+          "max_len": 3,
+          "null_count": 0,
+          "shapes": {
+            "text": 85517
+          }
+        },
+        "Status": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 85662,
+            "int64": 85662
+          },
+          "examples": [
+            "Executed",
+            "Rejected"
+          ],
+          "max_len": 8,
+          "null_count": 0,
+          "shapes": {
+            "text": 85517
+          }
+        },
+        "TradeID": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 85662
+          },
+          "examples": [
+            "1E+14",
+            "1.00E+14"
+          ],
+          "max_len": 8,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 71831,
+            "text": 13686
+          }
+        },
+        "Volume": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "-19",
+            "-10",
+            "-3"
+          ],
+          "max_len": 3,
+          "null_count": 0,
+          "shapes": {
+            "int": 85517
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "Bid Validity": {
+            "description": "Whether or not the bid is invalid",
+            "title": "Bid validity",
+            "type": "text",
+            "unit": null
+          },
+          "BiddingLevelName": {
+            "description": "The market for which the bid is in relation to. The two choices are DLH (Dynamic Low High) and LFS (Low Frequency Static)",
+            "title": "Bidding Level Name",
+            "type": "text",
+            "unit": null
+          },
+          "BlockCode": {
+            "description": "Either C01 for a non-curtailable block (may be a parent in a linked family or may be a standalone block) or C02 for a fully curtailable child block",
+            "title": "Block Code",
+            "type": "text",
+            "unit": null
+          },
+          "BlockCodePRM": {
+            "description": "Blank for a C01 block, for a C02 block infill the Order ID of the parent",
+            "title": "Block Code PRM",
+            "type": "text",
+            "unit": null
+          },
+          "ClearingPrice": {
+            "description": "The market clearing price is dependent on the price of the highest-priced sell order executed in the auction. When the highest-price sell order is a single-period block order, the market clearing price is the price of this order",
+            "title": "Clearing Price",
+            "type": "numeric",
+            "unit": "£/MW"
+          },
+          "DeliveryEnd": {
+            "description": "The time from which delivery of FFR will end",
+            "title": "Delivery End",
+            "type": "timestamp",
+            "unit": null
+          },
+          "DeliveryStart": {
+            "description": "The time from which delivery of FFR will commence",
+            "title": "Delivery Start",
+            "type": "timestamp",
+            "unit": null
+          },
+          "EFA": {
+            "description": "The week is split into 42 blocks, with 6 four-hour blocks each day",
+            "title": "EFA",
+            "type": "numeric",
+            "unit": null
+          },
+          "ExecutedVolume": {
+            "description": "The volume of the order which is executed",
+            "title": "Executed Volume",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "Invalid": {
+            "description": "Whether or not the bid is invalid",
+            "title": "Invalid bid - contract rejected",
+            "type": "text",
+            "unit": null
+          },
+          "MAR": {
+            "description": "Automatically infilled, please leave blank",
+            "title": "MAR",
+            "type": "numeric",
+            "unit": null
+          },
+          "MarketName": {
+            "description": "The market for which the bid is in relation to. The two choices are DLH (Dynamic Low High) and LFS (Low Frequency Static)",
+            "title": "Market Name",
+            "type": "text",
+            "unit": null
+          },
+          "MemberName": {
+            "description": "The member of the trial who submitted the bid",
+            "title": "Member Name",
+            "type": "text",
+            "unit": null
+          },
+          "OrderEntryTime": {
+            "description": "The time at which the bid was submitted",
+            "title": "Order Entry Time",
+            "type": "timestamp",
+            "unit": null
+          },
+          "OrderEntryUser": {
+            "description": "The user who submitted the entry",
+            "title": "Order Entry User",
+            "type": "text",
+            "unit": null
+          },
+          "OrderID": {
+            "description": "The ID for the submitted bid in the auction",
+            "title": "Order ID",
+            "type": "numeric",
+            "unit": null
+          },
+          "OrderPeriodID": {
+            "description": "ID for the order period",
+            "title": "Order Period ID",
+            "type": "numeric",
+            "unit": null
+          },
+          "Paradoxically": {
+            "description": "Is this bid paradoxical in relation to other bids?",
+            "title": "Paradoxically",
+            "type": "text",
+            "unit": null
+          },
+          "Portfolio": {
+            "description": "The portfolio associated with the FFR provider",
+            "title": "Portfolio",
+            "type": "text",
+            "unit": null
+          },
+          "Price": {
+            "description": "The price for the provision of the service",
+            "title": "Price",
+            "type": "numeric",
+            "unit": "£/MW"
+          },
+          "SettlementCurrency": {
+            "description": "The currency in which the bid was submitted",
+            "title": "Settlement Currency",
+            "type": "text",
+            "unit": null
+          },
+          "Status": {
+            "description": "Was the bid executed or rejected",
+            "title": "Status",
+            "type": "text",
+            "unit": null
+          },
+          "TradeID": {
+            "description": "Identical to previous column",
+            "title": "Trade ID",
+            "type": "numeric",
+            "unit": null
+          },
+          "Volume": {
+            "description": "The total volume of the bid",
+            "title": "Volume",
+            "type": "numeric",
+            "unit": "MW"
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T10:58:40.780562+00:00",
+      "header": [
+        "MarketName",
+        "BiddingLevelName",
+        "MemberName",
+        "OrderID",
+        "Portfolio",
+        "OrderEntryTime",
+        "OrderEntryUser",
+        "SettlementCurrency",
+        "ClearingPrice",
+        "Price",
+        "MAR",
+        "Status",
+        "BlockCode",
+        "BlockCodePRM",
+        "Paradoxically",
+        "OrderPeriodID",
+        "TradeID",
+        "EFA",
+        "DeliveryStart",
+        "DeliveryEnd",
+        "ExecutedVolume",
+        "Volume",
+        "Invalid",
+        "Bid Validity"
+      ],
+      "last_written_at": "2026-10-08T10:58:46.830914+00:00",
+      "resource_ids": [
+        "89467af0-a577-4bba-9955-f8c380a78923",
+        "979329c3-5587-4b08-a900-5520b58b2d8f",
+        "c074d827-ad03-4b11-b22e-8bbc96be3bab"
+      ],
+      "rows": 85662,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [
+    "sampled",
+    "sibling_candidate:ffr_phase2_auction_phase_block_order"
+  ],
+  "key": "ffr_phase2_auction_phase_blockorders",
+  "keys": {
+    "candidates": [],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "phase-2-ffr-auction-results-summary",
+  "proposal": {
+    "flags": [
+      "sampled",
+      "sibling_candidate:ffr_phase2_auction_phase_block_order"
+    ],
+    "record_draft": {
+      "eligibility": {
+        "question": "OrderID: a numeric column with no vendor unit; OrderEntryTime: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced); MAR: a numeric column with no vendor unit; OrderPeriodID: a numeric column with no vendor unit; TradeID: a numeric column with no vendor unit; EFA: a numeric column with no vendor unit; DeliveryStart: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced); DeliveryEnd: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)",
+        "status": "held",
+        "unit": "AS-5"
+      },
+      "encoding": "utf-8",
+      "entity_key": [
+        "marketname",
+        "biddinglevelname",
+        "membername",
+        "orderid",
+        "portfolio",
+        "orderentrytime",
+        "orderentryuser",
+        "settlementcurrency",
+        "clearingprice",
+        "price",
+        "mar",
+        "status",
+        "blockcode",
+        "blockcodeprm",
+        "paradoxically",
+        "orderperiodid",
+        "tradeid",
+        "efa",
+        "deliverystart",
+        "deliveryend",
+        "executedvolume",
+        "volume",
+        "invalid",
+        "bid_validity"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "marketname",
+              "nullable": true,
+              "source": "MarketName"
+            },
+            {
+              "dtype": "string",
+              "name": "biddinglevelname",
+              "nullable": true,
+              "source": "BiddingLevelName"
+            },
+            {
+              "dtype": "string",
+              "name": "membername",
+              "nullable": true,
+              "source": "MemberName"
+            },
+            {
+              "dtype": "float64",
+              "name": "orderid",
+              "nullable": true,
+              "source": "OrderID"
+            },
+            {
+              "dtype": "string",
+              "name": "portfolio",
+              "nullable": true,
+              "source": "Portfolio"
+            },
+            {
+              "dtype": "string",
+              "name": "orderentrytime",
+              "nullable": true,
+              "source": "OrderEntryTime"
+            },
+            {
+              "dtype": "string",
+              "name": "orderentryuser",
+              "nullable": true,
+              "source": "OrderEntryUser"
+            },
+            {
+              "dtype": "string",
+              "name": "settlementcurrency",
+              "nullable": true,
+              "source": "SettlementCurrency"
+            },
+            {
+              "dtype": "float64",
+              "name": "clearingprice",
+              "nullable": true,
+              "source": "ClearingPrice"
+            },
+            {
+              "dtype": "float64",
+              "name": "price",
+              "nullable": true,
+              "source": "Price"
+            },
+            {
+              "dtype": "float64",
+              "name": "mar",
+              "nullable": true,
+              "source": "MAR"
+            },
+            {
+              "dtype": "string",
+              "name": "status",
+              "nullable": true,
+              "source": "Status"
+            },
+            {
+              "dtype": "string",
+              "name": "blockcode",
+              "nullable": true,
+              "source": "BlockCode"
+            },
+            {
+              "dtype": "string",
+              "name": "blockcodeprm",
+              "nullable": true,
+              "source": "BlockCodePRM"
+            },
+            {
+              "dtype": "string",
+              "name": "paradoxically",
+              "nullable": true,
+              "source": "Paradoxically"
+            },
+            {
+              "dtype": "float64",
+              "name": "orderperiodid",
+              "nullable": true,
+              "source": "OrderPeriodID"
+            },
+            {
+              "dtype": "float64",
+              "name": "tradeid",
+              "nullable": true,
+              "source": "TradeID"
+            },
+            {
+              "dtype": "float64",
+              "name": "efa",
+              "nullable": true,
+              "source": "EFA"
+            },
+            {
+              "dtype": "string",
+              "name": "deliverystart",
+              "nullable": true,
+              "source": "DeliveryStart"
+            },
+            {
+              "dtype": "string",
+              "name": "deliveryend",
+              "nullable": true,
+              "source": "DeliveryEnd"
+            },
+            {
+              "dtype": "float64",
+              "name": "executedvolume",
+              "nullable": true,
+              "source": "ExecutedVolume"
+            },
+            {
+              "dtype": "float64",
+              "name": "volume",
+              "nullable": true,
+              "source": "Volume"
+            },
+            {
+              "dtype": "string",
+              "name": "invalid",
+              "nullable": true,
+              "source": "Invalid"
+            },
+            {
+              "dtype": "string",
+              "name": "bid_validity",
+              "nullable": true,
+              "source": "Bid Validity"
+            }
+          ],
+          "header": [
+            "MarketName",
+            "BiddingLevelName",
+            "MemberName",
+            "OrderID",
+            "Portfolio",
+            "OrderEntryTime",
+            "OrderEntryUser",
+            "SettlementCurrency",
+            "ClearingPrice",
+            "Price",
+            "MAR",
+            "Status",
+            "BlockCode",
+            "BlockCodePRM",
+            "Paradoxically",
+            "OrderPeriodID",
+            "TradeID",
+            "EFA",
+            "DeliveryStart",
+            "DeliveryEnd",
+            "ExecutedVolume",
+            "Volume",
+            "Invalid",
+            "Bid Validity"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T09",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "held",
+        "field": "column 'OrderID'.unit",
+        "id": "T01",
+        "kind": "unit",
+        "question": "OrderID: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'OrderEntryTime'",
+        "id": "T02",
+        "kind": "time_semantics",
+        "question": "OrderEntryTime: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'MAR'.unit",
+        "id": "T03",
+        "kind": "unit",
+        "question": "MAR: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'OrderPeriodID'.unit",
+        "id": "T04",
+        "kind": "unit",
+        "question": "OrderPeriodID: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'TradeID'.unit",
+        "id": "T05",
+        "kind": "unit",
+        "question": "TradeID: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'EFA'.unit",
+        "id": "T06",
+        "kind": "unit",
+        "question": "EFA: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'DeliveryStart'",
+        "id": "T07",
+        "kind": "time_semantics",
+        "question": "DeliveryStart: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'DeliveryEnd'",
+        "id": "T08",
+        "kind": "time_semantics",
+        "question": "DeliveryEnd: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T09",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: OrderEntryTime, DeliveryStart, DeliveryEnd"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T10",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['marketname', 'biddinglevelname', 'membername', 'orderid', 'portfolio', 'orderentrytime', 'orderentryuser', 'settlementcurrency', 'clearingprice', 'price', 'mar', 'status', 'blockcode', 'blockcodeprm', 'paradoxically', 'orderperiodid', 'tradeid', 'efa', 'deliverystart', 'deliveryend', 'executedvolume', 'volume', 'invalid', 'bid_validity'] (no candidate measured unique, so every column); without one, latest stays whole_capture"
+      }
+    ]
+  },
+  "refresh": "frozen",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update Frequency",
+        "value": "Not Active"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Ancillary services",
+    "title": "Phase 2: FFR Auction Results Summary"
+  }
+}

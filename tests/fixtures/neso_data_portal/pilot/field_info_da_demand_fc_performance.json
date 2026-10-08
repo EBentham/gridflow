@@ -1,0 +1,164 @@
+{
+  "family": "da_demand_fc_performance",
+  "package": "day-ahead-half-hourly-demand-forecast-performance",
+  "resource_id": "08e41551-80f8-4e28-a416-ea473a695db9",
+  "selected_by": "the family's datastore_active resource in the snapshot with the maximum (metadata_modified, id)",
+  "snapshot_id": "20261006T195819Z",
+  "fields": [
+    {
+      "type": "int",
+      "id": "_id"
+    },
+    {
+      "info": {
+        "comment": "",
+        "description": "Month in which the demand outturn occurred.",
+        "title": "Month",
+        "type": "string",
+        "example": "Apr",
+        "unit": ""
+      },
+      "type": "text",
+      "id": "Month"
+    },
+    {
+      "info": {
+        "comment": "",
+        "description": "Date on which the demand outturn occurred.",
+        "title": "Date",
+        "type": "date",
+        "example": "2021-04-18",
+        "unit": ""
+      },
+      "type": "date",
+      "id": "Date"
+    },
+    {
+      "info": {
+        "comment": "Datetime follows clock changes (BST when UK was in BST and vice versa).",
+        "description": "Datetime at which the demand outturn occurred.",
+        "title": "Datetime",
+        "type": "datetime",
+        "example": "2021-04-18T02:30:00Z",
+        "unit": "GMT/BST"
+      },
+      "type": "timestamp",
+      "id": "Datetime"
+    },
+    {
+      "info": {
+        "comment": "",
+        "description": "Settlement Period at which the demand outturn occurred.",
+        "title": "Settlement Period",
+        "type": "integer",
+        "example": "5",
+        "unit": ""
+      },
+      "type": "int4",
+      "id": "Settlement_Period"
+    },
+    {
+      "info": {
+        "comment": "",
+        "description": "National demand forecast for the specified datetime.",
+        "title": "Demand Forecast",
+        "type": "integer",
+        "example": "23088",
+        "unit": "MW"
+      },
+      "type": "int4",
+      "id": "Demand_Forecast"
+    },
+    {
+      "info": {
+        "comment": "",
+        "description": "National demand outturn for the specified datetime.",
+        "title": "Demand Outturn",
+        "type": "integer",
+        "example": "23502",
+        "unit": "MW"
+      },
+      "type": "int4",
+      "id": "Demand_Outturn"
+    },
+    {
+      "info": {
+        "comment": "This will be 0 for all time periods when it is not TRIAD season.",
+        "description": "TRIAD avoidance estimated to have taken place at the time of the demand outturn.",
+        "title": "TRIAD Avoidance Estimate",
+        "type": "integer",
+        "example": "0",
+        "unit": "MW"
+      },
+      "type": "int4",
+      "id": "TRIAD_Avoidance_Estimate"
+    },
+    {
+      "info": {
+        "comment": "This will be unchanged from the demand outturn when it is not TRIAD season.",
+        "description": "National demand outturn after adding on any estimated TRIAD avoidance.",
+        "title": "TRIAD Avoidance Corrected Demand Outturn",
+        "type": "integer",
+        "example": "23502",
+        "unit": "MW"
+      },
+      "type": "int4",
+      "id": "TRIAD_Avoidance_Corrected_Demand_Outturn"
+    },
+    {
+      "info": {
+        "comment": "",
+        "description": "Absolute Percentage Error of the forecast.",
+        "title": "Absolute Percentage Error",
+        "type": "number",
+        "example": "1.8",
+        "unit": "%"
+      },
+      "type": "numeric",
+      "id": "APE"
+    },
+    {
+      "info": {
+        "comment": "",
+        "description": "Absolute Error of the forecast",
+        "title": "Absolute Error",
+        "type": "integer",
+        "example": "132",
+        "unit": "MW"
+      },
+      "type": "int4",
+      "id": "Absolute_Error"
+    },
+    {
+      "info": {
+        "comment": "Datetime follows clock changes (BST when UK was in BST and vice versa).",
+        "description": "The datetime at which the forecast was made. ",
+        "title": "Publish Datetime",
+        "type": "datetime",
+        "example": "2021-04-17T08:45:00Z",
+        "unit": "GMT/BST"
+      },
+      "type": "timestamp",
+      "id": "Publish_Datetime"
+    }
+  ],
+  "total": 96786,
+  "include_total": true,
+  "records_format": "objects",
+  "records_returned": 0,
+  "request": {
+    "action": "datastore_search",
+    "params": {
+      "limit": "0",
+      "resource_id": "08e41551-80f8-4e28-a416-ea473a695db9"
+    },
+    "started_at": "2026-10-08T12:07:59.753471Z",
+    "finished_at": "2026-10-08T12:08:29.947604Z",
+    "status_code": 200,
+    "headers": {
+      "content-type": "application/json;charset=utf-8",
+      "date": "Thu, 08 Oct 2026 12:08:29 GMT"
+    },
+    "body_sha256": "a4e7910a9bc0189134cbae16c44956857e0cfc30462ab1da0b2d5ee4af4d4ab8"
+  }
+}

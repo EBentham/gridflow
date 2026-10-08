@@ -1,0 +1,208 @@
+{
+  "archetype": "SCN",
+  "batch": "SCN-3",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/building_heat_model_list_input/2026/10/08/raw_20261008T091412Z_b809e59a-e681-4ecb-af07-80997abbbd6f_784fcc2b.csv",
+      "ckan_last_modified": "2026-07-30T14:01:53.418825",
+      "cr": 0,
+      "crlf": 270,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "b809e59a-e681-4ecb-af07-80997abbbd6f",
+      "rows": 269,
+      "sampled": false,
+      "size": 9219,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T09:14:12.279856+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 1,
+      "columns": {
+        "parameter": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 269,
+            "int64": 269
+          },
+          "examples": [
+            "model run",
+            "sheet: PARAMETERS",
+            "building archetype"
+          ],
+          "max_len": 93,
+          "null_count": 0,
+          "shapes": {
+            "text": 269
+          }
+        },
+        "run_1": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 20,
+            "int64": 84
+          },
+          "examples": [
+            "1 month - 1 thermostat profile - 1 building archetype",
+            "semi detached – medium",
+            "76"
+          ],
+          "max_len": 53,
+          "null_count": 79,
+          "shapes": {
+            "decimal": 64,
+            "int": 106,
+            "text": 20
+          }
+        },
+        "run_2": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 18,
+            "int64": 82
+          },
+          "examples": [
+            "1 month - 1 thermostat profile - 1 building archetype",
+            "semi detached – medium",
+            "76"
+          ],
+          "max_len": 53,
+          "null_count": 79,
+          "shapes": {
+            "decimal": 64,
+            "int": 108,
+            "text": 18
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "parameter": {
+            "description": "List of parameter names",
+            "title": "Parameter",
+            "type": "text",
+            "unit": null
+          },
+          "run_1": {
+            "description": "All selected input parameters for profile run_1.",
+            "title": "run_1\t\t",
+            "type": "text",
+            "unit": null
+          },
+          "run_2": {
+            "description": "All selected input parameters for profile run_2.",
+            "title": "run_2\t\t",
+            "type": "text",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T09:14:12.279856+00:00",
+      "header": [
+        "parameter",
+        "run_1",
+        "run_2"
+      ],
+      "last_written_at": "2026-10-08T09:14:12.279856+00:00",
+      "resource_ids": [
+        "b809e59a-e681-4ecb-af07-80997abbbd6f"
+      ],
+      "rows": 269,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [],
+  "key": "building_heat_model_list_input",
+  "keys": {
+    "candidates": [],
+    "full_row_max_duplicates": 1
+  },
+  "other_captures": 0,
+  "package": "building-heat-model",
+  "proposal": {
+    "flags": [],
+    "record_draft": {
+      "encoding": "utf-8",
+      "entity_key": [
+        "parameter",
+        "run_1",
+        "run_2"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "parameter",
+              "nullable": true,
+              "source": "parameter"
+            },
+            {
+              "dtype": "string",
+              "name": "run_1",
+              "nullable": true,
+              "source": "run_1"
+            },
+            {
+              "dtype": "string",
+              "name": "run_2",
+              "nullable": true,
+              "source": "run_2"
+            }
+          ],
+          "header": [
+            "parameter",
+            "run_1",
+            "run_2"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T01",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T01",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: none"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T02",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['parameter', 'run_1', 'run_2'] (no candidate measured unique, so every column); without one, latest stays whole_capture"
+      }
+    ]
+  },
+  "refresh": "adhoc",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update frequency",
+        "value": "Ad hoc"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "FES: Pathways to Net Zero",
+    "title": "Building Heat Model"
+  }
+}

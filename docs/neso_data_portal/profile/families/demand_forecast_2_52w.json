@@ -1,0 +1,391 @@
+{
+  "archetype": "FC",
+  "batch": "PILOT",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/demand_forecast_2_52w/2026/10/08/raw_20261008T100602Z_903302b4-b577-4228-a347-b9917568b4e1_79991bf0.csv",
+      "ckan_last_modified": "2026-09-29T12:28:44.374647",
+      "cr": 0,
+      "crlf": 66,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "903302b4-b577-4228-a347-b9917568b4e1",
+      "rows": 65,
+      "sampled": false,
+      "size": 3404,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:06:02.958906+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 1,
+      "columns": {
+        "CDATE_peak": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%Y-%m-%d": 0,
+            "float64": 65,
+            "int64": 65
+          },
+          "examples": [
+            "2026-10-15",
+            "2026-10-22",
+            "2026-10-28"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "iso_date": 65
+          }
+        },
+        "ESIWK": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "42",
+            "43",
+            "44"
+          ],
+          "max_len": 2,
+          "null_count": 0,
+          "shapes": {
+            "int": 65
+          }
+        },
+        "calendar_year": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "2026",
+            "2027"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 65
+          }
+        },
+        "day_min": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "23128",
+            "24753",
+            "25859"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "int": 65
+          }
+        },
+        "financial_year": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "2026",
+            "2027"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 65
+          }
+        },
+        "night_min": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "19259",
+            "19862",
+            "19371"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "int": 65
+          }
+        },
+        "tsd_min": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "19259",
+            "19862",
+            "19371"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "int": 65
+          }
+        },
+        "tsd_peak": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "35497",
+            "36423",
+            "38256"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "int": 65
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "CDATE_peak": {
+            "description": "The date of the peak demand during that ESI week.",
+            "title": "CDATE Peak",
+            "type": "date",
+            "unit": null
+          },
+          "ESIWK": {
+            "description": "The ESI week the forecast is for.",
+            "title": "ESIWK",
+            "type": "int4",
+            "unit": null
+          },
+          "calendar_year": {
+            "description": "The calendar year the demand is forecast to occur.",
+            "title": "Calendar Year",
+            "type": "int4",
+            "unit": null
+          },
+          "day_min": {
+            "description": "The minimum daytime demand during that ESI week.",
+            "title": "Day minimum",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "financial_year": {
+            "description": "The financial year the demand is forecast to occur.",
+            "title": "Financial Year",
+            "type": "int4",
+            "unit": null
+          },
+          "night_min": {
+            "description": "The minimum overnight demand during that ESI week.",
+            "title": "Night minimum",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "tsd_min": {
+            "description": "The minimum demand during that ESI week.",
+            "title": "TSD minimum",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "tsd_peak": {
+            "description": "The peak demand during that ESI week.",
+            "title": "TSD Peak",
+            "type": "int4",
+            "unit": "MW"
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T10:06:02.958906+00:00",
+      "header": [
+        "calendar_year",
+        "financial_year",
+        "ESIWK",
+        "CDATE_peak",
+        "tsd_peak",
+        "tsd_min",
+        "day_min",
+        "night_min"
+      ],
+      "last_written_at": "2026-10-08T10:06:02.958906+00:00",
+      "resource_ids": [
+        "903302b4-b577-4228-a347-b9917568b4e1"
+      ],
+      "rows": 65,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [],
+  "key": "demand_forecast_2_52w",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 1,
+        "columns": [
+          "CDATE_peak"
+        ],
+        "max_duplicates": 0
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "long-term-2-52-weeks-ahead-national-demand-forecast",
+  "proposal": {
+    "flags": [],
+    "record_draft": {
+      "eligibility": {
+        "question": "calendar_year: a numeric column with no vendor unit; financial_year: a numeric column with no vendor unit; ESIWK: a numeric column with no vendor unit",
+        "status": "held",
+        "unit": "PILOT"
+      },
+      "encoding": "utf-8",
+      "entity_key": [
+        "cdate_peak"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "int64",
+              "name": "calendar_year",
+              "nullable": true,
+              "source": "calendar_year"
+            },
+            {
+              "dtype": "int64",
+              "name": "financial_year",
+              "nullable": true,
+              "source": "financial_year"
+            },
+            {
+              "dtype": "int64",
+              "name": "esiwk",
+              "nullable": true,
+              "source": "ESIWK"
+            },
+            {
+              "dtype": "date",
+              "format": "%Y-%m-%d",
+              "name": "cdate_peak",
+              "nullable": true,
+              "source": "CDATE_peak"
+            },
+            {
+              "dtype": "int64",
+              "name": "tsd_peak",
+              "nullable": true,
+              "source": "tsd_peak"
+            },
+            {
+              "dtype": "int64",
+              "name": "tsd_min",
+              "nullable": true,
+              "source": "tsd_min"
+            },
+            {
+              "dtype": "int64",
+              "name": "day_min",
+              "nullable": true,
+              "source": "day_min"
+            },
+            {
+              "dtype": "int64",
+              "name": "night_min",
+              "nullable": true,
+              "source": "night_min"
+            }
+          ],
+          "header": [
+            "calendar_year",
+            "financial_year",
+            "ESIWK",
+            "CDATE_peak",
+            "tsd_peak",
+            "tsd_min",
+            "day_min",
+            "night_min"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T04",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "held",
+        "field": "column 'calendar_year'.unit",
+        "id": "T01",
+        "kind": "unit",
+        "question": "calendar_year: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'financial_year'.unit",
+        "id": "T02",
+        "kind": "unit",
+        "question": "financial_year: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'ESIWK'.unit",
+        "id": "T03",
+        "kind": "unit",
+        "question": "ESIWK: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T04",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: CDATE_peak"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T05",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['cdate_peak'] (measured unique in 1 capture(s)); without one, latest stays whole_capture"
+      }
+    ]
+  },
+  "refresh": "adhoc",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update Frequency",
+        "value": "Ad hoc"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Demand",
+    "title": "Long Term (2-52 weeks ahead) National Demand Forecast"
+  }
+}

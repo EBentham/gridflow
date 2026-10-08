@@ -1,0 +1,472 @@
+{
+  "archetype": "EVT",
+  "batch": "TRD",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/gtma_trades_data/2026/10/08/raw_20261008T110439Z_bde33bcf-efc6-4e4a-bc7c-452b7424ea45_1855c457.csv",
+      "ckan_last_modified": "2020-12-09T17:08:51.416402",
+      "cr": 0,
+      "crlf": 2844,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "bde33bcf-efc6-4e4a-bc7c-452b7424ea45",
+      "rows": 2843,
+      "sampled": false,
+      "size": 206088,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:04:39.809727+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/gtma_trades_data/2026/10/08/raw_20261008T110442Z_b24d619b-f6ea-41e6-87ab-569960594d3f_dcc97609.csv",
+      "ckan_last_modified": "2020-12-09T16:50:44.945078",
+      "cr": 0,
+      "crlf": 2948,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "b24d619b-f6ea-41e6-87ab-569960594d3f",
+      "rows": 2947,
+      "sampled": false,
+      "size": 212366,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:04:42.382991+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/gtma_trades_data/2026/10/08/raw_20261008T110445Z_6f2772a4-ac7a-4eb7-a8ee-59ca6a03e205_5eb10812.csv",
+      "ckan_last_modified": "2020-12-09T16:51:36.261207",
+      "cr": 0,
+      "crlf": 3480,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "6f2772a4-ac7a-4eb7-a8ee-59ca6a03e205",
+      "rows": 3479,
+      "sampled": false,
+      "size": 253306,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:04:45.300931+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/gtma_trades_data/2026/10/08/raw_20261008T110447Z_58f3079a-1440-4a70-b227-f4e661defee7_46c944d6.csv",
+      "ckan_last_modified": "2020-12-09T16:53:07.230679",
+      "cr": 0,
+      "crlf": 8989,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "58f3079a-1440-4a70-b227-f4e661defee7",
+      "rows": 8988,
+      "sampled": false,
+      "size": 653577,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:04:47.812814+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/gtma_trades_data/2026/10/08/raw_20261008T110450Z_6a03c415-475f-4005-bf55-b9108291c511_9845ed60.csv",
+      "ckan_last_modified": "2020-12-09T16:54:00.343328",
+      "cr": 0,
+      "crlf": 32974,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "6a03c415-475f-4005-bf55-b9108291c511",
+      "rows": 32973,
+      "sampled": false,
+      "size": 2385250,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:04:50.274119+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/gtma_trades_data/2026/10/08/raw_20261008T110453Z_8e14ae8e-2091-4abc-a2e6-a4b82e5519ab_4bd1f961.csv",
+      "ckan_last_modified": "2021-04-06T11:20:05.467319",
+      "cr": 0,
+      "crlf": 55543,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "8e14ae8e-2091-4abc-a2e6-a4b82e5519ab",
+      "rows": 55542,
+      "sampled": true,
+      "size": 4006832,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:04:53.582808+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 6,
+      "columns": {
+        "Cost": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 41815
+          },
+          "examples": [
+            "10727.5",
+            "16026",
+            "17754"
+          ],
+          "max_len": 12,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 39180,
+            "int": 62050
+          }
+        },
+        "End Time": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 106772,
+            "int64": 106772
+          },
+          "examples": [
+            "2015-04-02T06:00:00Z",
+            "2015-04-02T19:00:00Z",
+            "2015-04-02T20:00:00Z"
+          ],
+          "max_len": 20,
+          "null_count": 0,
+          "shapes": {
+            "iso_datetime_z": 101230
+          }
+        },
+        "Price": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 95261
+          },
+          "examples": [
+            "42.91",
+            "53.42",
+            "59.18"
+          ],
+          "max_len": 8,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 90251,
+            "int": 10979
+          }
+        },
+        "SO Flag": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 106772,
+            "int64": 106772
+          },
+          "examples": [
+            "F",
+            "T"
+          ],
+          "max_len": 1,
+          "null_count": 0,
+          "shapes": {
+            "text": 101230
+          }
+        },
+        "Start Time": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 106772,
+            "int64": 106772
+          },
+          "examples": [
+            "2015-04-02T05:00:00Z",
+            "2015-04-02T18:00:00Z",
+            "2015-04-02T19:00:00Z"
+          ],
+          "max_len": 20,
+          "null_count": 0,
+          "shapes": {
+            "iso_datetime_z": 101230
+          }
+        },
+        "Trade ID": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 106772,
+            "int64": 106772
+          },
+          "examples": [
+            "ES00000001",
+            "ES00000002",
+            "ES00000003"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "text": 101230
+          }
+        },
+        "Volume": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 430
+          },
+          "examples": [
+            "250",
+            "300",
+            "-360"
+          ],
+          "max_len": 8,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 417,
+            "int": 100813
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "Cost": {
+            "description": "Cost of the trades.",
+            "title": "Cost",
+            "type": "numeric",
+            "unit": "£"
+          },
+          "End Time": {
+            "description": "Trade end date time (UTC).",
+            "title": "End Time",
+            "type": "timestamp",
+            "unit": null
+          },
+          "Price": {
+            "description": "Price of the trade.",
+            "title": "Price",
+            "type": "numeric",
+            "unit": "£/MWh"
+          },
+          "SO Flag": {
+            "description": "Either T: System trade or F: Energy trade.",
+            "title": "System Operator Flag",
+            "type": "text",
+            "unit": null
+          },
+          "Start Time": {
+            "description": "Trade start date time (UTC)",
+            "title": "Start Time",
+            "type": "timestamp",
+            "unit": null
+          },
+          "Trade ID": {
+            "description": "Trade ID.",
+            "title": "Trade ID",
+            "type": "text",
+            "unit": null
+          },
+          "Volume": {
+            "description": "Total volume for the trade.",
+            "title": "Volume",
+            "type": "numeric",
+            "unit": "MWh"
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T11:04:39.809727+00:00",
+      "header": [
+        "Trade ID",
+        "Start Time",
+        "End Time",
+        "Volume",
+        "Price",
+        "Cost",
+        "SO Flag"
+      ],
+      "last_written_at": "2026-10-08T11:04:53.582808+00:00",
+      "resource_ids": [
+        "58f3079a-1440-4a70-b227-f4e661defee7",
+        "6a03c415-475f-4005-bf55-b9108291c511",
+        "6f2772a4-ac7a-4eb7-a8ee-59ca6a03e205",
+        "8e14ae8e-2091-4abc-a2e6-a4b82e5519ab",
+        "b24d619b-f6ea-41e6-87ab-569960594d3f",
+        "bde33bcf-efc6-4e4a-bc7c-452b7424ea45"
+      ],
+      "rows": 106772,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [
+    "sampled",
+    "sibling_candidate:gtma_trades_data_pre"
+  ],
+  "key": "gtma_trades_data",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 6,
+        "columns": [
+          "Trade ID"
+        ],
+        "max_duplicates": 10
+      }
+    ],
+    "full_row_max_duplicates": 10
+  },
+  "other_captures": 0,
+  "package": "historic-gtma-grid-trade-master-agreement-trades-data",
+  "proposal": {
+    "flags": [
+      "sampled",
+      "sibling_candidate:gtma_trades_data_pre"
+    ],
+    "record_draft": {
+      "eligibility": {
+        "question": "Start Time: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced); End Time: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)",
+        "status": "held",
+        "unit": "TRD"
+      },
+      "encoding": "utf-8",
+      "entity_key": [
+        "trade_id",
+        "start_time",
+        "end_time",
+        "volume",
+        "price",
+        "cost",
+        "so_flag"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "trade_id",
+              "nullable": true,
+              "source": "Trade ID"
+            },
+            {
+              "dtype": "string",
+              "name": "start_time",
+              "nullable": true,
+              "source": "Start Time"
+            },
+            {
+              "dtype": "string",
+              "name": "end_time",
+              "nullable": true,
+              "source": "End Time"
+            },
+            {
+              "dtype": "float64",
+              "name": "volume",
+              "nullable": true,
+              "source": "Volume"
+            },
+            {
+              "dtype": "float64",
+              "name": "price",
+              "nullable": true,
+              "source": "Price"
+            },
+            {
+              "dtype": "float64",
+              "name": "cost",
+              "nullable": true,
+              "source": "Cost"
+            },
+            {
+              "dtype": "string",
+              "name": "so_flag",
+              "nullable": true,
+              "source": "SO Flag"
+            }
+          ],
+          "header": [
+            "Trade ID",
+            "Start Time",
+            "End Time",
+            "Volume",
+            "Price",
+            "Cost",
+            "SO Flag"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T03",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "held",
+        "field": "column 'Start Time'",
+        "id": "T01",
+        "kind": "time_semantics",
+        "question": "Start Time: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'End Time'",
+        "id": "T02",
+        "kind": "time_semantics",
+        "question": "End Time: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T03",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: Start Time, End Time"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T04",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['trade_id', 'start_time', 'end_time', 'volume', 'price', 'cost', 'so_flag'] (no candidate measured unique, so every column); without one, latest stays whole_capture"
+      }
+    ]
+  },
+  "refresh": "daily",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Status",
+        "value": "Live"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Trading",
+    "title": "Historic GTMA (Grid Trade Master Agreement) Trades Data"
+  }
+}

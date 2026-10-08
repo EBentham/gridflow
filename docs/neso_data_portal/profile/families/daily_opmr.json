@@ -1,0 +1,558 @@
+{
+  "archetype": "FC",
+  "batch": "GEN-1",
+  "captures": [
+    {
+      "all_blank_rows": 1,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/daily_opmr/2026/10/08/raw_20261008T100510Z_0eede912-8820-4c66-a58a-f7436d36b95f_6c474505.csv",
+      "ckan_last_modified": "2026-10-08T09:20:23.077566",
+      "cr": 0,
+      "crlf": 1,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 26828,
+      "parse_error": null,
+      "resource_id": "0eede912-8820-4c66-a58a-f7436d36b95f",
+      "rows": 26828,
+      "sampled": false,
+      "size": 2161291,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:05:10.360304+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 1,
+      "columns": {
+        "Constrained Plant": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "253",
+            "0",
+            "530"
+          ],
+          "max_len": 5,
+          "null_count": 15,
+          "shapes": {
+            "int": 26813
+          }
+        },
+        "Date": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%Y-%m-%d": 0,
+            "float64": 26827,
+            "int64": 26827
+          },
+          "examples": [
+            "2021-03-14",
+            "2021-03-15",
+            "2021-03-16"
+          ],
+          "max_len": 10,
+          "null_count": 1,
+          "shapes": {
+            "iso_date": 26827
+          }
+        },
+        "Generation Availability Margin": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "17178",
+            "8533",
+            "9259"
+          ],
+          "max_len": 5,
+          "null_count": 1,
+          "shapes": {
+            "int": 26827
+          }
+        },
+        "Generator Availability": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "54770",
+            "49853",
+            "50293"
+          ],
+          "max_len": 5,
+          "null_count": 1,
+          "shapes": {
+            "int": 26827
+          }
+        },
+        "High Freq Response Requirement": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "858",
+            "682",
+            "575"
+          ],
+          "max_len": 4,
+          "null_count": 15,
+          "shapes": {
+            "int": 26813
+          }
+        },
+        "Maximum IC Export": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "5646",
+            "6146",
+            "6646"
+          ],
+          "max_len": 5,
+          "null_count": 1,
+          "shapes": {
+            "int": 26827
+          }
+        },
+        "Maximum IC Import": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "5646",
+            "6146",
+            "6646"
+          ],
+          "max_len": 5,
+          "null_count": 1,
+          "shapes": {
+            "int": 26827
+          }
+        },
+        "Minimum Demand Forecast": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "20090",
+            "21921",
+            "23267"
+          ],
+          "max_len": 5,
+          "null_count": 1,
+          "shapes": {
+            "int": 26827
+          }
+        },
+        "National Surplus": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "12110",
+            "4540",
+            "5146"
+          ],
+          "max_len": 5,
+          "null_count": 1,
+          "shapes": {
+            "int": 26827
+          }
+        },
+        "Negative Reserve": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "2860",
+            "2540",
+            "2346"
+          ],
+          "max_len": 4,
+          "null_count": 15,
+          "shapes": {
+            "int": 26813
+          }
+        },
+        "OPMR total": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "5068",
+            "3993",
+            "4113"
+          ],
+          "max_len": 5,
+          "null_count": 1,
+          "shapes": {
+            "int": 26827
+          }
+        },
+        "Operating Reserve provided by ICs": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "0"
+          ],
+          "max_len": 1,
+          "null_count": 15,
+          "shapes": {
+            "int": 26813
+          }
+        },
+        "Peak Demand Forecast": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "37592",
+            "41320",
+            "41034"
+          ],
+          "max_len": 5,
+          "null_count": 1,
+          "shapes": {
+            "int": 26827
+          }
+        },
+        "Publish Date": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%Y-%m-%d": 0,
+            "float64": 26827,
+            "int64": 26827
+          },
+          "examples": [
+            "2021-03-12",
+            "2021-03-13",
+            "2021-03-14"
+          ],
+          "max_len": 10,
+          "null_count": 1,
+          "shapes": {
+            "iso_date": 26827
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "Constrained Plant": {
+            "description": "Generation restricted due to constraints on the electricity network",
+            "title": "Constrained Plant ",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "Date": {
+            "description": "Date the Operational Planning Margin Requirement (OPMR) was published for",
+            "title": "Date the OPMR published for",
+            "type": "date",
+            "unit": null
+          },
+          "Generation Availability Margin": {
+            "description": "The amount of generation available after meeting national demand",
+            "title": "Generation Availability Margin",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "Generator Availability": {
+            "description": "The availability of a power plant to produce electricity.",
+            "title": "Generator Availability",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "High Freq Response Requirement": {
+            "description": "This is high frequency response requirement at minimum demand",
+            "title": "High Freq Response Requirement ",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "Maximum IC Export": {
+            "description": "The maximum limit of Interconnector, connected to a System, for the transfer of electricity to the Total System to an External System;",
+            "title": "Maximum interconecctor Export",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "Maximum IC Import": {
+            "description": "The maximum limit of Interconnector, connected to a System, for the transfer of electricity from the Total System from an External System;",
+            "title": "Maximum interconecctor Import",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "Minimum Demand Forecast": {
+            "description": "Minimum Demand Forecast",
+            "title": "Minimum Demand Forecast",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "National Surplus": {
+            "description": "The total generation – demand - OPMR",
+            "title": "National Surplus",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "Negative Reserve": {
+            "description": "This is the sum of the Negative Regulating Reserve Requirement and the Reserve for High Frequency Response Requirement",
+            "title": "Negative Reserve",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "OPMR total": {
+            "description": "the amount of generation, in excess of demand forecast, that is required to meet Nation Grid ESO‘s Day-Ahead Reserve Requirement.",
+            "title": "Operational Planning Margin Requirement (OPMR) Total",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "Operating Reserve provided by ICs": {
+            "description": "This is the operating reserve provided by Interconnectors.",
+            "title": "Operating Reserve provided by interconnectors",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "Peak Demand Forecast": {
+            "description": "The maximum power requirement forecast of the day",
+            "title": "Peak Demand Forecast",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "Publish Date": {
+            "description": "Date the Operational Planning Margin Requirement (OPMR) was published",
+            "title": "Publish Date",
+            "type": "date",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T10:05:10.360304+00:00",
+      "header": [
+        "Publish Date",
+        "Date",
+        "Peak Demand Forecast",
+        "Generator Availability",
+        "Maximum IC Import",
+        "Maximum IC Export",
+        "Generation Availability Margin",
+        "Operating Reserve provided by ICs",
+        "OPMR total",
+        "Constrained Plant",
+        "National Surplus",
+        "Minimum Demand Forecast",
+        "High Freq Response Requirement",
+        "Negative Reserve"
+      ],
+      "last_written_at": "2026-10-08T10:05:10.360304+00:00",
+      "resource_ids": [
+        "0eede912-8820-4c66-a58a-f7436d36b95f"
+      ],
+      "rows": 26828,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [],
+  "key": "daily_opmr",
+  "keys": {
+    "candidates": [],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "daily-opmr",
+  "proposal": {
+    "flags": [],
+    "record_draft": {
+      "encoding": "utf-8",
+      "entity_key": [
+        "publish_date",
+        "date",
+        "peak_demand_forecast",
+        "generator_availability",
+        "maximum_ic_import",
+        "maximum_ic_export",
+        "generation_availability_margin",
+        "operating_reserve_provided_by_ics",
+        "opmr_total",
+        "constrained_plant",
+        "national_surplus",
+        "minimum_demand_forecast",
+        "high_freq_response_requirement",
+        "negative_reserve"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "date",
+              "format": "%Y-%m-%d",
+              "name": "publish_date",
+              "nullable": true,
+              "source": "Publish Date"
+            },
+            {
+              "dtype": "date",
+              "format": "%Y-%m-%d",
+              "name": "date",
+              "nullable": true,
+              "source": "Date"
+            },
+            {
+              "dtype": "int64",
+              "name": "peak_demand_forecast",
+              "nullable": true,
+              "source": "Peak Demand Forecast"
+            },
+            {
+              "dtype": "int64",
+              "name": "generator_availability",
+              "nullable": true,
+              "source": "Generator Availability"
+            },
+            {
+              "dtype": "int64",
+              "name": "maximum_ic_import",
+              "nullable": true,
+              "source": "Maximum IC Import"
+            },
+            {
+              "dtype": "int64",
+              "name": "maximum_ic_export",
+              "nullable": true,
+              "source": "Maximum IC Export"
+            },
+            {
+              "dtype": "int64",
+              "name": "generation_availability_margin",
+              "nullable": true,
+              "source": "Generation Availability Margin"
+            },
+            {
+              "dtype": "int64",
+              "name": "operating_reserve_provided_by_ics",
+              "nullable": true,
+              "source": "Operating Reserve provided by ICs"
+            },
+            {
+              "dtype": "int64",
+              "name": "opmr_total",
+              "nullable": true,
+              "source": "OPMR total"
+            },
+            {
+              "dtype": "int64",
+              "name": "constrained_plant",
+              "nullable": true,
+              "source": "Constrained Plant"
+            },
+            {
+              "dtype": "int64",
+              "name": "national_surplus",
+              "nullable": true,
+              "source": "National Surplus"
+            },
+            {
+              "dtype": "int64",
+              "name": "minimum_demand_forecast",
+              "nullable": true,
+              "source": "Minimum Demand Forecast"
+            },
+            {
+              "dtype": "int64",
+              "name": "high_freq_response_requirement",
+              "nullable": true,
+              "source": "High Freq Response Requirement"
+            },
+            {
+              "dtype": "int64",
+              "name": "negative_reserve",
+              "nullable": true,
+              "source": "Negative Reserve"
+            }
+          ],
+          "header": [
+            "Publish Date",
+            "Date",
+            "Peak Demand Forecast",
+            "Generator Availability",
+            "Maximum IC Import",
+            "Maximum IC Export",
+            "Generation Availability Margin",
+            "Operating Reserve provided by ICs",
+            "OPMR total",
+            "Constrained Plant",
+            "National Surplus",
+            "Minimum Demand Forecast",
+            "High Freq Response Requirement",
+            "Negative Reserve"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T01",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T01",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: Publish Date, Date"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T02",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['publish_date', 'date', 'peak_demand_forecast', 'generator_availability', 'maximum_ic_import', 'maximum_ic_export', 'generation_availability_margin', 'operating_reserve_provided_by_ics', 'opmr_total', 'constrained_plant', 'national_surplus', 'minimum_demand_forecast', 'high_freq_response_requirement', 'negative_reserve'] (no candidate measured unique, so every column); without one, latest stays whole_capture"
+      }
+    ]
+  },
+  "refresh": "daily",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update Frequency",
+        "value": "Daily (Weekdays)"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Generation",
+    "title": "Daily operational planning margin requirement (OPMR)"
+  }
+}

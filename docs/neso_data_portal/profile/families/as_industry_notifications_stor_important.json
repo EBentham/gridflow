@@ -1,0 +1,339 @@
+{
+  "archetype": "EVT",
+  "batch": "AS-2",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/as_industry_notifications_stor_important/2026/10/08/raw_20261008T081624Z_1dbebd85-6b42-4d8f-8542-16a83d17dc14_5e5108a0.csv",
+      "ckan_last_modified": "2025-04-01T07:32:28.323998",
+      "cr": 0,
+      "crlf": 10,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "1dbebd85-6b42-4d8f-8542-16a83d17dc14",
+      "rows": 9,
+      "sampled": false,
+      "size": 2486,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T08:16:24.805499+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 1,
+      "columns": {
+        "Description": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 9,
+            "int64": 9
+          },
+          "examples": [
+            "STOR requirements update",
+            "STOR auction results failure",
+            "STOR auction results timing of publishing"
+          ],
+          "max_len": 318,
+          "null_count": 0,
+          "shapes": {
+            "text": 9
+          }
+        },
+        "Effective From Date Time": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 9,
+            "int64": 9
+          },
+          "examples": [
+            "02/04/2025 05:00",
+            "07/02/2025 05:00",
+            "11/01/2025 05:00"
+          ],
+          "max_len": 16,
+          "null_count": 0,
+          "shapes": {
+            "text": 9
+          }
+        },
+        "Effective To Date Time": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 6,
+            "int64": 6
+          },
+          "examples": [
+            "11/01/2025 07:30",
+            "20/08/2024 05:00",
+            "19/08/2024 05:00"
+          ],
+          "max_len": 16,
+          "null_count": 3,
+          "shapes": {
+            "text": 6
+          }
+        },
+        "Notes": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 7,
+            "int64": 7
+          },
+          "examples": [
+            "Please note that STOR day-ahead requirement has increased to 1700MW from the auc",
+            "There was a technical issue with todays STOR auction resulting in no bids being ",
+            "Due to technical issues, there will be a delay in publishing todays auction resu"
+          ],
+          "max_len": 222,
+          "null_count": 2,
+          "shapes": {
+            "text": 7
+          }
+        },
+        "Notification Issued Date Time": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 9,
+            "int64": 9
+          },
+          "examples": [
+            "01/04/2025 09:00",
+            "07/02/2025 11:20",
+            "07/02/2025 10:00"
+          ],
+          "max_len": 16,
+          "null_count": 0,
+          "shapes": {
+            "text": 9
+          }
+        },
+        "Service": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 9,
+            "int64": 9
+          },
+          "examples": [
+            "STOR"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "text": 9
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "Description": {
+            "description": "Description of the notification.",
+            "title": "Description",
+            "type": "text",
+            "unit": null
+          },
+          "Effective From Date Time": {
+            "description": "The date and time of when the notification will become effective.",
+            "title": "Effective From Date Time",
+            "type": "timestamp",
+            "unit": "YYYY-MM-DDTHH:MM:SS"
+          },
+          "Effective To Date Time": {
+            "description": "The date and time of when the notification is expected to become inactive.",
+            "title": "Effective To Date Time",
+            "type": "timestamp",
+            "unit": "YYYY-MM-DDTHH:MM:SS"
+          },
+          "Notes": {
+            "description": "Any related notes for the notification.",
+            "title": "Notes",
+            "type": "text",
+            "unit": null
+          },
+          "Notification Issued Date Time": {
+            "description": "The date and time of the notification.",
+            "title": "Notification Issued Date Time",
+            "type": "timestamp",
+            "unit": "YYYY-MM-DDTHH:MM:SS"
+          },
+          "Service": {
+            "description": "The service this notification relates to.",
+            "title": "Service",
+            "type": "text",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T08:16:24.805499+00:00",
+      "header": [
+        "Notification Issued Date Time",
+        "Service",
+        "Description",
+        "Effective From Date Time",
+        "Effective To Date Time",
+        "Notes"
+      ],
+      "last_written_at": "2026-10-08T08:16:24.805499+00:00",
+      "resource_ids": [
+        "1dbebd85-6b42-4d8f-8542-16a83d17dc14"
+      ],
+      "rows": 9,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [
+    "sibling_candidate:as_industry_notifications_balancing,as_industry_notifications_dc_dm_dr,as_industry_notifications_sffr_important"
+  ],
+  "key": "as_industry_notifications_stor_important",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Notification Issued Date Time"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Description",
+          "Effective From Date Time"
+        ],
+        "max_duplicates": 0
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "ancillary-services-important-industry-notifications",
+  "proposal": {
+    "flags": [
+      "sibling_candidate:as_industry_notifications_balancing,as_industry_notifications_dc_dm_dr,as_industry_notifications_sffr_important"
+    ],
+    "record_draft": {
+      "eligibility": {
+        "question": "Notification Issued Date Time: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced); Effective From Date Time: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced); Effective To Date Time: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)",
+        "status": "held",
+        "unit": "AS-2"
+      },
+      "encoding": "utf-8",
+      "entity_key": [
+        "notification_issued_date_time"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "notification_issued_date_time",
+              "nullable": true,
+              "source": "Notification Issued Date Time"
+            },
+            {
+              "dtype": "string",
+              "name": "service",
+              "nullable": true,
+              "source": "Service"
+            },
+            {
+              "dtype": "string",
+              "name": "description",
+              "nullable": true,
+              "source": "Description"
+            },
+            {
+              "dtype": "string",
+              "name": "effective_from_date_time",
+              "nullable": true,
+              "source": "Effective From Date Time"
+            },
+            {
+              "dtype": "string",
+              "name": "effective_to_date_time",
+              "nullable": true,
+              "source": "Effective To Date Time"
+            },
+            {
+              "dtype": "string",
+              "name": "notes",
+              "nullable": true,
+              "source": "Notes"
+            }
+          ],
+          "header": [
+            "Notification Issued Date Time",
+            "Service",
+            "Description",
+            "Effective From Date Time",
+            "Effective To Date Time",
+            "Notes"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T04",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "held",
+        "field": "column 'Notification Issued Date Time'",
+        "id": "T01",
+        "kind": "time_semantics",
+        "question": "Notification Issued Date Time: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Effective From Date Time'",
+        "id": "T02",
+        "kind": "time_semantics",
+        "question": "Effective From Date Time: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Effective To Date Time'",
+        "id": "T03",
+        "kind": "time_semantics",
+        "question": "Effective To Date Time: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T04",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: Notification Issued Date Time, Effective From Date Time, Effective To Date Time"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T05",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['notification_issued_date_time'] (measured unique in 1 capture(s)); without one, latest stays whole_capture"
+      }
+    ]
+  },
+  "refresh": "adhoc",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update frequency",
+        "value": "Ad hoc"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Ancillary services",
+    "title": "Ancillary Services Important Industry Notifications"
+  }
+}

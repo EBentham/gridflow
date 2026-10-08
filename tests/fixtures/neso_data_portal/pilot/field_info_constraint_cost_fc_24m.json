@@ -1,0 +1,56 @@
+{
+  "family": "constraint_cost_fc_24m",
+  "package": "24-months-ahead-constraint-cost-forecast",
+  "resource_id": "28b85d3f-a1cc-4bb9-80af-600f2cca266a",
+  "selected_by": "the family's datastore_active resource in the snapshot with the maximum (metadata_modified, id)",
+  "snapshot_id": "20261006T195819Z",
+  "fields": [
+    {
+      "type": "int",
+      "id": "_id"
+    },
+    {
+      "info": {
+        "comment": "",
+        "description": "The month and year in the format MMM-YY",
+        "title": "Month",
+        "type": "string",
+        "example": "Dec-25",
+        "unit": ""
+      },
+      "type": "text",
+      "id": "Month"
+    },
+    {
+      "info": {
+        "comment": "",
+        "description": "The modelled constraint cost in £m for that month.",
+        "title": "Constraint Cost (£m)",
+        "type": "number",
+        "example": "109.4",
+        "unit": "£m"
+      },
+      "type": "numeric",
+      "id": "Constraint Cost"
+    }
+  ],
+  "total": 24,
+  "include_total": true,
+  "records_format": "objects",
+  "records_returned": 0,
+  "request": {
+    "action": "datastore_search",
+    "params": {
+      "limit": "0",
+      "resource_id": "28b85d3f-a1cc-4bb9-80af-600f2cca266a"
+    },
+    "started_at": "2026-10-08T12:02:29.427519Z",
+    "finished_at": "2026-10-08T12:02:59.423793Z",
+    "status_code": 200,
+    "headers": {
+      "content-type": "application/json;charset=utf-8",
+      "date": "Thu, 08 Oct 2026 12:02:59 GMT"
+    },
+    "body_sha256": "d7f24d3765eb94c397f21776206e21b40635de86558b55ea87bf77398975dcaa"
+  }
+}

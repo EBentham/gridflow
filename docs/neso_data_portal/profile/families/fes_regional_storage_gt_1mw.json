@@ -1,0 +1,399 @@
+{
+  "archetype": "SCN",
+  "batch": "SCN-1",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/fes_regional_storage_gt_1mw/2026/10/08/raw_20261008T105736Z_0465e5a3-ff3a-4e95-ac66-f59afd54cfe3_3803f350.csv",
+      "ckan_last_modified": "2023-07-07T13:36:43.988472",
+      "cr": 0,
+      "crlf": 14043,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "0465e5a3-ff3a-4e95-ac66-f59afd54cfe3",
+      "rows": 14042,
+      "sampled": false,
+      "size": 530184,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:57:36.424151+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/fes_regional_storage_gt_1mw/2026/10/08/raw_20261008T105739Z_eba5fd0a-ea22-4c00-84c2-35260e328736_1f5a5f65.csv",
+      "ckan_last_modified": "2024-07-15T06:45:04.345465",
+      "cr": 0,
+      "crlf": 10628,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "eba5fd0a-ea22-4c00-84c2-35260e328736",
+      "rows": 10627,
+      "sampled": false,
+      "size": 414317,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:57:39.027979+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 2,
+      "columns": {
+        "Capacity": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 15230
+          },
+          "examples": [
+            "5.347",
+            "13.3",
+            "0.303"
+          ],
+          "max_len": 7,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 15230,
+            "int": 9439
+          }
+        },
+        "location": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 24669,
+            "int64": 24669
+          },
+          "examples": [
+            "ALVE1",
+            "AMEM_1",
+            "ARMO_P"
+          ],
+          "max_len": 9,
+          "null_count": 0,
+          "shapes": {
+            "text": 24669
+          }
+        },
+        "scenario": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 24669,
+            "int64": 24669
+          },
+          "examples": [
+            "CF",
+            "CT",
+            "ST"
+          ],
+          "max_len": 2,
+          "null_count": 0,
+          "shapes": {
+            "text": 24669
+          }
+        },
+        "summam": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "0"
+          ],
+          "max_len": 1,
+          "null_count": 0,
+          "shapes": {
+            "int": 24669
+          }
+        },
+        "summpm": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 24304
+          },
+          "examples": [
+            "-1.877",
+            "-4.669",
+            "-0.106"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 24304,
+            "int": 365
+          }
+        },
+        "tech": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 24669,
+            "int64": 24669
+          },
+          "examples": [
+            "Battery",
+            "LAES",
+            "CAES"
+          ],
+          "max_len": 14,
+          "null_count": 0,
+          "shapes": {
+            "text": 24669
+          }
+        },
+        "wintpk": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "0"
+          ],
+          "max_len": 1,
+          "null_count": 0,
+          "shapes": {
+            "int": 24669
+          }
+        },
+        "year": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "22",
+            "23",
+            "24"
+          ],
+          "max_len": 2,
+          "null_count": 0,
+          "shapes": {
+            "int": 24669
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "Capacity": {
+            "description": "Total aggregate capacity of storage equal or greater than 1 MW of this technology type associated with this location.",
+            "title": "Capacity (available rate of charge) of storage",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "location": {
+            "description": "Connection location to the electricity system.",
+            "title": "Location",
+            "type": "text",
+            "unit": null
+          },
+          "scenario": {
+            "description": "The pathway to which this data corresponds.",
+            "title": "FES Pathway",
+            "type": "text",
+            "unit": null
+          },
+          "summam": {
+            "description": "Forecast demand at summer minimum morning demand. This shows whether the storage sites are filling at this time.  Negative values indicate the rate of filling.",
+            "title": "Forecast demand at summer minimum morning demand",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "summpm": {
+            "description": "Forecast demand at summer minimum afternoon demand. This shows whether the storage sites are filling at this time.  Negative values indicate the rate of filling.",
+            "title": "Forecast demand at summer minimum afternoon demand",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "tech": {
+            "description": "The type of storage technology represented by this entry.",
+            "title": "Technology Type",
+            "type": "text",
+            "unit": null
+          },
+          "wintpk": {
+            "description": "Forecast demand at winter peak demand. This shows whether the storage sites are filling at this time. Negative values indicate the rate of filling.",
+            "title": "Forecast demand at winter peak demand",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "year": {
+            "description": "Two character value indicating the year that this data relates to i.e. \"21\" = 2021, \"50\" = 2050.",
+            "title": "Year",
+            "type": "int4",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T10:57:36.424151+00:00",
+      "header": [
+        "scenario",
+        "tech",
+        "year",
+        "location",
+        "Capacity",
+        "wintpk",
+        "summam",
+        "summpm"
+      ],
+      "last_written_at": "2026-10-08T10:57:39.027979+00:00",
+      "resource_ids": [
+        "0465e5a3-ff3a-4e95-ac66-f59afd54cfe3",
+        "eba5fd0a-ea22-4c00-84c2-35260e328736"
+      ],
+      "rows": 24669,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [
+    "sibling_candidate:fes_regional_storage_gt_1mw_pre2023"
+  ],
+  "key": "fes_regional_storage_gt_1mw",
+  "keys": {
+    "candidates": [],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "regional-breakdown-of-fes-data-electricity",
+  "proposal": {
+    "flags": [
+      "sibling_candidate:fes_regional_storage_gt_1mw_pre2023"
+    ],
+    "record_draft": {
+      "eligibility": {
+        "question": "year: a numeric column with no vendor unit",
+        "status": "held",
+        "unit": "SCN-1"
+      },
+      "encoding": "utf-8",
+      "entity_key": [
+        "scenario",
+        "tech",
+        "year_vendor",
+        "location",
+        "capacity",
+        "wintpk",
+        "summam",
+        "summpm"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "scenario",
+              "nullable": true,
+              "source": "scenario"
+            },
+            {
+              "dtype": "string",
+              "name": "tech",
+              "nullable": true,
+              "source": "tech"
+            },
+            {
+              "dtype": "int64",
+              "name": "year_vendor",
+              "nullable": true,
+              "source": "year"
+            },
+            {
+              "dtype": "string",
+              "name": "location",
+              "nullable": true,
+              "source": "location"
+            },
+            {
+              "dtype": "float64",
+              "name": "capacity",
+              "nullable": true,
+              "source": "Capacity"
+            },
+            {
+              "dtype": "float64",
+              "name": "wintpk",
+              "nullable": true,
+              "source": "wintpk"
+            },
+            {
+              "dtype": "float64",
+              "name": "summam",
+              "nullable": true,
+              "source": "summam"
+            },
+            {
+              "dtype": "float64",
+              "name": "summpm",
+              "nullable": true,
+              "source": "summpm"
+            }
+          ],
+          "header": [
+            "scenario",
+            "tech",
+            "year",
+            "location",
+            "Capacity",
+            "wintpk",
+            "summam",
+            "summpm"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T02",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "held",
+        "field": "column 'year'.unit",
+        "id": "T01",
+        "kind": "unit",
+        "question": "year: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T02",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: none"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T03",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['scenario', 'tech', 'year_vendor', 'location', 'capacity', 'wintpk', 'summam', 'summpm'] (no candidate measured unique, so every column); without one, latest stays whole_capture"
+      }
+    ]
+  },
+  "refresh": "adhoc",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update frequency",
+        "value": "Ad hoc"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "FES: Pathways to Net Zero",
+    "title": "Regional breakdown of FES data (Electricity)"
+  }
+}

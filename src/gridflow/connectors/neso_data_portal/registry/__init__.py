@@ -553,8 +553,11 @@ def frozen_key_violations(registry: Registry, frozen: Iterable[FrozenKey]) -> li
 def key_collisions(registry: Registry, registered: Iterable[tuple[str, str]]) -> list[str]:
     """Return registry keys that collide with registered silver datasets (P-3).
 
-    Every non-legacy key must be absent from every source's registered dataset
-    names; a legacy key may appear only under ``neso_data_portal``.
+    A key collides only when **another source** registers the same dataset
+    name. Every registry key may appear under ``neso_data_portal``: the legacy
+    three through their bespoke transformers, a recorded family through its
+    generated transformer (ADR-034 P-15). Which keys are registered there is
+    pinned separately.
 
     Args:
         registry: The loaded registry.
@@ -569,7 +572,7 @@ def key_collisions(registry: Registry, registered: Iterable[tuple[str, str]]) ->
     problems: list[str] = []
     for key in sorted(registry.families):
         sources = owners.get(key, set())
-        foreign = sources - {"neso_data_portal"} if key in LEGACY_KEYS else sources
+        foreign = sources - {"neso_data_portal"}
         if foreign:
             problems.append(f"registry key {key!r} collides with datasets of {sorted(foreign)}")
     return problems

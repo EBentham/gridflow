@@ -1,0 +1,2630 @@
+{
+  "archetype": "EVT",
+  "batch": "AS-4",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/dynamic_containment_dc_dr_dm_linear/2026/10/08/raw_20261008T101120Z_26aefbcc-fce0-403f-80e1-4a26af3fe84b_51a66faa.csv",
+      "ckan_last_modified": "2023-01-23T15:00:17.792587",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 23155,
+      "parse_error": null,
+      "resource_id": "26aefbcc-fce0-403f-80e1-4a26af3fe84b",
+      "rows": 23154,
+      "sampled": false,
+      "size": 9437913,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T10:11:20.641555+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 1,
+      "columns": {
+        "10P": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 18083
+          },
+          "examples": [
+            "0",
+            "5",
+            "8"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 18083,
+            "int": 5071
+          }
+        },
+        "10V": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "0",
+            "491",
+            "470"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 23154
+          }
+        },
+        "11P": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 18083
+          },
+          "examples": [
+            "0",
+            "5",
+            "8"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 18083,
+            "int": 5071
+          }
+        },
+        "11V": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "0",
+            "489",
+            "469"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 23154
+          }
+        },
+        "12P": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 18072
+          },
+          "examples": [
+            "0",
+            "6",
+            "5"
+          ],
+          "max_len": 6,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 18072,
+            "int": 5082
+          }
+        },
+        "12V": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "0",
+            "489",
+            "469"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 23154
+          }
+        },
+        "13P": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 18072
+          },
+          "examples": [
+            "0",
+            "6",
+            "5"
+          ],
+          "max_len": 6,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 18072,
+            "int": 5082
+          }
+        },
+        "13V": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "0",
+            "487",
+            "468"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 23154
+          }
+        },
+        "14P": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 18072
+          },
+          "examples": [
+            "0",
+            "7",
+            "8"
+          ],
+          "max_len": 6,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 18072,
+            "int": 5082
+          }
+        },
+        "14V": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "0",
+            "487",
+            "468"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 23154
+          }
+        },
+        "15P": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 18072
+          },
+          "examples": [
+            "0",
+            "7",
+            "8"
+          ],
+          "max_len": 6,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 18072,
+            "int": 5082
+          }
+        },
+        "15V": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "0",
+            "485",
+            "467"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 23154
+          }
+        },
+        "16P": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 18041
+          },
+          "examples": [
+            "0",
+            "8",
+            "9"
+          ],
+          "max_len": 6,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 18041,
+            "int": 5113
+          }
+        },
+        "16V": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "0",
+            "485",
+            "467"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 23154
+          }
+        },
+        "17P": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 18041
+          },
+          "examples": [
+            "0",
+            "8",
+            "9"
+          ],
+          "max_len": 6,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 18041,
+            "int": 5113
+          }
+        },
+        "17V": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "0",
+            "483",
+            "466"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 23154
+          }
+        },
+        "18P": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 18077
+          },
+          "examples": [
+            "0",
+            "9",
+            "10"
+          ],
+          "max_len": 6,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 18077,
+            "int": 5077
+          }
+        },
+        "18V": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "0",
+            "483",
+            "466"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 23154
+          }
+        },
+        "19P": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 18077
+          },
+          "examples": [
+            "0",
+            "9",
+            "10"
+          ],
+          "max_len": 6,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 18077,
+            "int": 5077
+          }
+        },
+        "19V": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "0",
+            "481",
+            "465"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 23154
+          }
+        },
+        "1P": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "0"
+          ],
+          "max_len": 1,
+          "null_count": 0,
+          "shapes": {
+            "int": 23154
+          }
+        },
+        "1V": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1100",
+            "0",
+            "720"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 23154
+          }
+        },
+        "20P": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 18094
+          },
+          "examples": [
+            "0",
+            "10",
+            "11"
+          ],
+          "max_len": 6,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 18094,
+            "int": 5060
+          }
+        },
+        "20V": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "0",
+            "481",
+            "465"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 23154
+          }
+        },
+        "21P": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 18094
+          },
+          "examples": [
+            "0",
+            "10",
+            "11"
+          ],
+          "max_len": 6,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 18094,
+            "int": 5060
+          }
+        },
+        "21V": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "0",
+            "479",
+            "464"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 23154
+          }
+        },
+        "22P": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 18121
+          },
+          "examples": [
+            "0",
+            "11",
+            "12"
+          ],
+          "max_len": 6,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 18121,
+            "int": 5033
+          }
+        },
+        "22V": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "0",
+            "479",
+            "464"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 23154
+          }
+        },
+        "23P": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 18121
+          },
+          "examples": [
+            "0",
+            "11",
+            "12"
+          ],
+          "max_len": 6,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 18121,
+            "int": 5033
+          }
+        },
+        "23V": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "0",
+            "447",
+            "429"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 23154
+          }
+        },
+        "24P": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 18113
+          },
+          "examples": [
+            "0",
+            "11",
+            "13"
+          ],
+          "max_len": 6,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 18113,
+            "int": 5041
+          }
+        },
+        "24V": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "0",
+            "447",
+            "429"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 23154
+          }
+        },
+        "25P": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 18113
+          },
+          "examples": [
+            "0",
+            "11",
+            "13"
+          ],
+          "max_len": 6,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 18113,
+            "int": 5041
+          }
+        },
+        "25V": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "0",
+            "415",
+            "395"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 23154
+          }
+        },
+        "26P": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 18099
+          },
+          "examples": [
+            "0",
+            "12",
+            "14"
+          ],
+          "max_len": 6,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 18099,
+            "int": 5055
+          }
+        },
+        "26V": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "0",
+            "415",
+            "395"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 23154
+          }
+        },
+        "27P": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 18099
+          },
+          "examples": [
+            "0",
+            "12",
+            "14"
+          ],
+          "max_len": 6,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 18099,
+            "int": 5055
+          }
+        },
+        "27V": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "0",
+            "382",
+            "360"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 23154
+          }
+        },
+        "28P": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 17687
+          },
+          "examples": [
+            "0",
+            "13",
+            "16"
+          ],
+          "max_len": 6,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 17687,
+            "int": 5467
+          }
+        },
+        "28V": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "0",
+            "382",
+            "360"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 23154
+          }
+        },
+        "29P": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 17687
+          },
+          "examples": [
+            "0",
+            "13",
+            "16"
+          ],
+          "max_len": 6,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 17687,
+            "int": 5467
+          }
+        },
+        "29V": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "0",
+            "290",
+            "270"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 23154
+          }
+        },
+        "2P": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 21233
+          },
+          "examples": [
+            "17",
+            "17.01",
+            "999.99"
+          ],
+          "max_len": 6,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 21233,
+            "int": 1921
+          }
+        },
+        "2V": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1100",
+            "0",
+            "720"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 23154
+          }
+        },
+        "30P": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 18116
+          },
+          "examples": [
+            "0",
+            "1000",
+            "109"
+          ],
+          "max_len": 6,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 18116,
+            "int": 5038
+          }
+        },
+        "30V": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "0",
+            "290",
+            "270"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 23154
+          }
+        },
+        "31P": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 3122
+          },
+          "examples": [
+            "0",
+            "109",
+            "112"
+          ],
+          "max_len": 6,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 3122,
+            "int": 20032
+          }
+        },
+        "31V": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "0"
+          ],
+          "max_len": 1,
+          "null_count": 0,
+          "shapes": {
+            "int": 23154
+          }
+        },
+        "32P": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 3269
+          },
+          "examples": [
+            "0",
+            "1000",
+            "999.99"
+          ],
+          "max_len": 6,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 3269,
+            "int": 19885
+          }
+        },
+        "32V": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "0"
+          ],
+          "max_len": 1,
+          "null_count": 0,
+          "shapes": {
+            "int": 23154
+          }
+        },
+        "3P": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 19129
+          },
+          "examples": [
+            "17",
+            "17.01",
+            "0"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 19129,
+            "int": 4025
+          }
+        },
+        "3V": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "0",
+            "497",
+            "473"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 23154
+          }
+        },
+        "4P": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 20874
+          },
+          "examples": [
+            "999.99",
+            "0",
+            "1.91"
+          ],
+          "max_len": 6,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 20874,
+            "int": 2280
+          }
+        },
+        "4V": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "0",
+            "497",
+            "473"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 23154
+          }
+        },
+        "5P": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 18095
+          },
+          "examples": [
+            "0",
+            "2",
+            "3"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 18095,
+            "int": 5059
+          }
+        },
+        "5V": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "0",
+            "495",
+            "472"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 23154
+          }
+        },
+        "6P": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 18094
+          },
+          "examples": [
+            "0",
+            "3",
+            "5"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 18094,
+            "int": 5060
+          }
+        },
+        "6V": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "0",
+            "495",
+            "472"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 23154
+          }
+        },
+        "7P": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 18094
+          },
+          "examples": [
+            "0",
+            "3",
+            "5"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 18094,
+            "int": 5060
+          }
+        },
+        "7V": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "0",
+            "493",
+            "471"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 23154
+          }
+        },
+        "8P": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 18021
+          },
+          "examples": [
+            "0",
+            "4",
+            "6"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 18021,
+            "int": 5133
+          }
+        },
+        "8V": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "0",
+            "493",
+            "471"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 23154
+          }
+        },
+        "9P": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 18021
+          },
+          "examples": [
+            "0",
+            "4",
+            "6"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 18021,
+            "int": 5133
+          }
+        },
+        "9V": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "0",
+            "491",
+            "470"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 23154
+          }
+        },
+        "BiddingLevelName": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 23154,
+            "int64": 23154
+          },
+          "examples": [
+            "DCL",
+            "DCH",
+            "DMH"
+          ],
+          "max_len": 3,
+          "null_count": 0,
+          "shapes": {
+            "text": 23154
+          }
+        },
+        "DeliveryEnd": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 23154,
+            "int64": 23154
+          },
+          "examples": [
+            "2021-09-16T03:00:00",
+            "2021-09-16T07:00:00",
+            "2021-09-16T11:00:00"
+          ],
+          "max_len": 19,
+          "null_count": 0,
+          "shapes": {
+            "naive_datetime": 23154
+          }
+        },
+        "DeliveryStart": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 23154,
+            "int64": 23154
+          },
+          "examples": [
+            "2021-09-15T23:00:00",
+            "2021-09-16T03:00:00",
+            "2021-09-16T07:00:00"
+          ],
+          "max_len": 19,
+          "null_count": 0,
+          "shapes": {
+            "naive_datetime": 23154
+          }
+        },
+        "EFA": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1",
+            "2",
+            "3"
+          ],
+          "max_len": 1,
+          "null_count": 0,
+          "shapes": {
+            "int": 23154
+          }
+        },
+        "ExecutedVolume": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "467",
+            "374",
+            "380"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 23154
+          }
+        },
+        "MarketName": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 23154,
+            "int64": 23154
+          },
+          "examples": [
+            "DCL",
+            "DCH",
+            "DMH"
+          ],
+          "max_len": 3,
+          "null_count": 0,
+          "shapes": {
+            "text": 23154
+          }
+        },
+        "MemberName": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 23154,
+            "int64": 23154
+          },
+          "examples": [
+            "NATIONAL GRID ESO"
+          ],
+          "max_len": 17,
+          "null_count": 0,
+          "shapes": {
+            "text": 23154
+          }
+        },
+        "OrderEntryTime": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 23154,
+            "int64": 23154
+          },
+          "examples": [
+            "2021-09-09T09:05:00",
+            "2021-09-09T09:07:00",
+            "2021-09-17T10:50:00"
+          ],
+          "max_len": 19,
+          "null_count": 0,
+          "shapes": {
+            "naive_datetime": 23154
+          }
+        },
+        "OrderEntryUser": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 23154,
+            "int64": 23154
+          },
+          "examples": [
+            "NGESO-A",
+            "NGESO-B",
+            "NGESO-D"
+          ],
+          "max_len": 7,
+          "null_count": 0,
+          "shapes": {
+            "text": 23154
+          }
+        },
+        "OrderID": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "100000000103201",
+            "100000000103203",
+            "100000000107736"
+          ],
+          "max_len": 15,
+          "null_count": 0,
+          "shapes": {
+            "int": 23154
+          }
+        },
+        "OrderPeriodID": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "100000000124255",
+            "100000000124257",
+            "100000000124259"
+          ],
+          "max_len": 15,
+          "null_count": 0,
+          "shapes": {
+            "int": 23154
+          }
+        },
+        "Portfolio": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 23154,
+            "int64": 23154
+          },
+          "examples": [
+            "NGESO-T001"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "text": 23154
+          }
+        },
+        "SettlementCurrency": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 23154,
+            "int64": 23154
+          },
+          "examples": [
+            "GBP"
+          ],
+          "max_len": 3,
+          "null_count": 0,
+          "shapes": {
+            "text": 23154
+          }
+        },
+        "TradeID": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "100000000124255",
+            "100000000124257",
+            "100000000124259"
+          ],
+          "max_len": 15,
+          "null_count": 0,
+          "shapes": {
+            "int": 23154
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "10P": {
+            "description": "The price of point 10 on the bid curve.",
+            "title": "10P",
+            "type": "numeric",
+            "unit": "£/MW"
+          },
+          "10V": {
+            "description": "The volume of point 10 on the bid curve.",
+            "title": "10V",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "11P": {
+            "description": "The price of point 11 on the bid curve.",
+            "title": "11P",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "11V": {
+            "description": "The volume of point 11 on the bid curve.",
+            "title": "11V",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "12P": {
+            "description": "The price of point 12 on the bid curve.",
+            "title": "12P",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "12V": {
+            "description": "The volume of point 12 on the bid curve.",
+            "title": "12V",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "13P": {
+            "description": "The price of point 13 on the bid curve.",
+            "title": "13P",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "13V": {
+            "description": "The volume of point 13 on the bid curve.",
+            "title": "13V",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "14P": {
+            "description": "The price of point 14 on the bid curve.",
+            "title": "14P",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "14V": {
+            "description": "The volume of point 14 on the bid curve.",
+            "title": "14V",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "15P": {
+            "description": "The price of point 15 on the bid curve.",
+            "title": "15P",
+            "type": "numeric",
+            "unit": "£/MW"
+          },
+          "15V": {
+            "description": "The volume of point 15 on the bid curve.",
+            "title": "15V",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "16P": {
+            "description": "The price of point 16 on the bid curve.",
+            "title": "16P",
+            "type": "numeric",
+            "unit": "£/MW"
+          },
+          "16V": {
+            "description": "The volume of point 16 on the bid curve.",
+            "title": "16V",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "17P": {
+            "description": "The price of point 17 on the bid curve.",
+            "title": "17P",
+            "type": "numeric",
+            "unit": "£/MW"
+          },
+          "17V": {
+            "description": "The volume of point 17 on the bid curve.",
+            "title": "17V",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "18P": {
+            "description": "The price of point 18 on the bid curve.",
+            "title": "18P",
+            "type": "numeric",
+            "unit": "£/MW"
+          },
+          "18V": {
+            "description": "The volume of point 18 on the bid curve.",
+            "title": "18V",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "19P": {
+            "description": "The price of point 19 on the bid curve.",
+            "title": "19P",
+            "type": "numeric",
+            "unit": "£/MW"
+          },
+          "19V": {
+            "description": "The volume of point 19 on the bid curve.",
+            "title": "19V",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "1P": {
+            "description": "The price of point 1 on the bid curve.",
+            "title": "1P",
+            "type": "numeric",
+            "unit": "£/MW"
+          },
+          "1V": {
+            "description": "The volume of point 1 on the bid curve.",
+            "title": "1V",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "20P": {
+            "description": "The price of point 20 on the bid curve.",
+            "title": "20P",
+            "type": "numeric",
+            "unit": "£/MW"
+          },
+          "20V": {
+            "description": "The volume of point 20 on the bid curve.",
+            "title": "20V",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "21P": {
+            "description": "The price of point 21 on the bid curve.",
+            "title": "21P",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "21V": {
+            "description": "The volume of point 21 on the bid curve.",
+            "title": "21V",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "22P": {
+            "description": "The price of point 22 on the bid curve.",
+            "title": "22P",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "22V": {
+            "description": "The volume of point 22 on the bid curve.",
+            "title": "22V",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "23P": {
+            "description": "The price of point 23 on the bid curve.",
+            "title": "23P",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "23V": {
+            "description": "The volume of point 23 on the bid curve.",
+            "title": "23V",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "24P": {
+            "description": "The price of point 24 on the bid curve.",
+            "title": "24P",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "24V": {
+            "description": "The volume of point 24 on the bid curve.",
+            "title": "24V",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "25P": {
+            "description": "The price of point 25 on the bid curve.",
+            "title": "25P",
+            "type": "numeric",
+            "unit": "£/MW"
+          },
+          "25V": {
+            "description": "The volume of point 25 on the bid curve.",
+            "title": "25V",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "26P": {
+            "description": "The price of point 26 on the bid curve.",
+            "title": "26P",
+            "type": "numeric",
+            "unit": "£/MW"
+          },
+          "26V": {
+            "description": "The volume of point 26 on the bid curve.",
+            "title": "26V",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "27P": {
+            "description": "The price of point 27 on the bid curve.",
+            "title": "27P",
+            "type": "numeric",
+            "unit": "£/MW"
+          },
+          "27V": {
+            "description": "The volume of point 27 on the bid curve.",
+            "title": "27V",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "28P": {
+            "description": "The price of point 28 on the bid curve.",
+            "title": "28P",
+            "type": "numeric",
+            "unit": "£/MW"
+          },
+          "28V": {
+            "description": "The volume of point 28 on the bid curve.",
+            "title": "28V",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "29P": {
+            "description": "The price of point 29 on the bid curve.",
+            "title": "29P",
+            "type": "numeric",
+            "unit": "£/MW"
+          },
+          "29V": {
+            "description": "The volume of point 29 on the bid curve.",
+            "title": "29V",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "2P": {
+            "description": "The price of point 2 on the bid curve.",
+            "title": "2P",
+            "type": "numeric",
+            "unit": "£/MW"
+          },
+          "2V": {
+            "description": "The volume of point 2 on the bid curve.",
+            "title": "2V",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "30P": {
+            "description": "The price of point 30 on the bid curve.",
+            "title": "30P",
+            "type": "numeric",
+            "unit": "£/MW"
+          },
+          "30V": {
+            "description": "The volume of point 30 on the bid curve.",
+            "title": "30V",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "31P": {
+            "description": "The price of point 31 on the bid curve.",
+            "title": "31P",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "31V": {
+            "description": "The volume of point 31 on the bid curve.",
+            "title": "31V",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "32P": {
+            "description": "The price of point 32 on the bid curve.",
+            "title": "32P",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "32V": {
+            "description": "The volume of point 32 on the bid curve.",
+            "title": "32V",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "3P": {
+            "description": "The price of point 3 on the bid curve.",
+            "title": "3P",
+            "type": "numeric",
+            "unit": "£/MW"
+          },
+          "3V": {
+            "description": "The volume of point 3 on the bid curve.",
+            "title": "3V",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "4P": {
+            "description": "The price of point 4 on the bid curve.",
+            "title": "4P",
+            "type": "numeric",
+            "unit": "£/MW"
+          },
+          "4V": {
+            "description": "The volume of point 4 on the bid curve.",
+            "title": "4V",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "5P": {
+            "description": "test",
+            "title": "5P",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "5V": {
+            "description": "test",
+            "title": "5V",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "6P": {
+            "description": "The price of point 6 on the bid curve.",
+            "title": "6P",
+            "type": "numeric",
+            "unit": "£/MW"
+          },
+          "6V": {
+            "description": "The volume of point 6 on the bid curve.",
+            "title": "6V",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "7P": {
+            "description": "The price of point 7 on the bid curve.",
+            "title": "7P",
+            "type": "numeric",
+            "unit": "£/MW"
+          },
+          "7V": {
+            "description": "The volume of point 7 on the bid curve.",
+            "title": "7V",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "8P": {
+            "description": "The price of point 8 on the bid curve.",
+            "title": "8P",
+            "type": "numeric",
+            "unit": "£/MW"
+          },
+          "8V": {
+            "description": "The volume of point 8 on the bid curve.",
+            "title": "8V",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "9P": {
+            "description": "The price of point 9 on the bid curve.",
+            "title": "9P",
+            "type": "numeric",
+            "unit": "£/MW"
+          },
+          "9V": {
+            "description": "The volume of point 9 on the bid curve.",
+            "title": "9V",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "BiddingLevelName": {
+            "description": "The market for which the bid is in relation to. The choices are DCL (Dynamic Containment Low Frequency), DCH (Dynamic Containment High Frequency), DRL (Dynamic Regulation Low Frequency), DRH (Dynamic Regulation High Frequency), DML (Dynamic Moderation Low Frequency) and DMH (Dynamic Moderation High ",
+            "title": "Bidding Level Name",
+            "type": "text",
+            "unit": null
+          },
+          "DeliveryEnd": {
+            "description": "The time from which delivery of FFR will end",
+            "title": "Delivery End",
+            "type": "timestamp",
+            "unit": null
+          },
+          "DeliveryStart": {
+            "description": "The time from which delivery of FFR will commence",
+            "title": "Delivery Start",
+            "type": "timestamp",
+            "unit": null
+          },
+          "EFA": {
+            "description": "The week is split into 42 blocks, with 6 four-hour blocks each day",
+            "title": "Electricity Forward Agreement (EFA) block number",
+            "type": "numeric",
+            "unit": null
+          },
+          "ExecutedVolume": {
+            "description": "The volume of the order which is executed",
+            "title": "Executed Volume",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "MarketName": {
+            "description": "The market for which the bid is in relation to. The choices are DCL (Dynamic Containment Low Frequency), DCH (Dynamic Containment High Frequency), DRL (Dynamic Regulation Low Frequency), DRH (Dynamic Regulation High Frequency), DML (Dynamic Moderation Low Frequency) and DMH (Dynamic Moderation High ",
+            "title": "Market Name",
+            "type": "text",
+            "unit": null
+          },
+          "MemberName": {
+            "description": "The member of the trial who submitted the bid",
+            "title": "Member Name",
+            "type": "text",
+            "unit": null
+          },
+          "OrderEntryTime": {
+            "description": "The time at which the bid was submitted",
+            "title": "Order Entry Time",
+            "type": "timestamp",
+            "unit": null
+          },
+          "OrderEntryUser": {
+            "description": "The user who submitted the entry",
+            "title": "Order Entry User",
+            "type": "text",
+            "unit": null
+          },
+          "OrderID": {
+            "description": "The ID for the submitted bid in the auction",
+            "title": "Order ID",
+            "type": "numeric",
+            "unit": null
+          },
+          "OrderPeriodID": {
+            "description": "The ID submitted with this bid",
+            "title": "Order Period ID",
+            "type": "numeric",
+            "unit": null
+          },
+          "Portfolio": {
+            "description": "The portfolio associated with the FFR provider",
+            "title": "Portfolio",
+            "type": "text",
+            "unit": null
+          },
+          "SettlementCurrency": {
+            "description": "The currency in which the bid was submitted",
+            "title": "Settlement Currency",
+            "type": "text",
+            "unit": null
+          },
+          "TradeID": {
+            "description": "Identical to the previous column",
+            "title": "Trade ID",
+            "type": "numeric",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T10:11:20.641555+00:00",
+      "header": [
+        "MarketName",
+        "BiddingLevelName",
+        "MemberName",
+        "OrderID",
+        "Portfolio",
+        "OrderEntryTime",
+        "OrderEntryUser",
+        "SettlementCurrency",
+        "OrderPeriodID",
+        "TradeID",
+        "EFA",
+        "DeliveryStart",
+        "DeliveryEnd",
+        "ExecutedVolume",
+        "1P",
+        "1V",
+        "2P",
+        "2V",
+        "3P",
+        "3V",
+        "4P",
+        "4V",
+        "5P",
+        "5V",
+        "6P",
+        "6V",
+        "7P",
+        "7V",
+        "8P",
+        "8V",
+        "9P",
+        "9V",
+        "10P",
+        "10V",
+        "11P",
+        "11V",
+        "12P",
+        "12V",
+        "13P",
+        "13V",
+        "14P",
+        "14V",
+        "15P",
+        "15V",
+        "16P",
+        "16V",
+        "17P",
+        "17V",
+        "18P",
+        "18V",
+        "19P",
+        "19V",
+        "20P",
+        "20V",
+        "21P",
+        "21V",
+        "22P",
+        "22V",
+        "23P",
+        "23V",
+        "24P",
+        "24V",
+        "25P",
+        "25V",
+        "26P",
+        "26V",
+        "27P",
+        "27V",
+        "28P",
+        "28V",
+        "29P",
+        "29V",
+        "30P",
+        "30V",
+        "31P",
+        "31V",
+        "32P",
+        "32V"
+      ],
+      "last_written_at": "2026-10-08T10:11:20.641555+00:00",
+      "resource_ids": [
+        "26aefbcc-fce0-403f-80e1-4a26af3fe84b"
+      ],
+      "rows": 23154,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [],
+  "key": "dynamic_containment_dc_dr_dm_linear",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 1,
+        "columns": [
+          "OrderPeriodID"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 1,
+        "columns": [
+          "TradeID"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 1,
+        "columns": [
+          "MarketName",
+          "DeliveryStart"
+        ],
+        "max_duplicates": 0
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "dynamic-containment-data",
+  "proposal": {
+    "flags": [],
+    "record_draft": {
+      "eligibility": {
+        "question": "OrderID: a numeric column with no vendor unit; OrderEntryTime: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced); OrderPeriodID: a numeric column with no vendor unit; TradeID: a numeric column with no vendor unit; EFA: a numeric column with no vendor unit; DeliveryStart: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced); DeliveryEnd: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)",
+        "status": "held",
+        "unit": "AS-4"
+      },
+      "encoding": "utf-8",
+      "entity_key": [
+        "orderperiodid"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "marketname",
+              "nullable": true,
+              "source": "MarketName"
+            },
+            {
+              "dtype": "string",
+              "name": "biddinglevelname",
+              "nullable": true,
+              "source": "BiddingLevelName"
+            },
+            {
+              "dtype": "string",
+              "name": "membername",
+              "nullable": true,
+              "source": "MemberName"
+            },
+            {
+              "dtype": "float64",
+              "name": "orderid",
+              "nullable": true,
+              "source": "OrderID"
+            },
+            {
+              "dtype": "string",
+              "name": "portfolio",
+              "nullable": true,
+              "source": "Portfolio"
+            },
+            {
+              "dtype": "string",
+              "name": "orderentrytime",
+              "nullable": true,
+              "source": "OrderEntryTime"
+            },
+            {
+              "dtype": "string",
+              "name": "orderentryuser",
+              "nullable": true,
+              "source": "OrderEntryUser"
+            },
+            {
+              "dtype": "string",
+              "name": "settlementcurrency",
+              "nullable": true,
+              "source": "SettlementCurrency"
+            },
+            {
+              "dtype": "float64",
+              "name": "orderperiodid",
+              "nullable": true,
+              "source": "OrderPeriodID"
+            },
+            {
+              "dtype": "float64",
+              "name": "tradeid",
+              "nullable": true,
+              "source": "TradeID"
+            },
+            {
+              "dtype": "float64",
+              "name": "efa",
+              "nullable": true,
+              "source": "EFA"
+            },
+            {
+              "dtype": "string",
+              "name": "deliverystart",
+              "nullable": true,
+              "source": "DeliveryStart"
+            },
+            {
+              "dtype": "string",
+              "name": "deliveryend",
+              "nullable": true,
+              "source": "DeliveryEnd"
+            },
+            {
+              "dtype": "float64",
+              "name": "executedvolume",
+              "nullable": true,
+              "source": "ExecutedVolume"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_1p",
+              "nullable": true,
+              "source": "1P"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_1v",
+              "nullable": true,
+              "source": "1V"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2p",
+              "nullable": true,
+              "source": "2P"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2v",
+              "nullable": true,
+              "source": "2V"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_3p",
+              "nullable": true,
+              "source": "3P"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_3v",
+              "nullable": true,
+              "source": "3V"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_4p",
+              "nullable": true,
+              "source": "4P"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_4v",
+              "nullable": true,
+              "source": "4V"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_5p",
+              "nullable": true,
+              "source": "5P"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_5v",
+              "nullable": true,
+              "source": "5V"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_6p",
+              "nullable": true,
+              "source": "6P"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_6v",
+              "nullable": true,
+              "source": "6V"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_7p",
+              "nullable": true,
+              "source": "7P"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_7v",
+              "nullable": true,
+              "source": "7V"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_8p",
+              "nullable": true,
+              "source": "8P"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_8v",
+              "nullable": true,
+              "source": "8V"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_9p",
+              "nullable": true,
+              "source": "9P"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_9v",
+              "nullable": true,
+              "source": "9V"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_10p",
+              "nullable": true,
+              "source": "10P"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_10v",
+              "nullable": true,
+              "source": "10V"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_11p",
+              "nullable": true,
+              "source": "11P"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_11v",
+              "nullable": true,
+              "source": "11V"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_12p",
+              "nullable": true,
+              "source": "12P"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_12v",
+              "nullable": true,
+              "source": "12V"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_13p",
+              "nullable": true,
+              "source": "13P"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_13v",
+              "nullable": true,
+              "source": "13V"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_14p",
+              "nullable": true,
+              "source": "14P"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_14v",
+              "nullable": true,
+              "source": "14V"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_15p",
+              "nullable": true,
+              "source": "15P"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_15v",
+              "nullable": true,
+              "source": "15V"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_16p",
+              "nullable": true,
+              "source": "16P"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_16v",
+              "nullable": true,
+              "source": "16V"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_17p",
+              "nullable": true,
+              "source": "17P"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_17v",
+              "nullable": true,
+              "source": "17V"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_18p",
+              "nullable": true,
+              "source": "18P"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_18v",
+              "nullable": true,
+              "source": "18V"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_19p",
+              "nullable": true,
+              "source": "19P"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_19v",
+              "nullable": true,
+              "source": "19V"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_20p",
+              "nullable": true,
+              "source": "20P"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_20v",
+              "nullable": true,
+              "source": "20V"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_21p",
+              "nullable": true,
+              "source": "21P"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_21v",
+              "nullable": true,
+              "source": "21V"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_22p",
+              "nullable": true,
+              "source": "22P"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_22v",
+              "nullable": true,
+              "source": "22V"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_23p",
+              "nullable": true,
+              "source": "23P"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_23v",
+              "nullable": true,
+              "source": "23V"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_24p",
+              "nullable": true,
+              "source": "24P"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_24v",
+              "nullable": true,
+              "source": "24V"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_25p",
+              "nullable": true,
+              "source": "25P"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_25v",
+              "nullable": true,
+              "source": "25V"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_26p",
+              "nullable": true,
+              "source": "26P"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_26v",
+              "nullable": true,
+              "source": "26V"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_27p",
+              "nullable": true,
+              "source": "27P"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_27v",
+              "nullable": true,
+              "source": "27V"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_28p",
+              "nullable": true,
+              "source": "28P"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_28v",
+              "nullable": true,
+              "source": "28V"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_29p",
+              "nullable": true,
+              "source": "29P"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_29v",
+              "nullable": true,
+              "source": "29V"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_30p",
+              "nullable": true,
+              "source": "30P"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_30v",
+              "nullable": true,
+              "source": "30V"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_31p",
+              "nullable": true,
+              "source": "31P"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_31v",
+              "nullable": true,
+              "source": "31V"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_32p",
+              "nullable": true,
+              "source": "32P"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_32v",
+              "nullable": true,
+              "source": "32V"
+            }
+          ],
+          "header": [
+            "MarketName",
+            "BiddingLevelName",
+            "MemberName",
+            "OrderID",
+            "Portfolio",
+            "OrderEntryTime",
+            "OrderEntryUser",
+            "SettlementCurrency",
+            "OrderPeriodID",
+            "TradeID",
+            "EFA",
+            "DeliveryStart",
+            "DeliveryEnd",
+            "ExecutedVolume",
+            "1P",
+            "1V",
+            "2P",
+            "2V",
+            "3P",
+            "3V",
+            "4P",
+            "4V",
+            "5P",
+            "5V",
+            "6P",
+            "6V",
+            "7P",
+            "7V",
+            "8P",
+            "8V",
+            "9P",
+            "9V",
+            "10P",
+            "10V",
+            "11P",
+            "11V",
+            "12P",
+            "12V",
+            "13P",
+            "13V",
+            "14P",
+            "14V",
+            "15P",
+            "15V",
+            "16P",
+            "16V",
+            "17P",
+            "17V",
+            "18P",
+            "18V",
+            "19P",
+            "19V",
+            "20P",
+            "20V",
+            "21P",
+            "21V",
+            "22P",
+            "22V",
+            "23P",
+            "23V",
+            "24P",
+            "24V",
+            "25P",
+            "25V",
+            "26P",
+            "26V",
+            "27P",
+            "27V",
+            "28P",
+            "28V",
+            "29P",
+            "29V",
+            "30P",
+            "30V",
+            "31P",
+            "31V",
+            "32P",
+            "32V"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T08",
+      "version": "1",
+      "vintage": "capture_fallback"
+    },
+    "todos": [
+      {
+        "consequence": "held",
+        "field": "column 'OrderID'.unit",
+        "id": "T01",
+        "kind": "unit",
+        "question": "OrderID: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'OrderEntryTime'",
+        "id": "T02",
+        "kind": "time_semantics",
+        "question": "OrderEntryTime: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'OrderPeriodID'.unit",
+        "id": "T03",
+        "kind": "unit",
+        "question": "OrderPeriodID: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'TradeID'.unit",
+        "id": "T04",
+        "kind": "unit",
+        "question": "TradeID: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'EFA'.unit",
+        "id": "T05",
+        "kind": "unit",
+        "question": "EFA: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'DeliveryStart'",
+        "id": "T06",
+        "kind": "time_semantics",
+        "question": "DeliveryStart: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'DeliveryEnd'",
+        "id": "T07",
+        "kind": "time_semantics",
+        "question": "DeliveryEnd: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T08",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: OrderEntryTime, DeliveryStart, DeliveryEnd"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T09",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['orderperiodid'] (measured unique in 1 capture(s)); without one, latest stays whole_capture"
+      },
+      {
+        "consequence": "none",
+        "field": "vintage",
+        "id": "T10",
+        "kind": "vendor_publication",
+        "question": "available_at is gridflow capture time for the dump; a vendor instant is held (D)"
+      }
+    ]
+  },
+  "refresh": "frozen",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update Frequency",
+        "value": "Not Active"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Ancillary services",
+    "title": "Dynamic Containment, Regulation and Moderation auction results"
+  }
+}

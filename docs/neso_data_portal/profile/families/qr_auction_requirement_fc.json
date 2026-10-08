@@ -1,0 +1,411 @@
+{
+  "archetype": "FC",
+  "batch": "AS-1",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/qr_auction_requirement_fc/2026/10/08/raw_20261008T111653Z_f012de08-b258-408b-bc41-f885e183f97f_d3ce986f.csv",
+      "ckan_last_modified": "2026-09-22T14:48:27.491459",
+      "cr": 0,
+      "crlf": 1875,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "f012de08-b258-408b-bc41-f885e183f97f",
+      "rows": 1874,
+      "sampled": false,
+      "size": 147893,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:16:53.816423+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 1,
+      "columns": {
+        "Auction Date": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%d/%m/%Y": 0,
+            "float64": 1874,
+            "int64": 1874
+          },
+          "examples": [
+            "22/09/2026",
+            "23/09/2026",
+            "24/09/2026"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "slash_date": 1874
+          },
+          "slash_first_gt_12": 1298,
+          "slash_second_gt_12": 0
+        },
+        "Forecast produced on": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%d/%m/%Y": 0,
+            "float64": 1874,
+            "int64": 1874
+          },
+          "examples": [
+            "31/08/2026",
+            "22/09/2026"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "slash_date": 1874
+          },
+          "slash_first_gt_12": 1874,
+          "slash_second_gt_12": 0
+        },
+        "Negative Quick Reserve Requirement MW": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "300"
+          ],
+          "max_len": 3,
+          "null_count": 0,
+          "shapes": {
+            "int": 1874
+          }
+        },
+        "Positive Quick Reserve Requirement MW": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "500",
+            "300"
+          ],
+          "max_len": 3,
+          "null_count": 0,
+          "shapes": {
+            "int": 1874
+          }
+        },
+        "Service Delivery Date": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%d/%m/%Y": 0,
+            "float64": 1874,
+            "int64": 1874
+          },
+          "examples": [
+            "23/09/2026",
+            "24/09/2026",
+            "25/09/2026"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "slash_date": 1874
+          },
+          "slash_first_gt_12": 1298,
+          "slash_second_gt_12": 0
+        },
+        "Service Window": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 2,
+            "int64": 2
+          },
+          "examples": [
+            "1",
+            "2",
+            "3"
+          ],
+          "max_len": 2,
+          "null_count": 0,
+          "shapes": {
+            "int": 1872,
+            "text": 2
+          }
+        },
+        "Service Window End Time": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 1874,
+            "int64": 1874
+          },
+          "examples": [
+            "22/09/2026 23:29",
+            "22/09/2026 23:59",
+            "23/09/2026 00:29"
+          ],
+          "max_len": 16,
+          "null_count": 0,
+          "shapes": {
+            "text": 1874
+          }
+        },
+        "Service window Start Time": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 1874,
+            "int64": 1874
+          },
+          "examples": [
+            "22/09/2026 23:00",
+            "22/09/2026 23:30",
+            "23/09/2026 00:00"
+          ],
+          "max_len": 16,
+          "null_count": 0,
+          "shapes": {
+            "text": 1874
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "Auction Date": {
+            "description": "The date of the auction event that these requirements apply to",
+            "title": "Auction Date\t\t",
+            "type": "date",
+            "unit": null
+          },
+          "Forecast produced on": {
+            "description": "Date that the forecast was produce",
+            "title": "Forecast Produced on\t\t",
+            "type": "date",
+            "unit": null
+          },
+          "Negative Quick Reserve Requirement MW": {
+            "description": "Requirement for Negative Quick Reserve",
+            "title": "Negative Quick Reserve Requirement MW\t\t",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "Positive Quick Reserve Requirement MW": {
+            "description": "Requirement for Positive Quick Reserve",
+            "title": "Positive Quick Reserve Requirement MW\t\t",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "Service Delivery Date": {
+            "description": "The service day for delivery of the service",
+            "title": "Service Delivery Date\t\t",
+            "type": "date",
+            "unit": null
+          },
+          "Service Window": {
+            "description": "Service window identifier",
+            "title": "Service Window\t\t",
+            "type": "text",
+            "unit": null
+          },
+          "Service Window End Time": {
+            "description": "End time and date of service window",
+            "title": "Service Window End Time\t\t",
+            "type": "timestamp",
+            "unit": null
+          },
+          "Service window Start Time": {
+            "description": "Start time and date of service window",
+            "title": "Service Window Start Time\t\t",
+            "type": "timestamp",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T11:16:53.816423+00:00",
+      "header": [
+        "Auction Date",
+        "Service Delivery Date",
+        "Service Window",
+        "Service window Start Time",
+        "Service Window End Time",
+        "Positive Quick Reserve Requirement MW",
+        "Negative Quick Reserve Requirement MW",
+        "Forecast produced on"
+      ],
+      "last_written_at": "2026-10-08T11:16:53.816423+00:00",
+      "resource_ids": [
+        "f012de08-b258-408b-bc41-f885e183f97f"
+      ],
+      "rows": 1874,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [],
+  "key": "qr_auction_requirement_fc",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Auction Date",
+          "Service Window"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Service Delivery Date",
+          "Service Window"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Service Window",
+          "Service window Start Time"
+        ],
+        "max_duplicates": 0
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "quick-reserve-auction-requirement-forecast",
+  "proposal": {
+    "flags": [],
+    "record_draft": {
+      "eligibility": {
+        "question": "Service window Start Time: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced); Service Window End Time: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)",
+        "status": "held",
+        "unit": "AS-1"
+      },
+      "encoding": "utf-8",
+      "entity_key": [
+        "auction_date",
+        "service_window"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "date",
+              "format": "%d/%m/%Y",
+              "name": "auction_date",
+              "nullable": true,
+              "source": "Auction Date"
+            },
+            {
+              "dtype": "date",
+              "format": "%d/%m/%Y",
+              "name": "service_delivery_date",
+              "nullable": true,
+              "source": "Service Delivery Date"
+            },
+            {
+              "dtype": "string",
+              "name": "service_window",
+              "nullable": true,
+              "source": "Service Window"
+            },
+            {
+              "dtype": "string",
+              "name": "service_window_start_time",
+              "nullable": true,
+              "source": "Service window Start Time"
+            },
+            {
+              "dtype": "string",
+              "name": "service_window_end_time",
+              "nullable": true,
+              "source": "Service Window End Time"
+            },
+            {
+              "dtype": "int64",
+              "name": "positive_quick_reserve_requirement_mw",
+              "nullable": true,
+              "source": "Positive Quick Reserve Requirement MW"
+            },
+            {
+              "dtype": "int64",
+              "name": "negative_quick_reserve_requirement_mw",
+              "nullable": true,
+              "source": "Negative Quick Reserve Requirement MW"
+            },
+            {
+              "dtype": "date",
+              "format": "%d/%m/%Y",
+              "name": "forecast_produced_on",
+              "nullable": true,
+              "source": "Forecast produced on"
+            }
+          ],
+          "header": [
+            "Auction Date",
+            "Service Delivery Date",
+            "Service Window",
+            "Service window Start Time",
+            "Service Window End Time",
+            "Positive Quick Reserve Requirement MW",
+            "Negative Quick Reserve Requirement MW",
+            "Forecast produced on"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T03",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "held",
+        "field": "column 'Service window Start Time'",
+        "id": "T01",
+        "kind": "time_semantics",
+        "question": "Service window Start Time: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Service Window End Time'",
+        "id": "T02",
+        "kind": "time_semantics",
+        "question": "Service Window End Time: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T03",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: Auction Date, Service Delivery Date, Service window Start Time, Service Window End Time, Forecast produced on"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T04",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['auction_date', 'service_window'] (measured unique in 1 capture(s)); without one, latest stays whole_capture"
+      }
+    ]
+  },
+  "refresh": "monthly",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update frequency",
+        "value": "Monthly"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Ancillary services",
+    "title": "Quick Reserve Auction Requirement Forecast"
+  }
+}

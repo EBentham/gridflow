@@ -1,0 +1,3749 @@
+{
+  "archetype": "SCN",
+  "batch": "SCN-3",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/fes_la_heat_model_domestic/2026/10/08/raw_20261008T105539Z_c3dd66ab-cb07-4e4d-bbab-d79074ea1713_97db8d4f.csv",
+      "ckan_last_modified": "2022-08-31T07:33:03.509314",
+      "cr": 0,
+      "crlf": 1481,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "c3dd66ab-cb07-4e4d-bbab-d79074ea1713",
+      "rows": 1480,
+      "sampled": false,
+      "size": 577488,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:55:39.546223+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/fes_la_heat_model_domestic/2026/10/08/raw_20261008T105542Z_52baf0e4-b02b-4f69-8cd5-ca52c97bf872_2a99da98.csv",
+      "ckan_last_modified": "2022-08-31T07:34:02.299496",
+      "cr": 0,
+      "crlf": 1483,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "52baf0e4-b02b-4f69-8cd5-ca52c97bf872",
+      "rows": 1482,
+      "sampled": false,
+      "size": 800029,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:55:42.677271+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/fes_la_heat_model_domestic/2026/10/08/raw_20261008T105545Z_f41f65e2-9f55-496b-afaa-76efcee4cda2_65939b24.csv",
+      "ckan_last_modified": "2022-08-31T07:35:07.017785",
+      "cr": 0,
+      "crlf": 1483,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 2,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "f41f65e2-9f55-496b-afaa-76efcee4cda2",
+      "rows": 1482,
+      "sampled": false,
+      "size": 831861,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:55:45.372469+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/fes_la_heat_model_domestic/2026/10/08/raw_20261008T105548Z_7cec6380-1ad5-44e6-a0d4-246c43456498_71890a80.csv",
+      "ckan_last_modified": "2022-08-31T07:35:55.905799",
+      "cr": 0,
+      "crlf": 1483,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 2,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "7cec6380-1ad5-44e6-a0d4-246c43456498",
+      "rows": 1482,
+      "sampled": false,
+      "size": 857729,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:55:48.683298+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/fes_la_heat_model_domestic/2026/10/08/raw_20261008T105552Z_73f57682-bf0e-4bb6-8471-191f7cb75417_e2522826.csv",
+      "ckan_last_modified": "2022-08-31T07:37:12.485221",
+      "cr": 0,
+      "crlf": 1483,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 2,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "73f57682-bf0e-4bb6-8471-191f7cb75417",
+      "rows": 1482,
+      "sampled": false,
+      "size": 857727,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:55:52.194187+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/fes_la_heat_model_domestic/2026/10/08/raw_20261008T105555Z_e60da220-afb8-4a9e-9327-552a3c8df549_4a2a214a.csv",
+      "ckan_last_modified": "2022-08-31T07:37:53.735487",
+      "cr": 0,
+      "crlf": 1483,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 2,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "e60da220-afb8-4a9e-9327-552a3c8df549",
+      "rows": 1482,
+      "sampled": false,
+      "size": 857920,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:55:55.235546+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/fes_la_heat_model_domestic/2026/10/08/raw_20261008T105557Z_3a9451a1-9e79-4fda-a570-79544b30f44e_dff4db3d.csv",
+      "ckan_last_modified": "2022-08-31T07:38:37.918963",
+      "cr": 0,
+      "crlf": 1483,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 2,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "3a9451a1-9e79-4fda-a570-79544b30f44e",
+      "rows": 1482,
+      "sampled": false,
+      "size": 855991,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:55:57.742100+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 1,
+      "columns": {
+        "CODE_x": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 1480,
+            "int64": 1480
+          },
+          "examples": [
+            "S12000033",
+            "S12000034",
+            "E07000223"
+          ],
+          "max_len": 9,
+          "null_count": 0,
+          "shapes": {
+            "text": 1480
+          }
+        },
+        "Local_Authority": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 1480,
+            "int64": 1480
+          },
+          "examples": [
+            "Aberdeen City",
+            "Aberdeenshire",
+            "Adur"
+          ],
+          "max_len": 35,
+          "null_count": 0,
+          "shapes": {
+            "text": 1480
+          }
+        },
+        "Scenario": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 1480,
+            "int64": 1480
+          },
+          "examples": [
+            "CT",
+            "FS",
+            "LW"
+          ],
+          "max_len": 2,
+          "null_count": 0,
+          "shapes": {
+            "text": 1480
+          }
+        },
+        "Sector": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 1480,
+            "int64": 1480
+          },
+          "examples": [
+            "domestic"
+          ],
+          "max_len": 8,
+          "null_count": 0,
+          "shapes": {
+            "text": 1480
+          }
+        },
+        "Year": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "2020"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 1480
+          }
+        },
+        "stock ASHP": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1480
+          },
+          "examples": [
+            "1253.5321264020622",
+            "1253.1710340424474",
+            "205.3155706760947"
+          ],
+          "max_len": 18,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 1480
+          }
+        },
+        "stock Community": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1480
+          },
+          "examples": [
+            "903.0162747503824",
+            "633.3695530627285",
+            "192.8138985110024"
+          ],
+          "max_len": 18,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 1480
+          }
+        },
+        "stock DH": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1480
+          },
+          "examples": [
+            "2254.9639802565853",
+            "1581.616597931709",
+            "481.4845625626692"
+          ],
+          "max_len": 18,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 1480
+          }
+        },
+        "stock Electric resistive": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1480
+          },
+          "examples": [
+            "0.0",
+            "450.2292835381255",
+            "687.9016712341472"
+          ],
+          "max_len": 18,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 1480
+          }
+        },
+        "stock Electric storage": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1480
+          },
+          "examples": [
+            "12343.690179568412",
+            "12340.134457206452",
+            "2021.7685211954904"
+          ],
+          "max_len": 18,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 1480
+          }
+        },
+        "stock GSHP": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1480
+          },
+          "examples": [
+            "384.41651043198937",
+            "384.3057754441075",
+            "62.96344030941739"
+          ],
+          "max_len": 18,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 1480
+          }
+        },
+        "stock Gas boiler": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1480
+          },
+          "examples": [
+            "101968.12547898944",
+            "68124.08383150281",
+            "24616.84263856831"
+          ],
+          "max_len": 18,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 1480
+          }
+        },
+        "stock Oil boiler": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1480
+          },
+          "examples": [
+            "7943.02101983477",
+            "5642.014930619133",
+            "967.171246566438"
+          ],
+          "max_len": 18,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 1480
+          }
+        },
+        "stock Total": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1480
+          },
+          "examples": [
+            "127050.76557023363",
+            "89958.69617980938",
+            "28998.589161927543"
+          ],
+          "max_len": 18,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 1480
+          }
+        },
+        "stock TotalHPs": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1480
+          },
+          "examples": [
+            "1637.9486368340515",
+            "1637.4768094865549",
+            "268.27901098551206"
+          ],
+          "max_len": 18,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 1480
+          }
+        },
+        "stock_proportion ASHP": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1480
+          },
+          "examples": [
+            "0.0098663878236066",
+            "0.0139305157506686",
+            "0.0070801917131077"
+          ],
+          "max_len": 18,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 1480
+          }
+        },
+        "stock_proportion Community": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1480
+          },
+          "examples": [
+            "0.0071075232856522",
+            "0.0070406706628645",
+            "0.006649078596008"
+          ],
+          "max_len": 18,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 1480
+          }
+        },
+        "stock_proportion DH": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1480
+          },
+          "examples": [
+            "0.0177485272925021",
+            "0.0175815864957666",
+            "0.0166037237147665"
+          ],
+          "max_len": 18,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 1480
+          }
+        },
+        "stock_proportion Electric resistive": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1480
+          },
+          "examples": [
+            "0.0",
+            "0.0155259030370082",
+            "0.0149719064720807"
+          ],
+          "max_len": 18,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 1480
+          }
+        },
+        "stock_proportion Electric storage": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1480
+          },
+          "examples": [
+            "0.0971555749716818",
+            "0.1371755592426662",
+            "0.0697195477306145"
+          ],
+          "max_len": 18,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 1480
+          }
+        },
+        "stock_proportion GSHP": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1480
+          },
+          "examples": [
+            "0.0030256922003314",
+            "0.0042720247376191",
+            "0.0021712587449627"
+          ],
+          "max_len": 18,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 1480
+          }
+        },
+        "stock_proportion Gas boiler": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1480
+          },
+          "examples": [
+            "0.8025778122731696",
+            "0.7572818051446236",
+            "0.8488979412449463"
+          ],
+          "max_len": 18,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 1480
+          }
+        },
+        "stock_proportion Oil boiler": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1480
+          },
+          "examples": [
+            "0.0625184821530561",
+            "0.0627178379657912",
+            "0.0333523552185857"
+          ],
+          "max_len": 18,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 1480
+          }
+        },
+        "stock_proportion TotalHPs": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1480
+          },
+          "examples": [
+            "0.0128920800239381",
+            "0.0182025404882877",
+            "0.0092514504580704"
+          ],
+          "max_len": 18,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 1480
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "CODE_x": {
+            "description": "Code for the local authority",
+            "title": "CODE_x",
+            "type": "text",
+            "unit": null
+          },
+          "Local_Authority": {
+            "description": "Name of the local authority",
+            "title": "Local_Authority\t\t",
+            "type": "text",
+            "unit": null
+          },
+          "Scenario": {
+            "description": "One of the four FES Scenarios",
+            "title": "Scenario",
+            "type": "text",
+            "unit": null
+          },
+          "Sector": {
+            "description": "Domestic or Industrial & Commerical sector",
+            "title": "Sector",
+            "type": "text",
+            "unit": null
+          },
+          "Year": {
+            "description": "Year within the FES Scenarios",
+            "title": "Year",
+            "type": "numeric",
+            "unit": null
+          },
+          "stock ASHP": {
+            "description": "number of buildings with Air Source Heat Pumps",
+            "title": "stock ASHP",
+            "type": "numeric",
+            "unit": null
+          },
+          "stock Community": {
+            "description": "Number of buildings connected to Community heating schemes",
+            "title": "stock Community",
+            "type": "numeric",
+            "unit": null
+          },
+          "stock DH": {
+            "description": "Number of buildings connected to District Heating schemes",
+            "title": "stock DH",
+            "type": "numeric",
+            "unit": null
+          },
+          "stock Electric resistive": {
+            "description": "Number of buildings with electric resistive heating",
+            "title": "stock Electric resistive",
+            "type": "numeric",
+            "unit": null
+          },
+          "stock Electric storage": {
+            "description": "Number of buildings with electric storage systems",
+            "title": "stock Electric storage",
+            "type": "numeric",
+            "unit": null
+          },
+          "stock GSHP": {
+            "description": "Number of buildings with ground source heat pumps",
+            "title": "stock GSHP",
+            "type": "numeric",
+            "unit": null
+          },
+          "stock Gas boiler": {
+            "description": "Number of buildings with gas boilers",
+            "title": "stock Gas boiler",
+            "type": "numeric",
+            "unit": null
+          },
+          "stock Oil boiler": {
+            "description": "Proportion of Buildingswith oil boilers",
+            "title": "stock Oil boiler",
+            "type": "numeric",
+            "unit": null
+          },
+          "stock Total": {
+            "description": "Total number of buildings",
+            "title": "stock Total",
+            "type": "numeric",
+            "unit": null
+          },
+          "stock TotalHPs": {
+            "description": "Number of buildings with all types of heat pumps",
+            "title": "stock TotalHPs",
+            "type": "numeric",
+            "unit": null
+          },
+          "stock_proportion ASHP": {
+            "description": "Proportion of Buildings with Air source heat pumps",
+            "title": "stock_proportion ASHP",
+            "type": "numeric",
+            "unit": null
+          },
+          "stock_proportion Community": {
+            "description": "Proportion of Buildings connected to community heating schemes",
+            "title": "stock_proportion Community",
+            "type": "numeric",
+            "unit": null
+          },
+          "stock_proportion DH": {
+            "description": "Proportion of Buildings connected to district heating schemes",
+            "title": "stock_proportion DH",
+            "type": "numeric",
+            "unit": null
+          },
+          "stock_proportion Electric resistive": {
+            "description": "Proportion of Buildings with electric resistive heating",
+            "title": "stock_proportion Electric resistive",
+            "type": "numeric",
+            "unit": null
+          },
+          "stock_proportion Electric storage": {
+            "description": "Proportion of Buildings with electric storage devices",
+            "title": "stock_proportion Electric storage",
+            "type": "numeric",
+            "unit": null
+          },
+          "stock_proportion GSHP": {
+            "description": "Proportion of Buildings with ground source heat pumps",
+            "title": "stock_proportion GSHP",
+            "type": "numeric",
+            "unit": null
+          },
+          "stock_proportion Gas boiler": {
+            "description": "Proportion of Buildings with gas boilers",
+            "title": "stock_proportion Gas boiler",
+            "type": "numeric",
+            "unit": null
+          },
+          "stock_proportion Oil boiler": {
+            "description": "Proportion of Buildings with oil boilers",
+            "title": "stock_proportion Oil boiler",
+            "type": "numeric",
+            "unit": null
+          },
+          "stock_proportion TotalHPs": {
+            "description": "Proportion of Buildings with all types of heat pumps",
+            "title": "stock_proportion TotalHPs",
+            "type": "numeric",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [
+          "stock BioLPG boiler",
+          "stock Biomass boiler",
+          "stock Hybrid (ASHP + BioLPG boiler)",
+          "stock Hybrid (ASHP + Electric resistive)",
+          "stock Hybrid (ASHP + Hydrogen boiler)",
+          "stock Hydrogen boiler",
+          "stock_proportion BioLPG boiler",
+          "stock_proportion Biomass boiler",
+          "stock_proportion Hybrid (ASHP + BioLPG boiler)",
+          "stock_proportion Hybrid (ASHP + Electric resistive)",
+          "stock_proportion Hybrid (ASHP + Hydrogen boiler)",
+          "stock_proportion Hydrogen boiler"
+        ],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T10:55:39.546223+00:00",
+      "header": [
+        "CODE_x",
+        "Local_Authority",
+        "Year",
+        "Scenario",
+        "Sector",
+        "stock ASHP",
+        "stock Community",
+        "stock DH",
+        "stock Electric resistive",
+        "stock Electric storage",
+        "stock GSHP",
+        "stock Gas boiler",
+        "stock Oil boiler",
+        "stock Total",
+        "stock TotalHPs",
+        "stock_proportion ASHP",
+        "stock_proportion Community",
+        "stock_proportion DH",
+        "stock_proportion Electric resistive",
+        "stock_proportion Electric storage",
+        "stock_proportion GSHP",
+        "stock_proportion Gas boiler",
+        "stock_proportion Oil boiler",
+        "stock_proportion TotalHPs"
+      ],
+      "last_written_at": "2026-10-08T10:55:39.546223+00:00",
+      "resource_ids": [
+        "c3dd66ab-cb07-4e4d-bbab-d79074ea1713"
+      ],
+      "rows": 1480,
+      "settlement_periods": []
+    },
+    {
+      "captures": 1,
+      "columns": {
+        "CODE_x": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 1482,
+            "int64": 1482
+          },
+          "examples": [
+            "S12000033",
+            "S12000034",
+            "E07000223"
+          ],
+          "max_len": 9,
+          "null_count": 0,
+          "shapes": {
+            "text": 1482
+          }
+        },
+        "Local_Authority": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 1482,
+            "int64": 1482
+          },
+          "examples": [
+            "Aberdeen City",
+            "Aberdeenshire",
+            "Adur"
+          ],
+          "max_len": 35,
+          "null_count": 0,
+          "shapes": {
+            "text": 1482
+          }
+        },
+        "Scenario": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 1482,
+            "int64": 1482
+          },
+          "examples": [
+            "CT",
+            "FS",
+            "LW"
+          ],
+          "max_len": 2,
+          "null_count": 0,
+          "shapes": {
+            "text": 1482
+          }
+        },
+        "Sector": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 1482,
+            "int64": 1482
+          },
+          "examples": [
+            "domestic"
+          ],
+          "max_len": 8,
+          "null_count": 0,
+          "shapes": {
+            "text": 1482
+          }
+        },
+        "Year": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "2025"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 1482
+          }
+        },
+        "stock ASHP": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1482
+          },
+          "examples": [
+            "2937.247225051213",
+            "2468.868543845348",
+            "517.6603513195649"
+          ],
+          "max_len": 18,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 1482
+          }
+        },
+        "stock BioLPG boiler": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1482
+          },
+          "examples": [
+            "1154.747590943281",
+            "955.7077711975082",
+            "236.0849819849387"
+          ],
+          "max_len": 18,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 1482
+          }
+        },
+        "stock Biomass boiler": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1482
+          },
+          "examples": [
+            "66.84251491576015",
+            "46.75764428560599",
+            "17.56768541167079"
+          ],
+          "max_len": 18,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 1482
+          }
+        },
+        "stock Community": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1482
+          },
+          "examples": [
+            "789.4017574829138",
+            "553.6765172612539",
+            "155.0814787394944"
+          ],
+          "max_len": 18,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 1482
+          }
+        },
+        "stock DH": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1482
+          },
+          "examples": [
+            "2338.915555312479",
+            "1641.2769706710092",
+            "524.0409729426726"
+          ],
+          "max_len": 18,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 1482
+          }
+        },
+        "stock Electric resistive": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1482
+          },
+          "examples": [
+            "0.0",
+            "418.4834026536752",
+            "632.5379610929489"
+          ],
+          "max_len": 18,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 1482
+          }
+        },
+        "stock Electric storage": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1482
+          },
+          "examples": [
+            "11637.117895344858",
+            "11633.630894592368",
+            "1893.2691546205656"
+          ],
+          "max_len": 18,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 1482
+          }
+        },
+        "stock GSHP": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1482
+          },
+          "examples": [
+            "1245.7412970128603",
+            "999.1754441524516",
+            "258.36003584895485"
+          ],
+          "max_len": 18,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 1482
+          }
+        },
+        "stock Gas boiler": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1482
+          },
+          "examples": [
+            "102718.41693614566",
+            "68666.95068652701",
+            "24825.662683383314"
+          ],
+          "max_len": 18,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 1482
+          }
+        },
+        "stock Hybrid (ASHP + BioLPG boiler)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1482
+          },
+          "examples": [
+            "63.916840920067365",
+            "50.47842328314776",
+            "11.673319020193286"
+          ],
+          "max_len": 18,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 1482
+          }
+        },
+        "stock Hybrid (ASHP + Electric resistive)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1482
+          },
+          "examples": [
+            "301.79792651967523",
+            "238.9480685722968",
+            "36.868656788443154"
+          ],
+          "max_len": 18,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 1482
+          }
+        },
+        "stock Oil boiler": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1482
+          },
+          "examples": [
+            "6403.990841229331",
+            "4548.851770043671",
+            "746.7598864309747"
+          ],
+          "max_len": 18,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 1482
+          }
+        },
+        "stock Total": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1482
+          },
+          "examples": [
+            "129658.13638087807",
+            "91804.32273443164",
+            "29641.512609144454"
+          ],
+          "max_len": 18,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 1482
+          }
+        },
+        "stock TotalHPs": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1482
+          },
+          "examples": [
+            "4548.703289503816",
+            "3757.470479853244",
+            "824.5623629771562"
+          ],
+          "max_len": 18,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 1482
+          }
+        },
+        "stock_proportion ASHP": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1482
+          },
+          "examples": [
+            "0.0226537825318025",
+            "0.0268927265112254",
+            "0.0174640328968861"
+          ],
+          "max_len": 18,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 1482
+          }
+        },
+        "stock_proportion BioLPG boiler": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1482
+          },
+          "examples": [
+            "0.0089060943121312",
+            "0.0104102698296914",
+            "0.0079646739050727"
+          ],
+          "max_len": 21,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 1482
+          }
+        },
+        "stock_proportion Biomass boiler": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1482
+          },
+          "examples": [
+            "0.0005155288883638",
+            "0.0005093185472416",
+            "0.0005926716913309"
+          ],
+          "max_len": 22,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 1482
+          }
+        },
+        "stock_proportion Community": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1482
+          },
+          "examples": [
+            "0.0060883318202569",
+            "0.0060310506168964",
+            "0.0052319016503783"
+          ],
+          "max_len": 18,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 1482
+          }
+        },
+        "stock_proportion DH": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1482
+          },
+          "examples": [
+            "0.0180390958916899",
+            "0.0178779922533586",
+            "0.0176792925466632"
+          ],
+          "max_len": 18,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 1482
+          }
+        },
+        "stock_proportion Electric resistive": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1482
+          },
+          "examples": [
+            "0.0",
+            "0.0141181527465157",
+            "0.0134626364383073"
+          ],
+          "max_len": 18,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 1482
+          }
+        },
+        "stock_proportion Electric storage": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1482
+          },
+          "examples": [
+            "0.0897523149735869",
+            "0.1267220382230336",
+            "0.0638722179797426"
+          ],
+          "max_len": 18,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 1482
+          }
+        },
+        "stock_proportion GSHP": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1482
+          },
+          "examples": [
+            "0.0096078914272948",
+            "0.0108837515967829",
+            "0.0087161555908334"
+          ],
+          "max_len": 18,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 1482
+          }
+        },
+        "stock_proportion Gas boiler": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1482
+          },
+          "examples": [
+            "0.7922249987799032",
+            "0.7479707778593866",
+            "0.8375302236001463"
+          ],
+          "max_len": 18,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 1482
+          }
+        },
+        "stock_proportion Hybrid (ASHP + BioLPG boiler)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1482
+          },
+          "examples": [
+            "0.0004929643654009",
+            "0.000549848000395",
+            "0.0003938165765734"
+          ],
+          "max_len": 22,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 1482
+          }
+        },
+        "stock_proportion Hybrid (ASHP + Electric resistive)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1482
+          },
+          "examples": [
+            "0.0023276435628623",
+            "0.0026027975748322",
+            "0.0012438183325728"
+          ],
+          "max_len": 18,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 1482
+          }
+        },
+        "stock_proportion Oil boiler": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1482
+          },
+          "examples": [
+            "0.0493913534467073",
+            "0.0495494289871559",
+            "0.025193042483284"
+          ],
+          "max_len": 18,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 1482
+          }
+        },
+        "stock_proportion TotalHPs": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1482
+          },
+          "examples": [
+            "0.0350822818873606",
+            "0.0409291236832357",
+            "0.0278178233968659"
+          ],
+          "max_len": 18,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 1482
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "CODE_x": {
+            "description": "Code for the local authority",
+            "title": "CODE_x",
+            "type": "text",
+            "unit": null
+          },
+          "Local_Authority": {
+            "description": "Name of the local authority",
+            "title": "Local_Authority\t\t",
+            "type": "text",
+            "unit": null
+          },
+          "Scenario": {
+            "description": "One of the four FES Scenarios",
+            "title": "Scenario",
+            "type": "text",
+            "unit": null
+          },
+          "Sector": {
+            "description": "Domestic or Industrial & Commerical sector",
+            "title": "Sector",
+            "type": "text",
+            "unit": null
+          },
+          "Year": {
+            "description": "Year within the FES Scenarios",
+            "title": "Year",
+            "type": "numeric",
+            "unit": null
+          },
+          "stock ASHP": {
+            "description": "number of buildings with Air Source Heat Pumps",
+            "title": "stock ASHP",
+            "type": "numeric",
+            "unit": null
+          },
+          "stock BioLPG boiler": {
+            "description": "Number of buildings with BioLPG boilers",
+            "title": "stock BioLPG boiler",
+            "type": "numeric",
+            "unit": null
+          },
+          "stock Biomass boiler": {
+            "description": "Number of buildings with Biomass boilers",
+            "title": "stock Biomass boiler",
+            "type": "numeric",
+            "unit": null
+          },
+          "stock Community": {
+            "description": "Number of buildings connected to Community heating schemes",
+            "title": "stock Community",
+            "type": "numeric",
+            "unit": null
+          },
+          "stock DH": {
+            "description": "Number of buildings connected to District Heating schemes",
+            "title": "stock DH",
+            "type": "numeric",
+            "unit": null
+          },
+          "stock Electric resistive": {
+            "description": "Number of buildings with electric resistive heating",
+            "title": "stock Electric resistive",
+            "type": "numeric",
+            "unit": null
+          },
+          "stock Electric storage": {
+            "description": "Number of buildings with electric storage systems",
+            "title": "stock Electric storage",
+            "type": "numeric",
+            "unit": null
+          },
+          "stock GSHP": {
+            "description": "Number of buildings with ground source heat pumps",
+            "title": "stock GSHP",
+            "type": "numeric",
+            "unit": null
+          },
+          "stock Gas boiler": {
+            "description": "Number of buildings with gas boilers",
+            "title": "stock Gas boiler",
+            "type": "numeric",
+            "unit": null
+          },
+          "stock Hybrid (ASHP + BioLPG boiler)": {
+            "description": "Number of buildings with Air Source Heat Pump and BioLPG boiler hybrid heating systems",
+            "title": "stock Hybrid (ASHP + BioLPG boiler)",
+            "type": "numeric",
+            "unit": null
+          },
+          "stock Hybrid (ASHP + Electric resistive)": {
+            "description": "Number of buildings with Air Source Heat Pump and Electric resistive hybrid heating systems",
+            "title": "stock Hybrid (ASHP + Electric resistive)",
+            "type": "numeric",
+            "unit": null
+          },
+          "stock Oil boiler": {
+            "description": "Proportion of Buildingswith oil boilers",
+            "title": "stock Oil boiler",
+            "type": "numeric",
+            "unit": null
+          },
+          "stock Total": {
+            "description": "Total number of buildings",
+            "title": "stock Total",
+            "type": "numeric",
+            "unit": null
+          },
+          "stock TotalHPs": {
+            "description": "Number of buildings with all types of heat pumps",
+            "title": "stock TotalHPs",
+            "type": "numeric",
+            "unit": null
+          },
+          "stock_proportion ASHP": {
+            "description": "Proportion of Buildings with Air source heat pumps",
+            "title": "stock_proportion ASHP",
+            "type": "numeric",
+            "unit": null
+          },
+          "stock_proportion BioLPG boiler": {
+            "description": "Proportion of Buildings BioLPG boilers",
+            "title": "stock_proportion BioLPG boiler",
+            "type": "numeric",
+            "unit": null
+          },
+          "stock_proportion Biomass boiler": {
+            "description": "Proportion of Buildings with Biomass boilers",
+            "title": "stock_proportion Biomass boiler",
+            "type": "numeric",
+            "unit": null
+          },
+          "stock_proportion Community": {
+            "description": "Proportion of Buildings connected to community heating schemes",
+            "title": "stock_proportion Community",
+            "type": "numeric",
+            "unit": null
+          },
+          "stock_proportion DH": {
+            "description": "Proportion of Buildings connected to district heating schemes",
+            "title": "stock_proportion DH",
+            "type": "numeric",
+            "unit": null
+          },
+          "stock_proportion Electric resistive": {
+            "description": "Proportion of Buildings with electric resistive heating",
+            "title": "stock_proportion Electric resistive",
+            "type": "numeric",
+            "unit": null
+          },
+          "stock_proportion Electric storage": {
+            "description": "Proportion of Buildings with electric storage devices",
+            "title": "stock_proportion Electric storage",
+            "type": "numeric",
+            "unit": null
+          },
+          "stock_proportion GSHP": {
+            "description": "Proportion of Buildings with ground source heat pumps",
+            "title": "stock_proportion GSHP",
+            "type": "numeric",
+            "unit": null
+          },
+          "stock_proportion Gas boiler": {
+            "description": "Proportion of Buildings with gas boilers",
+            "title": "stock_proportion Gas boiler",
+            "type": "numeric",
+            "unit": null
+          },
+          "stock_proportion Hybrid (ASHP + BioLPG boiler)": {
+            "description": "Proportion of Buildings with Air source heat pumps and BioLPG boiler hybrid heating systems",
+            "title": "stock_proportion Hybrid (ASHP + BioLPG boiler)",
+            "type": "numeric",
+            "unit": null
+          },
+          "stock_proportion Hybrid (ASHP + Electric resistive)": {
+            "description": "Proportion of Buildings with Air source heat pumps and electric resistive hybrid heating systems",
+            "title": "stock_proportion Hybrid (ASHP + Electric resistive)",
+            "type": "numeric",
+            "unit": null
+          },
+          "stock_proportion Oil boiler": {
+            "description": "Proportion of Buildings with oil boilers",
+            "title": "stock_proportion Oil boiler",
+            "type": "numeric",
+            "unit": null
+          },
+          "stock_proportion TotalHPs": {
+            "description": "Proportion of Buildings with all types of heat pumps",
+            "title": "stock_proportion TotalHPs",
+            "type": "numeric",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [
+          "stock Hybrid (ASHP + Hydrogen boiler)",
+          "stock Hydrogen boiler",
+          "stock_proportion Hybrid (ASHP + Hydrogen boiler)",
+          "stock_proportion Hydrogen boiler"
+        ],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T10:55:42.677271+00:00",
+      "header": [
+        "CODE_x",
+        "Local_Authority",
+        "Year",
+        "Scenario",
+        "Sector",
+        "stock ASHP",
+        "stock BioLPG boiler",
+        "stock Biomass boiler",
+        "stock Community",
+        "stock DH",
+        "stock Electric resistive",
+        "stock Electric storage",
+        "stock GSHP",
+        "stock Gas boiler",
+        "stock Hybrid (ASHP + BioLPG boiler)",
+        "stock Hybrid (ASHP + Electric resistive)",
+        "stock Oil boiler",
+        "stock Total",
+        "stock TotalHPs",
+        "stock_proportion ASHP",
+        "stock_proportion BioLPG boiler",
+        "stock_proportion Biomass boiler",
+        "stock_proportion Community",
+        "stock_proportion DH",
+        "stock_proportion Electric resistive",
+        "stock_proportion Electric storage",
+        "stock_proportion GSHP",
+        "stock_proportion Gas boiler",
+        "stock_proportion Hybrid (ASHP + BioLPG boiler)",
+        "stock_proportion Hybrid (ASHP + Electric resistive)",
+        "stock_proportion Oil boiler",
+        "stock_proportion TotalHPs"
+      ],
+      "last_written_at": "2026-10-08T10:55:42.677271+00:00",
+      "resource_ids": [
+        "52baf0e4-b02b-4f69-8cd5-ca52c97bf872"
+      ],
+      "rows": 1482,
+      "settlement_periods": []
+    },
+    {
+      "captures": 5,
+      "columns": {
+        "CODE_x": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 7410,
+            "int64": 7410
+          },
+          "examples": [
+            "S12000033",
+            "S12000034",
+            "E07000223"
+          ],
+          "max_len": 9,
+          "null_count": 0,
+          "shapes": {
+            "text": 7410
+          }
+        },
+        "Local_Authority": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 7410,
+            "int64": 7410
+          },
+          "examples": [
+            "Aberdeen City",
+            "Aberdeenshire",
+            "Adur"
+          ],
+          "max_len": 35,
+          "null_count": 0,
+          "shapes": {
+            "text": 7410
+          }
+        },
+        "Scenario": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 7410,
+            "int64": 7410
+          },
+          "examples": [
+            "CT",
+            "FS",
+            "LW"
+          ],
+          "max_len": 2,
+          "null_count": 0,
+          "shapes": {
+            "text": 7410
+          }
+        },
+        "Sector": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 7410,
+            "int64": 7410
+          },
+          "examples": [
+            "domestic"
+          ],
+          "max_len": 8,
+          "null_count": 0,
+          "shapes": {
+            "text": 7410
+          }
+        },
+        "Year": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "2030",
+            "2035",
+            "2040"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 7410
+          }
+        },
+        "stock ASHP": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 7410
+          },
+          "examples": [
+            "13123.498137617384",
+            "9503.141044978334",
+            "2564.790199426841"
+          ],
+          "max_len": 18,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 7410
+          }
+        },
+        "stock BioLPG boiler": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 7410
+          },
+          "examples": [
+            "1754.0422242146994",
+            "1478.419903765591",
+            "372.2985613999985"
+          ],
+          "max_len": 18,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 7410
+          }
+        },
+        "stock Biomass boiler": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 7410
+          },
+          "examples": [
+            "129.62184440243496",
+            "90.93847399775404",
+            "35.32904146483132"
+          ],
+          "max_len": 18,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 7410
+          }
+        },
+        "stock Community": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 7410
+          },
+          "examples": [
+            "589.7483402598692",
+            "413.6429503388463",
+            "113.37164937066495"
+          ],
+          "max_len": 18,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 7410
+          }
+        },
+        "stock DH": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 7410
+          },
+          "examples": [
+            "2734.3343848633144",
+            "1921.1399523135967",
+            "703.9267480822788"
+          ],
+          "max_len": 18,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 7410
+          }
+        },
+        "stock Electric resistive": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 7410
+          },
+          "examples": [
+            "0.0",
+            "377.41626360921737",
+            "567.0214397954184"
+          ],
+          "max_len": 18,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 7410
+          }
+        },
+        "stock Electric storage": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 7410
+          },
+          "examples": [
+            "10595.020653037427",
+            "10470.0975671266",
+            "1853.491373160628"
+          ],
+          "max_len": 18,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 7410
+          }
+        },
+        "stock GSHP": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 7410
+          },
+          "examples": [
+            "5418.731430701799",
+            "3845.283725500315",
+            "1148.6007524949334"
+          ],
+          "max_len": 18,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 7410
+          }
+        },
+        "stock Gas boiler": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 7410
+          },
+          "examples": [
+            "89697.48960957873",
+            "59976.0418769262",
+            "22131.74200515757"
+          ],
+          "max_len": 22,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 7410
+          }
+        },
+        "stock Hybrid (ASHP + BioLPG boiler)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 7410
+          },
+          "examples": [
+            "384.8862023434552",
+            "310.3958910143903",
+            "67.42147043226231"
+          ],
+          "max_len": 18,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 7410
+          }
+        },
+        "stock Hybrid (ASHP + Electric resistive)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 7410
+          },
+          "examples": [
+            "3592.172639820333",
+            "2624.8302832014897",
+            "457.9375937470501"
+          ],
+          "max_len": 18,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 7410
+          }
+        },
+        "stock Hybrid (ASHP + Hydrogen boiler)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 3335
+          },
+          "examples": [
+            "19.295503548005787",
+            "13.50241465793628",
+            "62.26769953359637"
+          ],
+          "max_len": 18,
+          "null_count": 4075,
+          "shapes": {
+            "decimal": 3335
+          }
+        },
+        "stock Hydrogen boiler": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 3335
+          },
+          "examples": [
+            "79.1727349705505",
+            "56.740195545343845",
+            "834.5984354578626"
+          ],
+          "max_len": 18,
+          "null_count": 4075,
+          "shapes": {
+            "decimal": 3335
+          }
+        },
+        "stock Oil boiler": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 7410
+          },
+          "examples": [
+            "4245.9516503733785",
+            "3015.968300109615",
+            "476.9399278122788"
+          ],
+          "max_len": 22,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 7410
+          }
+        },
+        "stock Total": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 7410
+          },
+          "examples": [
+            "132265.49711721283",
+            "93649.89996927272",
+            "30303.265586158555"
+          ],
+          "max_len": 18,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 7410
+          }
+        },
+        "stock TotalHPs": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 7410
+          },
+          "examples": [
+            "22519.28841048297",
+            "16283.650944694533",
+            "4238.750016101087"
+          ],
+          "max_len": 18,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 7410
+          }
+        },
+        "stock_proportion ASHP": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 7410
+          },
+          "examples": [
+            "0.0992208733467914",
+            "0.1014751862852644",
+            "0.084637419427111"
+          ],
+          "max_len": 18,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 7410
+          }
+        },
+        "stock_proportion BioLPG boiler": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 7410
+          },
+          "examples": [
+            "0.0132615252083487",
+            "0.0157866682639348",
+            "0.0122857571353646"
+          ],
+          "max_len": 18,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 7410
+          }
+        },
+        "stock_proportion Biomass boiler": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 7410
+          },
+          "examples": [
+            "0.000980012529553",
+            "0.000971047209101",
+            "0.0011658493162851"
+          ],
+          "max_len": 22,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 7410
+          }
+        },
+        "stock_proportion Community": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 7410
+          },
+          "examples": [
+            "0.0044588222409751",
+            "0.0044169075511513",
+            "0.0037412353809963"
+          ],
+          "max_len": 22,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 7410
+          }
+        },
+        "stock_proportion DH": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 7410
+          },
+          "examples": [
+            "0.020673073813348",
+            "0.020514063046986",
+            "0.0232294023256624"
+          ],
+          "max_len": 18,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 7410
+          }
+        },
+        "stock_proportion Electric resistive": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 7410
+          },
+          "examples": [
+            "0.0",
+            "0.0124546399970044",
+            "0.011803587997471"
+          ],
+          "max_len": 18,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 7410
+          }
+        },
+        "stock_proportion Electric storage": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 7410
+          },
+          "examples": [
+            "0.080104191069937",
+            "0.111800413781135",
+            "0.0611647404102624"
+          ],
+          "max_len": 18,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 7410
+          }
+        },
+        "stock_proportion GSHP": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 7410
+          },
+          "examples": [
+            "0.0409685938419734",
+            "0.041060201097513",
+            "0.037903530536312"
+          ],
+          "max_len": 18,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 7410
+          }
+        },
+        "stock_proportion Gas boiler": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 7410
+          },
+          "examples": [
+            "0.678162420015625",
+            "0.6404282534909789",
+            "0.7303418155456669"
+          ],
+          "max_len": 22,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 7410
+          }
+        },
+        "stock_proportion Hybrid (ASHP + BioLPG boiler)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 7410
+          },
+          "examples": [
+            "0.0029099516558152",
+            "0.0033144284309565",
+            "0.0022248912494453"
+          ],
+          "max_len": 18,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 7410
+          }
+        },
+        "stock_proportion Hybrid (ASHP + Electric resistive)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 7410
+          },
+          "examples": [
+            "0.0271588034530046",
+            "0.0280281162506603",
+            "0.0151118232602699"
+          ],
+          "max_len": 18,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 7410
+          }
+        },
+        "stock_proportion Hybrid (ASHP + Hydrogen boiler)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 3335
+          },
+          "examples": [
+            "0.0001458842284575",
+            "0.000144178761301",
+            "0.0020552047120746"
+          ],
+          "max_len": 18,
+          "null_count": 4075,
+          "shapes": {
+            "decimal": 3335
+          }
+        },
+        "stock_proportion Hydrogen boiler": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 3335
+          },
+          "examples": [
+            "0.0005985878174839",
+            "0.0006058717138344",
+            "0.0275467160356178"
+          ],
+          "max_len": 18,
+          "null_count": 4075,
+          "shapes": {
+            "decimal": 3335
+          }
+        },
+        "stock_proportion Oil boiler": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 7410
+          },
+          "examples": [
+            "0.032101732824628",
+            "0.0322047145923186",
+            "0.015738895415619"
+          ],
+          "max_len": 22,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 7410
+          }
+        },
+        "stock_proportion TotalHPs": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 7410
+          },
+          "examples": [
+            "0.1702582222975847",
+            "0.1738779320643943",
+            "0.1398776644731383"
+          ],
+          "max_len": 18,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 7410
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "CODE_x": {
+            "description": "Code for the local authority",
+            "title": "CODE_x",
+            "type": "text",
+            "unit": null
+          },
+          "Local_Authority": {
+            "description": "Name of the local authority",
+            "title": "Local_Authority\t\t",
+            "type": "text",
+            "unit": null
+          },
+          "Scenario": {
+            "description": "One of the four FES Scenarios",
+            "title": "Scenario",
+            "type": "text",
+            "unit": null
+          },
+          "Sector": {
+            "description": "Domestic or Industrial & Commerical sector",
+            "title": "Sector",
+            "type": "text",
+            "unit": null
+          },
+          "Year": {
+            "description": "Year within the FES Scenarios",
+            "title": "Year",
+            "type": "numeric",
+            "unit": null
+          },
+          "stock ASHP": {
+            "description": "number of buildings with Air Source Heat Pumps",
+            "title": "stock ASHP",
+            "type": "numeric",
+            "unit": null
+          },
+          "stock BioLPG boiler": {
+            "description": "Number of buildings with BioLPG boilers",
+            "title": "stock BioLPG boiler",
+            "type": "numeric",
+            "unit": null
+          },
+          "stock Biomass boiler": {
+            "description": "Number of buildings with Biomass boilers",
+            "title": "stock Biomass boiler",
+            "type": "numeric",
+            "unit": null
+          },
+          "stock Community": {
+            "description": "Number of buildings connected to Community heating schemes",
+            "title": "stock Community",
+            "type": "numeric",
+            "unit": null
+          },
+          "stock DH": {
+            "description": "Number of buildings connected to District Heating schemes",
+            "title": "stock DH",
+            "type": "numeric",
+            "unit": null
+          },
+          "stock Electric resistive": {
+            "description": "Number of buildings with electric resistive heating",
+            "title": "stock Electric resistive",
+            "type": "numeric",
+            "unit": null
+          },
+          "stock Electric storage": {
+            "description": "Number of buildings with electric storage systems",
+            "title": "stock Electric storage",
+            "type": "numeric",
+            "unit": null
+          },
+          "stock GSHP": {
+            "description": "Number of buildings with ground source heat pumps",
+            "title": "stock GSHP",
+            "type": "numeric",
+            "unit": null
+          },
+          "stock Gas boiler": {
+            "description": "Number of buildings with gas boilers",
+            "title": "stock Gas boiler",
+            "type": "numeric",
+            "unit": null
+          },
+          "stock Hybrid (ASHP + BioLPG boiler)": {
+            "description": "Number of buildings with Air Source Heat Pump and BioLPG boiler hybrid heating systems",
+            "title": "stock Hybrid (ASHP + BioLPG boiler)",
+            "type": "numeric",
+            "unit": null
+          },
+          "stock Hybrid (ASHP + Electric resistive)": {
+            "description": "Number of buildings with Air Source Heat Pump and Electric resistive hybrid heating systems",
+            "title": "stock Hybrid (ASHP + Electric resistive)",
+            "type": "numeric",
+            "unit": null
+          },
+          "stock Hybrid (ASHP + Hydrogen boiler)": {
+            "description": "Number of buildings with Air Source Heat Pump and hydrogen hybrid heating systems",
+            "title": "stock Hybrid (ASHP + Hydrogen boiler)",
+            "type": "numeric",
+            "unit": null
+          },
+          "stock Hydrogen boiler": {
+            "description": "Number of buildings with hydrogen heating systems",
+            "title": "stock Hydrogen boiler",
+            "type": "numeric",
+            "unit": null
+          },
+          "stock Oil boiler": {
+            "description": "Proportion of Buildingswith oil boilers",
+            "title": "stock Oil boiler",
+            "type": "numeric",
+            "unit": null
+          },
+          "stock Total": {
+            "description": "Total number of buildings",
+            "title": "stock Total",
+            "type": "numeric",
+            "unit": null
+          },
+          "stock TotalHPs": {
+            "description": "Number of buildings with all types of heat pumps",
+            "title": "stock TotalHPs",
+            "type": "numeric",
+            "unit": null
+          },
+          "stock_proportion ASHP": {
+            "description": "Proportion of Buildings with Air source heat pumps",
+            "title": "stock_proportion ASHP",
+            "type": "numeric",
+            "unit": null
+          },
+          "stock_proportion BioLPG boiler": {
+            "description": "Proportion of Buildings BioLPG boilers",
+            "title": "stock_proportion BioLPG boiler",
+            "type": "numeric",
+            "unit": null
+          },
+          "stock_proportion Biomass boiler": {
+            "description": "Proportion of Buildings with Biomass boilers",
+            "title": "stock_proportion Biomass boiler",
+            "type": "numeric",
+            "unit": null
+          },
+          "stock_proportion Community": {
+            "description": "Proportion of Buildings connected to community heating schemes",
+            "title": "stock_proportion Community",
+            "type": "numeric",
+            "unit": null
+          },
+          "stock_proportion DH": {
+            "description": "Proportion of Buildings connected to district heating schemes",
+            "title": "stock_proportion DH",
+            "type": "numeric",
+            "unit": null
+          },
+          "stock_proportion Electric resistive": {
+            "description": "Proportion of Buildings with electric resistive heating",
+            "title": "stock_proportion Electric resistive",
+            "type": "numeric",
+            "unit": null
+          },
+          "stock_proportion Electric storage": {
+            "description": "Proportion of Buildings with electric storage devices",
+            "title": "stock_proportion Electric storage",
+            "type": "numeric",
+            "unit": null
+          },
+          "stock_proportion GSHP": {
+            "description": "Proportion of Buildings with ground source heat pumps",
+            "title": "stock_proportion GSHP",
+            "type": "numeric",
+            "unit": null
+          },
+          "stock_proportion Gas boiler": {
+            "description": "Proportion of Buildings with gas boilers",
+            "title": "stock_proportion Gas boiler",
+            "type": "numeric",
+            "unit": null
+          },
+          "stock_proportion Hybrid (ASHP + BioLPG boiler)": {
+            "description": "Proportion of Buildings with Air source heat pumps and BioLPG boiler hybrid heating systems",
+            "title": "stock_proportion Hybrid (ASHP + BioLPG boiler)",
+            "type": "numeric",
+            "unit": null
+          },
+          "stock_proportion Hybrid (ASHP + Electric resistive)": {
+            "description": "Proportion of Buildings with Air source heat pumps and electric resistive hybrid heating systems",
+            "title": "stock_proportion Hybrid (ASHP + Electric resistive)",
+            "type": "numeric",
+            "unit": null
+          },
+          "stock_proportion Hybrid (ASHP + Hydrogen boiler)": {
+            "description": "Proportion of Buildings with Air source heat pumps and hydrogen hybrid heating systems",
+            "title": "stock_proportion Hybrid (ASHP + Hydrogen boiler)",
+            "type": "numeric",
+            "unit": null
+          },
+          "stock_proportion Hydrogen boiler": {
+            "description": "Proportion of Buildings with hydrogen boiler heating systems",
+            "title": "stock_proportion Hydrogen boiler",
+            "type": "numeric",
+            "unit": null
+          },
+          "stock_proportion Oil boiler": {
+            "description": "Proportion of Buildings with oil boilers",
+            "title": "stock_proportion Oil boiler",
+            "type": "numeric",
+            "unit": null
+          },
+          "stock_proportion TotalHPs": {
+            "description": "Proportion of Buildings with all types of heat pumps",
+            "title": "stock_proportion TotalHPs",
+            "type": "numeric",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T10:55:45.372469+00:00",
+      "header": [
+        "CODE_x",
+        "Local_Authority",
+        "Year",
+        "Scenario",
+        "Sector",
+        "stock ASHP",
+        "stock BioLPG boiler",
+        "stock Biomass boiler",
+        "stock Community",
+        "stock DH",
+        "stock Electric resistive",
+        "stock Electric storage",
+        "stock GSHP",
+        "stock Gas boiler",
+        "stock Hybrid (ASHP + BioLPG boiler)",
+        "stock Hybrid (ASHP + Electric resistive)",
+        "stock Hybrid (ASHP + Hydrogen boiler)",
+        "stock Hydrogen boiler",
+        "stock Oil boiler",
+        "stock Total",
+        "stock TotalHPs",
+        "stock_proportion ASHP",
+        "stock_proportion BioLPG boiler",
+        "stock_proportion Biomass boiler",
+        "stock_proportion Community",
+        "stock_proportion DH",
+        "stock_proportion Electric resistive",
+        "stock_proportion Electric storage",
+        "stock_proportion GSHP",
+        "stock_proportion Gas boiler",
+        "stock_proportion Hybrid (ASHP + BioLPG boiler)",
+        "stock_proportion Hybrid (ASHP + Electric resistive)",
+        "stock_proportion Hybrid (ASHP + Hydrogen boiler)",
+        "stock_proportion Hydrogen boiler",
+        "stock_proportion Oil boiler",
+        "stock_proportion TotalHPs"
+      ],
+      "last_written_at": "2026-10-08T10:55:57.742100+00:00",
+      "resource_ids": [
+        "3a9451a1-9e79-4fda-a570-79544b30f44e",
+        "73f57682-bf0e-4bb6-8471-191f7cb75417",
+        "7cec6380-1ad5-44e6-a0d4-246c43456498",
+        "e60da220-afb8-4a9e-9327-552a3c8df549",
+        "f41f65e2-9f55-496b-afaa-76efcee4cda2"
+      ],
+      "rows": 7410,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [
+    "multi_epoch"
+  ],
+  "key": "fes_la_heat_model_domestic",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 7,
+        "columns": [
+          "stock ASHP"
+        ],
+        "max_duplicates": 1110
+      },
+      {
+        "captures_checked": 6,
+        "columns": [
+          "stock BioLPG boiler"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 6,
+        "columns": [
+          "stock Biomass boiler"
+        ],
+        "max_duplicates": 0
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "local-authority-level-spatial-heat-model-outputs-fes",
+  "proposal": {
+    "flags": [
+      "multi_epoch"
+    ],
+    "record_draft": {
+      "eligibility": {
+        "question": "Year: a numeric column with no vendor unit; stock ASHP: a numeric column with no vendor unit; stock Community: a numeric column with no vendor unit; stock DH: a numeric column with no vendor unit; stock Electric resistive: a numeric column with no vendor unit; stock Electric storage: a numeric column with no vendor unit; stock GSHP: a numeric column with no vendor unit; stock Gas boiler: a numeric column with no vendor unit; stock Oil boiler: a numeric column with no vendor unit; stock Total: a numeric column with no vendor unit; stock TotalHPs: a numeric column with no vendor unit; stock_proportion ASHP: a numeric column with no vendor unit; stock_proportion Community: a numeric column with no vendor unit; stock_proportion DH: a numeric column with no vendor unit; stock_proportion Electric resistive: a numeric column with no vendor unit; stock_proportion Electric storage: a numeric column with no vendor unit; stock_proportion GSHP: a numeric column with no vendor unit; stock_proportion Gas boiler: a numeric column with no vendor unit; stock_proportion Oil boiler: a numeric column with no vendor unit; stock_proportion TotalHPs: a numeric column with no vendor unit; Year: a numeric column with no vendor unit; stock ASHP: a numeric column with no vendor unit; stock BioLPG boiler: a numeric column with no vendor unit; stock Biomass boiler: a numeric column with no vendor unit; stock Community: a numeric column with no vendor unit; stock DH: a numeric column with no vendor unit; stock Electric resistive: a numeric column with no vendor unit; stock Electric storage: a numeric column with no vendor unit; stock GSHP: a numeric column with no vendor unit; stock Gas boiler: a numeric column with no vendor unit; stock Hybrid (ASHP + BioLPG boiler): a numeric column with no vendor unit; stock Hybrid (ASHP + Electric resistive): a numeric column with no vendor unit; stock Oil boiler: a numeric column with no vendor unit; stock Total: a numeric column with no vendor unit; stock TotalHPs: a numeric column with no vendor unit; stock_proportion ASHP: a numeric column with no vendor unit; stock_proportion BioLPG boiler: a numeric column with no vendor unit; stock_proportion Biomass boiler: a numeric column with no vendor unit; stock_proportion Community: a numeric column with no vendor unit; stock_proportion DH: a numeric column with no vendor unit; stock_proportion Electric resistive: a numeric column with no vendor unit; stock_proportion Electric storage: a numeric column with no vendor unit; stock_proportion GSHP: a numeric column with no vendor unit; stock_proportion Gas boiler: a numeric column with no vendor unit; stock_proportion Hybrid (ASHP + BioLPG boiler): a numeric column with no vendor unit; stock_proportion Hybrid (ASHP + Electric resistive): a numeric column with no vendor unit; stock_proportion Oil boiler: a numeric column with no vendor unit; stock_proportion TotalHPs: a numeric column with no vendor unit; Year: a numeric column with no vendor unit; stock ASHP: a numeric column with no vendor unit; stock BioLPG boiler: a numeric column with no vendor unit; stock Biomass boiler: a numeric column with no vendor unit; stock Community: a numeric column with no vendor unit; stock DH: a numeric column with no vendor unit; stock Electric resistive: a numeric column with no vendor unit; stock Electric storage: a numeric column with no vendor unit; stock GSHP: a numeric column with no vendor unit; stock Gas boiler: a numeric column with no vendor unit; stock Hybrid (ASHP + BioLPG boiler): a numeric column with no vendor unit; stock Hybrid (ASHP + Electric resistive): a numeric column with no vendor unit; stock Hybrid (ASHP + Hydrogen boiler): a numeric column with no vendor unit; stock Hydrogen boiler: a numeric column with no vendor unit; stock Oil boiler: a numeric column with no vendor unit; stock Total: a numeric column with no vendor unit; stock TotalHPs: a numeric column with no vendor unit; stock_proportion ASHP: a numeric column with no vendor unit; stock_proportion BioLPG boiler: a numeric column with no vendor unit; stock_proportion Biomass boiler: a numeric column with no vendor unit; stock_proportion Community: a numeric column with no vendor unit; stock_proportion DH: a numeric column with no vendor unit; stock_proportion Electric resistive: a numeric column with no vendor unit; stock_proportion Electric storage: a numeric column with no vendor unit; stock_proportion GSHP: a numeric column with no vendor unit; stock_proportion Gas boiler: a numeric column with no vendor unit; stock_proportion Hybrid (ASHP + BioLPG boiler): a numeric column with no vendor unit; stock_proportion Hybrid (ASHP + Electric resistive): a numeric column with no vendor unit; stock_proportion Hybrid (ASHP + Hydrogen boiler): a numeric column with no vendor unit; stock_proportion Hydrogen boiler: a numeric column with no vendor unit; stock_proportion Oil boiler: a numeric column with no vendor unit; stock_proportion TotalHPs: a numeric column with no vendor unit",
+        "status": "held",
+        "unit": "SCN-3"
+      },
+      "encoding": "utf-8",
+      "entity_key": [
+        "stock_biolpg_boiler"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "code_x",
+              "nullable": true,
+              "source": "CODE_x"
+            },
+            {
+              "dtype": "string",
+              "name": "local_authority",
+              "nullable": true,
+              "source": "Local_Authority"
+            },
+            {
+              "dtype": "float64",
+              "name": "year_vendor",
+              "nullable": true,
+              "source": "Year"
+            },
+            {
+              "dtype": "string",
+              "name": "scenario",
+              "nullable": true,
+              "source": "Scenario"
+            },
+            {
+              "dtype": "string",
+              "name": "sector",
+              "nullable": true,
+              "source": "Sector"
+            },
+            {
+              "dtype": "float64",
+              "name": "stock_ashp",
+              "nullable": true,
+              "source": "stock ASHP"
+            },
+            {
+              "dtype": "float64",
+              "name": "stock_community",
+              "nullable": true,
+              "source": "stock Community"
+            },
+            {
+              "dtype": "float64",
+              "name": "stock_dh",
+              "nullable": true,
+              "source": "stock DH"
+            },
+            {
+              "dtype": "float64",
+              "name": "stock_electric_resistive",
+              "nullable": true,
+              "source": "stock Electric resistive"
+            },
+            {
+              "dtype": "float64",
+              "name": "stock_electric_storage",
+              "nullable": true,
+              "source": "stock Electric storage"
+            },
+            {
+              "dtype": "float64",
+              "name": "stock_gshp",
+              "nullable": true,
+              "source": "stock GSHP"
+            },
+            {
+              "dtype": "float64",
+              "name": "stock_gas_boiler",
+              "nullable": true,
+              "source": "stock Gas boiler"
+            },
+            {
+              "dtype": "float64",
+              "name": "stock_oil_boiler",
+              "nullable": true,
+              "source": "stock Oil boiler"
+            },
+            {
+              "dtype": "float64",
+              "name": "stock_total",
+              "nullable": true,
+              "source": "stock Total"
+            },
+            {
+              "dtype": "float64",
+              "name": "stock_totalhps",
+              "nullable": true,
+              "source": "stock TotalHPs"
+            },
+            {
+              "dtype": "float64",
+              "name": "stock_proportion_ashp",
+              "nullable": true,
+              "source": "stock_proportion ASHP"
+            },
+            {
+              "dtype": "float64",
+              "name": "stock_proportion_community",
+              "nullable": true,
+              "source": "stock_proportion Community"
+            },
+            {
+              "dtype": "float64",
+              "name": "stock_proportion_dh",
+              "nullable": true,
+              "source": "stock_proportion DH"
+            },
+            {
+              "dtype": "float64",
+              "name": "stock_proportion_electric_resistive",
+              "nullable": true,
+              "source": "stock_proportion Electric resistive"
+            },
+            {
+              "dtype": "float64",
+              "name": "stock_proportion_electric_storage",
+              "nullable": true,
+              "source": "stock_proportion Electric storage"
+            },
+            {
+              "dtype": "float64",
+              "name": "stock_proportion_gshp",
+              "nullable": true,
+              "source": "stock_proportion GSHP"
+            },
+            {
+              "dtype": "float64",
+              "name": "stock_proportion_gas_boiler",
+              "nullable": true,
+              "source": "stock_proportion Gas boiler"
+            },
+            {
+              "dtype": "float64",
+              "name": "stock_proportion_oil_boiler",
+              "nullable": true,
+              "source": "stock_proportion Oil boiler"
+            },
+            {
+              "dtype": "float64",
+              "name": "stock_proportion_totalhps",
+              "nullable": true,
+              "source": "stock_proportion TotalHPs"
+            }
+          ],
+          "header": [
+            "CODE_x",
+            "Local_Authority",
+            "Year",
+            "Scenario",
+            "Sector",
+            "stock ASHP",
+            "stock Community",
+            "stock DH",
+            "stock Electric resistive",
+            "stock Electric storage",
+            "stock GSHP",
+            "stock Gas boiler",
+            "stock Oil boiler",
+            "stock Total",
+            "stock TotalHPs",
+            "stock_proportion ASHP",
+            "stock_proportion Community",
+            "stock_proportion DH",
+            "stock_proportion Electric resistive",
+            "stock_proportion Electric storage",
+            "stock_proportion GSHP",
+            "stock_proportion Gas boiler",
+            "stock_proportion Oil boiler",
+            "stock_proportion TotalHPs"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        },
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "code_x",
+              "nullable": true,
+              "source": "CODE_x"
+            },
+            {
+              "dtype": "string",
+              "name": "local_authority",
+              "nullable": true,
+              "source": "Local_Authority"
+            },
+            {
+              "dtype": "float64",
+              "name": "year_vendor",
+              "nullable": true,
+              "source": "Year"
+            },
+            {
+              "dtype": "string",
+              "name": "scenario",
+              "nullable": true,
+              "source": "Scenario"
+            },
+            {
+              "dtype": "string",
+              "name": "sector",
+              "nullable": true,
+              "source": "Sector"
+            },
+            {
+              "dtype": "float64",
+              "name": "stock_ashp",
+              "nullable": true,
+              "source": "stock ASHP"
+            },
+            {
+              "dtype": "float64",
+              "name": "stock_biolpg_boiler",
+              "nullable": true,
+              "source": "stock BioLPG boiler"
+            },
+            {
+              "dtype": "float64",
+              "name": "stock_biomass_boiler",
+              "nullable": true,
+              "source": "stock Biomass boiler"
+            },
+            {
+              "dtype": "float64",
+              "name": "stock_community",
+              "nullable": true,
+              "source": "stock Community"
+            },
+            {
+              "dtype": "float64",
+              "name": "stock_dh",
+              "nullable": true,
+              "source": "stock DH"
+            },
+            {
+              "dtype": "float64",
+              "name": "stock_electric_resistive",
+              "nullable": true,
+              "source": "stock Electric resistive"
+            },
+            {
+              "dtype": "float64",
+              "name": "stock_electric_storage",
+              "nullable": true,
+              "source": "stock Electric storage"
+            },
+            {
+              "dtype": "float64",
+              "name": "stock_gshp",
+              "nullable": true,
+              "source": "stock GSHP"
+            },
+            {
+              "dtype": "float64",
+              "name": "stock_gas_boiler",
+              "nullable": true,
+              "source": "stock Gas boiler"
+            },
+            {
+              "dtype": "float64",
+              "name": "stock_hybrid_ashp_biolpg_boiler",
+              "nullable": true,
+              "source": "stock Hybrid (ASHP + BioLPG boiler)"
+            },
+            {
+              "dtype": "float64",
+              "name": "stock_hybrid_ashp_electric_resistive",
+              "nullable": true,
+              "source": "stock Hybrid (ASHP + Electric resistive)"
+            },
+            {
+              "dtype": "float64",
+              "name": "stock_oil_boiler",
+              "nullable": true,
+              "source": "stock Oil boiler"
+            },
+            {
+              "dtype": "float64",
+              "name": "stock_total",
+              "nullable": true,
+              "source": "stock Total"
+            },
+            {
+              "dtype": "float64",
+              "name": "stock_totalhps",
+              "nullable": true,
+              "source": "stock TotalHPs"
+            },
+            {
+              "dtype": "float64",
+              "name": "stock_proportion_ashp",
+              "nullable": true,
+              "source": "stock_proportion ASHP"
+            },
+            {
+              "dtype": "float64",
+              "name": "stock_proportion_biolpg_boiler",
+              "nullable": true,
+              "source": "stock_proportion BioLPG boiler"
+            },
+            {
+              "dtype": "float64",
+              "name": "stock_proportion_biomass_boiler",
+              "nullable": true,
+              "source": "stock_proportion Biomass boiler"
+            },
+            {
+              "dtype": "float64",
+              "name": "stock_proportion_community",
+              "nullable": true,
+              "source": "stock_proportion Community"
+            },
+            {
+              "dtype": "float64",
+              "name": "stock_proportion_dh",
+              "nullable": true,
+              "source": "stock_proportion DH"
+            },
+            {
+              "dtype": "float64",
+              "name": "stock_proportion_electric_resistive",
+              "nullable": true,
+              "source": "stock_proportion Electric resistive"
+            },
+            {
+              "dtype": "float64",
+              "name": "stock_proportion_electric_storage",
+              "nullable": true,
+              "source": "stock_proportion Electric storage"
+            },
+            {
+              "dtype": "float64",
+              "name": "stock_proportion_gshp",
+              "nullable": true,
+              "source": "stock_proportion GSHP"
+            },
+            {
+              "dtype": "float64",
+              "name": "stock_proportion_gas_boiler",
+              "nullable": true,
+              "source": "stock_proportion Gas boiler"
+            },
+            {
+              "dtype": "float64",
+              "name": "stock_proportion_hybrid_ashp_biolpg_boiler",
+              "nullable": true,
+              "source": "stock_proportion Hybrid (ASHP + BioLPG boiler)"
+            },
+            {
+              "dtype": "float64",
+              "name": "stock_proportion_hybrid_ashp_electric_resistive",
+              "nullable": true,
+              "source": "stock_proportion Hybrid (ASHP + Electric resistive)"
+            },
+            {
+              "dtype": "float64",
+              "name": "stock_proportion_oil_boiler",
+              "nullable": true,
+              "source": "stock_proportion Oil boiler"
+            },
+            {
+              "dtype": "float64",
+              "name": "stock_proportion_totalhps",
+              "nullable": true,
+              "source": "stock_proportion TotalHPs"
+            }
+          ],
+          "header": [
+            "CODE_x",
+            "Local_Authority",
+            "Year",
+            "Scenario",
+            "Sector",
+            "stock ASHP",
+            "stock BioLPG boiler",
+            "stock Biomass boiler",
+            "stock Community",
+            "stock DH",
+            "stock Electric resistive",
+            "stock Electric storage",
+            "stock GSHP",
+            "stock Gas boiler",
+            "stock Hybrid (ASHP + BioLPG boiler)",
+            "stock Hybrid (ASHP + Electric resistive)",
+            "stock Oil boiler",
+            "stock Total",
+            "stock TotalHPs",
+            "stock_proportion ASHP",
+            "stock_proportion BioLPG boiler",
+            "stock_proportion Biomass boiler",
+            "stock_proportion Community",
+            "stock_proportion DH",
+            "stock_proportion Electric resistive",
+            "stock_proportion Electric storage",
+            "stock_proportion GSHP",
+            "stock_proportion Gas boiler",
+            "stock_proportion Hybrid (ASHP + BioLPG boiler)",
+            "stock_proportion Hybrid (ASHP + Electric resistive)",
+            "stock_proportion Oil boiler",
+            "stock_proportion TotalHPs"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        },
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "code_x",
+              "nullable": true,
+              "source": "CODE_x"
+            },
+            {
+              "dtype": "string",
+              "name": "local_authority",
+              "nullable": true,
+              "source": "Local_Authority"
+            },
+            {
+              "dtype": "float64",
+              "name": "year_vendor",
+              "nullable": true,
+              "source": "Year"
+            },
+            {
+              "dtype": "string",
+              "name": "scenario",
+              "nullable": true,
+              "source": "Scenario"
+            },
+            {
+              "dtype": "string",
+              "name": "sector",
+              "nullable": true,
+              "source": "Sector"
+            },
+            {
+              "dtype": "float64",
+              "name": "stock_ashp",
+              "nullable": true,
+              "source": "stock ASHP"
+            },
+            {
+              "dtype": "float64",
+              "name": "stock_biolpg_boiler",
+              "nullable": true,
+              "source": "stock BioLPG boiler"
+            },
+            {
+              "dtype": "float64",
+              "name": "stock_biomass_boiler",
+              "nullable": true,
+              "source": "stock Biomass boiler"
+            },
+            {
+              "dtype": "float64",
+              "name": "stock_community",
+              "nullable": true,
+              "source": "stock Community"
+            },
+            {
+              "dtype": "float64",
+              "name": "stock_dh",
+              "nullable": true,
+              "source": "stock DH"
+            },
+            {
+              "dtype": "float64",
+              "name": "stock_electric_resistive",
+              "nullable": true,
+              "source": "stock Electric resistive"
+            },
+            {
+              "dtype": "float64",
+              "name": "stock_electric_storage",
+              "nullable": true,
+              "source": "stock Electric storage"
+            },
+            {
+              "dtype": "float64",
+              "name": "stock_gshp",
+              "nullable": true,
+              "source": "stock GSHP"
+            },
+            {
+              "dtype": "float64",
+              "name": "stock_gas_boiler",
+              "nullable": true,
+              "source": "stock Gas boiler"
+            },
+            {
+              "dtype": "float64",
+              "name": "stock_hybrid_ashp_biolpg_boiler",
+              "nullable": true,
+              "source": "stock Hybrid (ASHP + BioLPG boiler)"
+            },
+            {
+              "dtype": "float64",
+              "name": "stock_hybrid_ashp_electric_resistive",
+              "nullable": true,
+              "source": "stock Hybrid (ASHP + Electric resistive)"
+            },
+            {
+              "dtype": "float64",
+              "name": "stock_hybrid_ashp_hydrogen_boiler",
+              "nullable": true,
+              "source": "stock Hybrid (ASHP + Hydrogen boiler)"
+            },
+            {
+              "dtype": "float64",
+              "name": "stock_hydrogen_boiler",
+              "nullable": true,
+              "source": "stock Hydrogen boiler"
+            },
+            {
+              "dtype": "float64",
+              "name": "stock_oil_boiler",
+              "nullable": true,
+              "source": "stock Oil boiler"
+            },
+            {
+              "dtype": "float64",
+              "name": "stock_total",
+              "nullable": true,
+              "source": "stock Total"
+            },
+            {
+              "dtype": "float64",
+              "name": "stock_totalhps",
+              "nullable": true,
+              "source": "stock TotalHPs"
+            },
+            {
+              "dtype": "float64",
+              "name": "stock_proportion_ashp",
+              "nullable": true,
+              "source": "stock_proportion ASHP"
+            },
+            {
+              "dtype": "float64",
+              "name": "stock_proportion_biolpg_boiler",
+              "nullable": true,
+              "source": "stock_proportion BioLPG boiler"
+            },
+            {
+              "dtype": "float64",
+              "name": "stock_proportion_biomass_boiler",
+              "nullable": true,
+              "source": "stock_proportion Biomass boiler"
+            },
+            {
+              "dtype": "float64",
+              "name": "stock_proportion_community",
+              "nullable": true,
+              "source": "stock_proportion Community"
+            },
+            {
+              "dtype": "float64",
+              "name": "stock_proportion_dh",
+              "nullable": true,
+              "source": "stock_proportion DH"
+            },
+            {
+              "dtype": "float64",
+              "name": "stock_proportion_electric_resistive",
+              "nullable": true,
+              "source": "stock_proportion Electric resistive"
+            },
+            {
+              "dtype": "float64",
+              "name": "stock_proportion_electric_storage",
+              "nullable": true,
+              "source": "stock_proportion Electric storage"
+            },
+            {
+              "dtype": "float64",
+              "name": "stock_proportion_gshp",
+              "nullable": true,
+              "source": "stock_proportion GSHP"
+            },
+            {
+              "dtype": "float64",
+              "name": "stock_proportion_gas_boiler",
+              "nullable": true,
+              "source": "stock_proportion Gas boiler"
+            },
+            {
+              "dtype": "float64",
+              "name": "stock_proportion_hybrid_ashp_biolpg_boiler",
+              "nullable": true,
+              "source": "stock_proportion Hybrid (ASHP + BioLPG boiler)"
+            },
+            {
+              "dtype": "float64",
+              "name": "stock_proportion_hybrid_ashp_electric_resistive",
+              "nullable": true,
+              "source": "stock_proportion Hybrid (ASHP + Electric resistive)"
+            },
+            {
+              "dtype": "float64",
+              "name": "stock_proportion_hybrid_ashp_hydrogen_boiler",
+              "nullable": true,
+              "source": "stock_proportion Hybrid (ASHP + Hydrogen boiler)"
+            },
+            {
+              "dtype": "float64",
+              "name": "stock_proportion_hydrogen_boiler",
+              "nullable": true,
+              "source": "stock_proportion Hydrogen boiler"
+            },
+            {
+              "dtype": "float64",
+              "name": "stock_proportion_oil_boiler",
+              "nullable": true,
+              "source": "stock_proportion Oil boiler"
+            },
+            {
+              "dtype": "float64",
+              "name": "stock_proportion_totalhps",
+              "nullable": true,
+              "source": "stock_proportion TotalHPs"
+            }
+          ],
+          "header": [
+            "CODE_x",
+            "Local_Authority",
+            "Year",
+            "Scenario",
+            "Sector",
+            "stock ASHP",
+            "stock BioLPG boiler",
+            "stock Biomass boiler",
+            "stock Community",
+            "stock DH",
+            "stock Electric resistive",
+            "stock Electric storage",
+            "stock GSHP",
+            "stock Gas boiler",
+            "stock Hybrid (ASHP + BioLPG boiler)",
+            "stock Hybrid (ASHP + Electric resistive)",
+            "stock Hybrid (ASHP + Hydrogen boiler)",
+            "stock Hydrogen boiler",
+            "stock Oil boiler",
+            "stock Total",
+            "stock TotalHPs",
+            "stock_proportion ASHP",
+            "stock_proportion BioLPG boiler",
+            "stock_proportion Biomass boiler",
+            "stock_proportion Community",
+            "stock_proportion DH",
+            "stock_proportion Electric resistive",
+            "stock_proportion Electric storage",
+            "stock_proportion GSHP",
+            "stock_proportion Gas boiler",
+            "stock_proportion Hybrid (ASHP + BioLPG boiler)",
+            "stock_proportion Hybrid (ASHP + Electric resistive)",
+            "stock_proportion Hybrid (ASHP + Hydrogen boiler)",
+            "stock_proportion Hydrogen boiler",
+            "stock_proportion Oil boiler",
+            "stock_proportion TotalHPs"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T81",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "held",
+        "field": "column 'Year'.unit",
+        "id": "T01",
+        "kind": "unit",
+        "question": "Year: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'stock ASHP'.unit",
+        "id": "T02",
+        "kind": "unit",
+        "question": "stock ASHP: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'stock Community'.unit",
+        "id": "T03",
+        "kind": "unit",
+        "question": "stock Community: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'stock DH'.unit",
+        "id": "T04",
+        "kind": "unit",
+        "question": "stock DH: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'stock Electric resistive'.unit",
+        "id": "T05",
+        "kind": "unit",
+        "question": "stock Electric resistive: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'stock Electric storage'.unit",
+        "id": "T06",
+        "kind": "unit",
+        "question": "stock Electric storage: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'stock GSHP'.unit",
+        "id": "T07",
+        "kind": "unit",
+        "question": "stock GSHP: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'stock Gas boiler'.unit",
+        "id": "T08",
+        "kind": "unit",
+        "question": "stock Gas boiler: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'stock Oil boiler'.unit",
+        "id": "T09",
+        "kind": "unit",
+        "question": "stock Oil boiler: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'stock Total'.unit",
+        "id": "T10",
+        "kind": "unit",
+        "question": "stock Total: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'stock TotalHPs'.unit",
+        "id": "T11",
+        "kind": "unit",
+        "question": "stock TotalHPs: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'stock_proportion ASHP'.unit",
+        "id": "T12",
+        "kind": "unit",
+        "question": "stock_proportion ASHP: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'stock_proportion Community'.unit",
+        "id": "T13",
+        "kind": "unit",
+        "question": "stock_proportion Community: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'stock_proportion DH'.unit",
+        "id": "T14",
+        "kind": "unit",
+        "question": "stock_proportion DH: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'stock_proportion Electric resistive'.unit",
+        "id": "T15",
+        "kind": "unit",
+        "question": "stock_proportion Electric resistive: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'stock_proportion Electric storage'.unit",
+        "id": "T16",
+        "kind": "unit",
+        "question": "stock_proportion Electric storage: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'stock_proportion GSHP'.unit",
+        "id": "T17",
+        "kind": "unit",
+        "question": "stock_proportion GSHP: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'stock_proportion Gas boiler'.unit",
+        "id": "T18",
+        "kind": "unit",
+        "question": "stock_proportion Gas boiler: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'stock_proportion Oil boiler'.unit",
+        "id": "T19",
+        "kind": "unit",
+        "question": "stock_proportion Oil boiler: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'stock_proportion TotalHPs'.unit",
+        "id": "T20",
+        "kind": "unit",
+        "question": "stock_proportion TotalHPs: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Year'.unit",
+        "id": "T21",
+        "kind": "unit",
+        "question": "Year: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'stock ASHP'.unit",
+        "id": "T22",
+        "kind": "unit",
+        "question": "stock ASHP: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'stock BioLPG boiler'.unit",
+        "id": "T23",
+        "kind": "unit",
+        "question": "stock BioLPG boiler: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'stock Biomass boiler'.unit",
+        "id": "T24",
+        "kind": "unit",
+        "question": "stock Biomass boiler: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'stock Community'.unit",
+        "id": "T25",
+        "kind": "unit",
+        "question": "stock Community: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'stock DH'.unit",
+        "id": "T26",
+        "kind": "unit",
+        "question": "stock DH: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'stock Electric resistive'.unit",
+        "id": "T27",
+        "kind": "unit",
+        "question": "stock Electric resistive: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'stock Electric storage'.unit",
+        "id": "T28",
+        "kind": "unit",
+        "question": "stock Electric storage: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'stock GSHP'.unit",
+        "id": "T29",
+        "kind": "unit",
+        "question": "stock GSHP: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'stock Gas boiler'.unit",
+        "id": "T30",
+        "kind": "unit",
+        "question": "stock Gas boiler: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'stock Hybrid (ASHP + BioLPG boiler)'.unit",
+        "id": "T31",
+        "kind": "unit",
+        "question": "stock Hybrid (ASHP + BioLPG boiler): a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'stock Hybrid (ASHP + Electric resistive)'.unit",
+        "id": "T32",
+        "kind": "unit",
+        "question": "stock Hybrid (ASHP + Electric resistive): a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'stock Oil boiler'.unit",
+        "id": "T33",
+        "kind": "unit",
+        "question": "stock Oil boiler: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'stock Total'.unit",
+        "id": "T34",
+        "kind": "unit",
+        "question": "stock Total: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'stock TotalHPs'.unit",
+        "id": "T35",
+        "kind": "unit",
+        "question": "stock TotalHPs: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'stock_proportion ASHP'.unit",
+        "id": "T36",
+        "kind": "unit",
+        "question": "stock_proportion ASHP: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'stock_proportion BioLPG boiler'.unit",
+        "id": "T37",
+        "kind": "unit",
+        "question": "stock_proportion BioLPG boiler: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'stock_proportion Biomass boiler'.unit",
+        "id": "T38",
+        "kind": "unit",
+        "question": "stock_proportion Biomass boiler: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'stock_proportion Community'.unit",
+        "id": "T39",
+        "kind": "unit",
+        "question": "stock_proportion Community: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'stock_proportion DH'.unit",
+        "id": "T40",
+        "kind": "unit",
+        "question": "stock_proportion DH: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'stock_proportion Electric resistive'.unit",
+        "id": "T41",
+        "kind": "unit",
+        "question": "stock_proportion Electric resistive: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'stock_proportion Electric storage'.unit",
+        "id": "T42",
+        "kind": "unit",
+        "question": "stock_proportion Electric storage: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'stock_proportion GSHP'.unit",
+        "id": "T43",
+        "kind": "unit",
+        "question": "stock_proportion GSHP: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'stock_proportion Gas boiler'.unit",
+        "id": "T44",
+        "kind": "unit",
+        "question": "stock_proportion Gas boiler: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'stock_proportion Hybrid (ASHP + BioLPG boiler)'.unit",
+        "id": "T45",
+        "kind": "unit",
+        "question": "stock_proportion Hybrid (ASHP + BioLPG boiler): a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'stock_proportion Hybrid (ASHP + Electric resistive)'.unit",
+        "id": "T46",
+        "kind": "unit",
+        "question": "stock_proportion Hybrid (ASHP + Electric resistive): a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'stock_proportion Oil boiler'.unit",
+        "id": "T47",
+        "kind": "unit",
+        "question": "stock_proportion Oil boiler: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'stock_proportion TotalHPs'.unit",
+        "id": "T48",
+        "kind": "unit",
+        "question": "stock_proportion TotalHPs: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Year'.unit",
+        "id": "T49",
+        "kind": "unit",
+        "question": "Year: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'stock ASHP'.unit",
+        "id": "T50",
+        "kind": "unit",
+        "question": "stock ASHP: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'stock BioLPG boiler'.unit",
+        "id": "T51",
+        "kind": "unit",
+        "question": "stock BioLPG boiler: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'stock Biomass boiler'.unit",
+        "id": "T52",
+        "kind": "unit",
+        "question": "stock Biomass boiler: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'stock Community'.unit",
+        "id": "T53",
+        "kind": "unit",
+        "question": "stock Community: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'stock DH'.unit",
+        "id": "T54",
+        "kind": "unit",
+        "question": "stock DH: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'stock Electric resistive'.unit",
+        "id": "T55",
+        "kind": "unit",
+        "question": "stock Electric resistive: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'stock Electric storage'.unit",
+        "id": "T56",
+        "kind": "unit",
+        "question": "stock Electric storage: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'stock GSHP'.unit",
+        "id": "T57",
+        "kind": "unit",
+        "question": "stock GSHP: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'stock Gas boiler'.unit",
+        "id": "T58",
+        "kind": "unit",
+        "question": "stock Gas boiler: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'stock Hybrid (ASHP + BioLPG boiler)'.unit",
+        "id": "T59",
+        "kind": "unit",
+        "question": "stock Hybrid (ASHP + BioLPG boiler): a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'stock Hybrid (ASHP + Electric resistive)'.unit",
+        "id": "T60",
+        "kind": "unit",
+        "question": "stock Hybrid (ASHP + Electric resistive): a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'stock Hybrid (ASHP + Hydrogen boiler)'.unit",
+        "id": "T61",
+        "kind": "unit",
+        "question": "stock Hybrid (ASHP + Hydrogen boiler): a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'stock Hydrogen boiler'.unit",
+        "id": "T62",
+        "kind": "unit",
+        "question": "stock Hydrogen boiler: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'stock Oil boiler'.unit",
+        "id": "T63",
+        "kind": "unit",
+        "question": "stock Oil boiler: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'stock Total'.unit",
+        "id": "T64",
+        "kind": "unit",
+        "question": "stock Total: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'stock TotalHPs'.unit",
+        "id": "T65",
+        "kind": "unit",
+        "question": "stock TotalHPs: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'stock_proportion ASHP'.unit",
+        "id": "T66",
+        "kind": "unit",
+        "question": "stock_proportion ASHP: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'stock_proportion BioLPG boiler'.unit",
+        "id": "T67",
+        "kind": "unit",
+        "question": "stock_proportion BioLPG boiler: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'stock_proportion Biomass boiler'.unit",
+        "id": "T68",
+        "kind": "unit",
+        "question": "stock_proportion Biomass boiler: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'stock_proportion Community'.unit",
+        "id": "T69",
+        "kind": "unit",
+        "question": "stock_proportion Community: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'stock_proportion DH'.unit",
+        "id": "T70",
+        "kind": "unit",
+        "question": "stock_proportion DH: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'stock_proportion Electric resistive'.unit",
+        "id": "T71",
+        "kind": "unit",
+        "question": "stock_proportion Electric resistive: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'stock_proportion Electric storage'.unit",
+        "id": "T72",
+        "kind": "unit",
+        "question": "stock_proportion Electric storage: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'stock_proportion GSHP'.unit",
+        "id": "T73",
+        "kind": "unit",
+        "question": "stock_proportion GSHP: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'stock_proportion Gas boiler'.unit",
+        "id": "T74",
+        "kind": "unit",
+        "question": "stock_proportion Gas boiler: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'stock_proportion Hybrid (ASHP + BioLPG boiler)'.unit",
+        "id": "T75",
+        "kind": "unit",
+        "question": "stock_proportion Hybrid (ASHP + BioLPG boiler): a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'stock_proportion Hybrid (ASHP + Electric resistive)'.unit",
+        "id": "T76",
+        "kind": "unit",
+        "question": "stock_proportion Hybrid (ASHP + Electric resistive): a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'stock_proportion Hybrid (ASHP + Hydrogen boiler)'.unit",
+        "id": "T77",
+        "kind": "unit",
+        "question": "stock_proportion Hybrid (ASHP + Hydrogen boiler): a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'stock_proportion Hydrogen boiler'.unit",
+        "id": "T78",
+        "kind": "unit",
+        "question": "stock_proportion Hydrogen boiler: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'stock_proportion Oil boiler'.unit",
+        "id": "T79",
+        "kind": "unit",
+        "question": "stock_proportion Oil boiler: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'stock_proportion TotalHPs'.unit",
+        "id": "T80",
+        "kind": "unit",
+        "question": "stock_proportion TotalHPs: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T81",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: none"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T82",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['stock_biolpg_boiler'] (measured unique in 6 capture(s)); without one, latest stays whole_capture"
+      },
+      {
+        "consequence": "none",
+        "field": "epochs",
+        "id": "T83",
+        "kind": "multi_epoch",
+        "question": "3 header epochs; review each in its batch"
+      }
+    ]
+  },
+  "refresh": "adhoc",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update frequency",
+        "value": "Ad hoc"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "FES: Pathways to Net Zero",
+    "title": "Local Authority Level Spatial Heat Model Outputs (FES)"
+  }
+}

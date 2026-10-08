@@ -1,0 +1,1785 @@
+{
+  "archetype": "SCN",
+  "batch": "SCN-1",
+  "captures": [
+    {
+      "all_blank_rows": 4,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/fes_building_blocks_block_definitions/2026/10/08/raw_20261008T105256Z_9fb5211f-9689-4d6f-a73e-cf28f03c5885_e582e544.csv",
+      "ckan_last_modified": "2020-08-13T12:40:08.469499",
+      "cr": 0,
+      "crlf": 54,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 11,
+      "parse_error": null,
+      "resource_id": "9fb5211f-9689-4d6f-a73e-cf28f03c5885",
+      "rows": 53,
+      "sampled": false,
+      "size": 8353,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:52:56.827482+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/fes_building_blocks_block_definitions/2026/10/08/raw_20261008T105259Z_0dce4330-7dfe-4db6-97c9-443e82246cbc_b507acef.csv",
+      "ckan_last_modified": "2026-09-16T13:33:00.286867",
+      "cr": 0,
+      "crlf": 65,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 7,
+      "parse_error": null,
+      "resource_id": "0dce4330-7dfe-4db6-97c9-443e82246cbc",
+      "rows": 64,
+      "sampled": false,
+      "size": 11046,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:52:59.591925+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/fes_building_blocks_block_definitions/2026/10/08/raw_20261008T105302Z_e5ab7ecb-0ab1-4fe7-833c-1fe905b086f8_14f8b9f4.csv",
+      "ckan_last_modified": "2026-09-03T13:45:29.162340",
+      "cr": 0,
+      "crlf": 67,
+      "duplicate_header": true,
+      "ends_with_newline": true,
+      "epoch": 2,
+      "lf": 7,
+      "parse_error": null,
+      "resource_id": "e5ab7ecb-0ab1-4fe7-833c-1fe905b086f8",
+      "rows": 66,
+      "sampled": false,
+      "size": 12205,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:53:02.747471+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/fes_building_blocks_block_definitions/2026/10/08/raw_20261008T105305Z_f400d905-4159-4bcb-8e7d-f28528545d89_ee424bf3.csv",
+      "ckan_last_modified": "2026-09-03T13:44:08.323327",
+      "cr": 0,
+      "crlf": 67,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 3,
+      "lf": 7,
+      "parse_error": null,
+      "resource_id": "f400d905-4159-4bcb-8e7d-f28528545d89",
+      "rows": 66,
+      "sampled": false,
+      "size": 12029,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:53:05.280666+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/fes_building_blocks_block_definitions/2026/10/08/raw_20261008T105307Z_778a505c-1972-463b-b4bf-53e33c4d3470_7b3252b3.csv",
+      "ckan_last_modified": "2024-07-15T06:35:12.667550",
+      "cr": 0,
+      "crlf": 67,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 4,
+      "lf": 7,
+      "parse_error": null,
+      "resource_id": "778a505c-1972-463b-b4bf-53e33c4d3470",
+      "rows": 66,
+      "sampled": false,
+      "size": 7523,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:53:07.837772+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/fes_building_blocks_block_definitions/2026/10/08/raw_20261008T105310Z_cc3118da-cbbe-49e8-a8ee-9bdd89a8bf9c_6489be12.csv",
+      "ckan_last_modified": "2025-07-14T04:48:17.882181",
+      "cr": 0,
+      "crlf": 67,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 4,
+      "lf": 10,
+      "parse_error": null,
+      "resource_id": "cc3118da-cbbe-49e8-a8ee-9bdd89a8bf9c",
+      "rows": 66,
+      "sampled": false,
+      "size": 11583,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:53:10.665613+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 1,
+      "columns": {
+        "Building Block ID Number": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 49,
+            "int64": 49
+          },
+          "examples": [
+            "Gen_BB001",
+            "Gen_BB002",
+            "Gen_BB003"
+          ],
+          "max_len": 10,
+          "null_count": 4,
+          "shapes": {
+            "text": 49
+          }
+        },
+        "Comments": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 21,
+            "int64": 21
+          },
+          "examples": [
+            "Non-renewable",
+            "Non-renewable excluding domestic Micro CHP",
+            "Reciprocating Engines, Gas Turbines, Includes Anaerobic Digestion"
+          ],
+          "max_len": 153,
+          "null_count": 32,
+          "shapes": {
+            "text": 21
+          }
+        },
+        "Detail": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 48,
+            "int64": 48
+          },
+          "examples": [
+            "Installed capacity",
+            "Number of domestic customers",
+            "Annualised Peak Demand MW"
+          ],
+          "max_len": 94,
+          "null_count": 5,
+          "shapes": {
+            "text": 48
+          }
+        },
+        "ESO Additional Notes": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 13,
+            "int64": 13
+          },
+          "examples": [
+            "Data used for FES is provided under licence from Oxford Economics. We are unable",
+            "1) Residential ACS Peak Demand\n2) Distribution losses (~6%) added to FES compone",
+            "Not included - we do not have this information as part of our FES analysis."
+          ],
+          "max_len": 441,
+          "null_count": 40,
+          "shapes": {
+            "text": 13
+          }
+        },
+        "Technology": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 49,
+            "int64": 49
+          },
+          "examples": [
+            "Non-renewable CHP",
+            "Micro CHP",
+            "Renewable Engines (Landfill Gas, Sewage Gas, Biogas)"
+          ],
+          "max_len": 52,
+          "null_count": 4,
+          "shapes": {
+            "text": 49
+          }
+        },
+        "Technology Detail": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 39,
+            "int64": 39
+          },
+          "examples": [
+            ">=1MW",
+            "<1MW",
+            "Domestic (G98/G83)"
+          ],
+          "max_len": 69,
+          "null_count": 14,
+          "shapes": {
+            "text": 39
+          }
+        },
+        "Template": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 49,
+            "int64": 49
+          },
+          "examples": [
+            "Generation",
+            "Demand",
+            "Demand Low Carbon Technologies"
+          ],
+          "max_len": 30,
+          "null_count": 4,
+          "shapes": {
+            "text": 49
+          }
+        },
+        "Units": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 49,
+            "int64": 49
+          },
+          "examples": [
+            "MW",
+            "Number of",
+            "Metres squared"
+          ],
+          "max_len": 36,
+          "null_count": 4,
+          "shapes": {
+            "text": 49
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "Building Block ID Number": {
+            "description": "Code identifying this building block",
+            "title": "Building Block ID Number",
+            "type": "text",
+            "unit": "MW"
+          },
+          "Comments": {
+            "description": "Further information on what is included in this building block",
+            "title": "Comments",
+            "type": "text",
+            "unit": null
+          },
+          "Detail": {
+            "description": "Description of what this building block contains",
+            "title": "Detail",
+            "type": "text",
+            "unit": "MW"
+          },
+          "Technology": {
+            "description": "Lower level of categorisation after template level",
+            "title": "Technology",
+            "type": "text",
+            "unit": "MW"
+          },
+          "Technology Detail": {
+            "description": "Further information on what this building block contains",
+            "title": "Technology Detail",
+            "type": "text",
+            "unit": "MW"
+          },
+          "Template": {
+            "description": "The area that this data relates to",
+            "title": "Template",
+            "type": "text",
+            "unit": "MW"
+          },
+          "Units": {
+            "description": "The units that this building block is in",
+            "title": "Units",
+            "type": "text",
+            "unit": "MW"
+          }
+        },
+        "field_info_not_in_header": [
+          "Alignment with Ofgem Core Scenario Key Drivers",
+          "ESO Comments"
+        ],
+        "header_not_in_field_info": [
+          "ESO Additional Notes"
+        ]
+      },
+      "first_written_at": "2026-10-08T10:52:56.827482+00:00",
+      "header": [
+        "Template",
+        "Technology",
+        "Building Block ID Number",
+        "Technology Detail",
+        "Units",
+        "Detail",
+        "Comments",
+        "ESO Additional Notes"
+      ],
+      "last_written_at": "2026-10-08T10:52:56.827482+00:00",
+      "resource_ids": [
+        "9fb5211f-9689-4d6f-a73e-cf28f03c5885"
+      ],
+      "rows": 53,
+      "settlement_periods": []
+    },
+    {
+      "captures": 1,
+      "columns": {
+        "Alignment with Ofgem Core Scenario Key Drivers": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 13,
+            "int64": 13
+          },
+          "examples": [
+            "Distribution Thermal Generation (MW)",
+            "Solar Generation (MW)",
+            "Wind Generation (MW)"
+          ],
+          "max_len": 158,
+          "null_count": 51,
+          "shapes": {
+            "text": 13
+          }
+        },
+        "Building Block ID Number": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 64,
+            "int64": 64
+          },
+          "examples": [
+            "Gen_BB001",
+            "Gen_BB002",
+            "Gen_BB003"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "text": 64
+          }
+        },
+        "Comments": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 29,
+            "int64": 29
+          },
+          "examples": [
+            "Non-renewable",
+            "Non-renewable excluding domestic Micro CHP",
+            "Reciprocating Engines, Gas Turbines, Includes Anaerobic Digestion"
+          ],
+          "max_len": 107,
+          "null_count": 35,
+          "shapes": {
+            "text": 29
+          }
+        },
+        "Detail": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 61,
+            "int64": 61
+          },
+          "examples": [
+            "Installed capacity",
+            "Number of domestic customers",
+            "Number of I&C customers"
+          ],
+          "max_len": 65,
+          "null_count": 3,
+          "shapes": {
+            "text": 61
+          }
+        },
+        "ESO Comments": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 19,
+            "int64": 19
+          },
+          "examples": [
+            "Data used for FES is provided under licence from Oxford Economics. We are unable",
+            "Not included - we do not have this information as part of our FES analysis.",
+            "The Building block data has been developed using a combination of modelling appr"
+          ],
+          "max_len": 722,
+          "null_count": 45,
+          "shapes": {
+            "text": 19
+          }
+        },
+        "Technology": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 64,
+            "int64": 64
+          },
+          "examples": [
+            "Non-renewable CHP",
+            "Micro CHP",
+            "Renewable Engines (Landfill Gas, Sewage Gas, Biogas)"
+          ],
+          "max_len": 52,
+          "null_count": 0,
+          "shapes": {
+            "text": 64
+          }
+        },
+        "Technology Detail": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 54,
+            "int64": 54
+          },
+          "examples": [
+            ">=1MW",
+            "<1MW",
+            "Domestic (G98/G83)"
+          ],
+          "max_len": 67,
+          "null_count": 10,
+          "shapes": {
+            "text": 54
+          }
+        },
+        "Template": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 64,
+            "int64": 64
+          },
+          "examples": [
+            "Generation",
+            "Demand",
+            "Demand Low Carbon Technologies"
+          ],
+          "max_len": 30,
+          "null_count": 0,
+          "shapes": {
+            "text": 64
+          }
+        },
+        "Units": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 64,
+            "int64": 64
+          },
+          "examples": [
+            "MW",
+            "Number of",
+            "Metres squared"
+          ],
+          "max_len": 36,
+          "null_count": 0,
+          "shapes": {
+            "text": 64
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "Alignment with Ofgem Core Scenario Key Drivers": {
+            "description": "Alignment with Ofgem Core Scenario Key Drivers",
+            "title": "Alignment with Ofgem Core Scenario Key Drivers",
+            "type": "text",
+            "unit": null
+          },
+          "Building Block ID Number": {
+            "description": "Code identifying this building block",
+            "title": "Building Block ID Number",
+            "type": "text",
+            "unit": "MW"
+          },
+          "Comments": {
+            "description": "Further information on what is included in this building block",
+            "title": "Comments",
+            "type": "text",
+            "unit": null
+          },
+          "Detail": {
+            "description": "Description of what this building block contains",
+            "title": "Detail",
+            "type": "text",
+            "unit": "MW"
+          },
+          "ESO Comments": {
+            "description": "Supplemental notes on what ESO have provided for this building block",
+            "title": "ESO Additional Notes",
+            "type": "text",
+            "unit": null
+          },
+          "Technology": {
+            "description": "Lower level of categorisation after template level",
+            "title": "Technology",
+            "type": "text",
+            "unit": "MW"
+          },
+          "Technology Detail": {
+            "description": "Further information on what this building block contains",
+            "title": "Technology Detail",
+            "type": "text",
+            "unit": "MW"
+          },
+          "Template": {
+            "description": "The area that this data relates to",
+            "title": "Template",
+            "type": "text",
+            "unit": "MW"
+          },
+          "Units": {
+            "description": "The units that this building block is in",
+            "title": "Units",
+            "type": "text",
+            "unit": "MW"
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T10:52:59.591925+00:00",
+      "header": [
+        "Template",
+        "Technology",
+        "Building Block ID Number",
+        "Technology Detail",
+        "Units",
+        "Detail",
+        "Comments",
+        "Alignment with Ofgem Core Scenario Key Drivers",
+        "ESO Comments"
+      ],
+      "last_written_at": "2026-10-08T10:52:59.591925+00:00",
+      "resource_ids": [
+        "0dce4330-7dfe-4db6-97c9-443e82246cbc"
+      ],
+      "rows": 64,
+      "settlement_periods": []
+    },
+    {
+      "captures": 1,
+      "columns": {
+        "": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [],
+          "max_len": 0,
+          "null_count": 66,
+          "shapes": {}
+        },
+        "Alignment with Ofgem Core Scenario Key Drivers": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 13,
+            "int64": 13
+          },
+          "examples": [
+            "Distribution Thermal Generation (MW)",
+            "Solar Generation (MW)",
+            "Wind Generation (MW)"
+          ],
+          "max_len": 158,
+          "null_count": 53,
+          "shapes": {
+            "text": 13
+          }
+        },
+        "Building Block ID Number": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 66,
+            "int64": 66
+          },
+          "examples": [
+            "Gen_BB001",
+            "Gen_BB002",
+            "Gen_BB003"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "text": 66
+          }
+        },
+        "Comments": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 31,
+            "int64": 31
+          },
+          "examples": [
+            "Non-renewable",
+            "Non-renewable excluding domestic Micro CHP",
+            "Reciprocating Engines, Gas Turbines, Includes Anaerobic Digestion"
+          ],
+          "max_len": 110,
+          "null_count": 35,
+          "shapes": {
+            "text": 31
+          }
+        },
+        "Detail": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 63,
+            "int64": 63
+          },
+          "examples": [
+            "Installed capacity",
+            "Number of domestic customers",
+            "Number of I&C customers"
+          ],
+          "max_len": 65,
+          "null_count": 3,
+          "shapes": {
+            "text": 63
+          }
+        },
+        "ESO Comments": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 18,
+            "int64": 18
+          },
+          "examples": [
+            "Not included - we do not have this information as part of our FES analysis.",
+            "The Building block data has been developed using a combination of modelling appr"
+          ],
+          "max_len": 722,
+          "null_count": 48,
+          "shapes": {
+            "text": 18
+          }
+        },
+        "Included in ESO Data": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 66,
+            "int64": 66
+          },
+          "examples": [
+            "Y",
+            "N"
+          ],
+          "max_len": 1,
+          "null_count": 0,
+          "shapes": {
+            "text": 66
+          }
+        },
+        "Technology": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 66,
+            "int64": 66
+          },
+          "examples": [
+            "Non-renewable CHP",
+            "Micro CHP",
+            "Renewable Engines (Landfill Gas, Sewage Gas, Biogas)"
+          ],
+          "max_len": 52,
+          "null_count": 0,
+          "shapes": {
+            "text": 66
+          }
+        },
+        "Technology Detail": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 56,
+            "int64": 56
+          },
+          "examples": [
+            ">=1MW",
+            "<1MW",
+            "Domestic (G98/G83)"
+          ],
+          "max_len": 67,
+          "null_count": 10,
+          "shapes": {
+            "text": 56
+          }
+        },
+        "Template": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 66,
+            "int64": 66
+          },
+          "examples": [
+            "Generation",
+            "Demand",
+            "Demand Low Carbon Technologies"
+          ],
+          "max_len": 30,
+          "null_count": 0,
+          "shapes": {
+            "text": 66
+          }
+        },
+        "Units": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 66,
+            "int64": 66
+          },
+          "examples": [
+            "MW",
+            "Number of",
+            "Metres squared"
+          ],
+          "max_len": 36,
+          "null_count": 0,
+          "shapes": {
+            "text": 66
+          }
+        },
+        "_duplicated_0": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [],
+          "max_len": 0,
+          "null_count": 66,
+          "shapes": {}
+        }
+      },
+      "field_info": {
+        "columns": {
+          "Alignment with Ofgem Core Scenario Key Drivers": {
+            "description": "Alignment with Ofgem Core Scenario Key Drivers",
+            "title": "Alignment with Ofgem Core Scenario Key Drivers",
+            "type": "text",
+            "unit": null
+          },
+          "Building Block ID Number": {
+            "description": "Code identifying this building block",
+            "title": "Building Block ID Number",
+            "type": "text",
+            "unit": "MW"
+          },
+          "Comments": {
+            "description": "Further information on what is included in this building block",
+            "title": "Comments",
+            "type": "text",
+            "unit": null
+          },
+          "Detail": {
+            "description": "Description of what this building block contains",
+            "title": "Detail",
+            "type": "text",
+            "unit": "MW"
+          },
+          "ESO Comments": {
+            "description": "Supplemental notes on what ESO have provided for this building block",
+            "title": "ESO Additional Notes",
+            "type": "text",
+            "unit": null
+          },
+          "Technology": {
+            "description": "Lower level of categorisation after template level",
+            "title": "Technology",
+            "type": "text",
+            "unit": "MW"
+          },
+          "Technology Detail": {
+            "description": "Further information on what this building block contains",
+            "title": "Technology Detail",
+            "type": "text",
+            "unit": "MW"
+          },
+          "Template": {
+            "description": "The area that this data relates to",
+            "title": "Template",
+            "type": "text",
+            "unit": "MW"
+          },
+          "Units": {
+            "description": "The units that this building block is in",
+            "title": "Units",
+            "type": "text",
+            "unit": "MW"
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": [
+          "",
+          "_duplicated_0",
+          "Included in ESO Data"
+        ]
+      },
+      "first_written_at": "2026-10-08T10:53:02.747471+00:00",
+      "header": [
+        "Template",
+        "Technology",
+        "Building Block ID Number",
+        "Technology Detail",
+        "Units",
+        "Detail",
+        "Comments",
+        "",
+        "Alignment with Ofgem Core Scenario Key Drivers",
+        "_duplicated_0",
+        "Included in ESO Data",
+        "ESO Comments"
+      ],
+      "last_written_at": "2026-10-08T10:53:02.747471+00:00",
+      "resource_ids": [
+        "e5ab7ecb-0ab1-4fe7-833c-1fe905b086f8"
+      ],
+      "rows": 66,
+      "settlement_periods": []
+    },
+    {
+      "captures": 1,
+      "columns": {
+        "Alignment with Ofgem Core Scenario Key Drivers": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 13,
+            "int64": 13
+          },
+          "examples": [
+            "Distribution Thermal Generation (MW)",
+            "Solar Generation (MW)",
+            "Wind Generation (MW)"
+          ],
+          "max_len": 158,
+          "null_count": 53,
+          "shapes": {
+            "text": 13
+          }
+        },
+        "Building Block ID Number": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 66,
+            "int64": 66
+          },
+          "examples": [
+            "Gen_BB001",
+            "Gen_BB002",
+            "Gen_BB003"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "text": 66
+          }
+        },
+        "Comments": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 31,
+            "int64": 31
+          },
+          "examples": [
+            "Non-renewable",
+            "Non-renewable excluding domestic Micro CHP",
+            "Reciprocating Engines, Gas Turbines, Includes Anaerobic Digestion"
+          ],
+          "max_len": 110,
+          "null_count": 35,
+          "shapes": {
+            "text": 31
+          }
+        },
+        "Detail": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 63,
+            "int64": 63
+          },
+          "examples": [
+            "Installed capacity",
+            "Number of domestic customers",
+            "Number of I&C customers"
+          ],
+          "max_len": 65,
+          "null_count": 3,
+          "shapes": {
+            "text": 63
+          }
+        },
+        "ESO Comments": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 18,
+            "int64": 18
+          },
+          "examples": [
+            "Not included - we do not have this information as part of our FES analysis.",
+            "The Building block data has been developed using a combination of modelling appr"
+          ],
+          "max_len": 703,
+          "null_count": 48,
+          "shapes": {
+            "text": 18
+          }
+        },
+        "Included in ESO Data": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 66,
+            "int64": 66
+          },
+          "examples": [
+            "Y",
+            "N"
+          ],
+          "max_len": 1,
+          "null_count": 0,
+          "shapes": {
+            "text": 66
+          }
+        },
+        "Technology": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 66,
+            "int64": 66
+          },
+          "examples": [
+            "Non-renewable CHP",
+            "Micro CHP",
+            "Renewable Engines (Landfill Gas, Sewage Gas, Biogas)"
+          ],
+          "max_len": 52,
+          "null_count": 0,
+          "shapes": {
+            "text": 66
+          }
+        },
+        "Technology Detail": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 56,
+            "int64": 56
+          },
+          "examples": [
+            ">=1MW",
+            "<1MW",
+            "Domestic (G98/G83)"
+          ],
+          "max_len": 67,
+          "null_count": 10,
+          "shapes": {
+            "text": 56
+          }
+        },
+        "Template": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 66,
+            "int64": 66
+          },
+          "examples": [
+            "Generation",
+            "Demand",
+            "Demand Low Carbon Technologies"
+          ],
+          "max_len": 30,
+          "null_count": 0,
+          "shapes": {
+            "text": 66
+          }
+        },
+        "Units": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 66,
+            "int64": 66
+          },
+          "examples": [
+            "MW",
+            "Number of",
+            "Metres squared"
+          ],
+          "max_len": 36,
+          "null_count": 0,
+          "shapes": {
+            "text": 66
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "Alignment with Ofgem Core Scenario Key Drivers": {
+            "description": "Alignment with Ofgem Core Scenario Key Drivers",
+            "title": "Alignment with Ofgem Core Scenario Key Drivers",
+            "type": "text",
+            "unit": null
+          },
+          "Building Block ID Number": {
+            "description": "Code identifying this building block",
+            "title": "Building Block ID Number",
+            "type": "text",
+            "unit": "MW"
+          },
+          "Comments": {
+            "description": "Further information on what is included in this building block",
+            "title": "Comments",
+            "type": "text",
+            "unit": null
+          },
+          "Detail": {
+            "description": "Description of what this building block contains",
+            "title": "Detail",
+            "type": "text",
+            "unit": "MW"
+          },
+          "ESO Comments": {
+            "description": "Supplemental notes on what ESO have provided for this building block",
+            "title": "ESO Additional Notes",
+            "type": "text",
+            "unit": null
+          },
+          "Technology": {
+            "description": "Lower level of categorisation after template level",
+            "title": "Technology",
+            "type": "text",
+            "unit": "MW"
+          },
+          "Technology Detail": {
+            "description": "Further information on what this building block contains",
+            "title": "Technology Detail",
+            "type": "text",
+            "unit": "MW"
+          },
+          "Template": {
+            "description": "The area that this data relates to",
+            "title": "Template",
+            "type": "text",
+            "unit": "MW"
+          },
+          "Units": {
+            "description": "The units that this building block is in",
+            "title": "Units",
+            "type": "text",
+            "unit": "MW"
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": [
+          "Included in ESO Data"
+        ]
+      },
+      "first_written_at": "2026-10-08T10:53:05.280666+00:00",
+      "header": [
+        "Template",
+        "Technology",
+        "Building Block ID Number",
+        "Technology Detail",
+        "Units",
+        "Detail",
+        "Comments",
+        "Alignment with Ofgem Core Scenario Key Drivers",
+        "Included in ESO Data",
+        "ESO Comments"
+      ],
+      "last_written_at": "2026-10-08T10:53:05.280666+00:00",
+      "resource_ids": [
+        "f400d905-4159-4bcb-8e7d-f28528545d89"
+      ],
+      "rows": 66,
+      "settlement_periods": []
+    },
+    {
+      "captures": 2,
+      "columns": {
+        "Alignment with Ofgem Core Scenario Key Drivers": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 79,
+            "int64": 79
+          },
+          "examples": [
+            "Distribution Thermal Generation (MW)",
+            "Solar Generation (MW)",
+            "Wind Generation (MW)"
+          ],
+          "max_len": 158,
+          "null_count": 53,
+          "shapes": {
+            "text": 79
+          }
+        },
+        "Building Block ID Number": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 132,
+            "int64": 132
+          },
+          "examples": [
+            "Gen_BB001",
+            "Gen_BB002",
+            "Gen_BB003"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "text": 132
+          }
+        },
+        "Comments": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 62,
+            "int64": 62
+          },
+          "examples": [
+            "Non-renewable",
+            "Non-renewable excluding domestic Micro CHP",
+            "Reciprocating Engines, Gas Turbines, Includes Anaerobic Digestion"
+          ],
+          "max_len": 110,
+          "null_count": 70,
+          "shapes": {
+            "text": 62
+          }
+        },
+        "Detail": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 124,
+            "int64": 124
+          },
+          "examples": [
+            "Installed capacity",
+            "Number of domestic customers",
+            "Number of I&C customers"
+          ],
+          "max_len": 65,
+          "null_count": 8,
+          "shapes": {
+            "text": 124
+          }
+        },
+        "Technology": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 94,
+            "int64": 94
+          },
+          "examples": [
+            "Non-renewable CHP",
+            "Micro CHP",
+            "Renewable Engines (Landfill Gas, Sewage Gas, Biogas)"
+          ],
+          "max_len": 52,
+          "null_count": 38,
+          "shapes": {
+            "text": 94
+          }
+        },
+        "Technology Detail": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 112,
+            "int64": 112
+          },
+          "examples": [
+            ">=1MW",
+            "<1MW",
+            "Domestic (G98/G83)"
+          ],
+          "max_len": 67,
+          "null_count": 20,
+          "shapes": {
+            "text": 112
+          }
+        },
+        "Template": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 70,
+            "int64": 70
+          },
+          "examples": [
+            "Generation",
+            "Demand",
+            "Demand Low Carbon Technologies"
+          ],
+          "max_len": 30,
+          "null_count": 62,
+          "shapes": {
+            "text": 70
+          }
+        },
+        "Units": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 130,
+            "int64": 130
+          },
+          "examples": [
+            "MW",
+            "Number of",
+            "Metres squared"
+          ],
+          "max_len": 61,
+          "null_count": 2,
+          "shapes": {
+            "text": 130
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "Alignment with Ofgem Core Scenario Key Drivers": {
+            "description": "Alignment with Ofgem Core Scenario Key Drivers",
+            "title": "Alignment with Ofgem Core Scenario Key Drivers",
+            "type": "text",
+            "unit": null
+          },
+          "Building Block ID Number": {
+            "description": "Code identifying this building block",
+            "title": "Building Block ID Number",
+            "type": "text",
+            "unit": "MW"
+          },
+          "Comments": {
+            "description": "Further information on what is included in this building block",
+            "title": "Comments",
+            "type": "text",
+            "unit": null
+          },
+          "Detail": {
+            "description": "Description of what this building block contains",
+            "title": "Detail",
+            "type": "text",
+            "unit": "MW"
+          },
+          "Technology": {
+            "description": "Lower level of categorisation after template level",
+            "title": "Technology",
+            "type": "text",
+            "unit": "MW"
+          },
+          "Technology Detail": {
+            "description": "Further information on what this building block contains",
+            "title": "Technology Detail",
+            "type": "text",
+            "unit": "MW"
+          },
+          "Template": {
+            "description": "The area that this data relates to",
+            "title": "Template",
+            "type": "text",
+            "unit": "MW"
+          },
+          "Units": {
+            "description": "The units that this building block is in",
+            "title": "Units",
+            "type": "text",
+            "unit": "MW"
+          }
+        },
+        "field_info_not_in_header": [
+          "ESO Comments"
+        ],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T10:53:07.837772+00:00",
+      "header": [
+        "Template",
+        "Technology",
+        "Building Block ID Number",
+        "Technology Detail",
+        "Units",
+        "Detail",
+        "Comments",
+        "Alignment with Ofgem Core Scenario Key Drivers"
+      ],
+      "last_written_at": "2026-10-08T10:53:10.665613+00:00",
+      "resource_ids": [
+        "778a505c-1972-463b-b4bf-53e33c4d3470",
+        "cc3118da-cbbe-49e8-a8ee-9bdd89a8bf9c"
+      ],
+      "rows": 132,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [
+    "duplicate_header",
+    "multi_epoch"
+  ],
+  "key": "fes_building_blocks_block_definitions",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 6,
+        "columns": [
+          "Building Block ID Number"
+        ],
+        "max_duplicates": 3
+      }
+    ],
+    "full_row_max_duplicates": 3
+  },
+  "other_captures": 0,
+  "package": "future-energy-scenario-fes-building-block-data",
+  "proposal": {
+    "flags": [
+      "duplicate_header",
+      "multi_epoch"
+    ],
+    "record_draft": {
+      "encoding": "utf-8",
+      "entity_key": [
+        "template",
+        "technology",
+        "building_block_id_number",
+        "technology_detail",
+        "units",
+        "detail",
+        "comments",
+        "alignment_with_ofgem_core_scenario_key_drivers"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "template",
+              "nullable": true,
+              "source": "Template"
+            },
+            {
+              "dtype": "string",
+              "name": "technology",
+              "nullable": true,
+              "source": "Technology"
+            },
+            {
+              "dtype": "string",
+              "name": "building_block_id_number",
+              "nullable": true,
+              "source": "Building Block ID Number"
+            },
+            {
+              "dtype": "string",
+              "name": "technology_detail",
+              "nullable": true,
+              "source": "Technology Detail"
+            },
+            {
+              "dtype": "string",
+              "name": "units",
+              "nullable": true,
+              "source": "Units"
+            },
+            {
+              "dtype": "string",
+              "name": "detail",
+              "nullable": true,
+              "source": "Detail"
+            },
+            {
+              "dtype": "string",
+              "name": "comments",
+              "nullable": true,
+              "source": "Comments"
+            },
+            {
+              "dtype": "string",
+              "name": "eso_additional_notes",
+              "nullable": true,
+              "source": "ESO Additional Notes"
+            }
+          ],
+          "header": [
+            "Template",
+            "Technology",
+            "Building Block ID Number",
+            "Technology Detail",
+            "Units",
+            "Detail",
+            "Comments",
+            "ESO Additional Notes"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        },
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "template",
+              "nullable": true,
+              "source": "Template"
+            },
+            {
+              "dtype": "string",
+              "name": "technology",
+              "nullable": true,
+              "source": "Technology"
+            },
+            {
+              "dtype": "string",
+              "name": "building_block_id_number",
+              "nullable": true,
+              "source": "Building Block ID Number"
+            },
+            {
+              "dtype": "string",
+              "name": "technology_detail",
+              "nullable": true,
+              "source": "Technology Detail"
+            },
+            {
+              "dtype": "string",
+              "name": "units",
+              "nullable": true,
+              "source": "Units"
+            },
+            {
+              "dtype": "string",
+              "name": "detail",
+              "nullable": true,
+              "source": "Detail"
+            },
+            {
+              "dtype": "string",
+              "name": "comments",
+              "nullable": true,
+              "source": "Comments"
+            },
+            {
+              "dtype": "string",
+              "name": "alignment_with_ofgem_core_scenario_key_drivers",
+              "nullable": true,
+              "source": "Alignment with Ofgem Core Scenario Key Drivers"
+            },
+            {
+              "dtype": "string",
+              "name": "eso_comments",
+              "nullable": true,
+              "source": "ESO Comments"
+            }
+          ],
+          "header": [
+            "Template",
+            "Technology",
+            "Building Block ID Number",
+            "Technology Detail",
+            "Units",
+            "Detail",
+            "Comments",
+            "Alignment with Ofgem Core Scenario Key Drivers",
+            "ESO Comments"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        },
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "template",
+              "nullable": true,
+              "source": "Template"
+            },
+            {
+              "dtype": "string",
+              "name": "technology",
+              "nullable": true,
+              "source": "Technology"
+            },
+            {
+              "dtype": "string",
+              "name": "building_block_id_number",
+              "nullable": true,
+              "source": "Building Block ID Number"
+            },
+            {
+              "dtype": "string",
+              "name": "technology_detail",
+              "nullable": true,
+              "source": "Technology Detail"
+            },
+            {
+              "dtype": "string",
+              "name": "units",
+              "nullable": true,
+              "source": "Units"
+            },
+            {
+              "dtype": "string",
+              "name": "detail",
+              "nullable": true,
+              "source": "Detail"
+            },
+            {
+              "dtype": "string",
+              "name": "comments",
+              "nullable": true,
+              "source": "Comments"
+            },
+            {
+              "dtype": "string",
+              "name": "col_8",
+              "nullable": true,
+              "source": ""
+            },
+            {
+              "dtype": "string",
+              "name": "alignment_with_ofgem_core_scenario_key_drivers",
+              "nullable": true,
+              "source": "Alignment with Ofgem Core Scenario Key Drivers"
+            },
+            {
+              "dtype": "string",
+              "name": "duplicated_0",
+              "nullable": true,
+              "source": "_duplicated_0"
+            },
+            {
+              "dtype": "string",
+              "name": "included_in_eso_data",
+              "nullable": true,
+              "source": "Included in ESO Data"
+            },
+            {
+              "dtype": "string",
+              "name": "eso_comments",
+              "nullable": true,
+              "source": "ESO Comments"
+            }
+          ],
+          "header": [
+            "Template",
+            "Technology",
+            "Building Block ID Number",
+            "Technology Detail",
+            "Units",
+            "Detail",
+            "Comments",
+            "",
+            "Alignment with Ofgem Core Scenario Key Drivers",
+            "_duplicated_0",
+            "Included in ESO Data",
+            "ESO Comments"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        },
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "template",
+              "nullable": true,
+              "source": "Template"
+            },
+            {
+              "dtype": "string",
+              "name": "technology",
+              "nullable": true,
+              "source": "Technology"
+            },
+            {
+              "dtype": "string",
+              "name": "building_block_id_number",
+              "nullable": true,
+              "source": "Building Block ID Number"
+            },
+            {
+              "dtype": "string",
+              "name": "technology_detail",
+              "nullable": true,
+              "source": "Technology Detail"
+            },
+            {
+              "dtype": "string",
+              "name": "units",
+              "nullable": true,
+              "source": "Units"
+            },
+            {
+              "dtype": "string",
+              "name": "detail",
+              "nullable": true,
+              "source": "Detail"
+            },
+            {
+              "dtype": "string",
+              "name": "comments",
+              "nullable": true,
+              "source": "Comments"
+            },
+            {
+              "dtype": "string",
+              "name": "alignment_with_ofgem_core_scenario_key_drivers",
+              "nullable": true,
+              "source": "Alignment with Ofgem Core Scenario Key Drivers"
+            },
+            {
+              "dtype": "string",
+              "name": "included_in_eso_data",
+              "nullable": true,
+              "source": "Included in ESO Data"
+            },
+            {
+              "dtype": "string",
+              "name": "eso_comments",
+              "nullable": true,
+              "source": "ESO Comments"
+            }
+          ],
+          "header": [
+            "Template",
+            "Technology",
+            "Building Block ID Number",
+            "Technology Detail",
+            "Units",
+            "Detail",
+            "Comments",
+            "Alignment with Ofgem Core Scenario Key Drivers",
+            "Included in ESO Data",
+            "ESO Comments"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        },
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "template",
+              "nullable": true,
+              "source": "Template"
+            },
+            {
+              "dtype": "string",
+              "name": "technology",
+              "nullable": true,
+              "source": "Technology"
+            },
+            {
+              "dtype": "string",
+              "name": "building_block_id_number",
+              "nullable": true,
+              "source": "Building Block ID Number"
+            },
+            {
+              "dtype": "string",
+              "name": "technology_detail",
+              "nullable": true,
+              "source": "Technology Detail"
+            },
+            {
+              "dtype": "string",
+              "name": "units",
+              "nullable": true,
+              "source": "Units"
+            },
+            {
+              "dtype": "string",
+              "name": "detail",
+              "nullable": true,
+              "source": "Detail"
+            },
+            {
+              "dtype": "string",
+              "name": "comments",
+              "nullable": true,
+              "source": "Comments"
+            },
+            {
+              "dtype": "string",
+              "name": "alignment_with_ofgem_core_scenario_key_drivers",
+              "nullable": true,
+              "source": "Alignment with Ofgem Core Scenario Key Drivers"
+            }
+          ],
+          "header": [
+            "Template",
+            "Technology",
+            "Building Block ID Number",
+            "Technology Detail",
+            "Units",
+            "Detail",
+            "Comments",
+            "Alignment with Ofgem Core Scenario Key Drivers"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T02",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "blocked",
+        "field": "epochs",
+        "id": "T01",
+        "kind": "parse",
+        "question": "a capture is ragged, unparseable or repeats a header name"
+      },
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T02",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: none"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T03",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['template', 'technology', 'building_block_id_number', 'technology_detail', 'units', 'detail', 'comments', 'alignment_with_ofgem_core_scenario_key_drivers'] (no candidate measured unique, so every column); without one, latest stays whole_capture"
+      },
+      {
+        "consequence": "none",
+        "field": "epochs",
+        "id": "T04",
+        "kind": "multi_epoch",
+        "question": "5 header epochs; review each in its batch"
+      }
+    ]
+  },
+  "refresh": "adhoc",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update Frequency",
+        "value": "Ad hoc"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "FES: Pathways to Net Zero",
+    "title": "FES: Pathways to Net Zero Building Block Data"
+  }
+}

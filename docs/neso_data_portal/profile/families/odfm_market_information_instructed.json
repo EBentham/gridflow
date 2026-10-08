@@ -1,0 +1,1432 @@
+{
+  "archetype": "EVT",
+  "batch": "AS-5",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/odfm_market_information_instructed/2026/10/08/raw_20261008T111529Z_f0a52698-5f80-4fb7-ad64-ede99015195f_1c1bed8d.csv",
+      "ckan_last_modified": "2020-07-08T13:42:03.334175",
+      "cr": 0,
+      "crlf": 50,
+      "duplicate_header": true,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "f0a52698-5f80-4fb7-ad64-ede99015195f",
+      "rows": 49,
+      "sampled": false,
+      "size": 3578,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:15:29.601535+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/odfm_market_information_instructed/2026/10/08/raw_20261008T111532Z_5c507a16-d2f3-44df-b1bb-98acc0d74e1c_0bb7cae7.csv",
+      "ckan_last_modified": "2020-07-08T13:37:56.620172",
+      "cr": 0,
+      "crlf": 50,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "5c507a16-d2f3-44df-b1bb-98acc0d74e1c",
+      "rows": 49,
+      "sampled": false,
+      "size": 1280,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:15:32.392120+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 1,
+      "columns": {
+        "": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [],
+          "max_len": 0,
+          "null_count": 49,
+          "shapes": {}
+        },
+        "Date": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%d/%m/%Y": 0,
+            "float64": 49,
+            "int64": 49
+          },
+          "examples": [
+            "04/07/2020",
+            "05/07/2020"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "slash_date": 49
+          },
+          "slash_first_gt_12": 0,
+          "slash_second_gt_12": 0
+        },
+        "ODFM Instructed MW": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "0",
+            "66",
+            "249"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 49
+          }
+        },
+        "Settlement Period": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "46",
+            "47",
+            "48"
+          ],
+          "max_len": 2,
+          "null_count": 0,
+          "shapes": {
+            "int": 49
+          }
+        },
+        "Time": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 49,
+            "int64": 49
+          },
+          "examples": [
+            "23:00",
+            "23:30",
+            "00:00"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "text": 49
+          }
+        },
+        "_duplicated_0": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [],
+          "max_len": 0,
+          "null_count": 49,
+          "shapes": {}
+        },
+        "_duplicated_1": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [],
+          "max_len": 0,
+          "null_count": 49,
+          "shapes": {}
+        },
+        "_duplicated_10": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [],
+          "max_len": 0,
+          "null_count": 49,
+          "shapes": {}
+        },
+        "_duplicated_11": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [],
+          "max_len": 0,
+          "null_count": 49,
+          "shapes": {}
+        },
+        "_duplicated_12": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [],
+          "max_len": 0,
+          "null_count": 49,
+          "shapes": {}
+        },
+        "_duplicated_13": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [],
+          "max_len": 0,
+          "null_count": 49,
+          "shapes": {}
+        },
+        "_duplicated_14": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [],
+          "max_len": 0,
+          "null_count": 49,
+          "shapes": {}
+        },
+        "_duplicated_15": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [],
+          "max_len": 0,
+          "null_count": 49,
+          "shapes": {}
+        },
+        "_duplicated_16": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [],
+          "max_len": 0,
+          "null_count": 49,
+          "shapes": {}
+        },
+        "_duplicated_17": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [],
+          "max_len": 0,
+          "null_count": 49,
+          "shapes": {}
+        },
+        "_duplicated_18": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [],
+          "max_len": 0,
+          "null_count": 49,
+          "shapes": {}
+        },
+        "_duplicated_19": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [],
+          "max_len": 0,
+          "null_count": 49,
+          "shapes": {}
+        },
+        "_duplicated_2": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [],
+          "max_len": 0,
+          "null_count": 49,
+          "shapes": {}
+        },
+        "_duplicated_20": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [],
+          "max_len": 0,
+          "null_count": 49,
+          "shapes": {}
+        },
+        "_duplicated_21": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [],
+          "max_len": 0,
+          "null_count": 49,
+          "shapes": {}
+        },
+        "_duplicated_22": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [],
+          "max_len": 0,
+          "null_count": 49,
+          "shapes": {}
+        },
+        "_duplicated_23": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [],
+          "max_len": 0,
+          "null_count": 49,
+          "shapes": {}
+        },
+        "_duplicated_24": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [],
+          "max_len": 0,
+          "null_count": 49,
+          "shapes": {}
+        },
+        "_duplicated_25": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [],
+          "max_len": 0,
+          "null_count": 49,
+          "shapes": {}
+        },
+        "_duplicated_26": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [],
+          "max_len": 0,
+          "null_count": 49,
+          "shapes": {}
+        },
+        "_duplicated_27": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [],
+          "max_len": 0,
+          "null_count": 49,
+          "shapes": {}
+        },
+        "_duplicated_28": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [],
+          "max_len": 0,
+          "null_count": 49,
+          "shapes": {}
+        },
+        "_duplicated_29": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [],
+          "max_len": 0,
+          "null_count": 49,
+          "shapes": {}
+        },
+        "_duplicated_3": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [],
+          "max_len": 0,
+          "null_count": 49,
+          "shapes": {}
+        },
+        "_duplicated_30": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [],
+          "max_len": 0,
+          "null_count": 49,
+          "shapes": {}
+        },
+        "_duplicated_31": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [],
+          "max_len": 0,
+          "null_count": 49,
+          "shapes": {}
+        },
+        "_duplicated_32": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [],
+          "max_len": 0,
+          "null_count": 49,
+          "shapes": {}
+        },
+        "_duplicated_33": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [],
+          "max_len": 0,
+          "null_count": 49,
+          "shapes": {}
+        },
+        "_duplicated_34": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [],
+          "max_len": 0,
+          "null_count": 49,
+          "shapes": {}
+        },
+        "_duplicated_35": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [],
+          "max_len": 0,
+          "null_count": 49,
+          "shapes": {}
+        },
+        "_duplicated_36": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [],
+          "max_len": 0,
+          "null_count": 49,
+          "shapes": {}
+        },
+        "_duplicated_37": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [],
+          "max_len": 0,
+          "null_count": 49,
+          "shapes": {}
+        },
+        "_duplicated_38": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [],
+          "max_len": 0,
+          "null_count": 49,
+          "shapes": {}
+        },
+        "_duplicated_39": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [],
+          "max_len": 0,
+          "null_count": 49,
+          "shapes": {}
+        },
+        "_duplicated_4": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [],
+          "max_len": 0,
+          "null_count": 49,
+          "shapes": {}
+        },
+        "_duplicated_40": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [],
+          "max_len": 0,
+          "null_count": 49,
+          "shapes": {}
+        },
+        "_duplicated_41": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [],
+          "max_len": 0,
+          "null_count": 49,
+          "shapes": {}
+        },
+        "_duplicated_42": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [],
+          "max_len": 0,
+          "null_count": 49,
+          "shapes": {}
+        },
+        "_duplicated_43": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [],
+          "max_len": 0,
+          "null_count": 49,
+          "shapes": {}
+        },
+        "_duplicated_44": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [],
+          "max_len": 0,
+          "null_count": 49,
+          "shapes": {}
+        },
+        "_duplicated_5": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [],
+          "max_len": 0,
+          "null_count": 49,
+          "shapes": {}
+        },
+        "_duplicated_6": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [],
+          "max_len": 0,
+          "null_count": 49,
+          "shapes": {}
+        },
+        "_duplicated_7": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [],
+          "max_len": 0,
+          "null_count": 49,
+          "shapes": {}
+        },
+        "_duplicated_8": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [],
+          "max_len": 0,
+          "null_count": 49,
+          "shapes": {}
+        },
+        "_duplicated_9": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [],
+          "max_len": 0,
+          "null_count": 49,
+          "shapes": {}
+        }
+      },
+      "field_info": {
+        "columns": {
+          "Date": {
+            "description": "Date of ODFM",
+            "title": "Date",
+            "type": "timestamp",
+            "unit": null
+          },
+          "ODFM Instructed MW": {
+            "description": "ODFM instructed in MW.",
+            "title": "ODFM Instructed MW",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "Settlement Period": {
+            "description": "A period of 30 minutes beginning on the hour or the half-hour.",
+            "title": "Settlement Period",
+            "type": "numeric",
+            "unit": null
+          },
+          "Time": {
+            "description": "Time of when instruction took place.",
+            "title": "Time",
+            "type": "text",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": [
+          "",
+          "_duplicated_0",
+          "_duplicated_1",
+          "_duplicated_2",
+          "_duplicated_3",
+          "_duplicated_4",
+          "_duplicated_5",
+          "_duplicated_6",
+          "_duplicated_7",
+          "_duplicated_8",
+          "_duplicated_9",
+          "_duplicated_10",
+          "_duplicated_11",
+          "_duplicated_12",
+          "_duplicated_13",
+          "_duplicated_14",
+          "_duplicated_15",
+          "_duplicated_16",
+          "_duplicated_17",
+          "_duplicated_18",
+          "_duplicated_19",
+          "_duplicated_20",
+          "_duplicated_21",
+          "_duplicated_22",
+          "_duplicated_23",
+          "_duplicated_24",
+          "_duplicated_25",
+          "_duplicated_26",
+          "_duplicated_27",
+          "_duplicated_28",
+          "_duplicated_29",
+          "_duplicated_30",
+          "_duplicated_31",
+          "_duplicated_32",
+          "_duplicated_33",
+          "_duplicated_34",
+          "_duplicated_35",
+          "_duplicated_36",
+          "_duplicated_37",
+          "_duplicated_38",
+          "_duplicated_39",
+          "_duplicated_40",
+          "_duplicated_41",
+          "_duplicated_42",
+          "_duplicated_43",
+          "_duplicated_44"
+        ]
+      },
+      "first_written_at": "2026-10-08T11:15:29.601535+00:00",
+      "header": [
+        "Settlement Period",
+        "ODFM Instructed MW",
+        "Time",
+        "Date",
+        "",
+        "_duplicated_0",
+        "_duplicated_1",
+        "_duplicated_2",
+        "_duplicated_3",
+        "_duplicated_4",
+        "_duplicated_5",
+        "_duplicated_6",
+        "_duplicated_7",
+        "_duplicated_8",
+        "_duplicated_9",
+        "_duplicated_10",
+        "_duplicated_11",
+        "_duplicated_12",
+        "_duplicated_13",
+        "_duplicated_14",
+        "_duplicated_15",
+        "_duplicated_16",
+        "_duplicated_17",
+        "_duplicated_18",
+        "_duplicated_19",
+        "_duplicated_20",
+        "_duplicated_21",
+        "_duplicated_22",
+        "_duplicated_23",
+        "_duplicated_24",
+        "_duplicated_25",
+        "_duplicated_26",
+        "_duplicated_27",
+        "_duplicated_28",
+        "_duplicated_29",
+        "_duplicated_30",
+        "_duplicated_31",
+        "_duplicated_32",
+        "_duplicated_33",
+        "_duplicated_34",
+        "_duplicated_35",
+        "_duplicated_36",
+        "_duplicated_37",
+        "_duplicated_38",
+        "_duplicated_39",
+        "_duplicated_40",
+        "_duplicated_41",
+        "_duplicated_42",
+        "_duplicated_43",
+        "_duplicated_44"
+      ],
+      "last_written_at": "2026-10-08T11:15:29.601535+00:00",
+      "resource_ids": [
+        "f0a52698-5f80-4fb7-ad64-ede99015195f"
+      ],
+      "rows": 49,
+      "settlement_periods": [
+        {
+          "capture_id": "bronze/neso_data_portal/odfm_market_information_instructed/2026/10/08/raw_20261008T111529Z_f0a52698-5f80-4fb7-ad64-ede99015195f_1c1bed8d.csv",
+          "date_column": "Date",
+          "dates_with_repeated_sp": 0,
+          "duplicated_pairs": 0,
+          "max": 48,
+          "min": 1,
+          "out_of_range": 0,
+          "period_column": "Settlement Period",
+          "rows_per_date": {
+            "2": 1,
+            "47": 1
+          }
+        }
+      ]
+    },
+    {
+      "captures": 1,
+      "columns": {
+        "Date": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%d/%m/%Y": 0,
+            "float64": 49,
+            "int64": 49
+          },
+          "examples": [
+            "04/07/2020",
+            "05/07/2020"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "slash_date": 49
+          },
+          "slash_first_gt_12": 0,
+          "slash_second_gt_12": 0
+        },
+        "ODFM Instructed MW": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "0",
+            "66",
+            "249"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 49
+          }
+        },
+        "Settlement Period": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "47",
+            "48",
+            "1"
+          ],
+          "max_len": 2,
+          "null_count": 0,
+          "shapes": {
+            "int": 49
+          }
+        },
+        "Time": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 49,
+            "int64": 49
+          },
+          "examples": [
+            "23:00",
+            "23:30",
+            "00:00"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "text": 49
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "Date": {
+            "description": "Date of ODFM",
+            "title": "Date",
+            "type": "timestamp",
+            "unit": null
+          },
+          "ODFM Instructed MW": {
+            "description": "ODFM instructed in MW.",
+            "title": "ODFM Instructed MW",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "Settlement Period": {
+            "description": "A period of 30 minutes beginning on the hour or the half-hour.",
+            "title": "Settlement Period",
+            "type": "numeric",
+            "unit": null
+          },
+          "Time": {
+            "description": "Time of when instruction took place.",
+            "title": "Time",
+            "type": "text",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T11:15:32.392120+00:00",
+      "header": [
+        "Settlement Period",
+        "ODFM Instructed MW",
+        "Time",
+        "Date"
+      ],
+      "last_written_at": "2026-10-08T11:15:32.392120+00:00",
+      "resource_ids": [
+        "5c507a16-d2f3-44df-b1bb-98acc0d74e1c"
+      ],
+      "rows": 49,
+      "settlement_periods": [
+        {
+          "capture_id": "bronze/neso_data_portal/odfm_market_information_instructed/2026/10/08/raw_20261008T111532Z_5c507a16-d2f3-44df-b1bb-98acc0d74e1c_0bb7cae7.csv",
+          "date_column": "Date",
+          "dates_with_repeated_sp": 0,
+          "duplicated_pairs": 0,
+          "max": 48,
+          "min": 1,
+          "out_of_range": 0,
+          "period_column": "Settlement Period",
+          "rows_per_date": {
+            "2": 1,
+            "47": 1
+          }
+        }
+      ]
+    }
+  ],
+  "flags": [
+    "duplicate_header",
+    "multi_epoch"
+  ],
+  "key": "odfm_market_information_instructed",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 2,
+        "columns": [
+          "Settlement Period",
+          "Date"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 2,
+        "columns": [
+          "Time",
+          "Date"
+        ],
+        "max_duplicates": 0
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "optional-downward-flexibility-management-odfm-market-information",
+  "proposal": {
+    "flags": [
+      "duplicate_header",
+      "multi_epoch"
+    ],
+    "record_draft": {
+      "eligibility": {
+        "question": "Settlement Period: a numeric column with no vendor unit; Date: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced); Settlement Period: a numeric column with no vendor unit; Date: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)",
+        "status": "held",
+        "unit": "AS-5"
+      },
+      "encoding": "utf-8",
+      "entity_key": [
+        "settlement_period",
+        "date"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "float64",
+              "name": "settlement_period",
+              "nullable": true,
+              "source": "Settlement Period"
+            },
+            {
+              "dtype": "float64",
+              "name": "odfm_instructed_mw",
+              "nullable": true,
+              "source": "ODFM Instructed MW"
+            },
+            {
+              "dtype": "string",
+              "name": "time",
+              "nullable": true,
+              "source": "Time"
+            },
+            {
+              "dtype": "string",
+              "name": "date",
+              "nullable": true,
+              "source": "Date"
+            },
+            {
+              "dtype": "string",
+              "name": "col_5",
+              "nullable": true,
+              "source": ""
+            },
+            {
+              "dtype": "string",
+              "name": "duplicated_0",
+              "nullable": true,
+              "source": "_duplicated_0"
+            },
+            {
+              "dtype": "string",
+              "name": "duplicated_1",
+              "nullable": true,
+              "source": "_duplicated_1"
+            },
+            {
+              "dtype": "string",
+              "name": "duplicated_2",
+              "nullable": true,
+              "source": "_duplicated_2"
+            },
+            {
+              "dtype": "string",
+              "name": "duplicated_3",
+              "nullable": true,
+              "source": "_duplicated_3"
+            },
+            {
+              "dtype": "string",
+              "name": "duplicated_4",
+              "nullable": true,
+              "source": "_duplicated_4"
+            },
+            {
+              "dtype": "string",
+              "name": "duplicated_5",
+              "nullable": true,
+              "source": "_duplicated_5"
+            },
+            {
+              "dtype": "string",
+              "name": "duplicated_6",
+              "nullable": true,
+              "source": "_duplicated_6"
+            },
+            {
+              "dtype": "string",
+              "name": "duplicated_7",
+              "nullable": true,
+              "source": "_duplicated_7"
+            },
+            {
+              "dtype": "string",
+              "name": "duplicated_8",
+              "nullable": true,
+              "source": "_duplicated_8"
+            },
+            {
+              "dtype": "string",
+              "name": "duplicated_9",
+              "nullable": true,
+              "source": "_duplicated_9"
+            },
+            {
+              "dtype": "string",
+              "name": "duplicated_10",
+              "nullable": true,
+              "source": "_duplicated_10"
+            },
+            {
+              "dtype": "string",
+              "name": "duplicated_11",
+              "nullable": true,
+              "source": "_duplicated_11"
+            },
+            {
+              "dtype": "string",
+              "name": "duplicated_12",
+              "nullable": true,
+              "source": "_duplicated_12"
+            },
+            {
+              "dtype": "string",
+              "name": "duplicated_13",
+              "nullable": true,
+              "source": "_duplicated_13"
+            },
+            {
+              "dtype": "string",
+              "name": "duplicated_14",
+              "nullable": true,
+              "source": "_duplicated_14"
+            },
+            {
+              "dtype": "string",
+              "name": "duplicated_15",
+              "nullable": true,
+              "source": "_duplicated_15"
+            },
+            {
+              "dtype": "string",
+              "name": "duplicated_16",
+              "nullable": true,
+              "source": "_duplicated_16"
+            },
+            {
+              "dtype": "string",
+              "name": "duplicated_17",
+              "nullable": true,
+              "source": "_duplicated_17"
+            },
+            {
+              "dtype": "string",
+              "name": "duplicated_18",
+              "nullable": true,
+              "source": "_duplicated_18"
+            },
+            {
+              "dtype": "string",
+              "name": "duplicated_19",
+              "nullable": true,
+              "source": "_duplicated_19"
+            },
+            {
+              "dtype": "string",
+              "name": "duplicated_20",
+              "nullable": true,
+              "source": "_duplicated_20"
+            },
+            {
+              "dtype": "string",
+              "name": "duplicated_21",
+              "nullable": true,
+              "source": "_duplicated_21"
+            },
+            {
+              "dtype": "string",
+              "name": "duplicated_22",
+              "nullable": true,
+              "source": "_duplicated_22"
+            },
+            {
+              "dtype": "string",
+              "name": "duplicated_23",
+              "nullable": true,
+              "source": "_duplicated_23"
+            },
+            {
+              "dtype": "string",
+              "name": "duplicated_24",
+              "nullable": true,
+              "source": "_duplicated_24"
+            },
+            {
+              "dtype": "string",
+              "name": "duplicated_25",
+              "nullable": true,
+              "source": "_duplicated_25"
+            },
+            {
+              "dtype": "string",
+              "name": "duplicated_26",
+              "nullable": true,
+              "source": "_duplicated_26"
+            },
+            {
+              "dtype": "string",
+              "name": "duplicated_27",
+              "nullable": true,
+              "source": "_duplicated_27"
+            },
+            {
+              "dtype": "string",
+              "name": "duplicated_28",
+              "nullable": true,
+              "source": "_duplicated_28"
+            },
+            {
+              "dtype": "string",
+              "name": "duplicated_29",
+              "nullable": true,
+              "source": "_duplicated_29"
+            },
+            {
+              "dtype": "string",
+              "name": "duplicated_30",
+              "nullable": true,
+              "source": "_duplicated_30"
+            },
+            {
+              "dtype": "string",
+              "name": "duplicated_31",
+              "nullable": true,
+              "source": "_duplicated_31"
+            },
+            {
+              "dtype": "string",
+              "name": "duplicated_32",
+              "nullable": true,
+              "source": "_duplicated_32"
+            },
+            {
+              "dtype": "string",
+              "name": "duplicated_33",
+              "nullable": true,
+              "source": "_duplicated_33"
+            },
+            {
+              "dtype": "string",
+              "name": "duplicated_34",
+              "nullable": true,
+              "source": "_duplicated_34"
+            },
+            {
+              "dtype": "string",
+              "name": "duplicated_35",
+              "nullable": true,
+              "source": "_duplicated_35"
+            },
+            {
+              "dtype": "string",
+              "name": "duplicated_36",
+              "nullable": true,
+              "source": "_duplicated_36"
+            },
+            {
+              "dtype": "string",
+              "name": "duplicated_37",
+              "nullable": true,
+              "source": "_duplicated_37"
+            },
+            {
+              "dtype": "string",
+              "name": "duplicated_38",
+              "nullable": true,
+              "source": "_duplicated_38"
+            },
+            {
+              "dtype": "string",
+              "name": "duplicated_39",
+              "nullable": true,
+              "source": "_duplicated_39"
+            },
+            {
+              "dtype": "string",
+              "name": "duplicated_40",
+              "nullable": true,
+              "source": "_duplicated_40"
+            },
+            {
+              "dtype": "string",
+              "name": "duplicated_41",
+              "nullable": true,
+              "source": "_duplicated_41"
+            },
+            {
+              "dtype": "string",
+              "name": "duplicated_42",
+              "nullable": true,
+              "source": "_duplicated_42"
+            },
+            {
+              "dtype": "string",
+              "name": "duplicated_43",
+              "nullable": true,
+              "source": "_duplicated_43"
+            },
+            {
+              "dtype": "string",
+              "name": "duplicated_44",
+              "nullable": true,
+              "source": "_duplicated_44"
+            }
+          ],
+          "header": [
+            "Settlement Period",
+            "ODFM Instructed MW",
+            "Time",
+            "Date",
+            "",
+            "_duplicated_0",
+            "_duplicated_1",
+            "_duplicated_2",
+            "_duplicated_3",
+            "_duplicated_4",
+            "_duplicated_5",
+            "_duplicated_6",
+            "_duplicated_7",
+            "_duplicated_8",
+            "_duplicated_9",
+            "_duplicated_10",
+            "_duplicated_11",
+            "_duplicated_12",
+            "_duplicated_13",
+            "_duplicated_14",
+            "_duplicated_15",
+            "_duplicated_16",
+            "_duplicated_17",
+            "_duplicated_18",
+            "_duplicated_19",
+            "_duplicated_20",
+            "_duplicated_21",
+            "_duplicated_22",
+            "_duplicated_23",
+            "_duplicated_24",
+            "_duplicated_25",
+            "_duplicated_26",
+            "_duplicated_27",
+            "_duplicated_28",
+            "_duplicated_29",
+            "_duplicated_30",
+            "_duplicated_31",
+            "_duplicated_32",
+            "_duplicated_33",
+            "_duplicated_34",
+            "_duplicated_35",
+            "_duplicated_36",
+            "_duplicated_37",
+            "_duplicated_38",
+            "_duplicated_39",
+            "_duplicated_40",
+            "_duplicated_41",
+            "_duplicated_42",
+            "_duplicated_43",
+            "_duplicated_44"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        },
+        {
+          "columns": [
+            {
+              "dtype": "float64",
+              "name": "settlement_period",
+              "nullable": true,
+              "source": "Settlement Period"
+            },
+            {
+              "dtype": "float64",
+              "name": "odfm_instructed_mw",
+              "nullable": true,
+              "source": "ODFM Instructed MW"
+            },
+            {
+              "dtype": "string",
+              "name": "time",
+              "nullable": true,
+              "source": "Time"
+            },
+            {
+              "dtype": "string",
+              "name": "date",
+              "nullable": true,
+              "source": "Date"
+            }
+          ],
+          "header": [
+            "Settlement Period",
+            "ODFM Instructed MW",
+            "Time",
+            "Date"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T06",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "held",
+        "field": "column 'Settlement Period'.unit",
+        "id": "T01",
+        "kind": "unit",
+        "question": "Settlement Period: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Date'",
+        "id": "T02",
+        "kind": "time_semantics",
+        "question": "Date: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Settlement Period'.unit",
+        "id": "T03",
+        "kind": "unit",
+        "question": "Settlement Period: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Date'",
+        "id": "T04",
+        "kind": "time_semantics",
+        "question": "Date: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "blocked",
+        "field": "epochs",
+        "id": "T05",
+        "kind": "parse",
+        "question": "a capture is ragged, unparseable or repeats a header name"
+      },
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T06",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: Settlement Period, Date"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T07",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['settlement_period', 'date'] (measured unique in 2 capture(s)); without one, latest stays whole_capture"
+      },
+      {
+        "consequence": "none",
+        "field": "epochs",
+        "id": "T08",
+        "kind": "multi_epoch",
+        "question": "2 header epochs; review each in its batch"
+      }
+    ]
+  },
+  "refresh": "frozen",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Status",
+        "value": "Not Active"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Ancillary services",
+    "title": "Optional Downward Flexibility Management (ODFM) Market Information"
+  }
+}

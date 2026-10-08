@@ -1,0 +1,212 @@
+{
+  "family": "interconnector_register",
+  "package": "interconnector-register",
+  "resource_id": "64f7908f-f787-4977-93e1-5342a5f1357f",
+  "selected_by": "the family's datastore_active resource in the snapshot with the maximum (metadata_modified, id)",
+  "snapshot_id": "20261006T195819Z",
+  "fields": [
+    {
+      "type": "int",
+      "id": "_id"
+    },
+    {
+      "info": {
+        "comment": "",
+        "description": "Name of Generation Project\t\t\r\n",
+        "title": "Project Name\t\t",
+        "type": "string",
+        "example": "Aminth\t\t",
+        "unit": ""
+      },
+      "type": "text",
+      "id": "Project Name"
+    },
+    {
+      "info": {
+        "comment": "",
+        "description": "Name of Generator\t\t\r\n",
+        "title": "Customer Name\t\t",
+        "type": "string",
+        "example": "AMINTH ENERGY LTD\t\t",
+        "unit": ""
+      },
+      "type": "text",
+      "id": "Customer Name"
+    },
+    {
+      "info": {
+        "comment": "",
+        "description": "Name of Generation Connection Site\t\t\r\n",
+        "title": "Connection Site\t\t",
+        "type": "string",
+        "example": "Mablethorpe 400kV\t\t",
+        "unit": ""
+      },
+      "type": "text",
+      "id": "Connection Site"
+    },
+    {
+      "info": {
+        "comment": "\"The customer may choose to bring on capacity in chunks to align with their build/commissioning program.  Staged contracts are also used when a customer may only be able to bring on a proportion of their total capacity at a particular point in time ahead of further reinforcement works being carried out, completion of which would allow the remaining TEC onto the system.\r\nField is only completed if the project is staged otherwise it will be empty\"\t\t\r\n",
+        "description": "Stage refers to Staged TEC – how much TEC the Customer will connect and when.  \t\t\r\n",
+        "title": "Stage\t\t",
+        "type": "number",
+        "example": "1",
+        "unit": ""
+      },
+      "type": "numeric",
+      "id": "Stage"
+    },
+    {
+      "info": {
+        "comment": "Field will state 0MW until the project is built and connected\t\t\r\n",
+        "description": "Amount of import capacity currently connected to the National Grid\t\t\r\n",
+        "title": "MW Import - Current\t\t",
+        "type": "number",
+        "example": "1200\t\t",
+        "unit": "MW\t\t"
+      },
+      "type": "numeric",
+      "id": "MW Import - Current"
+    },
+    {
+      "info": {
+        "comment": "Field will state 0MW until the project is built and connected\t\t\r\n",
+        "description": "Amount of export capacity currently connected to the National Grid\t\t\r\n",
+        "title": "MW Export - Current\t\t",
+        "type": "number",
+        "example": "1200\t\t",
+        "unit": "MW\t\t"
+      },
+      "type": "numeric",
+      "id": "MW Export - Current"
+    },
+    {
+      "info": {
+        "comment": "Field will state 0MW unless the TEC is due to increase or decrease\t\t\r\n",
+        "description": "Amount of import capacity contracted to connect or be removed at a future date\t\t\r\n",
+        "title": "MW Import - Increase / Decrease\t\t",
+        "type": "number",
+        "example": "1400\t\t",
+        "unit": "MW\t\t"
+      },
+      "type": "numeric",
+      "id": "MW Import - Increase / Decrease"
+    },
+    {
+      "info": {
+        "comment": "Field will state 0MW unless the TEC is due to increase or decrease\t\t\r\n",
+        "description": "Amount of export capacity contracted to connect or be removed at a future date\t\t\r\n",
+        "title": "MW Export - Increase / Decrease\t\t",
+        "type": "number",
+        "example": "1400\t\t",
+        "unit": "MW\t\t"
+      },
+      "type": "numeric",
+      "id": "MW Export - Increase / Decrease"
+    },
+    {
+      "info": {
+        "comment": "",
+        "description": "Total amount of import capacity contracted across all Stages\t\t\r\n",
+        "title": "MW Import - Total\t\t",
+        "type": "number",
+        "example": "500\t\t",
+        "unit": "MW\t\t"
+      },
+      "type": "numeric",
+      "id": "MW Import - Total"
+    },
+    {
+      "info": {
+        "comment": "",
+        "description": "Total amount of export capacity contracted across all Stages\t\t\r\n",
+        "title": "MW Export - Total\t\t",
+        "type": "number",
+        "example": "500\t\t",
+        "unit": "MW\t\t"
+      },
+      "type": "numeric",
+      "id": "MW Export - Total"
+    },
+    {
+      "info": {
+        "comment": "Field will only include dates for future connections or increase/decreases to TEC, otherwise this field will be empty\t\t\r\n",
+        "description": "Date on which Connection is contracted to be effective from\t\t\r\n",
+        "title": "MW Effective From\t\t",
+        "type": "date",
+        "example": "2028-10-31\t",
+        "unit": "yyyy-mm-dd\t\t"
+      },
+      "type": "date",
+      "id": "MW Effective From"
+    },
+    {
+      "info": {
+        "comment": "\"The Status classifications are very much based on information we have either ascertained from the customer or from another source, i.e. government website.  It’s important to note that we hold no authority on the Status classifications on Registers and are produced on an “as far as we are aware” basis.\r\n\r\nTo this end we deem the classifications to mean:\r\n\r\nScoping – we are not aware that a planning application has been made\r\nAwaiting Consents – we are aware (or the customer has told us) a planning application has been made\r\nConsents Approved – we are aware (or the customer has told us) the planning application has been approved\"\t\t\r\n",
+        "description": "Indicates what stage the Project is at in it's build cycle\t\t\r\n",
+        "title": "Project Status\t\t",
+        "type": "string",
+        "example": "Scoping\t\t",
+        "unit": ""
+      },
+      "type": "text",
+      "id": "Project Status"
+    },
+    {
+      "info": {
+        "comment": "NGET, SHET, SPT or OFTO\t\t\r\n",
+        "description": "Indicates which TO is responsible for the connection\t\t\r\n",
+        "title": "HOST TO\t\t",
+        "type": "string",
+        "example": "NGET\t\t",
+        "unit": ""
+      },
+      "type": "text",
+      "id": "HOST TO"
+    },
+    {
+      "info": {
+        "comment": "If there is more than one Stage the Project number will be followed by a dash and the relevant stage number.\t\t\r\n",
+        "description": "Unique Project Identifier\t\t\r\n",
+        "title": "Project Number\t\t",
+        "type": "string",
+        "example": "PRO-001292-1\t\t",
+        "unit": ""
+      },
+      "type": "text",
+      "id": "Project Number"
+    },
+    {
+      "info": {
+        "comment": "The value in this field is only completed once a signed Gate 1 or Gate 2 contract is countersigned - until that point all existing contracted projects will appear blank \t\t\r\n",
+        "description": "Indicates which Gate the Project is contracted at\t\t\r\n",
+        "title": "Gate\t\t",
+        "type": "number",
+        "example": "1",
+        "unit": ""
+      },
+      "type": "numeric",
+      "id": "Gate"
+    }
+  ],
+  "total": 35,
+  "include_total": true,
+  "records_format": "objects",
+  "records_returned": 0,
+  "request": {
+    "action": "datastore_search",
+    "params": {
+      "limit": "0",
+      "resource_id": "64f7908f-f787-4977-93e1-5342a5f1357f"
+    },
+    "started_at": "2026-10-08T13:10:34.917183Z",
+    "finished_at": "2026-10-08T13:11:13.086233Z",
+    "status_code": 200,
+    "headers": {
+      "content-type": "application/json;charset=utf-8",
+      "date": "Thu, 08 Oct 2026 13:11:13 GMT"
+    },
+    "body_sha256": "eb02749e4e7c7b37821f8194c41d740b65d4647af4f86c852d6b027207ca8419"
+  }
+}

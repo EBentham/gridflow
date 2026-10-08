@@ -1,0 +1,325 @@
+{
+  "archetype": "TAR",
+  "batch": "BAL-2",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/tnuos_tariffs_transmission_demand/2026/10/08/raw_20261008T113930Z_dcca94fd-343e-4d4e-8c5d-66009dec4ad3_595c0a59.csv",
+      "ckan_last_modified": "2026-05-12T13:06:47.185973",
+      "cr": 0,
+      "crlf": 463,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "dcca94fd-343e-4d4e-8c5d-66009dec4ad3",
+      "rows": 462,
+      "sampled": false,
+      "size": 22977,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:39:30.082617+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 1,
+      "columns": {
+        "Notes": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 462,
+            "int64": 462
+          },
+          "examples": [
+            "Domestic",
+            "LV_NoMIC_1",
+            "LV_NoMIC_2"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "text": 462
+          }
+        },
+        "Publication": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 462,
+            "int64": 462
+          },
+          "examples": [
+            "Forecast",
+            "Final",
+            "Draft"
+          ],
+          "max_len": 8,
+          "null_count": 0,
+          "shapes": {
+            "text": 462
+          }
+        },
+        "Published_Date": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%d/%m/%Y": 0,
+            "float64": 462,
+            "int64": 462
+          },
+          "examples": [
+            "11/05/2026",
+            "30/01/2026",
+            "19/12/2025"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "slash_date": 462
+          },
+          "slash_first_gt_12": 286,
+          "slash_second_gt_12": 0
+        },
+        "TDR Band": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 462,
+            "int64": 462
+          },
+          "examples": [
+            "Domestic",
+            "LV_NoMIC_1",
+            "LV_NoMIC_2"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "text": 462
+          }
+        },
+        "TDR Tariff in Â£/(Site Day)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 462
+          },
+          "examples": [
+            "0.257643",
+            "0.263362",
+            "0.729530"
+          ],
+          "max_len": 12,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 462
+          }
+        },
+        "Year_FY": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "2028",
+            "2027",
+            "2029"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 462
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "Notes": {
+            "description": "alternative names for the TDR bands",
+            "title": "Notes",
+            "type": "text",
+            "unit": null
+          },
+          "Publication": {
+            "description": "forecast or draft or final tariffs",
+            "title": "Publication",
+            "type": "text",
+            "unit": null
+          },
+          "Published_Date": {
+            "description": "date when published",
+            "title": "Published Date",
+            "type": "date",
+            "unit": "ISO 8601"
+          },
+          "TDR Band": {
+            "description": "Band category for final demand sites that are liable for Transmission Demand Residual (TDR) tariffs",
+            "title": "TDR Band",
+            "type": "text",
+            "unit": null
+          },
+          "TDR Tariff in Â£/(Site Day)": {
+            "description": "TDR tariffs per day, at 6d.p. TDR Tariff in £/(Site Day) for all sites except UMS (UMS sites TDR tariffs are in p/kWh per day)",
+            "title": "TDR Tariff",
+            "type": "numeric",
+            "unit": "p/kWh for sites of unmetered supplies; OR  £/site for all other final demand sites"
+          },
+          "Year_FY": {
+            "description": "Financial year",
+            "title": "Year FY",
+            "type": "int4",
+            "unit": "ISO 8601"
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T11:39:30.082617+00:00",
+      "header": [
+        "Publication",
+        "Year_FY",
+        "Published_Date",
+        "TDR Band",
+        "TDR Tariff in Â£/(Site Day)",
+        "Notes"
+      ],
+      "last_written_at": "2026-10-08T11:39:30.082617+00:00",
+      "resource_ids": [
+        "dcca94fd-343e-4d4e-8c5d-66009dec4ad3"
+      ],
+      "rows": 462,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [],
+  "key": "tnuos_tariffs_transmission_demand",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 1,
+        "columns": [
+          "TDR Tariff in Â£/(Site Day)"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Year_FY",
+          "Published_Date",
+          "TDR Band"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Year_FY",
+          "Published_Date",
+          "Notes"
+        ],
+        "max_duplicates": 0
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "transmission-network-use-of-system-tnuos-tariffs",
+  "proposal": {
+    "flags": [],
+    "record_draft": {
+      "encoding": "utf-8",
+      "entity_key": [
+        "tdr_tariff_in_site_day"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "publication",
+              "nullable": true,
+              "source": "Publication"
+            },
+            {
+              "dtype": "int64",
+              "name": "year_fy",
+              "nullable": true,
+              "source": "Year_FY"
+            },
+            {
+              "dtype": "date",
+              "format": "%d/%m/%Y",
+              "name": "published_date",
+              "nullable": true,
+              "source": "Published_Date"
+            },
+            {
+              "dtype": "string",
+              "name": "tdr_band",
+              "nullable": true,
+              "source": "TDR Band"
+            },
+            {
+              "dtype": "float64",
+              "name": "tdr_tariff_in_site_day",
+              "nullable": true,
+              "source": "TDR Tariff in Â£/(Site Day)"
+            },
+            {
+              "dtype": "string",
+              "name": "notes",
+              "nullable": true,
+              "source": "Notes"
+            }
+          ],
+          "header": [
+            "Publication",
+            "Year_FY",
+            "Published_Date",
+            "TDR Band",
+            "TDR Tariff in Â£/(Site Day)",
+            "Notes"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T01",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T01",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: Published_Date"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T02",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['tdr_tariff_in_site_day'] (measured unique in 1 capture(s)); without one, latest stays whole_capture"
+      }
+    ]
+  },
+  "refresh": "adhoc",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update Frequency",
+        "value": "Quarterly"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Network charges",
+    "title": "Transmission Network Use of System (TNUoS) Tariffs"
+  }
+}

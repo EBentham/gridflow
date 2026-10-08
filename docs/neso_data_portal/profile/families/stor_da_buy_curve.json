@@ -1,0 +1,430 @@
+{
+  "archetype": "EVT",
+  "batch": "DFS",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/stor_da_buy_curve/2026/10/08/raw_20261008T112735Z_8abc71ba-4484-4683-be68-5bc241b6ae7a_d240b649.csv",
+      "ckan_last_modified": "2026-03-30T04:22:46.013246",
+      "cr": 0,
+      "crlf": 5476,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "8abc71ba-4484-4683-be68-5bc241b6ae7a",
+      "rows": 5475,
+      "sampled": false,
+      "size": 1036153,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:27:35.997765+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 1,
+      "columns": {
+        "Availability Price (£/MWh)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 3622
+          },
+          "examples": [
+            "0",
+            "6.78",
+            "6.63"
+          ],
+          "max_len": 6,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 3622,
+            "int": 1853
+          }
+        },
+        "Buy Curve Name": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 5475,
+            "int64": 5475
+          },
+          "examples": [
+            "BCN-Short Term Operating Reserve-00000000",
+            "BCN-Short Term Operating Reserve-00000001",
+            "BCN-Short Term Operating Reserve-00000002"
+          ],
+          "max_len": 41,
+          "null_count": 0,
+          "shapes": {
+            "text": 5475
+          }
+        },
+        "Buy Curve Step: Buy Curve Step Id": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 5475,
+            "int64": 5475
+          },
+          "examples": [
+            "BCS-0000",
+            "BCS-0001",
+            "BCS-0002"
+          ],
+          "max_len": 8,
+          "null_count": 0,
+          "shapes": {
+            "text": 5475
+          }
+        },
+        "Buy Curve: Buy Curve ID": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 5475,
+            "int64": 5475
+          },
+          "examples": [
+            "BCN-00000000",
+            "BCN-00000001",
+            "BCN-00000002"
+          ],
+          "max_len": 12,
+          "null_count": 0,
+          "shapes": {
+            "text": 5475
+          }
+        },
+        "Curve to be applied to": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 5475,
+            "int64": 5475
+          },
+          "examples": [
+            "Service Period - All Operational Day windows"
+          ],
+          "max_len": 44,
+          "null_count": 0,
+          "shapes": {
+            "text": 5475
+          }
+        },
+        "Effective From Date": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 5475,
+            "int64": 5475
+          },
+          "examples": [
+            "2021-04-01 04:00:00Z",
+            "2021-04-02 04:00:00Z",
+            "2021-04-03 04:00:00Z"
+          ],
+          "max_len": 20,
+          "null_count": 0,
+          "shapes": {
+            "text": 5475
+          }
+        },
+        "Effective To Date": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 5475,
+            "int64": 5475
+          },
+          "examples": [
+            "2021-04-02 04:00:00Z",
+            "2021-04-03 04:00:00Z",
+            "2021-04-04 04:00:00Z"
+          ],
+          "max_len": 20,
+          "null_count": 0,
+          "shapes": {
+            "text": 5475
+          }
+        },
+        "MW": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1311",
+            "0",
+            "1313"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 5475
+          }
+        },
+        "Service Catalog": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 5475,
+            "int64": 5475
+          },
+          "examples": [
+            "Short Term Operating Reserve"
+          ],
+          "max_len": 28,
+          "null_count": 0,
+          "shapes": {
+            "text": 5475
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "Availability Price (£/MWh)": {
+            "description": "Maximum availaibility price associated with maximum MW requirement",
+            "title": "Availability price ",
+            "type": "numeric",
+            "unit": "Number"
+          },
+          "Buy Curve Name": {
+            "description": "Short Term operating reserve (STOR) Day Ahead Auction - Title",
+            "title": "Buy Curve Name",
+            "type": "text",
+            "unit": "Text"
+          },
+          "Buy Curve Step: Buy Curve Step Id": {
+            "description": "Unique identifier for each buy curve step",
+            "title": "Buy Curve Step Id",
+            "type": "text",
+            "unit": "text"
+          },
+          "Buy Curve: Buy Curve ID": {
+            "description": "Unique identifier for each buy curve",
+            "title": "Buy Curve ID ",
+            "type": "text",
+            "unit": "Text"
+          },
+          "Curve to be applied to": {
+            "description": "Service Windows the buy curve is applied to.",
+            "title": "Applied Service Period ",
+            "type": "text",
+            "unit": "Text"
+          },
+          "Effective From Date": {
+            "description": null,
+            "title": "Effective From Date",
+            "type": "timestamp",
+            "unit": "ISO-8601"
+          },
+          "Effective To Date": {
+            "description": null,
+            "title": "Effective To Date",
+            "type": "timestamp",
+            "unit": "ISO-8601"
+          },
+          "MW": {
+            "description": "Maximum MW associated with maximum prices listed in the availability price field",
+            "title": "MW ",
+            "type": "int4",
+            "unit": "integer"
+          },
+          "Service Catalog": {
+            "description": "The Service this Buy Curve relates to, in this case Short Term Operating Reserve",
+            "title": "Service Catalogue ",
+            "type": "text",
+            "unit": "Text"
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T11:27:35.997765+00:00",
+      "header": [
+        "Buy Curve Name",
+        "Service Catalog",
+        "Curve to be applied to",
+        "Effective From Date",
+        "Effective To Date",
+        "Buy Curve Step: Buy Curve Step Id",
+        "MW",
+        "Availability Price (£/MWh)",
+        "Buy Curve: Buy Curve ID"
+      ],
+      "last_written_at": "2026-10-08T11:27:35.997765+00:00",
+      "resource_ids": [
+        "8abc71ba-4484-4683-be68-5bc241b6ae7a"
+      ],
+      "rows": 5475,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [],
+  "key": "stor_da_buy_curve",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Buy Curve Step: Buy Curve Step Id"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Buy Curve Name",
+          "MW",
+          "Availability Price (£/MWh)"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Effective From Date",
+          "MW",
+          "Availability Price (£/MWh)"
+        ],
+        "max_duplicates": 0
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "short-term-operating-reserve-stor-day-ahead-buy-curve",
+  "proposal": {
+    "flags": [],
+    "record_draft": {
+      "eligibility": {
+        "question": "Effective From Date: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced); Effective To Date: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)",
+        "status": "held",
+        "unit": "DFS"
+      },
+      "encoding": "utf-8",
+      "entity_key": [
+        "buy_curve_step_buy_curve_step_id"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "buy_curve_name",
+              "nullable": true,
+              "source": "Buy Curve Name"
+            },
+            {
+              "dtype": "string",
+              "name": "service_catalog",
+              "nullable": true,
+              "source": "Service Catalog"
+            },
+            {
+              "dtype": "string",
+              "name": "curve_to_be_applied_to",
+              "nullable": true,
+              "source": "Curve to be applied to"
+            },
+            {
+              "dtype": "string",
+              "name": "effective_from_date",
+              "nullable": true,
+              "source": "Effective From Date"
+            },
+            {
+              "dtype": "string",
+              "name": "effective_to_date",
+              "nullable": true,
+              "source": "Effective To Date"
+            },
+            {
+              "dtype": "string",
+              "name": "buy_curve_step_buy_curve_step_id",
+              "nullable": true,
+              "source": "Buy Curve Step: Buy Curve Step Id"
+            },
+            {
+              "dtype": "int64",
+              "name": "mw",
+              "nullable": true,
+              "source": "MW"
+            },
+            {
+              "dtype": "float64",
+              "name": "availability_price_mwh",
+              "nullable": true,
+              "source": "Availability Price (£/MWh)"
+            },
+            {
+              "dtype": "string",
+              "name": "buy_curve_buy_curve_id",
+              "nullable": true,
+              "source": "Buy Curve: Buy Curve ID"
+            }
+          ],
+          "header": [
+            "Buy Curve Name",
+            "Service Catalog",
+            "Curve to be applied to",
+            "Effective From Date",
+            "Effective To Date",
+            "Buy Curve Step: Buy Curve Step Id",
+            "MW",
+            "Availability Price (£/MWh)",
+            "Buy Curve: Buy Curve ID"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T03",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "held",
+        "field": "column 'Effective From Date'",
+        "id": "T01",
+        "kind": "time_semantics",
+        "question": "Effective From Date: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Effective To Date'",
+        "id": "T02",
+        "kind": "time_semantics",
+        "question": "Effective To Date: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T03",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: Effective From Date, Effective To Date"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T04",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['buy_curve_step_buy_curve_step_id'] (measured unique in 1 capture(s)); without one, latest stays whole_capture"
+      }
+    ]
+  },
+  "refresh": "frozen",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update Frequency",
+        "value": "Not Active"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Ancillary services",
+    "title": "Short Term Operating Reserve (STOR) day ahead buy curve"
+  }
+}

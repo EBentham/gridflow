@@ -1,0 +1,697 @@
+{
+  "archetype": "REG",
+  "batch": "CI",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/capacity_market_components/2026/10/08/raw_20261008T091435Z_790f5fa0-f8eb-4d82-b98d-0d34d3e404e8_2d9e9dba.csv",
+      "ckan_last_modified": "2026-10-07T13:03:44.960185",
+      "cr": 0,
+      "crlf": 29850,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 21793,
+      "parse_error": null,
+      "resource_id": "790f5fa0-f8eb-4d82-b98d-0d34d3e404e8",
+      "rows": 29849,
+      "sampled": false,
+      "size": 8329415,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T09:14:35.042277+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 1,
+      "columns": {
+        "Application ID": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 29849,
+            "int64": 29849
+          },
+          "examples": [
+            "A-TR-2016-2015_1-00001",
+            "A-TR-2016-2015_2-00001",
+            "A-TR-2016-2015_3-00001"
+          ],
+          "max_len": 24,
+          "null_count": 0,
+          "shapes": {
+            "text": 29849
+          }
+        },
+        "Auction Name": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 29849,
+            "int64": 29849
+          },
+          "examples": [
+            "2016-17 (TR) Transitional Capacity Auction",
+            "2017-18 (T-1) One Year Ahead Capacity Auction",
+            "2017-18 (TR) Transitional Capacity Auction"
+          ],
+          "max_len": 47,
+          "null_count": 0,
+          "shapes": {
+            "text": 29849
+          }
+        },
+        "CMU ID": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 29779,
+            "int64": 29779
+          },
+          "examples": [
+            "2015_1",
+            "2015_2",
+            "2015_3"
+          ],
+          "max_len": 6,
+          "null_count": 0,
+          "shapes": {
+            "int": 70,
+            "text": 29779
+          }
+        },
+        "Component ID": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%b-%y": 29849,
+            "float64": 25593,
+            "int64": 25593
+          },
+          "examples": [
+            "000001",
+            "000002",
+            "000003"
+          ],
+          "max_len": 54,
+          "null_count": 0,
+          "shapes": {
+            "int": 4256,
+            "month_label": 13,
+            "text": 25580
+          }
+        },
+        "Connection or DSR Capacity": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 3666
+          },
+          "examples": [
+            "24.959",
+            "1.2",
+            "2.9"
+          ],
+          "max_len": 8,
+          "null_count": 24246,
+          "shapes": {
+            "decimal": 3666,
+            "int": 1937
+          }
+        },
+        "De Rated Capacity": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 5451
+          },
+          "examples": [
+            "23.202",
+            "1.089",
+            "2.633"
+          ],
+          "max_len": 8,
+          "null_count": 24378,
+          "shapes": {
+            "decimal": 5451,
+            "int": 20
+          }
+        },
+        "Delivery Year": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "2016",
+            "2017",
+            "2018"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 29849
+          }
+        },
+        "Description of CMU Components": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 29818,
+            "int64": 29818
+          },
+          "examples": [
+            "Industrial Steelmaking / Manufacturing Site",
+            "Industrial Site comprising multiple electro intensive proceses_ Reduction in Imp",
+            "Industrial Manufacturing Site with multiple processes.  Energy Demand Management"
+          ],
+          "max_len": 3140,
+          "null_count": 31,
+          "shapes": {
+            "text": 29818
+          }
+        },
+        "Generating Capacity of On Site Generating Unit": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 104
+          },
+          "examples": [
+            "24.98",
+            "12.49",
+            "6.245"
+          ],
+          "max_len": 6,
+          "null_count": 29735,
+          "shapes": {
+            "decimal": 104,
+            "int": 10
+          }
+        },
+        "Generating Technology Class": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 24139,
+            "int64": 24139
+          },
+          "examples": [
+            "CHP and autogeneration",
+            "OCGT and Reciprocating Engines (Fuel Type - Gas)",
+            "Storage"
+          ],
+          "max_len": 51,
+          "null_count": 5710,
+          "shapes": {
+            "text": 24139
+          }
+        },
+        "Location and Post Code": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 29706,
+            "int64": 29706
+          },
+          "examples": [
+            "TBC but targeted at:\n \nLlanwern Works NP9 0XN\nOS:  ST 394861\nPort Talbot Works, ",
+            "ROTHERHAM WORKS\nPOBOX 50\nALDWARKE LANE\nS60 1DW\nOS:  SK45009500",
+            "Trostre Works\nLlanelli\nCarmarthenshire\nSA14 9SD\nOS 52850E 99360N"
+          ],
+          "max_len": 1541,
+          "null_count": 143,
+          "shapes": {
+            "text": 29706
+          }
+        },
+        "Number of Components": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1",
+            "2",
+            "182"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "int": 29849
+          }
+        },
+        "OS Grid Reference": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 27086,
+            "int64": 27086
+          },
+          "examples": [
+            "Aggregated",
+            "TM 164 359",
+            "TF 113 499"
+          ],
+          "max_len": 10,
+          "null_count": 2763,
+          "shapes": {
+            "text": 27086
+          }
+        },
+        "Permitted On Site Generating Unit": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 2945,
+            "int64": 2945
+          },
+          "examples": [
+            "Yes",
+            "No"
+          ],
+          "max_len": 3,
+          "null_count": 26904,
+          "shapes": {
+            "text": 2945
+          }
+        },
+        "Post Refurbishing De Rated Capacity": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 60
+          },
+          "examples": [
+            "11.422",
+            "18.349",
+            "18.959"
+          ],
+          "max_len": 8,
+          "null_count": 29789,
+          "shapes": {
+            "decimal": 60
+          }
+        },
+        "Pre Refurbishing De Rated Capacity": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 72
+          },
+          "examples": [
+            "11.422",
+            "18.349",
+            "18.959"
+          ],
+          "max_len": 8,
+          "null_count": 29777,
+          "shapes": {
+            "decimal": 72
+          }
+        },
+        "Primary Fuel of Component": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 4455,
+            "int64": 4455
+          },
+          "examples": [
+            "Storage - Battery",
+            "Gas",
+            "Storage - Pumped"
+          ],
+          "max_len": 24,
+          "null_count": 25394,
+          "shapes": {
+            "text": 4455
+          }
+        },
+        "Type": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 29849,
+            "int64": 29849
+          },
+          "examples": [
+            "TR",
+            "ST",
+            "T-1"
+          ],
+          "max_len": 3,
+          "null_count": 0,
+          "shapes": {
+            "text": 29849
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "Application ID": {
+            "description": "System generated ID for Application",
+            "title": "Application ID",
+            "type": "text",
+            "unit": null
+          },
+          "Auction Name": {
+            "description": "Name of Capacity Market Auction",
+            "title": "Auction Name",
+            "type": "text",
+            "unit": null
+          },
+          "CMU ID": {
+            "description": "ID of Capacity Market Unit - defined by Capacity Provider",
+            "title": "CMU ID",
+            "type": "text",
+            "unit": null
+          },
+          "Component ID": {
+            "description": "ID of Component.\r\nAll components with a capacity less than 30kW have been aggregated per Generating Technology Class per CMU. \r\nComponents are additionally aggregated at ‘Permitted On-Site Generating Unit’ level.  Where a CMU contains components with a capacity less than 30kW and different Permitted",
+            "title": "Component ID",
+            "type": "text",
+            "unit": null
+          },
+          "Connection or DSR Capacity": {
+            "description": "Connection Capacity in MW",
+            "title": "Connection or DSR Capacity",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "De Rated Capacity": {
+            "description": "De-Rated Capacity in MW",
+            "title": "De Rated Capacity",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "Delivery Year": {
+            "description": "First delivery year to which the Capacity Auction relates to",
+            "title": "Delivery Year",
+            "type": "int4",
+            "unit": "Year"
+          },
+          "Description of CMU Components": {
+            "description": "Description of CMU Components",
+            "title": "Description of CMU Components",
+            "type": "text",
+            "unit": null
+          },
+          "Generating Capacity of On Site Generating Unit": {
+            "description": "Generating Capacity of on-site Generating Unit in MW",
+            "title": "Generating Capacity of On Site Generating Unit",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "Generating Technology Class": {
+            "description": "Details the technology used for component",
+            "title": "Generating Technology Class",
+            "type": "text",
+            "unit": null
+          },
+          "Location and Post Code": {
+            "description": "Component address",
+            "title": "Location and Post Code",
+            "type": "text",
+            "unit": null
+          },
+          "Number of Components": {
+            "description": "Number of small components aggregated",
+            "title": "Number of Components",
+            "type": "int4",
+            "unit": null
+          },
+          "OS Grid Reference": {
+            "description": "Ordnance Survey Grid Reference",
+            "title": "OS Grid Reference",
+            "type": "text",
+            "unit": null
+          },
+          "Permitted On Site Generating Unit": {
+            "description": "Does the component contain an on-site generating unit",
+            "title": "Permitted On Site Generating Unit",
+            "type": "text",
+            "unit": null
+          },
+          "Post Refurbishing De Rated Capacity": {
+            "description": "Post-Refurbishing De-Rated Capacity in MW",
+            "title": "Post Refurbishing De Rated Capacity",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "Pre Refurbishing De Rated Capacity": {
+            "description": "Pre-Refurbishing De-Rated Capacity in MW",
+            "title": "Pre Refurbishing De Rated Capacity",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "Primary Fuel of Component": {
+            "description": "Primary Fuel of Generating Unit or Permitted on-Site Generating Unit",
+            "title": "Primary Fuel of Component",
+            "type": "text",
+            "unit": null
+          },
+          "Type": {
+            "description": "Indicates the number of years leading up to the delivery year",
+            "title": "Type",
+            "type": "text",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T09:14:35.042277+00:00",
+      "header": [
+        "Auction Name",
+        "Application ID",
+        "CMU ID",
+        "Delivery Year",
+        "Component ID",
+        "Type",
+        "Generating Technology Class",
+        "Permitted On Site Generating Unit",
+        "Primary Fuel of Component",
+        "Connection or DSR Capacity",
+        "De Rated Capacity",
+        "Pre Refurbishing De Rated Capacity",
+        "Post Refurbishing De Rated Capacity",
+        "Generating Capacity of On Site Generating Unit",
+        "Description of CMU Components",
+        "Location and Post Code",
+        "OS Grid Reference",
+        "Number of Components"
+      ],
+      "last_written_at": "2026-10-08T09:14:35.042277+00:00",
+      "resource_ids": [
+        "790f5fa0-f8eb-4d82-b98d-0d34d3e404e8"
+      ],
+      "rows": 29849,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [],
+  "key": "capacity_market_components",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Auction Name",
+          "Application ID",
+          "Component ID"
+        ],
+        "max_duplicates": 0
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "capacity-market-register",
+  "proposal": {
+    "flags": [],
+    "record_draft": {
+      "eligibility": {
+        "question": "Number of Components: a numeric column with no vendor unit",
+        "status": "held",
+        "unit": "CI"
+      },
+      "encoding": "utf-8",
+      "entity_key": [
+        "auction_name",
+        "application_id",
+        "component_id"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "auction_name",
+              "nullable": true,
+              "source": "Auction Name"
+            },
+            {
+              "dtype": "string",
+              "name": "application_id",
+              "nullable": true,
+              "source": "Application ID"
+            },
+            {
+              "dtype": "string",
+              "name": "cmu_id",
+              "nullable": true,
+              "source": "CMU ID"
+            },
+            {
+              "dtype": "int64",
+              "name": "delivery_year",
+              "nullable": true,
+              "source": "Delivery Year"
+            },
+            {
+              "dtype": "string",
+              "name": "component_id",
+              "nullable": true,
+              "source": "Component ID"
+            },
+            {
+              "dtype": "string",
+              "name": "type",
+              "nullable": true,
+              "source": "Type"
+            },
+            {
+              "dtype": "string",
+              "name": "generating_technology_class",
+              "nullable": true,
+              "source": "Generating Technology Class"
+            },
+            {
+              "dtype": "string",
+              "name": "permitted_on_site_generating_unit",
+              "nullable": true,
+              "source": "Permitted On Site Generating Unit"
+            },
+            {
+              "dtype": "string",
+              "name": "primary_fuel_of_component",
+              "nullable": true,
+              "source": "Primary Fuel of Component"
+            },
+            {
+              "dtype": "float64",
+              "name": "connection_or_dsr_capacity",
+              "nullable": true,
+              "source": "Connection or DSR Capacity"
+            },
+            {
+              "dtype": "float64",
+              "name": "de_rated_capacity",
+              "nullable": true,
+              "source": "De Rated Capacity"
+            },
+            {
+              "dtype": "float64",
+              "name": "pre_refurbishing_de_rated_capacity",
+              "nullable": true,
+              "source": "Pre Refurbishing De Rated Capacity"
+            },
+            {
+              "dtype": "float64",
+              "name": "post_refurbishing_de_rated_capacity",
+              "nullable": true,
+              "source": "Post Refurbishing De Rated Capacity"
+            },
+            {
+              "dtype": "float64",
+              "name": "generating_capacity_of_on_site_generating_unit",
+              "nullable": true,
+              "source": "Generating Capacity of On Site Generating Unit"
+            },
+            {
+              "dtype": "string",
+              "name": "description_of_cmu_components",
+              "nullable": true,
+              "source": "Description of CMU Components"
+            },
+            {
+              "dtype": "string",
+              "name": "location_and_post_code",
+              "nullable": true,
+              "source": "Location and Post Code"
+            },
+            {
+              "dtype": "string",
+              "name": "os_grid_reference",
+              "nullable": true,
+              "source": "OS Grid Reference"
+            },
+            {
+              "dtype": "int64",
+              "name": "number_of_components",
+              "nullable": true,
+              "source": "Number of Components"
+            }
+          ],
+          "header": [
+            "Auction Name",
+            "Application ID",
+            "CMU ID",
+            "Delivery Year",
+            "Component ID",
+            "Type",
+            "Generating Technology Class",
+            "Permitted On Site Generating Unit",
+            "Primary Fuel of Component",
+            "Connection or DSR Capacity",
+            "De Rated Capacity",
+            "Pre Refurbishing De Rated Capacity",
+            "Post Refurbishing De Rated Capacity",
+            "Generating Capacity of On Site Generating Unit",
+            "Description of CMU Components",
+            "Location and Post Code",
+            "OS Grid Reference",
+            "Number of Components"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T02",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "held",
+        "field": "column 'Number of Components'.unit",
+        "id": "T01",
+        "kind": "unit",
+        "question": "Number of Components: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T02",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: none"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T03",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['auction_name', 'application_id', 'component_id'] (measured unique in 1 capture(s)); without one, latest stays whole_capture"
+      }
+    ]
+  },
+  "refresh": "weekly",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update frequency",
+        "value": "Weekly"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Electricity Market Reform",
+    "title": "Capacity Market Register"
+  }
+}

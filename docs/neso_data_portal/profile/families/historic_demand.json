@@ -1,0 +1,3527 @@
+{
+  "archetype": "SER",
+  "batch": "DEM-1",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/historic_demand/2026/10/08/raw_20261008T110732Z_ed8a37cb-65ac-4581-8dbc-a3130780da3a_a9db20de.csv",
+      "ckan_last_modified": "2023-07-24T12:16:55.273828",
+      "cr": 0,
+      "crlf": 17521,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "ed8a37cb-65ac-4581-8dbc-a3130780da3a",
+      "rows": 17520,
+      "sampled": false,
+      "size": 1221064,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:07:32.200543+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/historic_demand/2026/10/08/raw_20261008T110735Z_b3eae4a5-8c3c-4df1-b9de-7db243ac3a09_acff58f6.csv",
+      "ckan_last_modified": "2023-07-24T12:17:59.367327",
+      "cr": 0,
+      "crlf": 17521,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "b3eae4a5-8c3c-4df1-b9de-7db243ac3a09",
+      "rows": 17520,
+      "sampled": false,
+      "size": 1237038,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:07:35.027204+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/historic_demand/2026/10/08/raw_20261008T110738Z_01522076-2691-4140-bfb8-c62284752efd_102be4a6.csv",
+      "ckan_last_modified": "2023-07-24T12:19:33.983929",
+      "cr": 0,
+      "crlf": 17521,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "01522076-2691-4140-bfb8-c62284752efd",
+      "rows": 17520,
+      "sampled": false,
+      "size": 1269447,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:07:38.060727+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/historic_demand/2026/10/08/raw_20261008T110740Z_4bf713a2-ea0c-44d3-a09a-63fc6a634b00_551a7a74.csv",
+      "ckan_last_modified": "2023-07-24T12:21:01.069378",
+      "cr": 0,
+      "crlf": 17569,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "4bf713a2-ea0c-44d3-a09a-63fc6a634b00",
+      "rows": 17568,
+      "sampled": false,
+      "size": 1323744,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:07:40.607157+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/historic_demand/2026/10/08/raw_20261008T110743Z_2ff7aaff-8b42-4c1b-b234-9446573a1e27_f9ed1ed7.csv",
+      "ckan_last_modified": "2023-07-24T12:30:21.215757",
+      "cr": 0,
+      "crlf": 17521,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "2ff7aaff-8b42-4c1b-b234-9446573a1e27",
+      "rows": 17520,
+      "sampled": false,
+      "size": 1372112,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:07:43.398909+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/historic_demand/2026/10/08/raw_20261008T110746Z_b9005225-49d3-40d1-921c-03ee2d83a2ff_58fec6fe.csv",
+      "ckan_last_modified": "2023-07-24T12:32:14.516476",
+      "cr": 0,
+      "crlf": 17521,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "b9005225-49d3-40d1-921c-03ee2d83a2ff",
+      "rows": 17520,
+      "sampled": false,
+      "size": 1379848,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:07:46.037546+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/historic_demand/2026/10/08/raw_20261008T110748Z_cc505e45-65ae-4819-9b90-1fbb06880293_da73a3a4.csv",
+      "ckan_last_modified": "2023-07-24T12:35:23.084117",
+      "cr": 0,
+      "crlf": 17521,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "cc505e45-65ae-4819-9b90-1fbb06880293",
+      "rows": 17520,
+      "sampled": false,
+      "size": 1380366,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:07:48.921734+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/historic_demand/2026/10/08/raw_20261008T110751Z_3bb75a28-ab44-4a0b-9b1c-9be9715d3c44_ec031cca.csv",
+      "ckan_last_modified": "2023-07-24T12:41:09.588932",
+      "cr": 0,
+      "crlf": 17569,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "3bb75a28-ab44-4a0b-9b1c-9be9715d3c44",
+      "rows": 17568,
+      "sampled": false,
+      "size": 1367182,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:07:51.891913+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/historic_demand/2026/10/08/raw_20261008T110754Z_2f0f75b8-39c5-46ff-a914-ae38088ed022_ad6c47de.csv",
+      "ckan_last_modified": "2023-07-24T12:43:04.594718",
+      "cr": 0,
+      "crlf": 17521,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "2f0f75b8-39c5-46ff-a914-ae38088ed022",
+      "rows": 17520,
+      "sampled": false,
+      "size": 1385795,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:07:54.781139+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/historic_demand/2026/10/08/raw_20261008T110757Z_fcb12133-0db0-4f27-a4a5-1669fd9f6d33_a2e19b4e.csv",
+      "ckan_last_modified": "2023-07-24T12:45:05.955597",
+      "cr": 0,
+      "crlf": 17521,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "fcb12133-0db0-4f27-a4a5-1669fd9f6d33",
+      "rows": 17520,
+      "sampled": false,
+      "size": 1389142,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:07:57.748715+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/historic_demand/2026/10/08/raw_20261008T110800Z_dd9de980-d724-415a-b344-d8ae11321432_0084d546.csv",
+      "ckan_last_modified": "2025-04-08T19:45:40.926204",
+      "cr": 0,
+      "crlf": 17521,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "dd9de980-d724-415a-b344-d8ae11321432",
+      "rows": 17520,
+      "sampled": false,
+      "size": 1554786,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:08:00.788962+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/historic_demand/2026/10/08/raw_20261008T110804Z_33ba6857-2a55-479f-9308-e5c4c53d4381_7121b6fb.csv",
+      "ckan_last_modified": "2025-04-08T19:49:15.816242",
+      "cr": 0,
+      "crlf": 17569,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "33ba6857-2a55-479f-9308-e5c4c53d4381",
+      "rows": 17568,
+      "sampled": false,
+      "size": 1560521,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:08:04.215810+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/historic_demand/2026/10/08/raw_20261008T110807Z_18c69c42-f20d-46f0-84e9-e279045befc6_b9f7285f.csv",
+      "ckan_last_modified": "2025-04-08T19:51:19.727410",
+      "cr": 0,
+      "crlf": 17521,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "18c69c42-f20d-46f0-84e9-e279045befc6",
+      "rows": 17520,
+      "sampled": false,
+      "size": 1589451,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:08:07.204474+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/historic_demand/2026/10/08/raw_20261008T110810Z_bb44a1b5-75b1-4db2-8491-257f23385006_fc6bd5d5.csv",
+      "ckan_last_modified": "2025-04-08T19:52:21.391966",
+      "cr": 0,
+      "crlf": 17521,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "bb44a1b5-75b1-4db2-8491-257f23385006",
+      "rows": 17520,
+      "sampled": false,
+      "size": 1682356,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:08:10.015133+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/historic_demand/2026/10/08/raw_20261008T110813Z_bf5ab335-9b40-4ea4-b93a-ab4af7bce003_cb6f7b91.csv",
+      "ckan_last_modified": "2025-04-08T19:54:08.935442",
+      "cr": 0,
+      "crlf": 17521,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 2,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "bf5ab335-9b40-4ea4-b93a-ab4af7bce003",
+      "rows": 17520,
+      "sampled": false,
+      "size": 1732679,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:08:13.591261+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/historic_demand/2026/10/08/raw_20261008T110816Z_f6d02c0f-957b-48cb-82ee-09003f2ba759_fa7895b6.csv",
+      "ckan_last_modified": "2025-04-08T19:55:41.954513",
+      "cr": 0,
+      "crlf": 17569,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 2,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "f6d02c0f-957b-48cb-82ee-09003f2ba759",
+      "rows": 17568,
+      "sampled": false,
+      "size": 1809707,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:08:16.668758+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/historic_demand/2026/10/08/raw_20261008T110819Z_b2bde559-3455-4021-b179-dfe60c0337b0_8b8be946.csv",
+      "ckan_last_modified": "2026-06-09T13:25:07.456371",
+      "cr": 0,
+      "crlf": 17521,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 2,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "b2bde559-3455-4021-b179-dfe60c0337b0",
+      "rows": 17520,
+      "sampled": false,
+      "size": 1869771,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:08:19.089952+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/historic_demand/2026/10/08/raw_20261008T110821Z_e8608e9a-f56c-457f-b9e7-bfffcfd19731_4455cc1d.csv",
+      "ckan_last_modified": "2025-06-20T08:35:31.018121",
+      "cr": 0,
+      "crlf": 17521,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 2,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "e8608e9a-f56c-457f-b9e7-bfffcfd19731",
+      "rows": 17520,
+      "sampled": false,
+      "size": 1461282,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:08:21.951715+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/historic_demand/2026/10/08/raw_20261008T110824Z_4daaac31-ae56-461e-8efe-6b33e147225a_c552c919.csv",
+      "ckan_last_modified": "2025-06-20T08:35:55.064874",
+      "cr": 0,
+      "crlf": 17521,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 2,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "4daaac31-ae56-461e-8efe-6b33e147225a",
+      "rows": 17520,
+      "sampled": false,
+      "size": 1459634,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:08:24.373417+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/historic_demand/2026/10/08/raw_20261008T110827Z_30650247-acbf-414d-8ae2-2aa4aac57537_9f8c4d0c.csv",
+      "ckan_last_modified": "2025-06-20T08:36:18.971427",
+      "cr": 0,
+      "crlf": 17521,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 2,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "30650247-acbf-414d-8ae2-2aa4aac57537",
+      "rows": 17520,
+      "sampled": false,
+      "size": 1462386,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:08:27.250609+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/historic_demand/2026/10/08/raw_20261008T110830Z_5f5c076c-d3a3-4f33-a137-501cc3d2ca9b_c843053e.csv",
+      "ckan_last_modified": "2025-06-20T08:36:41.853468",
+      "cr": 0,
+      "crlf": 17569,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 2,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "5f5c076c-d3a3-4f33-a137-501cc3d2ca9b",
+      "rows": 17568,
+      "sampled": false,
+      "size": 1465731,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:08:30.406731+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/historic_demand/2026/10/08/raw_20261008T110833Z_42a41acd-53b6-450d-af1b-4a92a352895c_bd778dec.csv",
+      "ckan_last_modified": "2025-06-20T08:37:05.580758",
+      "cr": 0,
+      "crlf": 17521,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 2,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "42a41acd-53b6-450d-af1b-4a92a352895c",
+      "rows": 17520,
+      "sampled": false,
+      "size": 1519367,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:08:33.057099+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/historic_demand/2026/10/08/raw_20261008T110835Z_949bb4a4-8374-4730-89ef-302d82428d2c_e26ddade.csv",
+      "ckan_last_modified": "2025-06-20T08:37:30.333853",
+      "cr": 0,
+      "crlf": 17521,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 2,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "949bb4a4-8374-4730-89ef-302d82428d2c",
+      "rows": 17520,
+      "sampled": false,
+      "size": 1543093,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:08:35.733561+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/historic_demand/2026/10/08/raw_20261008T110838Z_c0da767c-447d-48d1-93fd-ca3955d078ae_1b27be61.csv",
+      "ckan_last_modified": "2025-06-20T08:37:56.090537",
+      "cr": 0,
+      "crlf": 17521,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 2,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "c0da767c-447d-48d1-93fd-ca3955d078ae",
+      "rows": 17520,
+      "sampled": false,
+      "size": 1530735,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:08:38.874614+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/historic_demand/2026/10/08/raw_20261008T110841Z_ec63adc8-e8a1-45cc-a593-5953b1ede7b1_f65b8cfe.csv",
+      "ckan_last_modified": "2025-06-20T08:38:21.660130",
+      "cr": 0,
+      "crlf": 17569,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 2,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "ec63adc8-e8a1-45cc-a593-5953b1ede7b1",
+      "rows": 17568,
+      "sampled": false,
+      "size": 1594396,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:08:41.501850+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/historic_demand/2026/10/08/raw_20261008T110844Z_8a4a771c-3929-4e56-93ad-cdf13219dea5_6bd25218.csv",
+      "ckan_last_modified": "2026-10-08T08:20:27.652049",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 3,
+      "lf": 12479,
+      "parse_error": null,
+      "resource_id": "8a4a771c-3929-4e56-93ad-cdf13219dea5",
+      "rows": 12478,
+      "sampled": false,
+      "size": 1331452,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:08:44.413539+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 10,
+      "columns": {
+        "BRITNED_FLOW": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "0",
+            "-1",
+            "51"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "int": 175296
+          }
+        },
+        "EAST_WEST_FLOW": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "0",
+            "-1",
+            "-2"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 175296
+          }
+        },
+        "EMBEDDED_SOLAR_CAPACITY": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "0",
+            "17",
+            "18"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "int": 175296
+          }
+        },
+        "EMBEDDED_SOLAR_GENERATION": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "0",
+            "1",
+            "2"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 175296
+          }
+        },
+        "EMBEDDED_WIND_CAPACITY": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1403",
+            "1405",
+            "1419"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 175296
+          }
+        },
+        "EMBEDDED_WIND_GENERATION": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "54",
+            "53",
+            "50"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 175296
+          }
+        },
+        "ENGLAND_WALES_DEMAND": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "33939",
+            "34072",
+            "33615"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "int": 175296
+          }
+        },
+        "IFA2_FLOW": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "0"
+          ],
+          "max_len": 1,
+          "null_count": 0,
+          "shapes": {
+            "int": 175296
+          }
+        },
+        "IFA_FLOW": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "2002",
+            "1772",
+            "1753"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "int": 175296
+          }
+        },
+        "MOYLE_FLOW": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "-161",
+            "-160",
+            "-128"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 175296
+          }
+        },
+        "ND": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "37910",
+            "38047",
+            "37380"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "int": 175296
+          }
+        },
+        "NEMO_FLOW": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "0"
+          ],
+          "max_len": 1,
+          "null_count": 0,
+          "shapes": {
+            "int": 175296
+          }
+        },
+        "NON_BM_STOR": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "0",
+            "1",
+            "52"
+          ],
+          "max_len": 3,
+          "null_count": 0,
+          "shapes": {
+            "int": 175296
+          }
+        },
+        "PUMP_STORAGE_PUMPING": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "33",
+            "157",
+            "511"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 175296
+          }
+        },
+        "SETTLEMENT_DATE": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 175296,
+            "int64": 175296
+          },
+          "examples": [
+            "01-JAN-2009",
+            "02-JAN-2009",
+            "03-JAN-2009"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "text": 175296
+          }
+        },
+        "SETTLEMENT_PERIOD": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1",
+            "2",
+            "3"
+          ],
+          "max_len": 2,
+          "null_count": 0,
+          "shapes": {
+            "int": 175296
+          }
+        },
+        "TSD": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "38704",
+            "38964",
+            "38651"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "int": 175296
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "BRITNED_FLOW": {
+            "description": "The flow on the respective interconnector. -ve signifies export power out from GB; +ve signifies import power into GB.",
+            "title": "Britned Interconnector Flow",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "EAST_WEST_FLOW": {
+            "description": "The flow on the respective interconnector. -ve signifies export power out from GB; +ve signifies import power into GB.",
+            "title": "East West Interconnector Flow",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "EMBEDDED_SOLAR_CAPACITY": {
+            "description": "As embedded wind capacity above, but for solar generation.",
+            "title": "Embedded Solar Capacity",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "EMBEDDED_SOLAR_GENERATION": {
+            "description": "This is an estimate of the GB solar generation from PV panels. These are embedded in the distribution network and invisible to NESO. Their effect is to suppress the electricity demand during periods of high radiation. The true output of these generators is not known so an estimate is provided based ",
+            "title": "Estimated Embedded Solar Generation",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "EMBEDDED_WIND_CAPACITY": {
+            "description": "This is NESO’s best view of the installed embedded wind capacity in GB. This is based on publicly available information compiled from a variety of sources and is not the definitive view. It is consistent with the generation estimate provided above.",
+            "title": "Embedded Wind Capacity",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "EMBEDDED_WIND_GENERATION": {
+            "description": "This is an estimate of the GB wind generation from wind farms which do not have Transmission System metering installed. These wind farms are embedded in the distribution network and invisible to NESO. Their effect is to suppress the electricity demand during periods of high wind. The true output of ",
+            "title": "Estimated Embedded Wind Generation",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "ENGLAND_WALES_DEMAND": {
+            "description": "England and Wales Demand, as ND above but on an England and Wales basis.",
+            "title": "England and Wales Demand",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "IFA2_FLOW": {
+            "description": "The flow on the respective interconnector. -ve signifies export power out from GB; +ve signifies import power into GB.",
+            "title": "IFA2 Interconnector Flow",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "IFA_FLOW": {
+            "description": "The flow on the respective interconnector. -ve signifies export power out from GB; +ve signifies import power into GB.",
+            "title": "IFA Interconnector Flow",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "MOYLE_FLOW": {
+            "description": "The flow on the respective interconnector. -ve signifies export power out from GB; +ve signifies import power into GB.",
+            "title": "Moyle Interconnector Flow",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "ND": {
+            "description": "This is the Great Britain generation requirement and is equivalent to the Initial National Demand Outturn (INDO) and National Demand Forecast as published on BM Reports. National Demand is the sum of metered generation, but excludes generation required to meet station load, pump storage pumping and ",
+            "title": "National Demand",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "NEMO_FLOW": {
+            "description": "The flow on the respective interconnector. -ve signifies export power out from GB; +ve signifies import power into GB.",
+            "title": "Nemo Interconnector Flow",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "NON_BM_STOR": {
+            "description": "For units that are not included in the ND generator definition. This can be in the form of generation or demand reduction.",
+            "title": "Non-Balancing Mechanism Short-Term Operating Reserve",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "PUMP_STORAGE_PUMPING": {
+            "description": "The demand due to pumping at hydro pump storage units; the -ve signifies pumping load.",
+            "title": "Pump Storage Pumping",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "SETTLEMENT_DATE": {
+            "description": "The date the historic outturn occurred.",
+            "title": "Settlement Date",
+            "type": "date",
+            "unit": null
+          },
+          "SETTLEMENT_PERIOD": {
+            "description": "The half hourly period for the historic outturn occurred. Settlement period 1 runs from 00:00-00:30.",
+            "title": "Settlement Period",
+            "type": "int4",
+            "unit": null
+          },
+          "TSD": {
+            "description": "This is the Transmission System generation requirement and is equivalent to the Initial Transmission System Demand Outturn (ITSDO) and Transmission System Demand Forecast on BM Reports. Transmission System Demand is equal to the ND plus the additional generation required to meet station load, pump s",
+            "title": "Transmission System Demand",
+            "type": "int4",
+            "unit": "MW"
+          }
+        },
+        "field_info_not_in_header": [
+          "ELECLINK_FLOW",
+          "FORECAST_ACTUAL_INDICATOR",
+          "GREENLINK_FLOW",
+          "NSL_FLOW",
+          "SCOTTISH_TRANSFER",
+          "VIKING_FLOW"
+        ],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T11:07:32.200543+00:00",
+      "header": [
+        "SETTLEMENT_DATE",
+        "SETTLEMENT_PERIOD",
+        "ND",
+        "TSD",
+        "ENGLAND_WALES_DEMAND",
+        "EMBEDDED_WIND_GENERATION",
+        "EMBEDDED_WIND_CAPACITY",
+        "EMBEDDED_SOLAR_GENERATION",
+        "EMBEDDED_SOLAR_CAPACITY",
+        "NON_BM_STOR",
+        "PUMP_STORAGE_PUMPING",
+        "IFA_FLOW",
+        "IFA2_FLOW",
+        "BRITNED_FLOW",
+        "MOYLE_FLOW",
+        "EAST_WEST_FLOW",
+        "NEMO_FLOW"
+      ],
+      "last_written_at": "2026-10-08T11:07:57.748715+00:00",
+      "resource_ids": [
+        "01522076-2691-4140-bfb8-c62284752efd",
+        "2f0f75b8-39c5-46ff-a914-ae38088ed022",
+        "2ff7aaff-8b42-4c1b-b234-9446573a1e27",
+        "3bb75a28-ab44-4a0b-9b1c-9be9715d3c44",
+        "4bf713a2-ea0c-44d3-a09a-63fc6a634b00",
+        "b3eae4a5-8c3c-4df1-b9de-7db243ac3a09",
+        "b9005225-49d3-40d1-921c-03ee2d83a2ff",
+        "cc505e45-65ae-4819-9b90-1fbb06880293",
+        "ed8a37cb-65ac-4581-8dbc-a3130780da3a",
+        "fcb12133-0db0-4f27-a4a5-1669fd9f6d33"
+      ],
+      "rows": 175296,
+      "settlement_periods": []
+    },
+    {
+      "captures": 4,
+      "columns": {
+        "BRITNED_FLOW": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "176",
+            "194",
+            "581"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "int": 70128
+          }
+        },
+        "EAST_WEST_FLOW": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "-250",
+            "-236",
+            "-311"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 70128
+          }
+        },
+        "ELECLINK_FLOW": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "0",
+            "66",
+            "499"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "int": 70128
+          }
+        },
+        "EMBEDDED_SOLAR_CAPACITY": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "12663",
+            "12664",
+            "12665"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "int": 70128
+          }
+        },
+        "EMBEDDED_SOLAR_GENERATION": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "0",
+            "87",
+            "406"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "int": 70128
+          }
+        },
+        "EMBEDDED_WIND_CAPACITY": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "5918",
+            "6135",
+            "6192"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 70128
+          }
+        },
+        "EMBEDDED_WIND_GENERATION": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "2912",
+            "2761",
+            "2709"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 70128
+          }
+        },
+        "ENGLAND_WALES_DEMAND": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "22393",
+            "22962",
+            "22689"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "int": 70128
+          }
+        },
+        "GREENLINK_FLOW": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "0"
+          ],
+          "max_len": 1,
+          "null_count": 0,
+          "shapes": {
+            "int": 70128
+          }
+        },
+        "IFA2_FLOW": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "0",
+            "-2",
+            "-1"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "int": 70128
+          }
+        },
+        "IFA_FLOW": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1553",
+            "1554",
+            "1505"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "int": 70128
+          }
+        },
+        "MOYLE_FLOW": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "-455",
+            "-410",
+            "-450"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 70128
+          }
+        },
+        "ND": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "23808",
+            "24402",
+            "24147"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "int": 70128
+          }
+        },
+        "NEMO_FLOW": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "0",
+            "994",
+            "1000"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "int": 70128
+          }
+        },
+        "NON_BM_STOR": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "0",
+            "54",
+            "142"
+          ],
+          "max_len": 3,
+          "null_count": 0,
+          "shapes": {
+            "int": 70128
+          }
+        },
+        "NSL_FLOW": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "0",
+            "-1",
+            "-3"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "int": 70128
+          }
+        },
+        "PUMP_STORAGE_PUMPING": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "178",
+            "27",
+            "28"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 70128
+          }
+        },
+        "SETTLEMENT_DATE": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 70128,
+            "int64": 70128
+          },
+          "examples": [
+            "01-JAN-2019",
+            "02-JAN-2019",
+            "03-JAN-2019"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "text": 70128
+          }
+        },
+        "SETTLEMENT_PERIOD": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1",
+            "2",
+            "3"
+          ],
+          "max_len": 2,
+          "null_count": 0,
+          "shapes": {
+            "int": 70128
+          }
+        },
+        "TSD": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "25291",
+            "25720",
+            "25495"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "int": 70128
+          }
+        },
+        "VIKING_FLOW": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "0"
+          ],
+          "max_len": 1,
+          "null_count": 0,
+          "shapes": {
+            "int": 70128
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "BRITNED_FLOW": {
+            "description": "The flow on the respective interconnector. -ve signifies export power out from GB; +ve signifies import power into GB.",
+            "title": "Britned Interconnector Flow",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "EAST_WEST_FLOW": {
+            "description": "The flow on the respective interconnector. -ve signifies export power out from GB; +ve signifies import power into GB.",
+            "title": "East West Interconnector Flow",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "ELECLINK_FLOW": {
+            "description": "The flow on the respective interconnector. -ve signifies export power out from GB; +ve signifies import power into GB.",
+            "title": "ElecLink Interconnector Flow",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "EMBEDDED_SOLAR_CAPACITY": {
+            "description": "As embedded wind capacity above, but for solar generation.",
+            "title": "Embedded Solar Capacity",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "EMBEDDED_SOLAR_GENERATION": {
+            "description": "This is an estimate of the GB solar generation from PV panels. These are embedded in the distribution network and invisible to NESO. Their effect is to suppress the electricity demand during periods of high radiation. The true output of these generators is not known so an estimate is provided based ",
+            "title": "Estimated Embedded Solar Generation",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "EMBEDDED_WIND_CAPACITY": {
+            "description": "This is NESO’s best view of the installed embedded wind capacity in GB. This is based on publicly available information compiled from a variety of sources and is not the definitive view. It is consistent with the generation estimate provided above.",
+            "title": "Embedded Wind Capacity",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "EMBEDDED_WIND_GENERATION": {
+            "description": "This is an estimate of the GB wind generation from wind farms which do not have Transmission System metering installed. These wind farms are embedded in the distribution network and invisible to NESO. Their effect is to suppress the electricity demand during periods of high wind. The true output of ",
+            "title": "Estimated Embedded Wind Generation",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "ENGLAND_WALES_DEMAND": {
+            "description": "England and Wales Demand, as ND above but on an England and Wales basis.",
+            "title": "England and Wales Demand",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "GREENLINK_FLOW": {
+            "description": "The flow on the respective interconnector. -ve signifies export power out from GB; +ve signifies import power into GB.",
+            "title": "Greenlink Interconnector Flow",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "IFA2_FLOW": {
+            "description": "The flow on the respective interconnector. -ve signifies export power out from GB; +ve signifies import power into GB.",
+            "title": "IFA2 Interconnector Flow",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "IFA_FLOW": {
+            "description": "The flow on the respective interconnector. -ve signifies export power out from GB; +ve signifies import power into GB.",
+            "title": "IFA Interconnector Flow",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "MOYLE_FLOW": {
+            "description": "The flow on the respective interconnector. -ve signifies export power out from GB; +ve signifies import power into GB.",
+            "title": "Moyle Interconnector Flow",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "ND": {
+            "description": "This is the Great Britain generation requirement and is equivalent to the Initial National Demand Outturn (INDO) and National Demand Forecast as published on BM Reports. National Demand is the sum of metered generation, but excludes generation required to meet station load, pump storage pumping and ",
+            "title": "National Demand",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "NEMO_FLOW": {
+            "description": "The flow on the respective interconnector. -ve signifies export power out from GB; +ve signifies import power into GB.",
+            "title": "Nemo Interconnector Flow",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "NON_BM_STOR": {
+            "description": "For units that are not included in the ND generator definition. This can be in the form of generation or demand reduction.",
+            "title": "Non-Balancing Mechanism Short-Term Operating Reserve",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "NSL_FLOW": {
+            "description": "The flow on the respective interconnector. -ve signifies export power out from GB; +ve signifies import power into GB.",
+            "title": "North Sea Link Interconnector Flow",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "PUMP_STORAGE_PUMPING": {
+            "description": "The demand due to pumping at hydro pump storage units; the -ve signifies pumping load.",
+            "title": "Pump Storage Pumping",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "SETTLEMENT_DATE": {
+            "description": "The date the historic outturn occurred.",
+            "title": "Settlement Date",
+            "type": "date",
+            "unit": null
+          },
+          "SETTLEMENT_PERIOD": {
+            "description": "The half hourly period for the historic outturn occurred. Settlement period 1 runs from 00:00-00:30.",
+            "title": "Settlement Period",
+            "type": "int4",
+            "unit": null
+          },
+          "TSD": {
+            "description": "This is the Transmission System generation requirement and is equivalent to the Initial Transmission System Demand Outturn (ITSDO) and Transmission System Demand Forecast on BM Reports. Transmission System Demand is equal to the ND plus the additional generation required to meet station load, pump s",
+            "title": "Transmission System Demand",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "VIKING_FLOW": {
+            "description": "The flow on the respective interconnector. -ve signifies export power out from GB; +ve signifies import power into GB.",
+            "title": "Viking Interconnector Flow",
+            "type": "int4",
+            "unit": "MW"
+          }
+        },
+        "field_info_not_in_header": [
+          "FORECAST_ACTUAL_INDICATOR",
+          "SCOTTISH_TRANSFER"
+        ],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T11:08:00.788962+00:00",
+      "header": [
+        "SETTLEMENT_DATE",
+        "SETTLEMENT_PERIOD",
+        "ND",
+        "TSD",
+        "ENGLAND_WALES_DEMAND",
+        "EMBEDDED_WIND_GENERATION",
+        "EMBEDDED_WIND_CAPACITY",
+        "EMBEDDED_SOLAR_GENERATION",
+        "EMBEDDED_SOLAR_CAPACITY",
+        "NON_BM_STOR",
+        "PUMP_STORAGE_PUMPING",
+        "IFA_FLOW",
+        "IFA2_FLOW",
+        "BRITNED_FLOW",
+        "MOYLE_FLOW",
+        "EAST_WEST_FLOW",
+        "NEMO_FLOW",
+        "NSL_FLOW",
+        "ELECLINK_FLOW",
+        "VIKING_FLOW",
+        "GREENLINK_FLOW"
+      ],
+      "last_written_at": "2026-10-08T11:08:10.015133+00:00",
+      "resource_ids": [
+        "18c69c42-f20d-46f0-84e9-e279045befc6",
+        "33ba6857-2a55-479f-9308-e5c4c53d4381",
+        "bb44a1b5-75b1-4db2-8491-257f23385006",
+        "dd9de980-d724-415a-b344-d8ae11321432"
+      ],
+      "rows": 70128,
+      "settlement_periods": []
+    },
+    {
+      "captures": 11,
+      "columns": {
+        "BRITNED_FLOW": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 140256,
+            "int64": 140256
+          },
+          "examples": [
+            "-896",
+            "-897",
+            "-910"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "int": 52608,
+            "text": 140256
+          }
+        },
+        "EAST_WEST_FLOW": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 140256,
+            "int64": 140256
+          },
+          "examples": [
+            "-529",
+            "-530",
+            "-511"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 52608,
+            "text": 140256
+          }
+        },
+        "ELECLINK_FLOW": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 140256,
+            "int64": 140256
+          },
+          "examples": [
+            "998",
+            "999",
+            "994"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "int": 52608,
+            "text": 140256
+          }
+        },
+        "EMBEDDED_SOLAR_CAPACITY": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 140256,
+            "int64": 140256
+          },
+          "examples": [
+            "15037",
+            "15038",
+            "15041"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "int": 52608,
+            "text": 140256
+          }
+        },
+        "EMBEDDED_SOLAR_GENERATION": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 140256,
+            "int64": 140256
+          },
+          "examples": [
+            "0",
+            "113",
+            "515"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "int": 52608,
+            "text": 140256
+          }
+        },
+        "EMBEDDED_WIND_CAPACITY": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 105168,
+            "int64": 105168
+          },
+          "examples": [
+            "6545",
+            "6538",
+            "6488"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 87696,
+            "text": 105168
+          }
+        },
+        "EMBEDDED_WIND_GENERATION": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 105168,
+            "int64": 105168
+          },
+          "examples": [
+            "2815",
+            "2793",
+            "2773"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 87696,
+            "text": 105168
+          }
+        },
+        "ENGLAND_WALES_DEMAND": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "18995",
+            "19730",
+            "19327"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "int": 192864
+          }
+        },
+        "GREENLINK_FLOW": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 140256,
+            "int64": 140256
+          },
+          "examples": [
+            "0",
+            "-20",
+            "-3"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 52608,
+            "text": 140256
+          }
+        },
+        "IFA2_FLOW": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 140256,
+            "int64": 140256
+          },
+          "examples": [
+            "903",
+            "904",
+            "983"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "int": 52608,
+            "text": 140256
+          }
+        },
+        "IFA_FLOW": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "609",
+            "596",
+            "516"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "int": 192864
+          }
+        },
+        "MOYLE_FLOW": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 70128,
+            "int64": 70128
+          },
+          "examples": [
+            "-451",
+            "-413",
+            "-401"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 122736,
+            "text": 70128
+          }
+        },
+        "ND": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "21043",
+            "21756",
+            "21348"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "int": 192864
+          }
+        },
+        "NEMO_FLOW": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 140256,
+            "int64": 140256
+          },
+          "examples": [
+            "253",
+            "252",
+            "254"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "int": 52608,
+            "text": 140256
+          }
+        },
+        "NON_BM_STOR": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "0",
+            "2",
+            "8"
+          ],
+          "max_len": 3,
+          "null_count": 0,
+          "shapes": {
+            "int": 192864
+          }
+        },
+        "NSL_FLOW": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 140256,
+            "int64": 140256
+          },
+          "examples": [
+            "235",
+            "157",
+            "-219"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "int": 52608,
+            "text": 140256
+          }
+        },
+        "PUMP_STORAGE_PUMPING": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1161",
+            "1056",
+            "1212"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 192864
+          }
+        },
+        "SCOTTISH_TRANSFER": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 140256,
+            "int64": 140256
+          },
+          "examples": [
+            "0",
+            "3470",
+            "3540"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "int": 52608,
+            "text": 140256
+          }
+        },
+        "SETTLEMENT_DATE": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%Y-%m-%d": 35088,
+            "float64": 192864,
+            "int64": 192864
+          },
+          "examples": [
+            "01-Jan-23",
+            "02-Jan-23",
+            "03-Jan-23"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "iso_date": 157776,
+            "text": 35088
+          }
+        },
+        "SETTLEMENT_PERIOD": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1",
+            "2",
+            "3"
+          ],
+          "max_len": 2,
+          "null_count": 0,
+          "shapes": {
+            "int": 192864
+          }
+        },
+        "TSD": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 70128,
+            "int64": 70128
+          },
+          "examples": [
+            "24680",
+            "25289",
+            "25269"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "int": 122736,
+            "text": 70128
+          }
+        },
+        "VIKING_FLOW": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 140256,
+            "int64": 140256
+          },
+          "examples": [
+            "0",
+            "3",
+            "1"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "int": 52608,
+            "text": 140256
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "BRITNED_FLOW": {
+            "description": "The flow on the respective interconnector. -ve signifies export power out from GB; +ve signifies import power into GB.",
+            "title": "Britned Interconnector Flow",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "EAST_WEST_FLOW": {
+            "description": "The flow on the respective interconnector. -ve signifies export power out from GB; +ve signifies import power into GB.",
+            "title": "East West Interconnector Flow",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "ELECLINK_FLOW": {
+            "description": "The flow on the respective interconnector. -ve signifies export power out from GB; +ve signifies import power into GB.",
+            "title": "ElecLink Interconnector Flow",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "EMBEDDED_SOLAR_CAPACITY": {
+            "description": "As embedded wind capacity above, but for solar generation.",
+            "title": "Embedded Solar Capacity",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "EMBEDDED_SOLAR_GENERATION": {
+            "description": "This is an estimate of the GB solar generation from PV panels. These are embedded in the distribution network and invisible to NESO. Their effect is to suppress the electricity demand during periods of high radiation. The true output of these generators is not known so an estimate is provided based ",
+            "title": "Estimated Embedded Solar Generation",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "EMBEDDED_WIND_CAPACITY": {
+            "description": "This is NESO’s best view of the installed embedded wind capacity in GB. This is based on publicly available information compiled from a variety of sources and is not the definitive view. It is consistent with the generation estimate provided above.",
+            "title": "Embedded Wind Capacity",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "EMBEDDED_WIND_GENERATION": {
+            "description": "This is an estimate of the GB wind generation from wind farms which do not have Transmission System metering installed. These wind farms are embedded in the distribution network and invisible to NESO. Their effect is to suppress the electricity demand during periods of high wind. The true output of ",
+            "title": "Estimated Embedded Wind Generation",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "ENGLAND_WALES_DEMAND": {
+            "description": "England and Wales Demand, as ND above but on an England and Wales basis.",
+            "title": "England and Wales Demand",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "GREENLINK_FLOW": {
+            "description": "The flow on the respective interconnector. -ve signifies export power out from GB; +ve signifies import power into GB.",
+            "title": "Greenlink Interconnector Flow",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "IFA2_FLOW": {
+            "description": "The flow on the respective interconnector. -ve signifies export power out from GB; +ve signifies import power into GB.",
+            "title": "IFA2 Interconnector Flow",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "IFA_FLOW": {
+            "description": "The flow on the respective interconnector. -ve signifies export power out from GB; +ve signifies import power into GB.",
+            "title": "IFA Interconnector Flow",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "MOYLE_FLOW": {
+            "description": "The flow on the respective interconnector. -ve signifies export power out from GB; +ve signifies import power into GB.",
+            "title": "Moyle Interconnector Flow",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "ND": {
+            "description": "This is the Great Britain generation requirement and is equivalent to the Initial National Demand Outturn (INDO) and National Demand Forecast as published on BM Reports. National Demand is the sum of metered generation, but excludes generation required to meet station load, pump storage pumping and ",
+            "title": "National Demand",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "NEMO_FLOW": {
+            "description": "The flow on the respective interconnector. -ve signifies export power out from GB; +ve signifies import power into GB.",
+            "title": "Nemo Interconnector Flow",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "NON_BM_STOR": {
+            "description": "For units that are not included in the ND generator definition. This can be in the form of generation or demand reduction.",
+            "title": "Non-Balancing Mechanism Short-Term Operating Reserve",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "NSL_FLOW": {
+            "description": "The flow on the respective interconnector. -ve signifies export power out from GB; +ve signifies import power into GB.",
+            "title": "North Sea Link Interconnector Flow",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "PUMP_STORAGE_PUMPING": {
+            "description": "The demand due to pumping at hydro pump storage units; the -ve signifies pumping load.",
+            "title": "Pump Storage Pumping",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "SCOTTISH_TRANSFER": {
+            "description": "The volume of power flowing from Scotland to England and Wales. Negative values denote a flow from England and Wales to Scotland.",
+            "title": "Scottish Transfer Volume",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "SETTLEMENT_DATE": {
+            "description": "The date the historic outturn occurred.",
+            "title": "Settlement Date",
+            "type": "date",
+            "unit": null
+          },
+          "SETTLEMENT_PERIOD": {
+            "description": "The half hourly period for the historic outturn occurred. Settlement period 1 runs from 00:00-00:30.",
+            "title": "Settlement Period",
+            "type": "int4",
+            "unit": null
+          },
+          "TSD": {
+            "description": "This is the Transmission System generation requirement and is equivalent to the Initial Transmission System Demand Outturn (ITSDO) and Transmission System Demand Forecast on BM Reports. Transmission System Demand is equal to the ND plus the additional generation required to meet station load, pump s",
+            "title": "Transmission System Demand",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "VIKING_FLOW": {
+            "description": "The flow on the respective interconnector. -ve signifies export power out from GB; +ve signifies import power into GB.",
+            "title": "Viking Interconnector Flow",
+            "type": "int4",
+            "unit": "MW"
+          }
+        },
+        "field_info_not_in_header": [
+          "FORECAST_ACTUAL_INDICATOR"
+        ],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T11:08:13.591261+00:00",
+      "header": [
+        "SETTLEMENT_DATE",
+        "SETTLEMENT_PERIOD",
+        "ND",
+        "TSD",
+        "ENGLAND_WALES_DEMAND",
+        "EMBEDDED_WIND_GENERATION",
+        "EMBEDDED_WIND_CAPACITY",
+        "EMBEDDED_SOLAR_GENERATION",
+        "EMBEDDED_SOLAR_CAPACITY",
+        "NON_BM_STOR",
+        "PUMP_STORAGE_PUMPING",
+        "SCOTTISH_TRANSFER",
+        "IFA_FLOW",
+        "IFA2_FLOW",
+        "BRITNED_FLOW",
+        "MOYLE_FLOW",
+        "EAST_WEST_FLOW",
+        "NEMO_FLOW",
+        "NSL_FLOW",
+        "ELECLINK_FLOW",
+        "VIKING_FLOW",
+        "GREENLINK_FLOW"
+      ],
+      "last_written_at": "2026-10-08T11:08:41.501850+00:00",
+      "resource_ids": [
+        "30650247-acbf-414d-8ae2-2aa4aac57537",
+        "42a41acd-53b6-450d-af1b-4a92a352895c",
+        "4daaac31-ae56-461e-8efe-6b33e147225a",
+        "5f5c076c-d3a3-4f33-a137-501cc3d2ca9b",
+        "949bb4a4-8374-4730-89ef-302d82428d2c",
+        "b2bde559-3455-4021-b179-dfe60c0337b0",
+        "bf5ab335-9b40-4ea4-b93a-ab4af7bce003",
+        "c0da767c-447d-48d1-93fd-ca3955d078ae",
+        "e8608e9a-f56c-457f-b9e7-bfffcfd19731",
+        "ec63adc8-e8a1-45cc-a593-5953b1ede7b1",
+        "f6d02c0f-957b-48cb-82ee-09003f2ba759"
+      ],
+      "rows": 192864,
+      "settlement_periods": []
+    },
+    {
+      "captures": 1,
+      "columns": {
+        "BRITNED_FLOW": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "989",
+            "1005",
+            "844"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "int": 12478
+          }
+        },
+        "EAST_WEST_FLOW": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "-527",
+            "-453",
+            "-524"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 12478
+          }
+        },
+        "ELECLINK_FLOW": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "-352",
+            "-359",
+            "-754"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "int": 12478
+          }
+        },
+        "EMBEDDED_SOLAR_CAPACITY": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "22300",
+            "22301",
+            "22302"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "int": 12478
+          }
+        },
+        "EMBEDDED_SOLAR_GENERATION": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "0",
+            "2",
+            "235"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "int": 12478
+          }
+        },
+        "EMBEDDED_WIND_CAPACITY": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "6417"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 12478
+          }
+        },
+        "EMBEDDED_WIND_GENERATION": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "4146",
+            "4188",
+            "4085"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 12478
+          }
+        },
+        "ENGLAND_WALES_DEMAND": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "23625",
+            "24341",
+            "23805"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "int": 12478
+          }
+        },
+        "FORECAST_ACTUAL_INDICATOR": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 12478,
+            "int64": 12478
+          },
+          "examples": [
+            "A"
+          ],
+          "max_len": 1,
+          "null_count": 0,
+          "shapes": {
+            "text": 12478
+          }
+        },
+        "GREENLINK_FLOW": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "-513",
+            "-514",
+            "-525"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 12478
+          }
+        },
+        "IFA2_FLOW": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "-610",
+            "-606",
+            "-594"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "int": 12478
+          }
+        },
+        "IFA_FLOW": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "-1143",
+            "-1132",
+            "-1433"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "int": 12478
+          }
+        },
+        "MOYLE_FLOW": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "-361",
+            "-421",
+            "-452"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 12478
+          }
+        },
+        "ND": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "25107",
+            "25881",
+            "25355"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "int": 12478
+          }
+        },
+        "NEMO_FLOW": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "209",
+            "243",
+            "343"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "int": 12478
+          }
+        },
+        "NON_BM_STOR": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "0"
+          ],
+          "max_len": 1,
+          "null_count": 0,
+          "shapes": {
+            "int": 12478
+          }
+        },
+        "NSL_FLOW": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "677",
+            "648",
+            "667"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "int": 12478
+          }
+        },
+        "PUMP_STORAGE_PUMPING": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "455",
+            "546",
+            "629"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 12478
+          }
+        },
+        "SCOTTISH_TRANSFER": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "2945",
+            "2909",
+            "3061"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "int": 12478
+          }
+        },
+        "SETTLEMENT_DATE": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%Y-%m-%d": 0,
+            "float64": 12478,
+            "int64": 12478
+          },
+          "examples": [
+            "2026-01-01",
+            "2026-01-02",
+            "2026-01-03"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "iso_date": 12478
+          }
+        },
+        "SETTLEMENT_PERIOD": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1",
+            "2",
+            "3"
+          ],
+          "max_len": 2,
+          "null_count": 0,
+          "shapes": {
+            "int": 12478
+          }
+        },
+        "TSD": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "29668",
+            "30361",
+            "30681"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "int": 12478
+          }
+        },
+        "VIKING_FLOW": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1021",
+            "994",
+            "990"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "int": 12478
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "BRITNED_FLOW": {
+            "description": "The flow on the respective interconnector. -ve signifies export power out from GB; +ve signifies import power into GB.",
+            "title": "Britned Interconnector Flow",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "EAST_WEST_FLOW": {
+            "description": "The flow on the respective interconnector. -ve signifies export power out from GB; +ve signifies import power into GB.",
+            "title": "East West Interconnector Flow",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "ELECLINK_FLOW": {
+            "description": "The flow on the respective interconnector. -ve signifies export power out from GB; +ve signifies import power into GB.",
+            "title": "ElecLink Interconnector Flow",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "EMBEDDED_SOLAR_CAPACITY": {
+            "description": "As embedded wind capacity above, but for solar generation.",
+            "title": "Embedded Solar Capacity",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "EMBEDDED_SOLAR_GENERATION": {
+            "description": "This is an estimate of the GB solar generation from PV panels. These are embedded in the distribution network and invisible to NESO. Their effect is to suppress the electricity demand during periods of high radiation. The true output of these generators is not known so an estimate is provided based ",
+            "title": "Estimated Embedded Solar Generation",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "EMBEDDED_WIND_CAPACITY": {
+            "description": "This is NESO’s best view of the installed embedded wind capacity in GB. This is based on publicly available information compiled from a variety of sources and is not the definitive view. It is consistent with the generation estimate provided above.",
+            "title": "Embedded Wind Capacity",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "EMBEDDED_WIND_GENERATION": {
+            "description": "This is an estimate of the GB wind generation from wind farms which do not have Transmission System metering installed. These wind farms are embedded in the distribution network and invisible to NESO. Their effect is to suppress the electricity demand during periods of high wind. The true output of ",
+            "title": "Estimated Embedded Wind Generation",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "ENGLAND_WALES_DEMAND": {
+            "description": "England and Wales Demand, as ND above but on an England and Wales basis.",
+            "title": "England and Wales Demand",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "FORECAST_ACTUAL_INDICATOR": {
+            "description": "This column will indicate if a given record is  'A' ('Actual') or  'F' ('Forecast')",
+            "title": "FORECAST_ACTUAL_INDICATOR",
+            "type": "text",
+            "unit": null
+          },
+          "GREENLINK_FLOW": {
+            "description": "The flow on the respective interconnector. -ve signifies export power out from GB; +ve signifies import power into GB.",
+            "title": "Greenlink Interconnector Flow",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "IFA2_FLOW": {
+            "description": "The flow on the respective interconnector. -ve signifies export power out from GB; +ve signifies import power into GB.",
+            "title": "IFA2 Interconnector Flow",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "IFA_FLOW": {
+            "description": "The flow on the respective interconnector. -ve signifies export power out from GB; +ve signifies import power into GB.",
+            "title": "IFA Interconnector Flow",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "MOYLE_FLOW": {
+            "description": "The flow on the respective interconnector. -ve signifies export power out from GB; +ve signifies import power into GB.",
+            "title": "Moyle Interconnector Flow",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "ND": {
+            "description": "This is the Great Britain generation requirement and is equivalent to the Initial National Demand Outturn (INDO) and National Demand Forecast as published on BM Reports. National Demand is the sum of metered generation, but excludes generation required to meet station load, pump storage pumping and ",
+            "title": "National Demand",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "NEMO_FLOW": {
+            "description": "The flow on the respective interconnector. -ve signifies export power out from GB; +ve signifies import power into GB.",
+            "title": "Nemo Interconnector Flow",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "NON_BM_STOR": {
+            "description": "For units that are not included in the ND generator definition. This can be in the form of generation or demand reduction.",
+            "title": "Non-Balancing Mechanism Short-Term Operating Reserve",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "NSL_FLOW": {
+            "description": "The flow on the respective interconnector. -ve signifies export power out from GB; +ve signifies import power into GB.",
+            "title": "North Sea Link Interconnector Flow",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "PUMP_STORAGE_PUMPING": {
+            "description": "The demand due to pumping at hydro pump storage units; the -ve signifies pumping load.",
+            "title": "Pump Storage Pumping",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "SCOTTISH_TRANSFER": {
+            "description": "The volume of power flowing from Scotland to England and Wales. Negative values denote a flow from England and Wales to Scotland.",
+            "title": "Scottish Transfer Volume",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "SETTLEMENT_DATE": {
+            "description": "The date the historic outturn occurred.",
+            "title": "Settlement Date",
+            "type": "date",
+            "unit": null
+          },
+          "SETTLEMENT_PERIOD": {
+            "description": "The half hourly period for the historic outturn occurred. Settlement period 1 runs from 00:00-00:30.",
+            "title": "Settlement Period",
+            "type": "int4",
+            "unit": null
+          },
+          "TSD": {
+            "description": "This is the Transmission System generation requirement and is equivalent to the Initial Transmission System Demand Outturn (ITSDO) and Transmission System Demand Forecast on BM Reports. Transmission System Demand is equal to the ND plus the additional generation required to meet station load, pump s",
+            "title": "Transmission System Demand",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "VIKING_FLOW": {
+            "description": "The flow on the respective interconnector. -ve signifies export power out from GB; +ve signifies import power into GB.",
+            "title": "Viking Interconnector Flow",
+            "type": "int4",
+            "unit": "MW"
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T11:08:44.413539+00:00",
+      "header": [
+        "SETTLEMENT_DATE",
+        "SETTLEMENT_PERIOD",
+        "ND",
+        "FORECAST_ACTUAL_INDICATOR",
+        "TSD",
+        "ENGLAND_WALES_DEMAND",
+        "EMBEDDED_WIND_GENERATION",
+        "EMBEDDED_WIND_CAPACITY",
+        "EMBEDDED_SOLAR_GENERATION",
+        "EMBEDDED_SOLAR_CAPACITY",
+        "NON_BM_STOR",
+        "PUMP_STORAGE_PUMPING",
+        "SCOTTISH_TRANSFER",
+        "IFA_FLOW",
+        "IFA2_FLOW",
+        "BRITNED_FLOW",
+        "MOYLE_FLOW",
+        "EAST_WEST_FLOW",
+        "NEMO_FLOW",
+        "NSL_FLOW",
+        "ELECLINK_FLOW",
+        "VIKING_FLOW",
+        "GREENLINK_FLOW"
+      ],
+      "last_written_at": "2026-10-08T11:08:44.413539+00:00",
+      "resource_ids": [
+        "8a4a771c-3929-4e56-93ad-cdf13219dea5"
+      ],
+      "rows": 12478,
+      "settlement_periods": [
+        {
+          "capture_id": "bronze/neso_data_portal/historic_demand/2026/10/08/raw_20261008T110844Z_8a4a771c-3929-4e56-93ad-cdf13219dea5_6bd25218.csv",
+          "date_column": "SETTLEMENT_DATE",
+          "dates_with_repeated_sp": 0,
+          "duplicated_pairs": 0,
+          "max": 48,
+          "min": 1,
+          "out_of_range": 0,
+          "period_column": "SETTLEMENT_PERIOD",
+          "rows_per_date": {
+            "46": 1,
+            "48": 259
+          }
+        }
+      ]
+    }
+  ],
+  "flags": [
+    "multi_epoch"
+  ],
+  "key": "historic_demand",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 26,
+        "columns": [
+          "SETTLEMENT_DATE",
+          "SETTLEMENT_PERIOD"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 26,
+        "columns": [
+          "ND",
+          "ENGLAND_WALES_DEMAND"
+        ],
+        "max_duplicates": 20
+      },
+      {
+        "captures_checked": 26,
+        "columns": [
+          "ENGLAND_WALES_DEMAND",
+          "EMBEDDED_WIND_GENERATION"
+        ],
+        "max_duplicates": 5028
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "historic-demand-data",
+  "proposal": {
+    "flags": [
+      "multi_epoch"
+    ],
+    "record_draft": {
+      "eligibility": {
+        "question": "SETTLEMENT_PERIOD: a numeric column with no vendor unit; SETTLEMENT_PERIOD: a numeric column with no vendor unit; SETTLEMENT_PERIOD: a numeric column with no vendor unit; SETTLEMENT_PERIOD: a numeric column with no vendor unit",
+        "status": "held",
+        "unit": "DEM-1"
+      },
+      "encoding": "utf-8",
+      "entity_key": [
+        "settlement_date",
+        "settlement_period"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "TODO: T01",
+              "name": "settlement_date",
+              "nullable": true,
+              "source": "SETTLEMENT_DATE"
+            },
+            {
+              "dtype": "int64",
+              "max": 50,
+              "min": 1,
+              "name": "settlement_period",
+              "nullable": true,
+              "source": "SETTLEMENT_PERIOD"
+            },
+            {
+              "dtype": "int64",
+              "name": "nd",
+              "nullable": true,
+              "source": "ND"
+            },
+            {
+              "dtype": "int64",
+              "name": "tsd",
+              "nullable": true,
+              "source": "TSD"
+            },
+            {
+              "dtype": "int64",
+              "name": "england_wales_demand",
+              "nullable": true,
+              "source": "ENGLAND_WALES_DEMAND"
+            },
+            {
+              "dtype": "int64",
+              "name": "embedded_wind_generation",
+              "nullable": true,
+              "source": "EMBEDDED_WIND_GENERATION"
+            },
+            {
+              "dtype": "int64",
+              "name": "embedded_wind_capacity",
+              "nullable": true,
+              "source": "EMBEDDED_WIND_CAPACITY"
+            },
+            {
+              "dtype": "int64",
+              "name": "embedded_solar_generation",
+              "nullable": true,
+              "source": "EMBEDDED_SOLAR_GENERATION"
+            },
+            {
+              "dtype": "int64",
+              "name": "embedded_solar_capacity",
+              "nullable": true,
+              "source": "EMBEDDED_SOLAR_CAPACITY"
+            },
+            {
+              "dtype": "int64",
+              "name": "non_bm_stor",
+              "nullable": true,
+              "source": "NON_BM_STOR"
+            },
+            {
+              "dtype": "int64",
+              "name": "pump_storage_pumping",
+              "nullable": true,
+              "source": "PUMP_STORAGE_PUMPING"
+            },
+            {
+              "dtype": "int64",
+              "name": "ifa_flow",
+              "nullable": true,
+              "source": "IFA_FLOW"
+            },
+            {
+              "dtype": "int64",
+              "name": "ifa2_flow",
+              "nullable": true,
+              "source": "IFA2_FLOW"
+            },
+            {
+              "dtype": "int64",
+              "name": "britned_flow",
+              "nullable": true,
+              "source": "BRITNED_FLOW"
+            },
+            {
+              "dtype": "int64",
+              "name": "moyle_flow",
+              "nullable": true,
+              "source": "MOYLE_FLOW"
+            },
+            {
+              "dtype": "int64",
+              "name": "east_west_flow",
+              "nullable": true,
+              "source": "EAST_WEST_FLOW"
+            },
+            {
+              "dtype": "int64",
+              "name": "nemo_flow",
+              "nullable": true,
+              "source": "NEMO_FLOW"
+            }
+          ],
+          "header": [
+            "SETTLEMENT_DATE",
+            "SETTLEMENT_PERIOD",
+            "ND",
+            "TSD",
+            "ENGLAND_WALES_DEMAND",
+            "EMBEDDED_WIND_GENERATION",
+            "EMBEDDED_WIND_CAPACITY",
+            "EMBEDDED_SOLAR_GENERATION",
+            "EMBEDDED_SOLAR_CAPACITY",
+            "NON_BM_STOR",
+            "PUMP_STORAGE_PUMPING",
+            "IFA_FLOW",
+            "IFA2_FLOW",
+            "BRITNED_FLOW",
+            "MOYLE_FLOW",
+            "EAST_WEST_FLOW",
+            "NEMO_FLOW"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        },
+        {
+          "columns": [
+            {
+              "dtype": "TODO: T03",
+              "name": "settlement_date",
+              "nullable": true,
+              "source": "SETTLEMENT_DATE"
+            },
+            {
+              "dtype": "int64",
+              "max": 50,
+              "min": 1,
+              "name": "settlement_period",
+              "nullable": true,
+              "source": "SETTLEMENT_PERIOD"
+            },
+            {
+              "dtype": "int64",
+              "name": "nd",
+              "nullable": true,
+              "source": "ND"
+            },
+            {
+              "dtype": "int64",
+              "name": "tsd",
+              "nullable": true,
+              "source": "TSD"
+            },
+            {
+              "dtype": "int64",
+              "name": "england_wales_demand",
+              "nullable": true,
+              "source": "ENGLAND_WALES_DEMAND"
+            },
+            {
+              "dtype": "int64",
+              "name": "embedded_wind_generation",
+              "nullable": true,
+              "source": "EMBEDDED_WIND_GENERATION"
+            },
+            {
+              "dtype": "int64",
+              "name": "embedded_wind_capacity",
+              "nullable": true,
+              "source": "EMBEDDED_WIND_CAPACITY"
+            },
+            {
+              "dtype": "int64",
+              "name": "embedded_solar_generation",
+              "nullable": true,
+              "source": "EMBEDDED_SOLAR_GENERATION"
+            },
+            {
+              "dtype": "int64",
+              "name": "embedded_solar_capacity",
+              "nullable": true,
+              "source": "EMBEDDED_SOLAR_CAPACITY"
+            },
+            {
+              "dtype": "int64",
+              "name": "non_bm_stor",
+              "nullable": true,
+              "source": "NON_BM_STOR"
+            },
+            {
+              "dtype": "int64",
+              "name": "pump_storage_pumping",
+              "nullable": true,
+              "source": "PUMP_STORAGE_PUMPING"
+            },
+            {
+              "dtype": "int64",
+              "name": "ifa_flow",
+              "nullable": true,
+              "source": "IFA_FLOW"
+            },
+            {
+              "dtype": "int64",
+              "name": "ifa2_flow",
+              "nullable": true,
+              "source": "IFA2_FLOW"
+            },
+            {
+              "dtype": "int64",
+              "name": "britned_flow",
+              "nullable": true,
+              "source": "BRITNED_FLOW"
+            },
+            {
+              "dtype": "int64",
+              "name": "moyle_flow",
+              "nullable": true,
+              "source": "MOYLE_FLOW"
+            },
+            {
+              "dtype": "int64",
+              "name": "east_west_flow",
+              "nullable": true,
+              "source": "EAST_WEST_FLOW"
+            },
+            {
+              "dtype": "int64",
+              "name": "nemo_flow",
+              "nullable": true,
+              "source": "NEMO_FLOW"
+            },
+            {
+              "dtype": "int64",
+              "name": "nsl_flow",
+              "nullable": true,
+              "source": "NSL_FLOW"
+            },
+            {
+              "dtype": "int64",
+              "name": "eleclink_flow",
+              "nullable": true,
+              "source": "ELECLINK_FLOW"
+            },
+            {
+              "dtype": "int64",
+              "name": "viking_flow",
+              "nullable": true,
+              "source": "VIKING_FLOW"
+            },
+            {
+              "dtype": "int64",
+              "name": "greenlink_flow",
+              "nullable": true,
+              "source": "GREENLINK_FLOW"
+            }
+          ],
+          "header": [
+            "SETTLEMENT_DATE",
+            "SETTLEMENT_PERIOD",
+            "ND",
+            "TSD",
+            "ENGLAND_WALES_DEMAND",
+            "EMBEDDED_WIND_GENERATION",
+            "EMBEDDED_WIND_CAPACITY",
+            "EMBEDDED_SOLAR_GENERATION",
+            "EMBEDDED_SOLAR_CAPACITY",
+            "NON_BM_STOR",
+            "PUMP_STORAGE_PUMPING",
+            "IFA_FLOW",
+            "IFA2_FLOW",
+            "BRITNED_FLOW",
+            "MOYLE_FLOW",
+            "EAST_WEST_FLOW",
+            "NEMO_FLOW",
+            "NSL_FLOW",
+            "ELECLINK_FLOW",
+            "VIKING_FLOW",
+            "GREENLINK_FLOW"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        },
+        {
+          "columns": [
+            {
+              "dtype": "TODO: T05",
+              "name": "settlement_date",
+              "nullable": true,
+              "source": "SETTLEMENT_DATE"
+            },
+            {
+              "dtype": "int64",
+              "max": 50,
+              "min": 1,
+              "name": "settlement_period",
+              "nullable": true,
+              "source": "SETTLEMENT_PERIOD"
+            },
+            {
+              "dtype": "int64",
+              "name": "nd",
+              "nullable": true,
+              "source": "ND"
+            },
+            {
+              "dtype": "TODO: T07",
+              "name": "tsd",
+              "nullable": true,
+              "source": "TSD"
+            },
+            {
+              "dtype": "int64",
+              "name": "england_wales_demand",
+              "nullable": true,
+              "source": "ENGLAND_WALES_DEMAND"
+            },
+            {
+              "dtype": "TODO: T08",
+              "name": "embedded_wind_generation",
+              "nullable": true,
+              "source": "EMBEDDED_WIND_GENERATION"
+            },
+            {
+              "dtype": "TODO: T09",
+              "name": "embedded_wind_capacity",
+              "nullable": true,
+              "source": "EMBEDDED_WIND_CAPACITY"
+            },
+            {
+              "dtype": "TODO: T10",
+              "name": "embedded_solar_generation",
+              "nullable": true,
+              "source": "EMBEDDED_SOLAR_GENERATION"
+            },
+            {
+              "dtype": "TODO: T11",
+              "name": "embedded_solar_capacity",
+              "nullable": true,
+              "source": "EMBEDDED_SOLAR_CAPACITY"
+            },
+            {
+              "dtype": "int64",
+              "name": "non_bm_stor",
+              "nullable": true,
+              "source": "NON_BM_STOR"
+            },
+            {
+              "dtype": "int64",
+              "name": "pump_storage_pumping",
+              "nullable": true,
+              "source": "PUMP_STORAGE_PUMPING"
+            },
+            {
+              "dtype": "TODO: T12",
+              "name": "scottish_transfer",
+              "nullable": true,
+              "source": "SCOTTISH_TRANSFER"
+            },
+            {
+              "dtype": "int64",
+              "name": "ifa_flow",
+              "nullable": true,
+              "source": "IFA_FLOW"
+            },
+            {
+              "dtype": "TODO: T13",
+              "name": "ifa2_flow",
+              "nullable": true,
+              "source": "IFA2_FLOW"
+            },
+            {
+              "dtype": "TODO: T14",
+              "name": "britned_flow",
+              "nullable": true,
+              "source": "BRITNED_FLOW"
+            },
+            {
+              "dtype": "TODO: T15",
+              "name": "moyle_flow",
+              "nullable": true,
+              "source": "MOYLE_FLOW"
+            },
+            {
+              "dtype": "TODO: T16",
+              "name": "east_west_flow",
+              "nullable": true,
+              "source": "EAST_WEST_FLOW"
+            },
+            {
+              "dtype": "TODO: T17",
+              "name": "nemo_flow",
+              "nullable": true,
+              "source": "NEMO_FLOW"
+            },
+            {
+              "dtype": "TODO: T18",
+              "name": "nsl_flow",
+              "nullable": true,
+              "source": "NSL_FLOW"
+            },
+            {
+              "dtype": "TODO: T19",
+              "name": "eleclink_flow",
+              "nullable": true,
+              "source": "ELECLINK_FLOW"
+            },
+            {
+              "dtype": "TODO: T20",
+              "name": "viking_flow",
+              "nullable": true,
+              "source": "VIKING_FLOW"
+            },
+            {
+              "dtype": "TODO: T21",
+              "name": "greenlink_flow",
+              "nullable": true,
+              "source": "GREENLINK_FLOW"
+            }
+          ],
+          "header": [
+            "SETTLEMENT_DATE",
+            "SETTLEMENT_PERIOD",
+            "ND",
+            "TSD",
+            "ENGLAND_WALES_DEMAND",
+            "EMBEDDED_WIND_GENERATION",
+            "EMBEDDED_WIND_CAPACITY",
+            "EMBEDDED_SOLAR_GENERATION",
+            "EMBEDDED_SOLAR_CAPACITY",
+            "NON_BM_STOR",
+            "PUMP_STORAGE_PUMPING",
+            "SCOTTISH_TRANSFER",
+            "IFA_FLOW",
+            "IFA2_FLOW",
+            "BRITNED_FLOW",
+            "MOYLE_FLOW",
+            "EAST_WEST_FLOW",
+            "NEMO_FLOW",
+            "NSL_FLOW",
+            "ELECLINK_FLOW",
+            "VIKING_FLOW",
+            "GREENLINK_FLOW"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        },
+        {
+          "columns": [
+            {
+              "dtype": "date",
+              "format": "%Y-%m-%d",
+              "name": "settlement_date",
+              "nullable": true,
+              "source": "SETTLEMENT_DATE"
+            },
+            {
+              "dtype": "int64",
+              "max": 50,
+              "min": 1,
+              "name": "settlement_period",
+              "nullable": true,
+              "source": "SETTLEMENT_PERIOD"
+            },
+            {
+              "dtype": "int64",
+              "name": "nd",
+              "nullable": true,
+              "source": "ND"
+            },
+            {
+              "dtype": "string",
+              "name": "forecast_actual_indicator",
+              "nullable": true,
+              "source": "FORECAST_ACTUAL_INDICATOR"
+            },
+            {
+              "dtype": "int64",
+              "name": "tsd",
+              "nullable": true,
+              "source": "TSD"
+            },
+            {
+              "dtype": "int64",
+              "name": "england_wales_demand",
+              "nullable": true,
+              "source": "ENGLAND_WALES_DEMAND"
+            },
+            {
+              "dtype": "int64",
+              "name": "embedded_wind_generation",
+              "nullable": true,
+              "source": "EMBEDDED_WIND_GENERATION"
+            },
+            {
+              "dtype": "int64",
+              "name": "embedded_wind_capacity",
+              "nullable": true,
+              "source": "EMBEDDED_WIND_CAPACITY"
+            },
+            {
+              "dtype": "int64",
+              "name": "embedded_solar_generation",
+              "nullable": true,
+              "source": "EMBEDDED_SOLAR_GENERATION"
+            },
+            {
+              "dtype": "int64",
+              "name": "embedded_solar_capacity",
+              "nullable": true,
+              "source": "EMBEDDED_SOLAR_CAPACITY"
+            },
+            {
+              "dtype": "int64",
+              "name": "non_bm_stor",
+              "nullable": true,
+              "source": "NON_BM_STOR"
+            },
+            {
+              "dtype": "int64",
+              "name": "pump_storage_pumping",
+              "nullable": true,
+              "source": "PUMP_STORAGE_PUMPING"
+            },
+            {
+              "dtype": "int64",
+              "name": "scottish_transfer",
+              "nullable": true,
+              "source": "SCOTTISH_TRANSFER"
+            },
+            {
+              "dtype": "int64",
+              "name": "ifa_flow",
+              "nullable": true,
+              "source": "IFA_FLOW"
+            },
+            {
+              "dtype": "int64",
+              "name": "ifa2_flow",
+              "nullable": true,
+              "source": "IFA2_FLOW"
+            },
+            {
+              "dtype": "int64",
+              "name": "britned_flow",
+              "nullable": true,
+              "source": "BRITNED_FLOW"
+            },
+            {
+              "dtype": "int64",
+              "name": "moyle_flow",
+              "nullable": true,
+              "source": "MOYLE_FLOW"
+            },
+            {
+              "dtype": "int64",
+              "name": "east_west_flow",
+              "nullable": true,
+              "source": "EAST_WEST_FLOW"
+            },
+            {
+              "dtype": "int64",
+              "name": "nemo_flow",
+              "nullable": true,
+              "source": "NEMO_FLOW"
+            },
+            {
+              "dtype": "int64",
+              "name": "nsl_flow",
+              "nullable": true,
+              "source": "NSL_FLOW"
+            },
+            {
+              "dtype": "int64",
+              "name": "eleclink_flow",
+              "nullable": true,
+              "source": "ELECLINK_FLOW"
+            },
+            {
+              "dtype": "int64",
+              "name": "viking_flow",
+              "nullable": true,
+              "source": "VIKING_FLOW"
+            },
+            {
+              "dtype": "int64",
+              "name": "greenlink_flow",
+              "nullable": true,
+              "source": "GREENLINK_FLOW"
+            }
+          ],
+          "header": [
+            "SETTLEMENT_DATE",
+            "SETTLEMENT_PERIOD",
+            "ND",
+            "FORECAST_ACTUAL_INDICATOR",
+            "TSD",
+            "ENGLAND_WALES_DEMAND",
+            "EMBEDDED_WIND_GENERATION",
+            "EMBEDDED_WIND_CAPACITY",
+            "EMBEDDED_SOLAR_GENERATION",
+            "EMBEDDED_SOLAR_CAPACITY",
+            "NON_BM_STOR",
+            "PUMP_STORAGE_PUMPING",
+            "SCOTTISH_TRANSFER",
+            "IFA_FLOW",
+            "IFA2_FLOW",
+            "BRITNED_FLOW",
+            "MOYLE_FLOW",
+            "EAST_WEST_FLOW",
+            "NEMO_FLOW",
+            "NSL_FLOW",
+            "ELECLINK_FLOW",
+            "VIKING_FLOW",
+            "GREENLINK_FLOW"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T23",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "blocked",
+        "field": "column 'SETTLEMENT_DATE'.dtype",
+        "id": "T01",
+        "kind": "type_conflict",
+        "question": "SETTLEMENT_DATE: field-info declares date but the bronze values do not all cast to one date format"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'SETTLEMENT_PERIOD'.unit",
+        "id": "T02",
+        "kind": "unit",
+        "question": "SETTLEMENT_PERIOD: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "blocked",
+        "field": "column 'SETTLEMENT_DATE'.dtype",
+        "id": "T03",
+        "kind": "type_conflict",
+        "question": "SETTLEMENT_DATE: field-info declares date but the bronze values do not all cast to one date format"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'SETTLEMENT_PERIOD'.unit",
+        "id": "T04",
+        "kind": "unit",
+        "question": "SETTLEMENT_PERIOD: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "blocked",
+        "field": "column 'SETTLEMENT_DATE'.dtype",
+        "id": "T05",
+        "kind": "type_conflict",
+        "question": "SETTLEMENT_DATE: field-info declares date but the bronze values do not all cast to one date format"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'SETTLEMENT_PERIOD'.unit",
+        "id": "T06",
+        "kind": "unit",
+        "question": "SETTLEMENT_PERIOD: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "blocked",
+        "field": "column 'TSD'.dtype",
+        "id": "T07",
+        "kind": "type_conflict",
+        "question": "TSD: field-info declares int4 but 70128 value(s) do not cast to int64"
+      },
+      {
+        "consequence": "blocked",
+        "field": "column 'EMBEDDED_WIND_GENERATION'.dtype",
+        "id": "T08",
+        "kind": "type_conflict",
+        "question": "EMBEDDED_WIND_GENERATION: field-info declares int4 but 105168 value(s) do not cast to int64"
+      },
+      {
+        "consequence": "blocked",
+        "field": "column 'EMBEDDED_WIND_CAPACITY'.dtype",
+        "id": "T09",
+        "kind": "type_conflict",
+        "question": "EMBEDDED_WIND_CAPACITY: field-info declares int4 but 105168 value(s) do not cast to int64"
+      },
+      {
+        "consequence": "blocked",
+        "field": "column 'EMBEDDED_SOLAR_GENERATION'.dtype",
+        "id": "T10",
+        "kind": "type_conflict",
+        "question": "EMBEDDED_SOLAR_GENERATION: field-info declares int4 but 140256 value(s) do not cast to int64"
+      },
+      {
+        "consequence": "blocked",
+        "field": "column 'EMBEDDED_SOLAR_CAPACITY'.dtype",
+        "id": "T11",
+        "kind": "type_conflict",
+        "question": "EMBEDDED_SOLAR_CAPACITY: field-info declares int4 but 140256 value(s) do not cast to int64"
+      },
+      {
+        "consequence": "blocked",
+        "field": "column 'SCOTTISH_TRANSFER'.dtype",
+        "id": "T12",
+        "kind": "type_conflict",
+        "question": "SCOTTISH_TRANSFER: field-info declares int4 but 140256 value(s) do not cast to int64"
+      },
+      {
+        "consequence": "blocked",
+        "field": "column 'IFA2_FLOW'.dtype",
+        "id": "T13",
+        "kind": "type_conflict",
+        "question": "IFA2_FLOW: field-info declares int4 but 140256 value(s) do not cast to int64"
+      },
+      {
+        "consequence": "blocked",
+        "field": "column 'BRITNED_FLOW'.dtype",
+        "id": "T14",
+        "kind": "type_conflict",
+        "question": "BRITNED_FLOW: field-info declares int4 but 140256 value(s) do not cast to int64"
+      },
+      {
+        "consequence": "blocked",
+        "field": "column 'MOYLE_FLOW'.dtype",
+        "id": "T15",
+        "kind": "type_conflict",
+        "question": "MOYLE_FLOW: field-info declares int4 but 70128 value(s) do not cast to int64"
+      },
+      {
+        "consequence": "blocked",
+        "field": "column 'EAST_WEST_FLOW'.dtype",
+        "id": "T16",
+        "kind": "type_conflict",
+        "question": "EAST_WEST_FLOW: field-info declares int4 but 140256 value(s) do not cast to int64"
+      },
+      {
+        "consequence": "blocked",
+        "field": "column 'NEMO_FLOW'.dtype",
+        "id": "T17",
+        "kind": "type_conflict",
+        "question": "NEMO_FLOW: field-info declares int4 but 140256 value(s) do not cast to int64"
+      },
+      {
+        "consequence": "blocked",
+        "field": "column 'NSL_FLOW'.dtype",
+        "id": "T18",
+        "kind": "type_conflict",
+        "question": "NSL_FLOW: field-info declares int4 but 140256 value(s) do not cast to int64"
+      },
+      {
+        "consequence": "blocked",
+        "field": "column 'ELECLINK_FLOW'.dtype",
+        "id": "T19",
+        "kind": "type_conflict",
+        "question": "ELECLINK_FLOW: field-info declares int4 but 140256 value(s) do not cast to int64"
+      },
+      {
+        "consequence": "blocked",
+        "field": "column 'VIKING_FLOW'.dtype",
+        "id": "T20",
+        "kind": "type_conflict",
+        "question": "VIKING_FLOW: field-info declares int4 but 140256 value(s) do not cast to int64"
+      },
+      {
+        "consequence": "blocked",
+        "field": "column 'GREENLINK_FLOW'.dtype",
+        "id": "T21",
+        "kind": "type_conflict",
+        "question": "GREENLINK_FLOW: field-info declares int4 but 140256 value(s) do not cast to int64"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'SETTLEMENT_PERIOD'.unit",
+        "id": "T22",
+        "kind": "unit",
+        "question": "SETTLEMENT_PERIOD: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T23",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: SETTLEMENT_DATE, SETTLEMENT_PERIOD"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T24",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['settlement_date', 'settlement_period'] (measured unique in 26 capture(s)); without one, latest stays whole_capture"
+      },
+      {
+        "consequence": "none",
+        "field": "epochs",
+        "id": "T25",
+        "kind": "multi_epoch",
+        "question": "4 header epochs; review each in its batch"
+      }
+    ]
+  },
+  "refresh": "daily",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Status",
+        "value": "Live"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Demand",
+    "title": "Historic Demand Data"
+  }
+}

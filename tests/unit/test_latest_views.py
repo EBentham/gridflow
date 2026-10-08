@@ -456,10 +456,23 @@ class TestPreExistingProjectionsAreByteUnchanged:
         """Detects any change to an existing ``_latest`` DDL or registered view.
 
         The golden was captured by :func:`catalogue_pin` on master ``d7cf513``.
+        The generated views of recorded NESO families (base, ``_latest`` and
+        the completion relation, ADR-034 P-11 I-1) are additions, derived from
+        the registry; every other view must equal the golden byte for byte.
         """
+        from gridflow.connectors.neso_data_portal.registry import load_registry
+        from gridflow.silver.neso_data_portal.generic import generated_registrations
+
+        added = {"state_neso_data_portal_completion"}
+        for key in generated_registrations(load_registry()).transformers:
+            added |= {f"silver_neso_data_portal_{key}", f"silver_neso_data_portal_{key}_latest"}
         actual = catalogue_pin(tmp_path, monkeypatch)
         expected = json.loads(_PIN_GOLDEN.read_text(encoding="utf-8"))
-        assert actual == expected
+        assert actual["sql"] == expected["sql"]
+        assert [view for view in actual["views"] if view[0] not in added] == expected["views"]
+        assert {view[0] for view in actual["views"]} - {
+            view[0] for view in expected["views"]
+        } == added
 
     def test_the_pin_covers_every_pre_existing_spec(self) -> None:
         """Detects a pre-existing spec escaping the pin (non-vacuity)."""

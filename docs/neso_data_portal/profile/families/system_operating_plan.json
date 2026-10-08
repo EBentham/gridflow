@@ -1,0 +1,3056 @@
+{
+  "archetype": "FC",
+  "batch": "IC-2",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/system_operating_plan/2026/10/08/raw_20261008T113818Z_e51f2721-00ab-4182-9cae-3c973e854aa8_92dcd12f.csv",
+      "ckan_last_modified": "2023-01-24T00:30:04.725185",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 10323,
+      "parse_error": null,
+      "resource_id": "e51f2721-00ab-4182-9cae-3c973e854aa8",
+      "rows": 10322,
+      "sampled": false,
+      "size": 4326360,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T11:38:18.294948+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 1,
+      "columns": {
+        "BAT_temi": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "-190",
+            "-473",
+            "-6"
+          ],
+          "max_len": 5,
+          "null_count": 5544,
+          "shapes": {
+            "int": 4778
+          }
+        },
+        "BAT_temx": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "38",
+            "516",
+            "297"
+          ],
+          "max_len": 5,
+          "null_count": 5615,
+          "shapes": {
+            "int": 4707
+          }
+        },
+        "BAT_teol": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "-20",
+            "-55",
+            "49"
+          ],
+          "max_len": 5,
+          "null_count": 5270,
+          "shapes": {
+            "int": 5052
+          }
+        },
+        "INTELEC_temi": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "0",
+            "-103",
+            "500"
+          ],
+          "max_len": 5,
+          "null_count": 3372,
+          "shapes": {
+            "int": 6950
+          }
+        },
+        "INTELEC_temx": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "0",
+            "-103",
+            "500"
+          ],
+          "max_len": 5,
+          "null_count": 3372,
+          "shapes": {
+            "int": 6950
+          }
+        },
+        "INTELEC_teol": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "0",
+            "-103",
+            "500"
+          ],
+          "max_len": 5,
+          "null_count": 3372,
+          "shapes": {
+            "int": 6950
+          }
+        },
+        "INTGRNL_temi": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "-383",
+            "504",
+            "-6"
+          ],
+          "max_len": 4,
+          "null_count": 8312,
+          "shapes": {
+            "int": 2010
+          }
+        },
+        "INTGRNL_temx": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "-383",
+            "504",
+            "-6"
+          ],
+          "max_len": 4,
+          "null_count": 8312,
+          "shapes": {
+            "int": 2010
+          }
+        },
+        "INTGRNL_teol": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "-383",
+            "504",
+            "-6"
+          ],
+          "max_len": 4,
+          "null_count": 8312,
+          "shapes": {
+            "int": 2010
+          }
+        },
+        "INTNSL_temi": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "703",
+            "595",
+            "476"
+          ],
+          "max_len": 5,
+          "null_count": 2600,
+          "shapes": {
+            "int": 7722
+          }
+        },
+        "INTNSL_temx": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "703",
+            "595",
+            "476"
+          ],
+          "max_len": 5,
+          "null_count": 2600,
+          "shapes": {
+            "int": 7722
+          }
+        },
+        "INTNSL_teol": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "703",
+            "595",
+            "476"
+          ],
+          "max_len": 5,
+          "null_count": 2600,
+          "shapes": {
+            "int": 7722
+          }
+        },
+        "INTVKL_temi": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "982",
+            "1224",
+            "1425"
+          ],
+          "max_len": 5,
+          "null_count": 8252,
+          "shapes": {
+            "int": 2070
+          }
+        },
+        "INTVKL_temx": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "982",
+            "1224",
+            "1425"
+          ],
+          "max_len": 5,
+          "null_count": 8252,
+          "shapes": {
+            "int": 2070
+          }
+        },
+        "INTVKL_teol": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "982",
+            "1224",
+            "1425"
+          ],
+          "max_len": 5,
+          "null_count": 8252,
+          "shapes": {
+            "int": 2070
+          }
+        },
+        "SLR_temi": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "5",
+            "16",
+            "42"
+          ],
+          "max_len": 3,
+          "null_count": 9183,
+          "shapes": {
+            "int": 1139
+          }
+        },
+        "SLR_temx": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "89",
+            "96",
+            "176"
+          ],
+          "max_len": 3,
+          "null_count": 9140,
+          "shapes": {
+            "int": 1182
+          }
+        },
+        "SLR_teol": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "17",
+            "25",
+            "23"
+          ],
+          "max_len": 3,
+          "null_count": 9169,
+          "shapes": {
+            "int": 1153
+          }
+        },
+        "britned_temi": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1060",
+            "830",
+            "524"
+          ],
+          "max_len": 5,
+          "null_count": 871,
+          "shapes": {
+            "int": 9451
+          }
+        },
+        "britned_temx": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1060",
+            "830",
+            "524"
+          ],
+          "max_len": 5,
+          "null_count": 871,
+          "shapes": {
+            "int": 9451
+          }
+        },
+        "britned_teol": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1060",
+            "830",
+            "524"
+          ],
+          "max_len": 5,
+          "null_count": 871,
+          "shapes": {
+            "int": 9451
+          }
+        },
+        "cardinal_point": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 10322,
+            "int64": 10322
+          },
+          "examples": [
+            "3C",
+            "4B",
+            "1A"
+          ],
+          "max_len": 3,
+          "null_count": 0,
+          "shapes": {
+            "text": 10322
+          }
+        },
+        "contingency_requirement": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "65",
+            "32",
+            "249"
+          ],
+          "max_len": 4,
+          "null_count": 1857,
+          "shapes": {
+            "int": 8465
+          }
+        },
+        "customer_demand_forcast": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "35523",
+            "35868",
+            "21039"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "int": 10322
+          }
+        },
+        "dsbr": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "0"
+          ],
+          "max_len": 1,
+          "null_count": 7709,
+          "shapes": {
+            "int": 2613
+          }
+        },
+        "ewic_temi": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "-530",
+            "-457",
+            "-162"
+          ],
+          "max_len": 4,
+          "null_count": 2580,
+          "shapes": {
+            "int": 7742
+          }
+        },
+        "ewic_temx": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "-530",
+            "-457",
+            "-162"
+          ],
+          "max_len": 4,
+          "null_count": 2580,
+          "shapes": {
+            "int": 7742
+          }
+        },
+        "ewic_teol": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "-530",
+            "-457",
+            "-162"
+          ],
+          "max_len": 4,
+          "null_count": 2580,
+          "shapes": {
+            "int": 7742
+          }
+        },
+        "france_temi": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "2000",
+            "-522",
+            "409"
+          ],
+          "max_len": 5,
+          "null_count": 286,
+          "shapes": {
+            "int": 10036
+          }
+        },
+        "france_temx": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "2000",
+            "-522",
+            "409"
+          ],
+          "max_len": 5,
+          "null_count": 286,
+          "shapes": {
+            "int": 10036
+          }
+        },
+        "france_teol": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "2000",
+            "-522",
+            "409"
+          ],
+          "max_len": 5,
+          "null_count": 286,
+          "shapes": {
+            "int": 10036
+          }
+        },
+        "imbalance": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "-185",
+            "162",
+            "611"
+          ],
+          "max_len": 5,
+          "null_count": 1,
+          "shapes": {
+            "int": 10321
+          }
+        },
+        "intifa2_temi": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "0",
+            "-100",
+            "100"
+          ],
+          "max_len": 5,
+          "null_count": 1092,
+          "shapes": {
+            "int": 9230
+          }
+        },
+        "intifa2_temx": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "0",
+            "-100",
+            "100"
+          ],
+          "max_len": 5,
+          "null_count": 1092,
+          "shapes": {
+            "int": 9230
+          }
+        },
+        "intifa2_teol": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "0",
+            "-100",
+            "100"
+          ],
+          "max_len": 5,
+          "null_count": 1092,
+          "shapes": {
+            "int": 9230
+          }
+        },
+        "latest_status": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 10322,
+            "int64": 10322
+          },
+          "examples": [
+            "Final",
+            "Revised",
+            "Day Ahead"
+          ],
+          "max_len": 9,
+          "null_count": 0,
+          "shapes": {
+            "text": 10322
+          }
+        },
+        "latest_version": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "2",
+            "1",
+            "3"
+          ],
+          "max_len": 2,
+          "null_count": 0,
+          "shapes": {
+            "int": 10322
+          }
+        },
+        "maximum_loss_demand": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "560",
+            "850",
+            "1120"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 10322
+          }
+        },
+        "maximum_loss_generation": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1260",
+            "1100",
+            "1000"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 10322
+          }
+        },
+        "moyle_temi": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "-450",
+            "-348",
+            "-208"
+          ],
+          "max_len": 4,
+          "null_count": 615,
+          "shapes": {
+            "int": 9707
+          }
+        },
+        "moyle_temx": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "-450",
+            "-348",
+            "-208"
+          ],
+          "max_len": 4,
+          "null_count": 615,
+          "shapes": {
+            "int": 9707
+          }
+        },
+        "moyle_teol": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "-450",
+            "-348",
+            "-208"
+          ],
+          "max_len": 4,
+          "null_count": 615,
+          "shapes": {
+            "int": 9707
+          }
+        },
+        "negative_reg_res_wind_adj": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "0",
+            "567",
+            "550"
+          ],
+          "max_len": 3,
+          "null_count": 2641,
+          "shapes": {
+            "int": 7681
+          }
+        },
+        "negative_residual": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "6619",
+            "7524",
+            "594"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "int": 10322
+          }
+        },
+        "negative_response_reserve": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "0",
+            "393",
+            "339"
+          ],
+          "max_len": 4,
+          "null_count": 1089,
+          "shapes": {
+            "int": 9233
+          }
+        },
+        "nemo_temi": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1000",
+            "800",
+            "511"
+          ],
+          "max_len": 5,
+          "null_count": 175,
+          "shapes": {
+            "int": 10147
+          }
+        },
+        "nemo_temx": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1000",
+            "800",
+            "511"
+          ],
+          "max_len": 5,
+          "null_count": 175,
+          "shapes": {
+            "int": 10147
+          }
+        },
+        "nemo_teol": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1000",
+            "800",
+            "511"
+          ],
+          "max_len": 5,
+          "null_count": 175,
+          "shapes": {
+            "int": 10147
+          }
+        },
+        "net_negative_regulating_reserve": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1424",
+            "1311",
+            "1301"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 10322
+          }
+        },
+        "net_positive_regulating_reserve": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1149",
+            "1010",
+            "1011"
+          ],
+          "max_len": 4,
+          "null_count": 1,
+          "shapes": {
+            "int": 10321
+          }
+        },
+        "no1_temi": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "9766",
+            "9747",
+            "9006"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "int": 10322
+          }
+        },
+        "no1_temx": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "14579",
+            "15051",
+            "10222"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "int": 10322
+          }
+        },
+        "no1_teol": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "14070",
+            "14775",
+            "9617"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "int": 10322
+          }
+        },
+        "nw1_temi": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "3554",
+            "3135",
+            "3356"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "int": 10322
+          }
+        },
+        "nw1_temx": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "3554",
+            "3135",
+            "4006"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "int": 10322
+          }
+        },
+        "nw1_teol": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "3554",
+            "3135",
+            "4006"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "int": 10322
+          }
+        },
+        "operating_margin_surplus": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "258",
+            "55",
+            "365"
+          ],
+          "max_len": 5,
+          "null_count": 5,
+          "shapes": {
+            "int": 10317
+          }
+        },
+        "percentage_of_standing_reserve_excess": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "0"
+          ],
+          "max_len": 1,
+          "null_count": 7709,
+          "shapes": {
+            "int": 2613
+          }
+        },
+        "positive_reg_res_wind_adj": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "0",
+            "711",
+            "731"
+          ],
+          "max_len": 4,
+          "null_count": 21,
+          "shapes": {
+            "int": 10301
+          }
+        },
+        "positive_residual": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "323",
+            "87",
+            "214"
+          ],
+          "max_len": 5,
+          "null_count": 20,
+          "shapes": {
+            "int": 10302
+          }
+        },
+        "ps_temi": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "411",
+            "301",
+            "-967"
+          ],
+          "max_len": 5,
+          "null_count": 354,
+          "shapes": {
+            "int": 9968
+          }
+        },
+        "ps_temx": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "751",
+            "601",
+            "-945"
+          ],
+          "max_len": 5,
+          "null_count": 351,
+          "shapes": {
+            "int": 9971
+          }
+        },
+        "ps_teol": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "601",
+            "301",
+            "-966"
+          ],
+          "max_len": 5,
+          "null_count": 365,
+          "shapes": {
+            "int": 9957
+          }
+        },
+        "report_date": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 10322,
+            "int64": 10322
+          },
+          "examples": [
+            "2020-09-30T00:00:00",
+            "2020-10-01T00:00:00",
+            "2020-10-02T00:00:00"
+          ],
+          "max_len": 19,
+          "null_count": 0,
+          "shapes": {
+            "naive_datetime": 10322
+          }
+        },
+        "reserve_for_response": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "255",
+            "244",
+            "855"
+          ],
+          "max_len": 4,
+          "null_count": 875,
+          "shapes": {
+            "int": 9447
+          }
+        },
+        "sb_temi": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "149",
+            "73",
+            "-49"
+          ],
+          "max_len": 4,
+          "null_count": 71,
+          "shapes": {
+            "int": 10251
+          }
+        },
+        "sb_temx": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "507",
+            "473",
+            "600"
+          ],
+          "max_len": 4,
+          "null_count": 55,
+          "shapes": {
+            "int": 10267
+          }
+        },
+        "sb_teol": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "204",
+            "165",
+            "-2"
+          ],
+          "max_len": 4,
+          "null_count": 86,
+          "shapes": {
+            "int": 10236
+          }
+        },
+        "so1_temi": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "7004",
+            "7191",
+            "4556"
+          ],
+          "max_len": 6,
+          "null_count": 0,
+          "shapes": {
+            "int": 10322
+          }
+        },
+        "so1_temx": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "11383",
+            "11483",
+            "6787"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "int": 10322
+          }
+        },
+        "so1_teol": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "10683",
+            "10744",
+            "4924"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "int": 10322
+          }
+        },
+        "sop_d_and_c_time_gmt": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 10322,
+            "int64": 10322
+          },
+          "examples": [
+            "2020-09-30T11:57:00",
+            "2020-09-30T15:39:00",
+            "2020-09-30T18:11:00"
+          ],
+          "max_len": 19,
+          "null_count": 0,
+          "shapes": {
+            "naive_datetime": 10322
+          }
+        },
+        "sop_datetime": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 10322,
+            "int64": 10322
+          },
+          "examples": [
+            "2020-09-30T17:45:00",
+            "2020-09-30T19:35:00",
+            "2020-10-01T02:00:00"
+          ],
+          "max_len": 19,
+          "null_count": 0,
+          "shapes": {
+            "naive_datetime": 10322
+          }
+        },
+        "sop_report_creation_time_gmt": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 10322,
+            "int64": 10322
+          },
+          "examples": [
+            "2020-09-30T12:24:00",
+            "2020-09-30T16:05:00",
+            "2020-09-30T19:25:00"
+          ],
+          "max_len": 19,
+          "null_count": 0,
+          "shapes": {
+            "naive_datetime": 10322
+          }
+        },
+        "standing_res_wind_adj": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "0"
+          ],
+          "max_len": 1,
+          "null_count": 7709,
+          "shapes": {
+            "int": 2613
+          }
+        },
+        "standing_reserve_availability": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1683",
+            "941",
+            "1528"
+          ],
+          "max_len": 4,
+          "null_count": 58,
+          "shapes": {
+            "int": 10264
+          }
+        },
+        "standing_reserve_excess": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "0",
+            "24",
+            "22"
+          ],
+          "max_len": 4,
+          "null_count": 7296,
+          "shapes": {
+            "int": 3026
+          }
+        },
+        "standing_reserve_requirement": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1800",
+            "1500",
+            "1633"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 10322
+          }
+        },
+        "standing_reserve_shortfall": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "117",
+            "559",
+            "272"
+          ],
+          "max_len": 4,
+          "null_count": 443,
+          "shapes": {
+            "int": 9879
+          }
+        },
+        "station_transformer": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "500",
+            "600"
+          ],
+          "max_len": 3,
+          "null_count": 0,
+          "shapes": {
+            "int": 10322
+          }
+        },
+        "sto_temi": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "0",
+            "270",
+            "318"
+          ],
+          "max_len": 5,
+          "null_count": 7500,
+          "shapes": {
+            "int": 2822
+          }
+        },
+        "sto_temx": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "-120",
+            "-400",
+            "-550"
+          ],
+          "max_len": 5,
+          "null_count": 5032,
+          "shapes": {
+            "int": 5290
+          }
+        },
+        "sto_teol": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "0",
+            "270",
+            "322"
+          ],
+          "max_len": 4,
+          "null_count": 7500,
+          "shapes": {
+            "int": 2822
+          }
+        },
+        "sw1_temi": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "4016",
+            "4006",
+            "3148"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "int": 10322
+          }
+        },
+        "sw1_temx": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "4016",
+            "4006",
+            "3148"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 10322
+          }
+        },
+        "sw1_teol": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "4016",
+            "4006",
+            "3148"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 10322
+          }
+        },
+        "total_negative_reserve": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1424",
+            "1311",
+            "1694"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 10322
+          }
+        },
+        "total_positive_reserve": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1404",
+            "1254",
+            "1866"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 10322
+          }
+        },
+        "total_sop_demand": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "36023",
+            "36368",
+            "21539"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "int": 10322
+          }
+        },
+        "total_temi": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "27980",
+            "27533",
+            "19251"
+          ],
+          "max_len": 6,
+          "null_count": 0,
+          "shapes": {
+            "int": 10322
+          }
+        },
+        "total_temx": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "37750",
+            "37709",
+            "23619"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "int": 10322
+          }
+        },
+        "total_teol": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "36208",
+            "36206",
+            "20928"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "int": 10322
+          }
+        },
+        "trigger_level": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "-450",
+            "-291",
+            "-500"
+          ],
+          "max_len": 4,
+          "null_count": 828,
+          "shapes": {
+            "int": 9494
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "BAT_temi": {
+            "description": "Batteries. Summation of the expected minimum MW achievable for each BMU running. The figures are derived from the Maximum Import Level (MIL) considering any restrictions due to system constraints. This includes any additional units scheduled to meet required margins.",
+            "title": "BAT_temi",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "BAT_temx": {
+            "description": "Batteries. Summation of expected maximum MW availabilities for each BMU running. The figures are derived from the Maximum Export Limit (MEL) considering any restrictions due to system constraints. This includes any additional units scheduled to meet required margins.",
+            "title": "BAT_temx",
+            "type": "float8",
+            "unit": "MW"
+          },
+          "BAT_teol": {
+            "description": "Batteries. Summation of expected actual output of each BMU running. The figures are derived from the Physical Notifications (PNs) considering any restrictions due to system constraints.",
+            "title": "BAT_teol",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "INTELEC_temi": {
+            "description": "Expected flow on the ElecLink Interconnector based on the latest submitted reference program",
+            "title": "INTELEC temi",
+            "type": "float8",
+            "unit": "MW"
+          },
+          "INTELEC_temx": {
+            "description": "Expected flow on the ElecLink Interconnector based on the latest submitted reference program",
+            "title": "INTELEC_temx",
+            "type": "float8",
+            "unit": "MW"
+          },
+          "INTELEC_teol": {
+            "description": "Expected flow on the ElecLink Interconnector based on the latest submitted reference program",
+            "title": "INTELEC teol",
+            "type": "float8",
+            "unit": "MW"
+          },
+          "INTGRNL_temi": {
+            "description": "Expected flow on the Greenlink Interconnector based on the latest submitted reference program",
+            "title": "INTGRNL_temi",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "INTGRNL_temx": {
+            "description": "Expected flow on the Greenlink Interconnector based on the latest submitted reference program",
+            "title": "INTGRNL_temx",
+            "type": "int4",
+            "unit": "Mw"
+          },
+          "INTGRNL_teol": {
+            "description": "Expected flow on the Greenlink Interconnector based on the latest submitted reference program",
+            "title": "INTGRNL_teol",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "INTNSL_temi": {
+            "description": "Expected flow on the NSL Interconnector based on the latest submitted reference program",
+            "title": "INTNSL temi",
+            "type": "float8",
+            "unit": "MW"
+          },
+          "INTNSL_temx": {
+            "description": "Expected flow on the NSL Interconnector based on the latest submitted reference program",
+            "title": "INTNSL temx",
+            "type": "float8",
+            "unit": "MW"
+          },
+          "INTNSL_teol": {
+            "description": "Expected flow on the NSL Interconnector based on the latest submitted reference program",
+            "title": "INTNSL temx",
+            "type": "float8",
+            "unit": "MW"
+          },
+          "INTVKL_temi": {
+            "description": "Expected flow on the Viking Link Interconnector based on the latest submitted reference program",
+            "title": "INTVKL_temi",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "INTVKL_temx": {
+            "description": "Expected flow on the Viking Link Interconnector based on the latest submitted reference program",
+            "title": "INTVKL_temx",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "INTVKL_teol": {
+            "description": "Expected flow on the Viking Link Interconnector based on the latest submitted reference program",
+            "title": "INTVKL_teol",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "SLR_temi": {
+            "description": "Solar. Summation of expected minimum MW availabilities for each BMU running. The figures are derived from the lower of Stable Export Limit (SEL) or Maximum Import Level (MIL), considering any restrictions due to system constraints. This includes any additional units scheduled to meet required margin",
+            "title": "SLR_temi",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "SLR_temx": {
+            "description": "Solar. Summation of expected maximum MW availabilities for each BMU running. The figures are derived from the Maximum Export Limit (MEL) considering any restrictions due to system constraints. This includes any additional units scheduled to meet required margins.",
+            "title": "SLR_temx",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "SLR_teol": {
+            "description": "Solar. Summation of expected actual output of each BMU running. The figures are derived from the Physical Notifications (PNs) considering any restrictions due to system constraints.",
+            "title": "SLR_teol",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "britned_temi": {
+            "description": "Expected flow on the BritNed Interconnector based on the latest submitted reference program",
+            "title": "BRITNED_temi",
+            "type": "float8",
+            "unit": "MW"
+          },
+          "britned_temx": {
+            "description": "Expected flow on the BritNed Interconnector based on the latest submitted reference program",
+            "title": "BRITNED_temx",
+            "type": "float8",
+            "unit": "MW"
+          },
+          "britned_teol": {
+            "description": "Expected flow on the BritNed Interconnector based on the latest submitted reference program",
+            "title": "BRITNED_teol",
+            "type": "float8",
+            "unit": "MW"
+          },
+          "cardinal_point": {
+            "description": "Electricity demand fluctuates during a day depending on how much energy people, businesses and industries are using at that moment in time. As this electricity demand goes up and down we get characteristic peaks and troughs, with some of these peaks and troughs appearing every single day at similar ",
+            "title": "Cardinal Point",
+            "type": "text",
+            "unit": null
+          },
+          "contingency_requirement": {
+            "description": "A margin of plant that will be maintained in a state to be capable of synchronising in sufficient time to achieve full output for the relevant Cardinal Point.",
+            "title": "Contingency Requirement",
+            "type": "float8",
+            "unit": "MW"
+          },
+          "customer_demand_forcast": {
+            "description": "National 5-minute spot demand",
+            "title": "Customer Demand Forcast  (CDF)",
+            "type": "float8",
+            "unit": "MW"
+          },
+          "dsbr": {
+            "description": "Demand Side Balancing Reserve",
+            "title": "DSBR",
+            "type": "float8",
+            "unit": "MW"
+          },
+          "ewic_temi": {
+            "description": "Expected flow on East West Interconnector based on the latest submitted reference program",
+            "title": "EWIC_temi",
+            "type": "float8",
+            "unit": "MW"
+          },
+          "ewic_temx": {
+            "description": "Expected flow on East West Interconnector based on the latest submitted reference program",
+            "title": "EWIC_temx",
+            "type": "float8",
+            "unit": "MW"
+          },
+          "ewic_teol": {
+            "description": "Expected flow on East West Interconnector based on the latest submitted reference program",
+            "title": "EWIC_teol",
+            "type": "float8",
+            "unit": "MW"
+          },
+          "france_temi": {
+            "description": "Expected flow on IFA Interconnector based on the latest submitted reference program",
+            "title": "FRANCE_temi",
+            "type": "float8",
+            "unit": "MW"
+          },
+          "france_temx": {
+            "description": "Expected flow on IFA Interconnector based on the latest submitted reference program",
+            "title": "FRANCE_temx",
+            "type": "float8",
+            "unit": "MW"
+          },
+          "france_teol": {
+            "description": "Expected flow on IFA Interconnector based on the latest submitted reference program",
+            "title": "FRANCE_teol",
+            "type": "float8",
+            "unit": "MW"
+          },
+          "imbalance": {
+            "description": "Indicates how many Bids or Offers the ESO expect to be required to meet SOP demand.",
+            "title": "Imbalance (SOP Demand - EOL)",
+            "type": "float8",
+            "unit": "MW"
+          },
+          "intifa2_temi": {
+            "description": "Expected flow on IFA2 Interconnector based on the latest submitted reference program",
+            "title": "INTIFA2_temi",
+            "type": "float8",
+            "unit": "MW"
+          },
+          "intifa2_temx": {
+            "description": "Expected flow on IFA2 Interconnector based on the latest submitted reference program",
+            "title": "INTIFA2_temx",
+            "type": "float8",
+            "unit": "MW"
+          },
+          "intifa2_teol": {
+            "description": "Expected flow on IFA2 Interconnector based on the latest submitted reference program",
+            "title": "INTIFA2_teol",
+            "type": "float8",
+            "unit": "MW"
+          },
+          "latest_status": {
+            "description": "Status of SOP",
+            "title": "Latest Status",
+            "type": "text",
+            "unit": null
+          },
+          "latest_version": {
+            "description": "Version number",
+            "title": "Latest Version",
+            "type": "float8",
+            "unit": null
+          },
+          "maximum_loss_demand": {
+            "description": "The maximum demand loss is determined by the maximum credible demand loss on the system at the CP for this SOP",
+            "title": "Maximum Loss (Demand)",
+            "type": "float8",
+            "unit": "MW"
+          },
+          "maximum_loss_generation": {
+            "description": "The maximum generation loss is determined by the maximum credible loss on the system at the CP for this SOP",
+            "title": "Maximum Loss (Generation)",
+            "type": "float8",
+            "unit": "MW"
+          },
+          "moyle_temi": {
+            "description": "Expected flow on the Moyle interconnector based on the latest submitted reference program",
+            "title": "MOYLE_temi",
+            "type": "float8",
+            "unit": "MW"
+          },
+          "moyle_temx": {
+            "description": "Expected flow on the Moyle interconnector based on the latest submitted reference program",
+            "title": "MOYLE_temx",
+            "type": "float8",
+            "unit": "MW"
+          },
+          "moyle_teol": {
+            "description": "Expected flow on the Moyle interconnector based on the latest submitted reference program",
+            "title": "MOYLE_teol",
+            "type": "float8",
+            "unit": "MW"
+          },
+          "negative_reg_res_wind_adj": {
+            "description": "This is an automatically calculated value to take into account the potential wind forecasting error.",
+            "title": "Negative Reg Res Wind Adj (WNRR)",
+            "type": "float8",
+            "unit": "MW"
+          },
+          "negative_residual": {
+            "description": "Indicates by how much the ESO has met its negative margin requirements in terms of SOP demand plus reserve requirements.",
+            "title": "Negative Residual (SOP Demand - (EMI + Negative Reserve))",
+            "type": "float8",
+            "unit": "MW"
+          },
+          "negative_response_reserve": {
+            "description": "Automatically calculated by ESO systems after all contracted response is subtracted from requirement",
+            "title": "Negative Response Reserve (NRS)",
+            "type": "float8",
+            "unit": "MW"
+          },
+          "nemo_temi": {
+            "description": "Expected flow on the NEMO interconnector based on the latest submitted reference program",
+            "title": "NEMO_temi",
+            "type": "float8",
+            "unit": "MW"
+          },
+          "nemo_temx": {
+            "description": "Expected flow on the NEMO interconnector based on the latest submitted reference program",
+            "title": "NEMO_temx",
+            "type": "float8",
+            "unit": "MW"
+          },
+          "nemo_teol": {
+            "description": "Expected flow on the NEMO interconnector based on the latest submitted reference program",
+            "title": "NEMO_teol",
+            "type": "float8",
+            "unit": "MW"
+          },
+          "net_negative_regulating_reserve": {
+            "description": "The negative reserve for response is the amount of reserve that needs to be allocated to synchronised generators to allow them to be picked up from SEL to hold high frequency response",
+            "title": "Net Negative Regulating Reserve (NRG)",
+            "type": "float8",
+            "unit": "MW"
+          },
+          "net_positive_regulating_reserve": {
+            "description": "Regulating reserve is designed to cover for expected levels of plant loss plus demand forecast error that occurs for a specified cardinal point between the final SOP production time and real time.",
+            "title": "Net Positive Regulating Reserve (PRG)",
+            "type": "float8",
+            "unit": "MW"
+          },
+          "no1_temi": {
+            "description": "All the non-wind BMUs in the north dispatch zone. Summation of the expected minimum MW achievable for each BMU running. The figures are derived from the Stable Export Level (SEL) considering any restrictions due to system constraints. This includes any additional units scheduled to meet required mar",
+            "title": "NO1_temi",
+            "type": "float8",
+            "unit": "MW"
+          },
+          "no1_temx": {
+            "description": "All the non-wind BMUs in the north dispatch zone. Summation of expected maximum MW availabilities for each BMU running. The figures are derived from the Maximum Export Limit (MEL) considering any restrictions due to system constraints. This includes any additional units scheduled to meet required ma",
+            "title": "NO1_temx",
+            "type": "float8",
+            "unit": "MW"
+          },
+          "no1_teol": {
+            "description": "All the non-wind BMUs in the north dispatch zone. Summation of expected actual output of each BMU running. The figures are derived from the Physical Notifications (PNs) considering any restrictions due to system constraints. This includes any additional units scheduled to meet required margins at SE",
+            "title": "NO1_teol",
+            "type": "float8",
+            "unit": "MW"
+          },
+          "nw1_temi": {
+            "description": "All the wind BMUs forecast output in the north dispatch zone. Summation of the expected minimum MW achievable for each BMU running. The figures are derived from the Stable Export Level (SEL) considering any restrictions due to system constraints. This includes any additional units scheduled to meet ",
+            "title": "NW1_temi",
+            "type": "float8",
+            "unit": "MW"
+          },
+          "nw1_temx": {
+            "description": "All the wind BMUs forecast output in the north dispatch zone. Summation of expected maximum MW availabilities for each BMU running. The figures are derived from the Maximum Export Limit (MEL) considering any restrictions due to system constraints. This includes any additional units scheduled to meet",
+            "title": "NW1_temx",
+            "type": "float8",
+            "unit": "MW"
+          },
+          "nw1_teol": {
+            "description": "All the wind BMUs forecast output in the north dispatch zone. Summation of expected actual output of each BMU running. The figures are derived from the Physical Notifications (PNs) considering any restrictions due to system constraints. This includes any additional units scheduled to meet required m",
+            "title": "NW1_teol",
+            "type": "float8",
+            "unit": "MW"
+          },
+          "operating_margin_surplus": {
+            "description": "Provides an indication of whether the contingency requirement for the cardinal point is satisfied",
+            "title": "Operating Margin Surplus (shortfall)",
+            "type": "float8",
+            "unit": "MW"
+          },
+          "percentage_of_standing_reserve_excess": {
+            "description": "This accounts for wind and demand forecast errors. The current requirement is set to 1300MW",
+            "title": "0% Percentage of Standing Reserve Excess",
+            "type": "float8",
+            "unit": "MW"
+          },
+          "positive_reg_res_wind_adj": {
+            "description": "This is an automatically calculated value to take into account the potential wind forecasting error.",
+            "title": "Positive Reg Res Wind Adj (WPRR)",
+            "type": "float8",
+            "unit": "MW"
+          },
+          "positive_residual": {
+            "description": "Indicates by how much the ESO has met its positive margin requirements in terms of SOP demand plus reserve requirements.",
+            "title": "Positive Residual (EMX - (SOP Demand + Positive Reserve))",
+            "type": "float8",
+            "unit": "MW"
+          },
+          "ps_temi": {
+            "description": "Pump Storage units. Summation of the expected minimum MW achievable for each BMU running. The figures are derived from the Stable Export Level (SEL) considering any restrictions due to system constraints. This includes any additional units scheduled to meet required margins at SEL.",
+            "title": "PS_temi",
+            "type": "float8",
+            "unit": "MW"
+          },
+          "ps_temx": {
+            "description": "Pump Storage units. Summation of expected maximum MW availabilities for each BMU running. The figures are derived from the Maximum Export Limit (MEL) considering any restrictions due to system constraints. This includes any additional units scheduled to meet required margins.",
+            "title": "PS_temx",
+            "type": "float8",
+            "unit": "MW"
+          },
+          "ps_teol": {
+            "description": "Pump Storage units. Summation of expected actual output of each BMU running. The figures are derived from the Physical Notifications (PNs) considering any restrictions due to system constraints. This includes any additional units scheduled to meet required margins at SEL.",
+            "title": "PS_teol",
+            "type": "float8",
+            "unit": "MW"
+          },
+          "report_date": {
+            "description": "Date that the SOP was created",
+            "title": "Report Date",
+            "type": "timestamp",
+            "unit": null
+          },
+          "reserve_for_response": {
+            "description": "The reserve for response is the amount of reserve that needs to be allocated to synchronised generators so they can be pulled back and instructed to hold frequency response.",
+            "title": "Reserve For Response (PRE)",
+            "type": "float8",
+            "unit": "MW"
+          },
+          "sb_temi": {
+            "description": "Small Balancing Mechanism Units (BMUs). Summation of the expected minimum MW achievable for each BMU running. The figures are derived from the Stable Export Level (SEL) considering any restrictions due to system constraints. This includes any additional units scheduled to meet required margins at SE",
+            "title": "SB_temi",
+            "type": "float8",
+            "unit": "MW"
+          },
+          "sb_temx": {
+            "description": "Small Balancing Mechanism Units (BMUs). Summation of expected maximum MW availabilities for each BMU running. The figures are derived from the Maximum Export Limit (MEL) considering any restrictions due to system constraints. This includes any additional units scheduled to meet required margins.",
+            "title": "SB_temx",
+            "type": "float8",
+            "unit": "MW"
+          },
+          "sb_teol": {
+            "description": "Small Balancing Mechanism Units (BMUs). Summation of expected actual output of each BMU running. The figures are derived from the Physical Notifications (PNs) considering any restrictions due to system constraints. This includes any additional units scheduled to meet required margins at SEL.",
+            "title": "SB_teol",
+            "type": "float8",
+            "unit": "MW"
+          },
+          "so1_temi": {
+            "description": "All the non-wind BMUs in the south dispatch zone. Summation of the expected minimum MW achievable for each BMU running. The figures are derived from the Stable Export Level (SEL) considering any restrictions due to system constraints. This includes any additional units scheduled to meet required mar",
+            "title": "SO1_temi",
+            "type": "float8",
+            "unit": "MW"
+          },
+          "so1_temx": {
+            "description": "All the non-wind BMUs in the south dispatch zone. Summation of expected maximum MW availabilities for each BMU running. The figures are derived from the Maximum Export Limit (MEL) considering any restrictions due to system constraints. This includes any additional units scheduled to meet required ma",
+            "title": "SO1_temx",
+            "type": "float8",
+            "unit": "MW"
+          },
+          "so1_teol": {
+            "description": "All the non-wind BMUs in the south dispatch zone. Summation of expected actual output of each BMU running. The figures are derived from the Physical Notifications (PNs) considering any restrictions due to system constraints. This includes any additional units scheduled to meet required margins at SE",
+            "title": "SO1_teol",
+            "type": "float8",
+            "unit": "MW"
+          },
+          "sop_d_and_c_time_gmt": {
+            "description": "Time that the demand and contraint process was run",
+            "title": "SOP D and C Time GMT",
+            "type": "timestamp",
+            "unit": "UTC ISO 8601"
+          },
+          "sop_datetime": {
+            "description": "UTC Time and date that the SOP was created for",
+            "title": "SOP Datetime",
+            "type": "timestamp",
+            "unit": "UTC ISO 8601"
+          },
+          "sop_report_creation_time_gmt": {
+            "description": "Time the SOP was created",
+            "title": "SOP Report Creation Time GMT",
+            "type": "timestamp",
+            "unit": "UTC ISO 8601"
+          },
+          "standing_res_wind_adj": {
+            "description": "This is an automatically calculated value, used to adjust the standing reserve requirement figure to take into account the potential wind forecasting error",
+            "title": "Standing Res Wind Adj (WSRR)",
+            "type": "float8",
+            "unit": "MW"
+          },
+          "standing_reserve_availability": {
+            "description": "The amount of STOR that is usable is the sum of the STOR declared available",
+            "title": "Standing Reserve Availability (SRA)",
+            "type": "float8",
+            "unit": "MW"
+          },
+          "standing_reserve_excess": {
+            "description": "Indicates if there is an excess of Standing Reserve. Calculated by SRR - SRA.",
+            "title": "Standing Reserve Excess (SRE)",
+            "type": "float8",
+            "unit": "MW"
+          },
+          "standing_reserve_requirement": {
+            "description": "Standing reserve has now been replaced by Short Term Operating Reserve (STOR). This is a fixed value depending on the time of day and year.",
+            "title": "Standing Reserve Requirement  (SRR)",
+            "type": "float8",
+            "unit": "MW"
+          },
+          "standing_reserve_shortfall": {
+            "description": "The standing reserve shortfall is the difference between the STOR requirement minus the STOR usable indicates if there is a standing reserve shortfall",
+            "title": "Standing Reserve Shortfall (SRS)",
+            "type": "float8",
+            "unit": "MW"
+          },
+          "station_transformer": {
+            "description": "Assumed total national station demand",
+            "title": "Station Transformer  (STX)",
+            "type": "float8",
+            "unit": "MW"
+          },
+          "sto_temi": {
+            "description": "Short Term Operating Reserve (STOR).",
+            "title": "STO_temi",
+            "type": "float8",
+            "unit": "MW"
+          },
+          "sto_temx": {
+            "description": "Short Term Operating Reserve (STOR).",
+            "title": "STO_temx",
+            "type": "float8",
+            "unit": "MW"
+          },
+          "sto_teol": {
+            "description": "Short Term Operating Reserve (STOR).",
+            "title": "STO_teol",
+            "type": "float8",
+            "unit": "MW"
+          },
+          "sw1_temi": {
+            "description": "All the wind BMUs forecast output in the south dispatch zone. Summation of the expected minimum MW achievable for each BMU running. The figures are derived from the Stable Export Level (SEL) considering any restrictions due to system constraints. This includes any additional units scheduled to meet ",
+            "title": "SW1_temi",
+            "type": "float8",
+            "unit": "MW"
+          },
+          "sw1_temx": {
+            "description": "All the wind BMUs forecast output in the south dispatch zone. Summation of expected maximum MW availabilities for each BMU running. The figures are derived from the Maximum Export Limit (MEL) considering any restrictions due to system constraints. This includes any additional units scheduled to meet",
+            "title": "SW1_temx",
+            "type": "float8",
+            "unit": "MW"
+          },
+          "sw1_teol": {
+            "description": "All the wind BMUs forecast output in the south dispatch zone. Summation of expected actual output of each BMU running. The figures are derived from the Physical Notifications (PNs) considering any restrictions due to system constraints. This includes any additional units scheduled to meet required m",
+            "title": "SW1_teol",
+            "type": "float8",
+            "unit": "MW"
+          },
+          "total_negative_reserve": {
+            "description": "Simple calculation of NRG + NRS.",
+            "title": "Total (Negative Reserve)",
+            "type": "float8",
+            "unit": "MW"
+          },
+          "total_positive_reserve": {
+            "description": "Simple calculation of PRG + PRE.",
+            "title": "Total Positive Reserve (SCS)",
+            "type": "float8",
+            "unit": "MW"
+          },
+          "total_sop_demand": {
+            "description": "Sum of Customer demand and Station demand",
+            "title": "Total (SOP Demand)",
+            "type": "float8",
+            "unit": "MW"
+          },
+          "total_temi": {
+            "description": "Sum of all emi values",
+            "title": "total_temi",
+            "type": "float8",
+            "unit": "MW"
+          },
+          "total_temx": {
+            "description": "Sum off all emx values",
+            "title": "total_temx",
+            "type": "float8",
+            "unit": "MW"
+          },
+          "total_teol": {
+            "description": "Sum of all eol values",
+            "title": "total_teol",
+            "type": "float8",
+            "unit": "MW"
+          },
+          "trigger_level": {
+            "description": "This value is used in conjunction with the Contingency Requirement. If the Contingency Requirement is not satisfied by the available plant then based on these trigger levels the ESO will consider whether to issue an Electricity Margin Notification (EMN) to the market. Variable value depending on tim",
+            "title": "Trigger Level (shortfall)",
+            "type": "float8",
+            "unit": "MW"
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T11:38:18.294948+00:00",
+      "header": [
+        "sop_datetime",
+        "report_date",
+        "latest_version",
+        "latest_status",
+        "cardinal_point",
+        "customer_demand_forcast",
+        "station_transformer",
+        "dsbr",
+        "total_sop_demand",
+        "standing_reserve_requirement",
+        "standing_reserve_availability",
+        "standing_reserve_shortfall",
+        "standing_reserve_excess",
+        "standing_res_wind_adj",
+        "net_positive_regulating_reserve",
+        "positive_reg_res_wind_adj",
+        "reserve_for_response",
+        "total_positive_reserve",
+        "percentage_of_standing_reserve_excess",
+        "net_negative_regulating_reserve",
+        "negative_reg_res_wind_adj",
+        "negative_response_reserve",
+        "total_negative_reserve",
+        "maximum_loss_generation",
+        "maximum_loss_demand",
+        "positive_residual",
+        "imbalance",
+        "negative_residual",
+        "sop_report_creation_time_gmt",
+        "sop_d_and_c_time_gmt",
+        "contingency_requirement",
+        "operating_margin_surplus",
+        "trigger_level",
+        "no1_temx",
+        "no1_teol",
+        "no1_temi",
+        "nw1_temx",
+        "nw1_teol",
+        "nw1_temi",
+        "so1_temx",
+        "so1_teol",
+        "so1_temi",
+        "sw1_temx",
+        "sw1_teol",
+        "sw1_temi",
+        "britned_temx",
+        "britned_teol",
+        "britned_temi",
+        "ewic_temx",
+        "ewic_teol",
+        "ewic_temi",
+        "france_temx",
+        "france_teol",
+        "france_temi",
+        "intifa2_temx",
+        "intifa2_teol",
+        "intifa2_temi",
+        "moyle_temx",
+        "moyle_teol",
+        "moyle_temi",
+        "nemo_temx",
+        "nemo_teol",
+        "nemo_temi",
+        "ps_temx",
+        "ps_teol",
+        "ps_temi",
+        "sto_temx",
+        "sto_teol",
+        "sto_temi",
+        "sb_temx",
+        "sb_teol",
+        "sb_temi",
+        "total_temx",
+        "total_teol",
+        "total_temi",
+        "INTNSL_temx",
+        "INTNSL_teol",
+        "INTNSL_temi",
+        "INTELEC_temx",
+        "INTELEC_teol",
+        "INTELEC_temi",
+        "BAT_temx",
+        "BAT_teol",
+        "BAT_temi",
+        "SLR_temx",
+        "SLR_teol",
+        "SLR_temi",
+        "INTGRNL_temx",
+        "INTGRNL_teol",
+        "INTGRNL_temi",
+        "INTVKL_temx",
+        "INTVKL_teol",
+        "INTVKL_temi"
+      ],
+      "last_written_at": "2026-10-08T11:38:18.294948+00:00",
+      "resource_ids": [
+        "e51f2721-00ab-4182-9cae-3c973e854aa8"
+      ],
+      "rows": 10322,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [],
+  "key": "system_operating_plan",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 1,
+        "columns": [
+          "sop_datetime"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 1,
+        "columns": [
+          "report_date",
+          "customer_demand_forcast"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 1,
+        "columns": [
+          "report_date",
+          "total_sop_demand"
+        ],
+        "max_duplicates": 0
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "system-operating-plan-sop",
+  "proposal": {
+    "flags": [],
+    "record_draft": {
+      "eligibility": {
+        "question": "sop_datetime: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced); report_date: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced); latest_version: a numeric column with no vendor unit; sop_report_creation_time_gmt: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced); sop_d_and_c_time_gmt: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)",
+        "status": "held",
+        "unit": "IC-2"
+      },
+      "encoding": "utf-8",
+      "entity_key": [
+        "sop_datetime"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "sop_datetime",
+              "nullable": true,
+              "source": "sop_datetime"
+            },
+            {
+              "dtype": "string",
+              "name": "report_date",
+              "nullable": true,
+              "source": "report_date"
+            },
+            {
+              "dtype": "float64",
+              "name": "latest_version",
+              "nullable": true,
+              "source": "latest_version"
+            },
+            {
+              "dtype": "string",
+              "name": "latest_status",
+              "nullable": true,
+              "source": "latest_status"
+            },
+            {
+              "dtype": "string",
+              "name": "cardinal_point",
+              "nullable": true,
+              "source": "cardinal_point"
+            },
+            {
+              "dtype": "float64",
+              "name": "customer_demand_forcast",
+              "nullable": true,
+              "source": "customer_demand_forcast"
+            },
+            {
+              "dtype": "float64",
+              "name": "station_transformer",
+              "nullable": true,
+              "source": "station_transformer"
+            },
+            {
+              "dtype": "float64",
+              "name": "dsbr",
+              "nullable": true,
+              "source": "dsbr"
+            },
+            {
+              "dtype": "float64",
+              "name": "total_sop_demand",
+              "nullable": true,
+              "source": "total_sop_demand"
+            },
+            {
+              "dtype": "float64",
+              "name": "standing_reserve_requirement",
+              "nullable": true,
+              "source": "standing_reserve_requirement"
+            },
+            {
+              "dtype": "float64",
+              "name": "standing_reserve_availability",
+              "nullable": true,
+              "source": "standing_reserve_availability"
+            },
+            {
+              "dtype": "float64",
+              "name": "standing_reserve_shortfall",
+              "nullable": true,
+              "source": "standing_reserve_shortfall"
+            },
+            {
+              "dtype": "float64",
+              "name": "standing_reserve_excess",
+              "nullable": true,
+              "source": "standing_reserve_excess"
+            },
+            {
+              "dtype": "float64",
+              "name": "standing_res_wind_adj",
+              "nullable": true,
+              "source": "standing_res_wind_adj"
+            },
+            {
+              "dtype": "float64",
+              "name": "net_positive_regulating_reserve",
+              "nullable": true,
+              "source": "net_positive_regulating_reserve"
+            },
+            {
+              "dtype": "float64",
+              "name": "positive_reg_res_wind_adj",
+              "nullable": true,
+              "source": "positive_reg_res_wind_adj"
+            },
+            {
+              "dtype": "float64",
+              "name": "reserve_for_response",
+              "nullable": true,
+              "source": "reserve_for_response"
+            },
+            {
+              "dtype": "float64",
+              "name": "total_positive_reserve",
+              "nullable": true,
+              "source": "total_positive_reserve"
+            },
+            {
+              "dtype": "float64",
+              "name": "percentage_of_standing_reserve_excess",
+              "nullable": true,
+              "source": "percentage_of_standing_reserve_excess"
+            },
+            {
+              "dtype": "float64",
+              "name": "net_negative_regulating_reserve",
+              "nullable": true,
+              "source": "net_negative_regulating_reserve"
+            },
+            {
+              "dtype": "float64",
+              "name": "negative_reg_res_wind_adj",
+              "nullable": true,
+              "source": "negative_reg_res_wind_adj"
+            },
+            {
+              "dtype": "float64",
+              "name": "negative_response_reserve",
+              "nullable": true,
+              "source": "negative_response_reserve"
+            },
+            {
+              "dtype": "float64",
+              "name": "total_negative_reserve",
+              "nullable": true,
+              "source": "total_negative_reserve"
+            },
+            {
+              "dtype": "float64",
+              "name": "maximum_loss_generation",
+              "nullable": true,
+              "source": "maximum_loss_generation"
+            },
+            {
+              "dtype": "float64",
+              "name": "maximum_loss_demand",
+              "nullable": true,
+              "source": "maximum_loss_demand"
+            },
+            {
+              "dtype": "float64",
+              "name": "positive_residual",
+              "nullable": true,
+              "source": "positive_residual"
+            },
+            {
+              "dtype": "float64",
+              "name": "imbalance",
+              "nullable": true,
+              "source": "imbalance"
+            },
+            {
+              "dtype": "float64",
+              "name": "negative_residual",
+              "nullable": true,
+              "source": "negative_residual"
+            },
+            {
+              "dtype": "string",
+              "name": "sop_report_creation_time_gmt",
+              "nullable": true,
+              "source": "sop_report_creation_time_gmt"
+            },
+            {
+              "dtype": "string",
+              "name": "sop_d_and_c_time_gmt",
+              "nullable": true,
+              "source": "sop_d_and_c_time_gmt"
+            },
+            {
+              "dtype": "float64",
+              "name": "contingency_requirement",
+              "nullable": true,
+              "source": "contingency_requirement"
+            },
+            {
+              "dtype": "float64",
+              "name": "operating_margin_surplus",
+              "nullable": true,
+              "source": "operating_margin_surplus"
+            },
+            {
+              "dtype": "float64",
+              "name": "trigger_level",
+              "nullable": true,
+              "source": "trigger_level"
+            },
+            {
+              "dtype": "float64",
+              "name": "no1_temx",
+              "nullable": true,
+              "source": "no1_temx"
+            },
+            {
+              "dtype": "float64",
+              "name": "no1_teol",
+              "nullable": true,
+              "source": "no1_teol"
+            },
+            {
+              "dtype": "float64",
+              "name": "no1_temi",
+              "nullable": true,
+              "source": "no1_temi"
+            },
+            {
+              "dtype": "float64",
+              "name": "nw1_temx",
+              "nullable": true,
+              "source": "nw1_temx"
+            },
+            {
+              "dtype": "float64",
+              "name": "nw1_teol",
+              "nullable": true,
+              "source": "nw1_teol"
+            },
+            {
+              "dtype": "float64",
+              "name": "nw1_temi",
+              "nullable": true,
+              "source": "nw1_temi"
+            },
+            {
+              "dtype": "float64",
+              "name": "so1_temx",
+              "nullable": true,
+              "source": "so1_temx"
+            },
+            {
+              "dtype": "float64",
+              "name": "so1_teol",
+              "nullable": true,
+              "source": "so1_teol"
+            },
+            {
+              "dtype": "float64",
+              "name": "so1_temi",
+              "nullable": true,
+              "source": "so1_temi"
+            },
+            {
+              "dtype": "float64",
+              "name": "sw1_temx",
+              "nullable": true,
+              "source": "sw1_temx"
+            },
+            {
+              "dtype": "float64",
+              "name": "sw1_teol",
+              "nullable": true,
+              "source": "sw1_teol"
+            },
+            {
+              "dtype": "float64",
+              "name": "sw1_temi",
+              "nullable": true,
+              "source": "sw1_temi"
+            },
+            {
+              "dtype": "float64",
+              "name": "britned_temx",
+              "nullable": true,
+              "source": "britned_temx"
+            },
+            {
+              "dtype": "float64",
+              "name": "britned_teol",
+              "nullable": true,
+              "source": "britned_teol"
+            },
+            {
+              "dtype": "float64",
+              "name": "britned_temi",
+              "nullable": true,
+              "source": "britned_temi"
+            },
+            {
+              "dtype": "float64",
+              "name": "ewic_temx",
+              "nullable": true,
+              "source": "ewic_temx"
+            },
+            {
+              "dtype": "float64",
+              "name": "ewic_teol",
+              "nullable": true,
+              "source": "ewic_teol"
+            },
+            {
+              "dtype": "float64",
+              "name": "ewic_temi",
+              "nullable": true,
+              "source": "ewic_temi"
+            },
+            {
+              "dtype": "float64",
+              "name": "france_temx",
+              "nullable": true,
+              "source": "france_temx"
+            },
+            {
+              "dtype": "float64",
+              "name": "france_teol",
+              "nullable": true,
+              "source": "france_teol"
+            },
+            {
+              "dtype": "float64",
+              "name": "france_temi",
+              "nullable": true,
+              "source": "france_temi"
+            },
+            {
+              "dtype": "float64",
+              "name": "intifa2_temx",
+              "nullable": true,
+              "source": "intifa2_temx"
+            },
+            {
+              "dtype": "float64",
+              "name": "intifa2_teol",
+              "nullable": true,
+              "source": "intifa2_teol"
+            },
+            {
+              "dtype": "float64",
+              "name": "intifa2_temi",
+              "nullable": true,
+              "source": "intifa2_temi"
+            },
+            {
+              "dtype": "float64",
+              "name": "moyle_temx",
+              "nullable": true,
+              "source": "moyle_temx"
+            },
+            {
+              "dtype": "float64",
+              "name": "moyle_teol",
+              "nullable": true,
+              "source": "moyle_teol"
+            },
+            {
+              "dtype": "float64",
+              "name": "moyle_temi",
+              "nullable": true,
+              "source": "moyle_temi"
+            },
+            {
+              "dtype": "float64",
+              "name": "nemo_temx",
+              "nullable": true,
+              "source": "nemo_temx"
+            },
+            {
+              "dtype": "float64",
+              "name": "nemo_teol",
+              "nullable": true,
+              "source": "nemo_teol"
+            },
+            {
+              "dtype": "float64",
+              "name": "nemo_temi",
+              "nullable": true,
+              "source": "nemo_temi"
+            },
+            {
+              "dtype": "float64",
+              "name": "ps_temx",
+              "nullable": true,
+              "source": "ps_temx"
+            },
+            {
+              "dtype": "float64",
+              "name": "ps_teol",
+              "nullable": true,
+              "source": "ps_teol"
+            },
+            {
+              "dtype": "float64",
+              "name": "ps_temi",
+              "nullable": true,
+              "source": "ps_temi"
+            },
+            {
+              "dtype": "float64",
+              "name": "sto_temx",
+              "nullable": true,
+              "source": "sto_temx"
+            },
+            {
+              "dtype": "float64",
+              "name": "sto_teol",
+              "nullable": true,
+              "source": "sto_teol"
+            },
+            {
+              "dtype": "float64",
+              "name": "sto_temi",
+              "nullable": true,
+              "source": "sto_temi"
+            },
+            {
+              "dtype": "float64",
+              "name": "sb_temx",
+              "nullable": true,
+              "source": "sb_temx"
+            },
+            {
+              "dtype": "float64",
+              "name": "sb_teol",
+              "nullable": true,
+              "source": "sb_teol"
+            },
+            {
+              "dtype": "float64",
+              "name": "sb_temi",
+              "nullable": true,
+              "source": "sb_temi"
+            },
+            {
+              "dtype": "float64",
+              "name": "total_temx",
+              "nullable": true,
+              "source": "total_temx"
+            },
+            {
+              "dtype": "float64",
+              "name": "total_teol",
+              "nullable": true,
+              "source": "total_teol"
+            },
+            {
+              "dtype": "float64",
+              "name": "total_temi",
+              "nullable": true,
+              "source": "total_temi"
+            },
+            {
+              "dtype": "float64",
+              "name": "intnsl_temx",
+              "nullable": true,
+              "source": "INTNSL_temx"
+            },
+            {
+              "dtype": "float64",
+              "name": "intnsl_teol",
+              "nullable": true,
+              "source": "INTNSL_teol"
+            },
+            {
+              "dtype": "float64",
+              "name": "intnsl_temi",
+              "nullable": true,
+              "source": "INTNSL_temi"
+            },
+            {
+              "dtype": "float64",
+              "name": "intelec_temx",
+              "nullable": true,
+              "source": "INTELEC_temx"
+            },
+            {
+              "dtype": "float64",
+              "name": "intelec_teol",
+              "nullable": true,
+              "source": "INTELEC_teol"
+            },
+            {
+              "dtype": "float64",
+              "name": "intelec_temi",
+              "nullable": true,
+              "source": "INTELEC_temi"
+            },
+            {
+              "dtype": "float64",
+              "name": "bat_temx",
+              "nullable": true,
+              "source": "BAT_temx"
+            },
+            {
+              "dtype": "int64",
+              "name": "bat_teol",
+              "nullable": true,
+              "source": "BAT_teol"
+            },
+            {
+              "dtype": "int64",
+              "name": "bat_temi",
+              "nullable": true,
+              "source": "BAT_temi"
+            },
+            {
+              "dtype": "int64",
+              "name": "slr_temx",
+              "nullable": true,
+              "source": "SLR_temx"
+            },
+            {
+              "dtype": "int64",
+              "name": "slr_teol",
+              "nullable": true,
+              "source": "SLR_teol"
+            },
+            {
+              "dtype": "int64",
+              "name": "slr_temi",
+              "nullable": true,
+              "source": "SLR_temi"
+            },
+            {
+              "dtype": "int64",
+              "name": "intgrnl_temx",
+              "nullable": true,
+              "source": "INTGRNL_temx"
+            },
+            {
+              "dtype": "int64",
+              "name": "intgrnl_teol",
+              "nullable": true,
+              "source": "INTGRNL_teol"
+            },
+            {
+              "dtype": "int64",
+              "name": "intgrnl_temi",
+              "nullable": true,
+              "source": "INTGRNL_temi"
+            },
+            {
+              "dtype": "int64",
+              "name": "intvkl_temx",
+              "nullable": true,
+              "source": "INTVKL_temx"
+            },
+            {
+              "dtype": "int64",
+              "name": "intvkl_teol",
+              "nullable": true,
+              "source": "INTVKL_teol"
+            },
+            {
+              "dtype": "int64",
+              "name": "intvkl_temi",
+              "nullable": true,
+              "source": "INTVKL_temi"
+            }
+          ],
+          "header": [
+            "sop_datetime",
+            "report_date",
+            "latest_version",
+            "latest_status",
+            "cardinal_point",
+            "customer_demand_forcast",
+            "station_transformer",
+            "dsbr",
+            "total_sop_demand",
+            "standing_reserve_requirement",
+            "standing_reserve_availability",
+            "standing_reserve_shortfall",
+            "standing_reserve_excess",
+            "standing_res_wind_adj",
+            "net_positive_regulating_reserve",
+            "positive_reg_res_wind_adj",
+            "reserve_for_response",
+            "total_positive_reserve",
+            "percentage_of_standing_reserve_excess",
+            "net_negative_regulating_reserve",
+            "negative_reg_res_wind_adj",
+            "negative_response_reserve",
+            "total_negative_reserve",
+            "maximum_loss_generation",
+            "maximum_loss_demand",
+            "positive_residual",
+            "imbalance",
+            "negative_residual",
+            "sop_report_creation_time_gmt",
+            "sop_d_and_c_time_gmt",
+            "contingency_requirement",
+            "operating_margin_surplus",
+            "trigger_level",
+            "no1_temx",
+            "no1_teol",
+            "no1_temi",
+            "nw1_temx",
+            "nw1_teol",
+            "nw1_temi",
+            "so1_temx",
+            "so1_teol",
+            "so1_temi",
+            "sw1_temx",
+            "sw1_teol",
+            "sw1_temi",
+            "britned_temx",
+            "britned_teol",
+            "britned_temi",
+            "ewic_temx",
+            "ewic_teol",
+            "ewic_temi",
+            "france_temx",
+            "france_teol",
+            "france_temi",
+            "intifa2_temx",
+            "intifa2_teol",
+            "intifa2_temi",
+            "moyle_temx",
+            "moyle_teol",
+            "moyle_temi",
+            "nemo_temx",
+            "nemo_teol",
+            "nemo_temi",
+            "ps_temx",
+            "ps_teol",
+            "ps_temi",
+            "sto_temx",
+            "sto_teol",
+            "sto_temi",
+            "sb_temx",
+            "sb_teol",
+            "sb_temi",
+            "total_temx",
+            "total_teol",
+            "total_temi",
+            "INTNSL_temx",
+            "INTNSL_teol",
+            "INTNSL_temi",
+            "INTELEC_temx",
+            "INTELEC_teol",
+            "INTELEC_temi",
+            "BAT_temx",
+            "BAT_teol",
+            "BAT_temi",
+            "SLR_temx",
+            "SLR_teol",
+            "SLR_temi",
+            "INTGRNL_temx",
+            "INTGRNL_teol",
+            "INTGRNL_temi",
+            "INTVKL_temx",
+            "INTVKL_teol",
+            "INTVKL_temi"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T06",
+      "version": "1",
+      "vintage": "capture_fallback"
+    },
+    "todos": [
+      {
+        "consequence": "held",
+        "field": "column 'sop_datetime'",
+        "id": "T01",
+        "kind": "time_semantics",
+        "question": "sop_datetime: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'report_date'",
+        "id": "T02",
+        "kind": "time_semantics",
+        "question": "report_date: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'latest_version'.unit",
+        "id": "T03",
+        "kind": "unit",
+        "question": "latest_version: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'sop_report_creation_time_gmt'",
+        "id": "T04",
+        "kind": "time_semantics",
+        "question": "sop_report_creation_time_gmt: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'sop_d_and_c_time_gmt'",
+        "id": "T05",
+        "kind": "time_semantics",
+        "question": "sop_d_and_c_time_gmt: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T06",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: sop_datetime, report_date, sop_report_creation_time_gmt, sop_d_and_c_time_gmt"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T07",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['sop_datetime'] (measured unique in 1 capture(s)); without one, latest stays whole_capture"
+      },
+      {
+        "consequence": "none",
+        "field": "vintage",
+        "id": "T08",
+        "kind": "vendor_publication",
+        "question": "available_at is gridflow capture time for the dump; a vendor instant is held (D)"
+      }
+    ]
+  },
+  "refresh": "daily",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update Frequency",
+        "value": "Daily"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "System",
+    "title": "System Operating Plan (SOP)"
+  }
+}

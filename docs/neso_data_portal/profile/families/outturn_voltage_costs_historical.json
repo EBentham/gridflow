@@ -1,0 +1,503 @@
+{
+  "archetype": "SER",
+  "batch": "SYS-1",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/outturn_voltage_costs_historical/2026/10/08/raw_20261008T111616Z_fae5a592-deb4-4c66-8d51-d6ef450ccd95_7a56317e.csv",
+      "ckan_last_modified": "2024-05-24T13:55:17.240734",
+      "cr": 0,
+      "crlf": 229,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "fae5a592-deb4-4c66-8d51-d6ef450ccd95",
+      "rows": 228,
+      "sampled": false,
+      "size": 14912,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:16:16.340937+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/outturn_voltage_costs_historical/2026/10/08/raw_20261008T111618Z_035ab58a-7b96-4e10-bf51-cf3a7e64f6a0_f95af6ec.csv",
+      "ckan_last_modified": "2024-05-24T13:56:19.823004",
+      "cr": 0,
+      "crlf": 229,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "035ab58a-7b96-4e10-bf51-cf3a7e64f6a0",
+      "rows": 228,
+      "sampled": false,
+      "size": 15126,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:16:18.592535+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/outturn_voltage_costs_historical/2026/10/08/raw_20261008T111621Z_f9a80c9d-586b-4139-8371-436cc07d1ef3_6d27efae.csv",
+      "ckan_last_modified": "2024-05-24T14:14:50.794083",
+      "cr": 0,
+      "crlf": 229,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "f9a80c9d-586b-4139-8371-436cc07d1ef3",
+      "rows": 228,
+      "sampled": false,
+      "size": 15235,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:16:21.196119+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/outturn_voltage_costs_historical/2026/10/08/raw_20261008T111624Z_118a9d4e-17a3-4606-bb30-4ed1d2abe722_f6256da5.csv",
+      "ckan_last_modified": "2024-05-24T14:17:30.934760",
+      "cr": 0,
+      "crlf": 229,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "118a9d4e-17a3-4606-bb30-4ed1d2abe722",
+      "rows": 228,
+      "sampled": false,
+      "size": 15187,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:16:24.050595+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/outturn_voltage_costs_historical/2026/10/08/raw_20261008T111626Z_27454f2f-591d-4222-a288-cc2f0fcc4250_7d6913e4.csv",
+      "ckan_last_modified": "2024-05-24T14:18:45.922196",
+      "cr": 0,
+      "crlf": 229,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "27454f2f-591d-4222-a288-cc2f0fcc4250",
+      "rows": 228,
+      "sampled": false,
+      "size": 15358,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:16:26.601829+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/outturn_voltage_costs_historical/2026/10/08/raw_20261008T111629Z_1b02d2ec-8d0f-4244-9828-9eac5d9c3c67_5b0b2331.csv",
+      "ckan_last_modified": "2024-05-24T09:56:46.687355",
+      "cr": 0,
+      "crlf": 229,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "1b02d2ec-8d0f-4244-9828-9eac5d9c3c67",
+      "rows": 228,
+      "sampled": false,
+      "size": 15352,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:16:29.280140+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/outturn_voltage_costs_historical/2026/10/08/raw_20261008T111631Z_1b47a532-9f22-49c1-ae2a-d84dcc6d7408_1f550d55.csv",
+      "ckan_last_modified": "2024-05-24T09:52:13.103712",
+      "cr": 0,
+      "crlf": 229,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "1b47a532-9f22-49c1-ae2a-d84dcc6d7408",
+      "rows": 228,
+      "sampled": false,
+      "size": 15501,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:16:31.812614+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/outturn_voltage_costs_historical/2026/10/08/raw_20261008T111634Z_bb3b4ea5-39f4-4fe4-b0e2-5b341908b186_0251b8f6.csv",
+      "ckan_last_modified": "2024-05-24T09:51:14.529174",
+      "cr": 0,
+      "crlf": 229,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "bb3b4ea5-39f4-4fe4-b0e2-5b341908b186",
+      "rows": 228,
+      "sampled": false,
+      "size": 15299,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:16:34.148240+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/outturn_voltage_costs_historical/2026/10/08/raw_20261008T111636Z_81a7db68-0a24-4ce9-a374-f0ffced588b0_32365a66.csv",
+      "ckan_last_modified": "2024-05-24T09:50:05.710366",
+      "cr": 0,
+      "crlf": 229,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "81a7db68-0a24-4ce9-a374-f0ffced588b0",
+      "rows": 228,
+      "sampled": false,
+      "size": 15094,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:16:36.561966+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/outturn_voltage_costs_historical/2026/10/08/raw_20261008T111639Z_6165d7d4-54cf-4e47-91e4-b487e8225e5a_ab60d687.csv",
+      "ckan_last_modified": "2024-05-24T09:45:06.429818",
+      "cr": 0,
+      "crlf": 229,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "6165d7d4-54cf-4e47-91e4-b487e8225e5a",
+      "rows": 228,
+      "sampled": false,
+      "size": 15387,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:16:39.037311+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/outturn_voltage_costs_historical/2026/10/08/raw_20261008T111641Z_3eced73f-b7e6-4974-8d3c-3ebd48eba74c_b494b559.csv",
+      "ckan_last_modified": "2025-04-29T15:42:04.442764",
+      "cr": 0,
+      "crlf": 229,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "3eced73f-b7e6-4974-8d3c-3ebd48eba74c",
+      "rows": 228,
+      "sampled": false,
+      "size": 14973,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:16:41.786398+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 11,
+      "columns": {
+        "Coordinates": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 2508,
+            "int64": 2508
+          },
+          "examples": [
+            "(54.495568, -2.7246094)",
+            "(55.844482, -2.4279785)",
+            "(52.569673, 1.0546875)"
+          ],
+          "max_len": 25,
+          "null_count": 0,
+          "shapes": {
+            "text": 2508
+          }
+        },
+        "Settlement Month": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%Y-%m-%d": 456,
+            "%d/%m/%Y": 2052,
+            "float64": 2508,
+            "int64": 2508
+          },
+          "examples": [
+            "01/04/2014",
+            "01/05/2014",
+            "01/06/2014"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "iso_date": 2052,
+            "slash_date": 456
+          },
+          "slash_first_gt_12": 0,
+          "slash_second_gt_12": 0
+        },
+        "Sync Costs (£m)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1124
+          },
+          "examples": [
+            "0",
+            "0.353366497",
+            "0.767087392"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 1124,
+            "int": 1384
+          }
+        },
+        "Utilisation Costs (£m)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 2366
+          },
+          "examples": [
+            "0.068722285",
+            "0.646333954",
+            "0.498643738"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 2366,
+            "int": 142
+          }
+        },
+        "Voltage Constraint Group": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 2508,
+            "int64": 2508
+          },
+          "examples": [
+            "Dumfries & Galloway",
+            "E CORRIDOR",
+            "E ENGLAND"
+          ],
+          "max_len": 19,
+          "null_count": 0,
+          "shapes": {
+            "text": 2508
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "Coordinates": {
+            "description": "Co-ordinates to geographically map the Voltage Constraint Group area.",
+            "title": "Coordinates",
+            "type": "text",
+            "unit": null
+          },
+          "Settlement Month": {
+            "description": "Total cost per Settlement Month. Date presented visually as 01/MMM/YYYY but represents the whole 'Month'.",
+            "title": "Settlement Month",
+            "type": "text",
+            "unit": null
+          },
+          "Sync Costs (£m)": {
+            "description": "Costs in the balancing mechanism to run the unit. From trades and balancing mechanism actions.",
+            "title": "Sync Costs",
+            "type": "numeric",
+            "unit": "£(m)"
+          },
+          "Utilisation Costs (£m)": {
+            "description": "AS costs for voltage",
+            "title": "Utilisation Costs (£m)",
+            "type": "numeric",
+            "unit": "£(m)"
+          },
+          "Voltage Constraint Group": {
+            "description": "Defined voltage requirement areas.",
+            "title": "Voltage Constraint Group",
+            "type": "text",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T11:16:16.340937+00:00",
+      "header": [
+        "Settlement Month",
+        "Voltage Constraint Group",
+        "Sync Costs (£m)",
+        "Utilisation Costs (£m)",
+        "Coordinates"
+      ],
+      "last_written_at": "2026-10-08T11:16:41.786398+00:00",
+      "resource_ids": [
+        "035ab58a-7b96-4e10-bf51-cf3a7e64f6a0",
+        "118a9d4e-17a3-4606-bb30-4ed1d2abe722",
+        "1b02d2ec-8d0f-4244-9828-9eac5d9c3c67",
+        "1b47a532-9f22-49c1-ae2a-d84dcc6d7408",
+        "27454f2f-591d-4222-a288-cc2f0fcc4250",
+        "3eced73f-b7e6-4974-8d3c-3ebd48eba74c",
+        "6165d7d4-54cf-4e47-91e4-b487e8225e5a",
+        "81a7db68-0a24-4ce9-a374-f0ffced588b0",
+        "bb3b4ea5-39f4-4fe4-b0e2-5b341908b186",
+        "f9a80c9d-586b-4139-8371-436cc07d1ef3",
+        "fae5a592-deb4-4c66-8d51-d6ef450ccd95"
+      ],
+      "rows": 2508,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [
+    "sibling_candidate:outturn_voltage_costs_main"
+  ],
+  "key": "outturn_voltage_costs_historical",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 11,
+        "columns": [
+          "Settlement Month",
+          "Voltage Constraint Group"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 11,
+        "columns": [
+          "Settlement Month",
+          "Coordinates"
+        ],
+        "max_duplicates": 0
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "outturn-voltage-costs",
+  "proposal": {
+    "flags": [
+      "sibling_candidate:outturn_voltage_costs_main"
+    ],
+    "record_draft": {
+      "encoding": "utf-8",
+      "entity_key": [
+        "settlement_month",
+        "voltage_constraint_group"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "settlement_month",
+              "nullable": true,
+              "source": "Settlement Month"
+            },
+            {
+              "dtype": "string",
+              "name": "voltage_constraint_group",
+              "nullable": true,
+              "source": "Voltage Constraint Group"
+            },
+            {
+              "dtype": "float64",
+              "name": "sync_costs_m",
+              "nullable": true,
+              "source": "Sync Costs (£m)"
+            },
+            {
+              "dtype": "float64",
+              "name": "utilisation_costs_m",
+              "nullable": true,
+              "source": "Utilisation Costs (£m)"
+            },
+            {
+              "dtype": "string",
+              "name": "coordinates",
+              "nullable": true,
+              "source": "Coordinates"
+            }
+          ],
+          "header": [
+            "Settlement Month",
+            "Voltage Constraint Group",
+            "Sync Costs (£m)",
+            "Utilisation Costs (£m)",
+            "Coordinates"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T01",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T01",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: Settlement Month"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T02",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['settlement_month', 'voltage_constraint_group'] (measured unique in 11 capture(s)); without one, latest stays whole_capture"
+      }
+    ]
+  },
+  "refresh": "monthly",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update Frequency",
+        "value": "Monthly"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Constraint management",
+    "title": "Voltage System Costs"
+  }
+}

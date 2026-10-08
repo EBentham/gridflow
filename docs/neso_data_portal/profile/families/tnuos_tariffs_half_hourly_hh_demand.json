@@ -1,0 +1,436 @@
+{
+  "archetype": "TAR",
+  "batch": "BAL-2",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/tnuos_tariffs_half_hourly_hh_demand/2026/10/08/raw_20261008T113907Z_6abe8416-149c-4c78-b65b-059eea19957a_b11b3c76.csv",
+      "ckan_last_modified": "2026-05-12T13:12:39.529022",
+      "cr": 0,
+      "crlf": 603,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "6abe8416-149c-4c78-b65b-059eea19957a",
+      "rows": 602,
+      "sampled": false,
+      "size": 46457,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:39:07.650463+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 1,
+      "columns": {
+        "HHTariff(Floored)_£/kW": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 602
+          },
+          "examples": [
+            "0.000000",
+            "0.230675",
+            "3.555364"
+          ],
+          "max_len": 9,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 602
+          }
+        },
+        "HH_SGD_Adjustment_£/kW": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 602
+          },
+          "examples": [
+            "0.000000",
+            "0.700635"
+          ],
+          "max_len": 8,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 602
+          }
+        },
+        "Peak_£/kW": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 602
+          },
+          "examples": [
+            "-2.298509",
+            "-3.257550",
+            "-4.311020"
+          ],
+          "max_len": 9,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 602
+          }
+        },
+        "Publication": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 602,
+            "int64": 602
+          },
+          "examples": [
+            "Forecast",
+            "Final",
+            "Draft"
+          ],
+          "max_len": 8,
+          "null_count": 0,
+          "shapes": {
+            "text": 602
+          }
+        },
+        "Published_Date": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%d/%m/%Y": 0,
+            "float64": 602,
+            "int64": 602
+          },
+          "examples": [
+            "11/05/2026",
+            "30/01/2026",
+            "19/12/2025"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "slash_date": 602
+          },
+          "slash_first_gt_12": 420,
+          "slash_second_gt_12": 0
+        },
+        "YearRound_£/kW": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 602
+          },
+          "examples": [
+            "-38.486797",
+            "-26.609440",
+            "-8.994197"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 602
+          }
+        },
+        "Year_FY": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "2028",
+            "2027",
+            "2029"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 602
+          }
+        },
+        "Zone_Name": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 602,
+            "int64": 602
+          },
+          "examples": [
+            "Northern Scotland",
+            "Southern Scotland",
+            "Northern"
+          ],
+          "max_len": 17,
+          "null_count": 0,
+          "shapes": {
+            "text": 602
+          }
+        },
+        "Zone_No": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1",
+            "2",
+            "3"
+          ],
+          "max_len": 2,
+          "null_count": 0,
+          "shapes": {
+            "int": 602
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "HHTariff(Floored)_£/kW": {
+            "description": "Overall HH Demand Tariff in £/kW",
+            "title": "Half Hourly Demand Tariff (Floored)",
+            "type": "numeric",
+            "unit": "£ per kW"
+          },
+          "HH_SGD_Adjustment_£/kW": {
+            "description": "Half-Hourly Demand Small Generator Discount adjustment in £/kW",
+            "title": "Half Hourly Demand Small Generator Discount Adjustment",
+            "type": "numeric",
+            "unit": "£ per kW"
+          },
+          "Peak_£/kW": {
+            "description": "Locational Peak Secrity Tariff (unfloored) in £/kW",
+            "title": "Peak Security Transport Zonal Tariff",
+            "type": "numeric",
+            "unit": "£ per kW"
+          },
+          "Publication": {
+            "description": "States what publication type the tariff relates to",
+            "title": "Publication",
+            "type": "text",
+            "unit": null
+          },
+          "Published_Date": {
+            "description": "Example would be that the 2021 Final tariffs we published 31 January 2020 (30/01/2020)",
+            "title": "Date of Tariff Publication",
+            "type": "date",
+            "unit": null
+          },
+          "YearRound_£/kW": {
+            "description": "Locational Year-Round Tariff (unfloored) in £/kW",
+            "title": "Year-Round Transport Zonal Tariff",
+            "type": "numeric",
+            "unit": "£ per kW"
+          },
+          "Year_FY": {
+            "description": "Year in which the tariff relates to i.e. 2021 = 1 April 2020 to 31 March 2021 (2020/21)",
+            "title": "Financial Year",
+            "type": "int4",
+            "unit": null
+          },
+          "Zone_Name": {
+            "description": "Name of Demand Zone",
+            "title": "Demand Zone Name",
+            "type": "text",
+            "unit": null
+          },
+          "Zone_No": {
+            "description": "Number Assigned to the Demand Zones 1 - 14",
+            "title": "Demand Zone No.",
+            "type": "int4",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T11:39:07.650463+00:00",
+      "header": [
+        "Publication",
+        "Year_FY",
+        "Published_Date",
+        "Zone_No",
+        "Zone_Name",
+        "Peak_£/kW",
+        "YearRound_£/kW",
+        "HH_SGD_Adjustment_£/kW",
+        "HHTariff(Floored)_£/kW"
+      ],
+      "last_written_at": "2026-10-08T11:39:07.650463+00:00",
+      "resource_ids": [
+        "6abe8416-149c-4c78-b65b-059eea19957a"
+      ],
+      "rows": 602,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [],
+  "key": "tnuos_tariffs_half_hourly_hh_demand",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Publication",
+          "Peak_£/kW"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Publication",
+          "YearRound_£/kW"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Published_Date",
+          "Peak_£/kW"
+        ],
+        "max_duplicates": 0
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "transmission-network-use-of-system-tnuos-tariffs",
+  "proposal": {
+    "flags": [],
+    "record_draft": {
+      "eligibility": {
+        "question": "Year_FY: a numeric column with no vendor unit; Zone_No: a numeric column with no vendor unit",
+        "status": "held",
+        "unit": "BAL-2"
+      },
+      "encoding": "utf-8",
+      "entity_key": [
+        "publication",
+        "peak_kw"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "publication",
+              "nullable": true,
+              "source": "Publication"
+            },
+            {
+              "dtype": "int64",
+              "name": "year_fy",
+              "nullable": true,
+              "source": "Year_FY"
+            },
+            {
+              "dtype": "date",
+              "format": "%d/%m/%Y",
+              "name": "published_date",
+              "nullable": true,
+              "source": "Published_Date"
+            },
+            {
+              "dtype": "int64",
+              "name": "zone_no",
+              "nullable": true,
+              "source": "Zone_No"
+            },
+            {
+              "dtype": "string",
+              "name": "zone_name",
+              "nullable": true,
+              "source": "Zone_Name"
+            },
+            {
+              "dtype": "float64",
+              "name": "peak_kw",
+              "nullable": true,
+              "source": "Peak_£/kW"
+            },
+            {
+              "dtype": "float64",
+              "name": "yearround_kw",
+              "nullable": true,
+              "source": "YearRound_£/kW"
+            },
+            {
+              "dtype": "float64",
+              "name": "hh_sgd_adjustment_kw",
+              "nullable": true,
+              "source": "HH_SGD_Adjustment_£/kW"
+            },
+            {
+              "dtype": "float64",
+              "name": "hhtariff_floored_kw",
+              "nullable": true,
+              "source": "HHTariff(Floored)_£/kW"
+            }
+          ],
+          "header": [
+            "Publication",
+            "Year_FY",
+            "Published_Date",
+            "Zone_No",
+            "Zone_Name",
+            "Peak_£/kW",
+            "YearRound_£/kW",
+            "HH_SGD_Adjustment_£/kW",
+            "HHTariff(Floored)_£/kW"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T03",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "held",
+        "field": "column 'Year_FY'.unit",
+        "id": "T01",
+        "kind": "unit",
+        "question": "Year_FY: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Zone_No'.unit",
+        "id": "T02",
+        "kind": "unit",
+        "question": "Zone_No: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T03",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: Published_Date"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T04",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['publication', 'peak_kw'] (measured unique in 1 capture(s)); without one, latest stays whole_capture"
+      }
+    ]
+  },
+  "refresh": "adhoc",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update Frequency",
+        "value": "Quarterly"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Network charges",
+    "title": "Transmission Network Use of System (TNUoS) Tariffs"
+  }
+}

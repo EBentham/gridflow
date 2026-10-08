@@ -1,0 +1,1742 @@
+{
+  "archetype": "EVT",
+  "batch": "AS-5",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/odfm_market_information_load_factors/2026/10/08/raw_20261008T111536Z_e6146148-c862-49f6-9c7f-52dc2b3e7086_2cc1c8c5.csv",
+      "ckan_last_modified": "2020-07-20T15:17:53.063674",
+      "cr": 0,
+      "crlf": 241,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "e6146148-c862-49f6-9c7f-52dc2b3e7086",
+      "rows": 240,
+      "sampled": false,
+      "size": 80862,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:15:36.175565+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 1,
+      "columns": {
+        "Datetime": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 240,
+            "int64": 240
+          },
+          "examples": [
+            "09/05/2020 23:00",
+            "09/05/2020 23:30",
+            "10/05/2020 00:00"
+          ],
+          "max_len": 16,
+          "null_count": 0,
+          "shapes": {
+            "text": 240
+          }
+        },
+        "Electricity North West Other": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1"
+          ],
+          "max_len": 1,
+          "null_count": 0,
+          "shapes": {
+            "int": 240
+          }
+        },
+        "Electricity North West Solar": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 174
+          },
+          "examples": [
+            "0",
+            "0.0043",
+            "0.018551429"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 174,
+            "int": 66
+          }
+        },
+        "Electricity North West Wind": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 240
+          },
+          "examples": [
+            "0.119121228",
+            "0.217303129",
+            "0.34483951"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 240
+          }
+        },
+        "NPG North East Other": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1"
+          ],
+          "max_len": 1,
+          "null_count": 0,
+          "shapes": {
+            "int": 240
+          }
+        },
+        "NPG North East Solar": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 177
+          },
+          "examples": [
+            "0",
+            "0.002211429",
+            "0.007862857"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 177,
+            "int": 63
+          }
+        },
+        "NPG North East Wind": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 240
+          },
+          "examples": [
+            "0.178530344",
+            "0.246094354",
+            "0.271261929"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 240
+          }
+        },
+        "NPG Yorkshire Other": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1"
+          ],
+          "max_len": 1,
+          "null_count": 0,
+          "shapes": {
+            "int": 240
+          }
+        },
+        "NPG Yorkshire Solar": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 177
+          },
+          "examples": [
+            "0",
+            "0.002457143",
+            "0.009214286"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 177,
+            "int": 63
+          }
+        },
+        "NPG Yorkshire Wind": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 240
+          },
+          "examples": [
+            "0.038416432",
+            "0.063484129",
+            "0.111994108"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 240
+          }
+        },
+        "SP Manweb Other": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1"
+          ],
+          "max_len": 1,
+          "null_count": 0,
+          "shapes": {
+            "int": 240
+          }
+        },
+        "SP Manweb Solar": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 169
+          },
+          "examples": [
+            "0",
+            "0.004914286",
+            "0.0172"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 169,
+            "int": 71
+          }
+        },
+        "SP Manweb Wind": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 240
+          },
+          "examples": [
+            "0.039377759",
+            "0.038831614",
+            "0.048499916"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 240
+          }
+        },
+        "SSE South Other": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1"
+          ],
+          "max_len": 1,
+          "null_count": 0,
+          "shapes": {
+            "int": 240
+          }
+        },
+        "SSE South Solar": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 163
+          },
+          "examples": [
+            "0",
+            "0.005897143",
+            "0.022114286"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 163,
+            "int": 77
+          }
+        },
+        "SSE South Wind": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 240
+          },
+          "examples": [
+            "0.024148444",
+            "0.019299391",
+            "0.020066873"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 240
+          }
+        },
+        "Scottish Hydro Other": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1"
+          ],
+          "max_len": 1,
+          "null_count": 0,
+          "shapes": {
+            "int": 240
+          }
+        },
+        "Scottish Hydro Solar": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 181
+          },
+          "examples": [
+            "0",
+            "0.000982857",
+            "0.015357143"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 181,
+            "int": 59
+          }
+        },
+        "Scottish Hydro Wind": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 240
+          },
+          "examples": [
+            "0.764417303",
+            "0.789866331",
+            "0.777985778"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 240
+          }
+        },
+        "Scottish Power Other": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1"
+          ],
+          "max_len": 1,
+          "null_count": 0,
+          "shapes": {
+            "int": 240
+          }
+        },
+        "Scottish Power Solar": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 178
+          },
+          "examples": [
+            "0",
+            "0.000737143",
+            "0.006757143"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 178,
+            "int": 62
+          }
+        },
+        "Scottish Power Wind": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 240
+          },
+          "examples": [
+            "0.41385107",
+            "0.443168628",
+            "0.481651741"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 240
+          }
+        },
+        "UKPN East Anglia Other": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1"
+          ],
+          "max_len": 1,
+          "null_count": 0,
+          "shapes": {
+            "int": 240
+          }
+        },
+        "UKPN East Anglia Solar": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 167
+          },
+          "examples": [
+            "0",
+            "0.011302857",
+            "0.035628571"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 167,
+            "int": 73
+          }
+        },
+        "UKPN East Anglia Wind": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 240
+          },
+          "examples": [
+            "0.038706611",
+            "0.033992225",
+            "0.031941861"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 240
+          }
+        },
+        "UKPN London Other": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1"
+          ],
+          "max_len": 1,
+          "null_count": 0,
+          "shapes": {
+            "int": 240
+          }
+        },
+        "UKPN London Solar": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 161
+          },
+          "examples": [
+            "0",
+            "0.006634286",
+            "0.02408"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 161,
+            "int": 79
+          }
+        },
+        "UKPN London Wind": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 240
+          },
+          "examples": [
+            "0.024122065",
+            "0.019663268",
+            "0.016671275"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 240
+          }
+        },
+        "UKPN South East Other": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1"
+          ],
+          "max_len": 1,
+          "null_count": 0,
+          "shapes": {
+            "int": 240
+          }
+        },
+        "UKPN South East Solar": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 164
+          },
+          "examples": [
+            "0",
+            "0.007985714",
+            "0.027765714"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 164,
+            "int": 76
+          }
+        },
+        "UKPN South East Wind": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 240
+          },
+          "examples": [
+            "0.031855471",
+            "0.028687792",
+            "0.02293848"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 240
+          }
+        },
+        "WPD East Midlands Other": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1"
+          ],
+          "max_len": 1,
+          "null_count": 0,
+          "shapes": {
+            "int": 240
+          }
+        },
+        "WPD East Midlands Solar": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 173
+          },
+          "examples": [
+            "0",
+            "0.007248571",
+            "0.028011429"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 173,
+            "int": 67
+          }
+        },
+        "WPD East Midlands Wind": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 240
+          },
+          "examples": [
+            "0.030174236",
+            "0.027555864",
+            "0.027857454"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 240
+          }
+        },
+        "WPD South Wales Other": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1"
+          ],
+          "max_len": 1,
+          "null_count": 0,
+          "shapes": {
+            "int": 240
+          }
+        },
+        "WPD South Wales Solar": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 166
+          },
+          "examples": [
+            "0",
+            "0.001105714",
+            "0.011917143"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 166,
+            "int": 74
+          }
+        },
+        "WPD South Wales Wind": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 240
+          },
+          "examples": [
+            "0.02882849",
+            "0.030536599",
+            "0.025448145"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 240
+          }
+        },
+        "WPD South West Other": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1"
+          ],
+          "max_len": 1,
+          "null_count": 0,
+          "shapes": {
+            "int": 240
+          }
+        },
+        "WPD South West Solar": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 170
+          },
+          "examples": [
+            "0",
+            "0.000122857",
+            "0.002825714"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 170,
+            "int": 70
+          }
+        },
+        "WPD South West Wind": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 240
+          },
+          "examples": [
+            "0.042424003",
+            "0.0443485",
+            "0.051906189"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 240
+          }
+        },
+        "WPD West Midlands Other": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1"
+          ],
+          "max_len": 1,
+          "null_count": 0,
+          "shapes": {
+            "int": 240
+          }
+        },
+        "WPD West Midlands Solar": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 167
+          },
+          "examples": [
+            "0",
+            "0.004422857",
+            "0.019411429"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 167,
+            "int": 73
+          }
+        },
+        "WPD West Midlands Wind": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 240
+          },
+          "examples": [
+            "0.045208724",
+            "0.045474708",
+            "0.042107313"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 240
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "Datetime": {
+            "description": "The load factor forecast for each DNO region.",
+            "title": "Datetime",
+            "type": "timestamp",
+            "unit": null
+          },
+          "Electricity North West Other": {
+            "description": "The load factor forecast for each DNO region excluding Wind and Solar.",
+            "title": "Electricity North West Other",
+            "type": "numeric",
+            "unit": null
+          },
+          "Electricity North West Solar": {
+            "description": "The load factor forecast for each DNO region.",
+            "title": "Electricity North West Solar",
+            "type": "numeric",
+            "unit": null
+          },
+          "Electricity North West Wind": {
+            "description": "The load factor forecast for each DNO region.",
+            "title": "Electricity North West Wind",
+            "type": "numeric",
+            "unit": null
+          },
+          "NPG North East Other": {
+            "description": "The load factor forecast for each DNO region excluding Wind and Solar.",
+            "title": "NPG North East Other",
+            "type": "numeric",
+            "unit": null
+          },
+          "NPG North East Solar": {
+            "description": "The load factor forecast for each DNO region.",
+            "title": "NPG North East Solar",
+            "type": "numeric",
+            "unit": null
+          },
+          "NPG North East Wind": {
+            "description": "The load factor forecast for each DNO region.",
+            "title": "NPG North East Wind",
+            "type": "numeric",
+            "unit": null
+          },
+          "NPG Yorkshire Other": {
+            "description": "The load factor forecast for each DNO region excluding Wind and Solar.",
+            "title": "NPG Yorkshire Other",
+            "type": "numeric",
+            "unit": null
+          },
+          "NPG Yorkshire Solar": {
+            "description": "The load factor forecast for each DNO region.",
+            "title": "NPG Yorkshire Solar",
+            "type": "numeric",
+            "unit": null
+          },
+          "NPG Yorkshire Wind": {
+            "description": "The load factor forecast for each DNO region.",
+            "title": "NPG Yorkshire Wind",
+            "type": "numeric",
+            "unit": null
+          },
+          "SP Manweb Other": {
+            "description": "The load factor forecast for each DNO region excluding Wind and Solar.",
+            "title": "SP Manweb Other",
+            "type": "numeric",
+            "unit": null
+          },
+          "SP Manweb Solar": {
+            "description": "The load factor forecast for each DNO region.",
+            "title": "SP Manweb Solar",
+            "type": "numeric",
+            "unit": null
+          },
+          "SP Manweb Wind": {
+            "description": "The load factor forecast for each DNO region.",
+            "title": "SP Manweb Wind",
+            "type": "numeric",
+            "unit": null
+          },
+          "SSE South Other": {
+            "description": "The load factor forecast for each DNO region excluding Wind and Solar.",
+            "title": "SSE South Other",
+            "type": "numeric",
+            "unit": null
+          },
+          "SSE South Solar": {
+            "description": "The load factor forecast for each DNO region.",
+            "title": "SSE South Solar",
+            "type": "numeric",
+            "unit": null
+          },
+          "SSE South Wind": {
+            "description": "The load factor forecast for each DNO region.",
+            "title": "SSE South Wind",
+            "type": "numeric",
+            "unit": null
+          },
+          "Scottish Hydro Other": {
+            "description": "The load factor forecast for each DNO region excluding Wind and Solar.",
+            "title": "Scottish Hydro Other",
+            "type": "numeric",
+            "unit": null
+          },
+          "Scottish Hydro Solar": {
+            "description": "The load factor forecast for each DNO region.",
+            "title": "Scottish Hydro Solar",
+            "type": "numeric",
+            "unit": null
+          },
+          "Scottish Hydro Wind": {
+            "description": "The load factor forecast for each DNO region.",
+            "title": "Scottish Hydro Wind",
+            "type": "numeric",
+            "unit": null
+          },
+          "Scottish Power Other": {
+            "description": "The load factor forecast for each DNO region excluding Wind and Solar.",
+            "title": "Scottish Power Other",
+            "type": "numeric",
+            "unit": null
+          },
+          "Scottish Power Solar": {
+            "description": "The load factor forecast for each DNO region.",
+            "title": "Scottish Power Solar",
+            "type": "numeric",
+            "unit": null
+          },
+          "Scottish Power Wind": {
+            "description": "The load factor forecast for each DNO region.",
+            "title": "Scottish Power Wind",
+            "type": "numeric",
+            "unit": null
+          },
+          "UKPN East Anglia Other": {
+            "description": "The load factor forecast for each DNO region excluding Wind and Solar.",
+            "title": "UKPN East Anglia Other",
+            "type": "numeric",
+            "unit": null
+          },
+          "UKPN East Anglia Solar": {
+            "description": "The load factor forecast for each DNO region.",
+            "title": "UKPN East Anglia Solar",
+            "type": "numeric",
+            "unit": null
+          },
+          "UKPN East Anglia Wind": {
+            "description": "The load factor forecast for each DNO region.",
+            "title": "UKPN East Anglia Wind",
+            "type": "numeric",
+            "unit": null
+          },
+          "UKPN London Other": {
+            "description": "The load factor forecast for each DNO region excluding Wind and Solar.",
+            "title": "UKPN London Other",
+            "type": "numeric",
+            "unit": null
+          },
+          "UKPN London Solar": {
+            "description": "The load factor forecast for each DNO region.",
+            "title": "UKPN London Solar",
+            "type": "numeric",
+            "unit": null
+          },
+          "UKPN London Wind": {
+            "description": "The load factor forecast for each DNO region.",
+            "title": "UKPN London Wind",
+            "type": "numeric",
+            "unit": null
+          },
+          "UKPN South East Other": {
+            "description": null,
+            "title": "UKPN South East Other",
+            "type": "numeric",
+            "unit": null
+          },
+          "UKPN South East Solar": {
+            "description": "The load factor forecast for each DNO region excluding Wind and Solar.",
+            "title": "UKPN South East Solar",
+            "type": "numeric",
+            "unit": null
+          },
+          "UKPN South East Wind": {
+            "description": "The load factor forecast for each DNO region.",
+            "title": "UKPN South East Wind",
+            "type": "numeric",
+            "unit": null
+          },
+          "WPD East Midlands Other": {
+            "description": "The load factor forecast for each DNO region excluding Wind and Solar.",
+            "title": "WPD East Midlands Other",
+            "type": "numeric",
+            "unit": null
+          },
+          "WPD East Midlands Solar": {
+            "description": "The load factor forecast for each DNO region.",
+            "title": "WPD East Midlands Solar",
+            "type": "numeric",
+            "unit": null
+          },
+          "WPD East Midlands Wind": {
+            "description": "The load factor forecast for each DNO region.",
+            "title": "WPD East Midlands Wind",
+            "type": "numeric",
+            "unit": null
+          },
+          "WPD South Wales Other": {
+            "description": "The load factor forecast for each DNO region excluding Wind and Solar.",
+            "title": "WPD South Wales Other",
+            "type": "numeric",
+            "unit": null
+          },
+          "WPD South Wales Solar": {
+            "description": "The load factor forecast for each DNO region.",
+            "title": "WPD South Wales Solar",
+            "type": "numeric",
+            "unit": null
+          },
+          "WPD South Wales Wind": {
+            "description": "The load factor forecast for each DNO region.",
+            "title": "WPD South Wales Wind",
+            "type": "numeric",
+            "unit": null
+          },
+          "WPD South West Other": {
+            "description": "The load factor forecast for each DNO region excluding Wind and Solar.",
+            "title": "WPD South West Other",
+            "type": "numeric",
+            "unit": null
+          },
+          "WPD South West Solar": {
+            "description": "The load factor forecast for each DNO region.",
+            "title": "WPD South West Solar",
+            "type": "numeric",
+            "unit": null
+          },
+          "WPD South West Wind": {
+            "description": "The load factor forecast for each DNO region.",
+            "title": "WPD South West Wind",
+            "type": "numeric",
+            "unit": null
+          },
+          "WPD West Midlands Other": {
+            "description": "The load factor forecast for each DNO region excluding Wind and Solar.",
+            "title": "WPD West Midlands Other",
+            "type": "numeric",
+            "unit": null
+          },
+          "WPD West Midlands Solar": {
+            "description": "The load factor forecast for each DNO region.",
+            "title": "WPD West Midlands Solar",
+            "type": "numeric",
+            "unit": null
+          },
+          "WPD West Midlands Wind": {
+            "description": "The load factor forecast for each DNO region.",
+            "title": "WPD West Midlands Wind",
+            "type": "numeric",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T11:15:36.175565+00:00",
+      "header": [
+        "Datetime",
+        "Scottish Hydro Wind",
+        "Scottish Power Wind",
+        "Electricity North West Wind",
+        "NPG North East Wind",
+        "NPG Yorkshire Wind",
+        "SP Manweb Wind",
+        "WPD West Midlands Wind",
+        "WPD East Midlands Wind",
+        "UKPN East Anglia Wind",
+        "UKPN London Wind",
+        "WPD South Wales Wind",
+        "WPD South West Wind",
+        "SSE South Wind",
+        "UKPN South East Wind",
+        "Scottish Hydro Solar",
+        "Scottish Power Solar",
+        "Electricity North West Solar",
+        "NPG North East Solar",
+        "NPG Yorkshire Solar",
+        "SP Manweb Solar",
+        "WPD West Midlands Solar",
+        "WPD East Midlands Solar",
+        "UKPN East Anglia Solar",
+        "UKPN London Solar",
+        "WPD South Wales Solar",
+        "WPD South West Solar",
+        "SSE South Solar",
+        "UKPN South East Solar",
+        "Scottish Hydro Other",
+        "Scottish Power Other",
+        "Electricity North West Other",
+        "NPG North East Other",
+        "NPG Yorkshire Other",
+        "SP Manweb Other",
+        "WPD West Midlands Other",
+        "WPD East Midlands Other",
+        "UKPN East Anglia Other",
+        "UKPN London Other",
+        "WPD South Wales Other",
+        "WPD South West Other",
+        "SSE South Other",
+        "UKPN South East Other"
+      ],
+      "last_written_at": "2026-10-08T11:15:36.175565+00:00",
+      "resource_ids": [
+        "e6146148-c862-49f6-9c7f-52dc2b3e7086"
+      ],
+      "rows": 240,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [],
+  "key": "odfm_market_information_load_factors",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Datetime"
+        ],
+        "max_duplicates": 0
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "optional-downward-flexibility-management-odfm-market-information",
+  "proposal": {
+    "flags": [],
+    "record_draft": {
+      "eligibility": {
+        "question": "Datetime: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced); Scottish Hydro Wind: a numeric column with no vendor unit; Scottish Power Wind: a numeric column with no vendor unit; Electricity North West Wind: a numeric column with no vendor unit; NPG North East Wind: a numeric column with no vendor unit; NPG Yorkshire Wind: a numeric column with no vendor unit; SP Manweb Wind: a numeric column with no vendor unit; WPD West Midlands Wind: a numeric column with no vendor unit; WPD East Midlands Wind: a numeric column with no vendor unit; UKPN East Anglia Wind: a numeric column with no vendor unit; UKPN London Wind: a numeric column with no vendor unit; WPD South Wales Wind: a numeric column with no vendor unit; WPD South West Wind: a numeric column with no vendor unit; SSE South Wind: a numeric column with no vendor unit; UKPN South East Wind: a numeric column with no vendor unit; Scottish Hydro Solar: a numeric column with no vendor unit; Scottish Power Solar: a numeric column with no vendor unit; Electricity North West Solar: a numeric column with no vendor unit; NPG North East Solar: a numeric column with no vendor unit; NPG Yorkshire Solar: a numeric column with no vendor unit; SP Manweb Solar: a numeric column with no vendor unit; WPD West Midlands Solar: a numeric column with no vendor unit; WPD East Midlands Solar: a numeric column with no vendor unit; UKPN East Anglia Solar: a numeric column with no vendor unit; UKPN London Solar: a numeric column with no vendor unit; WPD South Wales Solar: a numeric column with no vendor unit; WPD South West Solar: a numeric column with no vendor unit; SSE South Solar: a numeric column with no vendor unit; UKPN South East Solar: a numeric column with no vendor unit; Scottish Hydro Other: a numeric column with no vendor unit; Scottish Power Other: a numeric column with no vendor unit; Electricity North West Other: a numeric column with no vendor unit; NPG North East Other: a numeric column with no vendor unit; NPG Yorkshire Other: a numeric column with no vendor unit; SP Manweb Other: a numeric column with no vendor unit; WPD West Midlands Other: a numeric column with no vendor unit; WPD East Midlands Other: a numeric column with no vendor unit; UKPN East Anglia Other: a numeric column with no vendor unit; UKPN London Other: a numeric column with no vendor unit; WPD South Wales Other: a numeric column with no vendor unit; WPD South West Other: a numeric column with no vendor unit; SSE South Other: a numeric column with no vendor unit; UKPN South East Other: a numeric column with no vendor unit",
+        "status": "held",
+        "unit": "AS-5"
+      },
+      "encoding": "utf-8",
+      "entity_key": [
+        "datetime"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "datetime",
+              "nullable": true,
+              "source": "Datetime"
+            },
+            {
+              "dtype": "float64",
+              "name": "scottish_hydro_wind",
+              "nullable": true,
+              "source": "Scottish Hydro Wind"
+            },
+            {
+              "dtype": "float64",
+              "name": "scottish_power_wind",
+              "nullable": true,
+              "source": "Scottish Power Wind"
+            },
+            {
+              "dtype": "float64",
+              "name": "electricity_north_west_wind",
+              "nullable": true,
+              "source": "Electricity North West Wind"
+            },
+            {
+              "dtype": "float64",
+              "name": "npg_north_east_wind",
+              "nullable": true,
+              "source": "NPG North East Wind"
+            },
+            {
+              "dtype": "float64",
+              "name": "npg_yorkshire_wind",
+              "nullable": true,
+              "source": "NPG Yorkshire Wind"
+            },
+            {
+              "dtype": "float64",
+              "name": "sp_manweb_wind",
+              "nullable": true,
+              "source": "SP Manweb Wind"
+            },
+            {
+              "dtype": "float64",
+              "name": "wpd_west_midlands_wind",
+              "nullable": true,
+              "source": "WPD West Midlands Wind"
+            },
+            {
+              "dtype": "float64",
+              "name": "wpd_east_midlands_wind",
+              "nullable": true,
+              "source": "WPD East Midlands Wind"
+            },
+            {
+              "dtype": "float64",
+              "name": "ukpn_east_anglia_wind",
+              "nullable": true,
+              "source": "UKPN East Anglia Wind"
+            },
+            {
+              "dtype": "float64",
+              "name": "ukpn_london_wind",
+              "nullable": true,
+              "source": "UKPN London Wind"
+            },
+            {
+              "dtype": "float64",
+              "name": "wpd_south_wales_wind",
+              "nullable": true,
+              "source": "WPD South Wales Wind"
+            },
+            {
+              "dtype": "float64",
+              "name": "wpd_south_west_wind",
+              "nullable": true,
+              "source": "WPD South West Wind"
+            },
+            {
+              "dtype": "float64",
+              "name": "sse_south_wind",
+              "nullable": true,
+              "source": "SSE South Wind"
+            },
+            {
+              "dtype": "float64",
+              "name": "ukpn_south_east_wind",
+              "nullable": true,
+              "source": "UKPN South East Wind"
+            },
+            {
+              "dtype": "float64",
+              "name": "scottish_hydro_solar",
+              "nullable": true,
+              "source": "Scottish Hydro Solar"
+            },
+            {
+              "dtype": "float64",
+              "name": "scottish_power_solar",
+              "nullable": true,
+              "source": "Scottish Power Solar"
+            },
+            {
+              "dtype": "float64",
+              "name": "electricity_north_west_solar",
+              "nullable": true,
+              "source": "Electricity North West Solar"
+            },
+            {
+              "dtype": "float64",
+              "name": "npg_north_east_solar",
+              "nullable": true,
+              "source": "NPG North East Solar"
+            },
+            {
+              "dtype": "float64",
+              "name": "npg_yorkshire_solar",
+              "nullable": true,
+              "source": "NPG Yorkshire Solar"
+            },
+            {
+              "dtype": "float64",
+              "name": "sp_manweb_solar",
+              "nullable": true,
+              "source": "SP Manweb Solar"
+            },
+            {
+              "dtype": "float64",
+              "name": "wpd_west_midlands_solar",
+              "nullable": true,
+              "source": "WPD West Midlands Solar"
+            },
+            {
+              "dtype": "float64",
+              "name": "wpd_east_midlands_solar",
+              "nullable": true,
+              "source": "WPD East Midlands Solar"
+            },
+            {
+              "dtype": "float64",
+              "name": "ukpn_east_anglia_solar",
+              "nullable": true,
+              "source": "UKPN East Anglia Solar"
+            },
+            {
+              "dtype": "float64",
+              "name": "ukpn_london_solar",
+              "nullable": true,
+              "source": "UKPN London Solar"
+            },
+            {
+              "dtype": "float64",
+              "name": "wpd_south_wales_solar",
+              "nullable": true,
+              "source": "WPD South Wales Solar"
+            },
+            {
+              "dtype": "float64",
+              "name": "wpd_south_west_solar",
+              "nullable": true,
+              "source": "WPD South West Solar"
+            },
+            {
+              "dtype": "float64",
+              "name": "sse_south_solar",
+              "nullable": true,
+              "source": "SSE South Solar"
+            },
+            {
+              "dtype": "float64",
+              "name": "ukpn_south_east_solar",
+              "nullable": true,
+              "source": "UKPN South East Solar"
+            },
+            {
+              "dtype": "float64",
+              "name": "scottish_hydro_other",
+              "nullable": true,
+              "source": "Scottish Hydro Other"
+            },
+            {
+              "dtype": "float64",
+              "name": "scottish_power_other",
+              "nullable": true,
+              "source": "Scottish Power Other"
+            },
+            {
+              "dtype": "float64",
+              "name": "electricity_north_west_other",
+              "nullable": true,
+              "source": "Electricity North West Other"
+            },
+            {
+              "dtype": "float64",
+              "name": "npg_north_east_other",
+              "nullable": true,
+              "source": "NPG North East Other"
+            },
+            {
+              "dtype": "float64",
+              "name": "npg_yorkshire_other",
+              "nullable": true,
+              "source": "NPG Yorkshire Other"
+            },
+            {
+              "dtype": "float64",
+              "name": "sp_manweb_other",
+              "nullable": true,
+              "source": "SP Manweb Other"
+            },
+            {
+              "dtype": "float64",
+              "name": "wpd_west_midlands_other",
+              "nullable": true,
+              "source": "WPD West Midlands Other"
+            },
+            {
+              "dtype": "float64",
+              "name": "wpd_east_midlands_other",
+              "nullable": true,
+              "source": "WPD East Midlands Other"
+            },
+            {
+              "dtype": "float64",
+              "name": "ukpn_east_anglia_other",
+              "nullable": true,
+              "source": "UKPN East Anglia Other"
+            },
+            {
+              "dtype": "float64",
+              "name": "ukpn_london_other",
+              "nullable": true,
+              "source": "UKPN London Other"
+            },
+            {
+              "dtype": "float64",
+              "name": "wpd_south_wales_other",
+              "nullable": true,
+              "source": "WPD South Wales Other"
+            },
+            {
+              "dtype": "float64",
+              "name": "wpd_south_west_other",
+              "nullable": true,
+              "source": "WPD South West Other"
+            },
+            {
+              "dtype": "float64",
+              "name": "sse_south_other",
+              "nullable": true,
+              "source": "SSE South Other"
+            },
+            {
+              "dtype": "float64",
+              "name": "ukpn_south_east_other",
+              "nullable": true,
+              "source": "UKPN South East Other"
+            }
+          ],
+          "header": [
+            "Datetime",
+            "Scottish Hydro Wind",
+            "Scottish Power Wind",
+            "Electricity North West Wind",
+            "NPG North East Wind",
+            "NPG Yorkshire Wind",
+            "SP Manweb Wind",
+            "WPD West Midlands Wind",
+            "WPD East Midlands Wind",
+            "UKPN East Anglia Wind",
+            "UKPN London Wind",
+            "WPD South Wales Wind",
+            "WPD South West Wind",
+            "SSE South Wind",
+            "UKPN South East Wind",
+            "Scottish Hydro Solar",
+            "Scottish Power Solar",
+            "Electricity North West Solar",
+            "NPG North East Solar",
+            "NPG Yorkshire Solar",
+            "SP Manweb Solar",
+            "WPD West Midlands Solar",
+            "WPD East Midlands Solar",
+            "UKPN East Anglia Solar",
+            "UKPN London Solar",
+            "WPD South Wales Solar",
+            "WPD South West Solar",
+            "SSE South Solar",
+            "UKPN South East Solar",
+            "Scottish Hydro Other",
+            "Scottish Power Other",
+            "Electricity North West Other",
+            "NPG North East Other",
+            "NPG Yorkshire Other",
+            "SP Manweb Other",
+            "WPD West Midlands Other",
+            "WPD East Midlands Other",
+            "UKPN East Anglia Other",
+            "UKPN London Other",
+            "WPD South Wales Other",
+            "WPD South West Other",
+            "SSE South Other",
+            "UKPN South East Other"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T44",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "held",
+        "field": "column 'Datetime'",
+        "id": "T01",
+        "kind": "time_semantics",
+        "question": "Datetime: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Scottish Hydro Wind'.unit",
+        "id": "T02",
+        "kind": "unit",
+        "question": "Scottish Hydro Wind: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Scottish Power Wind'.unit",
+        "id": "T03",
+        "kind": "unit",
+        "question": "Scottish Power Wind: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Electricity North West Wind'.unit",
+        "id": "T04",
+        "kind": "unit",
+        "question": "Electricity North West Wind: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'NPG North East Wind'.unit",
+        "id": "T05",
+        "kind": "unit",
+        "question": "NPG North East Wind: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'NPG Yorkshire Wind'.unit",
+        "id": "T06",
+        "kind": "unit",
+        "question": "NPG Yorkshire Wind: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'SP Manweb Wind'.unit",
+        "id": "T07",
+        "kind": "unit",
+        "question": "SP Manweb Wind: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'WPD West Midlands Wind'.unit",
+        "id": "T08",
+        "kind": "unit",
+        "question": "WPD West Midlands Wind: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'WPD East Midlands Wind'.unit",
+        "id": "T09",
+        "kind": "unit",
+        "question": "WPD East Midlands Wind: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'UKPN East Anglia Wind'.unit",
+        "id": "T10",
+        "kind": "unit",
+        "question": "UKPN East Anglia Wind: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'UKPN London Wind'.unit",
+        "id": "T11",
+        "kind": "unit",
+        "question": "UKPN London Wind: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'WPD South Wales Wind'.unit",
+        "id": "T12",
+        "kind": "unit",
+        "question": "WPD South Wales Wind: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'WPD South West Wind'.unit",
+        "id": "T13",
+        "kind": "unit",
+        "question": "WPD South West Wind: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'SSE South Wind'.unit",
+        "id": "T14",
+        "kind": "unit",
+        "question": "SSE South Wind: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'UKPN South East Wind'.unit",
+        "id": "T15",
+        "kind": "unit",
+        "question": "UKPN South East Wind: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Scottish Hydro Solar'.unit",
+        "id": "T16",
+        "kind": "unit",
+        "question": "Scottish Hydro Solar: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Scottish Power Solar'.unit",
+        "id": "T17",
+        "kind": "unit",
+        "question": "Scottish Power Solar: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Electricity North West Solar'.unit",
+        "id": "T18",
+        "kind": "unit",
+        "question": "Electricity North West Solar: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'NPG North East Solar'.unit",
+        "id": "T19",
+        "kind": "unit",
+        "question": "NPG North East Solar: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'NPG Yorkshire Solar'.unit",
+        "id": "T20",
+        "kind": "unit",
+        "question": "NPG Yorkshire Solar: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'SP Manweb Solar'.unit",
+        "id": "T21",
+        "kind": "unit",
+        "question": "SP Manweb Solar: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'WPD West Midlands Solar'.unit",
+        "id": "T22",
+        "kind": "unit",
+        "question": "WPD West Midlands Solar: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'WPD East Midlands Solar'.unit",
+        "id": "T23",
+        "kind": "unit",
+        "question": "WPD East Midlands Solar: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'UKPN East Anglia Solar'.unit",
+        "id": "T24",
+        "kind": "unit",
+        "question": "UKPN East Anglia Solar: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'UKPN London Solar'.unit",
+        "id": "T25",
+        "kind": "unit",
+        "question": "UKPN London Solar: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'WPD South Wales Solar'.unit",
+        "id": "T26",
+        "kind": "unit",
+        "question": "WPD South Wales Solar: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'WPD South West Solar'.unit",
+        "id": "T27",
+        "kind": "unit",
+        "question": "WPD South West Solar: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'SSE South Solar'.unit",
+        "id": "T28",
+        "kind": "unit",
+        "question": "SSE South Solar: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'UKPN South East Solar'.unit",
+        "id": "T29",
+        "kind": "unit",
+        "question": "UKPN South East Solar: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Scottish Hydro Other'.unit",
+        "id": "T30",
+        "kind": "unit",
+        "question": "Scottish Hydro Other: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Scottish Power Other'.unit",
+        "id": "T31",
+        "kind": "unit",
+        "question": "Scottish Power Other: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Electricity North West Other'.unit",
+        "id": "T32",
+        "kind": "unit",
+        "question": "Electricity North West Other: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'NPG North East Other'.unit",
+        "id": "T33",
+        "kind": "unit",
+        "question": "NPG North East Other: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'NPG Yorkshire Other'.unit",
+        "id": "T34",
+        "kind": "unit",
+        "question": "NPG Yorkshire Other: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'SP Manweb Other'.unit",
+        "id": "T35",
+        "kind": "unit",
+        "question": "SP Manweb Other: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'WPD West Midlands Other'.unit",
+        "id": "T36",
+        "kind": "unit",
+        "question": "WPD West Midlands Other: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'WPD East Midlands Other'.unit",
+        "id": "T37",
+        "kind": "unit",
+        "question": "WPD East Midlands Other: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'UKPN East Anglia Other'.unit",
+        "id": "T38",
+        "kind": "unit",
+        "question": "UKPN East Anglia Other: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'UKPN London Other'.unit",
+        "id": "T39",
+        "kind": "unit",
+        "question": "UKPN London Other: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'WPD South Wales Other'.unit",
+        "id": "T40",
+        "kind": "unit",
+        "question": "WPD South Wales Other: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'WPD South West Other'.unit",
+        "id": "T41",
+        "kind": "unit",
+        "question": "WPD South West Other: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'SSE South Other'.unit",
+        "id": "T42",
+        "kind": "unit",
+        "question": "SSE South Other: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'UKPN South East Other'.unit",
+        "id": "T43",
+        "kind": "unit",
+        "question": "UKPN South East Other: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T44",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: Datetime"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T45",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['datetime'] (measured unique in 1 capture(s)); without one, latest stays whole_capture"
+      }
+    ]
+  },
+  "refresh": "frozen",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Status",
+        "value": "Not Active"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Ancillary services",
+    "title": "Optional Downward Flexibility Management (ODFM) Market Information"
+  }
+}

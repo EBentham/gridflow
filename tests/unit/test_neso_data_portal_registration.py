@@ -144,9 +144,12 @@ for dataset in {_D02_DATASETS!r}:
     assert transformer.dataset == dataset, transformer.dataset
     assert transformer.source == 'neso_data_portal', transformer.source
 
+from gridflow.connectors.neso_data_portal.registry import load_registry
+
+recorded = {{k for k, (_p, f) in load_registry().families.items() if f.record is not None}}
+expected = sorted(('neso_data_portal', d) for d in set({_D02_DATASETS!r}) | recorded)
 registered = sorted(list_transformers('neso_data_portal'))
-assert len(registered) == 3, registered
-assert registered == sorted(('neso_data_portal', d) for d in {_D02_DATASETS!r}), registered
+assert registered == expected, registered
 print('RESOLVED_ALL_THREE')
 """
 

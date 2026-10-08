@@ -1,0 +1,424 @@
+{
+  "archetype": "SCN",
+  "batch": "SCN-1",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/fes_regional_demand_active_power/2026/10/08/raw_20261008T105639Z_3360c832-acc3-4656-8a38-f0bdf57bde88_e8fb5c3b.csv",
+      "ckan_last_modified": "2021-07-06T11:06:43.990644",
+      "cr": 0,
+      "crlf": 352285,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "3360c832-acc3-4656-8a38-f0bdf57bde88",
+      "rows": 352284,
+      "sampled": true,
+      "size": 10986770,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:56:39.787331+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/fes_regional_demand_active_power/2026/10/08/raw_20261008T105642Z_6a1d99c2-a3c5-4ae0-b66a-21e4c15a9ae6_20b4a989.csv",
+      "ckan_last_modified": "2022-07-15T13:37:46.607400",
+      "cr": 0,
+      "crlf": 340921,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "6a1d99c2-a3c5-4ae0-b66a-21e4c15a9ae6",
+      "rows": 340920,
+      "sampled": true,
+      "size": 10661855,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:56:42.741607+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/fes_regional_demand_active_power/2026/10/08/raw_20261008T105645Z_66d309b9-0202-48ad-a7dc-eeafd9f53a65_70a798fb.csv",
+      "ckan_last_modified": "2023-08-29T08:50:58.979654",
+      "cr": 0,
+      "crlf": 329557,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "66d309b9-0202-48ad-a7dc-eeafd9f53a65",
+      "rows": 329556,
+      "sampled": true,
+      "size": 10330209,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:56:45.344928+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/fes_regional_demand_active_power/2026/10/08/raw_20261008T105648Z_7bd643c0-6aad-41ac-aa59-92b68992d9a4_bb6d9dba.csv",
+      "ckan_last_modified": "2024-07-15T06:43:07.255666",
+      "cr": 0,
+      "crlf": 257965,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "7bd643c0-6aad-41ac-aa59-92b68992d9a4",
+      "rows": 257964,
+      "sampled": true,
+      "size": 8153655,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:56:48.413285+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 4,
+      "columns": {
+        "DemandAM": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 818356
+          },
+          "examples": [
+            "33.379",
+            "33.974",
+            "34.378"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 116559,
+            "int": 83441
+          }
+        },
+        "DemandPM": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 845324
+          },
+          "examples": [
+            "47.38",
+            "48.206",
+            "48.751"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 120805,
+            "int": 79195
+          }
+        },
+        "DemandPk": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 957753
+          },
+          "examples": [
+            "79.89",
+            "81.231",
+            "82.074"
+          ],
+          "max_len": 11,
+          "null_count": 41040,
+          "shapes": {
+            "decimal": 136980,
+            "int": 52760
+          }
+        },
+        "GSP": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 1280724,
+            "int64": 1280724
+          },
+          "examples": [
+            "ABHA1",
+            "ABNE_P",
+            "ABTH_1"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "text": 200000
+          }
+        },
+        "scenario": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 1280724,
+            "int64": 1280724
+          },
+          "examples": [
+            "SP",
+            "FS",
+            "HE"
+          ],
+          "max_len": 2,
+          "null_count": 0,
+          "shapes": {
+            "text": 200000
+          }
+        },
+        "type": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 1280724,
+            "int64": 1280724
+          },
+          "examples": [
+            "C",
+            "D",
+            "E"
+          ],
+          "max_len": 1,
+          "null_count": 0,
+          "shapes": {
+            "text": 200000
+          }
+        },
+        "year": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "20",
+            "21",
+            "22"
+          ],
+          "max_len": 2,
+          "null_count": 0,
+          "shapes": {
+            "int": 200000
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "DemandAM": {
+            "description": "Expected demand at the specified location at the time of the lowest total demand for the nation",
+            "title": "Minimum Demand (Summer Morning)",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "DemandPM": {
+            "description": "Expected demand at the specified location at the lowest summer afternoon national demand.",
+            "title": "Minimum Demand (Summer Afternoon)",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "DemandPk": {
+            "description": "Expected demand at the specified location at the time of the highest total demand for the nation.",
+            "title": "Peak Demand",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "GSP": {
+            "description": "Mix of grid supply points as registered with Elexon and direct connect sites.",
+            "title": "Location",
+            "type": "text",
+            "unit": null
+          },
+          "scenario": {
+            "description": "The scenario to which this data corresponds.",
+            "title": "FES Scenario",
+            "type": "text",
+            "unit": null
+          },
+          "type": {
+            "description": "Type of active power demand, indicated by a single character code",
+            "title": "Type",
+            "type": "text",
+            "unit": null
+          },
+          "year": {
+            "description": "Two character value indicating the fiscal year that this data relates to i.e. \"25\" = 2025/26, \"50\" = 2050/51.",
+            "title": "Year",
+            "type": "int4",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T10:56:39.787331+00:00",
+      "header": [
+        "scenario",
+        "GSP",
+        "DemandPk",
+        "DemandAM",
+        "DemandPM",
+        "type",
+        "year"
+      ],
+      "last_written_at": "2026-10-08T10:56:48.413285+00:00",
+      "resource_ids": [
+        "3360c832-acc3-4656-8a38-f0bdf57bde88",
+        "66d309b9-0202-48ad-a7dc-eeafd9f53a65",
+        "6a1d99c2-a3c5-4ae0-b66a-21e4c15a9ae6",
+        "7bd643c0-6aad-41ac-aa59-92b68992d9a4"
+      ],
+      "rows": 1280724,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [
+    "sampled"
+  ],
+  "key": "fes_regional_demand_active_power",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 4,
+        "columns": [
+          "GSP",
+          "type",
+          "year"
+        ],
+        "max_duplicates": 264213
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "regional-breakdown-of-fes-data-electricity",
+  "proposal": {
+    "flags": [
+      "sampled"
+    ],
+    "record_draft": {
+      "eligibility": {
+        "question": "year: a numeric column with no vendor unit",
+        "status": "held",
+        "unit": "SCN-1"
+      },
+      "encoding": "utf-8",
+      "entity_key": [
+        "scenario",
+        "gsp",
+        "demandpk",
+        "demandam",
+        "demandpm",
+        "type",
+        "year_vendor"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "scenario",
+              "nullable": true,
+              "source": "scenario"
+            },
+            {
+              "dtype": "string",
+              "name": "gsp",
+              "nullable": true,
+              "source": "GSP"
+            },
+            {
+              "dtype": "float64",
+              "name": "demandpk",
+              "nullable": true,
+              "source": "DemandPk"
+            },
+            {
+              "dtype": "float64",
+              "name": "demandam",
+              "nullable": true,
+              "source": "DemandAM"
+            },
+            {
+              "dtype": "float64",
+              "name": "demandpm",
+              "nullable": true,
+              "source": "DemandPM"
+            },
+            {
+              "dtype": "string",
+              "name": "type",
+              "nullable": true,
+              "source": "type"
+            },
+            {
+              "dtype": "int64",
+              "name": "year_vendor",
+              "nullable": true,
+              "source": "year"
+            }
+          ],
+          "header": [
+            "scenario",
+            "GSP",
+            "DemandPk",
+            "DemandAM",
+            "DemandPM",
+            "type",
+            "year"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T02",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "held",
+        "field": "column 'year'.unit",
+        "id": "T01",
+        "kind": "unit",
+        "question": "year: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T02",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: none"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T03",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['scenario', 'gsp', 'demandpk', 'demandam', 'demandpm', 'type', 'year_vendor'] (no candidate measured unique, so every column); without one, latest stays whole_capture"
+      }
+    ]
+  },
+  "refresh": "adhoc",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update frequency",
+        "value": "Ad hoc"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "FES: Pathways to Net Zero",
+    "title": "Regional breakdown of FES data (Electricity)"
+  }
+}

@@ -1,0 +1,219 @@
+{
+  "archetype": "FC",
+  "batch": "GEN-1",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/nrapm_forecast_scotland_daily_days/2026/10/08/raw_20261008T111428Z_c2861f81-b400-4456-870e-d51a4b530331_65a59a29.csv",
+      "ckan_last_modified": "2026-10-08T10:55:55.308683",
+      "cr": 0,
+      "crlf": 27,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "c2861f81-b400-4456-870e-d51a4b530331",
+      "rows": 26,
+      "sampled": false,
+      "size": 649,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:14:28.560567+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 1,
+      "columns": {
+        "CP": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 26,
+            "int64": 26
+          },
+          "examples": [
+            "1B",
+            "3B"
+          ],
+          "max_len": 2,
+          "null_count": 0,
+          "shapes": {
+            "text": 26
+          }
+        },
+        "Date": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%Y-%m-%d": 0,
+            "float64": 26,
+            "int64": 26
+          },
+          "examples": [
+            "2026-10-10",
+            "2026-10-11",
+            "2026-10-12"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "iso_date": 26
+          }
+        },
+        "MW away from risk of Scotland Level NRAPM_Forecast Conditions": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1065",
+            "2025",
+            "5654"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 26
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "CP": {
+            "description": "Electricity demand fluctuates during a day depending on how much energy people, businesses and industries are using at that moment in time. As this electricity demand goes up and down we get characteristic peaks and troughs, with some of these peaks and troughs appearing every single day at similar ",
+            "title": "Cardinal Point",
+            "type": "text",
+            "unit": null
+          },
+          "Date": {
+            "description": "Forecast Date",
+            "title": "Date",
+            "type": "date",
+            "unit": null
+          },
+          "MW away from risk of Scotland Level NRAPM_Forecast Conditions": {
+            "description": "Forecast MW away from risk of Scotland Level NRAPM (Forecast Conditions) for 2-14 days ahead for overnight daily minimum 1B and daily minimum 3B.",
+            "title": "MW away from risk of Scotland Level NRAPM (Forecast Conditions)",
+            "type": "numeric",
+            "unit": "MW"
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T11:14:28.560567+00:00",
+      "header": [
+        "Date",
+        "CP",
+        "MW away from risk of Scotland Level NRAPM_Forecast Conditions"
+      ],
+      "last_written_at": "2026-10-08T11:14:28.560567+00:00",
+      "resource_ids": [
+        "c2861f81-b400-4456-870e-d51a4b530331"
+      ],
+      "rows": 26,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [],
+  "key": "nrapm_forecast_scotland_daily_days",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 1,
+        "columns": [
+          "MW away from risk of Scotland Level NRAPM_Forecast Conditions"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Date",
+          "CP"
+        ],
+        "max_duplicates": 0
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "negative-reserve-active-power-margin-nrapm-forecast",
+  "proposal": {
+    "flags": [],
+    "record_draft": {
+      "encoding": "utf-8",
+      "entity_key": [
+        "mw_away_from_risk_of_scotland_level_nrapm_forecast_conditions"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "date",
+              "format": "%Y-%m-%d",
+              "name": "date",
+              "nullable": true,
+              "source": "Date"
+            },
+            {
+              "dtype": "string",
+              "name": "cp",
+              "nullable": true,
+              "source": "CP"
+            },
+            {
+              "dtype": "float64",
+              "name": "mw_away_from_risk_of_scotland_level_nrapm_forecast_conditions",
+              "nullable": true,
+              "source": "MW away from risk of Scotland Level NRAPM_Forecast Conditions"
+            }
+          ],
+          "header": [
+            "Date",
+            "CP",
+            "MW away from risk of Scotland Level NRAPM_Forecast Conditions"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T01",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T01",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: Date"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T02",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['mw_away_from_risk_of_scotland_level_nrapm_forecast_conditions'] (measured unique in 1 capture(s)); without one, latest stays whole_capture"
+      }
+    ]
+  },
+  "refresh": "daily",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update Frequency",
+        "value": "Daily"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Generation",
+    "title": "Daily & Weekly NRAPM (Negative Reserve Active Power Margin) Forecast"
+  }
+}

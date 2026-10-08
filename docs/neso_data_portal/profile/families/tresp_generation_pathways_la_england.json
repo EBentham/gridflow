@@ -1,0 +1,355 @@
+{
+  "archetype": "SCN",
+  "batch": "SCN-1",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/tresp_generation_pathways_la_england/2026/10/08/raw_20261008T114014Z_d20aec73-01df-486d-a1aa-390c9cab2976_56066453.csv",
+      "ckan_last_modified": "2026-01-30T08:31:42.342845",
+      "cr": 0,
+      "crlf": 394865,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "d20aec73-01df-486d-a1aa-390c9cab2976",
+      "rows": 394864,
+      "sampled": true,
+      "size": 23829011,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:40:14.933216+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 1,
+      "columns": {
+        "Building_block_id": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 394864,
+            "int64": 394864
+          },
+          "examples": [
+            "Gen_BB001",
+            "Gen_BB002",
+            "Gen_BB003"
+          ],
+          "max_len": 9,
+          "null_count": 0,
+          "shapes": {
+            "text": 50000
+          }
+        },
+        "LAD24CD": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 394864,
+            "int64": 394864
+          },
+          "examples": [
+            "E06000001",
+            "E06000002",
+            "E06000003"
+          ],
+          "max_len": 9,
+          "null_count": 0,
+          "shapes": {
+            "text": 50000
+          }
+        },
+        "LAD24NM": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 394864,
+            "int64": 394864
+          },
+          "examples": [
+            "Hartlepool",
+            "Middlesbrough",
+            "Redcar and Cleveland"
+          ],
+          "max_len": 35,
+          "null_count": 0,
+          "shapes": {
+            "text": 50000
+          }
+        },
+        "Pathway": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 394864,
+            "int64": 394864
+          },
+          "examples": [
+            "tRESP - EE",
+            "tRESP - HE",
+            "tRESP - HT"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "text": 50000
+          }
+        },
+        "Unit": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 394864,
+            "int64": 394864
+          },
+          "examples": [
+            "MW"
+          ],
+          "max_len": 2,
+          "null_count": 0,
+          "shapes": {
+            "text": 50000
+          }
+        },
+        "Value": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 394864
+          },
+          "examples": [
+            "15.812587",
+            "13.8995495",
+            "11.986195"
+          ],
+          "max_len": 14,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 50000
+          }
+        },
+        "Year": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "2035",
+            "2036",
+            "2037"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 50000
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "Building_block_id": {
+            "description": "Refers to tRESP building block IDs",
+            "title": "Building_block_id\t\t",
+            "type": "text",
+            "unit": null
+          },
+          "LAD24CD": {
+            "description": "This refers to the local authority code for local authority districts (LAD) and unitary authorities (UA) in the United Kingdom as published by Office for National Statistics (ONS) as at 31st December 2024.",
+            "title": "LAD24CD\t\t",
+            "type": "text",
+            "unit": null
+          },
+          "LAD24NM": {
+            "description": "This refers to the local authority name for local authority districts (LAD) and unitary authorities (UA) in the United Kingdom as published by Office for National Statistics (ONS) as at 31st December 2024.",
+            "title": "LAD24NM\t\t",
+            "type": "text",
+            "unit": null
+          },
+          "Pathway": {
+            "description": "Refers to the name of tRESP Pathways: Holistic Transition (HT), Electric Engagement (EE) and Hydrogen Evolution (HE). The single Short-Term Pathway covering the period 2025-2035 (tRESP - HT) branches into three Long-Term Pathways (tRESP - HT, tRESP - HE and tRESP - EE) to account for greater uncerta",
+            "title": "Pathway\t\t",
+            "type": "text",
+            "unit": null
+          },
+          "Unit": {
+            "description": "Capacity installed (MW)",
+            "title": "Unit\t\t",
+            "type": "text",
+            "unit": "Capacity installed (MW)"
+          },
+          "Value": {
+            "description": "Indicative tRESP Pathway value",
+            "title": "Value\t\t",
+            "type": "numeric",
+            "unit": null
+          },
+          "Year": {
+            "description": "Refers to the year against which the Pathway value has been provided for, with volume at 31 March.",
+            "title": "Year\t\t",
+            "type": "int4",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T11:40:14.933216+00:00",
+      "header": [
+        "Building_block_id",
+        "LAD24CD",
+        "LAD24NM",
+        "Pathway",
+        "Year",
+        "Unit",
+        "Value"
+      ],
+      "last_written_at": "2026-10-08T11:40:14.933216+00:00",
+      "resource_ids": [
+        "d20aec73-01df-486d-a1aa-390c9cab2976"
+      ],
+      "rows": 394864,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [
+    "sampled",
+    "sibling_candidate:tresp_generation_pathways_la_scotland,tresp_generation_pathways_la_wales"
+  ],
+  "key": "tresp_generation_pathways_la_england",
+  "keys": {
+    "candidates": [],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "tresp-generation-pathways",
+  "proposal": {
+    "flags": [
+      "sampled",
+      "sibling_candidate:tresp_generation_pathways_la_scotland,tresp_generation_pathways_la_wales"
+    ],
+    "record_draft": {
+      "eligibility": {
+        "question": "Year: a numeric column with no vendor unit; Value: a numeric column with no vendor unit",
+        "status": "held",
+        "unit": "SCN-1"
+      },
+      "encoding": "utf-8",
+      "entity_key": [
+        "building_block_id",
+        "lad24cd",
+        "lad24nm",
+        "pathway",
+        "year_vendor",
+        "unit",
+        "value"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "building_block_id",
+              "nullable": true,
+              "source": "Building_block_id"
+            },
+            {
+              "dtype": "string",
+              "name": "lad24cd",
+              "nullable": true,
+              "source": "LAD24CD"
+            },
+            {
+              "dtype": "string",
+              "name": "lad24nm",
+              "nullable": true,
+              "source": "LAD24NM"
+            },
+            {
+              "dtype": "string",
+              "name": "pathway",
+              "nullable": true,
+              "source": "Pathway"
+            },
+            {
+              "dtype": "int64",
+              "name": "year_vendor",
+              "nullable": true,
+              "source": "Year"
+            },
+            {
+              "dtype": "string",
+              "name": "unit",
+              "nullable": true,
+              "source": "Unit"
+            },
+            {
+              "dtype": "float64",
+              "name": "value",
+              "nullable": true,
+              "source": "Value"
+            }
+          ],
+          "header": [
+            "Building_block_id",
+            "LAD24CD",
+            "LAD24NM",
+            "Pathway",
+            "Year",
+            "Unit",
+            "Value"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T03",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "held",
+        "field": "column 'Year'.unit",
+        "id": "T01",
+        "kind": "unit",
+        "question": "Year: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Value'.unit",
+        "id": "T02",
+        "kind": "unit",
+        "question": "Value: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T03",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: none"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T04",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['building_block_id', 'lad24cd', 'lad24nm', 'pathway', 'year_vendor', 'unit', 'value'] (no candidate measured unique, so every column); without one, latest stays whole_capture"
+      }
+    ]
+  },
+  "refresh": "adhoc",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update frequency",
+        "value": "Ad-hoc"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Generation",
+    "title": "Transitional Regional Energy Strategic Plan (tRESP) - Generation Pathways"
+  }
+}

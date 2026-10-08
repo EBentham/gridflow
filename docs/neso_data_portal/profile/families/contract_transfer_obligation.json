@@ -1,0 +1,440 @@
+{
+  "archetype": "EVT",
+  "batch": "AS-2",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/contract_transfer_obligation/2026/10/08/raw_20261008T091555Z_dbd7f746-07c9-4804-8ab2-9bec2d7ef0ec_39631781.csv",
+      "ckan_last_modified": "2026-10-05T09:45:24.439961",
+      "cr": 0,
+      "crlf": 13,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "dbd7f746-07c9-4804-8ab2-9bec2d7ef0ec",
+      "rows": 12,
+      "sampled": false,
+      "size": 1289,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T09:15:55.090300+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 1,
+      "columns": {
+        "Transfer Status": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 12,
+            "int64": 12
+          },
+          "examples": [
+            "Complete"
+          ],
+          "max_len": 8,
+          "null_count": 0,
+          "shapes": {
+            "text": 12
+          }
+        },
+        "Transfer To Unit": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 12,
+            "int64": 12
+          },
+          "examples": [
+            "DIDC03G",
+            "AG-LSTK03",
+            "AG-DSTK04"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "text": 12
+          }
+        },
+        "auctionProduct": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 12,
+            "int64": 12
+          },
+          "examples": [
+            "BALANCING RESERVE"
+          ],
+          "max_len": 17,
+          "null_count": 0,
+          "shapes": {
+            "text": 12
+          }
+        },
+        "auctionUnit": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [],
+          "max_len": 0,
+          "null_count": 12,
+          "shapes": {}
+        },
+        "clearingPrice": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "25",
+            "12",
+            "14"
+          ],
+          "max_len": 2,
+          "null_count": 0,
+          "shapes": {
+            "int": 12
+          }
+        },
+        "deliveryEnd": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%d/%m/%Y": 0,
+            "float64": 12,
+            "int64": 12
+          },
+          "examples": [
+            "30/04/2026",
+            "02/04/2026",
+            "26/08/2026"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "slash_date": 12
+          },
+          "slash_first_gt_12": 11,
+          "slash_second_gt_12": 0
+        },
+        "deliveryStart": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%d/%m/%Y": 0,
+            "float64": 12,
+            "int64": 12
+          },
+          "examples": [
+            "29/04/2026",
+            "02/04/2026",
+            "26/08/2026"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "slash_date": 12
+          },
+          "slash_first_gt_12": 11,
+          "slash_second_gt_12": 0
+        },
+        "executedQuantity": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "47",
+            "37",
+            "15"
+          ],
+          "max_len": 2,
+          "null_count": 0,
+          "shapes": {
+            "int": 12
+          }
+        },
+        "registeredAuctionParticipant": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 12,
+            "int64": 12
+          },
+          "examples": [
+            "RWE GENERATION UK PLC",
+            "Statkraft Markets GmbH"
+          ],
+          "max_len": 22,
+          "null_count": 0,
+          "shapes": {
+            "text": 12
+          }
+        },
+        "serviceType": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 12,
+            "int64": 12
+          },
+          "examples": [
+            "PBR"
+          ],
+          "max_len": 3,
+          "null_count": 0,
+          "shapes": {
+            "text": 12
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "Transfer Status": {
+            "description": "Status of the transfer e.g. accepted, rejected, or cancelled",
+            "title": "Transfer Status",
+            "type": "text",
+            "unit": null
+          },
+          "Transfer To Unit": {
+            "description": "Name of the Unit who will receive the contract obligation",
+            "title": "Transfer To Unit",
+            "type": "text",
+            "unit": null
+          },
+          "auctionProduct": {
+            "description": "Service Type Identifier – [NBR, PBR]",
+            "title": "auctionProduct",
+            "type": "text",
+            "unit": null
+          },
+          "auctionUnit": {
+            "description": "Unit Identifier - a collection of one or more Eligible Assets registered at the relevant time as an Auction Unit in accordance with the Registration and Pre-Qualification Procedure",
+            "title": "auctionUnit",
+            "type": "text",
+            "unit": null
+          },
+          "clearingPrice": {
+            "description": "The cleared price per MW per hour (£/MW/h)",
+            "title": "clearingPrice",
+            "type": "numeric",
+            "unit": "£/MW/h"
+          },
+          "deliveryEnd": {
+            "description": "The time from which delivery of the Auction Product will end",
+            "title": "deliveryEnd",
+            "type": "timestamp",
+            "unit": "ISO 8601"
+          },
+          "deliveryStart": {
+            "description": "The time from which delivery of the Auction Product will commence",
+            "title": "deliveryStart",
+            "type": "timestamp",
+            "unit": "ISO8601"
+          },
+          "executedQuantity": {
+            "description": "The volume of response that was accepted as at the clearing price",
+            "title": "executedQuantity",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "registeredAuctionParticipant": {
+            "description": "Name of the Participant who submitted the bid",
+            "title": "registeredAuctionParticipant",
+            "type": "text",
+            "unit": null
+          },
+          "serviceType": {
+            "description": "Service Identifier - [Balancing Reserve]",
+            "title": "serviceType",
+            "type": "text",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T09:15:55.090300+00:00",
+      "header": [
+        "registeredAuctionParticipant",
+        "auctionUnit",
+        "serviceType",
+        "auctionProduct",
+        "executedQuantity",
+        "clearingPrice",
+        "deliveryStart",
+        "deliveryEnd",
+        "Transfer To Unit",
+        "Transfer Status"
+      ],
+      "last_written_at": "2026-10-08T09:15:55.090300+00:00",
+      "resource_ids": [
+        "dbd7f746-07c9-4804-8ab2-9bec2d7ef0ec"
+      ],
+      "rows": 12,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [],
+  "key": "contract_transfer_obligation",
+  "keys": {
+    "candidates": [],
+    "full_row_max_duplicates": 5
+  },
+  "other_captures": 0,
+  "package": "contract-transfer-of-obligation",
+  "proposal": {
+    "flags": [],
+    "record_draft": {
+      "eligibility": {
+        "question": "deliveryStart: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced); deliveryEnd: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)",
+        "status": "held",
+        "unit": "AS-2"
+      },
+      "encoding": "utf-8",
+      "entity_key": [
+        "registeredauctionparticipant",
+        "auctionunit",
+        "servicetype",
+        "auctionproduct",
+        "executedquantity",
+        "clearingprice",
+        "deliverystart",
+        "deliveryend",
+        "transfer_to_unit",
+        "transfer_status"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "registeredauctionparticipant",
+              "nullable": true,
+              "source": "registeredAuctionParticipant"
+            },
+            {
+              "dtype": "string",
+              "name": "auctionunit",
+              "nullable": true,
+              "source": "auctionUnit"
+            },
+            {
+              "dtype": "string",
+              "name": "servicetype",
+              "nullable": true,
+              "source": "serviceType"
+            },
+            {
+              "dtype": "string",
+              "name": "auctionproduct",
+              "nullable": true,
+              "source": "auctionProduct"
+            },
+            {
+              "dtype": "float64",
+              "name": "executedquantity",
+              "nullable": true,
+              "source": "executedQuantity"
+            },
+            {
+              "dtype": "float64",
+              "name": "clearingprice",
+              "nullable": true,
+              "source": "clearingPrice"
+            },
+            {
+              "dtype": "string",
+              "name": "deliverystart",
+              "nullable": true,
+              "source": "deliveryStart"
+            },
+            {
+              "dtype": "string",
+              "name": "deliveryend",
+              "nullable": true,
+              "source": "deliveryEnd"
+            },
+            {
+              "dtype": "string",
+              "name": "transfer_to_unit",
+              "nullable": true,
+              "source": "Transfer To Unit"
+            },
+            {
+              "dtype": "string",
+              "name": "transfer_status",
+              "nullable": true,
+              "source": "Transfer Status"
+            }
+          ],
+          "header": [
+            "registeredAuctionParticipant",
+            "auctionUnit",
+            "serviceType",
+            "auctionProduct",
+            "executedQuantity",
+            "clearingPrice",
+            "deliveryStart",
+            "deliveryEnd",
+            "Transfer To Unit",
+            "Transfer Status"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T03",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "held",
+        "field": "column 'deliveryStart'",
+        "id": "T01",
+        "kind": "time_semantics",
+        "question": "deliveryStart: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'deliveryEnd'",
+        "id": "T02",
+        "kind": "time_semantics",
+        "question": "deliveryEnd: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T03",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: deliveryStart, deliveryEnd"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T04",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['registeredauctionparticipant', 'auctionunit', 'servicetype', 'auctionproduct', 'executedquantity', 'clearingprice', 'deliverystart', 'deliveryend', 'transfer_to_unit', 'transfer_status'] (no candidate measured unique, so every column); without one, latest stays whole_capture"
+      }
+    ]
+  },
+  "refresh": "adhoc",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update frequency",
+        "value": "Ad hoc"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Ancillary services",
+    "title": "Contract Transfer of Obligation"
+  }
+}

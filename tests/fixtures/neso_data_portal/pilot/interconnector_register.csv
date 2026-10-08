@@ -1,0 +1,36 @@
+﻿Project Name,Customer Name,Connection Site,Stage,MW Import - Current,MW Export - Current,MW Import - Increase / Decrease,MW Export - Increase / Decrease,MW Import - Total,MW Export - Total,MW Effective From,Project Status,HOST TO,Project Number,Gate
+Alverdiscott,XLINKS 1 LTD,Alverdiscott 400kV Substation,,0.00,0.00,1800.00,1800.00,1800.00,1800.00,2030-08-30,Scoping,NGET,PRO-001344,
+Alverdiscott 2,XLINKS 1 LTD,Alverdiscott 400kV Substation,,0.00,0.00,1800.00,1800.00,1800.00,1800.00,2032-08-30,Scoping,NGET,PRO-001345,
+Aquind Interconnector,Aquind Limited,Lovedean 400kV Substation,,0.00,0.00,2000.00,2075.00,2000.00,2075.00,2030-12-31,Awaiting Consents,NGET,PRO-000285,
+Auchencrosh (interconnector CCT),MOYLE INTERCONNECTOR LIMITED,Auchencrosh 275kV,1.00,270.00,500.00,205.00,0.00,475.00,500.00,2022-04-01,Built,SPT,PRO-001292-1,
+Auchencrosh (interconnector CCT),MOYLE INTERCONNECTOR LIMITED,Auchencrosh 275kV,2.00,475.00,500.00,25.00,0.00,500.00,500.00,2022-08-01,Built,SPT,PRO-001292-2,
+Britned,BRITNED DEVELOPMENT LIMITED,Grain 400kV Substation,,1200.00,1200.00,0.00,0.00,1200.00,1200.00,,Built,NGET,PRO-000280,
+Celtic MPI,National Grid Interconnector Holdings Limited,Alverdiscott 400kV Substation,,0.00,0.00,1500.00,1500.00,1500.00,1500.00,2037-10-31,Scoping,NGET,PRO-003461,1
+Continental Link,National Grid Interconnector Holdings Limited,Birkhill Wood 400kV Substation,,0.00,0.00,1800.00,1800.00,1800.00,1800.00,2035-10-31,Scoping,NGET,PRO-000977,
+Cronos,CRONOS ENERGY LTD,Kemsley 400kV Substation,,0.00,0.00,1400.00,1400.00,1400.00,1400.00,2029-10-31,Scoping,NGET,PRO-000984,
+East West Interconnector,EIRGRID INTERCONNECTOR DESIGNATED ACTIVITY COMPANY,Deeside 400kV Substation,,505.00,585.00,0.00,0.00,505.00,585.00,,Built,NGET,PRO-000284,
+ElecLink,ELECLINK LIMITED,Sellindge 400kV Substation,,1000.00,1050.00,0.00,0.00,1000.00,1050.00,,Built,NGET,PRO-000286,
+FAB Link Interconnector,FAB Link Limited,Exeter 400kV Substation,,0.00,0.00,1250.00,1310.00,1250.00,1310.00,2032-09-30,Awaiting Consents,NGET,PRO-000281,
+GB-EU MPI,Windgrid,Fiddes 400kV Substation,,0.00,0.00,1800.00,1800.00,1800.00,1800.00,2033-10-31,Scoping,SHET,PRO-004398,
+Greenlink,GREENLINK INTERCONNECTOR LIMITED,Pembroke 400kV Substation,,504.00,524.00,0.00,0.00,504.00,524.00,,Built,NGET,PRO-000279,
+Gridlink Interconnector,Gridlink Interconnector Limited,Kingsnorth 400kV Substation,,0.00,0.00,1500.00,1500.00,1500.00,1500.00,2029-03-31,Scoping,NGET,PRO-000287,
+IFA Interconnector,NATIONAL GRID INTERCONNECTORS LIMITED,Sellindge 400kV Substation,,1988.00,1988.00,0.00,0.00,1988.00,1988.00,,Built,NGET,PRO-000282,
+IFA2 Interconnector,NATIONAL GRID IFA 2 LIMITED,Chilling 400kV Substation,,1100.00,1150.00,0.00,0.00,1100.00,1150.00,,Built,NGET,PRO-000283,
+Isle of Man Interconnector,MANX UTILITIES,Bispham 132kV Substation,,74.00,74.00,0.00,0.00,74.00,74.00,,Built,NGET,PRO-001291,
+Kulizumboo Interconnector,KULIZUMBOO LIMITED,Canterbury 400kV GIS Substation,,0.00,0.00,700.00,700.00,700.00,700.00,2031-04-01,Scoping,NGET,PRO-001290,1
+LionLink (EuroLink),National Grid Interconnector Holdings Limited,Friston 400kV Substation,,0.00,0.00,1600.00,1600.00,1600.00,1600.00,2032-10-31,Scoping,NGET,PRO-000983,
+LIRIC Interconnector,TI LIRIC Limited,Hunterston East 400kV,,0.00,0.00,730.00,700.00,730.00,700.00,2032-10-31,Scoping,SPT,PRO-001454,
+Low Carbon Link,LOW CARBON SOLAR PARK 39 LIMITED,SOUTH WALES WEST CONNECTION NODE C 400KV SUBSTATION,,0.00,0.00,1400.00,1400.00,1400.00,1400.00,2037-10-31,Scoping,NGET,PRO-004262,1
+MARES,Maresconnect Limited,Bodelwyddan 400kV Substation,,0.00,0.00,750.00,750.00,750.00,750.00,2028-11-30,Awaiting Consents,NGET,PRO-000978,
+Nautilus,National Grid Interconnector Holdings Limited,Wallend 400kV Substation,,0.00,0.00,1500.00,1500.00,1500.00,1500.00,2029-10-31,Scoping,NGET,PRO-000976,
+Nemo Link,NEMO LINK LIMITED,Richborough 400kV Substation,,1020.00,1046.00,0.00,0.00,1020.00,1046.00,,Built,NGET,PRO-000974,
+NeuConnect Interconnector,Neuconnect Britain Ltd,Wallend 400kV Substation,,0.00,0.00,1400.00,1470.00,1400.00,1470.00,2026-08-01,Under Construction/Commissioning,NGET,PRO-001288,
+NorthConnect,NORTHCONNECT LIMITED,Peterhead 400kV Substation,,0.00,0.00,1400.00,1400.00,1400.00,1400.00,2030-03-01,Scoping,SHET,PRO-001285,
+NS Link,NATIONAL GRID NORTH SEA LINK LIMITED,Blyth GSP,,1400.00,1480.00,0.00,0.00,1400.00,1480.00,,Built,NGET,PRO-000975,
+Project Cobalt,GETLINK PROJECTS 2 LIMITED,East Kent Connection Node B 400kV Substation,,0.00,0.00,1000.00,1050.00,1000.00,1050.00,2036-10-30,Scoping,NGET,PRO-004402,1
+SENECA,FRONTIER POWER INTERNATIONAL LIMITED,Mablethorpe 400kV Substation,,0.00,0.00,1200.00,1254.00,1200.00,1254.00,2031-11-30,Scoping,NGET,PRO-000981,
+Tarchon,Tarchon Energy Limited,East Anglia Connection Node 400kV Substation,,0.00,0.00,1400.00,1400.00,1400.00,1400.00,2030-10-31,Scoping,NGET,PRO-001289,
+Teeside MPI,National Grid Interconnector Holdings Limited,Wearside Connection Node B 400kV Substation,,0.00,0.00,1800.00,1800.00,1800.00,1800.00,2033-10-31,Scoping,NGET,PRO-003462,1
+The Superconnection,ASC ENERGY PLC,Birkhill Wood 400kV Substation,,0.00,0.00,1000.00,1000.00,1000.00,1000.00,2027-09-01,Scoping,NGET,PRO-001284,
+Viking Link Denmark Interconnector,NATIONAL GRID VIKING LINK LIMITED,Bicker Fen 400kV Substation,,1500.00,1500.00,0.00,0.00,1500.00,1500.00,,Built,NGET,PRO-000288,
+Western MPI,National Grid Interconnector Holdings Limited,Connah's Quay 400kV Substation,,0.00,0.00,1500.00,1500.00,1500.00,1500.00,2037-10-31,Scoping,NGET,PRO-003463,1

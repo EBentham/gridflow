@@ -1,0 +1,128 @@
+{
+  "family": "demand_forecast_2_52w",
+  "package": "long-term-2-52-weeks-ahead-national-demand-forecast",
+  "resource_id": "903302b4-b577-4228-a347-b9917568b4e1",
+  "selected_by": "the family's datastore_active resource in the snapshot with the maximum (metadata_modified, id)",
+  "snapshot_id": "20261006T195819Z",
+  "fields": [
+    {
+      "type": "int",
+      "id": "_id"
+    },
+    {
+      "info": {
+        "comment": "",
+        "description": "The calendar year the demand is forecast to occur.",
+        "title": "Calendar Year",
+        "type": "integer",
+        "example": "2023",
+        "unit": ""
+      },
+      "type": "int4",
+      "id": "calendar_year"
+    },
+    {
+      "info": {
+        "comment": "",
+        "description": "The financial year the demand is forecast to occur.",
+        "title": "Financial Year",
+        "type": "integer",
+        "example": "2023",
+        "unit": ""
+      },
+      "type": "int4",
+      "id": "financial_year"
+    },
+    {
+      "info": {
+        "comment": "",
+        "description": "The ESI week the forecast is for.",
+        "title": "ESIWK",
+        "type": "integer",
+        "example": "24",
+        "unit": ""
+      },
+      "type": "int4",
+      "id": "ESIWK"
+    },
+    {
+      "info": {
+        "comment": "",
+        "description": "The date of the peak demand during that ESI week.",
+        "title": "CDATE Peak",
+        "type": "date",
+        "example": "13/06/2023\t\t",
+        "unit": ""
+      },
+      "type": "date",
+      "id": "CDATE_peak"
+    },
+    {
+      "info": {
+        "comment": "",
+        "description": "The peak demand during that ESI week.",
+        "title": "TSD Peak",
+        "type": "integer",
+        "example": "27774",
+        "unit": "MW"
+      },
+      "type": "int4",
+      "id": "tsd_peak"
+    },
+    {
+      "info": {
+        "comment": "",
+        "description": "The minimum demand during that ESI week.",
+        "title": "TSD minimum",
+        "type": "integer",
+        "example": "16016",
+        "unit": "MW"
+      },
+      "type": "int4",
+      "id": "tsd_min"
+    },
+    {
+      "info": {
+        "comment": "",
+        "description": "The minimum daytime demand during that ESI week.\t\t\r\n",
+        "title": "Day minimum",
+        "type": "integer",
+        "example": "18166",
+        "unit": "MW"
+      },
+      "type": "int4",
+      "id": "day_min"
+    },
+    {
+      "info": {
+        "comment": "",
+        "description": "The minimum overnight demand during that ESI week.\t\t\r\n",
+        "title": "Night minimum",
+        "type": "integer",
+        "example": "16016",
+        "unit": "MW"
+      },
+      "type": "int4",
+      "id": "night_min"
+    }
+  ],
+  "total": 65,
+  "include_total": true,
+  "records_format": "objects",
+  "records_returned": 0,
+  "request": {
+    "action": "datastore_search",
+    "params": {
+      "limit": "0",
+      "resource_id": "903302b4-b577-4228-a347-b9917568b4e1"
+    },
+    "started_at": "2026-10-08T12:17:30.325865Z",
+    "finished_at": "2026-10-08T12:18:00.666172Z",
+    "status_code": 200,
+    "headers": {
+      "content-type": "application/json;charset=utf-8",
+      "date": "Thu, 08 Oct 2026 12:18:00 GMT"
+    },
+    "body_sha256": "f7e3b6887866e0d5142ada6f41a74096ba63dbc2b58a1b80678b2cc82bb9c648"
+  }
+}

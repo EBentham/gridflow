@@ -1,0 +1,176 @@
+{
+  "archetype": "FC",
+  "batch": "DEM-2",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/demand_profile_dates/2026/10/08/raw_20261008T100618Z_48862d1a-f285-4709-a48c-1c0e8e7b37c3_7a8ab7c3.csv",
+      "ckan_last_modified": "2026-10-07T15:15:05.280419",
+      "cr": 0,
+      "crlf": 3225,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "48862d1a-f285-4709-a48c-1c0e8e7b37c3",
+      "rows": 3224,
+      "sampled": false,
+      "size": 74184,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:06:18.182207+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 1,
+      "columns": {
+        "FORECAST_DATE": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%Y-%m-%d": 0,
+            "float64": 3224,
+            "int64": 3224
+          },
+          "examples": [
+            "2018-01-01",
+            "2018-01-02",
+            "2018-01-03"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "iso_date": 3224
+          }
+        },
+        "PROFILE_DATE": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%Y-%m-%d": 0,
+            "float64": 3224,
+            "int64": 3224
+          },
+          "examples": [
+            "2017-01-01",
+            "2017-01-03",
+            "2017-01-04"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "iso_date": 3224
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "FORECAST_DATE": {
+            "description": "The date for which the profile date was used.",
+            "title": "Forecast Date",
+            "type": "date",
+            "unit": null
+          },
+          "PROFILE_DATE": {
+            "description": "The profile date that has been chosen for that forecast date.",
+            "title": "Profile Date",
+            "type": "date",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T10:06:18.182207+00:00",
+      "header": [
+        "FORECAST_DATE",
+        "PROFILE_DATE"
+      ],
+      "last_written_at": "2026-10-08T10:06:18.182207+00:00",
+      "resource_ids": [
+        "48862d1a-f285-4709-a48c-1c0e8e7b37c3"
+      ],
+      "rows": 3224,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [],
+  "key": "demand_profile_dates",
+  "keys": {
+    "candidates": [],
+    "full_row_max_duplicates": 8
+  },
+  "other_captures": 0,
+  "package": "demand-profile-dates",
+  "proposal": {
+    "flags": [],
+    "record_draft": {
+      "encoding": "utf-8",
+      "entity_key": [
+        "forecast_date",
+        "profile_date"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "date",
+              "format": "%Y-%m-%d",
+              "name": "forecast_date",
+              "nullable": true,
+              "source": "FORECAST_DATE"
+            },
+            {
+              "dtype": "date",
+              "format": "%Y-%m-%d",
+              "name": "profile_date",
+              "nullable": true,
+              "source": "PROFILE_DATE"
+            }
+          ],
+          "header": [
+            "FORECAST_DATE",
+            "PROFILE_DATE"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T01",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T01",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: FORECAST_DATE, PROFILE_DATE"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T02",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['forecast_date', 'profile_date'] (no candidate measured unique, so every column); without one, latest stays whole_capture"
+      }
+    ]
+  },
+  "refresh": "daily",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update frequency",
+        "value": "Daily"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Demand",
+    "title": "Demand Profile Dates"
+  }
+}

@@ -1,0 +1,439 @@
+{
+  "archetype": "SER",
+  "batch": "SYS-1",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/stability_pathfinder_utilisation_report/2026/10/08/raw_20261008T112720Z_52af0f68-e1c3-45dd-ae7f-54f68e32e0c6_e96ce2e1.csv",
+      "ckan_last_modified": "2024-04-05T15:45:09.278460",
+      "cr": 0,
+      "crlf": 110892,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "52af0f68-e1c3-45dd-ae7f-54f68e32e0c6",
+      "rows": 110891,
+      "sampled": true,
+      "size": 7487598,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:27:20.815424+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/stability_pathfinder_utilisation_report/2026/10/08/raw_20261008T112723Z_f43f5d61-b51f-45f9-a7e7-66f2959d38b5_85904720.csv",
+      "ckan_last_modified": "2025-04-11T14:21:51.833357",
+      "cr": 0,
+      "crlf": 198158,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "f43f5d61-b51f-45f9-a7e7-66f2959d38b5",
+      "rows": 198157,
+      "sampled": true,
+      "size": 13996566,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:27:23.136150+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/stability_pathfinder_utilisation_report/2026/10/08/raw_20261008T112725Z_fc08cdba-1a86-460b-85c4-3d8c0d3d4e42_e7ac1433.csv",
+      "ckan_last_modified": "2026-04-10T15:11:46.723351",
+      "cr": 0,
+      "crlf": 258389,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "fc08cdba-1a86-460b-85c4-3d8c0d3d4e42",
+      "rows": 258388,
+      "sampled": true,
+      "size": 18086315,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:27:25.857163+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/stability_pathfinder_utilisation_report/2026/10/08/raw_20261008T112728Z_75996c0a-70fb-4ddb-a345-bb1e8d39de35_f736cc2e.csv",
+      "ckan_last_modified": "2026-10-02T14:49:24.733259",
+      "cr": 0,
+      "crlf": 123988,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "75996c0a-70fb-4ddb-a345-bb1e8d39de35",
+      "rows": 123987,
+      "sampled": true,
+      "size": 8708369,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:27:28.771297+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 4,
+      "columns": {
+        "Actual Service Start or Cease Time": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 1260,
+            "int64": 1260
+          },
+          "examples": [
+            "2023-09-05T17:55:00+00:00",
+            "2023-09-05T22:30:00+00:00",
+            "2023-09-06T15:50:00+00:00"
+          ],
+          "max_len": 25,
+          "null_count": 690163,
+          "shapes": {
+            "iso_datetime_offset": 255
+          }
+        },
+        "Inertia": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "0",
+            "480",
+            "1729"
+          ],
+          "max_len": 4,
+          "null_count": 93051,
+          "shapes": {
+            "int": 149999
+          }
+        },
+        "Instruction Code": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 691423,
+            "int64": 691423
+          },
+          "examples": [
+            "No",
+            "Service Cease",
+            "Service Start"
+          ],
+          "max_len": 13,
+          "null_count": 0,
+          "shapes": {
+            "text": 200000
+          }
+        },
+        "Instruction Issue Time": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 1260,
+            "int64": 1260
+          },
+          "examples": [
+            "2023-09-05T17:53:00+00:00",
+            "2023-09-05T22:14:00+00:00",
+            "2023-09-06T15:48:00+00:00"
+          ],
+          "max_len": 25,
+          "null_count": 690163,
+          "shapes": {
+            "iso_datetime_offset": 255
+          }
+        },
+        "Settlement Period End Date Time": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 691423,
+            "int64": 691423
+          },
+          "examples": [
+            "2023-09-04T00:30:00+00:00",
+            "2023-09-04T01:00:00+00:00",
+            "2023-09-04T01:30:00+00:00"
+          ],
+          "max_len": 25,
+          "null_count": 0,
+          "shapes": {
+            "iso_datetime_offset": 200000
+          }
+        },
+        "Settlement Period Start Date Time": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 691423,
+            "int64": 691423
+          },
+          "examples": [
+            "2023-09-04T00:00:00+00:00",
+            "2023-09-04T00:30:00+00:00",
+            "2023-09-04T01:00:00+00:00"
+          ],
+          "max_len": 25,
+          "null_count": 0,
+          "shapes": {
+            "iso_datetime_offset": 200000
+          }
+        },
+        "UNIT": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 691423,
+            "int64": 691423
+          },
+          "examples": [
+            "CRUA-3",
+            "LRDSC-1",
+            "LRDSC-2"
+          ],
+          "max_len": 8,
+          "null_count": 0,
+          "shapes": {
+            "text": 200000
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "Actual Service Start or Cease Time": {
+            "description": "The actual date time the unit started or ceased delivery of the Stability service",
+            "title": "Actual Service Start or Cease Time",
+            "type": "timestamp",
+            "unit": null
+          },
+          "Inertia": {
+            "description": null,
+            "title": "Inertia",
+            "type": "int4",
+            "unit": null
+          },
+          "Instruction Code": {
+            "description": "Identifier of the type of instruction issued in this Settlement Period",
+            "title": "Instruction Code",
+            "type": "text",
+            "unit": null
+          },
+          "Instruction Issue Time": {
+            "description": null,
+            "title": "Instruction Issue Time",
+            "type": "timestamp",
+            "unit": null
+          },
+          "Settlement Period End Date Time": {
+            "description": "The identifier of the end date time of the Settlement Period that the information relates to",
+            "title": "Settlement Period End Date Time",
+            "type": "timestamp",
+            "unit": null
+          },
+          "Settlement Period Start Date Time": {
+            "description": "The identifier of the start date time of the Settlement Period that the information relates to",
+            "title": "Settlement Period Start Date Time",
+            "type": "timestamp",
+            "unit": null
+          },
+          "UNIT": {
+            "description": "Identifier of the unit that the information relates to",
+            "title": "UNIT",
+            "type": "text",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T11:27:20.815424+00:00",
+      "header": [
+        "UNIT",
+        "Settlement Period Start Date Time",
+        "Settlement Period End Date Time",
+        "Instruction Code",
+        "Instruction Issue Time",
+        "Actual Service Start or Cease Time",
+        "Inertia"
+      ],
+      "last_written_at": "2026-10-08T11:27:28.771297+00:00",
+      "resource_ids": [
+        "52af0f68-e1c3-45dd-ae7f-54f68e32e0c6",
+        "75996c0a-70fb-4ddb-a345-bb1e8d39de35",
+        "f43f5d61-b51f-45f9-a7e7-66f2959d38b5",
+        "fc08cdba-1a86-460b-85c4-3d8c0d3d4e42"
+      ],
+      "rows": 691423,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [
+    "sampled"
+  ],
+  "key": "stability_pathfinder_utilisation_report",
+  "keys": {
+    "candidates": [],
+    "full_row_max_duplicates": 3964
+  },
+  "other_captures": 0,
+  "package": "stability-pathfinder-service-information",
+  "proposal": {
+    "flags": [
+      "sampled"
+    ],
+    "record_draft": {
+      "eligibility": {
+        "question": "Settlement Period Start Date Time: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced); Settlement Period End Date Time: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced); Instruction Issue Time: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced); Actual Service Start or Cease Time: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced); Inertia: a numeric column with no vendor unit",
+        "status": "held",
+        "unit": "SYS-1"
+      },
+      "encoding": "utf-8",
+      "entity_key": [
+        "unit",
+        "settlement_period_start_date_time",
+        "settlement_period_end_date_time",
+        "instruction_code",
+        "instruction_issue_time",
+        "actual_service_start_or_cease_time",
+        "inertia"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "unit",
+              "nullable": true,
+              "source": "UNIT"
+            },
+            {
+              "dtype": "string",
+              "name": "settlement_period_start_date_time",
+              "nullable": true,
+              "source": "Settlement Period Start Date Time"
+            },
+            {
+              "dtype": "string",
+              "name": "settlement_period_end_date_time",
+              "nullable": true,
+              "source": "Settlement Period End Date Time"
+            },
+            {
+              "dtype": "string",
+              "name": "instruction_code",
+              "nullable": true,
+              "source": "Instruction Code"
+            },
+            {
+              "dtype": "string",
+              "name": "instruction_issue_time",
+              "nullable": true,
+              "source": "Instruction Issue Time"
+            },
+            {
+              "dtype": "string",
+              "name": "actual_service_start_or_cease_time",
+              "nullable": true,
+              "source": "Actual Service Start or Cease Time"
+            },
+            {
+              "dtype": "int64",
+              "name": "inertia",
+              "nullable": true,
+              "source": "Inertia"
+            }
+          ],
+          "header": [
+            "UNIT",
+            "Settlement Period Start Date Time",
+            "Settlement Period End Date Time",
+            "Instruction Code",
+            "Instruction Issue Time",
+            "Actual Service Start or Cease Time",
+            "Inertia"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T06",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "held",
+        "field": "column 'Settlement Period Start Date Time'",
+        "id": "T01",
+        "kind": "time_semantics",
+        "question": "Settlement Period Start Date Time: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Settlement Period End Date Time'",
+        "id": "T02",
+        "kind": "time_semantics",
+        "question": "Settlement Period End Date Time: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Instruction Issue Time'",
+        "id": "T03",
+        "kind": "time_semantics",
+        "question": "Instruction Issue Time: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Actual Service Start or Cease Time'",
+        "id": "T04",
+        "kind": "time_semantics",
+        "question": "Actual Service Start or Cease Time: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Inertia'.unit",
+        "id": "T05",
+        "kind": "unit",
+        "question": "Inertia: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T06",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: Settlement Period Start Date Time, Settlement Period End Date Time, Instruction Issue Time, Actual Service Start or Cease Time"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T07",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['unit', 'settlement_period_start_date_time', 'settlement_period_end_date_time', 'instruction_code', 'instruction_issue_time', 'actual_service_start_or_cease_time', 'inertia'] (no candidate measured unique, so every column); without one, latest stays whole_capture"
+      }
+    ]
+  },
+  "refresh": "weekly",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update frequency",
+        "value": "Weekly"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "System",
+    "title": "Stability Pathfinder service information"
+  }
+}

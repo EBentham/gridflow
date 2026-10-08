@@ -1,0 +1,190 @@
+{
+  "archetype": "FC",
+  "batch": "PILOT",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/constraint_cost_fc_24m/2026/10/08/raw_20261008T091541Z_28b85d3f-a1cc-4bb9-80af-600f2cca266a_c56921b4.csv",
+      "ckan_last_modified": "2026-09-10T09:38:53.501869",
+      "cr": 0,
+      "crlf": 25,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "28b85d3f-a1cc-4bb9-80af-600f2cca266a",
+      "rows": 24,
+      "sampled": false,
+      "size": 362,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T09:15:41.750414+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 1,
+      "columns": {
+        "Constraint Cost": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 24
+          },
+          "examples": [
+            "606.2",
+            "551.4",
+            "450.6"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 24
+          }
+        },
+        "Month": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%b-%y": 0,
+            "float64": 24,
+            "int64": 24
+          },
+          "examples": [
+            "Oct-26",
+            "Nov-26",
+            "Dec-26"
+          ],
+          "max_len": 6,
+          "null_count": 0,
+          "shapes": {
+            "month_label": 24
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "Constraint Cost": {
+            "description": "The modelled constraint cost in £m for that month.",
+            "title": "Constraint Cost (£m)",
+            "type": "numeric",
+            "unit": "£m"
+          },
+          "Month": {
+            "description": "The month and year in the format MMM-YY",
+            "title": "Month",
+            "type": "text",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T09:15:41.750414+00:00",
+      "header": [
+        "Month",
+        "Constraint Cost"
+      ],
+      "last_written_at": "2026-10-08T09:15:41.750414+00:00",
+      "resource_ids": [
+        "28b85d3f-a1cc-4bb9-80af-600f2cca266a"
+      ],
+      "rows": 24,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [],
+  "key": "constraint_cost_fc_24m",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Month"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Constraint Cost"
+        ],
+        "max_duplicates": 0
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "24-months-ahead-constraint-cost-forecast",
+  "proposal": {
+    "flags": [
+      "text_declared_date_shaped:Month"
+    ],
+    "record_draft": {
+      "encoding": "utf-8",
+      "entity_key": [
+        "month_vendor"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "date",
+              "format": "%b-%y",
+              "name": "month_vendor",
+              "nullable": true,
+              "source": "Month"
+            },
+            {
+              "dtype": "float64",
+              "name": "constraint_cost",
+              "nullable": true,
+              "source": "Constraint Cost"
+            }
+          ],
+          "header": [
+            "Month",
+            "Constraint Cost"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T01",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T01",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: Month"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T02",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['month_vendor'] (measured unique in 1 capture(s)); without one, latest stays whole_capture"
+      }
+    ]
+  },
+  "refresh": "monthly",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update frequency",
+        "value": "Monthly"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Constraint management",
+    "title": "24 Months Ahead Constraint Cost Forecast"
+  }
+}

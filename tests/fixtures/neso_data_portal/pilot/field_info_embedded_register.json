@@ -1,0 +1,200 @@
+{
+  "family": "embedded_register",
+  "package": "embedded-register",
+  "resource_id": "68b6f3a1-e1bf-403b-9062-0269fc758d77",
+  "selected_by": "the family's datastore_active resource in the snapshot with the maximum (metadata_modified, id)",
+  "snapshot_id": "20261006T195819Z",
+  "fields": [
+    {
+      "type": "int",
+      "id": "_id"
+    },
+    {
+      "info": {
+        "comment": "n/a",
+        "description": "Name of Generation Project",
+        "title": "Project Name",
+        "type": "string",
+        "example": "Abbotshaugh Reserve Power Facility",
+        "unit": "n/a"
+      },
+      "type": "text",
+      "id": "Project Name"
+    },
+    {
+      "info": {
+        "comment": "n/a",
+        "description": "Name of Generator",
+        "title": "Customer Name",
+        "type": "string",
+        "example": "SP DISTRIBUTION PLC",
+        "unit": "n/a"
+      },
+      "type": "text",
+      "id": "Customer Name"
+    },
+    {
+      "info": {
+        "comment": "n/a",
+        "description": "Name of Generation Connection Site",
+        "title": "Connection Site",
+        "type": "string",
+        "example": "A'Chruach Wind Farm 275kV Substation",
+        "unit": "n/a"
+      },
+      "type": "text",
+      "id": "Connection Site"
+    },
+    {
+      "info": {
+        "comment": "Field is only completed if the project is staged otherwise it will be empty",
+        "description": "Stage refers to Staged Capacity – how much Capacity the Customer will connect and when.  The customer may choose to bring on capacity in chunks to align with their build /commissioning program.  Staged contracts are also used when a customer may only be able to bring on a proportion of their total capacity at a particular point in time ahead of further reinforcement works being carried out, completion of which would allow the remaining Capacity onto the system.",
+        "title": "Stage",
+        "type": "number",
+        "example": "",
+        "unit": "number"
+      },
+      "type": "numeric",
+      "id": "Stage"
+    },
+    {
+      "info": {
+        "comment": "Field will state 0MW until the project is built and connected",
+        "description": "Amount of capacity currently connected to the National Grid",
+        "title": "MW Connected",
+        "type": "number",
+        "example": "20",
+        "unit": "MW"
+      },
+      "type": "numeric",
+      "id": "MW Connected"
+    },
+    {
+      "info": {
+        "comment": "Field will state 0MW unless the capacity is due to increase or decrease",
+        "description": "Amount of capacity contracted to connect or be removed at a future date",
+        "title": "MW Increase / Decrease",
+        "type": "number",
+        "example": "20",
+        "unit": "MW"
+      },
+      "type": "numeric",
+      "id": "MW Increase / Decrease"
+    },
+    {
+      "info": {
+        "comment": "n/a",
+        "description": "Total amount of capacity contracted across all Stages",
+        "title": "Cumulative Total Capacity (MW) ",
+        "type": "number",
+        "example": "40",
+        "unit": "MW"
+      },
+      "type": "numeric",
+      "id": "Cumulative Total Capacity (MW)"
+    },
+    {
+      "info": {
+        "comment": "Field will only include dates for future connections or increase/decreases to capacity, otherwise this field will be empty",
+        "description": "Date on which Connection is contracted to be effective from",
+        "title": "MW Effective From",
+        "type": "date",
+        "example": "31/10/2032",
+        "unit": "yyyy-mm-dd"
+      },
+      "type": "date",
+      "id": "MW Effective From"
+    },
+    {
+      "info": {
+        "comment": "The Status classifications are very much based on information we have either ascertained from the customer or from another source, i.e. government website.  It’s important to note that we hold no authority on the Status classifications on Registers and are produced on an “as far as we are aware” basis.",
+        "description": "Indicates what stage the Project is at in it's build cycle",
+        "title": "Project Status",
+        "type": "string",
+        "example": "Consents Approved",
+        "unit": "n/a"
+      },
+      "type": "text",
+      "id": "Project Status"
+    },
+    {
+      "info": {
+        "comment": "SHET or SPT",
+        "description": "Indicates which Transmission Owner (TO) is responsible for the connection",
+        "title": "HOST TO",
+        "type": "string",
+        "example": "SPT",
+        "unit": "n/a"
+      },
+      "type": "text",
+      "id": "HOST TO"
+    },
+    {
+      "info": {
+        "comment": "n/a",
+        "description": "Indicates the fuel type contracted to connect",
+        "title": "Plant Type",
+        "type": "string",
+        "example": "Gas Reciprocating",
+        "unit": "n/a"
+      },
+      "type": "text",
+      "id": "Plant Type"
+    },
+    {
+      "info": {
+        "comment": "This reference is case sensitive",
+        "description": "Unique Project Identifier",
+        "title": "Project ID",
+        "type": "string",
+        "example": "a0l4L0000005iN1",
+        "unit": "n/a"
+      },
+      "type": "text",
+      "id": "Project ID"
+    },
+    {
+      "info": {
+        "comment": "If there is more than one Stage the Project number will be followed by a dash and the relevant stage number.",
+        "description": "Unique Project Number",
+        "title": "Project Number",
+        "type": "string",
+        "example": "PRO-000630-1",
+        "unit": "n/a"
+      },
+      "type": "text",
+      "id": "Project Number"
+    },
+    {
+      "info": {
+        "comment": "The value in this field is only completed once a signed Gate 1 or Gate 2 contract is countersigned - until that point all existing contracted projects will appear blank ",
+        "description": "Indicates which Gate the Project is contracted at",
+        "title": "Gate",
+        "type": "number",
+        "example": "1",
+        "unit": "n/a"
+      },
+      "type": "numeric",
+      "id": "Gate"
+    }
+  ],
+  "total": 561,
+  "include_total": true,
+  "records_format": "objects",
+  "records_returned": 0,
+  "request": {
+    "action": "datastore_search",
+    "params": {
+      "limit": "0",
+      "resource_id": "68b6f3a1-e1bf-403b-9062-0269fc758d77"
+    },
+    "started_at": "2026-10-08T12:43:31.655326Z",
+    "finished_at": "2026-10-08T12:44:01.657569Z",
+    "status_code": 200,
+    "headers": {
+      "content-type": "application/json;charset=utf-8",
+      "date": "Thu, 08 Oct 2026 12:44:01 GMT"
+    },
+    "body_sha256": "d003f082adfa4dcc2a6b46272ce75560ddd2fa9ad502914fe78e125bed6437ed"
+  }
+}

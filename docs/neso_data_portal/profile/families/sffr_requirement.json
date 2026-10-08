@@ -1,0 +1,355 @@
+{
+  "archetype": "FC",
+  "batch": "AS-2",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/sffr_requirement/2026/10/08/raw_20261008T111740Z_bf236101-7167-4351-9fa0-c0b2e7c85747_151d3950.csv",
+      "ckan_last_modified": "2026-09-22T14:48:22.737387",
+      "cr": 0,
+      "crlf": 40,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "bf236101-7167-4351-9fa0-c0b2e7c85747",
+      "rows": 39,
+      "sampled": false,
+      "size": 1650,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:17:40.964081+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 1,
+      "columns": {
+        "EFA1": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "250"
+          ],
+          "max_len": 3,
+          "null_count": 0,
+          "shapes": {
+            "int": 39
+          }
+        },
+        "EFA2": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "250"
+          ],
+          "max_len": 3,
+          "null_count": 0,
+          "shapes": {
+            "int": 39
+          }
+        },
+        "EFA3": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "250"
+          ],
+          "max_len": 3,
+          "null_count": 0,
+          "shapes": {
+            "int": 39
+          }
+        },
+        "EFA4": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "250"
+          ],
+          "max_len": 3,
+          "null_count": 0,
+          "shapes": {
+            "int": 39
+          }
+        },
+        "EFA5": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "250"
+          ],
+          "max_len": 3,
+          "null_count": 0,
+          "shapes": {
+            "int": 39
+          }
+        },
+        "EFA6": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "250"
+          ],
+          "max_len": 3,
+          "null_count": 0,
+          "shapes": {
+            "int": 39
+          }
+        },
+        "EFA_DATE": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%d/%m/%Y": 0,
+            "float64": 39,
+            "int64": 39
+          },
+          "examples": [
+            "23/09/2026",
+            "24/09/2026",
+            "25/09/2026"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "slash_date": 39
+          },
+          "slash_first_gt_12": 27,
+          "slash_second_gt_12": 0
+        },
+        "Service": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 39,
+            "int64": 39
+          },
+          "examples": [
+            "SFFR"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "text": 39
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "EFA1": {
+            "description": "Our requirement for the service (before overholding) for this EFA",
+            "title": "EFA 1",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "EFA2": {
+            "description": "Our requirement for the service (before overholding) for this EFA",
+            "title": "EFA 2",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "EFA3": {
+            "description": "Our requirement for the service (before overholding) for this EFA",
+            "title": "EFA 3",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "EFA4": {
+            "description": "Our requirement for the service (before overholding) for this EFA",
+            "title": "EFA 4",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "EFA5": {
+            "description": "Our requirement for the service (before overholding) for this EFA",
+            "title": "EFA 5",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "EFA6": {
+            "description": "Our requirement for the service (before overholding) for this EFA",
+            "title": "EFA 6",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "EFA_DATE": {
+            "description": "The EFA DATE that the sFFR requirement volume is for.",
+            "title": "EFA DATE",
+            "type": "date",
+            "unit": null
+          },
+          "Service": {
+            "description": "The ancillary service that the requirement applies to.  SFFR = Static Firm Frequency Response",
+            "title": "Service",
+            "type": "text",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T11:17:40.964081+00:00",
+      "header": [
+        "EFA_DATE",
+        "Service",
+        "EFA1",
+        "EFA2",
+        "EFA3",
+        "EFA4",
+        "EFA5",
+        "EFA6"
+      ],
+      "last_written_at": "2026-10-08T11:17:40.964081+00:00",
+      "resource_ids": [
+        "bf236101-7167-4351-9fa0-c0b2e7c85747"
+      ],
+      "rows": 39,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [],
+  "key": "sffr_requirement",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 1,
+        "columns": [
+          "EFA_DATE"
+        ],
+        "max_duplicates": 0
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "static-firm-frequency-response-requirement",
+  "proposal": {
+    "flags": [],
+    "record_draft": {
+      "encoding": "utf-8",
+      "entity_key": [
+        "efa_date"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "date",
+              "format": "%d/%m/%Y",
+              "name": "efa_date",
+              "nullable": true,
+              "source": "EFA_DATE"
+            },
+            {
+              "dtype": "string",
+              "name": "service",
+              "nullable": true,
+              "source": "Service"
+            },
+            {
+              "dtype": "float64",
+              "name": "efa1",
+              "nullable": true,
+              "source": "EFA1"
+            },
+            {
+              "dtype": "float64",
+              "name": "efa2",
+              "nullable": true,
+              "source": "EFA2"
+            },
+            {
+              "dtype": "float64",
+              "name": "efa3",
+              "nullable": true,
+              "source": "EFA3"
+            },
+            {
+              "dtype": "float64",
+              "name": "efa4",
+              "nullable": true,
+              "source": "EFA4"
+            },
+            {
+              "dtype": "float64",
+              "name": "efa5",
+              "nullable": true,
+              "source": "EFA5"
+            },
+            {
+              "dtype": "float64",
+              "name": "efa6",
+              "nullable": true,
+              "source": "EFA6"
+            }
+          ],
+          "header": [
+            "EFA_DATE",
+            "Service",
+            "EFA1",
+            "EFA2",
+            "EFA3",
+            "EFA4",
+            "EFA5",
+            "EFA6"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T01",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T01",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: EFA_DATE"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T02",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['efa_date'] (measured unique in 1 capture(s)); without one, latest stays whole_capture"
+      }
+    ]
+  },
+  "refresh": "monthly",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update frequency",
+        "value": "Monthly"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Ancillary services",
+    "title": "Static Firm Frequency Response Requirement"
+  }
+}

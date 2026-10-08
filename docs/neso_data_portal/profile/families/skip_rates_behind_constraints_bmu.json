@@ -1,0 +1,349 @@
+{
+  "archetype": "SER",
+  "batch": "BAL-2",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/skip_rates_behind_constraints_bmu/2026/10/08/raw_20261008T111744Z_26f3a3de-e5fd-43e5-9d8a-d89a9c786812_73112eba.csv",
+      "ckan_last_modified": "2026-09-28T12:04:03.117796",
+      "cr": 0,
+      "crlf": 5872,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "26f3a3de-e5fd-43e5-9d8a-d89a9c786812",
+      "rows": 5871,
+      "sampled": false,
+      "size": 260646,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:17:44.829058+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 1,
+      "columns": {
+        "bid_offer": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 5871,
+            "int64": 5871
+          },
+          "examples": [
+            "Bid",
+            "Offer"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "text": 5871
+          }
+        },
+        "bm_unit": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 5871,
+            "int64": 5871
+          },
+          "examples": [
+            "ROTHW-1",
+            "CLAC-1",
+            "VKNGW-4"
+          ],
+          "max_len": 9,
+          "null_count": 0,
+          "shapes": {
+            "text": 5871
+          }
+        },
+        "fuel_type": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 5822,
+            "int64": 5822
+          },
+          "examples": [
+            "WIND",
+            "NPSHYD",
+            "PS"
+          ],
+          "max_len": 13,
+          "null_count": 49,
+          "shapes": {
+            "text": 5822
+          }
+        },
+        "in_merit_volume_mwh": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 5754
+          },
+          "examples": [
+            "575.7",
+            "3889.23",
+            "25021.83"
+          ],
+          "max_len": 9,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 5754,
+            "int": 117
+          }
+        },
+        "month": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 5871,
+            "int64": 5871
+          },
+          "examples": [
+            "2024-12",
+            "2025-01",
+            "2025-02"
+          ],
+          "max_len": 7,
+          "null_count": 0,
+          "shapes": {
+            "text": 5871
+          }
+        },
+        "skip_rate": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 3641
+          },
+          "examples": [
+            "100",
+            "26.8",
+            "4"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 3641,
+            "int": 2230
+          }
+        },
+        "skipped_volume_mwh": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 5031
+          },
+          "examples": [
+            "575.7",
+            "1040.78",
+            "1005.84"
+          ],
+          "max_len": 8,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 5031,
+            "int": 840
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "bid_offer": {
+            "description": "Whether the volume and price refers to a bid or an offer.",
+            "title": "Bid/Offer",
+            "type": "text",
+            "unit": null
+          },
+          "bm_unit": {
+            "description": "Balancing Mechanism Unit ID in merit stack.",
+            "title": "BM Unit",
+            "type": "text",
+            "unit": null
+          },
+          "fuel_type": {
+            "description": "Technology type of BMU",
+            "title": "Technology Type",
+            "type": "text",
+            "unit": null
+          },
+          "in_merit_volume_mwh": {
+            "description": "Total system volume that was in merit and available for dispatch under the methodology",
+            "title": "In Merit Volume MWh",
+            "type": "numeric",
+            "unit": "MWh"
+          },
+          "month": {
+            "description": "Date slice at monthly intervals",
+            "title": "Month",
+            "type": "text",
+            "unit": "YearMonth UTC"
+          },
+          "skip_rate": {
+            "description": "Percentage of in-merit volume that was skipped",
+            "title": "Skip Rate %",
+            "type": "numeric",
+            "unit": "Percentage"
+          },
+          "skipped_volume_mwh": {
+            "description": "The volume that was skipped",
+            "title": "Skipped Volume MWh",
+            "type": "numeric",
+            "unit": "MWh"
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T11:17:44.829058+00:00",
+      "header": [
+        "month",
+        "bm_unit",
+        "bid_offer",
+        "fuel_type",
+        "skipped_volume_mwh",
+        "in_merit_volume_mwh",
+        "skip_rate"
+      ],
+      "last_written_at": "2026-10-08T11:17:44.829058+00:00",
+      "resource_ids": [
+        "26f3a3de-e5fd-43e5-9d8a-d89a9c786812"
+      ],
+      "rows": 5871,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [],
+  "key": "skip_rates_behind_constraints_bmu",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 1,
+        "columns": [
+          "month",
+          "bm_unit",
+          "bid_offer"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 1,
+        "columns": [
+          "month",
+          "bm_unit",
+          "in_merit_volume_mwh"
+        ],
+        "max_duplicates": 0
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "skip-rates",
+  "proposal": {
+    "flags": [],
+    "record_draft": {
+      "encoding": "utf-8",
+      "entity_key": [
+        "month_vendor",
+        "bm_unit",
+        "bid_offer"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "month_vendor",
+              "nullable": true,
+              "source": "month"
+            },
+            {
+              "dtype": "string",
+              "name": "bm_unit",
+              "nullable": true,
+              "source": "bm_unit"
+            },
+            {
+              "dtype": "string",
+              "name": "bid_offer",
+              "nullable": true,
+              "source": "bid_offer"
+            },
+            {
+              "dtype": "string",
+              "name": "fuel_type",
+              "nullable": true,
+              "source": "fuel_type"
+            },
+            {
+              "dtype": "float64",
+              "name": "skipped_volume_mwh",
+              "nullable": true,
+              "source": "skipped_volume_mwh"
+            },
+            {
+              "dtype": "float64",
+              "name": "in_merit_volume_mwh",
+              "nullable": true,
+              "source": "in_merit_volume_mwh"
+            },
+            {
+              "dtype": "float64",
+              "name": "skip_rate",
+              "nullable": true,
+              "source": "skip_rate"
+            }
+          ],
+          "header": [
+            "month",
+            "bm_unit",
+            "bid_offer",
+            "fuel_type",
+            "skipped_volume_mwh",
+            "in_merit_volume_mwh",
+            "skip_rate"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T01",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T01",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: month"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T02",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['month_vendor', 'bm_unit', 'bid_offer'] (measured unique in 1 capture(s)); without one, latest stays whole_capture"
+      }
+    ]
+  },
+  "refresh": "daily",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update frequency",
+        "value": "Daily"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Balancing costs",
+    "title": "Skip Rates"
+  }
+}

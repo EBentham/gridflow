@@ -1,0 +1,324 @@
+{
+  "archetype": "SER",
+  "batch": "DEM-2",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/transmission_losses_main/2026/10/08/raw_20261008T113937Z_fddc307d-fc5a-458d-809f-2ad9a697b142_ced65f50.csv",
+      "ckan_last_modified": "2026-09-25T13:27:36.411183",
+      "cr": 0,
+      "crlf": 162,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "fddc307d-fc5a-458d-809f-2ad9a697b142",
+      "rows": 161,
+      "sampled": false,
+      "size": 6559,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:39:37.187111+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 1,
+      "columns": {
+        "Financial Year": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 161,
+            "int64": 161
+          },
+          "examples": [
+            "2013-14",
+            "2014-15",
+            "2015-16"
+          ],
+          "max_len": 7,
+          "null_count": 0,
+          "shapes": {
+            "text": 161
+          }
+        },
+        "GB totals": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 161
+          },
+          "examples": [
+            "0.465",
+            "0.408",
+            "0.334"
+          ],
+          "max_len": 6,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 161
+          }
+        },
+        "Month": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%b-%y": 0,
+            "float64": 161,
+            "int64": 161
+          },
+          "examples": [
+            "Apr-13",
+            "May-13",
+            "Jun-13"
+          ],
+          "max_len": 6,
+          "null_count": 0,
+          "shapes": {
+            "month_label": 161
+          }
+        },
+        "NGET": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 161
+          },
+          "examples": [
+            "0.389",
+            "0.34",
+            "0.283"
+          ],
+          "max_len": 6,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 161
+          }
+        },
+        "SHETL": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 161
+          },
+          "examples": [
+            "0.024",
+            "0.03",
+            "0.013"
+          ],
+          "max_len": 6,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 161
+          }
+        },
+        "SPT": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 161
+          },
+          "examples": [
+            "0.052",
+            "0.038",
+            "0.033"
+          ],
+          "max_len": 6,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 161
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "Financial Year": {
+            "description": "Financial year of the transmission losses.",
+            "title": "Financial Year",
+            "type": "text",
+            "unit": null
+          },
+          "GB totals": {
+            "description": "Great Britain Transmission System\tlosses",
+            "title": "GB totals",
+            "type": "numeric",
+            "unit": "TWh"
+          },
+          "Month": {
+            "description": "Year and month of the transmission losses.",
+            "title": "Month",
+            "type": "text",
+            "unit": null
+          },
+          "NGET": {
+            "description": "England and Wales Transmission System losses",
+            "title": "National Grid Electricity Transmission (NGET)",
+            "type": "numeric",
+            "unit": "TWh"
+          },
+          "SHETL": {
+            "description": "Scottish Hydro Electric Transmission system losses",
+            "title": "Scottish Hydro Electric Transmission (SHETL)",
+            "type": "numeric",
+            "unit": "TWh"
+          },
+          "SPT": {
+            "description": "Scottish Power Transmission system losses",
+            "title": "Scottish Power Transmission (SPT)",
+            "type": "numeric",
+            "unit": "TWh"
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T11:39:37.187111+00:00",
+      "header": [
+        "Financial Year",
+        "Month",
+        "NGET",
+        "SPT",
+        "SHETL",
+        "GB totals"
+      ],
+      "last_written_at": "2026-10-08T11:39:37.187111+00:00",
+      "resource_ids": [
+        "fddc307d-fc5a-458d-809f-2ad9a697b142"
+      ],
+      "rows": 161,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [],
+  "key": "transmission_losses_main",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Month"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 1,
+        "columns": [
+          "NGET",
+          "SPT"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Financial Year",
+          "NGET",
+          "SHETL"
+        ],
+        "max_duplicates": 0
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "transmission-losses",
+  "proposal": {
+    "flags": [
+      "text_declared_date_shaped:Month"
+    ],
+    "record_draft": {
+      "encoding": "utf-8",
+      "entity_key": [
+        "month_vendor"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "financial_year",
+              "nullable": true,
+              "source": "Financial Year"
+            },
+            {
+              "dtype": "date",
+              "format": "%b-%y",
+              "name": "month_vendor",
+              "nullable": true,
+              "source": "Month"
+            },
+            {
+              "dtype": "float64",
+              "name": "nget",
+              "nullable": true,
+              "source": "NGET"
+            },
+            {
+              "dtype": "float64",
+              "name": "spt",
+              "nullable": true,
+              "source": "SPT"
+            },
+            {
+              "dtype": "float64",
+              "name": "shetl",
+              "nullable": true,
+              "source": "SHETL"
+            },
+            {
+              "dtype": "float64",
+              "name": "gb_totals",
+              "nullable": true,
+              "source": "GB totals"
+            }
+          ],
+          "header": [
+            "Financial Year",
+            "Month",
+            "NGET",
+            "SPT",
+            "SHETL",
+            "GB totals"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T01",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T01",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: Month"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T02",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['month_vendor'] (measured unique in 1 capture(s)); without one, latest stays whole_capture"
+      }
+    ]
+  },
+  "refresh": "monthly",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update Frequency",
+        "value": "Monthly"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Demand",
+    "title": "Transmission Losses"
+  }
+}

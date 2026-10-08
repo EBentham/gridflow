@@ -131,3 +131,6 @@ and 2.98 GB for 5.
 - **Ingest-only warnings are loud by design** until unit E's records land: `pipeline
   neso_data_portal --all` ends `completed_with_warnings` for every tabular family without a
   record.
+
+**Forward pointer:** ADR-036 freezes the first records (the six pilot families) and adds
+the offline profiler that proposes the rest.

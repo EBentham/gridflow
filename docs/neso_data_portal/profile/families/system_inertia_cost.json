@@ -1,0 +1,502 @@
+{
+  "archetype": "SER",
+  "batch": "SYS-1",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/system_inertia_cost/2026/10/08/raw_20261008T113751Z_28dc603e-3472-45cd-8e7b-998efc674084_4d37dd62.csv",
+      "ckan_last_modified": "2021-12-07T12:12:09.974451",
+      "cr": 0,
+      "crlf": 366,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "28dc603e-3472-45cd-8e7b-998efc674084",
+      "rows": 365,
+      "sampled": false,
+      "size": 5150,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:37:51.909336+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/system_inertia_cost/2026/10/08/raw_20261008T113754Z_1146f7af-9f3b-4a8a-a37d-3003c727bfbf_b5bc0075.csv",
+      "ckan_last_modified": "2021-12-07T12:14:12.860862",
+      "cr": 0,
+      "crlf": 366,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "1146f7af-9f3b-4a8a-a37d-3003c727bfbf",
+      "rows": 365,
+      "sampled": false,
+      "size": 5347,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:37:54.616352+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/system_inertia_cost/2026/10/08/raw_20261008T113757Z_620491fa-ae1b-45b3-baa0-6e87c2d574cf_48a23e4a.csv",
+      "ckan_last_modified": "2021-12-07T12:14:59.890158",
+      "cr": 0,
+      "crlf": 367,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "620491fa-ae1b-45b3-baa0-6e87c2d574cf",
+      "rows": 366,
+      "sampled": false,
+      "size": 5386,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:37:57.536929+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/system_inertia_cost/2026/10/08/raw_20261008T113800Z_130c9f71-cbce-4027-b5b8-13cba14df0dd_80dc952e.csv",
+      "ckan_last_modified": "2021-12-07T12:15:37.611975",
+      "cr": 0,
+      "crlf": 366,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "130c9f71-cbce-4027-b5b8-13cba14df0dd",
+      "rows": 365,
+      "sampled": false,
+      "size": 5534,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:38:00.133113+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/system_inertia_cost/2026/10/08/raw_20261008T113803Z_3518e47e-ffb3-4561-aff1-4a102fcb242d_6436d340.csv",
+      "ckan_last_modified": "2022-04-07T08:30:42.821949",
+      "cr": 0,
+      "crlf": 362,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "3518e47e-ffb3-4561-aff1-4a102fcb242d",
+      "rows": 361,
+      "sampled": false,
+      "size": 5463,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:38:03.325819+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/system_inertia_cost/2026/10/08/raw_20261008T113805Z_8a3a4233-e9aa-45c2-b0c4-28b8d614165b_eb4859d0.csv",
+      "ckan_last_modified": "2024-04-02T16:17:02.960104",
+      "cr": 0,
+      "crlf": 363,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "8a3a4233-e9aa-45c2-b0c4-28b8d614165b",
+      "rows": 362,
+      "sampled": false,
+      "size": 5499,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:38:05.921910+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/system_inertia_cost/2026/10/08/raw_20261008T113808Z_3cc32e61-bf87-471c-bf00-abb356d3f8c8_35033a45.csv",
+      "ckan_last_modified": "2025-01-21T15:54:38.545770",
+      "cr": 0,
+      "crlf": 367,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "3cc32e61-bf87-471c-bf00-abb356d3f8c8",
+      "rows": 366,
+      "sampled": false,
+      "size": 5651,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:38:08.545881+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/system_inertia_cost/2026/10/08/raw_20261008T113811Z_91947c0c-bbbf-4d55-a29d-dc610d91d075_fb49c31e.csv",
+      "ckan_last_modified": "2025-09-04T13:30:48.701007",
+      "cr": 0,
+      "crlf": 366,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "91947c0c-bbbf-4d55-a29d-dc610d91d075",
+      "rows": 365,
+      "sampled": false,
+      "size": 5725,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:38:11.406081+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/system_inertia_cost/2026/10/08/raw_20261008T113813Z_a6a52241-1774-48d8-935f-2bef0d843e18_fc8d03c7.csv",
+      "ckan_last_modified": "2026-04-10T09:06:09.725049",
+      "cr": 0,
+      "crlf": 367,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "a6a52241-1774-48d8-935f-2bef0d843e18",
+      "rows": 366,
+      "sampled": false,
+      "size": 5681,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:38:13.868127+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/system_inertia_cost/2026/10/08/raw_20261008T113816Z_6295f4ed-b43d-4a80-8ca9-c27c9fa16517_1f7fa566.csv",
+      "ckan_last_modified": "2026-04-14T14:54:26.059319",
+      "cr": 0,
+      "crlf": 2,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "6295f4ed-b43d-4a80-8ca9-c27c9fa16517",
+      "rows": 1,
+      "sampled": false,
+      "size": 45,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:38:16.330604+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 4,
+      "columns": {
+        "Cost": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "0",
+            "1130",
+            "2833"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "int": 1461
+          }
+        },
+        "Settlement Date": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%d/%m/%Y": 0,
+            "float64": 1461,
+            "int64": 1461
+          },
+          "examples": [
+            "01/04/2017",
+            "02/04/2017",
+            "03/04/2017"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "slash_date": 1461
+          },
+          "slash_first_gt_12": 885,
+          "slash_second_gt_12": 0
+        }
+      },
+      "field_info": {
+        "columns": {
+          "Settlement Date": {
+            "description": "Settlement Date",
+            "title": "Settlement Date",
+            "type": "date",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [
+          "Cost_per_GVAs"
+        ],
+        "header_not_in_field_info": [
+          "Cost"
+        ]
+      },
+      "first_written_at": "2026-10-08T11:37:51.909336+00:00",
+      "header": [
+        "Settlement Date",
+        "Cost"
+      ],
+      "last_written_at": "2026-10-08T11:38:00.133113+00:00",
+      "resource_ids": [
+        "1146f7af-9f3b-4a8a-a37d-3003c727bfbf",
+        "130c9f71-cbce-4027-b5b8-13cba14df0dd",
+        "28dc603e-3472-45cd-8e7b-998efc674084",
+        "620491fa-ae1b-45b3-baa0-6e87c2d574cf"
+      ],
+      "rows": 1461,
+      "settlement_periods": []
+    },
+    {
+      "captures": 6,
+      "columns": {
+        "Cost_per_GVAs": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "0",
+            "2413",
+            "2369"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "int": 1821
+          }
+        },
+        "Settlement Date": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%Y-%m-%d": 1,
+            "%d/%m/%Y": 1820,
+            "float64": 1821,
+            "int64": 1821
+          },
+          "examples": [
+            "2021-04-01",
+            "2021-04-02",
+            "2021-04-03"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "iso_date": 1820,
+            "slash_date": 1
+          },
+          "slash_first_gt_12": 0,
+          "slash_second_gt_12": 0
+        }
+      },
+      "field_info": {
+        "columns": {
+          "Cost_per_GVAs": {
+            "description": "Daily average cost of unit of inertia (£ per GVA)",
+            "title": "Cost_per_GVAs",
+            "type": "int4",
+            "unit": "£ per GVAs"
+          },
+          "Settlement Date": {
+            "description": "Settlement Date",
+            "title": "Settlement Date",
+            "type": "date",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T11:38:03.325819+00:00",
+      "header": [
+        "Settlement Date",
+        "Cost_per_GVAs"
+      ],
+      "last_written_at": "2026-10-08T11:38:16.330604+00:00",
+      "resource_ids": [
+        "3518e47e-ffb3-4561-aff1-4a102fcb242d",
+        "3cc32e61-bf87-471c-bf00-abb356d3f8c8",
+        "6295f4ed-b43d-4a80-8ca9-c27c9fa16517",
+        "8a3a4233-e9aa-45c2-b0c4-28b8d614165b",
+        "91947c0c-bbbf-4d55-a29d-dc610d91d075",
+        "a6a52241-1774-48d8-935f-2bef0d843e18"
+      ],
+      "rows": 1821,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [
+    "multi_epoch"
+  ],
+  "key": "system_inertia_cost",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 10,
+        "columns": [
+          "Settlement Date"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 6,
+        "columns": [
+          "Cost_per_GVAs"
+        ],
+        "max_duplicates": 236
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "system-inertia-cost",
+  "proposal": {
+    "flags": [
+      "multi_epoch"
+    ],
+    "record_draft": {
+      "eligibility": {
+        "question": "Cost: a numeric column with no vendor unit",
+        "status": "held",
+        "unit": "SYS-1"
+      },
+      "encoding": "utf-8",
+      "entity_key": [
+        "settlement_date"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "date",
+              "format": "%d/%m/%Y",
+              "name": "settlement_date",
+              "nullable": true,
+              "source": "Settlement Date"
+            },
+            {
+              "dtype": "int64",
+              "name": "cost",
+              "nullable": true,
+              "source": "Cost"
+            }
+          ],
+          "header": [
+            "Settlement Date",
+            "Cost"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        },
+        {
+          "columns": [
+            {
+              "dtype": "TODO: T02",
+              "name": "settlement_date",
+              "nullable": true,
+              "source": "Settlement Date"
+            },
+            {
+              "dtype": "int64",
+              "name": "cost_per_gvas",
+              "nullable": true,
+              "source": "Cost_per_GVAs"
+            }
+          ],
+          "header": [
+            "Settlement Date",
+            "Cost_per_GVAs"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T03",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "held",
+        "field": "column 'Cost'.unit",
+        "id": "T01",
+        "kind": "unit",
+        "question": "Cost: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "blocked",
+        "field": "column 'Settlement Date'.dtype",
+        "id": "T02",
+        "kind": "type_conflict",
+        "question": "Settlement Date: field-info declares date but the bronze values do not all cast to one date format"
+      },
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T03",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: Settlement Date"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T04",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['settlement_date'] (measured unique in 10 capture(s)); without one, latest stays whole_capture"
+      },
+      {
+        "consequence": "none",
+        "field": "epochs",
+        "id": "T05",
+        "kind": "multi_epoch",
+        "question": "2 header epochs; review each in its batch"
+      }
+    ]
+  },
+  "refresh": "adhoc",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update frequency",
+        "value": "Ad hoc"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "System",
+    "title": "System Inertia Cost"
+  }
+}

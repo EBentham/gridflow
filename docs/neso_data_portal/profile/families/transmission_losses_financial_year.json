@@ -1,0 +1,286 @@
+{
+  "archetype": "SER",
+  "batch": "DEM-2",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/transmission_losses_financial_year/2026/10/08/raw_20261008T113933Z_c0cd9512-4f8a-468e-8823-7c8238dcb9b9_bd49c7bd.csv",
+      "ckan_last_modified": "2026-06-04T09:14:02.612393",
+      "cr": 0,
+      "crlf": 14,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "c0cd9512-4f8a-468e-8823-7c8238dcb9b9",
+      "rows": 13,
+      "sampled": false,
+      "size": 763,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:39:33.612377+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 1,
+      "columns": {
+        "Financial Year": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 13,
+            "int64": 13
+          },
+          "examples": [
+            "2013-14",
+            "2014-15",
+            "2015-16"
+          ],
+          "max_len": 7,
+          "null_count": 0,
+          "shapes": {
+            "text": 13
+          }
+        },
+        "Sum of GB totals": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 13
+          },
+          "examples": [
+            "5.426425259",
+            "5.636473429",
+            "5.371663376"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 13
+          }
+        },
+        "Sum of NGET": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 13
+          },
+          "examples": [
+            "4.556393018",
+            "4.57786541",
+            "4.598267205"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 13
+          }
+        },
+        "Sum of SHETL": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 13
+          },
+          "examples": [
+            "0.325972277",
+            "0.370512807",
+            "0.27068866"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 13
+          }
+        },
+        "Sum of SPT": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 13
+          },
+          "examples": [
+            "0.544059964",
+            "0.688095212",
+            "0.502707511"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 13
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "Financial Year": {
+            "description": "Financial year of the transmission losses",
+            "title": "Financial Year",
+            "type": "text",
+            "unit": null
+          },
+          "Sum of GB totals": {
+            "description": "Great Britain Transmission System losses for the financial year in question",
+            "title": "Sum of GB totals losses",
+            "type": "numeric",
+            "unit": "TWh"
+          },
+          "Sum of NGET": {
+            "description": "England and Wales Transmission System losses for the financial year in question",
+            "title": "Sum of National Grid Electricity Transmission (NGET) losses",
+            "type": "numeric",
+            "unit": "TWh"
+          },
+          "Sum of SHETL": {
+            "description": "Scottish Hydro Electric Transmission system losses for the financial year in question",
+            "title": "Sum of Scottish Hydro Electric Transmission (SHETL) losses",
+            "type": "numeric",
+            "unit": "TWh"
+          },
+          "Sum of SPT": {
+            "description": "Scottish Power Transmission system losses for the financial year in question",
+            "title": "Sum of Scottish Power Transmission (SPT) losses",
+            "type": "numeric",
+            "unit": "TWh"
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T11:39:33.612377+00:00",
+      "header": [
+        "Financial Year",
+        "Sum of NGET",
+        "Sum of SPT",
+        "Sum of SHETL",
+        "Sum of GB totals"
+      ],
+      "last_written_at": "2026-10-08T11:39:33.612377+00:00",
+      "resource_ids": [
+        "c0cd9512-4f8a-468e-8823-7c8238dcb9b9"
+      ],
+      "rows": 13,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [],
+  "key": "transmission_losses_financial_year",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Financial Year"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Sum of NGET"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Sum of SPT"
+        ],
+        "max_duplicates": 0
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "transmission-losses",
+  "proposal": {
+    "flags": [],
+    "record_draft": {
+      "encoding": "utf-8",
+      "entity_key": [
+        "financial_year"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "financial_year",
+              "nullable": true,
+              "source": "Financial Year"
+            },
+            {
+              "dtype": "float64",
+              "name": "sum_of_nget",
+              "nullable": true,
+              "source": "Sum of NGET"
+            },
+            {
+              "dtype": "float64",
+              "name": "sum_of_spt",
+              "nullable": true,
+              "source": "Sum of SPT"
+            },
+            {
+              "dtype": "float64",
+              "name": "sum_of_shetl",
+              "nullable": true,
+              "source": "Sum of SHETL"
+            },
+            {
+              "dtype": "float64",
+              "name": "sum_of_gb_totals",
+              "nullable": true,
+              "source": "Sum of GB totals"
+            }
+          ],
+          "header": [
+            "Financial Year",
+            "Sum of NGET",
+            "Sum of SPT",
+            "Sum of SHETL",
+            "Sum of GB totals"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T01",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T01",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: none"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T02",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['financial_year'] (measured unique in 1 capture(s)); without one, latest stays whole_capture"
+      }
+    ]
+  },
+  "refresh": "monthly",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update Frequency",
+        "value": "Monthly"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Demand",
+    "title": "Transmission Losses"
+  }
+}

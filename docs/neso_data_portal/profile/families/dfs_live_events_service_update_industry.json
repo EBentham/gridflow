@@ -1,0 +1,260 @@
+{
+  "archetype": "EVT",
+  "batch": "DFS",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/dfs_live_events_service_update_industry/2026/10/08/raw_20261008T100629Z_a59a9d56-af4b-4044-b0c8-6379ce1213f8_c6e0aaa4.csv",
+      "ckan_last_modified": "2023-03-07T14:29:05.792893",
+      "cr": 0,
+      "crlf": 8,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "a59a9d56-af4b-4044-b0c8-6379ce1213f8",
+      "rows": 7,
+      "sampled": false,
+      "size": 1293,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:06:29.757293+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 1,
+      "columns": {
+        "Date": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%Y-%m-%d": 0,
+            "float64": 7,
+            "int64": 7
+          },
+          "examples": [
+            "2023-03-07",
+            "2023-02-06",
+            "2023-01-23"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "iso_date": 7
+          }
+        },
+        "Status": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 7,
+            "int64": 7
+          },
+          "examples": [
+            "Further to issuing the anticipated requirement notice. There is no longer consid",
+            "This is an indication that a DFS Service Requirement might be published today at",
+            "DFS Service Requirement has been published for tomorrow. Please view the service"
+          ],
+          "max_len": 188,
+          "null_count": 0,
+          "shapes": {
+            "text": 7
+          }
+        },
+        "Time": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 7,
+            "int64": 7
+          },
+          "examples": [
+            "14:30",
+            "10:00"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "text": 7
+          }
+        },
+        "Type": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 7,
+            "int64": 7
+          },
+          "examples": [
+            "Requirement Cancelled",
+            "Anticipated Requirement Notice",
+            "Requirement Published"
+          ],
+          "max_len": 31,
+          "null_count": 0,
+          "shapes": {
+            "text": 7
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "Date": {
+            "description": "Date notification was posted",
+            "title": "Date of Notification",
+            "type": "date",
+            "unit": null
+          },
+          "Status": {
+            "description": "Details of the notification",
+            "title": "Status",
+            "type": "text",
+            "unit": null
+          },
+          "Time": {
+            "description": "Notification time",
+            "title": "Time of Notification",
+            "type": "text",
+            "unit": "HH:MM"
+          },
+          "Type": {
+            "description": "Anticipated DFS Requirements Notice: Published at around 10:00 GMT only when a requirement is anticipated DFS Requirement is now published: Published at around 14:30 GMT when a requirement for DFS has been published DFS Requirement not issued: Published at around 14:30 GMT when there is no longer co",
+            "title": "Type of Notification",
+            "type": "text",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T10:06:29.757293+00:00",
+      "header": [
+        "Date",
+        "Status",
+        "Type",
+        "Time"
+      ],
+      "last_written_at": "2026-10-08T10:06:29.757293+00:00",
+      "resource_ids": [
+        "a59a9d56-af4b-4044-b0c8-6379ce1213f8"
+      ],
+      "rows": 7,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [],
+  "key": "dfs_live_events_service_update_industry",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Date",
+          "Status"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Date",
+          "Type"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Date",
+          "Time"
+        ],
+        "max_duplicates": 0
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "demand-flexibility-service-live-events",
+  "proposal": {
+    "flags": [],
+    "record_draft": {
+      "encoding": "utf-8",
+      "entity_key": [
+        "date",
+        "status"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "date",
+              "format": "%Y-%m-%d",
+              "name": "date",
+              "nullable": true,
+              "source": "Date"
+            },
+            {
+              "dtype": "string",
+              "name": "status",
+              "nullable": true,
+              "source": "Status"
+            },
+            {
+              "dtype": "string",
+              "name": "type",
+              "nullable": true,
+              "source": "Type"
+            },
+            {
+              "dtype": "string",
+              "name": "time",
+              "nullable": true,
+              "source": "Time"
+            }
+          ],
+          "header": [
+            "Date",
+            "Status",
+            "Type",
+            "Time"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T01",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T01",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: Date"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T02",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['date', 'status'] (measured unique in 1 capture(s)); without one, latest stays whole_capture"
+      }
+    ]
+  },
+  "refresh": "frozen",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update Frequency",
+        "value": "Not Active"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Demand Flexibility Service",
+    "title": "Demand Flexibility Service 2022/23: Live Events"
+  }
+}

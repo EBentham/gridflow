@@ -1,0 +1,471 @@
+{
+  "archetype": "REG",
+  "batch": "CI",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/capacity_market_component_history/2026/10/08/raw_20261008T091423Z_62bca39c-d4f0-4cd6-b2ff-8ef42dca7f23_a619ea93.csv",
+      "ckan_last_modified": "2026-10-07T14:26:38.881535",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 7695,
+      "parse_error": null,
+      "resource_id": "62bca39c-d4f0-4cd6-b2ff-8ef42dca7f23",
+      "rows": 7460,
+      "sampled": false,
+      "size": 1215696,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T09:14:23.592318+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 1,
+      "columns": {
+        "Application ID": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 7460,
+            "int64": 7460
+          },
+          "examples": [
+            "S-ST-1-2026-OPL061-00002",
+            "S-ST-1-2026-6DG002-00001",
+            "S-ST-1-2026-6DG003-00001"
+          ],
+          "max_len": 24,
+          "null_count": 0,
+          "shapes": {
+            "text": 7460
+          }
+        },
+        "Attribute": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 7460,
+            "int64": 7460
+          },
+          "examples": [
+            "Description of CMU Components",
+            "Generating Technology Class",
+            "Location and Post Code"
+          ],
+          "max_len": 46,
+          "null_count": 0,
+          "shapes": {
+            "text": 7460
+          }
+        },
+        "Auction Name": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 7460,
+            "int64": 7460
+          },
+          "examples": [
+            "2025-26 (T-4) Four Year Ahead Capacity Auction",
+            "2026-27 (T-1) One Year Ahead Capacity Auction",
+            "2026-27 (T-4) Four Year Ahead Capacity Auction"
+          ],
+          "max_len": 46,
+          "null_count": 0,
+          "shapes": {
+            "text": 7460
+          }
+        },
+        "CMU ID": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 7460,
+            "int64": 7460
+          },
+          "examples": [
+            "OPL061",
+            "6DG002",
+            "6DG003"
+          ],
+          "max_len": 6,
+          "null_count": 0,
+          "shapes": {
+            "text": 7460
+          }
+        },
+        "Change Date": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%Y-%m-%d": 0,
+            "float64": 7460,
+            "int64": 7460
+          },
+          "examples": [
+            "2026-07-29",
+            "2026-08-05",
+            "2026-08-12"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "iso_date": 7460
+          }
+        },
+        "Change Type": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 7460,
+            "int64": 7460
+          },
+          "examples": [
+            "New",
+            "Removed",
+            "Detail"
+          ],
+          "max_len": 7,
+          "null_count": 0,
+          "shapes": {
+            "text": 7460
+          }
+        },
+        "Component ID": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 7414,
+            "int64": 7414
+          },
+          "examples": [
+            "610001",
+            "NDSR02",
+            "NDSR03A"
+          ],
+          "max_len": 34,
+          "null_count": 0,
+          "shapes": {
+            "int": 46,
+            "text": 7414
+          }
+        },
+        "Delivery Year": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "2026",
+            "2029",
+            "2027"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 7460
+          }
+        },
+        "Latest": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 3755,
+            "int64": 4136
+          },
+          "examples": [
+            "MANX Cable Company Coming into the UK",
+            "DSR",
+            "Manx Cable Company, Substation Bristol Avenue, Bispham, Blackpool FY2 0FB"
+          ],
+          "max_len": 218,
+          "null_count": 2499,
+          "shapes": {
+            "decimal": 381,
+            "int": 825,
+            "text": 3755
+          }
+        },
+        "Previous": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 1933,
+            "int64": 2127
+          },
+          "examples": [
+            "Standby generation",
+            "12.49",
+            "DSR"
+          ],
+          "max_len": 218,
+          "null_count": 4937,
+          "shapes": {
+            "decimal": 194,
+            "int": 396,
+            "text": 1933
+          }
+        },
+        "Type": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 7460,
+            "int64": 7460
+          },
+          "examples": [
+            "ST",
+            "T-1",
+            "T-4"
+          ],
+          "max_len": 3,
+          "null_count": 0,
+          "shapes": {
+            "text": 7460
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "Application ID": {
+            "description": "System generated ID for Application",
+            "title": "Application ID\t\t",
+            "type": "text",
+            "unit": null
+          },
+          "Attribute": {
+            "description": "The name of the column in CMU dataset where the value has changed",
+            "title": "Attribute\t\t",
+            "type": "text",
+            "unit": null
+          },
+          "Auction Name": {
+            "description": "Name of Capacity Market Auction",
+            "title": "Auction Name\t\t",
+            "type": "text",
+            "unit": null
+          },
+          "CMU ID": {
+            "description": "ID of Capacity Market Unit - defined by Capacity Provider",
+            "title": "CMU ID",
+            "type": "text",
+            "unit": null
+          },
+          "Change Date": {
+            "description": "The date that the change was first reported on CMR (normally Wednesday)",
+            "title": "Change Date\t\t",
+            "type": "date",
+            "unit": null
+          },
+          "Change Type": {
+            "description": "Type of change to value, new, removed or update",
+            "title": "Change Type\t\t",
+            "type": "text",
+            "unit": null
+          },
+          "Component ID": {
+            "description": "ID of Capacity Market Unit and Component (where relevant) - defined by Capacity Provider",
+            "title": "Component ID\t",
+            "type": "text",
+            "unit": null
+          },
+          "Delivery Year": {
+            "description": "First Delivery Year to which the Capacity Auction Relates to",
+            "title": "Delivery Year",
+            "type": "int4",
+            "unit": "Year"
+          },
+          "Latest": {
+            "description": "The updated attribute value, as at the change date",
+            "title": "Latest\t\t",
+            "type": "text",
+            "unit": null
+          },
+          "Previous": {
+            "description": "The attribute value in the previously published CMR",
+            "title": "Previous\t\t",
+            "type": "text",
+            "unit": null
+          },
+          "Type": {
+            "description": "Indicates the number of years leading up to the delivery year",
+            "title": "Type",
+            "type": "text",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T09:14:23.592318+00:00",
+      "header": [
+        "Auction Name",
+        "Application ID",
+        "CMU ID",
+        "Component ID",
+        "Type",
+        "Delivery Year",
+        "Attribute",
+        "Previous",
+        "Latest",
+        "Change Type",
+        "Change Date"
+      ],
+      "last_written_at": "2026-10-08T09:14:23.592318+00:00",
+      "resource_ids": [
+        "62bca39c-d4f0-4cd6-b2ff-8ef42dca7f23"
+      ],
+      "rows": 7460,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [
+    "sibling_candidate:capacity_market_component_history_pre"
+  ],
+  "key": "capacity_market_component_history",
+  "keys": {
+    "candidates": [],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "capacity-market-register",
+  "proposal": {
+    "flags": [
+      "sibling_candidate:capacity_market_component_history_pre"
+    ],
+    "record_draft": {
+      "encoding": "utf-8",
+      "entity_key": [
+        "auction_name",
+        "application_id",
+        "cmu_id",
+        "component_id",
+        "type",
+        "delivery_year",
+        "attribute",
+        "previous",
+        "latest",
+        "change_type",
+        "change_date"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "auction_name",
+              "nullable": true,
+              "source": "Auction Name"
+            },
+            {
+              "dtype": "string",
+              "name": "application_id",
+              "nullable": true,
+              "source": "Application ID"
+            },
+            {
+              "dtype": "string",
+              "name": "cmu_id",
+              "nullable": true,
+              "source": "CMU ID"
+            },
+            {
+              "dtype": "string",
+              "name": "component_id",
+              "nullable": true,
+              "source": "Component ID"
+            },
+            {
+              "dtype": "string",
+              "name": "type",
+              "nullable": true,
+              "source": "Type"
+            },
+            {
+              "dtype": "int64",
+              "name": "delivery_year",
+              "nullable": true,
+              "source": "Delivery Year"
+            },
+            {
+              "dtype": "string",
+              "name": "attribute",
+              "nullable": true,
+              "source": "Attribute"
+            },
+            {
+              "dtype": "string",
+              "name": "previous",
+              "nullable": true,
+              "source": "Previous"
+            },
+            {
+              "dtype": "string",
+              "name": "latest",
+              "nullable": true,
+              "source": "Latest"
+            },
+            {
+              "dtype": "string",
+              "name": "change_type",
+              "nullable": true,
+              "source": "Change Type"
+            },
+            {
+              "dtype": "date",
+              "format": "%Y-%m-%d",
+              "name": "change_date",
+              "nullable": true,
+              "source": "Change Date"
+            }
+          ],
+          "header": [
+            "Auction Name",
+            "Application ID",
+            "CMU ID",
+            "Component ID",
+            "Type",
+            "Delivery Year",
+            "Attribute",
+            "Previous",
+            "Latest",
+            "Change Type",
+            "Change Date"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T01",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T01",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: Change Date"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T02",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['auction_name', 'application_id', 'cmu_id', 'component_id', 'type', 'delivery_year', 'attribute', 'previous', 'latest', 'change_type', 'change_date'] (no candidate measured unique, so every column); without one, latest stays whole_capture"
+      }
+    ]
+  },
+  "refresh": "weekly",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update frequency",
+        "value": "Weekly"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Electricity Market Reform",
+    "title": "Capacity Market Register"
+  }
+}

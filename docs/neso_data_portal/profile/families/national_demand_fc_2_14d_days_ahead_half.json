@@ -1,0 +1,278 @@
+{
+  "archetype": "FC",
+  "batch": "DEM-1",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/national_demand_fc_2_14d_days_ahead_half/2026/10/08/raw_20261008T111304Z_7c0411cd-2714-4bb5-a408-adb065edf34d_9454ade5.csv",
+      "ckan_last_modified": "2026-10-08T08:46:32.246773",
+      "cr": 0,
+      "crlf": 625,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "7c0411cd-2714-4bb5-a408-adb065edf34d",
+      "rows": 624,
+      "sampled": false,
+      "size": 29113,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:13:04.910135+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 1,
+      "columns": {
+        "CTIME": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "30",
+            "100",
+            "130"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 624
+          }
+        },
+        "DATE": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%Y-%m-%d": 0,
+            "float64": 624,
+            "int64": 624
+          },
+          "examples": [
+            "2026-10-10",
+            "2026-10-11",
+            "2026-10-12"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "iso_date": 624
+          }
+        },
+        "GDATETIME": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 624,
+            "int64": 624
+          },
+          "examples": [
+            "2026-10-09T23:30:00",
+            "2026-10-10T00:00:00",
+            "2026-10-10T00:30:00"
+          ],
+          "max_len": 19,
+          "null_count": 0,
+          "shapes": {
+            "naive_datetime": 624
+          }
+        },
+        "NATIONALDEMAND": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "20660",
+            "20104",
+            "20384"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "int": 624
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "CTIME": {
+            "description": "Time at which the forecast demand is occurring. This time uses the GB timezone (BST/GMT).",
+            "title": "Clock Time",
+            "type": "int4",
+            "unit": null
+          },
+          "DATE": {
+            "description": "Date on which the forecast demand is occurring. This date is aligned with the GB timezone (BST/GMT).",
+            "title": "Date",
+            "type": "date",
+            "unit": null
+          },
+          "GDATETIME": {
+            "description": "Datetime at which the demand is occurring. This is in GMT/UTC regardless of forecast date's GB timezone.",
+            "title": "Datetime",
+            "type": "timestamp",
+            "unit": null
+          },
+          "NATIONALDEMAND": {
+            "description": "The demand forecast for the specified datetime.",
+            "title": "National Demand Forecast",
+            "type": "int4",
+            "unit": "MW"
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T11:13:04.910135+00:00",
+      "header": [
+        "DATE",
+        "CTIME",
+        "GDATETIME",
+        "NATIONALDEMAND"
+      ],
+      "last_written_at": "2026-10-08T11:13:04.910135+00:00",
+      "resource_ids": [
+        "7c0411cd-2714-4bb5-a408-adb065edf34d"
+      ],
+      "rows": 624,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [],
+  "key": "national_demand_fc_2_14d_days_ahead_half",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 1,
+        "columns": [
+          "GDATETIME"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 1,
+        "columns": [
+          "DATE",
+          "CTIME"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 1,
+        "columns": [
+          "CTIME",
+          "NATIONALDEMAND"
+        ],
+        "max_duplicates": 0
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "2-14-days-ahead-national-demand-forecast",
+  "proposal": {
+    "flags": [],
+    "record_draft": {
+      "eligibility": {
+        "question": "CTIME: a numeric column with no vendor unit; GDATETIME: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)",
+        "status": "held",
+        "unit": "DEM-1"
+      },
+      "encoding": "utf-8",
+      "entity_key": [
+        "gdatetime"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "date",
+              "format": "%Y-%m-%d",
+              "name": "date",
+              "nullable": true,
+              "source": "DATE"
+            },
+            {
+              "dtype": "int64",
+              "name": "ctime",
+              "nullable": true,
+              "source": "CTIME"
+            },
+            {
+              "dtype": "string",
+              "name": "gdatetime",
+              "nullable": true,
+              "source": "GDATETIME"
+            },
+            {
+              "dtype": "int64",
+              "name": "nationaldemand",
+              "nullable": true,
+              "source": "NATIONALDEMAND"
+            }
+          ],
+          "header": [
+            "DATE",
+            "CTIME",
+            "GDATETIME",
+            "NATIONALDEMAND"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T03",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "held",
+        "field": "column 'CTIME'.unit",
+        "id": "T01",
+        "kind": "unit",
+        "question": "CTIME: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'GDATETIME'",
+        "id": "T02",
+        "kind": "time_semantics",
+        "question": "GDATETIME: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T03",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: DATE, GDATETIME"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T04",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['gdatetime'] (measured unique in 1 capture(s)); without one, latest stays whole_capture"
+      }
+    ]
+  },
+  "refresh": "daily",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Status",
+        "value": "Live"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Demand",
+    "title": "2-14 Days Ahead Demand Forecast"
+  }
+}

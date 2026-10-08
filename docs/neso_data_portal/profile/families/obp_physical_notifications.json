@@ -1,0 +1,334 @@
+{
+  "archetype": "EVT",
+  "batch": "AS-3",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/obp_physical_notifications/2026/10/08/raw_20261008T111457Z_dfe1d229-e973-43c6-b5eb-c28ad59d7136_8f6a94d9.csv",
+      "ckan_last_modified": "2026-10-08T11:01:24.343784",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 495087,
+      "parse_error": null,
+      "resource_id": "dfe1d229-e973-43c6-b5eb-c28ad59d7136",
+      "rows": 495086,
+      "sampled": true,
+      "size": 29533717,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:14:57.154311+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 1,
+      "columns": {
+        "Data": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 495086,
+            "int64": 495086
+          },
+          "examples": [
+            "PN"
+          ],
+          "max_len": 2,
+          "null_count": 0,
+          "shapes": {
+            "text": 50000
+          }
+        },
+        "Level From": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 495086
+          },
+          "examples": [
+            "0.0",
+            "2.0",
+            "20.0"
+          ],
+          "max_len": 8,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 50000
+          }
+        },
+        "Level To": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 495086
+          },
+          "examples": [
+            "0.0",
+            "6.0",
+            "20.0"
+          ],
+          "max_len": 8,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 50000
+          }
+        },
+        "Time From": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 495086,
+            "int64": 495086
+          },
+          "examples": [
+            "2025-10-08T16:00:00",
+            "2025-10-08T16:30:00",
+            "2025-10-08T17:00:00"
+          ],
+          "max_len": 19,
+          "null_count": 0,
+          "shapes": {
+            "naive_datetime": 50000
+          }
+        },
+        "Time To": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 495086,
+            "int64": 495086
+          },
+          "examples": [
+            "2025-10-08T16:30:00",
+            "2025-10-08T17:00:00",
+            "2025-10-08T17:30:00"
+          ],
+          "max_len": 19,
+          "null_count": 0,
+          "shapes": {
+            "naive_datetime": 50000
+          }
+        },
+        "Unit ID": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 495086,
+            "int64": 495086
+          },
+          "examples": [
+            "EDFE-11",
+            "EDFE-8",
+            "EDFE-21"
+          ],
+          "max_len": 9,
+          "null_count": 0,
+          "shapes": {
+            "text": 50000
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "Data": {
+            "description": "Type of data",
+            "title": "Data\t\t",
+            "type": "text",
+            "unit": null
+          },
+          "Level From": {
+            "description": "PN at Gate Closure for window start time in MW",
+            "title": "Level From\t\t",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "Level To": {
+            "description": "PN at  Gate Closure for window end time in MW",
+            "title": "Level To\t\t",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "Time From": {
+            "description": "Window Start Datetime",
+            "title": "Time From\t\t",
+            "type": "timestamp",
+            "unit": "UTC"
+          },
+          "Time To": {
+            "description": "Window End Time",
+            "title": "Time To\t\t",
+            "type": "timestamp",
+            "unit": "UTC"
+          },
+          "Unit ID": {
+            "description": "Registered Unit ID associated with the corresponding instruction.",
+            "title": "Unit ID\t\t",
+            "type": "text",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T11:14:57.154311+00:00",
+      "header": [
+        "Data",
+        "Unit ID",
+        "Time From",
+        "Level From",
+        "Time To",
+        "Level To"
+      ],
+      "last_written_at": "2026-10-08T11:14:57.154311+00:00",
+      "resource_ids": [
+        "dfe1d229-e973-43c6-b5eb-c28ad59d7136"
+      ],
+      "rows": 495086,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [
+    "sampled"
+  ],
+  "key": "obp_physical_notifications",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Unit ID",
+          "Time From"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Unit ID",
+          "Time To"
+        ],
+        "max_duplicates": 0
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "obp-non-bm-physical-notifications",
+  "proposal": {
+    "flags": [
+      "sampled"
+    ],
+    "record_draft": {
+      "eligibility": {
+        "question": "Time From: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced); Time To: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)",
+        "status": "held",
+        "unit": "AS-3"
+      },
+      "encoding": "utf-8",
+      "entity_key": [
+        "unit_id",
+        "time_from"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "data",
+              "nullable": true,
+              "source": "Data"
+            },
+            {
+              "dtype": "string",
+              "name": "unit_id",
+              "nullable": true,
+              "source": "Unit ID"
+            },
+            {
+              "dtype": "string",
+              "name": "time_from",
+              "nullable": true,
+              "source": "Time From"
+            },
+            {
+              "dtype": "float64",
+              "name": "level_from",
+              "nullable": true,
+              "source": "Level From"
+            },
+            {
+              "dtype": "string",
+              "name": "time_to",
+              "nullable": true,
+              "source": "Time To"
+            },
+            {
+              "dtype": "float64",
+              "name": "level_to",
+              "nullable": true,
+              "source": "Level To"
+            }
+          ],
+          "header": [
+            "Data",
+            "Unit ID",
+            "Time From",
+            "Level From",
+            "Time To",
+            "Level To"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T03",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "held",
+        "field": "column 'Time From'",
+        "id": "T01",
+        "kind": "time_semantics",
+        "question": "Time From: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Time To'",
+        "id": "T02",
+        "kind": "time_semantics",
+        "question": "Time To: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T03",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: Time From, Time To"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T04",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['unit_id', 'time_from'] (measured unique in 1 capture(s)); without one, latest stays whole_capture"
+      }
+    ]
+  },
+  "refresh": "daily",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update frequency",
+        "value": "Ad hoc"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Ancillary services",
+    "title": "Open Balancing Platform (OBP) - Non-BM Physical Notifications (PN)"
+  }
+}

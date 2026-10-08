@@ -1,0 +1,149 @@
+{
+  "snapshot_id": "20261006T195819Z",
+  "packages": [
+    {
+      "name": "24-months-ahead-constraint-cost-forecast",
+      "id": "51bb8f5a-3c95-4f7f-9a72-3b36cb7f1dc0",
+      "title": "24 Months Ahead Constraint Cost Forecast",
+      "organization": {
+        "title": "Constraint management"
+      },
+      "license_title": "NESO Open Data Licence",
+      "extras": [
+        {
+          "key": "Update frequency",
+          "value": "Monthly"
+        }
+      ],
+      "resources": [
+        {
+          "id": "28b85d3f-a1cc-4bb9-80af-600f2cca266a",
+          "name": "24 Months Ahead Constraint Cost Forecast",
+          "format": "CSV",
+          "url_type": "upload",
+          "last_modified": "2026-09-10T09:38:53.501869"
+        }
+      ]
+    },
+    {
+      "name": "day-ahead-half-hourly-demand-forecast-performance",
+      "id": "5281b494-5566-42dd-bf1a-9ce38642fabf",
+      "title": "Day Ahead Half Hourly Demand Forecast Performance",
+      "organization": {
+        "title": "Demand"
+      },
+      "license_title": "NESO Open Data Licence",
+      "extras": [
+        {
+          "key": "Update frequency",
+          "value": "Monthly"
+        }
+      ],
+      "resources": [
+        {
+          "id": "08e41551-80f8-4e28-a416-ea473a695db9",
+          "name": "Day Ahead Half Hourly Demand Forecast Performance",
+          "format": "CSV",
+          "url_type": "upload",
+          "last_modified": "2026-10-06T09:15:08.465658"
+        }
+      ]
+    },
+    {
+      "name": "embedded-register",
+      "id": "4b0e109c-aa23-45ac-86c1-0bda557d1aab",
+      "title": "Embedded Register",
+      "organization": {
+        "title": "Connection registers"
+      },
+      "license_title": "NESO Open Data Licence",
+      "extras": [
+        {
+          "key": "Update Frequency",
+          "value": "Twice weekly"
+        }
+      ],
+      "resources": [
+        {
+          "id": "68b6f3a1-e1bf-403b-9062-0269fc758d77",
+          "name": "Embedded Register",
+          "format": "CSV",
+          "url_type": "upload",
+          "last_modified": "2026-10-06T10:47:45.071632"
+        }
+      ]
+    },
+    {
+      "name": "interconnector-register",
+      "id": "a7cca714-9dbb-42b1-99c8-4bc7211605a8",
+      "title": "Interconnector Register",
+      "organization": {
+        "title": "Connection registers"
+      },
+      "license_title": "NESO Open Data Licence",
+      "extras": [
+        {
+          "key": "Update Frequency",
+          "value": "Twice weekly"
+        }
+      ],
+      "resources": [
+        {
+          "id": "64f7908f-f787-4977-93e1-5342a5f1357f",
+          "name": "Interconnector Register",
+          "format": "CSV",
+          "url_type": "upload",
+          "last_modified": "2026-10-06T10:47:52.001303"
+        }
+      ]
+    },
+    {
+      "name": "long-term-2-52-weeks-ahead-national-demand-forecast",
+      "id": "edd6190a-66d4-480d-a125-88d32bd11c91",
+      "title": "Long Term (2-52 weeks ahead) National Demand Forecast",
+      "organization": {
+        "title": "Demand"
+      },
+      "license_title": "NESO Open Data Licence",
+      "extras": [
+        {
+          "key": "Update Frequency",
+          "value": "Ad hoc"
+        }
+      ],
+      "resources": [
+        {
+          "id": "903302b4-b577-4228-a347-b9917568b4e1",
+          "name": "Long term demand forecast",
+          "format": "CSV",
+          "url_type": "upload",
+          "last_modified": "2026-09-29T12:28:44.374647"
+        }
+      ]
+    },
+    {
+      "name": "transmission-entry-capacity-tec-register",
+      "id": "cbd45e54-e6e2-4a38-99f1-8de6fd96d7c1",
+      "title": "Transmission Entry Capacity (TEC) register",
+      "organization": {
+        "title": "Connection registers"
+      },
+      "license_title": "NESO Open Data Licence",
+      "extras": [
+        {
+          "key": "Update Frequency",
+          "value": "Twice weekly"
+        }
+      ],
+      "resources": [
+        {
+          "id": "17becbab-e3e8-473f-b303-3806f43a6a10",
+          "name": "TEC Register",
+          "format": "CSV",
+          "url_type": "upload",
+          "last_modified": "2026-10-06T10:47:29.757067"
+        }
+      ]
+    }
+  ]
+}

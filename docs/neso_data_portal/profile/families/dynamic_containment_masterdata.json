@@ -1,0 +1,725 @@
+{
+  "archetype": "EVT",
+  "batch": "AS-4",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/dynamic_containment_masterdata/2026/10/08/raw_20261008T101223Z_0b8dbc3c-e05e-44a4-b855-7dd1aa079c68_00789d3d.csv",
+      "ckan_last_modified": "2026-05-29T12:35:35.769649",
+      "cr": 0,
+      "crlf": 10389,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "0b8dbc3c-e05e-44a4-b855-7dd1aa079c68",
+      "rows": 10388,
+      "sampled": false,
+      "size": 1687187,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:12:23.877435+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 1,
+      "columns": {
+        "Accepted/Rejected": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 10388,
+            "int64": 10388
+          },
+          "examples": [
+            "Accepted",
+            "Rejected"
+          ],
+          "max_len": 8,
+          "null_count": 0,
+          "shapes": {
+            "text": 10388
+          }
+        },
+        "Agent/Applicant": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 10388,
+            "int64": 10388
+          },
+          "examples": [
+            "Flexitricity Limited",
+            "Arenko Cleantech Limited",
+            "Habitat Energy Limited"
+          ],
+          "max_len": 24,
+          "null_count": 0,
+          "shapes": {
+            "text": 10388
+          }
+        },
+        "Availability Fee": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1244
+          },
+          "examples": [
+            "15.03",
+            "14",
+            "24"
+          ],
+          "max_len": 11,
+          "null_count": 3,
+          "shapes": {
+            "decimal": 1244,
+            "int": 9141
+          }
+        },
+        "Delivery Date": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%d/%m/%Y": 0,
+            "float64": 10388,
+            "int64": 10388
+          },
+          "examples": [
+            "02/10/2020",
+            "03/10/2020",
+            "04/10/2020"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "slash_date": 10388
+          },
+          "slash_first_gt_12": 6118,
+          "slash_second_gt_12": 0
+        },
+        "Delivery End UTC": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 10388,
+            "int64": 10388
+          },
+          "examples": [
+            "2020-10-02T22:00:00Z",
+            "2020-10-03T22:00:00Z",
+            "2020-10-04T22:00:00Z"
+          ],
+          "max_len": 20,
+          "null_count": 0,
+          "shapes": {
+            "iso_datetime_z": 10388
+          }
+        },
+        "Delivery Start UTC": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 10388,
+            "int64": 10388
+          },
+          "examples": [
+            "2020-10-01T22:00:00Z",
+            "2020-10-02T22:00:00Z",
+            "2020-10-03T22:00:00Z"
+          ],
+          "max_len": 20,
+          "null_count": 0,
+          "shapes": {
+            "iso_datetime_z": 10388
+          }
+        },
+        "Market Name": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 10388,
+            "int64": 10388
+          },
+          "examples": [
+            "DC LF",
+            "Withdraw"
+          ],
+          "max_len": 8,
+          "null_count": 0,
+          "shapes": {
+            "text": 10388
+          }
+        },
+        "RTM/no RTM": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 10388,
+            "int64": 10388
+          },
+          "examples": [
+            "RTM",
+            "no RTM",
+            "no-RTM"
+          ],
+          "max_len": 38,
+          "null_count": 0,
+          "shapes": {
+            "text": 10388
+          }
+        },
+        "Rejection code": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1",
+            "5",
+            "4"
+          ],
+          "max_len": 1,
+          "null_count": 9195,
+          "shapes": {
+            "int": 1193
+          }
+        },
+        "Related Entity": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 8881,
+            "int64": 8881
+          },
+          "examples": [
+            "N/A",
+            "BESS HODLCO 3 LIMITED",
+            "BESS HOLDCO 3 LIMITED"
+          ],
+          "max_len": 29,
+          "null_count": 1507,
+          "shapes": {
+            "text": 8881
+          }
+        },
+        "Response Unit": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 10388,
+            "int64": 10388
+          },
+          "examples": [
+            "AG-MFLX02",
+            "ARNKB-1",
+            "AG-HEL00G"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "text": 10388
+          }
+        },
+        "Service Duration": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "24",
+            "25",
+            "23"
+          ],
+          "max_len": 2,
+          "null_count": 0,
+          "shapes": {
+            "int": 10388
+          }
+        },
+        "Technology Type": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 10388,
+            "int64": 10388
+          },
+          "examples": [
+            "Battery"
+          ],
+          "max_len": 7,
+          "null_count": 0,
+          "shapes": {
+            "text": 10388
+          }
+        },
+        "Total Cost": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1074
+          },
+          "examples": [
+            "17675.28",
+            "13776",
+            "14760"
+          ],
+          "max_len": 8,
+          "null_count": 1198,
+          "shapes": {
+            "decimal": 1074,
+            "int": 8116
+          }
+        },
+        "Unique bid number": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 10388,
+            "int64": 10388
+          },
+          "examples": [
+            "20201002 AG-MFLX02",
+            "20201002 ARNKB-1",
+            "20201002 AG-HEL00G"
+          ],
+          "max_len": 20,
+          "null_count": 0,
+          "shapes": {
+            "text": 10388
+          }
+        },
+        "Unit type": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 10388,
+            "int64": 10388
+          },
+          "examples": [
+            "BM",
+            "Non-BM"
+          ],
+          "max_len": 6,
+          "null_count": 0,
+          "shapes": {
+            "text": 10388
+          }
+        },
+        "Volume Accepted": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "49",
+            "41",
+            "0"
+          ],
+          "max_len": 2,
+          "null_count": 0,
+          "shapes": {
+            "int": 10388
+          }
+        },
+        "Volume offered": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "49",
+            "41",
+            "8"
+          ],
+          "max_len": 2,
+          "null_count": 0,
+          "shapes": {
+            "int": 10388
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "Accepted/Rejected": {
+            "description": "Text showing if unit is rejected or accepted",
+            "title": "Accepted/Rejected\t\t",
+            "type": "text",
+            "unit": null
+          },
+          "Agent/Applicant": {
+            "description": "Agent's name, as per submission template",
+            "title": "Agent/Applicant\t\t",
+            "type": "text",
+            "unit": null
+          },
+          "Availability Fee": {
+            "description": "If accepted, the price the unit will be paid at",
+            "title": "Availability Fee\t\t",
+            "type": "numeric",
+            "unit": "£"
+          },
+          "Delivery Date": {
+            "description": "Date when service will be delivered",
+            "title": "Delivery Date\t\t",
+            "type": "date",
+            "unit": null
+          },
+          "Delivery End UTC": {
+            "description": "End of service delivery",
+            "title": "Delivery End\t\t",
+            "type": "timestamp",
+            "unit": "UTC ISO 8601"
+          },
+          "Delivery Start UTC": {
+            "description": "Start of service delivery",
+            "title": "Delivery Start\t\t",
+            "type": "timestamp",
+            "unit": "UTC ISO 8601"
+          },
+          "Market Name": {
+            "description": "Dynamic Containment Low Frequency",
+            "title": "Market Name\t\t",
+            "type": "text",
+            "unit": null
+          },
+          "RTM/no RTM": {
+            "description": "Units participating in the tender \r\n(1) real time metering and baseline \r\n(2) no real time metering and baseline",
+            "title": "RTM/no RTM\t\t \t\t \t\t",
+            "type": "text",
+            "unit": null
+          },
+          "Rejection code": {
+            "description": "\"If bid was rejected, one of these codes will be applied:\r\n(1) bid not beneficial against alternative cost\r\n(2) requirement met by more economical bids\r\n(3) requirement met by more economic offers. Applies only to units with no real time metering and baseline where requirement of 300 MW was met by m",
+            "title": "Rejection Code\t\t",
+            "type": "numeric",
+            "unit": null
+          },
+          "Related Entity": {
+            "description": "Related entity, as per submission template",
+            "title": "Related Entity\t\t",
+            "type": "text",
+            "unit": null
+          },
+          "Response Unit": {
+            "description": "The registered unit name",
+            "title": "Response Unit\t\t",
+            "type": "text",
+            "unit": null
+          },
+          "Service Duration": {
+            "description": "24 hours contract",
+            "title": "Service Duration\t\t",
+            "type": "numeric",
+            "unit": null
+          },
+          "Technology Type": {
+            "description": "Unit's technology type",
+            "title": "Technology Type\t\t",
+            "type": "text",
+            "unit": "MW"
+          },
+          "Total Cost": {
+            "description": "if value shown, the bid was accepted, if blank, the bid was rejected",
+            "title": "Total cost\t\t",
+            "type": "numeric",
+            "unit": "£"
+          },
+          "Unique bid number": {
+            "description": "The unique bid number consisting of delivery date and unit name",
+            "title": "Unique bid number\t\t",
+            "type": "text",
+            "unit": null
+          },
+          "Unit type": {
+            "description": "Unit can be either BM or non-BM",
+            "title": "Unit Type\t\t",
+            "type": "text",
+            "unit": null
+          },
+          "Volume Accepted": {
+            "description": "If value shown, the bid was accepted, if 0 the unit was rejected",
+            "title": "Volume Accepted\t\t",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "Volume offered": {
+            "description": "The volume that unit offered",
+            "title": "Volume Offered\t\t",
+            "type": "numeric",
+            "unit": "MW"
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T10:12:23.877435+00:00",
+      "header": [
+        "Market Name",
+        "Delivery Date",
+        "Unique bid number",
+        "Response Unit",
+        "Unit type",
+        "Agent/Applicant",
+        "Related Entity",
+        "Volume offered",
+        "Volume Accepted",
+        "Delivery Start UTC",
+        "Delivery End UTC",
+        "Service Duration",
+        "Availability Fee",
+        "Total Cost",
+        "RTM/no RTM",
+        "Accepted/Rejected",
+        "Rejection code",
+        "Technology Type"
+      ],
+      "last_written_at": "2026-10-08T10:12:23.877435+00:00",
+      "resource_ids": [
+        "0b8dbc3c-e05e-44a4-b855-7dd1aa079c68"
+      ],
+      "rows": 10388,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [],
+  "key": "dynamic_containment_masterdata",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Unique bid number"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Delivery Date",
+          "Response Unit"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Response Unit",
+          "Delivery Start UTC"
+        ],
+        "max_duplicates": 0
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "dynamic-containment-data",
+  "proposal": {
+    "flags": [],
+    "record_draft": {
+      "eligibility": {
+        "question": "Delivery Start UTC: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced); Delivery End UTC: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced); Service Duration: a numeric column with no vendor unit; Rejection code: a numeric column with no vendor unit",
+        "status": "held",
+        "unit": "AS-4"
+      },
+      "encoding": "utf-8",
+      "entity_key": [
+        "unique_bid_number"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "market_name",
+              "nullable": true,
+              "source": "Market Name"
+            },
+            {
+              "dtype": "date",
+              "format": "%d/%m/%Y",
+              "name": "delivery_date",
+              "nullable": true,
+              "source": "Delivery Date"
+            },
+            {
+              "dtype": "string",
+              "name": "unique_bid_number",
+              "nullable": true,
+              "source": "Unique bid number"
+            },
+            {
+              "dtype": "string",
+              "name": "response_unit",
+              "nullable": true,
+              "source": "Response Unit"
+            },
+            {
+              "dtype": "string",
+              "name": "unit_type",
+              "nullable": true,
+              "source": "Unit type"
+            },
+            {
+              "dtype": "string",
+              "name": "agent_applicant",
+              "nullable": true,
+              "source": "Agent/Applicant"
+            },
+            {
+              "dtype": "string",
+              "name": "related_entity",
+              "nullable": true,
+              "source": "Related Entity"
+            },
+            {
+              "dtype": "float64",
+              "name": "volume_offered",
+              "nullable": true,
+              "source": "Volume offered"
+            },
+            {
+              "dtype": "float64",
+              "name": "volume_accepted",
+              "nullable": true,
+              "source": "Volume Accepted"
+            },
+            {
+              "dtype": "string",
+              "name": "delivery_start_utc",
+              "nullable": true,
+              "source": "Delivery Start UTC"
+            },
+            {
+              "dtype": "string",
+              "name": "delivery_end_utc",
+              "nullable": true,
+              "source": "Delivery End UTC"
+            },
+            {
+              "dtype": "float64",
+              "name": "service_duration",
+              "nullable": true,
+              "source": "Service Duration"
+            },
+            {
+              "dtype": "float64",
+              "name": "availability_fee",
+              "nullable": true,
+              "source": "Availability Fee"
+            },
+            {
+              "dtype": "float64",
+              "name": "total_cost",
+              "nullable": true,
+              "source": "Total Cost"
+            },
+            {
+              "dtype": "string",
+              "name": "rtm_no_rtm",
+              "nullable": true,
+              "source": "RTM/no RTM"
+            },
+            {
+              "dtype": "string",
+              "name": "accepted_rejected",
+              "nullable": true,
+              "source": "Accepted/Rejected"
+            },
+            {
+              "dtype": "float64",
+              "name": "rejection_code",
+              "nullable": true,
+              "source": "Rejection code"
+            },
+            {
+              "dtype": "string",
+              "name": "technology_type",
+              "nullable": true,
+              "source": "Technology Type"
+            }
+          ],
+          "header": [
+            "Market Name",
+            "Delivery Date",
+            "Unique bid number",
+            "Response Unit",
+            "Unit type",
+            "Agent/Applicant",
+            "Related Entity",
+            "Volume offered",
+            "Volume Accepted",
+            "Delivery Start UTC",
+            "Delivery End UTC",
+            "Service Duration",
+            "Availability Fee",
+            "Total Cost",
+            "RTM/no RTM",
+            "Accepted/Rejected",
+            "Rejection code",
+            "Technology Type"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T05",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "held",
+        "field": "column 'Delivery Start UTC'",
+        "id": "T01",
+        "kind": "time_semantics",
+        "question": "Delivery Start UTC: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Delivery End UTC'",
+        "id": "T02",
+        "kind": "time_semantics",
+        "question": "Delivery End UTC: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Service Duration'.unit",
+        "id": "T03",
+        "kind": "unit",
+        "question": "Service Duration: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Rejection code'.unit",
+        "id": "T04",
+        "kind": "unit",
+        "question": "Rejection code: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T05",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: Delivery Date, Delivery Start UTC, Delivery End UTC"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T06",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['unique_bid_number'] (measured unique in 1 capture(s)); without one, latest stays whole_capture"
+      }
+    ]
+  },
+  "refresh": "frozen",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update Frequency",
+        "value": "Not Active"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Ancillary services",
+    "title": "Dynamic Containment, Regulation and Moderation auction results"
+  }
+}

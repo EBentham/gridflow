@@ -1,0 +1,467 @@
+{
+  "archetype": "TAR",
+  "batch": "BAL-2",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/tnuos_tariffs_onshore_generator/2026/10/08/raw_20261008T113922Z_ffc0adb8-5426-474e-94a3-a5f3f01a0cdb_bf08ecbd.csv",
+      "ckan_last_modified": "2026-05-12T13:09:05.384311",
+      "cr": 0,
+      "crlf": 1162,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "ffc0adb8-5426-474e-94a3-a5f3f01a0cdb",
+      "rows": 1161,
+      "sampled": false,
+      "size": 112370,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:39:22.460136+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 1,
+      "columns": {
+        "NotSharedYearRound_£/kW": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1161
+          },
+          "examples": [
+            "14.895360",
+            "13.230397",
+            "20.919587"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 1161
+          }
+        },
+        "Publication": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 1161,
+            "int64": 1161
+          },
+          "examples": [
+            "Forecast",
+            "Final",
+            "Draft"
+          ],
+          "max_len": 8,
+          "null_count": 0,
+          "shapes": {
+            "text": 1161
+          }
+        },
+        "Published_Date": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%d/%m/%Y": 0,
+            "float64": 1161,
+            "int64": 1161
+          },
+          "examples": [
+            "11/05/2026",
+            "30/01/2026",
+            "19/12/2025"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "slash_date": 1161
+          },
+          "slash_first_gt_12": 810,
+          "slash_second_gt_12": 0
+        },
+        "Residual_£/kW": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1161
+          },
+          "examples": [
+            "-2.114050",
+            "-2.476760",
+            "-2.906397"
+          ],
+          "max_len": 9,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 1161
+          }
+        },
+        "SharedYearRound_£/kW": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1161
+          },
+          "examples": [
+            "33.683697",
+            "20.896191",
+            "31.284627"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 1161
+          }
+        },
+        "SmallGenDiscount_£/kW": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1161
+          },
+          "examples": [
+            "0.000000",
+            "11.545625"
+          ],
+          "max_len": 9,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 1161
+          }
+        },
+        "SystemPeak_£/kW": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1161
+          },
+          "examples": [
+            "3.441861",
+            "5.553769",
+            "2.926897"
+          ],
+          "max_len": 9,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 1161
+          }
+        },
+        "Year_FY": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "2028",
+            "2027",
+            "2029"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 1161
+          }
+        },
+        "Zone_Name": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 1161,
+            "int64": 1161
+          },
+          "examples": [
+            "North Scotland",
+            "East Aberdeenshire",
+            "Western Highlands"
+          ],
+          "max_len": 38,
+          "null_count": 0,
+          "shapes": {
+            "text": 1161
+          }
+        },
+        "Zone_No": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1",
+            "2",
+            "3"
+          ],
+          "max_len": 2,
+          "null_count": 0,
+          "shapes": {
+            "int": 1161
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "NotSharedYearRound_£/kW": {
+            "description": "Not Shared Year-Round in £/kw",
+            "title": "Not Shared Year-Round Tariff",
+            "type": "numeric",
+            "unit": "£ per kW"
+          },
+          "Publication": {
+            "description": "States what publication type the tariff relates to",
+            "title": "Publication",
+            "type": "text",
+            "unit": null
+          },
+          "Published_Date": {
+            "description": "Date tariffs were published",
+            "title": "Published Date",
+            "type": "date",
+            "unit": null
+          },
+          "Residual_£/kW": {
+            "description": "Generation Residual Tariff in £/kw",
+            "title": "Generation Residual Tariff",
+            "type": "numeric",
+            "unit": "£ per kW"
+          },
+          "SharedYearRound_£/kW": {
+            "description": "Shared Year-Round in £/kw",
+            "title": "Shared Year-Round Tariff",
+            "type": "numeric",
+            "unit": "£ per kW"
+          },
+          "SmallGenDiscount_£/kW": {
+            "description": "Small Generator Discount Tariff in £/kw",
+            "title": "Small Generator Discount Tariff",
+            "type": "numeric",
+            "unit": "£ per kW"
+          },
+          "SystemPeak_£/kW": {
+            "description": "System Peak in £/kW",
+            "title": "System Peak Tariff",
+            "type": "numeric",
+            "unit": "£ per kW"
+          },
+          "Year_FY": {
+            "description": "Year in which the tariff relates to i.e. 2021 = 1 April 2020 to 31 March 2021",
+            "title": "Financial Year",
+            "type": "int4",
+            "unit": null
+          },
+          "Zone_Name": {
+            "description": "Name of Generation Zone",
+            "title": "Generation Zone Name",
+            "type": "text",
+            "unit": null
+          },
+          "Zone_No": {
+            "description": "Number Assigned to the Generation Zone 1 - 27",
+            "title": "Generation Zone No.",
+            "type": "int4",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T11:39:22.460136+00:00",
+      "header": [
+        "Publication",
+        "Year_FY",
+        "Published_Date",
+        "Zone_No",
+        "Zone_Name",
+        "SystemPeak_£/kW",
+        "SharedYearRound_£/kW",
+        "NotSharedYearRound_£/kW",
+        "Residual_£/kW",
+        "SmallGenDiscount_£/kW"
+      ],
+      "last_written_at": "2026-10-08T11:39:22.460136+00:00",
+      "resource_ids": [
+        "ffc0adb8-5426-474e-94a3-a5f3f01a0cdb"
+      ],
+      "rows": 1161,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [],
+  "key": "tnuos_tariffs_onshore_generator",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Publication",
+          "SystemPeak_£/kW"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Published_Date",
+          "SystemPeak_£/kW"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Zone_No",
+          "Residual_£/kW"
+        ],
+        "max_duplicates": 0
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "transmission-network-use-of-system-tnuos-tariffs",
+  "proposal": {
+    "flags": [],
+    "record_draft": {
+      "eligibility": {
+        "question": "Year_FY: a numeric column with no vendor unit; Zone_No: a numeric column with no vendor unit",
+        "status": "held",
+        "unit": "BAL-2"
+      },
+      "encoding": "utf-8",
+      "entity_key": [
+        "publication",
+        "systempeak_kw"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "publication",
+              "nullable": true,
+              "source": "Publication"
+            },
+            {
+              "dtype": "int64",
+              "name": "year_fy",
+              "nullable": true,
+              "source": "Year_FY"
+            },
+            {
+              "dtype": "date",
+              "format": "%d/%m/%Y",
+              "name": "published_date",
+              "nullable": true,
+              "source": "Published_Date"
+            },
+            {
+              "dtype": "int64",
+              "name": "zone_no",
+              "nullable": true,
+              "source": "Zone_No"
+            },
+            {
+              "dtype": "string",
+              "name": "zone_name",
+              "nullable": true,
+              "source": "Zone_Name"
+            },
+            {
+              "dtype": "float64",
+              "name": "systempeak_kw",
+              "nullable": true,
+              "source": "SystemPeak_£/kW"
+            },
+            {
+              "dtype": "float64",
+              "name": "sharedyearround_kw",
+              "nullable": true,
+              "source": "SharedYearRound_£/kW"
+            },
+            {
+              "dtype": "float64",
+              "name": "notsharedyearround_kw",
+              "nullable": true,
+              "source": "NotSharedYearRound_£/kW"
+            },
+            {
+              "dtype": "float64",
+              "name": "residual_kw",
+              "nullable": true,
+              "source": "Residual_£/kW"
+            },
+            {
+              "dtype": "float64",
+              "name": "smallgendiscount_kw",
+              "nullable": true,
+              "source": "SmallGenDiscount_£/kW"
+            }
+          ],
+          "header": [
+            "Publication",
+            "Year_FY",
+            "Published_Date",
+            "Zone_No",
+            "Zone_Name",
+            "SystemPeak_£/kW",
+            "SharedYearRound_£/kW",
+            "NotSharedYearRound_£/kW",
+            "Residual_£/kW",
+            "SmallGenDiscount_£/kW"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T03",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "held",
+        "field": "column 'Year_FY'.unit",
+        "id": "T01",
+        "kind": "unit",
+        "question": "Year_FY: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Zone_No'.unit",
+        "id": "T02",
+        "kind": "unit",
+        "question": "Zone_No: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T03",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: Published_Date"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T04",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['publication', 'systempeak_kw'] (measured unique in 1 capture(s)); without one, latest stays whole_capture"
+      }
+    ]
+  },
+  "refresh": "adhoc",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update Frequency",
+        "value": "Quarterly"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Network charges",
+    "title": "Transmission Network Use of System (TNUoS) Tariffs"
+  }
+}

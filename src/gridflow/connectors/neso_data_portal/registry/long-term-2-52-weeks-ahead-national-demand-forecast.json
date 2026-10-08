@@ -17,7 +17,100 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "calendar_year",
+              "financial_year",
+              "ESIWK",
+              "CDATE_peak",
+              "tsd_peak",
+              "tsd_min",
+              "day_min",
+              "night_min"
+            ],
+            "columns": [
+              {
+                "source": "calendar_year",
+                "name": "calendar_year",
+                "dtype": "int64",
+                "nullable": true
+              },
+              {
+                "source": "financial_year",
+                "name": "financial_year",
+                "dtype": "int64",
+                "nullable": true
+              },
+              {
+                "source": "ESIWK",
+                "name": "esiwk",
+                "dtype": "int64",
+                "nullable": true
+              },
+              {
+                "source": "CDATE_peak",
+                "name": "cdate_peak",
+                "dtype": "date",
+                "format": "%Y-%m-%d",
+                "nullable": true
+              },
+              {
+                "source": "tsd_peak",
+                "name": "tsd_peak",
+                "dtype": "int64",
+                "nullable": true
+              },
+              {
+                "source": "tsd_min",
+                "name": "tsd_min",
+                "dtype": "int64",
+                "nullable": true
+              },
+              {
+                "source": "day_min",
+                "name": "day_min",
+                "dtype": "int64",
+                "nullable": true
+              },
+              {
+                "source": "night_min",
+                "name": "night_min",
+                "dtype": "int64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "calendar_year",
+          "financial_year",
+          "esiwk",
+          "cdate_peak",
+          "tsd_peak",
+          "tsd_min",
+          "day_min",
+          "night_min"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: ESI week definition (start and end day, numbering, rollover against calendar_year and financial_year) and why 2027 week 29 appears twice with CDATE_peak 2027-07-21 and 2027-07-22; the NESO dictionary is silent",
+          "unit": "E-SEM"
+        }
+      }
     }
   ],
   "resources": [

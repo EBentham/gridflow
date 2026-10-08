@@ -1,0 +1,649 @@
+{
+  "archetype": "SER",
+  "batch": "BAL-1",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/daily_balancing_volume/2026/10/08/raw_20261008T100428Z_a9b63a05-da9a-4a49-bcf4-13326720ce80_df2f3059.csv",
+      "ckan_last_modified": "2022-10-15T16:36:52.122801",
+      "cr": 0,
+      "crlf": 17521,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "a9b63a05-da9a-4a49-bcf4-13326720ce80",
+      "rows": 17520,
+      "sampled": false,
+      "size": 1166420,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:04:28.313270+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/daily_balancing_volume/2026/10/08/raw_20261008T100430Z_0481067a-8a0e-465a-85a1-79482fca9307_19f6bf10.csv",
+      "ckan_last_modified": "2024-03-04T14:42:26.975366",
+      "cr": 0,
+      "crlf": 17494,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "0481067a-8a0e-465a-85a1-79482fca9307",
+      "rows": 17493,
+      "sampled": false,
+      "size": 1169021,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:04:30.809127+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/daily_balancing_volume/2026/10/08/raw_20261008T100433Z_e1043731-cc07-4e41-89a4-596316a663e8_01df82f5.csv",
+      "ckan_last_modified": "2022-09-28T16:18:11.459102",
+      "cr": 0,
+      "crlf": 17558,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "e1043731-cc07-4e41-89a4-596316a663e8",
+      "rows": 17557,
+      "sampled": false,
+      "size": 1207805,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:04:33.338740+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/daily_balancing_volume/2026/10/08/raw_20261008T100435Z_b097d727-5adf-4c7c-98e5-4f8914b0f524_b148a006.csv",
+      "ckan_last_modified": "2022-09-28T16:18:59.747867",
+      "cr": 0,
+      "crlf": 17512,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "b097d727-5adf-4c7c-98e5-4f8914b0f524",
+      "rows": 17511,
+      "sampled": false,
+      "size": 1203628,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:04:35.926486+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/daily_balancing_volume/2026/10/08/raw_20261008T100438Z_539cc579-37e1-4b6f-94e5-c26f9ec9be70_6005b916.csv",
+      "ckan_last_modified": "2024-03-04T14:44:24.860716",
+      "cr": 0,
+      "crlf": 17519,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "539cc579-37e1-4b6f-94e5-c26f9ec9be70",
+      "rows": 17518,
+      "sampled": false,
+      "size": 1180394,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:04:38.481517+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/daily_balancing_volume/2026/10/08/raw_20261008T100441Z_0cb9b169-a14a-4d1f-b08a-273b21519465_f4f847cb.csv",
+      "ckan_last_modified": "2023-04-05T07:59:40.405844",
+      "cr": 0,
+      "crlf": 17520,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "0cb9b169-a14a-4d1f-b08a-273b21519465",
+      "rows": 17519,
+      "sampled": false,
+      "size": 1173675,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:04:41.653194+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/daily_balancing_volume/2026/10/08/raw_20261008T100444Z_66984a1a-4b02-4dd7-9183-425babf23b02_7309a2e2.csv",
+      "ckan_last_modified": "2024-04-07T13:21:15.960304",
+      "cr": 0,
+      "crlf": 17567,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "66984a1a-4b02-4dd7-9183-425babf23b02",
+      "rows": 17566,
+      "sampled": false,
+      "size": 1170749,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:04:44.813890+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/daily_balancing_volume/2026/10/08/raw_20261008T100448Z_62760005-e3bc-4a27-8207-2a2c035055d0_290b3918.csv",
+      "ckan_last_modified": "2025-05-14T11:11:13.655339",
+      "cr": 0,
+      "crlf": 17513,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "62760005-e3bc-4a27-8207-2a2c035055d0",
+      "rows": 17512,
+      "sampled": false,
+      "size": 1179809,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:04:48.243968+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/daily_balancing_volume/2026/10/08/raw_20261008T100450Z_ef47829c-4916-4a6d-8554-257b6241026a_3ce5e576.csv",
+      "ckan_last_modified": "2026-04-07T10:24:18.338440",
+      "cr": 0,
+      "crlf": 17517,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "ef47829c-4916-4a6d-8554-257b6241026a",
+      "rows": 17516,
+      "sampled": false,
+      "size": 1206277,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:04:50.717793+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/daily_balancing_volume/2026/10/08/raw_20261008T100453Z_e781da74-6c35-4296-81dd-250cee869c19_f1f13270.csv",
+      "ckan_last_modified": "2026-10-03T11:18:24.757400",
+      "cr": 0,
+      "crlf": 8827,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "e781da74-6c35-4296-81dd-250cee869c19",
+      "rows": 8826,
+      "sampled": false,
+      "size": 605496,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:04:53.348861+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 10,
+      "columns": {
+        "Constraint Bids (MWh)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 166538
+          },
+          "examples": [
+            "-348.5",
+            "-345.375",
+            "-248.674"
+          ],
+          "max_len": 9,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 166538
+          }
+        },
+        "Constraint Offers (MWh)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 166538
+          },
+          "examples": [
+            "325.0",
+            "0.0",
+            "31.705"
+          ],
+          "max_len": 8,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 166538
+          }
+        },
+        "Energy Imbalance (MWh)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 166538
+          },
+          "examples": [
+            "-572.883",
+            "-559.19",
+            "-141.802"
+          ],
+          "max_len": 9,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 166538
+          }
+        },
+        "Frequency Control Bids (MWh)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 166538
+          },
+          "examples": [
+            "-516.195",
+            "-448.892",
+            "-312.807"
+          ],
+          "max_len": 9,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 166538
+          }
+        },
+        "Frequency Control Offers (MWh)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 166538
+          },
+          "examples": [
+            "0.0",
+            "25.0",
+            "189.999"
+          ],
+          "max_len": 7,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 166538
+          }
+        },
+        "Negative Reserve (MWh)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 166538
+          },
+          "examples": [
+            "0.0",
+            "-12.5",
+            "-26.817"
+          ],
+          "max_len": 9,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 166538
+          }
+        },
+        "Other (MWh)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 166538
+          },
+          "examples": [
+            "-33.188",
+            "-111.798",
+            "4.506"
+          ],
+          "max_len": 9,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 166538
+          }
+        },
+        "Positive Reserve (MWh)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 166538
+          },
+          "examples": [
+            "0.0",
+            "13.35",
+            "8.35"
+          ],
+          "max_len": 8,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 166538
+          }
+        },
+        "SETT_DATE": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%Y-%m-%d": 0,
+            "float64": 166538,
+            "int64": 166538
+          },
+          "examples": [
+            "2017-04-01",
+            "2017-04-02",
+            "2017-04-03"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "iso_date": 166538
+          }
+        },
+        "SETT_PERIOD": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1",
+            "2",
+            "3"
+          ],
+          "max_len": 2,
+          "null_count": 0,
+          "shapes": {
+            "int": 166538
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "Constraint Bids (MWh)": {
+            "description": "Submitted bids on a unit to reduce its output.",
+            "title": "Constraint Bids ",
+            "type": "numeric",
+            "unit": "MWh"
+          },
+          "Constraint Offers (MWh)": {
+            "description": "Submitted offers on a unit to increase its output.",
+            "title": "Constraint Offers (MWh)",
+            "type": "numeric",
+            "unit": "MWh"
+          },
+          "Energy Imbalance (MWh)": {
+            "description": "Energy imbalance is the difference between the amount of energy generated in real time, the amount of energy consumed during that same time, and the amount of energy sold ahead of the generation time for that specific time period. The monthly energy imbalance cost can be negative or positive dependi",
+            "title": "Energy Imbalance (MWh)",
+            "type": "numeric",
+            "unit": "MWh"
+          },
+          "Frequency Control Bids (MWh)": {
+            "description": "The required Frequency Response Bid volume is dependent on the relative market synchronised position of the generation based on its upper and lower output limits.",
+            "title": " Frequency Control Bids (MWh)",
+            "type": "numeric",
+            "unit": "MWh"
+          },
+          "Frequency Control Offers (MWh)": {
+            "description": "Frequency response offers are predominantly required overnight when generation is running closer to its SEL, and offers are required to lift a unit’s position to enable them to provide high frequency response (reducing output",
+            "title": "Frequency Control Offers (MWh)",
+            "type": "numeric",
+            "unit": "MWh"
+          },
+          "Negative Reserve (MWh)": {
+            "description": "A Negative Reserve service can provide the flexibility to reduce generation or increase demand to ensure supply and demand are balanced. The service is held in reserve to cover unforeseen fluctuations in demand, or generation from demand side PV and wind.",
+            "title": "Negative Reserve (MWh)",
+            "type": "numeric",
+            "unit": "MWh"
+          },
+          "Other (MWh)": {
+            "description": "BM actions, which are not easily accounted for in the previously reported categories. Other general costs; trading option fees, bank charges, sterling adjustments. Non-Delivery and Reconciliation",
+            "title": "Other (MWh)",
+            "type": "numeric",
+            "unit": "MWh"
+          },
+          "Positive Reserve (MWh)": {
+            "description": "The Operating Reserve volume uses the half hourly reserve requirement and market length less market synchronised headroom to define the volume of reserve required per half hour. When there is enough market synchronised headroom or the market is sufficiently long, there will be no reserve requirement",
+            "title": " Positive Reserve",
+            "type": "numeric",
+            "unit": "MWh"
+          },
+          "SETT_DATE": {
+            "description": "The Payment Date in relation to an Initial Settlement Run.",
+            "title": "Settlement Date",
+            "type": "date",
+            "unit": null
+          },
+          "SETT_PERIOD": {
+            "description": "A period of 30 minutes beginning on the hour or the half-hour",
+            "title": "Settlement Period",
+            "type": "int4",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T10:04:28.313270+00:00",
+      "header": [
+        "SETT_DATE",
+        "SETT_PERIOD",
+        "Energy Imbalance (MWh)",
+        "Frequency Control Offers (MWh)",
+        "Frequency Control Bids (MWh)",
+        "Positive Reserve (MWh)",
+        "Constraint Offers (MWh)",
+        "Constraint Bids (MWh)",
+        "Negative Reserve (MWh)",
+        "Other (MWh)"
+      ],
+      "last_written_at": "2026-10-08T10:04:53.348861+00:00",
+      "resource_ids": [
+        "0481067a-8a0e-465a-85a1-79482fca9307",
+        "0cb9b169-a14a-4d1f-b08a-273b21519465",
+        "539cc579-37e1-4b6f-94e5-c26f9ec9be70",
+        "62760005-e3bc-4a27-8207-2a2c035055d0",
+        "66984a1a-4b02-4dd7-9183-425babf23b02",
+        "a9b63a05-da9a-4a49-bcf4-13326720ce80",
+        "b097d727-5adf-4c7c-98e5-4f8914b0f524",
+        "e1043731-cc07-4e41-89a4-596316a663e8",
+        "e781da74-6c35-4296-81dd-250cee869c19",
+        "ef47829c-4916-4a6d-8554-257b6241026a"
+      ],
+      "rows": 166538,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [],
+  "key": "daily_balancing_volume",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 10,
+        "columns": [
+          "SETT_DATE",
+          "SETT_PERIOD"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 10,
+        "columns": [
+          "SETT_PERIOD",
+          "Energy Imbalance (MWh)"
+        ],
+        "max_duplicates": 6
+      },
+      {
+        "captures_checked": 10,
+        "columns": [
+          "SETT_PERIOD",
+          "Constraint Offers (MWh)",
+          "Other (MWh)"
+        ],
+        "max_duplicates": 253
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "daily-balancing-volume-balancing-services-use-of-system",
+  "proposal": {
+    "flags": [],
+    "record_draft": {
+      "eligibility": {
+        "question": "SETT_PERIOD: a numeric column with no vendor unit",
+        "status": "held",
+        "unit": "BAL-1"
+      },
+      "encoding": "utf-8",
+      "entity_key": [
+        "sett_date",
+        "sett_period"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "date",
+              "format": "%Y-%m-%d",
+              "name": "sett_date",
+              "nullable": true,
+              "source": "SETT_DATE"
+            },
+            {
+              "dtype": "int64",
+              "name": "sett_period",
+              "nullable": true,
+              "source": "SETT_PERIOD"
+            },
+            {
+              "dtype": "float64",
+              "name": "energy_imbalance_mwh",
+              "nullable": true,
+              "source": "Energy Imbalance (MWh)"
+            },
+            {
+              "dtype": "float64",
+              "name": "frequency_control_offers_mwh",
+              "nullable": true,
+              "source": "Frequency Control Offers (MWh)"
+            },
+            {
+              "dtype": "float64",
+              "name": "frequency_control_bids_mwh",
+              "nullable": true,
+              "source": "Frequency Control Bids (MWh)"
+            },
+            {
+              "dtype": "float64",
+              "name": "positive_reserve_mwh",
+              "nullable": true,
+              "source": "Positive Reserve (MWh)"
+            },
+            {
+              "dtype": "float64",
+              "name": "constraint_offers_mwh",
+              "nullable": true,
+              "source": "Constraint Offers (MWh)"
+            },
+            {
+              "dtype": "float64",
+              "name": "constraint_bids_mwh",
+              "nullable": true,
+              "source": "Constraint Bids (MWh)"
+            },
+            {
+              "dtype": "float64",
+              "name": "negative_reserve_mwh",
+              "nullable": true,
+              "source": "Negative Reserve (MWh)"
+            },
+            {
+              "dtype": "float64",
+              "name": "other_mwh",
+              "nullable": true,
+              "source": "Other (MWh)"
+            }
+          ],
+          "header": [
+            "SETT_DATE",
+            "SETT_PERIOD",
+            "Energy Imbalance (MWh)",
+            "Frequency Control Offers (MWh)",
+            "Frequency Control Bids (MWh)",
+            "Positive Reserve (MWh)",
+            "Constraint Offers (MWh)",
+            "Constraint Bids (MWh)",
+            "Negative Reserve (MWh)",
+            "Other (MWh)"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T02",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "held",
+        "field": "column 'SETT_PERIOD'.unit",
+        "id": "T01",
+        "kind": "unit",
+        "question": "SETT_PERIOD: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T02",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: SETT_DATE"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T03",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['sett_date', 'sett_period'] (measured unique in 10 capture(s)); without one, latest stays whole_capture"
+      }
+    ]
+  },
+  "refresh": "weekly",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update Frequency",
+        "value": "Weekly"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Balancing costs",
+    "title": "Daily Balancing Services Use of System (BSUoS) Volume Data"
+  }
+}

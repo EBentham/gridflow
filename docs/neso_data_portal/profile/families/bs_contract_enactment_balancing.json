@@ -1,0 +1,651 @@
+{
+  "archetype": "EVT",
+  "batch": "TRD",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/bs_contract_enactment_balancing/2026/10/08/raw_20261008T090107Z_84837a48-8f5d-40d8-bc9f-53dd5e519447_71c1c12f.csv",
+      "ckan_last_modified": "2022-06-02T08:03:03.868365",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 73,
+      "parse_error": null,
+      "resource_id": "84837a48-8f5d-40d8-bc9f-53dd5e519447",
+      "rows": 72,
+      "sampled": false,
+      "size": 12313,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T09:01:07.347347+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/bs_contract_enactment_balancing/2026/10/08/raw_20261008T090137Z_ed753a4b-1b8c-4b07-9997-b5c0e09da041_53eb3e34.csv",
+      "ckan_last_modified": "2023-01-24T03:40:19.307106",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 4,
+      "parse_error": null,
+      "resource_id": "ed753a4b-1b8c-4b07-9997-b5c0e09da041",
+      "rows": 3,
+      "sampled": false,
+      "size": 598,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T09:01:37.339504+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/bs_contract_enactment_balancing/2026/10/08/raw_20261008T090207Z_3ca7b6d5-d211-479f-8d5f-4bca92add3c9_63dd2abb.csv",
+      "ckan_last_modified": null,
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 6,
+      "parse_error": null,
+      "resource_id": "3ca7b6d5-d211-479f-8d5f-4bca92add3c9",
+      "rows": 5,
+      "sampled": false,
+      "size": 914,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T09:02:07.396338+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/bs_contract_enactment_balancing/2026/10/08/raw_20261008T090237Z_b13cfa5e-53e3-41de-ace6-a5d3997b532c_e8127d6c.csv",
+      "ckan_last_modified": null,
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 2,
+      "parse_error": null,
+      "resource_id": "b13cfa5e-53e3-41de-ace6-a5d3997b532c",
+      "rows": 1,
+      "sampled": false,
+      "size": 218,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T09:02:37.433054+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/bs_contract_enactment_balancing/2026/10/08/raw_20261008T090307Z_183ecdfb-56e0-487d-8262-468ce1c78ed4_19c6247a.csv",
+      "ckan_last_modified": null,
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 3,
+      "parse_error": null,
+      "resource_id": "183ecdfb-56e0-487d-8262-468ce1c78ed4",
+      "rows": 2,
+      "sampled": false,
+      "size": 433,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T09:03:07.421654+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 5,
+      "columns": {
+        "Area": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 82,
+            "int64": 82
+          },
+          "examples": [
+            "England&Wales",
+            "Scotland"
+          ],
+          "max_len": 13,
+          "null_count": 1,
+          "shapes": {
+            "text": 82
+          }
+        },
+        "AssetID": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 83,
+            "int64": 83
+          },
+          "examples": [
+            "Runcorn",
+            "Carscreugh",
+            "NORHW-1"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "text": 83
+          }
+        },
+        "CP_Name": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 83,
+            "int64": 83
+          },
+          "examples": [
+            "INOVYN CHLORVINYLS Ltd",
+            "Carscreugh Renewable Energy Park Limited",
+            "North Rhine"
+          ],
+          "max_len": 40,
+          "null_count": 0,
+          "shapes": {
+            "text": 83
+          }
+        },
+        "Cost": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 7
+          },
+          "examples": [
+            "0",
+            "-7291.2",
+            "-8050.08"
+          ],
+          "max_len": 9,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 7,
+            "int": 76
+          }
+        },
+        "EndTime": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 83,
+            "int64": 83
+          },
+          "examples": [
+            "2021-10-09T07:00:00",
+            "2021-10-10T07:00:00",
+            "2021-10-11T06:00:00"
+          ],
+          "max_len": 19,
+          "null_count": 0,
+          "shapes": {
+            "naive_datetime": 83
+          }
+        },
+        "ID": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 83,
+            "int64": 83
+          },
+          "examples": [
+            "ES00151371",
+            "ES00151373",
+            "ES00151376"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "text": 83
+          }
+        },
+        "Last_Updated": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 83,
+            "int64": 83
+          },
+          "examples": [
+            "2021-10-08T14:08:37",
+            "2021-10-09T12:31:37",
+            "2021-10-10T11:46:13"
+          ],
+          "max_len": 19,
+          "null_count": 0,
+          "shapes": {
+            "naive_datetime": 83
+          }
+        },
+        "Note": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 73,
+            "int64": 73
+          },
+          "examples": [
+            "Reactive contract, 62 MVAr ORPS Rate",
+            "62MVArs at ORPS Rate",
+            "Reactive contract, 62MVAr ORPS rate"
+          ],
+          "max_len": 37,
+          "null_count": 10,
+          "shapes": {
+            "text": 73
+          }
+        },
+        "Price": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 2
+          },
+          "examples": [
+            "0",
+            "124",
+            "-105"
+          ],
+          "max_len": 6,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 2,
+            "int": 81
+          }
+        },
+        "Reason": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 82,
+            "int64": 82
+          },
+          "examples": [
+            "V_MERSEY",
+            "B6_localised"
+          ],
+          "max_len": 12,
+          "null_count": 1,
+          "shapes": {
+            "text": 82
+          }
+        },
+        "SO_Flag": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 83,
+            "int64": 83
+          },
+          "examples": [
+            "T",
+            "F"
+          ],
+          "max_len": 1,
+          "null_count": 0,
+          "shapes": {
+            "text": 83
+          }
+        },
+        "StartTime": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 83,
+            "int64": 83
+          },
+          "examples": [
+            "2021-10-08T22:00:00",
+            "2021-10-09T22:00:00",
+            "2021-10-10T22:00:00"
+          ],
+          "max_len": 19,
+          "null_count": 0,
+          "shapes": {
+            "naive_datetime": 83
+          }
+        },
+        "Volume": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 7
+          },
+          "examples": [
+            "0",
+            "-4.9",
+            "-10.8"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 7,
+            "int": 76
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "Area": {
+            "description": "The location of the asset",
+            "title": "Delivery Area",
+            "type": "text",
+            "unit": null
+          },
+          "AssetID": {
+            "description": "The ID of the Asset",
+            "title": "AssetID",
+            "type": "text",
+            "unit": null
+          },
+          "CP_Name": {
+            "description": "Name of the contract counterparty",
+            "title": "Counterparty name",
+            "type": "text",
+            "unit": null
+          },
+          "Cost": {
+            "description": "Total cost to Nationalgrid ESO for the contract enctment action",
+            "title": "Cost",
+            "type": "float8",
+            "unit": "£/h"
+          },
+          "EndTime": {
+            "description": "End time of the contract enactment action in UTC format",
+            "title": "End Time (UTC)",
+            "type": "timestamp",
+            "unit": "UTC ISO 8601"
+          },
+          "ID": {
+            "description": "ID of the Contract Enactment Action",
+            "title": "Contract ID",
+            "type": "text",
+            "unit": null
+          },
+          "Last_Updated": {
+            "description": "Date and Time that the information has been last updated",
+            "title": "Last Updated",
+            "type": "timestamp",
+            "unit": "UTC ISO 8601"
+          },
+          "Note": {
+            "description": "Notes or comments",
+            "title": "Note",
+            "type": "text",
+            "unit": null
+          },
+          "Price": {
+            "description": "Average price of the contract enactment action",
+            "title": "Price",
+            "type": "float8",
+            "unit": "£/MWh"
+          },
+          "Reason": {
+            "description": "Detailed reason for the contract enactment action",
+            "title": "Contract Reason",
+            "type": "text",
+            "unit": null
+          },
+          "SO_Flag": {
+            "description": "System flag indicating whether the action is mainly for system security purpose",
+            "title": "System Flag",
+            "type": "text",
+            "unit": null
+          },
+          "StartTime": {
+            "description": "Start time of the contract enactment action in UTC format",
+            "title": "Start Time (UTC)",
+            "type": "timestamp",
+            "unit": "UTC ISO 8601"
+          },
+          "Volume": {
+            "description": "Average Volume of the contract enactment action",
+            "title": "Average Volume",
+            "type": "float8",
+            "unit": "MW"
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T09:01:07.347347+00:00",
+      "header": [
+        "ID",
+        "StartTime",
+        "EndTime",
+        "Volume",
+        "Price",
+        "Cost",
+        "SO_Flag",
+        "Reason",
+        "AssetID",
+        "CP_Name",
+        "Area",
+        "Note",
+        "Last_Updated"
+      ],
+      "last_written_at": "2026-10-08T09:03:07.421654+00:00",
+      "resource_ids": [
+        "183ecdfb-56e0-487d-8262-468ce1c78ed4",
+        "3ca7b6d5-d211-479f-8d5f-4bca92add3c9",
+        "84837a48-8f5d-40d8-bc9f-53dd5e519447",
+        "b13cfa5e-53e3-41de-ace6-a5d3997b532c",
+        "ed753a4b-1b8c-4b07-9997-b5c0e09da041"
+      ],
+      "rows": 83,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [],
+  "key": "bs_contract_enactment_balancing",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 5,
+        "columns": [
+          "ID"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 5,
+        "columns": [
+          "StartTime"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 5,
+        "columns": [
+          "EndTime"
+        ],
+        "max_duplicates": 0
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "balancing-services-contract-enactment",
+  "proposal": {
+    "flags": [],
+    "record_draft": {
+      "eligibility": {
+        "question": "StartTime: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced); EndTime: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced); Last_Updated: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)",
+        "status": "held",
+        "unit": "TRD"
+      },
+      "encoding": "utf-8",
+      "entity_key": [
+        "id"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "id",
+              "nullable": true,
+              "source": "ID"
+            },
+            {
+              "dtype": "string",
+              "name": "starttime",
+              "nullable": true,
+              "source": "StartTime"
+            },
+            {
+              "dtype": "string",
+              "name": "endtime",
+              "nullable": true,
+              "source": "EndTime"
+            },
+            {
+              "dtype": "float64",
+              "name": "volume",
+              "nullable": true,
+              "source": "Volume"
+            },
+            {
+              "dtype": "float64",
+              "name": "price",
+              "nullable": true,
+              "source": "Price"
+            },
+            {
+              "dtype": "float64",
+              "name": "cost",
+              "nullable": true,
+              "source": "Cost"
+            },
+            {
+              "dtype": "string",
+              "name": "so_flag",
+              "nullable": true,
+              "source": "SO_Flag"
+            },
+            {
+              "dtype": "string",
+              "name": "reason",
+              "nullable": true,
+              "source": "Reason"
+            },
+            {
+              "dtype": "string",
+              "name": "assetid",
+              "nullable": true,
+              "source": "AssetID"
+            },
+            {
+              "dtype": "string",
+              "name": "cp_name",
+              "nullable": true,
+              "source": "CP_Name"
+            },
+            {
+              "dtype": "string",
+              "name": "area",
+              "nullable": true,
+              "source": "Area"
+            },
+            {
+              "dtype": "string",
+              "name": "note",
+              "nullable": true,
+              "source": "Note"
+            },
+            {
+              "dtype": "string",
+              "name": "last_updated",
+              "nullable": true,
+              "source": "Last_Updated"
+            }
+          ],
+          "header": [
+            "ID",
+            "StartTime",
+            "EndTime",
+            "Volume",
+            "Price",
+            "Cost",
+            "SO_Flag",
+            "Reason",
+            "AssetID",
+            "CP_Name",
+            "Area",
+            "Note",
+            "Last_Updated"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T04",
+      "version": "1",
+      "vintage": "capture_fallback"
+    },
+    "todos": [
+      {
+        "consequence": "held",
+        "field": "column 'StartTime'",
+        "id": "T01",
+        "kind": "time_semantics",
+        "question": "StartTime: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'EndTime'",
+        "id": "T02",
+        "kind": "time_semantics",
+        "question": "EndTime: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Last_Updated'",
+        "id": "T03",
+        "kind": "time_semantics",
+        "question": "Last_Updated: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T04",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: StartTime, EndTime, Last_Updated"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T05",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['id'] (measured unique in 5 capture(s)); without one, latest stays whole_capture"
+      },
+      {
+        "consequence": "none",
+        "field": "vintage",
+        "id": "T06",
+        "kind": "vendor_publication",
+        "question": "available_at is gridflow capture time for the dump; a vendor instant is held (D)"
+      }
+    ]
+  },
+  "refresh": "daily",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Status",
+        "value": "Live"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Trading",
+    "title": "Balancing Services Contract Enactment"
+  }
+}

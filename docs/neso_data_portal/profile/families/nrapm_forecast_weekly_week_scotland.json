@@ -1,0 +1,269 @@
+{
+  "archetype": "FC",
+  "batch": "GEN-1",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/nrapm_forecast_weekly_week_scotland/2026/10/08/raw_20261008T111435Z_88f3e766-fff2-418c-aef2-4b627d2cdabd_f6d8d5f3.csv",
+      "ckan_last_modified": "2026-10-08T10:35:06.056281",
+      "cr": 0,
+      "crlf": 56,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "88f3e766-fff2-418c-aef2-4b627d2cdabd",
+      "rows": 55,
+      "sampled": false,
+      "size": 1747,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:14:35.436027+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 1,
+      "columns": {
+        "Date": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%Y-%m-%d": 0,
+            "float64": 55,
+            "int64": 55
+          },
+          "examples": [
+            "2026-10-25",
+            "2026-11-01",
+            "2026-11-08"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "iso_date": 55
+          }
+        },
+        "Probability of seeing Wind load factor above": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 55
+          },
+          "examples": [
+            "0.11",
+            "0.21",
+            "0.16"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 55
+          }
+        },
+        "Week number": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 55,
+            "int64": 55
+          },
+          "examples": [
+            "43W26",
+            "44W26",
+            "45W26"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "text": 55
+          }
+        },
+        "Wind Load Factor required to cause a Scotland Level NRAPM": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 55
+          },
+          "examples": [
+            "0.55",
+            "0.6",
+            "0.5"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 55
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "Date": {
+            "description": "The date commencing the week number",
+            "title": "Date",
+            "type": "date",
+            "unit": null
+          },
+          "Probability of seeing Wind load factor above": {
+            "description": "Forecast Wind Load Factor required to cause a System Level NRAPM",
+            "title": "Probability of seeing Wind load factor ",
+            "type": "numeric",
+            "unit": null
+          },
+          "Week number": {
+            "description": "The week number and the year",
+            "title": "Week Number and Year",
+            "type": "text",
+            "unit": null
+          },
+          "Wind Load Factor required to cause a Scotland Level NRAPM": {
+            "description": "Probability of seeing a load factor on Wind that would cause a NRAPM in Scotland",
+            "title": "Wind Load Factor required to cause a System Level NRAPM",
+            "type": "numeric",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T11:14:35.436027+00:00",
+      "header": [
+        "Week number",
+        "Date",
+        "Wind Load Factor required to cause a Scotland Level NRAPM",
+        "Probability of seeing Wind load factor above"
+      ],
+      "last_written_at": "2026-10-08T11:14:35.436027+00:00",
+      "resource_ids": [
+        "88f3e766-fff2-418c-aef2-4b627d2cdabd"
+      ],
+      "rows": 55,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [],
+  "key": "nrapm_forecast_weekly_week_scotland",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Week number"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Date"
+        ],
+        "max_duplicates": 0
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "negative-reserve-active-power-margin-nrapm-forecast",
+  "proposal": {
+    "flags": [],
+    "record_draft": {
+      "eligibility": {
+        "question": "Wind Load Factor required to cause a Scotland Level NRAPM: a numeric column with no vendor unit; Probability of seeing Wind load factor above: a numeric column with no vendor unit",
+        "status": "held",
+        "unit": "GEN-1"
+      },
+      "encoding": "utf-8",
+      "entity_key": [
+        "week_number"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "week_number",
+              "nullable": true,
+              "source": "Week number"
+            },
+            {
+              "dtype": "date",
+              "format": "%Y-%m-%d",
+              "name": "date",
+              "nullable": true,
+              "source": "Date"
+            },
+            {
+              "dtype": "float64",
+              "name": "wind_load_factor_required_to_cause_a_scotland_level_nrapm",
+              "nullable": true,
+              "source": "Wind Load Factor required to cause a Scotland Level NRAPM"
+            },
+            {
+              "dtype": "float64",
+              "name": "probability_of_seeing_wind_load_factor_above",
+              "nullable": true,
+              "source": "Probability of seeing Wind load factor above"
+            }
+          ],
+          "header": [
+            "Week number",
+            "Date",
+            "Wind Load Factor required to cause a Scotland Level NRAPM",
+            "Probability of seeing Wind load factor above"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T03",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "held",
+        "field": "column 'Wind Load Factor required to cause a Scotland Level NRAPM'.unit",
+        "id": "T01",
+        "kind": "unit",
+        "question": "Wind Load Factor required to cause a Scotland Level NRAPM: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Probability of seeing Wind load factor above'.unit",
+        "id": "T02",
+        "kind": "unit",
+        "question": "Probability of seeing Wind load factor above: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T03",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: Date"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T04",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['week_number'] (measured unique in 1 capture(s)); without one, latest stays whole_capture"
+      }
+    ]
+  },
+  "refresh": "daily",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update Frequency",
+        "value": "Daily"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Generation",
+    "title": "Daily & Weekly NRAPM (Negative Reserve Active Power Margin) Forecast"
+  }
+}
