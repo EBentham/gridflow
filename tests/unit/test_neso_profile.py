@@ -532,6 +532,24 @@ class TestCounts:
         assert "| B1 |" in rendered and "| `fam_r` |" in rendered
 
 
+class TestBatchMap:
+    def test_t_b1_the_committed_batch_map_covers_every_package(self) -> None:
+        """T-B1: detects a registry package missing from the batch map, or a wrong pilot."""
+        batches = json.loads(BATCHES.read_text(encoding="utf-8"))
+        slugs = {p.package for p in registry_module.load_registry().packages}
+        assert set(batches) == slugs and len(slugs) == 131
+        assert all(isinstance(v, str) and v.strip() for v in batches.values())
+        assert {slug for slug, batch in batches.items() if batch == "PILOT"} == {
+            "transmission-entry-capacity-tec-register",
+            "interconnector-register",
+            "embedded-register",
+            "long-term-2-52-weeks-ahead-national-demand-forecast",
+            "day-ahead-half-hourly-demand-forecast-performance",
+            "24-months-ahead-constraint-cost-forecast",
+        }
+        assert list(batches) == sorted(batches)
+
+
 def test_snapshot_id_is_recorded(out: Path) -> None:
     """Detects the run's inputs missing from the summary (I-2: inputs, not host values)."""
     assert _summary(out)["inputs"] == {
