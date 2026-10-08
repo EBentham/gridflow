@@ -133,6 +133,12 @@ def _jsonable(value: Any) -> Any:
     return value
 
 
+def _canonical_path_text(text: str, root: Path) -> str:
+    # The golden must compare equal on Windows and Linux, so rendered paths
+    # use forward slashes regardless of the OS separator.
+    return text.replace(str(root), "<ROOT>").replace("\\", "/")
+
+
 def _counters(transformer: BaseSilverTransformer, root: Path) -> dict[str, Any]:
     out: dict[str, Any] = {}
     for name in sorted(dir(transformer)):
@@ -146,7 +152,7 @@ def _counters(transformer: BaseSilverTransformer, root: Path) -> dict[str, Any]:
                 [Path(path).relative_to(root).as_posix(), str(reason)] for path, reason in value
             )
         elif isinstance(value, tuple):
-            value = [str(item).replace(str(root), "<ROOT>") for item in value]
+            value = [_canonical_path_text(str(item), root) for item in value]
         out[name] = value
     return out
 

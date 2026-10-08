@@ -206,8 +206,8 @@
       "last_partition_trimmed_count": 0,
       "last_publication_fallback_count": 0,
       "last_source_exclusion_details": [
-        "source=2024-01-15 destination=2024-01-15 path=<ROOT>\\bronze\\elexon\\system_prices\\2024\\01\\15\\raw_nostamp.json reason=NO_TIMESTAMP_KEY",
-        "source=2024-01-15 destination=2024-01-15 path=<ROOT>\\bronze\\elexon\\system_prices\\2024\\01\\15\\raw_orphan.json reason=NO_SIDECAR"
+        "source=2024-01-15 destination=2024-01-15 path=<ROOT>/bronze/elexon/system_prices/2024/01/15/raw_nostamp.json reason=NO_TIMESTAMP_KEY",
+        "source=2024-01-15 destination=2024-01-15 path=<ROOT>/bronze/elexon/system_prices/2024/01/15/raw_orphan.json reason=NO_SIDECAR"
       ],
       "last_start_time_fallback_count": 0,
       "last_total_unaccounted_exclusion": false,
@@ -571,8 +571,8 @@
       "last_partition_trimmed_count": 0,
       "last_publication_fallback_count": 6,
       "last_source_exclusion_details": [
-        "source=2024-01-15 destination=2024-01-15 path=<ROOT>\\bronze\\elexon\\system_prices\\2024\\01\\15\\raw_nostamp.json reason=NO_TIMESTAMP_KEY",
-        "source=2024-01-15 destination=2024-01-15 path=<ROOT>\\bronze\\elexon\\system_prices\\2024\\01\\15\\raw_orphan.json reason=NO_SIDECAR"
+        "source=2024-01-15 destination=2024-01-15 path=<ROOT>/bronze/elexon/system_prices/2024/01/15/raw_nostamp.json reason=NO_TIMESTAMP_KEY",
+        "source=2024-01-15 destination=2024-01-15 path=<ROOT>/bronze/elexon/system_prices/2024/01/15/raw_orphan.json reason=NO_SIDECAR"
       ],
       "last_start_time_fallback_count": 0,
       "last_total_unaccounted_exclusion": false,
