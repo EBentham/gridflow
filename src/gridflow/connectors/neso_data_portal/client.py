@@ -912,8 +912,11 @@ class NesoDataPortalConnector(BaseConnector):
             the call.
 
         Raises:
-            CkanActionError: A redirect (action calls are not redirected), a
-                non-JSON body, or ``success: false``.
+            CkanActionError: A redirect (action calls are not redirected; the
+                target is named by origin only), a non-JSON body, or
+                ``success: false``.
+            NesoUnsafeRedirectError: A redirect whose ``Location`` does not
+                resolve; the value is not echoed.
         """
         if self._client is None:
             raise RuntimeError("Connector not initialized. Use 'async with' context manager.")
@@ -929,9 +932,13 @@ class NesoDataPortalConnector(BaseConnector):
             response = await self._send(request, target, lane=lane)
         try:
             if response.has_redirect_location:
+                # The Location is vendor-controlled and may be a signed URL or a
+                # bearer path, so it is named through SafeUrl.opaque (origin
+                # only): this message reaches logs and field-info-run.json.
+                hop = self._resolve_redirect_target(response, target)
                 raise CkanActionError(
-                    f"CKAN {action} {query!r} answered with a redirect to "
-                    f"{response.headers.get('location')!r}; action calls are not redirected"
+                    f"CKAN {action} {query!r} answered with a redirect to {hop}; "
+                    "action calls are not redirected"
                 )
             body = response.content
             trace = RequestTrace(

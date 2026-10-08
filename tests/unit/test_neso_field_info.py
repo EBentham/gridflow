@@ -30,7 +30,11 @@ from gridflow.connectors.neso_data_portal.catalog_snapshot import (
     advance_manifest,
     main,
 )
-from gridflow.connectors.neso_data_portal.client import NesoDataPortalConnector, RequestTrace
+from gridflow.connectors.neso_data_portal.client import (
+    CkanActionError,
+    NesoDataPortalConnector,
+    RequestTrace,
+)
 from gridflow.connectors.neso_data_portal.pacer import RunPacer
 
 if TYPE_CHECKING:
@@ -154,6 +158,26 @@ def _serve(router: respx.MockRouter, overrides: dict[str, dict[str, Any]] | None
         return httpx.Response(
             200, json={"success": True, "result": _result(rid, **(overrides or {}).get(rid, {}))}
         )
+
+    router.route(url__regex=r".*").mock(side_effect=_handler)
+
+
+_BEARER_TOKEN = "bearertoken0123456789abcdef"
+_SIGNATURE = "deadbeefsignature0123456789"
+_SIGNED_LOCATION = (
+    f"https://files.example.org/bearer/{_BEARER_TOKEN}/dump.csv"
+    f"?X-Amz-Signature={_SIGNATURE}&X-Amz-Expires=300"
+)
+
+
+def _serve_redirect(router: respx.MockRouter, redirected: str) -> None:
+    """Answer ``redirected``'s field-info call with a 302 to a signed URL, the rest normally."""
+
+    def _handler(request: httpx.Request) -> httpx.Response:
+        rid = request.url.params.get("resource_id", "")
+        if rid == redirected:
+            return httpx.Response(302, headers={"location": _SIGNED_LOCATION})
+        return httpx.Response(200, json={"success": True, "result": _result(rid)})
 
     router.route(url__regex=r".*").mock(side_effect=_handler)
 
@@ -331,6 +355,46 @@ class TestFieldInfo:
         argv = ["--out", str(out), "--field-info", "--family", "fam_b"]
         assert main(argv, field_info_session_factory=_session) == 0
         assert [dict(c.request.url.params)["resource_id"] for c in router.calls] == [B_ONE]
+
+    def test_a_redirected_action_names_the_target_origin_only(
+        self, router: respx.MockRouter
+    ) -> None:
+        """Detects a redirect ``Location`` rendered raw into a ``CkanActionError``."""
+        _serve_redirect(router, A_NEW)
+
+        async def _call() -> None:
+            async with _session() as session:
+                await session.datastore_fields(A_NEW)
+
+        with pytest.raises(CkanActionError) as excinfo:
+            asyncio.run(_call())
+        chain: list[BaseException] = []
+        link: BaseException | None = excinfo.value
+        while link is not None and link not in chain:
+            chain.append(link)
+            link = link.__cause__ or link.__context__
+        emitted = "\n".join(str(e) + repr(e) + repr(e.args) for e in chain)
+        assert _BEARER_TOKEN not in emitted and _SIGNATURE not in emitted, emitted
+        assert "https://files.example.org" in str(excinfo.value)
+
+    def test_a_redirect_detail_is_credential_free_on_disk_and_in_logs(
+        self, router: respx.MockRouter, out: Path, caplog: pytest.LogCaptureFixture
+    ) -> None:
+        """The review reproduction: detects a signed redirect reaching the run record or log."""
+        _serve_redirect(router, A_NEW)
+        with caplog.at_level(logging.DEBUG):
+            assert (
+                main(["--out", str(out), "--field-info"], field_info_session_factory=_session) == 1
+            )
+        (run_dir,) = _run_dirs(out)
+        run = json.loads((run_dir / FIELD_INFO_RUN_FILENAME).read_bytes())
+        outcomes = {f["family"]: (f["outcome"], f["detail"]) for f in run["families"]}
+        assert outcomes["fam_a"][0] == "failed" and "CkanActionError" in outcomes["fam_a"][1]
+        assert outcomes["fam_b"] == ("ok", "")
+        written = b"".join(path.read_bytes() for path in sorted(run_dir.iterdir()))
+        logged = "\n".join(record.getMessage() for record in caplog.records)
+        for secret in (_BEARER_TOKEN, _SIGNATURE):
+            assert secret.encode() not in written and secret not in logged
 
     def test_options_need_field_info(self, out: Path) -> None:
         with pytest.raises(SystemExit):
