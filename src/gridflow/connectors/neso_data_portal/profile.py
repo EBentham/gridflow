@@ -144,6 +144,7 @@ SP_HEADER = re.compile(r"(?i)^(settlement[ _]?period|sp|period)$")
 """A settlement-period header (P-4); its silver column is bounded 1..50."""
 SP_MIN, SP_MAX = 1, 50
 """The settlement-period range (50 on an autumn clock-change day); drafted as bounds."""
+_BLANK_ROW = "__gridflow_blank_row__"
 _DATE_HEADER = re.compile(r"(?i)date$")
 _SLASH_PARTS = r"^(\d{2})/(\d{2})/\d{4}$"
 
@@ -406,8 +407,13 @@ def _second_pass(
     raw_of = dict(zip(profile.header, profile.raw, strict=True))
     lazy = pl.scan_csv(profile.capture.body, infer_schema=False, encoding=profile.encoding)
     exprs: list[pl.Expr] = [pl.len().alias("__rows"), _hash_unique(profile.raw).alias("__full")]
-    blank_row = pl.all_horizontal(
-        [pl.col(c).is_null() | (pl.col(c).str.strip_chars() == "") for c in profile.raw]
+    # Computed once as a column: inlined per column it is O(columns^2) work and,
+    # on the wide bodies, more than doubled the run's wall clock and peak memory.
+    blank_row = pl.col(_BLANK_ROW)
+    lazy = lazy.with_columns(
+        pl.all_horizontal(
+            [pl.col(c).is_null() | (pl.col(c).str.strip_chars() == "") for c in profile.raw]
+        ).alias(_BLANK_ROW)
     )
     for index, vendor in enumerate(profile.header):
         value = _clean(raw_of[vendor])
