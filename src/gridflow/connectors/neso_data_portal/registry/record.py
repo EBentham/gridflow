@@ -67,6 +67,7 @@ RESERVED: frozenset[str] = frozenset(
         "bronze_capture_id",
         "capture_written_at",
         "child_id",
+        "child_crc32",
     }
 )
 """Names the engine or the catalogue writes itself (V-2).

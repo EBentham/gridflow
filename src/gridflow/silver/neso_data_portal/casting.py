@@ -129,8 +129,9 @@ def record_dtypes(record: SchemaRecord) -> dict[str, str]:
     """Every output column of P-4/P-5 -> its record dtype, in output order.
 
     The typed silver columns in first-appearance order across epochs, then
-    ``issue_time`` (when any epoch declares one), ``child_id`` (container
-    readers), then :data:`CAPTURE_STAMP_COLUMNS`.
+    ``issue_time`` (when any epoch declares one), ``child_id`` and
+    ``child_crc32`` (container readers, ADR-037 P-11), then
+    :data:`CAPTURE_STAMP_COLUMNS`.
     """
     from gridflow.silver.neso_data_portal.readers import CONTAINER_READERS
 
@@ -139,6 +140,7 @@ def record_dtypes(record: SchemaRecord) -> dict[str, str]:
         out["issue_time"] = "datetime"
     if record.reader in CONTAINER_READERS:
         out["child_id"] = "string"
+        out["child_crc32"] = "int64"
     out.update(
         {
             "timestamp_utc": "datetime",
@@ -285,7 +287,10 @@ def type_child(table: ChildTable, record: SchemaRecord, ctx: CaptureContext) -> 
     from gridflow.silver.neso_data_portal.readers import CONTAINER_READERS
 
     if record.reader in CONTAINER_READERS:
-        frame = frame.with_columns(pl.lit(table.child_id, dtype=pl.Utf8).alias("child_id"))
+        frame = frame.with_columns(
+            pl.lit(table.child_id, dtype=pl.Utf8).alias("child_id"),
+            pl.lit(table.crc32, dtype=pl.Int64).alias("child_crc32"),
+        )
     return TypedChild(frame=frame, tally=tally)
 
 
