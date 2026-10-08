@@ -1,0 +1,282 @@
+{
+  "archetype": "SCN",
+  "batch": "SCN-2",
+  "captures": [
+    {
+      "all_blank_rows": 9,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/fes_ed6_road_transport_notes/2026/10/08/raw_20261008T105443Z_30012023-6c0b-4da5-bd77-4f2b244a950d_16de6ee5.csv",
+      "ckan_last_modified": "2023-07-10T03:26:39.716174",
+      "cr": 0,
+      "crlf": 37,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "30012023-6c0b-4da5-bd77-4f2b244a950d",
+      "rows": 36,
+      "sampled": false,
+      "size": 8076,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:54:43.214013+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/fes_ed6_road_transport_notes/2026/10/08/raw_20261008T105446Z_7fe93ddc-7a88-478b-8f60-4531c15bd538_ea44b94e.csv",
+      "ckan_last_modified": "2024-07-15T06:41:16.480938",
+      "cr": 0,
+      "crlf": 28,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 19,
+      "parse_error": null,
+      "resource_id": "7fe93ddc-7a88-478b-8f60-4531c15bd538",
+      "rows": 27,
+      "sampled": false,
+      "size": 7984,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:54:46.048424+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/fes_ed6_road_transport_notes/2026/10/08/raw_20261008T105448Z_43add83b-bf94-493b-8f5d-de7fdbefc5bb_b2008380.csv",
+      "ckan_last_modified": "2025-12-10T17:02:44.975794",
+      "cr": 0,
+      "crlf": 27,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 19,
+      "parse_error": null,
+      "resource_id": "43add83b-bf94-493b-8f5d-de7fdbefc5bb",
+      "rows": 26,
+      "sampled": false,
+      "size": 8146,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:54:48.733314+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/fes_ed6_road_transport_notes/2026/10/08/raw_20261008T105451Z_06601add-c47b-427c-bdde-845b270e72e1_517aea06.csv",
+      "ckan_last_modified": "2026-09-16T15:01:14.222912",
+      "cr": 0,
+      "crlf": 27,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 19,
+      "parse_error": null,
+      "resource_id": "06601add-c47b-427c-bdde-845b270e72e1",
+      "rows": 26,
+      "sampled": false,
+      "size": 8165,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:54:51.332378+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 4,
+      "columns": {
+        "Category": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 106,
+            "int64": 106
+          },
+          "examples": [
+            "# Cars - All",
+            "# Vans - All",
+            "# Motorbikes - All"
+          ],
+          "max_len": 39,
+          "null_count": 9,
+          "shapes": {
+            "text": 106
+          }
+        },
+        "Column": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 106,
+            "int64": 106
+          },
+          "examples": [
+            "Data Item",
+            "Fuel",
+            "Peak/Annual/Minimum"
+          ],
+          "max_len": 19,
+          "null_count": 9,
+          "shapes": {
+            "text": 106
+          }
+        },
+        "Description": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 106,
+            "int64": 106
+          },
+          "examples": [
+            "all cars (as defined by DfT/DVLA in https://assets.publishing.service.gov.uk/gov",
+            "History from DfT/DVLA Vehicle licensing data tables - VEH0101. Refers to all van",
+            "History from DfT/DVLA Vehicle licensing data tables - VEH0305 & VEH0130, attempt"
+          ],
+          "max_len": 486,
+          "null_count": 9,
+          "shapes": {
+            "text": 106
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "Category": {
+            "description": "Terminology used in ED5",
+            "title": "Category",
+            "type": "text",
+            "unit": null
+          },
+          "Column": {
+            "description": "Column the note applies to from ED5",
+            "title": "Column",
+            "type": "text",
+            "unit": null
+          },
+          "Description": {
+            "description": "Description of the category",
+            "title": "Description",
+            "type": "text",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T10:54:43.214013+00:00",
+      "header": [
+        "Column",
+        "Category",
+        "Description"
+      ],
+      "last_written_at": "2026-10-08T10:54:51.332378+00:00",
+      "resource_ids": [
+        "06601add-c47b-427c-bdde-845b270e72e1",
+        "30012023-6c0b-4da5-bd77-4f2b244a950d",
+        "43add83b-bf94-493b-8f5d-de7fdbefc5bb",
+        "7fe93ddc-7a88-478b-8f60-4531c15bd538"
+      ],
+      "rows": 115,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [],
+  "key": "fes_ed6_road_transport_notes",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 4,
+        "columns": [
+          "Category"
+        ],
+        "max_duplicates": 8
+      },
+      {
+        "captures_checked": 4,
+        "columns": [
+          "Description"
+        ],
+        "max_duplicates": 8
+      }
+    ],
+    "full_row_max_duplicates": 8
+  },
+  "other_captures": 0,
+  "package": "fes-road-transport-notes-data-table-ed6",
+  "proposal": {
+    "flags": [],
+    "record_draft": {
+      "encoding": "utf-8",
+      "entity_key": [
+        "column",
+        "category",
+        "description"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "column",
+              "nullable": true,
+              "source": "Column"
+            },
+            {
+              "dtype": "string",
+              "name": "category",
+              "nullable": true,
+              "source": "Category"
+            },
+            {
+              "dtype": "string",
+              "name": "description",
+              "nullable": true,
+              "source": "Description"
+            }
+          ],
+          "header": [
+            "Column",
+            "Category",
+            "Description"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T01",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T01",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: none"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T02",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['column', 'category', 'description'] (no candidate measured unique, so every column); without one, latest stays whole_capture"
+      }
+    ]
+  },
+  "refresh": "adhoc",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update frequency",
+        "value": "Ad hoc"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "FES: Pathways to Net Zero",
+    "title": "FES: Pathways to Net Zero – Road Transport Notes Data Table (ED6)"
+  }
+}

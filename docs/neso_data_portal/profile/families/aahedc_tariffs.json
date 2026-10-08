@@ -1,0 +1,320 @@
+{
+  "archetype": "TAR",
+  "batch": "BAL-2",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/aahedc_tariffs/2026/10/08/raw_20261008T081300Z_ffd29cc8-3c55-4e83-aa0e-73212d4fedba_2ebbf27d.csv",
+      "ckan_last_modified": "2026-07-15T09:16:36.703704",
+      "cr": 0,
+      "crlf": 10,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "ffd29cc8-3c55-4e83-aa0e-73212d4fedba",
+      "rows": 9,
+      "sampled": false,
+      "size": 608,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T08:13:00.098981+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 1,
+      "columns": {
+        "AAHEDC tariff excluding the Shetland Assistance Amount in p/kwh": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 9
+          },
+          "examples": [
+            "0.028378",
+            "0.028593",
+            "0.030535"
+          ],
+          "max_len": 8,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 9
+          }
+        },
+        "Publication Type": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 9,
+            "int64": 9
+          },
+          "examples": [
+            "Final",
+            "Draft"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "text": 9
+          }
+        },
+        "Published Date": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%d/%m/%Y": 0,
+            "float64": 9,
+            "int64": 9
+          },
+          "examples": [
+            "15/07/2021",
+            "15/07/2022",
+            "15/07/2023"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "slash_date": 9
+          },
+          "slash_first_gt_12": 9,
+          "slash_second_gt_12": 0
+        },
+        "Shetland Tariff in p/kwh": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 9
+          },
+          "examples": [
+            "0.012049",
+            "0.012077",
+            "0.011503"
+          ],
+          "max_len": 8,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 9
+          }
+        },
+        "Total Scheme Tariff in p/kwh": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 9
+          },
+          "examples": [
+            "0.040427",
+            "0.04067",
+            "0.042038"
+          ],
+          "max_len": 8,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 9
+          }
+        },
+        "Year FY": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "2022",
+            "2023",
+            "2024"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 9
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "AAHEDC tariff excluding the Shetland Assistance Amount in p/kwh": {
+            "description": "AAHEDC tariff excluding the Shetland Assistance Amount in p/kwh at 6 decimal places",
+            "title": "AAHEDC tariff excluding the Shetland Assistance Amount in p/kwh\t\t",
+            "type": "numeric",
+            "unit": "Pence per kilowatt hour"
+          },
+          "Publication Type": {
+            "description": "Draft or Final Tariffs",
+            "title": "Publication Type",
+            "type": "text",
+            "unit": null
+          },
+          "Published Date": {
+            "description": "Date when this tariff was published",
+            "title": "Published Date\t\t",
+            "type": "date",
+            "unit": "ISO 8601"
+          },
+          "Shetland Tariff in p/kwh": {
+            "description": "Shetland Tariff in p/kwh at 6 decimal places",
+            "title": "Shetland Tariff in p/kwh\t\t",
+            "type": "numeric",
+            "unit": "Pence per kilowatt hour"
+          },
+          "Total Scheme Tariff in p/kwh": {
+            "description": "Total Scheme Tariff in p/kwh at 6 decimal places",
+            "title": "Total Scheme Tariff in p/kwh\t\t",
+            "type": "numeric",
+            "unit": "Pence per kilowatt hour"
+          },
+          "Year FY": {
+            "description": "Financial year",
+            "title": "Year FY\t\t",
+            "type": "int4",
+            "unit": "ISO 8601"
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T08:13:00.098981+00:00",
+      "header": [
+        "Publication Type",
+        "Year FY",
+        "Published Date",
+        "Total Scheme Tariff in p/kwh",
+        "Shetland Tariff in p/kwh",
+        "AAHEDC tariff excluding the Shetland Assistance Amount in p/kwh"
+      ],
+      "last_written_at": "2026-10-08T08:13:00.098981+00:00",
+      "resource_ids": [
+        "ffd29cc8-3c55-4e83-aa0e-73212d4fedba"
+      ],
+      "rows": 9,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [],
+  "key": "aahedc_tariffs",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Published Date"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Total Scheme Tariff in p/kwh"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 1,
+        "columns": [
+          "AAHEDC tariff excluding the Shetland Assistance Amount in p/kwh"
+        ],
+        "max_duplicates": 0
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "aahedc-tariffs",
+  "proposal": {
+    "flags": [],
+    "record_draft": {
+      "encoding": "utf-8",
+      "entity_key": [
+        "published_date"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "publication_type",
+              "nullable": true,
+              "source": "Publication Type"
+            },
+            {
+              "dtype": "int64",
+              "name": "year_fy",
+              "nullable": true,
+              "source": "Year FY"
+            },
+            {
+              "dtype": "date",
+              "format": "%d/%m/%Y",
+              "name": "published_date",
+              "nullable": true,
+              "source": "Published Date"
+            },
+            {
+              "dtype": "float64",
+              "name": "total_scheme_tariff_in_p_kwh",
+              "nullable": true,
+              "source": "Total Scheme Tariff in p/kwh"
+            },
+            {
+              "dtype": "float64",
+              "name": "shetland_tariff_in_p_kwh",
+              "nullable": true,
+              "source": "Shetland Tariff in p/kwh"
+            },
+            {
+              "dtype": "float64",
+              "name": "aahedc_tariff_excluding_the_shetland_assistance_amount_in_p_kwh",
+              "nullable": true,
+              "source": "AAHEDC tariff excluding the Shetland Assistance Amount in p/kwh"
+            }
+          ],
+          "header": [
+            "Publication Type",
+            "Year FY",
+            "Published Date",
+            "Total Scheme Tariff in p/kwh",
+            "Shetland Tariff in p/kwh",
+            "AAHEDC tariff excluding the Shetland Assistance Amount in p/kwh"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T01",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T01",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: Published Date"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T02",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['published_date'] (measured unique in 1 capture(s)); without one, latest stays whole_capture"
+      }
+    ]
+  },
+  "refresh": "adhoc",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update frequency",
+        "value": "Every 6 months"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Network charges",
+    "title": "Assistance for Areas of High Electricity Distribution Costs (AAHEDC) Tariffs"
+  }
+}

@@ -1,0 +1,895 @@
+{
+  "archetype": "EVT",
+  "batch": "AS-3",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/eac_mock_results_sell_orders/2026/10/08/raw_20261008T102753Z_3b18345a-1933-44d7-abd9-062a2e695ccd_d5d8f6e0.csv",
+      "ckan_last_modified": null,
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 30870,
+      "parse_error": null,
+      "resource_id": "3b18345a-1933-44d7-abd9-062a2e695ccd",
+      "rows": 30869,
+      "sampled": false,
+      "size": 5304231,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T10:27:53.401265+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 1,
+      "columns": {
+        "acceptanceRatio": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 30869
+          },
+          "examples": [
+            "0.0",
+            "1.0"
+          ],
+          "max_len": 3,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 30869
+          }
+        },
+        "auctionID": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1",
+            "2",
+            "3"
+          ],
+          "max_len": 2,
+          "null_count": 0,
+          "shapes": {
+            "int": 30869
+          }
+        },
+        "auctionProduct": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 30869,
+            "int64": 30869
+          },
+          "examples": [
+            "PBR",
+            "NBR",
+            "PQR"
+          ],
+          "max_len": 3,
+          "null_count": 0,
+          "shapes": {
+            "text": 30869
+          }
+        },
+        "auctionUnit": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 30869,
+            "int64": 30869
+          },
+          "examples": [
+            "AG-ASTK01",
+            "AG-ASTK02",
+            "DOLLB-1"
+          ],
+          "max_len": 9,
+          "null_count": 0,
+          "shapes": {
+            "text": 30869
+          }
+        },
+        "basketID": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "36",
+            "37",
+            "38"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "int": 30869
+          }
+        },
+        "clearingPrice": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 30869
+          },
+          "examples": [
+            "0.0",
+            "2.0",
+            "4.0"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 30869
+          }
+        },
+        "deliveryEnd": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 30869,
+            "int64": 30869
+          },
+          "examples": [
+            "2026-02-23T23:30:00",
+            "2026-02-24T00:00:00",
+            "2026-02-24T00:30:00"
+          ],
+          "max_len": 19,
+          "null_count": 0,
+          "shapes": {
+            "naive_datetime": 30869
+          }
+        },
+        "deliveryStart": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 30869,
+            "int64": 30869
+          },
+          "examples": [
+            "2026-02-23T23:00:00",
+            "2026-02-23T23:30:00",
+            "2026-02-24T00:00:00"
+          ],
+          "max_len": 19,
+          "null_count": 0,
+          "shapes": {
+            "naive_datetime": 30869
+          }
+        },
+        "executedQuantity": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 30869
+          },
+          "examples": [
+            "0.0",
+            "4.0",
+            "3.0"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 30869
+          }
+        },
+        "flexibleGroupID": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "10",
+            "12",
+            "14"
+          ],
+          "max_len": 4,
+          "null_count": 8333,
+          "shapes": {
+            "int": 22536
+          }
+        },
+        "loopedBasketID": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "2",
+            "1",
+            "5"
+          ],
+          "max_len": 1,
+          "null_count": 30757,
+          "shapes": {
+            "int": 112
+          }
+        },
+        "minimumConsecutiveWindows": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "4",
+            "10",
+            "9"
+          ],
+          "max_len": 2,
+          "null_count": 8333,
+          "shapes": {
+            "int": 22536
+          }
+        },
+        "orderEntryTime": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 30869,
+            "int64": 30869
+          },
+          "examples": [
+            "2026-02-16T15:36:47",
+            "2026-02-16T15:37:15",
+            "2026-02-16T15:37:54"
+          ],
+          "max_len": 19,
+          "null_count": 0,
+          "shapes": {
+            "naive_datetime": 30869
+          }
+        },
+        "orderID": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "154",
+            "153",
+            "152"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "int": 30869
+          }
+        },
+        "orderType": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 30869,
+            "int64": 30869
+          },
+          "examples": [
+            "CHILD",
+            "PARENT",
+            "SUBSTITUTABLECHILD"
+          ],
+          "max_len": 18,
+          "null_count": 0,
+          "shapes": {
+            "text": 30869
+          }
+        },
+        "priceLimit": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 30869
+          },
+          "examples": [
+            "4.0",
+            "3.0",
+            "1.0"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 30869
+          }
+        },
+        "productID": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "2",
+            "1",
+            "3"
+          ],
+          "max_len": 1,
+          "null_count": 0,
+          "shapes": {
+            "int": 30869
+          }
+        },
+        "quantity": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 30869
+          },
+          "examples": [
+            "2.0",
+            "1.0",
+            "4.0"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 30869
+          }
+        },
+        "reasonRejected": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "21",
+            "11",
+            "14"
+          ],
+          "max_len": 2,
+          "null_count": 22970,
+          "shapes": {
+            "int": 7899
+          }
+        },
+        "registeredAuctionParticipant": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 30869,
+            "int64": 30869
+          },
+          "examples": [
+            "STATKRAFT MARKETS GMBH",
+            "QUORUM DEV",
+            "UK POWER RESERVE LIMITED"
+          ],
+          "max_len": 51,
+          "null_count": 0,
+          "shapes": {
+            "text": 30869
+          }
+        },
+        "serviceType": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 30869,
+            "int64": 30869
+          },
+          "examples": [
+            "Balancing Reserve",
+            "Quick Reserve",
+            "Response"
+          ],
+          "max_len": 17,
+          "null_count": 0,
+          "shapes": {
+            "text": 30869
+          }
+        },
+        "status": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 30869,
+            "int64": 30869
+          },
+          "examples": [
+            "REJECTED",
+            "EXECUTED"
+          ],
+          "max_len": 8,
+          "null_count": 0,
+          "shapes": {
+            "text": 30869
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "acceptanceRatio": {
+            "description": "A number between 0 and 1, indicating the proportion of an Offered Quantity or a Bid Quantity which has been matched by the Auction algorithm",
+            "title": "acceptanceRatio\t\t",
+            "type": "numeric",
+            "unit": null
+          },
+          "auctionID": {
+            "description": "Unique auction identifier. All products auctioned in the same market",
+            "title": "auctionID\t\t",
+            "type": "int4",
+            "unit": null
+          },
+          "auctionProduct": {
+            "description": "Service Type Identifier – \r\n[DCH,DCL,DMH,DML,DRH,DRL,NSR,PSR,NQR,PQR]",
+            "title": "auctionProduct\t\t",
+            "type": "text",
+            "unit": null
+          },
+          "auctionUnit": {
+            "description": "Auction Unit Identifier - a collection of one or more Eligible Assets registered at the relevant time as an Auction Unit in accordance with the Registration and Pre-Qualification Procedure",
+            "title": "auctionUnit\t\t",
+            "type": "text",
+            "unit": null
+          },
+          "basketID": {
+            "description": "The ID for the Basket bid in the auction (generated by EAC)",
+            "title": "basketID\t\t",
+            "type": "int4",
+            "unit": null
+          },
+          "clearingPrice": {
+            "description": "The cleared price per MW per hour (£/MW/h)",
+            "title": "clearingPrice\t\t",
+            "type": "numeric",
+            "unit": "£/MW/h"
+          },
+          "deliveryEnd": {
+            "description": "The time from which delivery of the Auction Product will end",
+            "title": "deliveryEnd\t\t",
+            "type": "timestamp",
+            "unit": null
+          },
+          "deliveryStart": {
+            "description": "The time from which delivery of the Auction Product will commence",
+            "title": "deliveryStart\t\t",
+            "type": "timestamp",
+            "unit": null
+          },
+          "executedQuantity": {
+            "description": "The volume of response that was accepted as at the clearing price",
+            "title": "executedQuantity\t\t",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "flexibleGroupID": {
+            "description": "Identifies a specific Market Participant's flexible service windows group that they have linked together for a specific auction and service",
+            "title": "flexibleGroupID",
+            "type": "int4",
+            "unit": null
+          },
+          "loopedBasketID": {
+            "description": "\"•\tBlank for a CHILD or SUBSTITUTABLECHILD order \r\n•\tBlank if the Basket is not looped to another basket \r\n•\tBasket ID for a looped Basket\"",
+            "title": "loopedBasketID\t\t",
+            "type": "int4",
+            "unit": null
+          },
+          "minimumConsecutiveWindows": {
+            "description": "Identifies the minimum number of consecutive windows that can be accepted from a specific flexible window group",
+            "title": "minimumConsecutiveWindows",
+            "type": "int4",
+            "unit": null
+          },
+          "orderEntryTime": {
+            "description": "The time at which the bid was submitted",
+            "title": "orderEntryTime\t\t",
+            "type": "timestamp",
+            "unit": null
+          },
+          "orderID": {
+            "description": "The ID for the submitted bid in the auction",
+            "title": "orderID\t\t",
+            "type": "int4",
+            "unit": null
+          },
+          "orderType": {
+            "description": "Type of order  - [PARENT,CHILD,SUBSTITUTABLECHILD]",
+            "title": "orderType\t\t",
+            "type": "text",
+            "unit": null
+          },
+          "priceLimit": {
+            "description": "The price for the provision of the service",
+            "title": "priceLimit\t\t",
+            "type": "numeric",
+            "unit": "£/MW/h"
+          },
+          "productID": {
+            "description": "Identifier of each product offered within an auction ID",
+            "title": "productID\t\t",
+            "type": "int4",
+            "unit": null
+          },
+          "quantity": {
+            "description": "The total volume of the bid",
+            "title": "quantity\t\t",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "reasonRejected": {
+            "description": "Reason Codes",
+            "title": "reasonRejected\t\t",
+            "type": "text",
+            "unit": null
+          },
+          "registeredAuctionParticipant": {
+            "description": "Name of the Participant who submitted the bid",
+            "title": "registeredAuctionParticipant\t\t",
+            "type": "text",
+            "unit": null
+          },
+          "serviceType": {
+            "description": "Service Type Identifier - [Response, Quick Reserve or Slow Reserve]",
+            "title": "serviceType\t\t",
+            "type": "text",
+            "unit": null
+          },
+          "status": {
+            "description": "Was the order accepted or rejected [EXECUTED,REJECTED,EXCLUDED]",
+            "title": "status\t\t",
+            "type": "text",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T10:27:53.401265+00:00",
+      "header": [
+        "auctionID",
+        "registeredAuctionParticipant",
+        "auctionUnit",
+        "basketID",
+        "serviceType",
+        "deliveryStart",
+        "deliveryEnd",
+        "orderID",
+        "orderType",
+        "auctionProduct",
+        "productID",
+        "quantity",
+        "priceLimit",
+        "loopedBasketID",
+        "orderEntryTime",
+        "acceptanceRatio",
+        "status",
+        "executedQuantity",
+        "clearingPrice",
+        "reasonRejected",
+        "flexibleGroupID",
+        "minimumConsecutiveWindows"
+      ],
+      "last_written_at": "2026-10-08T10:27:53.401265+00:00",
+      "resource_ids": [
+        "3b18345a-1933-44d7-abd9-062a2e695ccd"
+      ],
+      "rows": 30869,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [],
+  "key": "eac_mock_results_sell_orders",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 1,
+        "columns": [
+          "orderID"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 1,
+        "columns": [
+          "basketID",
+          "auctionProduct",
+          "productID"
+        ],
+        "max_duplicates": 0
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "eac-mock-auction-results",
+  "proposal": {
+    "flags": [],
+    "record_draft": {
+      "eligibility": {
+        "question": "auctionID: a numeric column with no vendor unit; basketID: a numeric column with no vendor unit; deliveryStart: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced); deliveryEnd: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced); orderID: a numeric column with no vendor unit; productID: a numeric column with no vendor unit; loopedBasketID: a numeric column with no vendor unit; orderEntryTime: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced); acceptanceRatio: a numeric column with no vendor unit; flexibleGroupID: a numeric column with no vendor unit; minimumConsecutiveWindows: a numeric column with no vendor unit",
+        "status": "held",
+        "unit": "AS-3"
+      },
+      "encoding": "utf-8",
+      "entity_key": [
+        "orderid"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "int64",
+              "name": "auctionid",
+              "nullable": true,
+              "source": "auctionID"
+            },
+            {
+              "dtype": "string",
+              "name": "registeredauctionparticipant",
+              "nullable": true,
+              "source": "registeredAuctionParticipant"
+            },
+            {
+              "dtype": "string",
+              "name": "auctionunit",
+              "nullable": true,
+              "source": "auctionUnit"
+            },
+            {
+              "dtype": "int64",
+              "name": "basketid",
+              "nullable": true,
+              "source": "basketID"
+            },
+            {
+              "dtype": "string",
+              "name": "servicetype",
+              "nullable": true,
+              "source": "serviceType"
+            },
+            {
+              "dtype": "string",
+              "name": "deliverystart",
+              "nullable": true,
+              "source": "deliveryStart"
+            },
+            {
+              "dtype": "string",
+              "name": "deliveryend",
+              "nullable": true,
+              "source": "deliveryEnd"
+            },
+            {
+              "dtype": "int64",
+              "name": "orderid",
+              "nullable": true,
+              "source": "orderID"
+            },
+            {
+              "dtype": "string",
+              "name": "ordertype",
+              "nullable": true,
+              "source": "orderType"
+            },
+            {
+              "dtype": "string",
+              "name": "auctionproduct",
+              "nullable": true,
+              "source": "auctionProduct"
+            },
+            {
+              "dtype": "int64",
+              "name": "productid",
+              "nullable": true,
+              "source": "productID"
+            },
+            {
+              "dtype": "float64",
+              "name": "quantity",
+              "nullable": true,
+              "source": "quantity"
+            },
+            {
+              "dtype": "float64",
+              "name": "pricelimit",
+              "nullable": true,
+              "source": "priceLimit"
+            },
+            {
+              "dtype": "int64",
+              "name": "loopedbasketid",
+              "nullable": true,
+              "source": "loopedBasketID"
+            },
+            {
+              "dtype": "string",
+              "name": "orderentrytime",
+              "nullable": true,
+              "source": "orderEntryTime"
+            },
+            {
+              "dtype": "float64",
+              "name": "acceptanceratio",
+              "nullable": true,
+              "source": "acceptanceRatio"
+            },
+            {
+              "dtype": "string",
+              "name": "status",
+              "nullable": true,
+              "source": "status"
+            },
+            {
+              "dtype": "float64",
+              "name": "executedquantity",
+              "nullable": true,
+              "source": "executedQuantity"
+            },
+            {
+              "dtype": "float64",
+              "name": "clearingprice",
+              "nullable": true,
+              "source": "clearingPrice"
+            },
+            {
+              "dtype": "string",
+              "name": "reasonrejected",
+              "nullable": true,
+              "source": "reasonRejected"
+            },
+            {
+              "dtype": "int64",
+              "name": "flexiblegroupid",
+              "nullable": true,
+              "source": "flexibleGroupID"
+            },
+            {
+              "dtype": "int64",
+              "name": "minimumconsecutivewindows",
+              "nullable": true,
+              "source": "minimumConsecutiveWindows"
+            }
+          ],
+          "header": [
+            "auctionID",
+            "registeredAuctionParticipant",
+            "auctionUnit",
+            "basketID",
+            "serviceType",
+            "deliveryStart",
+            "deliveryEnd",
+            "orderID",
+            "orderType",
+            "auctionProduct",
+            "productID",
+            "quantity",
+            "priceLimit",
+            "loopedBasketID",
+            "orderEntryTime",
+            "acceptanceRatio",
+            "status",
+            "executedQuantity",
+            "clearingPrice",
+            "reasonRejected",
+            "flexibleGroupID",
+            "minimumConsecutiveWindows"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T12",
+      "version": "1",
+      "vintage": "capture_fallback"
+    },
+    "todos": [
+      {
+        "consequence": "held",
+        "field": "column 'auctionID'.unit",
+        "id": "T01",
+        "kind": "unit",
+        "question": "auctionID: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'basketID'.unit",
+        "id": "T02",
+        "kind": "unit",
+        "question": "basketID: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'deliveryStart'",
+        "id": "T03",
+        "kind": "time_semantics",
+        "question": "deliveryStart: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'deliveryEnd'",
+        "id": "T04",
+        "kind": "time_semantics",
+        "question": "deliveryEnd: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'orderID'.unit",
+        "id": "T05",
+        "kind": "unit",
+        "question": "orderID: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'productID'.unit",
+        "id": "T06",
+        "kind": "unit",
+        "question": "productID: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'loopedBasketID'.unit",
+        "id": "T07",
+        "kind": "unit",
+        "question": "loopedBasketID: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'orderEntryTime'",
+        "id": "T08",
+        "kind": "time_semantics",
+        "question": "orderEntryTime: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'acceptanceRatio'.unit",
+        "id": "T09",
+        "kind": "unit",
+        "question": "acceptanceRatio: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'flexibleGroupID'.unit",
+        "id": "T10",
+        "kind": "unit",
+        "question": "flexibleGroupID: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'minimumConsecutiveWindows'.unit",
+        "id": "T11",
+        "kind": "unit",
+        "question": "minimumConsecutiveWindows: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T12",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: deliveryStart, deliveryEnd, orderEntryTime"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T13",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['orderid'] (measured unique in 1 capture(s)); without one, latest stays whole_capture"
+      },
+      {
+        "consequence": "none",
+        "field": "vintage",
+        "id": "T14",
+        "kind": "vendor_publication",
+        "question": "available_at is gridflow capture time for the dump; a vendor instant is held (D)"
+      }
+    ]
+  },
+  "refresh": "weekly",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update Frequency",
+        "value": "Weekly"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Ancillary services",
+    "title": "EAC mock auction results"
+  }
+}

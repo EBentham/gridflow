@@ -1,0 +1,901 @@
+{
+  "archetype": "EVT",
+  "batch": "TRD",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/ssel_contract_enactment/2026/10/08/raw_20261008T112422Z_835d50b9-2d7c-4318-bd04-c7f94b149041_ab93d260.csv",
+      "ckan_last_modified": "2021-03-31T12:53:32.263801",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 21,
+      "parse_error": null,
+      "resource_id": "835d50b9-2d7c-4318-bd04-c7f94b149041",
+      "rows": 20,
+      "sampled": false,
+      "size": 1200,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T11:24:22.987921+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/ssel_contract_enactment/2026/10/08/raw_20261008T112453Z_bf9ca254-e9de-4aa2-841a-fb34566de38a_3d0f6244.csv",
+      "ckan_last_modified": "2022-03-04T21:13:04.682352",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 2,
+      "parse_error": null,
+      "resource_id": "bf9ca254-e9de-4aa2-841a-fb34566de38a",
+      "rows": 1,
+      "sampled": false,
+      "size": 212,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T11:24:53.923042+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/ssel_contract_enactment/2026/10/08/raw_20261008T112523Z_34f185bc-087a-41b2-b514-305e31158e5a_3e4e6917.csv",
+      "ckan_last_modified": "2022-12-31T17:50:14.677118",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 3,
+      "parse_error": null,
+      "resource_id": "34f185bc-087a-41b2-b514-305e31158e5a",
+      "rows": 2,
+      "sampled": false,
+      "size": 340,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T11:25:23.100777+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/ssel_contract_enactment/2026/10/08/raw_20261008T112553Z_817036a8-10af-442e-93d4-8f21ae038b52_3b0639d7.csv",
+      "ckan_last_modified": null,
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 3,
+      "parse_error": null,
+      "resource_id": "817036a8-10af-442e-93d4-8f21ae038b52",
+      "rows": 2,
+      "sampled": false,
+      "size": 345,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T11:25:53.203477+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/ssel_contract_enactment/2026/10/08/raw_20261008T112623Z_43078fd2-7583-4b0a-b398-e48de3817515_8efaf3df.csv",
+      "ckan_last_modified": null,
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 2,
+      "parse_error": null,
+      "resource_id": "43078fd2-7583-4b0a-b398-e48de3817515",
+      "rows": 1,
+      "sampled": false,
+      "size": 233,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T11:26:23.233088+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/ssel_contract_enactment/2026/10/08/raw_20261008T112653Z_8e7168fa-8617-4d83-9696-d6bf1f09c9c5_43b83723.csv",
+      "ckan_last_modified": null,
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 2,
+      "parse_error": null,
+      "resource_id": "8e7168fa-8617-4d83-9696-d6bf1f09c9c5",
+      "rows": 1,
+      "sampled": false,
+      "size": 219,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T11:26:53.176175+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 1,
+      "columns": {
+        "End": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 20,
+            "int64": 20
+          },
+          "examples": [
+            "2020-07-05T07:00:00",
+            "2020-07-06T06:00:00",
+            "2020-08-21T08:00:00"
+          ],
+          "max_len": 19,
+          "null_count": 0,
+          "shapes": {
+            "naive_datetime": 20
+          }
+        },
+        "Price (£/MW/hr)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 4
+          },
+          "examples": [
+            "58",
+            "25",
+            "63.16"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 4,
+            "int": 16
+          }
+        },
+        "Record": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1",
+            "2",
+            "4"
+          ],
+          "max_len": 2,
+          "null_count": 0,
+          "shapes": {
+            "int": 20
+          }
+        },
+        "Reduction (MW)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "100",
+            "150",
+            "200"
+          ],
+          "max_len": 3,
+          "null_count": 0,
+          "shapes": {
+            "int": 20
+          }
+        },
+        "Start": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 20,
+            "int64": 20
+          },
+          "examples": [
+            "2020-07-04T22:00:00",
+            "2020-07-05T22:00:00",
+            "2020-08-21T06:00:00"
+          ],
+          "max_len": 19,
+          "null_count": 0,
+          "shapes": {
+            "naive_datetime": 20
+          }
+        },
+        "Unit": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 20,
+            "int64": 20
+          },
+          "examples": [
+            "DRAXX-3",
+            "HUMR-1",
+            "SCCL-1"
+          ],
+          "max_len": 7,
+          "null_count": 0,
+          "shapes": {
+            "text": 20
+          }
+        }
+      },
+      "field_info": {
+        "columns": {},
+        "field_info_not_in_header": [
+          "Area",
+          "AssetID",
+          "CP_Name",
+          "Cost",
+          "EndTime",
+          "ID",
+          "Last_Updated",
+          "Note",
+          "Price",
+          "Reason",
+          "SO_Flag",
+          "StartTime",
+          "Volume"
+        ],
+        "header_not_in_field_info": [
+          "Record",
+          "Unit",
+          "Start",
+          "End",
+          "Reduction (MW)",
+          "Price (£/MW/hr)"
+        ]
+      },
+      "first_written_at": "2026-10-08T11:24:22.987921+00:00",
+      "header": [
+        "Record",
+        "Unit",
+        "Start",
+        "End",
+        "Reduction (MW)",
+        "Price (£/MW/hr)"
+      ],
+      "last_written_at": "2026-10-08T11:24:22.987921+00:00",
+      "resource_ids": [
+        "835d50b9-2d7c-4318-bd04-c7f94b149041"
+      ],
+      "rows": 20,
+      "settlement_periods": []
+    },
+    {
+      "captures": 5,
+      "columns": {
+        "Area": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [],
+          "max_len": 0,
+          "null_count": 7,
+          "shapes": {}
+        },
+        "AssetID": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 7,
+            "int64": 7
+          },
+          "examples": [
+            "DRAXX-3",
+            "DRAXX-2",
+            "GRAI-6"
+          ],
+          "max_len": 7,
+          "null_count": 0,
+          "shapes": {
+            "text": 7
+          }
+        },
+        "CP_Name": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 7,
+            "int64": 7
+          },
+          "examples": [
+            "Drax Power Ltd",
+            "Uniper Global Commodities SE"
+          ],
+          "max_len": 28,
+          "null_count": 0,
+          "shapes": {
+            "text": 7
+          }
+        },
+        "Cost": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "46400",
+            "-46400",
+            "-40600"
+          ],
+          "max_len": 6,
+          "null_count": 0,
+          "shapes": {
+            "int": 7
+          }
+        },
+        "EndTime": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 7,
+            "int64": 7
+          },
+          "examples": [
+            "2022-01-04T07:00:00",
+            "2022-11-02T06:00:00",
+            "2023-09-25T05:00:00"
+          ],
+          "max_len": 19,
+          "null_count": 0,
+          "shapes": {
+            "naive_datetime": 7
+          }
+        },
+        "ID": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 7,
+            "int64": 7
+          },
+          "examples": [
+            "ES00159754",
+            "ES00206316",
+            "ES00232575"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "text": 7
+          }
+        },
+        "Last_Updated": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 7,
+            "int64": 7
+          },
+          "examples": [
+            "2022-01-03T21:13:47",
+            "2022-11-01T17:53:46",
+            "2023-02-08T09:47:28"
+          ],
+          "max_len": 19,
+          "null_count": 0,
+          "shapes": {
+            "naive_datetime": 7
+          }
+        },
+        "Note": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [],
+          "max_len": 0,
+          "null_count": 7,
+          "shapes": {}
+        },
+        "Price": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1
+          },
+          "examples": [
+            "58",
+            "29.6"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 1,
+            "int": 6
+          }
+        },
+        "Reason": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 7,
+            "int64": 7
+          },
+          "examples": [
+            "V_NORTH",
+            "Downward Reg"
+          ],
+          "max_len": 12,
+          "null_count": 0,
+          "shapes": {
+            "text": 7
+          }
+        },
+        "SO_Flag": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 7,
+            "int64": 7
+          },
+          "examples": [
+            "T"
+          ],
+          "max_len": 1,
+          "null_count": 0,
+          "shapes": {
+            "text": 7
+          }
+        },
+        "StartTime": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 7,
+            "int64": 7
+          },
+          "examples": [
+            "2022-01-03T23:00:00",
+            "2022-11-01T22:00:00",
+            "2023-09-24T22:00:00"
+          ],
+          "max_len": 19,
+          "null_count": 0,
+          "shapes": {
+            "naive_datetime": 7
+          }
+        },
+        "Volume": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "100",
+            "-100",
+            "-95"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 7
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "Area": {
+            "description": "The location of the asset",
+            "title": "Delivery Area",
+            "type": "text",
+            "unit": null
+          },
+          "AssetID": {
+            "description": "The ID of the Asset",
+            "title": "AssetID",
+            "type": "text",
+            "unit": null
+          },
+          "CP_Name": {
+            "description": "Name of the contract counterparty",
+            "title": "Counterparty name",
+            "type": "text",
+            "unit": null
+          },
+          "Cost": {
+            "description": "Total cost to Nationalgrid ESO for the contract enctment action",
+            "title": "Cost",
+            "type": "float8",
+            "unit": "£/h"
+          },
+          "EndTime": {
+            "description": "End time of the contract enactment action in UTC format",
+            "title": "End Time (UTC)",
+            "type": "timestamp",
+            "unit": "UTC ISO 8601"
+          },
+          "ID": {
+            "description": "ID of the Contract Enactment Action",
+            "title": "Contract ID",
+            "type": "text",
+            "unit": null
+          },
+          "Last_Updated": {
+            "description": "Date and Time that the information has been last updated",
+            "title": "Last Updated",
+            "type": "timestamp",
+            "unit": "UTC ISO 8601"
+          },
+          "Note": {
+            "description": "Notes or comments",
+            "title": "Note",
+            "type": "text",
+            "unit": null
+          },
+          "Price": {
+            "description": "Average price of the contract enactment action",
+            "title": "Price",
+            "type": "float8",
+            "unit": "£/MWh"
+          },
+          "Reason": {
+            "description": "Detailed reason for the contract enactment action",
+            "title": "Contract Reason",
+            "type": "text",
+            "unit": null
+          },
+          "SO_Flag": {
+            "description": "System flag indicating whether the action is mainly for system security purpose",
+            "title": "System Flag",
+            "type": "text",
+            "unit": null
+          },
+          "StartTime": {
+            "description": "Start time of the contract enactment action in UTC format",
+            "title": "Start Time (UTC)",
+            "type": "timestamp",
+            "unit": "UTC ISO 8601"
+          },
+          "Volume": {
+            "description": "Average Volume of the contract enactment action",
+            "title": "Average Volume",
+            "type": "float8",
+            "unit": "MW"
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T11:24:53.923042+00:00",
+      "header": [
+        "ID",
+        "StartTime",
+        "EndTime",
+        "Volume",
+        "Price",
+        "Cost",
+        "SO_Flag",
+        "Reason",
+        "AssetID",
+        "CP_Name",
+        "Area",
+        "Note",
+        "Last_Updated"
+      ],
+      "last_written_at": "2026-10-08T11:26:53.176175+00:00",
+      "resource_ids": [
+        "34f185bc-087a-41b2-b514-305e31158e5a",
+        "43078fd2-7583-4b0a-b398-e48de3817515",
+        "817036a8-10af-442e-93d4-8f21ae038b52",
+        "8e7168fa-8617-4d83-9696-d6bf1f09c9c5",
+        "bf9ca254-e9de-4aa2-841a-fb34566de38a"
+      ],
+      "rows": 7,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [
+    "multi_epoch"
+  ],
+  "key": "ssel_contract_enactment",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 5,
+        "columns": [
+          "ID"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 5,
+        "columns": [
+          "StartTime"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 5,
+        "columns": [
+          "EndTime"
+        ],
+        "max_duplicates": 1
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "super-stable-export-limit-contract-enactment",
+  "proposal": {
+    "flags": [
+      "multi_epoch"
+    ],
+    "record_draft": {
+      "eligibility": {
+        "question": "Record: a numeric column with no vendor unit; Start: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced); End: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced); Reduction (MW): a numeric column with no vendor unit; Price (£/MW/hr): a numeric column with no vendor unit; StartTime: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced); EndTime: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced); Last_Updated: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)",
+        "status": "held",
+        "unit": "TRD"
+      },
+      "encoding": "utf-8",
+      "entity_key": [
+        "id"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "int64",
+              "name": "record",
+              "nullable": true,
+              "source": "Record"
+            },
+            {
+              "dtype": "string",
+              "name": "unit",
+              "nullable": true,
+              "source": "Unit"
+            },
+            {
+              "dtype": "string",
+              "name": "start",
+              "nullable": true,
+              "source": "Start"
+            },
+            {
+              "dtype": "string",
+              "name": "end",
+              "nullable": true,
+              "source": "End"
+            },
+            {
+              "dtype": "int64",
+              "name": "reduction_mw",
+              "nullable": true,
+              "source": "Reduction (MW)"
+            },
+            {
+              "dtype": "float64",
+              "name": "price_mw_hr",
+              "nullable": true,
+              "source": "Price (£/MW/hr)"
+            }
+          ],
+          "header": [
+            "Record",
+            "Unit",
+            "Start",
+            "End",
+            "Reduction (MW)",
+            "Price (£/MW/hr)"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        },
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "id",
+              "nullable": true,
+              "source": "ID"
+            },
+            {
+              "dtype": "string",
+              "name": "starttime",
+              "nullable": true,
+              "source": "StartTime"
+            },
+            {
+              "dtype": "string",
+              "name": "endtime",
+              "nullable": true,
+              "source": "EndTime"
+            },
+            {
+              "dtype": "float64",
+              "name": "volume",
+              "nullable": true,
+              "source": "Volume"
+            },
+            {
+              "dtype": "float64",
+              "name": "price",
+              "nullable": true,
+              "source": "Price"
+            },
+            {
+              "dtype": "float64",
+              "name": "cost",
+              "nullable": true,
+              "source": "Cost"
+            },
+            {
+              "dtype": "string",
+              "name": "so_flag",
+              "nullable": true,
+              "source": "SO_Flag"
+            },
+            {
+              "dtype": "string",
+              "name": "reason",
+              "nullable": true,
+              "source": "Reason"
+            },
+            {
+              "dtype": "string",
+              "name": "assetid",
+              "nullable": true,
+              "source": "AssetID"
+            },
+            {
+              "dtype": "string",
+              "name": "cp_name",
+              "nullable": true,
+              "source": "CP_Name"
+            },
+            {
+              "dtype": "string",
+              "name": "area",
+              "nullable": true,
+              "source": "Area"
+            },
+            {
+              "dtype": "string",
+              "name": "note",
+              "nullable": true,
+              "source": "Note"
+            },
+            {
+              "dtype": "string",
+              "name": "last_updated",
+              "nullable": true,
+              "source": "Last_Updated"
+            }
+          ],
+          "header": [
+            "ID",
+            "StartTime",
+            "EndTime",
+            "Volume",
+            "Price",
+            "Cost",
+            "SO_Flag",
+            "Reason",
+            "AssetID",
+            "CP_Name",
+            "Area",
+            "Note",
+            "Last_Updated"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T09",
+      "version": "1",
+      "vintage": "capture_fallback"
+    },
+    "todos": [
+      {
+        "consequence": "held",
+        "field": "column 'Record'.unit",
+        "id": "T01",
+        "kind": "unit",
+        "question": "Record: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Start'",
+        "id": "T02",
+        "kind": "time_semantics",
+        "question": "Start: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'End'",
+        "id": "T03",
+        "kind": "time_semantics",
+        "question": "End: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Reduction (MW)'.unit",
+        "id": "T04",
+        "kind": "unit",
+        "question": "Reduction (MW): a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Price (£/MW/hr)'.unit",
+        "id": "T05",
+        "kind": "unit",
+        "question": "Price (£/MW/hr): a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'StartTime'",
+        "id": "T06",
+        "kind": "time_semantics",
+        "question": "StartTime: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'EndTime'",
+        "id": "T07",
+        "kind": "time_semantics",
+        "question": "EndTime: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Last_Updated'",
+        "id": "T08",
+        "kind": "time_semantics",
+        "question": "Last_Updated: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T09",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: Start, End, StartTime, EndTime, Last_Updated"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T10",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['id'] (measured unique in 5 capture(s)); without one, latest stays whole_capture"
+      },
+      {
+        "consequence": "none",
+        "field": "vintage",
+        "id": "T11",
+        "kind": "vendor_publication",
+        "question": "available_at is gridflow capture time for the dump; a vendor instant is held (D)"
+      },
+      {
+        "consequence": "none",
+        "field": "epochs",
+        "id": "T12",
+        "kind": "multi_epoch",
+        "question": "2 header epochs; review each in its batch"
+      }
+    ]
+  },
+  "refresh": "daily",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Status",
+        "value": "Live"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Trading",
+    "title": "Super Stable Export Limit Contract Enactment"
+  }
+}

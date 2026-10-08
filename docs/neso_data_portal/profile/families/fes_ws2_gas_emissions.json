@@ -1,0 +1,3541 @@
+{
+  "archetype": "SCN",
+  "batch": "SCN-3",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/fes_ws2_gas_emissions/2026/10/08/raw_20261008T105814Z_5f8f7293-4894-40c5-8f5c-e096b19e8198_f5f6607f.csv",
+      "ckan_last_modified": "2023-07-10T03:31:44.136572",
+      "cr": 0,
+      "crlf": 92,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "5f8f7293-4894-40c5-8f5c-e096b19e8198",
+      "rows": 91,
+      "sampled": false,
+      "size": 17121,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:58:14.923059+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/fes_ws2_gas_emissions/2026/10/08/raw_20261008T105817Z_31188b9d-620d-497b-80c0-83fa4fa70320_a4440fa4.csv",
+      "ckan_last_modified": "2024-07-16T11:16:11.122722",
+      "cr": 0,
+      "crlf": 92,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "31188b9d-620d-497b-80c0-83fa4fa70320",
+      "rows": 91,
+      "sampled": false,
+      "size": 28559,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:58:17.249461+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/fes_ws2_gas_emissions/2026/10/08/raw_20261008T105819Z_a80a94cc-b349-412c-83a0-0f5f9eaf4e7e_075074a4.csv",
+      "ckan_last_modified": "2025-12-10T16:59:01.412328",
+      "cr": 0,
+      "crlf": 107,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "a80a94cc-b349-412c-83a0-0f5f9eaf4e7e",
+      "rows": 106,
+      "sampled": false,
+      "size": 26962,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:58:19.525633+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/fes_ws2_gas_emissions/2026/10/08/raw_20261008T105821Z_3aba22fd-1934-4654-a33a-f3273c973560_12322a99.csv",
+      "ckan_last_modified": "2026-09-16T14:51:40.910171",
+      "cr": 0,
+      "crlf": 19,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 2,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "3aba22fd-1934-4654-a33a-f3273c973560",
+      "rows": 18,
+      "sampled": false,
+      "size": 3255,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:58:21.823686+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 1,
+      "columns": {
+        "2021": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 91
+          },
+          "examples": [
+            "47.91",
+            "48.99",
+            "15.72"
+          ],
+          "max_len": 6,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 91
+          }
+        },
+        "2022": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 91
+          },
+          "examples": [
+            "44.98",
+            "47.84",
+            "43.85"
+          ],
+          "max_len": 6,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 91
+          }
+        },
+        "2023": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 91
+          },
+          "examples": [
+            "43.95",
+            "46.77",
+            "42.48"
+          ],
+          "max_len": 6,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 91
+          }
+        },
+        "2024": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 91
+          },
+          "examples": [
+            "42.88",
+            "45.67",
+            "41.09"
+          ],
+          "max_len": 6,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 91
+          }
+        },
+        "2025": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 91
+          },
+          "examples": [
+            "41.74",
+            "44.48",
+            "39.61"
+          ],
+          "max_len": 6,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 91
+          }
+        },
+        "2026": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 91
+          },
+          "examples": [
+            "40.53",
+            "43.23",
+            "38.09"
+          ],
+          "max_len": 6,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 91
+          }
+        },
+        "2027": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 91
+          },
+          "examples": [
+            "39.35",
+            "42.01",
+            "36.63"
+          ],
+          "max_len": 6,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 91
+          }
+        },
+        "2028": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 91
+          },
+          "examples": [
+            "38.19",
+            "40.80",
+            "35.21"
+          ],
+          "max_len": 6,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 91
+          }
+        },
+        "2029": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 74
+          },
+          "examples": [
+            "36.97",
+            "39.47",
+            "33.77"
+          ],
+          "max_len": 6,
+          "null_count": 17,
+          "shapes": {
+            "decimal": 74
+          }
+        },
+        "2030": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 74
+          },
+          "examples": [
+            "35.69",
+            "38.04",
+            "32.65"
+          ],
+          "max_len": 6,
+          "null_count": 17,
+          "shapes": {
+            "decimal": 74
+          }
+        },
+        "2031": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 74
+          },
+          "examples": [
+            "35.22",
+            "36.46",
+            "31.49"
+          ],
+          "max_len": 6,
+          "null_count": 17,
+          "shapes": {
+            "decimal": 74
+          }
+        },
+        "2032": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 74
+          },
+          "examples": [
+            "34.78",
+            "35.67",
+            "30.67"
+          ],
+          "max_len": 6,
+          "null_count": 17,
+          "shapes": {
+            "decimal": 74
+          }
+        },
+        "2033": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 74
+          },
+          "examples": [
+            "34.42",
+            "29.43",
+            "29.94"
+          ],
+          "max_len": 6,
+          "null_count": 17,
+          "shapes": {
+            "decimal": 74
+          }
+        },
+        "2034": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 74
+          },
+          "examples": [
+            "33.97",
+            "29.04",
+            "29.12"
+          ],
+          "max_len": 6,
+          "null_count": 17,
+          "shapes": {
+            "decimal": 74
+          }
+        },
+        "2035": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 74
+          },
+          "examples": [
+            "33.73",
+            "28.82",
+            "28.53"
+          ],
+          "max_len": 6,
+          "null_count": 17,
+          "shapes": {
+            "decimal": 74
+          }
+        },
+        "2036": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 74
+          },
+          "examples": [
+            "33.50",
+            "28.61",
+            "28.04"
+          ],
+          "max_len": 6,
+          "null_count": 17,
+          "shapes": {
+            "decimal": 74
+          }
+        },
+        "2037": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 74
+          },
+          "examples": [
+            "33.26",
+            "28.40",
+            "27.54"
+          ],
+          "max_len": 6,
+          "null_count": 17,
+          "shapes": {
+            "decimal": 74
+          }
+        },
+        "2038": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 74
+          },
+          "examples": [
+            "33.01",
+            "31.69",
+            "27.03"
+          ],
+          "max_len": 6,
+          "null_count": 17,
+          "shapes": {
+            "decimal": 74
+          }
+        },
+        "2039": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 74
+          },
+          "examples": [
+            "32.77",
+            "32.11",
+            "26.51"
+          ],
+          "max_len": 6,
+          "null_count": 17,
+          "shapes": {
+            "decimal": 74
+          }
+        },
+        "2040": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 74
+          },
+          "examples": [
+            "32.53",
+            "26.00",
+            "32.87"
+          ],
+          "max_len": 6,
+          "null_count": 17,
+          "shapes": {
+            "decimal": 74
+          }
+        },
+        "2041": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 74
+          },
+          "examples": [
+            "32.26",
+            "25.48",
+            "31.72"
+          ],
+          "max_len": 6,
+          "null_count": 17,
+          "shapes": {
+            "decimal": 74
+          }
+        },
+        "2042": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 74
+          },
+          "examples": [
+            "32.01",
+            "24.96",
+            "30.58"
+          ],
+          "max_len": 6,
+          "null_count": 17,
+          "shapes": {
+            "decimal": 74
+          }
+        },
+        "2043": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 74
+          },
+          "examples": [
+            "31.75",
+            "24.41",
+            "29.44"
+          ],
+          "max_len": 6,
+          "null_count": 17,
+          "shapes": {
+            "decimal": 74
+          }
+        },
+        "2044": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 74
+          },
+          "examples": [
+            "31.33",
+            "23.77",
+            "28.30"
+          ],
+          "max_len": 6,
+          "null_count": 17,
+          "shapes": {
+            "decimal": 74
+          }
+        },
+        "2045": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 74
+          },
+          "examples": [
+            "31.07",
+            "23.25",
+            "27.16"
+          ],
+          "max_len": 6,
+          "null_count": 17,
+          "shapes": {
+            "decimal": 74
+          }
+        },
+        "2046": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 74
+          },
+          "examples": [
+            "30.81",
+            "22.74",
+            "26.02"
+          ],
+          "max_len": 6,
+          "null_count": 17,
+          "shapes": {
+            "decimal": 74
+          }
+        },
+        "2047": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 74
+          },
+          "examples": [
+            "30.55",
+            "22.22",
+            "24.88"
+          ],
+          "max_len": 6,
+          "null_count": 17,
+          "shapes": {
+            "decimal": 74
+          }
+        },
+        "2048": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 74
+          },
+          "examples": [
+            "30.28",
+            "21.70",
+            "23.73"
+          ],
+          "max_len": 6,
+          "null_count": 17,
+          "shapes": {
+            "decimal": 74
+          }
+        },
+        "2049": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 74
+          },
+          "examples": [
+            "30.01",
+            "21.19",
+            "22.59"
+          ],
+          "max_len": 6,
+          "null_count": 17,
+          "shapes": {
+            "decimal": 74
+          }
+        },
+        "2050": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 74
+          },
+          "examples": [
+            "29.70",
+            "20.60",
+            "21.45"
+          ],
+          "max_len": 6,
+          "null_count": 17,
+          "shapes": {
+            "decimal": 74
+          }
+        },
+        "Scenario": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 91,
+            "int64": 91
+          },
+          "examples": [
+            "Consumer Transformation",
+            "System Transformation",
+            "Leading the Way"
+          ],
+          "max_len": 23,
+          "null_count": 0,
+          "shapes": {
+            "text": 91
+          }
+        },
+        "Sector": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 91,
+            "int64": 91
+          },
+          "examples": [
+            "Agriculture",
+            "Agriculture and LULUCF",
+            "Aviation"
+          ],
+          "max_len": 29,
+          "null_count": 0,
+          "shapes": {
+            "text": 91
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "2021": {
+            "description": null,
+            "title": null,
+            "type": "numeric",
+            "unit": null
+          },
+          "2022": {
+            "description": null,
+            "title": null,
+            "type": "numeric",
+            "unit": null
+          },
+          "2023": {
+            "description": null,
+            "title": null,
+            "type": "numeric",
+            "unit": null
+          },
+          "2024": {
+            "description": null,
+            "title": null,
+            "type": "numeric",
+            "unit": null
+          },
+          "2025": {
+            "description": null,
+            "title": null,
+            "type": "numeric",
+            "unit": null
+          },
+          "2026": {
+            "description": null,
+            "title": null,
+            "type": "numeric",
+            "unit": null
+          },
+          "2027": {
+            "description": null,
+            "title": null,
+            "type": "numeric",
+            "unit": null
+          },
+          "2028": {
+            "description": null,
+            "title": null,
+            "type": "numeric",
+            "unit": null
+          },
+          "2029": {
+            "description": null,
+            "title": null,
+            "type": "numeric",
+            "unit": null
+          },
+          "2030": {
+            "description": null,
+            "title": null,
+            "type": "numeric",
+            "unit": null
+          },
+          "2031": {
+            "description": null,
+            "title": null,
+            "type": "numeric",
+            "unit": null
+          },
+          "2032": {
+            "description": null,
+            "title": null,
+            "type": "numeric",
+            "unit": null
+          },
+          "2033": {
+            "description": null,
+            "title": null,
+            "type": "numeric",
+            "unit": null
+          },
+          "2034": {
+            "description": null,
+            "title": null,
+            "type": "numeric",
+            "unit": null
+          },
+          "2035": {
+            "description": null,
+            "title": null,
+            "type": "numeric",
+            "unit": null
+          },
+          "2036": {
+            "description": null,
+            "title": null,
+            "type": "numeric",
+            "unit": null
+          },
+          "2037": {
+            "description": null,
+            "title": null,
+            "type": "text",
+            "unit": null
+          },
+          "2038": {
+            "description": null,
+            "title": null,
+            "type": "text",
+            "unit": null
+          },
+          "2039": {
+            "description": null,
+            "title": null,
+            "type": "text",
+            "unit": null
+          },
+          "2040": {
+            "description": null,
+            "title": null,
+            "type": "text",
+            "unit": null
+          },
+          "2041": {
+            "description": null,
+            "title": null,
+            "type": "text",
+            "unit": null
+          },
+          "2042": {
+            "description": null,
+            "title": null,
+            "type": "text",
+            "unit": null
+          },
+          "2043": {
+            "description": null,
+            "title": null,
+            "type": "text",
+            "unit": null
+          },
+          "2044": {
+            "description": null,
+            "title": null,
+            "type": "text",
+            "unit": null
+          },
+          "2045": {
+            "description": null,
+            "title": null,
+            "type": "text",
+            "unit": null
+          },
+          "2046": {
+            "description": null,
+            "title": null,
+            "type": "text",
+            "unit": null
+          },
+          "2047": {
+            "description": null,
+            "title": null,
+            "type": "text",
+            "unit": null
+          },
+          "2048": {
+            "description": null,
+            "title": null,
+            "type": "text",
+            "unit": null
+          },
+          "2049": {
+            "description": null,
+            "title": null,
+            "type": "text",
+            "unit": null
+          },
+          "2050": {
+            "description": null,
+            "title": null,
+            "type": "text",
+            "unit": null
+          },
+          "Scenario": {
+            "description": null,
+            "title": null,
+            "type": "text",
+            "unit": null
+          },
+          "Sector": {
+            "description": null,
+            "title": null,
+            "type": "text",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [
+          "Category"
+        ],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T10:58:14.923059+00:00",
+      "header": [
+        "Scenario",
+        "Sector",
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025",
+        "2026",
+        "2027",
+        "2028",
+        "2029",
+        "2030",
+        "2031",
+        "2032",
+        "2033",
+        "2034",
+        "2035",
+        "2036",
+        "2037",
+        "2038",
+        "2039",
+        "2040",
+        "2041",
+        "2042",
+        "2043",
+        "2044",
+        "2045",
+        "2046",
+        "2047",
+        "2048",
+        "2049",
+        "2050"
+      ],
+      "last_written_at": "2026-10-08T10:58:14.923059+00:00",
+      "resource_ids": [
+        "5f8f7293-4894-40c5-8f5c-e096b19e8198"
+      ],
+      "rows": 91,
+      "settlement_periods": []
+    },
+    {
+      "captures": 2,
+      "columns": {
+        "2021": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 167
+          },
+          "examples": [
+            "48.8448241",
+            "49.36771598",
+            "16.46002677"
+          ],
+          "max_len": 12,
+          "null_count": 5,
+          "shapes": {
+            "decimal": 167,
+            "int": 25
+          }
+        },
+        "2022": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 167
+          },
+          "examples": [
+            "47.68295419",
+            "48.44086881",
+            "31.65588764"
+          ],
+          "max_len": 12,
+          "null_count": 5,
+          "shapes": {
+            "decimal": 167,
+            "int": 25
+          }
+        },
+        "2023": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 171
+          },
+          "examples": [
+            "47.7957042",
+            "48.44086881",
+            "48.52543132"
+          ],
+          "max_len": 12,
+          "null_count": 5,
+          "shapes": {
+            "decimal": 171,
+            "int": 21
+          }
+        },
+        "2024": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 177
+          },
+          "examples": [
+            "45.7957042",
+            "48.44086881",
+            "46.05434204"
+          ],
+          "max_len": 12,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 177,
+            "int": 20
+          }
+        },
+        "2025": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 177
+          },
+          "examples": [
+            "43.7957042",
+            "48.44086881",
+            "43.58325277"
+          ],
+          "max_len": 12,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 177,
+            "int": 20
+          }
+        },
+        "2026": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 177
+          },
+          "examples": [
+            "41.7957042",
+            "48.44086881",
+            "41.1121635"
+          ],
+          "max_len": 12,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 177,
+            "int": 20
+          }
+        },
+        "2027": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 177
+          },
+          "examples": [
+            "39.7957042",
+            "47.70302345",
+            "38.45661289"
+          ],
+          "max_len": 12,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 177,
+            "int": 20
+          }
+        },
+        "2028": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 177
+          },
+          "examples": [
+            "38.18522297",
+            "46.56167532",
+            "35.34630453"
+          ],
+          "max_len": 12,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 177,
+            "int": 20
+          }
+        },
+        "2029": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 177
+          },
+          "examples": [
+            "36.96967964",
+            "45.4203272",
+            "33.68854532"
+          ],
+          "max_len": 12,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 177,
+            "int": 20
+          }
+        },
+        "2030": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 170
+          },
+          "examples": [
+            "35.69471216",
+            "44.27897908",
+            "33.09328395"
+          ],
+          "max_len": 12,
+          "null_count": 17,
+          "shapes": {
+            "decimal": 170,
+            "int": 10
+          }
+        },
+        "2031": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 172
+          },
+          "examples": [
+            "35.2209629",
+            "43.13763095",
+            "32.54325842"
+          ],
+          "max_len": 12,
+          "null_count": 17,
+          "shapes": {
+            "decimal": 172,
+            "int": 8
+          }
+        },
+        "2032": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 172
+          },
+          "examples": [
+            "34.77822865",
+            "41.99628283",
+            "31.82145968"
+          ],
+          "max_len": 12,
+          "null_count": 17,
+          "shapes": {
+            "decimal": 172,
+            "int": 8
+          }
+        },
+        "2033": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 172
+          },
+          "examples": [
+            "34.41645776",
+            "40.8549347",
+            "31.26536585"
+          ],
+          "max_len": 12,
+          "null_count": 17,
+          "shapes": {
+            "decimal": 172,
+            "int": 8
+          }
+        },
+        "2034": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 172
+          },
+          "examples": [
+            "33.97265425",
+            "39.71358658",
+            "30.69651298"
+          ],
+          "max_len": 12,
+          "null_count": 17,
+          "shapes": {
+            "decimal": 172,
+            "int": 8
+          }
+        },
+        "2035": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 172
+          },
+          "examples": [
+            "33.73236651",
+            "38.57223845",
+            "30.430545"
+          ],
+          "max_len": 12,
+          "null_count": 17,
+          "shapes": {
+            "decimal": 172,
+            "int": 8
+          }
+        },
+        "2036": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 153
+          },
+          "examples": [
+            "33.49611532",
+            "37.43089033",
+            "30.20837005"
+          ],
+          "max_len": 12,
+          "null_count": 37,
+          "shapes": {
+            "decimal": 153,
+            "int": 7
+          }
+        },
+        "2037": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 153
+          },
+          "examples": [
+            "33.25678595",
+            "36.28954221",
+            "29.95758314"
+          ],
+          "max_len": 12,
+          "null_count": 37,
+          "shapes": {
+            "decimal": 153,
+            "int": 7
+          }
+        },
+        "2038": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 153
+          },
+          "examples": [
+            "33.01358934",
+            "35.14819408",
+            "29.76618325"
+          ],
+          "max_len": 12,
+          "null_count": 37,
+          "shapes": {
+            "decimal": 153,
+            "int": 7
+          }
+        },
+        "2039": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 153
+          },
+          "examples": [
+            "32.76601826",
+            "34.00684596",
+            "29.58021723"
+          ],
+          "max_len": 12,
+          "null_count": 37,
+          "shapes": {
+            "decimal": 153,
+            "int": 7
+          }
+        },
+        "2040": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 156
+          },
+          "examples": [
+            "32.52627085",
+            "32.86549783",
+            "29.16590605"
+          ],
+          "max_len": 12,
+          "null_count": 37,
+          "shapes": {
+            "decimal": 156,
+            "int": 4
+          }
+        },
+        "2041": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 156
+          },
+          "examples": [
+            "32.26123733",
+            "31.72414971",
+            "27.71052284"
+          ],
+          "max_len": 12,
+          "null_count": 37,
+          "shapes": {
+            "decimal": 156,
+            "int": 4
+          }
+        },
+        "2042": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 156
+          },
+          "examples": [
+            "32.00717023",
+            "30.58280158",
+            "27.28248532"
+          ],
+          "max_len": 12,
+          "null_count": 37,
+          "shapes": {
+            "decimal": 156,
+            "int": 4
+          }
+        },
+        "2043": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 156
+          },
+          "examples": [
+            "31.75142018",
+            "29.44145346",
+            "26.83788701"
+          ],
+          "max_len": 12,
+          "null_count": 37,
+          "shapes": {
+            "decimal": 156,
+            "int": 4
+          }
+        },
+        "2044": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 156
+          },
+          "examples": [
+            "31.33263266",
+            "28.30010534",
+            "26.31523449"
+          ],
+          "max_len": 12,
+          "null_count": 37,
+          "shapes": {
+            "decimal": 156,
+            "int": 4
+          }
+        },
+        "2045": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 156
+          },
+          "examples": [
+            "31.07205875",
+            "27.15875721",
+            "25.86453077"
+          ],
+          "max_len": 12,
+          "null_count": 37,
+          "shapes": {
+            "decimal": 156,
+            "int": 4
+          }
+        },
+        "2046": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 156
+          },
+          "examples": [
+            "30.8103974",
+            "26.01740909",
+            "25.39346055"
+          ],
+          "max_len": 12,
+          "null_count": 37,
+          "shapes": {
+            "decimal": 156,
+            "int": 4
+          }
+        },
+        "2047": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 156
+          },
+          "examples": [
+            "30.54601456",
+            "24.87606096",
+            "24.85201047"
+          ],
+          "max_len": 12,
+          "null_count": 37,
+          "shapes": {
+            "decimal": 156,
+            "int": 4
+          }
+        },
+        "2048": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 156
+          },
+          "examples": [
+            "30.27884655",
+            "23.73471284",
+            "24.36055368"
+          ],
+          "max_len": 12,
+          "null_count": 37,
+          "shapes": {
+            "decimal": 156,
+            "int": 4
+          }
+        },
+        "2049": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 156
+          },
+          "examples": [
+            "30.00867415",
+            "22.59336471",
+            "23.86776755"
+          ],
+          "max_len": 12,
+          "null_count": 37,
+          "shapes": {
+            "decimal": 156,
+            "int": 4
+          }
+        },
+        "2050": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 154
+          },
+          "examples": [
+            "29.70489065",
+            "21.45201659",
+            "23.35203382"
+          ],
+          "max_len": 12,
+          "null_count": 37,
+          "shapes": {
+            "decimal": 154,
+            "int": 6
+          }
+        },
+        "Pathway": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 197,
+            "int64": 197
+          },
+          "examples": [
+            "Electric Engagement",
+            "Hydrogen Evolution",
+            "Holistic Transition"
+          ],
+          "max_len": 19,
+          "null_count": 0,
+          "shapes": {
+            "text": 197
+          }
+        },
+        "Sector": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 197,
+            "int64": 197
+          },
+          "examples": [
+            "Agriculture",
+            "Agriculture and LULUCF",
+            "Aviation"
+          ],
+          "max_len": 45,
+          "null_count": 0,
+          "shapes": {
+            "text": 197
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "2021": {
+            "description": null,
+            "title": null,
+            "type": "numeric",
+            "unit": null
+          },
+          "2022": {
+            "description": null,
+            "title": null,
+            "type": "numeric",
+            "unit": null
+          },
+          "2023": {
+            "description": null,
+            "title": null,
+            "type": "numeric",
+            "unit": null
+          },
+          "2024": {
+            "description": null,
+            "title": null,
+            "type": "numeric",
+            "unit": null
+          },
+          "2025": {
+            "description": null,
+            "title": null,
+            "type": "numeric",
+            "unit": null
+          },
+          "2026": {
+            "description": null,
+            "title": null,
+            "type": "numeric",
+            "unit": null
+          },
+          "2027": {
+            "description": null,
+            "title": null,
+            "type": "numeric",
+            "unit": null
+          },
+          "2028": {
+            "description": null,
+            "title": null,
+            "type": "numeric",
+            "unit": null
+          },
+          "2029": {
+            "description": null,
+            "title": null,
+            "type": "numeric",
+            "unit": null
+          },
+          "2030": {
+            "description": null,
+            "title": null,
+            "type": "numeric",
+            "unit": null
+          },
+          "2031": {
+            "description": null,
+            "title": null,
+            "type": "numeric",
+            "unit": null
+          },
+          "2032": {
+            "description": null,
+            "title": null,
+            "type": "numeric",
+            "unit": null
+          },
+          "2033": {
+            "description": null,
+            "title": null,
+            "type": "numeric",
+            "unit": null
+          },
+          "2034": {
+            "description": null,
+            "title": null,
+            "type": "numeric",
+            "unit": null
+          },
+          "2035": {
+            "description": null,
+            "title": null,
+            "type": "numeric",
+            "unit": null
+          },
+          "2036": {
+            "description": null,
+            "title": null,
+            "type": "numeric",
+            "unit": null
+          },
+          "2037": {
+            "description": null,
+            "title": null,
+            "type": "text",
+            "unit": null
+          },
+          "2038": {
+            "description": null,
+            "title": null,
+            "type": "text",
+            "unit": null
+          },
+          "2039": {
+            "description": null,
+            "title": null,
+            "type": "text",
+            "unit": null
+          },
+          "2040": {
+            "description": null,
+            "title": null,
+            "type": "text",
+            "unit": null
+          },
+          "2041": {
+            "description": null,
+            "title": null,
+            "type": "text",
+            "unit": null
+          },
+          "2042": {
+            "description": null,
+            "title": null,
+            "type": "text",
+            "unit": null
+          },
+          "2043": {
+            "description": null,
+            "title": null,
+            "type": "text",
+            "unit": null
+          },
+          "2044": {
+            "description": null,
+            "title": null,
+            "type": "text",
+            "unit": null
+          },
+          "2045": {
+            "description": null,
+            "title": null,
+            "type": "text",
+            "unit": null
+          },
+          "2046": {
+            "description": null,
+            "title": null,
+            "type": "text",
+            "unit": null
+          },
+          "2047": {
+            "description": null,
+            "title": null,
+            "type": "text",
+            "unit": null
+          },
+          "2048": {
+            "description": null,
+            "title": null,
+            "type": "text",
+            "unit": null
+          },
+          "2049": {
+            "description": null,
+            "title": null,
+            "type": "text",
+            "unit": null
+          },
+          "2050": {
+            "description": null,
+            "title": null,
+            "type": "text",
+            "unit": null
+          },
+          "Sector": {
+            "description": null,
+            "title": null,
+            "type": "text",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [
+          "Category",
+          "Scenario"
+        ],
+        "header_not_in_field_info": [
+          "Pathway"
+        ]
+      },
+      "first_written_at": "2026-10-08T10:58:17.249461+00:00",
+      "header": [
+        "Pathway",
+        "Sector",
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025",
+        "2026",
+        "2027",
+        "2028",
+        "2029",
+        "2030",
+        "2031",
+        "2032",
+        "2033",
+        "2034",
+        "2035",
+        "2036",
+        "2037",
+        "2038",
+        "2039",
+        "2040",
+        "2041",
+        "2042",
+        "2043",
+        "2044",
+        "2045",
+        "2046",
+        "2047",
+        "2048",
+        "2049",
+        "2050"
+      ],
+      "last_written_at": "2026-10-08T10:58:19.525633+00:00",
+      "resource_ids": [
+        "31188b9d-620d-497b-80c0-83fa4fa70320",
+        "a80a94cc-b349-412c-83a0-0f5f9eaf4e7e"
+      ],
+      "rows": 197,
+      "settlement_periods": []
+    },
+    {
+      "captures": 1,
+      "columns": {
+        "2021": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 17
+          },
+          "examples": [
+            "0.0",
+            "45.26365",
+            "45.44541"
+          ],
+          "max_len": 8,
+          "null_count": 1,
+          "shapes": {
+            "decimal": 17
+          }
+        },
+        "2022": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 17
+          },
+          "examples": [
+            "0.0",
+            "45.63129",
+            "42.44263"
+          ],
+          "max_len": 8,
+          "null_count": 1,
+          "shapes": {
+            "decimal": 17
+          }
+        },
+        "2023": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 17
+          },
+          "examples": [
+            "0.0",
+            "35.52594",
+            "40.68944"
+          ],
+          "max_len": 8,
+          "null_count": 1,
+          "shapes": {
+            "decimal": 17
+          }
+        },
+        "2024": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 17
+          },
+          "examples": [
+            "0.0",
+            "28.33397",
+            "0.0001"
+          ],
+          "max_len": 8,
+          "null_count": 1,
+          "shapes": {
+            "decimal": 17
+          }
+        },
+        "2025": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 18
+          },
+          "examples": [
+            "0.0",
+            "16.63",
+            "0.00015"
+          ],
+          "max_len": 8,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 18
+          }
+        },
+        "2026": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 18
+          },
+          "examples": [
+            "0.0",
+            "18.70478",
+            "0.00022"
+          ],
+          "max_len": 8,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 18
+          }
+        },
+        "2027": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 18
+          },
+          "examples": [
+            "0.0",
+            "19.14184",
+            "0.00033"
+          ],
+          "max_len": 8,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 18
+          }
+        },
+        "2028": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 18
+          },
+          "examples": [
+            "0.0",
+            "17.33833",
+            "0.0007"
+          ],
+          "max_len": 8,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 18
+          }
+        },
+        "2029": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 18
+          },
+          "examples": [
+            "0.0",
+            "17.32288",
+            "0.0007"
+          ],
+          "max_len": 8,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 18
+          }
+        },
+        "2030": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 18
+          },
+          "examples": [
+            "0.0",
+            "13.11855",
+            "0.0007"
+          ],
+          "max_len": 8,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 18
+          }
+        },
+        "2031": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 18
+          },
+          "examples": [
+            "0.0",
+            "11.02168",
+            "0.00187"
+          ],
+          "max_len": 8,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 18
+          }
+        },
+        "2032": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 18
+          },
+          "examples": [
+            "0.0",
+            "10.09115",
+            "0.00187"
+          ],
+          "max_len": 8,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 18
+          }
+        },
+        "2033": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 18
+          },
+          "examples": [
+            "0.0",
+            "8.39063",
+            "0.00187"
+          ],
+          "max_len": 8,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 18
+          }
+        },
+        "2034": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 18
+          },
+          "examples": [
+            "0.0",
+            "7.94935",
+            "0.04438"
+          ],
+          "max_len": 8,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 18
+          }
+        },
+        "2035": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 18
+          },
+          "examples": [
+            "0.0",
+            "8.00362",
+            "0.04438"
+          ],
+          "max_len": 8,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 18
+          }
+        },
+        "2036": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 18
+          },
+          "examples": [
+            "0.0",
+            "9.13259",
+            "0.04438"
+          ],
+          "max_len": 8,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 18
+          }
+        },
+        "2037": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [],
+          "max_len": 0,
+          "null_count": 18,
+          "shapes": {}
+        },
+        "2038": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [],
+          "max_len": 0,
+          "null_count": 18,
+          "shapes": {}
+        },
+        "2039": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [],
+          "max_len": 0,
+          "null_count": 18,
+          "shapes": {}
+        },
+        "2040": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [],
+          "max_len": 0,
+          "null_count": 18,
+          "shapes": {}
+        },
+        "2041": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [],
+          "max_len": 0,
+          "null_count": 18,
+          "shapes": {}
+        },
+        "2042": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [],
+          "max_len": 0,
+          "null_count": 18,
+          "shapes": {}
+        },
+        "2043": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [],
+          "max_len": 0,
+          "null_count": 18,
+          "shapes": {}
+        },
+        "2044": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [],
+          "max_len": 0,
+          "null_count": 18,
+          "shapes": {}
+        },
+        "2045": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [],
+          "max_len": 0,
+          "null_count": 18,
+          "shapes": {}
+        },
+        "2046": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [],
+          "max_len": 0,
+          "null_count": 18,
+          "shapes": {}
+        },
+        "2047": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [],
+          "max_len": 0,
+          "null_count": 18,
+          "shapes": {}
+        },
+        "2048": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [],
+          "max_len": 0,
+          "null_count": 18,
+          "shapes": {}
+        },
+        "2049": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [],
+          "max_len": 0,
+          "null_count": 18,
+          "shapes": {}
+        },
+        "2050": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [],
+          "max_len": 0,
+          "null_count": 18,
+          "shapes": {}
+        },
+        "Category": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 18,
+            "int64": 18
+          },
+          "examples": [
+            "Emissions (MtCO2e)",
+            "Carbon Captured (MtCO2e)"
+          ],
+          "max_len": 24,
+          "null_count": 0,
+          "shapes": {
+            "text": 18
+          }
+        },
+        "Scenario": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 18,
+            "int64": 18
+          },
+          "examples": [
+            "Ten Year Outlook"
+          ],
+          "max_len": 16,
+          "null_count": 0,
+          "shapes": {
+            "text": 18
+          }
+        },
+        "Sector": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 18,
+            "int64": 18
+          },
+          "examples": [
+            "DACCS",
+            "Electricity without BECCS",
+            "Methane Reformation with CCUS"
+          ],
+          "max_len": 30,
+          "null_count": 0,
+          "shapes": {
+            "text": 18
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "2021": {
+            "description": null,
+            "title": null,
+            "type": "numeric",
+            "unit": null
+          },
+          "2022": {
+            "description": null,
+            "title": null,
+            "type": "numeric",
+            "unit": null
+          },
+          "2023": {
+            "description": null,
+            "title": null,
+            "type": "numeric",
+            "unit": null
+          },
+          "2024": {
+            "description": null,
+            "title": null,
+            "type": "numeric",
+            "unit": null
+          },
+          "2025": {
+            "description": null,
+            "title": null,
+            "type": "numeric",
+            "unit": null
+          },
+          "2026": {
+            "description": null,
+            "title": null,
+            "type": "numeric",
+            "unit": null
+          },
+          "2027": {
+            "description": null,
+            "title": null,
+            "type": "numeric",
+            "unit": null
+          },
+          "2028": {
+            "description": null,
+            "title": null,
+            "type": "numeric",
+            "unit": null
+          },
+          "2029": {
+            "description": null,
+            "title": null,
+            "type": "numeric",
+            "unit": null
+          },
+          "2030": {
+            "description": null,
+            "title": null,
+            "type": "numeric",
+            "unit": null
+          },
+          "2031": {
+            "description": null,
+            "title": null,
+            "type": "numeric",
+            "unit": null
+          },
+          "2032": {
+            "description": null,
+            "title": null,
+            "type": "numeric",
+            "unit": null
+          },
+          "2033": {
+            "description": null,
+            "title": null,
+            "type": "numeric",
+            "unit": null
+          },
+          "2034": {
+            "description": null,
+            "title": null,
+            "type": "numeric",
+            "unit": null
+          },
+          "2035": {
+            "description": null,
+            "title": null,
+            "type": "numeric",
+            "unit": null
+          },
+          "2036": {
+            "description": null,
+            "title": null,
+            "type": "numeric",
+            "unit": null
+          },
+          "2037": {
+            "description": null,
+            "title": null,
+            "type": "text",
+            "unit": null
+          },
+          "2038": {
+            "description": null,
+            "title": null,
+            "type": "text",
+            "unit": null
+          },
+          "2039": {
+            "description": null,
+            "title": null,
+            "type": "text",
+            "unit": null
+          },
+          "2040": {
+            "description": null,
+            "title": null,
+            "type": "text",
+            "unit": null
+          },
+          "2041": {
+            "description": null,
+            "title": null,
+            "type": "text",
+            "unit": null
+          },
+          "2042": {
+            "description": null,
+            "title": null,
+            "type": "text",
+            "unit": null
+          },
+          "2043": {
+            "description": null,
+            "title": null,
+            "type": "text",
+            "unit": null
+          },
+          "2044": {
+            "description": null,
+            "title": null,
+            "type": "text",
+            "unit": null
+          },
+          "2045": {
+            "description": null,
+            "title": null,
+            "type": "text",
+            "unit": null
+          },
+          "2046": {
+            "description": null,
+            "title": null,
+            "type": "text",
+            "unit": null
+          },
+          "2047": {
+            "description": null,
+            "title": null,
+            "type": "text",
+            "unit": null
+          },
+          "2048": {
+            "description": null,
+            "title": null,
+            "type": "text",
+            "unit": null
+          },
+          "2049": {
+            "description": null,
+            "title": null,
+            "type": "text",
+            "unit": null
+          },
+          "2050": {
+            "description": null,
+            "title": null,
+            "type": "text",
+            "unit": null
+          },
+          "Category": {
+            "description": null,
+            "title": null,
+            "type": "text",
+            "unit": null
+          },
+          "Scenario": {
+            "description": null,
+            "title": null,
+            "type": "text",
+            "unit": null
+          },
+          "Sector": {
+            "description": null,
+            "title": null,
+            "type": "text",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T10:58:21.823686+00:00",
+      "header": [
+        "Scenario",
+        "Category",
+        "Sector",
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025",
+        "2026",
+        "2027",
+        "2028",
+        "2029",
+        "2030",
+        "2031",
+        "2032",
+        "2033",
+        "2034",
+        "2035",
+        "2036",
+        "2037",
+        "2038",
+        "2039",
+        "2040",
+        "2041",
+        "2042",
+        "2043",
+        "2044",
+        "2045",
+        "2046",
+        "2047",
+        "2048",
+        "2049",
+        "2050"
+      ],
+      "last_written_at": "2026-10-08T10:58:21.823686+00:00",
+      "resource_ids": [
+        "3aba22fd-1934-4654-a33a-f3273c973560"
+      ],
+      "rows": 18,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [
+    "multi_epoch"
+  ],
+  "key": "fes_ws2_gas_emissions",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Category",
+          "Sector"
+        ],
+        "max_duplicates": 0
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "fes-whole-system-gas-supply-emissions-data-table-ws2",
+  "proposal": {
+    "flags": [
+      "multi_epoch"
+    ],
+    "record_draft": {
+      "eligibility": {
+        "question": "2021: a numeric column with no vendor unit; 2022: a numeric column with no vendor unit; 2023: a numeric column with no vendor unit; 2024: a numeric column with no vendor unit; 2025: a numeric column with no vendor unit; 2026: a numeric column with no vendor unit; 2027: a numeric column with no vendor unit; 2028: a numeric column with no vendor unit; 2029: a numeric column with no vendor unit; 2030: a numeric column with no vendor unit; 2031: a numeric column with no vendor unit; 2032: a numeric column with no vendor unit; 2033: a numeric column with no vendor unit; 2034: a numeric column with no vendor unit; 2035: a numeric column with no vendor unit; 2036: a numeric column with no vendor unit; 2021: a numeric column with no vendor unit; 2022: a numeric column with no vendor unit; 2023: a numeric column with no vendor unit; 2024: a numeric column with no vendor unit; 2025: a numeric column with no vendor unit; 2026: a numeric column with no vendor unit; 2027: a numeric column with no vendor unit; 2028: a numeric column with no vendor unit; 2029: a numeric column with no vendor unit; 2030: a numeric column with no vendor unit; 2031: a numeric column with no vendor unit; 2032: a numeric column with no vendor unit; 2033: a numeric column with no vendor unit; 2034: a numeric column with no vendor unit; 2035: a numeric column with no vendor unit; 2036: a numeric column with no vendor unit; 2021: a numeric column with no vendor unit; 2022: a numeric column with no vendor unit; 2023: a numeric column with no vendor unit; 2024: a numeric column with no vendor unit; 2025: a numeric column with no vendor unit; 2026: a numeric column with no vendor unit; 2027: a numeric column with no vendor unit; 2028: a numeric column with no vendor unit; 2029: a numeric column with no vendor unit; 2030: a numeric column with no vendor unit; 2031: a numeric column with no vendor unit; 2032: a numeric column with no vendor unit; 2033: a numeric column with no vendor unit; 2034: a numeric column with no vendor unit; 2035: a numeric column with no vendor unit; 2036: a numeric column with no vendor unit",
+        "status": "held",
+        "unit": "SCN-3"
+      },
+      "encoding": "utf-8",
+      "entity_key": [
+        "category",
+        "sector"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "scenario",
+              "nullable": true,
+              "source": "Scenario"
+            },
+            {
+              "dtype": "string",
+              "name": "sector",
+              "nullable": true,
+              "source": "Sector"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2021",
+              "nullable": true,
+              "source": "2021"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2022",
+              "nullable": true,
+              "source": "2022"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2023",
+              "nullable": true,
+              "source": "2023"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2024",
+              "nullable": true,
+              "source": "2024"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2025",
+              "nullable": true,
+              "source": "2025"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2026",
+              "nullable": true,
+              "source": "2026"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2027",
+              "nullable": true,
+              "source": "2027"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2028",
+              "nullable": true,
+              "source": "2028"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2029",
+              "nullable": true,
+              "source": "2029"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2030",
+              "nullable": true,
+              "source": "2030"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2031",
+              "nullable": true,
+              "source": "2031"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2032",
+              "nullable": true,
+              "source": "2032"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2033",
+              "nullable": true,
+              "source": "2033"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2034",
+              "nullable": true,
+              "source": "2034"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2035",
+              "nullable": true,
+              "source": "2035"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2036",
+              "nullable": true,
+              "source": "2036"
+            },
+            {
+              "dtype": "string",
+              "name": "c_2037",
+              "nullable": true,
+              "source": "2037"
+            },
+            {
+              "dtype": "string",
+              "name": "c_2038",
+              "nullable": true,
+              "source": "2038"
+            },
+            {
+              "dtype": "string",
+              "name": "c_2039",
+              "nullable": true,
+              "source": "2039"
+            },
+            {
+              "dtype": "string",
+              "name": "c_2040",
+              "nullable": true,
+              "source": "2040"
+            },
+            {
+              "dtype": "string",
+              "name": "c_2041",
+              "nullable": true,
+              "source": "2041"
+            },
+            {
+              "dtype": "string",
+              "name": "c_2042",
+              "nullable": true,
+              "source": "2042"
+            },
+            {
+              "dtype": "string",
+              "name": "c_2043",
+              "nullable": true,
+              "source": "2043"
+            },
+            {
+              "dtype": "string",
+              "name": "c_2044",
+              "nullable": true,
+              "source": "2044"
+            },
+            {
+              "dtype": "string",
+              "name": "c_2045",
+              "nullable": true,
+              "source": "2045"
+            },
+            {
+              "dtype": "string",
+              "name": "c_2046",
+              "nullable": true,
+              "source": "2046"
+            },
+            {
+              "dtype": "string",
+              "name": "c_2047",
+              "nullable": true,
+              "source": "2047"
+            },
+            {
+              "dtype": "string",
+              "name": "c_2048",
+              "nullable": true,
+              "source": "2048"
+            },
+            {
+              "dtype": "string",
+              "name": "c_2049",
+              "nullable": true,
+              "source": "2049"
+            },
+            {
+              "dtype": "string",
+              "name": "c_2050",
+              "nullable": true,
+              "source": "2050"
+            }
+          ],
+          "header": [
+            "Scenario",
+            "Sector",
+            "2021",
+            "2022",
+            "2023",
+            "2024",
+            "2025",
+            "2026",
+            "2027",
+            "2028",
+            "2029",
+            "2030",
+            "2031",
+            "2032",
+            "2033",
+            "2034",
+            "2035",
+            "2036",
+            "2037",
+            "2038",
+            "2039",
+            "2040",
+            "2041",
+            "2042",
+            "2043",
+            "2044",
+            "2045",
+            "2046",
+            "2047",
+            "2048",
+            "2049",
+            "2050"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        },
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "pathway",
+              "nullable": true,
+              "source": "Pathway"
+            },
+            {
+              "dtype": "string",
+              "name": "sector",
+              "nullable": true,
+              "source": "Sector"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2021",
+              "nullable": true,
+              "source": "2021"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2022",
+              "nullable": true,
+              "source": "2022"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2023",
+              "nullable": true,
+              "source": "2023"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2024",
+              "nullable": true,
+              "source": "2024"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2025",
+              "nullable": true,
+              "source": "2025"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2026",
+              "nullable": true,
+              "source": "2026"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2027",
+              "nullable": true,
+              "source": "2027"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2028",
+              "nullable": true,
+              "source": "2028"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2029",
+              "nullable": true,
+              "source": "2029"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2030",
+              "nullable": true,
+              "source": "2030"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2031",
+              "nullable": true,
+              "source": "2031"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2032",
+              "nullable": true,
+              "source": "2032"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2033",
+              "nullable": true,
+              "source": "2033"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2034",
+              "nullable": true,
+              "source": "2034"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2035",
+              "nullable": true,
+              "source": "2035"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2036",
+              "nullable": true,
+              "source": "2036"
+            },
+            {
+              "dtype": "string",
+              "name": "c_2037",
+              "nullable": true,
+              "source": "2037"
+            },
+            {
+              "dtype": "string",
+              "name": "c_2038",
+              "nullable": true,
+              "source": "2038"
+            },
+            {
+              "dtype": "string",
+              "name": "c_2039",
+              "nullable": true,
+              "source": "2039"
+            },
+            {
+              "dtype": "string",
+              "name": "c_2040",
+              "nullable": true,
+              "source": "2040"
+            },
+            {
+              "dtype": "string",
+              "name": "c_2041",
+              "nullable": true,
+              "source": "2041"
+            },
+            {
+              "dtype": "string",
+              "name": "c_2042",
+              "nullable": true,
+              "source": "2042"
+            },
+            {
+              "dtype": "string",
+              "name": "c_2043",
+              "nullable": true,
+              "source": "2043"
+            },
+            {
+              "dtype": "string",
+              "name": "c_2044",
+              "nullable": true,
+              "source": "2044"
+            },
+            {
+              "dtype": "string",
+              "name": "c_2045",
+              "nullable": true,
+              "source": "2045"
+            },
+            {
+              "dtype": "string",
+              "name": "c_2046",
+              "nullable": true,
+              "source": "2046"
+            },
+            {
+              "dtype": "string",
+              "name": "c_2047",
+              "nullable": true,
+              "source": "2047"
+            },
+            {
+              "dtype": "string",
+              "name": "c_2048",
+              "nullable": true,
+              "source": "2048"
+            },
+            {
+              "dtype": "string",
+              "name": "c_2049",
+              "nullable": true,
+              "source": "2049"
+            },
+            {
+              "dtype": "string",
+              "name": "c_2050",
+              "nullable": true,
+              "source": "2050"
+            }
+          ],
+          "header": [
+            "Pathway",
+            "Sector",
+            "2021",
+            "2022",
+            "2023",
+            "2024",
+            "2025",
+            "2026",
+            "2027",
+            "2028",
+            "2029",
+            "2030",
+            "2031",
+            "2032",
+            "2033",
+            "2034",
+            "2035",
+            "2036",
+            "2037",
+            "2038",
+            "2039",
+            "2040",
+            "2041",
+            "2042",
+            "2043",
+            "2044",
+            "2045",
+            "2046",
+            "2047",
+            "2048",
+            "2049",
+            "2050"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        },
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "scenario",
+              "nullable": true,
+              "source": "Scenario"
+            },
+            {
+              "dtype": "string",
+              "name": "category",
+              "nullable": true,
+              "source": "Category"
+            },
+            {
+              "dtype": "string",
+              "name": "sector",
+              "nullable": true,
+              "source": "Sector"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2021",
+              "nullable": true,
+              "source": "2021"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2022",
+              "nullable": true,
+              "source": "2022"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2023",
+              "nullable": true,
+              "source": "2023"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2024",
+              "nullable": true,
+              "source": "2024"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2025",
+              "nullable": true,
+              "source": "2025"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2026",
+              "nullable": true,
+              "source": "2026"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2027",
+              "nullable": true,
+              "source": "2027"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2028",
+              "nullable": true,
+              "source": "2028"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2029",
+              "nullable": true,
+              "source": "2029"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2030",
+              "nullable": true,
+              "source": "2030"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2031",
+              "nullable": true,
+              "source": "2031"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2032",
+              "nullable": true,
+              "source": "2032"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2033",
+              "nullable": true,
+              "source": "2033"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2034",
+              "nullable": true,
+              "source": "2034"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2035",
+              "nullable": true,
+              "source": "2035"
+            },
+            {
+              "dtype": "float64",
+              "name": "c_2036",
+              "nullable": true,
+              "source": "2036"
+            },
+            {
+              "dtype": "string",
+              "name": "c_2037",
+              "nullable": true,
+              "source": "2037"
+            },
+            {
+              "dtype": "string",
+              "name": "c_2038",
+              "nullable": true,
+              "source": "2038"
+            },
+            {
+              "dtype": "string",
+              "name": "c_2039",
+              "nullable": true,
+              "source": "2039"
+            },
+            {
+              "dtype": "string",
+              "name": "c_2040",
+              "nullable": true,
+              "source": "2040"
+            },
+            {
+              "dtype": "string",
+              "name": "c_2041",
+              "nullable": true,
+              "source": "2041"
+            },
+            {
+              "dtype": "string",
+              "name": "c_2042",
+              "nullable": true,
+              "source": "2042"
+            },
+            {
+              "dtype": "string",
+              "name": "c_2043",
+              "nullable": true,
+              "source": "2043"
+            },
+            {
+              "dtype": "string",
+              "name": "c_2044",
+              "nullable": true,
+              "source": "2044"
+            },
+            {
+              "dtype": "string",
+              "name": "c_2045",
+              "nullable": true,
+              "source": "2045"
+            },
+            {
+              "dtype": "string",
+              "name": "c_2046",
+              "nullable": true,
+              "source": "2046"
+            },
+            {
+              "dtype": "string",
+              "name": "c_2047",
+              "nullable": true,
+              "source": "2047"
+            },
+            {
+              "dtype": "string",
+              "name": "c_2048",
+              "nullable": true,
+              "source": "2048"
+            },
+            {
+              "dtype": "string",
+              "name": "c_2049",
+              "nullable": true,
+              "source": "2049"
+            },
+            {
+              "dtype": "string",
+              "name": "c_2050",
+              "nullable": true,
+              "source": "2050"
+            }
+          ],
+          "header": [
+            "Scenario",
+            "Category",
+            "Sector",
+            "2021",
+            "2022",
+            "2023",
+            "2024",
+            "2025",
+            "2026",
+            "2027",
+            "2028",
+            "2029",
+            "2030",
+            "2031",
+            "2032",
+            "2033",
+            "2034",
+            "2035",
+            "2036",
+            "2037",
+            "2038",
+            "2039",
+            "2040",
+            "2041",
+            "2042",
+            "2043",
+            "2044",
+            "2045",
+            "2046",
+            "2047",
+            "2048",
+            "2049",
+            "2050"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T49",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "held",
+        "field": "column '2021'.unit",
+        "id": "T01",
+        "kind": "unit",
+        "question": "2021: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2022'.unit",
+        "id": "T02",
+        "kind": "unit",
+        "question": "2022: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2023'.unit",
+        "id": "T03",
+        "kind": "unit",
+        "question": "2023: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2024'.unit",
+        "id": "T04",
+        "kind": "unit",
+        "question": "2024: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2025'.unit",
+        "id": "T05",
+        "kind": "unit",
+        "question": "2025: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2026'.unit",
+        "id": "T06",
+        "kind": "unit",
+        "question": "2026: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2027'.unit",
+        "id": "T07",
+        "kind": "unit",
+        "question": "2027: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2028'.unit",
+        "id": "T08",
+        "kind": "unit",
+        "question": "2028: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2029'.unit",
+        "id": "T09",
+        "kind": "unit",
+        "question": "2029: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2030'.unit",
+        "id": "T10",
+        "kind": "unit",
+        "question": "2030: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2031'.unit",
+        "id": "T11",
+        "kind": "unit",
+        "question": "2031: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2032'.unit",
+        "id": "T12",
+        "kind": "unit",
+        "question": "2032: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2033'.unit",
+        "id": "T13",
+        "kind": "unit",
+        "question": "2033: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2034'.unit",
+        "id": "T14",
+        "kind": "unit",
+        "question": "2034: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2035'.unit",
+        "id": "T15",
+        "kind": "unit",
+        "question": "2035: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2036'.unit",
+        "id": "T16",
+        "kind": "unit",
+        "question": "2036: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2021'.unit",
+        "id": "T17",
+        "kind": "unit",
+        "question": "2021: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2022'.unit",
+        "id": "T18",
+        "kind": "unit",
+        "question": "2022: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2023'.unit",
+        "id": "T19",
+        "kind": "unit",
+        "question": "2023: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2024'.unit",
+        "id": "T20",
+        "kind": "unit",
+        "question": "2024: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2025'.unit",
+        "id": "T21",
+        "kind": "unit",
+        "question": "2025: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2026'.unit",
+        "id": "T22",
+        "kind": "unit",
+        "question": "2026: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2027'.unit",
+        "id": "T23",
+        "kind": "unit",
+        "question": "2027: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2028'.unit",
+        "id": "T24",
+        "kind": "unit",
+        "question": "2028: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2029'.unit",
+        "id": "T25",
+        "kind": "unit",
+        "question": "2029: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2030'.unit",
+        "id": "T26",
+        "kind": "unit",
+        "question": "2030: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2031'.unit",
+        "id": "T27",
+        "kind": "unit",
+        "question": "2031: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2032'.unit",
+        "id": "T28",
+        "kind": "unit",
+        "question": "2032: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2033'.unit",
+        "id": "T29",
+        "kind": "unit",
+        "question": "2033: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2034'.unit",
+        "id": "T30",
+        "kind": "unit",
+        "question": "2034: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2035'.unit",
+        "id": "T31",
+        "kind": "unit",
+        "question": "2035: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2036'.unit",
+        "id": "T32",
+        "kind": "unit",
+        "question": "2036: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2021'.unit",
+        "id": "T33",
+        "kind": "unit",
+        "question": "2021: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2022'.unit",
+        "id": "T34",
+        "kind": "unit",
+        "question": "2022: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2023'.unit",
+        "id": "T35",
+        "kind": "unit",
+        "question": "2023: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2024'.unit",
+        "id": "T36",
+        "kind": "unit",
+        "question": "2024: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2025'.unit",
+        "id": "T37",
+        "kind": "unit",
+        "question": "2025: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2026'.unit",
+        "id": "T38",
+        "kind": "unit",
+        "question": "2026: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2027'.unit",
+        "id": "T39",
+        "kind": "unit",
+        "question": "2027: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2028'.unit",
+        "id": "T40",
+        "kind": "unit",
+        "question": "2028: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2029'.unit",
+        "id": "T41",
+        "kind": "unit",
+        "question": "2029: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2030'.unit",
+        "id": "T42",
+        "kind": "unit",
+        "question": "2030: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2031'.unit",
+        "id": "T43",
+        "kind": "unit",
+        "question": "2031: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2032'.unit",
+        "id": "T44",
+        "kind": "unit",
+        "question": "2032: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2033'.unit",
+        "id": "T45",
+        "kind": "unit",
+        "question": "2033: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2034'.unit",
+        "id": "T46",
+        "kind": "unit",
+        "question": "2034: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2035'.unit",
+        "id": "T47",
+        "kind": "unit",
+        "question": "2035: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2036'.unit",
+        "id": "T48",
+        "kind": "unit",
+        "question": "2036: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T49",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: none"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T50",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['category', 'sector'] (measured unique in 1 capture(s)); without one, latest stays whole_capture"
+      },
+      {
+        "consequence": "none",
+        "field": "epochs",
+        "id": "T51",
+        "kind": "multi_epoch",
+        "question": "3 header epochs; review each in its batch"
+      }
+    ]
+  },
+  "refresh": "adhoc",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update frequency",
+        "value": "Ad hoc"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "FES: Pathways to Net Zero",
+    "title": "FES: Pathways to Net Zero – Whole System & Gas Supply - Emissions Data table (WS2)"
+  }
+}

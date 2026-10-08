@@ -1,0 +1,2301 @@
+{
+  "archetype": "EVT",
+  "batch": "AS-5",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/asdp_instructions/2026/10/08/raw_20261008T081626Z_6f037ebe-110d-4099-ab82-0ac3185e3f18_0de9a797.csv",
+      "ckan_last_modified": null,
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 10,
+      "parse_error": null,
+      "resource_id": "6f037ebe-110d-4099-ab82-0ac3185e3f18",
+      "rows": 9,
+      "sampled": false,
+      "size": 1075,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T08:16:26.562018+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/asdp_instructions/2026/10/08/raw_20261008T081656Z_5d741b13-85c4-44bd-82ba-50dca68ff4f1_73d57ee7.csv",
+      "ckan_last_modified": null,
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 5,
+      "parse_error": null,
+      "resource_id": "5d741b13-85c4-44bd-82ba-50dca68ff4f1",
+      "rows": 4,
+      "sampled": false,
+      "size": 558,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T08:16:56.584671+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/asdp_instructions/2026/10/08/raw_20261008T081726Z_a16abb3c-36bd-448f-9263-b25d90ca08a0_fbed080e.csv",
+      "ckan_last_modified": null,
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 6,
+      "parse_error": null,
+      "resource_id": "a16abb3c-36bd-448f-9263-b25d90ca08a0",
+      "rows": 5,
+      "sampled": false,
+      "size": 657,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T08:17:26.619736+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/asdp_instructions/2026/10/08/raw_20261008T081756Z_339bbc15-2e83-4928-a07f-e09b6d60edfc_99ef00ae.csv",
+      "ckan_last_modified": "2020-10-31T23:43:56.509474",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 649,
+      "parse_error": null,
+      "resource_id": "339bbc15-2e83-4928-a07f-e09b6d60edfc",
+      "rows": 648,
+      "sampled": false,
+      "size": 73816,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T08:17:56.704746+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/asdp_instructions/2026/10/08/raw_20261008T081826Z_568b4255-b66f-4aa8-a704-36a5e65b5563_4f68898e.csv",
+      "ckan_last_modified": "2020-11-30T23:22:24.085723",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 1047,
+      "parse_error": null,
+      "resource_id": "568b4255-b66f-4aa8-a704-36a5e65b5563",
+      "rows": 1046,
+      "sampled": false,
+      "size": 119438,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T08:18:26.670098+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/asdp_instructions/2026/10/08/raw_20261008T081856Z_0acd8a9f-025b-4e4f-b69c-fda1bf9007ae_845d0c04.csv",
+      "ckan_last_modified": "2020-12-31T20:19:19.869835",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 1038,
+      "parse_error": null,
+      "resource_id": "0acd8a9f-025b-4e4f-b69c-fda1bf9007ae",
+      "rows": 1037,
+      "sampled": false,
+      "size": 118914,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T08:18:56.902249+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/asdp_instructions/2026/10/08/raw_20261008T081926Z_75acd396-3895-4538-998b-ed4c45574c40_25594951.csv",
+      "ckan_last_modified": "2021-01-31T17:36:01.369503",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 827,
+      "parse_error": null,
+      "resource_id": "75acd396-3895-4538-998b-ed4c45574c40",
+      "rows": 826,
+      "sampled": false,
+      "size": 91932,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T08:19:26.740208+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/asdp_instructions/2026/10/08/raw_20261008T081956Z_98a05e0c-eb08-427c-a440-b084d30af78e_b5bf418b.csv",
+      "ckan_last_modified": "2021-02-28T17:29:45.304775",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 720,
+      "parse_error": null,
+      "resource_id": "98a05e0c-eb08-427c-a440-b084d30af78e",
+      "rows": 719,
+      "sampled": false,
+      "size": 79369,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T08:19:56.765095+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/asdp_instructions/2026/10/08/raw_20261008T082026Z_d1fce430-c387-413d-99c7-e3f0fc6f5458_f899b78c.csv",
+      "ckan_last_modified": "2021-03-31T20:10:01.156489",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 1048,
+      "parse_error": null,
+      "resource_id": "d1fce430-c387-413d-99c7-e3f0fc6f5458",
+      "rows": 1047,
+      "sampled": false,
+      "size": 116480,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T08:20:26.783940+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/asdp_instructions/2026/10/08/raw_20261008T082056Z_02b3937a-4ba1-46a5-9082-bf7b4fd995cf_af3f7f39.csv",
+      "ckan_last_modified": "2021-04-30T23:16:55.365653",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 1134,
+      "parse_error": null,
+      "resource_id": "02b3937a-4ba1-46a5-9082-bf7b4fd995cf",
+      "rows": 1133,
+      "sampled": false,
+      "size": 125737,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T08:20:56.804703+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/asdp_instructions/2026/10/08/raw_20261008T082126Z_47e35617-1df4-46d4-9900-874f034792b1_2128b949.csv",
+      "ckan_last_modified": "2021-05-31T23:14:57.015234",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 1286,
+      "parse_error": null,
+      "resource_id": "47e35617-1df4-46d4-9900-874f034792b1",
+      "rows": 1285,
+      "sampled": false,
+      "size": 143014,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T08:21:26.857180+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/asdp_instructions/2026/10/08/raw_20261008T082156Z_e843280c-7c36-44e5-97b8-b6403d338bbc_e2600530.csv",
+      "ckan_last_modified": "2021-07-01T10:22:58.542680",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 1225,
+      "parse_error": null,
+      "resource_id": "e843280c-7c36-44e5-97b8-b6403d338bbc",
+      "rows": 1224,
+      "sampled": false,
+      "size": 136046,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T08:21:56.864696+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/asdp_instructions/2026/10/08/raw_20261008T082226Z_2522c3cd-9f5a-402a-8a0c-9410ad187bb8_5dfb48d4.csv",
+      "ckan_last_modified": "2021-07-31T20:27:01.176246",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 1158,
+      "parse_error": null,
+      "resource_id": "2522c3cd-9f5a-402a-8a0c-9410ad187bb8",
+      "rows": 1157,
+      "sampled": false,
+      "size": 130941,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T08:22:26.950738+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/asdp_instructions/2026/10/08/raw_20261008T082256Z_b87d78c8-a961-4b6b-8f64-7e0ccb4156f2_6a4657de.csv",
+      "ckan_last_modified": "2021-08-31T23:28:29.584236",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 844,
+      "parse_error": null,
+      "resource_id": "b87d78c8-a961-4b6b-8f64-7e0ccb4156f2",
+      "rows": 843,
+      "sampled": false,
+      "size": 96660,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T08:22:56.935786+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/asdp_instructions/2026/10/08/raw_20261008T082326Z_15d4c539-f523-4406-957a-334ad15859ec_ac5dad30.csv",
+      "ckan_last_modified": "2021-09-30T18:11:44.378344",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 828,
+      "parse_error": null,
+      "resource_id": "15d4c539-f523-4406-957a-334ad15859ec",
+      "rows": 827,
+      "sampled": false,
+      "size": 93435,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T08:23:26.948505+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/asdp_instructions/2026/10/08/raw_20261008T082356Z_4766f3e3-18ff-4703-8528-f4ea4606eeb1_49cc7b40.csv",
+      "ckan_last_modified": "2021-10-31T18:46:50.774816",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 632,
+      "parse_error": null,
+      "resource_id": "4766f3e3-18ff-4703-8528-f4ea4606eeb1",
+      "rows": 631,
+      "sampled": false,
+      "size": 71719,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T08:23:56.969608+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/asdp_instructions/2026/10/08/raw_20261008T082427Z_90ba1625-d99b-4ec6-8356-ad69af4e6b20_06922544.csv",
+      "ckan_last_modified": "2021-12-01T14:22:45.650767",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 1126,
+      "parse_error": null,
+      "resource_id": "90ba1625-d99b-4ec6-8356-ad69af4e6b20",
+      "rows": 1125,
+      "sampled": false,
+      "size": 161226,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T08:24:27.008835+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/asdp_instructions/2026/10/08/raw_20261008T082457Z_b2df172c-dbfe-4c96-9e33-7e2c0e64a0c4_e02913f1.csv",
+      "ckan_last_modified": "2021-12-31T20:14:26.138200",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 685,
+      "parse_error": null,
+      "resource_id": "b2df172c-dbfe-4c96-9e33-7e2c0e64a0c4",
+      "rows": 684,
+      "sampled": false,
+      "size": 97996,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T08:24:57.204777+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/asdp_instructions/2026/10/08/raw_20261008T082527Z_3c9e6c70-5cff-42e6-8c9e-ca7f51111ba8_3de09c9f.csv",
+      "ckan_last_modified": "2022-01-31T20:54:14.295866",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 946,
+      "parse_error": null,
+      "resource_id": "3c9e6c70-5cff-42e6-8c9e-ca7f51111ba8",
+      "rows": 945,
+      "sampled": false,
+      "size": 135913,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T08:25:27.075581+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/asdp_instructions/2026/10/08/raw_20261008T082557Z_fb7bc149-2a9b-4b80-86e7-e2c5c1e37271_e37df6a4.csv",
+      "ckan_last_modified": "2022-03-01T01:04:44.564517",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 862,
+      "parse_error": null,
+      "resource_id": "fb7bc149-2a9b-4b80-86e7-e2c5c1e37271",
+      "rows": 861,
+      "sampled": false,
+      "size": 123698,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T08:25:57.075402+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/asdp_instructions/2026/10/08/raw_20261008T082627Z_6835dd89-6845-48ec-a8a2-041c6924dc02_806379c7.csv",
+      "ckan_last_modified": "2022-03-31T18:34:03.806083",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 1032,
+      "parse_error": null,
+      "resource_id": "6835dd89-6845-48ec-a8a2-041c6924dc02",
+      "rows": 1031,
+      "sampled": false,
+      "size": 148039,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T08:26:27.145938+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/asdp_instructions/2026/10/08/raw_20261008T082657Z_bf629b2f-b93b-4d4a-8dd7-c50156c3a8ab_59d9c603.csv",
+      "ckan_last_modified": "2022-04-30T19:38:11.826035",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 783,
+      "parse_error": null,
+      "resource_id": "bf629b2f-b93b-4d4a-8dd7-c50156c3a8ab",
+      "rows": 782,
+      "sampled": false,
+      "size": 112459,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T08:26:57.106591+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/asdp_instructions/2026/10/08/raw_20261008T082727Z_b97f5a01-96bb-46ec-80c5-62d5ba010fe7_ddc72dc2.csv",
+      "ckan_last_modified": "2022-05-31T22:43:12.879902",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 718,
+      "parse_error": null,
+      "resource_id": "b97f5a01-96bb-46ec-80c5-62d5ba010fe7",
+      "rows": 717,
+      "sampled": false,
+      "size": 102336,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T08:27:27.150724+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/asdp_instructions/2026/10/08/raw_20261008T082757Z_00936338-b75c-4ada-b812-6d84e03ae650_44a82021.csv",
+      "ckan_last_modified": "2022-06-30T23:27:12.428599",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 847,
+      "parse_error": null,
+      "resource_id": "00936338-b75c-4ada-b812-6d84e03ae650",
+      "rows": 846,
+      "sampled": false,
+      "size": 121883,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T08:27:57.208972+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/asdp_instructions/2026/10/08/raw_20261008T082827Z_d6aa3dd3-42d7-426d-905b-0f24afd26d60_3a3ce23a.csv",
+      "ckan_last_modified": "2022-07-31T22:56:22.611954",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 933,
+      "parse_error": null,
+      "resource_id": "d6aa3dd3-42d7-426d-905b-0f24afd26d60",
+      "rows": 932,
+      "sampled": false,
+      "size": 133682,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T08:28:27.193296+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/asdp_instructions/2026/10/08/raw_20261008T082857Z_1b02bcab-e050-4725-bfc1-b5d034aaef37_4bf716fb.csv",
+      "ckan_last_modified": "2022-08-31T23:12:27.173889",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 1010,
+      "parse_error": null,
+      "resource_id": "1b02bcab-e050-4725-bfc1-b5d034aaef37",
+      "rows": 1009,
+      "sampled": false,
+      "size": 144756,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T08:28:57.323287+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/asdp_instructions/2026/10/08/raw_20261008T082927Z_c3d32954-7b6b-472f-9d22-a96580a97fc2_9b90fd79.csv",
+      "ckan_last_modified": "2022-09-30T16:59:17.292729",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 1111,
+      "parse_error": null,
+      "resource_id": "c3d32954-7b6b-472f-9d22-a96580a97fc2",
+      "rows": 1110,
+      "sampled": false,
+      "size": 159422,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T08:29:27.283380+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/asdp_instructions/2026/10/08/raw_20261008T082957Z_33858909-ad26-4a3c-b1d1-af5b8df7cac2_0183735a.csv",
+      "ckan_last_modified": "2022-10-31T18:06:23.887273",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 818,
+      "parse_error": null,
+      "resource_id": "33858909-ad26-4a3c-b1d1-af5b8df7cac2",
+      "rows": 817,
+      "sampled": false,
+      "size": 116969,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T08:29:57.295652+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/asdp_instructions/2026/10/08/raw_20261008T083027Z_8229a89a-77fe-44db-a0e6-a02aff2ad048_e8c6fc56.csv",
+      "ckan_last_modified": "2022-11-30T23:54:59.019478",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 809,
+      "parse_error": null,
+      "resource_id": "8229a89a-77fe-44db-a0e6-a02aff2ad048",
+      "rows": 808,
+      "sampled": false,
+      "size": 115532,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T08:30:27.374213+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/asdp_instructions/2026/10/08/raw_20261008T083057Z_e647c7e0-4ecf-4fcc-b177-5e6e2473e8ac_8bc07476.csv",
+      "ckan_last_modified": "2022-12-31T23:05:55.328773",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 851,
+      "parse_error": null,
+      "resource_id": "e647c7e0-4ecf-4fcc-b177-5e6e2473e8ac",
+      "rows": 850,
+      "sampled": false,
+      "size": 121580,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T08:30:57.349090+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/asdp_instructions/2026/10/08/raw_20261008T083127Z_aa138e72-3e25-4787-8369-40f2b9abb980_c5f169ed.csv",
+      "ckan_last_modified": "2023-01-23T19:01:51.777632",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 768,
+      "parse_error": null,
+      "resource_id": "aa138e72-3e25-4787-8369-40f2b9abb980",
+      "rows": 767,
+      "sampled": false,
+      "size": 110764,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T08:31:27.382576+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/asdp_instructions/2026/10/08/raw_20261008T083157Z_b3cd38dd-9d42-4a15-975a-f047b1452830_d5ddb671.csv",
+      "ckan_last_modified": null,
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 540,
+      "parse_error": null,
+      "resource_id": "b3cd38dd-9d42-4a15-975a-f047b1452830",
+      "rows": 539,
+      "sampled": false,
+      "size": 77588,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T08:31:57.412181+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/asdp_instructions/2026/10/08/raw_20261008T083227Z_f42d3568-e5d5-49ff-85fa-5307ef5a1a9e_0f318627.csv",
+      "ckan_last_modified": null,
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 734,
+      "parse_error": null,
+      "resource_id": "f42d3568-e5d5-49ff-85fa-5307ef5a1a9e",
+      "rows": 733,
+      "sampled": false,
+      "size": 104946,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T08:32:27.421175+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/asdp_instructions/2026/10/08/raw_20261008T083257Z_1f8eb6f2-6c3f-41ae-bc47-9d546a564988_93c92008.csv",
+      "ckan_last_modified": null,
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 770,
+      "parse_error": null,
+      "resource_id": "1f8eb6f2-6c3f-41ae-bc47-9d546a564988",
+      "rows": 769,
+      "sampled": false,
+      "size": 110492,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T08:32:57.493888+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/asdp_instructions/2026/10/08/raw_20261008T083327Z_7d42751b-69d7-4886-b323-348bc280ec70_66a7ce01.csv",
+      "ckan_last_modified": null,
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 755,
+      "parse_error": null,
+      "resource_id": "7d42751b-69d7-4886-b323-348bc280ec70",
+      "rows": 754,
+      "sampled": false,
+      "size": 107221,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T08:33:27.508215+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/asdp_instructions/2026/10/08/raw_20261008T083357Z_022b285b-99b5-4daf-984b-67af79d034a9_979b13cb.csv",
+      "ckan_last_modified": null,
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 890,
+      "parse_error": null,
+      "resource_id": "022b285b-99b5-4daf-984b-67af79d034a9",
+      "rows": 889,
+      "sampled": false,
+      "size": 127978,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T08:33:57.524658+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/asdp_instructions/2026/10/08/raw_20261008T083427Z_b6de945d-deed-4181-a97c-ba795d41a550_d879de40.csv",
+      "ckan_last_modified": null,
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 903,
+      "parse_error": null,
+      "resource_id": "b6de945d-deed-4181-a97c-ba795d41a550",
+      "rows": 902,
+      "sampled": false,
+      "size": 129134,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T08:34:27.562309+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/asdp_instructions/2026/10/08/raw_20261008T083457Z_edd4f419-14d1-4f48-a9e6-1e0a87b99561_a9da649e.csv",
+      "ckan_last_modified": null,
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 809,
+      "parse_error": null,
+      "resource_id": "edd4f419-14d1-4f48-a9e6-1e0a87b99561",
+      "rows": 808,
+      "sampled": false,
+      "size": 115957,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T08:34:57.574967+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/asdp_instructions/2026/10/08/raw_20261008T083527Z_f352265b-01c4-4f45-b0e4-bef889b74d23_e9095f35.csv",
+      "ckan_last_modified": null,
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 838,
+      "parse_error": null,
+      "resource_id": "f352265b-01c4-4f45-b0e4-bef889b74d23",
+      "rows": 837,
+      "sampled": false,
+      "size": 119832,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T08:35:27.604477+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/asdp_instructions/2026/10/08/raw_20261008T083557Z_2057abe9-465d-4ca0-84d1-ec67e9cdb7c8_b06938ca.csv",
+      "ckan_last_modified": null,
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 980,
+      "parse_error": null,
+      "resource_id": "2057abe9-465d-4ca0-84d1-ec67e9cdb7c8",
+      "rows": 979,
+      "sampled": false,
+      "size": 140212,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T08:35:57.608683+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/asdp_instructions/2026/10/08/raw_20261008T083627Z_9d03620d-e526-4c2e-8917-0d990efe71c9_bb0beedf.csv",
+      "ckan_last_modified": null,
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 579,
+      "parse_error": null,
+      "resource_id": "9d03620d-e526-4c2e-8917-0d990efe71c9",
+      "rows": 578,
+      "sampled": false,
+      "size": 83187,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T08:36:27.635245+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/asdp_instructions/2026/10/08/raw_20261008T083657Z_3050db3d-0930-4462-8275-47413788fc7f_5c1d60bd.csv",
+      "ckan_last_modified": null,
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 420,
+      "parse_error": null,
+      "resource_id": "3050db3d-0930-4462-8275-47413788fc7f",
+      "rows": 419,
+      "sampled": false,
+      "size": 60093,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T08:36:57.682201+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/asdp_instructions/2026/10/08/raw_20261008T083727Z_f9de917d-9fc1-4ae6-9bfd-38f2c4e03ad7_12bad96a.csv",
+      "ckan_last_modified": null,
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 506,
+      "parse_error": null,
+      "resource_id": "f9de917d-9fc1-4ae6-9bfd-38f2c4e03ad7",
+      "rows": 505,
+      "sampled": false,
+      "size": 72649,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T08:37:27.680898+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/asdp_instructions/2026/10/08/raw_20261008T083757Z_f393b6dd-a53e-479b-9487-ef6be9b54c7c_fb0d60a1.csv",
+      "ckan_last_modified": null,
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 646,
+      "parse_error": null,
+      "resource_id": "f393b6dd-a53e-479b-9487-ef6be9b54c7c",
+      "rows": 645,
+      "sampled": false,
+      "size": 92445,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T08:37:57.774704+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/asdp_instructions/2026/10/08/raw_20261008T083827Z_634f9b03-e2e2-4d5a-a1b3-1eeae249dad3_12ace273.csv",
+      "ckan_last_modified": null,
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 1236,
+      "parse_error": null,
+      "resource_id": "634f9b03-e2e2-4d5a-a1b3-1eeae249dad3",
+      "rows": 1235,
+      "sampled": false,
+      "size": 182918,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T08:38:27.699036+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/asdp_instructions/2026/10/08/raw_20261008T083857Z_cbe93aea-a869-40a9-8115-ec32c690300c_b64e548a.csv",
+      "ckan_last_modified": null,
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 1245,
+      "parse_error": null,
+      "resource_id": "cbe93aea-a869-40a9-8115-ec32c690300c",
+      "rows": 1244,
+      "sampled": false,
+      "size": 185562,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T08:38:57.771928+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/asdp_instructions/2026/10/08/raw_20261008T083927Z_c6ec4a0d-bf02-41fd-b31d-d341d183a281_f98eb47b.csv",
+      "ckan_last_modified": null,
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 1115,
+      "parse_error": null,
+      "resource_id": "c6ec4a0d-bf02-41fd-b31d-d341d183a281",
+      "rows": 1114,
+      "sampled": false,
+      "size": 167885,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T08:39:27.789531+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/asdp_instructions/2026/10/08/raw_20261008T083957Z_3d943305-737e-4da3-af80-d02da7ab89e7_24981507.csv",
+      "ckan_last_modified": null,
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 1128,
+      "parse_error": null,
+      "resource_id": "3d943305-737e-4da3-af80-d02da7ab89e7",
+      "rows": 1127,
+      "sampled": false,
+      "size": 169910,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T08:39:57.808663+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/asdp_instructions/2026/10/08/raw_20261008T084027Z_8fbe008a-cbb7-4244-accd-52eb48484589_63cb8eb3.csv",
+      "ckan_last_modified": null,
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 1043,
+      "parse_error": null,
+      "resource_id": "8fbe008a-cbb7-4244-accd-52eb48484589",
+      "rows": 1042,
+      "sampled": false,
+      "size": 156723,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T08:40:27.867320+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/asdp_instructions/2026/10/08/raw_20261008T084057Z_a5ce745a-8555-4c50-94fa-d7db3bd2b8af_6361aa0f.csv",
+      "ckan_last_modified": null,
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 1821,
+      "parse_error": null,
+      "resource_id": "a5ce745a-8555-4c50-94fa-d7db3bd2b8af",
+      "rows": 1820,
+      "sampled": false,
+      "size": 275757,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T08:40:57.945354+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/asdp_instructions/2026/10/08/raw_20261008T084127Z_9cec00cf-8ade-4a81-b2ef-f3ecf51e7c97_0ff6dfe0.csv",
+      "ckan_last_modified": null,
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 1721,
+      "parse_error": null,
+      "resource_id": "9cec00cf-8ade-4a81-b2ef-f3ecf51e7c97",
+      "rows": 1720,
+      "sampled": false,
+      "size": 261835,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T08:41:27.939255+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/asdp_instructions/2026/10/08/raw_20261008T084157Z_6d3919d5-21be-4427-8757-e43fda9db4b6_20ea9082.csv",
+      "ckan_last_modified": null,
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 1917,
+      "parse_error": null,
+      "resource_id": "6d3919d5-21be-4427-8757-e43fda9db4b6",
+      "rows": 1916,
+      "sampled": false,
+      "size": 293251,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T08:41:57.920698+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/asdp_instructions/2026/10/08/raw_20261008T084227Z_43a3ba39-6a69-4951-8f31-b36f24a752eb_2743fcf1.csv",
+      "ckan_last_modified": null,
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 1458,
+      "parse_error": null,
+      "resource_id": "43a3ba39-6a69-4951-8f31-b36f24a752eb",
+      "rows": 1457,
+      "sampled": false,
+      "size": 222084,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T08:42:27.956730+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/asdp_instructions/2026/10/08/raw_20261008T084258Z_57d05910-1b81-4eaa-b87d-46e6ad7a483a_4c11f12d.csv",
+      "ckan_last_modified": null,
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 1730,
+      "parse_error": null,
+      "resource_id": "57d05910-1b81-4eaa-b87d-46e6ad7a483a",
+      "rows": 1729,
+      "sampled": false,
+      "size": 265933,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T08:42:58.007905+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/asdp_instructions/2026/10/08/raw_20261008T084327Z_6661b52e-89b7-4011-8900-e2ded58b215f_6a9c6eda.csv",
+      "ckan_last_modified": null,
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 1455,
+      "parse_error": null,
+      "resource_id": "6661b52e-89b7-4011-8900-e2ded58b215f",
+      "rows": 1454,
+      "sampled": false,
+      "size": 222429,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T08:43:27.995652+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/asdp_instructions/2026/10/08/raw_20261008T084358Z_fa6aa4e7-9c1a-439b-8d56-bfb3dfff9568_cf2e7ac6.csv",
+      "ckan_last_modified": null,
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 1305,
+      "parse_error": null,
+      "resource_id": "fa6aa4e7-9c1a-439b-8d56-bfb3dfff9568",
+      "rows": 1304,
+      "sampled": false,
+      "size": 198802,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T08:43:58.017265+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/asdp_instructions/2026/10/08/raw_20261008T084428Z_ed60b6bf-b771-4eb5-8633-46d816f05703_c76a44c4.csv",
+      "ckan_last_modified": null,
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 1711,
+      "parse_error": null,
+      "resource_id": "ed60b6bf-b771-4eb5-8633-46d816f05703",
+      "rows": 1710,
+      "sampled": false,
+      "size": 259519,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T08:44:28.072766+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/asdp_instructions/2026/10/08/raw_20261008T084458Z_302141a1-6c74-4c2f-a1dc-298e485d59d9_b259e14d.csv",
+      "ckan_last_modified": null,
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 1251,
+      "parse_error": null,
+      "resource_id": "302141a1-6c74-4c2f-a1dc-298e485d59d9",
+      "rows": 1250,
+      "sampled": false,
+      "size": 190330,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T08:44:58.148812+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/asdp_instructions/2026/10/08/raw_20261008T084528Z_fa096fbf-9e57-4e9e-bbc0-8371e8541bf9_6291647f.csv",
+      "ckan_last_modified": null,
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 1429,
+      "parse_error": null,
+      "resource_id": "fa096fbf-9e57-4e9e-bbc0-8371e8541bf9",
+      "rows": 1428,
+      "sampled": false,
+      "size": 218107,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T08:45:28.128318+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/asdp_instructions/2026/10/08/raw_20261008T084558Z_51f4ada0-407e-49f4-bca8-ffe67c5beb9a_b06ed9e6.csv",
+      "ckan_last_modified": null,
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 1504,
+      "parse_error": null,
+      "resource_id": "51f4ada0-407e-49f4-bca8-ffe67c5beb9a",
+      "rows": 1503,
+      "sampled": false,
+      "size": 227714,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T08:45:58.156785+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/asdp_instructions/2026/10/08/raw_20261008T084628Z_c2e53d15-8041-4ec3-9d55-69e15895ab49_854dc522.csv",
+      "ckan_last_modified": null,
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 1736,
+      "parse_error": null,
+      "resource_id": "c2e53d15-8041-4ec3-9d55-69e15895ab49",
+      "rows": 1735,
+      "sampled": false,
+      "size": 264416,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T08:46:28.687112+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/asdp_instructions/2026/10/08/raw_20261008T084658Z_0a4e2125-5e97-4c28-b707-056c7f295419_99cee8d7.csv",
+      "ckan_last_modified": null,
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 1567,
+      "parse_error": null,
+      "resource_id": "0a4e2125-5e97-4c28-b707-056c7f295419",
+      "rows": 1566,
+      "sampled": false,
+      "size": 238850,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T08:46:58.187733+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/asdp_instructions/2026/10/08/raw_20261008T084728Z_7b3a9ead-c041-4a62-97b1-6cb0587baf58_0a8a3862.csv",
+      "ckan_last_modified": null,
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 1627,
+      "parse_error": null,
+      "resource_id": "7b3a9ead-c041-4a62-97b1-6cb0587baf58",
+      "rows": 1626,
+      "sampled": false,
+      "size": 249622,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T08:47:28.193940+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/asdp_instructions/2026/10/08/raw_20261008T084758Z_35a4fac5-ee33-475a-adab-25ad14da60b0_394a78a6.csv",
+      "ckan_last_modified": null,
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 1621,
+      "parse_error": null,
+      "resource_id": "35a4fac5-ee33-475a-adab-25ad14da60b0",
+      "rows": 1620,
+      "sampled": false,
+      "size": 247529,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T08:47:58.213108+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/asdp_instructions/2026/10/08/raw_20261008T084828Z_cc57a85a-8f7e-4f45-9957-ae086d48b1c3_28165816.csv",
+      "ckan_last_modified": null,
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 1806,
+      "parse_error": null,
+      "resource_id": "cc57a85a-8f7e-4f45-9957-ae086d48b1c3",
+      "rows": 1805,
+      "sampled": false,
+      "size": 277295,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T08:48:28.284404+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/asdp_instructions/2026/10/08/raw_20261008T084858Z_bfbce47e-7ef8-4777-91cb-9b547d222829_4e4012bb.csv",
+      "ckan_last_modified": null,
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 1342,
+      "parse_error": null,
+      "resource_id": "bfbce47e-7ef8-4777-91cb-9b547d222829",
+      "rows": 1341,
+      "sampled": false,
+      "size": 206296,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T08:48:58.286685+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/asdp_instructions/2026/10/08/raw_20261008T084928Z_4c1e607e-d006-4d1a-a753-2c94d23b10c5_5e6aba8c.csv",
+      "ckan_last_modified": null,
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 1964,
+      "parse_error": null,
+      "resource_id": "4c1e607e-d006-4d1a-a753-2c94d23b10c5",
+      "rows": 1963,
+      "sampled": false,
+      "size": 304124,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T08:49:28.311552+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/asdp_instructions/2026/10/08/raw_20261008T084958Z_2043a615-ad1c-44ed-9a36-11fbbcef5128_8d5a0dc8.csv",
+      "ckan_last_modified": null,
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 1497,
+      "parse_error": null,
+      "resource_id": "2043a615-ad1c-44ed-9a36-11fbbcef5128",
+      "rows": 1496,
+      "sampled": false,
+      "size": 231073,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T08:49:58.340219+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/asdp_instructions/2026/10/08/raw_20261008T085028Z_ba09543b-79e0-46c7-a229-089d83df6304_e36dbf51.csv",
+      "ckan_last_modified": null,
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 1907,
+      "parse_error": null,
+      "resource_id": "ba09543b-79e0-46c7-a229-089d83df6304",
+      "rows": 1906,
+      "sampled": false,
+      "size": 293472,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T08:50:28.361511+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/asdp_instructions/2026/10/08/raw_20261008T085058Z_099bd868-d0af-4157-85c6-4508ddbd8a64_76c993b5.csv",
+      "ckan_last_modified": null,
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 945,
+      "parse_error": null,
+      "resource_id": "099bd868-d0af-4157-85c6-4508ddbd8a64",
+      "rows": 944,
+      "sampled": false,
+      "size": 145397,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T08:50:58.360629+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 16,
+      "columns": {
+        "CeaseDateTimeStamp": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 12343,
+            "int64": 12343
+          },
+          "examples": [
+            "2020-06-25 02:40:08Z",
+            "2020-06-25 09:19:08Z",
+            "2020-06-25 15:24:21Z"
+          ],
+          "max_len": 20,
+          "null_count": 98,
+          "shapes": {
+            "naive_datetime": 9619,
+            "text": 2724
+          }
+        },
+        "DispatchDateTimeStamp": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 12400,
+            "int64": 12400
+          },
+          "examples": [
+            "2020-06-25 01:47:36Z",
+            "2020-06-25 09:04:07Z",
+            "2020-06-25 13:59:48Z"
+          ],
+          "max_len": 20,
+          "null_count": 41,
+          "shapes": {
+            "naive_datetime": 9676,
+            "text": 2724
+          }
+        },
+        "EntryID": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1",
+            "2",
+            "3"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "int": 12441
+          }
+        },
+        "IndicativePrice": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 3643
+          },
+          "examples": [
+            "48.85",
+            "200",
+            "115"
+          ],
+          "max_len": 6,
+          "null_count": 41,
+          "shapes": {
+            "decimal": 3643,
+            "int": 8757
+          }
+        },
+        "InstructionCeaseDateTime": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 12343,
+            "int64": 12343
+          },
+          "examples": [
+            "2020-06-25 02:45:00Z",
+            "2020-06-25 09:24:00Z",
+            "2020-06-25 09:27:57Z"
+          ],
+          "max_len": 20,
+          "null_count": 98,
+          "shapes": {
+            "naive_datetime": 9619,
+            "text": 2724
+          }
+        },
+        "InstructionStartDateTime": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 12400,
+            "int64": 12400
+          },
+          "examples": [
+            "2020-06-25 01:49:00Z",
+            "2020-06-25 09:04:00Z",
+            "2020-06-25 09:05:00Z"
+          ],
+          "max_len": 20,
+          "null_count": 41,
+          "shapes": {
+            "naive_datetime": 9676,
+            "text": 2724
+          }
+        },
+        "MW": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "4",
+            "5",
+            "12"
+          ],
+          "max_len": 3,
+          "null_count": 41,
+          "shapes": {
+            "int": 12400
+          }
+        },
+        "ServiceType": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 12441,
+            "int64": 12441
+          },
+          "examples": [
+            "Non-BM STOR",
+            "Non-BM Fast Reserve"
+          ],
+          "max_len": 19,
+          "null_count": 0,
+          "shapes": {
+            "text": 12441
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "CeaseDateTimeStamp": {
+            "description": "Timestamp Cease is sent (publish time to NESO data portal)",
+            "title": "Cease DateTimeStamp",
+            "type": "timestamp",
+            "unit": null
+          },
+          "DispatchDateTimeStamp": {
+            "description": "Timestamp Dispatch is sent (publish time to NESO data portal)",
+            "title": "Dispatch DateTimeStamp",
+            "type": "timestamp",
+            "unit": null
+          },
+          "EntryID": {
+            "description": "Sequential Number",
+            "title": "Entry ID",
+            "type": "int4",
+            "unit": null
+          },
+          "IndicativePrice": {
+            "description": "Pound/MWh should be the price of the instruction at the time it starts to ramp up.\nFor RDP MW Dispatch, this is the DER Unit's latest Utilization Price (in £/MWh) for the given day when the Dispatch Instruction was issued.",
+            "title": "Indicative Price",
+            "type": "float8",
+            "unit": "£/MWh"
+          },
+          "InstructionCeaseDateTime": {
+            "description": "Date time Cease instruction ramp down ends.\nFor RDP MW Dispatch, this is the DateTime the Cease instruction was sent to the conerned DER Unit via the DNO to restore its MW generation.",
+            "title": "Instruction Cease DateTime",
+            "type": "timestamp",
+            "unit": null
+          },
+          "InstructionStartDateTime": {
+            "description": "Date time Dispatch instruction starts to ramp up.\nFor RDP MW Dispatch, this is the DateTime each successful Dispatch instruction was sent to the conerned DER Unit via the DNO for curtailment down to 0 MW.",
+            "title": "Instruction Start DateTime",
+            "type": "timestamp",
+            "unit": null
+          },
+          "MW": {
+            "description": "MWs dispatched",
+            "title": "MW",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "ServiceType": {
+            "description": "All STOR service types are Non-BM STOR and FAST RESERVE type is Non-BM Fast Reserve.\nAll RDP MW Dispatch Instructions will currently have RDP_NEGATIVE Service Type.",
+            "title": "Service Type",
+            "type": "text",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [
+          "AssetID",
+          "PartyID",
+          "Tendered"
+        ],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T08:16:26.562018+00:00",
+      "header": [
+        "EntryID",
+        "ServiceType",
+        "InstructionStartDateTime",
+        "MW",
+        "IndicativePrice",
+        "InstructionCeaseDateTime",
+        "DispatchDateTimeStamp",
+        "CeaseDateTimeStamp"
+      ],
+      "last_written_at": "2026-10-08T08:23:56.969608+00:00",
+      "resource_ids": [
+        "02b3937a-4ba1-46a5-9082-bf7b4fd995cf",
+        "0acd8a9f-025b-4e4f-b69c-fda1bf9007ae",
+        "15d4c539-f523-4406-957a-334ad15859ec",
+        "2522c3cd-9f5a-402a-8a0c-9410ad187bb8",
+        "339bbc15-2e83-4928-a07f-e09b6d60edfc",
+        "4766f3e3-18ff-4703-8528-f4ea4606eeb1",
+        "47e35617-1df4-46d4-9900-874f034792b1",
+        "568b4255-b66f-4aa8-a704-36a5e65b5563",
+        "5d741b13-85c4-44bd-82ba-50dca68ff4f1",
+        "6f037ebe-110d-4099-ab82-0ac3185e3f18",
+        "75acd396-3895-4538-998b-ed4c45574c40",
+        "98a05e0c-eb08-427c-a440-b084d30af78e",
+        "a16abb3c-36bd-448f-9263-b25d90ca08a0",
+        "b87d78c8-a961-4b6b-8f64-7e0ccb4156f2",
+        "d1fce430-c387-413d-99c7-e3f0fc6f5458",
+        "e843280c-7c36-44e5-97b8-b6403d338bbc"
+      ],
+      "rows": 12441,
+      "settlement_periods": []
+    },
+    {
+      "captures": 54,
+      "columns": {
+        "AssetID": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 61601,
+            "int64": 61601
+          },
+          "examples": [
+            "OFR-ENWL-1",
+            "OFR-UKPR-5",
+            "OFR-UKPR-4"
+          ],
+          "max_len": 10,
+          "null_count": 95,
+          "shapes": {
+            "text": 61601
+          }
+        },
+        "CeaseDateTimeStamp": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 61591,
+            "int64": 61591
+          },
+          "examples": [
+            "2021-11-01T12:43:43",
+            "2021-11-01T12:40:13",
+            "2021-11-01T15:18:29"
+          ],
+          "max_len": 19,
+          "null_count": 105,
+          "shapes": {
+            "naive_datetime": 61591
+          }
+        },
+        "DispatchDateTimeStamp": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 61628,
+            "int64": 61628
+          },
+          "examples": [
+            "2021-11-01T12:09:11",
+            "2021-11-01T12:21:41",
+            "2021-11-01T13:03:14"
+          ],
+          "max_len": 19,
+          "null_count": 68,
+          "shapes": {
+            "naive_datetime": 61628
+          }
+        },
+        "EntryID": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "12810",
+            "12809",
+            "12811"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "int": 61696
+          }
+        },
+        "IndicativePrice": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 22179
+          },
+          "examples": [
+            "221.75",
+            "224.95",
+            "200"
+          ],
+          "max_len": 6,
+          "null_count": 68,
+          "shapes": {
+            "decimal": 22179,
+            "int": 39449
+          }
+        },
+        "InstructionCeaseDateTime": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 61591,
+            "int64": 61591
+          },
+          "examples": [
+            "2021-11-01T12:46:00",
+            "2021-11-01T12:42:00",
+            "2021-11-01T12:46:13"
+          ],
+          "max_len": 19,
+          "null_count": 105,
+          "shapes": {
+            "naive_datetime": 61591
+          }
+        },
+        "InstructionStartDateTime": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 61628,
+            "int64": 61628
+          },
+          "examples": [
+            "2021-11-01T12:11:00",
+            "2021-11-01T12:24:00",
+            "2021-11-01T13:05:00"
+          ],
+          "max_len": 19,
+          "null_count": 68,
+          "shapes": {
+            "naive_datetime": 61628
+          }
+        },
+        "MW": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "80",
+            "65",
+            "60"
+          ],
+          "max_len": 3,
+          "null_count": 68,
+          "shapes": {
+            "int": 61628
+          }
+        },
+        "PartyID": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 61601,
+            "int64": 61601
+          },
+          "examples": [
+            "ENWL",
+            "UKPR",
+            "KIWI POWER LIMITED"
+          ],
+          "max_len": 31,
+          "null_count": 95,
+          "shapes": {
+            "text": 61601
+          }
+        },
+        "ServiceType": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 61696,
+            "int64": 61696
+          },
+          "examples": [
+            "Non-BM Fast Reserve",
+            "Non-BM STOR",
+            "RDP_NEGATIVE"
+          ],
+          "max_len": 19,
+          "null_count": 0,
+          "shapes": {
+            "text": 61696
+          }
+        },
+        "Tendered": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 61601,
+            "int64": 61601
+          },
+          "examples": [
+            "Non-tendered",
+            "Tendered",
+            "Non-Tendered"
+          ],
+          "max_len": 12,
+          "null_count": 95,
+          "shapes": {
+            "text": 61601
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "AssetID": {
+            "description": "This should be the Non-BMU ID associated with the corresponding instruction.\nFor RDP MW Dispatch, this will be the NESO assigned Unit ID for the respective DERs.",
+            "title": "Asset Id",
+            "type": "text",
+            "unit": null
+          },
+          "CeaseDateTimeStamp": {
+            "description": "Timestamp Cease is sent (publish time to NESO data portal)",
+            "title": "Cease DateTimeStamp",
+            "type": "timestamp",
+            "unit": null
+          },
+          "DispatchDateTimeStamp": {
+            "description": "Timestamp Dispatch is sent (publish time to NESO data portal)",
+            "title": "Dispatch DateTimeStamp",
+            "type": "timestamp",
+            "unit": null
+          },
+          "EntryID": {
+            "description": "Sequential Number",
+            "title": "Entry ID",
+            "type": "int4",
+            "unit": null
+          },
+          "IndicativePrice": {
+            "description": "Pound/MWh should be the price of the instruction at the time it starts to ramp up.\nFor RDP MW Dispatch, this is the DER Unit's latest Utilization Price (in £/MWh) for the given day when the Dispatch Instruction was issued.",
+            "title": "Indicative Price",
+            "type": "float8",
+            "unit": "£/MWh"
+          },
+          "InstructionCeaseDateTime": {
+            "description": "Date time Cease instruction ramp down ends.\nFor RDP MW Dispatch, this is the DateTime the Cease instruction was sent to the conerned DER Unit via the DNO to restore its MW generation.",
+            "title": "Instruction Cease DateTime",
+            "type": "timestamp",
+            "unit": null
+          },
+          "InstructionStartDateTime": {
+            "description": "Date time Dispatch instruction starts to ramp up.\nFor RDP MW Dispatch, this is the DateTime each successful Dispatch instruction was sent to the conerned DER Unit via the DNO for curtailment down to 0 MW.",
+            "title": "Instruction Start DateTime",
+            "type": "timestamp",
+            "unit": null
+          },
+          "MW": {
+            "description": "MWs dispatched",
+            "title": "MW",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "PartyID": {
+            "description": "This should be the service provider name associated with the corresponding instruction",
+            "title": "Party Id",
+            "type": "text",
+            "unit": null
+          },
+          "ServiceType": {
+            "description": "All STOR service types are Non-BM STOR and FAST RESERVE type is Non-BM Fast Reserve.\nAll RDP MW Dispatch Instructions will currently have RDP_NEGATIVE Service Type.",
+            "title": "Service Type",
+            "type": "text",
+            "unit": null
+          },
+          "Tendered": {
+            "description": "This is the flag indicating if a service is Tendered or Non-tendered.\nFor RDP MW Dispatch, this will always be Non-Tendered.",
+            "title": "Tendered",
+            "type": "text",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T08:24:27.008835+00:00",
+      "header": [
+        "EntryID",
+        "ServiceType",
+        "InstructionStartDateTime",
+        "MW",
+        "IndicativePrice",
+        "InstructionCeaseDateTime",
+        "DispatchDateTimeStamp",
+        "CeaseDateTimeStamp",
+        "PartyID",
+        "AssetID",
+        "Tendered"
+      ],
+      "last_written_at": "2026-10-08T08:50:58.360629+00:00",
+      "resource_ids": [
+        "00936338-b75c-4ada-b812-6d84e03ae650",
+        "022b285b-99b5-4daf-984b-67af79d034a9",
+        "099bd868-d0af-4157-85c6-4508ddbd8a64",
+        "0a4e2125-5e97-4c28-b707-056c7f295419",
+        "1b02bcab-e050-4725-bfc1-b5d034aaef37",
+        "1f8eb6f2-6c3f-41ae-bc47-9d546a564988",
+        "2043a615-ad1c-44ed-9a36-11fbbcef5128",
+        "2057abe9-465d-4ca0-84d1-ec67e9cdb7c8",
+        "302141a1-6c74-4c2f-a1dc-298e485d59d9",
+        "3050db3d-0930-4462-8275-47413788fc7f",
+        "33858909-ad26-4a3c-b1d1-af5b8df7cac2",
+        "35a4fac5-ee33-475a-adab-25ad14da60b0",
+        "3c9e6c70-5cff-42e6-8c9e-ca7f51111ba8",
+        "3d943305-737e-4da3-af80-d02da7ab89e7",
+        "43a3ba39-6a69-4951-8f31-b36f24a752eb",
+        "4c1e607e-d006-4d1a-a753-2c94d23b10c5",
+        "51f4ada0-407e-49f4-bca8-ffe67c5beb9a",
+        "57d05910-1b81-4eaa-b87d-46e6ad7a483a",
+        "634f9b03-e2e2-4d5a-a1b3-1eeae249dad3",
+        "6661b52e-89b7-4011-8900-e2ded58b215f",
+        "6835dd89-6845-48ec-a8a2-041c6924dc02",
+        "6d3919d5-21be-4427-8757-e43fda9db4b6",
+        "7b3a9ead-c041-4a62-97b1-6cb0587baf58",
+        "7d42751b-69d7-4886-b323-348bc280ec70",
+        "8229a89a-77fe-44db-a0e6-a02aff2ad048",
+        "8fbe008a-cbb7-4244-accd-52eb48484589",
+        "90ba1625-d99b-4ec6-8356-ad69af4e6b20",
+        "9cec00cf-8ade-4a81-b2ef-f3ecf51e7c97",
+        "9d03620d-e526-4c2e-8917-0d990efe71c9",
+        "a5ce745a-8555-4c50-94fa-d7db3bd2b8af",
+        "aa138e72-3e25-4787-8369-40f2b9abb980",
+        "b2df172c-dbfe-4c96-9e33-7e2c0e64a0c4",
+        "b3cd38dd-9d42-4a15-975a-f047b1452830",
+        "b6de945d-deed-4181-a97c-ba795d41a550",
+        "b97f5a01-96bb-46ec-80c5-62d5ba010fe7",
+        "ba09543b-79e0-46c7-a229-089d83df6304",
+        "bf629b2f-b93b-4d4a-8dd7-c50156c3a8ab",
+        "bfbce47e-7ef8-4777-91cb-9b547d222829",
+        "c2e53d15-8041-4ec3-9d55-69e15895ab49",
+        "c3d32954-7b6b-472f-9d22-a96580a97fc2",
+        "c6ec4a0d-bf02-41fd-b31d-d341d183a281",
+        "cbe93aea-a869-40a9-8115-ec32c690300c",
+        "cc57a85a-8f7e-4f45-9957-ae086d48b1c3",
+        "d6aa3dd3-42d7-426d-905b-0f24afd26d60",
+        "e647c7e0-4ecf-4fcc-b177-5e6e2473e8ac",
+        "ed60b6bf-b771-4eb5-8633-46d816f05703",
+        "edd4f419-14d1-4f48-a9e6-1e0a87b99561",
+        "f352265b-01c4-4f45-b0e4-bef889b74d23",
+        "f393b6dd-a53e-479b-9487-ef6be9b54c7c",
+        "f42d3568-e5d5-49ff-85fa-5307ef5a1a9e",
+        "f9de917d-9fc1-4ae6-9bfd-38f2c4e03ad7",
+        "fa096fbf-9e57-4e9e-bbc0-8371e8541bf9",
+        "fa6aa4e7-9c1a-439b-8d56-bfb3dfff9568",
+        "fb7bc149-2a9b-4b80-86e7-e2c5c1e37271"
+      ],
+      "rows": 61696,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [
+    "multi_epoch"
+  ],
+  "key": "asdp_instructions",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 70,
+        "columns": [
+          "EntryID"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 54,
+        "columns": [
+          "InstructionStartDateTime",
+          "AssetID"
+        ],
+        "max_duplicates": 14
+      },
+      {
+        "captures_checked": 54,
+        "columns": [
+          "InstructionCeaseDateTime",
+          "AssetID"
+        ],
+        "max_duplicates": 8
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "non-bm-ancillary-service-dispatch-platform-asdp-instructions",
+  "proposal": {
+    "flags": [
+      "multi_epoch"
+    ],
+    "record_draft": {
+      "eligibility": {
+        "question": "EntryID: a numeric column with no vendor unit; InstructionStartDateTime: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced); InstructionCeaseDateTime: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced); DispatchDateTimeStamp: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced); CeaseDateTimeStamp: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced); EntryID: a numeric column with no vendor unit; InstructionStartDateTime: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced); InstructionCeaseDateTime: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced); DispatchDateTimeStamp: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced); CeaseDateTimeStamp: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)",
+        "status": "held",
+        "unit": "AS-5"
+      },
+      "encoding": "utf-8",
+      "entity_key": [
+        "entryid"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "int64",
+              "name": "entryid",
+              "nullable": true,
+              "source": "EntryID"
+            },
+            {
+              "dtype": "string",
+              "name": "servicetype",
+              "nullable": true,
+              "source": "ServiceType"
+            },
+            {
+              "dtype": "string",
+              "name": "instructionstartdatetime",
+              "nullable": true,
+              "source": "InstructionStartDateTime"
+            },
+            {
+              "dtype": "int64",
+              "name": "mw",
+              "nullable": true,
+              "source": "MW"
+            },
+            {
+              "dtype": "float64",
+              "name": "indicativeprice",
+              "nullable": true,
+              "source": "IndicativePrice"
+            },
+            {
+              "dtype": "string",
+              "name": "instructionceasedatetime",
+              "nullable": true,
+              "source": "InstructionCeaseDateTime"
+            },
+            {
+              "dtype": "string",
+              "name": "dispatchdatetimestamp",
+              "nullable": true,
+              "source": "DispatchDateTimeStamp"
+            },
+            {
+              "dtype": "string",
+              "name": "ceasedatetimestamp",
+              "nullable": true,
+              "source": "CeaseDateTimeStamp"
+            }
+          ],
+          "header": [
+            "EntryID",
+            "ServiceType",
+            "InstructionStartDateTime",
+            "MW",
+            "IndicativePrice",
+            "InstructionCeaseDateTime",
+            "DispatchDateTimeStamp",
+            "CeaseDateTimeStamp"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        },
+        {
+          "columns": [
+            {
+              "dtype": "int64",
+              "name": "entryid",
+              "nullable": true,
+              "source": "EntryID"
+            },
+            {
+              "dtype": "string",
+              "name": "servicetype",
+              "nullable": true,
+              "source": "ServiceType"
+            },
+            {
+              "dtype": "string",
+              "name": "instructionstartdatetime",
+              "nullable": true,
+              "source": "InstructionStartDateTime"
+            },
+            {
+              "dtype": "int64",
+              "name": "mw",
+              "nullable": true,
+              "source": "MW"
+            },
+            {
+              "dtype": "float64",
+              "name": "indicativeprice",
+              "nullable": true,
+              "source": "IndicativePrice"
+            },
+            {
+              "dtype": "string",
+              "name": "instructionceasedatetime",
+              "nullable": true,
+              "source": "InstructionCeaseDateTime"
+            },
+            {
+              "dtype": "string",
+              "name": "dispatchdatetimestamp",
+              "nullable": true,
+              "source": "DispatchDateTimeStamp"
+            },
+            {
+              "dtype": "string",
+              "name": "ceasedatetimestamp",
+              "nullable": true,
+              "source": "CeaseDateTimeStamp"
+            },
+            {
+              "dtype": "string",
+              "name": "partyid",
+              "nullable": true,
+              "source": "PartyID"
+            },
+            {
+              "dtype": "string",
+              "name": "assetid",
+              "nullable": true,
+              "source": "AssetID"
+            },
+            {
+              "dtype": "string",
+              "name": "tendered",
+              "nullable": true,
+              "source": "Tendered"
+            }
+          ],
+          "header": [
+            "EntryID",
+            "ServiceType",
+            "InstructionStartDateTime",
+            "MW",
+            "IndicativePrice",
+            "InstructionCeaseDateTime",
+            "DispatchDateTimeStamp",
+            "CeaseDateTimeStamp",
+            "PartyID",
+            "AssetID",
+            "Tendered"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T11",
+      "version": "1",
+      "vintage": "capture_fallback"
+    },
+    "todos": [
+      {
+        "consequence": "held",
+        "field": "column 'EntryID'.unit",
+        "id": "T01",
+        "kind": "unit",
+        "question": "EntryID: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'InstructionStartDateTime'",
+        "id": "T02",
+        "kind": "time_semantics",
+        "question": "InstructionStartDateTime: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'InstructionCeaseDateTime'",
+        "id": "T03",
+        "kind": "time_semantics",
+        "question": "InstructionCeaseDateTime: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'DispatchDateTimeStamp'",
+        "id": "T04",
+        "kind": "time_semantics",
+        "question": "DispatchDateTimeStamp: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'CeaseDateTimeStamp'",
+        "id": "T05",
+        "kind": "time_semantics",
+        "question": "CeaseDateTimeStamp: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'EntryID'.unit",
+        "id": "T06",
+        "kind": "unit",
+        "question": "EntryID: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'InstructionStartDateTime'",
+        "id": "T07",
+        "kind": "time_semantics",
+        "question": "InstructionStartDateTime: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'InstructionCeaseDateTime'",
+        "id": "T08",
+        "kind": "time_semantics",
+        "question": "InstructionCeaseDateTime: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'DispatchDateTimeStamp'",
+        "id": "T09",
+        "kind": "time_semantics",
+        "question": "DispatchDateTimeStamp: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'CeaseDateTimeStamp'",
+        "id": "T10",
+        "kind": "time_semantics",
+        "question": "CeaseDateTimeStamp: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T11",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: InstructionStartDateTime, InstructionCeaseDateTime, DispatchDateTimeStamp, CeaseDateTimeStamp"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T12",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['entryid'] (measured unique in 70 capture(s)); without one, latest stays whole_capture"
+      },
+      {
+        "consequence": "none",
+        "field": "vintage",
+        "id": "T13",
+        "kind": "vendor_publication",
+        "question": "available_at is gridflow capture time for the dump; a vendor instant is held (D)"
+      },
+      {
+        "consequence": "none",
+        "field": "epochs",
+        "id": "T14",
+        "kind": "multi_epoch",
+        "question": "2 header epochs; review each in its batch"
+      }
+    ]
+  },
+  "refresh": "frozen",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update Frequency",
+        "value": "Not Active"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Ancillary services",
+    "title": "Non-BM ancillary service dispatch platform (ASDP) instructions"
+  }
+}

@@ -1,0 +1,325 @@
+{
+  "archetype": "TAR",
+  "batch": "BAL-1",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/bsuos_fixed_tariffs/2026/10/08/raw_20261008T090657Z_4dfa533f-bec6-491b-a3f1-7ce92449bc9a_1dbeb874.csv",
+      "ckan_last_modified": "2026-10-05T15:43:25.730825",
+      "cr": 0,
+      "crlf": 18,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "4dfa533f-bec6-491b-a3f1-7ce92449bc9a",
+      "rows": 17,
+      "sampled": false,
+      "size": 1179,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T09:06:57.529107+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 1,
+      "columns": {
+        "Fixed Tariff End Date": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%Y-%m-%d": 0,
+            "float64": 17,
+            "int64": 17
+          },
+          "examples": [
+            "2023-09-30",
+            "2024-03-31",
+            "2024-09-30"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "iso_date": 17
+          }
+        },
+        "Fixed Tariff Start Date": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%Y-%m-%d": 0,
+            "float64": 17,
+            "int64": 17
+          },
+          "examples": [
+            "2023-04-01",
+            "2023-10-01",
+            "2024-04-01"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "iso_date": 17
+          }
+        },
+        "Fixed Tariff Title": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 17,
+            "int64": 17
+          },
+          "examples": [
+            "Fixed Tariff 1",
+            "Fixed Tariff 2",
+            "Fixed Tariff 3"
+          ],
+          "max_len": 15,
+          "null_count": 0,
+          "shapes": {
+            "text": 17
+          }
+        },
+        "Fixed Tariff_GBP per MWh": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 17
+          },
+          "examples": [
+            "13.41",
+            "14.03",
+            "7.63"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 17
+          }
+        },
+        "Publication": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 17,
+            "int64": 17
+          },
+          "examples": [
+            "Final",
+            "Draft",
+            "Initial Forecast"
+          ],
+          "max_len": 16,
+          "null_count": 0,
+          "shapes": {
+            "text": 17
+          }
+        },
+        "Published Date": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%Y-%m-%d": 0,
+            "float64": 17,
+            "int64": 17
+          },
+          "examples": [
+            "2023-01-31",
+            "2023-06-30",
+            "2023-12-22"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "iso_date": 17
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "Fixed Tariff End Date": {
+            "description": "Final settlement date the tariff relates to",
+            "title": "Fixed Tariff End Date\t\t",
+            "type": "date",
+            "unit": null
+          },
+          "Fixed Tariff Start Date": {
+            "description": "First settlement date the tariff relates to",
+            "title": "Fixed Tariff Start Date",
+            "type": "date",
+            "unit": null
+          },
+          "Fixed Tariff Title": {
+            "description": "Name ascribed to a particular Fixed Tariff",
+            "title": "Fixed Tariff Title",
+            "type": "text",
+            "unit": null
+          },
+          "Fixed Tariff_GBP per MWh": {
+            "description": "BSUoS Tariff in £/MWh",
+            "title": "Fixed Tariff £/MWh\t\t",
+            "type": "numeric",
+            "unit": "£/MWh"
+          },
+          "Publication": {
+            "description": "States what publication type the tariff relates to",
+            "title": "Publication",
+            "type": "text",
+            "unit": null
+          },
+          "Published Date": {
+            "description": "Date tariffs were published",
+            "title": "Published Date",
+            "type": "date",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T09:06:57.529107+00:00",
+      "header": [
+        "Publication",
+        "Fixed Tariff Title",
+        "Published Date",
+        "Fixed Tariff Start Date",
+        "Fixed Tariff End Date",
+        "Fixed Tariff_GBP per MWh"
+      ],
+      "last_written_at": "2026-10-08T09:06:57.529107+00:00",
+      "resource_ids": [
+        "4dfa533f-bec6-491b-a3f1-7ce92449bc9a"
+      ],
+      "rows": 17,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [],
+  "key": "bsuos_fixed_tariffs",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Fixed Tariff_GBP per MWh"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Publication",
+          "Fixed Tariff Title"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Publication",
+          "Fixed Tariff Start Date"
+        ],
+        "max_duplicates": 0
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "bsuos-fixed-tariffs",
+  "proposal": {
+    "flags": [],
+    "record_draft": {
+      "encoding": "utf-8",
+      "entity_key": [
+        "fixed_tariff_gbp_per_mwh"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "publication",
+              "nullable": true,
+              "source": "Publication"
+            },
+            {
+              "dtype": "string",
+              "name": "fixed_tariff_title",
+              "nullable": true,
+              "source": "Fixed Tariff Title"
+            },
+            {
+              "dtype": "date",
+              "format": "%Y-%m-%d",
+              "name": "published_date",
+              "nullable": true,
+              "source": "Published Date"
+            },
+            {
+              "dtype": "date",
+              "format": "%Y-%m-%d",
+              "name": "fixed_tariff_start_date",
+              "nullable": true,
+              "source": "Fixed Tariff Start Date"
+            },
+            {
+              "dtype": "date",
+              "format": "%Y-%m-%d",
+              "name": "fixed_tariff_end_date",
+              "nullable": true,
+              "source": "Fixed Tariff End Date"
+            },
+            {
+              "dtype": "float64",
+              "name": "fixed_tariff_gbp_per_mwh",
+              "nullable": true,
+              "source": "Fixed Tariff_GBP per MWh"
+            }
+          ],
+          "header": [
+            "Publication",
+            "Fixed Tariff Title",
+            "Published Date",
+            "Fixed Tariff Start Date",
+            "Fixed Tariff End Date",
+            "Fixed Tariff_GBP per MWh"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T01",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T01",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: Published Date, Fixed Tariff Start Date, Fixed Tariff End Date"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T02",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['fixed_tariff_gbp_per_mwh'] (measured unique in 1 capture(s)); without one, latest stays whole_capture"
+      }
+    ]
+  },
+  "refresh": "adhoc",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update frequency",
+        "value": "Biannual"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Balancing costs",
+    "title": "BSUoS Fixed Tariffs"
+  }
+}

@@ -1,0 +1,376 @@
+{
+  "archetype": "EVT",
+  "batch": "DFS",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/dfs_service_requirements/2026/10/08/raw_20261008T100640Z_7914dd99-fe1c-41ba-9989-5784531c58bb_b6411b04.csv",
+      "ckan_last_modified": "2024-03-14T12:00:12.712070",
+      "cr": 0,
+      "crlf": 33,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "7914dd99-fe1c-41ba-9989-5784531c58bb",
+      "rows": 32,
+      "sampled": false,
+      "size": 21755,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:06:40.917544+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 1,
+      "columns": {
+        "DFS Required MW": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "75",
+            "50",
+            "100"
+          ],
+          "max_len": 3,
+          "null_count": 0,
+          "shapes": {
+            "int": 32
+          }
+        },
+        "Delivery Date": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%d/%m/%Y": 0,
+            "float64": 32,
+            "int64": 32
+          },
+          "examples": [
+            "21/03/2024",
+            "14/03/2024",
+            "02/03/2024"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "slash_date": 32
+          },
+          "slash_first_gt_12": 19,
+          "slash_second_gt_12": 0
+        },
+        "Despatch Type": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 32,
+            "int64": 32
+          },
+          "examples": [
+            "All Providers",
+            "Staggered"
+          ],
+          "max_len": 13,
+          "null_count": 0,
+          "shapes": {
+            "text": 32
+          }
+        },
+        "From": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 32,
+            "int64": 32
+          },
+          "examples": [
+            "17:30",
+            "18:30",
+            "18:00"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "text": 32
+          }
+        },
+        "Guaranteed Acceptance Price GBP per MWh": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "0",
+            "3000"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 32
+          }
+        },
+        "Participant Bids Eligible": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 32,
+            "int64": 32
+          },
+          "examples": [
+            "OCTOPUS ENERGY LIMITED,FLEXITRICITY LIMITED,ORANGE POWER LTD,DRAX ENERGY SOLUTIO",
+            "OCTOPUS ENERGY LIMITED,FLEXITRICITY LIMITED,ORANGE POWER LTD,DRAX ENERGY SOLUTIO",
+            "OCTOPUS ENERGY LIMITED,FLEXITRICITY LIMITED,ORANGE POWER LTD,DRAX ENERGY SOLUTIO"
+          ],
+          "max_len": 733,
+          "null_count": 0,
+          "shapes": {
+            "text": 32
+          }
+        },
+        "Service Requirement Type": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 32,
+            "int64": 32
+          },
+          "examples": [
+            "Test",
+            "Live"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "text": 32
+          }
+        },
+        "To": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 32,
+            "int64": 32
+          },
+          "examples": [
+            "18:00",
+            "19:00",
+            "18:30"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "text": 32
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "DFS Required MW": {
+            "description": "Service Requirement: MW volume of DFS required for corresponding service window.",
+            "title": "DFS Required MW",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "Delivery Date": {
+            "description": "Date of DFS Event.",
+            "title": "Delivery Date",
+            "type": "date",
+            "unit": null
+          },
+          "Despatch Type": {
+            "description": "Indicating if all Registered DFS Participants are eligible to tender bids for corresponding service window, or only a subgroup of Registered DFS Participants are eligible to tender bids for corresponding service window.",
+            "title": "Despatch Type",
+            "type": "text",
+            "unit": null
+          },
+          "From": {
+            "description": "DFS service window start time.",
+            "title": "From",
+            "type": "time",
+            "unit": "17:00"
+          },
+          "Guaranteed Acceptance Price GBP per MWh": {
+            "description": "The ESO commits to accepting all tendered DFS Bids for the corresponding service window price at or below the Guaranteed Acceptance Price.",
+            "title": "Guaranteed Acceptance Price GBP per MWh",
+            "type": "numeric",
+            "unit": "£/MWh"
+          },
+          "Participant Bids Eligible": {
+            "description": "List of Registered DFS Participants eligible to tender bids for corresponding service window.",
+            "title": "Participant Bids Eligible",
+            "type": "text",
+            "unit": null
+          },
+          "Service Requirement Type": {
+            "description": "Indicating if Service Requirements corresponds to a Live or Test DFS Event.",
+            "title": "Service Requirement Type",
+            "type": "text",
+            "unit": null
+          },
+          "To": {
+            "description": "DFS service window end time.",
+            "title": "To",
+            "type": "time",
+            "unit": "HH:MM"
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T10:06:40.917544+00:00",
+      "header": [
+        "Delivery Date",
+        "From",
+        "To",
+        "DFS Required MW",
+        "Service Requirement Type",
+        "Guaranteed Acceptance Price GBP per MWh",
+        "Despatch Type",
+        "Participant Bids Eligible"
+      ],
+      "last_written_at": "2026-10-08T10:06:40.917544+00:00",
+      "resource_ids": [
+        "7914dd99-fe1c-41ba-9989-5784531c58bb"
+      ],
+      "rows": 32,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [],
+  "key": "dfs_service_requirements",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Delivery Date",
+          "From"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Delivery Date",
+          "To"
+        ],
+        "max_duplicates": 0
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "demand-flexibility-service",
+  "proposal": {
+    "flags": [],
+    "record_draft": {
+      "encoding": "utf-8",
+      "entity_key": [
+        "delivery_date",
+        "from"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "date",
+              "format": "%d/%m/%Y",
+              "name": "delivery_date",
+              "nullable": true,
+              "source": "Delivery Date"
+            },
+            {
+              "dtype": "string",
+              "name": "from",
+              "nullable": true,
+              "source": "From"
+            },
+            {
+              "dtype": "string",
+              "name": "to",
+              "nullable": true,
+              "source": "To"
+            },
+            {
+              "dtype": "int64",
+              "name": "dfs_required_mw",
+              "nullable": true,
+              "source": "DFS Required MW"
+            },
+            {
+              "dtype": "string",
+              "name": "service_requirement_type",
+              "nullable": true,
+              "source": "Service Requirement Type"
+            },
+            {
+              "dtype": "float64",
+              "name": "guaranteed_acceptance_price_gbp_per_mwh",
+              "nullable": true,
+              "source": "Guaranteed Acceptance Price GBP per MWh"
+            },
+            {
+              "dtype": "string",
+              "name": "despatch_type",
+              "nullable": true,
+              "source": "Despatch Type"
+            },
+            {
+              "dtype": "string",
+              "name": "participant_bids_eligible",
+              "nullable": true,
+              "source": "Participant Bids Eligible"
+            }
+          ],
+          "header": [
+            "Delivery Date",
+            "From",
+            "To",
+            "DFS Required MW",
+            "Service Requirement Type",
+            "Guaranteed Acceptance Price GBP per MWh",
+            "Despatch Type",
+            "Participant Bids Eligible"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T01",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T01",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: Delivery Date"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T02",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['delivery_date', 'from'] (measured unique in 1 capture(s)); without one, latest stays whole_capture"
+      }
+    ]
+  },
+  "refresh": "frozen",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update frequency",
+        "value": "Not Active"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Demand Flexibility Service",
+    "title": "Demand Flexibility Service 2023/24"
+  }
+}

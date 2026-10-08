@@ -1,0 +1,256 @@
+{
+  "archetype": "REG",
+  "batch": "CI",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/capacity_market_de_rating_factors/2026/10/08/raw_20261008T091438Z_d94ff98d-39ba-40d6-9672-7433de0631ac_b8ec6223.csv",
+      "ckan_last_modified": "2026-09-09T11:52:54.749384",
+      "cr": 0,
+      "crlf": 891,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "d94ff98d-39ba-40d6-9672-7433de0631ac",
+      "rows": 890,
+      "sampled": false,
+      "size": 74304,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T09:14:38.881107+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 1,
+      "columns": {
+        "Auction Name": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 890,
+            "int64": 890
+          },
+          "examples": [
+            "2016-17 (TR) Transitional Capacity Auction",
+            "2017-18 (T-1) One Year Ahead Capacity Auction",
+            "2017-18 (TR) Transitional Capacity Auction"
+          ],
+          "max_len": 47,
+          "null_count": 0,
+          "shapes": {
+            "text": 890
+          }
+        },
+        "De Rating Factor": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 883
+          },
+          "examples": [
+            "0.8786",
+            "0.868",
+            "0.89"
+          ],
+          "max_len": 6,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 883,
+            "int": 7
+          }
+        },
+        "Generating Technology Class": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 890,
+            "int64": 890
+          },
+          "examples": [
+            "Coal/biomass",
+            "DSR",
+            "Combined Cycle Gas Turbine (CCGT)"
+          ],
+          "max_len": 51,
+          "null_count": 0,
+          "shapes": {
+            "text": 890
+          }
+        },
+        "Primary Fuel Type": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 890,
+            "int64": 890
+          },
+          "examples": [
+            "Biomass/Coal/EfW",
+            "DSR",
+            "Gas"
+          ],
+          "max_len": 16,
+          "null_count": 0,
+          "shapes": {
+            "text": 890
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "Auction Name": {
+            "description": "Name of Capacity Market Auction",
+            "title": "Auction Name",
+            "type": "text",
+            "unit": null
+          },
+          "De Rating Factor": {
+            "description": null,
+            "title": "De Rating Factor",
+            "type": "numeric",
+            "unit": null
+          },
+          "Generating Technology Class": {
+            "description": "Generating Technology Class of Component used to determine De-Rating Factor",
+            "title": "Generating Technology Class",
+            "type": "text",
+            "unit": null
+          },
+          "Primary Fuel Type": {
+            "description": "Primary fuel of CMU",
+            "title": "Primary Fuel Type",
+            "type": "text",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T09:14:38.881107+00:00",
+      "header": [
+        "Auction Name",
+        "Primary Fuel Type",
+        "Generating Technology Class",
+        "De Rating Factor"
+      ],
+      "last_written_at": "2026-10-08T09:14:38.881107+00:00",
+      "resource_ids": [
+        "d94ff98d-39ba-40d6-9672-7433de0631ac"
+      ],
+      "rows": 890,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [],
+  "key": "capacity_market_de_rating_factors",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Auction Name",
+          "Generating Technology Class"
+        ],
+        "max_duplicates": 0
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "capacity-market-register",
+  "proposal": {
+    "flags": [],
+    "record_draft": {
+      "eligibility": {
+        "question": "De Rating Factor: a numeric column with no vendor unit",
+        "status": "held",
+        "unit": "CI"
+      },
+      "encoding": "utf-8",
+      "entity_key": [
+        "auction_name",
+        "generating_technology_class"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "auction_name",
+              "nullable": true,
+              "source": "Auction Name"
+            },
+            {
+              "dtype": "string",
+              "name": "primary_fuel_type",
+              "nullable": true,
+              "source": "Primary Fuel Type"
+            },
+            {
+              "dtype": "string",
+              "name": "generating_technology_class",
+              "nullable": true,
+              "source": "Generating Technology Class"
+            },
+            {
+              "dtype": "float64",
+              "name": "de_rating_factor",
+              "nullable": true,
+              "source": "De Rating Factor"
+            }
+          ],
+          "header": [
+            "Auction Name",
+            "Primary Fuel Type",
+            "Generating Technology Class",
+            "De Rating Factor"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T02",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "held",
+        "field": "column 'De Rating Factor'.unit",
+        "id": "T01",
+        "kind": "unit",
+        "question": "De Rating Factor: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T02",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: none"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T03",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['auction_name', 'generating_technology_class'] (measured unique in 1 capture(s)); without one, latest stays whole_capture"
+      }
+    ]
+  },
+  "refresh": "weekly",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update frequency",
+        "value": "Weekly"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Electricity Market Reform",
+    "title": "Capacity Market Register"
+  }
+}

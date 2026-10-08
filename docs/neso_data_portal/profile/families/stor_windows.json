@@ -1,0 +1,349 @@
+{
+  "archetype": "REG",
+  "batch": "AS-2",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/stor_windows/2026/10/08/raw_20261008T112743Z_90d4a1a4-d311-4a22-9138-84cb7ead2599_6e5c1515.csv",
+      "ckan_last_modified": "2026-07-27T14:25:54.738965",
+      "cr": 0,
+      "crlf": 1827,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "90d4a1a4-d311-4a22-9138-84cb7ead2599",
+      "rows": 1826,
+      "sampled": false,
+      "size": 80748,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:27:43.094353+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 1,
+      "columns": {
+        "Date": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%d/%m/%Y": 0,
+            "float64": 1826,
+            "int64": 1826
+          },
+          "examples": [
+            "01/04/2021",
+            "02/04/2021",
+            "03/04/2021"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "slash_date": 1826
+          },
+          "slash_first_gt_12": 1106,
+          "slash_second_gt_12": 0
+        },
+        "Season": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1826
+          },
+          "examples": [
+            "15.1",
+            "15.2",
+            "15.3"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 1826
+          }
+        },
+        "WD_NWD": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 1826,
+            "int64": 1826
+          },
+          "examples": [
+            "WD",
+            "NWD"
+          ],
+          "max_len": 3,
+          "null_count": 0,
+          "shapes": {
+            "text": 1826
+          }
+        },
+        "Window 1 End Time": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 1826,
+            "int64": 1826
+          },
+          "examples": [
+            "13:00",
+            "14:00",
+            "13:30"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "text": 1826
+          }
+        },
+        "Window 1 Start Time": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 1826,
+            "int64": 1826
+          },
+          "examples": [
+            "06:00",
+            "10:00",
+            "10:30"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "text": 1826
+          }
+        },
+        "Window 2 End Time": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 1826,
+            "int64": 1826
+          },
+          "examples": [
+            "22:00",
+            "20:30",
+            "19:30"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "text": 1826
+          }
+        },
+        "Window 2 Start Time": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 1826,
+            "int64": 1826
+          },
+          "examples": [
+            "19:00",
+            "17:30",
+            "16:00"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "text": 1826
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "Date": {
+            "description": "Delivery date",
+            "title": "Date\t\t",
+            "type": "date",
+            "unit": null
+          },
+          "Season": {
+            "description": "Time frame for which the committed STOR windows apply",
+            "title": "Season\t\t",
+            "type": "numeric",
+            "unit": null
+          },
+          "WD_NWD": {
+            "description": "Working Day/ Non Working Day",
+            "title": "WD/NWD\t\t",
+            "type": "text",
+            "unit": null
+          },
+          "Window 1 End Time": {
+            "description": "End time for delivery window 1",
+            "title": "Window 1 End Time\t\t",
+            "type": "text",
+            "unit": null
+          },
+          "Window 1 Start Time": {
+            "description": "Start time for delivery window 1",
+            "title": "Window 1 Start Time\t\t",
+            "type": "text",
+            "unit": null
+          },
+          "Window 2 End Time": {
+            "description": "End time for delivery window 2",
+            "title": "Window 2 End Time\t\t",
+            "type": "text",
+            "unit": null
+          },
+          "Window 2 Start Time": {
+            "description": "Start time for delivery window 2",
+            "title": "Window 2 Start Time\t\t",
+            "type": "text",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T11:27:43.094353+00:00",
+      "header": [
+        "Date",
+        "Season",
+        "WD_NWD",
+        "Window 1 Start Time",
+        "Window 1 End Time",
+        "Window 2 Start Time",
+        "Window 2 End Time"
+      ],
+      "last_written_at": "2026-10-08T11:27:43.094353+00:00",
+      "resource_ids": [
+        "90d4a1a4-d311-4a22-9138-84cb7ead2599"
+      ],
+      "rows": 1826,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [],
+  "key": "stor_windows",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Date"
+        ],
+        "max_duplicates": 0
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "stor-windows",
+  "proposal": {
+    "flags": [],
+    "record_draft": {
+      "eligibility": {
+        "question": "Season: a numeric column with no vendor unit",
+        "status": "held",
+        "unit": "AS-2"
+      },
+      "encoding": "utf-8",
+      "entity_key": [
+        "date"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "date",
+              "format": "%d/%m/%Y",
+              "name": "date",
+              "nullable": true,
+              "source": "Date"
+            },
+            {
+              "dtype": "float64",
+              "name": "season",
+              "nullable": true,
+              "source": "Season"
+            },
+            {
+              "dtype": "string",
+              "name": "wd_nwd",
+              "nullable": true,
+              "source": "WD_NWD"
+            },
+            {
+              "dtype": "string",
+              "name": "window_1_start_time",
+              "nullable": true,
+              "source": "Window 1 Start Time"
+            },
+            {
+              "dtype": "string",
+              "name": "window_1_end_time",
+              "nullable": true,
+              "source": "Window 1 End Time"
+            },
+            {
+              "dtype": "string",
+              "name": "window_2_start_time",
+              "nullable": true,
+              "source": "Window 2 Start Time"
+            },
+            {
+              "dtype": "string",
+              "name": "window_2_end_time",
+              "nullable": true,
+              "source": "Window 2 End Time"
+            }
+          ],
+          "header": [
+            "Date",
+            "Season",
+            "WD_NWD",
+            "Window 1 Start Time",
+            "Window 1 End Time",
+            "Window 2 Start Time",
+            "Window 2 End Time"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T02",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "held",
+        "field": "column 'Season'.unit",
+        "id": "T01",
+        "kind": "unit",
+        "question": "Season: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T02",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: Date"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T03",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['date'] (measured unique in 1 capture(s)); without one, latest stays whole_capture"
+      }
+    ]
+  },
+  "refresh": "adhoc",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update frequency",
+        "value": "Ad hoc"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Ancillary services",
+    "title": "Short Term Operating Reserve (STOR) Windows"
+  }
+}

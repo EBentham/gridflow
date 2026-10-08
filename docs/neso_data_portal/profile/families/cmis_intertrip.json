@@ -1,0 +1,640 @@
+{
+  "archetype": "EVT",
+  "batch": "CON",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/cmis_intertrip/2026/10/08/raw_20261008T091457Z_60b4055c-d87e-4ebe-8d21-e023f506e461_bf43e369.csv",
+      "ckan_last_modified": "2024-03-12T14:16:03.129176",
+      "cr": 0,
+      "crlf": 442,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "60b4055c-d87e-4ebe-8d21-e023f506e461",
+      "rows": 441,
+      "sampled": false,
+      "size": 33675,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T09:14:57.004056+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/cmis_intertrip/2026/10/08/raw_20261008T091500Z_38c6a5cd-388d-4275-b404-361c6eb102b3_5baf9a29.csv",
+      "ckan_last_modified": "2024-04-08T11:56:08.968572",
+      "cr": 0,
+      "crlf": 111,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "38c6a5cd-388d-4275-b404-361c6eb102b3",
+      "rows": 110,
+      "sampled": false,
+      "size": 8403,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T09:15:00.029089+00:00"
+    },
+    {
+      "all_blank_rows": 1,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/cmis_intertrip/2026/10/08/raw_20261008T091502Z_2f0777a3-719c-4ffe-96c2-61117a5ec468_c1016587.csv",
+      "ckan_last_modified": "2025-05-06T10:00:06.772385",
+      "cr": 0,
+      "crlf": 248,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "2f0777a3-719c-4ffe-96c2-61117a5ec468",
+      "rows": 247,
+      "sampled": false,
+      "size": 18916,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T09:15:02.989951+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/cmis_intertrip/2026/10/08/raw_20261008T091505Z_c6f0c279-87c9-4123-a4d1-b2d6d98b43a7_c156410d.csv",
+      "ckan_last_modified": "2026-04-28T16:25:43.722522",
+      "cr": 0,
+      "crlf": 168,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "c6f0c279-87c9-4123-a4d1-b2d6d98b43a7",
+      "rows": 167,
+      "sampled": false,
+      "size": 12900,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T09:15:05.121807+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/cmis_intertrip/2026/10/08/raw_20261008T091508Z_60a1c0c6-4821-4e38-bc87-c6b4d510be6d_bb03d88d.csv",
+      "ckan_last_modified": "2026-10-01T10:37:07.382134",
+      "cr": 0,
+      "crlf": 84,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "60a1c0c6-4821-4e38-bc87-c6b4d510be6d",
+      "rows": 83,
+      "sampled": false,
+      "size": 6478,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T09:15:08.802368+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 2,
+      "columns": {
+        "Arming Date Time": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 551,
+            "int64": 551
+          },
+          "examples": [
+            "2022-04-03T17:11:00+00:00",
+            "2022-04-04T00:00:00+00:00",
+            "2022-04-03T17:13:00+00:00"
+          ],
+          "max_len": 25,
+          "null_count": 0,
+          "shapes": {
+            "iso_datetime_offset": 551
+          }
+        },
+        "BMU ID": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 551,
+            "int64": 551
+          },
+          "examples": [
+            "WHILW-1",
+            "BLLA-1",
+            "GRIFW-1"
+          ],
+          "max_len": 7,
+          "null_count": 0,
+          "shapes": {
+            "text": 551
+          }
+        },
+        "Cost for this utilisation (£)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 550
+          },
+          "examples": [
+            "51935.5",
+            "153012.91",
+            "19208.28"
+          ],
+          "max_len": 9,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 550,
+            "int": 1
+          }
+        },
+        "Current Arming Fee (£ / SP)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 551
+          },
+          "examples": [
+            "3809.45",
+            "1408.92",
+            "254.61"
+          ],
+          "max_len": 7,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 551
+          }
+        },
+        "Disarming Date Time": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 551,
+            "int64": 551
+          },
+          "examples": [
+            "2022-04-04T00:00:00+00:00",
+            "2022-04-04T20:05:00+00:00",
+            "2022-04-06T00:00:00+00:00"
+          ],
+          "max_len": 25,
+          "null_count": 0,
+          "shapes": {
+            "iso_datetime_offset": 551
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "Arming Date Time": {
+            "description": "The date time that the unit was armed to the intertrip from.",
+            "title": "Arming Date Time",
+            "type": "timestamp",
+            "unit": null
+          },
+          "BMU ID": {
+            "description": "Identifier of the unit that the information relates to",
+            "title": "BMU ID",
+            "type": "text",
+            "unit": null
+          },
+          "Cost for this utilisation (£)": {
+            "description": "The amount due to the unit for the duration of being armed.",
+            "title": "Cost for this utilisation (£)",
+            "type": "numeric",
+            "unit": "£"
+          },
+          "Disarming Date Time": {
+            "description": "The date time that the unit was armed to the intertrip until.",
+            "title": "Disarming Date Time",
+            "type": "timestamp",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [
+          "B6/EC5",
+          "Current Arming Fee (£ / MWH)"
+        ],
+        "header_not_in_field_info": [
+          "Current Arming Fee (£ / SP)"
+        ]
+      },
+      "first_written_at": "2026-10-08T09:14:57.004056+00:00",
+      "header": [
+        "BMU ID",
+        "Arming Date Time",
+        "Disarming Date Time",
+        "Current Arming Fee (£ / SP)",
+        "Cost for this utilisation (£)"
+      ],
+      "last_written_at": "2026-10-08T09:15:00.029089+00:00",
+      "resource_ids": [
+        "38c6a5cd-388d-4275-b404-361c6eb102b3",
+        "60b4055c-d87e-4ebe-8d21-e023f506e461"
+      ],
+      "rows": 551,
+      "settlement_periods": []
+    },
+    {
+      "captures": 3,
+      "columns": {
+        "Arming Date Time": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 496,
+            "int64": 496
+          },
+          "examples": [
+            "2024-04-17T07:00:00+00:00",
+            "2024-04-19T09:40:00+00:00",
+            "2024-08-21T06:04:00+00:00"
+          ],
+          "max_len": 25,
+          "null_count": 1,
+          "shapes": {
+            "iso_datetime_offset": 496
+          }
+        },
+        "B6/EC5": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 496,
+            "int64": 496
+          },
+          "examples": [
+            "EC5",
+            "B6"
+          ],
+          "max_len": 3,
+          "null_count": 1,
+          "shapes": {
+            "text": 496
+          }
+        },
+        "BMU ID": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 496,
+            "int64": 496
+          },
+          "examples": [
+            "DDGNO-1",
+            "DDGNO-2",
+            "DDGNO-3"
+          ],
+          "max_len": 7,
+          "null_count": 1,
+          "shapes": {
+            "text": 496
+          }
+        },
+        "Cost for this utilisation (£)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 472
+          },
+          "examples": [
+            "1135.31",
+            "731.55",
+            "993.36"
+          ],
+          "max_len": 9,
+          "null_count": 1,
+          "shapes": {
+            "decimal": 472,
+            "int": 24
+          }
+        },
+        "Current Arming Fee (£ / MWH)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 437
+          },
+          "examples": [
+            "2",
+            "25.44",
+            "3.15"
+          ],
+          "max_len": 5,
+          "null_count": 1,
+          "shapes": {
+            "decimal": 437,
+            "int": 59
+          }
+        },
+        "Disarming Date Time": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 496,
+            "int64": 496
+          },
+          "examples": [
+            "2024-04-17T15:55:00+00:00",
+            "2024-04-19T12:24:00+00:00",
+            "2024-08-22T00:00:00+00:00"
+          ],
+          "max_len": 25,
+          "null_count": 1,
+          "shapes": {
+            "iso_datetime_offset": 496
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "Arming Date Time": {
+            "description": "The date time that the unit was armed to the intertrip from.",
+            "title": "Arming Date Time",
+            "type": "timestamp",
+            "unit": null
+          },
+          "B6/EC5": {
+            "description": "Describes the unit armed as either a SP RENEWABLES unit (B6) or a GALLOPER OFFSHORE Unit (EC5)",
+            "title": "B6/EC5",
+            "type": "text",
+            "unit": null
+          },
+          "BMU ID": {
+            "description": "Identifier of the unit that the information relates to",
+            "title": "BMU ID",
+            "type": "text",
+            "unit": null
+          },
+          "Cost for this utilisation (£)": {
+            "description": "The amount due to the unit for the duration of being armed.",
+            "title": "Cost for this utilisation (£)",
+            "type": "numeric",
+            "unit": "£"
+          },
+          "Current Arming Fee (£ / MWH)": {
+            "description": "The arming fee rate (in £/MWH) of the units that was armed.",
+            "title": "Current Arming Fee (£ / MWH)",
+            "type": "numeric",
+            "unit": "£/SP"
+          },
+          "Disarming Date Time": {
+            "description": "The date time that the unit was armed to the intertrip until.",
+            "title": "Disarming Date Time",
+            "type": "timestamp",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T09:15:02.989951+00:00",
+      "header": [
+        "BMU ID",
+        "Arming Date Time",
+        "Disarming Date Time",
+        "Current Arming Fee (£ / MWH)",
+        "Cost for this utilisation (£)",
+        "B6/EC5"
+      ],
+      "last_written_at": "2026-10-08T09:15:08.802368+00:00",
+      "resource_ids": [
+        "2f0777a3-719c-4ffe-96c2-61117a5ec468",
+        "60a1c0c6-4821-4e38-bc87-c6b4d510be6d",
+        "c6f0c279-87c9-4123-a4d1-b2d6d98b43a7"
+      ],
+      "rows": 497,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [
+    "multi_epoch"
+  ],
+  "key": "cmis_intertrip",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 5,
+        "columns": [
+          "BMU ID",
+          "Arming Date Time"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 5,
+        "columns": [
+          "BMU ID",
+          "Disarming Date Time"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 5,
+        "columns": [
+          "BMU ID",
+          "Cost for this utilisation (£)"
+        ],
+        "max_duplicates": 47
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "constraint-management-intertrip-service-information-cmis",
+  "proposal": {
+    "flags": [
+      "multi_epoch"
+    ],
+    "record_draft": {
+      "eligibility": {
+        "question": "Arming Date Time: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced); Disarming Date Time: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced); Current Arming Fee (£ / SP): a numeric column with no vendor unit; Arming Date Time: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced); Disarming Date Time: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)",
+        "status": "held",
+        "unit": "CON"
+      },
+      "encoding": "utf-8",
+      "entity_key": [
+        "bmu_id",
+        "arming_date_time"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "bmu_id",
+              "nullable": true,
+              "source": "BMU ID"
+            },
+            {
+              "dtype": "string",
+              "name": "arming_date_time",
+              "nullable": true,
+              "source": "Arming Date Time"
+            },
+            {
+              "dtype": "string",
+              "name": "disarming_date_time",
+              "nullable": true,
+              "source": "Disarming Date Time"
+            },
+            {
+              "dtype": "float64",
+              "name": "current_arming_fee_sp",
+              "nullable": true,
+              "source": "Current Arming Fee (£ / SP)"
+            },
+            {
+              "dtype": "float64",
+              "name": "cost_for_this_utilisation",
+              "nullable": true,
+              "source": "Cost for this utilisation (£)"
+            }
+          ],
+          "header": [
+            "BMU ID",
+            "Arming Date Time",
+            "Disarming Date Time",
+            "Current Arming Fee (£ / SP)",
+            "Cost for this utilisation (£)"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        },
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "bmu_id",
+              "nullable": true,
+              "source": "BMU ID"
+            },
+            {
+              "dtype": "string",
+              "name": "arming_date_time",
+              "nullable": true,
+              "source": "Arming Date Time"
+            },
+            {
+              "dtype": "string",
+              "name": "disarming_date_time",
+              "nullable": true,
+              "source": "Disarming Date Time"
+            },
+            {
+              "dtype": "float64",
+              "name": "current_arming_fee_mwh",
+              "nullable": true,
+              "source": "Current Arming Fee (£ / MWH)"
+            },
+            {
+              "dtype": "float64",
+              "name": "cost_for_this_utilisation",
+              "nullable": true,
+              "source": "Cost for this utilisation (£)"
+            },
+            {
+              "dtype": "string",
+              "name": "b6_ec5",
+              "nullable": true,
+              "source": "B6/EC5"
+            }
+          ],
+          "header": [
+            "BMU ID",
+            "Arming Date Time",
+            "Disarming Date Time",
+            "Current Arming Fee (£ / MWH)",
+            "Cost for this utilisation (£)",
+            "B6/EC5"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T06",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "held",
+        "field": "column 'Arming Date Time'",
+        "id": "T01",
+        "kind": "time_semantics",
+        "question": "Arming Date Time: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Disarming Date Time'",
+        "id": "T02",
+        "kind": "time_semantics",
+        "question": "Disarming Date Time: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Current Arming Fee (£ / SP)'.unit",
+        "id": "T03",
+        "kind": "unit",
+        "question": "Current Arming Fee (£ / SP): a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Arming Date Time'",
+        "id": "T04",
+        "kind": "time_semantics",
+        "question": "Arming Date Time: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Disarming Date Time'",
+        "id": "T05",
+        "kind": "time_semantics",
+        "question": "Disarming Date Time: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T06",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: Arming Date Time, Disarming Date Time"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T07",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['bmu_id', 'arming_date_time'] (measured unique in 5 capture(s)); without one, latest stays whole_capture"
+      },
+      {
+        "consequence": "none",
+        "field": "epochs",
+        "id": "T08",
+        "kind": "multi_epoch",
+        "question": "2 header epochs; review each in its batch"
+      }
+    ]
+  },
+  "refresh": "monthly",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update frequency",
+        "value": "Monthly"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Constraint management",
+    "title": "Constraint Management Intertrip Service Information (CMIS)"
+  }
+}

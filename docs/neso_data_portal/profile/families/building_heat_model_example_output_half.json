@@ -1,0 +1,666 @@
+{
+  "archetype": "SCN",
+  "batch": "SCN-3",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/building_heat_model_example_output_half/2026/10/08/raw_20261008T091401Z_27522340-008d-4c82-97c1-17eeb7ed1b6a_8cc7d9aa.csv",
+      "ckan_last_modified": "2026-07-30T15:36:52.510328",
+      "cr": 0,
+      "crlf": 97,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "27522340-008d-4c82-97c1-17eeb7ed1b6a",
+      "rows": 96,
+      "sampled": false,
+      "size": 10034,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T09:14:01.292897+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 1,
+      "columns": {
+        "avg_COP_dhw": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 4
+          },
+          "examples": [
+            "2.969475884",
+            "2.562559093",
+            "3.501152716"
+          ],
+          "max_len": 11,
+          "null_count": 92,
+          "shapes": {
+            "decimal": 4
+          }
+        },
+        "avg_COP_space_heat": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 26
+          },
+          "examples": [
+            "6.585432242",
+            "4.466712366",
+            "3.588312094"
+          ],
+          "max_len": 11,
+          "null_count": 70,
+          "shapes": {
+            "decimal": 26
+          }
+        },
+        "building_archetype": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 96,
+            "int64": 96
+          },
+          "examples": [
+            "semi detached – medium"
+          ],
+          "max_len": 23,
+          "null_count": 0,
+          "shapes": {
+            "text": 96
+          }
+        },
+        "electricity_dhw": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 4
+          },
+          "examples": [
+            "0",
+            "0.818452513",
+            "0.243577393"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 4,
+            "int": 92
+          }
+        },
+        "electricity_space_heat": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 26
+          },
+          "examples": [
+            "0",
+            "0.162977913",
+            "0.600710272"
+          ],
+          "max_len": 11,
+          "null_count": 48,
+          "shapes": {
+            "decimal": 26,
+            "int": 22
+          }
+        },
+        "gas_dhw": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 48
+          },
+          "examples": [
+            "0.013824424",
+            "0.008034039",
+            "0.006476242"
+          ],
+          "max_len": 11,
+          "null_count": 48,
+          "shapes": {
+            "decimal": 48
+          }
+        },
+        "gas_space_heat": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 15
+          },
+          "examples": [
+            "0",
+            "8.730137387",
+            "4.303249804"
+          ],
+          "max_len": 11,
+          "null_count": 48,
+          "shapes": {
+            "decimal": 15,
+            "int": 33
+          }
+        },
+        "heater_output_dhw": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 52
+          },
+          "examples": [
+            "0.012441981",
+            "0.007230635",
+            "0.005828618"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 52,
+            "int": 44
+          }
+        },
+        "heater_output_space_heat": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 41
+          },
+          "examples": [
+            "0",
+            "7.857123648",
+            "3.872924823"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 41,
+            "int": 55
+          }
+        },
+        "hh_period": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1",
+            "2",
+            "3"
+          ],
+          "max_len": 2,
+          "null_count": 0,
+          "shapes": {
+            "int": 96
+          }
+        },
+        "month": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 96,
+            "int64": 96
+          },
+          "examples": [
+            "jan"
+          ],
+          "max_len": 3,
+          "null_count": 0,
+          "shapes": {
+            "text": 96
+          }
+        },
+        "run_id": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 96,
+            "int64": 96
+          },
+          "examples": [
+            "run_1",
+            "run_2"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "text": 96
+          }
+        },
+        "start_of_hh_period": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 96,
+            "int64": 96
+          },
+          "examples": [
+            "00:00",
+            "00:30",
+            "01:00"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "text": 96
+          }
+        },
+        "total_electricity": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 30
+          },
+          "examples": [
+            "0",
+            "0.818452513",
+            "0.243577393"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 30,
+            "int": 66
+          }
+        },
+        "total_gas": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 48
+          },
+          "examples": [
+            "0.013824424",
+            "0.008034039",
+            "0.006476242"
+          ],
+          "max_len": 11,
+          "null_count": 48,
+          "shapes": {
+            "decimal": 48
+          }
+        },
+        "total_heater_output": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 78
+          },
+          "examples": [
+            "0.012441981",
+            "0.007230635",
+            "0.005828618"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 78,
+            "int": 18
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "avg_COP_dhw": {
+            "description": "Half-hourly aggregated average coefficient of performance (COP) for domestic hot water.",
+            "title": "avg_COP_dhw\t",
+            "type": "numeric",
+            "unit": null
+          },
+          "avg_COP_space_heat": {
+            "description": "Half-hourly aggregated average coefficient of performance (COP) for space heating.",
+            "title": "avg_COP_space_heat\t",
+            "type": "numeric",
+            "unit": null
+          },
+          "building_archetype": {
+            "description": "The dwelling type selected from the preset list of 12 building archetypes in the tool.",
+            "title": "building_archetype\t\t",
+            "type": "text",
+            "unit": null
+          },
+          "electricity_dhw": {
+            "description": "Half-hourly aggregated electricity demand for domestic hot water in kWh.",
+            "title": "electricity_dhw\t",
+            "type": "numeric",
+            "unit": "kWh"
+          },
+          "electricity_space_heat": {
+            "description": "Half-hourly aggregated electricity demand for space heating in kWh.",
+            "title": "electricity_space_heat",
+            "type": "numeric",
+            "unit": "kWh"
+          },
+          "gas_dhw": {
+            "description": "Half-hourly aggregated gas demand for domestic hot water in kWh.",
+            "title": "gas_dhw\t",
+            "type": "numeric",
+            "unit": "kWh"
+          },
+          "gas_space_heat": {
+            "description": "Half-hourly aggregated gas demand for space heating in kWh.",
+            "title": "gas_space_heat",
+            "type": "numeric",
+            "unit": "kWh"
+          },
+          "heater_output_dhw": {
+            "description": "Half-hourly aggregated heat demand for domestic hot water in kWh.",
+            "title": "heater_output_dhw\t",
+            "type": "numeric",
+            "unit": "kWh"
+          },
+          "heater_output_space_heat": {
+            "description": "Half-hourly aggregated heat demand for space heating in kWh.",
+            "title": "heater_output_space_heat\t",
+            "type": "numeric",
+            "unit": "kWh"
+          },
+          "hh_period": {
+            "description": "The half-hour period (1 to 48)",
+            "title": "hh_period\t\t",
+            "type": "int4",
+            "unit": null
+          },
+          "month": {
+            "description": "The month selected",
+            "title": "month\t\t",
+            "type": "text",
+            "unit": null
+          },
+          "run_id": {
+            "description": "A run ID which associates the output profile data with the list of input parameters in the accompanying data file.",
+            "title": "run_id\t\t",
+            "type": "text",
+            "unit": null
+          },
+          "start_of_hh_period": {
+            "description": "The time (hh:mm) corresponding to the start of the half hour period.",
+            "title": "start_of_hh_period\t\t",
+            "type": "timestamp",
+            "unit": "HH:MM"
+          },
+          "total_electricity": {
+            "description": "Total half-hourly aggregated electricity demand for in kWh.",
+            "title": "total_electricity",
+            "type": "numeric",
+            "unit": "kWh"
+          },
+          "total_gas": {
+            "description": "Total half-hourly aggregated gas demand in kWh.",
+            "title": "total_gas\t",
+            "type": "numeric",
+            "unit": "kWh"
+          },
+          "total_heater_output": {
+            "description": "Total half-hourly aggregated heat demand in kWh.",
+            "title": "total_heater_output",
+            "type": "numeric",
+            "unit": "kWh"
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T09:14:01.292897+00:00",
+      "header": [
+        "run_id",
+        "building_archetype",
+        "month",
+        "hh_period",
+        "start_of_hh_period",
+        "heater_output_space_heat",
+        "gas_space_heat",
+        "avg_COP_space_heat",
+        "electricity_space_heat",
+        "heater_output_dhw",
+        "gas_dhw",
+        "avg_COP_dhw",
+        "electricity_dhw",
+        "total_heater_output",
+        "total_gas",
+        "total_electricity"
+      ],
+      "last_written_at": "2026-10-08T09:14:01.292897+00:00",
+      "resource_ids": [
+        "27522340-008d-4c82-97c1-17eeb7ed1b6a"
+      ],
+      "rows": 96,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [],
+  "key": "building_heat_model_example_output_half",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 1,
+        "columns": [
+          "run_id",
+          "hh_period"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 1,
+        "columns": [
+          "run_id",
+          "start_of_hh_period"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 1,
+        "columns": [
+          "hh_period",
+          "heater_output_dhw"
+        ],
+        "max_duplicates": 0
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "building-heat-model",
+  "proposal": {
+    "flags": [],
+    "record_draft": {
+      "eligibility": {
+        "question": "hh_period: a numeric column with no vendor unit; start_of_hh_period: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced); avg_COP_space_heat: a numeric column with no vendor unit; avg_COP_dhw: a numeric column with no vendor unit",
+        "status": "held",
+        "unit": "SCN-3"
+      },
+      "encoding": "utf-8",
+      "entity_key": [
+        "run_id",
+        "hh_period"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "run_id",
+              "nullable": true,
+              "source": "run_id"
+            },
+            {
+              "dtype": "string",
+              "name": "building_archetype",
+              "nullable": true,
+              "source": "building_archetype"
+            },
+            {
+              "dtype": "string",
+              "name": "month_vendor",
+              "nullable": true,
+              "source": "month"
+            },
+            {
+              "dtype": "int64",
+              "name": "hh_period",
+              "nullable": true,
+              "source": "hh_period"
+            },
+            {
+              "dtype": "string",
+              "name": "start_of_hh_period",
+              "nullable": true,
+              "source": "start_of_hh_period"
+            },
+            {
+              "dtype": "float64",
+              "name": "heater_output_space_heat",
+              "nullable": true,
+              "source": "heater_output_space_heat"
+            },
+            {
+              "dtype": "float64",
+              "name": "gas_space_heat",
+              "nullable": true,
+              "source": "gas_space_heat"
+            },
+            {
+              "dtype": "float64",
+              "name": "avg_cop_space_heat",
+              "nullable": true,
+              "source": "avg_COP_space_heat"
+            },
+            {
+              "dtype": "float64",
+              "name": "electricity_space_heat",
+              "nullable": true,
+              "source": "electricity_space_heat"
+            },
+            {
+              "dtype": "float64",
+              "name": "heater_output_dhw",
+              "nullable": true,
+              "source": "heater_output_dhw"
+            },
+            {
+              "dtype": "float64",
+              "name": "gas_dhw",
+              "nullable": true,
+              "source": "gas_dhw"
+            },
+            {
+              "dtype": "float64",
+              "name": "avg_cop_dhw",
+              "nullable": true,
+              "source": "avg_COP_dhw"
+            },
+            {
+              "dtype": "float64",
+              "name": "electricity_dhw",
+              "nullable": true,
+              "source": "electricity_dhw"
+            },
+            {
+              "dtype": "float64",
+              "name": "total_heater_output",
+              "nullable": true,
+              "source": "total_heater_output"
+            },
+            {
+              "dtype": "float64",
+              "name": "total_gas",
+              "nullable": true,
+              "source": "total_gas"
+            },
+            {
+              "dtype": "float64",
+              "name": "total_electricity",
+              "nullable": true,
+              "source": "total_electricity"
+            }
+          ],
+          "header": [
+            "run_id",
+            "building_archetype",
+            "month",
+            "hh_period",
+            "start_of_hh_period",
+            "heater_output_space_heat",
+            "gas_space_heat",
+            "avg_COP_space_heat",
+            "electricity_space_heat",
+            "heater_output_dhw",
+            "gas_dhw",
+            "avg_COP_dhw",
+            "electricity_dhw",
+            "total_heater_output",
+            "total_gas",
+            "total_electricity"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T05",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "held",
+        "field": "column 'hh_period'.unit",
+        "id": "T01",
+        "kind": "unit",
+        "question": "hh_period: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'start_of_hh_period'",
+        "id": "T02",
+        "kind": "time_semantics",
+        "question": "start_of_hh_period: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'avg_COP_space_heat'.unit",
+        "id": "T03",
+        "kind": "unit",
+        "question": "avg_COP_space_heat: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'avg_COP_dhw'.unit",
+        "id": "T04",
+        "kind": "unit",
+        "question": "avg_COP_dhw: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T05",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: month, start_of_hh_period"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T06",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['run_id', 'hh_period'] (measured unique in 1 capture(s)); without one, latest stays whole_capture"
+      }
+    ]
+  },
+  "refresh": "adhoc",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update frequency",
+        "value": "Ad hoc"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "FES: Pathways to Net Zero",
+    "title": "Building Heat Model"
+  }
+}

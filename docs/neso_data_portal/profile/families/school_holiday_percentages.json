@@ -1,0 +1,382 @@
+{
+  "archetype": "SER",
+  "batch": "DEM-2",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/school_holiday_percentages/2026/10/08/raw_20261008T111716Z_f2c25078-5721-4abd-b9e3-0fd6d839bb04_8d02a3fe.csv",
+      "ckan_last_modified": "2024-10-17T16:05:05.134322",
+      "cr": 0,
+      "crlf": 71830,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "f2c25078-5721-4abd-b9e3-0fd6d839bb04",
+      "rows": 71829,
+      "sampled": true,
+      "size": 2724434,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:17:16.646002+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/school_holiday_percentages/2026/10/08/raw_20261008T111718Z_4b640366-af9a-4785-b12f-ff2274e369c0_c135c424.csv",
+      "ckan_last_modified": "2024-10-17T16:07:36.806001",
+      "cr": 0,
+      "crlf": 72513,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "4b640366-af9a-4785-b12f-ff2274e369c0",
+      "rows": 72512,
+      "sampled": true,
+      "size": 3278978,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:17:18.981998+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/school_holiday_percentages/2026/10/08/raw_20261008T111721Z_8a9a21e2-91d9-40e0-ac99-68f5e3f1a732_502c7ef8.csv",
+      "ckan_last_modified": "2024-10-17T16:09:06.364747",
+      "cr": 0,
+      "crlf": 72719,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "8a9a21e2-91d9-40e0-ac99-68f5e3f1a732",
+      "rows": 72718,
+      "sampled": true,
+      "size": 3542576,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:17:21.478661+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/school_holiday_percentages/2026/10/08/raw_20261008T111723Z_48f922ef-b18f-4193-868c-e95c1f271b5c_dbe2fbff.csv",
+      "ckan_last_modified": "2024-10-17T16:13:23.814979",
+      "cr": 0,
+      "crlf": 73596,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "48f922ef-b18f-4193-868c-e95c1f271b5c",
+      "rows": 73595,
+      "sampled": true,
+      "size": 3139073,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:17:23.984217+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/school_holiday_percentages/2026/10/08/raw_20261008T111726Z_73c68bc9-d08b-4173-bfef-6ba1ac0684a9_32585b63.csv",
+      "ckan_last_modified": "2025-07-15T11:27:03.752628",
+      "cr": 0,
+      "crlf": 72037,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "73c68bc9-d08b-4173-bfef-6ba1ac0684a9",
+      "rows": 72036,
+      "sampled": true,
+      "size": 3593306,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:17:26.512555+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/school_holiday_percentages/2026/10/08/raw_20261008T111728Z_5e4bb837-a43b-4709-91e6-ddf8ca9a660a_d52d4989.csv",
+      "ckan_last_modified": "2026-02-12T16:12:22.167008",
+      "cr": 0,
+      "crlf": 72244,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "5e4bb837-a43b-4709-91e6-ddf8ca9a660a",
+      "rows": 72243,
+      "sampled": true,
+      "size": 3168237,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:17:28.968885+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 6,
+      "columns": {
+        "Date": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%Y-%m-%d": 71829,
+            "%d/%m/%Y": 363104,
+            "float64": 434933,
+            "int64": 434933
+          },
+          "examples": [
+            "27/06/2024",
+            "28/06/2024",
+            "29/06/2024"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "iso_date": 250000,
+            "slash_date": 50000
+          },
+          "slash_first_gt_12": 42849,
+          "slash_second_gt_12": 0
+        },
+        "Local_Authority": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 434933,
+            "int64": 434933
+          },
+          "examples": [
+            "Aberdeen",
+            "Aberdeenshire",
+            "Angus"
+          ],
+          "max_len": 28,
+          "null_count": 0,
+          "shapes": {
+            "text": 300000
+          }
+        },
+        "Multiplier": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 432825
+          },
+          "examples": [
+            "0.003057163",
+            "0.004588272",
+            "0.001928624"
+          ],
+          "max_len": 20,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 300000
+          }
+        },
+        "School_Holiday": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1222
+          },
+          "examples": [
+            "0",
+            "1"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "int": 300000
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "Date": {
+            "description": "The date which could be a holiday",
+            "title": "Date",
+            "type": "date",
+            "unit": null
+          },
+          "Local_Authority": {
+            "description": "The Local Authority responsible for setting the holiday times",
+            "title": "Local Authority",
+            "type": "text",
+            "unit": null
+          },
+          "Multiplier": {
+            "description": "The population weighting used to convert the data to a national total",
+            "title": "Multiplier",
+            "type": "numeric",
+            "unit": null
+          },
+          "School_Holiday": {
+            "description": "The percentage of public schools on holiday in the local authority or in total.",
+            "title": "School Holiday",
+            "type": "numeric",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T11:17:16.646002+00:00",
+      "header": [
+        "Local_Authority",
+        "Multiplier",
+        "Date",
+        "School_Holiday"
+      ],
+      "last_written_at": "2026-10-08T11:17:28.968885+00:00",
+      "resource_ids": [
+        "48f922ef-b18f-4193-868c-e95c1f271b5c",
+        "4b640366-af9a-4785-b12f-ff2274e369c0",
+        "5e4bb837-a43b-4709-91e6-ddf8ca9a660a",
+        "73c68bc9-d08b-4173-bfef-6ba1ac0684a9",
+        "8a9a21e2-91d9-40e0-ac99-68f5e3f1a732",
+        "f2c25078-5721-4abd-b9e3-0fd6d839bb04"
+      ],
+      "rows": 434933,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [
+    "sampled"
+  ],
+  "key": "school_holiday_percentages",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 6,
+        "columns": [
+          "Local_Authority",
+          "Date"
+        ],
+        "max_duplicates": 0
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "school-holiday-percentages",
+  "proposal": {
+    "flags": [
+      "sampled"
+    ],
+    "record_draft": {
+      "eligibility": {
+        "question": "Multiplier: a numeric column with no vendor unit; School_Holiday: a numeric column with no vendor unit",
+        "status": "held",
+        "unit": "DEM-2"
+      },
+      "encoding": "utf-8",
+      "entity_key": [
+        "local_authority",
+        "date"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "local_authority",
+              "nullable": true,
+              "source": "Local_Authority"
+            },
+            {
+              "dtype": "float64",
+              "name": "multiplier",
+              "nullable": true,
+              "source": "Multiplier"
+            },
+            {
+              "dtype": "TODO: T02",
+              "name": "date",
+              "nullable": true,
+              "source": "Date"
+            },
+            {
+              "dtype": "float64",
+              "name": "school_holiday",
+              "nullable": true,
+              "source": "School_Holiday"
+            }
+          ],
+          "header": [
+            "Local_Authority",
+            "Multiplier",
+            "Date",
+            "School_Holiday"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T04",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "held",
+        "field": "column 'Multiplier'.unit",
+        "id": "T01",
+        "kind": "unit",
+        "question": "Multiplier: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "blocked",
+        "field": "column 'Date'.dtype",
+        "id": "T02",
+        "kind": "type_conflict",
+        "question": "Date: field-info declares date but the bronze values do not all cast to one date format"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'School_Holiday'.unit",
+        "id": "T03",
+        "kind": "unit",
+        "question": "School_Holiday: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T04",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: Date"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T05",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['local_authority', 'date'] (measured unique in 6 capture(s)); without one, latest stays whole_capture"
+      }
+    ]
+  },
+  "refresh": "adhoc",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update frequency",
+        "value": "Yearly"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Demand",
+    "title": "School Holiday Percentages"
+  }
+}

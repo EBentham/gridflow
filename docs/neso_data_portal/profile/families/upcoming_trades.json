@@ -1,0 +1,477 @@
+{
+  "archetype": "REG",
+  "batch": "TRD",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/upcoming_trades/2026/10/08/raw_20261008T114027Z_0b7e84ec-eded-4458-b111-d29ba4508e85_7441677b.csv",
+      "ckan_last_modified": "2026-10-08T11:30:04",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 29,
+      "parse_error": null,
+      "resource_id": "0b7e84ec-eded-4458-b111-d29ba4508e85",
+      "rows": 28,
+      "sampled": false,
+      "size": 2276,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T11:40:28.001597+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 1,
+      "columns": {
+        "Cost": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 22
+          },
+          "examples": [
+            "-269.36",
+            "-3641",
+            "-1800"
+          ],
+          "max_len": 8,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 22,
+            "int": 6
+          }
+        },
+        "Date": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%Y-%m-%d": 0,
+            "float64": 28,
+            "int64": 28
+          },
+          "examples": [
+            "2026-10-08"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "iso_date": 28
+          }
+        },
+        "ID": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 28,
+            "int64": 28
+          },
+          "examples": [
+            "ES00380892",
+            "ES00380893",
+            "ES00380894"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "text": 28
+          }
+        },
+        "Last_Updated": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 28,
+            "int64": 28
+          },
+          "examples": [
+            "2026-10-08T11:37:29",
+            "2026-10-08T11:37:28"
+          ],
+          "max_len": 19,
+          "null_count": 0,
+          "shapes": {
+            "naive_datetime": 28
+          }
+        },
+        "Note": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [],
+          "max_len": 0,
+          "null_count": 28,
+          "shapes": {}
+        },
+        "Price": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 26
+          },
+          "examples": [
+            "76.96",
+            "72.82",
+            "72"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 26,
+            "int": 2
+          }
+        },
+        "Reason": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 28,
+            "int64": 28
+          },
+          "examples": [
+            "Downward Reg"
+          ],
+          "max_len": 12,
+          "null_count": 0,
+          "shapes": {
+            "text": 28
+          }
+        },
+        "SO_Flag": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 28,
+            "int64": 28
+          },
+          "examples": [
+            "F"
+          ],
+          "max_len": 1,
+          "null_count": 0,
+          "shapes": {
+            "text": 28
+          }
+        },
+        "SP": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "29",
+            "30",
+            "31"
+          ],
+          "max_len": 2,
+          "null_count": 0,
+          "shapes": {
+            "int": 28
+          }
+        },
+        "Volume": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 4
+          },
+          "examples": [
+            "-3.5",
+            "-50",
+            "-25"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 4,
+            "int": 24
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "Cost": {
+            "description": "Cost of the Trade to National Grid ESO",
+            "title": "Cost",
+            "type": "float8",
+            "unit": "£"
+          },
+          "Date": {
+            "description": "Settlement date",
+            "title": "Settlement date",
+            "type": "date",
+            "unit": null
+          },
+          "ID": {
+            "description": "ID of the GMTA Trade",
+            "title": "Trade ID",
+            "type": "text",
+            "unit": null
+          },
+          "Last_Updated": {
+            "description": "Date and Time that the information has been last updated",
+            "title": "Last Updated",
+            "type": "timestamp",
+            "unit": null
+          },
+          "Note": {
+            "description": "Notes or comments",
+            "title": "Note",
+            "type": "text",
+            "unit": null
+          },
+          "Price": {
+            "description": "Price of the Trade",
+            "title": "Price",
+            "type": "float8",
+            "unit": "£/MWh"
+          },
+          "Reason": {
+            "description": "Detailed reason for the Trade",
+            "title": "Trade Reason",
+            "type": "text",
+            "unit": null
+          },
+          "SO_Flag": {
+            "description": "The SO-Flag indicates whether or not the Action was potentially taken for reasons other than balancing the short-term energy imbalance of the Transmission System.",
+            "title": "System Flag",
+            "type": "text",
+            "unit": null
+          },
+          "SP": {
+            "description": "Settlement period number that trade is delivered.",
+            "title": "Settlement period",
+            "type": "int4",
+            "unit": null
+          },
+          "Volume": {
+            "description": "Average volume of trade.",
+            "title": "Average Volume",
+            "type": "float8",
+            "unit": "MWh"
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T11:40:28.001597+00:00",
+      "header": [
+        "ID",
+        "Date",
+        "SP",
+        "Volume",
+        "Price",
+        "Cost",
+        "SO_Flag",
+        "Reason",
+        "Note",
+        "Last_Updated"
+      ],
+      "last_written_at": "2026-10-08T11:40:28.001597+00:00",
+      "resource_ids": [
+        "0b7e84ec-eded-4458-b111-d29ba4508e85"
+      ],
+      "rows": 28,
+      "settlement_periods": [
+        {
+          "capture_id": "bronze/neso_data_portal/upcoming_trades/2026/10/08/raw_20261008T114027Z_0b7e84ec-eded-4458-b111-d29ba4508e85_7441677b.csv",
+          "date_column": "Date",
+          "dates_with_repeated_sp": 1,
+          "duplicated_pairs": 24,
+          "max": 32,
+          "min": 29,
+          "out_of_range": 0,
+          "period_column": "SP",
+          "rows_per_date": {
+            "28": 1
+          }
+        }
+      ]
+    }
+  ],
+  "flags": [],
+  "key": "upcoming_trades",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 1,
+        "columns": [
+          "ID",
+          "SP"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 1,
+        "columns": [
+          "SP",
+          "Price"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 1,
+        "columns": [
+          "SP",
+          "Cost"
+        ],
+        "max_duplicates": 0
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "upcoming-trades",
+  "proposal": {
+    "flags": [],
+    "record_draft": {
+      "eligibility": {
+        "question": "SP: a numeric column with no vendor unit; Last_Updated: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)",
+        "status": "held",
+        "unit": "TRD"
+      },
+      "encoding": "utf-8",
+      "entity_key": [
+        "id",
+        "sp"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "id",
+              "nullable": true,
+              "source": "ID"
+            },
+            {
+              "dtype": "date",
+              "format": "%Y-%m-%d",
+              "name": "date",
+              "nullable": true,
+              "source": "Date"
+            },
+            {
+              "dtype": "int64",
+              "name": "sp",
+              "nullable": true,
+              "source": "SP"
+            },
+            {
+              "dtype": "float64",
+              "name": "volume",
+              "nullable": true,
+              "source": "Volume"
+            },
+            {
+              "dtype": "float64",
+              "name": "price",
+              "nullable": true,
+              "source": "Price"
+            },
+            {
+              "dtype": "float64",
+              "name": "cost",
+              "nullable": true,
+              "source": "Cost"
+            },
+            {
+              "dtype": "string",
+              "name": "so_flag",
+              "nullable": true,
+              "source": "SO_Flag"
+            },
+            {
+              "dtype": "string",
+              "name": "reason",
+              "nullable": true,
+              "source": "Reason"
+            },
+            {
+              "dtype": "string",
+              "name": "note",
+              "nullable": true,
+              "source": "Note"
+            },
+            {
+              "dtype": "string",
+              "name": "last_updated",
+              "nullable": true,
+              "source": "Last_Updated"
+            }
+          ],
+          "header": [
+            "ID",
+            "Date",
+            "SP",
+            "Volume",
+            "Price",
+            "Cost",
+            "SO_Flag",
+            "Reason",
+            "Note",
+            "Last_Updated"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T03",
+      "version": "1",
+      "vintage": "capture_fallback"
+    },
+    "todos": [
+      {
+        "consequence": "held",
+        "field": "column 'SP'.unit",
+        "id": "T01",
+        "kind": "unit",
+        "question": "SP: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Last_Updated'",
+        "id": "T02",
+        "kind": "time_semantics",
+        "question": "Last_Updated: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T03",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: Date, SP, Last_Updated"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T04",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['id', 'sp'] (measured unique in 1 capture(s)); without one, latest stays whole_capture"
+      },
+      {
+        "consequence": "none",
+        "field": "vintage",
+        "id": "T05",
+        "kind": "vendor_publication",
+        "question": "available_at is gridflow capture time for the dump; a vendor instant is held (D)"
+      }
+    ]
+  },
+  "refresh": "daily",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Status",
+        "value": "Live"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Trading",
+    "title": "Upcoming trades"
+  }
+}

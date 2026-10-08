@@ -1,0 +1,362 @@
+{
+  "archetype": "SCN",
+  "batch": "SCN-1",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/tresp_generation_pathways_gsp/2026/10/08/raw_20261008T114010Z_970b7a25-6086-4b07-b109-b01ae43ae78c_1a9be88f.csv",
+      "ckan_last_modified": "2026-01-30T08:36:50.063067",
+      "cr": 0,
+      "crlf": 308155,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "970b7a25-6086-4b07-b109-b01ae43ae78c",
+      "rows": 308154,
+      "sampled": true,
+      "size": 19194150,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:40:10.436470+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 1,
+      "columns": {
+        "Building_block_id": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 308154,
+            "int64": 308154
+          },
+          "examples": [
+            "Gen_BB001",
+            "Gen_BB002",
+            "Gen_BB003"
+          ],
+          "max_len": 9,
+          "null_count": 0,
+          "shapes": {
+            "text": 50000
+          }
+        },
+        "DNO_licence_area": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 308154,
+            "int64": 308154
+          },
+          "examples": [
+            "SSEN South",
+            "UKPN London",
+            "UKPN Eastern"
+          ],
+          "max_len": 18,
+          "null_count": 0,
+          "shapes": {
+            "text": 50000
+          }
+        },
+        "Pathway": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 308154,
+            "int64": 308154
+          },
+          "examples": [
+            "tRESP - HT"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "text": 50000
+          }
+        },
+        "Unit": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 308154,
+            "int64": 308154
+          },
+          "examples": [
+            "MW"
+          ],
+          "max_len": 2,
+          "null_count": 0,
+          "shapes": {
+            "text": 50000
+          }
+        },
+        "Value": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 308154
+          },
+          "examples": [
+            "0.0",
+            "0.2211",
+            "0.4422"
+          ],
+          "max_len": 18,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 49942,
+            "text": 58
+          }
+        },
+        "Year": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "2025",
+            "2026",
+            "2027"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 50000
+          }
+        },
+        "tRESP_GSP_area": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 308154,
+            "int64": 308154
+          },
+          "examples": [
+            "BASI_in_H@BRLE_1|FLEE_1",
+            "BEDDT_HURS_LPN",
+            "BRAI_RAYL_EPN"
+          ],
+          "max_len": 37,
+          "null_count": 0,
+          "shapes": {
+            "text": 50000
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "Building_block_id": {
+            "description": "Refers to tRESP building block ID.",
+            "title": "Building_block_id\t\t",
+            "type": "text",
+            "unit": null
+          },
+          "DNO_licence_area": {
+            "description": "Refers to the DNO licence area against which the Pathway value has been provided for.",
+            "title": "DNO_licence_area\t\t",
+            "type": "text",
+            "unit": null
+          },
+          "Pathway": {
+            "description": "Refers to the name of tRESP Pathways: Holistic Transition (HT), Electric Engagement (EE) and Hydrogen Evolution (HE). The single Short-Term Pathway covering the period 2025-2035 (tRESP - HT) branches into three Long-Term Pathways (tRESP - HT, tRESP - HE and tRESP - EE) to account for greater uncerta",
+            "title": "Pathway\t\t",
+            "type": "text",
+            "unit": null
+          },
+          "Unit": {
+            "description": "Capacity installed (MW)",
+            "title": "Unit\t\t",
+            "type": "text",
+            "unit": "Capacity installed (MW)"
+          },
+          "Value": {
+            "description": "tRESP Pathway value",
+            "title": "Value\t\t",
+            "type": "numeric",
+            "unit": null
+          },
+          "Year": {
+            "description": "Refers to the year against which the Pathway value has been provided for, with volume at 31 March.",
+            "title": "Year\t\t",
+            "type": "int4",
+            "unit": null
+          },
+          "tRESP_GSP_area": {
+            "description": "Refers to tRESP Grid Supply Point (GSP) area used to define the specific tRESP Pathway.",
+            "title": "tRESP_GSP_area\t\t",
+            "type": "text",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T11:40:10.436470+00:00",
+      "header": [
+        "Building_block_id",
+        "tRESP_GSP_area",
+        "Pathway",
+        "Year",
+        "Value",
+        "Unit",
+        "DNO_licence_area"
+      ],
+      "last_written_at": "2026-10-08T11:40:10.436470+00:00",
+      "resource_ids": [
+        "970b7a25-6086-4b07-b109-b01ae43ae78c"
+      ],
+      "rows": 308154,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [
+    "sampled"
+  ],
+  "key": "tresp_generation_pathways_gsp",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Building_block_id",
+          "tRESP_GSP_area",
+          "Year"
+        ],
+        "max_duplicates": 170016
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "tresp-generation-pathways",
+  "proposal": {
+    "flags": [
+      "sampled"
+    ],
+    "record_draft": {
+      "eligibility": {
+        "question": "Year: a numeric column with no vendor unit; Value: a numeric column with no vendor unit",
+        "status": "held",
+        "unit": "SCN-1"
+      },
+      "encoding": "utf-8",
+      "entity_key": [
+        "building_block_id",
+        "tresp_gsp_area",
+        "pathway",
+        "year_vendor",
+        "value",
+        "unit",
+        "dno_licence_area"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "building_block_id",
+              "nullable": true,
+              "source": "Building_block_id"
+            },
+            {
+              "dtype": "string",
+              "name": "tresp_gsp_area",
+              "nullable": true,
+              "source": "tRESP_GSP_area"
+            },
+            {
+              "dtype": "string",
+              "name": "pathway",
+              "nullable": true,
+              "source": "Pathway"
+            },
+            {
+              "dtype": "int64",
+              "name": "year_vendor",
+              "nullable": true,
+              "source": "Year"
+            },
+            {
+              "dtype": "float64",
+              "name": "value",
+              "nullable": true,
+              "source": "Value"
+            },
+            {
+              "dtype": "string",
+              "name": "unit",
+              "nullable": true,
+              "source": "Unit"
+            },
+            {
+              "dtype": "string",
+              "name": "dno_licence_area",
+              "nullable": true,
+              "source": "DNO_licence_area"
+            }
+          ],
+          "header": [
+            "Building_block_id",
+            "tRESP_GSP_area",
+            "Pathway",
+            "Year",
+            "Value",
+            "Unit",
+            "DNO_licence_area"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T03",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "held",
+        "field": "column 'Year'.unit",
+        "id": "T01",
+        "kind": "unit",
+        "question": "Year: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Value'.unit",
+        "id": "T02",
+        "kind": "unit",
+        "question": "Value: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T03",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: none"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T04",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['building_block_id', 'tresp_gsp_area', 'pathway', 'year_vendor', 'value', 'unit', 'dno_licence_area'] (no candidate measured unique, so every column); without one, latest stays whole_capture"
+      }
+    ]
+  },
+  "refresh": "adhoc",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update frequency",
+        "value": "Ad-hoc"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Generation",
+    "title": "Transitional Regional Energy Strategic Plan (tRESP) - Generation Pathways"
+  }
+}

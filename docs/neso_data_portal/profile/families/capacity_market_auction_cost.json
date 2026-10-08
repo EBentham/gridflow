@@ -1,0 +1,260 @@
+{
+  "archetype": "REG",
+  "batch": "CI",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/capacity_market_auction_cost/2026/10/08/raw_20261008T091415Z_b1b58919-eaa4-40ea-80df-3d3e526f8223_eda39a73.csv",
+      "ckan_last_modified": "2026-09-09T11:54:02.061035",
+      "cr": 0,
+      "crlf": 193,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "b1b58919-eaa4-40ea-80df-3d3e526f8223",
+      "rows": 192,
+      "sampled": false,
+      "size": 14873,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T09:14:15.921895+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 1,
+      "columns": {
+        "Auction Name": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 192,
+            "int64": 192
+          },
+          "examples": [
+            "2016-17 (TR) Transitional Capacity Auction",
+            "2017-18 (TR) Transitional Capacity Auction",
+            "2017-18 (T-1) One Year Ahead Capacity Auction"
+          ],
+          "max_len": 47,
+          "null_count": 0,
+          "shapes": {
+            "text": 192
+          }
+        },
+        "Capacity Awarded": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 192
+          },
+          "examples": [
+            "802.71",
+            "312.171",
+            "54433.634"
+          ],
+          "max_len": 9,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 192
+          }
+        },
+        "Delivery Year": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 192,
+            "int64": 192
+          },
+          "examples": [
+            "2016/2017",
+            "2017/2018",
+            "2018/2019"
+          ],
+          "max_len": 9,
+          "null_count": 0,
+          "shapes": {
+            "text": 192
+          }
+        },
+        "Forecast Cost_GBP": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 92
+          },
+          "examples": [
+            "22074525",
+            "14047695",
+            "378313756.3"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 92,
+            "int": 100
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "Auction Name": {
+            "description": "Name of Capacity Market Auction",
+            "title": "Auction Name",
+            "type": "text",
+            "unit": null
+          },
+          "Capacity Awarded": {
+            "description": "Capacity Awarded (MW) by Auction and Delivery Year",
+            "title": "Capacity Awarded",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "Delivery Year": {
+            "description": "Delivery Year agreement awarded for, including multi-year agreements",
+            "title": "Delivery Year",
+            "type": "text",
+            "unit": null
+          },
+          "Forecast Cost_GBP": {
+            "description": "Capacity Awarded * Clearing Price of Auction, by Auction and Delivery Year",
+            "title": "Forecast Cost_GBP",
+            "type": "numeric",
+            "unit": "£"
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T09:14:15.921895+00:00",
+      "header": [
+        "Auction Name",
+        "Delivery Year",
+        "Capacity Awarded",
+        "Forecast Cost_GBP"
+      ],
+      "last_written_at": "2026-10-08T09:14:15.921895+00:00",
+      "resource_ids": [
+        "b1b58919-eaa4-40ea-80df-3d3e526f8223"
+      ],
+      "rows": 192,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [],
+  "key": "capacity_market_auction_cost",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Auction Name",
+          "Delivery Year"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Delivery Year",
+          "Capacity Awarded"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Delivery Year",
+          "Forecast Cost_GBP"
+        ],
+        "max_duplicates": 0
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "capacity-market-register",
+  "proposal": {
+    "flags": [],
+    "record_draft": {
+      "encoding": "utf-8",
+      "entity_key": [
+        "auction_name",
+        "delivery_year"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "auction_name",
+              "nullable": true,
+              "source": "Auction Name"
+            },
+            {
+              "dtype": "string",
+              "name": "delivery_year",
+              "nullable": true,
+              "source": "Delivery Year"
+            },
+            {
+              "dtype": "float64",
+              "name": "capacity_awarded",
+              "nullable": true,
+              "source": "Capacity Awarded"
+            },
+            {
+              "dtype": "float64",
+              "name": "forecast_cost_gbp",
+              "nullable": true,
+              "source": "Forecast Cost_GBP"
+            }
+          ],
+          "header": [
+            "Auction Name",
+            "Delivery Year",
+            "Capacity Awarded",
+            "Forecast Cost_GBP"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T01",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T01",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: none"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T02",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['auction_name', 'delivery_year'] (measured unique in 1 capture(s)); without one, latest stays whole_capture"
+      }
+    ]
+  },
+  "refresh": "weekly",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update frequency",
+        "value": "Weekly"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Electricity Market Reform",
+    "title": "Capacity Market Register"
+  }
+}

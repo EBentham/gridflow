@@ -1,0 +1,773 @@
+{
+  "archetype": "REG",
+  "batch": "FILE",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/gis_grid_supply_points/2026/10/08/raw_20261008T110407Z_bbe2cc72-a6c6-46e6-8f4e-48b879467368_e6048a53.csv",
+      "ckan_last_modified": "2020-05-05T07:54:07.800829",
+      "cr": 0,
+      "crlf": 381,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "bbe2cc72-a6c6-46e6-8f4e-48b879467368",
+      "rows": 380,
+      "sampled": false,
+      "size": 34324,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:04:07.596378+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 1,
+      "columns": {
+        "dc_id": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1",
+            "2",
+            "3"
+          ],
+          "max_len": 2,
+          "null_count": 361,
+          "shapes": {
+            "int": 19
+          }
+        },
+        "dc_lat": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 19
+          },
+          "examples": [
+            "53.3421",
+            "54.606477",
+            "51.6607"
+          ],
+          "max_len": 10,
+          "null_count": 361,
+          "shapes": {
+            "decimal": 19
+          }
+        },
+        "dc_lon": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 19
+          },
+          "examples": [
+            "2.7297",
+            "-1.116691",
+            "-1.22683"
+          ],
+          "max_len": 9,
+          "null_count": 361,
+          "shapes": {
+            "decimal": 19
+          }
+        },
+        "dc_name": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 19,
+            "int64": 19
+          },
+          "examples": [
+            "T_CASKD-1",
+            "T_TODSD-1",
+            "T__HYELT002"
+          ],
+          "max_len": 11,
+          "null_count": 361,
+          "shapes": {
+            "text": 19
+          }
+        },
+        "ggd_id": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1",
+            "2",
+            "3"
+          ],
+          "max_len": 3,
+          "null_count": 0,
+          "shapes": {
+            "int": 380
+          }
+        },
+        "gnode_id": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1",
+            "2",
+            "3"
+          ],
+          "max_len": 3,
+          "null_count": 4,
+          "shapes": {
+            "int": 376
+          }
+        },
+        "gnode_lat": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 376
+          },
+          "examples": [
+            "51.71105",
+            "51.92579",
+            "52.59726"
+          ],
+          "max_len": 11,
+          "null_count": 4,
+          "shapes": {
+            "decimal": 376
+          }
+        },
+        "gnode_lon": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 376
+          },
+          "examples": [
+            "-1.18901",
+            "-0.90565",
+            "-1.21548"
+          ],
+          "max_len": 12,
+          "null_count": 4,
+          "shapes": {
+            "decimal": 376
+          }
+        },
+        "gnode_name": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 376,
+            "int64": 376
+          },
+          "examples": [
+            "COWL",
+            "ECLA",
+            "ENDEDW"
+          ],
+          "max_len": 6,
+          "null_count": 4,
+          "shapes": {
+            "text": 376
+          }
+        },
+        "gsp_id": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1",
+            "2",
+            "3"
+          ],
+          "max_len": 3,
+          "null_count": 20,
+          "shapes": {
+            "int": 360
+          }
+        },
+        "gsp_lat": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 360
+          },
+          "examples": [
+            "51.71105",
+            "51.92579",
+            "52.59726"
+          ],
+          "max_len": 11,
+          "null_count": 20,
+          "shapes": {
+            "decimal": 360
+          }
+        },
+        "gsp_lon": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 360
+          },
+          "examples": [
+            "-1.18901",
+            "-0.90565",
+            "-1.21548"
+          ],
+          "max_len": 12,
+          "null_count": 20,
+          "shapes": {
+            "decimal": 360
+          }
+        },
+        "gsp_name": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 360,
+            "int64": 360
+          },
+          "examples": [
+            "COWL_1",
+            "ECLA_1",
+            "ENDE_1"
+          ],
+          "max_len": 10,
+          "null_count": 20,
+          "shapes": {
+            "text": 360
+          }
+        },
+        "has_pv": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1",
+            "0"
+          ],
+          "max_len": 1,
+          "null_count": 0,
+          "shapes": {
+            "int": 380
+          }
+        },
+        "ng_id": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1",
+            "2",
+            "3"
+          ],
+          "max_len": 3,
+          "null_count": 0,
+          "shapes": {
+            "int": 380
+          }
+        },
+        "pes_id": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "20",
+            "11",
+            "22"
+          ],
+          "max_len": 2,
+          "null_count": 20,
+          "shapes": {
+            "int": 360
+          }
+        },
+        "pes_name": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 360,
+            "int64": 360
+          },
+          "examples": [
+            "_H",
+            "_B",
+            "_L"
+          ],
+          "max_len": 2,
+          "null_count": 20,
+          "shapes": {
+            "text": 360
+          }
+        },
+        "region_id": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1",
+            "19",
+            "20"
+          ],
+          "max_len": 3,
+          "null_count": 20,
+          "shapes": {
+            "int": 360
+          }
+        },
+        "region_name": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 360,
+            "int64": 360
+          },
+          "examples": [
+            "Cowley",
+            "East Claydon",
+            "Enderby"
+          ],
+          "max_len": 22,
+          "null_count": 20,
+          "shapes": {
+            "text": 360
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "dc_id": {
+            "description": "Unique ID for each 'Direct Connect'",
+            "title": "dc_id",
+            "type": "numeric",
+            "unit": null
+          },
+          "dc_lat": {
+            "description": "Latitude of the 'Direct Connect'",
+            "title": "dc_lat",
+            "type": "numeric",
+            "unit": "Decimal degrees in WGS 1984 Coordinate Reference System"
+          },
+          "dc_lon": {
+            "description": "Longitude of the 'Direct Connect'",
+            "title": "dc_lon",
+            "type": "numeric",
+            "unit": "Decimal degrees in WGS 1984 Coordinate Reference System"
+          },
+          "dc_name": {
+            "description": "Unique Name for each 'Direct Connect'",
+            "title": "dc_name",
+            "type": "text",
+            "unit": null
+          },
+          "ggd_id": {
+            "description": "Unique ID representing a fundamental entity in the lookup between GSP, Gnode and DNO License Area",
+            "title": "ggd_id",
+            "type": "numeric",
+            "unit": null
+          },
+          "gnode_id": {
+            "description": "Unique ID for each Gnode",
+            "title": "gnode_id",
+            "type": "numeric",
+            "unit": null
+          },
+          "gnode_lat": {
+            "description": "Latitude of the Gnode location",
+            "title": "gnode_lat",
+            "type": "numeric",
+            "unit": "Decimal degrees in WGS 1984 Coordinate Reference System"
+          },
+          "gnode_lon": {
+            "description": "Longitude of the Gnode location",
+            "title": "gnode_lon",
+            "type": "numeric",
+            "unit": "Decimal degrees in WGS 1984 Coordinate Reference System"
+          },
+          "gnode_name": {
+            "description": "Unique Name for each Gnode",
+            "title": "gnode_name",
+            "type": "text",
+            "unit": null
+          },
+          "gsp_id": {
+            "description": "Unique ID for each Grid Supply Point",
+            "title": "gsp_id",
+            "type": "numeric",
+            "unit": null
+          },
+          "gsp_lat": {
+            "description": "Latitude of the Grid Supply Point location",
+            "title": "gsp_lat",
+            "type": "numeric",
+            "unit": "Decimal degrees in WGS 1984 Coordinate Reference System"
+          },
+          "gsp_lon": {
+            "description": "Longitude of the Grid Supply Point location",
+            "title": "gsp_lon",
+            "type": "numeric",
+            "unit": "Decimal degrees in WGS 1984 Coordinate Reference System"
+          },
+          "gsp_name": {
+            "description": "Unique Name for each Grid Supply Point",
+            "title": "gsp_name",
+            "type": "text",
+            "unit": null
+          },
+          "has_pv": {
+            "description": "Whether the entity is deemed to possibly host any embedded Solar Photovoltaic capacity based on best available evidence at the time the regions were derived.",
+            "title": "has_pv",
+            "type": "numeric",
+            "unit": null
+          },
+          "ng_id": {
+            "description": "Unique ID used in region derivations",
+            "title": "ng_id",
+            "type": "numeric",
+            "unit": null
+          },
+          "pes_id": {
+            "description": "Unique ID for each Public Electricity Supplier region a.k.a. DNO Licence Area a.k.a. GSP Group region",
+            "title": "pes_id",
+            "type": "numeric",
+            "unit": null
+          },
+          "pes_name": {
+            "description": "Character code used to identify each PES a.k.a. DNO Licence Area a.k.a. GSP Group",
+            "title": "pes_name",
+            "type": "text",
+            "unit": null
+          },
+          "region_id": {
+            "description": "Unique ID for each geospatial boundary",
+            "title": "region_id / RegionID",
+            "type": "numeric",
+            "unit": null
+          },
+          "region_name": {
+            "description": "Unique Name for each geospatial boundary",
+            "title": "region_name / RegionName",
+            "type": "text",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T11:04:07.596378+00:00",
+      "header": [
+        "ng_id",
+        "ggd_id",
+        "gnode_id",
+        "gnode_name",
+        "gnode_lat",
+        "gnode_lon",
+        "gsp_id",
+        "gsp_name",
+        "gsp_lat",
+        "gsp_lon",
+        "dc_id",
+        "dc_name",
+        "dc_lat",
+        "dc_lon",
+        "region_id",
+        "region_name",
+        "has_pv",
+        "pes_id",
+        "pes_name"
+      ],
+      "last_written_at": "2026-10-08T11:04:07.596378+00:00",
+      "resource_ids": [
+        "bbe2cc72-a6c6-46e6-8f4e-48b879467368"
+      ],
+      "rows": 380,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [],
+  "key": "gis_grid_supply_points",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 1,
+        "columns": [
+          "ng_id"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 1,
+        "columns": [
+          "ggd_id"
+        ],
+        "max_duplicates": 0
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "gis-boundaries-for-gb-grid-supply-points",
+  "proposal": {
+    "flags": [],
+    "record_draft": {
+      "eligibility": {
+        "question": "ng_id: a numeric column with no vendor unit; ggd_id: a numeric column with no vendor unit; gnode_id: a numeric column with no vendor unit; gsp_id: a numeric column with no vendor unit; dc_id: a numeric column with no vendor unit; region_id: a numeric column with no vendor unit; has_pv: a numeric column with no vendor unit; pes_id: a numeric column with no vendor unit",
+        "status": "held",
+        "unit": "FILE"
+      },
+      "encoding": "utf-8",
+      "entity_key": [
+        "ng_id"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "float64",
+              "name": "ng_id",
+              "nullable": true,
+              "source": "ng_id"
+            },
+            {
+              "dtype": "float64",
+              "name": "ggd_id",
+              "nullable": true,
+              "source": "ggd_id"
+            },
+            {
+              "dtype": "float64",
+              "name": "gnode_id",
+              "nullable": true,
+              "source": "gnode_id"
+            },
+            {
+              "dtype": "string",
+              "name": "gnode_name",
+              "nullable": true,
+              "source": "gnode_name"
+            },
+            {
+              "dtype": "float64",
+              "name": "gnode_lat",
+              "nullable": true,
+              "source": "gnode_lat"
+            },
+            {
+              "dtype": "float64",
+              "name": "gnode_lon",
+              "nullable": true,
+              "source": "gnode_lon"
+            },
+            {
+              "dtype": "float64",
+              "name": "gsp_id",
+              "nullable": true,
+              "source": "gsp_id"
+            },
+            {
+              "dtype": "string",
+              "name": "gsp_name",
+              "nullable": true,
+              "source": "gsp_name"
+            },
+            {
+              "dtype": "float64",
+              "name": "gsp_lat",
+              "nullable": true,
+              "source": "gsp_lat"
+            },
+            {
+              "dtype": "float64",
+              "name": "gsp_lon",
+              "nullable": true,
+              "source": "gsp_lon"
+            },
+            {
+              "dtype": "float64",
+              "name": "dc_id",
+              "nullable": true,
+              "source": "dc_id"
+            },
+            {
+              "dtype": "string",
+              "name": "dc_name",
+              "nullable": true,
+              "source": "dc_name"
+            },
+            {
+              "dtype": "float64",
+              "name": "dc_lat",
+              "nullable": true,
+              "source": "dc_lat"
+            },
+            {
+              "dtype": "float64",
+              "name": "dc_lon",
+              "nullable": true,
+              "source": "dc_lon"
+            },
+            {
+              "dtype": "float64",
+              "name": "region_id",
+              "nullable": true,
+              "source": "region_id"
+            },
+            {
+              "dtype": "string",
+              "name": "region_name",
+              "nullable": true,
+              "source": "region_name"
+            },
+            {
+              "dtype": "float64",
+              "name": "has_pv",
+              "nullable": true,
+              "source": "has_pv"
+            },
+            {
+              "dtype": "float64",
+              "name": "pes_id",
+              "nullable": true,
+              "source": "pes_id"
+            },
+            {
+              "dtype": "string",
+              "name": "pes_name",
+              "nullable": true,
+              "source": "pes_name"
+            }
+          ],
+          "header": [
+            "ng_id",
+            "ggd_id",
+            "gnode_id",
+            "gnode_name",
+            "gnode_lat",
+            "gnode_lon",
+            "gsp_id",
+            "gsp_name",
+            "gsp_lat",
+            "gsp_lon",
+            "dc_id",
+            "dc_name",
+            "dc_lat",
+            "dc_lon",
+            "region_id",
+            "region_name",
+            "has_pv",
+            "pes_id",
+            "pes_name"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T09",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "held",
+        "field": "column 'ng_id'.unit",
+        "id": "T01",
+        "kind": "unit",
+        "question": "ng_id: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'ggd_id'.unit",
+        "id": "T02",
+        "kind": "unit",
+        "question": "ggd_id: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'gnode_id'.unit",
+        "id": "T03",
+        "kind": "unit",
+        "question": "gnode_id: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'gsp_id'.unit",
+        "id": "T04",
+        "kind": "unit",
+        "question": "gsp_id: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'dc_id'.unit",
+        "id": "T05",
+        "kind": "unit",
+        "question": "dc_id: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'region_id'.unit",
+        "id": "T06",
+        "kind": "unit",
+        "question": "region_id: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'has_pv'.unit",
+        "id": "T07",
+        "kind": "unit",
+        "question": "has_pv: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'pes_id'.unit",
+        "id": "T08",
+        "kind": "unit",
+        "question": "pes_id: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T09",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: none"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T10",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['ng_id'] (measured unique in 1 capture(s)); without one, latest stays whole_capture"
+      }
+    ]
+  },
+  "refresh": "adhoc",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update Frequency",
+        "value": "Ad hoc"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "System",
+    "title": "GIS Boundaries for GB Grid Supply Points"
+  }
+}

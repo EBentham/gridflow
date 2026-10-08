@@ -1,0 +1,406 @@
+{
+  "archetype": "FC",
+  "batch": "BAL-2",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/bsuos_daily_forecast/2026/10/08/raw_20261008T090640Z_ac191a63-a67a-4b3b-ac8c-fdfcea79d042_1a1867a1.csv",
+      "ckan_last_modified": "2019-12-11T14:46:49.740950",
+      "cp1252_clean": true,
+      "cr": 0,
+      "crlf": 6046,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "ac191a63-a67a-4b3b-ac8c-fdfcea79d042",
+      "rows": 6045,
+      "sampled": false,
+      "size": 180453,
+      "url_type": "upload",
+      "utf8": false,
+      "written_at": "2026-10-08T09:06:40.560791+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/bsuos_daily_forecast/2026/10/08/raw_20261008T090644Z_c1be6c7c-c36d-46cb-8038-098075599bb0_96a799b0.csv",
+      "ckan_last_modified": "2020-08-11T10:42:51.974667",
+      "cp1252_clean": true,
+      "cr": 0,
+      "crlf": 18330,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "c1be6c7c-c36d-46cb-8038-098075599bb0",
+      "rows": 18329,
+      "sampled": false,
+      "size": 559494,
+      "url_type": "upload",
+      "utf8": false,
+      "written_at": "2026-10-08T09:06:44.943805+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/bsuos_daily_forecast/2026/10/08/raw_20261008T090647Z_586d0e6b-cc03-4312-9df3-407438715eb2_2d6eabb9.csv",
+      "ckan_last_modified": "2022-01-09T16:00:22.506568",
+      "cp1252_clean": true,
+      "cr": 0,
+      "crlf": 30623,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "586d0e6b-cc03-4312-9df3-407438715eb2",
+      "rows": 30622,
+      "sampled": false,
+      "size": 949489,
+      "url_type": "upload",
+      "utf8": false,
+      "written_at": "2026-10-08T09:06:47.656069+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/bsuos_daily_forecast/2026/10/08/raw_20261008T090650Z_25e4acc4-e1b3-48f5-af8c-8d6f84291791_c1a15384.csv",
+      "ckan_last_modified": "2022-04-21T12:34:50.046758",
+      "cp1252_clean": true,
+      "cr": 0,
+      "crlf": 17375,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "25e4acc4-e1b3-48f5-af8c-8d6f84291791",
+      "rows": 17374,
+      "sampled": false,
+      "size": 550458,
+      "url_type": "upload",
+      "utf8": false,
+      "written_at": "2026-10-08T09:06:50.410581+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/bsuos_daily_forecast/2026/10/08/raw_20261008T090653Z_b98095a8-310a-4fee-8d51-e20531c49465_88028879.csv",
+      "ckan_last_modified": "2023-04-02T15:00:16.562043",
+      "cp1252_clean": true,
+      "cr": 0,
+      "crlf": 17517,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "b98095a8-310a-4fee-8d51-e20531c49465",
+      "rows": 17516,
+      "sampled": false,
+      "size": 581306,
+      "url_type": "upload",
+      "utf8": false,
+      "written_at": "2026-10-08T09:06:53.363075+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 5,
+      "columns": {
+        "BSUoS �/MWh": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 86888
+          },
+          "examples": [
+            "2.13",
+            "2.95",
+            "2.56"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 86888,
+            "int": 2998
+          }
+        },
+        "Date": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%Y-%m-%d": 72370,
+            "float64": 89886,
+            "int64": 89886
+          },
+          "examples": [
+            "01-Dec-18",
+            "02-Dec-18",
+            "03-Dec-18"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "iso_date": 17516,
+            "text": 72370
+          }
+        },
+        "Half hourly cost �": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 240
+          },
+          "examples": [
+            "51634",
+            "71127",
+            "60601"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 240,
+            "int": 89646
+          }
+        },
+        "Half hourly volume MWh": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 207
+          },
+          "examples": [
+            "24266",
+            "24135",
+            "23683"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 207,
+            "int": 89679
+          }
+        },
+        "SP": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1",
+            "2",
+            "3"
+          ],
+          "max_len": 2,
+          "null_count": 0,
+          "shapes": {
+            "int": 89886
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "Date": {
+            "description": "Date for historic outurn and day ahead forecast. Given in (Coordinated Universal Time) UTC or UTC+1 during British Summer Time.",
+            "title": "Date",
+            "type": "date",
+            "unit": null
+          },
+          "Half hourly volume MWh": {
+            "description": null,
+            "title": "Half hourly volume MWh",
+            "type": "numeric",
+            "unit": null
+          },
+          "SP": {
+            "description": "The half hourly period at which balancing service use of system occurred. Settlement period 1 runs from 00:00-00:30.",
+            "title": "Settlement Period",
+            "type": "numeric",
+            "unit": "Number"
+          }
+        },
+        "field_info_not_in_header": [
+          "BSUoS £/MWh",
+          "Half hourly cost £"
+        ],
+        "header_not_in_field_info": [
+          "BSUoS �/MWh",
+          "Half hourly cost �"
+        ]
+      },
+      "first_written_at": "2026-10-08T09:06:40.560791+00:00",
+      "header": [
+        "Date",
+        "SP",
+        "BSUoS �/MWh",
+        "Half hourly cost �",
+        "Half hourly volume MWh"
+      ],
+      "last_written_at": "2026-10-08T09:06:53.363075+00:00",
+      "resource_ids": [
+        "25e4acc4-e1b3-48f5-af8c-8d6f84291791",
+        "586d0e6b-cc03-4312-9df3-407438715eb2",
+        "ac191a63-a67a-4b3b-ac8c-fdfcea79d042",
+        "b98095a8-310a-4fee-8d51-e20531c49465",
+        "c1be6c7c-c36d-46cb-8038-098075599bb0"
+      ],
+      "rows": 89886,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [
+    "not_utf8"
+  ],
+  "key": "bsuos_daily_forecast",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 5,
+        "columns": [
+          "Date",
+          "SP"
+        ],
+        "max_duplicates": 0
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "balancing-services-use-of-system-bsuos-daily-forecast",
+  "proposal": {
+    "flags": [
+      "not_utf8"
+    ],
+    "record_draft": {
+      "eligibility": {
+        "question": "BSUoS �/MWh: a numeric column with no vendor unit; Half hourly cost �: a numeric column with no vendor unit; Half hourly volume MWh: a numeric column with no vendor unit",
+        "status": "held",
+        "unit": "BAL-2"
+      },
+      "encoding": "TODO: T05",
+      "entity_key": [
+        "date",
+        "sp"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "TODO: T01",
+              "name": "date",
+              "nullable": true,
+              "source": "Date"
+            },
+            {
+              "dtype": "float64",
+              "name": "sp",
+              "nullable": true,
+              "source": "SP"
+            },
+            {
+              "dtype": "float64",
+              "name": "bsuos_mwh",
+              "nullable": true,
+              "source": "BSUoS �/MWh"
+            },
+            {
+              "dtype": "float64",
+              "name": "half_hourly_cost",
+              "nullable": true,
+              "source": "Half hourly cost �"
+            },
+            {
+              "dtype": "float64",
+              "name": "half_hourly_volume_mwh",
+              "nullable": true,
+              "source": "Half hourly volume MWh"
+            }
+          ],
+          "header": [
+            "Date",
+            "SP",
+            "BSUoS �/MWh",
+            "Half hourly cost �",
+            "Half hourly volume MWh"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T06",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "blocked",
+        "field": "column 'Date'.dtype",
+        "id": "T01",
+        "kind": "type_conflict",
+        "question": "Date: field-info declares date but the bronze values do not all cast to one date format"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'BSUoS �/MWh'.unit",
+        "id": "T02",
+        "kind": "unit",
+        "question": "BSUoS �/MWh: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Half hourly cost �'.unit",
+        "id": "T03",
+        "kind": "unit",
+        "question": "Half hourly cost �: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Half hourly volume MWh'.unit",
+        "id": "T04",
+        "kind": "unit",
+        "question": "Half hourly volume MWh: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "blocked",
+        "field": "encoding",
+        "id": "T05",
+        "kind": "encoding",
+        "question": "a capture is not valid UTF-8 (see cp1252_clean); the vendor's encoding is unevidenced"
+      },
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T06",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: Date, SP"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T07",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['date', 'sp'] (measured unique in 5 capture(s)); without one, latest stays whole_capture"
+      }
+    ]
+  },
+  "refresh": "frozen",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update Frequency",
+        "value": "Not Active"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Balancing costs",
+    "title": "Daily Balancing Services Use of System (BSUoS) Forecast"
+  }
+}

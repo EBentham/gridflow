@@ -1,0 +1,346 @@
+{
+  "archetype": "SCN",
+  "batch": "SCN-1",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/fes_building_blocks_block_licence_area/2026/10/08/raw_20261008T105314Z_0ec29244-277e-41d1-bca7-17f12b71eb60_0583f3c9.csv",
+      "ckan_last_modified": "2024-07-15T06:35:22.821993",
+      "cr": 0,
+      "crlf": 20,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "0ec29244-277e-41d1-bca7-17f12b71eb60",
+      "rows": 19,
+      "sampled": false,
+      "size": 1436,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:53:14.274565+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 1,
+      "columns": {
+        "Area Type": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 19,
+            "int64": 19
+          },
+          "examples": [
+            "DNO",
+            "TO",
+            "IDNO"
+          ],
+          "max_len": 21,
+          "null_count": 0,
+          "shapes": {
+            "text": 19
+          }
+        },
+        "Comments": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 1,
+            "int64": 1
+          },
+          "examples": [
+            "e.g. Offshore wind exclusively for H2 production"
+          ],
+          "max_len": 48,
+          "null_count": 18,
+          "shapes": {
+            "text": 1
+          }
+        },
+        "Elexon GSP Group": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 19,
+            "int64": 19
+          },
+          "examples": [
+            "_G",
+            "_A",
+            "_B"
+          ],
+          "max_len": 3,
+          "null_count": 0,
+          "shapes": {
+            "text": 19
+          }
+        },
+        "Elexon GSP Group Name": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 19,
+            "int64": 19
+          },
+          "examples": [
+            "North Western",
+            "Eastern",
+            "East Midlands"
+          ],
+          "max_len": 26,
+          "null_count": 0,
+          "shapes": {
+            "text": 19
+          }
+        },
+        "FES2024 Area Name": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 19,
+            "int64": 19
+          },
+          "examples": [
+            "Electricity North West",
+            "UKPN Eastern",
+            "NGED East Midlands"
+          ],
+          "max_len": 22,
+          "null_count": 0,
+          "shapes": {
+            "text": 19
+          }
+        },
+        "FES23 BB Area Name": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 19,
+            "int64": 19
+          },
+          "examples": [
+            "ENW",
+            "EPN",
+            "East Midlands"
+          ],
+          "max_len": 13,
+          "null_count": 0,
+          "shapes": {
+            "text": 19
+          }
+        },
+        "Full Licence Name": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 19,
+            "int64": 19
+          },
+          "examples": [
+            "Electricity North West",
+            "Eastern Power Networks",
+            "NGED (East Midlands)"
+          ],
+          "max_len": 42,
+          "null_count": 0,
+          "shapes": {
+            "text": 19
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "Area Type": {
+            "description": "The type of area",
+            "title": "Area Type",
+            "type": "text",
+            "unit": null
+          },
+          "Comments": {
+            "description": "Any extra comments",
+            "title": "Comments",
+            "type": "text",
+            "unit": null
+          },
+          "Elexon GSP Group": {
+            "description": "The Elexon GSP group the area is in",
+            "title": "Elexon GSP Group",
+            "type": "text",
+            "unit": null
+          },
+          "Elexon GSP Group Name": {
+            "description": "The Elexon gsp group name",
+            "title": "Elexon GSP Group Name",
+            "type": "text",
+            "unit": null
+          },
+          "FES2024 Area Name": {
+            "description": "The FES 2024 area name",
+            "title": "FES2024 Area Name",
+            "type": "text",
+            "unit": null
+          },
+          "FES23 BB Area Name": {
+            "description": "The FES 2023 area name",
+            "title": "FES23 BB Area Name",
+            "type": "text",
+            "unit": null
+          },
+          "Full Licence Name": {
+            "description": "The full name of the area",
+            "title": "Full Licence Name",
+            "type": "text",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T10:53:14.274565+00:00",
+      "header": [
+        "Area Type",
+        "FES23 BB Area Name",
+        "Full Licence Name",
+        "Elexon GSP Group",
+        "Elexon GSP Group Name",
+        "FES2024 Area Name",
+        "Comments"
+      ],
+      "last_written_at": "2026-10-08T10:53:14.274565+00:00",
+      "resource_ids": [
+        "0ec29244-277e-41d1-bca7-17f12b71eb60"
+      ],
+      "rows": 19,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [],
+  "key": "fes_building_blocks_block_licence_area",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 1,
+        "columns": [
+          "FES23 BB Area Name"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Full Licence Name"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 1,
+        "columns": [
+          "FES2024 Area Name"
+        ],
+        "max_duplicates": 0
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "future-energy-scenario-fes-building-block-data",
+  "proposal": {
+    "flags": [],
+    "record_draft": {
+      "encoding": "utf-8",
+      "entity_key": [
+        "fes23_bb_area_name"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "area_type",
+              "nullable": true,
+              "source": "Area Type"
+            },
+            {
+              "dtype": "string",
+              "name": "fes23_bb_area_name",
+              "nullable": true,
+              "source": "FES23 BB Area Name"
+            },
+            {
+              "dtype": "string",
+              "name": "full_licence_name",
+              "nullable": true,
+              "source": "Full Licence Name"
+            },
+            {
+              "dtype": "string",
+              "name": "elexon_gsp_group",
+              "nullable": true,
+              "source": "Elexon GSP Group"
+            },
+            {
+              "dtype": "string",
+              "name": "elexon_gsp_group_name",
+              "nullable": true,
+              "source": "Elexon GSP Group Name"
+            },
+            {
+              "dtype": "string",
+              "name": "fes2024_area_name",
+              "nullable": true,
+              "source": "FES2024 Area Name"
+            },
+            {
+              "dtype": "string",
+              "name": "comments",
+              "nullable": true,
+              "source": "Comments"
+            }
+          ],
+          "header": [
+            "Area Type",
+            "FES23 BB Area Name",
+            "Full Licence Name",
+            "Elexon GSP Group",
+            "Elexon GSP Group Name",
+            "FES2024 Area Name",
+            "Comments"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T01",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T01",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: none"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T02",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['fes23_bb_area_name'] (measured unique in 1 capture(s)); without one, latest stays whole_capture"
+      }
+    ]
+  },
+  "refresh": "adhoc",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update Frequency",
+        "value": "Ad hoc"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "FES: Pathways to Net Zero",
+    "title": "FES: Pathways to Net Zero Building Block Data"
+  }
+}

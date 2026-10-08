@@ -1,0 +1,257 @@
+{
+  "archetype": "FC",
+  "batch": "CI",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/country_ci_forecast/2026/10/08/raw_20261008T091558Z_e032e7aa-dea5-4695-80d6-19739142021d_5d621791.csv",
+      "ckan_last_modified": "2026-10-08T09:10:31.323607",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 141010,
+      "parse_error": null,
+      "resource_id": "e032e7aa-dea5-4695-80d6-19739142021d",
+      "rows": 141009,
+      "sampled": true,
+      "size": 5134988,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T09:15:58.545897+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 1,
+      "columns": {
+        "England": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 139355
+          },
+          "examples": [
+            "183.0",
+            "110.0",
+            "94.0"
+          ],
+          "max_len": 5,
+          "null_count": 1311,
+          "shapes": {
+            "decimal": 48893
+          }
+        },
+        "Scotland": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 139355
+          },
+          "examples": [
+            "46.0",
+            "24.0",
+            "18.0"
+          ],
+          "max_len": 5,
+          "null_count": 1311,
+          "shapes": {
+            "decimal": 48893
+          }
+        },
+        "Wales": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 139355
+          },
+          "examples": [
+            "291.0",
+            "110.0",
+            "92.0"
+          ],
+          "max_len": 5,
+          "null_count": 1311,
+          "shapes": {
+            "decimal": 48893
+          }
+        },
+        "datetime": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 141009,
+            "int64": 141009
+          },
+          "examples": [
+            "2019-01-01T01:30:00",
+            "2020-02-02T11:00:00",
+            "2020-04-22T14:00:00"
+          ],
+          "max_len": 19,
+          "null_count": 0,
+          "shapes": {
+            "naive_datetime": 50000
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "England": {
+            "description": "Forecast English carbon intensity, predicted using machine learning models and metered generation. Forecast values are given in gCO2/kWh.",
+            "title": "English Carbon Intensity Forecast",
+            "type": "numeric",
+            "unit": "gCO2/kWh"
+          },
+          "Scotland": {
+            "description": "Forecast Scottish carbon intensity, predicted using machine learning models and metered generation. Forecast values are given in gCO2/kWh.",
+            "title": "Scottish Carbon Intensity Forecast",
+            "type": "numeric",
+            "unit": "gCO2/kWh"
+          },
+          "Wales": {
+            "description": "Forecast Welsh carbon intensity, predicted using machine learning models and metered generation. Forecast values are given in gCO2/kWh.",
+            "title": "Welsh Carbon Intensity Forecast",
+            "type": "numeric",
+            "unit": "gCO2/kWh"
+          },
+          "datetime": {
+            "description": "Timestamp of record, given in UTC (Coordinated Universal Time).",
+            "title": "Date & Time",
+            "type": "timestamp",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T09:15:58.545897+00:00",
+      "header": [
+        "datetime",
+        "Scotland",
+        "England",
+        "Wales"
+      ],
+      "last_written_at": "2026-10-08T09:15:58.545897+00:00",
+      "resource_ids": [
+        "e032e7aa-dea5-4695-80d6-19739142021d"
+      ],
+      "rows": 141009,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [
+    "sampled"
+  ],
+  "key": "country_ci_forecast",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 1,
+        "columns": [
+          "datetime"
+        ],
+        "max_duplicates": 0
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "country-carbon-intensity-forecast",
+  "proposal": {
+    "flags": [
+      "sampled"
+    ],
+    "record_draft": {
+      "eligibility": {
+        "question": "datetime: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)",
+        "status": "held",
+        "unit": "CI"
+      },
+      "encoding": "utf-8",
+      "entity_key": [
+        "datetime"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "datetime",
+              "nullable": true,
+              "source": "datetime"
+            },
+            {
+              "dtype": "float64",
+              "name": "scotland",
+              "nullable": true,
+              "source": "Scotland"
+            },
+            {
+              "dtype": "float64",
+              "name": "england",
+              "nullable": true,
+              "source": "England"
+            },
+            {
+              "dtype": "float64",
+              "name": "wales",
+              "nullable": true,
+              "source": "Wales"
+            }
+          ],
+          "header": [
+            "datetime",
+            "Scotland",
+            "England",
+            "Wales"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T02",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "held",
+        "field": "column 'datetime'",
+        "id": "T01",
+        "kind": "time_semantics",
+        "question": "datetime: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T02",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: datetime"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T03",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['datetime'] (measured unique in 1 capture(s)); without one, latest stays whole_capture"
+      }
+    ]
+  },
+  "refresh": "intraday",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update Frequency",
+        "value": "Hourly"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Carbon intensity",
+    "title": "Country Carbon Intensity Forecast"
+  }
+}

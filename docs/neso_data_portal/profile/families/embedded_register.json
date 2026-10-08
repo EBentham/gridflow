@@ -1,0 +1,581 @@
+{
+  "archetype": "REG",
+  "batch": "PILOT",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/embedded_register/2026/10/08/raw_20261008T103647Z_68b6f3a1-e1bf-403b-9062-0269fc758d77_2feb369e.csv",
+      "ckan_last_modified": "2026-10-06T10:47:45.071632",
+      "cr": 0,
+      "crlf": 562,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "68b6f3a1-e1bf-403b-9062-0269fc758d77",
+      "rows": 561,
+      "sampled": false,
+      "size": 92325,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:36:47.633836+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 1,
+      "columns": {
+        "Connection Site": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 561,
+            "int64": 561
+          },
+          "examples": [
+            "BRORA 132/33KV GRID SUPPLY POINT SUBSTATION",
+            "Bainsford 132/33kV",
+            "Paisley GSP"
+          ],
+          "max_len": 55,
+          "null_count": 0,
+          "shapes": {
+            "text": 561
+          }
+        },
+        "Cumulative Total Capacity (MW)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 561
+          },
+          "examples": [
+            "50.00",
+            "20.00",
+            "22.50"
+          ],
+          "max_len": 6,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 561
+          }
+        },
+        "Customer Name": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 561,
+            "int64": 561
+          },
+          "examples": [
+            "Opdenergy UK 19 Limited",
+            "SP DISTRIBUTION PLC",
+            "Scottish Hydro Electric Power Distribution Plc"
+          ],
+          "max_len": 46,
+          "null_count": 0,
+          "shapes": {
+            "text": 561
+          }
+        },
+        "Gate": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1",
+            "2"
+          ],
+          "max_len": 1,
+          "null_count": 464,
+          "shapes": {
+            "int": 97
+          }
+        },
+        "HOST TO": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 561,
+            "int64": 561
+          },
+          "examples": [
+            "SHET",
+            "SPT"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "text": 561
+          }
+        },
+        "MW Connected": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 561
+          },
+          "examples": [
+            "0.00",
+            "20.00",
+            "22.50"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 561
+          }
+        },
+        "MW Effective From": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%Y-%m-%d": 0,
+            "float64": 346,
+            "int64": 346
+          },
+          "examples": [
+            "2030-10-31",
+            "2026-06-30",
+            "2023-08-31"
+          ],
+          "max_len": 10,
+          "null_count": 215,
+          "shapes": {
+            "iso_date": 346
+          }
+        },
+        "MW Increase / Decrease": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 561
+          },
+          "examples": [
+            "50.00",
+            "0.00",
+            "25.00"
+          ],
+          "max_len": 6,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 561
+          }
+        },
+        "Plant Type": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 561,
+            "int64": 561
+          },
+          "examples": [
+            "Energy Storage System",
+            "CCGT (Combined Cycle Gas Turbine)",
+            "Gas Reciprocating"
+          ],
+          "max_len": 65,
+          "null_count": 0,
+          "shapes": {
+            "text": 561
+          }
+        },
+        "Project ID": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 561,
+            "int64": 561
+          },
+          "examples": [
+            "a0l8e0000011zr5AAA",
+            "a0l4L0000005iN1QAI",
+            "a0l4L0000005ifIQAQ"
+          ],
+          "max_len": 18,
+          "null_count": 0,
+          "shapes": {
+            "text": 561
+          }
+        },
+        "Project Name": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 561,
+            "int64": 561
+          },
+          "examples": [
+            "180/181 Clynelish Muir BESS",
+            "Abbotshaugh Reserve Power Facility",
+            "Abercorn Street Gas"
+          ],
+          "max_len": 53,
+          "null_count": 0,
+          "shapes": {
+            "text": 561
+          }
+        },
+        "Project Number": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 561,
+            "int64": 561
+          },
+          "examples": [
+            "PRO-003597",
+            "PRO-001213",
+            "PRO-000706"
+          ],
+          "max_len": 12,
+          "null_count": 0,
+          "shapes": {
+            "text": 561
+          }
+        },
+        "Project Status": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 561,
+            "int64": 561
+          },
+          "examples": [
+            "Scoping",
+            "Built",
+            "Consents Approved"
+          ],
+          "max_len": 32,
+          "null_count": 0,
+          "shapes": {
+            "text": 561
+          }
+        },
+        "Stage": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 31
+          },
+          "examples": [
+            "1.00",
+            "2.00",
+            "3.00"
+          ],
+          "max_len": 4,
+          "null_count": 530,
+          "shapes": {
+            "decimal": 31
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "Connection Site": {
+            "description": "Name of Generation Connection Site",
+            "title": "Connection Site",
+            "type": "text",
+            "unit": null
+          },
+          "Cumulative Total Capacity (MW)": {
+            "description": "Total amount of capacity contracted across all Stages",
+            "title": "Cumulative Total Capacity (MW) ",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "Customer Name": {
+            "description": "Name of Generator",
+            "title": "Customer Name",
+            "type": "text",
+            "unit": null
+          },
+          "Gate": {
+            "description": "Indicates which Gate the Project is contracted at",
+            "title": "Gate",
+            "type": "numeric",
+            "unit": null
+          },
+          "HOST TO": {
+            "description": "Indicates which Transmission Owner (TO) is responsible for the connection",
+            "title": "HOST TO",
+            "type": "text",
+            "unit": null
+          },
+          "MW Connected": {
+            "description": "Amount of capacity currently connected to the National Grid",
+            "title": "MW Connected",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "MW Effective From": {
+            "description": "Date on which Connection is contracted to be effective from",
+            "title": "MW Effective From",
+            "type": "date",
+            "unit": "yyyy-mm-dd"
+          },
+          "MW Increase / Decrease": {
+            "description": "Amount of capacity contracted to connect or be removed at a future date",
+            "title": "MW Increase / Decrease",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "Plant Type": {
+            "description": "Indicates the fuel type contracted to connect",
+            "title": "Plant Type",
+            "type": "text",
+            "unit": null
+          },
+          "Project ID": {
+            "description": "Unique Project Identifier",
+            "title": "Project ID",
+            "type": "text",
+            "unit": null
+          },
+          "Project Name": {
+            "description": "Name of Generation Project",
+            "title": "Project Name",
+            "type": "text",
+            "unit": null
+          },
+          "Project Number": {
+            "description": "Unique Project Number",
+            "title": "Project Number",
+            "type": "text",
+            "unit": null
+          },
+          "Project Status": {
+            "description": "Indicates what stage the Project is at in it's build cycle",
+            "title": "Project Status",
+            "type": "text",
+            "unit": null
+          },
+          "Stage": {
+            "description": "Stage refers to Staged Capacity – how much Capacity the Customer will connect and when.  The customer may choose to bring on capacity in chunks to align with their build /commissioning program.  Staged contracts are also used when a customer may only be able to bring on a proportion of their total c",
+            "title": "Stage",
+            "type": "numeric",
+            "unit": "number"
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T10:36:47.633836+00:00",
+      "header": [
+        "Project Name",
+        "Customer Name",
+        "Connection Site",
+        "Stage",
+        "MW Connected",
+        "MW Increase / Decrease",
+        "Cumulative Total Capacity (MW)",
+        "MW Effective From",
+        "Project Status",
+        "HOST TO",
+        "Plant Type",
+        "Project ID",
+        "Project Number",
+        "Gate"
+      ],
+      "last_written_at": "2026-10-08T10:36:47.633836+00:00",
+      "resource_ids": [
+        "68b6f3a1-e1bf-403b-9062-0269fc758d77"
+      ],
+      "rows": 561,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [],
+  "key": "embedded_register",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Project Number"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Project Name",
+          "MW Increase / Decrease",
+          "Cumulative Total Capacity (MW)"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 1,
+        "columns": [
+          "MW Increase / Decrease",
+          "Cumulative Total Capacity (MW)",
+          "Project ID"
+        ],
+        "max_duplicates": 0
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "embedded-register",
+  "proposal": {
+    "flags": [],
+    "record_draft": {
+      "eligibility": {
+        "question": "Gate: a numeric column with no vendor unit",
+        "status": "held",
+        "unit": "PILOT"
+      },
+      "encoding": "utf-8",
+      "entity_key": [
+        "project_number"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "project_name",
+              "nullable": true,
+              "source": "Project Name"
+            },
+            {
+              "dtype": "string",
+              "name": "customer_name",
+              "nullable": true,
+              "source": "Customer Name"
+            },
+            {
+              "dtype": "string",
+              "name": "connection_site",
+              "nullable": true,
+              "source": "Connection Site"
+            },
+            {
+              "dtype": "float64",
+              "name": "stage",
+              "nullable": true,
+              "source": "Stage"
+            },
+            {
+              "dtype": "float64",
+              "name": "mw_connected",
+              "nullable": true,
+              "source": "MW Connected"
+            },
+            {
+              "dtype": "float64",
+              "name": "mw_increase_decrease",
+              "nullable": true,
+              "source": "MW Increase / Decrease"
+            },
+            {
+              "dtype": "float64",
+              "name": "cumulative_total_capacity_mw",
+              "nullable": true,
+              "source": "Cumulative Total Capacity (MW)"
+            },
+            {
+              "dtype": "date",
+              "format": "%Y-%m-%d",
+              "name": "mw_effective_from",
+              "nullable": true,
+              "source": "MW Effective From"
+            },
+            {
+              "dtype": "string",
+              "name": "project_status",
+              "nullable": true,
+              "source": "Project Status"
+            },
+            {
+              "dtype": "string",
+              "name": "host_to",
+              "nullable": true,
+              "source": "HOST TO"
+            },
+            {
+              "dtype": "string",
+              "name": "plant_type",
+              "nullable": true,
+              "source": "Plant Type"
+            },
+            {
+              "dtype": "string",
+              "name": "project_id",
+              "nullable": true,
+              "source": "Project ID"
+            },
+            {
+              "dtype": "string",
+              "name": "project_number",
+              "nullable": true,
+              "source": "Project Number"
+            },
+            {
+              "dtype": "float64",
+              "name": "gate",
+              "nullable": true,
+              "source": "Gate"
+            }
+          ],
+          "header": [
+            "Project Name",
+            "Customer Name",
+            "Connection Site",
+            "Stage",
+            "MW Connected",
+            "MW Increase / Decrease",
+            "Cumulative Total Capacity (MW)",
+            "MW Effective From",
+            "Project Status",
+            "HOST TO",
+            "Plant Type",
+            "Project ID",
+            "Project Number",
+            "Gate"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T02",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "held",
+        "field": "column 'Gate'.unit",
+        "id": "T01",
+        "kind": "unit",
+        "question": "Gate: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T02",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: MW Effective From"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T03",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['project_number'] (measured unique in 1 capture(s)); without one, latest stays whole_capture"
+      }
+    ]
+  },
+  "refresh": "daily",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update Frequency",
+        "value": "Twice weekly"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Connection registers",
+    "title": "Embedded Register"
+  }
+}

@@ -1,0 +1,508 @@
+{
+  "archetype": "EVT",
+  "batch": "AS-3",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/eac_results_by_unit/2026/10/08/raw_20261008T103138Z_a63ab354-7e68-44c2-ad96-c6f920c30e85_4220afd5.csv",
+      "ckan_last_modified": "2026-04-15T11:43:07.338503",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 1444631,
+      "parse_error": null,
+      "resource_id": "a63ab354-7e68-44c2-ad96-c6f920c30e85",
+      "rows": 1444630,
+      "sampled": true,
+      "size": 218717646,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T10:31:38.664575+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 1,
+      "columns": {
+        "auctionProduct": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 1444630,
+            "int64": 1444630
+          },
+          "examples": [
+            "PSR",
+            "PQR",
+            "DRH"
+          ],
+          "max_len": 3,
+          "null_count": 0,
+          "shapes": {
+            "text": 50000
+          }
+        },
+        "auctionUnit": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 1444630,
+            "int64": 1444630
+          },
+          "examples": [
+            "AG-GBL06G",
+            "COWE2",
+            "FARNB-1"
+          ],
+          "max_len": 9,
+          "null_count": 0,
+          "shapes": {
+            "text": 50000
+          }
+        },
+        "clearingPrice": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1444630
+          },
+          "examples": [
+            "8.98",
+            "9.73",
+            "0.0"
+          ],
+          "max_len": 6,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 50000
+          }
+        },
+        "deliveryEnd": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 1444630,
+            "int64": 1444630
+          },
+          "examples": [
+            "2026-04-01T08:00:00",
+            "2026-04-01T06:30:00",
+            "2026-04-01T03:30:00"
+          ],
+          "max_len": 19,
+          "null_count": 0,
+          "shapes": {
+            "naive_datetime": 50000
+          }
+        },
+        "deliveryStart": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 1444630,
+            "int64": 1444630
+          },
+          "examples": [
+            "2026-04-01T07:30:00",
+            "2026-04-01T06:00:00",
+            "2026-04-01T03:00:00"
+          ],
+          "max_len": 19,
+          "null_count": 0,
+          "shapes": {
+            "naive_datetime": 50000
+          }
+        },
+        "executedQuantity": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1444630
+          },
+          "examples": [
+            "11.0",
+            "70.0",
+            "20.0"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 50000
+          }
+        },
+        "postCode": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 1224170,
+            "int64": 1230621
+          },
+          "examples": [
+            "PO32 6JS",
+            "GU10 4JU",
+            "DA1 5PZ"
+          ],
+          "max_len": 8,
+          "null_count": 214009,
+          "shapes": {
+            "text": 44521
+          }
+        },
+        "registeredAuctionParticipant": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 1444630,
+            "int64": 1444630
+          },
+          "examples": [
+            "GRIDBEYOND LIMITED",
+            "RWE Generation UK Plc",
+            "TESLA MOTORS LIMITED"
+          ],
+          "max_len": 51,
+          "null_count": 0,
+          "shapes": {
+            "text": 50000
+          }
+        },
+        "serviceType": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 1444630,
+            "int64": 1444630
+          },
+          "examples": [
+            "Slow Reserve",
+            "Quick Reserve",
+            "Response"
+          ],
+          "max_len": 17,
+          "null_count": 0,
+          "shapes": {
+            "text": 50000
+          }
+        },
+        "technologyType": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 1441890,
+            "int64": 1441890
+          },
+          "examples": [
+            "Load Response",
+            "OCGT",
+            "Batteries"
+          ],
+          "max_len": 25,
+          "null_count": 2740,
+          "shapes": {
+            "text": 49823
+          }
+        },
+        "unitResultID": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 1444630,
+            "int64": 1444630
+          },
+          "examples": [
+            "2661#||#2710#||#PSR#||#150423",
+            "2661#||#565#||#PSR#||#150420",
+            "2661#||#71#||#PSR#||#150414"
+          ],
+          "max_len": 29,
+          "null_count": 0,
+          "shapes": {
+            "text": 50000
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "auctionProduct": {
+            "description": "Service Type Identifier – \r\n[DCH,DCL,DMH,DML,DRH,DRL,NSR,PSR,NQR,PQR]",
+            "title": "auctionProduct",
+            "type": "text",
+            "unit": null
+          },
+          "auctionUnit": {
+            "description": "Unit Identifier - a collection of one or more Eligible Assets registered at the relevant time as an Auction Unit in accordance with the Registration and Pre-Qualification Procedure",
+            "title": "auctionUnit",
+            "type": "text",
+            "unit": null
+          },
+          "clearingPrice": {
+            "description": "The cleared price per MW per hour (£/MW/h)",
+            "title": "clearingPrice",
+            "type": "numeric",
+            "unit": "£/MW/h"
+          },
+          "deliveryEnd": {
+            "description": "The time from which delivery of the Auction Product will end",
+            "title": "deliveryEnd",
+            "type": "timestamp",
+            "unit": "ISO 8601"
+          },
+          "deliveryStart": {
+            "description": "The time from which delivery of the Auction Product will commence",
+            "title": "deliveryStart",
+            "type": "timestamp",
+            "unit": "ISO8601"
+          },
+          "executedQuantity": {
+            "description": "The volume of response that was accepted as at the clearing price",
+            "title": "executedQuantity",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "postCode": {
+            "description": "Post Code",
+            "title": "postCode",
+            "type": "text",
+            "unit": null
+          },
+          "registeredAuctionParticipant": {
+            "description": "Name of the Participant who submitted the bid",
+            "title": "registeredAuctionParticipant",
+            "type": "text",
+            "unit": null
+          },
+          "serviceType": {
+            "description": "Service Identifier - [Response, Quick Reserve or Slow Reserve]",
+            "title": "serviceType",
+            "type": "text",
+            "unit": null
+          },
+          "technologyType": {
+            "description": "Technology Type of the Unit",
+            "title": "technologyType",
+            "type": "text",
+            "unit": null
+          },
+          "unitResultID": {
+            "description": "Unit result record unique identifier",
+            "title": "unitResultID",
+            "type": "text",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T10:31:38.664575+00:00",
+      "header": [
+        "registeredAuctionParticipant",
+        "auctionUnit",
+        "serviceType",
+        "auctionProduct",
+        "executedQuantity",
+        "clearingPrice",
+        "deliveryStart",
+        "deliveryEnd",
+        "technologyType",
+        "postCode",
+        "unitResultID"
+      ],
+      "last_written_at": "2026-10-08T10:31:38.664575+00:00",
+      "resource_ids": [
+        "a63ab354-7e68-44c2-ad96-c6f920c30e85"
+      ],
+      "rows": 1444630,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [
+    "sampled",
+    "sibling_candidate:eac_results_by_unit_fy,eac_results_daily_by_unit"
+  ],
+  "key": "eac_results_by_unit",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 1,
+        "columns": [
+          "unitResultID"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 1,
+        "columns": [
+          "auctionUnit",
+          "auctionProduct",
+          "deliveryStart"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 1,
+        "columns": [
+          "auctionUnit",
+          "auctionProduct",
+          "deliveryEnd"
+        ],
+        "max_duplicates": 0
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "eac-auction-results",
+  "proposal": {
+    "flags": [
+      "sampled",
+      "sibling_candidate:eac_results_by_unit_fy,eac_results_daily_by_unit"
+    ],
+    "record_draft": {
+      "eligibility": {
+        "question": "deliveryStart: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced); deliveryEnd: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)",
+        "status": "held",
+        "unit": "AS-3"
+      },
+      "encoding": "utf-8",
+      "entity_key": [
+        "unitresultid"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "registeredauctionparticipant",
+              "nullable": true,
+              "source": "registeredAuctionParticipant"
+            },
+            {
+              "dtype": "string",
+              "name": "auctionunit",
+              "nullable": true,
+              "source": "auctionUnit"
+            },
+            {
+              "dtype": "string",
+              "name": "servicetype",
+              "nullable": true,
+              "source": "serviceType"
+            },
+            {
+              "dtype": "string",
+              "name": "auctionproduct",
+              "nullable": true,
+              "source": "auctionProduct"
+            },
+            {
+              "dtype": "float64",
+              "name": "executedquantity",
+              "nullable": true,
+              "source": "executedQuantity"
+            },
+            {
+              "dtype": "float64",
+              "name": "clearingprice",
+              "nullable": true,
+              "source": "clearingPrice"
+            },
+            {
+              "dtype": "string",
+              "name": "deliverystart",
+              "nullable": true,
+              "source": "deliveryStart"
+            },
+            {
+              "dtype": "string",
+              "name": "deliveryend",
+              "nullable": true,
+              "source": "deliveryEnd"
+            },
+            {
+              "dtype": "string",
+              "name": "technologytype",
+              "nullable": true,
+              "source": "technologyType"
+            },
+            {
+              "dtype": "string",
+              "name": "postcode",
+              "nullable": true,
+              "source": "postCode"
+            },
+            {
+              "dtype": "string",
+              "name": "unitresultid",
+              "nullable": true,
+              "source": "unitResultID"
+            }
+          ],
+          "header": [
+            "registeredAuctionParticipant",
+            "auctionUnit",
+            "serviceType",
+            "auctionProduct",
+            "executedQuantity",
+            "clearingPrice",
+            "deliveryStart",
+            "deliveryEnd",
+            "technologyType",
+            "postCode",
+            "unitResultID"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T03",
+      "version": "1",
+      "vintage": "capture_fallback"
+    },
+    "todos": [
+      {
+        "consequence": "held",
+        "field": "column 'deliveryStart'",
+        "id": "T01",
+        "kind": "time_semantics",
+        "question": "deliveryStart: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'deliveryEnd'",
+        "id": "T02",
+        "kind": "time_semantics",
+        "question": "deliveryEnd: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T03",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: deliveryStart, deliveryEnd"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T04",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['unitresultid'] (measured unique in 1 capture(s)); without one, latest stays whole_capture"
+      },
+      {
+        "consequence": "none",
+        "field": "vintage",
+        "id": "T05",
+        "kind": "vendor_publication",
+        "question": "available_at is gridflow capture time for the dump; a vendor instant is held (D)"
+      }
+    ]
+  },
+  "refresh": "daily",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update frequency",
+        "value": "Daily"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Ancillary services",
+    "title": "Enduring Auction Capability (EAC) auction results"
+  }
+}

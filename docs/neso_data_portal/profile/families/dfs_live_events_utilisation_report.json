@@ -1,0 +1,1405 @@
+{
+  "archetype": "EVT",
+  "batch": "DFS",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/dfs_live_events_utilisation_report/2026/10/08/raw_20261008T100633Z_4e87244e-2479-4e6e-84c2-698dffaca41f_94191b4f.csv",
+      "ckan_last_modified": "2026-07-27T14:01:36.453412",
+      "cr": 0,
+      "crlf": 171,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "4e87244e-2479-4e6e-84c2-698dffaca41f",
+      "rows": 170,
+      "sampled": false,
+      "size": 29094,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:06:33.337275+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 1,
+      "columns": {
+        "D0 East England": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 56
+          },
+          "examples": [
+            "1.65",
+            "0.18",
+            "0.17"
+          ],
+          "max_len": 4,
+          "null_count": 5,
+          "shapes": {
+            "decimal": 56,
+            "int": 109
+          }
+        },
+        "D0 East Midlands": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 68
+          },
+          "examples": [
+            "1.05",
+            "0.2",
+            "0.24"
+          ],
+          "max_len": 4,
+          "null_count": 5,
+          "shapes": {
+            "decimal": 68,
+            "int": 97
+          }
+        },
+        "D0 London": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 53
+          },
+          "examples": [
+            "0.62",
+            "0.03",
+            "0.02"
+          ],
+          "max_len": 4,
+          "null_count": 5,
+          "shapes": {
+            "decimal": 53,
+            "int": 112
+          }
+        },
+        "D0 North East England": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 66
+          },
+          "examples": [
+            "0.62",
+            "0.02",
+            "0.01"
+          ],
+          "max_len": 4,
+          "null_count": 5,
+          "shapes": {
+            "decimal": 66,
+            "int": 99
+          }
+        },
+        "D0 North Scotland": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 53
+          },
+          "examples": [
+            "0.18",
+            "0",
+            "0.1"
+          ],
+          "max_len": 4,
+          "null_count": 5,
+          "shapes": {
+            "decimal": 53,
+            "int": 112
+          }
+        },
+        "D0 North Wales Merseyside and Cheshire": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 78
+          },
+          "examples": [
+            "0.64",
+            "0.14",
+            "0.13"
+          ],
+          "max_len": 4,
+          "null_count": 5,
+          "shapes": {
+            "decimal": 78,
+            "int": 87
+          }
+        },
+        "D0 North West England": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 71
+          },
+          "examples": [
+            "1.05",
+            "0.01",
+            "0"
+          ],
+          "max_len": 4,
+          "null_count": 5,
+          "shapes": {
+            "decimal": 71,
+            "int": 94
+          }
+        },
+        "D0 Other": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 3
+          },
+          "examples": [
+            "0",
+            "1",
+            "0.3"
+          ],
+          "max_len": 4,
+          "null_count": 5,
+          "shapes": {
+            "decimal": 3,
+            "int": 162
+          }
+        },
+        "D0 South East England": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 61
+          },
+          "examples": [
+            "1.25",
+            "0.03",
+            "0.02"
+          ],
+          "max_len": 4,
+          "null_count": 5,
+          "shapes": {
+            "decimal": 61,
+            "int": 104
+          }
+        },
+        "D0 South Wales": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 53
+          },
+          "examples": [
+            "0.33",
+            "0",
+            "0.2"
+          ],
+          "max_len": 4,
+          "null_count": 5,
+          "shapes": {
+            "decimal": 53,
+            "int": 112
+          }
+        },
+        "D0 South West England": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 66
+          },
+          "examples": [
+            "0.59",
+            "0.01",
+            "0"
+          ],
+          "max_len": 4,
+          "null_count": 5,
+          "shapes": {
+            "decimal": 66,
+            "int": 99
+          }
+        },
+        "D0 South and Central Scotland": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 56
+          },
+          "examples": [
+            "0.77",
+            "0.02",
+            "0.01"
+          ],
+          "max_len": 4,
+          "null_count": 5,
+          "shapes": {
+            "decimal": 56,
+            "int": 109
+          }
+        },
+        "D0 Southern England": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 68
+          },
+          "examples": [
+            "1.45",
+            "0.03",
+            "0.02"
+          ],
+          "max_len": 4,
+          "null_count": 5,
+          "shapes": {
+            "decimal": 68,
+            "int": 97
+          }
+        },
+        "D0 Total": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 56
+          },
+          "examples": [
+            "12",
+            "1",
+            "0.7"
+          ],
+          "max_len": 5,
+          "null_count": 5,
+          "shapes": {
+            "decimal": 56,
+            "int": 109
+          }
+        },
+        "D0 West Midlands": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 81
+          },
+          "examples": [
+            "0.84",
+            "0.13",
+            "0.12"
+          ],
+          "max_len": 4,
+          "null_count": 5,
+          "shapes": {
+            "decimal": 81,
+            "int": 84
+          }
+        },
+        "D0 Yorkshire": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 71
+          },
+          "examples": [
+            "0.97",
+            "0.2",
+            "0.19"
+          ],
+          "max_len": 4,
+          "null_count": 5,
+          "shapes": {
+            "decimal": 71,
+            "int": 94
+          }
+        },
+        "DFS Provider": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 170,
+            "int64": 170
+          },
+          "examples": [
+            "BritishGasTradingLimited",
+            "CUBUKLtd",
+            "ConradEnergyTradingLimited"
+          ],
+          "max_len": 26,
+          "null_count": 0,
+          "shapes": {
+            "text": 170
+          }
+        },
+        "DFS Volume": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 58
+          },
+          "examples": [
+            "12",
+            "1",
+            "2.3"
+          ],
+          "max_len": 7,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 58,
+            "int": 112
+          }
+        },
+        "Date": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%d/%m/%Y": 0,
+            "float64": 170,
+            "int64": 170
+          },
+          "examples": [
+            "24/01/2023",
+            "23/01/2023"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "slash_date": 170
+          },
+          "slash_first_gt_12": 170,
+          "slash_second_gt_12": 0
+        },
+        "East England": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 65
+          },
+          "examples": [
+            "1.65",
+            "0.18",
+            "0.17"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 65,
+            "int": 105
+          }
+        },
+        "East Midlands": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 77
+          },
+          "examples": [
+            "1.05",
+            "0.2",
+            "0.24"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 77,
+            "int": 93
+          }
+        },
+        "From": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 170,
+            "int64": 170
+          },
+          "examples": [
+            "16:30",
+            "17:00",
+            "17:30"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "text": 170
+          }
+        },
+        "London": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 59
+          },
+          "examples": [
+            "0.62",
+            "0.03",
+            "0"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 59,
+            "int": 111
+          }
+        },
+        "North East England": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 77
+          },
+          "examples": [
+            "0.62",
+            "0.02",
+            "0"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 77,
+            "int": 93
+          }
+        },
+        "North Scotland": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 57
+          },
+          "examples": [
+            "0.18",
+            "0",
+            "0.1"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 57,
+            "int": 113
+          }
+        },
+        "North Wales_Merseyside_Cheshire": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 87
+          },
+          "examples": [
+            "0.64",
+            "0.14",
+            "0.13"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 87,
+            "int": 83
+          }
+        },
+        "North West England": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 82
+          },
+          "examples": [
+            "1.05",
+            "0.01",
+            "0"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 82,
+            "int": 88
+          }
+        },
+        "Other": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 5
+          },
+          "examples": [
+            "0",
+            "1",
+            "4"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 5,
+            "int": 165
+          }
+        },
+        "Price": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "6000",
+            "3000",
+            "5000"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 170
+          }
+        },
+        "South East England": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 71
+          },
+          "examples": [
+            "1.25",
+            "0.03",
+            "0.02"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 71,
+            "int": 99
+          }
+        },
+        "South Wales": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 57
+          },
+          "examples": [
+            "0.33",
+            "0",
+            "0.2"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 57,
+            "int": 113
+          }
+        },
+        "South West England": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 77
+          },
+          "examples": [
+            "0.59",
+            "0.01",
+            "2.3"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 77,
+            "int": 93
+          }
+        },
+        "South and Central Scotland": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 67
+          },
+          "examples": [
+            "0.77",
+            "0.02",
+            "0"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 67,
+            "int": 103
+          }
+        },
+        "Southern England": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 79
+          },
+          "examples": [
+            "1.45",
+            "0.03",
+            "0.02"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 79,
+            "int": 91
+          }
+        },
+        "Status": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 170,
+            "int64": 170
+          },
+          "examples": [
+            "Accepted",
+            "Rejected"
+          ],
+          "max_len": 8,
+          "null_count": 0,
+          "shapes": {
+            "text": 170
+          }
+        },
+        "To": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 170,
+            "int64": 170
+          },
+          "examples": [
+            "17:00",
+            "17:30",
+            "18:00"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "text": 170
+          }
+        },
+        "Total": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 56
+          },
+          "examples": [
+            "12",
+            "1",
+            "2.3"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 56,
+            "int": 114
+          }
+        },
+        "Unit": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 170,
+            "int64": 170
+          },
+          "examples": [
+            "BG-A-001",
+            "CUB-01",
+            "CUB-02"
+          ],
+          "max_len": 9,
+          "null_count": 0,
+          "shapes": {
+            "text": 170
+          }
+        },
+        "West Midlands": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 90
+          },
+          "examples": [
+            "0.84",
+            "0.13",
+            "0.12"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 90,
+            "int": 80
+          }
+        },
+        "Yorkshire": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 80
+          },
+          "examples": [
+            "0.97",
+            "0.2",
+            "0.19"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 80,
+            "int": 90
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "D0 East England": {
+            "description": "Forecasted volume to be delivered for GSP on day of event 10:00GMT",
+            "title": "D0 East England",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "D0 East Midlands": {
+            "description": "Forecasted volume to be delivered for GSP on day of event 10:00GMT",
+            "title": "D0 East Midlands",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "D0 London": {
+            "description": "Forecasted volume to be delivered for GSP on day of event 10:00GMT",
+            "title": "D0 London",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "D0 North East England": {
+            "description": "Forecasted volume to be delivered for GSP on day of event 10:00GMT",
+            "title": "D0 North East England",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "D0 North Scotland": {
+            "description": "Forecasted volume to be delivered for GSP on day of event 10:00GMT",
+            "title": "D0 North Scotland ",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "D0 North Wales Merseyside and Cheshire": {
+            "description": "Forecasted volume to be delivered for GSP on day of event 10:00GMT",
+            "title": "D0 North Wales Merseyside and Cheshire",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "D0 North West England": {
+            "description": "Forecasted volume to be delivered for GSP on day of event 10:00GMT",
+            "title": "D0 North West England",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "D0 Other": {
+            "description": "Forecasted volume to be delivered for other GSPs on day of event 10:00GMT",
+            "title": "D0 Other",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "D0 South East England": {
+            "description": "Forecasted volume to be delivered for GSP on day of event 10:00GMT",
+            "title": "D0 South East England",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "D0 South Wales": {
+            "description": "Forecasted volume to be delivered for GSP on day of event 10:00GMT",
+            "title": "D0 South Wales",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "D0 South West England": {
+            "description": "Forecasted volume to be delivered for GSP on day of event 10:00GMT",
+            "title": "D0 South West England",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "D0 South and Central Scotland": {
+            "description": "Forecasted volume to be delivered for GSP on day of event 10:00GMT",
+            "title": "D0 South and Central Scotland",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "D0 Southern England": {
+            "description": "Forecasted volume to be delivered for GSP on day of event 10:00GMT",
+            "title": "D0 Southern England",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "D0 Total": {
+            "description": "Total forecasted volume to be delivered on day of event 10:00GMT",
+            "title": "D0 Total",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "D0 West Midlands": {
+            "description": "Forecasted volume to be delivered for GSP on day of event 10:00GMT",
+            "title": "D0 West Midlands",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "D0 Yorkshire": {
+            "description": "Forecasted volume to be delivered for GSP on day of event 10:00GMT",
+            "title": "D0 Yorkshire ",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "DFS Provider": {
+            "description": "Name of the registered DFS provider",
+            "title": "DFS Provider",
+            "type": "text",
+            "unit": null
+          },
+          "DFS Volume": {
+            "description": "DFS Volume Submitted at D-1",
+            "title": "DFS Volume Submitted",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "Date": {
+            "description": "Date of DFS event",
+            "title": "Date",
+            "type": "date",
+            "unit": null
+          },
+          "East England": {
+            "description": "Volume submitted for GSP at D-1",
+            "title": "East England",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "East Midlands": {
+            "description": "Volume submitted for GSP at D-1",
+            "title": "East Midlands",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "From": {
+            "description": "Start time of DFS event",
+            "title": "DFS Event Start Time",
+            "type": "text",
+            "unit": "HH:MM"
+          },
+          "London": {
+            "description": "Volume submitted for GSP at D-1",
+            "title": "London ",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "North East England": {
+            "description": "Volume submitted for GSP at D-1",
+            "title": "North East England",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "North Scotland": {
+            "description": "Volume submitted for GSP at D-1",
+            "title": "North Scotland",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "North Wales_Merseyside_Cheshire": {
+            "description": "Volume submitted for GSP at D-1",
+            "title": "North Wales, Merseyside and Cheshire",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "North West England": {
+            "description": "Volume submitted for GSP at D-1",
+            "title": "North West England",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "Other": {
+            "description": "Volume submitted for other GSPs at D-1",
+            "title": "Other ",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "Price": {
+            "description": "Price of volume submitted per MWh",
+            "title": "Price",
+            "type": "numeric",
+            "unit": "£/MWh"
+          },
+          "South East England": {
+            "description": "Volume submitted for GSP at D-1",
+            "title": "South East England",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "South Wales": {
+            "description": "Volume submitted for GSP at D-1",
+            "title": "South Wales",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "South West England": {
+            "description": "Volume submitted for GSP at D-1",
+            "title": "South West England ",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "South and Central Scotland": {
+            "description": "Volume submitted for GSP at D-1",
+            "title": "South and Central Scotland",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "Southern England": {
+            "description": "Volume submitted for GSP at D-1",
+            "title": "Southern England",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "Status": {
+            "description": "Status of the bid - either Accepted or Rejected",
+            "title": "Status of Bid",
+            "type": "text",
+            "unit": null
+          },
+          "To": {
+            "description": "End time of DFS event",
+            "title": "DFS Event End Time",
+            "type": "text",
+            "unit": "HH:MM"
+          },
+          "Total": {
+            "description": "Total volume submitted for GSPs at D-1",
+            "title": "Total",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "Unit": {
+            "description": "Registered DFS unit ID",
+            "title": "DFS Unit",
+            "type": "text",
+            "unit": null
+          },
+          "West Midlands": {
+            "description": "Volume submitted for GSP at D-1",
+            "title": "West Midlands",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "Yorkshire": {
+            "description": "Volume submitted for GSP at D-1",
+            "title": "Yorkshire ",
+            "type": "numeric",
+            "unit": "MW"
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T10:06:33.337275+00:00",
+      "header": [
+        "Date",
+        "DFS Provider",
+        "Unit",
+        "DFS Volume",
+        "From",
+        "To",
+        "Price",
+        "Status",
+        "North Scotland",
+        "South and Central Scotland",
+        "North East England",
+        "North West England",
+        "Yorkshire",
+        "East Midlands",
+        "West Midlands",
+        "London",
+        "East England",
+        "South East England",
+        "South West England",
+        "Southern England",
+        "North Wales_Merseyside_Cheshire",
+        "South Wales",
+        "Other",
+        "Total",
+        "D0 North Scotland",
+        "D0 South and Central Scotland",
+        "D0 North East England",
+        "D0 North West England",
+        "D0 Yorkshire",
+        "D0 East Midlands",
+        "D0 West Midlands",
+        "D0 London",
+        "D0 East England",
+        "D0 South East England",
+        "D0 South West England",
+        "D0 Southern England",
+        "D0 North Wales Merseyside and Cheshire",
+        "D0 South Wales",
+        "D0 Other",
+        "D0 Total"
+      ],
+      "last_written_at": "2026-10-08T10:06:33.337275+00:00",
+      "resource_ids": [
+        "4e87244e-2479-4e6e-84c2-698dffaca41f"
+      ],
+      "rows": 170,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [],
+  "key": "dfs_live_events_utilisation_report",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Date",
+          "Unit",
+          "From"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Date",
+          "Unit",
+          "To"
+        ],
+        "max_duplicates": 0
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "demand-flexibility-service-live-events",
+  "proposal": {
+    "flags": [],
+    "record_draft": {
+      "encoding": "utf-8",
+      "entity_key": [
+        "date",
+        "unit",
+        "from"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "date",
+              "format": "%d/%m/%Y",
+              "name": "date",
+              "nullable": true,
+              "source": "Date"
+            },
+            {
+              "dtype": "string",
+              "name": "dfs_provider",
+              "nullable": true,
+              "source": "DFS Provider"
+            },
+            {
+              "dtype": "string",
+              "name": "unit",
+              "nullable": true,
+              "source": "Unit"
+            },
+            {
+              "dtype": "float64",
+              "name": "dfs_volume",
+              "nullable": true,
+              "source": "DFS Volume"
+            },
+            {
+              "dtype": "string",
+              "name": "from",
+              "nullable": true,
+              "source": "From"
+            },
+            {
+              "dtype": "string",
+              "name": "to",
+              "nullable": true,
+              "source": "To"
+            },
+            {
+              "dtype": "float64",
+              "name": "price",
+              "nullable": true,
+              "source": "Price"
+            },
+            {
+              "dtype": "string",
+              "name": "status",
+              "nullable": true,
+              "source": "Status"
+            },
+            {
+              "dtype": "float64",
+              "name": "north_scotland",
+              "nullable": true,
+              "source": "North Scotland"
+            },
+            {
+              "dtype": "float64",
+              "name": "south_and_central_scotland",
+              "nullable": true,
+              "source": "South and Central Scotland"
+            },
+            {
+              "dtype": "float64",
+              "name": "north_east_england",
+              "nullable": true,
+              "source": "North East England"
+            },
+            {
+              "dtype": "float64",
+              "name": "north_west_england",
+              "nullable": true,
+              "source": "North West England"
+            },
+            {
+              "dtype": "float64",
+              "name": "yorkshire",
+              "nullable": true,
+              "source": "Yorkshire"
+            },
+            {
+              "dtype": "float64",
+              "name": "east_midlands",
+              "nullable": true,
+              "source": "East Midlands"
+            },
+            {
+              "dtype": "float64",
+              "name": "west_midlands",
+              "nullable": true,
+              "source": "West Midlands"
+            },
+            {
+              "dtype": "float64",
+              "name": "london",
+              "nullable": true,
+              "source": "London"
+            },
+            {
+              "dtype": "float64",
+              "name": "east_england",
+              "nullable": true,
+              "source": "East England"
+            },
+            {
+              "dtype": "float64",
+              "name": "south_east_england",
+              "nullable": true,
+              "source": "South East England"
+            },
+            {
+              "dtype": "float64",
+              "name": "south_west_england",
+              "nullable": true,
+              "source": "South West England"
+            },
+            {
+              "dtype": "float64",
+              "name": "southern_england",
+              "nullable": true,
+              "source": "Southern England"
+            },
+            {
+              "dtype": "float64",
+              "name": "north_wales_merseyside_cheshire",
+              "nullable": true,
+              "source": "North Wales_Merseyside_Cheshire"
+            },
+            {
+              "dtype": "float64",
+              "name": "south_wales",
+              "nullable": true,
+              "source": "South Wales"
+            },
+            {
+              "dtype": "float64",
+              "name": "other",
+              "nullable": true,
+              "source": "Other"
+            },
+            {
+              "dtype": "float64",
+              "name": "total",
+              "nullable": true,
+              "source": "Total"
+            },
+            {
+              "dtype": "float64",
+              "name": "d0_north_scotland",
+              "nullable": true,
+              "source": "D0 North Scotland"
+            },
+            {
+              "dtype": "float64",
+              "name": "d0_south_and_central_scotland",
+              "nullable": true,
+              "source": "D0 South and Central Scotland"
+            },
+            {
+              "dtype": "float64",
+              "name": "d0_north_east_england",
+              "nullable": true,
+              "source": "D0 North East England"
+            },
+            {
+              "dtype": "float64",
+              "name": "d0_north_west_england",
+              "nullable": true,
+              "source": "D0 North West England"
+            },
+            {
+              "dtype": "float64",
+              "name": "d0_yorkshire",
+              "nullable": true,
+              "source": "D0 Yorkshire"
+            },
+            {
+              "dtype": "float64",
+              "name": "d0_east_midlands",
+              "nullable": true,
+              "source": "D0 East Midlands"
+            },
+            {
+              "dtype": "float64",
+              "name": "d0_west_midlands",
+              "nullable": true,
+              "source": "D0 West Midlands"
+            },
+            {
+              "dtype": "float64",
+              "name": "d0_london",
+              "nullable": true,
+              "source": "D0 London"
+            },
+            {
+              "dtype": "float64",
+              "name": "d0_east_england",
+              "nullable": true,
+              "source": "D0 East England"
+            },
+            {
+              "dtype": "float64",
+              "name": "d0_south_east_england",
+              "nullable": true,
+              "source": "D0 South East England"
+            },
+            {
+              "dtype": "float64",
+              "name": "d0_south_west_england",
+              "nullable": true,
+              "source": "D0 South West England"
+            },
+            {
+              "dtype": "float64",
+              "name": "d0_southern_england",
+              "nullable": true,
+              "source": "D0 Southern England"
+            },
+            {
+              "dtype": "float64",
+              "name": "d0_north_wales_merseyside_and_cheshire",
+              "nullable": true,
+              "source": "D0 North Wales Merseyside and Cheshire"
+            },
+            {
+              "dtype": "float64",
+              "name": "d0_south_wales",
+              "nullable": true,
+              "source": "D0 South Wales"
+            },
+            {
+              "dtype": "float64",
+              "name": "d0_other",
+              "nullable": true,
+              "source": "D0 Other"
+            },
+            {
+              "dtype": "float64",
+              "name": "d0_total",
+              "nullable": true,
+              "source": "D0 Total"
+            }
+          ],
+          "header": [
+            "Date",
+            "DFS Provider",
+            "Unit",
+            "DFS Volume",
+            "From",
+            "To",
+            "Price",
+            "Status",
+            "North Scotland",
+            "South and Central Scotland",
+            "North East England",
+            "North West England",
+            "Yorkshire",
+            "East Midlands",
+            "West Midlands",
+            "London",
+            "East England",
+            "South East England",
+            "South West England",
+            "Southern England",
+            "North Wales_Merseyside_Cheshire",
+            "South Wales",
+            "Other",
+            "Total",
+            "D0 North Scotland",
+            "D0 South and Central Scotland",
+            "D0 North East England",
+            "D0 North West England",
+            "D0 Yorkshire",
+            "D0 East Midlands",
+            "D0 West Midlands",
+            "D0 London",
+            "D0 East England",
+            "D0 South East England",
+            "D0 South West England",
+            "D0 Southern England",
+            "D0 North Wales Merseyside and Cheshire",
+            "D0 South Wales",
+            "D0 Other",
+            "D0 Total"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T01",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T01",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: Date"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T02",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['date', 'unit', 'from'] (measured unique in 1 capture(s)); without one, latest stays whole_capture"
+      }
+    ]
+  },
+  "refresh": "frozen",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update Frequency",
+        "value": "Not Active"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Demand Flexibility Service",
+    "title": "Demand Flexibility Service 2022/23: Live Events"
+  }
+}

@@ -1,0 +1,347 @@
+{
+  "archetype": "SER",
+  "batch": "BAL-2",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/skip_rates_stage5_psa_technology/2026/10/08/raw_20261008T112352Z_007c5786-bd34-4a09-8bdf-be5d63eda16a_9818bf02.csv",
+      "ckan_last_modified": "2026-10-08T08:58:11.847497",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 132140,
+      "parse_error": null,
+      "resource_id": "007c5786-bd34-4a09-8bdf-be5d63eda16a",
+      "rows": 132139,
+      "sampled": true,
+      "size": 7040849,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:23:52.769492+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 1,
+      "columns": {
+        "bid_offer": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 132139,
+            "int64": 132139
+          },
+          "examples": [
+            "Bid",
+            "Offer"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "text": 50000
+          }
+        },
+        "fuel": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 123206,
+            "int64": 123206
+          },
+          "examples": [
+            "PS",
+            "BATTERY",
+            "CCGT"
+          ],
+          "max_len": 14,
+          "null_count": 8933,
+          "shapes": {
+            "text": 46401
+          }
+        },
+        "fuel_in_merit_volume_MWh": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 132139
+          },
+          "examples": [
+            "0.01",
+            "0.02",
+            "206.78"
+          ],
+          "max_len": 7,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 50000
+          }
+        },
+        "fuel_skipped_volume_MWh": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 132139
+          },
+          "examples": [
+            "0.01",
+            "0.0",
+            "124.74"
+          ],
+          "max_len": 7,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 50000
+          }
+        },
+        "relative_technology_skip_rate": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 132139
+          },
+          "examples": [
+            "100.0",
+            "0.0",
+            "43.19"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 50000
+          }
+        },
+        "settlement_period_start": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 132139,
+            "int64": 132139
+          },
+          "examples": [
+            "2024-12-15T00:00:00",
+            "2024-12-15T00:30:00",
+            "2024-12-15T01:00:00"
+          ],
+          "max_len": 19,
+          "null_count": 0,
+          "shapes": {
+            "naive_datetime": 50000
+          }
+        },
+        "technology_specific_skip_rate": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 132139
+          },
+          "examples": [
+            "100.0",
+            "0.0",
+            "60.32"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 50000
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "bid_offer": {
+            "description": "Whether a bid or offer was accepted",
+            "title": "Bid_Offer",
+            "type": "text",
+            "unit": null
+          },
+          "fuel": {
+            "description": "Technology type of BMU",
+            "title": "Technology",
+            "type": "text",
+            "unit": null
+          },
+          "fuel_in_merit_volume_MWh": {
+            "description": "The total volume for a specific technology type that was considered in-merit.",
+            "title": "In-merit Volume (MWh)",
+            "type": "numeric",
+            "unit": "MWh"
+          },
+          "fuel_skipped_volume_MWh": {
+            "description": "The volume for a specific technology type that was skipped.",
+            "title": "Skipped Volume (MWh)",
+            "type": "numeric",
+            "unit": "MWh"
+          },
+          "relative_technology_skip_rate": {
+            "description": "A measure of avoidable skips, which accounts for the various technology types  contributing to the overall skip rate within a specified period, calculated by dividing the  total volume of skipped technology by the total in-merit volume of all technology types.",
+            "title": "Relative Technology Skip Rate (%)",
+            "type": "numeric",
+            "unit": "Percentage"
+          },
+          "settlement_period_start": {
+            "description": "Datetime slice at 30min intervals",
+            "title": "Date",
+            "type": "timestamp",
+            "unit": "DateTime UTC"
+          },
+          "technology_specific_skip_rate": {
+            "description": "A measure of avoidable skips, reflecting the frequency at which each technology type is skipped when it is in merit, calculated by dividing the total technology skipped volume by the total in-merit volume specific to each technology type.",
+            "title": "Technology Specific Skip Rate (%)",
+            "type": "numeric",
+            "unit": "Percentage"
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T11:23:52.769492+00:00",
+      "header": [
+        "settlement_period_start",
+        "bid_offer",
+        "fuel",
+        "relative_technology_skip_rate",
+        "technology_specific_skip_rate",
+        "fuel_in_merit_volume_MWh",
+        "fuel_skipped_volume_MWh"
+      ],
+      "last_written_at": "2026-10-08T11:23:52.769492+00:00",
+      "resource_ids": [
+        "007c5786-bd34-4a09-8bdf-be5d63eda16a"
+      ],
+      "rows": 132139,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [
+    "sampled"
+  ],
+  "key": "skip_rates_stage5_psa_technology",
+  "keys": {
+    "candidates": [],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "skip-rates",
+  "proposal": {
+    "flags": [
+      "sampled"
+    ],
+    "record_draft": {
+      "eligibility": {
+        "question": "settlement_period_start: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)",
+        "status": "held",
+        "unit": "BAL-2"
+      },
+      "encoding": "utf-8",
+      "entity_key": [
+        "settlement_period_start",
+        "bid_offer",
+        "fuel",
+        "relative_technology_skip_rate",
+        "technology_specific_skip_rate",
+        "fuel_in_merit_volume_mwh",
+        "fuel_skipped_volume_mwh"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "settlement_period_start",
+              "nullable": true,
+              "source": "settlement_period_start"
+            },
+            {
+              "dtype": "string",
+              "name": "bid_offer",
+              "nullable": true,
+              "source": "bid_offer"
+            },
+            {
+              "dtype": "string",
+              "name": "fuel",
+              "nullable": true,
+              "source": "fuel"
+            },
+            {
+              "dtype": "float64",
+              "name": "relative_technology_skip_rate",
+              "nullable": true,
+              "source": "relative_technology_skip_rate"
+            },
+            {
+              "dtype": "float64",
+              "name": "technology_specific_skip_rate",
+              "nullable": true,
+              "source": "technology_specific_skip_rate"
+            },
+            {
+              "dtype": "float64",
+              "name": "fuel_in_merit_volume_mwh",
+              "nullable": true,
+              "source": "fuel_in_merit_volume_MWh"
+            },
+            {
+              "dtype": "float64",
+              "name": "fuel_skipped_volume_mwh",
+              "nullable": true,
+              "source": "fuel_skipped_volume_MWh"
+            }
+          ],
+          "header": [
+            "settlement_period_start",
+            "bid_offer",
+            "fuel",
+            "relative_technology_skip_rate",
+            "technology_specific_skip_rate",
+            "fuel_in_merit_volume_MWh",
+            "fuel_skipped_volume_MWh"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T02",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "held",
+        "field": "column 'settlement_period_start'",
+        "id": "T01",
+        "kind": "time_semantics",
+        "question": "settlement_period_start: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T02",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: settlement_period_start"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T03",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['settlement_period_start', 'bid_offer', 'fuel', 'relative_technology_skip_rate', 'technology_specific_skip_rate', 'fuel_in_merit_volume_mwh', 'fuel_skipped_volume_mwh'] (no candidate measured unique, so every column); without one, latest stays whole_capture"
+      }
+    ]
+  },
+  "refresh": "daily",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update frequency",
+        "value": "Daily"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Balancing costs",
+    "title": "Skip Rates"
+  }
+}

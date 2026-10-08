@@ -1,0 +1,446 @@
+{
+  "archetype": "FC",
+  "batch": "DEM-1",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/demand_forecast_1d_historic_day_ahead/2026/10/08/raw_20261008T100559Z_9847e7bb-986e-49be-8138-717b25933fbb_b92031eb.csv",
+      "ckan_last_modified": "2026-10-08T08:00:22.840245",
+      "cr": 0,
+      "crlf": 58562,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "9847e7bb-986e-49be-8138-717b25933fbb",
+      "rows": 58561,
+      "sampled": true,
+      "size": 3889600,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:05:59.423430+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 1,
+      "columns": {
+        "CARDINALPOINT": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 52858,
+            "int64": 52858
+          },
+          "examples": [
+            "1F",
+            "1A",
+            "03"
+          ],
+          "max_len": 3,
+          "null_count": 0,
+          "shapes": {
+            "int": 4963,
+            "text": 45037
+          }
+        },
+        "CP_END_TIME": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "30",
+            "230",
+            "300"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 50000
+          }
+        },
+        "CP_ST_TIME": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "30",
+            "100",
+            "300"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 50000
+          }
+        },
+        "CP_TYPE": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 58561,
+            "int64": 58561
+          },
+          "examples": [
+            "F",
+            "P",
+            "T"
+          ],
+          "max_len": 1,
+          "null_count": 0,
+          "shapes": {
+            "text": 50000
+          }
+        },
+        "DAYSAHEAD": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1"
+          ],
+          "max_len": 1,
+          "null_count": 0,
+          "shapes": {
+            "int": 50000
+          }
+        },
+        "FORECASTDEMAND": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "24920",
+            "25250",
+            "23390"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "int": 50000
+          }
+        },
+        "FORECAST_TIMESTAMP": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 58561,
+            "int64": 58561
+          },
+          "examples": [
+            "2018-01-01T08:46:43Z",
+            "2018-01-02T08:43:47Z",
+            "2018-01-03T08:33:46Z"
+          ],
+          "max_len": 20,
+          "null_count": 0,
+          "shapes": {
+            "iso_datetime_z": 50000
+          }
+        },
+        "F_Point": {
+          "blank_count": 2414,
+          "cast_failures": {
+            "float64": 56147,
+            "int64": 56147
+          },
+          "examples": [
+            "NA",
+            "Om",
+            "DM"
+          ],
+          "max_len": 2,
+          "null_count": 0,
+          "shapes": {
+            "text": 50000
+          }
+        },
+        "TARGETDATE": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%Y-%m-%d": 0,
+            "float64": 58561,
+            "int64": 58561
+          },
+          "examples": [
+            "2018-01-02",
+            "2018-01-03",
+            "2018-01-04"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "iso_date": 50000
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "CARDINALPOINT": {
+            "description": "Electricity demand fluctuates during a day depending on how much energy people, businesses and industries are using at that moment in time. As this electricity demand goes up and down we get characteristic peaks and troughs, with some of these peaks and troughs appearing every single day at similar ",
+            "title": "Cardinal Point",
+            "type": "text",
+            "unit": null
+          },
+          "CP_END_TIME": {
+            "description": "The time when a particular cardinal point (CP) ends during the day. This is given relative to the timezone in effect in the UK at the forecast time and date.",
+            "title": "Cardinal Point End Time",
+            "type": "numeric",
+            "unit": null
+          },
+          "CP_ST_TIME": {
+            "description": "The time when a particular cardinal point (CP) starts during the day. This is given relative to the timezone in effect in the UK at the forecast time and date.",
+            "title": "Cardinal Point Start Time",
+            "type": "numeric",
+            "unit": null
+          },
+          "CP_TYPE": {
+            "description": "Fixed, Trough or Peak. Cardinal points (CPs) can either be fixed (occur at a fixed time), trough (minimum demands during a set period of the day) or peak(maximum demands during a set period of the day). These are represented throught the first letter of the point type (F,T or P)",
+            "title": "Cardinal Point Type",
+            "type": "text",
+            "unit": null
+          },
+          "DAYSAHEAD": {
+            "description": "Number of days in advance the forecast was produced",
+            "title": "Days Ahead",
+            "type": "int4",
+            "unit": "Days"
+          },
+          "FORECASTDEMAND": {
+            "description": "National day ahead demand forecast values.",
+            "title": "Forecast Demand",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "FORECAST_TIMESTAMP": {
+            "description": "The date and time at which the forecast was made.",
+            "title": "Forecast Timestamp",
+            "type": "timestamp",
+            "unit": null
+          },
+          "F_Point": {
+            "description": "Forecasts of forecasting points , Publishing forecasts of forecasting points: overnight demand minimum, daytime demand maximum, daytime demand minimum and evening demand maximum.",
+            "title": "Forecasting Point",
+            "type": "text",
+            "unit": null
+          },
+          "TARGETDATE": {
+            "description": "The date the demand forecast is for",
+            "title": "Target Date",
+            "type": "date",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T10:05:59.423430+00:00",
+      "header": [
+        "DAYSAHEAD",
+        "TARGETDATE",
+        "FORECASTDEMAND",
+        "CARDINALPOINT",
+        "CP_TYPE",
+        "CP_ST_TIME",
+        "CP_END_TIME",
+        "F_Point",
+        "FORECAST_TIMESTAMP"
+      ],
+      "last_written_at": "2026-10-08T10:05:59.423430+00:00",
+      "resource_ids": [
+        "9847e7bb-986e-49be-8138-717b25933fbb"
+      ],
+      "rows": 58561,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [
+    "sampled"
+  ],
+  "key": "demand_forecast_1d_historic_day_ahead",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 1,
+        "columns": [
+          "CARDINALPOINT",
+          "FORECAST_TIMESTAMP"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 1,
+        "columns": [
+          "CP_END_TIME",
+          "FORECAST_TIMESTAMP"
+        ],
+        "max_duplicates": 1
+      },
+      {
+        "captures_checked": 1,
+        "columns": [
+          "FORECASTDEMAND",
+          "CP_ST_TIME",
+          "FORECAST_TIMESTAMP"
+        ],
+        "max_duplicates": 1
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "1-day-ahead-demand-forecast",
+  "proposal": {
+    "flags": [
+      "sampled"
+    ],
+    "record_draft": {
+      "eligibility": {
+        "question": "CP_ST_TIME: a numeric column with no vendor unit; CP_END_TIME: a numeric column with no vendor unit; FORECAST_TIMESTAMP: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)",
+        "status": "held",
+        "unit": "DEM-1"
+      },
+      "encoding": "utf-8",
+      "entity_key": [
+        "cardinalpoint",
+        "forecast_timestamp"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "int64",
+              "name": "daysahead",
+              "nullable": true,
+              "source": "DAYSAHEAD"
+            },
+            {
+              "dtype": "date",
+              "format": "%Y-%m-%d",
+              "name": "targetdate",
+              "nullable": true,
+              "source": "TARGETDATE"
+            },
+            {
+              "dtype": "int64",
+              "name": "forecastdemand",
+              "nullable": true,
+              "source": "FORECASTDEMAND"
+            },
+            {
+              "dtype": "string",
+              "name": "cardinalpoint",
+              "nullable": true,
+              "source": "CARDINALPOINT"
+            },
+            {
+              "dtype": "string",
+              "name": "cp_type",
+              "nullable": true,
+              "source": "CP_TYPE"
+            },
+            {
+              "dtype": "float64",
+              "name": "cp_st_time",
+              "nullable": true,
+              "source": "CP_ST_TIME"
+            },
+            {
+              "dtype": "float64",
+              "name": "cp_end_time",
+              "nullable": true,
+              "source": "CP_END_TIME"
+            },
+            {
+              "dtype": "string",
+              "name": "f_point",
+              "nullable": true,
+              "source": "F_Point"
+            },
+            {
+              "dtype": "string",
+              "name": "forecast_timestamp",
+              "nullable": true,
+              "source": "FORECAST_TIMESTAMP"
+            }
+          ],
+          "header": [
+            "DAYSAHEAD",
+            "TARGETDATE",
+            "FORECASTDEMAND",
+            "CARDINALPOINT",
+            "CP_TYPE",
+            "CP_ST_TIME",
+            "CP_END_TIME",
+            "F_Point",
+            "FORECAST_TIMESTAMP"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T04",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "held",
+        "field": "column 'CP_ST_TIME'.unit",
+        "id": "T01",
+        "kind": "unit",
+        "question": "CP_ST_TIME: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'CP_END_TIME'.unit",
+        "id": "T02",
+        "kind": "unit",
+        "question": "CP_END_TIME: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'FORECAST_TIMESTAMP'",
+        "id": "T03",
+        "kind": "time_semantics",
+        "question": "FORECAST_TIMESTAMP: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T04",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: TARGETDATE, FORECAST_TIMESTAMP"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T05",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['cardinalpoint', 'forecast_timestamp'] (measured unique in 1 capture(s)); without one, latest stays whole_capture"
+      }
+    ]
+  },
+  "refresh": "intraday",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Status",
+        "value": "Live"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Demand",
+    "title": "Day Ahead Demand Forecast"
+  }
+}

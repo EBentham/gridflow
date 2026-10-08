@@ -1,0 +1,298 @@
+{
+  "archetype": "SER",
+  "batch": "SYS-1",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/outturn_voltage_costs_main/2026/10/08/raw_20261008T111645Z_073f9ffa-05d5-47e5-8835-e1ac31b7656d_da93654c.csv",
+      "ckan_last_modified": "2025-06-23T11:40:39.592575",
+      "cr": 0,
+      "crlf": 39,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "073f9ffa-05d5-47e5-8835-e1ac31b7656d",
+      "rows": 38,
+      "sampled": false,
+      "size": 2670,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:16:45.428605+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 1,
+      "columns": {
+        "Coordinates": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 38,
+            "int64": 38
+          },
+          "examples": [
+            "(54.495568, -2.7246094)",
+            "(55.844482, -2.4279785)",
+            "(52.569673, 1.0546875)"
+          ],
+          "max_len": 25,
+          "null_count": 0,
+          "shapes": {
+            "text": 38
+          }
+        },
+        "Settlement Month": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%d/%m/%Y": 0,
+            "float64": 38,
+            "int64": 38
+          },
+          "examples": [
+            "01/04/2025",
+            "01/05/2025"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "slash_date": 38
+          },
+          "slash_first_gt_12": 0,
+          "slash_second_gt_12": 0
+        },
+        "Sync Costs (£m)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 22
+          },
+          "examples": [
+            "0",
+            "0.198802603",
+            "2.449078885"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 22,
+            "int": 16
+          }
+        },
+        "Utilisation Costs (£m)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 36
+          },
+          "examples": [
+            "0.363698459",
+            "2.083087479",
+            "1.31757467"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 36,
+            "int": 2
+          }
+        },
+        "Voltage Constraint Group": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 38,
+            "int64": 38
+          },
+          "examples": [
+            "Dumfries & Galloway",
+            "E CORRIDOR",
+            "E ENGLAND"
+          ],
+          "max_len": 19,
+          "null_count": 0,
+          "shapes": {
+            "text": 38
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "Coordinates": {
+            "description": "Co-ordinates to geographically map the Voltage Constraint Group area.",
+            "title": "Coordinates",
+            "type": "text",
+            "unit": null
+          },
+          "Settlement Month": {
+            "description": "Total cost per Settlement Month. Date presented visually as 01/MMM/YYYY but represents the whole 'Month'.",
+            "title": "Settlement Month",
+            "type": "text",
+            "unit": null
+          },
+          "Sync Costs (£m)": {
+            "description": "Costs in the balancing mechanism to run the unit. From trades and balancing mechanism actions.",
+            "title": "Sync Costs",
+            "type": "numeric",
+            "unit": "£(m)"
+          },
+          "Utilisation Costs (£m)": {
+            "description": "AS costs for voltage",
+            "title": "Utilisation Costs (£m)",
+            "type": "numeric",
+            "unit": "£(m)"
+          },
+          "Voltage Constraint Group": {
+            "description": "Defined voltage requirement areas.",
+            "title": "Voltage Constraint Group",
+            "type": "text",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T11:16:45.428605+00:00",
+      "header": [
+        "Settlement Month",
+        "Voltage Constraint Group",
+        "Sync Costs (£m)",
+        "Utilisation Costs (£m)",
+        "Coordinates"
+      ],
+      "last_written_at": "2026-10-08T11:16:45.428605+00:00",
+      "resource_ids": [
+        "073f9ffa-05d5-47e5-8835-e1ac31b7656d"
+      ],
+      "rows": 38,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [
+    "sibling_candidate:outturn_voltage_costs_historical"
+  ],
+  "key": "outturn_voltage_costs_main",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Settlement Month",
+          "Voltage Constraint Group"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Settlement Month",
+          "Utilisation Costs (£m)"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Settlement Month",
+          "Coordinates"
+        ],
+        "max_duplicates": 0
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "outturn-voltage-costs",
+  "proposal": {
+    "flags": [
+      "sibling_candidate:outturn_voltage_costs_historical"
+    ],
+    "record_draft": {
+      "encoding": "utf-8",
+      "entity_key": [
+        "settlement_month",
+        "voltage_constraint_group"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "settlement_month",
+              "nullable": true,
+              "source": "Settlement Month"
+            },
+            {
+              "dtype": "string",
+              "name": "voltage_constraint_group",
+              "nullable": true,
+              "source": "Voltage Constraint Group"
+            },
+            {
+              "dtype": "float64",
+              "name": "sync_costs_m",
+              "nullable": true,
+              "source": "Sync Costs (£m)"
+            },
+            {
+              "dtype": "float64",
+              "name": "utilisation_costs_m",
+              "nullable": true,
+              "source": "Utilisation Costs (£m)"
+            },
+            {
+              "dtype": "string",
+              "name": "coordinates",
+              "nullable": true,
+              "source": "Coordinates"
+            }
+          ],
+          "header": [
+            "Settlement Month",
+            "Voltage Constraint Group",
+            "Sync Costs (£m)",
+            "Utilisation Costs (£m)",
+            "Coordinates"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T01",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T01",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: Settlement Month"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T02",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['settlement_month', 'voltage_constraint_group'] (measured unique in 1 capture(s)); without one, latest stays whole_capture"
+      }
+    ]
+  },
+  "refresh": "monthly",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update Frequency",
+        "value": "Monthly"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Constraint management",
+    "title": "Voltage System Costs"
+  }
+}

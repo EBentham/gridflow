@@ -1,0 +1,442 @@
+{
+  "archetype": "FC",
+  "batch": "AS-1",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/br_auction_requirement_fc_da_archive/2026/10/08/raw_20261008T085205Z_b9ce03d0-c189-44ef-92e4-c02e91feb65d_8ff327b8.csv",
+      "ckan_last_modified": "2026-10-07T13:05:08.053897",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 46415,
+      "parse_error": null,
+      "resource_id": "b9ce03d0-c189-44ef-92e4-c02e91feb65d",
+      "rows": 46414,
+      "sampled": false,
+      "size": 4337894,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T08:52:05.326294+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 1,
+      "columns": {
+        "Auction Date": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%Y-%m-%d": 0,
+            "float64": 46414,
+            "int64": 46414
+          },
+          "examples": [
+            "2024-02-14",
+            "2024-02-15",
+            "2024-02-16"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "iso_date": 46414
+          }
+        },
+        "Forecast produced on": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%Y-%m-%d": 0,
+            "float64": 46414,
+            "int64": 46414
+          },
+          "examples": [
+            "2024-02-13",
+            "2024-02-14",
+            "2024-02-15"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "iso_date": 46414
+          }
+        },
+        "Forecast type": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 46414,
+            "int64": 46414
+          },
+          "examples": [
+            "Dayahead"
+          ],
+          "max_len": 8,
+          "null_count": 0,
+          "shapes": {
+            "text": 46414
+          }
+        },
+        "Negative Balancing Reserve Requirement MW": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "400",
+            "0",
+            "1450"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 46414
+          }
+        },
+        "Positive Balancing Reserve Requirement MW": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "400",
+            "0",
+            "200"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 46414
+          }
+        },
+        "Service Delivery Date": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%Y-%m-%d": 0,
+            "float64": 46414,
+            "int64": 46414
+          },
+          "examples": [
+            "2024-02-15",
+            "2024-02-16",
+            "2024-02-17"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "iso_date": 46414
+          }
+        },
+        "Service Window": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 4,
+            "int64": 4
+          },
+          "examples": [
+            "1",
+            "2",
+            "3"
+          ],
+          "max_len": 2,
+          "null_count": 0,
+          "shapes": {
+            "int": 46410,
+            "text": 4
+          }
+        },
+        "Service Window End Time": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 46414,
+            "int64": 46414
+          },
+          "examples": [
+            "2024-02-14 23:29:00",
+            "2024-02-14 23:59:00",
+            "2024-02-15 00:29:00"
+          ],
+          "max_len": 19,
+          "null_count": 0,
+          "shapes": {
+            "naive_datetime": 46414
+          }
+        },
+        "Service window start time": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 46414,
+            "int64": 46414
+          },
+          "examples": [
+            "2024-02-14 23:00:00",
+            "2024-02-14 23:30:00",
+            "2024-02-15 00:00:00"
+          ],
+          "max_len": 19,
+          "null_count": 0,
+          "shapes": {
+            "naive_datetime": 46414
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "Auction Date": {
+            "description": "The date of the auction event that these requirements apply to",
+            "title": "Auction Date",
+            "type": "date",
+            "unit": null
+          },
+          "Forecast produced on": {
+            "description": "Date that the forecast was produce",
+            "title": "Forecast produced on ",
+            "type": "date",
+            "unit": null
+          },
+          "Forecast type": {
+            "description": "Type of forecast",
+            "title": "Forecast type",
+            "type": "text",
+            "unit": null
+          },
+          "Negative Balancing Reserve Requirement MW": {
+            "description": "Requirement for Negative Balancing reserve",
+            "title": "Negative Balancing Reserve Requirement MW",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "Positive Balancing Reserve Requirement MW": {
+            "description": "Requirement for Positive Balancing reserve",
+            "title": "Positive Balancing Reserve Requirement MW",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "Service Delivery Date": {
+            "description": "The service day for delivery of the service.",
+            "title": "Service Delivery Date",
+            "type": "date",
+            "unit": null
+          },
+          "Service Window": {
+            "description": "Service window identifier",
+            "title": "Service Window",
+            "type": "text",
+            "unit": null
+          },
+          "Service Window End Time": {
+            "description": "End time and date of service window",
+            "title": "Service Window End Time",
+            "type": "timestamp",
+            "unit": null
+          },
+          "Service window start time": {
+            "description": "Start time and date of service window",
+            "title": "Service window start time",
+            "type": "timestamp",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T08:52:05.326294+00:00",
+      "header": [
+        "Auction Date",
+        "Service Delivery Date",
+        "Service Window",
+        "Service window start time",
+        "Service Window End Time",
+        "Positive Balancing Reserve Requirement MW",
+        "Negative Balancing Reserve Requirement MW",
+        "Forecast produced on",
+        "Forecast type"
+      ],
+      "last_written_at": "2026-10-08T08:52:05.326294+00:00",
+      "resource_ids": [
+        "b9ce03d0-c189-44ef-92e4-c02e91feb65d"
+      ],
+      "rows": 46414,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [
+    "sibling_candidate:br_auction_requirement_fc_da,br_auction_requirement_fc_medium_term"
+  ],
+  "key": "br_auction_requirement_fc_da_archive",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Auction Date",
+          "Service Window"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Service Delivery Date",
+          "Service Window"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Service Window",
+          "Service window start time"
+        ],
+        "max_duplicates": 0
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "balancing-reserve-auction-requirement-forecast",
+  "proposal": {
+    "flags": [
+      "sibling_candidate:br_auction_requirement_fc_da,br_auction_requirement_fc_medium_term"
+    ],
+    "record_draft": {
+      "eligibility": {
+        "question": "Service window start time: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced); Service Window End Time: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)",
+        "status": "held",
+        "unit": "AS-1"
+      },
+      "encoding": "utf-8",
+      "entity_key": [
+        "auction_date",
+        "service_window"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "date",
+              "format": "%Y-%m-%d",
+              "name": "auction_date",
+              "nullable": true,
+              "source": "Auction Date"
+            },
+            {
+              "dtype": "date",
+              "format": "%Y-%m-%d",
+              "name": "service_delivery_date",
+              "nullable": true,
+              "source": "Service Delivery Date"
+            },
+            {
+              "dtype": "string",
+              "name": "service_window",
+              "nullable": true,
+              "source": "Service Window"
+            },
+            {
+              "dtype": "string",
+              "name": "service_window_start_time",
+              "nullable": true,
+              "source": "Service window start time"
+            },
+            {
+              "dtype": "string",
+              "name": "service_window_end_time",
+              "nullable": true,
+              "source": "Service Window End Time"
+            },
+            {
+              "dtype": "int64",
+              "name": "positive_balancing_reserve_requirement_mw",
+              "nullable": true,
+              "source": "Positive Balancing Reserve Requirement MW"
+            },
+            {
+              "dtype": "int64",
+              "name": "negative_balancing_reserve_requirement_mw",
+              "nullable": true,
+              "source": "Negative Balancing Reserve Requirement MW"
+            },
+            {
+              "dtype": "date",
+              "format": "%Y-%m-%d",
+              "name": "forecast_produced_on",
+              "nullable": true,
+              "source": "Forecast produced on"
+            },
+            {
+              "dtype": "string",
+              "name": "forecast_type",
+              "nullable": true,
+              "source": "Forecast type"
+            }
+          ],
+          "header": [
+            "Auction Date",
+            "Service Delivery Date",
+            "Service Window",
+            "Service window start time",
+            "Service Window End Time",
+            "Positive Balancing Reserve Requirement MW",
+            "Negative Balancing Reserve Requirement MW",
+            "Forecast produced on",
+            "Forecast type"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T03",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "held",
+        "field": "column 'Service window start time'",
+        "id": "T01",
+        "kind": "time_semantics",
+        "question": "Service window start time: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Service Window End Time'",
+        "id": "T02",
+        "kind": "time_semantics",
+        "question": "Service Window End Time: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T03",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: Auction Date, Service Delivery Date, Service window start time, Service Window End Time, Forecast produced on"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T04",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['auction_date', 'service_window'] (measured unique in 1 capture(s)); without one, latest stays whole_capture"
+      }
+    ]
+  },
+  "refresh": "daily",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update frequency",
+        "value": "Daily"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Ancillary services",
+    "title": "Balancing Reserve Auction Requirement Forecast"
+  }
+}

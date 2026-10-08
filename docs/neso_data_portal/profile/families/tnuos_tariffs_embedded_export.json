@@ -1,0 +1,437 @@
+{
+  "archetype": "TAR",
+  "batch": "BAL-2",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/tnuos_tariffs_embedded_export/2026/10/08/raw_20261008T113904Z_af4501a0-6b96-4088-926c-7c7b0c499b08_b17c3bfa.csv",
+      "ckan_last_modified": "2026-05-28T16:24:12.610430",
+      "cr": 0,
+      "crlf": 603,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "af4501a0-6b96-4088-926c-7c7b0c499b08",
+      "rows": 602,
+      "sampled": false,
+      "size": 40021,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:39:04.071264+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 1,
+      "columns": {
+        "AGIC_£/kW": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 602
+          },
+          "examples": [
+            "3.204673",
+            "3.143391",
+            "3.158116"
+          ],
+          "max_len": 8,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 602
+          }
+        },
+        "EET(Floored)_£/kW": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 362
+          },
+          "examples": [
+            "0",
+            "0.809519",
+            "3.435348"
+          ],
+          "max_len": 9,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 362,
+            "int": 240
+          }
+        },
+        "Locational_£/kW": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 602
+          },
+          "examples": [
+            "-40.785306",
+            "-29.86699",
+            "-13.305217"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 602
+          }
+        },
+        "PhasedResidual_£/kW": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "0"
+          ],
+          "max_len": 1,
+          "null_count": 0,
+          "shapes": {
+            "int": 602
+          }
+        },
+        "Publication": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 602,
+            "int64": 602
+          },
+          "examples": [
+            "Forecast",
+            "Final",
+            "Draft"
+          ],
+          "max_len": 8,
+          "null_count": 0,
+          "shapes": {
+            "text": 602
+          }
+        },
+        "Published_Date": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%d/%m/%Y": 0,
+            "float64": 602,
+            "int64": 602
+          },
+          "examples": [
+            "11/05/2026",
+            "30/01/2026",
+            "19/12/2025"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "slash_date": 602
+          },
+          "slash_first_gt_12": 420,
+          "slash_second_gt_12": 0
+        },
+        "Year_FY": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "2028",
+            "2027",
+            "2029"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 602
+          }
+        },
+        "Zone_Name": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 602,
+            "int64": 602
+          },
+          "examples": [
+            "Northern Scotland",
+            "Southern Scotland",
+            "Northern"
+          ],
+          "max_len": 17,
+          "null_count": 0,
+          "shapes": {
+            "text": 602
+          }
+        },
+        "Zone_No": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1",
+            "2",
+            "3"
+          ],
+          "max_len": 2,
+          "null_count": 0,
+          "shapes": {
+            "int": 602
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "AGIC_£/kW": {
+            "description": "Avoided GSP Infrastructure Costs (AGIC) in £/kW",
+            "title": "Avoided GSP Infrastructure Costs Tariff",
+            "type": "numeric",
+            "unit": "£ per kW"
+          },
+          "EET(Floored)_£/kW": {
+            "description": "Embedded Export (Floored) in £/kW",
+            "title": "Embedded Export Tariff (Floored)",
+            "type": "numeric",
+            "unit": "£ per kW"
+          },
+          "Locational_£/kW": {
+            "description": "Embedded Export Locational in £/kW",
+            "title": "Embedded Export Locational Tariff",
+            "type": "numeric",
+            "unit": "£ per kW"
+          },
+          "PhasedResidual_£/kW": {
+            "description": "Phased Residual in £/kW",
+            "title": "Phased Residual Tariff",
+            "type": "numeric",
+            "unit": "£ per kW"
+          },
+          "Publication": {
+            "description": "States what publication type the tariff relates to",
+            "title": "Publication",
+            "type": "text",
+            "unit": null
+          },
+          "Published_Date": {
+            "description": "Date tariffs were published",
+            "title": "Date of Tariff Publication",
+            "type": "date",
+            "unit": null
+          },
+          "Year_FY": {
+            "description": "Year in which the tariff relates to i.e. 2021 = 1 April 2020 to 31 March 2021",
+            "title": "Finacial Year\t\t",
+            "type": "int4",
+            "unit": null
+          },
+          "Zone_Name": {
+            "description": "Name of Demand (Embedded Export) Zone",
+            "title": "Demand Zone Name",
+            "type": "text",
+            "unit": null
+          },
+          "Zone_No": {
+            "description": "Number Assigned to the Demand (Embedded Export) Zones 1 - 14",
+            "title": "Demand Zone No.",
+            "type": "int4",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T11:39:04.071264+00:00",
+      "header": [
+        "Publication",
+        "Year_FY",
+        "Published_Date",
+        "Zone_No",
+        "Zone_Name",
+        "Locational_£/kW",
+        "AGIC_£/kW",
+        "PhasedResidual_£/kW",
+        "EET(Floored)_£/kW"
+      ],
+      "last_written_at": "2026-10-08T11:39:04.071264+00:00",
+      "resource_ids": [
+        "af4501a0-6b96-4088-926c-7c7b0c499b08"
+      ],
+      "rows": 602,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [],
+  "key": "tnuos_tariffs_embedded_export",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Publication",
+          "Locational_£/kW"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Published_Date",
+          "Locational_£/kW"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Publication",
+          "Zone_No",
+          "AGIC_£/kW"
+        ],
+        "max_duplicates": 0
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "transmission-network-use-of-system-tnuos-tariffs",
+  "proposal": {
+    "flags": [],
+    "record_draft": {
+      "eligibility": {
+        "question": "Year_FY: a numeric column with no vendor unit; Zone_No: a numeric column with no vendor unit",
+        "status": "held",
+        "unit": "BAL-2"
+      },
+      "encoding": "utf-8",
+      "entity_key": [
+        "publication",
+        "locational_kw"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "publication",
+              "nullable": true,
+              "source": "Publication"
+            },
+            {
+              "dtype": "int64",
+              "name": "year_fy",
+              "nullable": true,
+              "source": "Year_FY"
+            },
+            {
+              "dtype": "date",
+              "format": "%d/%m/%Y",
+              "name": "published_date",
+              "nullable": true,
+              "source": "Published_Date"
+            },
+            {
+              "dtype": "int64",
+              "name": "zone_no",
+              "nullable": true,
+              "source": "Zone_No"
+            },
+            {
+              "dtype": "string",
+              "name": "zone_name",
+              "nullable": true,
+              "source": "Zone_Name"
+            },
+            {
+              "dtype": "float64",
+              "name": "locational_kw",
+              "nullable": true,
+              "source": "Locational_£/kW"
+            },
+            {
+              "dtype": "float64",
+              "name": "agic_kw",
+              "nullable": true,
+              "source": "AGIC_£/kW"
+            },
+            {
+              "dtype": "float64",
+              "name": "phasedresidual_kw",
+              "nullable": true,
+              "source": "PhasedResidual_£/kW"
+            },
+            {
+              "dtype": "float64",
+              "name": "eet_floored_kw",
+              "nullable": true,
+              "source": "EET(Floored)_£/kW"
+            }
+          ],
+          "header": [
+            "Publication",
+            "Year_FY",
+            "Published_Date",
+            "Zone_No",
+            "Zone_Name",
+            "Locational_£/kW",
+            "AGIC_£/kW",
+            "PhasedResidual_£/kW",
+            "EET(Floored)_£/kW"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T03",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "held",
+        "field": "column 'Year_FY'.unit",
+        "id": "T01",
+        "kind": "unit",
+        "question": "Year_FY: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Zone_No'.unit",
+        "id": "T02",
+        "kind": "unit",
+        "question": "Zone_No: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T03",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: Published_Date"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T04",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['publication', 'locational_kw'] (measured unique in 1 capture(s)); without one, latest stays whole_capture"
+      }
+    ]
+  },
+  "refresh": "adhoc",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update Frequency",
+        "value": "Quarterly"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Network charges",
+    "title": "Transmission Network Use of System (TNUoS) Tariffs"
+  }
+}

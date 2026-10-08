@@ -1,0 +1,3423 @@
+{
+  "archetype": "EVT",
+  "batch": "AS-5",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/ffr_post_tender_reports_csv_ext/2026/10/08/raw_20261008T105935Z_9347c45d-bffd-40ee-aa1e-593b41bde9a4_3a3f9799.csv",
+      "ckan_last_modified": "2021-07-22T11:52:10.923126",
+      "cr": 0,
+      "crlf": 98,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 2,
+      "parse_error": null,
+      "resource_id": "9347c45d-bffd-40ee-aa1e-593b41bde9a4",
+      "rows": 97,
+      "sampled": false,
+      "size": 25449,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:59:35.183798+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/ffr_post_tender_reports_csv_ext/2026/10/08/raw_20261008T105937Z_fe695206-4729-46f2-a82e-b05ed8552da8_197c0806.csv",
+      "ckan_last_modified": "2021-08-17T14:31:55.605215",
+      "cr": 0,
+      "crlf": 91,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 4,
+      "parse_error": null,
+      "resource_id": "fe695206-4729-46f2-a82e-b05ed8552da8",
+      "rows": 90,
+      "sampled": false,
+      "size": 24168,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:59:37.543597+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/ffr_post_tender_reports_csv_ext/2026/10/08/raw_20261008T105940Z_5e0afd6e-ab83-480a-938b-e0da0223fcbc_32fa9eea.csv",
+      "ckan_last_modified": "2026-05-29T12:28:29.477953",
+      "cr": 0,
+      "crlf": 95,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 4,
+      "parse_error": null,
+      "resource_id": "5e0afd6e-ab83-480a-938b-e0da0223fcbc",
+      "rows": 94,
+      "sampled": false,
+      "size": 25457,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:59:40.293839+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/ffr_post_tender_reports_csv_ext/2026/10/08/raw_20261008T105943Z_61ee31ac-1f2d-4744-add3-bac7878c6010_f2108acb.csv",
+      "ckan_last_modified": "2022-01-19T16:19:50.690294",
+      "cr": 0,
+      "crlf": 230,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 5,
+      "parse_error": null,
+      "resource_id": "61ee31ac-1f2d-4744-add3-bac7878c6010",
+      "rows": 229,
+      "sampled": false,
+      "size": 57350,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:59:43.009138+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/ffr_post_tender_reports_csv_ext/2026/10/08/raw_20261008T105945Z_66e127dc-5e95-49b5-bc55-915269d09e1a_60e06799.csv",
+      "ckan_last_modified": "2022-04-26T14:52:49.241569",
+      "cr": 0,
+      "crlf": 197,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 5,
+      "parse_error": null,
+      "resource_id": "66e127dc-5e95-49b5-bc55-915269d09e1a",
+      "rows": 196,
+      "sampled": false,
+      "size": 51383,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:59:45.501580+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/ffr_post_tender_reports_csv_ext/2026/10/08/raw_20261008T105947Z_c99081fb-0211-4a1a-9eed-53497f64a6ea_7c9c8fd2.csv",
+      "ckan_last_modified": "2022-03-16T16:39:04.706143",
+      "cr": 0,
+      "crlf": 213,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 2,
+      "parse_error": null,
+      "resource_id": "c99081fb-0211-4a1a-9eed-53497f64a6ea",
+      "rows": 212,
+      "sampled": false,
+      "size": 54687,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:59:47.946404+00:00"
+    },
+    {
+      "all_blank_rows": 9,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/ffr_post_tender_reports_csv_ext/2026/10/08/raw_20261008T105950Z_fc994d78-f7d0-4a29-9ea7-31121931d04c_4dfd0883.csv",
+      "ckan_last_modified": "2022-04-20T13:01:32.640805",
+      "cr": 0,
+      "crlf": 213,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 5,
+      "parse_error": null,
+      "resource_id": "fc994d78-f7d0-4a29-9ea7-31121931d04c",
+      "rows": 212,
+      "sampled": false,
+      "size": 52972,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:59:50.576877+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/ffr_post_tender_reports_csv_ext/2026/10/08/raw_20261008T105953Z_a32e86a6-6bd3-422c-996a-7245dcb9b6ee_6aeb5bc2.csv",
+      "ckan_last_modified": "2022-05-18T12:36:31.481807",
+      "cr": 0,
+      "crlf": 228,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 5,
+      "parse_error": null,
+      "resource_id": "a32e86a6-6bd3-422c-996a-7245dcb9b6ee",
+      "rows": 227,
+      "sampled": false,
+      "size": 58570,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:59:53.088174+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/ffr_post_tender_reports_csv_ext/2026/10/08/raw_20261008T105955Z_36164e1d-c6d5-4a58-85b1-74c3a01b0a9b_039d7391.csv",
+      "ckan_last_modified": "2022-06-21T12:25:39.599073",
+      "cr": 0,
+      "crlf": 260,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 5,
+      "parse_error": null,
+      "resource_id": "36164e1d-c6d5-4a58-85b1-74c3a01b0a9b",
+      "rows": 259,
+      "sampled": false,
+      "size": 66708,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:59:55.984081+00:00"
+    },
+    {
+      "all_blank_rows": 7,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/ffr_post_tender_reports_csv_ext/2026/10/08/raw_20261008T105958Z_fcc91d6f-e35a-4878-a77d-d2882d01c357_b19593a7.csv",
+      "ckan_last_modified": "2022-08-18T12:55:34.453397",
+      "cr": 0,
+      "crlf": 260,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 5,
+      "parse_error": null,
+      "resource_id": "fcc91d6f-e35a-4878-a77d-d2882d01c357",
+      "rows": 259,
+      "sampled": false,
+      "size": 65050,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:59:58.897572+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/ffr_post_tender_reports_csv_ext/2026/10/08/raw_20261008T110001Z_7ed768cf-aa45-4577-bc7f-c1b64e534812_0dde3146.csv",
+      "ckan_last_modified": "2022-08-19T15:46:57.440022",
+      "cr": 0,
+      "crlf": 267,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 5,
+      "parse_error": null,
+      "resource_id": "7ed768cf-aa45-4577-bc7f-c1b64e534812",
+      "rows": 266,
+      "sampled": false,
+      "size": 68195,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:00:01.579875+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/ffr_post_tender_reports_csv_ext/2026/10/08/raw_20261008T110004Z_178b6c47-6b27-403e-9715-87f41b48a84b_9bd1e929.csv",
+      "ckan_last_modified": "2022-09-16T14:24:54.063749",
+      "cr": 0,
+      "crlf": 273,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 2,
+      "parse_error": null,
+      "resource_id": "178b6c47-6b27-403e-9715-87f41b48a84b",
+      "rows": 272,
+      "sampled": false,
+      "size": 69763,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:00:04.661749+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/ffr_post_tender_reports_csv_ext/2026/10/08/raw_20261008T110007Z_7e48c1ce-b4cf-43fa-afe9-4e6730474944_586f8249.csv",
+      "ckan_last_modified": "2022-10-24T12:46:53.505500",
+      "cr": 0,
+      "crlf": 273,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 2,
+      "parse_error": null,
+      "resource_id": "7e48c1ce-b4cf-43fa-afe9-4e6730474944",
+      "rows": 272,
+      "sampled": false,
+      "size": 68662,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:00:07.666194+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/ffr_post_tender_reports_csv_ext/2026/10/08/raw_20261008T110010Z_904d2bf0-8396-43c4-8b8a-cafe105fc47c_e412af6f.csv",
+      "ckan_last_modified": "2022-11-18T10:56:58.977745",
+      "cr": 0,
+      "crlf": 282,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 2,
+      "parse_error": null,
+      "resource_id": "904d2bf0-8396-43c4-8b8a-cafe105fc47c",
+      "rows": 281,
+      "sampled": false,
+      "size": 72591,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:00:10.361086+00:00"
+    },
+    {
+      "all_blank_rows": 12,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/ffr_post_tender_reports_csv_ext/2026/10/08/raw_20261008T110013Z_fd84c085-4ff8-45b4-b2ee-43ad2b052d9f_329f6c17.csv",
+      "ckan_last_modified": "2022-12-16T15:10:11.843435",
+      "cr": 0,
+      "crlf": 282,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 2,
+      "parse_error": null,
+      "resource_id": "fd84c085-4ff8-45b4-b2ee-43ad2b052d9f",
+      "rows": 281,
+      "sampled": false,
+      "size": 69672,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:00:13.731112+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/ffr_post_tender_reports_csv_ext/2026/10/08/raw_20261008T110016Z_bd7cbfb7-a8cb-4b84-bd69-42abff36af0d_65db0ccf.csv",
+      "ckan_last_modified": "2023-01-18T15:49:00.316383",
+      "cr": 0,
+      "crlf": 292,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 2,
+      "parse_error": null,
+      "resource_id": "bd7cbfb7-a8cb-4b84-bd69-42abff36af0d",
+      "rows": 291,
+      "sampled": false,
+      "size": 75227,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:00:16.460080+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/ffr_post_tender_reports_csv_ext/2026/10/08/raw_20261008T110019Z_e15891f5-fd65-437f-823f-2906f238d0af_ea1ca32e.csv",
+      "ckan_last_modified": "2023-02-15T14:32:23.226864",
+      "cr": 0,
+      "crlf": 311,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 2,
+      "parse_error": null,
+      "resource_id": "e15891f5-fd65-437f-823f-2906f238d0af",
+      "rows": 310,
+      "sampled": false,
+      "size": 81141,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:00:19.278015+00:00"
+    },
+    {
+      "all_blank_rows": 63,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/ffr_post_tender_reports_csv_ext/2026/10/08/raw_20261008T110021Z_41c9403d-9618-4eb9-be69-45b9923bcf3f_abefb591.csv",
+      "ckan_last_modified": "2023-03-16T14:14:06.143219",
+      "cr": 0,
+      "crlf": 270,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 2,
+      "parse_error": null,
+      "resource_id": "41c9403d-9618-4eb9-be69-45b9923bcf3f",
+      "rows": 269,
+      "sampled": false,
+      "size": 59470,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:00:21.776161+00:00"
+    },
+    {
+      "all_blank_rows": 3,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/ffr_post_tender_reports_csv_ext/2026/10/08/raw_20261008T110024Z_a99bc100-352b-433a-83fc-5514affbbc0e_bd1df7e6.csv",
+      "ckan_last_modified": "2023-04-19T11:32:51.252405",
+      "cr": 0,
+      "crlf": 207,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 2,
+      "parse_error": null,
+      "resource_id": "a99bc100-352b-433a-83fc-5514affbbc0e",
+      "rows": 206,
+      "sampled": false,
+      "size": 56525,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:00:24.268117+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/ffr_post_tender_reports_csv_ext/2026/10/08/raw_20261008T110027Z_3d71f7d1-3dd7-40b1-b5f4-708da72a4f67_8ec5bbe1.csv",
+      "ckan_last_modified": "2023-05-17T13:46:48.140364",
+      "cr": 0,
+      "crlf": 210,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 2,
+      "parse_error": null,
+      "resource_id": "3d71f7d1-3dd7-40b1-b5f4-708da72a4f67",
+      "rows": 209,
+      "sampled": false,
+      "size": 59025,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:00:27.178389+00:00"
+    },
+    {
+      "all_blank_rows": 9,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/ffr_post_tender_reports_csv_ext/2026/10/08/raw_20261008T110029Z_fd57201c-24f6-4d42-8be2-177dd4b36229_422e0d1d.csv",
+      "ckan_last_modified": "2023-06-15T10:51:25.343063",
+      "cr": 0,
+      "crlf": 204,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 2,
+      "parse_error": null,
+      "resource_id": "fd57201c-24f6-4d42-8be2-177dd4b36229",
+      "rows": 203,
+      "sampled": false,
+      "size": 55305,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:00:29.886691+00:00"
+    },
+    {
+      "all_blank_rows": 5,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/ffr_post_tender_reports_csv_ext/2026/10/08/raw_20261008T110032Z_fbb1ce86-b2f7-405d-94ac-6cef6f14cceb_0f21c976.csv",
+      "ckan_last_modified": "2023-07-18T09:12:57.073538",
+      "cr": 0,
+      "crlf": 195,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 2,
+      "parse_error": null,
+      "resource_id": "fbb1ce86-b2f7-405d-94ac-6cef6f14cceb",
+      "rows": 194,
+      "sampled": false,
+      "size": 53222,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:00:32.494150+00:00"
+    },
+    {
+      "all_blank_rows": 7,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/ffr_post_tender_reports_csv_ext/2026/10/08/raw_20261008T110034Z_2bfa2ab3-7f4e-44d7-a9ab-7342c4b9cd34_3afe4e88.csv",
+      "ckan_last_modified": "2023-08-11T14:16:07.574193",
+      "cr": 0,
+      "crlf": 195,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 2,
+      "parse_error": null,
+      "resource_id": "2bfa2ab3-7f4e-44d7-a9ab-7342c4b9cd34",
+      "rows": 194,
+      "sampled": false,
+      "size": 51759,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:00:34.929954+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/ffr_post_tender_reports_csv_ext/2026/10/08/raw_20261008T110037Z_bec39c50-563c-4ed6-8100-8b519dcbf1ef_c917914c.csv",
+      "ckan_last_modified": "2023-09-18T08:43:37.772705",
+      "cr": 0,
+      "crlf": 180,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 2,
+      "parse_error": null,
+      "resource_id": "bec39c50-563c-4ed6-8100-8b519dcbf1ef",
+      "rows": 179,
+      "sampled": false,
+      "size": 49896,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:00:37.697658+00:00"
+    },
+    {
+      "all_blank_rows": 30,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/ffr_post_tender_reports_csv_ext/2026/10/08/raw_20261008T110040Z_59dfabd4-a395-4ddc-a261-2f546a8a3b52_f9961aad.csv",
+      "ckan_last_modified": "2023-10-16T10:33:04.326675",
+      "cr": 0,
+      "crlf": 180,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 2,
+      "parse_error": null,
+      "resource_id": "59dfabd4-a395-4ddc-a261-2f546a8a3b52",
+      "rows": 179,
+      "sampled": false,
+      "size": 42541,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:00:40.275876+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 1,
+      "columns": {
+        "Applicable FFR Capability Data Table": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 97,
+            "int64": 97
+          },
+          "examples": [
+            "As per FFR framework agreement"
+          ],
+          "max_len": 31,
+          "null_count": 0,
+          "shapes": {
+            "text": 97
+          }
+        },
+        "Are you adding volume as per detail change provision": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [],
+          "max_len": 0,
+          "null_count": 97,
+          "shapes": {}
+        },
+        "Automatic Response Energy Deliverable by 10s (MW)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [],
+          "max_len": 0,
+          "null_count": 97,
+          "shapes": {}
+        },
+        "Automatic Response Energy Deliverable by 30s (MW)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 4,
+            "int64": 4
+          },
+          "examples": [
+            "5",
+            "6",
+            "7"
+          ],
+          "max_len": 21,
+          "null_count": 65,
+          "shapes": {
+            "int": 28,
+            "text": 4
+          }
+        },
+        "BMUs  Only": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 13,
+            "int64": 13
+          },
+          "examples": [
+            "No",
+            "-",
+            "Yes"
+          ],
+          "max_len": 3,
+          "null_count": 84,
+          "shapes": {
+            "text": 13
+          }
+        },
+        "Comments": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 20,
+            "int64": 20
+          },
+          "examples": [
+            "H for only 30min"
+          ],
+          "max_len": 16,
+          "null_count": 77,
+          "shapes": {
+            "text": 20
+          }
+        },
+        "Company Name": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 97,
+            "int64": 97
+          },
+          "examples": [
+            "REstore Flexpond UK Ltd",
+            "GridBeyond Limited",
+            "Limejump Ltd"
+          ],
+          "max_len": 36,
+          "null_count": 0,
+          "shapes": {
+            "text": 97
+          }
+        },
+        "End Date": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%d/%m/%Y": 0,
+            "float64": 97,
+            "int64": 97
+          },
+          "examples": [
+            "31/08/2021"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "slash_date": 97
+          },
+          "slash_first_gt_12": 97,
+          "slash_second_gt_12": 0
+        },
+        "Generation Type": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 97,
+            "int64": 97
+          },
+          "examples": [
+            "Multiple Fuel Type",
+            "DSF: Load response",
+            "DSF: Storage (for export)"
+          ],
+          "max_len": 40,
+          "null_count": 0,
+          "shapes": {
+            "text": 97
+          }
+        },
+        "High Frequency Response (max.) @ 0.2Hz (MW)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 52
+          },
+          "examples": [
+            "6.4",
+            "6",
+            "5.6"
+          ],
+          "max_len": 5,
+          "null_count": 28,
+          "shapes": {
+            "decimal": 52,
+            "int": 17
+          }
+        },
+        "High Frequency Response (max.) @ 0.5Hz (MW)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "16",
+            "15",
+            "14"
+          ],
+          "max_len": 2,
+          "null_count": 28,
+          "shapes": {
+            "int": 69
+          }
+        },
+        "Maximum Part Load Point (MW)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [],
+          "max_len": 0,
+          "null_count": 97,
+          "shapes": {}
+        },
+        "Maximum SEL (MW)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [],
+          "max_len": 0,
+          "null_count": 97,
+          "shapes": {}
+        },
+        "Minimum MEL (MW)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [],
+          "max_len": 0,
+          "null_count": 97,
+          "shapes": {}
+        },
+        "Minimum Part Load Point (MW)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [],
+          "max_len": 0,
+          "null_count": 97,
+          "shapes": {}
+        },
+        "Please indicate if this is a mutually exclusive tender": {
+          "blank_count": 1,
+          "cast_failures": {
+            "float64": 3,
+            "int64": 3
+          },
+          "examples": [
+            "Mutually Exclusive to C",
+            "Mutually Exclusive to A + B"
+          ],
+          "max_len": 27,
+          "null_count": 93,
+          "shapes": {
+            "text": 3
+          }
+        },
+        "Please state if this is an all or nothing bid.": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 23,
+            "int64": 23
+          },
+          "examples": [
+            "A",
+            "B",
+            "C"
+          ],
+          "max_len": 1,
+          "null_count": 74,
+          "shapes": {
+            "text": 23
+          }
+        },
+        "Please state the accepted tender that you are stacking onto": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [],
+          "max_len": 0,
+          "null_count": 97,
+          "shapes": {}
+        },
+        "Primary Response (max.) @ 0.2Hz (MW)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 53
+          },
+          "examples": [
+            "6.4",
+            "11.2",
+            "10"
+          ],
+          "max_len": 5,
+          "null_count": 28,
+          "shapes": {
+            "decimal": 53,
+            "int": 16
+          }
+        },
+        "Primary Response (max.) @ 0.5Hz (MW)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "16",
+            "28",
+            "25"
+          ],
+          "max_len": 2,
+          "null_count": 28,
+          "shapes": {
+            "int": 69
+          }
+        },
+        "Primary Response (max.) @ 0.8Hz (MW)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "16",
+            "28",
+            "25"
+          ],
+          "max_len": 2,
+          "null_count": 28,
+          "shapes": {
+            "int": 69
+          }
+        },
+        "Rejection Codes": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 70,
+            "int64": 70
+          },
+          "examples": [
+            "NA",
+            "4",
+            "2"
+          ],
+          "max_len": 2,
+          "null_count": 0,
+          "shapes": {
+            "int": 27,
+            "text": 70
+          }
+        },
+        "Secondary Response (max.) @ 0.2/0.2Hz (MW)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 53
+          },
+          "examples": [
+            "6.4",
+            "11.2",
+            "10"
+          ],
+          "max_len": 5,
+          "null_count": 28,
+          "shapes": {
+            "decimal": 53,
+            "int": 16
+          }
+        },
+        "Secondary Response (max.) @ 0.5/0.5Hz (MW)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "16",
+            "28",
+            "25"
+          ],
+          "max_len": 2,
+          "null_count": 28,
+          "shapes": {
+            "int": 69
+          }
+        },
+        "Start Date": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%d/%m/%Y": 0,
+            "float64": 97,
+            "int64": 97
+          },
+          "examples": [
+            "31/07/2021",
+            "01/08/2021"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "slash_date": 97
+          },
+          "slash_first_gt_12": 39,
+          "slash_second_gt_12": 0
+        },
+        "Status": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 97,
+            "int64": 97
+          },
+          "examples": [
+            "Accepted",
+            "Rejected"
+          ],
+          "max_len": 8,
+          "null_count": 0,
+          "shapes": {
+            "text": 97
+          }
+        },
+        "TO connection  /  DNO connection": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 97,
+            "int64": 97
+          },
+          "examples": [
+            "DNO connection",
+            "TO connection",
+            "DNO Connection"
+          ],
+          "max_len": 14,
+          "null_count": 0,
+          "shapes": {
+            "text": 97
+          }
+        },
+        "Tender Ref": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 97
+          },
+          "examples": [
+            "139.001",
+            "139.002",
+            "139.003"
+          ],
+          "max_len": 7,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 97
+          }
+        },
+        "Tendered Frames per Service Day - Duration (Mon-Fri)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "16",
+            "8",
+            "24"
+          ],
+          "max_len": 2,
+          "null_count": 6,
+          "shapes": {
+            "int": 91
+          }
+        },
+        "Tendered Frames per Service Day - Duration (Saturday)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "16",
+            "8",
+            "24"
+          ],
+          "max_len": 2,
+          "null_count": 7,
+          "shapes": {
+            "int": 90
+          }
+        },
+        "Tendered Frames per Service Day - Duration (Sunday/Bank Hol)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "16",
+            "8",
+            "24"
+          ],
+          "max_len": 2,
+          "null_count": 7,
+          "shapes": {
+            "int": 90
+          }
+        },
+        "Tendered Frames per Service Day - From (Mon-Fri)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "2300",
+            "1500",
+            "700"
+          ],
+          "max_len": 4,
+          "null_count": 6,
+          "shapes": {
+            "int": 91
+          }
+        },
+        "Tendered Frames per Service Day - From (Saturday)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "2300",
+            "1500",
+            "700"
+          ],
+          "max_len": 4,
+          "null_count": 7,
+          "shapes": {
+            "int": 90
+          }
+        },
+        "Tendered Frames per Service Day - From (Sunday/Bank Holidays)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "2300",
+            "1500",
+            "700"
+          ],
+          "max_len": 4,
+          "null_count": 7,
+          "shapes": {
+            "int": 90
+          }
+        },
+        "Tendered Frames per Service Day - To (Mon- Fri)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1500",
+            "2300",
+            "700"
+          ],
+          "max_len": 4,
+          "null_count": 6,
+          "shapes": {
+            "int": 91
+          }
+        },
+        "Tendered Frames per Service Day - To (Saturday)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1500",
+            "2300",
+            "700"
+          ],
+          "max_len": 4,
+          "null_count": 7,
+          "shapes": {
+            "int": 90
+          }
+        },
+        "Tendered Frames per Service Day - To (Sunday/Bank Holidays)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1500",
+            "2300",
+            "700"
+          ],
+          "max_len": 4,
+          "null_count": 7,
+          "shapes": {
+            "int": 90
+          }
+        },
+        "Tendered Period \n(dd.mm.yy - dd.mm.yy)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 97,
+            "int64": 97
+          },
+          "examples": [
+            "31.07.21 - 31.08.21 (1 months)",
+            "01.08.21 - 31.08.21 (1 months)"
+          ],
+          "max_len": 30,
+          "null_count": 0,
+          "shapes": {
+            "text": 97
+          }
+        },
+        "Tendered Prices -  Window Initiation Fee (£/window)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 4,
+            "int64": 4
+          },
+          "examples": [
+            "-"
+          ],
+          "max_len": 1,
+          "null_count": 93,
+          "shapes": {
+            "text": 4
+          }
+        },
+        "Tendered Prices - Availability Fee (£/h)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 66
+          },
+          "examples": [
+            "175.2",
+            "181.6",
+            "177.28"
+          ],
+          "max_len": 6,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 66,
+            "int": 31
+          }
+        },
+        "Tendered Prices - Nomination Fee (£/h)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "0"
+          ],
+          "max_len": 1,
+          "null_count": 90,
+          "shapes": {
+            "int": 7
+          }
+        },
+        "Tendered Unit \n(BMU/Unit ID)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 97,
+            "int64": 97
+          },
+          "examples": [
+            "REST-1",
+            "GBND-2",
+            "ENDSR-1"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "text": 97
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "Applicable FFR Capability Data Table": {
+            "description": "A reference to where information on the technical parameters of the tendered unit is accessible for National Grid ESO.",
+            "title": "Applicable FFR Capability Data Table",
+            "type": "text",
+            "unit": null
+          },
+          "Are you adding volume as per detail change provision": {
+            "description": "An indication as to whether volume is being added to a previous tender via this one",
+            "title": "Adding volume",
+            "type": "text",
+            "unit": null
+          },
+          "Automatic Response Energy Deliverable by 10s (MW)": {
+            "description": "The amount of automatic response (in MW) to be delivered within 10s of the frequency dropping below 49.7 Hz.",
+            "title": "Non-dynamic response volumes",
+            "type": "text",
+            "unit": "MW"
+          },
+          "Automatic Response Energy Deliverable by 30s (MW)": {
+            "description": "The amount of automatic response (in MW) to be delivered within 30s of the frequency dropping below 49.7 Hz.",
+            "title": "Non-dynamic response volumes",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "BMUs  Only": {
+            "description": "A yes/no field depending on whether ABSVD applies to the tendered unit. This can only apply to BMUs.",
+            "title": "BMUs only – Applicable Balancing Service (ABSVD)",
+            "type": "text",
+            "unit": null
+          },
+          "Comments": {
+            "description": "Any further comments associated with the tender submission.",
+            "title": "Comments",
+            "type": "text",
+            "unit": null
+          },
+          "Company Name": {
+            "description": "The name of the company which submitted the associated tender.",
+            "title": "Company Name",
+            "type": "text",
+            "unit": null
+          },
+          "End Date": {
+            "description": "The final date for which FFR would be provided following acceptance of the tender.",
+            "title": "End date",
+            "type": "text",
+            "unit": null
+          },
+          "Generation Type": {
+            "description": "Indicates the fuel type of the tendered unit.",
+            "title": "Generation type",
+            "type": "text",
+            "unit": null
+          },
+          "High Frequency Response (max.) @ 0.2Hz (MW)": {
+            "description": "The amount (in MW) of high frequency response that will be provided at frequency deviations at 0.2 Hz respectively.",
+            "title": "High frequency response (max) @ 0.2Hz (MW)",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "High Frequency Response (max.) @ 0.5Hz (MW)": {
+            "description": "The amount (in MW) of high frequency response that will be provided at frequency deviations at 0.5 Hz respectively.",
+            "title": "High frequency response (max) @ 0.5Hz (MW)",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "Maximum Part Load Point (MW)": {
+            "description": "The maximum partial load the unit can run with - a unit is part-loaded if it is operating at a level other than",
+            "title": "Maximum part load point",
+            "type": "text",
+            "unit": "MW"
+          },
+          "Maximum SEL (MW)": {
+            "description": "The maximum value for the SEL. The SEL is the minimum value at which the BM Unit, under stable conditions, may export (in MW) to the GB Transmission System at the Grid Entry Point or Grid Supply Point as appropriate",
+            "title": "Maximum Stable Export Limit",
+            "type": "text",
+            "unit": "MW"
+          },
+          "Minimum MEL (MW)": {
+            "description": "The minimum value for the MEL. The MEL is the profile of the maximum level at which the BM Unit may be exporting (in MW) to the GB Transmission System at the Grid Entry Point or Grid Supply Point as appropriate",
+            "title": "Minimum Maximum Export Limit",
+            "type": "text",
+            "unit": "MW"
+          },
+          "Minimum Part Load Point (MW)": {
+            "description": "The minimum partial load the unit can run with - a unit is part-loaded if it is operating at a level other than",
+            "title": "Minimum part load point",
+            "type": "text",
+            "unit": "MW"
+          },
+          "Please indicate if this is a mutually exclusive tender": {
+            "description": "Any bids with which this one cannot be taken",
+            "title": "Mutually exclusive tender",
+            "type": "text",
+            "unit": null
+          },
+          "Please state if this is an all or nothing bid.": {
+            "description": "Whether or not this bid is part of an all or nothing combination of bids",
+            "title": "All or nothing bid",
+            "type": "text",
+            "unit": null
+          },
+          "Please state the accepted tender that you are stacking onto": {
+            "description": "The tender being stacked on as per the previous column",
+            "title": "Stacked tender",
+            "type": "text",
+            "unit": null
+          },
+          "Primary Response (max.) @ 0.2Hz (MW)": {
+            "description": "The amount (in MW) of primary frequency response that will be provided at frequency deviations at 0.2 Hz respectively.",
+            "title": "Primary response (max) @ 0.2Hz (MW)",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "Primary Response (max.) @ 0.5Hz (MW)": {
+            "description": "The amount (in MW) of primary frequency response that will be provided at frequency deviations at 0.5 Hz respectively.",
+            "title": "Primary response (max) @ 0.5Hz (MW)",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "Primary Response (max.) @ 0.8Hz (MW)": {
+            "description": "The amount (in MW) of primary frequency response that will be provided at frequency deviations at 0.8 Hz respectively.",
+            "title": "Primary response (max) @ 0.8Hz (MW)",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "Rejection Codes": {
+            "description": "For tenders with the ‘rejected’ status, these codes give a reason as to why they were rejected.",
+            "title": "Rejection Code",
+            "type": "text",
+            "unit": null
+          },
+          "Secondary Response (max.) @ 0.2/0.2Hz (MW)": {
+            "description": "The amount (in MW) of secondary frequency response that will be provided at frequency deviations at 0.2 Hz respectively.",
+            "title": "Secondary response (max) @ 0.2Hz (MW)",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "Secondary Response (max.) @ 0.5/0.5Hz (MW)": {
+            "description": "The amount (in MW) of secondary frequency response that will be provided at frequency deviations at 0.5 Hz respectively.",
+            "title": "Secondary response (max) @ 0.5Hz (MW)",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "Start Date": {
+            "description": "The date from which FFR would be provided following acceptance of the tender.",
+            "title": "Start date",
+            "type": "text",
+            "unit": null
+          },
+          "Status": {
+            "description": "This indicates whether the tender was accepted or rejected during the assessment process.",
+            "title": "Status",
+            "type": "text",
+            "unit": null
+          },
+          "TO connection  /  DNO connection": {
+            "description": "Indicates whether the unit is connected to the transmission network or the distribution network.",
+            "title": "TO connection / DNO connection",
+            "type": "text",
+            "unit": null
+          },
+          "Tender Ref": {
+            "description": "A reference to identify the tender submission. The first 3 digits giver the tender round, and the following digits ID the tender submission within the tender round.",
+            "title": "Tender Ref",
+            "type": "numeric",
+            "unit": null
+          },
+          "Tendered Frames per Service Day - Duration (Mon-Fri)": {
+            "description": "The duration per day for which the unit would be available to provide FFR",
+            "title": "Tendered Frames per Service Day - duration (h)",
+            "type": "int4",
+            "unit": "hours"
+          },
+          "Tendered Frames per Service Day - Duration (Saturday)": {
+            "description": "number of hours that have been tendered for Saturdays",
+            "title": "Duration (h)",
+            "type": "int4",
+            "unit": null
+          },
+          "Tendered Frames per Service Day - Duration (Sunday/Bank Hol)": {
+            "description": "number of hours that have been tendered for Sundays/ bank holidays",
+            "title": "Duration (h)",
+            "type": "int4",
+            "unit": "£"
+          },
+          "Tendered Frames per Service Day - From (Mon-Fri)": {
+            "description": "The time from which the unit would be available to provide FFR",
+            "title": "Tendered Frames per Service Day - from",
+            "type": "int4",
+            "unit": null
+          },
+          "Tendered Frames per Service Day - From (Saturday)": {
+            "description": "start time for Saturdays,  must begin in line with EFA block timings",
+            "title": "Saturdays From",
+            "type": "int4",
+            "unit": null
+          },
+          "Tendered Frames per Service Day - From (Sunday/Bank Holidays)": {
+            "description": "start time for Sundays/ bank holidays,  must begin in line with EFA block timings",
+            "title": "Sundays/ Bank Holidays From",
+            "type": "int4",
+            "unit": null
+          },
+          "Tendered Frames per Service Day - To (Mon- Fri)": {
+            "description": "The time from which the unit would stop being available to provide FFR",
+            "title": "Tendered Frames per Service Day - to",
+            "type": "int4",
+            "unit": null
+          },
+          "Tendered Frames per Service Day - To (Saturday)": {
+            "description": "End time for Saturdays,  must begin in line with EFA block timings",
+            "title": "Saturdays To",
+            "type": "int4",
+            "unit": null
+          },
+          "Tendered Frames per Service Day - To (Sunday/Bank Holidays)": {
+            "description": "End time for Sundays/ bank holidays,  must begin in line with EFA block timings",
+            "title": "Sundays/ Bank Holidays To",
+            "type": "int4",
+            "unit": null
+          },
+          "Tendered Prices -  Window Initiation Fee (£/window)": {
+            "description": "Fee for each FFR window that the provider has been instructed under",
+            "title": "Window initiation fee",
+            "type": "text",
+            "unit": "£/window"
+          },
+          "Tendered Prices - Availability Fee (£/h)": {
+            "description": "This is the main fee that all providers will tender in.  It is the number of hours of availability from a provider.",
+            "title": "Availability fee",
+            "type": "numeric",
+            "unit": "£/h"
+          },
+          "Tendered Prices - Nomination Fee (£/h)": {
+            "description": "Upon a tender being accepted, National Grid ESO can choose to nominate all or part of the hours tendered in.  This payment is made for each hour nominated.",
+            "title": "Nomination fee",
+            "type": "text",
+            "unit": "£/h"
+          }
+        },
+        "field_info_not_in_header": [
+          "Post code",
+          "Tendered Period  (dd.mm.yy - dd.mm.yy)",
+          "Tendered Unit  (BMU/Unit ID)"
+        ],
+        "header_not_in_field_info": [
+          "Tendered Unit \n(BMU/Unit ID)",
+          "Tendered Period \n(dd.mm.yy - dd.mm.yy)"
+        ]
+      },
+      "first_written_at": "2026-10-08T10:59:35.183798+00:00",
+      "header": [
+        "Tender Ref",
+        "Status",
+        "Rejection Codes",
+        "Company Name",
+        "Tendered Unit \n(BMU/Unit ID)",
+        "TO connection  /  DNO connection",
+        "Generation Type",
+        "Start Date",
+        "End Date",
+        "Tendered Period \n(dd.mm.yy - dd.mm.yy)",
+        "Applicable FFR Capability Data Table",
+        "Tendered Frames per Service Day - From (Mon-Fri)",
+        "Tendered Frames per Service Day - To (Mon- Fri)",
+        "Tendered Frames per Service Day - Duration (Mon-Fri)",
+        "Tendered Frames per Service Day - From (Saturday)",
+        "Tendered Frames per Service Day - To (Saturday)",
+        "Tendered Frames per Service Day - Duration (Saturday)",
+        "Tendered Frames per Service Day - From (Sunday/Bank Holidays)",
+        "Tendered Frames per Service Day - To (Sunday/Bank Holidays)",
+        "Tendered Frames per Service Day - Duration (Sunday/Bank Hol)",
+        "Tendered Prices - Availability Fee (£/h)",
+        "Tendered Prices - Nomination Fee (£/h)",
+        "Tendered Prices -  Window Initiation Fee (£/window)",
+        "BMUs  Only",
+        "Maximum Part Load Point (MW)",
+        "Minimum Part Load Point (MW)",
+        "Minimum MEL (MW)",
+        "Maximum SEL (MW)",
+        "Primary Response (max.) @ 0.2Hz (MW)",
+        "Primary Response (max.) @ 0.5Hz (MW)",
+        "Primary Response (max.) @ 0.8Hz (MW)",
+        "Secondary Response (max.) @ 0.2/0.2Hz (MW)",
+        "Secondary Response (max.) @ 0.5/0.5Hz (MW)",
+        "High Frequency Response (max.) @ 0.2Hz (MW)",
+        "High Frequency Response (max.) @ 0.5Hz (MW)",
+        "Are you adding volume as per detail change provision",
+        "Please state the accepted tender that you are stacking onto",
+        "Please state if this is an all or nothing bid.",
+        "Please indicate if this is a mutually exclusive tender",
+        "Automatic Response Energy Deliverable by 10s (MW)",
+        "Automatic Response Energy Deliverable by 30s (MW)",
+        "Comments"
+      ],
+      "last_written_at": "2026-10-08T10:59:35.183798+00:00",
+      "resource_ids": [
+        "9347c45d-bffd-40ee-aa1e-593b41bde9a4"
+      ],
+      "rows": 97,
+      "settlement_periods": []
+    },
+    {
+      "captures": 24,
+      "columns": {
+        "Applicable FFR Capability Data Table": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 5226,
+            "int64": 5226
+          },
+          "examples": [
+            "As per FFR framework agreement",
+            "as per FFR framework agreement"
+          ],
+          "max_len": 31,
+          "null_count": 158,
+          "shapes": {
+            "text": 5226
+          }
+        },
+        "Are you adding volume as per detail change provision": {
+          "blank_count": 1,
+          "cast_failures": {
+            "float64": 23,
+            "int64": 23
+          },
+          "examples": [
+            "-",
+            "A",
+            "B"
+          ],
+          "max_len": 1,
+          "null_count": 5360,
+          "shapes": {
+            "text": 23
+          }
+        },
+        "Automatic Response Energy Deliverable by 10s (MW)": {
+          "blank_count": 1,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1"
+          ],
+          "max_len": 1,
+          "null_count": 5382,
+          "shapes": {
+            "int": 1
+          }
+        },
+        "Automatic Response Energy Deliverable by 30s (MW)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "5",
+            "4",
+            "6"
+          ],
+          "max_len": 2,
+          "null_count": 4161,
+          "shapes": {
+            "int": 1223
+          }
+        },
+        "BMUs  Only": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 2194,
+            "int64": 2194
+          },
+          "examples": [
+            "YES",
+            "-",
+            "Yes"
+          ],
+          "max_len": 3,
+          "null_count": 3190,
+          "shapes": {
+            "text": 2194
+          }
+        },
+        "Comments": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 740,
+            "int64": 740
+          },
+          "examples": [
+            "H for only 30min",
+            "H for 30 minutes only",
+            "All or nothing bid on volume"
+          ],
+          "max_len": 112,
+          "null_count": 4644,
+          "shapes": {
+            "text": 740
+          }
+        },
+        "Company Name": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 5229,
+            "int64": 5229
+          },
+          "examples": [
+            "Social Energy Limited",
+            "Limejump Ltd",
+            "Limejump Energy Ltd"
+          ],
+          "max_len": 50,
+          "null_count": 155,
+          "shapes": {
+            "text": 5229
+          }
+        },
+        "End Date": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%d/%m/%Y": 321,
+            "float64": 4908,
+            "int64": 4908
+          },
+          "examples": [
+            "30/09/2021",
+            "31/10/2021",
+            "44620"
+          ],
+          "max_len": 10,
+          "null_count": 155,
+          "shapes": {
+            "int": 321,
+            "slash_date": 4908
+          },
+          "slash_first_gt_12": 4908,
+          "slash_second_gt_12": 0
+        },
+        "Generation Type": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 5229,
+            "int64": 5229
+          },
+          "examples": [
+            "DSF: Storage (onsite)",
+            "DSF: Storage (for export)",
+            "DSF: Load response"
+          ],
+          "max_len": 40,
+          "null_count": 155,
+          "shapes": {
+            "text": 5229
+          }
+        },
+        "High Frequency Response (max.) @ 0.2Hz (MW)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 3006
+          },
+          "examples": [
+            "0.4",
+            "5.2",
+            "20"
+          ],
+          "max_len": 5,
+          "null_count": 1368,
+          "shapes": {
+            "decimal": 3006,
+            "int": 1010
+          }
+        },
+        "High Frequency Response (max.) @ 0.5Hz (MW)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1",
+            "13",
+            "50"
+          ],
+          "max_len": 2,
+          "null_count": 1368,
+          "shapes": {
+            "int": 4016
+          }
+        },
+        "Maximum Part Load Point (MW)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 8,
+            "int64": 8
+          },
+          "examples": [
+            "-"
+          ],
+          "max_len": 1,
+          "null_count": 5376,
+          "shapes": {
+            "text": 8
+          }
+        },
+        "Maximum SEL (MW)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 8,
+            "int64": 8
+          },
+          "examples": [
+            "-"
+          ],
+          "max_len": 1,
+          "null_count": 5376,
+          "shapes": {
+            "text": 8
+          }
+        },
+        "Minimum MEL (MW)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 8,
+            "int64": 8
+          },
+          "examples": [
+            "-"
+          ],
+          "max_len": 1,
+          "null_count": 5376,
+          "shapes": {
+            "text": 8
+          }
+        },
+        "Minimum Part Load Point (MW)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 8,
+            "int64": 8
+          },
+          "examples": [
+            "-"
+          ],
+          "max_len": 1,
+          "null_count": 5376,
+          "shapes": {
+            "text": 8
+          }
+        },
+        "Please indicate if this is a mutually exclusive tender": {
+          "blank_count": 360,
+          "cast_failures": {
+            "float64": 706,
+            "int64": 714
+          },
+          "examples": [
+            "Mutually Exclusive to C",
+            "Mutually Exclusive to A + B",
+            "Cannot be accepted with A"
+          ],
+          "max_len": 112,
+          "null_count": 4310,
+          "shapes": {
+            "decimal": 8,
+            "text": 706
+          }
+        },
+        "Please state if this is an all or nothing bid.": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 2227,
+            "int64": 2227
+          },
+          "examples": [
+            "A",
+            "B",
+            "C"
+          ],
+          "max_len": 2,
+          "null_count": 3157,
+          "shapes": {
+            "text": 2227
+          }
+        },
+        "Please state the accepted tender that you are stacking onto": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 15,
+            "int64": 15
+          },
+          "examples": [
+            "-",
+            "Mutually exclusive with A and B",
+            "Mutually exclusive with D and E"
+          ],
+          "max_len": 31,
+          "null_count": 5369,
+          "shapes": {
+            "text": 15
+          }
+        },
+        "Post code": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 3669,
+            "int64": 3669
+          },
+          "examples": [
+            "N/A",
+            "YO12",
+            "SN16"
+          ],
+          "max_len": 17,
+          "null_count": 1715,
+          "shapes": {
+            "text": 3669
+          }
+        },
+        "Primary Response (max.) @ 0.2Hz (MW)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 3034
+          },
+          "examples": [
+            "0.4",
+            "5.2",
+            "20"
+          ],
+          "max_len": 5,
+          "null_count": 1368,
+          "shapes": {
+            "decimal": 3034,
+            "int": 982
+          }
+        },
+        "Primary Response (max.) @ 0.5Hz (MW)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1",
+            "13",
+            "50"
+          ],
+          "max_len": 2,
+          "null_count": 1368,
+          "shapes": {
+            "int": 4016
+          }
+        },
+        "Primary Response (max.) @ 0.8Hz (MW)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 15
+          },
+          "examples": [
+            "1",
+            "13",
+            "50"
+          ],
+          "max_len": 4,
+          "null_count": 1368,
+          "shapes": {
+            "decimal": 15,
+            "int": 4001
+          }
+        },
+        "Rejection Codes": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 2508,
+            "int64": 4794
+          },
+          "examples": [
+            "NA",
+            "2",
+            "4"
+          ],
+          "max_len": 3,
+          "null_count": 155,
+          "shapes": {
+            "decimal": 2286,
+            "int": 435,
+            "text": 2508
+          }
+        },
+        "Secondary Response (max.) @ 0.2/0.2Hz (MW)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 3033
+          },
+          "examples": [
+            "0.4",
+            "5.2",
+            "20"
+          ],
+          "max_len": 5,
+          "null_count": 1368,
+          "shapes": {
+            "decimal": 3033,
+            "int": 983
+          }
+        },
+        "Secondary Response (max.) @ 0.5/0.5Hz (MW)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1",
+            "13",
+            "50"
+          ],
+          "max_len": 2,
+          "null_count": 1368,
+          "shapes": {
+            "int": 4016
+          }
+        },
+        "Start Date": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%d/%m/%Y": 321,
+            "float64": 4908,
+            "int64": 4908
+          },
+          "examples": [
+            "31/08/2021",
+            "01/09/2021",
+            "30/09/2021"
+          ],
+          "max_len": 10,
+          "null_count": 155,
+          "shapes": {
+            "int": 321,
+            "slash_date": 4908
+          },
+          "slash_first_gt_12": 2113,
+          "slash_second_gt_12": 0
+        },
+        "Status": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 5229,
+            "int64": 5229
+          },
+          "examples": [
+            "Accepted",
+            "Rejected"
+          ],
+          "max_len": 9,
+          "null_count": 155,
+          "shapes": {
+            "text": 5229
+          }
+        },
+        "TO connection  /  DNO connection": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 5229,
+            "int64": 5229
+          },
+          "examples": [
+            "DNO connection",
+            "TO connection",
+            "DNO Connection"
+          ],
+          "max_len": 14,
+          "null_count": 155,
+          "shapes": {
+            "text": 5229
+          }
+        },
+        "Tender Ref": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 5229
+          },
+          "examples": [
+            "140.001",
+            "140.002",
+            "140.003"
+          ],
+          "max_len": 7,
+          "null_count": 155,
+          "shapes": {
+            "decimal": 5229
+          }
+        },
+        "Tendered Frames per Service Day - Duration (Mon-Fri)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "8",
+            "24",
+            "4"
+          ],
+          "max_len": 2,
+          "null_count": 351,
+          "shapes": {
+            "int": 5033
+          }
+        },
+        "Tendered Frames per Service Day - Duration (Saturday)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "8",
+            "24",
+            "4"
+          ],
+          "max_len": 2,
+          "null_count": 392,
+          "shapes": {
+            "int": 4992
+          }
+        },
+        "Tendered Frames per Service Day - Duration (Sunday/Bank Hol)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "8",
+            "24",
+            "4"
+          ],
+          "max_len": 2,
+          "null_count": 392,
+          "shapes": {
+            "int": 4992
+          }
+        },
+        "Tendered Frames per Service Day - From (Mon-Fri)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "2300",
+            "700",
+            "1500"
+          ],
+          "max_len": 4,
+          "null_count": 351,
+          "shapes": {
+            "int": 5033
+          }
+        },
+        "Tendered Frames per Service Day - From (Saturday)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "2300",
+            "700",
+            "1500"
+          ],
+          "max_len": 4,
+          "null_count": 392,
+          "shapes": {
+            "int": 4992
+          }
+        },
+        "Tendered Frames per Service Day - From (Sunday/Bank Holidays)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "2300",
+            "700",
+            "1500"
+          ],
+          "max_len": 4,
+          "null_count": 392,
+          "shapes": {
+            "int": 4992
+          }
+        },
+        "Tendered Frames per Service Day - To (Mon- Fri)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "700",
+            "1500",
+            "2300"
+          ],
+          "max_len": 4,
+          "null_count": 351,
+          "shapes": {
+            "int": 5033
+          }
+        },
+        "Tendered Frames per Service Day - To (Saturday)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "700",
+            "1500",
+            "2300"
+          ],
+          "max_len": 4,
+          "null_count": 392,
+          "shapes": {
+            "int": 4992
+          }
+        },
+        "Tendered Frames per Service Day - To (Sunday/Bank Holidays)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "700",
+            "1500",
+            "2300"
+          ],
+          "max_len": 4,
+          "null_count": 392,
+          "shapes": {
+            "int": 4992
+          }
+        },
+        "Tendered Period \n(dd.mm.yy - dd.mm.yy)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 5229,
+            "int64": 5229
+          },
+          "examples": [
+            "31.08.21 - 30.09.21 (1 months)",
+            "01.09.21 - 30.09.21 (1 months)",
+            "30.09.21 - 31.10.21 (1 months)"
+          ],
+          "max_len": 30,
+          "null_count": 155,
+          "shapes": {
+            "text": 5229
+          }
+        },
+        "Tendered Prices -  Window Initiation Fee (£/window)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 205,
+            "int64": 205
+          },
+          "examples": [
+            "-",
+            "0"
+          ],
+          "max_len": 1,
+          "null_count": 5172,
+          "shapes": {
+            "int": 7,
+            "text": 205
+          }
+        },
+        "Tendered Prices - Availability Fee (£/h)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 1,
+            "int64": 4216
+          },
+          "examples": [
+            "10.49",
+            "11.99",
+            "10.63"
+          ],
+          "max_len": 11,
+          "null_count": 155,
+          "shapes": {
+            "decimal": 4215,
+            "int": 1013,
+            "text": 1
+          }
+        },
+        "Tendered Prices - Nomination Fee (£/h)": {
+          "blank_count": 9,
+          "cast_failures": {
+            "float64": 205,
+            "int64": 205
+          },
+          "examples": [
+            "-",
+            "0"
+          ],
+          "max_len": 1,
+          "null_count": 4947,
+          "shapes": {
+            "int": 223,
+            "text": 205
+          }
+        },
+        "Tendered Unit \n(BMU/Unit ID)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 5229,
+            "int64": 5229
+          },
+          "examples": [
+            "SOC1-FFR",
+            "SOC2-FFR",
+            "SOC3-FFR"
+          ],
+          "max_len": 11,
+          "null_count": 155,
+          "shapes": {
+            "text": 5229
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "Applicable FFR Capability Data Table": {
+            "description": "A reference to where information on the technical parameters of the tendered unit is accessible for National Grid ESO.",
+            "title": "Applicable FFR Capability Data Table",
+            "type": "text",
+            "unit": null
+          },
+          "Are you adding volume as per detail change provision": {
+            "description": "An indication as to whether volume is being added to a previous tender via this one",
+            "title": "Adding volume",
+            "type": "text",
+            "unit": null
+          },
+          "Automatic Response Energy Deliverable by 10s (MW)": {
+            "description": "The amount of automatic response (in MW) to be delivered within 10s of the frequency dropping below 49.7 Hz.",
+            "title": "Non-dynamic response volumes",
+            "type": "text",
+            "unit": "MW"
+          },
+          "Automatic Response Energy Deliverable by 30s (MW)": {
+            "description": "The amount of automatic response (in MW) to be delivered within 30s of the frequency dropping below 49.7 Hz.",
+            "title": "Non-dynamic response volumes",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "BMUs  Only": {
+            "description": "A yes/no field depending on whether ABSVD applies to the tendered unit. This can only apply to BMUs.",
+            "title": "BMUs only – Applicable Balancing Service (ABSVD)",
+            "type": "text",
+            "unit": null
+          },
+          "Comments": {
+            "description": "Any further comments associated with the tender submission.",
+            "title": "Comments",
+            "type": "text",
+            "unit": null
+          },
+          "Company Name": {
+            "description": "The name of the company which submitted the associated tender.",
+            "title": "Company Name",
+            "type": "text",
+            "unit": null
+          },
+          "End Date": {
+            "description": "The final date for which FFR would be provided following acceptance of the tender.",
+            "title": "End date",
+            "type": "text",
+            "unit": null
+          },
+          "Generation Type": {
+            "description": "Indicates the fuel type of the tendered unit.",
+            "title": "Generation type",
+            "type": "text",
+            "unit": null
+          },
+          "High Frequency Response (max.) @ 0.2Hz (MW)": {
+            "description": "The amount (in MW) of high frequency response that will be provided at frequency deviations at 0.2 Hz respectively.",
+            "title": "High frequency response (max) @ 0.2Hz (MW)",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "High Frequency Response (max.) @ 0.5Hz (MW)": {
+            "description": "The amount (in MW) of high frequency response that will be provided at frequency deviations at 0.5 Hz respectively.",
+            "title": "High frequency response (max) @ 0.5Hz (MW)",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "Maximum Part Load Point (MW)": {
+            "description": "The maximum partial load the unit can run with - a unit is part-loaded if it is operating at a level other than",
+            "title": "Maximum part load point",
+            "type": "text",
+            "unit": "MW"
+          },
+          "Maximum SEL (MW)": {
+            "description": "The maximum value for the SEL. The SEL is the minimum value at which the BM Unit, under stable conditions, may export (in MW) to the GB Transmission System at the Grid Entry Point or Grid Supply Point as appropriate",
+            "title": "Maximum Stable Export Limit",
+            "type": "text",
+            "unit": "MW"
+          },
+          "Minimum MEL (MW)": {
+            "description": "The minimum value for the MEL. The MEL is the profile of the maximum level at which the BM Unit may be exporting (in MW) to the GB Transmission System at the Grid Entry Point or Grid Supply Point as appropriate",
+            "title": "Minimum Maximum Export Limit",
+            "type": "text",
+            "unit": "MW"
+          },
+          "Minimum Part Load Point (MW)": {
+            "description": "The minimum partial load the unit can run with - a unit is part-loaded if it is operating at a level other than",
+            "title": "Minimum part load point",
+            "type": "text",
+            "unit": "MW"
+          },
+          "Please indicate if this is a mutually exclusive tender": {
+            "description": "Any bids with which this one cannot be taken",
+            "title": "Mutually exclusive tender",
+            "type": "text",
+            "unit": null
+          },
+          "Please state if this is an all or nothing bid.": {
+            "description": "Whether or not this bid is part of an all or nothing combination of bids",
+            "title": "All or nothing bid",
+            "type": "text",
+            "unit": null
+          },
+          "Please state the accepted tender that you are stacking onto": {
+            "description": "The tender being stacked on as per the previous column",
+            "title": "Stacked tender",
+            "type": "text",
+            "unit": null
+          },
+          "Post code": {
+            "description": "1st 4 digits of the assets postcode.  Only applies to assets 1MW or greater in size.  For aggregated assets initially this will list the largest asset if over 1MW",
+            "title": "Tendered Unit Post code",
+            "type": "text",
+            "unit": null
+          },
+          "Primary Response (max.) @ 0.2Hz (MW)": {
+            "description": "The amount (in MW) of primary frequency response that will be provided at frequency deviations at 0.2 Hz respectively.",
+            "title": "Primary response (max) @ 0.2Hz (MW)",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "Primary Response (max.) @ 0.5Hz (MW)": {
+            "description": "The amount (in MW) of primary frequency response that will be provided at frequency deviations at 0.5 Hz respectively.",
+            "title": "Primary response (max) @ 0.5Hz (MW)",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "Primary Response (max.) @ 0.8Hz (MW)": {
+            "description": "The amount (in MW) of primary frequency response that will be provided at frequency deviations at 0.8 Hz respectively.",
+            "title": "Primary response (max) @ 0.8Hz (MW)",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "Rejection Codes": {
+            "description": "For tenders with the ‘rejected’ status, these codes give a reason as to why they were rejected.",
+            "title": "Rejection Code",
+            "type": "text",
+            "unit": null
+          },
+          "Secondary Response (max.) @ 0.2/0.2Hz (MW)": {
+            "description": "The amount (in MW) of secondary frequency response that will be provided at frequency deviations at 0.2 Hz respectively.",
+            "title": "Secondary response (max) @ 0.2Hz (MW)",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "Secondary Response (max.) @ 0.5/0.5Hz (MW)": {
+            "description": "The amount (in MW) of secondary frequency response that will be provided at frequency deviations at 0.5 Hz respectively.",
+            "title": "Secondary response (max) @ 0.5Hz (MW)",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "Start Date": {
+            "description": "The date from which FFR would be provided following acceptance of the tender.",
+            "title": "Start date",
+            "type": "text",
+            "unit": null
+          },
+          "Status": {
+            "description": "This indicates whether the tender was accepted or rejected during the assessment process.",
+            "title": "Status",
+            "type": "text",
+            "unit": null
+          },
+          "TO connection  /  DNO connection": {
+            "description": "Indicates whether the unit is connected to the transmission network or the distribution network.",
+            "title": "TO connection / DNO connection",
+            "type": "text",
+            "unit": null
+          },
+          "Tender Ref": {
+            "description": "A reference to identify the tender submission. The first 3 digits giver the tender round, and the following digits ID the tender submission within the tender round.",
+            "title": "Tender Ref",
+            "type": "numeric",
+            "unit": null
+          },
+          "Tendered Frames per Service Day - Duration (Mon-Fri)": {
+            "description": "The duration per day for which the unit would be available to provide FFR",
+            "title": "Tendered Frames per Service Day - duration (h)",
+            "type": "int4",
+            "unit": "hours"
+          },
+          "Tendered Frames per Service Day - Duration (Saturday)": {
+            "description": "number of hours that have been tendered for Saturdays",
+            "title": "Duration (h)",
+            "type": "int4",
+            "unit": null
+          },
+          "Tendered Frames per Service Day - Duration (Sunday/Bank Hol)": {
+            "description": "number of hours that have been tendered for Sundays/ bank holidays",
+            "title": "Duration (h)",
+            "type": "int4",
+            "unit": "£"
+          },
+          "Tendered Frames per Service Day - From (Mon-Fri)": {
+            "description": "The time from which the unit would be available to provide FFR",
+            "title": "Tendered Frames per Service Day - from",
+            "type": "int4",
+            "unit": null
+          },
+          "Tendered Frames per Service Day - From (Saturday)": {
+            "description": "start time for Saturdays,  must begin in line with EFA block timings",
+            "title": "Saturdays From",
+            "type": "int4",
+            "unit": null
+          },
+          "Tendered Frames per Service Day - From (Sunday/Bank Holidays)": {
+            "description": "start time for Sundays/ bank holidays,  must begin in line with EFA block timings",
+            "title": "Sundays/ Bank Holidays From",
+            "type": "int4",
+            "unit": null
+          },
+          "Tendered Frames per Service Day - To (Mon- Fri)": {
+            "description": "The time from which the unit would stop being available to provide FFR",
+            "title": "Tendered Frames per Service Day - to",
+            "type": "int4",
+            "unit": null
+          },
+          "Tendered Frames per Service Day - To (Saturday)": {
+            "description": "End time for Saturdays,  must begin in line with EFA block timings",
+            "title": "Saturdays To",
+            "type": "int4",
+            "unit": null
+          },
+          "Tendered Frames per Service Day - To (Sunday/Bank Holidays)": {
+            "description": "End time for Sundays/ bank holidays,  must begin in line with EFA block timings",
+            "title": "Sundays/ Bank Holidays To",
+            "type": "int4",
+            "unit": null
+          },
+          "Tendered Prices -  Window Initiation Fee (£/window)": {
+            "description": "Fee for each FFR window that the provider has been instructed under",
+            "title": "Window initiation fee",
+            "type": "text",
+            "unit": "£/window"
+          },
+          "Tendered Prices - Availability Fee (£/h)": {
+            "description": "This is the main fee that all providers will tender in.  It is the number of hours of availability from a provider.",
+            "title": "Availability fee",
+            "type": "numeric",
+            "unit": "£/h"
+          },
+          "Tendered Prices - Nomination Fee (£/h)": {
+            "description": "Upon a tender being accepted, National Grid ESO can choose to nominate all or part of the hours tendered in.  This payment is made for each hour nominated.",
+            "title": "Nomination fee",
+            "type": "text",
+            "unit": "£/h"
+          }
+        },
+        "field_info_not_in_header": [
+          "Tendered Period  (dd.mm.yy - dd.mm.yy)",
+          "Tendered Unit  (BMU/Unit ID)"
+        ],
+        "header_not_in_field_info": [
+          "Tendered Unit \n(BMU/Unit ID)",
+          "Tendered Period \n(dd.mm.yy - dd.mm.yy)"
+        ]
+      },
+      "first_written_at": "2026-10-08T10:59:37.543597+00:00",
+      "header": [
+        "Tender Ref",
+        "Status",
+        "Rejection Codes",
+        "Company Name",
+        "Tendered Unit \n(BMU/Unit ID)",
+        "TO connection  /  DNO connection",
+        "Generation Type",
+        "Start Date",
+        "End Date",
+        "Tendered Period \n(dd.mm.yy - dd.mm.yy)",
+        "Applicable FFR Capability Data Table",
+        "Tendered Frames per Service Day - From (Mon-Fri)",
+        "Tendered Frames per Service Day - To (Mon- Fri)",
+        "Tendered Frames per Service Day - Duration (Mon-Fri)",
+        "Tendered Frames per Service Day - From (Saturday)",
+        "Tendered Frames per Service Day - To (Saturday)",
+        "Tendered Frames per Service Day - Duration (Saturday)",
+        "Tendered Frames per Service Day - From (Sunday/Bank Holidays)",
+        "Tendered Frames per Service Day - To (Sunday/Bank Holidays)",
+        "Tendered Frames per Service Day - Duration (Sunday/Bank Hol)",
+        "Tendered Prices - Availability Fee (£/h)",
+        "Tendered Prices - Nomination Fee (£/h)",
+        "Tendered Prices -  Window Initiation Fee (£/window)",
+        "BMUs  Only",
+        "Maximum Part Load Point (MW)",
+        "Minimum Part Load Point (MW)",
+        "Minimum MEL (MW)",
+        "Maximum SEL (MW)",
+        "Primary Response (max.) @ 0.2Hz (MW)",
+        "Primary Response (max.) @ 0.5Hz (MW)",
+        "Primary Response (max.) @ 0.8Hz (MW)",
+        "Secondary Response (max.) @ 0.2/0.2Hz (MW)",
+        "Secondary Response (max.) @ 0.5/0.5Hz (MW)",
+        "High Frequency Response (max.) @ 0.2Hz (MW)",
+        "High Frequency Response (max.) @ 0.5Hz (MW)",
+        "Are you adding volume as per detail change provision",
+        "Please state the accepted tender that you are stacking onto",
+        "Please state if this is an all or nothing bid.",
+        "Please indicate if this is a mutually exclusive tender",
+        "Automatic Response Energy Deliverable by 10s (MW)",
+        "Automatic Response Energy Deliverable by 30s (MW)",
+        "Post code",
+        "Comments"
+      ],
+      "last_written_at": "2026-10-08T11:00:40.275876+00:00",
+      "resource_ids": [
+        "178b6c47-6b27-403e-9715-87f41b48a84b",
+        "2bfa2ab3-7f4e-44d7-a9ab-7342c4b9cd34",
+        "36164e1d-c6d5-4a58-85b1-74c3a01b0a9b",
+        "3d71f7d1-3dd7-40b1-b5f4-708da72a4f67",
+        "41c9403d-9618-4eb9-be69-45b9923bcf3f",
+        "59dfabd4-a395-4ddc-a261-2f546a8a3b52",
+        "5e0afd6e-ab83-480a-938b-e0da0223fcbc",
+        "61ee31ac-1f2d-4744-add3-bac7878c6010",
+        "66e127dc-5e95-49b5-bc55-915269d09e1a",
+        "7e48c1ce-b4cf-43fa-afe9-4e6730474944",
+        "7ed768cf-aa45-4577-bc7f-c1b64e534812",
+        "904d2bf0-8396-43c4-8b8a-cafe105fc47c",
+        "a32e86a6-6bd3-422c-996a-7245dcb9b6ee",
+        "a99bc100-352b-433a-83fc-5514affbbc0e",
+        "bd7cbfb7-a8cb-4b84-bd69-42abff36af0d",
+        "bec39c50-563c-4ed6-8100-8b519dcbf1ef",
+        "c99081fb-0211-4a1a-9eed-53497f64a6ea",
+        "e15891f5-fd65-437f-823f-2906f238d0af",
+        "fbb1ce86-b2f7-405d-94ac-6cef6f14cceb",
+        "fc994d78-f7d0-4a29-9ea7-31121931d04c",
+        "fcc91d6f-e35a-4878-a77d-d2882d01c357",
+        "fd57201c-24f6-4d42-8be2-177dd4b36229",
+        "fd84c085-4ff8-45b4-b2ee-43ad2b052d9f",
+        "fe695206-4729-46f2-a82e-b05ed8552da8"
+      ],
+      "rows": 5384,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [
+    "multi_epoch",
+    "sibling_candidate:ffr_post_tender_reports_csv,ffr_post_tender_reports_ext"
+  ],
+  "key": "ffr_post_tender_reports_csv_ext",
+  "keys": {
+    "candidates": [],
+    "full_row_max_duplicates": 62
+  },
+  "other_captures": 0,
+  "package": "firm-frequency-response-post-tender-reports",
+  "proposal": {
+    "flags": [
+      "multi_epoch",
+      "sibling_candidate:ffr_post_tender_reports_csv,ffr_post_tender_reports_ext",
+      "text_declared_date_shaped:End Date",
+      "text_declared_date_shaped:Start Date"
+    ],
+    "record_draft": {
+      "eligibility": {
+        "question": "Tender Ref: a numeric column with no vendor unit; Tendered Frames per Service Day - From (Mon-Fri): a numeric column with no vendor unit; Tendered Frames per Service Day - To (Mon- Fri): a numeric column with no vendor unit; Tendered Frames per Service Day - From (Saturday): a numeric column with no vendor unit; Tendered Frames per Service Day - To (Saturday): a numeric column with no vendor unit; Tendered Frames per Service Day - Duration (Saturday): a numeric column with no vendor unit; Tendered Frames per Service Day - From (Sunday/Bank Holidays): a numeric column with no vendor unit; Tendered Frames per Service Day - To (Sunday/Bank Holidays): a numeric column with no vendor unit; Tender Ref: a numeric column with no vendor unit; Tendered Frames per Service Day - From (Mon-Fri): a numeric column with no vendor unit; Tendered Frames per Service Day - To (Mon- Fri): a numeric column with no vendor unit; Tendered Frames per Service Day - From (Saturday): a numeric column with no vendor unit; Tendered Frames per Service Day - To (Saturday): a numeric column with no vendor unit; Tendered Frames per Service Day - Duration (Saturday): a numeric column with no vendor unit; Tendered Frames per Service Day - From (Sunday/Bank Holidays): a numeric column with no vendor unit; Tendered Frames per Service Day - To (Sunday/Bank Holidays): a numeric column with no vendor unit",
+        "status": "held",
+        "unit": "AS-5"
+      },
+      "encoding": "utf-8",
+      "entity_key": [
+        "tender_ref",
+        "status",
+        "rejection_codes",
+        "company_name",
+        "tendered_unit_bmu_unit_id",
+        "to_connection_dno_connection",
+        "generation_type",
+        "start_date",
+        "end_date",
+        "tendered_period_dd_mm_yy_dd_mm_yy",
+        "applicable_ffr_capability_data_table",
+        "tendered_frames_per_service_day_from_mon_fri",
+        "tendered_frames_per_service_day_to_mon_fri",
+        "tendered_frames_per_service_day_duration_mon_fri",
+        "tendered_frames_per_service_day_from_saturday",
+        "tendered_frames_per_service_day_to_saturday",
+        "tendered_frames_per_service_day_duration_saturday",
+        "tendered_frames_per_service_day_from_sunday_bank_holidays",
+        "tendered_frames_per_service_day_to_sunday_bank_holidays",
+        "tendered_frames_per_service_day_duration_sunday_bank_hol",
+        "tendered_prices_availability_fee_h",
+        "tendered_prices_nomination_fee_h",
+        "tendered_prices_window_initiation_fee_window",
+        "bmus_only",
+        "maximum_part_load_point_mw",
+        "minimum_part_load_point_mw",
+        "minimum_mel_mw",
+        "maximum_sel_mw",
+        "primary_response_max_0_2hz_mw",
+        "primary_response_max_0_5hz_mw",
+        "primary_response_max_0_8hz_mw",
+        "secondary_response_max_0_2_0_2hz_mw",
+        "secondary_response_max_0_5_0_5hz_mw",
+        "high_frequency_response_max_0_2hz_mw",
+        "high_frequency_response_max_0_5hz_mw",
+        "are_you_adding_volume_as_per_detail_change_provision",
+        "please_state_the_accepted_tender_that_you_are_stacking_onto",
+        "please_state_if_this_is_an_all_or_nothing_bid",
+        "please_indicate_if_this_is_a_mutually_exclusive_tender",
+        "automatic_response_energy_deliverable_by_10s_mw",
+        "automatic_response_energy_deliverable_by_30s_mw",
+        "post_code",
+        "comments"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "float64",
+              "name": "tender_ref",
+              "nullable": true,
+              "source": "Tender Ref"
+            },
+            {
+              "dtype": "string",
+              "name": "status",
+              "nullable": true,
+              "source": "Status"
+            },
+            {
+              "dtype": "string",
+              "name": "rejection_codes",
+              "nullable": true,
+              "source": "Rejection Codes"
+            },
+            {
+              "dtype": "string",
+              "name": "company_name",
+              "nullable": true,
+              "source": "Company Name"
+            },
+            {
+              "dtype": "string",
+              "name": "tendered_unit_bmu_unit_id",
+              "nullable": true,
+              "source": "Tendered Unit \n(BMU/Unit ID)"
+            },
+            {
+              "dtype": "string",
+              "name": "to_connection_dno_connection",
+              "nullable": true,
+              "source": "TO connection  /  DNO connection"
+            },
+            {
+              "dtype": "string",
+              "name": "generation_type",
+              "nullable": true,
+              "source": "Generation Type"
+            },
+            {
+              "dtype": "date",
+              "format": "%d/%m/%Y",
+              "name": "start_date",
+              "nullable": true,
+              "source": "Start Date"
+            },
+            {
+              "dtype": "date",
+              "format": "%d/%m/%Y",
+              "name": "end_date",
+              "nullable": true,
+              "source": "End Date"
+            },
+            {
+              "dtype": "string",
+              "name": "tendered_period_dd_mm_yy_dd_mm_yy",
+              "nullable": true,
+              "source": "Tendered Period \n(dd.mm.yy - dd.mm.yy)"
+            },
+            {
+              "dtype": "string",
+              "name": "applicable_ffr_capability_data_table",
+              "nullable": true,
+              "source": "Applicable FFR Capability Data Table"
+            },
+            {
+              "dtype": "int64",
+              "name": "tendered_frames_per_service_day_from_mon_fri",
+              "nullable": true,
+              "source": "Tendered Frames per Service Day - From (Mon-Fri)"
+            },
+            {
+              "dtype": "int64",
+              "name": "tendered_frames_per_service_day_to_mon_fri",
+              "nullable": true,
+              "source": "Tendered Frames per Service Day - To (Mon- Fri)"
+            },
+            {
+              "dtype": "int64",
+              "name": "tendered_frames_per_service_day_duration_mon_fri",
+              "nullable": true,
+              "source": "Tendered Frames per Service Day - Duration (Mon-Fri)"
+            },
+            {
+              "dtype": "int64",
+              "name": "tendered_frames_per_service_day_from_saturday",
+              "nullable": true,
+              "source": "Tendered Frames per Service Day - From (Saturday)"
+            },
+            {
+              "dtype": "int64",
+              "name": "tendered_frames_per_service_day_to_saturday",
+              "nullable": true,
+              "source": "Tendered Frames per Service Day - To (Saturday)"
+            },
+            {
+              "dtype": "int64",
+              "name": "tendered_frames_per_service_day_duration_saturday",
+              "nullable": true,
+              "source": "Tendered Frames per Service Day - Duration (Saturday)"
+            },
+            {
+              "dtype": "int64",
+              "name": "tendered_frames_per_service_day_from_sunday_bank_holidays",
+              "nullable": true,
+              "source": "Tendered Frames per Service Day - From (Sunday/Bank Holidays)"
+            },
+            {
+              "dtype": "int64",
+              "name": "tendered_frames_per_service_day_to_sunday_bank_holidays",
+              "nullable": true,
+              "source": "Tendered Frames per Service Day - To (Sunday/Bank Holidays)"
+            },
+            {
+              "dtype": "int64",
+              "name": "tendered_frames_per_service_day_duration_sunday_bank_hol",
+              "nullable": true,
+              "source": "Tendered Frames per Service Day - Duration (Sunday/Bank Hol)"
+            },
+            {
+              "dtype": "float64",
+              "name": "tendered_prices_availability_fee_h",
+              "nullable": true,
+              "source": "Tendered Prices - Availability Fee (£/h)"
+            },
+            {
+              "dtype": "string",
+              "name": "tendered_prices_nomination_fee_h",
+              "nullable": true,
+              "source": "Tendered Prices - Nomination Fee (£/h)"
+            },
+            {
+              "dtype": "string",
+              "name": "tendered_prices_window_initiation_fee_window",
+              "nullable": true,
+              "source": "Tendered Prices -  Window Initiation Fee (£/window)"
+            },
+            {
+              "dtype": "string",
+              "name": "bmus_only",
+              "nullable": true,
+              "source": "BMUs  Only"
+            },
+            {
+              "dtype": "string",
+              "name": "maximum_part_load_point_mw",
+              "nullable": true,
+              "source": "Maximum Part Load Point (MW)"
+            },
+            {
+              "dtype": "string",
+              "name": "minimum_part_load_point_mw",
+              "nullable": true,
+              "source": "Minimum Part Load Point (MW)"
+            },
+            {
+              "dtype": "string",
+              "name": "minimum_mel_mw",
+              "nullable": true,
+              "source": "Minimum MEL (MW)"
+            },
+            {
+              "dtype": "string",
+              "name": "maximum_sel_mw",
+              "nullable": true,
+              "source": "Maximum SEL (MW)"
+            },
+            {
+              "dtype": "float64",
+              "name": "primary_response_max_0_2hz_mw",
+              "nullable": true,
+              "source": "Primary Response (max.) @ 0.2Hz (MW)"
+            },
+            {
+              "dtype": "int64",
+              "name": "primary_response_max_0_5hz_mw",
+              "nullable": true,
+              "source": "Primary Response (max.) @ 0.5Hz (MW)"
+            },
+            {
+              "dtype": "int64",
+              "name": "primary_response_max_0_8hz_mw",
+              "nullable": true,
+              "source": "Primary Response (max.) @ 0.8Hz (MW)"
+            },
+            {
+              "dtype": "float64",
+              "name": "secondary_response_max_0_2_0_2hz_mw",
+              "nullable": true,
+              "source": "Secondary Response (max.) @ 0.2/0.2Hz (MW)"
+            },
+            {
+              "dtype": "int64",
+              "name": "secondary_response_max_0_5_0_5hz_mw",
+              "nullable": true,
+              "source": "Secondary Response (max.) @ 0.5/0.5Hz (MW)"
+            },
+            {
+              "dtype": "float64",
+              "name": "high_frequency_response_max_0_2hz_mw",
+              "nullable": true,
+              "source": "High Frequency Response (max.) @ 0.2Hz (MW)"
+            },
+            {
+              "dtype": "int64",
+              "name": "high_frequency_response_max_0_5hz_mw",
+              "nullable": true,
+              "source": "High Frequency Response (max.) @ 0.5Hz (MW)"
+            },
+            {
+              "dtype": "string",
+              "name": "are_you_adding_volume_as_per_detail_change_provision",
+              "nullable": true,
+              "source": "Are you adding volume as per detail change provision"
+            },
+            {
+              "dtype": "string",
+              "name": "please_state_the_accepted_tender_that_you_are_stacking_onto",
+              "nullable": true,
+              "source": "Please state the accepted tender that you are stacking onto"
+            },
+            {
+              "dtype": "string",
+              "name": "please_state_if_this_is_an_all_or_nothing_bid",
+              "nullable": true,
+              "source": "Please state if this is an all or nothing bid."
+            },
+            {
+              "dtype": "string",
+              "name": "please_indicate_if_this_is_a_mutually_exclusive_tender",
+              "nullable": true,
+              "source": "Please indicate if this is a mutually exclusive tender"
+            },
+            {
+              "dtype": "string",
+              "name": "automatic_response_energy_deliverable_by_10s_mw",
+              "nullable": true,
+              "source": "Automatic Response Energy Deliverable by 10s (MW)"
+            },
+            {
+              "dtype": "TODO: T09",
+              "name": "automatic_response_energy_deliverable_by_30s_mw",
+              "nullable": true,
+              "source": "Automatic Response Energy Deliverable by 30s (MW)"
+            },
+            {
+              "dtype": "string",
+              "name": "comments",
+              "nullable": true,
+              "source": "Comments"
+            }
+          ],
+          "header": [
+            "Tender Ref",
+            "Status",
+            "Rejection Codes",
+            "Company Name",
+            "Tendered Unit \n(BMU/Unit ID)",
+            "TO connection  /  DNO connection",
+            "Generation Type",
+            "Start Date",
+            "End Date",
+            "Tendered Period \n(dd.mm.yy - dd.mm.yy)",
+            "Applicable FFR Capability Data Table",
+            "Tendered Frames per Service Day - From (Mon-Fri)",
+            "Tendered Frames per Service Day - To (Mon- Fri)",
+            "Tendered Frames per Service Day - Duration (Mon-Fri)",
+            "Tendered Frames per Service Day - From (Saturday)",
+            "Tendered Frames per Service Day - To (Saturday)",
+            "Tendered Frames per Service Day - Duration (Saturday)",
+            "Tendered Frames per Service Day - From (Sunday/Bank Holidays)",
+            "Tendered Frames per Service Day - To (Sunday/Bank Holidays)",
+            "Tendered Frames per Service Day - Duration (Sunday/Bank Hol)",
+            "Tendered Prices - Availability Fee (£/h)",
+            "Tendered Prices - Nomination Fee (£/h)",
+            "Tendered Prices -  Window Initiation Fee (£/window)",
+            "BMUs  Only",
+            "Maximum Part Load Point (MW)",
+            "Minimum Part Load Point (MW)",
+            "Minimum MEL (MW)",
+            "Maximum SEL (MW)",
+            "Primary Response (max.) @ 0.2Hz (MW)",
+            "Primary Response (max.) @ 0.5Hz (MW)",
+            "Primary Response (max.) @ 0.8Hz (MW)",
+            "Secondary Response (max.) @ 0.2/0.2Hz (MW)",
+            "Secondary Response (max.) @ 0.5/0.5Hz (MW)",
+            "High Frequency Response (max.) @ 0.2Hz (MW)",
+            "High Frequency Response (max.) @ 0.5Hz (MW)",
+            "Are you adding volume as per detail change provision",
+            "Please state the accepted tender that you are stacking onto",
+            "Please state if this is an all or nothing bid.",
+            "Please indicate if this is a mutually exclusive tender",
+            "Automatic Response Energy Deliverable by 10s (MW)",
+            "Automatic Response Energy Deliverable by 30s (MW)",
+            "Comments"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        },
+        {
+          "columns": [
+            {
+              "dtype": "float64",
+              "name": "tender_ref",
+              "nullable": true,
+              "source": "Tender Ref"
+            },
+            {
+              "dtype": "string",
+              "name": "status",
+              "nullable": true,
+              "source": "Status"
+            },
+            {
+              "dtype": "string",
+              "name": "rejection_codes",
+              "nullable": true,
+              "source": "Rejection Codes"
+            },
+            {
+              "dtype": "string",
+              "name": "company_name",
+              "nullable": true,
+              "source": "Company Name"
+            },
+            {
+              "dtype": "string",
+              "name": "tendered_unit_bmu_unit_id",
+              "nullable": true,
+              "source": "Tendered Unit \n(BMU/Unit ID)"
+            },
+            {
+              "dtype": "string",
+              "name": "to_connection_dno_connection",
+              "nullable": true,
+              "source": "TO connection  /  DNO connection"
+            },
+            {
+              "dtype": "string",
+              "name": "generation_type",
+              "nullable": true,
+              "source": "Generation Type"
+            },
+            {
+              "dtype": "string",
+              "name": "start_date",
+              "nullable": true,
+              "source": "Start Date"
+            },
+            {
+              "dtype": "string",
+              "name": "end_date",
+              "nullable": true,
+              "source": "End Date"
+            },
+            {
+              "dtype": "string",
+              "name": "tendered_period_dd_mm_yy_dd_mm_yy",
+              "nullable": true,
+              "source": "Tendered Period \n(dd.mm.yy - dd.mm.yy)"
+            },
+            {
+              "dtype": "string",
+              "name": "applicable_ffr_capability_data_table",
+              "nullable": true,
+              "source": "Applicable FFR Capability Data Table"
+            },
+            {
+              "dtype": "int64",
+              "name": "tendered_frames_per_service_day_from_mon_fri",
+              "nullable": true,
+              "source": "Tendered Frames per Service Day - From (Mon-Fri)"
+            },
+            {
+              "dtype": "int64",
+              "name": "tendered_frames_per_service_day_to_mon_fri",
+              "nullable": true,
+              "source": "Tendered Frames per Service Day - To (Mon- Fri)"
+            },
+            {
+              "dtype": "int64",
+              "name": "tendered_frames_per_service_day_duration_mon_fri",
+              "nullable": true,
+              "source": "Tendered Frames per Service Day - Duration (Mon-Fri)"
+            },
+            {
+              "dtype": "int64",
+              "name": "tendered_frames_per_service_day_from_saturday",
+              "nullable": true,
+              "source": "Tendered Frames per Service Day - From (Saturday)"
+            },
+            {
+              "dtype": "int64",
+              "name": "tendered_frames_per_service_day_to_saturday",
+              "nullable": true,
+              "source": "Tendered Frames per Service Day - To (Saturday)"
+            },
+            {
+              "dtype": "int64",
+              "name": "tendered_frames_per_service_day_duration_saturday",
+              "nullable": true,
+              "source": "Tendered Frames per Service Day - Duration (Saturday)"
+            },
+            {
+              "dtype": "int64",
+              "name": "tendered_frames_per_service_day_from_sunday_bank_holidays",
+              "nullable": true,
+              "source": "Tendered Frames per Service Day - From (Sunday/Bank Holidays)"
+            },
+            {
+              "dtype": "int64",
+              "name": "tendered_frames_per_service_day_to_sunday_bank_holidays",
+              "nullable": true,
+              "source": "Tendered Frames per Service Day - To (Sunday/Bank Holidays)"
+            },
+            {
+              "dtype": "int64",
+              "name": "tendered_frames_per_service_day_duration_sunday_bank_hol",
+              "nullable": true,
+              "source": "Tendered Frames per Service Day - Duration (Sunday/Bank Hol)"
+            },
+            {
+              "dtype": "TODO: T18",
+              "name": "tendered_prices_availability_fee_h",
+              "nullable": true,
+              "source": "Tendered Prices - Availability Fee (£/h)"
+            },
+            {
+              "dtype": "string",
+              "name": "tendered_prices_nomination_fee_h",
+              "nullable": true,
+              "source": "Tendered Prices - Nomination Fee (£/h)"
+            },
+            {
+              "dtype": "string",
+              "name": "tendered_prices_window_initiation_fee_window",
+              "nullable": true,
+              "source": "Tendered Prices -  Window Initiation Fee (£/window)"
+            },
+            {
+              "dtype": "string",
+              "name": "bmus_only",
+              "nullable": true,
+              "source": "BMUs  Only"
+            },
+            {
+              "dtype": "string",
+              "name": "maximum_part_load_point_mw",
+              "nullable": true,
+              "source": "Maximum Part Load Point (MW)"
+            },
+            {
+              "dtype": "string",
+              "name": "minimum_part_load_point_mw",
+              "nullable": true,
+              "source": "Minimum Part Load Point (MW)"
+            },
+            {
+              "dtype": "string",
+              "name": "minimum_mel_mw",
+              "nullable": true,
+              "source": "Minimum MEL (MW)"
+            },
+            {
+              "dtype": "string",
+              "name": "maximum_sel_mw",
+              "nullable": true,
+              "source": "Maximum SEL (MW)"
+            },
+            {
+              "dtype": "float64",
+              "name": "primary_response_max_0_2hz_mw",
+              "nullable": true,
+              "source": "Primary Response (max.) @ 0.2Hz (MW)"
+            },
+            {
+              "dtype": "int64",
+              "name": "primary_response_max_0_5hz_mw",
+              "nullable": true,
+              "source": "Primary Response (max.) @ 0.5Hz (MW)"
+            },
+            {
+              "dtype": "TODO: T19",
+              "name": "primary_response_max_0_8hz_mw",
+              "nullable": true,
+              "source": "Primary Response (max.) @ 0.8Hz (MW)"
+            },
+            {
+              "dtype": "float64",
+              "name": "secondary_response_max_0_2_0_2hz_mw",
+              "nullable": true,
+              "source": "Secondary Response (max.) @ 0.2/0.2Hz (MW)"
+            },
+            {
+              "dtype": "int64",
+              "name": "secondary_response_max_0_5_0_5hz_mw",
+              "nullable": true,
+              "source": "Secondary Response (max.) @ 0.5/0.5Hz (MW)"
+            },
+            {
+              "dtype": "float64",
+              "name": "high_frequency_response_max_0_2hz_mw",
+              "nullable": true,
+              "source": "High Frequency Response (max.) @ 0.2Hz (MW)"
+            },
+            {
+              "dtype": "int64",
+              "name": "high_frequency_response_max_0_5hz_mw",
+              "nullable": true,
+              "source": "High Frequency Response (max.) @ 0.5Hz (MW)"
+            },
+            {
+              "dtype": "string",
+              "name": "are_you_adding_volume_as_per_detail_change_provision",
+              "nullable": true,
+              "source": "Are you adding volume as per detail change provision"
+            },
+            {
+              "dtype": "string",
+              "name": "please_state_the_accepted_tender_that_you_are_stacking_onto",
+              "nullable": true,
+              "source": "Please state the accepted tender that you are stacking onto"
+            },
+            {
+              "dtype": "string",
+              "name": "please_state_if_this_is_an_all_or_nothing_bid",
+              "nullable": true,
+              "source": "Please state if this is an all or nothing bid."
+            },
+            {
+              "dtype": "string",
+              "name": "please_indicate_if_this_is_a_mutually_exclusive_tender",
+              "nullable": true,
+              "source": "Please indicate if this is a mutually exclusive tender"
+            },
+            {
+              "dtype": "string",
+              "name": "automatic_response_energy_deliverable_by_10s_mw",
+              "nullable": true,
+              "source": "Automatic Response Energy Deliverable by 10s (MW)"
+            },
+            {
+              "dtype": "int64",
+              "name": "automatic_response_energy_deliverable_by_30s_mw",
+              "nullable": true,
+              "source": "Automatic Response Energy Deliverable by 30s (MW)"
+            },
+            {
+              "dtype": "string",
+              "name": "post_code",
+              "nullable": true,
+              "source": "Post code"
+            },
+            {
+              "dtype": "string",
+              "name": "comments",
+              "nullable": true,
+              "source": "Comments"
+            }
+          ],
+          "header": [
+            "Tender Ref",
+            "Status",
+            "Rejection Codes",
+            "Company Name",
+            "Tendered Unit \n(BMU/Unit ID)",
+            "TO connection  /  DNO connection",
+            "Generation Type",
+            "Start Date",
+            "End Date",
+            "Tendered Period \n(dd.mm.yy - dd.mm.yy)",
+            "Applicable FFR Capability Data Table",
+            "Tendered Frames per Service Day - From (Mon-Fri)",
+            "Tendered Frames per Service Day - To (Mon- Fri)",
+            "Tendered Frames per Service Day - Duration (Mon-Fri)",
+            "Tendered Frames per Service Day - From (Saturday)",
+            "Tendered Frames per Service Day - To (Saturday)",
+            "Tendered Frames per Service Day - Duration (Saturday)",
+            "Tendered Frames per Service Day - From (Sunday/Bank Holidays)",
+            "Tendered Frames per Service Day - To (Sunday/Bank Holidays)",
+            "Tendered Frames per Service Day - Duration (Sunday/Bank Hol)",
+            "Tendered Prices - Availability Fee (£/h)",
+            "Tendered Prices - Nomination Fee (£/h)",
+            "Tendered Prices -  Window Initiation Fee (£/window)",
+            "BMUs  Only",
+            "Maximum Part Load Point (MW)",
+            "Minimum Part Load Point (MW)",
+            "Minimum MEL (MW)",
+            "Maximum SEL (MW)",
+            "Primary Response (max.) @ 0.2Hz (MW)",
+            "Primary Response (max.) @ 0.5Hz (MW)",
+            "Primary Response (max.) @ 0.8Hz (MW)",
+            "Secondary Response (max.) @ 0.2/0.2Hz (MW)",
+            "Secondary Response (max.) @ 0.5/0.5Hz (MW)",
+            "High Frequency Response (max.) @ 0.2Hz (MW)",
+            "High Frequency Response (max.) @ 0.5Hz (MW)",
+            "Are you adding volume as per detail change provision",
+            "Please state the accepted tender that you are stacking onto",
+            "Please state if this is an all or nothing bid.",
+            "Please indicate if this is a mutually exclusive tender",
+            "Automatic Response Energy Deliverable by 10s (MW)",
+            "Automatic Response Energy Deliverable by 30s (MW)",
+            "Post code",
+            "Comments"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T20",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "held",
+        "field": "column 'Tender Ref'.unit",
+        "id": "T01",
+        "kind": "unit",
+        "question": "Tender Ref: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Tendered Frames per Service Day - From (Mon-Fri)'.unit",
+        "id": "T02",
+        "kind": "unit",
+        "question": "Tendered Frames per Service Day - From (Mon-Fri): a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Tendered Frames per Service Day - To (Mon- Fri)'.unit",
+        "id": "T03",
+        "kind": "unit",
+        "question": "Tendered Frames per Service Day - To (Mon- Fri): a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Tendered Frames per Service Day - From (Saturday)'.unit",
+        "id": "T04",
+        "kind": "unit",
+        "question": "Tendered Frames per Service Day - From (Saturday): a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Tendered Frames per Service Day - To (Saturday)'.unit",
+        "id": "T05",
+        "kind": "unit",
+        "question": "Tendered Frames per Service Day - To (Saturday): a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Tendered Frames per Service Day - Duration (Saturday)'.unit",
+        "id": "T06",
+        "kind": "unit",
+        "question": "Tendered Frames per Service Day - Duration (Saturday): a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Tendered Frames per Service Day - From (Sunday/Bank Holidays)'.unit",
+        "id": "T07",
+        "kind": "unit",
+        "question": "Tendered Frames per Service Day - From (Sunday/Bank Holidays): a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Tendered Frames per Service Day - To (Sunday/Bank Holidays)'.unit",
+        "id": "T08",
+        "kind": "unit",
+        "question": "Tendered Frames per Service Day - To (Sunday/Bank Holidays): a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "blocked",
+        "field": "column 'Automatic Response Energy Deliverable by 30s (MW)'.dtype",
+        "id": "T09",
+        "kind": "type_conflict",
+        "question": "Automatic Response Energy Deliverable by 30s (MW): field-info declares int4 but 4 value(s) do not cast to int64"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Tender Ref'.unit",
+        "id": "T10",
+        "kind": "unit",
+        "question": "Tender Ref: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Tendered Frames per Service Day - From (Mon-Fri)'.unit",
+        "id": "T11",
+        "kind": "unit",
+        "question": "Tendered Frames per Service Day - From (Mon-Fri): a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Tendered Frames per Service Day - To (Mon- Fri)'.unit",
+        "id": "T12",
+        "kind": "unit",
+        "question": "Tendered Frames per Service Day - To (Mon- Fri): a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Tendered Frames per Service Day - From (Saturday)'.unit",
+        "id": "T13",
+        "kind": "unit",
+        "question": "Tendered Frames per Service Day - From (Saturday): a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Tendered Frames per Service Day - To (Saturday)'.unit",
+        "id": "T14",
+        "kind": "unit",
+        "question": "Tendered Frames per Service Day - To (Saturday): a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Tendered Frames per Service Day - Duration (Saturday)'.unit",
+        "id": "T15",
+        "kind": "unit",
+        "question": "Tendered Frames per Service Day - Duration (Saturday): a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Tendered Frames per Service Day - From (Sunday/Bank Holidays)'.unit",
+        "id": "T16",
+        "kind": "unit",
+        "question": "Tendered Frames per Service Day - From (Sunday/Bank Holidays): a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Tendered Frames per Service Day - To (Sunday/Bank Holidays)'.unit",
+        "id": "T17",
+        "kind": "unit",
+        "question": "Tendered Frames per Service Day - To (Sunday/Bank Holidays): a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "blocked",
+        "field": "column 'Tendered Prices - Availability Fee (£/h)'.dtype",
+        "id": "T18",
+        "kind": "type_conflict",
+        "question": "Tendered Prices - Availability Fee (£/h): field-info declares numeric but 1 value(s) do not cast to float64"
+      },
+      {
+        "consequence": "blocked",
+        "field": "column 'Primary Response (max.) @ 0.8Hz (MW)'.dtype",
+        "id": "T19",
+        "kind": "type_conflict",
+        "question": "Primary Response (max.) @ 0.8Hz (MW): field-info declares int4 but 15 value(s) do not cast to int64"
+      },
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T20",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: Start Date, End Date"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T21",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['tender_ref', 'status', 'rejection_codes', 'company_name', 'tendered_unit_bmu_unit_id', 'to_connection_dno_connection', 'generation_type', 'start_date', 'end_date', 'tendered_period_dd_mm_yy_dd_mm_yy', 'applicable_ffr_capability_data_table', 'tendered_frames_per_service_day_from_mon_fri', 'tendered_frames_per_service_day_to_mon_fri', 'tendered_frames_per_service_day_duration_mon_fri', 'tendered_frames_per_service_day_from_saturday', 'tendered_frames_per_service_day_to_saturday', 'tendered_frames_per_service_day_duration_saturday', 'tendered_frames_per_service_day_from_sunday_bank_holidays', 'tendered_frames_per_service_day_to_sunday_bank_holidays', 'tendered_frames_per_service_day_duration_sunday_bank_hol', 'tendered_prices_availability_fee_h', 'tendered_prices_nomination_fee_h', 'tendered_prices_window_initiation_fee_window', 'bmus_only', 'maximum_part_load_point_mw', 'minimum_part_load_point_mw', 'minimum_mel_mw', 'maximum_sel_mw', 'primary_response_max_0_2hz_mw', 'primary_response_max_0_5hz_mw', 'primary_response_max_0_8hz_mw', 'secondary_response_max_0_2_0_2hz_mw', 'secondary_response_max_0_5_0_5hz_mw', 'high_frequency_response_max_0_2hz_mw', 'high_frequency_response_max_0_5hz_mw', 'are_you_adding_volume_as_per_detail_change_provision', 'please_state_the_accepted_tender_that_you_are_stacking_onto', 'please_state_if_this_is_an_all_or_nothing_bid', 'please_indicate_if_this_is_a_mutually_exclusive_tender', 'automatic_response_energy_deliverable_by_10s_mw', 'automatic_response_energy_deliverable_by_30s_mw', 'post_code', 'comments'] (no candidate measured unique, so every column); without one, latest stays whole_capture"
+      },
+      {
+        "consequence": "none",
+        "field": "epochs",
+        "id": "T22",
+        "kind": "multi_epoch",
+        "question": "2 header epochs; review each in its batch"
+      }
+    ]
+  },
+  "refresh": "frozen",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update Frequency",
+        "value": "Not Active"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Ancillary services",
+    "title": "Firm Frequency Response (FFR) Post Tender Reports"
+  }
+}

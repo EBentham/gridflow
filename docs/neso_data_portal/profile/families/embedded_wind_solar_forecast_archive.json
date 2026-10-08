@@ -1,0 +1,584 @@
+{
+  "archetype": "FC",
+  "batch": "DONE+EF",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/embedded_wind_solar_forecast_archive/2026/10/08/raw_20261008T103654Z_bc4d1093-ecf2-46d8-b207-7a0e3e8fb957_27a522f3.csv",
+      "ckan_last_modified": "2025-05-23T09:32:48.819542",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": false,
+      "epoch": 0,
+      "lf": 2775615,
+      "parse_error": null,
+      "resource_id": "bc4d1093-ecf2-46d8-b207-7a0e3e8fb957",
+      "rows": 2775615,
+      "sampled": true,
+      "size": 260472832,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:36:54.985153+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/embedded_wind_solar_forecast_archive/2026/10/08/raw_20261008T103702Z_8a7249d4-ee67-45aa-9641-a3e063f54dba_46614721.csv",
+      "ckan_last_modified": "2025-05-23T10:18:28.096891",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 5304293,
+      "parse_error": null,
+      "resource_id": "8a7249d4-ee67-45aa-9641-a3e063f54dba",
+      "rows": 5304292,
+      "sampled": true,
+      "size": 498063149,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:37:02.577747+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/embedded_wind_solar_forecast_archive/2026/10/08/raw_20261008T103710Z_794107f5-8567-4b32-ae3a-6817fec73e5c_5e6e63c3.csv",
+      "ckan_last_modified": "2025-05-23T11:08:53.229239",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 5465983,
+      "parse_error": null,
+      "resource_id": "794107f5-8567-4b32-ae3a-6817fec73e5c",
+      "rows": 5465982,
+      "sampled": true,
+      "size": 513072735,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:37:10.796332+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/embedded_wind_solar_forecast_archive/2026/10/08/raw_20261008T103718Z_07b0b42c-5152-4fc5-bcd1-e10ec8ec07de_319324f9.csv",
+      "ckan_last_modified": "2025-05-23T11:56:25.476505",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 5391384,
+      "parse_error": null,
+      "resource_id": "07b0b42c-5152-4fc5-bcd1-e10ec8ec07de",
+      "rows": 5391383,
+      "sampled": true,
+      "size": 506536805,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:37:18.903251+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/embedded_wind_solar_forecast_archive/2026/10/08/raw_20261008T103727Z_26c9ef64-ce43-4e22-b984-ef013636aacb_74da42a5.csv",
+      "ckan_last_modified": "2025-05-23T13:50:26.773081",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 5434404,
+      "parse_error": null,
+      "resource_id": "26c9ef64-ce43-4e22-b984-ef013636aacb",
+      "rows": 5434403,
+      "sampled": true,
+      "size": 510495378,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:37:28.332675+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/embedded_wind_solar_forecast_archive/2026/10/08/raw_20261008T103737Z_06abd00a-ef6b-488b-9b6d-5e08fdc0c890_f9a3fba4.csv",
+      "ckan_last_modified": "2025-05-23T14:30:16.994795",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 5451116,
+      "parse_error": null,
+      "resource_id": "06abd00a-ef6b-488b-9b6d-5e08fdc0c890",
+      "rows": 5451115,
+      "sampled": true,
+      "size": 512049380,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:37:37.838067+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/embedded_wind_solar_forecast_archive/2026/10/08/raw_20261008T105245Z_31861619-0b86-47ba-bac2-d008a760af54_7e71c7ab.csv",
+      "ckan_last_modified": "2026-07-28T16:19:45.553879",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 4208759,
+      "parse_error": null,
+      "resource_id": "31861619-0b86-47ba-bac2-d008a760af54",
+      "rows": 4208758,
+      "sampled": true,
+      "size": 378997269,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T10:52:46.017118+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 7,
+      "columns": {
+        "DATE_GMT": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 34031548,
+            "int64": 34031548
+          },
+          "examples": [
+            "2019-06-18T00:00:00Z",
+            "2019-06-19T00:00:00Z",
+            "2019-06-20T00:00:00Z"
+          ],
+          "max_len": 20,
+          "null_count": 0,
+          "shapes": {
+            "iso_datetime_z": 300000,
+            "naive_datetime": 50000
+          }
+        },
+        "EMBEDDED_SOLAR_CAPACITY": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "13080",
+            "13082",
+            "13083"
+          ],
+          "max_len": 5,
+          "null_count": 48,
+          "shapes": {
+            "int": 350000
+          }
+        },
+        "EMBEDDED_SOLAR_FORECAST": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "3057",
+            "2728",
+            "2370"
+          ],
+          "max_len": 5,
+          "null_count": 48,
+          "shapes": {
+            "int": 350000
+          }
+        },
+        "EMBEDDED_WIND_CAPACITY": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "6137",
+            "6465",
+            "6527"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 350000
+          }
+        },
+        "EMBEDDED_WIND_FORECAST": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1057",
+            "1007",
+            "957"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 350000
+          }
+        },
+        "Forecast_Datetime": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 34031548,
+            "int64": 34031548
+          },
+          "examples": [
+            "2019-06-18T16:15:00Z",
+            "2019-06-18T16:34:00Z",
+            "2019-06-18T16:41:00Z"
+          ],
+          "max_len": 20,
+          "null_count": 0,
+          "shapes": {
+            "iso_datetime_z": 300000,
+            "naive_datetime": 50000
+          }
+        },
+        "SETTLEMENT_DATE": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 34031548,
+            "int64": 34031548
+          },
+          "examples": [
+            "2019-06-18T00:00:00Z",
+            "2019-06-19T00:00:00Z",
+            "2019-06-20T00:00:00Z"
+          ],
+          "max_len": 20,
+          "null_count": 0,
+          "shapes": {
+            "iso_datetime_z": 300000,
+            "naive_datetime": 50000
+          }
+        },
+        "SETTLEMENT_PERIOD": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "32",
+            "33",
+            "34"
+          ],
+          "max_len": 2,
+          "null_count": 0,
+          "shapes": {
+            "int": 350000
+          }
+        },
+        "TIME_GMT": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 34031548,
+            "int64": 34031548
+          },
+          "examples": [
+            "15:00:00",
+            "15:30:00",
+            "16:00:00"
+          ],
+          "max_len": 8,
+          "null_count": 0,
+          "shapes": {
+            "text": 350000
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "DATE_GMT": {
+            "description": "The date to which the forecast relates",
+            "title": "Forecast Date",
+            "type": "timestamp",
+            "unit": null
+          },
+          "EMBEDDED_SOLAR_CAPACITY": {
+            "description": "Estimated Embedded Solar Capacity. This is NESO's best view of the installed embedded solar capacity in GB. This is based on publicly available information compiled from a variety of sources and is not the definitive view. It is consistent with the generation estimate provided.",
+            "title": "Embedded Solar Capacity",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "EMBEDDED_SOLAR_FORECAST": {
+            "description": "This is an estimate forecast of the GB solar generation from solar farms which do not have Transmission System metering installed. These solar farms are embedded in the distribution network and invisible to NESO. Their effect is to suppress the electricity demand during periods of high solar periods",
+            "title": "Embedded Solar Forecast",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "EMBEDDED_WIND_CAPACITY": {
+            "description": "This is NESO's best view of the installed embedded wind capacity in GB. This is based on publicly available information compiled from a variety of sources and is not the definitive view. It is consistent with the generation estimate provided.",
+            "title": "Embedded Wind Capacity",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "EMBEDDED_WIND_FORECAST": {
+            "description": "This is an estimate forecast of the GB wind generation from wind farms which do not have Transmission System metering installed. These wind farms are embedded in the distribution network and invisible to NESO. Their effect is to suppress the electricity demand during periods of high wind. The true o",
+            "title": "Embedded Wind Forecast",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "Forecast_Datetime": {
+            "description": "The datetime at which the forecast was produced",
+            "title": "Forecast Timestamp",
+            "type": "timestamp",
+            "unit": null
+          },
+          "SETTLEMENT_DATE": {
+            "description": "The settlement date to which the forecast relates",
+            "title": "Settlement Date",
+            "type": "timestamp",
+            "unit": null
+          },
+          "SETTLEMENT_PERIOD": {
+            "description": "Period of 30 minutes beginning on the hour or the half-hour",
+            "title": "Settlement Period",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "TIME_GMT": {
+            "description": "The time to which the forecast relates",
+            "title": "Forecast Time",
+            "type": "text",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T10:36:54.985153+00:00",
+      "header": [
+        "DATE_GMT",
+        "TIME_GMT",
+        "SETTLEMENT_DATE",
+        "SETTLEMENT_PERIOD",
+        "EMBEDDED_WIND_FORECAST",
+        "EMBEDDED_WIND_CAPACITY",
+        "EMBEDDED_SOLAR_FORECAST",
+        "EMBEDDED_SOLAR_CAPACITY",
+        "Forecast_Datetime"
+      ],
+      "last_written_at": "2026-10-08T10:52:46.017118+00:00",
+      "resource_ids": [
+        "06abd00a-ef6b-488b-9b6d-5e08fdc0c890",
+        "07b0b42c-5152-4fc5-bcd1-e10ec8ec07de",
+        "26c9ef64-ce43-4e22-b984-ef013636aacb",
+        "31861619-0b86-47ba-bac2-d008a760af54",
+        "794107f5-8567-4b32-ae3a-6817fec73e5c",
+        "8a7249d4-ee67-45aa-9641-a3e063f54dba",
+        "bc4d1093-ecf2-46d8-b207-7a0e3e8fb957"
+      ],
+      "rows": 34031548,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [
+    "sampled"
+  ],
+  "key": "embedded_wind_solar_forecast_archive",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 7,
+        "columns": [
+          "DATE_GMT",
+          "TIME_GMT",
+          "Forecast_Datetime"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 7,
+        "columns": [
+          "DATE_GMT",
+          "SETTLEMENT_PERIOD",
+          "Forecast_Datetime"
+        ],
+        "max_duplicates": 278
+      },
+      {
+        "captures_checked": 7,
+        "columns": [
+          "TIME_GMT",
+          "SETTLEMENT_DATE",
+          "Forecast_Datetime"
+        ],
+        "max_duplicates": 602
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "embedded-wind-and-solar-forecasts",
+  "proposal": {
+    "flags": [
+      "sampled"
+    ],
+    "record_draft": {
+      "eligibility": {
+        "question": "DATE_GMT: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced); SETTLEMENT_DATE: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced); Forecast_Datetime: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)",
+        "status": "held",
+        "unit": "DONE+EF"
+      },
+      "encoding": "utf-8",
+      "entity_key": [
+        "date_gmt",
+        "time_gmt",
+        "forecast_datetime"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "date_gmt",
+              "nullable": true,
+              "source": "DATE_GMT"
+            },
+            {
+              "dtype": "string",
+              "name": "time_gmt",
+              "nullable": true,
+              "source": "TIME_GMT"
+            },
+            {
+              "dtype": "string",
+              "name": "settlement_date",
+              "nullable": true,
+              "source": "SETTLEMENT_DATE"
+            },
+            {
+              "dtype": "int64",
+              "name": "settlement_period",
+              "nullable": true,
+              "source": "SETTLEMENT_PERIOD"
+            },
+            {
+              "dtype": "int64",
+              "name": "embedded_wind_forecast",
+              "nullable": true,
+              "source": "EMBEDDED_WIND_FORECAST"
+            },
+            {
+              "dtype": "int64",
+              "name": "embedded_wind_capacity",
+              "nullable": true,
+              "source": "EMBEDDED_WIND_CAPACITY"
+            },
+            {
+              "dtype": "int64",
+              "name": "embedded_solar_forecast",
+              "nullable": true,
+              "source": "EMBEDDED_SOLAR_FORECAST"
+            },
+            {
+              "dtype": "int64",
+              "name": "embedded_solar_capacity",
+              "nullable": true,
+              "source": "EMBEDDED_SOLAR_CAPACITY"
+            },
+            {
+              "dtype": "string",
+              "name": "forecast_datetime",
+              "nullable": true,
+              "source": "Forecast_Datetime"
+            }
+          ],
+          "header": [
+            "DATE_GMT",
+            "TIME_GMT",
+            "SETTLEMENT_DATE",
+            "SETTLEMENT_PERIOD",
+            "EMBEDDED_WIND_FORECAST",
+            "EMBEDDED_WIND_CAPACITY",
+            "EMBEDDED_SOLAR_FORECAST",
+            "EMBEDDED_SOLAR_CAPACITY",
+            "Forecast_Datetime"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T04",
+      "version": "1",
+      "vintage": "capture_fallback"
+    },
+    "todos": [
+      {
+        "consequence": "held",
+        "field": "column 'DATE_GMT'",
+        "id": "T01",
+        "kind": "time_semantics",
+        "question": "DATE_GMT: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'SETTLEMENT_DATE'",
+        "id": "T02",
+        "kind": "time_semantics",
+        "question": "SETTLEMENT_DATE: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Forecast_Datetime'",
+        "id": "T03",
+        "kind": "time_semantics",
+        "question": "Forecast_Datetime: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T04",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: DATE_GMT, SETTLEMENT_DATE, SETTLEMENT_PERIOD, Forecast_Datetime"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T05",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['date_gmt', 'time_gmt', 'forecast_datetime'] (measured unique in 7 capture(s)); without one, latest stays whole_capture"
+      },
+      {
+        "consequence": "none",
+        "field": "vintage",
+        "id": "T06",
+        "kind": "vendor_publication",
+        "question": "available_at is gridflow capture time for the dump; a vendor instant is held (D)"
+      }
+    ]
+  },
+  "refresh": "intraday",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Status",
+        "value": "Live"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Generation",
+    "title": "Embedded Wind and Solar Forecasts"
+  }
+}

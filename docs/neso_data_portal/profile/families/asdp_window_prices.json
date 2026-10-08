@@ -1,0 +1,452 @@
+{
+  "archetype": "EVT",
+  "batch": "AS-5",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/asdp_window_prices/2026/10/08/raw_20261008T085128Z_91749b29-d98a-4565-b126-bd021253b3af_a94dcf61.csv",
+      "ckan_last_modified": "2025-01-27T10:19:34.091937",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 25934,
+      "parse_error": null,
+      "resource_id": "91749b29-d98a-4565-b126-bd021253b3af",
+      "rows": 25933,
+      "sampled": false,
+      "size": 3079847,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T08:51:28.613802+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/asdp_window_prices/2026/10/08/raw_20261008T085158Z_832e6702-3007-4424-9146-8d35db8b2fe4_1249d37d.csv",
+      "ckan_last_modified": null,
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 13310,
+      "parse_error": null,
+      "resource_id": "832e6702-3007-4424-9146-8d35db8b2fe4",
+      "rows": 13309,
+      "sampled": false,
+      "size": 1577565,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T08:51:58.504934+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 2,
+      "columns": {
+        "AssetID": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 39239,
+            "int64": 39242
+          },
+          "examples": [
+            "OFR-HAB-1",
+            "OFR-ENWL-1",
+            "OFR-HAB-4"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 3,
+            "text": 39239
+          }
+        },
+        "CreatedTime": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 39242,
+            "int64": 39242
+          },
+          "examples": [
+            "2025-01-28T16:04:01",
+            "2025-01-28T16:05:00",
+            "2025-01-28T16:17:01"
+          ],
+          "max_len": 19,
+          "null_count": 0,
+          "shapes": {
+            "naive_datetime": 39242
+          }
+        },
+        "EntryID": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "51278",
+            "51279",
+            "51280"
+          ],
+          "max_len": 5,
+          "null_count": 6,
+          "shapes": {
+            "int": 39236
+          }
+        },
+        "PartyID": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 39242,
+            "int64": 39242
+          },
+          "examples": [
+            "HABITAT ENERGY LIMITED",
+            "ENWL",
+            "UKPR"
+          ],
+          "max_len": 22,
+          "null_count": 0,
+          "shapes": {
+            "text": 39242
+          }
+        },
+        "SPEndDateTime": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 39242,
+            "int64": 39242
+          },
+          "examples": [
+            "2025-01-28T16:30:00",
+            "2025-01-28T17:00:00",
+            "2025-01-28T17:30:00"
+          ],
+          "max_len": 19,
+          "null_count": 0,
+          "shapes": {
+            "naive_datetime": 39242
+          }
+        },
+        "SPStartDateTime": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 39242,
+            "int64": 39242
+          },
+          "examples": [
+            "2025-01-28T16:00:00",
+            "2025-01-28T16:30:00",
+            "2025-01-28T17:00:00"
+          ],
+          "max_len": 19,
+          "null_count": 0,
+          "shapes": {
+            "naive_datetime": 39242
+          }
+        },
+        "ServiceType": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 39242,
+            "int64": 39242
+          },
+          "examples": [
+            "Non-BM Fast Reserve",
+            "Non-BM STOR"
+          ],
+          "max_len": 19,
+          "null_count": 0,
+          "shapes": {
+            "text": 39242
+          }
+        },
+        "WindowPrice": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 28064
+          },
+          "examples": [
+            "124.0",
+            "111.8",
+            "125.0"
+          ],
+          "max_len": 6,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 28064,
+            "int": 11178
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "AssetID": {
+            "description": "This should be the Non-BMU ID associated with the corresponding instruction. For RDP MW Dispatch, this will be the NESO assigned Unit ID for the respective",
+            "title": "Asset ID",
+            "type": "text",
+            "unit": null
+          },
+          "CreatedTime": {
+            "description": "Created Time",
+            "title": "Created Time",
+            "type": "timestamp",
+            "unit": null
+          },
+          "EntryID": {
+            "description": "EntryID from Instruction Dispatches",
+            "title": "Entry ID",
+            "type": "int4",
+            "unit": null
+          },
+          "PartyID": {
+            "description": "This should be the service provider name associated with the corresponding instruction",
+            "title": "Party ID",
+            "type": "text",
+            "unit": null
+          },
+          "SPEndDateTime": {
+            "description": "Settlement Period End Date Time",
+            "title": "SP End DateTime",
+            "type": "timestamp",
+            "unit": null
+          },
+          "SPStartDateTime": {
+            "description": "Date time Settlment Period starts.",
+            "title": "SP Start DateTime",
+            "type": "timestamp",
+            "unit": null
+          },
+          "ServiceType": {
+            "description": "Service type",
+            "title": "Service Type",
+            "type": "text",
+            "unit": null
+          },
+          "WindowPrice": {
+            "description": "Indicative Price",
+            "title": "Window Price",
+            "type": "float8",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T08:51:28.613802+00:00",
+      "header": [
+        "EntryID",
+        "ServiceType",
+        "SPStartDateTime",
+        "SPEndDateTime",
+        "WindowPrice",
+        "CreatedTime",
+        "PartyID",
+        "AssetID"
+      ],
+      "last_written_at": "2026-10-08T08:51:58.504934+00:00",
+      "resource_ids": [
+        "832e6702-3007-4424-9146-8d35db8b2fe4",
+        "91749b29-d98a-4565-b126-bd021253b3af"
+      ],
+      "rows": 39242,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [],
+  "key": "asdp_window_prices",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 2,
+        "columns": [
+          "EntryID",
+          "SPStartDateTime"
+        ],
+        "max_duplicates": 1
+      },
+      {
+        "captures_checked": 2,
+        "columns": [
+          "EntryID",
+          "CreatedTime"
+        ],
+        "max_duplicates": 1
+      },
+      {
+        "captures_checked": 2,
+        "columns": [
+          "CreatedTime",
+          "AssetID"
+        ],
+        "max_duplicates": 0
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "non-bm-ancillary-service-dispatch-platform-asdp-window-prices",
+  "proposal": {
+    "flags": [],
+    "record_draft": {
+      "eligibility": {
+        "question": "EntryID: a numeric column with no vendor unit; SPStartDateTime: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced); SPEndDateTime: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced); WindowPrice: a numeric column with no vendor unit; CreatedTime: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)",
+        "status": "held",
+        "unit": "AS-5"
+      },
+      "encoding": "utf-8",
+      "entity_key": [
+        "createdtime",
+        "assetid"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "int64",
+              "name": "entryid",
+              "nullable": true,
+              "source": "EntryID"
+            },
+            {
+              "dtype": "string",
+              "name": "servicetype",
+              "nullable": true,
+              "source": "ServiceType"
+            },
+            {
+              "dtype": "string",
+              "name": "spstartdatetime",
+              "nullable": true,
+              "source": "SPStartDateTime"
+            },
+            {
+              "dtype": "string",
+              "name": "spenddatetime",
+              "nullable": true,
+              "source": "SPEndDateTime"
+            },
+            {
+              "dtype": "float64",
+              "name": "windowprice",
+              "nullable": true,
+              "source": "WindowPrice"
+            },
+            {
+              "dtype": "string",
+              "name": "createdtime",
+              "nullable": true,
+              "source": "CreatedTime"
+            },
+            {
+              "dtype": "string",
+              "name": "partyid",
+              "nullable": true,
+              "source": "PartyID"
+            },
+            {
+              "dtype": "string",
+              "name": "assetid",
+              "nullable": true,
+              "source": "AssetID"
+            }
+          ],
+          "header": [
+            "EntryID",
+            "ServiceType",
+            "SPStartDateTime",
+            "SPEndDateTime",
+            "WindowPrice",
+            "CreatedTime",
+            "PartyID",
+            "AssetID"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T06",
+      "version": "1",
+      "vintage": "capture_fallback"
+    },
+    "todos": [
+      {
+        "consequence": "held",
+        "field": "column 'EntryID'.unit",
+        "id": "T01",
+        "kind": "unit",
+        "question": "EntryID: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'SPStartDateTime'",
+        "id": "T02",
+        "kind": "time_semantics",
+        "question": "SPStartDateTime: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'SPEndDateTime'",
+        "id": "T03",
+        "kind": "time_semantics",
+        "question": "SPEndDateTime: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'WindowPrice'.unit",
+        "id": "T04",
+        "kind": "unit",
+        "question": "WindowPrice: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'CreatedTime'",
+        "id": "T05",
+        "kind": "time_semantics",
+        "question": "CreatedTime: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T06",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: SPStartDateTime, SPEndDateTime, CreatedTime"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T07",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['createdtime', 'assetid'] (measured unique in 2 capture(s)); without one, latest stays whole_capture"
+      },
+      {
+        "consequence": "none",
+        "field": "vintage",
+        "id": "T08",
+        "kind": "vendor_publication",
+        "question": "available_at is gridflow capture time for the dump; a vendor instant is held (D)"
+      }
+    ]
+  },
+  "refresh": "frozen",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update frequency",
+        "value": "Not Active"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Ancillary services",
+    "title": "Non-BM Ancillary Service Dispatch Platform (ASDP) Window Prices"
+  }
+}

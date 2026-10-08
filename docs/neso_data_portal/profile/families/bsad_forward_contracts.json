@@ -1,0 +1,1014 @@
+{
+  "archetype": "EVT",
+  "batch": "AS-4",
+  "captures": [
+    {
+      "all_blank_rows": 5,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/bsad_forward_contracts/2026/10/08/raw_20261008T090344Z_30ba12a9-9a9e-4dbb-a69e-ad256d274b04_f0aeb0c5.csv",
+      "ckan_last_modified": "2019-12-13T13:00:26.502204",
+      "cr": 0,
+      "crlf": 17528,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "30ba12a9-9a9e-4dbb-a69e-ad256d274b04",
+      "rows": 17527,
+      "sampled": false,
+      "size": 527558,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T09:03:44.111052+00:00"
+    },
+    {
+      "all_blank_rows": 5,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/bsad_forward_contracts/2026/10/08/raw_20261008T090346Z_16fe508d-27da-4282-b8af-1fa519b6f480_bbcd85d1.csv",
+      "ckan_last_modified": "2019-12-13T13:00:03.669509",
+      "cr": 0,
+      "crlf": 17526,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "16fe508d-27da-4282-b8af-1fa519b6f480",
+      "rows": 17525,
+      "sampled": false,
+      "size": 523520,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T09:03:46.777374+00:00"
+    },
+    {
+      "all_blank_rows": 5,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/bsad_forward_contracts/2026/10/08/raw_20261008T090349Z_0e7f8536-b449-4f04-a5f5-d08e8121c8c4_298347d9.csv",
+      "ckan_last_modified": "2019-12-13T12:59:35.689470",
+      "cr": 0,
+      "crlf": 17526,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "0e7f8536-b449-4f04-a5f5-d08e8121c8c4",
+      "rows": 17525,
+      "sampled": false,
+      "size": 520145,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T09:03:49.613733+00:00"
+    },
+    {
+      "all_blank_rows": 5,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/bsad_forward_contracts/2026/10/08/raw_20261008T090352Z_7ce8164f-0f0c-4940-b821-ca232e2eefaf_b8e5ef22.csv",
+      "ckan_last_modified": "2020-04-02T19:09:59.585431",
+      "cr": 0,
+      "crlf": 17574,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "7ce8164f-0f0c-4940-b821-ca232e2eefaf",
+      "rows": 17573,
+      "sampled": false,
+      "size": 538457,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T09:03:52.539684+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/bsad_forward_contracts/2026/10/08/raw_20261008T090355Z_5d0f2119-1ba6-4d7d-8db5-ea4e23720aa9_070a68c3.csv",
+      "ckan_last_modified": "2021-11-25T18:16:36.056809",
+      "cr": 0,
+      "crlf": 17536,
+      "duplicate_header": false,
+      "ends_with_newline": false,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "5d0f2119-1ba6-4d7d-8db5-ea4e23720aa9",
+      "rows": 17536,
+      "sampled": false,
+      "size": 539855,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T09:03:55.689175+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/bsad_forward_contracts/2026/10/08/raw_20261008T090407Z_c435e464-f4d5-4ec2-b8f5-693416e22baa_16ca6d30.csv",
+      "ckan_last_modified": "2022-03-31T12:40:18.824382",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 17521,
+      "parse_error": null,
+      "resource_id": "c435e464-f4d5-4ec2-b8f5-693416e22baa",
+      "rows": 17520,
+      "sampled": false,
+      "size": 496275,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T09:04:07.626710+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/bsad_forward_contracts/2026/10/08/raw_20261008T090437Z_38f74f2c-f735-46fb-8e26-32545011a310_af037ae0.csv",
+      "ckan_last_modified": "2023-01-23T16:28:36.824731",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 17521,
+      "parse_error": null,
+      "resource_id": "38f74f2c-f735-46fb-8e26-32545011a310",
+      "rows": 17520,
+      "sampled": false,
+      "size": 521387,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T09:04:37.657202+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/bsad_forward_contracts/2026/10/08/raw_20261008T090507Z_56e8e727-3ef9-4b0a-bd06-756cbf5df2fc_16d325a6.csv",
+      "ckan_last_modified": null,
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 17569,
+      "parse_error": null,
+      "resource_id": "56e8e727-3ef9-4b0a-bd06-756cbf5df2fc",
+      "rows": 17568,
+      "sampled": false,
+      "size": 512052,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T09:05:07.675638+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/bsad_forward_contracts/2026/10/08/raw_20261008T090538Z_93f9bdde-1fd9-4619-99e2-d1c5e38239e1_513e851f.csv",
+      "ckan_last_modified": null,
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 17521,
+      "parse_error": null,
+      "resource_id": "93f9bdde-1fd9-4619-99e2-d1c5e38239e1",
+      "rows": 17520,
+      "sampled": false,
+      "size": 497354,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T09:05:38.318890+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/bsad_forward_contracts/2026/10/08/raw_20261008T090607Z_9382cd2a-656d-4a0a-a82e-eb26cd8bf7f7_eae2f4b2.csv",
+      "ckan_last_modified": null,
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 17521,
+      "parse_error": null,
+      "resource_id": "9382cd2a-656d-4a0a-a82e-eb26cd8bf7f7",
+      "rows": 17520,
+      "sampled": false,
+      "size": 490966,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T09:06:07.830598+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/bsad_forward_contracts/2026/10/08/raw_20261008T090637Z_449c73a6-a7fd-4166-91f0-3dd1a0e0bb14_25476885.csv",
+      "ckan_last_modified": null,
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 9169,
+      "parse_error": null,
+      "resource_id": "449c73a6-a7fd-4166-91f0-3dd1a0e0bb14",
+      "rows": 9168,
+      "sampled": false,
+      "size": 259601,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T09:06:37.704384+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 5,
+      "columns": {
+        "BCA (£)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 3429
+          },
+          "examples": [
+            "0",
+            "2570.82",
+            "13227.27"
+          ],
+          "max_len": 9,
+          "null_count": 20,
+          "shapes": {
+            "decimal": 3429,
+            "int": 84237
+          }
+        },
+        "BSA (MWh)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 9246
+          },
+          "examples": [
+            "0",
+            "165",
+            "414"
+          ],
+          "max_len": 8,
+          "null_count": 20,
+          "shapes": {
+            "decimal": 9246,
+            "int": 78420
+          }
+        },
+        "BVA (MWh)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1007
+          },
+          "examples": [
+            "0",
+            "17.04",
+            "87.673"
+          ],
+          "max_len": 7,
+          "null_count": 20,
+          "shapes": {
+            "decimal": 1007,
+            "int": 86659
+          }
+        },
+        "Date": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%d/%m/%Y": 0,
+            "float64": 87666,
+            "int64": 87666
+          },
+          "examples": [
+            "01/04/2016",
+            "02/04/2016",
+            "03/04/2016"
+          ],
+          "max_len": 10,
+          "null_count": 20,
+          "shapes": {
+            "slash_date": 86370,
+            "text": 1296
+          },
+          "slash_first_gt_12": 53106,
+          "slash_second_gt_12": 0
+        },
+        "SCA (£)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 5990
+          },
+          "examples": [
+            "0",
+            "168.75",
+            "190.5"
+          ],
+          "max_len": 8,
+          "null_count": 20,
+          "shapes": {
+            "decimal": 5990,
+            "int": 81676
+          }
+        },
+        "SSA (MWh)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 20354
+          },
+          "examples": [
+            "0",
+            "28",
+            "35"
+          ],
+          "max_len": 8,
+          "null_count": 20,
+          "shapes": {
+            "decimal": 20354,
+            "int": 67312
+          }
+        },
+        "SVA (MWh)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 2397
+          },
+          "examples": [
+            "0",
+            "12.5",
+            "41.522"
+          ],
+          "max_len": 7,
+          "null_count": 20,
+          "shapes": {
+            "decimal": 2397,
+            "int": 85269
+          }
+        },
+        "Settlement Period": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1",
+            "2",
+            "3"
+          ],
+          "max_len": 2,
+          "null_count": 20,
+          "shapes": {
+            "int": 87666
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "Date": {
+            "description": "Date at which balancing service adjustments occurred. Given in (Coordinated Universal Time) UTC or UTC+1 during British Summer Time.",
+            "title": "Date of balancing service adjustments",
+            "type": "text",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [
+          "BCA",
+          "BSA",
+          "BVA",
+          "SCA",
+          "SSA",
+          "SVA",
+          "SettlementPeriod"
+        ],
+        "header_not_in_field_info": [
+          "Settlement Period",
+          "BCA (£)",
+          "BSA (MWh)",
+          "BVA (MWh)",
+          "SCA (£)",
+          "SSA (MWh)",
+          "SVA (MWh)"
+        ]
+      },
+      "first_written_at": "2026-10-08T09:03:44.111052+00:00",
+      "header": [
+        "Date",
+        "Settlement Period",
+        "BCA (£)",
+        "BSA (MWh)",
+        "BVA (MWh)",
+        "SCA (£)",
+        "SSA (MWh)",
+        "SVA (MWh)"
+      ],
+      "last_written_at": "2026-10-08T09:03:55.689175+00:00",
+      "resource_ids": [
+        "0e7f8536-b449-4f04-a5f5-d08e8121c8c4",
+        "16fe508d-27da-4282-b8af-1fa519b6f480",
+        "30ba12a9-9a9e-4dbb-a69e-ad256d274b04",
+        "5d0f2119-1ba6-4d7d-8db5-ea4e23720aa9",
+        "7ce8164f-0f0c-4940-b821-ca232e2eefaf"
+      ],
+      "rows": 87686,
+      "settlement_periods": []
+    },
+    {
+      "captures": 6,
+      "columns": {
+        "BCA": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 9991
+          },
+          "examples": [
+            "0",
+            "4541.58",
+            "13270.2"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 9991,
+            "int": 86825
+          }
+        },
+        "BSA": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 7094
+          },
+          "examples": [
+            "385",
+            "0",
+            "488"
+          ],
+          "max_len": 8,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 7094,
+            "int": 89722
+          }
+        },
+        "BVA": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 558
+          },
+          "examples": [
+            "0",
+            "72.5",
+            "190"
+          ],
+          "max_len": 7,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 558,
+            "int": 96258
+          }
+        },
+        "Date": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%Y-%m-%d": 0,
+            "float64": 96816,
+            "int64": 96816
+          },
+          "examples": [
+            "2021-08-06",
+            "2021-08-08",
+            "2021-08-07"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "iso_date": 96816
+          }
+        },
+        "SCA": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 8346
+          },
+          "examples": [
+            "74.68",
+            "541.18",
+            "17613.3"
+          ],
+          "max_len": 9,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 8346,
+            "int": 88470
+          }
+        },
+        "SSA": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 7061
+          },
+          "examples": [
+            "810",
+            "635",
+            "385"
+          ],
+          "max_len": 8,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 7061,
+            "int": 89755
+          }
+        },
+        "SVA": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 329
+          },
+          "examples": [
+            "750",
+            "500",
+            "0"
+          ],
+          "max_len": 6,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 329,
+            "int": 96487
+          }
+        },
+        "SettlementPeriod": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1",
+            "2",
+            "3"
+          ],
+          "max_len": 2,
+          "null_count": 0,
+          "shapes": {
+            "int": 96816
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "BCA": {
+            "description": "Net Buy Price Cost Adjustment",
+            "title": "Buy Cost Adjustment",
+            "type": "float8",
+            "unit": "£"
+          },
+          "BSA": {
+            "description": "Gross Volume Purchased (Trades)",
+            "title": "Gross Volume Purchased",
+            "type": "float8",
+            "unit": "MWh"
+          },
+          "BVA": {
+            "description": "Net Buy Price Volume Adjustment",
+            "title": "Buy Volume Adjustment",
+            "type": "float8",
+            "unit": "MWh"
+          },
+          "Date": {
+            "description": "Date at which balancing service adjustments occurred. Given in (Coordinated Universal Time) UTC or UTC+1 during British Summer Time.",
+            "title": "Date of balancing service adjustments",
+            "type": "text",
+            "unit": null
+          },
+          "SCA": {
+            "description": "Net Sell Price Cost Adjustment",
+            "title": "Sell Cost Adjustment",
+            "type": "float8",
+            "unit": "£"
+          },
+          "SSA": {
+            "description": "Gross Volume Sold (Trades)",
+            "title": "Gross Volume Sold",
+            "type": "float8",
+            "unit": "MWh"
+          },
+          "SVA": {
+            "description": "Net Sell Price Volume Adjustment",
+            "title": "SellVolumeAdjustment",
+            "type": "float8",
+            "unit": "MWh"
+          },
+          "SettlementPeriod": {
+            "description": "The half hourly period at which balancing service adjustments occurred. Settlement period 1 runs from 00:00-00:30.",
+            "title": "Settlement Period",
+            "type": "int4",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T09:04:07.626710+00:00",
+      "header": [
+        "Date",
+        "SettlementPeriod",
+        "BCA",
+        "BSA",
+        "BVA",
+        "SCA",
+        "SSA",
+        "SVA"
+      ],
+      "last_written_at": "2026-10-08T09:06:37.704384+00:00",
+      "resource_ids": [
+        "38f74f2c-f735-46fb-8e26-32545011a310",
+        "449c73a6-a7fd-4166-91f0-3dd1a0e0bb14",
+        "56e8e727-3ef9-4b0a-bd06-756cbf5df2fc",
+        "9382cd2a-656d-4a0a-a82e-eb26cd8bf7f7",
+        "93f9bdde-1fd9-4619-99e2-d1c5e38239e1",
+        "c435e464-f4d5-4ec2-b8f5-693416e22baa"
+      ],
+      "rows": 96816,
+      "settlement_periods": [
+        {
+          "capture_id": "bronze/neso_data_portal/bsad_forward_contracts/2026/10/08/raw_20261008T090407Z_c435e464-f4d5-4ec2-b8f5-693416e22baa_16ca6d30.csv",
+          "date_column": "Date",
+          "dates_with_repeated_sp": 0,
+          "duplicated_pairs": 0,
+          "max": 50,
+          "min": 1,
+          "out_of_range": 0,
+          "period_column": "SettlementPeriod",
+          "rows_per_date": {
+            "46": 1,
+            "48": 363,
+            "50": 1
+          }
+        },
+        {
+          "capture_id": "bronze/neso_data_portal/bsad_forward_contracts/2026/10/08/raw_20261008T090437Z_38f74f2c-f735-46fb-8e26-32545011a310_af037ae0.csv",
+          "date_column": "Date",
+          "dates_with_repeated_sp": 0,
+          "duplicated_pairs": 0,
+          "max": 50,
+          "min": 1,
+          "out_of_range": 0,
+          "period_column": "SettlementPeriod",
+          "rows_per_date": {
+            "46": 1,
+            "48": 363,
+            "50": 1
+          }
+        },
+        {
+          "capture_id": "bronze/neso_data_portal/bsad_forward_contracts/2026/10/08/raw_20261008T090507Z_56e8e727-3ef9-4b0a-bd06-756cbf5df2fc_16d325a6.csv",
+          "date_column": "Date",
+          "dates_with_repeated_sp": 0,
+          "duplicated_pairs": 0,
+          "max": 50,
+          "min": 1,
+          "out_of_range": 0,
+          "period_column": "SettlementPeriod",
+          "rows_per_date": {
+            "46": 1,
+            "48": 364,
+            "50": 1
+          }
+        },
+        {
+          "capture_id": "bronze/neso_data_portal/bsad_forward_contracts/2026/10/08/raw_20261008T090538Z_93f9bdde-1fd9-4619-99e2-d1c5e38239e1_513e851f.csv",
+          "date_column": "Date",
+          "dates_with_repeated_sp": 0,
+          "duplicated_pairs": 0,
+          "max": 50,
+          "min": 1,
+          "out_of_range": 0,
+          "period_column": "SettlementPeriod",
+          "rows_per_date": {
+            "46": 1,
+            "48": 363,
+            "50": 1
+          }
+        },
+        {
+          "capture_id": "bronze/neso_data_portal/bsad_forward_contracts/2026/10/08/raw_20261008T090607Z_9382cd2a-656d-4a0a-a82e-eb26cd8bf7f7_eae2f4b2.csv",
+          "date_column": "Date",
+          "dates_with_repeated_sp": 0,
+          "duplicated_pairs": 0,
+          "max": 50,
+          "min": 1,
+          "out_of_range": 0,
+          "period_column": "SettlementPeriod",
+          "rows_per_date": {
+            "46": 1,
+            "48": 363,
+            "50": 1
+          }
+        },
+        {
+          "capture_id": "bronze/neso_data_portal/bsad_forward_contracts/2026/10/08/raw_20261008T090637Z_449c73a6-a7fd-4166-91f0-3dd1a0e0bb14_25476885.csv",
+          "date_column": "Date",
+          "dates_with_repeated_sp": 0,
+          "duplicated_pairs": 0,
+          "max": 48,
+          "min": 1,
+          "out_of_range": 0,
+          "period_column": "SettlementPeriod",
+          "rows_per_date": {
+            "48": 191
+          }
+        }
+      ]
+    }
+  ],
+  "flags": [
+    "multi_epoch"
+  ],
+  "key": "bsad_forward_contracts",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 6,
+        "columns": [
+          "Date",
+          "SettlementPeriod"
+        ],
+        "max_duplicates": 0
+      }
+    ],
+    "full_row_max_duplicates": 6
+  },
+  "other_captures": 0,
+  "package": "balancing-services-adjustment-data-forward-contracts",
+  "proposal": {
+    "flags": [
+      "multi_epoch",
+      "text_declared_date_shaped:Date"
+    ],
+    "record_draft": {
+      "eligibility": {
+        "question": "Settlement Period: a numeric column with no vendor unit; BCA (£): a numeric column with no vendor unit; BSA (MWh): a numeric column with no vendor unit; BVA (MWh): a numeric column with no vendor unit; SCA (£): a numeric column with no vendor unit; SSA (MWh): a numeric column with no vendor unit; SVA (MWh): a numeric column with no vendor unit; SettlementPeriod: a numeric column with no vendor unit",
+        "status": "held",
+        "unit": "AS-4"
+      },
+      "encoding": "utf-8",
+      "entity_key": [
+        "date",
+        "settlementperiod"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "date",
+              "nullable": true,
+              "source": "Date"
+            },
+            {
+              "dtype": "int64",
+              "name": "settlement_period",
+              "nullable": true,
+              "source": "Settlement Period"
+            },
+            {
+              "dtype": "float64",
+              "name": "bca",
+              "nullable": true,
+              "source": "BCA (£)"
+            },
+            {
+              "dtype": "float64",
+              "name": "bsa_mwh",
+              "nullable": true,
+              "source": "BSA (MWh)"
+            },
+            {
+              "dtype": "float64",
+              "name": "bva_mwh",
+              "nullable": true,
+              "source": "BVA (MWh)"
+            },
+            {
+              "dtype": "float64",
+              "name": "sca",
+              "nullable": true,
+              "source": "SCA (£)"
+            },
+            {
+              "dtype": "float64",
+              "name": "ssa_mwh",
+              "nullable": true,
+              "source": "SSA (MWh)"
+            },
+            {
+              "dtype": "float64",
+              "name": "sva_mwh",
+              "nullable": true,
+              "source": "SVA (MWh)"
+            }
+          ],
+          "header": [
+            "Date",
+            "Settlement Period",
+            "BCA (£)",
+            "BSA (MWh)",
+            "BVA (MWh)",
+            "SCA (£)",
+            "SSA (MWh)",
+            "SVA (MWh)"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        },
+        {
+          "columns": [
+            {
+              "dtype": "date",
+              "format": "%Y-%m-%d",
+              "name": "date",
+              "nullable": true,
+              "source": "Date"
+            },
+            {
+              "dtype": "int64",
+              "name": "settlementperiod",
+              "nullable": true,
+              "source": "SettlementPeriod"
+            },
+            {
+              "dtype": "float64",
+              "name": "bca",
+              "nullable": true,
+              "source": "BCA"
+            },
+            {
+              "dtype": "float64",
+              "name": "bsa",
+              "nullable": true,
+              "source": "BSA"
+            },
+            {
+              "dtype": "float64",
+              "name": "bva",
+              "nullable": true,
+              "source": "BVA"
+            },
+            {
+              "dtype": "float64",
+              "name": "sca",
+              "nullable": true,
+              "source": "SCA"
+            },
+            {
+              "dtype": "float64",
+              "name": "ssa",
+              "nullable": true,
+              "source": "SSA"
+            },
+            {
+              "dtype": "float64",
+              "name": "sva",
+              "nullable": true,
+              "source": "SVA"
+            }
+          ],
+          "header": [
+            "Date",
+            "SettlementPeriod",
+            "BCA",
+            "BSA",
+            "BVA",
+            "SCA",
+            "SSA",
+            "SVA"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T09",
+      "version": "1",
+      "vintage": "capture_fallback"
+    },
+    "todos": [
+      {
+        "consequence": "held",
+        "field": "column 'Settlement Period'.unit",
+        "id": "T01",
+        "kind": "unit",
+        "question": "Settlement Period: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'BCA (£)'.unit",
+        "id": "T02",
+        "kind": "unit",
+        "question": "BCA (£): a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'BSA (MWh)'.unit",
+        "id": "T03",
+        "kind": "unit",
+        "question": "BSA (MWh): a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'BVA (MWh)'.unit",
+        "id": "T04",
+        "kind": "unit",
+        "question": "BVA (MWh): a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'SCA (£)'.unit",
+        "id": "T05",
+        "kind": "unit",
+        "question": "SCA (£): a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'SSA (MWh)'.unit",
+        "id": "T06",
+        "kind": "unit",
+        "question": "SSA (MWh): a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'SVA (MWh)'.unit",
+        "id": "T07",
+        "kind": "unit",
+        "question": "SVA (MWh): a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'SettlementPeriod'.unit",
+        "id": "T08",
+        "kind": "unit",
+        "question": "SettlementPeriod: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T09",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: Settlement Period, Date, SettlementPeriod"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T10",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['date', 'settlementperiod'] (measured unique in 6 capture(s)); without one, latest stays whole_capture"
+      },
+      {
+        "consequence": "none",
+        "field": "vintage",
+        "id": "T11",
+        "kind": "vendor_publication",
+        "question": "available_at is gridflow capture time for the dump; a vendor instant is held (D)"
+      },
+      {
+        "consequence": "none",
+        "field": "epochs",
+        "id": "T12",
+        "kind": "multi_epoch",
+        "question": "2 header epochs; review each in its batch"
+      }
+    ]
+  },
+  "refresh": "daily",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Status",
+        "value": "Live"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Ancillary services",
+    "title": "Balancing Services Adjustment Data (BSAD) Forward Contracts"
+  }
+}

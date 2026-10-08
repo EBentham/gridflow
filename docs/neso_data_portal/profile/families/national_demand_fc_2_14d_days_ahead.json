@@ -1,0 +1,416 @@
+{
+  "archetype": "FC",
+  "batch": "DEM-1",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/national_demand_fc_2_14d_days_ahead/2026/10/08/raw_20261008T111301Z_9af18ed4-efc8-4779-bef5-c0927fee9b0a_fa27c9c0.csv",
+      "ckan_last_modified": "2026-10-08T08:45:03.632388",
+      "cr": 0,
+      "crlf": 157,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "9af18ed4-efc8-4779-bef5-c0927fee9b0a",
+      "rows": 156,
+      "sampled": false,
+      "size": 6328,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:13:01.281032+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 1,
+      "columns": {
+        "CARDINALPOINT": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 156,
+            "int64": 156
+          },
+          "examples": [
+            "1F",
+            "1S",
+            "1A"
+          ],
+          "max_len": 3,
+          "null_count": 0,
+          "shapes": {
+            "text": 156
+          }
+        },
+        "CP_END_TIME": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "30",
+            "130",
+            "230"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 156
+          }
+        },
+        "CP_ST_TIME": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "30",
+            "100",
+            "200"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 156
+          }
+        },
+        "CP_TYPE": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 156,
+            "int64": 156
+          },
+          "examples": [
+            "F",
+            "T",
+            "P"
+          ],
+          "max_len": 1,
+          "null_count": 0,
+          "shapes": {
+            "text": 156
+          }
+        },
+        "DAYSAHEAD": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "2",
+            "3",
+            "4"
+          ],
+          "max_len": 2,
+          "null_count": 0,
+          "shapes": {
+            "int": 156
+          }
+        },
+        "FORECASTDEMAND": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "20660",
+            "20104",
+            "20357"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "int": 156
+          }
+        },
+        "F_Point": {
+          "blank_count": 104,
+          "cast_failures": {
+            "float64": 52,
+            "int64": 52
+          },
+          "examples": [
+            "Om",
+            "DM",
+            "Dm"
+          ],
+          "max_len": 2,
+          "null_count": 0,
+          "shapes": {
+            "text": 52
+          }
+        },
+        "TARGETDATE": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "20261010",
+            "20261011",
+            "20261012"
+          ],
+          "max_len": 8,
+          "null_count": 0,
+          "shapes": {
+            "int": 156
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "CARDINALPOINT": {
+            "description": "Electricity demand fluctuates during a day depending on how much energy people, businesses and industries are using at that moment in time. As this electricity demand goes up and down we get characteristic peaks and troughs, with some of these peaks and troughs appearing every single day at similar ",
+            "title": "Cardinal Point (CP)",
+            "type": "text",
+            "unit": null
+          },
+          "CP_END_TIME": {
+            "description": "Time UTC  , The time when a particular cardinal point (CP) ends during the day.",
+            "title": "Cardinal Point (CP) End Time",
+            "type": "int4",
+            "unit": null
+          },
+          "CP_ST_TIME": {
+            "description": "Time UTC  , The time when a particular cardinal point (CP) starts during the day.",
+            "title": "Cardinal Point (CP) Start Time",
+            "type": "int4",
+            "unit": null
+          },
+          "CP_TYPE": {
+            "description": "Fixed, Trough, Peak  , Cardinal point (CP) can either be Fixed i.e occur at a fix time during the day, Trough i.e. minimum demands during the day or Peak i.e maximum demands during the day.",
+            "title": "Cardinal Point (CP) Type",
+            "type": "text",
+            "unit": null
+          },
+          "DAYSAHEAD": {
+            "description": "Unique number describing what day the demand forecast is for i .e. \"4\" for 4 Day Ahead forecast.",
+            "title": "2-14 Day Ahead Demand Forecast",
+            "type": "int4",
+            "unit": null
+          },
+          "FORECASTDEMAND": {
+            "description": "National 2-14 day ahead demand forecast values.",
+            "title": "Demand Forecast",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "F_Point": {
+            "description": "Forecasts of forecasting points  , Publishing forecasts of forecasting points: overnight demand minimum, daytime demand maximum, daytime demand minimum and evening demand maximum.",
+            "title": "Forecasting Point",
+            "type": "text",
+            "unit": null
+          },
+          "TARGETDATE": {
+            "description": "The date the demand forecast is for i.e. D+4 for 4 Day Ahead.",
+            "title": "Forecast Date",
+            "type": "date",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T11:13:01.281032+00:00",
+      "header": [
+        "DAYSAHEAD",
+        "TARGETDATE",
+        "FORECASTDEMAND",
+        "CARDINALPOINT",
+        "CP_TYPE",
+        "CP_ST_TIME",
+        "CP_END_TIME",
+        "F_Point"
+      ],
+      "last_written_at": "2026-10-08T11:13:01.281032+00:00",
+      "resource_ids": [
+        "9af18ed4-efc8-4779-bef5-c0927fee9b0a"
+      ],
+      "rows": 156,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [],
+  "key": "national_demand_fc_2_14d_days_ahead",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 1,
+        "columns": [
+          "DAYSAHEAD",
+          "FORECASTDEMAND"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 1,
+        "columns": [
+          "DAYSAHEAD",
+          "CARDINALPOINT"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 1,
+        "columns": [
+          "DAYSAHEAD",
+          "CP_ST_TIME"
+        ],
+        "max_duplicates": 0
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "2-14-days-ahead-national-demand-forecast",
+  "proposal": {
+    "flags": [],
+    "record_draft": {
+      "eligibility": {
+        "question": "DAYSAHEAD: a numeric column with no vendor unit; CP_ST_TIME: a numeric column with no vendor unit; CP_END_TIME: a numeric column with no vendor unit",
+        "status": "held",
+        "unit": "DEM-1"
+      },
+      "encoding": "utf-8",
+      "entity_key": [
+        "daysahead",
+        "forecastdemand"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "int64",
+              "name": "daysahead",
+              "nullable": true,
+              "source": "DAYSAHEAD"
+            },
+            {
+              "dtype": "TODO: T02",
+              "name": "targetdate",
+              "nullable": true,
+              "source": "TARGETDATE"
+            },
+            {
+              "dtype": "int64",
+              "name": "forecastdemand",
+              "nullable": true,
+              "source": "FORECASTDEMAND"
+            },
+            {
+              "dtype": "string",
+              "name": "cardinalpoint",
+              "nullable": true,
+              "source": "CARDINALPOINT"
+            },
+            {
+              "dtype": "string",
+              "name": "cp_type",
+              "nullable": true,
+              "source": "CP_TYPE"
+            },
+            {
+              "dtype": "int64",
+              "name": "cp_st_time",
+              "nullable": true,
+              "source": "CP_ST_TIME"
+            },
+            {
+              "dtype": "int64",
+              "name": "cp_end_time",
+              "nullable": true,
+              "source": "CP_END_TIME"
+            },
+            {
+              "dtype": "string",
+              "name": "f_point",
+              "nullable": true,
+              "source": "F_Point"
+            }
+          ],
+          "header": [
+            "DAYSAHEAD",
+            "TARGETDATE",
+            "FORECASTDEMAND",
+            "CARDINALPOINT",
+            "CP_TYPE",
+            "CP_ST_TIME",
+            "CP_END_TIME",
+            "F_Point"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T05",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "held",
+        "field": "column 'DAYSAHEAD'.unit",
+        "id": "T01",
+        "kind": "unit",
+        "question": "DAYSAHEAD: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "blocked",
+        "field": "column 'TARGETDATE'.dtype",
+        "id": "T02",
+        "kind": "type_conflict",
+        "question": "TARGETDATE: field-info declares date but the bronze values do not all cast to one date format"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'CP_ST_TIME'.unit",
+        "id": "T03",
+        "kind": "unit",
+        "question": "CP_ST_TIME: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'CP_END_TIME'.unit",
+        "id": "T04",
+        "kind": "unit",
+        "question": "CP_END_TIME: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T05",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: TARGETDATE"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T06",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['daysahead', 'forecastdemand'] (measured unique in 1 capture(s)); without one, latest stays whole_capture"
+      }
+    ]
+  },
+  "refresh": "daily",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Status",
+        "value": "Live"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Demand",
+    "title": "2-14 Days Ahead Demand Forecast"
+  }
+}

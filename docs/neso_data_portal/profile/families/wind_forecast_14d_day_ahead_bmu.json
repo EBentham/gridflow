@@ -1,0 +1,425 @@
+{
+  "archetype": "FC",
+  "batch": "GEN-1",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/wind_forecast_14d_day_ahead_bmu/2026/10/08/raw_20261008T114156Z_342aae25-d3a6-436c-b168-db8b247ccb83_cd363d08.csv",
+      "ckan_last_modified": "2026-10-08T11:30:44.268960",
+      "cr": 0,
+      "crlf": 155233,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "342aae25-d3a6-436c-b168-db8b247ccb83",
+      "rows": 155232,
+      "sampled": true,
+      "size": 12223991,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:41:56.914994+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 1,
+      "columns": {
+        "Capacity": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "95",
+            "36",
+            "10"
+          ],
+          "max_len": 3,
+          "null_count": 0,
+          "shapes": {
+            "int": 50000
+          }
+        },
+        "Date": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%Y-%m-%d": 0,
+            "float64": 155232,
+            "int64": 155232
+          },
+          "examples": [
+            "2026-10-08",
+            "2026-10-09",
+            "2026-10-10"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "iso_date": 50000
+          }
+        },
+        "Datetime": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 155232,
+            "int64": 155232
+          },
+          "examples": [
+            "2026-10-08T10:30:00Z",
+            "2026-10-08T11:00:00Z",
+            "2026-10-08T11:30:00Z"
+          ],
+          "max_len": 20,
+          "null_count": 0,
+          "shapes": {
+            "iso_datetime_z": 50000
+          }
+        },
+        "Generator_Full_Name": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 155232,
+            "int64": 155232
+          },
+          "examples": [
+            "Aberdeen Bay",
+            "Auchrobert",
+            "Achlachan"
+          ],
+          "max_len": 31,
+          "null_count": 0,
+          "shapes": {
+            "text": 50000
+          }
+        },
+        "Generator_Name": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 155232,
+            "int64": 155232
+          },
+          "examples": [
+            "ABRBO-1",
+            "ABRTW-1",
+            "ACHLW-1"
+          ],
+          "max_len": 9,
+          "null_count": 0,
+          "shapes": {
+            "text": 50000
+          }
+        },
+        "Region": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 155232,
+            "int64": 155232
+          },
+          "examples": [
+            "NORTH SCOTLAND",
+            "SOUTH SCOTLAND",
+            "EAST MIDLANDS"
+          ],
+          "max_len": 18,
+          "null_count": 0,
+          "shapes": {
+            "text": 50000
+          }
+        },
+        "Settlement_Period": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "24",
+            "25",
+            "26"
+          ],
+          "max_len": 2,
+          "null_count": 0,
+          "shapes": {
+            "int": 50000
+          }
+        },
+        "Wind_Forecast": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "17",
+            "3",
+            "0"
+          ],
+          "max_len": 3,
+          "null_count": 0,
+          "shapes": {
+            "int": 50000
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "Capacity": {
+            "description": "This is the total operational wind capacity that is connected to the National Grid Transmission Network",
+            "title": "Capacity",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "Date": {
+            "description": "Date for which the forecast is made",
+            "title": "Date",
+            "type": "date",
+            "unit": null
+          },
+          "Datetime": {
+            "description": "Date and time for which the forecast is made",
+            "title": "Date & Time",
+            "type": "timestamp",
+            "unit": "UTC ISO 8601"
+          },
+          "Generator_Full_Name": {
+            "description": "Generator Full Name",
+            "title": "Generator_Full_Name\t\t",
+            "type": "text",
+            "unit": null
+          },
+          "Generator_Name": {
+            "description": "Anonymised generator name.",
+            "title": "Generator Name",
+            "type": "text",
+            "unit": null
+          },
+          "Region": {
+            "description": "Region",
+            "title": "Region\t\t",
+            "type": "text",
+            "unit": null
+          },
+          "Settlement_Period": {
+            "description": "A number representing a sequence of time periods of 30 minutes ending at the half hour or hour throughout the day",
+            "title": "Settlement Period",
+            "type": "int4",
+            "unit": null
+          },
+          "Wind_Forecast": {
+            "description": "Wind forecast for each half hourly settlement period",
+            "title": "Wind Forecast",
+            "type": "numeric",
+            "unit": "MW"
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T11:41:56.914994+00:00",
+      "header": [
+        "Datetime",
+        "Date",
+        "Settlement_Period",
+        "Generator_Name",
+        "Generator_Full_Name",
+        "Region",
+        "Capacity",
+        "Wind_Forecast"
+      ],
+      "last_written_at": "2026-10-08T11:41:56.914994+00:00",
+      "resource_ids": [
+        "342aae25-d3a6-436c-b168-db8b247ccb83"
+      ],
+      "rows": 155232,
+      "settlement_periods": [
+        {
+          "capture_id": "bronze/neso_data_portal/wind_forecast_14d_day_ahead_bmu/2026/10/08/raw_20261008T114156Z_342aae25-d3a6-436c-b168-db8b247ccb83_cd363d08.csv",
+          "date_column": "Date",
+          "dates_with_repeated_sp": 15,
+          "duplicated_pairs": 154560,
+          "max": 48,
+          "min": 1,
+          "out_of_range": 0,
+          "period_column": "Settlement_Period",
+          "rows_per_date": {
+            "11088": 13,
+            "5313": 1,
+            "5775": 1
+          }
+        }
+      ]
+    }
+  ],
+  "flags": [
+    "sampled"
+  ],
+  "key": "wind_forecast_14d_day_ahead_bmu",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Datetime",
+          "Generator_Name"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Datetime",
+          "Generator_Full_Name"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Date",
+          "Settlement_Period",
+          "Generator_Name"
+        ],
+        "max_duplicates": 0
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "14-days-ahead-wind-forecasts",
+  "proposal": {
+    "flags": [
+      "sampled"
+    ],
+    "record_draft": {
+      "eligibility": {
+        "question": "Datetime: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced); Settlement_Period: a numeric column with no vendor unit",
+        "status": "held",
+        "unit": "GEN-1"
+      },
+      "encoding": "utf-8",
+      "entity_key": [
+        "datetime",
+        "generator_name"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "datetime",
+              "nullable": true,
+              "source": "Datetime"
+            },
+            {
+              "dtype": "date",
+              "format": "%Y-%m-%d",
+              "name": "date",
+              "nullable": true,
+              "source": "Date"
+            },
+            {
+              "dtype": "int64",
+              "name": "settlement_period",
+              "nullable": true,
+              "source": "Settlement_Period"
+            },
+            {
+              "dtype": "string",
+              "name": "generator_name",
+              "nullable": true,
+              "source": "Generator_Name"
+            },
+            {
+              "dtype": "string",
+              "name": "generator_full_name",
+              "nullable": true,
+              "source": "Generator_Full_Name"
+            },
+            {
+              "dtype": "string",
+              "name": "region",
+              "nullable": true,
+              "source": "Region"
+            },
+            {
+              "dtype": "float64",
+              "name": "capacity",
+              "nullable": true,
+              "source": "Capacity"
+            },
+            {
+              "dtype": "float64",
+              "name": "wind_forecast",
+              "nullable": true,
+              "source": "Wind_Forecast"
+            }
+          ],
+          "header": [
+            "Datetime",
+            "Date",
+            "Settlement_Period",
+            "Generator_Name",
+            "Generator_Full_Name",
+            "Region",
+            "Capacity",
+            "Wind_Forecast"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T03",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "held",
+        "field": "column 'Datetime'",
+        "id": "T01",
+        "kind": "time_semantics",
+        "question": "Datetime: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Settlement_Period'.unit",
+        "id": "T02",
+        "kind": "unit",
+        "question": "Settlement_Period: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T03",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: Datetime, Date, Settlement_Period"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T04",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['datetime', 'generator_name'] (measured unique in 1 capture(s)); without one, latest stays whole_capture"
+      }
+    ]
+  },
+  "refresh": "intraday",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update Frequency",
+        "value": "8 times/day"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Generation",
+    "title": "14 Days Ahead Wind Forecasts"
+  }
+}

@@ -1,0 +1,433 @@
+{
+  "archetype": "SCN",
+  "batch": "SCN-1",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/fes_regional_gsp_info/2026/10/08/raw_20261008T105724Z_41fb4ca1-7b59-4fce-b480-b46682f346c9_b41263e8.csv",
+      "ckan_last_modified": "2021-07-06T10:53:01.441148",
+      "cr": 0,
+      "crlf": 371,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "41fb4ca1-7b59-4fce-b480-b46682f346c9",
+      "rows": 370,
+      "sampled": false,
+      "size": 15326,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:57:24.776324+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/fes_regional_gsp_info/2026/10/08/raw_20261008T105727Z_000d08b9-12d9-4396-95f8-6b3677664836_6a93974d.csv",
+      "ckan_last_modified": "2022-07-15T13:31:25.009443",
+      "cp1252_clean": true,
+      "cr": 0,
+      "crlf": 371,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "000d08b9-12d9-4396-95f8-6b3677664836",
+      "rows": 370,
+      "sampled": false,
+      "size": 15316,
+      "url_type": "upload",
+      "utf8": false,
+      "written_at": "2026-10-08T10:57:27.213496+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/fes_regional_gsp_info/2026/10/08/raw_20261008T105729Z_805e20e4-6a8b-4113-9d2d-09efa0a4bbb9_e35c80e3.csv",
+      "ckan_last_modified": "2023-07-07T13:36:07.968680",
+      "cr": 0,
+      "crlf": 371,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "805e20e4-6a8b-4113-9d2d-09efa0a4bbb9",
+      "rows": 370,
+      "sampled": false,
+      "size": 15269,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:57:29.582165+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/fes_regional_gsp_info/2026/10/08/raw_20261008T105732Z_21c2b09c-24ff-4837-a3b1-b6aea88f8124_f283aaa9.csv",
+      "ckan_last_modified": "2024-07-15T06:43:26.501169",
+      "cr": 0,
+      "crlf": 374,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "21c2b09c-24ff-4837-a3b1-b6aea88f8124",
+      "rows": 373,
+      "sampled": false,
+      "size": 16416,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:57:32.461859+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 4,
+      "columns": {
+        "Comments": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 68,
+            "int64": 68
+          },
+          "examples": [
+            "GSP \"DUMF\" modelled as 3 parts (split busbar)",
+            "GSP \"GRMO\" modelled as 2 parts (split busbar)",
+            "GSP \"KILB\" modelled as 2 parts (split busbar)"
+          ],
+          "max_len": 192,
+          "null_count": 1415,
+          "shapes": {
+            "text": 68
+          }
+        },
+        "GSP Group": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 1483,
+            "int64": 1483
+          },
+          "examples": [
+            "_P",
+            "_K",
+            "_L"
+          ],
+          "max_len": 2,
+          "null_count": 0,
+          "shapes": {
+            "text": 1483
+          }
+        },
+        "GSP ID": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 1483,
+            "int64": 1483
+          },
+          "examples": [
+            "ABNE_P",
+            "ABTH_1",
+            "ABHA1"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "text": 1483
+          }
+        },
+        "Latitude": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 12,
+            "int64": 1477
+          },
+          "examples": [
+            "56.339",
+            "51.385",
+            "50.472"
+          ],
+          "max_len": 6,
+          "null_count": 6,
+          "shapes": {
+            "decimal": 1465,
+            "text": 12
+          }
+        },
+        "Longitude": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 12,
+            "int64": 1477
+          },
+          "examples": [
+            "-3.294",
+            "-3.403",
+            "-3.729"
+          ],
+          "max_len": 6,
+          "null_count": 6,
+          "shapes": {
+            "decimal": 1465,
+            "text": 12
+          }
+        },
+        "Minor FLOP": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 1483,
+            "int64": 1483
+          },
+          "examples": [
+            "T4",
+            "H2",
+            "F6"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "text": 1483
+          }
+        },
+        "Name": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 1483,
+            "int64": 1483
+          },
+          "examples": [
+            "Abernethy",
+            "Aberthaw",
+            "Abham"
+          ],
+          "max_len": 31,
+          "null_count": 0,
+          "shapes": {
+            "text": 1483
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "Comments": {
+            "description": "Any additional information about this GSP e.g. where non-Elexon names have been used",
+            "title": "Comments",
+            "type": "text",
+            "unit": null
+          },
+          "GSP Group": {
+            "description": "The larger grouping for this GSP, corresponding to a DNO licence area",
+            "title": "Grid Supply Point Group",
+            "type": "text",
+            "unit": null
+          },
+          "GSP ID": {
+            "description": "Name for this location in our regional breakdown of FES data. Elexon GSP names are used where possible. See comments within file where this is not the case.",
+            "title": "Grid Supply Point ID",
+            "type": "text",
+            "unit": null
+          },
+          "Latitude": {
+            "description": "Numerical value given approximate location of the GSP",
+            "title": "Lattitude\t\t",
+            "type": "numeric",
+            "unit": null
+          },
+          "Longitude": {
+            "description": "Numerical value given approximate location of the GSP",
+            "title": "Longitude",
+            "type": "numeric",
+            "unit": null
+          },
+          "Minor FLOP": {
+            "description": "The area that this GSP falls within. FLOP zones are defined in the National Grid ESO ETYS publication.",
+            "title": "Minor FLOP zone ID",
+            "type": "text",
+            "unit": null
+          },
+          "Name": {
+            "description": "Long form name of this Grid Supply Point",
+            "title": "Name",
+            "type": "text",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T10:57:24.776324+00:00",
+      "header": [
+        "GSP ID",
+        "GSP Group",
+        "Minor FLOP",
+        "Name",
+        "Latitude",
+        "Longitude",
+        "Comments"
+      ],
+      "last_written_at": "2026-10-08T10:57:32.461859+00:00",
+      "resource_ids": [
+        "000d08b9-12d9-4396-95f8-6b3677664836",
+        "21c2b09c-24ff-4837-a3b1-b6aea88f8124",
+        "41fb4ca1-7b59-4fce-b480-b46682f346c9",
+        "805e20e4-6a8b-4113-9d2d-09efa0a4bbb9"
+      ],
+      "rows": 1483,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [
+    "not_utf8"
+  ],
+  "key": "fes_regional_gsp_info",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 4,
+        "columns": [
+          "GSP ID"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 4,
+        "columns": [
+          "GSP Group",
+          "Name"
+        ],
+        "max_duplicates": 0
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "regional-breakdown-of-fes-data-electricity",
+  "proposal": {
+    "flags": [
+      "not_utf8"
+    ],
+    "record_draft": {
+      "encoding": "TODO: T03",
+      "entity_key": [
+        "gsp_id"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "gsp_id",
+              "nullable": true,
+              "source": "GSP ID"
+            },
+            {
+              "dtype": "string",
+              "name": "gsp_group",
+              "nullable": true,
+              "source": "GSP Group"
+            },
+            {
+              "dtype": "string",
+              "name": "minor_flop",
+              "nullable": true,
+              "source": "Minor FLOP"
+            },
+            {
+              "dtype": "string",
+              "name": "name",
+              "nullable": true,
+              "source": "Name"
+            },
+            {
+              "dtype": "TODO: T01",
+              "name": "latitude",
+              "nullable": true,
+              "source": "Latitude"
+            },
+            {
+              "dtype": "TODO: T02",
+              "name": "longitude",
+              "nullable": true,
+              "source": "Longitude"
+            },
+            {
+              "dtype": "string",
+              "name": "comments",
+              "nullable": true,
+              "source": "Comments"
+            }
+          ],
+          "header": [
+            "GSP ID",
+            "GSP Group",
+            "Minor FLOP",
+            "Name",
+            "Latitude",
+            "Longitude",
+            "Comments"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T04",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "blocked",
+        "field": "column 'Latitude'.dtype",
+        "id": "T01",
+        "kind": "type_conflict",
+        "question": "Latitude: field-info declares numeric but 12 value(s) do not cast to float64"
+      },
+      {
+        "consequence": "blocked",
+        "field": "column 'Longitude'.dtype",
+        "id": "T02",
+        "kind": "type_conflict",
+        "question": "Longitude: field-info declares numeric but 12 value(s) do not cast to float64"
+      },
+      {
+        "consequence": "blocked",
+        "field": "encoding",
+        "id": "T03",
+        "kind": "encoding",
+        "question": "a capture is not valid UTF-8 (see cp1252_clean); the vendor's encoding is unevidenced"
+      },
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T04",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: none"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T05",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['gsp_id'] (measured unique in 4 capture(s)); without one, latest stays whole_capture"
+      }
+    ]
+  },
+  "refresh": "adhoc",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update frequency",
+        "value": "Ad hoc"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "FES: Pathways to Net Zero",
+    "title": "Regional breakdown of FES data (Electricity)"
+  }
+}

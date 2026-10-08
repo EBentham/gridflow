@@ -1,0 +1,804 @@
+{
+  "archetype": "SER",
+  "batch": "BAL-1",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/current_bsuos_historic_sf/2026/10/08/raw_20261008T091636Z_241b40c3-1f20-4607-b329-0466d215871d_428bf216.csv",
+      "ckan_last_modified": "2023-04-28T13:00:16.486391",
+      "cr": 0,
+      "crlf": 105169,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "241b40c3-1f20-4607-b329-0466d215871d",
+      "rows": 105168,
+      "sampled": true,
+      "size": 5830277,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T09:16:36.512794+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/current_bsuos_historic_sf/2026/10/08/raw_20261008T091639Z_a68fecf2-99a0-407a-90bb-2a6ebc39d9aa_51dcd08a.csv",
+      "ckan_last_modified": "2024-04-25T12:07:01.189404",
+      "cr": 0,
+      "crlf": 17569,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "a68fecf2-99a0-407a-90bb-2a6ebc39d9aa",
+      "rows": 17568,
+      "sampled": false,
+      "size": 1307503,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T09:16:39.524468+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/current_bsuos_historic_sf/2026/10/08/raw_20261008T091641Z_320cdc0d-457f-4849-a0fc-bf6bdd4e21e5_fa86fe60.csv",
+      "ckan_last_modified": "2025-05-01T16:43:13.047170",
+      "cr": 0,
+      "crlf": 17521,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "320cdc0d-457f-4849-a0fc-bf6bdd4e21e5",
+      "rows": 17520,
+      "sampled": false,
+      "size": 1290877,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T09:16:41.879597+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/current_bsuos_historic_sf/2026/10/08/raw_20261008T091644Z_927aac83-c218-476c-9c20-29cf20cee448_1fd8f5fe.csv",
+      "ckan_last_modified": "2026-05-11T13:00:01.647239",
+      "cr": 0,
+      "crlf": 17521,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "927aac83-c218-476c-9c20-29cf20cee448",
+      "rows": 17520,
+      "sampled": false,
+      "size": 1308265,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T09:16:44.998243+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 1,
+      "columns": {
+        "BSUoS Price (£/MWh Hour)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 105167
+          },
+          "examples": [
+            "2.32048",
+            "2.38117",
+            "3.07589"
+          ],
+          "max_len": 9,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 49999,
+            "int": 1
+          }
+        },
+        "Half-hourly Charge": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 105168
+          },
+          "examples": [
+            "49940.98",
+            "50638.76",
+            "66499.20"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 50000
+          }
+        },
+        "Run Type": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 105168,
+            "int64": 105168
+          },
+          "examples": [
+            "SF"
+          ],
+          "max_len": 2,
+          "null_count": 0,
+          "shapes": {
+            "text": 50000
+          }
+        },
+        "Settlement Day": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 105168,
+            "int64": 105168
+          },
+          "examples": [
+            "2017-04-01T00:00:00",
+            "2017-04-02T00:00:00",
+            "2017-04-03T00:00:00"
+          ],
+          "max_len": 19,
+          "null_count": 0,
+          "shapes": {
+            "naive_datetime": 50000
+          }
+        },
+        "Settlement Period": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1",
+            "2",
+            "3"
+          ],
+          "max_len": 2,
+          "null_count": 0,
+          "shapes": {
+            "int": 50000
+          }
+        },
+        "Total Daily BSUoS Charge": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 105168
+          },
+          "examples": [
+            "2719054.14",
+            "2180538.75",
+            "2630136.59"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 50000
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "Run Type": {
+            "description": "This run type will be that of the data set- Either II (Interim initial) SF (Settlement final) RF (Reconciliation final)",
+            "title": "Run Type",
+            "type": "text",
+            "unit": null
+          },
+          "Settlement Day": {
+            "description": "The settlement date for which the BSUoS price is given",
+            "title": "Settlement Day",
+            "type": "date",
+            "unit": null
+          },
+          "Settlement Period": {
+            "description": "The 30 minutes period for which the half hourly charge calculated",
+            "title": "Settlement Period",
+            "type": "numeric",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [
+          "Actual BSUoS Cost (£)",
+          "BSUoS Fund Recovery (£)",
+          "BSUoS Fund Tariff (£/MWh)",
+          "BSUoS Recovery (£)",
+          "BSUoS Tariff (£/MWh)",
+          "BSUoS Total Recovery ()",
+          "Volume (MWh)"
+        ],
+        "header_not_in_field_info": [
+          "BSUoS Price (£/MWh Hour)",
+          "Half-hourly Charge",
+          "Total Daily BSUoS Charge"
+        ]
+      },
+      "first_written_at": "2026-10-08T09:16:36.512794+00:00",
+      "header": [
+        "Settlement Day",
+        "Settlement Period",
+        "BSUoS Price (£/MWh Hour)",
+        "Half-hourly Charge",
+        "Total Daily BSUoS Charge",
+        "Run Type"
+      ],
+      "last_written_at": "2026-10-08T09:16:36.512794+00:00",
+      "resource_ids": [
+        "241b40c3-1f20-4607-b329-0466d215871d"
+      ],
+      "rows": 105168,
+      "settlement_periods": []
+    },
+    {
+      "captures": 3,
+      "columns": {
+        "Actual BSUoS Cost (£)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 52608
+          },
+          "examples": [
+            "233459.46",
+            "243181.80",
+            "225972.60"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 52608
+          }
+        },
+        "BSUoS Fund Recovery (£)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "0"
+          ],
+          "max_len": 1,
+          "null_count": 0,
+          "shapes": {
+            "int": 52608
+          }
+        },
+        "BSUoS Fund Tariff (£/MWh)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [],
+          "max_len": 0,
+          "null_count": 52608,
+          "shapes": {}
+        },
+        "BSUoS Recovery (£)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 52608
+          },
+          "examples": [
+            "172107.22",
+            "169219.11",
+            "168457.80"
+          ],
+          "max_len": 9,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 52608
+          }
+        },
+        "BSUoS Tariff (£/MWh)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 52608
+          },
+          "examples": [
+            "13.41",
+            "14.03",
+            "7.63"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 52608
+          }
+        },
+        "BSUoS Total Recovery ()": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 52608
+          },
+          "examples": [
+            "172107.22",
+            "169219.11",
+            "168457.80"
+          ],
+          "max_len": 9,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 52608
+          }
+        },
+        "Run Type": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 52608,
+            "int64": 52608
+          },
+          "examples": [
+            "SF"
+          ],
+          "max_len": 2,
+          "null_count": 0,
+          "shapes": {
+            "text": 52608
+          }
+        },
+        "Settlement Day": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 52608,
+            "int64": 52608
+          },
+          "examples": [
+            "2023-04-01T00:00:00",
+            "2023-04-02T00:00:00",
+            "2023-04-03T00:00:00"
+          ],
+          "max_len": 20,
+          "null_count": 0,
+          "shapes": {
+            "naive_datetime": 52608
+          }
+        },
+        "Settlement Period": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1",
+            "2",
+            "3"
+          ],
+          "max_len": 2,
+          "null_count": 0,
+          "shapes": {
+            "int": 52608
+          }
+        },
+        "Volume (MWh)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 52608
+          },
+          "examples": [
+            "12834.24",
+            "12618.87",
+            "12562.10"
+          ],
+          "max_len": 8,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 52608
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "Actual BSUoS Cost (£)": {
+            "description": null,
+            "title": "Actual BSUoS Cost(£)",
+            "type": "numeric",
+            "unit": "£"
+          },
+          "BSUoS Fund Recovery (£)": {
+            "description": null,
+            "title": "BSUoS Fund Recovery",
+            "type": "numeric",
+            "unit": null
+          },
+          "BSUoS Fund Tariff (£/MWh)": {
+            "description": "This is the fixed fund tariff for system wide balancing which is then applied to each calculation for every BSUoS customer charge",
+            "title": "BSUoS Fund Tariff (£/MWh)",
+            "type": "numeric",
+            "unit": "£"
+          },
+          "BSUoS Recovery (£)": {
+            "description": null,
+            "title": "BSUoS Recovery",
+            "type": "numeric",
+            "unit": null
+          },
+          "BSUoS Tariff (£/MWh)": {
+            "description": "This is the fixed tariff for system wide balancing which is then applied to each calculation for every BSUoS customer charge.",
+            "title": "BSUoS Tariff (£/MWh)",
+            "type": "numeric",
+            "unit": "£"
+          },
+          "BSUoS Total Recovery ()": {
+            "description": null,
+            "title": "BSUoS Total Recovery",
+            "type": "numeric",
+            "unit": null
+          },
+          "Run Type": {
+            "description": "This run type will be that of the data set- Either II (Interim initial) SF (Settlement final) RF (Reconciliation final)",
+            "title": "Run Type",
+            "type": "text",
+            "unit": null
+          },
+          "Settlement Day": {
+            "description": "The settlement date for which the BSUoS price is given",
+            "title": "Settlement Day",
+            "type": "date",
+            "unit": null
+          },
+          "Settlement Period": {
+            "description": "The 30 minutes period for which the half hourly charge calculated",
+            "title": "Settlement Period",
+            "type": "numeric",
+            "unit": null
+          },
+          "Volume (MWh)": {
+            "description": "The volume will be calculated (F/C) BSUoS recovery ( £/BSUoS Tariff) (£/MWh)",
+            "title": "Volume (MWh)",
+            "type": "numeric",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T09:16:39.524468+00:00",
+      "header": [
+        "Settlement Day",
+        "Settlement Period",
+        "BSUoS Tariff (£/MWh)",
+        "BSUoS Fund Tariff (£/MWh)",
+        "Volume (MWh)",
+        "BSUoS Recovery (£)",
+        "BSUoS Fund Recovery (£)",
+        "BSUoS Total Recovery ()",
+        "Run Type",
+        "Actual BSUoS Cost (£)"
+      ],
+      "last_written_at": "2026-10-08T09:16:44.998243+00:00",
+      "resource_ids": [
+        "320cdc0d-457f-4849-a0fc-bf6bdd4e21e5",
+        "927aac83-c218-476c-9c20-29cf20cee448",
+        "a68fecf2-99a0-407a-90bb-2a6ebc39d9aa"
+      ],
+      "rows": 52608,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [
+    "multi_epoch",
+    "sampled",
+    "sibling_candidate:current_bsuos_historic_ii,current_bsuos_historic_rf",
+    "sibling_candidate:current_bsuos_historic_rf"
+  ],
+  "key": "current_bsuos_historic_sf",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 4,
+        "columns": [
+          "Settlement Day",
+          "Settlement Period"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 3,
+        "columns": [
+          "Settlement Day",
+          "Actual BSUoS Cost (£)"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 3,
+        "columns": [
+          "Settlement Period",
+          "Actual BSUoS Cost (£)"
+        ],
+        "max_duplicates": 0
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "current-balancing-services-use-of-system-bsuos-data",
+  "proposal": {
+    "flags": [
+      "multi_epoch",
+      "sampled",
+      "sibling_candidate:current_bsuos_historic_ii,current_bsuos_historic_rf",
+      "sibling_candidate:current_bsuos_historic_rf"
+    ],
+    "record_draft": {
+      "eligibility": {
+        "question": "Settlement Day: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced); Settlement Period: a numeric column with no vendor unit; BSUoS Price (£/MWh Hour): a numeric column with no vendor unit; Half-hourly Charge: a numeric column with no vendor unit; Total Daily BSUoS Charge: a numeric column with no vendor unit; Settlement Day: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced); Settlement Period: a numeric column with no vendor unit; Volume (MWh): a numeric column with no vendor unit; BSUoS Recovery (£): a numeric column with no vendor unit; BSUoS Fund Recovery (£): a numeric column with no vendor unit; BSUoS Total Recovery (): a numeric column with no vendor unit",
+        "status": "held",
+        "unit": "BAL-1"
+      },
+      "encoding": "utf-8",
+      "entity_key": [
+        "settlement_day",
+        "settlement_period"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "settlement_day",
+              "nullable": true,
+              "source": "Settlement Day"
+            },
+            {
+              "dtype": "float64",
+              "name": "settlement_period",
+              "nullable": true,
+              "source": "Settlement Period"
+            },
+            {
+              "dtype": "float64",
+              "name": "bsuos_price_mwh_hour",
+              "nullable": true,
+              "source": "BSUoS Price (£/MWh Hour)"
+            },
+            {
+              "dtype": "float64",
+              "name": "half_hourly_charge",
+              "nullable": true,
+              "source": "Half-hourly Charge"
+            },
+            {
+              "dtype": "float64",
+              "name": "total_daily_bsuos_charge",
+              "nullable": true,
+              "source": "Total Daily BSUoS Charge"
+            },
+            {
+              "dtype": "string",
+              "name": "run_type",
+              "nullable": true,
+              "source": "Run Type"
+            }
+          ],
+          "header": [
+            "Settlement Day",
+            "Settlement Period",
+            "BSUoS Price (£/MWh Hour)",
+            "Half-hourly Charge",
+            "Total Daily BSUoS Charge",
+            "Run Type"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        },
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "settlement_day",
+              "nullable": true,
+              "source": "Settlement Day"
+            },
+            {
+              "dtype": "float64",
+              "name": "settlement_period",
+              "nullable": true,
+              "source": "Settlement Period"
+            },
+            {
+              "dtype": "float64",
+              "name": "bsuos_tariff_mwh",
+              "nullable": true,
+              "source": "BSUoS Tariff (£/MWh)"
+            },
+            {
+              "dtype": "float64",
+              "name": "bsuos_fund_tariff_mwh",
+              "nullable": true,
+              "source": "BSUoS Fund Tariff (£/MWh)"
+            },
+            {
+              "dtype": "float64",
+              "name": "volume_mwh",
+              "nullable": true,
+              "source": "Volume (MWh)"
+            },
+            {
+              "dtype": "float64",
+              "name": "bsuos_recovery",
+              "nullable": true,
+              "source": "BSUoS Recovery (£)"
+            },
+            {
+              "dtype": "float64",
+              "name": "bsuos_fund_recovery",
+              "nullable": true,
+              "source": "BSUoS Fund Recovery (£)"
+            },
+            {
+              "dtype": "float64",
+              "name": "bsuos_total_recovery",
+              "nullable": true,
+              "source": "BSUoS Total Recovery ()"
+            },
+            {
+              "dtype": "string",
+              "name": "run_type",
+              "nullable": true,
+              "source": "Run Type"
+            },
+            {
+              "dtype": "float64",
+              "name": "actual_bsuos_cost",
+              "nullable": true,
+              "source": "Actual BSUoS Cost (£)"
+            }
+          ],
+          "header": [
+            "Settlement Day",
+            "Settlement Period",
+            "BSUoS Tariff (£/MWh)",
+            "BSUoS Fund Tariff (£/MWh)",
+            "Volume (MWh)",
+            "BSUoS Recovery (£)",
+            "BSUoS Fund Recovery (£)",
+            "BSUoS Total Recovery ()",
+            "Run Type",
+            "Actual BSUoS Cost (£)"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T12",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "held",
+        "field": "column 'Settlement Day'",
+        "id": "T01",
+        "kind": "time_semantics",
+        "question": "Settlement Day: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Settlement Period'.unit",
+        "id": "T02",
+        "kind": "unit",
+        "question": "Settlement Period: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'BSUoS Price (£/MWh Hour)'.unit",
+        "id": "T03",
+        "kind": "unit",
+        "question": "BSUoS Price (£/MWh Hour): a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Half-hourly Charge'.unit",
+        "id": "T04",
+        "kind": "unit",
+        "question": "Half-hourly Charge: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Total Daily BSUoS Charge'.unit",
+        "id": "T05",
+        "kind": "unit",
+        "question": "Total Daily BSUoS Charge: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Settlement Day'",
+        "id": "T06",
+        "kind": "time_semantics",
+        "question": "Settlement Day: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Settlement Period'.unit",
+        "id": "T07",
+        "kind": "unit",
+        "question": "Settlement Period: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Volume (MWh)'.unit",
+        "id": "T08",
+        "kind": "unit",
+        "question": "Volume (MWh): a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'BSUoS Recovery (£)'.unit",
+        "id": "T09",
+        "kind": "unit",
+        "question": "BSUoS Recovery (£): a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'BSUoS Fund Recovery (£)'.unit",
+        "id": "T10",
+        "kind": "unit",
+        "question": "BSUoS Fund Recovery (£): a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'BSUoS Total Recovery ()'.unit",
+        "id": "T11",
+        "kind": "unit",
+        "question": "BSUoS Total Recovery (): a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T12",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: Settlement Day, Settlement Period"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T13",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['settlement_day', 'settlement_period'] (measured unique in 4 capture(s)); without one, latest stays whole_capture"
+      },
+      {
+        "consequence": "none",
+        "field": "epochs",
+        "id": "T14",
+        "kind": "multi_epoch",
+        "question": "2 header epochs; review each in its batch"
+      }
+    ]
+  },
+  "refresh": "daily",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update Frequency",
+        "value": "Daily (Weekdays)"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Balancing costs",
+    "title": "Current Balancing Services Use of System (BSUoS) Charges"
+  }
+}

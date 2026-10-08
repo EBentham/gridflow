@@ -1,0 +1,919 @@
+{
+  "archetype": "SER",
+  "batch": "BAL-2",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/skip_rates_exclusion_reasons/2026/10/08/raw_20261008T111753Z_ea2951b0-79d7-4575-a7d9-7d522ca2422c_7b78da4b.csv",
+      "ckan_last_modified": "2025-11-18T17:23:03.955307",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 636748,
+      "parse_error": null,
+      "resource_id": "ea2951b0-79d7-4575-a7d9-7d522ca2422c",
+      "rows": 636747,
+      "sampled": true,
+      "size": 55441176,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:17:53.486592+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/skip_rates_exclusion_reasons/2026/10/08/raw_20261008T111756Z_5fed7209-7f33-4b19-9858-84a967df0351_3619592b.csv",
+      "ckan_last_modified": "2025-11-18T17:17:12.722191",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 452421,
+      "parse_error": null,
+      "resource_id": "5fed7209-7f33-4b19-9858-84a967df0351",
+      "rows": 452420,
+      "sampled": true,
+      "size": 39419998,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:17:56.338843+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/skip_rates_exclusion_reasons/2026/10/08/raw_20261008T111759Z_c20e81a0-1c82-4e03-913e-9e73d6daca6b_cc56965c.csv",
+      "ckan_last_modified": "2025-11-18T16:47:28.162627",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 637841,
+      "parse_error": null,
+      "resource_id": "c20e81a0-1c82-4e03-913e-9e73d6daca6b",
+      "rows": 637840,
+      "sampled": true,
+      "size": 56065222,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:17:59.208027+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/skip_rates_exclusion_reasons/2026/10/08/raw_20261008T111801Z_fa3df861-bbdd-4d60-8e84-9b7f9351ba48_583d3754.csv",
+      "ckan_last_modified": "2025-11-18T16:35:36.637959",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 411724,
+      "parse_error": null,
+      "resource_id": "fa3df861-bbdd-4d60-8e84-9b7f9351ba48",
+      "rows": 411723,
+      "sampled": true,
+      "size": 36008370,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:18:01.937049+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/skip_rates_exclusion_reasons/2026/10/08/raw_20261008T111805Z_16e874cf-7b26-4fea-bf39-aa153f552e20_ae1b18a0.csv",
+      "ckan_last_modified": "2025-11-18T16:46:21.585305",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 662159,
+      "parse_error": null,
+      "resource_id": "16e874cf-7b26-4fea-bf39-aa153f552e20",
+      "rows": 662158,
+      "sampled": true,
+      "size": 57868204,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:18:05.386325+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/skip_rates_exclusion_reasons/2026/10/08/raw_20261008T111807Z_1b310928-3800-4402-9ee2-29e6815fa5a9_78aca870.csv",
+      "ckan_last_modified": "2025-11-18T16:56:00.675113",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 592055,
+      "parse_error": null,
+      "resource_id": "1b310928-3800-4402-9ee2-29e6815fa5a9",
+      "rows": 592054,
+      "sampled": true,
+      "size": 51912496,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:18:07.716166+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/skip_rates_exclusion_reasons/2026/10/08/raw_20261008T111810Z_a3d3e2ea-f099-483c-a61c-a4fb883db52b_95aa5e4a.csv",
+      "ckan_last_modified": "2025-11-18T17:05:37.863565",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 311645,
+      "parse_error": null,
+      "resource_id": "a3d3e2ea-f099-483c-a61c-a4fb883db52b",
+      "rows": 311644,
+      "sampled": true,
+      "size": 27402428,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:18:10.073288+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/skip_rates_exclusion_reasons/2026/10/08/raw_20261008T111812Z_8eed92f7-5450-476e-bfce-06af1385d75a_65e24042.csv",
+      "ckan_last_modified": "2025-11-18T17:08:40.604477",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 485443,
+      "parse_error": null,
+      "resource_id": "8eed92f7-5450-476e-bfce-06af1385d75a",
+      "rows": 485442,
+      "sampled": true,
+      "size": 42280064,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:18:12.924906+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/skip_rates_exclusion_reasons/2026/10/08/raw_20261008T111815Z_f6a6beb1-1117-4798-b5c4-68e6d60ccb0b_5a2a8ffc.csv",
+      "ckan_last_modified": "2025-11-18T17:21:47.328213",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 828113,
+      "parse_error": null,
+      "resource_id": "f6a6beb1-1117-4798-b5c4-68e6d60ccb0b",
+      "rows": 828112,
+      "sampled": true,
+      "size": 72684347,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:18:15.757963+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/skip_rates_exclusion_reasons/2026/10/08/raw_20261008T111818Z_51ae34f6-10bb-409e-8feb-6d07e8c4fbed_70b3a6b6.csv",
+      "ckan_last_modified": "2025-11-18T17:37:10.999707",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 711476,
+      "parse_error": null,
+      "resource_id": "51ae34f6-10bb-409e-8feb-6d07e8c4fbed",
+      "rows": 711475,
+      "sampled": true,
+      "size": 62486031,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:18:18.572222+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/skip_rates_exclusion_reasons/2026/10/08/raw_20261008T111821Z_9a90687c-265b-4f58-820f-43870c9a5256_781a44c5.csv",
+      "ckan_last_modified": "2025-11-18T17:41:01.538138",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 848691,
+      "parse_error": null,
+      "resource_id": "9a90687c-265b-4f58-820f-43870c9a5256",
+      "rows": 848690,
+      "sampled": true,
+      "size": 74691375,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:18:21.676813+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/skip_rates_exclusion_reasons/2026/10/08/raw_20261008T111825Z_1db68aaf-7d1b-4041-8556-a71383159944_44997f21.csv",
+      "ckan_last_modified": "2025-12-01T09:32:53.374964",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 702721,
+      "parse_error": null,
+      "resource_id": "1db68aaf-7d1b-4041-8556-a71383159944",
+      "rows": 702720,
+      "sampled": true,
+      "size": 61210003,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:18:25.406700+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/skip_rates_exclusion_reasons/2026/10/08/raw_20261008T111827Z_cba84b51-1a29-43a6-b643-73670a71bb7f_44e37e9c.csv",
+      "ckan_last_modified": "2026-01-01T09:49:32.433670",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 671391,
+      "parse_error": null,
+      "resource_id": "cba84b51-1a29-43a6-b643-73670a71bb7f",
+      "rows": 671390,
+      "sampled": true,
+      "size": 58489397,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:18:28.052979+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/skip_rates_exclusion_reasons/2026/10/08/raw_20261008T111831Z_c81b5b16-3650-45f5-8dce-2765c840f50a_30f6d32e.csv",
+      "ckan_last_modified": "2026-02-01T09:50:01.994241",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 726738,
+      "parse_error": null,
+      "resource_id": "c81b5b16-3650-45f5-8dce-2765c840f50a",
+      "rows": 726737,
+      "sampled": true,
+      "size": 63383553,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:18:31.288020+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/skip_rates_exclusion_reasons/2026/10/08/raw_20261008T111834Z_4da36ea5-ea48-45ef-ab50-29751bff476b_d834aff2.csv",
+      "ckan_last_modified": "2026-03-01T09:51:27.111191",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 577693,
+      "parse_error": null,
+      "resource_id": "4da36ea5-ea48-45ef-ab50-29751bff476b",
+      "rows": 577692,
+      "sampled": true,
+      "size": 50241261,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:18:34.284825+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/skip_rates_exclusion_reasons/2026/10/08/raw_20261008T111838Z_be20790b-f860-4d8e-bdcc-8ec4311b2058_0d7f522b.csv",
+      "ckan_last_modified": "2026-04-01T08:51:56.337195",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 992307,
+      "parse_error": null,
+      "resource_id": "be20790b-f860-4d8e-bdcc-8ec4311b2058",
+      "rows": 992306,
+      "sampled": true,
+      "size": 85503528,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:18:38.953768+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/skip_rates_exclusion_reasons/2026/10/08/raw_20261008T111842Z_5fc6319d-0ceb-4bad-99d6-653ef23cbed0_3bda91dd.csv",
+      "ckan_last_modified": "2026-05-01T08:52:22.310203",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 839613,
+      "parse_error": null,
+      "resource_id": "5fc6319d-0ceb-4bad-99d6-653ef23cbed0",
+      "rows": 839612,
+      "sampled": true,
+      "size": 72148635,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:18:42.308458+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/skip_rates_exclusion_reasons/2026/10/08/raw_20261008T111844Z_6f4319a1-ee65-442a-8081-f6e71713ba7f_0fde1148.csv",
+      "ckan_last_modified": "2026-06-01T08:53:10.308585",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 569653,
+      "parse_error": null,
+      "resource_id": "6f4319a1-ee65-442a-8081-f6e71713ba7f",
+      "rows": 569652,
+      "sampled": true,
+      "size": 48710695,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:18:44.844215+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/skip_rates_exclusion_reasons/2026/10/08/raw_20261008T111848Z_f2879df1-32d2-4faf-b4e4-28d33059960b_71af2c53.csv",
+      "ckan_last_modified": "2026-07-01T08:54:37.958757",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 823327,
+      "parse_error": null,
+      "resource_id": "f2879df1-32d2-4faf-b4e4-28d33059960b",
+      "rows": 823326,
+      "sampled": true,
+      "size": 70437107,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:18:48.402428+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/skip_rates_exclusion_reasons/2026/10/08/raw_20261008T111851Z_db88ded4-bb64-4b5a-851d-bdd6eabb397d_66bbd532.csv",
+      "ckan_last_modified": "2026-08-01T08:55:34.559015",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 707431,
+      "parse_error": null,
+      "resource_id": "db88ded4-bb64-4b5a-851d-bdd6eabb397d",
+      "rows": 707430,
+      "sampled": true,
+      "size": 60219130,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:18:51.255009+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/skip_rates_exclusion_reasons/2026/10/08/raw_20261008T111854Z_a82a2a20-6f08-4d7d-a2ed-221527ba75c2_de3a47aa.csv",
+      "ckan_last_modified": "2026-09-01T08:57:00.417996",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 595961,
+      "parse_error": null,
+      "resource_id": "a82a2a20-6f08-4d7d-a2ed-221527ba75c2",
+      "rows": 595960,
+      "sampled": true,
+      "size": 51005076,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:18:54.309426+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/skip_rates_exclusion_reasons/2026/10/08/raw_20261008T111857Z_1679aa42-0184-4564-8bf5-406f6b0bc594_daf9a04d.csv",
+      "ckan_last_modified": "2026-10-01T08:56:54.285605",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 1471604,
+      "parse_error": null,
+      "resource_id": "1679aa42-0184-4564-8bf5-406f6b0bc594",
+      "rows": 1471603,
+      "sampled": true,
+      "size": 127927024,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:18:57.770365+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/skip_rates_exclusion_reasons/2026/10/08/raw_20261008T111900Z_f8110eb8-f4ad-4288-87d5-37ab434b55b5_0e635ffa.csv",
+      "ckan_last_modified": "2026-10-08T08:57:27.401427",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 319033,
+      "parse_error": null,
+      "resource_id": "f8110eb8-f4ad-4288-87d5-37ab434b55b5",
+      "rows": 319032,
+      "sampled": true,
+      "size": 27847134,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:19:00.524166+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 23,
+      "columns": {
+        "average_price_per_MWh": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 15575765
+          },
+          "examples": [
+            "93.0",
+            "90.0",
+            "100.0"
+          ],
+          "max_len": 19,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 1150000
+          }
+        },
+        "bid_offer": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 15575765,
+            "int64": 15575765
+          },
+          "examples": [
+            "Offer",
+            "Bid"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "text": 1150000
+          }
+        },
+        "bm_unit": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 15575765,
+            "int64": 15575765
+          },
+          "examples": [
+            "MOYEW-1",
+            "TULWW-2",
+            "TULWW-1"
+          ],
+          "max_len": 9,
+          "null_count": 0,
+          "shapes": {
+            "text": 1150000
+          }
+        },
+        "date": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 15575765,
+            "int64": 15575765
+          },
+          "examples": [
+            "2025-08-01T00:00:00Z",
+            "2025-08-01T00:05:00Z",
+            "2025-08-01T00:10:00Z"
+          ],
+          "max_len": 20,
+          "null_count": 0,
+          "shapes": {
+            "iso_datetime_z": 550000,
+            "naive_datetime": 600000
+          }
+        },
+        "excluded_from_accepted_or_feasible_merit_stack": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 15575765,
+            "int64": 15575765
+          },
+          "examples": [
+            "Feasible Merit",
+            "Accepted"
+          ],
+          "max_len": 14,
+          "null_count": 0,
+          "shapes": {
+            "text": 1150000
+          }
+        },
+        "excluded_volume_MWh": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 15575765
+          },
+          "examples": [
+            "4.83",
+            "1.74",
+            "1.17"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 1150000
+          }
+        },
+        "exclusion_reason": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 15575765,
+            "int64": 15575765
+          },
+          "examples": [
+            "Wind offer",
+            "Behind constraint",
+            "System-tagged"
+          ],
+          "max_len": 98,
+          "null_count": 0,
+          "shapes": {
+            "text": 1150000
+          }
+        },
+        "exclusion_stage": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1",
+            "2",
+            "3"
+          ],
+          "max_len": 1,
+          "null_count": 0,
+          "shapes": {
+            "int": 1150000
+          }
+        },
+        "fuel": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 15332589,
+            "int64": 15332589
+          },
+          "examples": [
+            "WIND",
+            "CCGT",
+            "PS"
+          ],
+          "max_len": 14,
+          "null_count": 243176,
+          "shapes": {
+            "text": 1133030
+          }
+        },
+        "pair_id": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1",
+            "-1",
+            "-2"
+          ],
+          "max_len": 2,
+          "null_count": 0,
+          "shapes": {
+            "int": 1150000
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "average_price_per_MWh": {
+            "description": "Average price for excluded volume",
+            "title": "Average Price £/MWh",
+            "type": "numeric",
+            "unit": "£/MWh"
+          },
+          "bid_offer": {
+            "description": "Whether bid or offer volume was excluded",
+            "title": "Bid/Offer",
+            "type": "text",
+            "unit": null
+          },
+          "bm_unit": {
+            "description": "BMU ID with excluded volume",
+            "title": "BM Unit",
+            "type": "text",
+            "unit": null
+          },
+          "date": {
+            "description": "Datetime slice at 5min intervals",
+            "title": "Date",
+            "type": "timestamp",
+            "unit": "DateTime UTC"
+          },
+          "excluded_from_accepted_or_feasible_merit_stack": {
+            "description": "Whether the unit was excluded from the accepted merit stack or the feasible merit stack. If volume has been excluded from both the accepted merit stack and the feasible merit stack then there will be two rows.",
+            "title": "Excluded from Accepted or Feasible Merit Stack",
+            "type": "text",
+            "unit": null
+          },
+          "excluded_volume_MWh": {
+            "description": "Total excluded volume",
+            "title": "Excluded Volume MWh",
+            "type": "numeric",
+            "unit": "MWh"
+          },
+          "exclusion_reason": {
+            "description": "The reason the volume was excluded from the given stage. Multiple reasons will be given for the stage if appropriate",
+            "title": "Exclusion Reason",
+            "type": "text",
+            "unit": null
+          },
+          "exclusion_stage": {
+            "description": "The stage the volume was excluded at",
+            "title": "Exclusion Stage",
+            "type": "int4",
+            "unit": null
+          },
+          "fuel": {
+            "description": "Fuel type of BMU",
+            "title": "Fuel",
+            "type": "text",
+            "unit": null
+          },
+          "pair_id": {
+            "description": "Pair ID of excluded volume. There will be multiple rows if volume was excluded for multiple pair IDs for the same BMU",
+            "title": "Pair Id",
+            "type": "int4",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T11:17:53.486592+00:00",
+      "header": [
+        "date",
+        "bm_unit",
+        "fuel",
+        "bid_offer",
+        "excluded_from_accepted_or_feasible_merit_stack",
+        "exclusion_stage",
+        "pair_id",
+        "average_price_per_MWh",
+        "excluded_volume_MWh",
+        "exclusion_reason"
+      ],
+      "last_written_at": "2026-10-08T11:19:00.524166+00:00",
+      "resource_ids": [
+        "1679aa42-0184-4564-8bf5-406f6b0bc594",
+        "16e874cf-7b26-4fea-bf39-aa153f552e20",
+        "1b310928-3800-4402-9ee2-29e6815fa5a9",
+        "1db68aaf-7d1b-4041-8556-a71383159944",
+        "4da36ea5-ea48-45ef-ab50-29751bff476b",
+        "51ae34f6-10bb-409e-8feb-6d07e8c4fbed",
+        "5fc6319d-0ceb-4bad-99d6-653ef23cbed0",
+        "5fed7209-7f33-4b19-9858-84a967df0351",
+        "6f4319a1-ee65-442a-8081-f6e71713ba7f",
+        "8eed92f7-5450-476e-bfce-06af1385d75a",
+        "9a90687c-265b-4f58-820f-43870c9a5256",
+        "a3d3e2ea-f099-483c-a61c-a4fb883db52b",
+        "a82a2a20-6f08-4d7d-a2ed-221527ba75c2",
+        "be20790b-f860-4d8e-bdcc-8ec4311b2058",
+        "c20e81a0-1c82-4e03-913e-9e73d6daca6b",
+        "c81b5b16-3650-45f5-8dce-2765c840f50a",
+        "cba84b51-1a29-43a6-b643-73670a71bb7f",
+        "db88ded4-bb64-4b5a-851d-bdd6eabb397d",
+        "ea2951b0-79d7-4575-a7d9-7d522ca2422c",
+        "f2879df1-32d2-4faf-b4e4-28d33059960b",
+        "f6a6beb1-1117-4798-b5c4-68e6d60ccb0b",
+        "f8110eb8-f4ad-4288-87d5-37ab434b55b5",
+        "fa3df861-bbdd-4d60-8e84-9b7f9351ba48"
+      ],
+      "rows": 15575765,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [
+    "sampled"
+  ],
+  "key": "skip_rates_exclusion_reasons",
+  "keys": {
+    "candidates": [],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "skip-rates",
+  "proposal": {
+    "flags": [
+      "sampled"
+    ],
+    "record_draft": {
+      "eligibility": {
+        "question": "date: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced); exclusion_stage: a numeric column with no vendor unit; pair_id: a numeric column with no vendor unit",
+        "status": "held",
+        "unit": "BAL-2"
+      },
+      "encoding": "utf-8",
+      "entity_key": [
+        "date",
+        "bm_unit",
+        "fuel",
+        "bid_offer",
+        "excluded_from_accepted_or_feasible_merit_stack",
+        "exclusion_stage",
+        "pair_id",
+        "average_price_per_mwh",
+        "excluded_volume_mwh",
+        "exclusion_reason"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "date",
+              "nullable": true,
+              "source": "date"
+            },
+            {
+              "dtype": "string",
+              "name": "bm_unit",
+              "nullable": true,
+              "source": "bm_unit"
+            },
+            {
+              "dtype": "string",
+              "name": "fuel",
+              "nullable": true,
+              "source": "fuel"
+            },
+            {
+              "dtype": "string",
+              "name": "bid_offer",
+              "nullable": true,
+              "source": "bid_offer"
+            },
+            {
+              "dtype": "string",
+              "name": "excluded_from_accepted_or_feasible_merit_stack",
+              "nullable": true,
+              "source": "excluded_from_accepted_or_feasible_merit_stack"
+            },
+            {
+              "dtype": "int64",
+              "name": "exclusion_stage",
+              "nullable": true,
+              "source": "exclusion_stage"
+            },
+            {
+              "dtype": "int64",
+              "name": "pair_id",
+              "nullable": true,
+              "source": "pair_id"
+            },
+            {
+              "dtype": "float64",
+              "name": "average_price_per_mwh",
+              "nullable": true,
+              "source": "average_price_per_MWh"
+            },
+            {
+              "dtype": "float64",
+              "name": "excluded_volume_mwh",
+              "nullable": true,
+              "source": "excluded_volume_MWh"
+            },
+            {
+              "dtype": "string",
+              "name": "exclusion_reason",
+              "nullable": true,
+              "source": "exclusion_reason"
+            }
+          ],
+          "header": [
+            "date",
+            "bm_unit",
+            "fuel",
+            "bid_offer",
+            "excluded_from_accepted_or_feasible_merit_stack",
+            "exclusion_stage",
+            "pair_id",
+            "average_price_per_MWh",
+            "excluded_volume_MWh",
+            "exclusion_reason"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T04",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "held",
+        "field": "column 'date'",
+        "id": "T01",
+        "kind": "time_semantics",
+        "question": "date: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'exclusion_stage'.unit",
+        "id": "T02",
+        "kind": "unit",
+        "question": "exclusion_stage: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'pair_id'.unit",
+        "id": "T03",
+        "kind": "unit",
+        "question": "pair_id: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T04",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: date"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T05",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['date', 'bm_unit', 'fuel', 'bid_offer', 'excluded_from_accepted_or_feasible_merit_stack', 'exclusion_stage', 'pair_id', 'average_price_per_mwh', 'excluded_volume_mwh', 'exclusion_reason'] (no candidate measured unique, so every column); without one, latest stays whole_capture"
+      }
+    ]
+  },
+  "refresh": "daily",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update frequency",
+        "value": "Daily"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Balancing costs",
+    "title": "Skip Rates"
+  }
+}

@@ -1,0 +1,659 @@
+{
+  "archetype": "EVT",
+  "batch": "AS-5",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/odfm_market_information_results/2026/10/08/raw_20261008T111539Z_cfd349e9-7f36-480d-abb5-a740d8a6ea16_7fff2782.csv",
+      "ckan_last_modified": "2020-11-06T10:53:58.070864",
+      "cp1252_clean": true,
+      "cr": 0,
+      "crlf": 7322,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "cfd349e9-7f36-480d-abb5-a740d8a6ea16",
+      "rows": 7321,
+      "sampled": false,
+      "size": 972979,
+      "url_type": "upload",
+      "utf8": false,
+      "written_at": "2026-10-08T11:15:39.712340+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/odfm_market_information_results/2026/10/08/raw_20261008T111542Z_45e60798-da66-4734-bf9e-178efd49657c_28833981.csv",
+      "ckan_last_modified": "2021-11-01T11:58:18.873208",
+      "cp1252_clean": true,
+      "cr": 0,
+      "crlf": 35575,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "45e60798-da66-4734-bf9e-178efd49657c",
+      "rows": 35574,
+      "sampled": false,
+      "size": 4386856,
+      "url_type": "upload",
+      "utf8": false,
+      "written_at": "2026-10-08T11:15:42.213212+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 2,
+      "columns": {
+        "Accept/Reject": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 42895,
+            "int64": 42895
+          },
+          "examples": [
+            "Reject",
+            "Accept",
+            "REJECT"
+          ],
+          "max_len": 6,
+          "null_count": 0,
+          "shapes": {
+            "text": 42895
+          }
+        },
+        "Allocated Registered Service Volume (MW)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 24302
+          },
+          "examples": [
+            "57.4",
+            "96",
+            "32.8"
+          ],
+          "max_len": 6,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 24302,
+            "int": 18593
+          }
+        },
+        "Applicant/Agent": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 42895,
+            "int64": 42895
+          },
+          "examples": [
+            "innogy Renewables UK Limited",
+            "Ecotricity (Smart Grid) Limited",
+            "Habitat Energy Limited"
+          ],
+          "max_len": 47,
+          "null_count": 0,
+          "shapes": {
+            "text": 42895
+          }
+        },
+        "Cease Date": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%d/%m/%Y": 0,
+            "float64": 622,
+            "int64": 622
+          },
+          "examples": [
+            "05/10/2020",
+            "23/05/2020",
+            "24/05/2020"
+          ],
+          "max_len": 10,
+          "null_count": 42273,
+          "shapes": {
+            "slash_date": 622
+          },
+          "slash_first_gt_12": 388,
+          "slash_second_gt_12": 0
+        },
+        "Cease time (BST)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 622,
+            "int64": 622
+          },
+          "examples": [
+            "07:00:00",
+            "08:00:00",
+            "18:00:00"
+          ],
+          "max_len": 8,
+          "null_count": 42273,
+          "shapes": {
+            "text": 622
+          }
+        },
+        "Contracted Unit ID": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 42895,
+            "int64": 42895
+          },
+          "examples": [
+            "BREFW-1",
+            "CLNGW-1",
+            "GFLDW-1"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "text": 42895
+          }
+        },
+        "DNO": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 42895,
+            "int64": 42895
+          },
+          "examples": [
+            "WPD South Wales",
+            "SP Manweb",
+            "NPG Yorkshire"
+          ],
+          "max_len": 25,
+          "null_count": 0,
+          "shapes": {
+            "text": 42895
+          }
+        },
+        "Date": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 42895,
+            "int64": 42895
+          },
+          "examples": [
+            "10-May",
+            "23-May",
+            "24-May"
+          ],
+          "max_len": 31,
+          "null_count": 0,
+          "shapes": {
+            "text": 42895
+          }
+        },
+        "GSP": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 42895,
+            "int64": 42895
+          },
+          "examples": [
+            "Swansea North",
+            "St Asaph",
+            "Drax"
+          ],
+          "max_len": 30,
+          "null_count": 0,
+          "shapes": {
+            "text": 42895
+          }
+        },
+        "Price (�/MW/hr)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 28758
+          },
+          "examples": [
+            "80",
+            "95",
+            "70"
+          ],
+          "max_len": 11,
+          "null_count": 2,
+          "shapes": {
+            "decimal": 28758,
+            "int": 14135
+          }
+        },
+        "Reasons": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 622,
+            "int64": 622
+          },
+          "examples": [
+            "3",
+            "1",
+            "Accept"
+          ],
+          "max_len": 6,
+          "null_count": 0,
+          "shapes": {
+            "int": 42273,
+            "text": 622
+          }
+        },
+        "Start date": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%d/%m/%Y": 0,
+            "float64": 622,
+            "int64": 622
+          },
+          "examples": [
+            "05/10/2020",
+            "23/05/2020",
+            "22/05/2020"
+          ],
+          "max_len": 10,
+          "null_count": 42273,
+          "shapes": {
+            "slash_date": 622
+          },
+          "slash_first_gt_12": 388,
+          "slash_second_gt_12": 0
+        },
+        "Start time (BST)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 622,
+            "int64": 622
+          },
+          "examples": [
+            "04:00:00",
+            "02:30:00",
+            "00:00:00"
+          ],
+          "max_len": 8,
+          "null_count": 42273,
+          "shapes": {
+            "text": 622
+          }
+        },
+        "Technology type": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 42895,
+            "int64": 42895
+          },
+          "examples": [
+            "Wind",
+            "Other",
+            "Solar"
+          ],
+          "max_len": 34,
+          "null_count": 0,
+          "shapes": {
+            "text": 42895
+          }
+        },
+        "Unique ID": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 42895,
+            "int64": 42895
+          },
+          "examples": [
+            "43962 BREFW-1",
+            "43962 CLNGW-1",
+            "43962 GFLDW-1"
+          ],
+          "max_len": 22,
+          "null_count": 0,
+          "shapes": {
+            "text": 42895
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "Accept/Reject": {
+            "description": "Was the bid accepted or rejected",
+            "title": "Accept/Reject",
+            "type": "text",
+            "unit": null
+          },
+          "Allocated Registered Service Volume (MW)": {
+            "description": "The total capacity of the bidding unit",
+            "title": "Allocated Registered Service Volume (MW)",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "Applicant/Agent": {
+            "description": "The name of the provider who has submitted the bid",
+            "title": "Applicant Agent",
+            "type": "text",
+            "unit": null
+          },
+          "Cease Date": {
+            "description": "The date from which delivery of ODFM ended",
+            "title": "Cease Date",
+            "type": "text",
+            "unit": "dd.mm.yyyy"
+          },
+          "Cease time (BST)": {
+            "description": "The time from which delivery of ODFM ended",
+            "title": "Cease Time (BST)",
+            "type": "text",
+            "unit": "hh:mm"
+          },
+          "Contracted Unit ID": {
+            "description": "The unique identifier for the specific unit bidding into the market",
+            "title": "Contracted Unit ID",
+            "type": "text",
+            "unit": null
+          },
+          "DNO": {
+            "description": "Distribution Network Operator",
+            "title": "DNO",
+            "type": "text",
+            "unit": null
+          },
+          "Date": {
+            "description": "Date the bid was made for",
+            "title": "Date",
+            "type": "timestamp",
+            "unit": null
+          },
+          "GSP": {
+            "description": "Grid Supply Point",
+            "title": "GSP",
+            "type": "text",
+            "unit": null
+          },
+          "Reasons": {
+            "description": "Reason code for the acceptance or rejection of a bid",
+            "title": "Reasons",
+            "type": "numeric",
+            "unit": null
+          },
+          "Start date": {
+            "description": "The date from which delivery of ODFM commenced",
+            "title": "Start Date",
+            "type": "text",
+            "unit": "dd.mm.yyyy"
+          },
+          "Start time (BST)": {
+            "description": "The time from which delivery of ODFM commenced",
+            "title": "Start Time (BST)",
+            "type": "text",
+            "unit": "hh:mm"
+          },
+          "Technology type": {
+            "description": "The type of unit bidding in",
+            "title": "Technolgy Type",
+            "type": "text",
+            "unit": null
+          },
+          "Unique ID": {
+            "description": "The ID for the submitted bid in the auction",
+            "title": "Unique ID",
+            "type": "text",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [
+          "Price (£/MW/hr)"
+        ],
+        "header_not_in_field_info": [
+          "Price (�/MW/hr)"
+        ]
+      },
+      "first_written_at": "2026-10-08T11:15:39.712340+00:00",
+      "header": [
+        "Unique ID",
+        "Contracted Unit ID",
+        "Applicant/Agent",
+        "Price (�/MW/hr)",
+        "Allocated Registered Service Volume (MW)",
+        "Technology type",
+        "Start time (BST)",
+        "Start date",
+        "Cease time (BST)",
+        "Cease Date",
+        "GSP",
+        "DNO",
+        "Accept/Reject",
+        "Reasons",
+        "Date"
+      ],
+      "last_written_at": "2026-10-08T11:15:42.213212+00:00",
+      "resource_ids": [
+        "45e60798-da66-4734-bf9e-178efd49657c",
+        "cfd349e9-7f36-480d-abb5-a740d8a6ea16"
+      ],
+      "rows": 42895,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [
+    "not_utf8"
+  ],
+  "key": "odfm_market_information_results",
+  "keys": {
+    "candidates": [],
+    "full_row_max_duplicates": 170
+  },
+  "other_captures": 0,
+  "package": "optional-downward-flexibility-management-odfm-market-information",
+  "proposal": {
+    "flags": [
+      "not_utf8",
+      "text_declared_date_shaped:Cease Date",
+      "text_declared_date_shaped:Start date"
+    ],
+    "record_draft": {
+      "eligibility": {
+        "question": "Price (�/MW/hr): a numeric column with no vendor unit; Date: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)",
+        "status": "held",
+        "unit": "AS-5"
+      },
+      "encoding": "TODO: T04",
+      "entity_key": [
+        "unique_id",
+        "contracted_unit_id",
+        "applicant_agent",
+        "price_mw_hr",
+        "allocated_registered_service_volume_mw",
+        "technology_type",
+        "start_time_bst",
+        "start_date",
+        "cease_time_bst",
+        "cease_date",
+        "gsp",
+        "dno",
+        "accept_reject",
+        "reasons",
+        "date"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "unique_id",
+              "nullable": true,
+              "source": "Unique ID"
+            },
+            {
+              "dtype": "string",
+              "name": "contracted_unit_id",
+              "nullable": true,
+              "source": "Contracted Unit ID"
+            },
+            {
+              "dtype": "string",
+              "name": "applicant_agent",
+              "nullable": true,
+              "source": "Applicant/Agent"
+            },
+            {
+              "dtype": "float64",
+              "name": "price_mw_hr",
+              "nullable": true,
+              "source": "Price (�/MW/hr)"
+            },
+            {
+              "dtype": "float64",
+              "name": "allocated_registered_service_volume_mw",
+              "nullable": true,
+              "source": "Allocated Registered Service Volume (MW)"
+            },
+            {
+              "dtype": "string",
+              "name": "technology_type",
+              "nullable": true,
+              "source": "Technology type"
+            },
+            {
+              "dtype": "string",
+              "name": "start_time_bst",
+              "nullable": true,
+              "source": "Start time (BST)"
+            },
+            {
+              "dtype": "date",
+              "format": "%d/%m/%Y",
+              "name": "start_date",
+              "nullable": true,
+              "source": "Start date"
+            },
+            {
+              "dtype": "string",
+              "name": "cease_time_bst",
+              "nullable": true,
+              "source": "Cease time (BST)"
+            },
+            {
+              "dtype": "date",
+              "format": "%d/%m/%Y",
+              "name": "cease_date",
+              "nullable": true,
+              "source": "Cease Date"
+            },
+            {
+              "dtype": "string",
+              "name": "gsp",
+              "nullable": true,
+              "source": "GSP"
+            },
+            {
+              "dtype": "string",
+              "name": "dno",
+              "nullable": true,
+              "source": "DNO"
+            },
+            {
+              "dtype": "string",
+              "name": "accept_reject",
+              "nullable": true,
+              "source": "Accept/Reject"
+            },
+            {
+              "dtype": "TODO: T02",
+              "name": "reasons",
+              "nullable": true,
+              "source": "Reasons"
+            },
+            {
+              "dtype": "string",
+              "name": "date",
+              "nullable": true,
+              "source": "Date"
+            }
+          ],
+          "header": [
+            "Unique ID",
+            "Contracted Unit ID",
+            "Applicant/Agent",
+            "Price (�/MW/hr)",
+            "Allocated Registered Service Volume (MW)",
+            "Technology type",
+            "Start time (BST)",
+            "Start date",
+            "Cease time (BST)",
+            "Cease Date",
+            "GSP",
+            "DNO",
+            "Accept/Reject",
+            "Reasons",
+            "Date"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T05",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "held",
+        "field": "column 'Price (�/MW/hr)'.unit",
+        "id": "T01",
+        "kind": "unit",
+        "question": "Price (�/MW/hr): a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "blocked",
+        "field": "column 'Reasons'.dtype",
+        "id": "T02",
+        "kind": "type_conflict",
+        "question": "Reasons: field-info declares numeric but 622 value(s) do not cast to float64"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Date'",
+        "id": "T03",
+        "kind": "time_semantics",
+        "question": "Date: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "blocked",
+        "field": "encoding",
+        "id": "T04",
+        "kind": "encoding",
+        "question": "a capture is not valid UTF-8 (see cp1252_clean); the vendor's encoding is unevidenced"
+      },
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T05",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: Start date, Cease Date, Date"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T06",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['unique_id', 'contracted_unit_id', 'applicant_agent', 'price_mw_hr', 'allocated_registered_service_volume_mw', 'technology_type', 'start_time_bst', 'start_date', 'cease_time_bst', 'cease_date', 'gsp', 'dno', 'accept_reject', 'reasons', 'date'] (no candidate measured unique, so every column); without one, latest stays whole_capture"
+      }
+    ]
+  },
+  "refresh": "frozen",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Status",
+        "value": "Not Active"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Ancillary services",
+    "title": "Optional Downward Flexibility Management (ODFM) Market Information"
+  }
+}

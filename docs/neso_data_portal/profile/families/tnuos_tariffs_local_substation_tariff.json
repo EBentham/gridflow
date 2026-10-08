@@ -1,0 +1,352 @@
+{
+  "archetype": "TAR",
+  "batch": "BAL-2",
+  "captures": [
+    {
+      "all_blank_rows": 48,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/tnuos_tariffs_local_substation_tariff/2026/10/08/raw_20261008T113915Z_e697e9be-c068-482d-ae35-01f60bcb6700_8178f4bc.csv",
+      "ckan_last_modified": "2026-05-12T13:05:48.317924",
+      "cr": 0,
+      "crlf": 85,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "e697e9be-c068-482d-ae35-01f60bcb6700",
+      "rows": 84,
+      "sampled": false,
+      "size": 2702,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:39:15.061170+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 1,
+      "columns": {
+        "Connection Type": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 36,
+            "int64": 36
+          },
+          "examples": [
+            "No redundancy",
+            "Redundancy"
+          ],
+          "max_len": 13,
+          "null_count": 48,
+          "shapes": {
+            "text": 36
+          }
+        },
+        "Publication": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 36,
+            "int64": 36
+          },
+          "examples": [
+            "Forecast",
+            "Final",
+            "Draft"
+          ],
+          "max_len": 8,
+          "null_count": 48,
+          "shapes": {
+            "text": 36
+          }
+        },
+        "Published_Date": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%d/%m/%Y": 0,
+            "float64": 36,
+            "int64": 36
+          },
+          "examples": [
+            "11/05/2026",
+            "30/01/2026",
+            "19/12/2025"
+          ],
+          "max_len": 10,
+          "null_count": 48,
+          "shapes": {
+            "slash_date": 36
+          },
+          "slash_first_gt_12": 24,
+          "slash_second_gt_12": 0
+        },
+        "Sum of TEC at Connecting Substation": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 36,
+            "int64": 36
+          },
+          "examples": [
+            "<1320 MW",
+            "≥1320 MW"
+          ],
+          "max_len": 8,
+          "null_count": 48,
+          "shapes": {
+            "text": 36
+          }
+        },
+        "Tariff": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 36
+          },
+          "examples": [
+            "0.414097",
+            "0.874864",
+            "0.000000"
+          ],
+          "max_len": 8,
+          "null_count": 48,
+          "shapes": {
+            "decimal": 36
+          }
+        },
+        "Voltage": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 36,
+            "int64": 36
+          },
+          "examples": [
+            "132kV",
+            "275kV",
+            "400kV"
+          ],
+          "max_len": 5,
+          "null_count": 48,
+          "shapes": {
+            "text": 36
+          }
+        },
+        "Year_FY": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "2028",
+            "2027"
+          ],
+          "max_len": 4,
+          "null_count": 48,
+          "shapes": {
+            "int": 36
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "Connection Type": {
+            "description": "Redundancy of the Substation",
+            "title": "Connection Type\t\t",
+            "type": "text",
+            "unit": null
+          },
+          "Publication": {
+            "description": "States what publication type the tariff relates to",
+            "title": "Publication\t\t",
+            "type": "text",
+            "unit": null
+          },
+          "Published_Date": {
+            "description": "Example would be that the 2025 Final tariffs we published 31 January 2024 (30/01/2024)",
+            "title": "Published_Date\t\t",
+            "type": "date",
+            "unit": null
+          },
+          "Sum of TEC at Connecting Substation": {
+            "description": "Capacity of the Substations",
+            "title": "Sum of TEC at Connecting Substation\t\t",
+            "type": "text",
+            "unit": null
+          },
+          "Tariff": {
+            "description": "Local Substation Tariff",
+            "title": "Tariff\t\t",
+            "type": "numeric",
+            "unit": null
+          },
+          "Voltage": {
+            "description": "Voltage level of the substation",
+            "title": "Voltage\t\t",
+            "type": "text",
+            "unit": null
+          },
+          "Year_FY": {
+            "description": "Year in which the tariff relates to i.e. 2026 = 1 April 2025 to 31 March 2026 (2025/26)",
+            "title": "Year_FY\t\t",
+            "type": "int4",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T11:39:15.061170+00:00",
+      "header": [
+        "Publication",
+        "Year_FY",
+        "Published_Date",
+        "Voltage",
+        "Sum of TEC at Connecting Substation",
+        "Connection Type",
+        "Tariff"
+      ],
+      "last_written_at": "2026-10-08T11:39:15.061170+00:00",
+      "resource_ids": [
+        "e697e9be-c068-482d-ae35-01f60bcb6700"
+      ],
+      "rows": 84,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [],
+  "key": "tnuos_tariffs_local_substation_tariff",
+  "keys": {
+    "candidates": [],
+    "full_row_max_duplicates": 47
+  },
+  "other_captures": 0,
+  "package": "transmission-network-use-of-system-tnuos-tariffs",
+  "proposal": {
+    "flags": [],
+    "record_draft": {
+      "eligibility": {
+        "question": "Year_FY: a numeric column with no vendor unit; Tariff: a numeric column with no vendor unit",
+        "status": "held",
+        "unit": "BAL-2"
+      },
+      "encoding": "utf-8",
+      "entity_key": [
+        "publication",
+        "year_fy",
+        "published_date",
+        "voltage",
+        "sum_of_tec_at_connecting_substation",
+        "connection_type",
+        "tariff"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "publication",
+              "nullable": true,
+              "source": "Publication"
+            },
+            {
+              "dtype": "int64",
+              "name": "year_fy",
+              "nullable": true,
+              "source": "Year_FY"
+            },
+            {
+              "dtype": "date",
+              "format": "%d/%m/%Y",
+              "name": "published_date",
+              "nullable": true,
+              "source": "Published_Date"
+            },
+            {
+              "dtype": "string",
+              "name": "voltage",
+              "nullable": true,
+              "source": "Voltage"
+            },
+            {
+              "dtype": "string",
+              "name": "sum_of_tec_at_connecting_substation",
+              "nullable": true,
+              "source": "Sum of TEC at Connecting Substation"
+            },
+            {
+              "dtype": "string",
+              "name": "connection_type",
+              "nullable": true,
+              "source": "Connection Type"
+            },
+            {
+              "dtype": "float64",
+              "name": "tariff",
+              "nullable": true,
+              "source": "Tariff"
+            }
+          ],
+          "header": [
+            "Publication",
+            "Year_FY",
+            "Published_Date",
+            "Voltage",
+            "Sum of TEC at Connecting Substation",
+            "Connection Type",
+            "Tariff"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T03",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "held",
+        "field": "column 'Year_FY'.unit",
+        "id": "T01",
+        "kind": "unit",
+        "question": "Year_FY: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Tariff'.unit",
+        "id": "T02",
+        "kind": "unit",
+        "question": "Tariff: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T03",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: Published_Date"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T04",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['publication', 'year_fy', 'published_date', 'voltage', 'sum_of_tec_at_connecting_substation', 'connection_type', 'tariff'] (no candidate measured unique, so every column); without one, latest stays whole_capture"
+      }
+    ]
+  },
+  "refresh": "adhoc",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update Frequency",
+        "value": "Quarterly"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Network charges",
+    "title": "Transmission Network Use of System (TNUoS) Tariffs"
+  }
+}

@@ -1,0 +1,875 @@
+{
+  "archetype": "EVT",
+  "batch": "TRD",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/ic_requirement_auction/2026/10/08/raw_20261008T110850Z_6a928369-bed3-445f-af8a-69cdb2cc5089_e87ac116.csv",
+      "ckan_last_modified": "2023-01-23T22:44:59.745674",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 28329,
+      "parse_error": null,
+      "resource_id": "6a928369-bed3-445f-af8a-69cdb2cc5089",
+      "rows": 28328,
+      "sampled": false,
+      "size": 5255998,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T11:08:50.312375+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 1,
+      "columns": {
+        "Auction ID": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 28328,
+            "int64": 28328
+          },
+          "examples": [
+            "2020_12_16-15_57",
+            "2020_12_16-19_54",
+            "2020_12_17-17_11"
+          ],
+          "max_len": 16,
+          "null_count": 0,
+          "shapes": {
+            "text": 28328
+          }
+        },
+        "Auction Lot ID": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 28328,
+            "int64": 28328
+          },
+          "examples": [
+            "2020_12_16-15_57-1",
+            "2020_12_16-15_57-10",
+            "2020_12_16-15_57-2"
+          ],
+          "max_len": 19,
+          "null_count": 0,
+          "shapes": {
+            "text": 28328
+          }
+        },
+        "BN Volume": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "9",
+            "106",
+            "50"
+          ],
+          "max_len": 4,
+          "null_count": 17943,
+          "shapes": {
+            "int": 10385
+          }
+        },
+        "Best Price": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 24213
+          },
+          "examples": [
+            "31.02",
+            "35.89",
+            "33.45"
+          ],
+          "max_len": 7,
+          "null_count": 232,
+          "shapes": {
+            "decimal": 24213,
+            "int": 3883
+          }
+        },
+        "Bid Deadline": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 28328,
+            "int64": 28328
+          },
+          "examples": [
+            "2020-12-16T16:45:00",
+            "2020-12-16T20:30:00",
+            "2020-12-17T17:40:00"
+          ],
+          "max_len": 19,
+          "null_count": 0,
+          "shapes": {
+            "naive_datetime": 28328
+          }
+        },
+        "Buy Sell": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 28328,
+            "int64": 28328
+          },
+          "examples": [
+            "Sell",
+            "Buy",
+            "BUY"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "text": 28328
+          }
+        },
+        "Cleared Volume": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "60",
+            "50",
+            "15"
+          ],
+          "max_len": 4,
+          "null_count": 1740,
+          "shapes": {
+            "int": 26588
+          }
+        },
+        "Clearing Price": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 24381
+          },
+          "examples": [
+            "28.54",
+            "35.36",
+            "29.75"
+          ],
+          "max_len": 7,
+          "null_count": 232,
+          "shapes": {
+            "decimal": 24381,
+            "int": 3715
+          }
+        },
+        "Default Price": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 303
+          },
+          "examples": [
+            "54",
+            "42",
+            "52"
+          ],
+          "max_len": 16,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 303,
+            "int": 28025
+          }
+        },
+        "EL Volume": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "50",
+            "200",
+            "100"
+          ],
+          "max_len": 4,
+          "null_count": 24059,
+          "shapes": {
+            "int": 4269
+          }
+        },
+        "End Time": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 28328,
+            "int64": 28328
+          },
+          "examples": [
+            "2020-12-16T23:00:00",
+            "2020-12-17T03:00:00",
+            "2020-12-17T00:00:00"
+          ],
+          "max_len": 19,
+          "null_count": 0,
+          "shapes": {
+            "naive_datetime": 28328
+          }
+        },
+        "IFA1 Volume": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "400",
+            "460",
+            "185"
+          ],
+          "max_len": 4,
+          "null_count": 12849,
+          "shapes": {
+            "int": 15479
+          }
+        },
+        "IFA2 Volume": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "158",
+            "149",
+            "55"
+          ],
+          "max_len": 4,
+          "null_count": 19527,
+          "shapes": {
+            "int": 8801
+          }
+        },
+        "NEMO Volume": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "150",
+            "200",
+            "70"
+          ],
+          "max_len": 4,
+          "null_count": 14441,
+          "shapes": {
+            "int": 13887
+          }
+        },
+        "Notes": {
+          "blank_count": 27689,
+          "cast_failures": {
+            "float64": 639,
+            "int64": 639
+          },
+          "examples": [
+            "IT issue, delayed upload",
+            "CANCELLED",
+            "Due to French electricity system conditions, NGESO is unable to trade on the int"
+          ],
+          "max_len": 352,
+          "null_count": 0,
+          "shapes": {
+            "text": 639
+          }
+        },
+        "Published DateTime": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 28328,
+            "int64": 28328
+          },
+          "examples": [
+            "2020-12-16T17:15:42",
+            "2020-12-16T20:46:29",
+            "2020-12-18T12:28:17"
+          ],
+          "max_len": 19,
+          "null_count": 0,
+          "shapes": {
+            "naive_datetime": 28328
+          }
+        },
+        "Qualified IC": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 28328,
+            "int64": 28328
+          },
+          "examples": [
+            "NEMO",
+            "IFA1",
+            "IFA1/NEMO"
+          ],
+          "max_len": 24,
+          "null_count": 0,
+          "shapes": {
+            "text": 28328
+          }
+        },
+        "Start Time": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 28328,
+            "int64": 28328
+          },
+          "examples": [
+            "2020-12-16T22:00:00",
+            "2020-12-17T02:00:00",
+            "2020-12-16T23:00:00"
+          ],
+          "max_len": 19,
+          "null_count": 0,
+          "shapes": {
+            "naive_datetime": 28328
+          }
+        },
+        "System Flag": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 1552,
+            "int64": 1552
+          },
+          "examples": [
+            "T",
+            "F",
+            "null"
+          ],
+          "max_len": 4,
+          "null_count": 26776,
+          "shapes": {
+            "text": 1552
+          }
+        },
+        "Total Bid Volume": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 85
+          },
+          "examples": [
+            "290",
+            "300",
+            "250"
+          ],
+          "max_len": 11,
+          "null_count": 1742,
+          "shapes": {
+            "decimal": 85,
+            "int": 26501
+          }
+        },
+        "VKL Volume": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "100",
+            "200",
+            "300"
+          ],
+          "max_len": 4,
+          "null_count": 25672,
+          "shapes": {
+            "int": 2656
+          }
+        },
+        "VWA Price": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 26212
+          },
+          "examples": [
+            "28.95",
+            "35.63",
+            "30.98"
+          ],
+          "max_len": 7,
+          "null_count": 232,
+          "shapes": {
+            "decimal": 26212,
+            "int": 1884
+          }
+        },
+        "Volume Required": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "150",
+            "400",
+            "200"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 28328
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "Auction ID": {
+            "description": "Identifier for a given auction, typically based on the timestamp when initial requirement was sent. Usually in a given auction there might be one or more seperate requirement (Lot).",
+            "title": "Auction ID",
+            "type": "text",
+            "unit": null
+          },
+          "Auction Lot ID": {
+            "description": "Combination of the Auction ID and Lot ID.",
+            "title": "Auction Lot ID",
+            "type": "text",
+            "unit": null
+          },
+          "BN Volume": {
+            "description": "The volume cleared on BritNed (BN)",
+            "title": "BN Volume",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "Best Price": {
+            "description": "The best price for a given requirement lot.",
+            "title": "Best Price",
+            "type": "numeric",
+            "unit": "£/MWh"
+          },
+          "Bid Deadline": {
+            "description": "Bidding deadline date time..",
+            "title": "Bid Deadline",
+            "type": "timestamp",
+            "unit": "UTC ISO 8601"
+          },
+          "Buy Sell": {
+            "description": "Whether NESO intend to Buy or Sell for the given requirement (Lot)",
+            "title": "Buy Sell",
+            "type": "text",
+            "unit": null
+          },
+          "Cleared Volume": {
+            "description": "Total volume being accepted for a given requirement.",
+            "title": "Cleared Volume",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "Clearing Price": {
+            "description": "The clearing price (worst price) for a given requirement (lot).",
+            "title": "Clearing Price",
+            "type": "numeric",
+            "unit": "£/MWh"
+          },
+          "Default Price": {
+            "description": "The default price that applied if the counterparty failed to deliver.",
+            "title": "Default Price",
+            "type": "numeric",
+            "unit": "£/MWh"
+          },
+          "EL Volume": {
+            "description": "The volume cleared on the ElecLink Interconnector (EL)",
+            "title": "EL Volume",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "End Time": {
+            "description": "End date time for the requirement lot.",
+            "title": "End Time",
+            "type": "timestamp",
+            "unit": "UTC ISO 8601"
+          },
+          "IFA1 Volume": {
+            "description": "The volume cleared on Interconnexion France-Angleterre (IFA1).",
+            "title": "IFA1 Volume",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "IFA2 Volume": {
+            "description": "The volume cleared on Interconnexion France-Angleterre 2 (IFA2).",
+            "title": "IFA2 Volume",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "NEMO Volume": {
+            "description": "The volume cleared on NEMO Link.",
+            "title": "NEMO Volume",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "Notes": {
+            "description": "Notes and comments for a given requirement.",
+            "title": "Notes",
+            "type": "text",
+            "unit": null
+          },
+          "Published DateTime": {
+            "description": "The date and time when the data was last updated",
+            "title": "Published DateTime",
+            "type": "timestamp",
+            "unit": "UTC ISO 8601"
+          },
+          "Qualified IC": {
+            "description": "Qualified Interconnector for given requirement (Lot). Can be a combination of multiple Interconnectors, '/' is used as the separator.",
+            "title": "Qualfied IC",
+            "type": "text",
+            "unit": null
+          },
+          "Start Time": {
+            "description": "Start date time for the requirement lot.",
+            "title": "Start Time",
+            "type": "timestamp",
+            "unit": "UTC ISO 8601"
+          },
+          "System Flag": {
+            "description": "Trade is for system or energy",
+            "title": "System Flag",
+            "type": "text",
+            "unit": null
+          },
+          "Total Bid Volume": {
+            "description": "Total bid volume for given requirement.",
+            "title": "Total Bid Volume",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "VKL Volume": {
+            "description": "The volume cleared on the Viking Link Interconnector (VKL)",
+            "title": "VKL Volume",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "VWA Price": {
+            "description": "The Volume Weighted Average price for a given requirement lot..",
+            "title": "VWA Price",
+            "type": "numeric",
+            "unit": "£/MWh"
+          },
+          "Volume Required": {
+            "description": "Volume required for a given requirement (Lot).",
+            "title": "Volume Required",
+            "type": "numeric",
+            "unit": "MW"
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T11:08:50.312375+00:00",
+      "header": [
+        "Published DateTime",
+        "Notes",
+        "Auction ID",
+        "Auction Lot ID",
+        "Buy Sell",
+        "Volume Required",
+        "Qualified IC",
+        "Start Time",
+        "End Time",
+        "Bid Deadline",
+        "Default Price",
+        "Clearing Price",
+        "Best Price",
+        "VWA Price",
+        "Cleared Volume",
+        "Total Bid Volume",
+        "IFA1 Volume",
+        "BN Volume",
+        "NEMO Volume",
+        "IFA2 Volume",
+        "EL Volume",
+        "VKL Volume",
+        "System Flag"
+      ],
+      "last_written_at": "2026-10-08T11:08:50.312375+00:00",
+      "resource_ids": [
+        "6a928369-bed3-445f-af8a-69cdb2cc5089"
+      ],
+      "rows": 28328,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [],
+  "key": "ic_requirement_auction",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Auction Lot ID"
+        ],
+        "max_duplicates": 0
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "interconnector-requirement-and-auction-summary-data",
+  "proposal": {
+    "flags": [],
+    "record_draft": {
+      "eligibility": {
+        "question": "Published DateTime: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced); Start Time: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced); End Time: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced); Bid Deadline: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)",
+        "status": "held",
+        "unit": "TRD"
+      },
+      "encoding": "utf-8",
+      "entity_key": [
+        "auction_lot_id"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "published_datetime",
+              "nullable": true,
+              "source": "Published DateTime"
+            },
+            {
+              "dtype": "string",
+              "name": "notes",
+              "nullable": true,
+              "source": "Notes"
+            },
+            {
+              "dtype": "string",
+              "name": "auction_id",
+              "nullable": true,
+              "source": "Auction ID"
+            },
+            {
+              "dtype": "string",
+              "name": "auction_lot_id",
+              "nullable": true,
+              "source": "Auction Lot ID"
+            },
+            {
+              "dtype": "string",
+              "name": "buy_sell",
+              "nullable": true,
+              "source": "Buy Sell"
+            },
+            {
+              "dtype": "float64",
+              "name": "volume_required",
+              "nullable": true,
+              "source": "Volume Required"
+            },
+            {
+              "dtype": "string",
+              "name": "qualified_ic",
+              "nullable": true,
+              "source": "Qualified IC"
+            },
+            {
+              "dtype": "string",
+              "name": "start_time",
+              "nullable": true,
+              "source": "Start Time"
+            },
+            {
+              "dtype": "string",
+              "name": "end_time",
+              "nullable": true,
+              "source": "End Time"
+            },
+            {
+              "dtype": "string",
+              "name": "bid_deadline",
+              "nullable": true,
+              "source": "Bid Deadline"
+            },
+            {
+              "dtype": "float64",
+              "name": "default_price",
+              "nullable": true,
+              "source": "Default Price"
+            },
+            {
+              "dtype": "float64",
+              "name": "clearing_price",
+              "nullable": true,
+              "source": "Clearing Price"
+            },
+            {
+              "dtype": "float64",
+              "name": "best_price",
+              "nullable": true,
+              "source": "Best Price"
+            },
+            {
+              "dtype": "float64",
+              "name": "vwa_price",
+              "nullable": true,
+              "source": "VWA Price"
+            },
+            {
+              "dtype": "float64",
+              "name": "cleared_volume",
+              "nullable": true,
+              "source": "Cleared Volume"
+            },
+            {
+              "dtype": "float64",
+              "name": "total_bid_volume",
+              "nullable": true,
+              "source": "Total Bid Volume"
+            },
+            {
+              "dtype": "float64",
+              "name": "ifa1_volume",
+              "nullable": true,
+              "source": "IFA1 Volume"
+            },
+            {
+              "dtype": "float64",
+              "name": "bn_volume",
+              "nullable": true,
+              "source": "BN Volume"
+            },
+            {
+              "dtype": "float64",
+              "name": "nemo_volume",
+              "nullable": true,
+              "source": "NEMO Volume"
+            },
+            {
+              "dtype": "float64",
+              "name": "ifa2_volume",
+              "nullable": true,
+              "source": "IFA2 Volume"
+            },
+            {
+              "dtype": "float64",
+              "name": "el_volume",
+              "nullable": true,
+              "source": "EL Volume"
+            },
+            {
+              "dtype": "float64",
+              "name": "vkl_volume",
+              "nullable": true,
+              "source": "VKL Volume"
+            },
+            {
+              "dtype": "string",
+              "name": "system_flag",
+              "nullable": true,
+              "source": "System Flag"
+            }
+          ],
+          "header": [
+            "Published DateTime",
+            "Notes",
+            "Auction ID",
+            "Auction Lot ID",
+            "Buy Sell",
+            "Volume Required",
+            "Qualified IC",
+            "Start Time",
+            "End Time",
+            "Bid Deadline",
+            "Default Price",
+            "Clearing Price",
+            "Best Price",
+            "VWA Price",
+            "Cleared Volume",
+            "Total Bid Volume",
+            "IFA1 Volume",
+            "BN Volume",
+            "NEMO Volume",
+            "IFA2 Volume",
+            "EL Volume",
+            "VKL Volume",
+            "System Flag"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T05",
+      "version": "1",
+      "vintage": "capture_fallback"
+    },
+    "todos": [
+      {
+        "consequence": "held",
+        "field": "column 'Published DateTime'",
+        "id": "T01",
+        "kind": "time_semantics",
+        "question": "Published DateTime: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Start Time'",
+        "id": "T02",
+        "kind": "time_semantics",
+        "question": "Start Time: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'End Time'",
+        "id": "T03",
+        "kind": "time_semantics",
+        "question": "End Time: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Bid Deadline'",
+        "id": "T04",
+        "kind": "time_semantics",
+        "question": "Bid Deadline: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T05",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: Published DateTime, Start Time, End Time, Bid Deadline"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T06",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['auction_lot_id'] (measured unique in 1 capture(s)); without one, latest stays whole_capture"
+      },
+      {
+        "consequence": "none",
+        "field": "vintage",
+        "id": "T07",
+        "kind": "vendor_publication",
+        "question": "available_at is gridflow capture time for the dump; a vendor instant is held (D)"
+      }
+    ]
+  },
+  "refresh": "adhoc",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update Frequency",
+        "value": "Ad hoc"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Trading",
+    "title": "Interconnector Requirement and Auction Summary Data"
+  }
+}

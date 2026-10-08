@@ -1,0 +1,148 @@
+{
+  "archetype": "REG",
+  "batch": "DEM-2",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/national_demand_bmus/2026/10/08/raw_20261008T111257Z_7e1e84cf-89f4-4c69-a72a-d778087c22a4_46cdc2ce.csv",
+      "ckan_last_modified": "2026-09-29T13:45:22.344455",
+      "cr": 0,
+      "crlf": 1002,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "7e1e84cf-89f4-4c69-a72a-d778087c22a4",
+      "rows": 1001,
+      "sampled": false,
+      "size": 9462,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:12:57.464036+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 1,
+      "columns": {
+        "BM_Name": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 1001,
+            "int64": 1001
+          },
+          "examples": [
+            "ABERU-1",
+            "ABRBO-1",
+            "ABRTW-1"
+          ],
+          "max_len": 9,
+          "null_count": 0,
+          "shapes": {
+            "text": 1001
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "BM_Name": {
+            "description": "Name of BM Unit",
+            "title": "BM_Name",
+            "type": "text",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T11:12:57.464036+00:00",
+      "header": [
+        "BM_Name"
+      ],
+      "last_written_at": "2026-10-08T11:12:57.464036+00:00",
+      "resource_ids": [
+        "7e1e84cf-89f4-4c69-a72a-d778087c22a4"
+      ],
+      "rows": 1001,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [],
+  "key": "national_demand_bmus",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 1,
+        "columns": [
+          "BM_Name"
+        ],
+        "max_duplicates": 0
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "national-demand-balancing-mechanism-units",
+  "proposal": {
+    "flags": [],
+    "record_draft": {
+      "encoding": "utf-8",
+      "entity_key": [
+        "bm_name"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "bm_name",
+              "nullable": true,
+              "source": "BM_Name"
+            }
+          ],
+          "header": [
+            "BM_Name"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T01",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T01",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: none"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T02",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['bm_name'] (measured unique in 1 capture(s)); without one, latest stays whole_capture"
+      }
+    ]
+  },
+  "refresh": "adhoc",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update frequency",
+        "value": "Ad hoc"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Demand",
+    "title": "National Demand Balancing Mechanism Units"
+  }
+}

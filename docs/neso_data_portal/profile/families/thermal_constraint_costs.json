@@ -1,0 +1,327 @@
+{
+  "archetype": "SER",
+  "batch": "CON",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/thermal_constraint_costs/2026/10/08/raw_20261008T113831Z_4357dd3b-5c7a-4caa-8d1a-8cf848521143_e23b439e.csv",
+      "ckan_last_modified": "2022-04-08T15:22:06.203234",
+      "cr": 0,
+      "crlf": 2191,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "4357dd3b-5c7a-4caa-8d1a-8cf848521143",
+      "rows": 2190,
+      "sampled": false,
+      "size": 48560,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:38:31.219010+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/thermal_constraint_costs/2026/10/08/raw_20261008T113834Z_476b8d39-5eda-425c-9756-73ddfd36dc4d_f6459291.csv",
+      "ckan_last_modified": "2023-04-17T16:03:55.101783",
+      "cr": 0,
+      "crlf": 2191,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "476b8d39-5eda-425c-9756-73ddfd36dc4d",
+      "rows": 2190,
+      "sampled": false,
+      "size": 47648,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:38:34.163169+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/thermal_constraint_costs/2026/10/08/raw_20261008T113836Z_75c9c564-af38-4421-a461-a612a6921212_264e1474.csv",
+      "ckan_last_modified": "2024-04-04T10:31:42.196846",
+      "cr": 0,
+      "crlf": 2197,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "75c9c564-af38-4421-a461-a612a6921212",
+      "rows": 2196,
+      "sampled": false,
+      "size": 47559,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:38:36.877727+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/thermal_constraint_costs/2026/10/08/raw_20261008T113840Z_27df75fd-6233-466c-beed-3e6e2261e6b1_3260164e.csv",
+      "ckan_last_modified": "2025-04-04T15:20:03.256759",
+      "cr": 0,
+      "crlf": 2191,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "27df75fd-6233-466c-beed-3e6e2261e6b1",
+      "rows": 2190,
+      "sampled": false,
+      "size": 48348,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:38:40.203041+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/thermal_constraint_costs/2026/10/08/raw_20261008T113843Z_407f3e9d-5c38-4a64-98f5-923dc4d64fb2_6224bd08.csv",
+      "ckan_last_modified": "2026-04-07T10:00:55.940094",
+      "cr": 0,
+      "crlf": 2185,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "407f3e9d-5c38-4a64-98f5-923dc4d64fb2",
+      "rows": 2184,
+      "sampled": false,
+      "size": 47908,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:38:43.328601+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/thermal_constraint_costs/2026/10/08/raw_20261008T113845Z_c730b788-4328-43dc-9f84-27fd3adeda59_c8fd673b.csv",
+      "ckan_last_modified": "2026-10-03T11:17:46.430939",
+      "cr": 0,
+      "crlf": 1105,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "c730b788-4328-43dc-9f84-27fd3adeda59",
+      "rows": 1104,
+      "sampled": false,
+      "size": 24827,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:38:45.938951+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 6,
+      "columns": {
+        "Constraint Group": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 12054,
+            "int64": 12054
+          },
+          "examples": [
+            "ESTEX",
+            "SCOTEX",
+            "SEIMP"
+          ],
+          "max_len": 6,
+          "null_count": 0,
+          "shapes": {
+            "text": 12054
+          }
+        },
+        "Daily Cost (GBP)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 360,
+            "int64": 360
+          },
+          "examples": [
+            "0",
+            "2,150,551",
+            "1,390,386"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "int": 11694,
+            "text": 360
+          }
+        },
+        "Settlement Date": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%Y-%m-%d": 0,
+            "float64": 12054,
+            "int64": 12054
+          },
+          "examples": [
+            "2021-04-01",
+            "2021-04-02",
+            "2021-04-03"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "iso_date": 12054
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "Constraint Group": {
+            "description": "The name of the constraint.",
+            "title": "Constraint Group",
+            "type": "text",
+            "unit": null
+          },
+          "Daily Cost (GBP)": {
+            "description": "The daily spend in GBP for the constraint. This is an integer (rounded).",
+            "title": "Daily Cost (GBP)",
+            "type": "int4",
+            "unit": "£"
+          },
+          "Settlement Date": {
+            "description": "The date the constraint costs belong to.",
+            "title": "Settlement Date",
+            "type": "date",
+            "unit": "ISO 8601"
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T11:38:31.219010+00:00",
+      "header": [
+        "Settlement Date",
+        "Constraint Group",
+        "Daily Cost (GBP)"
+      ],
+      "last_written_at": "2026-10-08T11:38:45.938951+00:00",
+      "resource_ids": [
+        "27df75fd-6233-466c-beed-3e6e2261e6b1",
+        "407f3e9d-5c38-4a64-98f5-923dc4d64fb2",
+        "4357dd3b-5c7a-4caa-8d1a-8cf848521143",
+        "476b8d39-5eda-425c-9756-73ddfd36dc4d",
+        "75c9c564-af38-4421-a461-a612a6921212",
+        "c730b788-4328-43dc-9f84-27fd3adeda59"
+      ],
+      "rows": 12054,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [],
+  "key": "thermal_constraint_costs",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 6,
+        "columns": [
+          "Settlement Date",
+          "Constraint Group"
+        ],
+        "max_duplicates": 0
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "thermal-constraint-costs",
+  "proposal": {
+    "flags": [],
+    "record_draft": {
+      "encoding": "utf-8",
+      "entity_key": [
+        "settlement_date",
+        "constraint_group"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "date",
+              "format": "%Y-%m-%d",
+              "name": "settlement_date",
+              "nullable": true,
+              "source": "Settlement Date"
+            },
+            {
+              "dtype": "string",
+              "name": "constraint_group",
+              "nullable": true,
+              "source": "Constraint Group"
+            },
+            {
+              "dtype": "TODO: T01",
+              "name": "daily_cost_gbp",
+              "nullable": true,
+              "source": "Daily Cost (GBP)"
+            }
+          ],
+          "header": [
+            "Settlement Date",
+            "Constraint Group",
+            "Daily Cost (GBP)"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T02",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "blocked",
+        "field": "column 'Daily Cost (GBP)'.dtype",
+        "id": "T01",
+        "kind": "type_conflict",
+        "question": "Daily Cost (GBP): field-info declares int4 but 360 value(s) do not cast to int64"
+      },
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T02",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: Settlement Date"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T03",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['settlement_date', 'constraint_group'] (measured unique in 6 capture(s)); without one, latest stays whole_capture"
+      }
+    ]
+  },
+  "refresh": "weekly",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update Frequency",
+        "value": "Weekly"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Constraint management",
+    "title": "Thermal Constraint Costs"
+  }
+}

@@ -1,0 +1,2540 @@
+{
+  "archetype": "REG",
+  "batch": "CI",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/capacity_market_unit_cmu/2026/10/08/raw_20261008T091442Z_25a5fa2e-873d-41c5-8aaf-fbc2b06d79e6_9d91a949.csv",
+      "ckan_last_modified": "2026-10-07T13:21:26.523270",
+      "cr": 0,
+      "crlf": 18201,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "25a5fa2e-873d-41c5-8aaf-fbc2b06d79e6",
+      "rows": 18200,
+      "sampled": false,
+      "size": 8762136,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T09:14:42.633112+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 1,
+      "columns": {
+        "Agent Name": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 234,
+            "int64": 234
+          },
+          "examples": [
+            "Tom Bent",
+            "Simon Stockton",
+            "Fabienne van der Velde"
+          ],
+          "max_len": 51,
+          "null_count": 17966,
+          "shapes": {
+            "text": 234
+          }
+        },
+        "Amount of Credit Cover": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "21700",
+            "0",
+            "4000"
+          ],
+          "max_len": 8,
+          "null_count": 1962,
+          "shapes": {
+            "int": 16238
+          }
+        },
+        "Annual Penalty Cap": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 9317,
+            "int64": 9317
+          },
+          "examples": [
+            "100.00%"
+          ],
+          "max_len": 7,
+          "null_count": 8883,
+          "shapes": {
+            "text": 9317
+          }
+        },
+        "Anticipated De Rated Capacity": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 15750
+          },
+          "examples": [
+            "4.041",
+            "3.233",
+            "4.849"
+          ],
+          "max_len": 8,
+          "null_count": 1330,
+          "shapes": {
+            "decimal": 15750,
+            "int": 1120
+          }
+        },
+        "Anticipated Post Refurbishing De Rated Capacity": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 193
+          },
+          "examples": [
+            "4.741",
+            "418",
+            "9.361"
+          ],
+          "max_len": 8,
+          "null_count": 17985,
+          "shapes": {
+            "decimal": 193,
+            "int": 22
+          }
+        },
+        "Anticipated Pre Refurbishing De Rated Capacity": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 179
+          },
+          "examples": [
+            "4.844",
+            "396",
+            "9.361"
+          ],
+          "max_len": 8,
+          "null_count": 17990,
+          "shapes": {
+            "decimal": 179,
+            "int": 31
+          }
+        },
+        "Application ID": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 18200,
+            "int64": 18200
+          },
+          "examples": [
+            "A-TR-2016-2015_1-00001",
+            "A-TR-2016-2015_2-00001",
+            "A-TR-2016-2015_3-00001"
+          ],
+          "max_len": 24,
+          "null_count": 0,
+          "shapes": {
+            "text": 18200
+          }
+        },
+        "Auction": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 18200,
+            "int64": 18200
+          },
+          "examples": [
+            "Capacity Auction"
+          ],
+          "max_len": 16,
+          "null_count": 0,
+          "shapes": {
+            "text": 18200
+          }
+        },
+        "Auction Acquired Capacity Obligation": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 7581
+          },
+          "examples": [
+            "15",
+            "3.45",
+            "2.6"
+          ],
+          "max_len": 8,
+          "null_count": 8883,
+          "shapes": {
+            "decimal": 7581,
+            "int": 1736
+          }
+        },
+        "Auction Name": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 18200,
+            "int64": 18200
+          },
+          "examples": [
+            "2016-17 (TR) Transitional Capacity Auction",
+            "2017-18 (T-1) One Year Ahead Capacity Auction",
+            "2017-18 (TR) Transitional Capacity Auction"
+          ],
+          "max_len": 47,
+          "null_count": 0,
+          "shapes": {
+            "text": 18200
+          }
+        },
+        "Beta Value": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [],
+          "max_len": 0,
+          "null_count": 18200,
+          "shapes": {}
+        },
+        "CM Unit Category": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 18200,
+            "int64": 18200
+          },
+          "examples": [
+            "Unproven DSR CMU",
+            "Existing Generating CMU",
+            "New Build Generating CMU"
+          ],
+          "max_len": 28,
+          "null_count": 0,
+          "shapes": {
+            "text": 18200
+          }
+        },
+        "CM Unit Name": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 18179,
+            "int64": 18179
+          },
+          "examples": [
+            "Strip_15",
+            "Spec_15",
+            "Pack_15"
+          ],
+          "max_len": 79,
+          "null_count": 20,
+          "shapes": {
+            "int": 1,
+            "text": 18179
+          }
+        },
+        "CM Unit Type": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 18200,
+            "int64": 18200
+          },
+          "examples": [
+            "Non CMRS",
+            "CMRS"
+          ],
+          "max_len": 8,
+          "null_count": 0,
+          "shapes": {
+            "text": 18200
+          }
+        },
+        "CMU ID": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 18130,
+            "int64": 18130
+          },
+          "examples": [
+            "2015_1",
+            "2015_2",
+            "2015_3"
+          ],
+          "max_len": 6,
+          "null_count": 0,
+          "shapes": {
+            "int": 70,
+            "text": 18130
+          }
+        },
+        "CMU Technology": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 18194,
+            "int64": 18194
+          },
+          "examples": [
+            "DSR",
+            "CHP and autogeneration",
+            "OCGT and Reciprocating Engines"
+          ],
+          "max_len": 101,
+          "null_count": 6,
+          "shapes": {
+            "text": 18194
+          }
+        },
+        "CMU confirmed entry into Auction": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 12837,
+            "int64": 12837
+          },
+          "examples": [
+            "Yes",
+            "No"
+          ],
+          "max_len": 3,
+          "null_count": 5363,
+          "shapes": {
+            "text": 12837
+          }
+        },
+        "Capacity Agreement Awarded": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 11807,
+            "int64": 11807
+          },
+          "examples": [
+            "Yes",
+            "No"
+          ],
+          "max_len": 3,
+          "null_count": 6393,
+          "shapes": {
+            "text": 11807
+          }
+        },
+        "Capacity Agreement has been Terminated": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 561,
+            "int64": 561
+          },
+          "examples": [
+            "Yes"
+          ],
+          "max_len": 3,
+          "null_count": 17639,
+          "shapes": {
+            "text": 561
+          }
+        },
+        "Capacity obligation Summary": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 1973,
+            "int64": 1973
+          },
+          "examples": [
+            "01/10/2017 - 13/03/2018:2.730 MW; 14/03/2018 - 30/09/2018:0.000 MW",
+            "01/10/2017 - 13/03/2018:11.432 MW; 14/03/2018 - 30/09/2018:7.432 MW",
+            "01/10/2017 - 22/10/2017:385.440 MW; 23/10/2017 - 04/12/2017:0.000 MW; 05/12/2017"
+          ],
+          "max_len": 596,
+          "null_count": 16227,
+          "shapes": {
+            "text": 1973
+          }
+        },
+        "Connection Agreement Deferral Declaration": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 1245,
+            "int64": 1245
+          },
+          "examples": [
+            "Yes"
+          ],
+          "max_len": 3,
+          "null_count": 16955,
+          "shapes": {
+            "text": 1245
+          }
+        },
+        "Connection or DSR Capacity": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 9611
+          },
+          "examples": [
+            "50",
+            "9.216",
+            "4"
+          ],
+          "max_len": 8,
+          "null_count": 308,
+          "shapes": {
+            "decimal": 9611,
+            "int": 8281
+          }
+        },
+        "DSR Bidding Capacity": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1777
+          },
+          "examples": [
+            "15",
+            "3.45",
+            "2.6"
+          ],
+          "max_len": 6,
+          "null_count": 15779,
+          "shapes": {
+            "decimal": 1777,
+            "int": 644
+          }
+        },
+        "DSR Test Method": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 700,
+            "int64": 700
+          },
+          "examples": [
+            "Post auction DSR test",
+            "Post Auction DSR Test",
+            "Post Auction"
+          ],
+          "max_len": 35,
+          "null_count": 17500,
+          "shapes": {
+            "text": 700
+          }
+        },
+        "Date for Financial Commitment Milestone": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%d/%m/%Y": 0,
+            "float64": 243,
+            "int64": 243
+          },
+          "examples": [
+            "08/02/2016",
+            "13/05/2018",
+            "02/07/2016"
+          ],
+          "max_len": 10,
+          "null_count": 17957,
+          "shapes": {
+            "slash_date": 243
+          },
+          "slash_first_gt_12": 182,
+          "slash_second_gt_12": 0
+        },
+        "Date for provision of deferred Connection Agreement": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%d/%m/%Y": 0,
+            "float64": 126,
+            "int64": 126
+          },
+          "examples": [
+            "29/03/2018",
+            "31/03/2017",
+            "01/04/2018"
+          ],
+          "max_len": 10,
+          "null_count": 18074,
+          "shapes": {
+            "slash_date": 126
+          },
+          "slash_first_gt_12": 122,
+          "slash_second_gt_12": 0
+        },
+        "Date for provision of deferred TEC": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%d/%m/%Y": 0,
+            "float64": 2,
+            "int64": 2
+          },
+          "examples": [
+            "01/04/2017"
+          ],
+          "max_len": 10,
+          "null_count": 18198,
+          "shapes": {
+            "slash_date": 2
+          },
+          "slash_first_gt_12": 0,
+          "slash_second_gt_12": 0
+        },
+        "Date of Issue of Capacity Agreement": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%d/%m/%Y": 0,
+            "float64": 9317,
+            "int64": 9317
+          },
+          "examples": [
+            "06/03/2017",
+            "26/06/2017",
+            "08/06/2024"
+          ],
+          "max_len": 10,
+          "null_count": 8883,
+          "shapes": {
+            "slash_date": 9317
+          },
+          "slash_first_gt_12": 5634,
+          "slash_second_gt_12": 0
+        },
+        "Date of Issue of DSR Test Certificate": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%d/%m/%Y": 0,
+            "float64": 612,
+            "int64": 612
+          },
+          "examples": [
+            "29/09/2016",
+            "01/12/2016",
+            "31/08/2016"
+          ],
+          "max_len": 10,
+          "null_count": 17588,
+          "shapes": {
+            "slash_date": 612
+          },
+          "slash_first_gt_12": 453,
+          "slash_second_gt_12": 0
+        },
+        "Date of Termination of Capacity Agreement": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%d/%m/%Y": 0,
+            "float64": 561,
+            "int64": 561
+          },
+          "examples": [
+            "29/03/2017",
+            "21/06/2018",
+            "24/11/2017"
+          ],
+          "max_len": 10,
+          "null_count": 17639,
+          "shapes": {
+            "slash_date": 561
+          },
+          "slash_first_gt_12": 366,
+          "slash_second_gt_12": 0
+        },
+        "De Rated Capacity": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 16443
+          },
+          "examples": [
+            "43.4",
+            "7.999",
+            "3.472"
+          ],
+          "max_len": 8,
+          "null_count": 267,
+          "shapes": {
+            "decimal": 16443,
+            "int": 1490
+          }
+        },
+        "Delivery Year": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "2016",
+            "2017",
+            "2018"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 18200
+          }
+        },
+        "Delivery Years for which Agreement Valid": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 9317,
+            "int64": 9317
+          },
+          "examples": [
+            "2016/2017",
+            "2017/2018",
+            "2018/2019"
+          ],
+          "max_len": 163,
+          "null_count": 8883,
+          "shapes": {
+            "text": 9317
+          }
+        },
+        "Duration of Capacity Agreement Awarded": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1",
+            "15",
+            "14"
+          ],
+          "max_len": 2,
+          "null_count": 8884,
+          "shapes": {
+            "int": 9316
+          }
+        },
+        "Duration of Capacity Agreement in First Bidding Round": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1",
+            "15",
+            "3"
+          ],
+          "max_len": 2,
+          "null_count": 8715,
+          "shapes": {
+            "int": 9485
+          }
+        },
+        "Earliest Date SCM is expected to be achieved": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%d/%m/%Y": 0,
+            "float64": 837,
+            "int64": 837
+          },
+          "examples": [
+            "20/09/2022",
+            "15/05/2023",
+            "14/08/2023"
+          ],
+          "max_len": 10,
+          "null_count": 17363,
+          "shapes": {
+            "slash_date": 837
+          },
+          "slash_first_gt_12": 368,
+          "slash_second_gt_12": 0
+        },
+        "Has Capacity Agreement been Suspended": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 157,
+            "int64": 157
+          },
+          "examples": [
+            "Yes - Suspended",
+            "Yes - Suspended and repay Capacity Payments"
+          ],
+          "max_len": 43,
+          "null_count": 18043,
+          "shapes": {
+            "text": 157
+          }
+        },
+        "Is Connection Agreement required": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 126,
+            "int64": 126
+          },
+          "examples": [
+            "Yes"
+          ],
+          "max_len": 3,
+          "null_count": 18074,
+          "shapes": {
+            "text": 126
+          }
+        },
+        "Is FCM required": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 246,
+            "int64": 246
+          },
+          "examples": [
+            "Yes"
+          ],
+          "max_len": 3,
+          "null_count": 17954,
+          "shapes": {
+            "text": 246
+          }
+        },
+        "Is copy of Grid Connection Agreement required": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 2,
+            "int64": 2
+          },
+          "examples": [
+            "Yes"
+          ],
+          "max_len": 3,
+          "null_count": 18198,
+          "shapes": {
+            "text": 2
+          }
+        },
+        "Latest Date SCM is expected to be achieved": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%d/%m/%Y": 0,
+            "float64": 838,
+            "int64": 838
+          },
+          "examples": [
+            "23/12/2022",
+            "30/09/2023",
+            "04/09/2023"
+          ],
+          "max_len": 10,
+          "null_count": 17362,
+          "shapes": {
+            "slash_date": 838
+          },
+          "slash_first_gt_12": 579,
+          "slash_second_gt_12": 0
+        },
+        "Legal Name of any Person with a Security Interest": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 433,
+            "int64": 433
+          },
+          "examples": [
+            "1.HSBC Corporate Trustee Company Limited",
+            "1.HSBC Corporate Trustee Company (UK) Limited",
+            "1.MACQUARIE BANK LIMITED (LONDON BRANCH)"
+          ],
+          "max_len": 230,
+          "null_count": 17767,
+          "shapes": {
+            "text": 433
+          }
+        },
+        "List of Traded Capacity Obligations": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 1973,
+            "int64": 1973
+          },
+          "examples": [
+            "T1: -2.730 MW",
+            "T1: -4.000 MW",
+            "T1: -385.440 MW"
+          ],
+          "max_len": 920,
+          "null_count": 16227,
+          "shapes": {
+            "text": 1973
+          }
+        },
+        "Long Stop Date for the Minimum Completion Requirement": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%d/%m/%Y": 0,
+            "float64": 628,
+            "int64": 628
+          },
+          "examples": [
+            "01/10/2017",
+            "01/10/2018",
+            "01/10/2019"
+          ],
+          "max_len": 10,
+          "null_count": 17572,
+          "shapes": {
+            "slash_date": 628
+          },
+          "slash_first_gt_12": 43,
+          "slash_second_gt_12": 0
+        },
+        "Maximum Obligation Period": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1",
+            "15",
+            "3"
+          ],
+          "max_len": 2,
+          "null_count": 502,
+          "shapes": {
+            "int": 17698
+          }
+        },
+        "Monthly Penalty Cap": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 9317,
+            "int64": 9317
+          },
+          "examples": [
+            "200.00%"
+          ],
+          "max_len": 7,
+          "null_count": 8883,
+          "shapes": {
+            "text": 9317
+          }
+        },
+        "Name of Applicant": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 18200,
+            "int64": 18200
+          },
+          "examples": [
+            "TATA STEEL UK LIMITED",
+            "Ameresco Limited",
+            "Anglian Water Services Limited"
+          ],
+          "max_len": 51,
+          "null_count": 0,
+          "shapes": {
+            "text": 18200
+          }
+        },
+        "Nature of the Security Interest": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 433,
+            "int64": 433
+          },
+          "examples": [
+            "1.A charge and assignment of the rights under the Capacity Agreement pursuant to",
+            "1.An absolute assignment, subject to a proviso for re-assignment on redemption, ",
+            "1.Debenture"
+          ],
+          "max_len": 451,
+          "null_count": 17767,
+          "shapes": {
+            "text": 433
+          }
+        },
+        "New Build Yet to Satisfy FCM": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 2088,
+            "int64": 2088
+          },
+          "examples": [
+            "Yes"
+          ],
+          "max_len": 3,
+          "null_count": 16112,
+          "shapes": {
+            "text": 2088
+          }
+        },
+        "Opt Out Reason": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 380,
+            "int64": 380
+          },
+          "examples": [
+            "Temporarily non-operational for the Winter of the relevant  Delivery Year but op",
+            "Closed down, decommissioned or otherwise non-operational by the start of the rel",
+            "(i) will be closed down, decommissioned or otherwise non-operational by the comm"
+          ],
+          "max_len": 153,
+          "null_count": 17820,
+          "shapes": {
+            "text": 380
+          }
+        },
+        "Opt Out Status": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 18200,
+            "int64": 18200
+          },
+          "examples": [
+            "Opt-In",
+            "Opt-Out"
+          ],
+          "max_len": 7,
+          "null_count": 0,
+          "shapes": {
+            "text": 18200
+          }
+        },
+        "Parent Company": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 12213,
+            "int64": 12213
+          },
+          "examples": [
+            "Reactive Technologies Limited",
+            "Stardust Master ProjectCo Limited",
+            "Conrad (Windrush) Limited"
+          ],
+          "max_len": 59,
+          "null_count": 5985,
+          "shapes": {
+            "int": 2,
+            "text": 12213
+          }
+        },
+        "Period for which the transfer applies": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 1973,
+            "int64": 1973
+          },
+          "examples": [
+            "T1: 14/03/2018 - 30/09/2018",
+            "T1: 23/10/2017 - 04/12/2017",
+            "T1: 30/09/2018 - 30/09/2018"
+          ],
+          "max_len": 1759,
+          "null_count": 16227,
+          "shapes": {
+            "text": 1973
+          }
+        },
+        "Planning Consents Conditions": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 352,
+            "int64": 352
+          },
+          "examples": [
+            "Yes"
+          ],
+          "max_len": 3,
+          "null_count": 17848,
+          "shapes": {
+            "text": 352
+          }
+        },
+        "Post Refurbishing De Rated Capacity": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 192
+          },
+          "examples": [
+            "4.741",
+            "418",
+            "9.361"
+          ],
+          "max_len": 8,
+          "null_count": 17993,
+          "shapes": {
+            "decimal": 192,
+            "int": 15
+          }
+        },
+        "Pre Qualification Decision": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 17820,
+            "int64": 17820
+          },
+          "examples": [
+            "Not Prequalified",
+            "Prequalified",
+            "Rejected"
+          ],
+          "max_len": 26,
+          "null_count": 380,
+          "shapes": {
+            "text": 17820
+          }
+        },
+        "Pre Refurbishing CMU Status": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 215,
+            "int64": 215
+          },
+          "examples": [
+            "Opt-In",
+            "Opt-Out"
+          ],
+          "max_len": 7,
+          "null_count": 17985,
+          "shapes": {
+            "text": 215
+          }
+        },
+        "Pre Refurbishing De Rated Capacity": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 177
+          },
+          "examples": [
+            "4.741",
+            "396",
+            "9.361"
+          ],
+          "max_len": 8,
+          "null_count": 17985,
+          "shapes": {
+            "decimal": 177,
+            "int": 38
+          }
+        },
+        "Pre Refurbishment Bidding Status": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 172,
+            "int64": 172
+          },
+          "examples": [
+            "Pre & Post Refurbishing",
+            "Pre-Refurbishing Only",
+            "Post-Refurbishing Only"
+          ],
+          "max_len": 23,
+          "null_count": 18028,
+          "shapes": {
+            "text": 172
+          }
+        },
+        "Primary Fuel Type": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 14624,
+            "int64": 14624
+          },
+          "examples": [
+            "Hydro",
+            "Gas",
+            "Storage - Battery"
+          ],
+          "max_len": 24,
+          "null_count": 3576,
+          "shapes": {
+            "text": 14624
+          }
+        },
+        "Proven DSR Capacity": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 1085
+          },
+          "examples": [
+            "38.854",
+            "2.621",
+            "4.852"
+          ],
+          "max_len": 6,
+          "null_count": 17082,
+          "shapes": {
+            "decimal": 1085,
+            "int": 33
+          }
+        },
+        "Registered Holder": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 9317,
+            "int64": 9317
+          },
+          "examples": [
+            "TATA STEEL UK LIMITED",
+            "Ameresco Limited",
+            "Anglian Water Services Limited"
+          ],
+          "max_len": 51,
+          "null_count": 8883,
+          "shapes": {
+            "text": 9317
+          }
+        },
+        "Secondary Trading Contact_Email": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 14924,
+            "int64": 14924
+          },
+          "examples": [
+            "gbcm.trading@reactive-technologies.com",
+            "info@conradenergy.co.uk",
+            "secondarytrading@conradenergy.co.uk"
+          ],
+          "max_len": 43,
+          "null_count": 3276,
+          "shapes": {
+            "text": 14924
+          }
+        },
+        "Secondary Trading Contact_Telephone": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 14853,
+            "int64": 14853
+          },
+          "examples": [
+            "'+442031424798",
+            "'+441865987704",
+            "'+4401235427290"
+          ],
+          "max_len": 18,
+          "null_count": 3276,
+          "shapes": {
+            "int": 71,
+            "text": 14853
+          }
+        },
+        "Storage Facility": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 18200,
+            "int64": 18200
+          },
+          "examples": [
+            "No",
+            "Yes"
+          ],
+          "max_len": 3,
+          "null_count": 0,
+          "shapes": {
+            "text": 18200
+          }
+        },
+        "Subject to Substantial Completion Milestone": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 476,
+            "int64": 476
+          },
+          "examples": [
+            "Yes"
+          ],
+          "max_len": 3,
+          "null_count": 17724,
+          "shapes": {
+            "text": 476
+          }
+        },
+        "Subject to a Minimum Completion Requirement": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 670,
+            "int64": 670
+          },
+          "examples": [
+            "Yes"
+          ],
+          "max_len": 3,
+          "null_count": 17530,
+          "shapes": {
+            "text": 670
+          }
+        },
+        "TEC Deferral": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 9,
+            "int64": 9
+          },
+          "examples": [
+            "Yes"
+          ],
+          "max_len": 3,
+          "null_count": 18191,
+          "shapes": {
+            "text": 9
+          }
+        },
+        "Term of the Capacity Agreement": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1",
+            "15",
+            "14"
+          ],
+          "max_len": 2,
+          "null_count": 8883,
+          "shapes": {
+            "int": 9317
+          }
+        },
+        "Termination Fee 1 Rate": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 9317,
+            "int64": 9317
+          },
+          "examples": [
+            "£5000.00 /MW"
+          ],
+          "max_len": 12,
+          "null_count": 8883,
+          "shapes": {
+            "text": 9317
+          }
+        },
+        "Termination Fee 2 Rate": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 9317,
+            "int64": 9317
+          },
+          "examples": [
+            "£25000.00 /MW"
+          ],
+          "max_len": 13,
+          "null_count": 8883,
+          "shapes": {
+            "text": 9317
+          }
+        },
+        "Termination Fee 3 Rate": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 8495,
+            "int64": 8495
+          },
+          "examples": [
+            "£10000.00 /MW"
+          ],
+          "max_len": 13,
+          "null_count": 9705,
+          "shapes": {
+            "text": 8495
+          }
+        },
+        "Termination Fee 4 Rate": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 8495,
+            "int64": 8495
+          },
+          "examples": [
+            "£15000.00 /MW"
+          ],
+          "max_len": 13,
+          "null_count": 9705,
+          "shapes": {
+            "text": 8495
+          }
+        },
+        "Termination Fee 5 Rate": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 8495,
+            "int64": 8495
+          },
+          "examples": [
+            "£35000.00 /MW"
+          ],
+          "max_len": 13,
+          "null_count": 9705,
+          "shapes": {
+            "text": 8495
+          }
+        },
+        "Transmission or Distribution": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 18200,
+            "int64": 18200
+          },
+          "examples": [
+            "Distribution",
+            "Transmission"
+          ],
+          "max_len": 12,
+          "null_count": 0,
+          "shapes": {
+            "text": 18200
+          }
+        },
+        "Type": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 18200,
+            "int64": 18200
+          },
+          "examples": [
+            "TR",
+            "T-1",
+            "ST"
+          ],
+          "max_len": 3,
+          "null_count": 0,
+          "shapes": {
+            "text": 18200
+          }
+        },
+        "Unique Agreement Identifier": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 9317,
+            "int64": 9317
+          },
+          "examples": [
+            "CAN-2016-2015_2-001",
+            "CAN-2016-AMER01-001",
+            "CAN-2016-AMER02-001"
+          ],
+          "max_len": 19,
+          "null_count": 8883,
+          "shapes": {
+            "text": 9317
+          }
+        },
+        "Unproven DSR": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 2249,
+            "int64": 2249
+          },
+          "examples": [
+            "Yes"
+          ],
+          "max_len": 3,
+          "null_count": 15951,
+          "shapes": {
+            "text": 2249
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "Agent Name": {
+            "description": "Where relevant Name of the Agent Company acting on behalf of the applicant company",
+            "title": "Agent Name",
+            "type": "text",
+            "unit": null
+          },
+          "Amount of Credit Cover": {
+            "description": "Amount of Credit Cover required",
+            "title": "Amount of Credit Cover",
+            "type": "numeric",
+            "unit": "£"
+          },
+          "Annual Penalty Cap": {
+            "description": "Annual Penalty Cap",
+            "title": "Annual Penalty Cap",
+            "type": "text",
+            "unit": "%"
+          },
+          "Anticipated De Rated Capacity": {
+            "description": "Anticipated De-Rated Capacity in MW",
+            "title": "Anticipated De Rated Capacity",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "Anticipated Post Refurbishing De Rated Capacity": {
+            "description": "Anticipated Post-Refurbishing De-Rated Capacity in MW",
+            "title": "Anticipated Post Refurbishing De Rated Capacity",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "Anticipated Pre Refurbishing De Rated Capacity": {
+            "description": "Anticipated Pre-Refurbishing De-Rated Capacity in MW",
+            "title": "Anticipated Pre Refurbishing De Rated Capacity",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "Application ID": {
+            "description": "System generated ID for Application",
+            "title": "Application ID",
+            "type": "text",
+            "unit": null
+          },
+          "Auction": {
+            "description": "Type of auction - always 'Capacity Auction'",
+            "title": "Auction",
+            "type": "text",
+            "unit": null
+          },
+          "Auction Acquired Capacity Obligation": {
+            "description": "Capacity Obligation in MW",
+            "title": "Auction Acquired Capacity Obligation",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "Auction Name": {
+            "description": "Name of Capacity Market Auction",
+            "title": "Auction Name",
+            "type": "text",
+            "unit": null
+          },
+          "Beta Value": {
+            "description": "Used for Stress Event",
+            "title": "Beta Value",
+            "type": "text",
+            "unit": null
+          },
+          "CM Unit Category": {
+            "description": "Categorises the CMU Unit Type in accordance with defined list in CM Rules",
+            "title": "CM Unit Category",
+            "type": "text",
+            "unit": null
+          },
+          "CM Unit Name": {
+            "description": "Name Defined by Applicant Company",
+            "title": "CM Unit Name",
+            "type": "text",
+            "unit": null
+          },
+          "CM Unit Type": {
+            "description": "Informs whether the applicant metering is CMRS/Non CMRS",
+            "title": "CM Unit Type",
+            "type": "text",
+            "unit": null
+          },
+          "CMU ID": {
+            "description": "ID of Capacity Market Unit - defined by Capacity Provider",
+            "title": "CMU ID",
+            "type": "text",
+            "unit": null
+          },
+          "CMU Technology": {
+            "description": "String of unique Generating Technology Classes from Components in the CMU",
+            "title": "CMU Technology",
+            "type": "text",
+            "unit": null
+          },
+          "CMU confirmed entry into Auction": {
+            "description": "Auction Entry Confirmation",
+            "title": "CMU confirmed entry into Auction",
+            "type": "text",
+            "unit": null
+          },
+          "Capacity Agreement Awarded": {
+            "description": "Confirmation of whether capacity agreement has been awarded",
+            "title": "Capacity Agreement Awarded",
+            "type": "text",
+            "unit": null
+          },
+          "Capacity Agreement has been Terminated": {
+            "description": "Has Agreement been Terminated?",
+            "title": "Capacity Agreement has been Terminated",
+            "type": "text",
+            "unit": null
+          },
+          "Capacity obligation Summary": {
+            "description": "Capacity obligation summary based on the traded capacity obligation(s)",
+            "title": "Capacity obligation Summary",
+            "type": "text",
+            "unit": null
+          },
+          "Connection Agreement Deferral Declaration": {
+            "description": "Connection Agreement Deferral Declaration under Rule 3.7.3(c) or Connection Agreement Deferral Declaration under Rule 3.7.3(b)(iii)",
+            "title": "Connection Agreement Deferral Declaration",
+            "type": "text",
+            "unit": null
+          },
+          "Connection or DSR Capacity": {
+            "description": "Connection Capacity in MW",
+            "title": "Connection or DSR Capacity",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "DSR Bidding Capacity": {
+            "description": "DSR Bidding Capacity in MW",
+            "title": "DSR Bidding Capacity",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "DSR Test Method": {
+            "description": "Method used to carry DSR Test",
+            "title": "DSR Test Method",
+            "type": "text",
+            "unit": null
+          },
+          "Date for Financial Commitment Milestone": {
+            "description": "Latest Date Financial Commitment Milestone can be submitted",
+            "title": "Date for Financial Commitment Milestone",
+            "type": "date",
+            "unit": null
+          },
+          "Date for provision of deferred Connection Agreement": {
+            "description": "Latest date connection agreement can be submitted",
+            "title": "Date for provision of deferred Connection Agreement",
+            "type": "date",
+            "unit": null
+          },
+          "Date for provision of deferred TEC": {
+            "description": "Latest date for providing deferred Transmission Entry Capacity",
+            "title": "Date for provision of deferred TEC",
+            "type": "date",
+            "unit": null
+          },
+          "Date of Issue of Capacity Agreement": {
+            "description": "Date capacity agreement issued",
+            "title": "Date of Issue of Capacity Agreement",
+            "type": "date",
+            "unit": null
+          },
+          "Date of Issue of DSR Test Certificate": {
+            "description": "Date of Issue of DSR Test Certificate",
+            "title": "Date of Issue of DSR Test Certificate",
+            "type": "date",
+            "unit": null
+          },
+          "Date of Termination of Capacity Agreement": {
+            "description": "Date Capacity Agreement was Terminated",
+            "title": "Date of Termination of Capacity Agreement",
+            "type": "date",
+            "unit": null
+          },
+          "De Rated Capacity": {
+            "description": "De-Rated Capacity in MW",
+            "title": "De Rated Capacity",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "Delivery Year": {
+            "description": "First Delivery Year to which the Capacity Auction Relates to",
+            "title": "Delivery Year",
+            "type": "int4",
+            "unit": "Year"
+          },
+          "Delivery Years for which Agreement Valid": {
+            "description": "List of delivery years agreement is valid for",
+            "title": "Delivery Years for which Agreement Valid",
+            "type": "text",
+            "unit": null
+          },
+          "Duration of Capacity Agreement Awarded": {
+            "description": "Duration of Capacity Agreement that has been awarded",
+            "title": "Duration of Capacity Agreement Awarded",
+            "type": "numeric",
+            "unit": "Number"
+          },
+          "Duration of Capacity Agreement in First Bidding Round": {
+            "description": "Customer confirmation of length of agreement being bid for",
+            "title": "Duration of Capacity Agreement in First Bidding Round",
+            "type": "numeric",
+            "unit": "Number"
+          },
+          "Earliest Date SCM is expected to be achieved": {
+            "description": "Earliest Substantial Completion Milestone is expected to be achieved",
+            "title": "Earliest Date SCM is expected to be achieved",
+            "type": "date",
+            "unit": null
+          },
+          "Has Capacity Agreement been Suspended": {
+            "description": "Suspension or Repayment of Capacity Payments pursuant to Rule 13.4.1",
+            "title": "Has Capacity Agreement been Suspended",
+            "type": "text",
+            "unit": null
+          },
+          "Is Connection Agreement required": {
+            "description": "Subject to provide a copy of its Connection Agreement in accordance with Rule 8.3.1(a) - distribution agreements only",
+            "title": "Is Connection Agreement required",
+            "type": "text",
+            "unit": null
+          },
+          "Is FCM required": {
+            "description": "Subject to meet Financial Commitment Milestone in accordance with Rule 6.6",
+            "title": "Is FCM required",
+            "type": "text",
+            "unit": null
+          },
+          "Is copy of Grid Connection Agreement required": {
+            "description": "Subject to provide a copy of its Grid Connection Agreement in accordance with Rule 8.3.1(b) - transmission agreements only",
+            "title": "Is copy of Grid Connection Agreement required",
+            "type": "text",
+            "unit": null
+          },
+          "Latest Date SCM is expected to be achieved": {
+            "description": "Latest Substantial Completion Milestone is expected to be achieved",
+            "title": "Latest Date SCM is expected to be achieved",
+            "type": "date",
+            "unit": null
+          },
+          "Legal Name of any Person with a Security Interest": {
+            "description": "Name or Names of Security Interest Provider",
+            "title": "Legal Name of any Person with a Security Interest",
+            "type": "text",
+            "unit": null
+          },
+          "List of Traded Capacity Obligations": {
+            "description": "The Physically Traded Capacity Obligation for the Period of the Transfer",
+            "title": "List of Traded Capacity Obligations",
+            "type": "text",
+            "unit": null
+          },
+          "Long Stop Date for the Minimum Completion Requirement": {
+            "description": "Latest date minimum completion requirement can be submitted",
+            "title": "Long Stop Date for the Minimum Completion Requirement",
+            "type": "date",
+            "unit": null
+          },
+          "Maximum Obligation Period": {
+            "description": "Maximum Length of agreement the applicant can bid for in this auction",
+            "title": "Maximum Obligation Period",
+            "type": "numeric",
+            "unit": "Number"
+          },
+          "Monthly Penalty Cap": {
+            "description": "Monthly Penalty Cap",
+            "title": "Monthly Penalty Cap",
+            "type": "text",
+            "unit": "%"
+          },
+          "Name of Applicant": {
+            "description": "Applicant company for the CMU Subject to the Application",
+            "title": "Name of Applicant",
+            "type": "text",
+            "unit": null
+          },
+          "Nature of the Security Interest": {
+            "description": "Security Interest Type(s)",
+            "title": "Nature of the Security Interest",
+            "type": "text",
+            "unit": null
+          },
+          "New Build Yet to Satisfy FCM": {
+            "description": "Has CMU deferred its Financial Commitment Milestone",
+            "title": "New Build Yet to Satisfy SCM",
+            "type": "text",
+            "unit": null
+          },
+          "Opt Out Reason": {
+            "description": "Reason for CMU Opting out",
+            "title": "Opt Out Reason",
+            "type": "text",
+            "unit": null
+          },
+          "Opt Out Status": {
+            "description": "Has the Capacity Provider Opted in or Out",
+            "title": "Opt Out Status",
+            "type": "text",
+            "unit": null
+          },
+          "Parent Company": {
+            "description": "Parent Company of Applicant Company where applicable",
+            "title": "Parent Company",
+            "type": "text",
+            "unit": null
+          },
+          "Period for which the transfer applies": {
+            "description": "List of the period of the traded capacity obligation",
+            "title": "Period for which the transfer applies",
+            "type": "text",
+            "unit": null
+          },
+          "Planning Consents Conditions": {
+            "description": "Has the CMU Deferred its planning consents",
+            "title": "Planning Consents Conditions",
+            "type": "text",
+            "unit": null
+          },
+          "Post Refurbishing De Rated Capacity": {
+            "description": "Post-Refurbishing De-Rated Capacity in MW",
+            "title": "Post Refurbishing De Rated Capacity",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "Pre Qualification Decision": {
+            "description": "Confirms outcome of Prequalification Assessment",
+            "title": "Pre Qualification Decision",
+            "type": "text",
+            "unit": null
+          },
+          "Pre Refurbishing CMU Status": {
+            "description": "Confirmation of whether CMU has opted in or opted out of the pre refurb element",
+            "title": "Pre Refurbishing CMU Status",
+            "type": "text",
+            "unit": null
+          },
+          "Pre Refurbishing De Rated Capacity": {
+            "description": "Pre-Refurbishing De-Rated Capacity in MW",
+            "title": "Pre Refurbishing De Rated Capacity",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "Pre Refurbishment Bidding Status": {
+            "description": "Customer confirmation whether they are participating with the pre refurbishment element",
+            "title": "Pre Refurbishment Bidding Status",
+            "type": "text",
+            "unit": null
+          },
+          "Primary Fuel Type": {
+            "description": "Primary Fuel of the CMU",
+            "title": "Primary Fuel Type",
+            "type": "text",
+            "unit": null
+          },
+          "Proven DSR Capacity": {
+            "description": "Confirmed DSR Capacity in MW",
+            "title": "Proven DSR Capacity",
+            "type": "numeric",
+            "unit": "MW"
+          },
+          "Registered Holder": {
+            "description": "Registered holder of the agreement (Company account)",
+            "title": "Registered Holder",
+            "type": "text",
+            "unit": null
+          },
+          "Secondary Trading Contact_Email": {
+            "description": "Secondary Trading e-mail address",
+            "title": "Secondary Trading Contact_Email",
+            "type": "text",
+            "unit": null
+          },
+          "Secondary Trading Contact_Telephone": {
+            "description": "Secondary Trading Telephone Number",
+            "title": "Secondary Trading Contact_Telephone",
+            "type": "text",
+            "unit": null
+          },
+          "Storage Facility": {
+            "description": "Does the Site offer Battery Storage",
+            "title": "Storage Facility",
+            "type": "text",
+            "unit": null
+          },
+          "Subject to Substantial Completion Milestone": {
+            "description": "Is substantial completion requirement outstanding?",
+            "title": "Subject to Substantial Completion Milestone",
+            "type": "text",
+            "unit": null
+          },
+          "Subject to a Minimum Completion Requirement": {
+            "description": "Is minimum completion requirement outstanding?",
+            "title": "Subject to a Minimum Completion Requirement",
+            "type": "text",
+            "unit": null
+          },
+          "TEC Deferral": {
+            "description": "Has CMU deferred its Transmission Entry Capacity (T-4 only)",
+            "title": "TEC Deferral",
+            "type": "text",
+            "unit": null
+          },
+          "Term of the Capacity Agreement": {
+            "description": "Length of Capacity Agreement",
+            "title": "Term of the Capacity Agreement",
+            "type": "numeric",
+            "unit": "Number"
+          },
+          "Termination Fee 1 Rate": {
+            "description": "Termination Fee Rate",
+            "title": "Termination Fee 1 Rate",
+            "type": "text",
+            "unit": "£ per MW"
+          },
+          "Termination Fee 2 Rate": {
+            "description": "Termination Fee Rate",
+            "title": "Termination Fee 2 Rate",
+            "type": "text",
+            "unit": "£ per MW"
+          },
+          "Termination Fee 3 Rate": {
+            "description": "Termination Fee Rate",
+            "title": "Termination Fee 3 Rate",
+            "type": "text",
+            "unit": "£ per MW"
+          },
+          "Termination Fee 4 Rate": {
+            "description": "Termination Fee Rate",
+            "title": "Termination Fee 4 Rate",
+            "type": "text",
+            "unit": "£ per MW"
+          },
+          "Termination Fee 5 Rate": {
+            "description": "Termination Fee Rate",
+            "title": "Termination Fee 5 Rate",
+            "type": "text",
+            "unit": "£ per MW"
+          },
+          "Transmission or Distribution": {
+            "description": "Informs whether the CMU is Transmission or Distribution connected",
+            "title": "Transmission or Distribution",
+            "type": "text",
+            "unit": null
+          },
+          "Type": {
+            "description": "Indicates the number of years leading up to the delivery year",
+            "title": "Type",
+            "type": "text",
+            "unit": null
+          },
+          "Unique Agreement Identifier": {
+            "description": "Capacity agreement notice Reference",
+            "title": "Unique Agreement Identifier",
+            "type": "text",
+            "unit": null
+          },
+          "Unproven DSR": {
+            "description": "Is the CMU subject to a DSR test",
+            "title": "Unproven DSR",
+            "type": "text",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T09:14:42.633112+00:00",
+      "header": [
+        "Auction Name",
+        "Application ID",
+        "CMU ID",
+        "Type",
+        "Auction",
+        "Delivery Year",
+        "Name of Applicant",
+        "Agent Name",
+        "CM Unit Name",
+        "Parent Company",
+        "Secondary Trading Contact_Telephone",
+        "Secondary Trading Contact_Email",
+        "Transmission or Distribution",
+        "CM Unit Type",
+        "CM Unit Category",
+        "Primary Fuel Type",
+        "CMU Technology",
+        "Storage Facility",
+        "Pre Qualification Decision",
+        "Opt Out Status",
+        "Opt Out Reason",
+        "Maximum Obligation Period",
+        "Unproven DSR",
+        "New Build Yet to Satisfy FCM",
+        "Connection Agreement Deferral Declaration",
+        "TEC Deferral",
+        "Amount of Credit Cover",
+        "Planning Consents Conditions",
+        "Connection or DSR Capacity",
+        "Proven DSR Capacity",
+        "DSR Bidding Capacity",
+        "De Rated Capacity",
+        "Pre Refurbishing De Rated Capacity",
+        "Post Refurbishing De Rated Capacity",
+        "Pre Refurbishing CMU Status",
+        "Anticipated De Rated Capacity",
+        "Anticipated Pre Refurbishing De Rated Capacity",
+        "Anticipated Post Refurbishing De Rated Capacity",
+        "Date of Issue of DSR Test Certificate",
+        "DSR Test Method",
+        "CMU confirmed entry into Auction",
+        "Duration of Capacity Agreement in First Bidding Round",
+        "Pre Refurbishment Bidding Status",
+        "Capacity Agreement Awarded",
+        "Duration of Capacity Agreement Awarded",
+        "Unique Agreement Identifier",
+        "Registered Holder",
+        "Date of Issue of Capacity Agreement",
+        "Term of the Capacity Agreement",
+        "Delivery Years for which Agreement Valid",
+        "Auction Acquired Capacity Obligation",
+        "Is FCM required",
+        "Date for Financial Commitment Milestone",
+        "Is Connection Agreement required",
+        "Date for provision of deferred Connection Agreement",
+        "Subject to a Minimum Completion Requirement",
+        "Subject to Substantial Completion Milestone",
+        "Long Stop Date for the Minimum Completion Requirement",
+        "Earliest Date SCM is expected to be achieved",
+        "Latest Date SCM is expected to be achieved",
+        "Is copy of Grid Connection Agreement required",
+        "Date for provision of deferred TEC",
+        "Termination Fee 1 Rate",
+        "Termination Fee 2 Rate",
+        "Termination Fee 3 Rate",
+        "Termination Fee 4 Rate",
+        "Termination Fee 5 Rate",
+        "Annual Penalty Cap",
+        "Monthly Penalty Cap",
+        "Legal Name of any Person with a Security Interest",
+        "Nature of the Security Interest",
+        "Capacity Agreement has been Terminated",
+        "Date of Termination of Capacity Agreement",
+        "List of Traded Capacity Obligations",
+        "Period for which the transfer applies",
+        "Capacity obligation Summary",
+        "Beta Value",
+        "Has Capacity Agreement been Suspended"
+      ],
+      "last_written_at": "2026-10-08T09:14:42.633112+00:00",
+      "resource_ids": [
+        "25a5fa2e-873d-41c5-8aaf-fbc2b06d79e6"
+      ],
+      "rows": 18200,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [],
+  "key": "capacity_market_unit_cmu",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Auction Name",
+          "Application ID"
+        ],
+        "max_duplicates": 0
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "capacity-market-register",
+  "proposal": {
+    "flags": [],
+    "record_draft": {
+      "encoding": "utf-8",
+      "entity_key": [
+        "auction_name",
+        "application_id"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "auction_name",
+              "nullable": true,
+              "source": "Auction Name"
+            },
+            {
+              "dtype": "string",
+              "name": "application_id",
+              "nullable": true,
+              "source": "Application ID"
+            },
+            {
+              "dtype": "string",
+              "name": "cmu_id",
+              "nullable": true,
+              "source": "CMU ID"
+            },
+            {
+              "dtype": "string",
+              "name": "type",
+              "nullable": true,
+              "source": "Type"
+            },
+            {
+              "dtype": "string",
+              "name": "auction",
+              "nullable": true,
+              "source": "Auction"
+            },
+            {
+              "dtype": "int64",
+              "name": "delivery_year",
+              "nullable": true,
+              "source": "Delivery Year"
+            },
+            {
+              "dtype": "string",
+              "name": "name_of_applicant",
+              "nullable": true,
+              "source": "Name of Applicant"
+            },
+            {
+              "dtype": "string",
+              "name": "agent_name",
+              "nullable": true,
+              "source": "Agent Name"
+            },
+            {
+              "dtype": "string",
+              "name": "cm_unit_name",
+              "nullable": true,
+              "source": "CM Unit Name"
+            },
+            {
+              "dtype": "string",
+              "name": "parent_company",
+              "nullable": true,
+              "source": "Parent Company"
+            },
+            {
+              "dtype": "string",
+              "name": "secondary_trading_contact_telephone",
+              "nullable": true,
+              "source": "Secondary Trading Contact_Telephone"
+            },
+            {
+              "dtype": "string",
+              "name": "secondary_trading_contact_email",
+              "nullable": true,
+              "source": "Secondary Trading Contact_Email"
+            },
+            {
+              "dtype": "string",
+              "name": "transmission_or_distribution",
+              "nullable": true,
+              "source": "Transmission or Distribution"
+            },
+            {
+              "dtype": "string",
+              "name": "cm_unit_type",
+              "nullable": true,
+              "source": "CM Unit Type"
+            },
+            {
+              "dtype": "string",
+              "name": "cm_unit_category",
+              "nullable": true,
+              "source": "CM Unit Category"
+            },
+            {
+              "dtype": "string",
+              "name": "primary_fuel_type",
+              "nullable": true,
+              "source": "Primary Fuel Type"
+            },
+            {
+              "dtype": "string",
+              "name": "cmu_technology",
+              "nullable": true,
+              "source": "CMU Technology"
+            },
+            {
+              "dtype": "string",
+              "name": "storage_facility",
+              "nullable": true,
+              "source": "Storage Facility"
+            },
+            {
+              "dtype": "string",
+              "name": "pre_qualification_decision",
+              "nullable": true,
+              "source": "Pre Qualification Decision"
+            },
+            {
+              "dtype": "string",
+              "name": "opt_out_status",
+              "nullable": true,
+              "source": "Opt Out Status"
+            },
+            {
+              "dtype": "string",
+              "name": "opt_out_reason",
+              "nullable": true,
+              "source": "Opt Out Reason"
+            },
+            {
+              "dtype": "float64",
+              "name": "maximum_obligation_period",
+              "nullable": true,
+              "source": "Maximum Obligation Period"
+            },
+            {
+              "dtype": "string",
+              "name": "unproven_dsr",
+              "nullable": true,
+              "source": "Unproven DSR"
+            },
+            {
+              "dtype": "string",
+              "name": "new_build_yet_to_satisfy_fcm",
+              "nullable": true,
+              "source": "New Build Yet to Satisfy FCM"
+            },
+            {
+              "dtype": "string",
+              "name": "connection_agreement_deferral_declaration",
+              "nullable": true,
+              "source": "Connection Agreement Deferral Declaration"
+            },
+            {
+              "dtype": "string",
+              "name": "tec_deferral",
+              "nullable": true,
+              "source": "TEC Deferral"
+            },
+            {
+              "dtype": "float64",
+              "name": "amount_of_credit_cover",
+              "nullable": true,
+              "source": "Amount of Credit Cover"
+            },
+            {
+              "dtype": "string",
+              "name": "planning_consents_conditions",
+              "nullable": true,
+              "source": "Planning Consents Conditions"
+            },
+            {
+              "dtype": "float64",
+              "name": "connection_or_dsr_capacity",
+              "nullable": true,
+              "source": "Connection or DSR Capacity"
+            },
+            {
+              "dtype": "float64",
+              "name": "proven_dsr_capacity",
+              "nullable": true,
+              "source": "Proven DSR Capacity"
+            },
+            {
+              "dtype": "float64",
+              "name": "dsr_bidding_capacity",
+              "nullable": true,
+              "source": "DSR Bidding Capacity"
+            },
+            {
+              "dtype": "float64",
+              "name": "de_rated_capacity",
+              "nullable": true,
+              "source": "De Rated Capacity"
+            },
+            {
+              "dtype": "float64",
+              "name": "pre_refurbishing_de_rated_capacity",
+              "nullable": true,
+              "source": "Pre Refurbishing De Rated Capacity"
+            },
+            {
+              "dtype": "float64",
+              "name": "post_refurbishing_de_rated_capacity",
+              "nullable": true,
+              "source": "Post Refurbishing De Rated Capacity"
+            },
+            {
+              "dtype": "string",
+              "name": "pre_refurbishing_cmu_status",
+              "nullable": true,
+              "source": "Pre Refurbishing CMU Status"
+            },
+            {
+              "dtype": "float64",
+              "name": "anticipated_de_rated_capacity",
+              "nullable": true,
+              "source": "Anticipated De Rated Capacity"
+            },
+            {
+              "dtype": "float64",
+              "name": "anticipated_pre_refurbishing_de_rated_capacity",
+              "nullable": true,
+              "source": "Anticipated Pre Refurbishing De Rated Capacity"
+            },
+            {
+              "dtype": "float64",
+              "name": "anticipated_post_refurbishing_de_rated_capacity",
+              "nullable": true,
+              "source": "Anticipated Post Refurbishing De Rated Capacity"
+            },
+            {
+              "dtype": "date",
+              "format": "%d/%m/%Y",
+              "name": "date_of_issue_of_dsr_test_certificate",
+              "nullable": true,
+              "source": "Date of Issue of DSR Test Certificate"
+            },
+            {
+              "dtype": "string",
+              "name": "dsr_test_method",
+              "nullable": true,
+              "source": "DSR Test Method"
+            },
+            {
+              "dtype": "string",
+              "name": "cmu_confirmed_entry_into_auction",
+              "nullable": true,
+              "source": "CMU confirmed entry into Auction"
+            },
+            {
+              "dtype": "float64",
+              "name": "duration_of_capacity_agreement_in_first_bidding_round",
+              "nullable": true,
+              "source": "Duration of Capacity Agreement in First Bidding Round"
+            },
+            {
+              "dtype": "string",
+              "name": "pre_refurbishment_bidding_status",
+              "nullable": true,
+              "source": "Pre Refurbishment Bidding Status"
+            },
+            {
+              "dtype": "string",
+              "name": "capacity_agreement_awarded",
+              "nullable": true,
+              "source": "Capacity Agreement Awarded"
+            },
+            {
+              "dtype": "float64",
+              "name": "duration_of_capacity_agreement_awarded",
+              "nullable": true,
+              "source": "Duration of Capacity Agreement Awarded"
+            },
+            {
+              "dtype": "string",
+              "name": "unique_agreement_identifier",
+              "nullable": true,
+              "source": "Unique Agreement Identifier"
+            },
+            {
+              "dtype": "string",
+              "name": "registered_holder",
+              "nullable": true,
+              "source": "Registered Holder"
+            },
+            {
+              "dtype": "date",
+              "format": "%d/%m/%Y",
+              "name": "date_of_issue_of_capacity_agreement",
+              "nullable": true,
+              "source": "Date of Issue of Capacity Agreement"
+            },
+            {
+              "dtype": "float64",
+              "name": "term_of_the_capacity_agreement",
+              "nullable": true,
+              "source": "Term of the Capacity Agreement"
+            },
+            {
+              "dtype": "string",
+              "name": "delivery_years_for_which_agreement_valid",
+              "nullable": true,
+              "source": "Delivery Years for which Agreement Valid"
+            },
+            {
+              "dtype": "float64",
+              "name": "auction_acquired_capacity_obligation",
+              "nullable": true,
+              "source": "Auction Acquired Capacity Obligation"
+            },
+            {
+              "dtype": "string",
+              "name": "is_fcm_required",
+              "nullable": true,
+              "source": "Is FCM required"
+            },
+            {
+              "dtype": "date",
+              "format": "%d/%m/%Y",
+              "name": "date_for_financial_commitment_milestone",
+              "nullable": true,
+              "source": "Date for Financial Commitment Milestone"
+            },
+            {
+              "dtype": "string",
+              "name": "is_connection_agreement_required",
+              "nullable": true,
+              "source": "Is Connection Agreement required"
+            },
+            {
+              "dtype": "date",
+              "format": "%d/%m/%Y",
+              "name": "date_for_provision_of_deferred_connection_agreement",
+              "nullable": true,
+              "source": "Date for provision of deferred Connection Agreement"
+            },
+            {
+              "dtype": "string",
+              "name": "subject_to_a_minimum_completion_requirement",
+              "nullable": true,
+              "source": "Subject to a Minimum Completion Requirement"
+            },
+            {
+              "dtype": "string",
+              "name": "subject_to_substantial_completion_milestone",
+              "nullable": true,
+              "source": "Subject to Substantial Completion Milestone"
+            },
+            {
+              "dtype": "date",
+              "format": "%d/%m/%Y",
+              "name": "long_stop_date_for_the_minimum_completion_requirement",
+              "nullable": true,
+              "source": "Long Stop Date for the Minimum Completion Requirement"
+            },
+            {
+              "dtype": "date",
+              "format": "%d/%m/%Y",
+              "name": "earliest_date_scm_is_expected_to_be_achieved",
+              "nullable": true,
+              "source": "Earliest Date SCM is expected to be achieved"
+            },
+            {
+              "dtype": "date",
+              "format": "%d/%m/%Y",
+              "name": "latest_date_scm_is_expected_to_be_achieved",
+              "nullable": true,
+              "source": "Latest Date SCM is expected to be achieved"
+            },
+            {
+              "dtype": "string",
+              "name": "is_copy_of_grid_connection_agreement_required",
+              "nullable": true,
+              "source": "Is copy of Grid Connection Agreement required"
+            },
+            {
+              "dtype": "date",
+              "format": "TODO: T01",
+              "name": "date_for_provision_of_deferred_tec",
+              "nullable": true,
+              "source": "Date for provision of deferred TEC"
+            },
+            {
+              "dtype": "string",
+              "name": "termination_fee_1_rate",
+              "nullable": true,
+              "source": "Termination Fee 1 Rate"
+            },
+            {
+              "dtype": "string",
+              "name": "termination_fee_2_rate",
+              "nullable": true,
+              "source": "Termination Fee 2 Rate"
+            },
+            {
+              "dtype": "string",
+              "name": "termination_fee_3_rate",
+              "nullable": true,
+              "source": "Termination Fee 3 Rate"
+            },
+            {
+              "dtype": "string",
+              "name": "termination_fee_4_rate",
+              "nullable": true,
+              "source": "Termination Fee 4 Rate"
+            },
+            {
+              "dtype": "string",
+              "name": "termination_fee_5_rate",
+              "nullable": true,
+              "source": "Termination Fee 5 Rate"
+            },
+            {
+              "dtype": "string",
+              "name": "annual_penalty_cap",
+              "nullable": true,
+              "source": "Annual Penalty Cap"
+            },
+            {
+              "dtype": "string",
+              "name": "monthly_penalty_cap",
+              "nullable": true,
+              "source": "Monthly Penalty Cap"
+            },
+            {
+              "dtype": "string",
+              "name": "legal_name_of_any_person_with_a_security_interest",
+              "nullable": true,
+              "source": "Legal Name of any Person with a Security Interest"
+            },
+            {
+              "dtype": "string",
+              "name": "nature_of_the_security_interest",
+              "nullable": true,
+              "source": "Nature of the Security Interest"
+            },
+            {
+              "dtype": "string",
+              "name": "capacity_agreement_has_been_terminated",
+              "nullable": true,
+              "source": "Capacity Agreement has been Terminated"
+            },
+            {
+              "dtype": "date",
+              "format": "%d/%m/%Y",
+              "name": "date_of_termination_of_capacity_agreement",
+              "nullable": true,
+              "source": "Date of Termination of Capacity Agreement"
+            },
+            {
+              "dtype": "string",
+              "name": "list_of_traded_capacity_obligations",
+              "nullable": true,
+              "source": "List of Traded Capacity Obligations"
+            },
+            {
+              "dtype": "string",
+              "name": "period_for_which_the_transfer_applies",
+              "nullable": true,
+              "source": "Period for which the transfer applies"
+            },
+            {
+              "dtype": "string",
+              "name": "capacity_obligation_summary",
+              "nullable": true,
+              "source": "Capacity obligation Summary"
+            },
+            {
+              "dtype": "string",
+              "name": "beta_value",
+              "nullable": true,
+              "source": "Beta Value"
+            },
+            {
+              "dtype": "string",
+              "name": "has_capacity_agreement_been_suspended",
+              "nullable": true,
+              "source": "Has Capacity Agreement been Suspended"
+            }
+          ],
+          "header": [
+            "Auction Name",
+            "Application ID",
+            "CMU ID",
+            "Type",
+            "Auction",
+            "Delivery Year",
+            "Name of Applicant",
+            "Agent Name",
+            "CM Unit Name",
+            "Parent Company",
+            "Secondary Trading Contact_Telephone",
+            "Secondary Trading Contact_Email",
+            "Transmission or Distribution",
+            "CM Unit Type",
+            "CM Unit Category",
+            "Primary Fuel Type",
+            "CMU Technology",
+            "Storage Facility",
+            "Pre Qualification Decision",
+            "Opt Out Status",
+            "Opt Out Reason",
+            "Maximum Obligation Period",
+            "Unproven DSR",
+            "New Build Yet to Satisfy FCM",
+            "Connection Agreement Deferral Declaration",
+            "TEC Deferral",
+            "Amount of Credit Cover",
+            "Planning Consents Conditions",
+            "Connection or DSR Capacity",
+            "Proven DSR Capacity",
+            "DSR Bidding Capacity",
+            "De Rated Capacity",
+            "Pre Refurbishing De Rated Capacity",
+            "Post Refurbishing De Rated Capacity",
+            "Pre Refurbishing CMU Status",
+            "Anticipated De Rated Capacity",
+            "Anticipated Pre Refurbishing De Rated Capacity",
+            "Anticipated Post Refurbishing De Rated Capacity",
+            "Date of Issue of DSR Test Certificate",
+            "DSR Test Method",
+            "CMU confirmed entry into Auction",
+            "Duration of Capacity Agreement in First Bidding Round",
+            "Pre Refurbishment Bidding Status",
+            "Capacity Agreement Awarded",
+            "Duration of Capacity Agreement Awarded",
+            "Unique Agreement Identifier",
+            "Registered Holder",
+            "Date of Issue of Capacity Agreement",
+            "Term of the Capacity Agreement",
+            "Delivery Years for which Agreement Valid",
+            "Auction Acquired Capacity Obligation",
+            "Is FCM required",
+            "Date for Financial Commitment Milestone",
+            "Is Connection Agreement required",
+            "Date for provision of deferred Connection Agreement",
+            "Subject to a Minimum Completion Requirement",
+            "Subject to Substantial Completion Milestone",
+            "Long Stop Date for the Minimum Completion Requirement",
+            "Earliest Date SCM is expected to be achieved",
+            "Latest Date SCM is expected to be achieved",
+            "Is copy of Grid Connection Agreement required",
+            "Date for provision of deferred TEC",
+            "Termination Fee 1 Rate",
+            "Termination Fee 2 Rate",
+            "Termination Fee 3 Rate",
+            "Termination Fee 4 Rate",
+            "Termination Fee 5 Rate",
+            "Annual Penalty Cap",
+            "Monthly Penalty Cap",
+            "Legal Name of any Person with a Security Interest",
+            "Nature of the Security Interest",
+            "Capacity Agreement has been Terminated",
+            "Date of Termination of Capacity Agreement",
+            "List of Traded Capacity Obligations",
+            "Period for which the transfer applies",
+            "Capacity obligation Summary",
+            "Beta Value",
+            "Has Capacity Agreement been Suspended"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T02",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "blocked",
+        "field": "column 'Date for provision of deferred TEC'.format",
+        "id": "T01",
+        "kind": "date_order",
+        "question": "Date for provision of deferred TEC: dd/mm/yyyy-shaped values never exceed 12 in the first field; day-first or month-first?"
+      },
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T02",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: Date of Issue of DSR Test Certificate, Date of Issue of Capacity Agreement, Date for Financial Commitment Milestone, Date for provision of deferred Connection Agreement, Long Stop Date for the Minimum Completion Requirement, Earliest Date SCM is expected to be achieved, Latest Date SCM is expected to be achieved, Date for provision of deferred TEC, Monthly Penalty Cap, Date of Termination of Capacity Agreement"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T03",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['auction_name', 'application_id'] (measured unique in 1 capture(s)); without one, latest stays whole_capture"
+      }
+    ]
+  },
+  "refresh": "weekly",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update frequency",
+        "value": "Weekly"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Electricity Market Reform",
+    "title": "Capacity Market Register"
+  }
+}

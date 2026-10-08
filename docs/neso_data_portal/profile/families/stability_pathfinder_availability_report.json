@@ -1,0 +1,353 @@
+{
+  "archetype": "SER",
+  "batch": "SYS-1",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/stability_pathfinder_availability_report/2026/10/08/raw_20261008T112709Z_a4fd8208-3e36-4f9c-bdc7-435c3734a2da_eeaf24d9.csv",
+      "ckan_last_modified": "2024-04-05T15:44:41.388092",
+      "cr": 0,
+      "crlf": 110888,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "a4fd8208-3e36-4f9c-bdc7-435c3734a2da",
+      "rows": 110887,
+      "sampled": true,
+      "size": 8026553,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:27:09.606261+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/stability_pathfinder_availability_report/2026/10/08/raw_20261008T112712Z_bacc45e5-11ac-4bac-88ef-6872f499db97_7f743fae.csv",
+      "ckan_last_modified": "2025-04-11T14:19:34.799957",
+      "cr": 0,
+      "crlf": 199202,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "bacc45e5-11ac-4bac-88ef-6872f499db97",
+      "rows": 199201,
+      "sampled": true,
+      "size": 14429386,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:27:12.510515+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/stability_pathfinder_availability_report/2026/10/08/raw_20261008T112715Z_1264f36f-27ce-4ed9-aab1-393c7612d6bc_c9e43104.csv",
+      "ckan_last_modified": "2026-04-10T15:12:15.650724",
+      "cr": 0,
+      "crlf": 297479,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "1264f36f-27ce-4ed9-aab1-393c7612d6bc",
+      "rows": 297478,
+      "sampled": true,
+      "size": 21533621,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:27:15.618107+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/stability_pathfinder_availability_report/2026/10/08/raw_20261008T112717Z_690a9e42-20e2-4b0e-b74f-f3e37cac4bac_cdf0f939.csv",
+      "ckan_last_modified": "2026-10-02T14:49:34.759439",
+      "cr": 0,
+      "crlf": 132012,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "690a9e42-20e2-4b0e-b74f-f3e37cac4bac",
+      "rows": 132011,
+      "sampled": true,
+      "size": 9582437,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:27:17.484052+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 4,
+      "columns": {
+        "Availability Flag": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 739577,
+            "int64": 739577
+          },
+          "examples": [
+            "Available",
+            "Unavailable"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "text": 200000
+          }
+        },
+        "REMARK": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 989,
+            "int64": 989
+          },
+          "examples": [
+            "Unavailable at 08/10/2023 04:49:00",
+            "Available at 08/10/2023 11:00:00",
+            "Unavailable at 12/10/2023 12:00:00"
+          ],
+          "max_len": 40,
+          "null_count": 738588,
+          "shapes": {
+            "text": 195
+          }
+        },
+        "Settlement Period End Date Time": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 739577,
+            "int64": 739577
+          },
+          "examples": [
+            "2023-09-04T00:30:00+00:00",
+            "2023-09-04T01:00:00+00:00",
+            "2023-09-04T01:30:00+00:00"
+          ],
+          "max_len": 25,
+          "null_count": 0,
+          "shapes": {
+            "iso_datetime_offset": 200000
+          }
+        },
+        "Settlement Period Start Date Time": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 739577,
+            "int64": 739577
+          },
+          "examples": [
+            "2023-09-04T00:00:00+00:00",
+            "2023-09-04T00:30:00+00:00",
+            "2023-09-04T01:00:00+00:00"
+          ],
+          "max_len": 25,
+          "null_count": 0,
+          "shapes": {
+            "iso_datetime_offset": 200000
+          }
+        },
+        "UNIT": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 739577,
+            "int64": 739577
+          },
+          "examples": [
+            "CRUA-3",
+            "DEEPS-1",
+            "GRAISC-1"
+          ],
+          "max_len": 8,
+          "null_count": 0,
+          "shapes": {
+            "text": 200000
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "Availability Flag": {
+            "description": "Indicates whether the unit was available or unavailable in the relevant settlement period",
+            "title": "Availability Flag",
+            "type": "text",
+            "unit": null
+          },
+          "REMARK": {
+            "description": "Additional information on the availability of units",
+            "title": "REMARK",
+            "type": "text",
+            "unit": null
+          },
+          "Settlement Period End Date Time": {
+            "description": "The identifier of the end date time of the Settlement Period that the information relates to",
+            "title": "Settlement Period End Date Time",
+            "type": "timestamp",
+            "unit": null
+          },
+          "Settlement Period Start Date Time": {
+            "description": "The identifier of the start date time of the Settlement Period that the information relates to",
+            "title": "Settlement Period Start Date Time",
+            "type": "timestamp",
+            "unit": null
+          },
+          "UNIT": {
+            "description": "Identifier of the unit that the information relates to",
+            "title": "UNIT",
+            "type": "text",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T11:27:09.606261+00:00",
+      "header": [
+        "UNIT",
+        "Settlement Period Start Date Time",
+        "Settlement Period End Date Time",
+        "Availability Flag",
+        "REMARK"
+      ],
+      "last_written_at": "2026-10-08T11:27:17.484052+00:00",
+      "resource_ids": [
+        "1264f36f-27ce-4ed9-aab1-393c7612d6bc",
+        "690a9e42-20e2-4b0e-b74f-f3e37cac4bac",
+        "a4fd8208-3e36-4f9c-bdc7-435c3734a2da",
+        "bacc45e5-11ac-4bac-88ef-6872f499db97"
+      ],
+      "rows": 739577,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [
+    "sampled"
+  ],
+  "key": "stability_pathfinder_availability_report",
+  "keys": {
+    "candidates": [],
+    "full_row_max_duplicates": 46921
+  },
+  "other_captures": 0,
+  "package": "stability-pathfinder-service-information",
+  "proposal": {
+    "flags": [
+      "sampled"
+    ],
+    "record_draft": {
+      "eligibility": {
+        "question": "Settlement Period Start Date Time: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced); Settlement Period End Date Time: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)",
+        "status": "held",
+        "unit": "SYS-1"
+      },
+      "encoding": "utf-8",
+      "entity_key": [
+        "unit",
+        "settlement_period_start_date_time",
+        "settlement_period_end_date_time",
+        "availability_flag",
+        "remark"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "unit",
+              "nullable": true,
+              "source": "UNIT"
+            },
+            {
+              "dtype": "string",
+              "name": "settlement_period_start_date_time",
+              "nullable": true,
+              "source": "Settlement Period Start Date Time"
+            },
+            {
+              "dtype": "string",
+              "name": "settlement_period_end_date_time",
+              "nullable": true,
+              "source": "Settlement Period End Date Time"
+            },
+            {
+              "dtype": "string",
+              "name": "availability_flag",
+              "nullable": true,
+              "source": "Availability Flag"
+            },
+            {
+              "dtype": "string",
+              "name": "remark",
+              "nullable": true,
+              "source": "REMARK"
+            }
+          ],
+          "header": [
+            "UNIT",
+            "Settlement Period Start Date Time",
+            "Settlement Period End Date Time",
+            "Availability Flag",
+            "REMARK"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T03",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "held",
+        "field": "column 'Settlement Period Start Date Time'",
+        "id": "T01",
+        "kind": "time_semantics",
+        "question": "Settlement Period Start Date Time: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Settlement Period End Date Time'",
+        "id": "T02",
+        "kind": "time_semantics",
+        "question": "Settlement Period End Date Time: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T03",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: Settlement Period Start Date Time, Settlement Period End Date Time"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T04",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['unit', 'settlement_period_start_date_time', 'settlement_period_end_date_time', 'availability_flag', 'remark'] (no candidate measured unique, so every column); without one, latest stays whole_capture"
+      }
+    ]
+  },
+  "refresh": "weekly",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update frequency",
+        "value": "Weekly"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "System",
+    "title": "Stability Pathfinder service information"
+  }
+}

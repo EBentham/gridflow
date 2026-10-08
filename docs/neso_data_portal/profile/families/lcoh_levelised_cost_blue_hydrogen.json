@@ -1,0 +1,519 @@
+{
+  "archetype": "SCN",
+  "batch": "SCN-3",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/lcoh_levelised_cost_blue_hydrogen/2026/10/08/raw_20261008T111208Z_3f3b1bf0-4664-494f-a501-a39adabecd0d_6675141f.csv",
+      "ckan_last_modified": "2026-09-24T13:45:35.470635",
+      "cr": 0,
+      "crlf": 121,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "3f3b1bf0-4664-494f-a501-a39adabecd0d",
+      "rows": 120,
+      "sampled": false,
+      "size": 15513,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:12:08.547775+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 1,
+      "columns": {
+        "Build Year": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "2025",
+            "2030",
+            "2035"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 120
+          }
+        },
+        "Discount Factor": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 120
+          },
+          "examples": [
+            "0.06",
+            "0.07",
+            "0.08"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 120
+          }
+        },
+        "LCOH": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 120
+          },
+          "examples": [
+            "73.55630947",
+            "75.02031955",
+            "76.55945006"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 120
+          }
+        },
+        "LCOH Capex": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 120
+          },
+          "examples": [
+            "12.96785044",
+            "14.36489231",
+            "15.83571356"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 120
+          }
+        },
+        "LCOH Electricity Cost": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 120
+          },
+          "examples": [
+            "4.763321993",
+            "4.765299552",
+            "4.767092843"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 120
+          }
+        },
+        "LCOH Emissions Cost": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 120
+          },
+          "examples": [
+            "1.258446657",
+            "1.247239861",
+            "1.236204173"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 120
+          }
+        },
+        "LCOH Fixed Opex": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 120
+          },
+          "examples": [
+            "4.686373468",
+            "4.434030281",
+            "4.073540014"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 120
+          }
+        },
+        "LCOH Fuel Cost": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 120
+          },
+          "examples": [
+            "33.44442969",
+            "33.52062714",
+            "33.5981788"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 120
+          }
+        },
+        "LCOH Variable Opex": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 120
+          },
+          "examples": [
+            "0.742009132",
+            "0.702054795",
+            "0.644977169"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 120
+          }
+        },
+        "LCOH_CO2_TS_Cost": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 120
+          },
+          "examples": [
+            "15.69387808",
+            "0.617869216"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 120
+          }
+        },
+        "Tech": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 120,
+            "int64": 120
+          },
+          "examples": [
+            "ATR + CCS"
+          ],
+          "max_len": 9,
+          "null_count": 0,
+          "shapes": {
+            "text": 120
+          }
+        },
+        "Units": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 120,
+            "int64": 120
+          },
+          "examples": [
+            "£/MWh H2 HHV",
+            "£/kg H2"
+          ],
+          "max_len": 12,
+          "null_count": 0,
+          "shapes": {
+            "text": 120
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "Build Year": {
+            "description": "Construction year of the plant",
+            "title": "Build Year\t\t",
+            "type": "int4",
+            "unit": null
+          },
+          "Discount Factor": {
+            "description": "The discount factor or hurdle rate representing the cost of financing.",
+            "title": "Discount Factor\t\t",
+            "type": "numeric",
+            "unit": "%"
+          },
+          "LCOH": {
+            "description": "The total discounted lifetime cost of building and operating the plant, expressed as a cost per unit of hydrogen produced (£/MWh H2 HHV or £/kg)",
+            "title": "LCOH\t\t",
+            "type": "numeric",
+            "unit": "£/MWh H2 HHV or £/kg"
+          },
+          "LCOH Capex": {
+            "description": "Capex component of the LCOH",
+            "title": "LCOH Capex\t\t",
+            "type": "numeric",
+            "unit": "£/MWh H2 HHV or £/kg"
+          },
+          "LCOH Electricity Cost": {
+            "description": "Cost of electricity component of the LCOH",
+            "title": "LCOH Electricity Cost\t\t",
+            "type": "numeric",
+            "unit": "£/MWh H2 HHV or £/kg"
+          },
+          "LCOH Emissions Cost": {
+            "description": "LCOH cost of CO2 emissions not captured",
+            "title": "LCOH Emissions Cost\t\t",
+            "type": "numeric",
+            "unit": null
+          },
+          "LCOH Fixed Opex": {
+            "description": "Fixed opex component of LCOH",
+            "title": "LCOH Fixed Opex\t\t",
+            "type": "numeric",
+            "unit": "£/MWh H2 HHV or £/kg"
+          },
+          "LCOH Fuel Cost": {
+            "description": "Cost of fuel component of LCOH",
+            "title": "LCOH Fuel Cost\t\t",
+            "type": "numeric",
+            "unit": "£/MWh H2 HHV or £/kg"
+          },
+          "LCOH Variable Opex": {
+            "description": "Variable opex component of LCOH",
+            "title": "LCOH Variable Opex\t\t",
+            "type": "numeric",
+            "unit": "£/MWh H2 HHV or £/kg"
+          },
+          "LCOH_CO2_TS_Cost": {
+            "description": "LCOH cost of captured CO2 transport and storage",
+            "title": "LCOH CO2 T&S Cost\t\t",
+            "type": "numeric",
+            "unit": "£/MWh H2 HHV or £/kg"
+          },
+          "Tech": {
+            "description": "Blue H2 production technology - Autorthermal reforming plus carbon capture and storage (ATR + CCS)",
+            "title": "Tech\t\t",
+            "type": "text",
+            "unit": null
+          },
+          "Units": {
+            "description": "LCOH units of hydrogen produced - either £/kg or £/MWh H2 HHV (higher heating value)",
+            "title": "Units\t\t",
+            "type": "text",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T11:12:08.547775+00:00",
+      "header": [
+        "Tech",
+        "Build Year",
+        "Discount Factor",
+        "Units",
+        "LCOH",
+        "LCOH Capex",
+        "LCOH Fixed Opex",
+        "LCOH Variable Opex",
+        "LCOH Electricity Cost",
+        "LCOH Fuel Cost",
+        "LCOH_CO2_TS_Cost",
+        "LCOH Emissions Cost"
+      ],
+      "last_written_at": "2026-10-08T11:12:08.547775+00:00",
+      "resource_ids": [
+        "3f3b1bf0-4664-494f-a501-a39adabecd0d"
+      ],
+      "rows": 120,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [],
+  "key": "lcoh_levelised_cost_blue_hydrogen",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 1,
+        "columns": [
+          "LCOH"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 1,
+        "columns": [
+          "LCOH Capex"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Build Year",
+          "LCOH Electricity Cost"
+        ],
+        "max_duplicates": 0
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "levelised-cost-of-green-hydrogen",
+  "proposal": {
+    "flags": [],
+    "record_draft": {
+      "eligibility": {
+        "question": "Build Year: a numeric column with no vendor unit; LCOH Emissions Cost: a numeric column with no vendor unit",
+        "status": "held",
+        "unit": "SCN-3"
+      },
+      "encoding": "utf-8",
+      "entity_key": [
+        "lcoh"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "tech",
+              "nullable": true,
+              "source": "Tech"
+            },
+            {
+              "dtype": "int64",
+              "name": "build_year",
+              "nullable": true,
+              "source": "Build Year"
+            },
+            {
+              "dtype": "float64",
+              "name": "discount_factor",
+              "nullable": true,
+              "source": "Discount Factor"
+            },
+            {
+              "dtype": "string",
+              "name": "units",
+              "nullable": true,
+              "source": "Units"
+            },
+            {
+              "dtype": "float64",
+              "name": "lcoh",
+              "nullable": true,
+              "source": "LCOH"
+            },
+            {
+              "dtype": "float64",
+              "name": "lcoh_capex",
+              "nullable": true,
+              "source": "LCOH Capex"
+            },
+            {
+              "dtype": "float64",
+              "name": "lcoh_fixed_opex",
+              "nullable": true,
+              "source": "LCOH Fixed Opex"
+            },
+            {
+              "dtype": "float64",
+              "name": "lcoh_variable_opex",
+              "nullable": true,
+              "source": "LCOH Variable Opex"
+            },
+            {
+              "dtype": "float64",
+              "name": "lcoh_electricity_cost",
+              "nullable": true,
+              "source": "LCOH Electricity Cost"
+            },
+            {
+              "dtype": "float64",
+              "name": "lcoh_fuel_cost",
+              "nullable": true,
+              "source": "LCOH Fuel Cost"
+            },
+            {
+              "dtype": "float64",
+              "name": "lcoh_co2_ts_cost",
+              "nullable": true,
+              "source": "LCOH_CO2_TS_Cost"
+            },
+            {
+              "dtype": "float64",
+              "name": "lcoh_emissions_cost",
+              "nullable": true,
+              "source": "LCOH Emissions Cost"
+            }
+          ],
+          "header": [
+            "Tech",
+            "Build Year",
+            "Discount Factor",
+            "Units",
+            "LCOH",
+            "LCOH Capex",
+            "LCOH Fixed Opex",
+            "LCOH Variable Opex",
+            "LCOH Electricity Cost",
+            "LCOH Fuel Cost",
+            "LCOH_CO2_TS_Cost",
+            "LCOH Emissions Cost"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T03",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "held",
+        "field": "column 'Build Year'.unit",
+        "id": "T01",
+        "kind": "unit",
+        "question": "Build Year: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'LCOH Emissions Cost'.unit",
+        "id": "T02",
+        "kind": "unit",
+        "question": "LCOH Emissions Cost: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T03",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: none"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T04",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['lcoh'] (measured unique in 1 capture(s)); without one, latest stays whole_capture"
+      }
+    ]
+  },
+  "refresh": "adhoc",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update frequency",
+        "value": "Ad hoc"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "FES: Pathways to Net Zero",
+    "title": "Levelised cost of green hydrogen"
+  }
+}

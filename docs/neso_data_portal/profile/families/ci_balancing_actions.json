@@ -1,0 +1,257 @@
+{
+  "archetype": "SER",
+  "batch": "CI",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/ci_balancing_actions/2026/10/08/raw_20261008T091450Z_0b7edf10-4328-4b85-a0af-e6daa6bb8428_1ae8306e.csv",
+      "ckan_last_modified": "2026-10-07T11:38:19.659640",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 96164,
+      "parse_error": null,
+      "resource_id": "0b7edf10-4328-4b85-a0af-e6daa6bb8428",
+      "rows": 96163,
+      "sampled": true,
+      "size": 4755075,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T09:14:50.052577+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 1,
+      "columns": {
+        "BOA": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 96163
+          },
+          "examples": [
+            "212.356",
+            "212.792",
+            "216.082"
+          ],
+          "max_len": 18,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 50000
+          }
+        },
+        "DATETIME": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 96163,
+            "int64": 96163
+          },
+          "examples": [
+            "2021-03-31T00:00:00",
+            "2021-03-31T00:30:00",
+            "2021-03-31T01:00:00"
+          ],
+          "max_len": 19,
+          "null_count": 0,
+          "shapes": {
+            "naive_datetime": 50000
+          }
+        },
+        "Difference": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 96163
+          },
+          "examples": [
+            "1.856",
+            "1.612",
+            "4.202"
+          ],
+          "max_len": 34,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 50000
+          }
+        },
+        "FPN": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 96163
+          },
+          "examples": [
+            "210.5",
+            "211.18",
+            "211.88"
+          ],
+          "max_len": 18,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 50000
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "BOA": {
+            "description": "Once BMUs have submitted their FPNs, the NESO control room can instruct them to deviate from their intended profile by issuing bids and offers. If a bid or offer is accepted (BOA), the BMU will follow the BOA profile rather than the FPN profile. The carbon intensity of BOAs, the balancing actions ta",
+            "title": "Carbon Intensity of BOA",
+            "type": "numeric",
+            "unit": "gCO2/kWh"
+          },
+          "DATETIME": {
+            "description": "Time stamp of record. Record given in year-month-day hour:minute format.",
+            "title": "Date & Time",
+            "type": "timestamp",
+            "unit": "UTC ISO 8601"
+          },
+          "Difference": {
+            "description": "This metric records the difference between the FPN carbon intensity, where no balancing actions have been taken, and the BOA carbon intensity with balancing actions applied. It indicates whether the balancing actions in the BM have increased or decreased the carbon intensity of the system. It is pos",
+            "title": "FPN BOA Difference",
+            "type": "numeric",
+            "unit": "gCO2/kWh"
+          },
+          "FPN": {
+            "description": "Balancing Mechanism Units submit their Final Physical Notice to the NESO at gate closure. FPNs are a notice of BMU's intended profile over the settlement period. The carbon intensity of the FPN profile is a measure of CO2 emissions per kilowatt hour had all units followed their FPN profile.",
+            "title": "Carbon Intensity of FPN",
+            "type": "numeric",
+            "unit": "gCO2/kWh"
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T09:14:50.052577+00:00",
+      "header": [
+        "DATETIME",
+        "FPN",
+        "BOA",
+        "Difference"
+      ],
+      "last_written_at": "2026-10-08T09:14:50.052577+00:00",
+      "resource_ids": [
+        "0b7edf10-4328-4b85-a0af-e6daa6bb8428"
+      ],
+      "rows": 96163,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [
+    "sampled"
+  ],
+  "key": "ci_balancing_actions",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 1,
+        "columns": [
+          "DATETIME"
+        ],
+        "max_duplicates": 0
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "carbon-intensity-of-balancing-actions",
+  "proposal": {
+    "flags": [
+      "sampled"
+    ],
+    "record_draft": {
+      "eligibility": {
+        "question": "DATETIME: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)",
+        "status": "held",
+        "unit": "CI"
+      },
+      "encoding": "utf-8",
+      "entity_key": [
+        "datetime"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "datetime",
+              "nullable": true,
+              "source": "DATETIME"
+            },
+            {
+              "dtype": "float64",
+              "name": "fpn",
+              "nullable": true,
+              "source": "FPN"
+            },
+            {
+              "dtype": "float64",
+              "name": "boa",
+              "nullable": true,
+              "source": "BOA"
+            },
+            {
+              "dtype": "float64",
+              "name": "difference",
+              "nullable": true,
+              "source": "Difference"
+            }
+          ],
+          "header": [
+            "DATETIME",
+            "FPN",
+            "BOA",
+            "Difference"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T02",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "held",
+        "field": "column 'DATETIME'",
+        "id": "T01",
+        "kind": "time_semantics",
+        "question": "DATETIME: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T02",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: DATETIME"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T03",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['datetime'] (measured unique in 1 capture(s)); without one, latest stays whole_capture"
+      }
+    ]
+  },
+  "refresh": "daily",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update Frequency",
+        "value": "Daily"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Carbon intensity",
+    "title": "Carbon Intensity of Balancing Actions"
+  }
+}

@@ -1,0 +1,572 @@
+{
+  "archetype": "FC",
+  "batch": "CON",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/constraint_limits_24m/2026/10/08/raw_20261008T091545Z_3c359e33-3dac-4bdd-87d1-efbf4cbc2f07_3eef5064.csv",
+      "ckan_last_modified": "2026-09-10T09:48:47.500911",
+      "cr": 0,
+      "crlf": 106,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "3c359e33-3dac-4bdd-87d1-efbf4cbc2f07",
+      "rows": 105,
+      "sampled": false,
+      "size": 7406,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T09:15:45.347537+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 1,
+      "columns": {
+        "DRESHEX1": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "6400",
+            "6300",
+            "6100"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 105
+          }
+        },
+        "ESTEX": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "6600",
+            "6075",
+            "5050"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 105
+          }
+        },
+        "FLOWSTH": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "9900",
+            "8900",
+            "9700"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "int": 105
+          }
+        },
+        "GM_SNOW5A": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1550",
+            "1500",
+            "2500"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 105
+          }
+        },
+        "HARSPNBLY": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "5400",
+            "4850",
+            "5150"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 105
+          }
+        },
+        "NKILGRMO": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1400",
+            "1451",
+            "1814"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 105
+          }
+        },
+        "SCOTEX": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "4347",
+            "4200",
+            "5127"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 105
+          }
+        },
+        "SEIMPPR2": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "5372",
+            "4749",
+            "6450"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 105
+          }
+        },
+        "SSEN_S": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "2050",
+            "961",
+            "2580"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 105
+          }
+        },
+        "SSE_GRM": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1570",
+            "1645",
+            "2225"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 105
+          }
+        },
+        "SSE_SP2": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1600",
+            "973",
+            "2100"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 105
+          }
+        },
+        "SSHARN3": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "7200",
+            "7250",
+            "7600"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 105
+          }
+        },
+        "Week No": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "40",
+            "41",
+            "42"
+          ],
+          "max_len": 2,
+          "null_count": 0,
+          "shapes": {
+            "int": 105
+          }
+        },
+        "YEAR": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "2026",
+            "2027",
+            "2028"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 105
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "DRESHEX1": {
+            "description": "Boundary capability for DRESHEX1",
+            "title": "DRESHEX1",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "ESTEX": {
+            "description": "Boundary capability for ESTEX",
+            "title": "ESTEX",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "FLOWSTH": {
+            "description": "Boundary capability for FLOWSTH",
+            "title": "FLOWSTH",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "GM_SNOW5A": {
+            "description": "Boundary capability for GM+ SNOW5A",
+            "title": "GM+ SNOW5A",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "HARSPNBLY": {
+            "description": "Boundary capability for HARSPNBLY",
+            "title": "HARSPNBLY",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "NKILGRMO": {
+            "description": "Boundary capability for NKILGRMO",
+            "title": "NKILGRMO",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "SCOTEX": {
+            "description": "Boundary capability for SCOTEX",
+            "title": "SCOTEX",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "SEIMPPR2": {
+            "description": "Boundary capability for SEIMPPR2",
+            "title": "SEIMPPR2",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "SSEN_S": {
+            "description": "Boundary capability for SSEN-S",
+            "title": "SSEN-S",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "SSE_GRM": {
+            "description": "Boundary capability for SSE+GRM",
+            "title": "SSE+GRM",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "SSE_SP2": {
+            "description": "Boundary capability for SSE-SP2",
+            "title": "SSE-SP2",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "SSHARN3": {
+            "description": "Boundary capability for SSHARN3",
+            "title": "SSHARN3",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "Week No": {
+            "description": "The week number (1-52) for which the limit is applicable.",
+            "title": "Week Number",
+            "type": "int4",
+            "unit": null
+          },
+          "YEAR": {
+            "description": "Time series - Year",
+            "title": "Year",
+            "type": "int4",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T09:15:45.347537+00:00",
+      "header": [
+        "YEAR",
+        "Week No",
+        "DRESHEX1",
+        "ESTEX",
+        "FLOWSTH",
+        "GM_SNOW5A",
+        "HARSPNBLY",
+        "NKILGRMO",
+        "SCOTEX",
+        "SEIMPPR2",
+        "SSE_GRM",
+        "SSEN_S",
+        "SSE_SP2",
+        "SSHARN3"
+      ],
+      "last_written_at": "2026-10-08T09:15:45.347537+00:00",
+      "resource_ids": [
+        "3c359e33-3dac-4bdd-87d1-efbf4cbc2f07"
+      ],
+      "rows": 105,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [],
+  "key": "constraint_limits_24m",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 1,
+        "columns": [
+          "YEAR",
+          "Week No"
+        ],
+        "max_duplicates": 0
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "24-months-ahead-constraint-limits",
+  "proposal": {
+    "flags": [],
+    "record_draft": {
+      "eligibility": {
+        "question": "YEAR: a numeric column with no vendor unit; Week No: a numeric column with no vendor unit",
+        "status": "held",
+        "unit": "CON"
+      },
+      "encoding": "utf-8",
+      "entity_key": [
+        "year_vendor",
+        "week_no"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "int64",
+              "name": "year_vendor",
+              "nullable": true,
+              "source": "YEAR"
+            },
+            {
+              "dtype": "int64",
+              "name": "week_no",
+              "nullable": true,
+              "source": "Week No"
+            },
+            {
+              "dtype": "int64",
+              "name": "dreshex1",
+              "nullable": true,
+              "source": "DRESHEX1"
+            },
+            {
+              "dtype": "int64",
+              "name": "estex",
+              "nullable": true,
+              "source": "ESTEX"
+            },
+            {
+              "dtype": "int64",
+              "name": "flowsth",
+              "nullable": true,
+              "source": "FLOWSTH"
+            },
+            {
+              "dtype": "int64",
+              "name": "gm_snow5a",
+              "nullable": true,
+              "source": "GM_SNOW5A"
+            },
+            {
+              "dtype": "int64",
+              "name": "harspnbly",
+              "nullable": true,
+              "source": "HARSPNBLY"
+            },
+            {
+              "dtype": "int64",
+              "name": "nkilgrmo",
+              "nullable": true,
+              "source": "NKILGRMO"
+            },
+            {
+              "dtype": "int64",
+              "name": "scotex",
+              "nullable": true,
+              "source": "SCOTEX"
+            },
+            {
+              "dtype": "int64",
+              "name": "seimppr2",
+              "nullable": true,
+              "source": "SEIMPPR2"
+            },
+            {
+              "dtype": "int64",
+              "name": "sse_grm",
+              "nullable": true,
+              "source": "SSE_GRM"
+            },
+            {
+              "dtype": "int64",
+              "name": "ssen_s",
+              "nullable": true,
+              "source": "SSEN_S"
+            },
+            {
+              "dtype": "int64",
+              "name": "sse_sp2",
+              "nullable": true,
+              "source": "SSE_SP2"
+            },
+            {
+              "dtype": "int64",
+              "name": "ssharn3",
+              "nullable": true,
+              "source": "SSHARN3"
+            }
+          ],
+          "header": [
+            "YEAR",
+            "Week No",
+            "DRESHEX1",
+            "ESTEX",
+            "FLOWSTH",
+            "GM_SNOW5A",
+            "HARSPNBLY",
+            "NKILGRMO",
+            "SCOTEX",
+            "SEIMPPR2",
+            "SSE_GRM",
+            "SSEN_S",
+            "SSE_SP2",
+            "SSHARN3"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T03",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "held",
+        "field": "column 'YEAR'.unit",
+        "id": "T01",
+        "kind": "unit",
+        "question": "YEAR: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Week No'.unit",
+        "id": "T02",
+        "kind": "unit",
+        "question": "Week No: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T03",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: none"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T04",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['year_vendor', 'week_no'] (measured unique in 1 capture(s)); without one, latest stays whole_capture"
+      }
+    ]
+  },
+  "refresh": "monthly",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update frequency",
+        "value": "Monthly"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Constraint management",
+    "title": "24 Months Ahead Constraint Limits"
+  }
+}

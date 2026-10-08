@@ -1,0 +1,291 @@
+{
+  "archetype": "SER",
+  "batch": "BAL-2",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/skip_rates_behind_constraints_cons/2026/10/08/raw_20261008T111748Z_a88adc4c-d3a6-440d-946b-4e5a3e7ea1c5_9d1ac736.csv",
+      "ckan_last_modified": "2026-09-28T12:08:43.108251",
+      "cr": 0,
+      "crlf": 237,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "a88adc4c-d3a6-440d-946b-4e5a3e7ea1c5",
+      "rows": 236,
+      "sampled": false,
+      "size": 8805,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:17:48.366851+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 1,
+      "columns": {
+        "constraint": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 236,
+            "int64": 236
+          },
+          "examples": [
+            "SSE-SP2",
+            "OTHER",
+            "SCOTEX"
+          ],
+          "max_len": 9,
+          "null_count": 0,
+          "shapes": {
+            "text": 236
+          }
+        },
+        "in_merit_volume_mwh": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 234
+          },
+          "examples": [
+            "25214.95",
+            "385569.8",
+            "207030.48"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 234,
+            "int": 2
+          }
+        },
+        "month": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 236,
+            "int64": 236
+          },
+          "examples": [
+            "2024-12",
+            "2025-01",
+            "2025-02"
+          ],
+          "max_len": 7,
+          "null_count": 0,
+          "shapes": {
+            "text": 236
+          }
+        },
+        "skip_rate": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 200
+          },
+          "examples": [
+            "22.2",
+            "5.3",
+            "22.6"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 200,
+            "int": 36
+          }
+        },
+        "skipped_volume_mwh": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 232
+          },
+          "examples": [
+            "5604.83",
+            "20454.2",
+            "46785.19"
+          ],
+          "max_len": 9,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 232,
+            "int": 4
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "constraint": {
+            "description": "Active thermal constraint",
+            "title": "Constraint",
+            "type": "text",
+            "unit": null
+          },
+          "in_merit_volume_mwh": {
+            "description": "Total system volume that was in merit and available for dispatch under the methodology",
+            "title": "In Merit Volume MWh",
+            "type": "numeric",
+            "unit": "MWh"
+          },
+          "month": {
+            "description": "Date slice at monthly intervals",
+            "title": "Month",
+            "type": "text",
+            "unit": "YearMonth UTC"
+          },
+          "skip_rate": {
+            "description": "Percentage of in-merit volume that was skipped",
+            "title": "Skip Rate %",
+            "type": "numeric",
+            "unit": "Percentage"
+          },
+          "skipped_volume_mwh": {
+            "description": "The volume that was skipped",
+            "title": "Skipped Volume MWh",
+            "type": "numeric",
+            "unit": "MWh"
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T11:17:48.366851+00:00",
+      "header": [
+        "month",
+        "constraint",
+        "skipped_volume_mwh",
+        "in_merit_volume_mwh",
+        "skip_rate"
+      ],
+      "last_written_at": "2026-10-08T11:17:48.366851+00:00",
+      "resource_ids": [
+        "a88adc4c-d3a6-440d-946b-4e5a3e7ea1c5"
+      ],
+      "rows": 236,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [],
+  "key": "skip_rates_behind_constraints_cons",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 1,
+        "columns": [
+          "in_merit_volume_mwh"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 1,
+        "columns": [
+          "month",
+          "constraint"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 1,
+        "columns": [
+          "month",
+          "skipped_volume_mwh"
+        ],
+        "max_duplicates": 0
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "skip-rates",
+  "proposal": {
+    "flags": [],
+    "record_draft": {
+      "encoding": "utf-8",
+      "entity_key": [
+        "in_merit_volume_mwh"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "month_vendor",
+              "nullable": true,
+              "source": "month"
+            },
+            {
+              "dtype": "string",
+              "name": "constraint",
+              "nullable": true,
+              "source": "constraint"
+            },
+            {
+              "dtype": "float64",
+              "name": "skipped_volume_mwh",
+              "nullable": true,
+              "source": "skipped_volume_mwh"
+            },
+            {
+              "dtype": "float64",
+              "name": "in_merit_volume_mwh",
+              "nullable": true,
+              "source": "in_merit_volume_mwh"
+            },
+            {
+              "dtype": "float64",
+              "name": "skip_rate",
+              "nullable": true,
+              "source": "skip_rate"
+            }
+          ],
+          "header": [
+            "month",
+            "constraint",
+            "skipped_volume_mwh",
+            "in_merit_volume_mwh",
+            "skip_rate"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T01",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T01",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: month"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T02",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['in_merit_volume_mwh'] (measured unique in 1 capture(s)); without one, latest stays whole_capture"
+      }
+    ]
+  },
+  "refresh": "daily",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update frequency",
+        "value": "Daily"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Balancing costs",
+    "title": "Skip Rates"
+  }
+}

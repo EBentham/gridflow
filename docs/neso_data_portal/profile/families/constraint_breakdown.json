@@ -1,0 +1,602 @@
+{
+  "archetype": "SER",
+  "batch": "BAL-1",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/constraint_breakdown/2026/10/08/raw_20261008T091512Z_3651e9e3-52a8-46b6-a675-3a4c2aedc813_89199455.csv",
+      "ckan_last_modified": "2021-08-03T13:02:43.115452",
+      "cr": 0,
+      "crlf": 366,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "3651e9e3-52a8-46b6-a675-3a4c2aedc813",
+      "rows": 365,
+      "sampled": false,
+      "size": 18301,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T09:15:12.475796+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/constraint_breakdown/2026/10/08/raw_20261008T091514Z_26af8438-1824-4436-9bbd-d397a9a517e2_31280f55.csv",
+      "ckan_last_modified": "2021-08-03T12:58:42.610033",
+      "cr": 0,
+      "crlf": 366,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "26af8438-1824-4436-9bbd-d397a9a517e2",
+      "rows": 365,
+      "sampled": false,
+      "size": 19279,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T09:15:14.836253+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/constraint_breakdown/2026/10/08/raw_20261008T091517Z_c4d2be3a-4c05-4fac-be7e-56368ca46142_51fbd925.csv",
+      "ckan_last_modified": "2024-03-07T10:32:33.105338",
+      "cr": 0,
+      "crlf": 367,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "c4d2be3a-4c05-4fac-be7e-56368ca46142",
+      "rows": 366,
+      "sampled": false,
+      "size": 20074,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T09:15:17.564394+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/constraint_breakdown/2026/10/08/raw_20261008T091521Z_87088ac4-72d5-48ff-9ee1-f2a99e18277a_2e050c9d.csv",
+      "ckan_last_modified": "2021-06-09T14:57:07.736484",
+      "cr": 0,
+      "crlf": 366,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "87088ac4-72d5-48ff-9ee1-f2a99e18277a",
+      "rows": 365,
+      "sampled": false,
+      "size": 20715,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T09:15:21.389215+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/constraint_breakdown/2026/10/08/raw_20261008T091524Z_419337fb-f609-45e3-9097-798a41b4b3de_5747bb08.csv",
+      "ckan_last_modified": "2022-06-08T11:22:02.313951",
+      "cr": 0,
+      "crlf": 366,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "419337fb-f609-45e3-9097-798a41b4b3de",
+      "rows": 365,
+      "sampled": false,
+      "size": 18558,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T09:15:24.191722+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/constraint_breakdown/2026/10/08/raw_20261008T091526Z_efb633ae-f6d7-444b-8759-449ac0539dd0_61413ffe.csv",
+      "ckan_last_modified": "2023-04-06T15:50:32.383318",
+      "cr": 0,
+      "crlf": 366,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "efb633ae-f6d7-444b-8759-449ac0539dd0",
+      "rows": 365,
+      "sampled": false,
+      "size": 16890,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T09:15:26.609819+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/constraint_breakdown/2026/10/08/raw_20261008T091529Z_24d067d8-1328-452a-9720-21cb691e491e_b2b6dc11.csv",
+      "ckan_last_modified": "2024-04-04T10:47:03.220307",
+      "cr": 0,
+      "crlf": 367,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "24d067d8-1328-452a-9720-21cb691e491e",
+      "rows": 366,
+      "sampled": false,
+      "size": 17986,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T09:15:29.773951+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/constraint_breakdown/2026/10/08/raw_20261008T091532Z_748557ef-2bb3-41c0-8181-5f1a148c1ff4_7efb8117.csv",
+      "ckan_last_modified": "2025-06-16T14:51:46.011303",
+      "cr": 0,
+      "crlf": 366,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "748557ef-2bb3-41c0-8181-5f1a148c1ff4",
+      "rows": 365,
+      "sampled": false,
+      "size": 18384,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T09:15:32.448718+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/constraint_breakdown/2026/10/08/raw_20261008T091534Z_6afe1c2b-6d70-4e76-8e74-0952b0a2beab_5e8f8062.csv",
+      "ckan_last_modified": "2026-04-07T09:49:30.748060",
+      "cr": 0,
+      "crlf": 365,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "6afe1c2b-6d70-4e76-8e74-0952b0a2beab",
+      "rows": 364,
+      "sampled": false,
+      "size": 18583,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T09:15:34.998942+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/constraint_breakdown/2026/10/08/raw_20261008T091538Z_4136a8e2-07c5-4784-8096-28999447a16e_2fa4d9f5.csv",
+      "ckan_last_modified": "2026-10-03T11:00:54.622473",
+      "cr": 0,
+      "crlf": 185,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "4136a8e2-07c5-4784-8096-28999447a16e",
+      "rows": 184,
+      "sampled": false,
+      "size": 9519,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T09:15:38.095731+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 10,
+      "columns": {
+        "Date": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%Y-%m-%d": 0,
+            "float64": 3470,
+            "int64": 3470
+          },
+          "examples": [
+            "2017-04-01",
+            "2017-04-02",
+            "2017-04-03"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "iso_date": 3470
+          }
+        },
+        "Increasing system inertia cost": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "0",
+            "7191",
+            "29810"
+          ],
+          "max_len": 7,
+          "null_count": 0,
+          "shapes": {
+            "int": 3470
+          }
+        },
+        "Increasing system inertia volume": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "0",
+            "785",
+            "5495"
+          ],
+          "max_len": 6,
+          "null_count": 0,
+          "shapes": {
+            "int": 3470
+          }
+        },
+        "Reducing largest loss cost": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "134684",
+            "10428",
+            "44620"
+          ],
+          "max_len": 7,
+          "null_count": 0,
+          "shapes": {
+            "int": 3470
+          }
+        },
+        "Reducing largest loss volume": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "-5612",
+            "-2550",
+            "-3039"
+          ],
+          "max_len": 6,
+          "null_count": 0,
+          "shapes": {
+            "int": 3470
+          }
+        },
+        "Thermal constraints cost": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "126043",
+            "165965",
+            "1123015"
+          ],
+          "max_len": 8,
+          "null_count": 0,
+          "shapes": {
+            "int": 3470
+          }
+        },
+        "Thermal constraints volume": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "2080",
+            "1277",
+            "-6950"
+          ],
+          "max_len": 7,
+          "null_count": 0,
+          "shapes": {
+            "int": 3470
+          }
+        },
+        "Voltage constraints cost": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "98767",
+            "231727",
+            "153499"
+          ],
+          "max_len": 7,
+          "null_count": 0,
+          "shapes": {
+            "int": 3470
+          }
+        },
+        "Voltage constraints volume": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "3872",
+            "6618",
+            "4405"
+          ],
+          "max_len": 6,
+          "null_count": 0,
+          "shapes": {
+            "int": 3470
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "Date": {
+            "description": "The date of the costs/volumes.",
+            "title": "Date",
+            "type": "date",
+            "unit": "ISO 8601"
+          },
+          "Increasing system inertia cost": {
+            "description": "Increasing the level of inertia on the system can also reduce RoCoF. Taking BM Actions to increase synchronous generation can increase inertia. The costs of these BM Actions are shown here.",
+            "title": "Increasing system inertia cost",
+            "type": "numeric",
+            "unit": "£"
+          },
+          "Increasing system inertia volume": {
+            "description": "Increasing the level of inertia on the system can also reduce RoCoF. Taking BM Actions to increase synchronous generation can increase inertia. The volumes of these BM Actions are shown here.",
+            "title": "Increasing system inertia volume",
+            "type": "numeric",
+            "unit": "MWh"
+          },
+          "Reducing largest loss cost": {
+            "description": "At times of low inertia we must take more actions to keep the potential RoCoF below trigger points. We limit RoCoF by limiting the largest credible loss. Trading or taking BM Actions can reduce the level of the generation or demand that comprises the largest loss. eg. reducing generation output in o",
+            "title": "Reducing largest loss cost",
+            "type": "numeric",
+            "unit": "£"
+          },
+          "Reducing largest loss volume": {
+            "description": "At times of low inertia we must take more actions to keep the potential RoCoF below trigger points. We limit RoCoF by limiting the largest credible loss. Trading or taking BM Actions can reduce the level of the generation or demand that comprises the largest loss. eg. reducing generation output in o",
+            "title": "Reducing largest loss volume",
+            "type": "numeric",
+            "unit": "MWh"
+          },
+          "Thermal constraints cost": {
+            "description": "Thermal constraints are taken when the amount of energy that would flow naturally from one region to another exceeds the capacity of the circuits connecting the two regions. Thermal constraints can be managed by Trades or BM Actions. The costs of these actions are shown here.",
+            "title": "Thermal constraints cost",
+            "type": "numeric",
+            "unit": "£"
+          },
+          "Thermal constraints volume": {
+            "description": "Thermal constraints are taken when the amount of energy that would flow naturally from one region to another exceeds the capacity of the circuits connecting the two regions. Thermal constraints can be managed by Trades or BM Actions. The volumes of these actions are shown here.",
+            "title": "Thermal constraints volume",
+            "type": "numeric",
+            "unit": "MWh"
+          },
+          "Voltage constraints cost": {
+            "description": "Reactive power needs to be kept in balance to keep the voltage at the right level. Voltage requirements can vary from one region to another. Trades and BM Actions can support Voltage Control. The costs of these actions are shown here.",
+            "title": "Voltage constraints cost",
+            "type": "numeric",
+            "unit": "£"
+          },
+          "Voltage constraints volume": {
+            "description": "Reactive power needs to be kept in balance to keep the voltage at the right level. Voltage requirements can vary from one region to another. Trades and BM Actions can support Voltage Control. The volumes of these actions are shown here.",
+            "title": "Voltage constraints volume",
+            "type": "numeric",
+            "unit": "MWh"
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T09:15:12.475796+00:00",
+      "header": [
+        "Date",
+        "Reducing largest loss cost",
+        "Increasing system inertia cost",
+        "Voltage constraints cost",
+        "Thermal constraints cost",
+        "Reducing largest loss volume",
+        "Increasing system inertia volume",
+        "Voltage constraints volume",
+        "Thermal constraints volume"
+      ],
+      "last_written_at": "2026-10-08T09:15:38.095731+00:00",
+      "resource_ids": [
+        "24d067d8-1328-452a-9720-21cb691e491e",
+        "26af8438-1824-4436-9bbd-d397a9a517e2",
+        "3651e9e3-52a8-46b6-a675-3a4c2aedc813",
+        "4136a8e2-07c5-4784-8096-28999447a16e",
+        "419337fb-f609-45e3-9097-798a41b4b3de",
+        "6afe1c2b-6d70-4e76-8e74-0952b0a2beab",
+        "748557ef-2bb3-41c0-8181-5f1a148c1ff4",
+        "87088ac4-72d5-48ff-9ee1-f2a99e18277a",
+        "c4d2be3a-4c05-4fac-be7e-56368ca46142",
+        "efb633ae-f6d7-444b-8759-449ac0539dd0"
+      ],
+      "rows": 3470,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [],
+  "key": "constraint_breakdown",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 10,
+        "columns": [
+          "Date"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 10,
+        "columns": [
+          "Thermal constraints cost"
+        ],
+        "max_duplicates": 81
+      },
+      {
+        "captures_checked": 10,
+        "columns": [
+          "Increasing system inertia cost",
+          "Thermal constraints volume"
+        ],
+        "max_duplicates": 69
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "constraint-breakdown",
+  "proposal": {
+    "flags": [],
+    "record_draft": {
+      "encoding": "utf-8",
+      "entity_key": [
+        "date"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "date",
+              "format": "%Y-%m-%d",
+              "name": "date",
+              "nullable": true,
+              "source": "Date"
+            },
+            {
+              "dtype": "float64",
+              "name": "reducing_largest_loss_cost",
+              "nullable": true,
+              "source": "Reducing largest loss cost"
+            },
+            {
+              "dtype": "float64",
+              "name": "increasing_system_inertia_cost",
+              "nullable": true,
+              "source": "Increasing system inertia cost"
+            },
+            {
+              "dtype": "float64",
+              "name": "voltage_constraints_cost",
+              "nullable": true,
+              "source": "Voltage constraints cost"
+            },
+            {
+              "dtype": "float64",
+              "name": "thermal_constraints_cost",
+              "nullable": true,
+              "source": "Thermal constraints cost"
+            },
+            {
+              "dtype": "float64",
+              "name": "reducing_largest_loss_volume",
+              "nullable": true,
+              "source": "Reducing largest loss volume"
+            },
+            {
+              "dtype": "float64",
+              "name": "increasing_system_inertia_volume",
+              "nullable": true,
+              "source": "Increasing system inertia volume"
+            },
+            {
+              "dtype": "float64",
+              "name": "voltage_constraints_volume",
+              "nullable": true,
+              "source": "Voltage constraints volume"
+            },
+            {
+              "dtype": "float64",
+              "name": "thermal_constraints_volume",
+              "nullable": true,
+              "source": "Thermal constraints volume"
+            }
+          ],
+          "header": [
+            "Date",
+            "Reducing largest loss cost",
+            "Increasing system inertia cost",
+            "Voltage constraints cost",
+            "Thermal constraints cost",
+            "Reducing largest loss volume",
+            "Increasing system inertia volume",
+            "Voltage constraints volume",
+            "Thermal constraints volume"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T01",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T01",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: Date"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T02",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['date'] (measured unique in 10 capture(s)); without one, latest stays whole_capture"
+      }
+    ]
+  },
+  "refresh": "weekly",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update Frequency",
+        "value": "Weekly"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Balancing costs",
+    "title": "Constraint Breakdown Costs and Volume"
+  }
+}

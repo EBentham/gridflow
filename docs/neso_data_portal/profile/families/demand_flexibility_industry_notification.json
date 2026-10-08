@@ -1,0 +1,326 @@
+{
+  "archetype": "EVT",
+  "batch": "DFS",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/demand_flexibility_industry_notification/2026/10/08/raw_20261008T100525Z_3d042450-b556-450f-a4b5-cdb075cdf9c1_b746d964.csv",
+      "ckan_last_modified": "2026-03-27T10:44:31.904341",
+      "cr": 0,
+      "crlf": 192,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "3d042450-b556-450f-a4b5-cdb075cdf9c1",
+      "rows": 191,
+      "sampled": false,
+      "size": 22082,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:05:25.790632+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 1,
+      "columns": {
+        "Notification Issued Date": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%d/%m/%Y": 0,
+            "float64": 191,
+            "int64": 191
+          },
+          "examples": [
+            "27/03/2026",
+            "23/03/2026",
+            "22/03/2026"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "slash_date": 191
+          },
+          "slash_first_gt_12": 111,
+          "slash_second_gt_12": 0
+        },
+        "Notification Issued Time": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 191,
+            "int64": 191
+          },
+          "examples": [
+            "11:00",
+            "11:15",
+            "10:00"
+          ],
+          "max_len": 5,
+          "null_count": 0,
+          "shapes": {
+            "text": 191
+          }
+        },
+        "Notification Type": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 191,
+            "int64": 191
+          },
+          "examples": [
+            "Requirement Published",
+            "Revised Requirement Published"
+          ],
+          "max_len": 29,
+          "null_count": 0,
+          "shapes": {
+            "text": 191
+          }
+        },
+        "Requirement For": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%d/%m/%Y": 0,
+            "float64": 191,
+            "int64": 191
+          },
+          "examples": [
+            "27/03/2026",
+            "23/03/2026",
+            "22/03/2026"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "slash_date": 191
+          },
+          "slash_first_gt_12": 111,
+          "slash_second_gt_12": 0
+        },
+        "Requirement Type": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 191,
+            "int64": 191
+          },
+          "examples": [
+            "Live"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "text": 191
+          }
+        },
+        "Status": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 191,
+            "int64": 191
+          },
+          "examples": [
+            "DFS Service Requirement has been published for 27/03/2026.",
+            "DFS Service Requirement has been published for 23/03/2026.",
+            "DFS Service Requirement has been published for 22/03/2026."
+          ],
+          "max_len": 58,
+          "null_count": 0,
+          "shapes": {
+            "text": 191
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "Notification Issued Date": {
+            "description": "Date on which the notification was issued",
+            "title": "Notification Issued Date\t\t",
+            "type": "date",
+            "unit": "YYYY-MM-DD"
+          },
+          "Notification Issued Time": {
+            "description": "Time at which the notification was issued",
+            "title": "Notification Issued Time\t\t",
+            "type": "text",
+            "unit": "HH:MM:SS"
+          },
+          "Notification Type": {
+            "description": "Details the principal justification for the notification",
+            "title": "Notification Type\t\t",
+            "type": "text",
+            "unit": null
+          },
+          "Requirement For": {
+            "description": "Date the notification is applicable to",
+            "title": "Requirement For\t\t",
+            "type": "date",
+            "unit": "YYYY-MM-DD"
+          },
+          "Requirement Type": {
+            "description": "Indicating whether the notification concerns a Live or Test DFS service requirement",
+            "title": "Requirement Type\t\t",
+            "type": "text",
+            "unit": null
+          },
+          "Status": {
+            "description": "Details of the notification",
+            "title": "Status\t\t",
+            "type": "text",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T10:05:25.790632+00:00",
+      "header": [
+        "Notification Issued Date",
+        "Notification Issued Time",
+        "Requirement For",
+        "Requirement Type",
+        "Status",
+        "Notification Type"
+      ],
+      "last_written_at": "2026-10-08T10:05:25.790632+00:00",
+      "resource_ids": [
+        "3d042450-b556-450f-a4b5-cdb075cdf9c1"
+      ],
+      "rows": 191,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [],
+  "key": "demand_flexibility_industry_notification",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Notification Issued Date",
+          "Notification Issued Time"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Notification Issued Date",
+          "Notification Type"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Notification Issued Time",
+          "Requirement For"
+        ],
+        "max_duplicates": 0
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "demand-flexibility",
+  "proposal": {
+    "flags": [],
+    "record_draft": {
+      "encoding": "utf-8",
+      "entity_key": [
+        "notification_issued_date",
+        "notification_issued_time"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "date",
+              "format": "%d/%m/%Y",
+              "name": "notification_issued_date",
+              "nullable": true,
+              "source": "Notification Issued Date"
+            },
+            {
+              "dtype": "string",
+              "name": "notification_issued_time",
+              "nullable": true,
+              "source": "Notification Issued Time"
+            },
+            {
+              "dtype": "date",
+              "format": "%d/%m/%Y",
+              "name": "requirement_for",
+              "nullable": true,
+              "source": "Requirement For"
+            },
+            {
+              "dtype": "string",
+              "name": "requirement_type",
+              "nullable": true,
+              "source": "Requirement Type"
+            },
+            {
+              "dtype": "string",
+              "name": "status",
+              "nullable": true,
+              "source": "Status"
+            },
+            {
+              "dtype": "string",
+              "name": "notification_type",
+              "nullable": true,
+              "source": "Notification Type"
+            }
+          ],
+          "header": [
+            "Notification Issued Date",
+            "Notification Issued Time",
+            "Requirement For",
+            "Requirement Type",
+            "Status",
+            "Notification Type"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T01",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T01",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: Notification Issued Date, Requirement For"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T02",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['notification_issued_date', 'notification_issued_time'] (measured unique in 1 capture(s)); without one, latest stays whole_capture"
+      }
+    ]
+  },
+  "refresh": "adhoc",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update frequency",
+        "value": "Ad hoc"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Demand Flexibility Service",
+    "title": "Demand Flexibility Service"
+  }
+}

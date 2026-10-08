@@ -1,0 +1,221 @@
+{
+  "archetype": "SER",
+  "batch": "IC-2",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/nordpool_da_prices/2026/10/08/raw_20261008T111421Z_4f27eea5-7038-4f73-9740-e3e4ad47c26a_9cf3a923.csv",
+      "ckan_last_modified": "2026-09-21T12:38:33.467657",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 44257,
+      "parse_error": null,
+      "resource_id": "4f27eea5-7038-4f73-9740-e3e4ad47c26a",
+      "rows": 44256,
+      "sampled": false,
+      "size": 1568234,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T11:14:21.282381+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 1,
+      "columns": {
+        "Date": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%Y-%m-%d": 0,
+            "float64": 44256,
+            "int64": 44256
+          },
+          "examples": [
+            "2021-09-20",
+            "2021-09-21",
+            "2021-09-22"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "iso_date": 44256
+          }
+        },
+        "Delivery Period": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 44256,
+            "int64": 44256
+          },
+          "examples": [
+            "22:00 - 23:00",
+            "23:00 - 00:00",
+            "00:00 - 01:00"
+          ],
+          "max_len": 13,
+          "null_count": 0,
+          "shapes": {
+            "text": 44256
+          }
+        },
+        "Price": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 44256
+          },
+          "examples": [
+            "129.950000",
+            "126.200000",
+            "122.250000"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 44256
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "Date": {
+            "description": "Delivery Date in YYYY-MM-DD format",
+            "title": "Date\t\t",
+            "type": "date",
+            "unit": null
+          },
+          "Delivery Period": {
+            "description": "Day ahead Hourly Delivery periods in HH:MM - HH:MM format",
+            "title": "Delivery Period (GMT)\t\t",
+            "type": "text",
+            "unit": null
+          },
+          "Price": {
+            "description": "Auction price for the delivery period, expressed in the requested currency (GBP). Null if no price was set or no trading occurred for that period.",
+            "title": "Price (GBP)\t\t",
+            "type": "numeric",
+            "unit": "GBP"
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T11:14:21.282381+00:00",
+      "header": [
+        "Date",
+        "Delivery Period",
+        "Price"
+      ],
+      "last_written_at": "2026-10-08T11:14:21.282381+00:00",
+      "resource_ids": [
+        "4f27eea5-7038-4f73-9740-e3e4ad47c26a"
+      ],
+      "rows": 44256,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [],
+  "key": "nordpool_da_prices",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Date",
+          "Delivery Period"
+        ],
+        "max_duplicates": 0
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "day-ahead-power-exchange-prices-nordpool",
+  "proposal": {
+    "flags": [],
+    "record_draft": {
+      "encoding": "utf-8",
+      "entity_key": [
+        "date",
+        "delivery_period"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "date",
+              "format": "%Y-%m-%d",
+              "name": "date",
+              "nullable": true,
+              "source": "Date"
+            },
+            {
+              "dtype": "string",
+              "name": "delivery_period",
+              "nullable": true,
+              "source": "Delivery Period"
+            },
+            {
+              "dtype": "float64",
+              "name": "price",
+              "nullable": true,
+              "source": "Price"
+            }
+          ],
+          "header": [
+            "Date",
+            "Delivery Period",
+            "Price"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T01",
+      "version": "1",
+      "vintage": "capture_fallback"
+    },
+    "todos": [
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T01",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: Date"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T02",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['date', 'delivery_period'] (measured unique in 1 capture(s)); without one, latest stays whole_capture"
+      },
+      {
+        "consequence": "none",
+        "field": "vintage",
+        "id": "T03",
+        "kind": "vendor_publication",
+        "question": "available_at is gridflow capture time for the dump; a vendor instant is held (D)"
+      }
+    ]
+  },
+  "refresh": "daily",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update frequency",
+        "value": "Daily"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Trading",
+    "title": "Day-Ahead Power Exchange prices (Nord Pool)"
+  }
+}

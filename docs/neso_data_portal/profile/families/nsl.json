@@ -1,0 +1,636 @@
+{
+  "archetype": "FC",
+  "batch": "IC-1",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/nsl/2026/10/08/raw_20261008T111450Z_9db51c01-922d-413d-8b67-3938fdc14bdb_18c54e33.csv",
+      "ckan_last_modified": "2026-09-17T08:57:32.333754",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 17785,
+      "parse_error": null,
+      "resource_id": "9db51c01-922d-413d-8b67-3938fdc14bdb",
+      "rows": 17784,
+      "sampled": false,
+      "size": 1600640,
+      "url_type": "datastore",
+      "utf8": true,
+      "written_at": "2026-10-08T11:14:50.796409+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/nsl/2026/10/08/raw_20261008T111452Z_33646e05-1af1-41b5-a056-9e95fb9f0534_0519d13a.csv",
+      "ckan_last_modified": "2024-11-27T13:26:08.527346",
+      "cr": 0,
+      "crlf": 0,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 16633,
+      "parse_error": null,
+      "resource_id": "33646e05-1af1-41b5-a056-9e95fb9f0534",
+      "rows": 16632,
+      "sampled": false,
+      "size": 1030220,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:14:52.643813+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 1,
+      "columns": {
+        "Auction Type": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 17784,
+            "int64": 17784
+          },
+          "examples": [
+            "Day Ahead"
+          ],
+          "max_len": 9,
+          "null_count": 0,
+          "shapes": {
+            "text": 17784
+          }
+        },
+        "Data Upload Time GMT": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 17784,
+            "int64": 17784
+          },
+          "examples": [
+            "2024-09-24T10:30:09",
+            "2024-09-25T10:30:07",
+            "2024-09-26T10:30:09"
+          ],
+          "max_len": 19,
+          "null_count": 0,
+          "shapes": {
+            "naive_datetime": 17784
+          }
+        },
+        "Flow in MW From GB": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1400",
+            "1403",
+            "1404"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 17784
+          }
+        },
+        "Flow in MW To GB": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1400",
+            "1404",
+            "680"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 17784
+          }
+        },
+        "Operational Period Start Date and Time GMT": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 17784,
+            "int64": 17784
+          },
+          "examples": [
+            "2024-09-24T22:00:00",
+            "2024-09-24T23:00:00",
+            "2024-09-25T00:00:00"
+          ],
+          "max_len": 19,
+          "null_count": 0,
+          "shapes": {
+            "naive_datetime": 17784
+          }
+        },
+        "Reason For Restriction From GB": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 17784,
+            "int64": 17784
+          },
+          "examples": [
+            "No Restriction",
+            "Largest System Loss",
+            "Margin Extremes"
+          ],
+          "max_len": 19,
+          "null_count": 0,
+          "shapes": {
+            "text": 17784
+          }
+        },
+        "Reason For Restriction To GB": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 17784,
+            "int64": 17784
+          },
+          "examples": [
+            "No Restriction",
+            "Largest System Loss"
+          ],
+          "max_len": 19,
+          "null_count": 0,
+          "shapes": {
+            "text": 17784
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "Auction Type": {
+            "description": "Day-ahead (DA) or Intraday (ID) auction",
+            "title": "Auction Type",
+            "type": "text",
+            "unit": null
+          },
+          "Data Upload Time GMT": {
+            "description": "Date and time that data was published",
+            "title": "Data Upload Time (GMT)",
+            "type": "timestamp",
+            "unit": "ISO 8601"
+          },
+          "Flow in MW From GB": {
+            "description": "Maximum flow in this direction",
+            "title": "Flow (MW) From GB",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "Flow in MW To GB": {
+            "description": "Maximum flow in this direction",
+            "title": "Flow (MW) To GB",
+            "type": "int4",
+            "unit": "MW"
+          },
+          "Operational Period Start Date and Time GMT": {
+            "description": "Hourly Operational Period Start Datetime for which restriction applies. The provided timestamp reflects the datetime when the period starts the next 1 hour time.",
+            "title": "Operational Period Start Datetime (GMT)",
+            "type": "timestamp",
+            "unit": "ISO 8601"
+          },
+          "Reason For Restriction From GB": {
+            "description": "Reason for restriction in this direction",
+            "title": "Reason For Restriction From GB",
+            "type": "text",
+            "unit": null
+          },
+          "Reason For Restriction To GB": {
+            "description": "Reason for restriction in this direction",
+            "title": "Reason For Restriction To GB",
+            "type": "text",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T11:14:50.796409+00:00",
+      "header": [
+        "Data Upload Time GMT",
+        "Auction Type",
+        "Operational Period Start Date and Time GMT",
+        "Flow in MW To GB",
+        "Reason For Restriction To GB",
+        "Flow in MW From GB",
+        "Reason For Restriction From GB"
+      ],
+      "last_written_at": "2026-10-08T11:14:50.796409+00:00",
+      "resource_ids": [
+        "9db51c01-922d-413d-8b67-3938fdc14bdb"
+      ],
+      "rows": 17784,
+      "settlement_periods": []
+    },
+    {
+      "captures": 1,
+      "columns": {
+        "Auction Type": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 16632,
+            "int64": 16632
+          },
+          "examples": [
+            "DayAhead"
+          ],
+          "max_len": 8,
+          "null_count": 0,
+          "shapes": {
+            "text": 16632
+          }
+        },
+        "Flow (MW) From GB": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1453",
+            "1449",
+            "704"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 16632
+          }
+        },
+        "Flow (MW) To GB": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1404",
+            "1400",
+            "680"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 16632
+          }
+        },
+        "Hourly Time Period (GMT)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 16632,
+            "int64": 16632
+          },
+          "examples": [
+            "22:00 to 23:00",
+            "23:00 to 00:00",
+            "00:00 to 01:00"
+          ],
+          "max_len": 14,
+          "null_count": 0,
+          "shapes": {
+            "text": 16632
+          }
+        },
+        "Operational Date": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "20240924",
+            "20240923",
+            "20240922"
+          ],
+          "max_len": 8,
+          "null_count": 0,
+          "shapes": {
+            "int": 16632
+          }
+        },
+        "Reason For Reduction": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 14927,
+            "int64": 14927
+          },
+          "examples": [
+            "No Restriction",
+            "Network Constraints",
+            "Largest System Loss"
+          ],
+          "max_len": 19,
+          "null_count": 1705,
+          "shapes": {
+            "text": 14927
+          }
+        },
+        "Version": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "001",
+            "002",
+            "003"
+          ],
+          "max_len": 3,
+          "null_count": 0,
+          "shapes": {
+            "int": 16632
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "Auction Type": {
+            "description": "Day-ahead (DA) or Intraday (ID) auction",
+            "title": "Auction Type",
+            "type": "text",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [
+          "Data Upload Time GMT",
+          "Flow in MW From GB",
+          "Flow in MW To GB",
+          "Operational Period Start Date and Time GMT",
+          "Reason For Restriction From GB",
+          "Reason For Restriction To GB"
+        ],
+        "header_not_in_field_info": [
+          "Operational Date",
+          "Version",
+          "Hourly Time Period (GMT)",
+          "Flow (MW) To GB",
+          "Flow (MW) From GB",
+          "Reason For Reduction"
+        ]
+      },
+      "first_written_at": "2026-10-08T11:14:52.643813+00:00",
+      "header": [
+        "Operational Date",
+        "Auction Type",
+        "Version",
+        "Hourly Time Period (GMT)",
+        "Flow (MW) To GB",
+        "Flow (MW) From GB",
+        "Reason For Reduction"
+      ],
+      "last_written_at": "2026-10-08T11:14:52.643813+00:00",
+      "resource_ids": [
+        "33646e05-1af1-41b5-a056-9e95fb9f0534"
+      ],
+      "rows": 16632,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [
+    "multi_epoch"
+  ],
+  "key": "nsl",
+  "keys": {
+    "candidates": [],
+    "full_row_max_duplicates": 1
+  },
+  "other_captures": 0,
+  "package": "nsl",
+  "proposal": {
+    "flags": [
+      "multi_epoch"
+    ],
+    "record_draft": {
+      "eligibility": {
+        "question": "Data Upload Time GMT: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced); Operational Period Start Date and Time GMT: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced); Operational Date: a numeric column with no vendor unit; Version: a numeric column with no vendor unit; Flow (MW) To GB: a numeric column with no vendor unit; Flow (MW) From GB: a numeric column with no vendor unit",
+        "status": "held",
+        "unit": "IC-1"
+      },
+      "encoding": "utf-8",
+      "entity_key": [
+        "operational_date",
+        "auction_type",
+        "version",
+        "hourly_time_period_gmt",
+        "flow_mw_to_gb",
+        "flow_mw_from_gb",
+        "reason_for_reduction"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "data_upload_time_gmt",
+              "nullable": true,
+              "source": "Data Upload Time GMT"
+            },
+            {
+              "dtype": "string",
+              "name": "auction_type",
+              "nullable": true,
+              "source": "Auction Type"
+            },
+            {
+              "dtype": "string",
+              "name": "operational_period_start_date_and_time_gmt",
+              "nullable": true,
+              "source": "Operational Period Start Date and Time GMT"
+            },
+            {
+              "dtype": "int64",
+              "name": "flow_in_mw_to_gb",
+              "nullable": true,
+              "source": "Flow in MW To GB"
+            },
+            {
+              "dtype": "string",
+              "name": "reason_for_restriction_to_gb",
+              "nullable": true,
+              "source": "Reason For Restriction To GB"
+            },
+            {
+              "dtype": "int64",
+              "name": "flow_in_mw_from_gb",
+              "nullable": true,
+              "source": "Flow in MW From GB"
+            },
+            {
+              "dtype": "string",
+              "name": "reason_for_restriction_from_gb",
+              "nullable": true,
+              "source": "Reason For Restriction From GB"
+            }
+          ],
+          "header": [
+            "Data Upload Time GMT",
+            "Auction Type",
+            "Operational Period Start Date and Time GMT",
+            "Flow in MW To GB",
+            "Reason For Restriction To GB",
+            "Flow in MW From GB",
+            "Reason For Restriction From GB"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        },
+        {
+          "columns": [
+            {
+              "dtype": "int64",
+              "name": "operational_date",
+              "nullable": true,
+              "source": "Operational Date"
+            },
+            {
+              "dtype": "string",
+              "name": "auction_type",
+              "nullable": true,
+              "source": "Auction Type"
+            },
+            {
+              "dtype": "int64",
+              "name": "version",
+              "nullable": true,
+              "source": "Version"
+            },
+            {
+              "dtype": "string",
+              "name": "hourly_time_period_gmt",
+              "nullable": true,
+              "source": "Hourly Time Period (GMT)"
+            },
+            {
+              "dtype": "int64",
+              "name": "flow_mw_to_gb",
+              "nullable": true,
+              "source": "Flow (MW) To GB"
+            },
+            {
+              "dtype": "int64",
+              "name": "flow_mw_from_gb",
+              "nullable": true,
+              "source": "Flow (MW) From GB"
+            },
+            {
+              "dtype": "string",
+              "name": "reason_for_reduction",
+              "nullable": true,
+              "source": "Reason For Reduction"
+            }
+          ],
+          "header": [
+            "Operational Date",
+            "Auction Type",
+            "Version",
+            "Hourly Time Period (GMT)",
+            "Flow (MW) To GB",
+            "Flow (MW) From GB",
+            "Reason For Reduction"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T07",
+      "version": "1",
+      "vintage": "capture_fallback"
+    },
+    "todos": [
+      {
+        "consequence": "held",
+        "field": "column 'Data Upload Time GMT'",
+        "id": "T01",
+        "kind": "time_semantics",
+        "question": "Data Upload Time GMT: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Operational Period Start Date and Time GMT'",
+        "id": "T02",
+        "kind": "time_semantics",
+        "question": "Operational Period Start Date and Time GMT: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced)"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Operational Date'.unit",
+        "id": "T03",
+        "kind": "unit",
+        "question": "Operational Date: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Version'.unit",
+        "id": "T04",
+        "kind": "unit",
+        "question": "Version: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Flow (MW) To GB'.unit",
+        "id": "T05",
+        "kind": "unit",
+        "question": "Flow (MW) To GB: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'Flow (MW) From GB'.unit",
+        "id": "T06",
+        "kind": "unit",
+        "question": "Flow (MW) From GB: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T07",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: Data Upload Time GMT, Operational Period Start Date and Time GMT"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T08",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['operational_date', 'auction_type', 'version', 'hourly_time_period_gmt', 'flow_mw_to_gb', 'flow_mw_from_gb', 'reason_for_reduction'] (no candidate measured unique, so every column); without one, latest stays whole_capture"
+      },
+      {
+        "consequence": "none",
+        "field": "vintage",
+        "id": "T09",
+        "kind": "vendor_publication",
+        "question": "available_at is gridflow capture time for the dump; a vendor instant is held (D)"
+      },
+      {
+        "consequence": "none",
+        "field": "epochs",
+        "id": "T10",
+        "kind": "multi_epoch",
+        "question": "2 header epochs; review each in its batch"
+      }
+    ]
+  },
+  "refresh": "daily",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update frequency",
+        "value": "Daily"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Interconnectors",
+    "title": "North Sea Link - NESO's Net Transfer Capacity"
+  }
+}

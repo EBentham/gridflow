@@ -1,0 +1,767 @@
+{
+  "archetype": "FC",
+  "batch": "BAL-2",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/bsuos_monthly_forecast_impact_on_due/2026/10/08/raw_20261008T091222Z_8fad0617-c238-4bbf-b6f3-418862dcbf17_0bedc5ac.csv",
+      "ckan_last_modified": "2021-01-07T10:40:52.553689",
+      "cp1252_clean": true,
+      "cr": 0,
+      "crlf": 37,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "8fad0617-c238-4bbf-b6f3-418862dcbf17",
+      "rows": 36,
+      "sampled": false,
+      "size": 8011,
+      "url_type": "upload",
+      "utf8": false,
+      "written_at": "2026-10-08T09:12:22.406846+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 1,
+      "columns": {
+        "ALoMCP": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 22
+          },
+          "examples": [
+            "0",
+            "2.4",
+            "4.8"
+          ],
+          "max_len": 3,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 22,
+            "int": 14
+          }
+        },
+        "Black Start": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 36
+          },
+          "examples": [
+            "3.766827308",
+            "3.27165743",
+            "3.84607255"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 36
+          }
+        },
+        "Constraints - AS": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 12
+          },
+          "examples": [
+            "2.415984044",
+            "1.351087146",
+            "2.445267697"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 12,
+            "int": 24
+          }
+        },
+        "Constraints - Cheviot": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 36
+          },
+          "examples": [
+            "0.368023236",
+            "0.140127129",
+            "1.576607742"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 36
+          }
+        },
+        "Constraints - E&W": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 36
+          },
+          "examples": [
+            "15.84709582",
+            "43.03251808",
+            "23.97946034"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 36
+          }
+        },
+        "Constraints - Scotland": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 36
+          },
+          "examples": [
+            "4.940178943",
+            "1.101910559",
+            "3.207615697"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 36
+          }
+        },
+        "Demand": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 36
+          },
+          "examples": [
+            "36.73272839",
+            "34.05321869",
+            "35.62080484"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 36
+          }
+        },
+        "Energy Imbalance": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 36
+          },
+          "examples": [
+            "-0.00041649",
+            "2.142005237",
+            "-0.361219963"
+          ],
+          "max_len": 12,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 36
+          }
+        },
+        "Esitmated NGET Profit/(Loss)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 31
+          },
+          "examples": [
+            "1.019178082",
+            "0.98630137",
+            "-1.387649062"
+          ],
+          "max_len": 12,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 31,
+            "int": 5
+          }
+        },
+        "Estimated Internal BSUos(�m)": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 36
+          },
+          "examples": [
+            "25.72091233",
+            "24.89120548",
+            "23.23179178"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 36
+          }
+        },
+        "Fast Reserve": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 36
+          },
+          "examples": [
+            "7.363266359",
+            "7.618361016",
+            "7.625239343"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 36
+          }
+        },
+        "Minor Components": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 36
+          },
+          "examples": [
+            "1.649722764",
+            "2.693916156",
+            "2.805951277"
+          ],
+          "max_len": 12,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 36
+          }
+        },
+        "Month": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%b-%y": 0,
+            "float64": 36,
+            "int64": 36
+          },
+          "examples": [
+            "May-19",
+            "Jun-19",
+            "Jul-19"
+          ],
+          "max_len": 6,
+          "null_count": 0,
+          "shapes": {
+            "month_label": 36
+          }
+        },
+        "Negative Reserve": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 36
+          },
+          "examples": [
+            "0.147089854",
+            "0.730403434",
+            "0.103470228"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 36
+          }
+        },
+        "Operating Reserve": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 36
+          },
+          "examples": [
+            "4.844755061",
+            "4.307756112",
+            "4.392274228"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 36
+          }
+        },
+        "Other Reserve": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 36
+          },
+          "examples": [
+            "1.51450896",
+            "1.43946411",
+            "1.23849219"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 36
+          }
+        },
+        "Reactive": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 36
+          },
+          "examples": [
+            "6.70274245",
+            "6.08258236",
+            "5.65550386"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 36
+          }
+        },
+        "Response": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 36
+          },
+          "examples": [
+            "10.98970279",
+            "10.46840273",
+            "10.14303533"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 36
+          }
+        },
+        "STOR": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 36
+          },
+          "examples": [
+            "3.971564414",
+            "4.657792411",
+            "4.399289652"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 36
+          }
+        },
+        "Total": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 36
+          },
+          "examples": [
+            "64.52104552",
+            "89.03798391",
+            "71.05706017"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 36
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "ALoMCP": {
+            "description": "Recovery of the costs of the Accelerated Loss of Mains Change Programme (ALoMCP). For further details about the programme see the operability strategy report.",
+            "title": "Accelerated Loss of Mains Change Programme (ALoMCP)",
+            "type": "numeric",
+            "unit": "£"
+          },
+          "Black Start": {
+            "description": "Black start is the procedure we use to restore power in the event of a total or partial shutdown of the national electricity transmission system. It means we can start up each power station in turn and reconnect them to the grid one by one. In this sort of emergency, a power station can get its elec",
+            "title": "Black Start",
+            "type": "numeric",
+            "unit": "£"
+          },
+          "Constraints - AS": {
+            "description": "Actions taken for non energy system management reasons via balancing services contracts.",
+            "title": "Constraints - Ancillary Services",
+            "type": "numeric",
+            "unit": "£"
+          },
+          "Constraints - Cheviot": {
+            "description": "Actions taken by the ENCC for non energy system management reasons across England and Scotland border.",
+            "title": "Constraints  - Cheviot",
+            "type": "numeric",
+            "unit": "£"
+          },
+          "Constraints - E&W": {
+            "description": "Actions taken by the ENCC for non energy system management reasons in England and Wales.",
+            "title": "Constraints - England & Wales",
+            "type": "numeric",
+            "unit": "£"
+          },
+          "Constraints - Scotland": {
+            "description": "Actions taken by the ENCC for non energy system management reasons in Scotland.",
+            "title": "Constraints - Scotland",
+            "type": "numeric",
+            "unit": "£"
+          },
+          "Demand": {
+            "description": "Balancing Service Use of System volume",
+            "title": "Demand",
+            "type": "numeric",
+            "unit": "£"
+          },
+          "Energy Imbalance": {
+            "description": "Energy imbalance is the difference between the amount of energy generated in real time, the amount of energy consumed during that same time, and the amount of energy sold ahead of the generation time for that specific time period. The monthly energy imbalance cost can be negative or positive dependi",
+            "title": "Energy Imbalance",
+            "type": "numeric",
+            "unit": "£"
+          },
+          "Esitmated NGET Profit/(Loss)": {
+            "description": "Recovery of the estimated revenue paid to NGESO under the incentive scheme. Profit is positive and a loss is represented as a negative.",
+            "title": "Esitmated NGET Profit/(Loss)",
+            "type": "numeric",
+            "unit": "£"
+          },
+          "Fast Reserve": {
+            "description": "Fast Reserve provides the rapid and reliable delivery of active power through an increased output from generation or a reduction in consumption from demand sources, following receipt of an electronic dispatch instruction from National Grid. Fast Reserve service must commence within two minutes follo",
+            "title": "Fast Reserve",
+            "type": "numeric",
+            "unit": "£"
+          },
+          "Minor Components": {
+            "description": "Any actions that don’t meet the defined rules to categorise costs. This also includes costs which are not specific to an ancillary service.",
+            "title": "Minor Components",
+            "type": "numeric",
+            "unit": "£"
+          },
+          "Month": {
+            "description": "The month Balancing Services Use of System (BSUoS) forecasted for.",
+            "title": "Month",
+            "type": "text",
+            "unit": null
+          },
+          "Negative Reserve": {
+            "description": "A Negative Reserve service can provide the flexibility to reduce generation or increase demand to ensure supply and demand are balanced. The service is held in reserve to cover unforeseen fluctuations in demand, or generation from demand side PV and wind.",
+            "title": "Negative Reserve",
+            "type": "numeric",
+            "unit": "£"
+          },
+          "Operating Reserve": {
+            "description": "Positive Reserve that is managed in the BM, through trades, or SO-SO services. Positive Reserve is required to operate the transmission system securely, and provides the reserve energy required to meet the demand when there are shortfalls, due to demand changes or generation breakdowns.",
+            "title": "Operating Reserve",
+            "type": "numeric",
+            "unit": "£"
+          },
+          "Other Reserve": {
+            "description": "We currently have several other reserve services that we are not actively procuring and are under review. The aim is to move away from services procured outside of competitive mechanisms, so we do not intend to procure additional volume under the current frameworks.",
+            "title": "Other Reserve",
+            "type": "numeric",
+            "unit": "£"
+          },
+          "Reactive": {
+            "description": "We manage voltage levels across the grid to make sure we stay within our operational standards and avoid damage to transmission equipment. Voltage levels are controlled by reactive power, and we pay providers to help manage voltage levels on the system by controlling the volume of reactive power tha",
+            "title": "Reactive",
+            "type": "numeric",
+            "unit": "£"
+          },
+          "Response": {
+            "description": "Response is a service we use to keep the system frequency close to 50Hz. Fast acting generation and demand services are held in readiness to manage any fluctuation in the system frequency, which could be caused by a sudden loss of generation or demand. There are three types of frequency response kno",
+            "title": "Response",
+            "type": "numeric",
+            "unit": "£"
+          },
+          "STOR": {
+            "description": "Short-term Operating Reserve (STOR) allows us to have extra power in reserve for when we need it. It helps us meet extra demand at certain times of the day or if there’s an unexpected drop in generation.",
+            "title": "Short Term Operating Reserve",
+            "type": "numeric",
+            "unit": "£"
+          },
+          "Total": {
+            "description": "Total balancing cost",
+            "title": "Total",
+            "type": "numeric",
+            "unit": "£"
+          }
+        },
+        "field_info_not_in_header": [
+          "Estimated Internal BSUos(£m)"
+        ],
+        "header_not_in_field_info": [
+          "Estimated Internal BSUos(�m)"
+        ]
+      },
+      "first_written_at": "2026-10-08T09:12:22.406846+00:00",
+      "header": [
+        "Month",
+        "Energy Imbalance",
+        "Operating Reserve",
+        "STOR",
+        "Constraints - E&W",
+        "Constraints - Cheviot",
+        "Constraints - Scotland",
+        "Constraints - AS",
+        "Negative Reserve",
+        "Fast Reserve",
+        "Response",
+        "Other Reserve",
+        "Reactive",
+        "Minor Components",
+        "Black Start",
+        "Total",
+        "Demand",
+        "Estimated Internal BSUos(�m)",
+        "Esitmated NGET Profit/(Loss)",
+        "ALoMCP"
+      ],
+      "last_written_at": "2026-10-08T09:12:22.406846+00:00",
+      "resource_ids": [
+        "8fad0617-c238-4bbf-b6f3-418862dcbf17"
+      ],
+      "rows": 36,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [
+    "not_utf8",
+    "sibling_candidate:bsuos_monthly_forecast_including_new,bsuos_monthly_forecast_summary,bsuos_monthly_forecast_summary_pct"
+  ],
+  "key": "bsuos_monthly_forecast_impact_on_due",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Month"
+        ],
+        "max_duplicates": 0
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "bsuos-monthly-forecast",
+  "proposal": {
+    "flags": [
+      "not_utf8",
+      "sibling_candidate:bsuos_monthly_forecast_including_new,bsuos_monthly_forecast_summary,bsuos_monthly_forecast_summary_pct",
+      "text_declared_date_shaped:Month"
+    ],
+    "record_draft": {
+      "eligibility": {
+        "question": "Estimated Internal BSUos(�m): a numeric column with no vendor unit",
+        "status": "held",
+        "unit": "BAL-2"
+      },
+      "encoding": "TODO: T02",
+      "entity_key": [
+        "month_vendor"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "date",
+              "format": "%b-%y",
+              "name": "month_vendor",
+              "nullable": true,
+              "source": "Month"
+            },
+            {
+              "dtype": "float64",
+              "name": "energy_imbalance",
+              "nullable": true,
+              "source": "Energy Imbalance"
+            },
+            {
+              "dtype": "float64",
+              "name": "operating_reserve",
+              "nullable": true,
+              "source": "Operating Reserve"
+            },
+            {
+              "dtype": "float64",
+              "name": "stor",
+              "nullable": true,
+              "source": "STOR"
+            },
+            {
+              "dtype": "float64",
+              "name": "constraints_e_w",
+              "nullable": true,
+              "source": "Constraints - E&W"
+            },
+            {
+              "dtype": "float64",
+              "name": "constraints_cheviot",
+              "nullable": true,
+              "source": "Constraints - Cheviot"
+            },
+            {
+              "dtype": "float64",
+              "name": "constraints_scotland",
+              "nullable": true,
+              "source": "Constraints - Scotland"
+            },
+            {
+              "dtype": "float64",
+              "name": "constraints_as",
+              "nullable": true,
+              "source": "Constraints - AS"
+            },
+            {
+              "dtype": "float64",
+              "name": "negative_reserve",
+              "nullable": true,
+              "source": "Negative Reserve"
+            },
+            {
+              "dtype": "float64",
+              "name": "fast_reserve",
+              "nullable": true,
+              "source": "Fast Reserve"
+            },
+            {
+              "dtype": "float64",
+              "name": "response",
+              "nullable": true,
+              "source": "Response"
+            },
+            {
+              "dtype": "float64",
+              "name": "other_reserve",
+              "nullable": true,
+              "source": "Other Reserve"
+            },
+            {
+              "dtype": "float64",
+              "name": "reactive",
+              "nullable": true,
+              "source": "Reactive"
+            },
+            {
+              "dtype": "float64",
+              "name": "minor_components",
+              "nullable": true,
+              "source": "Minor Components"
+            },
+            {
+              "dtype": "float64",
+              "name": "black_start",
+              "nullable": true,
+              "source": "Black Start"
+            },
+            {
+              "dtype": "float64",
+              "name": "total",
+              "nullable": true,
+              "source": "Total"
+            },
+            {
+              "dtype": "float64",
+              "name": "demand",
+              "nullable": true,
+              "source": "Demand"
+            },
+            {
+              "dtype": "float64",
+              "name": "estimated_internal_bsuos_m",
+              "nullable": true,
+              "source": "Estimated Internal BSUos(�m)"
+            },
+            {
+              "dtype": "float64",
+              "name": "esitmated_nget_profit_loss",
+              "nullable": true,
+              "source": "Esitmated NGET Profit/(Loss)"
+            },
+            {
+              "dtype": "float64",
+              "name": "alomcp",
+              "nullable": true,
+              "source": "ALoMCP"
+            }
+          ],
+          "header": [
+            "Month",
+            "Energy Imbalance",
+            "Operating Reserve",
+            "STOR",
+            "Constraints - E&W",
+            "Constraints - Cheviot",
+            "Constraints - Scotland",
+            "Constraints - AS",
+            "Negative Reserve",
+            "Fast Reserve",
+            "Response",
+            "Other Reserve",
+            "Reactive",
+            "Minor Components",
+            "Black Start",
+            "Total",
+            "Demand",
+            "Estimated Internal BSUos(�m)",
+            "Esitmated NGET Profit/(Loss)",
+            "ALoMCP"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T03",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "held",
+        "field": "column 'Estimated Internal BSUos(�m)'.unit",
+        "id": "T01",
+        "kind": "unit",
+        "question": "Estimated Internal BSUos(�m): a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "blocked",
+        "field": "encoding",
+        "id": "T02",
+        "kind": "encoding",
+        "question": "a capture is not valid UTF-8 (see cp1252_clean); the vendor's encoding is unevidenced"
+      },
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T03",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: Month"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T04",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['month_vendor'] (measured unique in 1 capture(s)); without one, latest stays whole_capture"
+      }
+    ]
+  },
+  "refresh": "monthly",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update Frequency",
+        "value": "Monthly"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Balancing costs",
+    "title": "Monthly Balancing Services Use of System (BSUoS) Forecast Data"
+  }
+}

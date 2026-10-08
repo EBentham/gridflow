@@ -1,0 +1,893 @@
+{
+  "archetype": "SER",
+  "batch": "BAL-1",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/daily_balancing_costs/2026/10/08/raw_20261008T100355Z_a84e4ccb-18e2-474e-a34a-47b835772f17_3fc6b14b.csv",
+      "ckan_last_modified": "2022-09-28T16:02:28.295736",
+      "cr": 0,
+      "crlf": 17521,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "a84e4ccb-18e2-474e-a34a-47b835772f17",
+      "rows": 17520,
+      "sampled": false,
+      "size": 1100388,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:03:55.806658+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/daily_balancing_costs/2026/10/08/raw_20261008T100358Z_2be31033-829f-4030-94d6-58f2fdf76312_d956f1ab.csv",
+      "ckan_last_modified": "2024-03-04T14:40:43.156956",
+      "cr": 0,
+      "crlf": 17494,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "2be31033-829f-4030-94d6-58f2fdf76312",
+      "rows": 17493,
+      "sampled": false,
+      "size": 1340159,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:03:58.284801+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/daily_balancing_costs/2026/10/08/raw_20261008T100400Z_723dd577-985b-4ceb-ab98-95a5df32584f_d168ff8b.csv",
+      "ckan_last_modified": "2022-09-28T15:50:27.312532",
+      "cr": 0,
+      "crlf": 17558,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "723dd577-985b-4ceb-ab98-95a5df32584f",
+      "rows": 17557,
+      "sampled": false,
+      "size": 1144160,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:04:00.921893+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/daily_balancing_costs/2026/10/08/raw_20261008T100403Z_7bcd8e25-c148-4cdb-b46f-394f88b92db5_83d2acdd.csv",
+      "ckan_last_modified": "2022-09-28T15:36:16.188755",
+      "cr": 0,
+      "crlf": 17512,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "7bcd8e25-c148-4cdb-b46f-394f88b92db5",
+      "rows": 17511,
+      "sampled": false,
+      "size": 1152561,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:04:03.734848+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/daily_balancing_costs/2026/10/08/raw_20261008T100406Z_8d89e8ee-85d7-4395-813e-a9233b3bdb7c_08ec643b.csv",
+      "ckan_last_modified": "2024-03-04T14:41:45.817232",
+      "cr": 0,
+      "crlf": 17519,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "8d89e8ee-85d7-4395-813e-a9233b3bdb7c",
+      "rows": 17518,
+      "sampled": false,
+      "size": 1393242,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:04:06.379349+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/daily_balancing_costs/2026/10/08/raw_20261008T100409Z_2a48ee67-a7f5-4d29-b223-a92f1d289224_1f2a76c7.csv",
+      "ckan_last_modified": "2023-04-05T07:59:33.016990",
+      "cr": 0,
+      "crlf": 17520,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "2a48ee67-a7f5-4d29-b223-a92f1d289224",
+      "rows": 17519,
+      "sampled": false,
+      "size": 1390897,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:04:09.360642+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/daily_balancing_costs/2026/10/08/raw_20261008T100412Z_5eb3f06d-26ed-4e04-81a0-ce8c02ecd11e_ca9a4084.csv",
+      "ckan_last_modified": "2024-04-07T13:21:09.292095",
+      "cr": 0,
+      "crlf": 17567,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "5eb3f06d-26ed-4e04-81a0-ce8c02ecd11e",
+      "rows": 17566,
+      "sampled": false,
+      "size": 1402355,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:04:12.463081+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/daily_balancing_costs/2026/10/08/raw_20261008T100415Z_527a5f40-942b-416b-99df-81a51c30d041_ce421c96.csv",
+      "ckan_last_modified": "2025-05-14T11:10:46.981006",
+      "cr": 0,
+      "crlf": 17513,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "527a5f40-942b-416b-99df-81a51c30d041",
+      "rows": 17512,
+      "sampled": false,
+      "size": 1429537,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:04:15.025030+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/daily_balancing_costs/2026/10/08/raw_20261008T100417Z_46183ba7-48df-4318-9b4b-06828348d46e_fbaf6432.csv",
+      "ckan_last_modified": "2026-04-07T10:24:13.342330",
+      "cr": 0,
+      "crlf": 17517,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "46183ba7-48df-4318-9b4b-06828348d46e",
+      "rows": 17516,
+      "sampled": false,
+      "size": 1470668,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:04:17.954182+00:00"
+    },
+    {
+      "all_blank_rows": 0,
+      "bom": false,
+      "capture_id": "bronze/neso_data_portal/daily_balancing_costs/2026/10/08/raw_20261008T100420Z_1d040751-f77f-4641-9130-d49f8cbfe54f_8daec25b.csv",
+      "ckan_last_modified": "2026-10-03T11:18:19.357113",
+      "cr": 0,
+      "crlf": 8827,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 1,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "1d040751-f77f-4641-9130-d49f8cbfe54f",
+      "rows": 8826,
+      "sampled": false,
+      "size": 733417,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T10:04:20.545535+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 3,
+      "columns": {
+        "Constraints": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 43229
+          },
+          "examples": [
+            "22737.955",
+            "22738.19",
+            "22909.11866"
+          ],
+          "max_len": 12,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 43229,
+            "int": 9359
+          }
+        },
+        "Energy Imbalance": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 52447
+          },
+          "examples": [
+            "-16344.352",
+            "-15959.283",
+            "-4136.364"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 52447,
+            "int": 141
+          }
+        },
+        "Frequency Control": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 49544
+          },
+          "examples": [
+            "1547.211",
+            "2047.106",
+            "5780.480644"
+          ],
+          "max_len": 12,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 49544,
+            "int": 3044
+          }
+        },
+        "Negative Reserve": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 11088
+          },
+          "examples": [
+            "0",
+            "3.289893603",
+            "4.453029255"
+          ],
+          "max_len": 12,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 11088,
+            "int": 41500
+          }
+        },
+        "Other": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 48610
+          },
+          "examples": [
+            "106.456",
+            "395.865",
+            "43.56869203"
+          ],
+          "max_len": 12,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 48610,
+            "int": 3978
+          }
+        },
+        "Positive Reserve": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 39393
+          },
+          "examples": [
+            "0",
+            "8149.05",
+            "3365.717"
+          ],
+          "max_len": 12,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 39393,
+            "int": 13195
+          }
+        },
+        "SETT_DATE": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%d/%m/%Y": 0,
+            "float64": 52588,
+            "int64": 52588
+          },
+          "examples": [
+            "01/04/2017",
+            "02/04/2017",
+            "03/04/2017"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "slash_date": 52588
+          },
+          "slash_first_gt_12": 31858,
+          "slash_second_gt_12": 0
+        },
+        "SETT_PERIOD": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1",
+            "2",
+            "3"
+          ],
+          "max_len": 2,
+          "null_count": 0,
+          "shapes": {
+            "int": 52588
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "Constraints": {
+            "description": "Running the transmission network also requires actions to protect equipment, enable access to the system, keep within the Security and Quality of Supply Standard (SQSS) and prevent the loss of large parts of the network.",
+            "title": "Constraints",
+            "type": "numeric",
+            "unit": "£"
+          },
+          "Energy Imbalance": {
+            "description": "Energy imbalance is the difference between the amount of energy generated in real time, the amount of energy consumed during that same time, and the amount of energy sold ahead of the generation time for that specific time period. The monthly energy imbalance cost can be negative or positive dependi",
+            "title": "Energy Imbalance",
+            "type": "numeric",
+            "unit": "£"
+          },
+          "Frequency Control": {
+            "description": "Response and Fast reserve",
+            "title": "Frequency Control",
+            "type": "numeric",
+            "unit": "£"
+          },
+          "Negative Reserve": {
+            "description": "A Negative Reserve service can provide the flexibility to reduce generation or increase demand to ensure supply and demand are balanced. The service is held in reserve to cover unforeseen fluctuations in demand, or generation from demand side PV and wind.",
+            "title": "Negative Reserve",
+            "type": "numeric",
+            "unit": "£"
+          },
+          "Other": {
+            "description": "BM actions, which are not easily accounted for in the previously reported categories. Other general costs; trading option fees, bank charges, sterling adjustments. Non-Delivery and Reconciliation",
+            "title": "Other",
+            "type": "numeric",
+            "unit": "£"
+          },
+          "Positive Reserve": {
+            "description": "Positive Reserve is required to operate the transmission system securely and provides the reserve energy required to meet the demand when there are shortfalls, due to demand forecast changes or generation breakdowns.",
+            "title": "Positive Reserve",
+            "type": "numeric",
+            "unit": "£"
+          },
+          "SETT_DATE": {
+            "description": "The Payment Date in relation to an Initial Settlement Run.",
+            "title": "Settlement Date",
+            "type": "date",
+            "unit": null
+          },
+          "SETT_PERIOD": {
+            "description": "A period of 30 minutes beginning on the hour or the half-hour",
+            "title": "Settlement Period",
+            "type": "int4",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T10:03:55.806658+00:00",
+      "header": [
+        "SETT_DATE",
+        "SETT_PERIOD",
+        "Energy Imbalance",
+        "Frequency Control",
+        "Positive Reserve",
+        "Negative Reserve",
+        "Constraints",
+        "Other"
+      ],
+      "last_written_at": "2026-10-08T10:04:03.734848+00:00",
+      "resource_ids": [
+        "723dd577-985b-4ceb-ab98-95a5df32584f",
+        "7bcd8e25-c148-4cdb-b46f-394f88b92db5",
+        "a84e4ccb-18e2-474e-a34a-47b835772f17"
+      ],
+      "rows": 52588,
+      "settlement_periods": []
+    },
+    {
+      "captures": 7,
+      "columns": {
+        "Constraints": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 113950
+          },
+          "examples": [
+            "7349.24",
+            "4266.225",
+            "3813.981085594272"
+          ],
+          "max_len": 21,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 113950
+          }
+        },
+        "Energy Imbalance": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 113950
+          },
+          "examples": [
+            "9202.251",
+            "8036.9",
+            "-3585.873"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 113950
+          }
+        },
+        "Frequency Control": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 113950
+          },
+          "examples": [
+            "1019.63",
+            "1135.157",
+            "1609.7553367669054"
+          ],
+          "max_len": 22,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 113950
+          }
+        },
+        "Negative Reserve": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 113950
+          },
+          "examples": [
+            "0.0",
+            "3090.589",
+            "4156.313"
+          ],
+          "max_len": 22,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 113950
+          }
+        },
+        "Other": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 113950
+          },
+          "examples": [
+            "46.264",
+            "0.0",
+            "22.251577638822592"
+          ],
+          "max_len": 22,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 111520,
+            "text": 2430
+          }
+        },
+        "Positive Reserve": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 113950
+          },
+          "examples": [
+            "1800.0",
+            "0.0",
+            "3912.0"
+          ],
+          "max_len": 23,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 113950
+          }
+        },
+        "SETT_DATE": {
+          "blank_count": 0,
+          "cast_failures": {
+            "%Y-%m-%d": 0,
+            "float64": 113950,
+            "int64": 113950
+          },
+          "examples": [
+            "2018-04-01",
+            "2018-04-02",
+            "2018-04-03"
+          ],
+          "max_len": 10,
+          "null_count": 0,
+          "shapes": {
+            "iso_date": 113950
+          }
+        },
+        "SETT_PERIOD": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "1",
+            "2",
+            "3"
+          ],
+          "max_len": 2,
+          "null_count": 0,
+          "shapes": {
+            "int": 113950
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "Constraints": {
+            "description": "Running the transmission network also requires actions to protect equipment, enable access to the system, keep within the Security and Quality of Supply Standard (SQSS) and prevent the loss of large parts of the network.",
+            "title": "Constraints",
+            "type": "numeric",
+            "unit": "£"
+          },
+          "Energy Imbalance": {
+            "description": "Energy imbalance is the difference between the amount of energy generated in real time, the amount of energy consumed during that same time, and the amount of energy sold ahead of the generation time for that specific time period. The monthly energy imbalance cost can be negative or positive dependi",
+            "title": "Energy Imbalance",
+            "type": "numeric",
+            "unit": "£"
+          },
+          "Frequency Control": {
+            "description": "Response and Fast reserve",
+            "title": "Frequency Control",
+            "type": "numeric",
+            "unit": "£"
+          },
+          "Negative Reserve": {
+            "description": "A Negative Reserve service can provide the flexibility to reduce generation or increase demand to ensure supply and demand are balanced. The service is held in reserve to cover unforeseen fluctuations in demand, or generation from demand side PV and wind.",
+            "title": "Negative Reserve",
+            "type": "numeric",
+            "unit": "£"
+          },
+          "Other": {
+            "description": "BM actions, which are not easily accounted for in the previously reported categories. Other general costs; trading option fees, bank charges, sterling adjustments. Non-Delivery and Reconciliation",
+            "title": "Other",
+            "type": "numeric",
+            "unit": "£"
+          },
+          "Positive Reserve": {
+            "description": "Positive Reserve is required to operate the transmission system securely and provides the reserve energy required to meet the demand when there are shortfalls, due to demand forecast changes or generation breakdowns.",
+            "title": "Positive Reserve",
+            "type": "numeric",
+            "unit": "£"
+          },
+          "SETT_DATE": {
+            "description": "The Payment Date in relation to an Initial Settlement Run.",
+            "title": "Settlement Date",
+            "type": "date",
+            "unit": null
+          },
+          "SETT_PERIOD": {
+            "description": "A period of 30 minutes beginning on the hour or the half-hour",
+            "title": "Settlement Period",
+            "type": "int4",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T10:03:58.284801+00:00",
+      "header": [
+        "SETT_DATE",
+        "SETT_PERIOD",
+        "Energy Imbalance",
+        "Frequency Control",
+        "Positive Reserve",
+        "Constraints",
+        "Negative Reserve",
+        "Other"
+      ],
+      "last_written_at": "2026-10-08T10:04:20.545535+00:00",
+      "resource_ids": [
+        "1d040751-f77f-4641-9130-d49f8cbfe54f",
+        "2a48ee67-a7f5-4d29-b223-a92f1d289224",
+        "2be31033-829f-4030-94d6-58f2fdf76312",
+        "46183ba7-48df-4318-9b4b-06828348d46e",
+        "527a5f40-942b-416b-99df-81a51c30d041",
+        "5eb3f06d-26ed-4e04-81a0-ce8c02ecd11e",
+        "8d89e8ee-85d7-4395-813e-a9233b3bdb7c"
+      ],
+      "rows": 113950,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [
+    "multi_epoch"
+  ],
+  "key": "daily_balancing_costs",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 10,
+        "columns": [
+          "SETT_DATE",
+          "SETT_PERIOD"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 10,
+        "columns": [
+          "SETT_DATE",
+          "Energy Imbalance",
+          "Other"
+        ],
+        "max_duplicates": 440
+      },
+      {
+        "captures_checked": 10,
+        "columns": [
+          "SETT_PERIOD",
+          "Energy Imbalance",
+          "Constraints"
+        ],
+        "max_duplicates": 1084
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "daily-balancing-costs-balancing-services-use-of-system",
+  "proposal": {
+    "flags": [
+      "multi_epoch"
+    ],
+    "record_draft": {
+      "eligibility": {
+        "question": "SETT_PERIOD: a numeric column with no vendor unit; SETT_PERIOD: a numeric column with no vendor unit",
+        "status": "held",
+        "unit": "BAL-1"
+      },
+      "encoding": "utf-8",
+      "entity_key": [
+        "sett_date",
+        "sett_period"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "date",
+              "format": "%d/%m/%Y",
+              "name": "sett_date",
+              "nullable": true,
+              "source": "SETT_DATE"
+            },
+            {
+              "dtype": "int64",
+              "name": "sett_period",
+              "nullable": true,
+              "source": "SETT_PERIOD"
+            },
+            {
+              "dtype": "float64",
+              "name": "energy_imbalance",
+              "nullable": true,
+              "source": "Energy Imbalance"
+            },
+            {
+              "dtype": "float64",
+              "name": "frequency_control",
+              "nullable": true,
+              "source": "Frequency Control"
+            },
+            {
+              "dtype": "float64",
+              "name": "positive_reserve",
+              "nullable": true,
+              "source": "Positive Reserve"
+            },
+            {
+              "dtype": "float64",
+              "name": "negative_reserve",
+              "nullable": true,
+              "source": "Negative Reserve"
+            },
+            {
+              "dtype": "float64",
+              "name": "constraints",
+              "nullable": true,
+              "source": "Constraints"
+            },
+            {
+              "dtype": "float64",
+              "name": "other",
+              "nullable": true,
+              "source": "Other"
+            }
+          ],
+          "header": [
+            "SETT_DATE",
+            "SETT_PERIOD",
+            "Energy Imbalance",
+            "Frequency Control",
+            "Positive Reserve",
+            "Negative Reserve",
+            "Constraints",
+            "Other"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        },
+        {
+          "columns": [
+            {
+              "dtype": "date",
+              "format": "%Y-%m-%d",
+              "name": "sett_date",
+              "nullable": true,
+              "source": "SETT_DATE"
+            },
+            {
+              "dtype": "int64",
+              "name": "sett_period",
+              "nullable": true,
+              "source": "SETT_PERIOD"
+            },
+            {
+              "dtype": "float64",
+              "name": "energy_imbalance",
+              "nullable": true,
+              "source": "Energy Imbalance"
+            },
+            {
+              "dtype": "float64",
+              "name": "frequency_control",
+              "nullable": true,
+              "source": "Frequency Control"
+            },
+            {
+              "dtype": "float64",
+              "name": "positive_reserve",
+              "nullable": true,
+              "source": "Positive Reserve"
+            },
+            {
+              "dtype": "float64",
+              "name": "constraints",
+              "nullable": true,
+              "source": "Constraints"
+            },
+            {
+              "dtype": "float64",
+              "name": "negative_reserve",
+              "nullable": true,
+              "source": "Negative Reserve"
+            },
+            {
+              "dtype": "float64",
+              "name": "other",
+              "nullable": true,
+              "source": "Other"
+            }
+          ],
+          "header": [
+            "SETT_DATE",
+            "SETT_PERIOD",
+            "Energy Imbalance",
+            "Frequency Control",
+            "Positive Reserve",
+            "Constraints",
+            "Negative Reserve",
+            "Other"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T03",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "held",
+        "field": "column 'SETT_PERIOD'.unit",
+        "id": "T01",
+        "kind": "unit",
+        "question": "SETT_PERIOD: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column 'SETT_PERIOD'.unit",
+        "id": "T02",
+        "kind": "unit",
+        "question": "SETT_PERIOD: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T03",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: SETT_DATE"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T04",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['sett_date', 'sett_period'] (measured unique in 10 capture(s)); without one, latest stays whole_capture"
+      },
+      {
+        "consequence": "none",
+        "field": "epochs",
+        "id": "T05",
+        "kind": "multi_epoch",
+        "question": "2 header epochs; review each in its batch"
+      }
+    ]
+  },
+  "refresh": "weekly",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update Frequency",
+        "value": "Weekly"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Balancing costs",
+    "title": "Daily Balancing Services Use of System (BSUoS) Cost Data"
+  }
+}

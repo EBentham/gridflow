@@ -1,0 +1,430 @@
+{
+  "archetype": "SER",
+  "batch": "AS-3",
+  "captures": [
+    {
+      "all_blank_rows": 0,
+      "bom": true,
+      "capture_id": "bronze/neso_data_portal/orps_utilisation_reactive_default/2026/10/08/raw_20261008T111605Z_b00df5b1-4179-44e3-b556-28a836ad619f_2830307a.csv",
+      "ckan_last_modified": "2026-09-17T07:44:25.572388",
+      "cr": 0,
+      "crlf": 229,
+      "duplicate_header": false,
+      "ends_with_newline": true,
+      "epoch": 0,
+      "lf": 0,
+      "parse_error": null,
+      "resource_id": "b00df5b1-4179-44e3-b556-28a836ad619f",
+      "rows": 228,
+      "sampled": false,
+      "size": 13032,
+      "url_type": "upload",
+      "utf8": true,
+      "written_at": "2026-10-08T11:16:05.568105+00:00"
+    }
+  ],
+  "epochs": [
+    {
+      "captures": 1,
+      "columns": {
+        "FRPIm": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 203
+          },
+          "examples": [
+            "418.1",
+            "417.4",
+            "416.8"
+          ],
+          "max_len": 6,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 203,
+            "int": 25
+          }
+        },
+        "HPIm": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 226
+          },
+          "examples": [
+            "152.775",
+            "123.7",
+            "108.15"
+          ],
+          "max_len": 7,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 226,
+            "int": 2
+          }
+        },
+        "Im": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 228
+          },
+          "examples": [
+            "6.7139",
+            "5.8957",
+            "5.2861"
+          ],
+          "max_len": 7,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 228
+          }
+        },
+        "Month": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "10",
+            "9",
+            "8"
+          ],
+          "max_len": 2,
+          "null_count": 0,
+          "shapes": {
+            "int": 228
+          }
+        },
+        "PAPIm": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 227
+          },
+          "examples": [
+            "125.47",
+            "115.56",
+            "97.61"
+          ],
+          "max_len": 6,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 227,
+            "int": 1
+          }
+        },
+        "PPIm": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 215
+          },
+          "examples": [
+            "152.5",
+            "124.5",
+            "108.15"
+          ],
+          "max_len": 6,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 215,
+            "int": 13
+          }
+        },
+        "X = 0.2": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 228
+          },
+          "examples": [
+            "1.477372112",
+            "1.297329832",
+            "1.163189312"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 228
+          }
+        },
+        "X = 1": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 228
+          },
+          "examples": [
+            "7.386860558",
+            "6.486649159",
+            "5.815946558"
+          ],
+          "max_len": 11,
+          "null_count": 0,
+          "shapes": {
+            "decimal": 228
+          }
+        },
+        "Year": {
+          "blank_count": 0,
+          "cast_failures": {
+            "float64": 0,
+            "int64": 0
+          },
+          "examples": [
+            "2026",
+            "2025",
+            "2024"
+          ],
+          "max_len": 4,
+          "null_count": 0,
+          "shapes": {
+            "int": 228
+          }
+        }
+      },
+      "field_info": {
+        "columns": {
+          "FRPIm": {
+            "description": "Contains the RPI Indices inputs value",
+            "title": "FRPIm\t\t",
+            "type": "numeric",
+            "unit": "£"
+          },
+          "HPIm": {
+            "description": "Contains the Heren values",
+            "title": "HPIm\t\t",
+            "type": "numeric",
+            "unit": "£"
+          },
+          "Im": {
+            "description": "This vales are auto - generated using HPIm, PAPIm, PPIm & FRPIm standard inputs",
+            "title": "Im\t\t",
+            "type": "numeric",
+            "unit": "£"
+          },
+          "Month": {
+            "description": "Contains month data",
+            "title": "Month\t\t",
+            "type": "int4",
+            "unit": null
+          },
+          "PAPIm": {
+            "description": "Contains the Argus values",
+            "title": "PAPIm\t\t",
+            "type": "numeric",
+            "unit": "£"
+          },
+          "PPIm": {
+            "description": "Contains the Platts values",
+            "title": "PPIm\t\t",
+            "type": "numeric",
+            "unit": "£"
+          },
+          "X = 0.2": {
+            "description": "This vales are auto - generated using HPIm, PAPIm, PPIm & FRPIm standard inputs",
+            "title": "X = 0.2\t\t",
+            "type": "numeric",
+            "unit": "£"
+          },
+          "X = 1": {
+            "description": "This vales are auto - generated using HPIm, PAPIm, PPIm & FRPIm standard inputs",
+            "title": "X = 1\t\t",
+            "type": "numeric",
+            "unit": "£"
+          },
+          "Year": {
+            "description": "Contains year data",
+            "title": "Year\t\t",
+            "type": "text",
+            "unit": null
+          }
+        },
+        "field_info_not_in_header": [],
+        "header_not_in_field_info": []
+      },
+      "first_written_at": "2026-10-08T11:16:05.568105+00:00",
+      "header": [
+        "Year",
+        "Month",
+        "HPIm",
+        "PAPIm",
+        "PPIm",
+        "FRPIm",
+        "Im",
+        "X = 1",
+        "X = 0.2"
+      ],
+      "last_written_at": "2026-10-08T11:16:05.568105+00:00",
+      "resource_ids": [
+        "b00df5b1-4179-44e3-b556-28a836ad619f"
+      ],
+      "rows": 228,
+      "settlement_periods": []
+    }
+  ],
+  "flags": [],
+  "key": "orps_utilisation_reactive_default",
+  "keys": {
+    "candidates": [
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Year",
+          "Month"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Month",
+          "HPIm"
+        ],
+        "max_duplicates": 0
+      },
+      {
+        "captures_checked": 1,
+        "columns": [
+          "Month",
+          "PAPIm"
+        ],
+        "max_duplicates": 0
+      }
+    ],
+    "full_row_max_duplicates": 0
+  },
+  "other_captures": 0,
+  "package": "obligatory-reactive-power-service-orps-utilisation",
+  "proposal": {
+    "flags": [],
+    "record_draft": {
+      "eligibility": {
+        "question": "Month: a numeric column with no vendor unit",
+        "status": "held",
+        "unit": "AS-3"
+      },
+      "encoding": "utf-8",
+      "entity_key": [
+        "year_vendor",
+        "month_vendor"
+      ],
+      "epochs": [
+        {
+          "columns": [
+            {
+              "dtype": "string",
+              "name": "year_vendor",
+              "nullable": true,
+              "source": "Year"
+            },
+            {
+              "dtype": "int64",
+              "name": "month_vendor",
+              "nullable": true,
+              "source": "Month"
+            },
+            {
+              "dtype": "float64",
+              "name": "hpim",
+              "nullable": true,
+              "source": "HPIm"
+            },
+            {
+              "dtype": "float64",
+              "name": "papim",
+              "nullable": true,
+              "source": "PAPIm"
+            },
+            {
+              "dtype": "float64",
+              "name": "ppim",
+              "nullable": true,
+              "source": "PPIm"
+            },
+            {
+              "dtype": "float64",
+              "name": "frpim",
+              "nullable": true,
+              "source": "FRPIm"
+            },
+            {
+              "dtype": "float64",
+              "name": "im",
+              "nullable": true,
+              "source": "Im"
+            },
+            {
+              "dtype": "float64",
+              "name": "x_1",
+              "nullable": true,
+              "source": "X = 1"
+            },
+            {
+              "dtype": "float64",
+              "name": "x_0_2",
+              "nullable": true,
+              "source": "X = 0.2"
+            }
+          ],
+          "header": [
+            "Year",
+            "Month",
+            "HPIm",
+            "PAPIm",
+            "PPIm",
+            "FRPIm",
+            "Im",
+            "X = 1",
+            "X = 0.2"
+          ],
+          "issue": {
+            "kind": "none"
+          }
+        }
+      ],
+      "latest": "whole_capture",
+      "reader": "csv",
+      "temporal": "TODO: T02",
+      "version": "1",
+      "vintage": "ckan_last_modified"
+    },
+    "todos": [
+      {
+        "consequence": "held",
+        "field": "column 'Month'.unit",
+        "id": "T01",
+        "kind": "unit",
+        "question": "Month: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "none",
+        "field": "temporal",
+        "id": "T02",
+        "kind": "temporal",
+        "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: Month"
+      },
+      {
+        "consequence": "none",
+        "field": "entity_key",
+        "id": "T03",
+        "kind": "key_identity",
+        "question": "a vendor-documented identity for ['year_vendor', 'month_vendor'] (measured unique in 1 capture(s)); without one, latest stays whole_capture"
+      }
+    ]
+  },
+  "refresh": "monthly",
+  "snapshot": {
+    "extras": [
+      {
+        "key": "Update Frequency",
+        "value": "Monthly"
+      }
+    ],
+    "license_title": "NESO Open Data Licence",
+    "organization": "Ancillary services",
+    "title": "Obligatory Reactive Power Service (ORPS)"
+  }
+}
