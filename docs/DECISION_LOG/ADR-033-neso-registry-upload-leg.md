@@ -136,3 +136,4 @@ unchanged fails the dataset.
   raises and publication fails loud.
 - **C-3, measured.** 39 `system-frequency-data` resources declare CKAN `CSV` but serve ZIP
   archives; they are captured as `.zip` and held for X-R.
+- The datastore lane and the dump leg: ADR-035.

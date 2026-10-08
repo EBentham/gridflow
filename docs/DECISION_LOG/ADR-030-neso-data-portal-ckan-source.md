@@ -647,6 +647,8 @@ Carried from the phase plan; none is a blocker for what shipped.
   (guidance names only `datastore_search`/`datastore_search_sql` under 2 req/min). Not on
   this phase's path (all three resources are `url_type: upload`). Required before any
   package whose current resource is `url_type: datastore` is taken.
+  **Status (2026-10-08):** still unstated by NESO; the dump route is paced on the 2 req/min
+  datastore lane by default — see ADR-035.
 - **TODO-02** — D-15's UTC reading is corroborated, not documented. Resolution: NESO
   support confirmation, or an observation across the October DST transition.
 - **TODO-03** — `historic-generation-mix`'s republish cadence is unknown and is **not
