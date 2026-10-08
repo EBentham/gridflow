@@ -73,7 +73,11 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     from gridflow.connectors.neso_data_portal.captures import Capture
-    from gridflow.connectors.neso_data_portal.registry import FamilyEntry, Registry
+    from gridflow.connectors.neso_data_portal.registry import (
+        FamilyEntry,
+        Registry,
+        ResourceEntry,
+    )
     from gridflow.connectors.neso_data_portal.registry.record import SchemaRecord
     from gridflow.silver.date_columns import DateColSqlType
 
@@ -93,6 +97,7 @@ __all__ = [
     "make_generic_transformer",
     "output_columns",
     "register_generated",
+    "resource_of",
 ]
 
 SOURCE = "neso_data_portal"
@@ -122,14 +127,13 @@ class EmptyCaptureError(Exception):
     """A header-only body that is not a valid empty capture, or a marker on rows."""
 
 
-def families_of(capture: Capture, dir_key: str, registry: Registry) -> dict[str, tuple[str, ...]]:
-    """Return the families a capture feeds and, per family, its child ids (P-2).
+def resource_of(capture: Capture, dir_key: str, registry: Registry) -> ResourceEntry | None:
+    """Return the registry resource a capture belongs to (P-2; ADR-037 P-14).
 
-    The capture's resource is its sidecar ``resource_id`` in the registry,
-    else the exact ``(resource_name, ckan_format)`` in the directory family's
-    package. Each child's ``SILVER(k)`` when the resource has children, else
-    the resource's own ``SILVER(k)``; ``DOC``, ``GIS``, ``HOLD`` and
-    ``COVERED`` feed nothing.
+    The capture's sidecar ``resource_id`` in the registry, else the exact
+    ``(resource_name, ckan_format)`` in the directory family's package. The
+    one resolution the COVERED exemption (:func:`families_of`) and the
+    equivalence proof's scope share.
 
     Args:
         capture: A usable capture.
@@ -137,7 +141,7 @@ def families_of(capture: Capture, dir_key: str, registry: Registry) -> dict[str,
         registry: The loaded registry.
 
     Returns:
-        Family key -> child ids (``()`` for a plain body).
+        The resource, or ``None`` when neither rule resolves one.
     """
     entry = registry.resources.get(capture.resource_id)
     resource = entry[1] if entry is not None else None
@@ -150,6 +154,25 @@ def families_of(capture: Capture, dir_key: str, registry: Registry) -> dict[str,
             (r for r in package.resources if r.name == capture.resource_name and r.format == fmt),
             None,
         )
+    return resource
+
+
+def families_of(capture: Capture, dir_key: str, registry: Registry) -> dict[str, tuple[str, ...]]:
+    """Return the families a capture feeds and, per family, its child ids (P-2).
+
+    The capture's resource is :func:`resource_of`. Each child's ``SILVER(k)``
+    when the resource has children, else the resource's own ``SILVER(k)``;
+    ``DOC``, ``GIS``, ``HOLD`` and ``COVERED`` feed nothing.
+
+    Args:
+        capture: A usable capture.
+        dir_key: The bronze directory (family key) it was found under.
+        registry: The loaded registry.
+
+    Returns:
+        Family key -> child ids (``()`` for a plain body).
+    """
+    resource = resource_of(capture, dir_key, registry)
     if resource is None:
         return {}
     out: dict[str, list[str]] = {}
