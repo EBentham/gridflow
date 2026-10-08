@@ -17,7 +17,137 @@
       "empty_allowed": true,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Project Name",
+              "Customer Name",
+              "Connection Site",
+              "Stage",
+              "MW Import - Current",
+              "MW Export - Current",
+              "MW Import - Increase / Decrease",
+              "MW Export - Increase / Decrease",
+              "MW Import - Total",
+              "MW Export - Total",
+              "MW Effective From",
+              "Project Status",
+              "HOST TO",
+              "Project Number",
+              "Gate"
+            ],
+            "columns": [
+              {
+                "source": "Project Name",
+                "name": "project_name",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Customer Name",
+                "name": "customer_name",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Connection Site",
+                "name": "connection_site",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Stage",
+                "name": "stage",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "MW Import - Current",
+                "name": "mw_import_current",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "MW Export - Current",
+                "name": "mw_export_current",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "MW Import - Increase / Decrease",
+                "name": "mw_import_increase_decrease",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "MW Export - Increase / Decrease",
+                "name": "mw_export_increase_decrease",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "MW Import - Total",
+                "name": "mw_import_total",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "MW Export - Total",
+                "name": "mw_export_total",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "MW Effective From",
+                "name": "mw_effective_from",
+                "dtype": "date",
+                "format": "%Y-%m-%d",
+                "nullable": true
+              },
+              {
+                "source": "Project Status",
+                "name": "project_status",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "HOST TO",
+                "name": "host_to",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Project Number",
+                "name": "project_number",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Gate",
+                "name": "gate",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "project_number"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified"
+      }
     }
   ],
   "resources": [

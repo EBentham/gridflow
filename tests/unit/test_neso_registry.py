@@ -794,11 +794,10 @@ class TestRegistrations:
                 from gridflow.silver.registry import list_transformers
                 import_transformers()
                 registered = {d for _s, d in list_transformers('neso_data_portal')}
-                bespoke = {
-                    k for k, (_p, f) in load_registry().families.items()
-                    if f.transformer == 'bespoke'
-                }
-                assert registered == bespoke, (registered, bespoke)
+                families = load_registry().families
+                bespoke = {k for k, (_p, f) in families.items() if f.transformer == 'bespoke'}
+                recorded = {k for k, (_p, f) in families.items() if f.record is not None}
+                assert registered == bespoke | recorded, (registered, bespoke, recorded)
                 assert bespoke == {'daily_wind_availability', 'historic_generation_mix',
                                    'embedded_wind_solar_forecast'}
                 print('OK')

@@ -19,6 +19,21 @@ if TYPE_CHECKING:
     import pytest
 
 
+def _generated_views() -> set[str]:
+    """The base and ``_latest`` views of every recorded NESO family (ADR-034 P-11 I-1).
+
+    They register unconditionally, whatever the data root holds, so each pin
+    of a data-root-derived view set is asserted over the remaining names.
+    """
+    from gridflow.connectors.neso_data_portal.registry import load_registry
+    from gridflow.silver.neso_data_portal.generic import generated_registrations
+
+    names: set[str] = set()
+    for key in generated_registrations(load_registry()).transformers:
+        names |= {f"silver_neso_data_portal_{key}", f"silver_neso_data_portal_{key}_latest"}
+    return names
+
+
 def _write_parquet(df: pl.DataFrame, path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     df.write_parquet(path)
@@ -164,6 +179,9 @@ def test_silver_view_count_matches_silver_dir_count(
     finally:
         con.close()
 
+    generated = _generated_views()
+    assert generated <= silver_views
+    silver_views -= generated
     qualified = silver_views - expected_aliases
     assert len(qualified) == len(silver_dirs)
     assert qualified == expected_qualified
@@ -394,7 +412,9 @@ def _assert_metadata_without_data_views(db_path: Path) -> None:
     finally:
         con.close()
     assert {"pipeline_runs", "pipeline_watermarks", "quality_reports"} <= names
-    assert not {name for name in names if name.startswith(("silver_", "gold_"))}
+    generated = _generated_views()
+    assert generated <= names
+    assert not {name for name in names - generated if name.startswith(("silver_", "gold_"))}
 
 
 def test_init_and_refresh_preserve_absent_data_roots(

@@ -38,7 +38,8 @@ from gridflow.silver.schema_manifest import (
 # cost. Grew to four when the neso-data-portal phase registered the first
 # non-elexon APPEND_ONLY dataset (D-21; PHASE.md ruling 12), then to five with
 # that phase's `historic_generation_mix` (B3a/T-16) and to six with its
-# `embedded_wind_solar_forecast` (B3a/T-17).
+# `embedded_wind_solar_forecast` (B3a/T-17), then to twelve with v0.22-E's six
+# pilot frozen records (ADR-036), each a generated APPEND_ONLY transformer.
 _APPEND_ONLY_DATASETS: tuple[tuple[str, str], ...] = (
     ("elexon", "system_prices"),
     ("elexon", "remit"),
@@ -46,6 +47,12 @@ _APPEND_ONLY_DATASETS: tuple[tuple[str, str], ...] = (
     ("neso_data_portal", "daily_wind_availability"),
     ("neso_data_portal", "historic_generation_mix"),
     ("neso_data_portal", "embedded_wind_solar_forecast"),
+    ("neso_data_portal", "tec_register"),
+    ("neso_data_portal", "interconnector_register"),
+    ("neso_data_portal", "embedded_register"),
+    ("neso_data_portal", "demand_forecast_2_52w"),
+    ("neso_data_portal", "da_demand_fc_performance"),
+    ("neso_data_portal", "constraint_cost_fc_24m"),
 )
 
 
@@ -239,9 +246,9 @@ def test_append_only_set_equals_latest_spec_set() -> None:
     spec_set = set(LATEST_VIEW_SPECS)
 
     # Non-vacuity guard: this invariant must never pass because both sides are
-    # empty (F16) -- six APPEND_ONLY datasets are registered today.
+    # empty (F16) -- twelve APPEND_ONLY datasets are registered today.
     assert len(append_only) > 0
-    assert len(append_only) == 6
+    assert len(append_only) == 12
 
     missing_specs = append_only - spec_set
     extra_specs = spec_set - append_only
@@ -267,6 +274,12 @@ _EXPECTED_APPEND_ONLY_DEPRECATED_ALIASES: dict[tuple[str, str], str | None] = {
         "neso_data_portal",
         "embedded_wind_solar_forecast",
     ): "silver_embedded_wind_solar_forecast",
+    ("neso_data_portal", "tec_register"): "silver_tec_register",
+    ("neso_data_portal", "interconnector_register"): "silver_interconnector_register",
+    ("neso_data_portal", "embedded_register"): "silver_embedded_register",
+    ("neso_data_portal", "demand_forecast_2_52w"): "silver_demand_forecast_2_52w",
+    ("neso_data_portal", "da_demand_fc_performance"): "silver_da_demand_fc_performance",
+    ("neso_data_portal", "constraint_cost_fc_24m"): "silver_constraint_cost_fc_24m",
 }
 
 

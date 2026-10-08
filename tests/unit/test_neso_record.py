@@ -435,8 +435,28 @@ class TestColumnShapes:
             _load(tmp_path, record(encoding="no-such-codec"))
 
 
+PILOT_RECORDED = {
+    "tec_register",
+    "interconnector_register",
+    "embedded_register",
+    "demand_forecast_2_52w",
+    "da_demand_fc_performance",
+    "constraint_cost_fc_24m",
+}
+"""The families v0.22-E's pilot records (ADR-036); every other family is record-free."""
+
+PILOT_PACKAGE_FILES = {
+    "transmission-entry-capacity-tec-register.json",
+    "interconnector-register.json",
+    "embedded-register.json",
+    "long-term-2-52-weeks-ahead-national-demand-forecast.json",
+    "day-ahead-half-hourly-demand-forecast-performance.json",
+    "24-months-ahead-constraint-cost-forecast.json",
+}
+
+
 class TestSeededRegistry:
-    """T-B1-3: the defaults keep every seeded package valid and record-free."""
+    """T-B1-3: the defaults keep every seeded package valid; only the pilot has records."""
 
     def test_every_seeded_package_loads_with_no_record(self) -> None:
         loaded = registry_module.load_registry()
@@ -444,20 +464,24 @@ class TestSeededRegistry:
         assert len(entries) == 310
         assert sum(entry.legacy for entry in entries) == 3
         assert sum(entry.kind == "files" for entry in entries) == 35
-        assert all(entry.record is None for entry in entries)
+        recorded = {entry.key for entry in entries if entry.record is not None}
+        assert recorded == PILOT_RECORDED
         assert all(not res.children for _package, res in loaded.resources.values())
 
     def test_no_seeded_file_carries_a_b_field(self) -> None:
-        """The seeded JSON is unchanged: no file names a field B added."""
+        """Only the six pilot package files name ``record``; none names ``children``."""
         from importlib import resources as importlib_resources
 
         root = importlib_resources.files(registry_module.__name__)
+        with_record: set[str] = set()
         for item in root.iterdir():
             if not item.name.endswith(".json") or item.name.startswith("_"):
                 continue
             document = json.loads(item.read_text(encoding="utf-8"))
-            assert all("record" not in fam for fam in document["families"]), item.name
+            if any("record" in fam for fam in document["families"]):
+                with_record.add(item.name)
             assert all("children" not in res for res in document["resources"]), item.name
+        assert with_record == PILOT_PACKAGE_FILES
 
 
 class TestDumpVintageRule:

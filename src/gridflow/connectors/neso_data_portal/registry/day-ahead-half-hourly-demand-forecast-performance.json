@@ -17,7 +17,124 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Month",
+              "Date",
+              "Datetime",
+              "Settlement_Period",
+              "Demand_Forecast",
+              "Demand_Outturn",
+              "TRIAD_Avoidance_Estimate",
+              "TRIAD_Avoidance_Corrected_Demand_Outturn",
+              "APE",
+              "Absolute_Error",
+              "Publish_Datetime"
+            ],
+            "columns": [
+              {
+                "source": "Month",
+                "name": "month_name",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Date",
+                "name": "outturn_date",
+                "dtype": "date",
+                "format": "%Y-%m-%d",
+                "nullable": true
+              },
+              {
+                "source": "Datetime",
+                "name": "outturn_datetime",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Settlement_Period",
+                "name": "settlement_period",
+                "dtype": "int64",
+                "nullable": true
+              },
+              {
+                "source": "Demand_Forecast",
+                "name": "demand_forecast",
+                "dtype": "int64",
+                "nullable": true
+              },
+              {
+                "source": "Demand_Outturn",
+                "name": "demand_outturn",
+                "dtype": "int64",
+                "nullable": true
+              },
+              {
+                "source": "TRIAD_Avoidance_Estimate",
+                "name": "triad_avoidance_estimate",
+                "dtype": "int64",
+                "nullable": true
+              },
+              {
+                "source": "TRIAD_Avoidance_Corrected_Demand_Outturn",
+                "name": "triad_avoidance_corrected_demand_outturn",
+                "dtype": "int64",
+                "nullable": true
+              },
+              {
+                "source": "APE",
+                "name": "ape",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Absolute_Error",
+                "name": "absolute_error",
+                "dtype": "int64",
+                "nullable": true
+              },
+              {
+                "source": "Publish_Datetime",
+                "name": "publish_datetime",
+                "dtype": "string",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "month_name",
+          "outturn_date",
+          "outturn_datetime",
+          "settlement_period",
+          "demand_forecast",
+          "demand_outturn",
+          "triad_avoidance_estimate",
+          "triad_avoidance_corrected_demand_outturn",
+          "ape",
+          "absolute_error",
+          "publish_datetime"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: Datetime and Publish_Datetime end in 'Z' but the dictionary states GMT/BST; whether Datetime marks period start or end; Settlement_Period repeats SP4/SP5 on 2021-10-31 and SP2/SP3 on 2022-10-30; whether Publish_Datetime is the publication instant",
+          "unit": "E-SEM"
+        }
+      }
     }
   ],
   "resources": [

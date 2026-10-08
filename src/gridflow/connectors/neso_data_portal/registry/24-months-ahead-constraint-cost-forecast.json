@@ -17,7 +17,51 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Month",
+              "Constraint Cost"
+            ],
+            "columns": [
+              {
+                "source": "Month",
+                "name": "forecast_month",
+                "dtype": "date",
+                "format": "%b-%y",
+                "nullable": false
+              },
+              {
+                "source": "Constraint Cost",
+                "name": "constraint_cost",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "forecast_month"
+        ],
+        "latest": "key_latest",
+        "vintage": "ckan_last_modified",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: currency unit of Constraint Cost; vendor metadata shows an undecodable symbol before 'm'; confirm GBP million from the NESO data dictionary",
+          "unit": "E-SEM"
+        }
+      }
     }
   ],
   "resources": [
