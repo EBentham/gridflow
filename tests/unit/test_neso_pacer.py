@@ -537,3 +537,64 @@ class TestRunIngestBinds:
         assert result.status == "success", result
         assert bound == [(data_dir, data_dir / "state" / "neso_data_portal")]
         assert sends and all(count == 1 for count in sends), "a send preceded the bind"
+
+
+_DUMP_RID = "aaaaaaaa-0000-4000-8000-000000000010"
+
+
+async def _dump_send(connector: NesoDataPortalConnector) -> None:
+    """One datastore-lane send through the primitive, as the dump leg makes it."""
+    from gridflow.connectors.neso_data_portal.client import SafeUrl
+    from gridflow.connectors.neso_data_portal.endpoints import build_dump_path
+
+    assert connector._client is not None
+    request = connector._client.build_request("GET", build_dump_path(_DUMP_RID))
+    response = await connector._send(
+        request, SafeUrl.verified(request.url), stream=True, lane=Lane.DATASTORE
+    )
+    await response.aclose()
+
+
+class TestDatastoreLanePlumbing:
+    """T-D2-1 / T-D2-2 (ADR-035 P-1): the lane reaches the pacer; CKAN call shapes are frozen."""
+
+    def test_d2_1_datastore_sends_are_30s_apart_and_ckan_is_not_delayed(
+        self, router: respx.MockRouter
+    ) -> None:
+        """Detects a datastore send admitted on the CKAN lane (red on master: no ``lane``)."""
+        clock = FakeClock()
+        pacer = RunPacer(1.0, 30.0, monotonic=clock.monotonic, sleep=clock.sleep)
+        stamps: list[tuple[str, float]] = []
+
+        def _handler(request: httpx.Request) -> httpx.Response:
+            kind = "dump" if "/datastore/dump/" in str(request.url) else "ckan"
+            stamps.append((kind, clock.now))
+            if kind == "dump":
+                return httpx.Response(200, content=b"A,B\n1,2\n")
+            return httpx.Response(200, json={"success": True, "result": {"id": "p"}})
+
+        router.route(url__regex=r".*").mock(side_effect=_handler)
+
+        async def _run() -> None:
+            async with NesoDataPortalConnector(_config(), pacer=pacer) as connector:
+                await _dump_send(connector)
+                await connector._package_show("x")
+                await _dump_send(connector)
+
+        asyncio.run(_run())
+        assert stamps == [("dump", 0.0), ("ckan", 0.0), ("dump", 30.0)], stamps
+
+    def test_d2_2_ckan_sequence_still_paces_at_one_second(self, router: respx.MockRouter) -> None:
+        """Detects the CKAN path moving onto another lane or interval (I-1)."""
+        clock = FakeClock()
+        pacer = RunPacer(1.0, 30.0, monotonic=clock.monotonic, sleep=clock.sleep)
+        stamps: list[float] = []
+        router.route(url__regex=r".*").mock(side_effect=_package_show_handler(stamps, clock))
+
+        async def _run() -> None:
+            async with NesoDataPortalConnector(_config(), pacer=pacer) as connector:
+                for _ in range(3):
+                    await connector._package_show("x")
+
+        asyncio.run(_run())
+        assert stamps == [0.0, 1.0, 2.0], stamps

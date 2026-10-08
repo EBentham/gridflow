@@ -84,6 +84,14 @@ REGISTRY: dict[str, _RegistryEntry] = {
         1,
         reason=("record_count None by design; the empty marker lives in the sidecar (ADR-033 P-7)"),
     ),
+    "neso_data_portal/client.py:_dump_member": _RegistryEntry(
+        "EXEMPT",
+        1,
+        reason=(
+            "datastore dump body is handed to bronze unparsed; record_count None by design, "
+            "the empty marker lives in the sidecar (ADR-035 P-4)"
+        ),
+    ),
     "neso/carbon_intensity.py:fetch": _RegistryEntry(
         "EXEMPT",
         1,

@@ -43,6 +43,7 @@ def family(
     legacy: bool = False,
     name_regex: str | None = None,
     record: dict[str, Any] | None = None,
+    refresh: str = "daily",
 ) -> dict[str, Any]:
     """One family entry; ``record`` adds a frozen schema record (ADR-034 P-1)."""
     entry: dict[str, Any] = {
@@ -50,7 +51,7 @@ def family(
         "kind": kind,
         "legacy": legacy,
         "archetype": archetype,
-        "refresh": "daily",
+        "refresh": refresh,
         "empty_allowed": empty_allowed,
         "max_download_bytes": max_download_bytes,
         "name_regex": name_regex,

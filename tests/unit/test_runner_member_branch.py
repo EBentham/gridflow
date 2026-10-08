@@ -315,25 +315,42 @@ class TestAccounting:
         )
         assert marks["alpha_series"].value is None
 
-    def test_u3_all_deferred_warns_without_raising(
+    def test_u3_dump_member_captured_through_runner(
         self,
         router: respx.MockRouter,
         data_dir: Path,
         registry_dir: Path,
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
-        _wire(router, [_live(3, "Alpha Dump", url_type="datastore")], {})
-        (result,), marks = _ingest(data_dir, monkeypatch, ["alpha_dump"])
-        assert (result.status, result.rows_in, result.rows_skipped) == (
-            "completed_with_warnings",
-            0,
-            1,
-        )
-        assert result.error is None
-        assert marks["alpha_dump"].value is None
-        assert [
-            str(c.request.url) for c in router.calls if "package_show" not in str(c.request.url)
-        ] == []
+        """T-D0-2 (ADR-035, supersedes U-3's all-deferred case).
+
+        Detects a dump member not captured through ``run_ingest``, or an
+        identical re-fetch writing bronze or advancing the frontier.
+        """
+        pacer = pacer_module.RunPacer(0.0, 0.0)
+
+        def _shared(config: Any, state_dir: Path | None = None) -> Any:
+            if state_dir is not None:
+                pacer.bind(state_dir)
+            return pacer
+
+        monkeypatch.setattr(pacer_module, "shared_pacer", _shared)
+        _wire(router, [_live(3, "Alpha Dump", url_type="datastore")], {_rid(3): CSV_BODY})
+        try:
+            first_end = datetime.now(UTC) - timedelta(minutes=10)
+            (first,), marks = _ingest(data_dir, monkeypatch, ["alpha_dump"], end=first_end)
+            assert (first.status, first.rows_in, first.rows_skipped) == ("success", 1, 0)
+            first_mark = marks["alpha_dump"].value
+            assert first_mark is not None
+            sidecars = sorted(data_dir.rglob("raw_*.meta.json"))
+            assert len(sidecars) == 1
+
+            (second,), marks = _ingest(data_dir, monkeypatch, ["alpha_dump"])
+        finally:
+            pacer.close()
+        assert second.status == "success" and second.members_unchanged == 1
+        assert sorted(data_dir.rglob("raw_*.meta.json")) == sidecars
+        assert marks["alpha_dump"].value == first_mark
 
     def test_m6_every_member_failed_fails_the_dataset(
         self,

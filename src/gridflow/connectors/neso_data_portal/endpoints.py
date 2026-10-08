@@ -35,15 +35,26 @@ if TYPE_CHECKING:
 __all__ = [
     "CKAN_ACTION_PREFIX",
     "DATASETS",
+    "DATASTORE_DUMP_PREFIX",
     "FAMILIES",
     "CkanDataset",
     "FamilySpec",
     "build_action_url",
     "build_datasets",
+    "build_dump_path",
     "build_families",
+    "is_canonical_resource_id",
 ]
 
 CKAN_ACTION_PREFIX = "/api/3/action"
+
+DATASTORE_DUMP_PREFIX = "/datastore/dump"
+"""CKAN's datastore dump route; the resource id is its only path segment (ADR-035)."""
+
+# The canonical lowercase UUID ``BronzeWriter.publish_capture`` requires
+# (``bronze/writer.py``), copied rather than imported: this table must not
+# import the bronze writer.
+_RESOURCE_ID_PATTERN = re.compile(r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")
 
 
 @dataclass(frozen=True)
@@ -158,6 +169,8 @@ class FamilySpec:
         names: The exact ``(name, FORMAT)`` pairs seeded under the key.
         name_regex: An optional anchored selector for future members; matched
             with ``re.fullmatch`` only, and only for a format already seeded.
+        refresh: The registry's refresh class. Read only by the dump leg's
+            frozen-class cadence gate (ADR-035 P-7).
     """
 
     package: str
@@ -168,6 +181,7 @@ class FamilySpec:
     max_download_bytes: int
     names: frozenset[tuple[str, str]]
     name_regex: str | None
+    refresh: str
 
     @property
     def formats(self) -> frozenset[str]:
@@ -200,6 +214,7 @@ def build_families(registry: Registry) -> dict[str, FamilySpec]:
             max_download_bytes=family.max_download_bytes,
             names=registry.family_names(key),
             name_regex=family.name_regex,
+            refresh=family.refresh,
         )
         for key, (package, family) in registry.families.items()
     }
@@ -250,3 +265,30 @@ def build_action_url(action: str, **params: str) -> tuple[str, dict[str, str]]:
         URL taken from a response body is ever fetched (D-39 §1a).
     """
     return f"{CKAN_ACTION_PREFIX}/{action}", dict(params)
+
+
+def is_canonical_resource_id(resource_id: str) -> bool:
+    """Whether ``resource_id`` is a canonical lowercase CKAN resource UUID."""
+    return _RESOURCE_ID_PATTERN.fullmatch(resource_id) is not None
+
+
+def build_dump_path(resource_id: str) -> str:
+    """Build the datastore dump path for one registry-seeded resource id (ADR-035).
+
+    The path is built from the id alone and never read from ``resources[].url``
+    (D-39): the dump URL is a vendor-supplied field, the id is the registry's.
+    The path is relative, so httpx resolves it against ``base_url``.
+
+    Args:
+        resource_id: A canonical lowercase UUID.
+
+    Returns:
+        ``/datastore/dump/<resource_id>``.
+
+    Raises:
+        ValueError: ``resource_id`` is not a canonical lowercase UUID, so no
+            path segment other than the id can be smuggled in.
+    """
+    if not is_canonical_resource_id(resource_id):
+        raise ValueError(f"datastore resource id {resource_id!r} is not a canonical lowercase UUID")
+    return f"{DATASTORE_DUMP_PREFIX}/{resource_id}"
