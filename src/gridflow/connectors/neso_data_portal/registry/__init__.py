@@ -34,6 +34,7 @@ from typing import TYPE_CHECKING, Annotated, Any, Literal
 from pydantic import Field, ValidationError
 
 from gridflow.connectors.neso_data_portal.registry.record import (
+    CHILD_SEPARATOR,
     Eligibility,
     Eligible,
     Held,
@@ -425,6 +426,63 @@ def _validate_silver_targets(
                         f"registry file {name}: family {resource.family!r}: resource "
                         f"{resource.id} is SILVER in the non-tabular family {disposition.key!r}"
                     )
+            _validate_container_targets(name, resource, families)
+
+
+def _validate_container_targets(
+    name: str, resource: ResourceEntry, families: dict[str, tuple[PackageEntry, FamilyEntry]]
+) -> None:
+    """V-15 and V-15b (ADR-037 P-5): a SILVER target's reader fits the body's shape.
+
+    V-15, for every recorded target ``k``: a childless resource's ``SILVER(k)``
+    needs ``reader == "csv"``; a child's ``SILVER(k)`` needs a container
+    reader: under ``xlsx`` the child id names a sheet (no ``::``), under
+    ``zip_member`` its member part fullmatches ``member_pattern`` and ``::``
+    is present exactly when ``inner == "xlsx"``. V-15b: a resource with
+    children whose own disposition is ``SILVER(k)`` has every SILVER child
+    targeting exactly ``k``.
+    """
+    where = f"registry file {name}: family {resource.family!r}"
+    own = resource.disposition
+    if resource.children and isinstance(own, SilverDisposition):
+        for child in resource.children:
+            target = child.disposition
+            if isinstance(target, SilverDisposition) and target.key != own.key:
+                raise RegistryError(
+                    f"{where}: V-15b: resource {resource.id} is SILVER({own.key}) but its child "
+                    f"{child.child!r} is SILVER({target.key})"
+                )
+    if not resource.children and isinstance(own, SilverDisposition):
+        record = families[own.key][1].record
+        if record is not None and record.reader != "csv":
+            raise RegistryError(
+                f"{where}: V-15: childless resource {resource.id} is SILVER({own.key}), whose "
+                f"reader {record.reader!r} reads containers"
+            )
+    for child in resource.children:
+        target = child.disposition
+        if not isinstance(target, SilverDisposition):
+            continue
+        record = families[target.key][1].record
+        if record is None:
+            continue
+        label = f"{where}: V-15: resource {resource.id} child {child.child!r} SILVER({target.key})"
+        member, separator, _sheet = child.child.partition(CHILD_SEPARATOR)
+        if record.reader == "csv":
+            raise RegistryError(f"{label}: a csv reader cannot read a container child")
+        if record.reader == "xlsx" and separator:
+            raise RegistryError(f"{label}: an xlsx child names a sheet, not a member")
+        if record.reader == "zip_member":
+            spec = record.zip_member
+            assert spec is not None  # V-14
+            if re.fullmatch(spec.member_pattern, member) is None:
+                raise RegistryError(
+                    f"{label}: member {member!r} does not match {spec.member_pattern!r}"
+                )
+            if bool(separator) != (spec.inner == "xlsx"):
+                raise RegistryError(
+                    f"{label}: '::' appears in a zip_member child exactly when inner is xlsx"
+                )
 
 
 @cache
@@ -492,7 +550,9 @@ def load_registry(path: Path | None = None) -> Registry:
             resource naming an undeclared family, a SILVER resource outside its
             own tabular family or a recorded sibling owner (V-11), an invalid
             key, a non-compiling ``name_regex``, a frozen schema record breaking
-            V-1..V-10 or V-13, a COVERED grant without evidence (V-12)).
+            V-1..V-10 or V-13, a COVERED grant without evidence (V-12), a
+            SILVER target whose reader does not fit the body's shape (V-15,
+            V-15b)).
     """
     return _load(None if path is None else Path(path))
 

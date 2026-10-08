@@ -128,9 +128,19 @@
       "family": "daily_balancing_volume_files",
       "disposition": {
         "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
-      }
+        "reason": "data container: child inventory committed by X; records pending in BAL-1",
+        "unit": "BAL-1"
+      },
+      "children": [
+        {
+          "child": "Missing_Dates_Periods",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family balancing_volume_missing_sp: record pending in BAL-1 (V-11)",
+            "unit": "BAL-1"
+          }
+        }
+      ]
     },
     {
       "id": "ef47829c-4916-4a6d-8554-257b6241026a",

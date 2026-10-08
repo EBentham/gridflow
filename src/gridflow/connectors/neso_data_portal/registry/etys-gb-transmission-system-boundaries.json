@@ -28,9 +28,7 @@
       "url_type": "upload",
       "family": "etys_boundaries_files",
       "disposition": {
-        "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
+        "kind": "GIS"
       }
     }
   ]

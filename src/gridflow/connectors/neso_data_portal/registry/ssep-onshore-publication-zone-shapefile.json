@@ -28,9 +28,7 @@
       "url_type": "upload",
       "family": "ssep_publication_zones_files",
       "disposition": {
-        "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
+        "kind": "GIS"
       }
     },
     {
@@ -40,9 +38,7 @@
       "url_type": "upload",
       "family": "ssep_publication_zones_files",
       "disposition": {
-        "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
+        "kind": "GIS"
       }
     },
     {
@@ -52,9 +48,7 @@
       "url_type": "upload",
       "family": "ssep_publication_zones_files",
       "disposition": {
-        "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
+        "kind": "GIS"
       }
     }
   ]

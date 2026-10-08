@@ -106,6 +106,92 @@
       "max_download_bytes": 536870912,
       "name_regex": null,
       "transformer": null
+    },
+    {
+      "key": "ffr_phase2_result_summary_archive",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "EVT",
+      "refresh": "frozen",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "zip_member",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Service",
+              "Date",
+              "EFA",
+              "Cleared Volume",
+              "Clearing Price"
+            ],
+            "columns": [
+              {
+                "source": "Service",
+                "name": "service",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Date",
+                "name": "date",
+                "dtype": "date",
+                "format": "%Y-%m-%d",
+                "nullable": false
+              },
+              {
+                "source": "EFA",
+                "name": "efa",
+                "dtype": "int64",
+                "nullable": false
+              },
+              {
+                "source": "Cleared Volume",
+                "name": "cleared_volume",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Clearing Price",
+                "name": "clearing_price",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "date_sp1",
+          "date_column": "date"
+        },
+        "entity_key": [
+          "service",
+          "date",
+          "efa"
+        ],
+        "latest": "key_latest",
+        "siblings": [
+          "ffr_phase2_auction_files"
+        ],
+        "vintage": "ckan_last_modified",
+        "eligibility": {
+          "status": "held",
+          "question": "Phase-2 FFR archive: Date and EFA (1-42) semantics are undocumented; timestamp_utc is date_sp1 of Date, not an EFA block start",
+          "unit": "AS-5"
+        },
+        "zip_member": {
+          "member_pattern": "[^/]+/NGESO_FRA_\\d{4}-\\d{2}-\\d{2}_ResultSummary\\.csv",
+          "inner": "csv"
+        }
+      }
     }
   ],
   "resources": [
@@ -117,9 +203,27 @@
       "family": "ffr_phase2_auction_files",
       "disposition": {
         "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
-      }
+        "reason": "data container: child inventory committed by X; records pending in AS-5",
+        "unit": "AS-5"
+      },
+      "children": [
+        {
+          "child": "BlockOrders 2019-11-22 to 2019-11-29/NGESO_FRA_2019-11-22_BlockOrders.csv",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family ffr_phase2_blockorders_archive: record pending in AS-5 (V-11)",
+            "unit": "AS-5"
+          }
+        },
+        {
+          "child": "BlockOrders 2019-11-22 to 2019-11-29/NGESO_FRA_2019-11-29_BlockOrders.csv",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family ffr_phase2_blockorders_archive: record pending in AS-5 (V-11)",
+            "unit": "AS-5"
+          }
+        }
+      ]
     },
     {
       "id": "7ab29f1c-4da1-4f36-b611-cb74f62737fc",
@@ -129,9 +233,67 @@
       "family": "ffr_phase2_auction_files",
       "disposition": {
         "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
-      }
+        "reason": "data container: child inventory committed by X; records pending in AS-5",
+        "unit": "AS-5"
+      },
+      "children": [
+        {
+          "child": "LinearOrders 2019-11-22 to 2020-01-03/NGESO_FRA_2019-11-22_LinearOrders.csv",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family ffr_phase2_linearorders_archive: record pending in AS-5 (V-11)",
+            "unit": "AS-5"
+          }
+        },
+        {
+          "child": "LinearOrders 2019-11-22 to 2020-01-03/NGESO_FRA_2019-11-29_LinearOrders.csv",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family ffr_phase2_linearorders_archive: record pending in AS-5 (V-11)",
+            "unit": "AS-5"
+          }
+        },
+        {
+          "child": "LinearOrders 2019-11-22 to 2020-01-03/NGESO_FRA_2019-12-06_LinearOrders.csv",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family ffr_phase2_linearorders_archive: record pending in AS-5 (V-11)",
+            "unit": "AS-5"
+          }
+        },
+        {
+          "child": "LinearOrders 2019-11-22 to 2020-01-03/NGESO_FRA_2019-12-13_LinearOrders.csv",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family ffr_phase2_linearorders_archive: record pending in AS-5 (V-11)",
+            "unit": "AS-5"
+          }
+        },
+        {
+          "child": "LinearOrders 2019-11-22 to 2020-01-03/NGESO_FRA_2019-12-20_LinearOrders.csv",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family ffr_phase2_linearorders_archive: record pending in AS-5 (V-11)",
+            "unit": "AS-5"
+          }
+        },
+        {
+          "child": "LinearOrders 2019-11-22 to 2020-01-03/NGESO_FRA_2019-12-27_LinearOrders.csv",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family ffr_phase2_linearorders_archive: record pending in AS-5 (V-11)",
+            "unit": "AS-5"
+          }
+        },
+        {
+          "child": "LinearOrders 2019-11-22 to 2020-01-03/NGESO_FRA_2020-01-03_LinearOrders.csv",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family ffr_phase2_linearorders_archive: record pending in AS-5 (V-11)",
+            "unit": "AS-5"
+          }
+        }
+      ]
     },
     {
       "id": "a99410bb-5501-4292-a308-eb7c16b1b3f4",
@@ -141,9 +303,27 @@
       "family": "ffr_phase2_auction_files",
       "disposition": {
         "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
-      }
+        "reason": "data container: child inventory committed by X; records pending in AS-5",
+        "unit": "AS-5"
+      },
+      "children": [
+        {
+          "child": "ResultByUnit 2019-11-22 to 2019-11-29/NGESO_FRA_2019-11-22_ResultsByUnit.csv",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family ffr_phase2_results_by_unit_archive: record pending in AS-5 (V-11)",
+            "unit": "AS-5"
+          }
+        },
+        {
+          "child": "ResultByUnit 2019-11-22 to 2019-11-29/NGESO_FRA_2019-11-29_ResultsByUnit.csv",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family ffr_phase2_results_by_unit_archive: record pending in AS-5 (V-11)",
+            "unit": "AS-5"
+          }
+        }
+      ]
     },
     {
       "id": "3928f192-97a5-4b4f-9234-0dcc9ad071a0",
@@ -152,10 +332,25 @@
       "url_type": "upload",
       "family": "ffr_phase2_auction_files",
       "disposition": {
-        "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
-      }
+        "kind": "SILVER",
+        "key": "ffr_phase2_result_summary_archive"
+      },
+      "children": [
+        {
+          "child": "ResultSummary 2019-11-22 to 2019-11-29/NGESO_FRA_2019-11-22_ResultSummary.csv",
+          "disposition": {
+            "kind": "SILVER",
+            "key": "ffr_phase2_result_summary_archive"
+          }
+        },
+        {
+          "child": "ResultSummary 2019-11-22 to 2019-11-29/NGESO_FRA_2019-11-29_ResultSummary.csv",
+          "disposition": {
+            "kind": "SILVER",
+            "key": "ffr_phase2_result_summary_archive"
+          }
+        }
+      ]
     },
     {
       "id": "979329c3-5587-4b08-a900-5520b58b2d8f",

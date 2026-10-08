@@ -95,9 +95,27 @@
       "family": "bs_contract_enactment_files",
       "disposition": {
         "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
-      }
+        "reason": "data container: child inventory committed by X; records pending in TRD",
+        "unit": "TRD"
+      },
+      "children": [
+        {
+          "child": "Archived Balancing Services Contract Enactment/balancing-1.csv",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family bs_contract_enactment_archive: COVERED nomination by f75a1dcb-de6e-4c20-8407-e37d5e67cf79 — partial overlap only, 2 records differ",
+            "unit": "TRD"
+          }
+        },
+        {
+          "child": "Archived Balancing Services Contract Enactment/balancing-service-contract-enactment-20-21.csv",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family bs_contract_enactment_archive: record pending in TRD (V-11)",
+            "unit": "TRD"
+          }
+        }
+      ]
     },
     {
       "id": "b13cfa5e-53e3-41de-ace6-a5d3997b532c",

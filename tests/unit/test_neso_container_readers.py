@@ -89,7 +89,7 @@ def cmp_record() -> dict[str, Any]:
     """P-12's ``current_bsuos_cap_adjustments`` record."""
     columns = [
         _col(CMP_HEADER[0], "date", False, format="%Y-%m-%d %H:%M:%S"),
-        _col(CMP_HEADER[1], "int64", False),
+        _col(CMP_HEADER[1], "int64", False, min=1, max=50),
         _col(CMP_HEADER[2]),
         _col(CMP_HEADER[3]),
         _col(CMP_HEADER[4]),

@@ -71,6 +71,7 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `constraint-management-intertrip-service-information-cmis` | `cmis_intertrip` | ingest-only (no silver output) | — | — | — | — |
 | `contract-transfer-of-obligation` | `contract_transfer_obligation` | ingest-only (no silver output) | — | — | — | — |
 | `country-carbon-intensity-forecast` | `country_ci_forecast` | ingest-only (no silver output) | — | — | — | — |
+| `current-balancing-services-use-of-system-bsuos-data` | `current_bsuos_cap_adjustments` | silver | eligible | key_latest | sp_pair | CKAN last_modified of the captured file (ADR-030) |
 | `current-balancing-services-use-of-system-bsuos-data` | `current_bsuos_files` | catalogue only | — | — | — | — |
 | `current-balancing-services-use-of-system-bsuos-data` | `current_bsuos_historic_ii` | ingest-only (no silver output) | — | — | — | — |
 | `current-balancing-services-use-of-system-bsuos-data` | `current_bsuos_historic_rf` | ingest-only (no silver output) | — | — | — | — |
@@ -241,6 +242,7 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `phase-2-ffr-auction-results-summary` | `ffr_phase2_auction_phase_results_unit` | ingest-only (no silver output) | — | — | — | — |
 | `phase-2-ffr-auction-results-summary` | `ffr_phase2_auction_phase_resultsbyunit` | ingest-only (no silver output) | — | — | — | — |
 | `phase-2-ffr-auction-results-summary` | `ffr_phase2_auction_phase_resultsum` | ingest-only (no silver output) | — | — | — | — |
+| `phase-2-ffr-auction-results-summary` | `ffr_phase2_result_summary_archive` | silver | held: Phase-2 FFR archive: Date and EFA (1-42) semantics are undocumented; timestamp_utc is date_sp1 of Date, not an EFA block start (unit AS-5) | key_latest | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
 | `quick-reserve-auction-requirement-forecast` | `qr_auction_requirement_fc` | ingest-only (no silver output) | — | — | — | — |
 | `regional-breakdown-of-fes-data-electricity` | `fes_regional_demand_active_power` | ingest-only (no silver output) | — | — | — | — |
 | `regional-breakdown-of-fes-data-electricity` | `fes_regional_dg_gt_1mw` | ingest-only (no silver output) | — | — | — | — |
@@ -341,14 +343,14 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `brit-ned` | eligible | 187 | 0 | 0 | 0 | 0 |
 | `bsuos-fixed-tariffs` | eligible | 1 | 0 | 0 | 0 | 0 |
 | `bsuos-monthly-forecast` | eligible | 142 | 0 | 1 | 0 | 1 |
-| `building-heat-model` | eligible | 2 | 0 | 1 | 0 | 1 |
+| `building-heat-model` | eligible | 2 | 0 | 2 | 0 | 0 |
 | `capacity-market-register` | eligible | 8 | 0 | 0 | 0 | 0 |
 | `carbon-intensity-of-balancing-actions` | eligible | 1 | 0 | 1 | 0 | 0 |
 | `constraint-breakdown` | eligible | 10 | 0 | 0 | 0 | 0 |
 | `constraint-management-intertrip-service-information-cmis` | eligible | 5 | 0 | 0 | 0 | 0 |
 | `contract-transfer-of-obligation` | eligible | 1 | 0 | 0 | 0 | 0 |
 | `country-carbon-intensity-forecast` | eligible | 1 | 0 | 0 | 0 | 0 |
-| `current-balancing-services-use-of-system-bsuos-data` | eligible | 14 | 0 | 0 | 0 | 4 |
+| `current-balancing-services-use-of-system-bsuos-data` | eligible | 18 | 0 | 0 | 0 | 0 |
 | `daily-balancing-costs-balancing-services-use-of-system` | eligible | 10 | 0 | 0 | 0 | 1 |
 | `daily-balancing-volume-balancing-services-use-of-system` | eligible | 10 | 0 | 0 | 0 | 1 |
 | `daily-demand-update` | eligible | 1 | 0 | 1 | 0 | 0 |
@@ -376,7 +378,7 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `eleclink` | eligible | 2 | 0 | 0 | 0 | 0 |
 | `embedded-register` | eligible | 1 | 0 | 0 | 0 | 0 |
 | `embedded-wind-and-solar-forecasts` | eligible | 9 | 0 | 1 | 0 | 0 |
-| `etys-gb-transmission-system-boundaries` | eligible | 0 | 0 | 0 | 0 | 1 |
+| `etys-gb-transmission-system-boundaries` | eligible | 0 | 0 | 0 | 1 | 0 |
 | `fes-electricity-demand-summary-data-table-ed1` | eligible | 4 | 0 | 3 | 0 | 0 |
 | `fes-european-electricity-supply-data-table-es2` | eligible | 4 | 0 | 0 | 0 | 0 |
 | `fes-flexibility-data-table-data-table-flx1` | eligible | 4 | 0 | 0 | 0 | 0 |
@@ -390,9 +392,9 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `future-energy-scenario-electricity-supply-data-table-es1` | eligible | 7 | 0 | 0 | 0 | 0 |
 | `future-energy-scenario-fes-building-block-data` | eligible | 13 | 0 | 0 | 0 | 0 |
 | `gb-system-inertia-bid-and-offer-costs` | eligible | 1 | 0 | 0 | 0 | 0 |
-| `gis-boundaries-for-gb-dno-license-areas` | held: third-party origin cited in package notes; licence carve-out (unit N) | 0 | 0 | 2 | 2 | 2 |
-| `gis-boundaries-for-gb-generation-charging-zones` | eligible | 0 | 0 | 0 | 1 | 1 |
-| `gis-boundaries-for-gb-grid-supply-points` | eligible | 1 | 0 | 1 | 2 | 6 |
+| `gis-boundaries-for-gb-dno-license-areas` | held: third-party origin cited in package notes; licence carve-out (unit N) | 0 | 0 | 2 | 4 | 0 |
+| `gis-boundaries-for-gb-generation-charging-zones` | eligible | 0 | 0 | 0 | 2 | 0 |
+| `gis-boundaries-for-gb-grid-supply-points` | eligible | 1 | 0 | 1 | 8 | 0 |
 | `historic-demand-data` | eligible | 26 | 0 | 1 | 0 | 0 |
 | `historic-generation-mix` | eligible | 1 | 0 | 0 | 0 | 0 |
 | `historic-gtma-grid-trade-master-agreement-trades-data` | eligible | 13 | 0 | 0 | 0 | 0 |
@@ -421,7 +423,7 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `operational-transparency-forum-network-congestion-data` | eligible | 1 | 0 | 0 | 0 | 0 |
 | `optional-downward-flexibility-management-odfm-market-information` | eligible | 5 | 0 | 8 | 0 | 0 |
 | `outturn-voltage-costs` | eligible | 12 | 0 | 1 | 0 | 0 |
-| `phase-2-ffr-auction-results-summary` | eligible | 16 | 0 | 0 | 0 | 4 |
+| `phase-2-ffr-auction-results-summary` | eligible | 17 | 0 | 0 | 0 | 3 |
 | `quick-reserve-auction-requirement-forecast` | eligible | 1 | 0 | 0 | 0 | 0 |
 | `regional-breakdown-of-fes-data-electricity` | eligible | 27 | 0 | 0 | 0 | 0 |
 | `regional-carbon-intensity-forecast` | eligible | 1 | 0 | 1 | 0 | 0 |
@@ -431,14 +433,14 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `short-term-operating-reserve-stor-day-ahead-buy-curve` | eligible | 1 | 0 | 1 | 0 | 0 |
 | `skip-rates` | eligible | 77 | 0 | 0 | 0 | 0 |
 | `slow-reserve-requirement-forecast` | eligible | 1 | 0 | 0 | 0 | 0 |
-| `ssep-onshore-publication-zone-shapefile` | eligible | 0 | 0 | 0 | 0 | 3 |
+| `ssep-onshore-publication-zone-shapefile` | eligible | 0 | 0 | 0 | 3 | 0 |
 | `stability-midterm-y-1-utilisation-report` | eligible | 1 | 0 | 0 | 0 | 0 |
 | `stability-pathfinder-service-information` | eligible | 8 | 0 | 0 | 0 | 0 |
 | `static-firm-frequency-response-auction-results` | eligible | 2 | 0 | 0 | 0 | 0 |
 | `static-firm-frequency-response-requirement` | eligible | 1 | 0 | 0 | 0 | 0 |
 | `stor-windows` | eligible | 1 | 0 | 0 | 0 | 0 |
 | `super-stable-export-limit-contract-enactment` | eligible | 6 | 0 | 0 | 0 | 0 |
-| `system-frequency-data` | eligible | 113 | 0 | 0 | 0 | 39 |
+| `system-frequency-data` | eligible | 152 | 0 | 0 | 0 | 0 |
 | `system-inertia` | eligible | 10 | 0 | 0 | 0 | 0 |
 | `system-inertia-cost` | eligible | 10 | 0 | 0 | 0 | 0 |
 | `system-operating-plan-sop` | eligible | 1 | 0 | 2 | 0 | 0 |
@@ -454,11 +456,11 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `weekly-opmr` | eligible | 1 | 0 | 0 | 0 | 0 |
 | `weekly-wind-availability` | eligible | 1 | 0 | 0 | 0 | 0 |
 | `wind-bmu-boa-volumes` | eligible | 9 | 0 | 0 | 0 | 0 |
-| **Total** | | 1205 | 0 | 42 | 7 | 131 |
+| **Total** | | 1249 | 0 | 43 | 20 | 73 |
 
 ## Totals
 
 - Packages: 131 (held: 2)
-- Families: 310: silver 9 (bespoke 3, recorded 6), ingest-only 266, catalogue only 35
-- Silver outputs held: 3
+- Families: 312: silver 11 (bespoke 3, recorded 8), ingest-only 266, catalogue only 35
+- Silver outputs held: 4
 - Resources: 1385

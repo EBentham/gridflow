@@ -35,6 +35,8 @@ from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
 from typing import TYPE_CHECKING
 
+from gridflow.connectors.neso_data_portal.registry.record import CHILD_SEPARATOR
+
 if TYPE_CHECKING:
     from collections.abc import Iterator, Sequence
 
@@ -63,9 +65,6 @@ __all__ = [
 MAX_ENTRIES = 1_000
 MAX_ENTRY_BYTES = 256 * 1024 * 1024
 MAX_TOTAL_BYTES = 1024 * 1024 * 1024
-
-CHILD_SEPARATOR = "::"
-"""Joins a workbook member's name to one of its sheets in a child id."""
 
 WORKBOOK_PART = "xl/workbook.xml"
 _WORKBOOK_RELS = "xl/_rels/workbook.xml.rels"

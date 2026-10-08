@@ -84,6 +84,132 @@
       "max_download_bytes": 536870912,
       "name_regex": null,
       "transformer": null
+    },
+    {
+      "key": "current_bsuos_cap_adjustments",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SER",
+      "refresh": "daily",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "xlsx",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Settlement Day",
+              "Settlement Period",
+              "BSUoS Price (£/MWh Hour)",
+              "Half-hourly Charge",
+              "Total Daily BSUoS Charge",
+              "Run Type",
+              "Total Chargeable Energy Volume (MWh)",
+              "CAPPED BSUoS Price (£/MWh)",
+              "REVISED Half-Hourly Charge",
+              "Total Net Adjustment to Invoices"
+            ],
+            "columns": [
+              {
+                "source": "Settlement Day",
+                "name": "settlement_day",
+                "dtype": "date",
+                "format": "%Y-%m-%d %H:%M:%S",
+                "nullable": false
+              },
+              {
+                "source": "Settlement Period",
+                "name": "settlement_period",
+                "dtype": "int64",
+                "nullable": false,
+                "min": 1,
+                "max": 50
+              },
+              {
+                "source": "BSUoS Price (£/MWh Hour)",
+                "name": "bsuos_price_mwh_hour",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Half-hourly Charge",
+                "name": "half_hourly_charge",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Total Daily BSUoS Charge",
+                "name": "total_daily_bsuos_charge",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Run Type",
+                "name": "run_type",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Total Chargeable Energy Volume (MWh)",
+                "name": "total_chargeable_energy_volume_mwh",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "CAPPED BSUoS Price (£/MWh)",
+                "name": "capped_bsuos_price_mwh",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "REVISED Half-Hourly Charge",
+                "name": "revised_half_hourly_charge",
+                "dtype": "float64",
+                "null_tokens": [
+                  "N/A"
+                ],
+                "nullable": true
+              },
+              {
+                "source": "Total Net Adjustment to Invoices",
+                "name": "total_net_adjustment_to_invoices",
+                "dtype": "float64",
+                "null_tokens": [
+                  "N/A"
+                ],
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "sp_pair",
+          "date_column": "settlement_day",
+          "period_column": "settlement_period"
+        },
+        "entity_key": [
+          "settlement_day",
+          "settlement_period",
+          "run_type"
+        ],
+        "latest": "key_latest",
+        "run_type_column": "run_type",
+        "siblings": [
+          "current_bsuos_files"
+        ],
+        "vintage": "ckan_last_modified",
+        "xlsx": {
+          "header_row": 8,
+          "columns": "A:J"
+        }
+      }
     }
   ],
   "resources": [
@@ -149,10 +275,24 @@
       "url_type": "upload",
       "family": "current_bsuos_files",
       "disposition": {
-        "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
-      }
+        "kind": "SILVER",
+        "key": "current_bsuos_cap_adjustments"
+      },
+      "children": [
+        {
+          "child": "II Output",
+          "disposition": {
+            "kind": "SILVER",
+            "key": "current_bsuos_cap_adjustments"
+          }
+        },
+        {
+          "child": "Prior Comms",
+          "disposition": {
+            "kind": "DOC"
+          }
+        }
+      ]
     },
     {
       "id": "ead98e64-b345-450a-9c45-c6eae9cc1bbe",
@@ -161,10 +301,24 @@
       "url_type": "upload",
       "family": "current_bsuos_files",
       "disposition": {
-        "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
-      }
+        "kind": "SILVER",
+        "key": "current_bsuos_cap_adjustments"
+      },
+      "children": [
+        {
+          "child": "SF Output",
+          "disposition": {
+            "kind": "SILVER",
+            "key": "current_bsuos_cap_adjustments"
+          }
+        },
+        {
+          "child": "Prior Comms",
+          "disposition": {
+            "kind": "DOC"
+          }
+        }
+      ]
     },
     {
       "id": "6ae55c11-7b79-4ea4-9775-1a0b3ccb5275",
@@ -173,10 +327,24 @@
       "url_type": "upload",
       "family": "current_bsuos_files",
       "disposition": {
-        "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
-      }
+        "kind": "SILVER",
+        "key": "current_bsuos_cap_adjustments"
+      },
+      "children": [
+        {
+          "child": "II Output",
+          "disposition": {
+            "kind": "SILVER",
+            "key": "current_bsuos_cap_adjustments"
+          }
+        },
+        {
+          "child": "Prior Comms",
+          "disposition": {
+            "kind": "DOC"
+          }
+        }
+      ]
     },
     {
       "id": "1feb6b1e-549a-4af2-869a-e90b0a7a9c76",
@@ -185,10 +353,24 @@
       "url_type": "upload",
       "family": "current_bsuos_files",
       "disposition": {
-        "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
-      }
+        "kind": "SILVER",
+        "key": "current_bsuos_cap_adjustments"
+      },
+      "children": [
+        {
+          "child": "SF Output",
+          "disposition": {
+            "kind": "SILVER",
+            "key": "current_bsuos_cap_adjustments"
+          }
+        },
+        {
+          "child": "Prior Comms",
+          "disposition": {
+            "kind": "DOC"
+          }
+        }
+      ]
     },
     {
       "id": "0eda5e28-1dc6-48da-8663-c00e12f2a1e2",

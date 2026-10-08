@@ -28,9 +28,7 @@
       "url_type": "upload",
       "family": "gis_gen_charging_zones_files",
       "disposition": {
-        "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
+        "kind": "GIS"
       }
     },
     {

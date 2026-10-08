@@ -32,6 +32,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 from gridflow.silver.date_columns import DATE_COL_SQL_TYPES
 
 __all__ = [
+    "CHILD_SEPARATOR",
     "RESERVED",
     "SILVER_NAME_PATTERN",
     "ColumnSpec",
@@ -51,6 +52,9 @@ __all__ = [
 ]
 
 SILVER_NAME_PATTERN = re.compile(r"^[a-z][a-z0-9_]*$")
+
+CHILD_SEPARATOR = "::"
+"""Joins a workbook member's name to one of its sheets in a container child id (ADR-037 P-3)."""
 
 RESERVED: frozenset[str] = frozenset(
     {

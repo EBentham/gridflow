@@ -25,6 +25,11 @@ DATE_COL_SQL_TYPES: dict[str, DateColSqlType] = {
     # NESO's daily wind availability is stated for a GB availability DAY, and
     # the derived instant lives in `timestamp_utc` (D-25).
     "availability_date": "DATE",
+    # Calendar days of unit X's two activation families (ADR-037 P-12): the
+    # CMP381/395 workbooks' `settlement_day` (an sp_pair date) and the phase-2
+    # FFR ResultSummary archive's `date` (date_sp1).
+    "settlement_day": "DATE",
+    "date": "DATE",
     "timestamp_utc": "TIMESTAMPTZ",
     "implementation_datetime_utc": "TIMESTAMPTZ",
     "ingested_at": "TIMESTAMPTZ",

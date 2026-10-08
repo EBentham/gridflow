@@ -62,9 +62,275 @@
       "family": "orps_utilisation_files",
       "disposition": {
         "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
-      }
+        "reason": "data container: child inventory committed by X; records pending in AS-3",
+        "unit": "AS-3"
+      },
+      "children": [
+        {
+          "child": "Oct00-Mar05",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family orps_utilisation_workbook: record pending in AS-3 (V-11)",
+            "unit": "AS-3"
+          }
+        },
+        {
+          "child": "Apr05-Sep06",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family orps_utilisation_workbook: record pending in AS-3 (V-11)",
+            "unit": "AS-3"
+          }
+        },
+        {
+          "child": "Oct06-Mar07",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family orps_utilisation_workbook: record pending in AS-3 (V-11)",
+            "unit": "AS-3"
+          }
+        },
+        {
+          "child": "Apr07-Sep07",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family orps_utilisation_workbook: record pending in AS-3 (V-11)",
+            "unit": "AS-3"
+          }
+        },
+        {
+          "child": "Oct07-Mar08",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family orps_utilisation_workbook: record pending in AS-3 (V-11)",
+            "unit": "AS-3"
+          }
+        },
+        {
+          "child": "Apr08-Sep08",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family orps_utilisation_workbook: record pending in AS-3 (V-11)",
+            "unit": "AS-3"
+          }
+        },
+        {
+          "child": "Oct08-Mar09",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family orps_utilisation_workbook: record pending in AS-3 (V-11)",
+            "unit": "AS-3"
+          }
+        },
+        {
+          "child": "Apr09-Sep09",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family orps_utilisation_workbook: record pending in AS-3 (V-11)",
+            "unit": "AS-3"
+          }
+        },
+        {
+          "child": "Oct09-Mar10",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family orps_utilisation_workbook: record pending in AS-3 (V-11)",
+            "unit": "AS-3"
+          }
+        },
+        {
+          "child": "Apr10-Sep10",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family orps_utilisation_workbook: record pending in AS-3 (V-11)",
+            "unit": "AS-3"
+          }
+        },
+        {
+          "child": "Oct10-Mar11",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family orps_utilisation_workbook: record pending in AS-3 (V-11)",
+            "unit": "AS-3"
+          }
+        },
+        {
+          "child": "Apr11-Sep11",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family orps_utilisation_workbook: record pending in AS-3 (V-11)",
+            "unit": "AS-3"
+          }
+        },
+        {
+          "child": "Oct11-Mar12",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family orps_utilisation_workbook: record pending in AS-3 (V-11)",
+            "unit": "AS-3"
+          }
+        },
+        {
+          "child": "Apr12-Sep12 ",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family orps_utilisation_workbook: record pending in AS-3 (V-11)",
+            "unit": "AS-3"
+          }
+        },
+        {
+          "child": "Oct12-Mar13",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family orps_utilisation_workbook: record pending in AS-3 (V-11)",
+            "unit": "AS-3"
+          }
+        },
+        {
+          "child": "Apr13-Sep13",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family orps_utilisation_workbook: record pending in AS-3 (V-11)",
+            "unit": "AS-3"
+          }
+        },
+        {
+          "child": "Oct13-Mar14",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family orps_utilisation_workbook: record pending in AS-3 (V-11)",
+            "unit": "AS-3"
+          }
+        },
+        {
+          "child": "Apr14-Sep14",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family orps_utilisation_workbook: record pending in AS-3 (V-11)",
+            "unit": "AS-3"
+          }
+        },
+        {
+          "child": "Oct14-Mar15",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family orps_utilisation_workbook: record pending in AS-3 (V-11)",
+            "unit": "AS-3"
+          }
+        },
+        {
+          "child": "Apr15-Sep15",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family orps_utilisation_workbook: record pending in AS-3 (V-11)",
+            "unit": "AS-3"
+          }
+        },
+        {
+          "child": "Oct15-Mar16",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family orps_utilisation_workbook: record pending in AS-3 (V-11)",
+            "unit": "AS-3"
+          }
+        },
+        {
+          "child": "Apr16-Sep16",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family orps_utilisation_workbook: record pending in AS-3 (V-11)",
+            "unit": "AS-3"
+          }
+        },
+        {
+          "child": "Oct16-Mar17",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family orps_utilisation_workbook: record pending in AS-3 (V-11)",
+            "unit": "AS-3"
+          }
+        },
+        {
+          "child": "Apr17-Sep17",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family orps_utilisation_workbook: record pending in AS-3 (V-11)",
+            "unit": "AS-3"
+          }
+        },
+        {
+          "child": "Oct17-Mar18",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family orps_utilisation_workbook: record pending in AS-3 (V-11)",
+            "unit": "AS-3"
+          }
+        },
+        {
+          "child": "Apr18 - Sep 18",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family orps_utilisation_workbook: record pending in AS-3 (V-11)",
+            "unit": "AS-3"
+          }
+        },
+        {
+          "child": "Oct 18 - Mar19",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family orps_utilisation_workbook: record pending in AS-3 (V-11)",
+            "unit": "AS-3"
+          }
+        },
+        {
+          "child": "Apr 19 - Sep 19",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family orps_utilisation_workbook: record pending in AS-3 (V-11)",
+            "unit": "AS-3"
+          }
+        },
+        {
+          "child": "Oct 19 - Mar 20",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family orps_utilisation_workbook: record pending in AS-3 (V-11)",
+            "unit": "AS-3"
+          }
+        },
+        {
+          "child": "Apr 20 - Sep 20",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family orps_utilisation_workbook: record pending in AS-3 (V-11)",
+            "unit": "AS-3"
+          }
+        },
+        {
+          "child": "Oct 20 - Mar 21 ",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family orps_utilisation_workbook: record pending in AS-3 (V-11)",
+            "unit": "AS-3"
+          }
+        },
+        {
+          "child": "Apr 21 - Sep 21",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family orps_utilisation_workbook: record pending in AS-3 (V-11)",
+            "unit": "AS-3"
+          }
+        },
+        {
+          "child": "Oct 21 - Mar 22",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family orps_utilisation_workbook: record pending in AS-3 (V-11)",
+            "unit": "AS-3"
+          }
+        }
+      ]
     },
     {
       "id": "e2e6f74c-ebca-48b3-b2ae-e4652d296dca",

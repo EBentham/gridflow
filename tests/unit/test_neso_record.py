@@ -259,15 +259,20 @@ class TestRules:
         )
 
     def test_v11_sibling_read_is_accepted_when_listed(self, tmp_path: Path) -> None:
-        """Positive control for V-11: the sibling read the plan allows."""
+        """Positive control for V-11: the sibling read the plan allows.
+
+        The record reads sheets (``xlsx``) and the family's own CSV resource is held,
+        so the fixture also satisfies V-15 (ADR-037: a child needs a container reader).
+        """
         children = [{"child": "sheet1", "disposition": {"kind": "SILVER", "key": "gen_series"}}]
+        held = {"kind": "HOLD", "reason": "not this reader", "unit": "T"}
         resources = [
-            resource(R1, "Series", "gen_series"),
+            resource(R1, "Series", "gen_series", disposition=held),
             resource(R2, "Box", "gen_box", fmt="XLSX", children=children),
         ]
         loaded = _load(
             tmp_path,
-            record(siblings=("gen_box",)),
+            record(siblings=("gen_box",), reader="xlsx", xlsx={"header_row": 1, "columns": "A:D"}),
             extra_families=[family("gen_box", kind="files")],
             resources=resources,
         )
@@ -443,7 +448,11 @@ PILOT_RECORDED = {
     "da_demand_fc_performance",
     "constraint_cost_fc_24m",
 }
-"""The families v0.22-E's pilot records (ADR-036); every other family is record-free."""
+"""The families v0.22-E's pilot records (ADR-036)."""
+
+X_RECORDED = {"current_bsuos_cap_adjustments", "ffr_phase2_result_summary_archive"}
+"""The two activation families unit X records (ADR-037 P-12); every other family is
+record-free."""
 
 PILOT_PACKAGE_FILES = {
     "transmission-entry-capacity-tec-register.json",
@@ -454,22 +463,32 @@ PILOT_PACKAGE_FILES = {
     "24-months-ahead-constraint-cost-forecast.json",
 }
 
+X_PACKAGE_FILES = {
+    "current-balancing-services-use-of-system-bsuos-data.json",
+    "phase-2-ffr-auction-results-summary.json",
+}
+
+X_RESOURCES_WITH_CHILDREN = 4 + 1 + 39 + 73 + 1
+"""Unit X's committed inventories (ADR-037 P-8): CMP workbooks, the ResultSummary ZIP,
+frequency ZIPs, held data containers and the GSP archive with a CSV member."""
+
 
 class TestSeededRegistry:
-    """T-B1-3: the defaults keep every seeded package valid; only the pilot has records."""
+    """T-B1-3: the defaults keep every seeded package valid; only the pilot and X record."""
 
     def test_every_seeded_package_loads_with_no_record(self) -> None:
         loaded = registry_module.load_registry()
         entries = [entry for _package, entry in loaded.families.values()]
-        assert len(entries) == 310
+        assert len(entries) == 312
         assert sum(entry.legacy for entry in entries) == 3
         assert sum(entry.kind == "files" for entry in entries) == 35
         recorded = {entry.key for entry in entries if entry.record is not None}
-        assert recorded == PILOT_RECORDED
-        assert all(not res.children for _package, res in loaded.resources.values())
+        assert recorded == PILOT_RECORDED | X_RECORDED
+        with_children = [res for _package, res in loaded.resources.values() if res.children]
+        assert len(with_children) == X_RESOURCES_WITH_CHILDREN
 
     def test_no_seeded_file_carries_a_b_field(self) -> None:
-        """Only the six pilot package files name ``record``; none names ``children``."""
+        """Only the pilot's and X's package files name ``record``."""
         from importlib import resources as importlib_resources
 
         root = importlib_resources.files(registry_module.__name__)
@@ -480,8 +499,7 @@ class TestSeededRegistry:
             document = json.loads(item.read_text(encoding="utf-8"))
             if any("record" in fam for fam in document["families"]):
                 with_record.add(item.name)
-            assert all("children" not in res for res in document["resources"]), item.name
-        assert with_record == PILOT_PACKAGE_FILES
+        assert with_record == PILOT_PACKAGE_FILES | X_PACKAGE_FILES
 
 
 class TestDumpVintageRule:
@@ -518,18 +536,22 @@ class TestReaderSpecs:
 
     XLSX = {"header_row": 8, "columns": "A:J"}
 
+    HELD = [resource(R1, "Series", "gen_series", disposition={"kind": "DOC"})]
+    """A container record's family holds no childless SILVER resource (V-15)."""
+
     def test_controls_load(self, tmp_path: Path) -> None:
-        loaded = _load(tmp_path / "a", record(reader="xlsx", xlsx=self.XLSX))
+        loaded = _load(tmp_path / "a", record(reader="xlsx", xlsx=self.XLSX), resources=self.HELD)
         rec = loaded.families["gen_series"][1].record
         assert rec is not None and rec.xlsx is not None
         assert rec.xlsx.bounds == (1, 10)
         csv_member = {"member_pattern": r"[^/]+\.csv", "inner": "csv"}
-        assert _load(tmp_path / "b", record(reader="zip_member", zip_member=csv_member))
+        rec1 = record(reader="zip_member", zip_member=csv_member)
+        assert _load(tmp_path / "b", rec1, resources=self.HELD)
         xlsx_member = {"member_pattern": ".+", "inner": "xlsx"}
         rec2 = record(reader="zip_member", zip_member=xlsx_member, xlsx=self.XLSX)
-        assert _load(tmp_path / "c", rec2)
+        assert _load(tmp_path / "c", rec2, resources=self.HELD)
         last = {"header_row": 2, "columns": "A:AA", "last_row": 3}
-        assert _load(tmp_path / "d", record(reader="xlsx", xlsx=last))
+        assert _load(tmp_path / "d", record(reader="xlsx", xlsx=last), resources=self.HELD)
 
     @pytest.mark.parametrize(
         ("kwargs", "label"),
@@ -589,7 +611,7 @@ class TestReaderSpecs:
     )
     def test_malformed_xlsx_specs_are_rejected(self, tmp_path: Path, spec: dict[str, Any]) -> None:
         with pytest.raises(RegistryError, match="xlsx"):
-            _load(tmp_path, record(reader="xlsx", xlsx=spec))
+            _load(tmp_path, record(reader="xlsx", xlsx=spec), resources=self.HELD)
 
     def test_member_pattern_must_compile(self, tmp_path: Path) -> None:
         spec = {"member_pattern": "(", "inner": "csv"}

@@ -30,9 +30,7 @@
       "url_type": "upload",
       "family": "gis_dno_license_areas_files",
       "disposition": {
-        "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
+        "kind": "GIS"
       }
     },
     {
@@ -62,9 +60,7 @@
       "url_type": "upload",
       "family": "gis_dno_license_areas_files",
       "disposition": {
-        "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
+        "kind": "GIS"
       }
     },
     {

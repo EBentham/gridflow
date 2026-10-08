@@ -688,10 +688,18 @@
       "url_type": "upload",
       "family": "system_frequency",
       "disposition": {
-        "kind": "HOLD",
-        "reason": "CSV-declared ZIP body; classification",
-        "unit": "X-R"
-      }
+        "kind": "SILVER",
+        "key": "system_frequency"
+      },
+      "children": [
+        {
+          "child": "f 2019 12.csv",
+          "disposition": {
+            "kind": "SILVER",
+            "key": "system_frequency"
+          }
+        }
+      ]
     },
     {
       "id": "3d1a42c0-5637-4702-b9c3-76a7c5d8f062",
@@ -700,10 +708,18 @@
       "url_type": "upload",
       "family": "system_frequency",
       "disposition": {
-        "kind": "HOLD",
-        "reason": "CSV-declared ZIP body; classification",
-        "unit": "X-R"
-      }
+        "kind": "SILVER",
+        "key": "system_frequency"
+      },
+      "children": [
+        {
+          "child": "f 2019 11.csv",
+          "disposition": {
+            "kind": "SILVER",
+            "key": "system_frequency"
+          }
+        }
+      ]
     },
     {
       "id": "65b4f284-4963-46c5-ae78-cab57fe5372f",
@@ -712,10 +728,18 @@
       "url_type": "upload",
       "family": "system_frequency",
       "disposition": {
-        "kind": "HOLD",
-        "reason": "CSV-declared ZIP body; classification",
-        "unit": "X-R"
-      }
+        "kind": "SILVER",
+        "key": "system_frequency"
+      },
+      "children": [
+        {
+          "child": "f 2019 10.csv",
+          "disposition": {
+            "kind": "SILVER",
+            "key": "system_frequency"
+          }
+        }
+      ]
     },
     {
       "id": "9ffafdfb-cf42-46b3-802f-a6d9a45794aa",
@@ -724,10 +748,18 @@
       "url_type": "upload",
       "family": "system_frequency",
       "disposition": {
-        "kind": "HOLD",
-        "reason": "CSV-declared ZIP body; classification",
-        "unit": "X-R"
-      }
+        "kind": "SILVER",
+        "key": "system_frequency"
+      },
+      "children": [
+        {
+          "child": "f 2019 9.csv",
+          "disposition": {
+            "kind": "SILVER",
+            "key": "system_frequency"
+          }
+        }
+      ]
     },
     {
       "id": "819a0821-cc6d-4909-a1ea-7dba5cab0c33",
@@ -736,10 +768,18 @@
       "url_type": "upload",
       "family": "system_frequency",
       "disposition": {
-        "kind": "HOLD",
-        "reason": "CSV-declared ZIP body; classification",
-        "unit": "X-R"
-      }
+        "kind": "SILVER",
+        "key": "system_frequency"
+      },
+      "children": [
+        {
+          "child": "f 2019 8.csv",
+          "disposition": {
+            "kind": "SILVER",
+            "key": "system_frequency"
+          }
+        }
+      ]
     },
     {
       "id": "da48b1fe-8e54-48fc-87b9-f6b0362422e2",
@@ -748,10 +788,18 @@
       "url_type": "upload",
       "family": "system_frequency",
       "disposition": {
-        "kind": "HOLD",
-        "reason": "CSV-declared ZIP body; classification",
-        "unit": "X-R"
-      }
+        "kind": "SILVER",
+        "key": "system_frequency"
+      },
+      "children": [
+        {
+          "child": "f 2019 7.csv",
+          "disposition": {
+            "kind": "SILVER",
+            "key": "system_frequency"
+          }
+        }
+      ]
     },
     {
       "id": "f967b00a-36b4-4979-920e-77fdb6be8a9c",
@@ -760,10 +808,18 @@
       "url_type": "upload",
       "family": "system_frequency",
       "disposition": {
-        "kind": "HOLD",
-        "reason": "CSV-declared ZIP body; classification",
-        "unit": "X-R"
-      }
+        "kind": "SILVER",
+        "key": "system_frequency"
+      },
+      "children": [
+        {
+          "child": "f 2019 6.csv",
+          "disposition": {
+            "kind": "SILVER",
+            "key": "system_frequency"
+          }
+        }
+      ]
     },
     {
       "id": "84a85749-18e1-4b6b-bb97-73888ccacfe0",
@@ -772,10 +828,18 @@
       "url_type": "upload",
       "family": "system_frequency",
       "disposition": {
-        "kind": "HOLD",
-        "reason": "CSV-declared ZIP body; classification",
-        "unit": "X-R"
-      }
+        "kind": "SILVER",
+        "key": "system_frequency"
+      },
+      "children": [
+        {
+          "child": "f 2019 5.csv",
+          "disposition": {
+            "kind": "SILVER",
+            "key": "system_frequency"
+          }
+        }
+      ]
     },
     {
       "id": "5a511d6f-0cc4-4054-bb45-8ad3b81051ad",
@@ -784,10 +848,18 @@
       "url_type": "upload",
       "family": "system_frequency",
       "disposition": {
-        "kind": "HOLD",
-        "reason": "CSV-declared ZIP body; classification",
-        "unit": "X-R"
-      }
+        "kind": "SILVER",
+        "key": "system_frequency"
+      },
+      "children": [
+        {
+          "child": "f 2019 4.csv",
+          "disposition": {
+            "kind": "SILVER",
+            "key": "system_frequency"
+          }
+        }
+      ]
     },
     {
       "id": "b4fc11ec-2f9b-465e-8974-37cc289f2aaa",
@@ -796,10 +868,18 @@
       "url_type": "upload",
       "family": "system_frequency",
       "disposition": {
-        "kind": "HOLD",
-        "reason": "CSV-declared ZIP body; classification",
-        "unit": "X-R"
-      }
+        "kind": "SILVER",
+        "key": "system_frequency"
+      },
+      "children": [
+        {
+          "child": "f 2019 3.csv",
+          "disposition": {
+            "kind": "SILVER",
+            "key": "system_frequency"
+          }
+        }
+      ]
     },
     {
       "id": "3343dbfb-58ac-478a-8aed-618a35b38475",
@@ -808,10 +888,18 @@
       "url_type": "upload",
       "family": "system_frequency",
       "disposition": {
-        "kind": "HOLD",
-        "reason": "CSV-declared ZIP body; classification",
-        "unit": "X-R"
-      }
+        "kind": "SILVER",
+        "key": "system_frequency"
+      },
+      "children": [
+        {
+          "child": "f 2019 2.csv",
+          "disposition": {
+            "kind": "SILVER",
+            "key": "system_frequency"
+          }
+        }
+      ]
     },
     {
       "id": "2a653f90-7948-4203-a49e-8763733debb2",
@@ -820,10 +908,18 @@
       "url_type": "upload",
       "family": "system_frequency",
       "disposition": {
-        "kind": "HOLD",
-        "reason": "CSV-declared ZIP body; classification",
-        "unit": "X-R"
-      }
+        "kind": "SILVER",
+        "key": "system_frequency"
+      },
+      "children": [
+        {
+          "child": "f 2019 1.csv",
+          "disposition": {
+            "kind": "SILVER",
+            "key": "system_frequency"
+          }
+        }
+      ]
     },
     {
       "id": "e1eb079f-abab-47c8-b59d-d558b3399796",
@@ -832,10 +928,18 @@
       "url_type": "upload",
       "family": "system_frequency",
       "disposition": {
-        "kind": "HOLD",
-        "reason": "CSV-declared ZIP body; classification",
-        "unit": "X-R"
-      }
+        "kind": "SILVER",
+        "key": "system_frequency"
+      },
+      "children": [
+        {
+          "child": "fNew 2020 1.csv",
+          "disposition": {
+            "kind": "SILVER",
+            "key": "system_frequency"
+          }
+        }
+      ]
     },
     {
       "id": "939590e1-2632-432b-b0d3-3f7e1def9d30",
@@ -844,10 +948,18 @@
       "url_type": "upload",
       "family": "system_frequency",
       "disposition": {
-        "kind": "HOLD",
-        "reason": "CSV-declared ZIP body; classification",
-        "unit": "X-R"
-      }
+        "kind": "SILVER",
+        "key": "system_frequency"
+      },
+      "children": [
+        {
+          "child": "fNew 2020 2.csv",
+          "disposition": {
+            "kind": "SILVER",
+            "key": "system_frequency"
+          }
+        }
+      ]
     },
     {
       "id": "1b7609f1-5132-45fc-8962-89912eb2b682",
@@ -856,10 +968,18 @@
       "url_type": "upload",
       "family": "system_frequency",
       "disposition": {
-        "kind": "HOLD",
-        "reason": "CSV-declared ZIP body; classification",
-        "unit": "X-R"
-      }
+        "kind": "SILVER",
+        "key": "system_frequency"
+      },
+      "children": [
+        {
+          "child": "fNew 2020 3.csv",
+          "disposition": {
+            "kind": "SILVER",
+            "key": "system_frequency"
+          }
+        }
+      ]
     },
     {
       "id": "8b974058-2494-4675-98af-0570c3a0b240",
@@ -868,10 +988,18 @@
       "url_type": "upload",
       "family": "system_frequency",
       "disposition": {
-        "kind": "HOLD",
-        "reason": "CSV-declared ZIP body; classification",
-        "unit": "X-R"
-      }
+        "kind": "SILVER",
+        "key": "system_frequency"
+      },
+      "children": [
+        {
+          "child": "fNew 2020 4.csv",
+          "disposition": {
+            "kind": "SILVER",
+            "key": "system_frequency"
+          }
+        }
+      ]
     },
     {
       "id": "954de419-c4e4-4366-9711-6cc1f0fcaa48",
@@ -880,10 +1008,18 @@
       "url_type": "upload",
       "family": "system_frequency",
       "disposition": {
-        "kind": "HOLD",
-        "reason": "CSV-declared ZIP body; classification",
-        "unit": "X-R"
-      }
+        "kind": "SILVER",
+        "key": "system_frequency"
+      },
+      "children": [
+        {
+          "child": "fNew 2020 5.csv",
+          "disposition": {
+            "kind": "SILVER",
+            "key": "system_frequency"
+          }
+        }
+      ]
     },
     {
       "id": "4a7f506b-dd04-4480-988b-dff0cc3f9ed4",
@@ -892,10 +1028,18 @@
       "url_type": "upload",
       "family": "system_frequency",
       "disposition": {
-        "kind": "HOLD",
-        "reason": "CSV-declared ZIP body; classification",
-        "unit": "X-R"
-      }
+        "kind": "SILVER",
+        "key": "system_frequency"
+      },
+      "children": [
+        {
+          "child": "fNew 2020 6.csv",
+          "disposition": {
+            "kind": "SILVER",
+            "key": "system_frequency"
+          }
+        }
+      ]
     },
     {
       "id": "7c9a488f-5070-4f8b-a3a1-0418ed4438a2",
@@ -904,10 +1048,18 @@
       "url_type": "upload",
       "family": "system_frequency",
       "disposition": {
-        "kind": "HOLD",
-        "reason": "CSV-declared ZIP body; classification",
-        "unit": "X-R"
-      }
+        "kind": "SILVER",
+        "key": "system_frequency"
+      },
+      "children": [
+        {
+          "child": "fNew 2020 7.csv",
+          "disposition": {
+            "kind": "SILVER",
+            "key": "system_frequency"
+          }
+        }
+      ]
     },
     {
       "id": "27d4d8b3-0cbe-4cb2-bd83-947f968671a1",
@@ -916,10 +1068,18 @@
       "url_type": "upload",
       "family": "system_frequency",
       "disposition": {
-        "kind": "HOLD",
-        "reason": "CSV-declared ZIP body; classification",
-        "unit": "X-R"
-      }
+        "kind": "SILVER",
+        "key": "system_frequency"
+      },
+      "children": [
+        {
+          "child": "fNew 2020 8.csv",
+          "disposition": {
+            "kind": "SILVER",
+            "key": "system_frequency"
+          }
+        }
+      ]
     },
     {
       "id": "cfc880fe-3d3d-4df4-bf4f-9294a4dbc901",
@@ -928,10 +1088,18 @@
       "url_type": "upload",
       "family": "system_frequency",
       "disposition": {
-        "kind": "HOLD",
-        "reason": "CSV-declared ZIP body; classification",
-        "unit": "X-R"
-      }
+        "kind": "SILVER",
+        "key": "system_frequency"
+      },
+      "children": [
+        {
+          "child": "fNew 2020 9.csv",
+          "disposition": {
+            "kind": "SILVER",
+            "key": "system_frequency"
+          }
+        }
+      ]
     },
     {
       "id": "3617f1af-4d3c-45d3-a1f6-0d51a9c2167b",
@@ -940,10 +1108,18 @@
       "url_type": "upload",
       "family": "system_frequency",
       "disposition": {
-        "kind": "HOLD",
-        "reason": "CSV-declared ZIP body; classification",
-        "unit": "X-R"
-      }
+        "kind": "SILVER",
+        "key": "system_frequency"
+      },
+      "children": [
+        {
+          "child": "fNew 2020 10.csv",
+          "disposition": {
+            "kind": "SILVER",
+            "key": "system_frequency"
+          }
+        }
+      ]
     },
     {
       "id": "bcfa7999-1b14-444b-8f8f-6402092a0e9d",
@@ -952,10 +1128,18 @@
       "url_type": "upload",
       "family": "system_frequency",
       "disposition": {
-        "kind": "HOLD",
-        "reason": "CSV-declared ZIP body; classification",
-        "unit": "X-R"
-      }
+        "kind": "SILVER",
+        "key": "system_frequency"
+      },
+      "children": [
+        {
+          "child": "fNew 2020 11.csv",
+          "disposition": {
+            "kind": "SILVER",
+            "key": "system_frequency"
+          }
+        }
+      ]
     },
     {
       "id": "706ec5fe-777a-4a46-90de-b9089f93853c",
@@ -964,10 +1148,18 @@
       "url_type": "upload",
       "family": "system_frequency",
       "disposition": {
-        "kind": "HOLD",
-        "reason": "CSV-declared ZIP body; classification",
-        "unit": "X-R"
-      }
+        "kind": "SILVER",
+        "key": "system_frequency"
+      },
+      "children": [
+        {
+          "child": "fNew 2020 12.csv",
+          "disposition": {
+            "kind": "SILVER",
+            "key": "system_frequency"
+          }
+        }
+      ]
     },
     {
       "id": "fe2502b8-7fef-4027-8399-550a0c84f415",
@@ -976,10 +1168,18 @@
       "url_type": "upload",
       "family": "system_frequency",
       "disposition": {
-        "kind": "HOLD",
-        "reason": "CSV-declared ZIP body; classification",
-        "unit": "X-R"
-      }
+        "kind": "SILVER",
+        "key": "system_frequency"
+      },
+      "children": [
+        {
+          "child": "fNew 2021 1.csv",
+          "disposition": {
+            "kind": "SILVER",
+            "key": "system_frequency"
+          }
+        }
+      ]
     },
     {
       "id": "53e2be31-c68c-40b3-bb83-7ae12240107c",
@@ -988,10 +1188,18 @@
       "url_type": "upload",
       "family": "system_frequency",
       "disposition": {
-        "kind": "HOLD",
-        "reason": "CSV-declared ZIP body; classification",
-        "unit": "X-R"
-      }
+        "kind": "SILVER",
+        "key": "system_frequency"
+      },
+      "children": [
+        {
+          "child": "fNew 2021 2.csv",
+          "disposition": {
+            "kind": "SILVER",
+            "key": "system_frequency"
+          }
+        }
+      ]
     },
     {
       "id": "ac4e4031-0f86-48ff-8ecd-147d51ffbb81",
@@ -1000,10 +1208,18 @@
       "url_type": "upload",
       "family": "system_frequency",
       "disposition": {
-        "kind": "HOLD",
-        "reason": "CSV-declared ZIP body; classification",
-        "unit": "X-R"
-      }
+        "kind": "SILVER",
+        "key": "system_frequency"
+      },
+      "children": [
+        {
+          "child": "fNew 2021 3.csv",
+          "disposition": {
+            "kind": "SILVER",
+            "key": "system_frequency"
+          }
+        }
+      ]
     },
     {
       "id": "bd6e1b3f-1abb-452c-813c-397a41f7af8d",
@@ -1012,10 +1228,18 @@
       "url_type": "upload",
       "family": "system_frequency",
       "disposition": {
-        "kind": "HOLD",
-        "reason": "CSV-declared ZIP body; classification",
-        "unit": "X-R"
-      }
+        "kind": "SILVER",
+        "key": "system_frequency"
+      },
+      "children": [
+        {
+          "child": "fNew 2021 4.csv",
+          "disposition": {
+            "kind": "SILVER",
+            "key": "system_frequency"
+          }
+        }
+      ]
     },
     {
       "id": "625597eb-7364-4ba8-a306-a7f59dcdc2a7",
@@ -1024,10 +1248,18 @@
       "url_type": "upload",
       "family": "system_frequency",
       "disposition": {
-        "kind": "HOLD",
-        "reason": "CSV-declared ZIP body; classification",
-        "unit": "X-R"
-      }
+        "kind": "SILVER",
+        "key": "system_frequency"
+      },
+      "children": [
+        {
+          "child": "fNew 2021 5.csv",
+          "disposition": {
+            "kind": "SILVER",
+            "key": "system_frequency"
+          }
+        }
+      ]
     },
     {
       "id": "bd754692-bce7-43b7-ba25-813921476391",
@@ -1036,10 +1268,18 @@
       "url_type": "upload",
       "family": "system_frequency",
       "disposition": {
-        "kind": "HOLD",
-        "reason": "CSV-declared ZIP body; classification",
-        "unit": "X-R"
-      }
+        "kind": "SILVER",
+        "key": "system_frequency"
+      },
+      "children": [
+        {
+          "child": "fNew 2021 6.csv",
+          "disposition": {
+            "kind": "SILVER",
+            "key": "system_frequency"
+          }
+        }
+      ]
     },
     {
       "id": "94d95251-ccbb-4187-ae54-1b90ebf12b9f",
@@ -1048,10 +1288,18 @@
       "url_type": "upload",
       "family": "system_frequency",
       "disposition": {
-        "kind": "HOLD",
-        "reason": "CSV-declared ZIP body; classification",
-        "unit": "X-R"
-      }
+        "kind": "SILVER",
+        "key": "system_frequency"
+      },
+      "children": [
+        {
+          "child": "fNew 2021 7.csv",
+          "disposition": {
+            "kind": "SILVER",
+            "key": "system_frequency"
+          }
+        }
+      ]
     },
     {
       "id": "ae40912b-de8f-43b1-8eeb-c58e469f2365",
@@ -1060,10 +1308,18 @@
       "url_type": "upload",
       "family": "system_frequency",
       "disposition": {
-        "kind": "HOLD",
-        "reason": "CSV-declared ZIP body; classification",
-        "unit": "X-R"
-      }
+        "kind": "SILVER",
+        "key": "system_frequency"
+      },
+      "children": [
+        {
+          "child": "fNew 2021 8.csv",
+          "disposition": {
+            "kind": "SILVER",
+            "key": "system_frequency"
+          }
+        }
+      ]
     },
     {
       "id": "5cea7516-cbc3-416e-8dbf-162327c16b17",
@@ -1072,10 +1328,18 @@
       "url_type": "upload",
       "family": "system_frequency",
       "disposition": {
-        "kind": "HOLD",
-        "reason": "CSV-declared ZIP body; classification",
-        "unit": "X-R"
-      }
+        "kind": "SILVER",
+        "key": "system_frequency"
+      },
+      "children": [
+        {
+          "child": "fNew 2021 9.csv",
+          "disposition": {
+            "kind": "SILVER",
+            "key": "system_frequency"
+          }
+        }
+      ]
     },
     {
       "id": "12291f14-95c3-4847-b2ef-3190eaa1193c",
@@ -1084,10 +1348,18 @@
       "url_type": "upload",
       "family": "system_frequency",
       "disposition": {
-        "kind": "HOLD",
-        "reason": "CSV-declared ZIP body; classification",
-        "unit": "X-R"
-      }
+        "kind": "SILVER",
+        "key": "system_frequency"
+      },
+      "children": [
+        {
+          "child": "fNew 2021 10.csv",
+          "disposition": {
+            "kind": "SILVER",
+            "key": "system_frequency"
+          }
+        }
+      ]
     },
     {
       "id": "9bc4746e-3152-4c6f-886e-58377ab88e0e",
@@ -1096,10 +1368,18 @@
       "url_type": "upload",
       "family": "system_frequency",
       "disposition": {
-        "kind": "HOLD",
-        "reason": "CSV-declared ZIP body; classification",
-        "unit": "X-R"
-      }
+        "kind": "SILVER",
+        "key": "system_frequency"
+      },
+      "children": [
+        {
+          "child": "fNew 2021 11.csv",
+          "disposition": {
+            "kind": "SILVER",
+            "key": "system_frequency"
+          }
+        }
+      ]
     },
     {
       "id": "afe9895c-5937-4e78-8949-f0f026643666",
@@ -1108,10 +1388,18 @@
       "url_type": "upload",
       "family": "system_frequency",
       "disposition": {
-        "kind": "HOLD",
-        "reason": "CSV-declared ZIP body; classification",
-        "unit": "X-R"
-      }
+        "kind": "SILVER",
+        "key": "system_frequency"
+      },
+      "children": [
+        {
+          "child": "fNew 2021 12.csv",
+          "disposition": {
+            "kind": "SILVER",
+            "key": "system_frequency"
+          }
+        }
+      ]
     },
     {
       "id": "43000c20-1208-4ca7-a419-712c7a1d375c",
@@ -1120,10 +1408,18 @@
       "url_type": "upload",
       "family": "system_frequency",
       "disposition": {
-        "kind": "HOLD",
-        "reason": "CSV-declared ZIP body; classification",
-        "unit": "X-R"
-      }
+        "kind": "SILVER",
+        "key": "system_frequency"
+      },
+      "children": [
+        {
+          "child": "fNew 2022 1.csv",
+          "disposition": {
+            "kind": "SILVER",
+            "key": "system_frequency"
+          }
+        }
+      ]
     },
     {
       "id": "181e8958-bf78-4bd6-b6ca-b8376da8e1aa",
@@ -1132,10 +1428,18 @@
       "url_type": "upload",
       "family": "system_frequency",
       "disposition": {
-        "kind": "HOLD",
-        "reason": "CSV-declared ZIP body; classification",
-        "unit": "X-R"
-      }
+        "kind": "SILVER",
+        "key": "system_frequency"
+      },
+      "children": [
+        {
+          "child": "fNew 2022 2.csv",
+          "disposition": {
+            "kind": "SILVER",
+            "key": "system_frequency"
+          }
+        }
+      ]
     },
     {
       "id": "182081de-9773-4b5b-9c87-17adbd1576e6",
@@ -1144,10 +1448,18 @@
       "url_type": "upload",
       "family": "system_frequency",
       "disposition": {
-        "kind": "HOLD",
-        "reason": "CSV-declared ZIP body; classification",
-        "unit": "X-R"
-      }
+        "kind": "SILVER",
+        "key": "system_frequency"
+      },
+      "children": [
+        {
+          "child": "fNew 2022 3.csv",
+          "disposition": {
+            "kind": "SILVER",
+            "key": "system_frequency"
+          }
+        }
+      ]
     },
     {
       "id": "b3bbd2e7-50b1-49cb-8326-bc8f09003cde",

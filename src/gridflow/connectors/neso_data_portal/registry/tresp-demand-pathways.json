@@ -159,9 +159,35 @@
       "family": "tresp_demand_pathways_files",
       "disposition": {
         "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
-      }
+        "reason": "data container: child inventory committed by X; records pending in SCN-1",
+        "unit": "SCN-1"
+      },
+      "children": [
+        {
+          "child": "tRESP Building Blocks",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family tresp_building_block_definitions: record pending in SCN-1 (V-11)",
+            "unit": "SCN-1"
+          }
+        },
+        {
+          "child": "tRESP GSP Areas with Names",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family tresp_gsp_area_names: record pending in SCN-1 (V-11)",
+            "unit": "SCN-1"
+          }
+        },
+        {
+          "child": "tRESP BB list - old",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family tresp_building_block_definitions_old: record pending in SCN-1 (V-11)",
+            "unit": "SCN-1"
+          }
+        }
+      ]
     }
   ]
 }
