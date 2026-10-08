@@ -375,6 +375,9 @@ class TestSettlementPeriods:
         assert periods["rows_per_date"] == {"49": 1, "50": 1}
         assert periods["dates_with_repeated_sp"] == 1
         assert (periods["min"], periods["max"]) == (1, 51)
+        sp = _column(document, "SettlementPeriod")
+        assert (sp["dtype"], sp["min"], sp["max"]) == ("int64", 1, 50)
+        assert "min" not in _column(document, "Value")
         draft = document["proposal"]["record_draft"]
         temporal = _todos(document, "temporal")
         assert draft["temporal"] == "TODO: " + temporal[0]["id"]

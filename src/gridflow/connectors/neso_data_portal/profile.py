@@ -142,6 +142,8 @@ TODO_CONSEQUENCES: dict[str, str] = {
 
 SP_HEADER = re.compile(r"(?i)^(settlement[ _]?period|sp|period)$")
 """A settlement-period header (P-4); its silver column is bounded 1..50."""
+SP_MIN, SP_MAX = 1, 50
+"""The settlement-period range (50 on an autumn clock-change day); drafted as bounds."""
 _DATE_HEADER = re.compile(r"(?i)date$")
 _SLASH_PARTS = r"^(\d{2})/(\d{2})/\d{4}$"
 
@@ -443,7 +445,7 @@ def _second_pass(
         exprs += [
             period.min().alias("__sp_min"),
             period.max().alias("__sp_max"),
-            (period.is_not_null() & ~period.is_between(1, 50)).sum().alias("__sp_out"),
+            (period.is_not_null() & ~period.is_between(SP_MIN, SP_MAX)).sum().alias("__sp_out"),
             _hash_unique([date_col, sp_col]).alias("__sp_pairs"),
         ]
     row = lazy.select(exprs).collect(engine="streaming").row(0, named=True)
@@ -716,6 +718,8 @@ def _draft_column(
         return dated()
     else:
         column["dtype"] = "string"
+    if column["dtype"] == "int64" and SP_HEADER.match(vendor):
+        column["min"], column["max"] = SP_MIN, SP_MAX
     if column["dtype"] in ("int64", "float64") and vendor_unit(fields.get(vendor)) is None:
         todos.add("unit", f"{where}.unit", f"{vendor}: a numeric column with no vendor unit")
     temporal = bool(SP_HEADER.match(vendor)) or "month" in vendor.lower()
