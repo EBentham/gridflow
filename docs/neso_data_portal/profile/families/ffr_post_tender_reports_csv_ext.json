@@ -728,8 +728,8 @@
         "Please indicate if this is a mutually exclusive tender": {
           "blank_count": 1,
           "cast_failures": {
-            "float64": 3,
-            "int64": 3
+            "float64": 4,
+            "int64": 4
           },
           "examples": [
             "Mutually Exclusive to C",
@@ -1505,8 +1505,8 @@
         "Are you adding volume as per detail change provision": {
           "blank_count": 1,
           "cast_failures": {
-            "float64": 23,
-            "int64": 23
+            "float64": 24,
+            "int64": 24
           },
           "examples": [
             "-",
@@ -1522,8 +1522,8 @@
         "Automatic Response Energy Deliverable by 10s (MW)": {
           "blank_count": 1,
           "cast_failures": {
-            "float64": 0,
-            "int64": 0
+            "float64": 1,
+            "int64": 1
           },
           "examples": [
             "1"
@@ -1738,8 +1738,8 @@
         "Please indicate if this is a mutually exclusive tender": {
           "blank_count": 360,
           "cast_failures": {
-            "float64": 706,
-            "int64": 714
+            "float64": 1066,
+            "int64": 1074
           },
           "examples": [
             "Mutually Exclusive to C",
@@ -2191,8 +2191,8 @@
         "Tendered Prices - Nomination Fee (£/h)": {
           "blank_count": 9,
           "cast_failures": {
-            "float64": 205,
-            "int64": 205
+            "float64": 214,
+            "int64": 214
           },
           "examples": [
             "-",

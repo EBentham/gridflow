@@ -60,8 +60,8 @@
         "Automatic Response Energy Deliverable by 10s (MW)": {
           "blank_count": 1,
           "cast_failures": {
-            "float64": 0,
-            "int64": 0
+            "float64": 1,
+            "int64": 1
           },
           "examples": [],
           "max_len": 1,
@@ -269,8 +269,8 @@
         "Please indicate if this is a mutually exclusive tender": {
           "blank_count": 13,
           "cast_failures": {
-            "float64": 40,
-            "int64": 40
+            "float64": 53,
+            "int64": 53
           },
           "examples": [
             "Mutually Exclusive to C",

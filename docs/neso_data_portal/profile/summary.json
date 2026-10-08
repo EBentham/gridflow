@@ -2203,8 +2203,8 @@
       "package": "fes-flexibility-data-table-data-table-flx1",
       "rows_newest": 36,
       "todos_by_consequence": {
-        "blocked": 0,
-        "held": 58,
+        "blocked": 13,
+        "held": 42,
         "none": 3
       }
     },
@@ -4287,8 +4287,8 @@
     "parse_failures": 39,
     "sibling_candidate_groups": 28,
     "todos_by_consequence": {
-      "blocked": 310,
-      "held": 1759,
+      "blocked": 323,
+      "held": 1743,
       "none": 624
     },
     "unusable_captures": 0

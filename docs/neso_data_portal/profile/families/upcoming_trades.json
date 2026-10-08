@@ -354,6 +354,8 @@
             },
             {
               "dtype": "int64",
+              "max": 50,
+              "min": 1,
               "name": "sp",
               "nullable": true,
               "source": "SP"

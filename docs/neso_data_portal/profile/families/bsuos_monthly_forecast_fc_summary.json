@@ -6267,7 +6267,7 @@
         "21/22 Under-Recovered Costs (£m)": {
           "blank_count": 0,
           "cast_failures": {
-            "float64": 54,
+            "float64": 66,
             "int64": 90
           },
           "examples": [
@@ -6482,7 +6482,7 @@
         "Winter Security of Supply Cost (£m)": {
           "blank_count": 0,
           "cast_failures": {
-            "float64": 51,
+            "float64": 66,
             "int64": 93
           },
           "examples": [
@@ -9830,14 +9830,14 @@
         "field": "column 'Winter Security of Supply Cost (£m)'.dtype",
         "id": "T128",
         "kind": "type_conflict",
-        "question": "Winter Security of Supply Cost (£m): field-info declares numeric but 51 value(s) do not cast to float64"
+        "question": "Winter Security of Supply Cost (£m): field-info declares numeric but 66 value(s) do not cast to float64"
       },
       {
         "consequence": "blocked",
         "field": "column '21/22 Under-Recovered Costs (£m)'.dtype",
         "id": "T129",
         "kind": "type_conflict",
-        "question": "21/22 Under-Recovered Costs (£m): field-info declares numeric but 54 value(s) do not cast to float64"
+        "question": "21/22 Under-Recovered Costs (£m): field-info declares numeric but 66 value(s) do not cast to float64"
       },
       {
         "consequence": "blocked",

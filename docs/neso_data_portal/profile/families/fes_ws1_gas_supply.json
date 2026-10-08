@@ -673,8 +673,8 @@
         "Category Lookup": {
           "blank_count": 4,
           "cast_failures": {
-            "float64": 263,
-            "int64": 263
+            "float64": 267,
+            "int64": 267
           },
           "examples": [
             "Industrial & Commercial",
@@ -690,8 +690,8 @@
         "Feedstock": {
           "blank_count": 4,
           "cast_failures": {
-            "float64": 252,
-            "int64": 252
+            "float64": 256,
+            "int64": 256
           },
           "examples": [
             "MSW, C&I (biogenic)",
@@ -707,8 +707,8 @@
         "Fuel": {
           "blank_count": 3,
           "cast_failures": {
-            "float64": 394,
-            "int64": 394
+            "float64": 397,
+            "int64": 397
           },
           "examples": [
             "Biomass",
@@ -758,8 +758,8 @@
         "Sector": {
           "blank_count": 4,
           "cast_failures": {
-            "float64": 568,
-            "int64": 568
+            "float64": 572,
+            "int64": 572
           },
           "examples": [
             "Power Generation",
@@ -1690,8 +1690,8 @@
         "Category Lookup": {
           "blank_count": 8,
           "cast_failures": {
-            "float64": 432,
-            "int64": 432
+            "float64": 440,
+            "int64": 440
           },
           "examples": [
             "Industrial & Commercial",
@@ -1707,8 +1707,8 @@
         "Feedstock": {
           "blank_count": 8,
           "cast_failures": {
-            "float64": 628,
-            "int64": 628
+            "float64": 636,
+            "int64": 636
           },
           "examples": [
             "MSW, C&I (biogenic)",
@@ -1724,8 +1724,8 @@
         "Fuel": {
           "blank_count": 6,
           "cast_failures": {
-            "float64": 901,
-            "int64": 901
+            "float64": 907,
+            "int64": 907
           },
           "examples": [
             "Biomass",
@@ -1775,8 +1775,8 @@
         "Sector": {
           "blank_count": 8,
           "cast_failures": {
-            "float64": 1159,
-            "int64": 1159
+            "float64": 1167,
+            "int64": 1167
           },
           "examples": [
             "Power Generation",

@@ -90,7 +90,7 @@
         "2021": {
           "blank_count": 0,
           "cast_failures": {
-            "float64": 0,
+            "float64": 45,
             "int64": 175
           },
           "examples": [
@@ -108,7 +108,7 @@
         "2022": {
           "blank_count": 0,
           "cast_failures": {
-            "float64": 0,
+            "float64": 45,
             "int64": 175
           },
           "examples": [
@@ -126,7 +126,7 @@
         "2023": {
           "blank_count": 0,
           "cast_failures": {
-            "float64": 0,
+            "float64": 45,
             "int64": 175
           },
           "examples": [
@@ -144,7 +144,7 @@
         "2024": {
           "blank_count": 0,
           "cast_failures": {
-            "float64": 0,
+            "float64": 45,
             "int64": 175
           },
           "examples": [
@@ -162,7 +162,7 @@
         "2025": {
           "blank_count": 0,
           "cast_failures": {
-            "float64": 0,
+            "float64": 45,
             "int64": 175
           },
           "examples": [
@@ -180,7 +180,7 @@
         "2026": {
           "blank_count": 0,
           "cast_failures": {
-            "float64": 0,
+            "float64": 45,
             "int64": 177
           },
           "examples": [
@@ -198,7 +198,7 @@
         "2027": {
           "blank_count": 0,
           "cast_failures": {
-            "float64": 0,
+            "float64": 45,
             "int64": 182
           },
           "examples": [
@@ -216,7 +216,7 @@
         "2028": {
           "blank_count": 0,
           "cast_failures": {
-            "float64": 0,
+            "float64": 45,
             "int64": 182
           },
           "examples": [
@@ -234,7 +234,7 @@
         "2029": {
           "blank_count": 0,
           "cast_failures": {
-            "float64": 0,
+            "float64": 36,
             "int64": 146
           },
           "examples": [
@@ -252,7 +252,7 @@
         "2030": {
           "blank_count": 0,
           "cast_failures": {
-            "float64": 0,
+            "float64": 36,
             "int64": 146
           },
           "examples": [
@@ -270,7 +270,7 @@
         "2031": {
           "blank_count": 0,
           "cast_failures": {
-            "float64": 0,
+            "float64": 36,
             "int64": 146
           },
           "examples": [
@@ -288,7 +288,7 @@
         "2032": {
           "blank_count": 0,
           "cast_failures": {
-            "float64": 0,
+            "float64": 36,
             "int64": 144
           },
           "examples": [
@@ -306,7 +306,7 @@
         "2033": {
           "blank_count": 0,
           "cast_failures": {
-            "float64": 0,
+            "float64": 36,
             "int64": 146
           },
           "examples": [
@@ -324,7 +324,7 @@
         "2034": {
           "blank_count": 0,
           "cast_failures": {
-            "float64": 0,
+            "float64": 36,
             "int64": 146
           },
           "examples": [
@@ -342,7 +342,7 @@
         "2035": {
           "blank_count": 0,
           "cast_failures": {
-            "float64": 0,
+            "float64": 36,
             "int64": 147
           },
           "examples": [
@@ -360,7 +360,7 @@
         "2036": {
           "blank_count": 0,
           "cast_failures": {
-            "float64": 0,
+            "float64": 36,
             "int64": 146
           },
           "examples": [
@@ -378,7 +378,7 @@
         "2037": {
           "blank_count": 0,
           "cast_failures": {
-            "float64": 0,
+            "float64": 36,
             "int64": 145
           },
           "examples": [
@@ -396,7 +396,7 @@
         "2038": {
           "blank_count": 0,
           "cast_failures": {
-            "float64": 0,
+            "float64": 36,
             "int64": 146
           },
           "examples": [
@@ -414,7 +414,7 @@
         "2039": {
           "blank_count": 0,
           "cast_failures": {
-            "float64": 0,
+            "float64": 36,
             "int64": 146
           },
           "examples": [
@@ -432,7 +432,7 @@
         "2040": {
           "blank_count": 0,
           "cast_failures": {
-            "float64": 0,
+            "float64": 36,
             "int64": 146
           },
           "examples": [
@@ -450,7 +450,7 @@
         "2041": {
           "blank_count": 0,
           "cast_failures": {
-            "float64": 0,
+            "float64": 36,
             "int64": 146
           },
           "examples": [
@@ -468,7 +468,7 @@
         "2042": {
           "blank_count": 0,
           "cast_failures": {
-            "float64": 0,
+            "float64": 36,
             "int64": 146
           },
           "examples": [
@@ -486,7 +486,7 @@
         "2043": {
           "blank_count": 0,
           "cast_failures": {
-            "float64": 0,
+            "float64": 36,
             "int64": 146
           },
           "examples": [
@@ -504,7 +504,7 @@
         "2044": {
           "blank_count": 0,
           "cast_failures": {
-            "float64": 0,
+            "float64": 36,
             "int64": 146
           },
           "examples": [
@@ -522,7 +522,7 @@
         "2045": {
           "blank_count": 0,
           "cast_failures": {
-            "float64": 0,
+            "float64": 36,
             "int64": 146
           },
           "examples": [
@@ -540,7 +540,7 @@
         "2046": {
           "blank_count": 0,
           "cast_failures": {
-            "float64": 0,
+            "float64": 36,
             "int64": 147
           },
           "examples": [
@@ -558,7 +558,7 @@
         "2047": {
           "blank_count": 0,
           "cast_failures": {
-            "float64": 0,
+            "float64": 36,
             "int64": 147
           },
           "examples": [
@@ -576,7 +576,7 @@
         "2048": {
           "blank_count": 0,
           "cast_failures": {
-            "float64": 0,
+            "float64": 36,
             "int64": 147
           },
           "examples": [
@@ -594,7 +594,7 @@
         "2049": {
           "blank_count": 0,
           "cast_failures": {
-            "float64": 0,
+            "float64": 36,
             "int64": 147
           },
           "examples": [
@@ -612,7 +612,7 @@
         "2050": {
           "blank_count": 0,
           "cast_failures": {
-            "float64": 0,
+            "float64": 36,
             "int64": 147
           },
           "examples": [
@@ -3543,7 +3543,7 @@
     ],
     "record_draft": {
       "eligibility": {
-        "question": "2021: a numeric column with no vendor unit; 2022: a numeric column with no vendor unit; 2023: a numeric column with no vendor unit; 2024: a numeric column with no vendor unit; 2025: a numeric column with no vendor unit; 2026: a numeric column with no vendor unit; 2027: a numeric column with no vendor unit; 2028: a numeric column with no vendor unit; 2029: a numeric column with no vendor unit; 2030: a numeric column with no vendor unit; 2031: a numeric column with no vendor unit; 2032: a numeric column with no vendor unit; 2033: a numeric column with no vendor unit; 2034: a numeric column with no vendor unit; 2035: a numeric column with no vendor unit; 2036: a numeric column with no vendor unit; 2021: a numeric column with no vendor unit; 2022: a numeric column with no vendor unit; 2023: a numeric column with no vendor unit; 2024: a numeric column with no vendor unit; 2025: a numeric column with no vendor unit; 2026: a numeric column with no vendor unit; 2027: a numeric column with no vendor unit; 2028: a numeric column with no vendor unit; 2029: a numeric column with no vendor unit; 2030: a numeric column with no vendor unit; 2031: a numeric column with no vendor unit; 2032: a numeric column with no vendor unit; 2033: a numeric column with no vendor unit; 2034: a numeric column with no vendor unit; 2035: a numeric column with no vendor unit; 2036: a numeric column with no vendor unit; 2024: a numeric column with no vendor unit; 2025: a numeric column with no vendor unit; 2026: a numeric column with no vendor unit; 2027: a numeric column with no vendor unit; 2028: a numeric column with no vendor unit; 2029: a numeric column with no vendor unit; 2030: a numeric column with no vendor unit; 2031: a numeric column with no vendor unit; 2032: a numeric column with no vendor unit; 2033: a numeric column with no vendor unit; 2034: a numeric column with no vendor unit; 2035: a numeric column with no vendor unit; 2036: a numeric column with no vendor unit; 2024: a numeric column with no vendor unit; 2025: a numeric column with no vendor unit; 2026: a numeric column with no vendor unit; 2027: a numeric column with no vendor unit; 2028: a numeric column with no vendor unit; 2029: a numeric column with no vendor unit; 2030: a numeric column with no vendor unit; 2031: a numeric column with no vendor unit; 2032: a numeric column with no vendor unit; 2033: a numeric column with no vendor unit; 2034: a numeric column with no vendor unit; 2035: a numeric column with no vendor unit; 2036: a numeric column with no vendor unit",
+        "question": "2021: a numeric column with no vendor unit; 2022: a numeric column with no vendor unit; 2023: a numeric column with no vendor unit; 2024: a numeric column with no vendor unit; 2025: a numeric column with no vendor unit; 2026: a numeric column with no vendor unit; 2027: a numeric column with no vendor unit; 2028: a numeric column with no vendor unit; 2029: a numeric column with no vendor unit; 2030: a numeric column with no vendor unit; 2031: a numeric column with no vendor unit; 2032: a numeric column with no vendor unit; 2033: a numeric column with no vendor unit; 2034: a numeric column with no vendor unit; 2035: a numeric column with no vendor unit; 2036: a numeric column with no vendor unit; 2024: a numeric column with no vendor unit; 2025: a numeric column with no vendor unit; 2026: a numeric column with no vendor unit; 2027: a numeric column with no vendor unit; 2028: a numeric column with no vendor unit; 2029: a numeric column with no vendor unit; 2030: a numeric column with no vendor unit; 2031: a numeric column with no vendor unit; 2032: a numeric column with no vendor unit; 2033: a numeric column with no vendor unit; 2034: a numeric column with no vendor unit; 2035: a numeric column with no vendor unit; 2036: a numeric column with no vendor unit; 2024: a numeric column with no vendor unit; 2025: a numeric column with no vendor unit; 2026: a numeric column with no vendor unit; 2027: a numeric column with no vendor unit; 2028: a numeric column with no vendor unit; 2029: a numeric column with no vendor unit; 2030: a numeric column with no vendor unit; 2031: a numeric column with no vendor unit; 2032: a numeric column with no vendor unit; 2033: a numeric column with no vendor unit; 2034: a numeric column with no vendor unit; 2035: a numeric column with no vendor unit; 2036: a numeric column with no vendor unit",
         "status": "held",
         "unit": "SCN-2"
       },
@@ -3630,97 +3630,97 @@
               "source": "Detail"
             },
             {
-              "dtype": "float64",
+              "dtype": "string",
               "name": "c_2021",
               "nullable": true,
               "source": "2021"
             },
             {
-              "dtype": "float64",
+              "dtype": "string",
               "name": "c_2022",
               "nullable": true,
               "source": "2022"
             },
             {
-              "dtype": "float64",
+              "dtype": "string",
               "name": "c_2023",
               "nullable": true,
               "source": "2023"
             },
             {
-              "dtype": "float64",
+              "dtype": "TODO: T01",
               "name": "c_2024",
               "nullable": true,
               "source": "2024"
             },
             {
-              "dtype": "float64",
+              "dtype": "TODO: T02",
               "name": "c_2025",
               "nullable": true,
               "source": "2025"
             },
             {
-              "dtype": "float64",
+              "dtype": "TODO: T03",
               "name": "c_2026",
               "nullable": true,
               "source": "2026"
             },
             {
-              "dtype": "float64",
+              "dtype": "TODO: T04",
               "name": "c_2027",
               "nullable": true,
               "source": "2027"
             },
             {
-              "dtype": "float64",
+              "dtype": "TODO: T05",
               "name": "c_2028",
               "nullable": true,
               "source": "2028"
             },
             {
-              "dtype": "float64",
+              "dtype": "TODO: T06",
               "name": "c_2029",
               "nullable": true,
               "source": "2029"
             },
             {
-              "dtype": "float64",
+              "dtype": "TODO: T07",
               "name": "c_2030",
               "nullable": true,
               "source": "2030"
             },
             {
-              "dtype": "float64",
+              "dtype": "TODO: T08",
               "name": "c_2031",
               "nullable": true,
               "source": "2031"
             },
             {
-              "dtype": "float64",
+              "dtype": "TODO: T09",
               "name": "c_2032",
               "nullable": true,
               "source": "2032"
             },
             {
-              "dtype": "float64",
+              "dtype": "TODO: T10",
               "name": "c_2033",
               "nullable": true,
               "source": "2033"
             },
             {
-              "dtype": "float64",
+              "dtype": "TODO: T11",
               "name": "c_2034",
               "nullable": true,
               "source": "2034"
             },
             {
-              "dtype": "float64",
+              "dtype": "TODO: T12",
               "name": "c_2035",
               "nullable": true,
               "source": "2035"
             },
             {
-              "dtype": "float64",
+              "dtype": "TODO: T13",
               "name": "c_2036",
               "nullable": true,
               "source": "2036"
@@ -4618,435 +4618,414 @@
       ],
       "latest": "whole_capture",
       "reader": "csv",
-      "temporal": "TODO: T59",
+      "temporal": "TODO: T56",
       "version": "1",
       "vintage": "ckan_last_modified"
     },
     "todos": [
       {
+        "consequence": "blocked",
+        "field": "column '2024'.dtype",
+        "id": "T01",
+        "kind": "type_conflict",
+        "question": "2024: field-info declares numeric but 45 value(s) do not cast to float64"
+      },
+      {
+        "consequence": "blocked",
+        "field": "column '2025'.dtype",
+        "id": "T02",
+        "kind": "type_conflict",
+        "question": "2025: field-info declares numeric but 45 value(s) do not cast to float64"
+      },
+      {
+        "consequence": "blocked",
+        "field": "column '2026'.dtype",
+        "id": "T03",
+        "kind": "type_conflict",
+        "question": "2026: field-info declares numeric but 45 value(s) do not cast to float64"
+      },
+      {
+        "consequence": "blocked",
+        "field": "column '2027'.dtype",
+        "id": "T04",
+        "kind": "type_conflict",
+        "question": "2027: field-info declares numeric but 45 value(s) do not cast to float64"
+      },
+      {
+        "consequence": "blocked",
+        "field": "column '2028'.dtype",
+        "id": "T05",
+        "kind": "type_conflict",
+        "question": "2028: field-info declares numeric but 45 value(s) do not cast to float64"
+      },
+      {
+        "consequence": "blocked",
+        "field": "column '2029'.dtype",
+        "id": "T06",
+        "kind": "type_conflict",
+        "question": "2029: field-info declares numeric but 36 value(s) do not cast to float64"
+      },
+      {
+        "consequence": "blocked",
+        "field": "column '2030'.dtype",
+        "id": "T07",
+        "kind": "type_conflict",
+        "question": "2030: field-info declares numeric but 36 value(s) do not cast to float64"
+      },
+      {
+        "consequence": "blocked",
+        "field": "column '2031'.dtype",
+        "id": "T08",
+        "kind": "type_conflict",
+        "question": "2031: field-info declares numeric but 36 value(s) do not cast to float64"
+      },
+      {
+        "consequence": "blocked",
+        "field": "column '2032'.dtype",
+        "id": "T09",
+        "kind": "type_conflict",
+        "question": "2032: field-info declares numeric but 36 value(s) do not cast to float64"
+      },
+      {
+        "consequence": "blocked",
+        "field": "column '2033'.dtype",
+        "id": "T10",
+        "kind": "type_conflict",
+        "question": "2033: field-info declares numeric but 36 value(s) do not cast to float64"
+      },
+      {
+        "consequence": "blocked",
+        "field": "column '2034'.dtype",
+        "id": "T11",
+        "kind": "type_conflict",
+        "question": "2034: field-info declares numeric but 36 value(s) do not cast to float64"
+      },
+      {
+        "consequence": "blocked",
+        "field": "column '2035'.dtype",
+        "id": "T12",
+        "kind": "type_conflict",
+        "question": "2035: field-info declares numeric but 36 value(s) do not cast to float64"
+      },
+      {
+        "consequence": "blocked",
+        "field": "column '2036'.dtype",
+        "id": "T13",
+        "kind": "type_conflict",
+        "question": "2036: field-info declares numeric but 36 value(s) do not cast to float64"
+      },
+      {
         "consequence": "held",
         "field": "column '2021'.unit",
-        "id": "T01",
-        "kind": "unit",
-        "question": "2021: a numeric column with no vendor unit"
-      },
-      {
-        "consequence": "held",
-        "field": "column '2022'.unit",
-        "id": "T02",
-        "kind": "unit",
-        "question": "2022: a numeric column with no vendor unit"
-      },
-      {
-        "consequence": "held",
-        "field": "column '2023'.unit",
-        "id": "T03",
-        "kind": "unit",
-        "question": "2023: a numeric column with no vendor unit"
-      },
-      {
-        "consequence": "held",
-        "field": "column '2024'.unit",
-        "id": "T04",
-        "kind": "unit",
-        "question": "2024: a numeric column with no vendor unit"
-      },
-      {
-        "consequence": "held",
-        "field": "column '2025'.unit",
-        "id": "T05",
-        "kind": "unit",
-        "question": "2025: a numeric column with no vendor unit"
-      },
-      {
-        "consequence": "held",
-        "field": "column '2026'.unit",
-        "id": "T06",
-        "kind": "unit",
-        "question": "2026: a numeric column with no vendor unit"
-      },
-      {
-        "consequence": "held",
-        "field": "column '2027'.unit",
-        "id": "T07",
-        "kind": "unit",
-        "question": "2027: a numeric column with no vendor unit"
-      },
-      {
-        "consequence": "held",
-        "field": "column '2028'.unit",
-        "id": "T08",
-        "kind": "unit",
-        "question": "2028: a numeric column with no vendor unit"
-      },
-      {
-        "consequence": "held",
-        "field": "column '2029'.unit",
-        "id": "T09",
-        "kind": "unit",
-        "question": "2029: a numeric column with no vendor unit"
-      },
-      {
-        "consequence": "held",
-        "field": "column '2030'.unit",
-        "id": "T10",
-        "kind": "unit",
-        "question": "2030: a numeric column with no vendor unit"
-      },
-      {
-        "consequence": "held",
-        "field": "column '2031'.unit",
-        "id": "T11",
-        "kind": "unit",
-        "question": "2031: a numeric column with no vendor unit"
-      },
-      {
-        "consequence": "held",
-        "field": "column '2032'.unit",
-        "id": "T12",
-        "kind": "unit",
-        "question": "2032: a numeric column with no vendor unit"
-      },
-      {
-        "consequence": "held",
-        "field": "column '2033'.unit",
-        "id": "T13",
-        "kind": "unit",
-        "question": "2033: a numeric column with no vendor unit"
-      },
-      {
-        "consequence": "held",
-        "field": "column '2034'.unit",
         "id": "T14",
         "kind": "unit",
-        "question": "2034: a numeric column with no vendor unit"
-      },
-      {
-        "consequence": "held",
-        "field": "column '2035'.unit",
-        "id": "T15",
-        "kind": "unit",
-        "question": "2035: a numeric column with no vendor unit"
-      },
-      {
-        "consequence": "held",
-        "field": "column '2036'.unit",
-        "id": "T16",
-        "kind": "unit",
-        "question": "2036: a numeric column with no vendor unit"
-      },
-      {
-        "consequence": "held",
-        "field": "column '2021'.unit",
-        "id": "T17",
-        "kind": "unit",
         "question": "2021: a numeric column with no vendor unit"
       },
       {
         "consequence": "held",
         "field": "column '2022'.unit",
-        "id": "T18",
+        "id": "T15",
         "kind": "unit",
         "question": "2022: a numeric column with no vendor unit"
       },
       {
         "consequence": "held",
         "field": "column '2023'.unit",
-        "id": "T19",
+        "id": "T16",
         "kind": "unit",
         "question": "2023: a numeric column with no vendor unit"
       },
       {
         "consequence": "held",
         "field": "column '2024'.unit",
+        "id": "T17",
+        "kind": "unit",
+        "question": "2024: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2025'.unit",
+        "id": "T18",
+        "kind": "unit",
+        "question": "2025: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2026'.unit",
+        "id": "T19",
+        "kind": "unit",
+        "question": "2026: a numeric column with no vendor unit"
+      },
+      {
+        "consequence": "held",
+        "field": "column '2027'.unit",
         "id": "T20",
         "kind": "unit",
-        "question": "2024: a numeric column with no vendor unit"
+        "question": "2027: a numeric column with no vendor unit"
       },
       {
         "consequence": "held",
-        "field": "column '2025'.unit",
+        "field": "column '2028'.unit",
         "id": "T21",
         "kind": "unit",
-        "question": "2025: a numeric column with no vendor unit"
+        "question": "2028: a numeric column with no vendor unit"
       },
       {
         "consequence": "held",
-        "field": "column '2026'.unit",
+        "field": "column '2029'.unit",
         "id": "T22",
         "kind": "unit",
-        "question": "2026: a numeric column with no vendor unit"
+        "question": "2029: a numeric column with no vendor unit"
       },
       {
         "consequence": "held",
-        "field": "column '2027'.unit",
+        "field": "column '2030'.unit",
         "id": "T23",
         "kind": "unit",
-        "question": "2027: a numeric column with no vendor unit"
+        "question": "2030: a numeric column with no vendor unit"
       },
       {
         "consequence": "held",
-        "field": "column '2028'.unit",
+        "field": "column '2031'.unit",
         "id": "T24",
         "kind": "unit",
-        "question": "2028: a numeric column with no vendor unit"
+        "question": "2031: a numeric column with no vendor unit"
       },
       {
         "consequence": "held",
-        "field": "column '2029'.unit",
+        "field": "column '2032'.unit",
         "id": "T25",
         "kind": "unit",
-        "question": "2029: a numeric column with no vendor unit"
+        "question": "2032: a numeric column with no vendor unit"
       },
       {
         "consequence": "held",
-        "field": "column '2030'.unit",
+        "field": "column '2033'.unit",
         "id": "T26",
         "kind": "unit",
-        "question": "2030: a numeric column with no vendor unit"
+        "question": "2033: a numeric column with no vendor unit"
       },
       {
         "consequence": "held",
-        "field": "column '2031'.unit",
+        "field": "column '2034'.unit",
         "id": "T27",
         "kind": "unit",
-        "question": "2031: a numeric column with no vendor unit"
+        "question": "2034: a numeric column with no vendor unit"
       },
       {
         "consequence": "held",
-        "field": "column '2032'.unit",
+        "field": "column '2035'.unit",
         "id": "T28",
         "kind": "unit",
-        "question": "2032: a numeric column with no vendor unit"
+        "question": "2035: a numeric column with no vendor unit"
       },
       {
         "consequence": "held",
-        "field": "column '2033'.unit",
+        "field": "column '2036'.unit",
         "id": "T29",
         "kind": "unit",
-        "question": "2033: a numeric column with no vendor unit"
+        "question": "2036: a numeric column with no vendor unit"
       },
       {
         "consequence": "held",
-        "field": "column '2034'.unit",
+        "field": "column '2024'.unit",
         "id": "T30",
         "kind": "unit",
-        "question": "2034: a numeric column with no vendor unit"
+        "question": "2024: a numeric column with no vendor unit"
       },
       {
         "consequence": "held",
-        "field": "column '2035'.unit",
+        "field": "column '2025'.unit",
         "id": "T31",
         "kind": "unit",
-        "question": "2035: a numeric column with no vendor unit"
+        "question": "2025: a numeric column with no vendor unit"
       },
       {
         "consequence": "held",
-        "field": "column '2036'.unit",
+        "field": "column '2026'.unit",
         "id": "T32",
         "kind": "unit",
-        "question": "2036: a numeric column with no vendor unit"
+        "question": "2026: a numeric column with no vendor unit"
       },
       {
         "consequence": "held",
-        "field": "column '2024'.unit",
+        "field": "column '2027'.unit",
         "id": "T33",
         "kind": "unit",
-        "question": "2024: a numeric column with no vendor unit"
-      },
-      {
-        "consequence": "held",
-        "field": "column '2025'.unit",
-        "id": "T34",
-        "kind": "unit",
-        "question": "2025: a numeric column with no vendor unit"
-      },
-      {
-        "consequence": "held",
-        "field": "column '2026'.unit",
-        "id": "T35",
-        "kind": "unit",
-        "question": "2026: a numeric column with no vendor unit"
-      },
-      {
-        "consequence": "held",
-        "field": "column '2027'.unit",
-        "id": "T36",
-        "kind": "unit",
         "question": "2027: a numeric column with no vendor unit"
       },
       {
         "consequence": "held",
         "field": "column '2028'.unit",
-        "id": "T37",
+        "id": "T34",
         "kind": "unit",
         "question": "2028: a numeric column with no vendor unit"
       },
       {
         "consequence": "held",
         "field": "column '2029'.unit",
-        "id": "T38",
+        "id": "T35",
         "kind": "unit",
         "question": "2029: a numeric column with no vendor unit"
       },
       {
         "consequence": "held",
         "field": "column '2030'.unit",
-        "id": "T39",
+        "id": "T36",
         "kind": "unit",
         "question": "2030: a numeric column with no vendor unit"
       },
       {
         "consequence": "held",
         "field": "column '2031'.unit",
-        "id": "T40",
+        "id": "T37",
         "kind": "unit",
         "question": "2031: a numeric column with no vendor unit"
       },
       {
         "consequence": "held",
         "field": "column '2032'.unit",
-        "id": "T41",
+        "id": "T38",
         "kind": "unit",
         "question": "2032: a numeric column with no vendor unit"
       },
       {
         "consequence": "held",
         "field": "column '2033'.unit",
-        "id": "T42",
+        "id": "T39",
         "kind": "unit",
         "question": "2033: a numeric column with no vendor unit"
       },
       {
         "consequence": "held",
         "field": "column '2034'.unit",
-        "id": "T43",
+        "id": "T40",
         "kind": "unit",
         "question": "2034: a numeric column with no vendor unit"
       },
       {
         "consequence": "held",
         "field": "column '2035'.unit",
-        "id": "T44",
+        "id": "T41",
         "kind": "unit",
         "question": "2035: a numeric column with no vendor unit"
       },
       {
         "consequence": "held",
         "field": "column '2036'.unit",
-        "id": "T45",
+        "id": "T42",
         "kind": "unit",
         "question": "2036: a numeric column with no vendor unit"
       },
       {
         "consequence": "held",
         "field": "column '2024'.unit",
-        "id": "T46",
+        "id": "T43",
         "kind": "unit",
         "question": "2024: a numeric column with no vendor unit"
       },
       {
         "consequence": "held",
         "field": "column '2025'.unit",
-        "id": "T47",
+        "id": "T44",
         "kind": "unit",
         "question": "2025: a numeric column with no vendor unit"
       },
       {
         "consequence": "held",
         "field": "column '2026'.unit",
-        "id": "T48",
+        "id": "T45",
         "kind": "unit",
         "question": "2026: a numeric column with no vendor unit"
       },
       {
         "consequence": "held",
         "field": "column '2027'.unit",
-        "id": "T49",
+        "id": "T46",
         "kind": "unit",
         "question": "2027: a numeric column with no vendor unit"
       },
       {
         "consequence": "held",
         "field": "column '2028'.unit",
-        "id": "T50",
+        "id": "T47",
         "kind": "unit",
         "question": "2028: a numeric column with no vendor unit"
       },
       {
         "consequence": "held",
         "field": "column '2029'.unit",
-        "id": "T51",
+        "id": "T48",
         "kind": "unit",
         "question": "2029: a numeric column with no vendor unit"
       },
       {
         "consequence": "held",
         "field": "column '2030'.unit",
-        "id": "T52",
+        "id": "T49",
         "kind": "unit",
         "question": "2030: a numeric column with no vendor unit"
       },
       {
         "consequence": "held",
         "field": "column '2031'.unit",
-        "id": "T53",
+        "id": "T50",
         "kind": "unit",
         "question": "2031: a numeric column with no vendor unit"
       },
       {
         "consequence": "held",
         "field": "column '2032'.unit",
-        "id": "T54",
+        "id": "T51",
         "kind": "unit",
         "question": "2032: a numeric column with no vendor unit"
       },
       {
         "consequence": "held",
         "field": "column '2033'.unit",
-        "id": "T55",
+        "id": "T52",
         "kind": "unit",
         "question": "2033: a numeric column with no vendor unit"
       },
       {
         "consequence": "held",
         "field": "column '2034'.unit",
-        "id": "T56",
+        "id": "T53",
         "kind": "unit",
         "question": "2034: a numeric column with no vendor unit"
       },
       {
         "consequence": "held",
         "field": "column '2035'.unit",
-        "id": "T57",
+        "id": "T54",
         "kind": "unit",
         "question": "2035: a numeric column with no vendor unit"
       },
       {
         "consequence": "held",
         "field": "column '2036'.unit",
-        "id": "T58",
+        "id": "T55",
         "kind": "unit",
         "question": "2036: a numeric column with no vendor unit"
       },
       {
         "consequence": "none",
         "field": "temporal",
-        "id": "T59",
+        "id": "T56",
         "kind": "temporal",
         "question": "no temporal recipe is evidenced; timestamp_utc stays the capture time. Candidate columns: none"
       },
       {
         "consequence": "none",
         "field": "entity_key",
-        "id": "T60",
+        "id": "T57",
         "kind": "key_identity",
         "question": "a vendor-documented identity for ['flexibility_type', 'flexibility_sub_type', 'data_item', 'unit', 'scenario', 'fuel', 'detail', 'c_2024', 'c_2025', 'c_2026', 'c_2027', 'c_2028', 'c_2029', 'c_2030', 'c_2031', 'c_2032', 'c_2033', 'c_2034', 'c_2035', 'c_2036', 'c_2037', 'c_2038', 'c_2039', 'c_2040', 'c_2041', 'c_2042', 'c_2043', 'c_2044', 'c_2045', 'c_2046', 'c_2047', 'c_2048', 'c_2049', 'c_2050'] (no candidate measured unique, so every column); without one, latest stays whole_capture"
       },
       {
         "consequence": "none",
         "field": "epochs",
-        "id": "T61",
+        "id": "T58",
         "kind": "multi_epoch",
         "question": "4 header epochs; review each in its batch"
       }

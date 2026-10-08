@@ -291,8 +291,8 @@
         "Please indicate if this is a mutually exclusive tender": {
           "blank_count": 34,
           "cast_failures": {
-            "float64": 39,
-            "int64": 41
+            "float64": 73,
+            "int64": 75
           },
           "examples": [
             "Mutually Exclusive to C",

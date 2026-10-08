@@ -148,8 +148,8 @@
         "F_Point": {
           "blank_count": 5987,
           "cast_failures": {
-            "float64": 8621,
-            "int64": 8621
+            "float64": 14608,
+            "int64": 14608
           },
           "examples": [
             "NA",

@@ -271,8 +271,8 @@
         "Notes": {
           "blank_count": 27689,
           "cast_failures": {
-            "float64": 639,
-            "int64": 639
+            "float64": 28328,
+            "int64": 28328
           },
           "examples": [
             "IT issue, delayed upload",

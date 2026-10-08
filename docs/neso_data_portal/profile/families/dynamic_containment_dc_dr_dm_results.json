@@ -30,8 +30,8 @@
         "Cancelled": {
           "blank_count": 397662,
           "cast_failures": {
-            "float64": 0,
-            "int64": 0
+            "float64": 397662,
+            "int64": 397662
           },
           "examples": [],
           "max_len": 0,
@@ -162,8 +162,8 @@
         "Location": {
           "blank_count": 49373,
           "cast_failures": {
-            "float64": 339259,
-            "int64": 339259
+            "float64": 388632,
+            "int64": 388632
           },
           "examples": [
             "RG27",

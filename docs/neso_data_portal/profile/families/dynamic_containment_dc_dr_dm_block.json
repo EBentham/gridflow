@@ -30,8 +30,8 @@
         "Bid Validity": {
           "blank_count": 728794,
           "cast_failures": {
-            "float64": 0,
-            "int64": 0
+            "float64": 728794,
+            "int64": 728794
           },
           "examples": [],
           "max_len": 0,

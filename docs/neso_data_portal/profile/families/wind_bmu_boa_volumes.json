@@ -2430,6 +2430,8 @@
             },
             {
               "dtype": "int64",
+              "max": 50,
+              "min": 1,
               "name": "settlement_period",
               "nullable": true,
               "source": "Settlement_Period"

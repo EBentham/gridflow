@@ -133,8 +133,8 @@
         "postCode": {
           "blank_count": 5537,
           "cast_failures": {
-            "float64": 471446,
-            "int64": 471446
+            "float64": 476983,
+            "int64": 476983
           },
           "examples": [
             "BH15",
@@ -182,8 +182,8 @@
         "technologyType": {
           "blank_count": 955,
           "cast_failures": {
-            "float64": 619234,
-            "int64": 619234
+            "float64": 620189,
+            "int64": 620189
           },
           "examples": [
             "Batteries",
