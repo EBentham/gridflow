@@ -287,20 +287,19 @@ class TestRules:
         _refused(tmp_path, "V-12", record(), resources=resources)
 
     def test_v12_covered_grant_with_evidence_loads(self, tmp_path: Path) -> None:
-        evidence = {
-            "covered_capture": "a",
-            "covering_capture": "b",
-            "covered_record_version": "1",
-            "covering_record_version": "1",
-            "inventory_sha256": "0" * 64,
-        }
+        evidence = {"fingerprint": "0" * 64, "components": {"harness": "0" * 64}}
         resources = [
             resource(R1, "Series", "gen_series"),
             resource(
                 R2,
                 "Copy",
                 "gen_series",
-                disposition={"kind": "COVERED", "by": R1, "evidence": evidence},
+                disposition={
+                    "kind": "COVERED",
+                    "by": R1,
+                    "key": "gen_series",
+                    "evidence": evidence,
+                },
             ),
         ]
         assert _load(tmp_path, record(), resources=resources).resources[R2]

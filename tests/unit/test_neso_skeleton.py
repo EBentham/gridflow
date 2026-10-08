@@ -69,13 +69,7 @@ class TestGolden:
 def synthetic(tmp_path: Path) -> tuple[Any, dict[str, Any]]:
     """A held package with every disposition, a child inventory and a dump family."""
     ids = [f"00000000-0000-4000-8000-0000000001{n:02d}" for n in range(10)]
-    evidence = {
-        "covered_capture": "c1",
-        "covering_capture": "c2",
-        "covered_record_version": "1",
-        "covering_record_version": "1",
-        "inventory_sha256": "0" * 64,
-    }
+    evidence = {"fingerprint": "0" * 64, "components": {"harness": "0" * 64}}
     document = package(
         "every-disposition",
         "00000000-0000-4000-8000-000000000001",
@@ -89,8 +83,13 @@ def synthetic(tmp_path: Path) -> tuple[Any, dict[str, Any]]:
             resource(
                 ids[1],
                 "Old Series",
-                "syn_series",
-                disposition={"kind": "COVERED", "by": ids[0], "evidence": evidence},
+                "syn_dump",
+                disposition={
+                    "kind": "COVERED",
+                    "by": ids[5],
+                    "key": "syn_dump",
+                    "evidence": evidence,
+                },
             ),
             resource(ids[2], "Guide", "syn_files", fmt="PDF"),
             resource(ids[3], "Map", "syn_files", fmt="GEOJSON", disposition={"kind": "GIS"}),
