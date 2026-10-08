@@ -121,6 +121,14 @@ every covered capture matched. The CLI prints the JSON proof (exit 0 grant, 1 re
 2 usage). A grant enters the registry only with a committed test that re-proves it on byte
 copies.
 
+**P-15 — fixtures on disk.** `tests/fixtures/neso_data_portal/containers/` holds byte
+copies of four real bronze bodies (CMP381 II workbook, TR129 XLSM, the ResultSummary ZIP,
+the TNUoS generation-zones shapefile ZIP); `PROVENANCE.md` gives each source path, SHA-256
+and the sidecar values the tests use, and a test re-hashes every fixture. Negative cases
+come from a stdlib workbook builder and ZIP corrupters (repeated name, bad CRC, the
+false-size prefix construction). Every X test module runs under `forbid_zipfile_reads`,
+which fails any `ZipFile.read/open/extract*/testzip` call made from a NESO module.
+
 **P-16 — GIS facts.** `connectors/neso_data_portal/gis.py` states per layer the feature
 count, bounding box and CRS of every `GIS` resource's newest capture (GeoJSON via `json`;
 GPKG via in-memory `sqlite3.deserialize` with bound values and an identifier regex on the
