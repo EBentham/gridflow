@@ -268,3 +268,46 @@ class TestRuntimeFreezePin:
 
     def test_no_bronze_at_all_is_fine(self, tmp_path: Path, registry: Registry) -> None:
         assert_bronze_dirs_registered(tmp_path, registry)
+
+
+class TestSilverScanOptions:
+    """T-B8-4: B's keyword-only scan options; A's tests above stay unchanged."""
+
+    def test_require_provenance_false_admits_a_capture_without_last_modified(
+        self, tmp_path: Path, registry: Registry
+    ) -> None:
+        """Detects silver losing sight of a dump capture (no ``last_modified``)."""
+        _alpha_capture(tmp_path / "bronze", ckan_last_modified="")
+        dataset = tmp_path / "bronze" / "alpha_series"
+        assert scan_dataset(dataset, registry).captures == ()
+        relaxed = scan_dataset(dataset, registry, require_provenance=False)
+        assert len(relaxed.captures) == 1
+        assert relaxed.captures[0].ckan_last_modified is None
+
+    def test_require_provenance_false_still_needs_the_identity_keys(
+        self, tmp_path: Path, registry: Registry
+    ) -> None:
+        _body, sidecar = _alpha_capture(tmp_path / "bronze")
+        edit_sidecar(sidecar, _drop_param("resource_filename"))
+        scan = scan_dataset(
+            tmp_path / "bronze" / "alpha_series", registry, require_provenance=False
+        )
+        assert scan.captures == ()
+        assert "resource_filename" in scan.unusable[0].reason
+
+    def test_partition_restricts_the_walk_to_one_date_directory(
+        self, tmp_path: Path, registry: Registry
+    ) -> None:
+        _alpha_capture(tmp_path / "bronze", partition="2026/10/07")
+        _alpha_capture(
+            tmp_path / "bronze",
+            partition="2026/10/08",
+            fetched_at=datetime(2026, 10, 8, 12, tzinfo=UTC),
+        )
+        dataset = tmp_path / "bronze" / "alpha_series"
+        assert len(scan_dataset(dataset, registry).captures) == 2
+        from datetime import date
+
+        only = scan_dataset(dataset, registry, partition=date(2026, 10, 8))
+        assert [c.body.parent.name for c in only.captures] == ["08"]
+        assert scan_dataset(dataset, registry, partition=date(2026, 10, 9)).captures == ()

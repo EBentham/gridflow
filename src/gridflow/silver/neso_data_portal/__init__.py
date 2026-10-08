@@ -27,8 +27,17 @@ Distinct from ``gridflow.silver.neso``, which is the Carbon Intensity source
 
 from __future__ import annotations
 
+from gridflow.connectors.neso_data_portal.registry import LEGACY_KEYS
 from gridflow.silver.neso_data_portal import (
     daily_wind_availability,  # noqa: F401
     embedded_wind_solar_forecast,  # noqa: F401
+    generic,  # noqa: F401  # registers every recorded family (ADR-034 P-15)
     historic_generation_mix,  # noqa: F401
 )
+from gridflow.silver.neso_data_portal.completion import record_bespoke_completions
+from gridflow.silver.registry import register_post_run_hook
+
+# ADR-034 P-8: the bespoke three gain completion records through a post-run
+# hook; their own modules stay byte-unchanged.
+for _legacy_key in sorted(LEGACY_KEYS):
+    register_post_run_hook("neso_data_portal", _legacy_key, record_bespoke_completions)

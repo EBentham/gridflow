@@ -120,6 +120,7 @@ unchanged fails the dataset.
 - **C-7, residual.** `gridflow pipeline neso_data_portal --all` exits 1 at transform until
   unit B, because only the three legacy keys have transformers. The capture sweep uses
   `gridflow ingest neso_data_portal --all`; the legacy datasets keep per-dataset `pipeline`.
+  C-7 closed by ADR-034 P-13.
 - **FM-9, accepted residual: fail-open skip.** If NESO changes a file's bytes without moving
   its `last_modified`, the skip keeps the older capture. TODO: vendor confirmation, or an
   observed equal-`last_modified` republication with a different SHA, would retire this. The

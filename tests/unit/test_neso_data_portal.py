@@ -93,7 +93,8 @@ from gridflow.silver.neso_data_portal.historic_generation_mix import (
 from gridflow.silver.registry import get_transformer_class, list_transformers
 from gridflow.silver.schema_manifest import (
     _DATE_COL_SQL_TYPES,
-    DESIGNATED_DATE_COLS,
+    _deprecated_aliases,
+    _silver_entry,
     get_silver_schema_manifest,
 )
 from gridflow.utils.time import settlement_period_to_utc, settlement_periods_in_day
@@ -3574,12 +3575,20 @@ class TestRegistrationCoverage:
 
     def test_every_registered_dataset_has_a_designated_date_col(self) -> None:
         """ADR-024. A missing entry is not a soft gap: `get_silver_schema_manifest()`
-        raises `ValueError`, so the whole manifest becomes unbuildable."""
-        for key in list_transformers("neso_data_portal"):
-            assert key in DESIGNATED_DATE_COLS, f"{key} has no DESIGNATED_DATE_COLS entry"
-            assert DESIGNATED_DATE_COLS[key] in _DATE_COL_SQL_TYPES, (
-                f"{key}'s date column has no registered SQL type, which also raises"
+        raises `ValueError`, so the whole manifest becomes unbuildable.
+
+        Resolved through `_silver_entry` (ADR-034 P-12): a generated family
+        carries its date column on its class and never appears in
+        `DESIGNATED_DATE_COLS`, so the dict alone is no longer the whole lookup.
+        """
+        keys = list_transformers("neso_data_portal")
+        aliases = _deprecated_aliases(list_transformers())
+        for source, dataset in keys:
+            entry = _silver_entry(source, dataset, aliases)
+            assert entry.designated_date_col in _DATE_COL_SQL_TYPES, (
+                f"{(source, dataset)}'s date column has no registered SQL type, which also raises"
             )
+            assert entry.date_col_sql_type == _DATE_COL_SQL_TYPES[entry.designated_date_col]
 
     def test_every_registered_dataset_has_a_latest_view_spec(self) -> None:
         """D-21 makes APPEND_ONLY uniform across this source, and an APPEND_ONLY

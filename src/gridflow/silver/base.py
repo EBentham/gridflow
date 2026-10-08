@@ -400,6 +400,15 @@ def gas_day_event_time_expr(column: str = "gas_day") -> pl.Expr:
     )
 
 
+def append_only_run_stamp(available_at: datetime) -> str:
+    """Format an APPEND_ONLY filename's ``run`` suffix (ADR-018), the one site.
+
+    ``_write_silver`` names a vintage file with it, and the NESO completion
+    ledger (ADR-034 P-6/P-8) derives the same name to find or claim a file.
+    """
+    return available_at.isoformat().replace(":", "-").replace("+", "-")
+
+
 class BaseSilverTransformer(ABC):
     """Base class for bronze -> silver transformations.
 
@@ -933,15 +942,11 @@ class BaseSilverTransformer(ABC):
         """
         return column
 
-    def run(
-        self,
-        target_date: date,
-        run_id: str | None = None,
-        reingest: bool = False,
-    ) -> int:
-        """Execute the full bronze -> silver pipeline for one date.
+    def _reset_run_counters(self) -> None:
+        """Reset every per-run ``last_*`` counter (ADR-034 P-9).
 
-        Returns the number of rows written.
+        Called first by :meth:`run` and by the NESO generic engine's
+        ``run_captures``, so both publish their counters from one reset.
         """
         # Reset the per-run warning counters before either early-return path so a
         # date with no bronze / missing columns is never charged a prior date's
@@ -971,11 +976,29 @@ class BaseSilverTransformer(ABC):
         self.last_unaccounted_empty_frames = 0
         self.last_total_unaccounted_exclusion = False
 
+    def run(
+        self,
+        target_date: date,
+        run_id: str | None = None,
+        reingest: bool = False,
+    ) -> int:
+        """Execute the full bronze -> silver pipeline for one date.
+
+        Returns the number of rows written.
+        """
+        self._reset_run_counters()
+
         resolved_run_id = run_id or f"adhoc-{datetime.now(UTC).isoformat()}"
         if self.PARTITION_DATE_COLUMN is not None:
             return self._run_partition_owned(target_date, resolved_run_id, reingest)
 
         frames: list[pl.DataFrame] = []
+        # P-9: the per-file branch keeps a running count instead of every
+        # written frame, so one date's memory is bounded by one body. `frames`
+        # still collects there only for the opt-in CSV sidecar, whose diagonal
+        # concat needs the data itself.
+        released_rows = 0
+        released_frames = 0
         saw_bronze = False
 
         # Mutually exclusive: a transformer is either an Elexon in-scope
@@ -1065,7 +1088,11 @@ class BaseSilverTransformer(ABC):
                         )
                         if clean_df is not None:
                             self._write_silver(clean_df, target_date, available_at=available_at)
-                            frames.append(clean_df)
+                            released_rows += clean_df.height
+                            released_frames += 1
+                            if self.write_silver_csv:
+                                frames.append(clean_df)
+                        del raw_df, clean_df
             finally:
                 # D-42's publication rule. On the exception path the predicates
                 # are computed over what was examined BEFORE the failure, which
@@ -1090,7 +1117,7 @@ class BaseSilverTransformer(ABC):
                 # so it is already durable across an exception. Only the derived
                 # FLAG is computed here.
                 self.last_total_unaccounted_exclusion = (
-                    examined > 0 and not frames and self.last_unaccounted_empty_frames > 0
+                    examined > 0 and released_frames == 0 and self.last_unaccounted_empty_frames > 0
                 )
         elif self.LOCKSTEP_BRONZE_READ:
             # ONE scan, ONE sidecar read per examined candidate, threaded as a
@@ -1191,7 +1218,7 @@ class BaseSilverTransformer(ABC):
                     self._write_silver(clean_df, target_date, available_at=available_at)
                     frames.append(clean_df)
 
-        if not frames:
+        if not frames and released_frames == 0:
             # Distinguish "nothing to read" from "read but transformed to zero
             # rows" (the latter already logged per frame by _process_frame).
             if not saw_bronze:
@@ -1203,7 +1230,9 @@ class BaseSilverTransformer(ABC):
             # vintage only) — diagonal concat null-fills instead of raising (CL-1).
             self._write_csv(pl.concat(frames, how="diagonal"), target_date)
 
-        total_rows = sum(len(frame) for frame in frames)
+        total_rows = (
+            released_rows if self.VINTAGE_PER_BRONZE_FILE else sum(len(frame) for frame in frames)
+        )
         logger.info(
             f"Silver write: {self.source}/{self.dataset} {target_date} -> {total_rows} rows"
         )
@@ -2639,7 +2668,7 @@ class BaseSilverTransformer(ABC):
             dataset_dir=self.silver_dir,
         )
         if self.APPEND_ONLY:
-            run_stamp = available_at.isoformat().replace(":", "-").replace("+", "-")
+            run_stamp = append_only_run_stamp(available_at)
             filename = f"{self.dataset}_{target_date.strftime('%Y%m%d')}_run{run_stamp}.parquet"
             final_path = out_dir / filename
         else:

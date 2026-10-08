@@ -1,0 +1,92 @@
+{
+  "sql": {
+    "elexon/fou2t14d": "CREATE OR REPLACE VIEW \"silver_elexon_fou2t14d_latest\" AS SELECT * FROM \"silver_elexon_fou2t14d\" QUALIFY ROW_NUMBER() OVER (PARTITION BY \"settlement_date\", \"fuel_type\", \"settlement_period\" ORDER BY \"available_at\" DESC NULLS LAST) = 1",
+    "elexon/remit": "CREATE OR REPLACE VIEW \"silver_elexon_remit_latest\" AS SELECT * FROM \"silver_elexon_remit\" QUALIFY ROW_NUMBER() OVER (PARTITION BY \"mrid\" ORDER BY \"available_at\" DESC NULLS LAST, \"revision_number\" DESC NULLS LAST) = 1",
+    "elexon/system_prices": "CREATE OR REPLACE VIEW \"silver_elexon_system_prices_latest\" AS SELECT * FROM \"silver_elexon_system_prices\" QUALIFY ROW_NUMBER() OVER (PARTITION BY \"settlement_date\", \"settlement_period\" ORDER BY \"available_at\" DESC NULLS LAST, CASE \"run_type\" WHEN 'II' THEN 1 WHEN 'SF' THEN 2 WHEN 'R1' THEN 3 WHEN 'R2' THEN 4 WHEN 'R3' THEN 5 WHEN 'RF' THEN 6 WHEN 'DF' THEN 7 ELSE 0 END DESC) = 1",
+    "neso_data_portal/daily_wind_availability": "CREATE OR REPLACE VIEW \"silver_neso_data_portal_daily_wind_availability_latest\" AS SELECT * FROM \"silver_neso_data_portal_daily_wind_availability\" QUALIFY ROW_NUMBER() OVER (PARTITION BY \"bmu_id\", \"availability_date\" ORDER BY \"available_at\" DESC NULLS LAST) = 1",
+    "neso_data_portal/embedded_wind_solar_forecast": "CREATE OR REPLACE VIEW \"silver_neso_data_portal_embedded_wind_solar_forecast_latest\" AS SELECT * FROM \"silver_neso_data_portal_embedded_wind_solar_forecast\" QUALIFY ROW_NUMBER() OVER (PARTITION BY \"settlement_date\", \"settlement_period\" ORDER BY \"available_at\" DESC NULLS LAST) = 1",
+    "neso_data_portal/historic_generation_mix": "CREATE OR REPLACE VIEW \"silver_neso_data_portal_historic_generation_mix_latest\" AS SELECT * FROM \"silver_neso_data_portal_historic_generation_mix\" QUALIFY ROW_NUMBER() OVER (PARTITION BY \"timestamp_utc\" ORDER BY \"available_at\" DESC NULLS LAST) = 1"
+  },
+  "views": [
+    [
+      "silver_daily_wind_availability",
+      "CREATE VIEW silver_daily_wind_availability AS SELECT * FROM silver_neso_data_portal_daily_wind_availability;"
+    ],
+    [
+      "silver_elexon_fou2t14d",
+      "CREATE VIEW silver_elexon_fou2t14d AS SELECT * FROM read_parquet('<DATA>/silver/elexon/fou2t14d/**/[!.]*.parquet', (hive_partitioning = CAST('t' AS BOOLEAN)), (union_by_name = CAST('t' AS BOOLEAN)));"
+    ],
+    [
+      "silver_elexon_fou2t14d_latest",
+      "CREATE VIEW silver_elexon_fou2t14d_latest AS SELECT * FROM silver_elexon_fou2t14d QUALIFY (row_number() OVER (PARTITION BY settlement_date, fuel_type, settlement_period ORDER BY available_at DESC NULLS LAST) = 1);"
+    ],
+    [
+      "silver_elexon_mid",
+      "CREATE VIEW silver_elexon_mid AS SELECT * FROM read_parquet('<DATA>/silver/elexon/mid/**/[!.]*.parquet', (hive_partitioning = CAST('t' AS BOOLEAN)), (union_by_name = CAST('t' AS BOOLEAN)));"
+    ],
+    [
+      "silver_elexon_remit",
+      "CREATE VIEW silver_elexon_remit AS SELECT * FROM read_parquet('<DATA>/silver/elexon/remit/**/[!.]*.parquet', (hive_partitioning = CAST('t' AS BOOLEAN)), (union_by_name = CAST('t' AS BOOLEAN)));"
+    ],
+    [
+      "silver_elexon_remit_latest",
+      "CREATE VIEW silver_elexon_remit_latest AS SELECT * FROM silver_elexon_remit QUALIFY (row_number() OVER (PARTITION BY mrid ORDER BY available_at DESC NULLS LAST, revision_number DESC NULLS LAST) = 1);"
+    ],
+    [
+      "silver_elexon_system_prices",
+      "CREATE VIEW silver_elexon_system_prices AS SELECT * FROM read_parquet('<DATA>/silver/elexon/system_prices/**/[!.]*.parquet', (hive_partitioning = CAST('t' AS BOOLEAN)), (union_by_name = CAST('t' AS BOOLEAN)));"
+    ],
+    [
+      "silver_elexon_system_prices_latest",
+      "CREATE VIEW silver_elexon_system_prices_latest AS SELECT * FROM silver_elexon_system_prices QUALIFY (row_number() OVER (PARTITION BY settlement_date, settlement_period ORDER BY available_at DESC NULLS LAST, CASE  WHEN ((run_type = 'II')) THEN (1) WHEN ((run_type = 'SF')) THEN (2) WHEN ((run_type = 'R1')) THEN (3) WHEN ((run_type = 'R2')) THEN (4) WHEN ((run_type = 'R3')) THEN (5) WHEN ((run_type = 'RF')) THEN (6) WHEN ((run_type = 'DF')) THEN (7) ELSE 0 END DESC) = 1);"
+    ],
+    [
+      "silver_embedded_wind_solar_forecast",
+      "CREATE VIEW silver_embedded_wind_solar_forecast AS SELECT * FROM silver_neso_data_portal_embedded_wind_solar_forecast;"
+    ],
+    [
+      "silver_fou2t14d",
+      "CREATE VIEW silver_fou2t14d AS SELECT * FROM silver_elexon_fou2t14d;"
+    ],
+    [
+      "silver_historic_generation_mix",
+      "CREATE VIEW silver_historic_generation_mix AS SELECT * FROM silver_neso_data_portal_historic_generation_mix;"
+    ],
+    [
+      "silver_mid",
+      "CREATE VIEW silver_mid AS SELECT * FROM silver_elexon_mid;"
+    ],
+    [
+      "silver_neso_data_portal_daily_wind_availability",
+      "CREATE VIEW silver_neso_data_portal_daily_wind_availability AS SELECT * FROM read_parquet('<DATA>/silver/neso_data_portal/daily_wind_availability/**/[!.]*.parquet', (hive_partitioning = CAST('t' AS BOOLEAN)), (union_by_name = CAST('t' AS BOOLEAN)));"
+    ],
+    [
+      "silver_neso_data_portal_daily_wind_availability_latest",
+      "CREATE VIEW silver_neso_data_portal_daily_wind_availability_latest AS SELECT * FROM silver_neso_data_portal_daily_wind_availability QUALIFY (row_number() OVER (PARTITION BY bmu_id, availability_date ORDER BY available_at DESC NULLS LAST) = 1);"
+    ],
+    [
+      "silver_neso_data_portal_embedded_wind_solar_forecast",
+      "CREATE VIEW silver_neso_data_portal_embedded_wind_solar_forecast AS SELECT * FROM read_parquet('<DATA>/silver/neso_data_portal/embedded_wind_solar_forecast/**/[!.]*.parquet', (hive_partitioning = CAST('t' AS BOOLEAN)), (union_by_name = CAST('t' AS BOOLEAN)));"
+    ],
+    [
+      "silver_neso_data_portal_embedded_wind_solar_forecast_latest",
+      "CREATE VIEW silver_neso_data_portal_embedded_wind_solar_forecast_latest AS SELECT * FROM silver_neso_data_portal_embedded_wind_solar_forecast QUALIFY (row_number() OVER (PARTITION BY settlement_date, settlement_period ORDER BY available_at DESC NULLS LAST) = 1);"
+    ],
+    [
+      "silver_neso_data_portal_historic_generation_mix",
+      "CREATE VIEW silver_neso_data_portal_historic_generation_mix AS SELECT * FROM read_parquet('<DATA>/silver/neso_data_portal/historic_generation_mix/**/[!.]*.parquet', (hive_partitioning = CAST('t' AS BOOLEAN)), (union_by_name = CAST('t' AS BOOLEAN)));"
+    ],
+    [
+      "silver_neso_data_portal_historic_generation_mix_latest",
+      "CREATE VIEW silver_neso_data_portal_historic_generation_mix_latest AS SELECT * FROM silver_neso_data_portal_historic_generation_mix QUALIFY (row_number() OVER (PARTITION BY timestamp_utc ORDER BY available_at DESC NULLS LAST) = 1);"
+    ],
+    [
+      "silver_remit",
+      "CREATE VIEW silver_remit AS SELECT * FROM silver_elexon_remit;"
+    ],
+    [
+      "silver_system_prices",
+      "CREATE VIEW silver_system_prices AS SELECT * FROM silver_elexon_system_prices;"
+    ]
+  ]
+}

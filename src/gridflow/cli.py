@@ -688,6 +688,8 @@ def quality(
     )
     from gridflow.quality.reporter import QualityReporter
     from gridflow.silver.latest_views import LATEST_VIEW_SPECS, select_latest_vintage
+    from gridflow.silver.owned_relations import RegisteredRelationsTransformer
+    from gridflow.silver.registry import get_transformer_class
     from gridflow.storage.parquet import scan_parquet_dir
     from gridflow.utils.logging import setup_logging
 
@@ -730,7 +732,14 @@ def quality(
             # latest-vintage surface (ADR-025 P0.3) so duplicate/gap checks see
             # one row per entity key, not one per vintage.
             spec = LATEST_VIEW_SPECS.get((src, ds))
-            if spec is not None:
+            if spec is not None and spec.mode == "whole_capture":
+                owner = get_transformer_class(src, ds)
+                if owner is None or not issubclass(owner, RegisteredRelationsTransformer):
+                    raise RuntimeError(f"{src}/{ds}: a whole-capture spec without its owner class")
+                lf = select_latest_vintage(
+                    lf, spec, completions=owner.completions(settings.pipeline.data_dir)
+                )
+            elif spec is not None:
                 lf = select_latest_vintage(lf, spec)
             df = lf.collect()
             if df.is_empty():
@@ -1338,7 +1347,11 @@ def _echo_transform_results(source: str, results: list[DatasetResult]) -> None:
             )
             if count
         )
-        if r.status == "completed_with_warnings":
+        if r.skip_reason is not None:
+            # ADR-034 P-13: an ingest-only family. Ahead of the status branches
+            # so a skip never reads as "0 rows transformed".
+            typer.echo(f"  {source}/{r.dataset}: skipped ({r.skip_reason})")
+        elif r.status == "completed_with_warnings":
             # Excluded bronze bodies are a FILE count, appended only when
             # nonzero so the existing line is unchanged for every other
             # warning shape (ADR-028).

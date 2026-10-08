@@ -42,9 +42,10 @@ def family(
     max_download_bytes: int = 64 * 1024 * 1024,
     legacy: bool = False,
     name_regex: str | None = None,
+    record: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    """One family entry."""
-    return {
+    """One family entry; ``record`` adds a frozen schema record (ADR-034 P-1)."""
+    entry: dict[str, Any] = {
         "key": key,
         "kind": kind,
         "legacy": legacy,
@@ -54,6 +55,85 @@ def family(
         "max_download_bytes": max_download_bytes,
         "name_regex": name_regex,
         "transformer": "bespoke" if legacy else None,
+    }
+    if record is not None:
+        entry["record"] = record
+    return entry
+
+
+def column(
+    source: str,
+    name: str | None = None,
+    dtype: str = "string",
+    *,
+    nullable: bool = True,
+    **extra: Any,
+) -> dict[str, Any]:
+    """One ``ColumnSpec``; ``name`` defaults to the lower-cased source."""
+    spec: dict[str, Any] = {
+        "source": source,
+        "name": name if name is not None else source.lower(),
+        "dtype": dtype,
+        "nullable": nullable,
+    }
+    if dtype == "date":
+        spec["format"] = "%Y-%m-%d"
+    spec.update(extra)
+    return spec
+
+
+def epoch(columns: list[dict[str, Any]], *, issue: dict[str, Any] | None = None) -> dict[str, Any]:
+    """One ``HeaderEpoch``: the header is the columns' sources, in order."""
+    return {
+        "header": [spec["source"] for spec in columns],
+        "columns": columns,
+        "issue": issue if issue is not None else {"kind": "none"},
+    }
+
+
+def sp_columns() -> list[dict[str, Any]]:
+    """The default sp_pair epoch: date, period, a string key and a value."""
+    return [
+        column("SettlementDate", "settlement_date", "date", nullable=False),
+        column("SettlementPeriod", "settlement_period", "int64", nullable=False),
+        column("Unit", "unit", nullable=False),
+        column("Value", "value", "float64"),
+    ]
+
+
+def record(
+    *,
+    epochs: list[dict[str, Any]] | None = None,
+    temporal: dict[str, Any] | None = None,
+    entity_key: tuple[str, ...] = ("settlement_date", "settlement_period", "unit"),
+    latest: str = "key_latest",
+    vintage: str = "ckan_last_modified",
+    reader: str = "csv",
+    encoding: str = "utf-8",
+    version: str = "1",
+    run_type_column: str | None = None,
+    siblings: tuple[str, ...] = (),
+    vintage_evidence: str | None = None,
+) -> dict[str, Any]:
+    """One frozen ``SchemaRecord``; the defaults are a valid sp_pair family."""
+    return {
+        "version": version,
+        "reader": reader,
+        "encoding": encoding,
+        "epochs": epochs if epochs is not None else [epoch(sp_columns())],
+        "temporal": temporal
+        if temporal is not None
+        else {
+            "kind": "sp_pair",
+            "date_column": "settlement_date",
+            "period_column": "settlement_period",
+        },
+        "entity_key": list(entity_key),
+        "latest": latest,
+        "run_type_column": run_type_column,
+        "siblings": list(siblings),
+        "vintage": vintage,
+        "vintage_evidence": vintage_evidence,
     }
 
 
@@ -65,11 +145,12 @@ def resource(
     fmt: str = "CSV",
     url_type: str = "upload",
     disposition: dict[str, Any] | None = None,
+    children: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     """One resource entry; SILVER for CSV by default, DOC otherwise."""
     if disposition is None:
         disposition = {"kind": "SILVER", "key": family_key} if fmt == "CSV" else {"kind": "DOC"}
-    return {
+    entry: dict[str, Any] = {
         "id": resource_id,
         "name": name,
         "format": fmt,
@@ -77,6 +158,9 @@ def resource(
         "family": family_key,
         "disposition": disposition,
     }
+    if children is not None:
+        entry["children"] = children
+    return entry
 
 
 def package(
