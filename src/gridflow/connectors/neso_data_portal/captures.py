@@ -73,6 +73,9 @@ class Capture:
         written_at: When the capture became durable, tz-aware.
         body_sha256: The recorded body digest.
         body_size_bytes: The recorded body size.
+        url_type: ``request_params.url_type`` when it is a string (``upload``
+            or ``datastore``), else ``None`` (a legacy sidecar). Last and
+            defaulted, so the field is additive (ADR-035 P-6).
     """
 
     sidecar: Path
@@ -84,6 +87,7 @@ class Capture:
     written_at: datetime
     body_sha256: str
     body_size_bytes: int
+    url_type: str | None = None
 
 
 @dataclass(frozen=True)
@@ -188,8 +192,13 @@ def _usable_reason(
     clause 3 becomes "the ``request_params`` D-12 keys other than
     ``ckan_last_modified`` are non-empty strings" and clause 4 reads
     ``package`` and ``resource_name`` from ``request_params``, so a capture
-    with no ``last_modified`` (a dump) stays visible. The default reproduces
-    unit A's rule exactly.
+    with no ``last_modified`` (a dump) stays visible.
+
+    A ``datastore`` sidecar (``request_params.url_type == "datastore"``) takes
+    that identity form **whatever** ``require_provenance`` says (ADR-035 P-6):
+    no CKAN timestamp is required of a dump because none is trusted
+    (decision 9). Every other sidecar under the default reproduces unit A's
+    rule exactly.
     """
     if not isinstance(meta, dict):
         return "sidecar is not a JSON object"
@@ -206,7 +215,8 @@ def _usable_reason(
         return f"body is {actual} B but the sidecar records {declared} B"
 
     params = meta.get("request_params")
-    if require_provenance:
+    is_dump = isinstance(params, dict) and params.get("url_type") == "datastore"
+    if require_provenance and not is_dump:
         # Imported lazily: the silver package import loads the three transformers.
         from gridflow.silver.neso_data_portal._bronze import provenance_for
 
@@ -326,6 +336,7 @@ def scan_dataset(
                     written_at=written_at,
                     body_sha256=str(meta.get("body_sha256", "")),
                     body_size_bytes=int(meta["body_size_bytes"]),
+                    url_type=_url_type(params),
                 )
             )
 
@@ -338,6 +349,11 @@ def scan_dataset(
             item.reason,
         )
     return ScanResult(tuple(captures), tuple(unusable), tuple(orphans), tuple(temps))
+
+
+def _url_type(params: dict[str, Any]) -> str | None:
+    value = params.get("url_type")
+    return value if isinstance(value, str) else None
 
 
 def _last_modified(params: dict[str, Any]) -> str | None:

@@ -301,3 +301,21 @@ def test_a_failed_json_write_leaves_the_previous_report_intact(
         f"report truncated to {len(report.read_bytes())} of {len(previous)} bytes"
     )
     assert [p.name for p in report.parent.iterdir()] == ["report.json"]
+
+
+def test_d3_4_a_null_last_modified_dump_capture_counts_captured(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """T-D3-4: detects a dump capture reported ``unusable`` (red on master, A4)."""
+    _install(tmp_path, monkeypatch)
+    data_dir = tmp_path / "data"
+    _body, sidecar = _capture(data_dir, "alpha_series", ckan_last_modified="")
+
+    def _as_dump(meta: dict[str, Any]) -> None:
+        meta["request_params"]["url_type"] = "datastore"
+        meta["request_params"]["resource_filename"] = R1
+
+    edit_sidecar(sidecar, _as_dump)
+    assert _run(_snapshot(tmp_path, [R1]), data_dir, "--verify-sha") == 0
+    out = capsys.readouterr().out
+    assert "captured 1" in out and "unusable 0" in out, out
