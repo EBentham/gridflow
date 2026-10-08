@@ -140,7 +140,8 @@ TODO_CONSEQUENCES: dict[str, str] = {
 }
 """TODO kind -> eligibility consequence (decision 16; P-6's table)."""
 
-_SP_HEADER = re.compile(r"(?i)^(settlement[ _]?period|sp|period)$")
+SP_HEADER = re.compile(r"(?i)^(settlement[ _]?period|sp|period)$")
+"""A settlement-period header (P-4); its silver column is bounded 1..50."""
 _DATE_HEADER = re.compile(r"(?i)date$")
 _SLASH_PARTS = r"^(\d{2})/(\d{2})/\d{4}$"
 
@@ -531,7 +532,7 @@ def _date_formats(shapes: dict[str, int]) -> list[str]:
 
 def _sp_pair(header: tuple[str, ...], shapes: dict[str, dict[str, int]]) -> tuple[str, str] | None:
     period = next(
-        (h for h in header if _SP_HEADER.match(h) and shapes[h] and set(shapes[h]) == {"int"}),
+        (h for h in header if SP_HEADER.match(h) and shapes[h] and set(shapes[h]) == {"int"}),
         None,
     )
     if period is None:
@@ -717,7 +718,7 @@ def _draft_column(
         column["dtype"] = "string"
     if column["dtype"] in ("int64", "float64") and vendor_unit(fields.get(vendor)) is None:
         todos.add("unit", f"{where}.unit", f"{vendor}: a numeric column with no vendor unit")
-    temporal = bool(_SP_HEADER.match(vendor)) or "month" in vendor.lower()
+    temporal = bool(SP_HEADER.match(vendor)) or "month" in vendor.lower()
     return _Draft(column, temporal=temporal)
 
 

@@ -22,6 +22,7 @@ import pytest
 from _neso_generic_support import write_capture
 
 from gridflow.connectors.neso_data_portal import registry as registry_module
+from gridflow.connectors.neso_data_portal.profile import SP_HEADER
 from gridflow.connectors.neso_data_portal.registry import Held
 from gridflow.silver.latest_views import LATEST_VIEW_SPECS, select_latest_vintage
 from gridflow.silver.neso_data_portal import generic
@@ -250,6 +251,44 @@ def test_t_pr2_da_perf_keeps_every_row_of_the_fold_day_as_vendor_strings(
     assert frame.schema["outturn_datetime"] == pl.Utf8
     assert frame["outturn_datetime"].str.ends_with("Z").all()
     assert "2021-04-01T00:30:00Z" in frame["outturn_datetime"].to_list()
+
+
+def test_da_perf_settlement_periods_outside_1_to_50_are_excluded(data: Path) -> None:
+    """Detects a settlement period of 0 or 51 reaching silver (the range is 1..50).
+
+    The record's bounds exclude the row and count it; without them both rows
+    are written with zero exclusions (review fix 1 #1).
+    """
+    body = pilot_body("da_demand_fc_performance")
+    body = body.replace(b",2021-04-01T00:30:00Z,1,", b",2021-04-01T00:30:00Z,0,", 1)
+    body = body.replace(b",2021-04-01T01:00:00Z,2,", b",2021-04-01T01:00:00Z,51,", 1)
+    capture_id = _capture(data, "da_demand_fc_performance", body)
+    transformer = get_transformer(SOURCE, "da_demand_fc_performance", data)
+    assert transformer.run(DAY, run_id="r") == _rows(body) - 2
+    assert transformer.last_excluded_row_count == 2
+    completion = read_completion(data, "da_demand_fc_performance", capture_id)
+    assert completion is not None and completion["rows_excluded"] == 2
+    periods = _silver(data, "da_demand_fc_performance")["settlement_period"]
+    assert periods.min() == 1 and periods.max() == 50
+
+
+def test_every_recorded_settlement_period_column_is_bounded_1_to_50() -> None:
+    """Detects any frozen record typing a settlement period without the 1..50 bounds.
+
+    Registry-wide, so a later batch's record cannot repeat the pilot's omission.
+    """
+    checked = 0
+    for key, (_package, entry) in registry_module.load_registry().families.items():
+        if entry.record is None:
+            continue
+        for epoch in entry.record.epochs:
+            for column in epoch.columns:
+                if SP_HEADER.match(column.source) or SP_HEADER.match(column.name):
+                    checked += 1
+                    assert column.dtype == "int64", (key, column.name)
+                    assert column.min is not None and column.min >= 1, (key, column)
+                    assert column.max is not None and column.max <= 50, (key, column)
+    assert checked >= 1
 
 
 def test_t_pr2_constraint_cost_month_labels_are_first_of_month(data: Path) -> None:
