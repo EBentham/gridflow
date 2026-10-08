@@ -1,14 +1,1218 @@
 [
   {
+    "key": "aahedc_tariffs",
+    "package": "aahedc-tariffs"
+  },
+  {
+    "key": "aggregated_bsad",
+    "package": "aggregated-bsad"
+  },
+  {
+    "key": "as_industry_notifications_balancing",
+    "package": "ancillary-services-important-industry-notifications"
+  },
+  {
+    "key": "as_industry_notifications_dc_dm_dr",
+    "package": "ancillary-services-important-industry-notifications"
+  },
+  {
+    "key": "as_industry_notifications_quick_reserve",
+    "package": "ancillary-services-important-industry-notifications"
+  },
+  {
+    "key": "as_industry_notifications_sffr_important",
+    "package": "ancillary-services-important-industry-notifications"
+  },
+  {
+    "key": "as_industry_notifications_slow_reserve",
+    "package": "ancillary-services-important-industry-notifications"
+  },
+  {
+    "key": "as_industry_notifications_stor_important",
+    "package": "ancillary-services-important-industry-notifications"
+  },
+  {
+    "key": "asdp_instructions",
+    "package": "non-bm-ancillary-service-dispatch-platform-asdp-instructions"
+  },
+  {
+    "key": "asdp_window_prices",
+    "package": "non-bm-ancillary-service-dispatch-platform-asdp-window-prices"
+  },
+  {
+    "key": "br_auction_requirement_fc_da",
+    "package": "balancing-reserve-auction-requirement-forecast"
+  },
+  {
+    "key": "br_auction_requirement_fc_da_archive",
+    "package": "balancing-reserve-auction-requirement-forecast"
+  },
+  {
+    "key": "br_auction_requirement_fc_medium_term",
+    "package": "balancing-reserve-auction-requirement-forecast"
+  },
+  {
+    "key": "brit_ned",
+    "package": "brit-ned"
+  },
+  {
+    "key": "bs_contract_enactment_balancing",
+    "package": "balancing-services-contract-enactment"
+  },
+  {
+    "key": "bs_contract_enactment_balancing_service",
+    "package": "balancing-services-contract-enactment"
+  },
+  {
+    "key": "bs_contract_enactment_files",
+    "package": "balancing-services-contract-enactment"
+  },
+  {
+    "key": "bsad_forward_contracts",
+    "package": "balancing-services-adjustment-data-forward-contracts"
+  },
+  {
+    "key": "bsuos_daily_forecast",
+    "package": "balancing-services-use-of-system-bsuos-daily-forecast"
+  },
+  {
+    "key": "bsuos_fixed_tariffs",
+    "package": "bsuos-fixed-tariffs"
+  },
+  {
+    "key": "bsuos_monthly_forecast_actual_sum",
+    "package": "bsuos-monthly-forecast"
+  },
+  {
+    "key": "bsuos_monthly_forecast_fc_summary",
+    "package": "bsuos-monthly-forecast"
+  },
+  {
+    "key": "bsuos_monthly_forecast_fc_summary_pct",
+    "package": "bsuos-monthly-forecast"
+  },
+  {
+    "key": "bsuos_monthly_forecast_files",
+    "package": "bsuos-monthly-forecast"
+  },
+  {
+    "key": "bsuos_monthly_forecast_impact_on_due",
+    "package": "bsuos-monthly-forecast"
+  },
+  {
+    "key": "bsuos_monthly_forecast_including_new",
+    "package": "bsuos-monthly-forecast"
+  },
+  {
+    "key": "bsuos_monthly_forecast_sum_winter",
+    "package": "bsuos-monthly-forecast"
+  },
+  {
+    "key": "bsuos_monthly_forecast_summary",
+    "package": "bsuos-monthly-forecast"
+  },
+  {
+    "key": "bsuos_monthly_forecast_summary_pct",
+    "package": "bsuos-monthly-forecast"
+  },
+  {
+    "key": "building_heat_model_example_output_half",
+    "package": "building-heat-model"
+  },
+  {
+    "key": "building_heat_model_files",
+    "package": "building-heat-model"
+  },
+  {
+    "key": "building_heat_model_list_input",
+    "package": "building-heat-model"
+  },
+  {
+    "key": "capacity_market_auction_cost",
+    "package": "capacity-market-register"
+  },
+  {
+    "key": "capacity_market_auction_static",
+    "package": "capacity-market-register"
+  },
+  {
+    "key": "capacity_market_component_history",
+    "package": "capacity-market-register"
+  },
+  {
+    "key": "capacity_market_component_history_pre",
+    "package": "capacity-market-register"
+  },
+  {
+    "key": "capacity_market_components",
+    "package": "capacity-market-register"
+  },
+  {
+    "key": "capacity_market_de_rating_factors",
+    "package": "capacity-market-register"
+  },
+  {
+    "key": "capacity_market_unit_cmu",
+    "package": "capacity-market-register"
+  },
+  {
+    "key": "capacity_market_unit_cmu_history",
+    "package": "capacity-market-register"
+  },
+  {
+    "key": "ci_balancing_actions",
+    "package": "carbon-intensity-of-balancing-actions"
+  },
+  {
+    "key": "ci_balancing_actions_files",
+    "package": "carbon-intensity-of-balancing-actions"
+  },
+  {
+    "key": "cmis_intertrip",
+    "package": "constraint-management-intertrip-service-information-cmis"
+  },
+  {
+    "key": "constraint_breakdown",
+    "package": "constraint-breakdown"
+  },
+  {
+    "key": "constraint_cost_fc_24m",
+    "package": "24-months-ahead-constraint-cost-forecast"
+  },
+  {
+    "key": "constraint_limits_24m",
+    "package": "24-months-ahead-constraint-limits"
+  },
+  {
+    "key": "constraint_limits_24m_files",
+    "package": "24-months-ahead-constraint-limits"
+  },
+  {
+    "key": "contract_transfer_obligation",
+    "package": "contract-transfer-of-obligation"
+  },
+  {
+    "key": "country_ci_forecast",
+    "package": "country-carbon-intensity-forecast"
+  },
+  {
+    "key": "current_bsuos_files",
+    "package": "current-balancing-services-use-of-system-bsuos-data"
+  },
+  {
+    "key": "current_bsuos_historic_ii",
+    "package": "current-balancing-services-use-of-system-bsuos-data"
+  },
+  {
+    "key": "current_bsuos_historic_rf",
+    "package": "current-balancing-services-use-of-system-bsuos-data"
+  },
+  {
+    "key": "current_bsuos_historic_sf",
+    "package": "current-balancing-services-use-of-system-bsuos-data"
+  },
+  {
+    "key": "current_bsuos_ii",
+    "package": "current-balancing-services-use-of-system-bsuos-data"
+  },
+  {
+    "key": "current_bsuos_rf",
+    "package": "current-balancing-services-use-of-system-bsuos-data"
+  },
+  {
+    "key": "current_bsuos_sf",
+    "package": "current-balancing-services-use-of-system-bsuos-data"
+  },
+  {
+    "key": "da_constraint_flows_limits",
+    "package": "day-ahead-constraint-flows-and-limits"
+  },
+  {
+    "key": "da_constraint_flows_limits_files",
+    "package": "day-ahead-constraint-flows-and-limits"
+  },
+  {
+    "key": "da_demand_fc_performance",
+    "package": "day-ahead-half-hourly-demand-forecast-performance"
+  },
+  {
+    "key": "da_wind_forecast_day_ahead",
+    "package": "day-ahead-wind-forecast"
+  },
+  {
+    "key": "da_wind_forecast_day_ahead_bmu",
+    "package": "day-ahead-wind-forecast"
+  },
+  {
+    "key": "da_wind_forecast_historic_day_ahead",
+    "package": "day-ahead-wind-forecast"
+  },
+  {
+    "key": "da_wind_forecast_historic_day_ahead_bmu",
+    "package": "day-ahead-wind-forecast"
+  },
+  {
+    "key": "daily_balancing_costs",
+    "package": "daily-balancing-costs-balancing-services-use-of-system"
+  },
+  {
+    "key": "daily_balancing_costs_files",
+    "package": "daily-balancing-costs-balancing-services-use-of-system"
+  },
+  {
+    "key": "daily_balancing_volume",
+    "package": "daily-balancing-volume-balancing-services-use-of-system"
+  },
+  {
+    "key": "daily_balancing_volume_files",
+    "package": "daily-balancing-volume-balancing-services-use-of-system"
+  },
+  {
+    "key": "daily_demand_update",
+    "package": "daily-demand-update"
+  },
+  {
+    "key": "daily_demand_update_files",
+    "package": "daily-demand-update"
+  },
+  {
+    "key": "daily_opmr",
+    "package": "daily-opmr"
+  },
+  {
     "key": "daily_wind_availability",
     "package": "daily-wind-availability"
+  },
+  {
+    "key": "dc_dm_dr_long_term_fc",
+    "package": "long-term-forecasts-for-dc-dm-dr-requirements"
+  },
+  {
+    "key": "dc_forecast_4d",
+    "package": "dynamic-containment-4-day-forecast"
+  },
+  {
+    "key": "dc_forecast_4d_history",
+    "package": "dynamic-containment-4-day-forecast"
+  },
+  {
+    "key": "demand_flexibility_industry_notification",
+    "package": "demand-flexibility"
+  },
+  {
+    "key": "demand_flexibility_service_requirement",
+    "package": "demand-flexibility"
+  },
+  {
+    "key": "demand_flexibility_utilisation_report",
+    "package": "demand-flexibility"
+  },
+  {
+    "key": "demand_flexibility_utilisation_summary",
+    "package": "demand-flexibility"
+  },
+  {
+    "key": "demand_forecast_1d_day_ahead_national",
+    "package": "1-day-ahead-demand-forecast"
+  },
+  {
+    "key": "demand_forecast_1d_files",
+    "package": "1-day-ahead-demand-forecast"
+  },
+  {
+    "key": "demand_forecast_1d_historic_day_ahead",
+    "package": "1-day-ahead-demand-forecast"
+  },
+  {
+    "key": "demand_forecast_2_52w",
+    "package": "long-term-2-52-weeks-ahead-national-demand-forecast"
+  },
+  {
+    "key": "demand_forecast_2d_day_ahead",
+    "package": "2-day-ahead-demand-forecast"
+  },
+  {
+    "key": "demand_forecast_2d_files",
+    "package": "2-day-ahead-demand-forecast"
+  },
+  {
+    "key": "demand_forecast_2d_historic_day_ahead",
+    "package": "2-day-ahead-demand-forecast"
+  },
+  {
+    "key": "demand_profile_dates",
+    "package": "demand-profile-dates"
+  },
+  {
+    "key": "dfs_industry_notification",
+    "package": "demand-flexibility-service"
+  },
+  {
+    "key": "dfs_live_events_service_requirement",
+    "package": "demand-flexibility-service-live-events"
+  },
+  {
+    "key": "dfs_live_events_service_update_industry",
+    "package": "demand-flexibility-service-live-events"
+  },
+  {
+    "key": "dfs_live_events_utilisation_report",
+    "package": "demand-flexibility-service-live-events"
+  },
+  {
+    "key": "dfs_live_events_utilisation_report_sum",
+    "package": "demand-flexibility-service-live-events"
+  },
+  {
+    "key": "dfs_service_requirements",
+    "package": "demand-flexibility-service"
+  },
+  {
+    "key": "dfs_test_events_service_requirement",
+    "package": "demand-flexibility-service-test-events"
+  },
+  {
+    "key": "dfs_test_events_service_update_industry",
+    "package": "demand-flexibility-service-test-events"
+  },
+  {
+    "key": "dfs_test_events_utilisation_report",
+    "package": "demand-flexibility-service-test-events"
+  },
+  {
+    "key": "dfs_test_events_utilisation_report_sum",
+    "package": "demand-flexibility-service-test-events"
+  },
+  {
+    "key": "dfs_utilisation_report",
+    "package": "demand-flexibility-service"
+  },
+  {
+    "key": "dfs_utilisation_report_sum",
+    "package": "demand-flexibility-service"
+  },
+  {
+    "key": "disaggregated_bsad",
+    "package": "disaggregated-bsad"
+  },
+  {
+    "key": "dm_requirements",
+    "package": "dynamic-moderation-requirements"
+  },
+  {
+    "key": "dr_requirements",
+    "package": "dynamic-regulation-requirements"
+  },
+  {
+    "key": "dynamic_containment_dc_dr_dm_block",
+    "package": "dynamic-containment-data"
+  },
+  {
+    "key": "dynamic_containment_dc_dr_dm_linear",
+    "package": "dynamic-containment-data"
+  },
+  {
+    "key": "dynamic_containment_dc_dr_dm_results",
+    "package": "dynamic-containment-data"
+  },
+  {
+    "key": "dynamic_containment_dc_dr_dm_results_sum",
+    "package": "dynamic-containment-data"
+  },
+  {
+    "key": "dynamic_containment_masterdata",
+    "package": "dynamic-containment-data"
+  },
+  {
+    "key": "eac_br_mock_results_buy_orders",
+    "package": "eac-br-mock-auction-results"
+  },
+  {
+    "key": "eac_br_mock_results_by_unit",
+    "package": "eac-br-mock-auction-results"
+  },
+  {
+    "key": "eac_br_mock_results_sell_orders",
+    "package": "eac-br-mock-auction-results"
+  },
+  {
+    "key": "eac_br_mock_results_summary",
+    "package": "eac-br-mock-auction-results"
+  },
+  {
+    "key": "eac_br_results_buy_orders",
+    "package": "eac-br-auction-results"
+  },
+  {
+    "key": "eac_br_results_by_unit",
+    "package": "eac-br-auction-results"
+  },
+  {
+    "key": "eac_br_results_summary",
+    "package": "eac-br-auction-results"
+  },
+  {
+    "key": "eac_mock_results_buy_orders",
+    "package": "eac-mock-auction-results"
+  },
+  {
+    "key": "eac_mock_results_by_unit",
+    "package": "eac-mock-auction-results"
+  },
+  {
+    "key": "eac_mock_results_sell_orders",
+    "package": "eac-mock-auction-results"
+  },
+  {
+    "key": "eac_mock_results_summary",
+    "package": "eac-mock-auction-results"
+  },
+  {
+    "key": "eac_results_buy_orders",
+    "package": "eac-auction-results"
+  },
+  {
+    "key": "eac_results_buy_orders_fy",
+    "package": "eac-auction-results"
+  },
+  {
+    "key": "eac_results_by_unit",
+    "package": "eac-auction-results"
+  },
+  {
+    "key": "eac_results_by_unit_fy",
+    "package": "eac-auction-results"
+  },
+  {
+    "key": "eac_results_daily_buy_orders",
+    "package": "eac-auction-results"
+  },
+  {
+    "key": "eac_results_daily_by_unit",
+    "package": "eac-auction-results"
+  },
+  {
+    "key": "eac_results_daily_sell_orders",
+    "package": "eac-auction-results"
+  },
+  {
+    "key": "eac_results_daily_summary",
+    "package": "eac-auction-results"
+  },
+  {
+    "key": "eac_results_sell_orders",
+    "package": "eac-auction-results"
+  },
+  {
+    "key": "eac_results_summary",
+    "package": "eac-auction-results"
+  },
+  {
+    "key": "eac_results_summary_fy",
+    "package": "eac-auction-results"
+  },
+  {
+    "key": "eleclink",
+    "package": "eleclink"
+  },
+  {
+    "key": "embedded_register",
+    "package": "embedded-register"
   },
   {
     "key": "embedded_wind_solar_forecast",
     "package": "embedded-wind-and-solar-forecasts"
   },
   {
+    "key": "embedded_wind_solar_forecast_archive",
+    "package": "embedded-wind-and-solar-forecasts"
+  },
+  {
+    "key": "embedded_wind_solar_forecast_files",
+    "package": "embedded-wind-and-solar-forecasts"
+  },
+  {
+    "key": "etys_boundaries_files",
+    "package": "etys-gb-transmission-system-boundaries"
+  },
+  {
+    "key": "fes_building_blocks_block_definitions",
+    "package": "future-energy-scenario-fes-building-block-data"
+  },
+  {
+    "key": "fes_building_blocks_block_licence_area",
+    "package": "future-energy-scenario-fes-building-block-data"
+  },
+  {
+    "key": "fes_building_blocks_main",
+    "package": "future-energy-scenario-fes-building-block-data"
+  },
+  {
+    "key": "fes_ed1_electricity_demand",
+    "package": "fes-electricity-demand-summary-data-table-ed1"
+  },
+  {
+    "key": "fes_ed1_electricity_demand_files",
+    "package": "fes-electricity-demand-summary-data-table-ed1"
+  },
+  {
+    "key": "fes_ed3_heat_demand_natural_gas",
+    "package": "fes-natural-gas-residential-and-non-domestic-i-c-heat-demand-summary-data-table-ed3"
+  },
+  {
+    "key": "fes_ed3_heat_demand_natural_gas_sum_ed",
+    "package": "fes-natural-gas-residential-and-non-domestic-i-c-heat-demand-summary-data-table-ed3"
+  },
+  {
+    "key": "fes_ed3_heat_demand_sum_ed",
+    "package": "fes-natural-gas-residential-and-non-domestic-i-c-heat-demand-summary-data-table-ed3"
+  },
+  {
+    "key": "fes_ed4_gas_demand_defs",
+    "package": "fes-natural-gas-demand-definitions-ed4"
+  },
+  {
+    "key": "fes_ed5_road_transport",
+    "package": "fes-road-transport-summary-data-table-ed5"
+  },
+  {
+    "key": "fes_ed6_road_transport_notes",
+    "package": "fes-road-transport-notes-data-table-ed6"
+  },
+  {
+    "key": "fes_es1_electricity_supply",
+    "package": "future-energy-scenario-electricity-supply-data-table-es1"
+  },
+  {
+    "key": "fes_es2_european_supply",
+    "package": "fes-european-electricity-supply-data-table-es2"
+  },
+  {
+    "key": "fes_flx1_flexibility",
+    "package": "fes-flexibility-data-table-data-table-flx1"
+  },
+  {
+    "key": "fes_la_heat_model_domestic",
+    "package": "local-authority-level-spatial-heat-model-outputs-fes"
+  },
+  {
+    "key": "fes_la_heat_model_residential",
+    "package": "local-authority-level-spatial-heat-model-outputs-fes"
+  },
+  {
+    "key": "fes_regional_demand_active_power",
+    "package": "regional-breakdown-of-fes-data-electricity"
+  },
+  {
+    "key": "fes_regional_dg_gt_1mw",
+    "package": "regional-breakdown-of-fes-data-electricity"
+  },
+  {
+    "key": "fes_regional_dg_lt_1mw",
+    "package": "regional-breakdown-of-fes-data-electricity"
+  },
+  {
+    "key": "fes_regional_dsr",
+    "package": "regional-breakdown-of-fes-data-electricity"
+  },
+  {
+    "key": "fes_regional_gsp_info",
+    "package": "regional-breakdown-of-fes-data-electricity"
+  },
+  {
+    "key": "fes_regional_storage_gt_1mw",
+    "package": "regional-breakdown-of-fes-data-electricity"
+  },
+  {
+    "key": "fes_regional_storage_gt_1mw_pre2023",
+    "package": "regional-breakdown-of-fes-data-electricity"
+  },
+  {
+    "key": "fes_regional_storage_lt_1mw",
+    "package": "regional-breakdown-of-fes-data-electricity"
+  },
+  {
+    "key": "fes_regional_storage_lt_1mw_pre2023",
+    "package": "regional-breakdown-of-fes-data-electricity"
+  },
+  {
+    "key": "fes_ws1_gas_supply",
+    "package": "fes-whole-system-gas-supply-data-table-ws1"
+  },
+  {
+    "key": "fes_ws2_gas_emissions",
+    "package": "fes-whole-system-gas-supply-emissions-data-table-ws2"
+  },
+  {
+    "key": "ffr_phase2_auction_files",
+    "package": "phase-2-ffr-auction-results-summary"
+  },
+  {
+    "key": "ffr_phase2_auction_phase_block_order",
+    "package": "phase-2-ffr-auction-results-summary"
+  },
+  {
+    "key": "ffr_phase2_auction_phase_blockorders",
+    "package": "phase-2-ffr-auction-results-summary"
+  },
+  {
+    "key": "ffr_phase2_auction_phase_linear_orders",
+    "package": "phase-2-ffr-auction-results-summary"
+  },
+  {
+    "key": "ffr_phase2_auction_phase_linearorders",
+    "package": "phase-2-ffr-auction-results-summary"
+  },
+  {
+    "key": "ffr_phase2_auction_phase_results_sum",
+    "package": "phase-2-ffr-auction-results-summary"
+  },
+  {
+    "key": "ffr_phase2_auction_phase_results_unit",
+    "package": "phase-2-ffr-auction-results-summary"
+  },
+  {
+    "key": "ffr_phase2_auction_phase_resultsbyunit",
+    "package": "phase-2-ffr-auction-results-summary"
+  },
+  {
+    "key": "ffr_phase2_auction_phase_resultsum",
+    "package": "phase-2-ffr-auction-results-summary"
+  },
+  {
+    "key": "ffr_post_tender_reports_csv",
+    "package": "firm-frequency-response-post-tender-reports"
+  },
+  {
+    "key": "ffr_post_tender_reports_csv_ext",
+    "package": "firm-frequency-response-post-tender-reports"
+  },
+  {
+    "key": "ffr_post_tender_reports_ext",
+    "package": "firm-frequency-response-post-tender-reports"
+  },
+  {
+    "key": "ffr_post_tender_reports_files",
+    "package": "firm-frequency-response-post-tender-reports"
+  },
+  {
+    "key": "gis_dno_license_areas_files",
+    "package": "gis-boundaries-for-gb-dno-license-areas"
+  },
+  {
+    "key": "gis_gen_charging_zones_files",
+    "package": "gis-boundaries-for-gb-generation-charging-zones"
+  },
+  {
+    "key": "gis_grid_supply_points",
+    "package": "gis-boundaries-for-gb-grid-supply-points"
+  },
+  {
+    "key": "gis_grid_supply_points_files",
+    "package": "gis-boundaries-for-gb-grid-supply-points"
+  },
+  {
+    "key": "gtma_trades_data",
+    "package": "historic-gtma-grid-trade-master-agreement-trades-data"
+  },
+  {
+    "key": "gtma_trades_data_pre",
+    "package": "historic-gtma-grid-trade-master-agreement-trades-data"
+  },
+  {
+    "key": "gtma_trades_fy",
+    "package": "historic-gtma-grid-trade-master-agreement-trades-data"
+  },
+  {
+    "key": "historic_demand",
+    "package": "historic-demand-data"
+  },
+  {
+    "key": "historic_demand_files",
+    "package": "historic-demand-data"
+  },
+  {
     "key": "historic_generation_mix",
     "package": "historic-generation-mix"
+  },
+  {
+    "key": "ic_requirement_auction",
+    "package": "interconnector-requirement-and-auction-summary-data"
+  },
+  {
+    "key": "ic_requirement_auction_files",
+    "package": "interconnector-requirement-and-auction-summary-data"
+  },
+  {
+    "key": "ifa2_ifa_da_id_weekly_itls",
+    "package": "ifa2"
+  },
+  {
+    "key": "ifa2_ifa_itl",
+    "package": "ifa2"
+  },
+  {
+    "key": "ifa_da_id_weekly_itls",
+    "package": "ifa"
+  },
+  {
+    "key": "ifa_itl",
+    "package": "ifa"
+  },
+  {
+    "key": "index_linked_contract_volume",
+    "package": "index-linked-contract-volume"
+  },
+  {
+    "key": "index_linked_contract_volume_files",
+    "package": "index-linked-contract-volume"
+  },
+  {
+    "key": "inertia_bid_offer_costs",
+    "package": "gb-system-inertia-bid-and-offer-costs"
+  },
+  {
+    "key": "interconnector_register",
+    "package": "interconnector-register"
+  },
+  {
+    "key": "lcoh_capex_opex_input_assumptions_pem",
+    "package": "levelised-cost-of-green-hydrogen"
+  },
+  {
+    "key": "lcoh_levelised_cost_blue_hydrogen",
+    "package": "levelised-cost-of-green-hydrogen"
+  },
+  {
+    "key": "lcoh_levelised_cost_green_hydrogen",
+    "package": "levelised-cost-of-green-hydrogen"
+  },
+  {
+    "key": "metered_wind_forecast_14d",
+    "package": "14-days-ahead-operational-metered-wind-forecasts"
+  },
+  {
+    "key": "metered_wind_forecast_14d_windfarm",
+    "package": "14-days-ahead-operational-metered-wind-forecasts"
+  },
+  {
+    "key": "metered_wind_output_monthly",
+    "package": "monthly-operational-metered-wind-output"
+  },
+  {
+    "key": "national_ci_forecast",
+    "package": "national-carbon-intensity-forecast"
+  },
+  {
+    "key": "national_ci_forecast_files",
+    "package": "national-carbon-intensity-forecast"
+  },
+  {
+    "key": "national_demand_bmus",
+    "package": "national-demand-balancing-mechanism-units"
+  },
+  {
+    "key": "national_demand_fc_2_14d_days_ahead",
+    "package": "2-14-days-ahead-national-demand-forecast"
+  },
+  {
+    "key": "national_demand_fc_2_14d_days_ahead_half",
+    "package": "2-14-days-ahead-national-demand-forecast"
+  },
+  {
+    "key": "national_demand_fc_2_14d_historic_day",
+    "package": "2-14-days-ahead-national-demand-forecast"
+  },
+  {
+    "key": "national_forecast_7d_day_ahead_demand",
+    "package": "7-day-ahead-national-forecast"
+  },
+  {
+    "key": "national_forecast_7d_files",
+    "package": "7-day-ahead-national-forecast"
+  },
+  {
+    "key": "national_forecast_7d_historic_day_ahead",
+    "package": "7-day-ahead-national-forecast"
+  },
+  {
+    "key": "nemolink_intraday",
+    "package": "nemolink"
+  },
+  {
+    "key": "nemolink_nemo_da_id_weekly_ntcs",
+    "package": "nemolink"
+  },
+  {
+    "key": "nemolink_ntc",
+    "package": "nemolink"
+  },
+  {
+    "key": "nordpool_da_prices",
+    "package": "day-ahead-power-exchange-prices-nordpool"
+  },
+  {
+    "key": "nrapm_forecast_national_daily_days",
+    "package": "negative-reserve-active-power-margin-nrapm-forecast"
+  },
+  {
+    "key": "nrapm_forecast_scotland_daily_days",
+    "package": "negative-reserve-active-power-margin-nrapm-forecast"
+  },
+  {
+    "key": "nrapm_forecast_weekly_week_national",
+    "package": "negative-reserve-active-power-margin-nrapm-forecast"
+  },
+  {
+    "key": "nrapm_forecast_weekly_week_scotland",
+    "package": "negative-reserve-active-power-margin-nrapm-forecast"
+  },
+  {
+    "key": "nsl",
+    "package": "nsl"
+  },
+  {
+    "key": "obp_physical_notifications",
+    "package": "obp-non-bm-physical-notifications"
+  },
+  {
+    "key": "obp_reserve_avail_price",
+    "package": "obp-reserve-availability-utilisation-price"
+  },
+  {
+    "key": "obp_reserve_instructions",
+    "package": "obp-non-bm-reserve-instructions"
+  },
+  {
+    "key": "odfm_market_information_files",
+    "package": "optional-downward-flexibility-management-odfm-market-information"
+  },
+  {
+    "key": "odfm_market_information_instructed",
+    "package": "optional-downward-flexibility-management-odfm-market-information"
+  },
+  {
+    "key": "odfm_market_information_load_factors",
+    "package": "optional-downward-flexibility-management-odfm-market-information"
+  },
+  {
+    "key": "odfm_market_information_results",
+    "package": "optional-downward-flexibility-management-odfm-market-information"
+  },
+  {
+    "key": "orps_utilisation_files",
+    "package": "obligatory-reactive-power-service-orps-utilisation"
+  },
+  {
+    "key": "orps_utilisation_historic_reactive",
+    "package": "obligatory-reactive-power-service-orps-utilisation"
+  },
+  {
+    "key": "orps_utilisation_reactive",
+    "package": "obligatory-reactive-power-service-orps-utilisation"
+  },
+  {
+    "key": "orps_utilisation_reactive_default",
+    "package": "obligatory-reactive-power-service-orps-utilisation"
+  },
+  {
+    "key": "otf_network_congestion",
+    "package": "operational-transparency-forum-network-congestion-data"
+  },
+  {
+    "key": "outturn_voltage_costs_files",
+    "package": "outturn-voltage-costs"
+  },
+  {
+    "key": "outturn_voltage_costs_historical",
+    "package": "outturn-voltage-costs"
+  },
+  {
+    "key": "outturn_voltage_costs_main",
+    "package": "outturn-voltage-costs"
+  },
+  {
+    "key": "portal_known_issues",
+    "package": "data-portal-planned-changes-known-issues"
+  },
+  {
+    "key": "qr_auction_requirement_fc",
+    "package": "quick-reserve-auction-requirement-forecast"
+  },
+  {
+    "key": "regional_ci_forecast",
+    "package": "regional-carbon-intensity-forecast"
+  },
+  {
+    "key": "regional_ci_forecast_files",
+    "package": "regional-carbon-intensity-forecast"
+  },
+  {
+    "key": "resource_adequacy_2030s_peak_demand",
+    "package": "resource-adequacy-in-2030s"
+  },
+  {
+    "key": "resource_adequacy_2030s_portfolio",
+    "package": "resource-adequacy-in-2030s"
+  },
+  {
+    "key": "resource_adequacy_2030s_results",
+    "package": "resource-adequacy-in-2030s"
+  },
+  {
+    "key": "school_holiday_percentages",
+    "package": "school-holiday-percentages"
+  },
+  {
+    "key": "sffr_auction_results_buy_orders",
+    "package": "static-firm-frequency-response-auction-results"
+  },
+  {
+    "key": "sffr_auction_results_main",
+    "package": "static-firm-frequency-response-auction-results"
+  },
+  {
+    "key": "sffr_requirement",
+    "package": "static-firm-frequency-response-requirement"
+  },
+  {
+    "key": "skip_rates_behind_constraints_bmu",
+    "package": "skip-rates"
+  },
+  {
+    "key": "skip_rates_behind_constraints_cons",
+    "package": "skip-rates"
+  },
+  {
+    "key": "skip_rates_exclusion_reasons",
+    "package": "skip-rates"
+  },
+  {
+    "key": "skip_rates_in_merit_all_bm",
+    "package": "skip-rates"
+  },
+  {
+    "key": "skip_rates_in_merit_psa",
+    "package": "skip-rates"
+  },
+  {
+    "key": "skip_rates_in_merit_psa_dsf_unit",
+    "package": "skip-rates"
+  },
+  {
+    "key": "skip_rates_stage5_dsf_technology",
+    "package": "skip-rates"
+  },
+  {
+    "key": "skip_rates_stage5_psa_technology",
+    "package": "skip-rates"
+  },
+  {
+    "key": "skip_rates_stage6_acceptance",
+    "package": "skip-rates"
+  },
+  {
+    "key": "skip_rates_stage6_psa",
+    "package": "skip-rates"
+  },
+  {
+    "key": "skip_rates_summary",
+    "package": "skip-rates"
+  },
+  {
+    "key": "slow_reserve_requirement_fc",
+    "package": "slow-reserve-requirement-forecast"
+  },
+  {
+    "key": "ssel_contract_enactment",
+    "package": "super-stable-export-limit-contract-enactment"
+  },
+  {
+    "key": "ssep_publication_zones_files",
+    "package": "ssep-onshore-publication-zone-shapefile"
+  },
+  {
+    "key": "stability_midterm_y1",
+    "package": "stability-midterm-y-1-utilisation-report"
+  },
+  {
+    "key": "stability_pathfinder_availability_report",
+    "package": "stability-pathfinder-service-information"
+  },
+  {
+    "key": "stability_pathfinder_utilisation_report",
+    "package": "stability-pathfinder-service-information"
+  },
+  {
+    "key": "stor_da_auction_results",
+    "package": "short-term-operating-reserve-stor-day-ahead-auction-results"
+  },
+  {
+    "key": "stor_da_buy_curve",
+    "package": "short-term-operating-reserve-stor-day-ahead-buy-curve"
+  },
+  {
+    "key": "stor_da_buy_curve_files",
+    "package": "short-term-operating-reserve-stor-day-ahead-buy-curve"
+  },
+  {
+    "key": "stor_windows",
+    "package": "stor-windows"
+  },
+  {
+    "key": "system_frequency",
+    "package": "system-frequency-data"
+  },
+  {
+    "key": "system_inertia",
+    "package": "system-inertia"
+  },
+  {
+    "key": "system_inertia_cost",
+    "package": "system-inertia-cost"
+  },
+  {
+    "key": "system_operating_plan",
+    "package": "system-operating-plan-sop"
+  },
+  {
+    "key": "system_operating_plan_files",
+    "package": "system-operating-plan-sop"
+  },
+  {
+    "key": "tec_register",
+    "package": "transmission-entry-capacity-tec-register"
+  },
+  {
+    "key": "thermal_constraint_costs",
+    "package": "thermal-constraint-costs"
+  },
+  {
+    "key": "thermal_constraint_costs_files",
+    "package": "thermal-constraint-costs"
+  },
+  {
+    "key": "tnuos_tariffs_embedded_export",
+    "package": "transmission-network-use-of-system-tnuos-tariffs"
+  },
+  {
+    "key": "tnuos_tariffs_half_hourly_hh_demand",
+    "package": "transmission-network-use-of-system-tnuos-tariffs"
+  },
+  {
+    "key": "tnuos_tariffs_local_offshore_generator",
+    "package": "transmission-network-use-of-system-tnuos-tariffs"
+  },
+  {
+    "key": "tnuos_tariffs_local_substation_tariff",
+    "package": "transmission-network-use-of-system-tnuos-tariffs"
+  },
+  {
+    "key": "tnuos_tariffs_non_half_hourly_nhh_demand",
+    "package": "transmission-network-use-of-system-tnuos-tariffs"
+  },
+  {
+    "key": "tnuos_tariffs_onshore_generator",
+    "package": "transmission-network-use-of-system-tnuos-tariffs"
+  },
+  {
+    "key": "tnuos_tariffs_onshore_local_circuit",
+    "package": "transmission-network-use-of-system-tnuos-tariffs"
+  },
+  {
+    "key": "tnuos_tariffs_transmission_demand",
+    "package": "transmission-network-use-of-system-tnuos-tariffs"
+  },
+  {
+    "key": "transmission_losses_financial_year",
+    "package": "transmission-losses"
+  },
+  {
+    "key": "transmission_losses_main",
+    "package": "transmission-losses"
+  },
+  {
+    "key": "tresp_demand_pathways_files",
+    "package": "tresp-demand-pathways"
+  },
+  {
+    "key": "tresp_demand_pathways_gsp",
+    "package": "tresp-demand-pathways"
+  },
+  {
+    "key": "tresp_demand_pathways_la_england",
+    "package": "tresp-demand-pathways"
+  },
+  {
+    "key": "tresp_demand_pathways_la_scotland",
+    "package": "tresp-demand-pathways"
+  },
+  {
+    "key": "tresp_demand_pathways_la_wales",
+    "package": "tresp-demand-pathways"
+  },
+  {
+    "key": "tresp_demand_pathways_resp_region",
+    "package": "tresp-demand-pathways"
+  },
+  {
+    "key": "tresp_generation_pathways_gsp",
+    "package": "tresp-generation-pathways"
+  },
+  {
+    "key": "tresp_generation_pathways_la_england",
+    "package": "tresp-generation-pathways"
+  },
+  {
+    "key": "tresp_generation_pathways_la_scotland",
+    "package": "tresp-generation-pathways"
+  },
+  {
+    "key": "tresp_generation_pathways_la_wales",
+    "package": "tresp-generation-pathways"
+  },
+  {
+    "key": "tresp_generation_pathways_resp_region",
+    "package": "tresp-generation-pathways"
+  },
+  {
+    "key": "upcoming_trades",
+    "package": "upcoming-trades"
+  },
+  {
+    "key": "viking_link_ntc",
+    "package": "viking"
+  },
+  {
+    "key": "viking_ntc",
+    "package": "viking"
+  },
+  {
+    "key": "voltage_requirement",
+    "package": "voltage-requirement"
+  },
+  {
+    "key": "voltage_requirement_files",
+    "package": "voltage-requirement"
+  },
+  {
+    "key": "weekly_opmr",
+    "package": "weekly-opmr"
+  },
+  {
+    "key": "weekly_wind_availability",
+    "package": "weekly-wind-availability"
+  },
+  {
+    "key": "wind_bmu_boa_volumes",
+    "package": "wind-bmu-boa-volumes"
+  },
+  {
+    "key": "wind_forecast_14d_day_ahead_bmu",
+    "package": "14-days-ahead-wind-forecasts"
+  },
+  {
+    "key": "wind_forecast_14d_days_ahead",
+    "package": "14-days-ahead-wind-forecasts"
   }
 ]

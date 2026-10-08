@@ -371,6 +371,37 @@ class TestFreezeLedger:
     def test_the_committed_ledger_is_honoured(self) -> None:
         _assert_ok(_run(self._CHECK))
 
+    def test_t_f1_the_ledger_freezes_every_swept_key(self) -> None:
+        """T-F1: the 301 swept keys plus the legacy three, sorted, packages honoured.
+
+        Detects a ledger that does not cover the S sweep's bronze (3 rows on
+        master), a repeated or unsorted key, or a row whose package disagrees
+        with the registry's owner of that key.
+        """
+        result = _run(
+            """
+            import json
+            from gridflow.connectors.neso_data_portal.registry import (
+                load_frozen_keys, load_registry,
+            )
+            frozen = load_frozen_keys()
+            keys = [row.key for row in frozen]
+            assert len(keys) == 304, len(keys)
+            assert len(set(keys)) == len(keys), 'repeated key'
+            assert keys == sorted(keys), 'not sorted by key'
+            registry = load_registry()
+            wrong = [
+                row.key for row in frozen
+                if registry.families[row.key][0].package != row.package
+            ]
+            assert not wrong, wrong
+            assert {'daily_wind_availability', 'embedded_wind_solar_forecast',
+                    'historic_generation_mix'} <= set(keys)
+            print('OK')
+            """
+        )
+        _assert_ok(result)
+
     def test_negative_control_a_removed_frozen_key_fails(self, tmp_path: Path) -> None:
         directory = _copy_registry(tmp_path)
         (directory / "historic-generation-mix.json").unlink()
