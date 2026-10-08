@@ -493,6 +493,8 @@ class TestCounts:
         measured = set(summary["families"])
         assert "fam_files" not in measured and "fam_xlsx" not in measured
         assert summary["totals"]["measured_families"] == len(measured) == 9
+        assert summary["totals"]["non_csv_captures"] == 1
+        assert summary["totals"]["files_family_csv_captures"] == 1
         assert summary["families"]["fam_r"]["batch"] == profile.UNASSIGNED
         assert "unassigned_batch" in summary["families"]["fam_r"]["flags"]
         b1 = summary["batches"]["B1"]

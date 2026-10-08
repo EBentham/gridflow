@@ -77,6 +77,8 @@ from gridflow.connectors.neso_data_portal.files import replace_atomically
 from gridflow.connectors.neso_data_portal.registry.record import RESERVED
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+
     from gridflow.connectors.neso_data_portal.captures import Capture
     from gridflow.connectors.neso_data_portal.registry import PackageEntry, Registry
 
@@ -181,6 +183,12 @@ def _epoch_names(header: tuple[str, ...]) -> list[str]:
 # ---------------------------------------------------------------------------
 # Per-capture measurement (P-2)
 # ---------------------------------------------------------------------------
+
+
+def _message(exc: Exception) -> str:
+    """A parse failure as bounded, printable text (a binary body echoes raw bytes)."""
+    text = f"{type(exc).__name__}: {exc}"[:MESSAGE_CHARS]
+    return "".join(ch if ch.isprintable() else "?" for ch in text)
 
 
 def _byte_pass(body: Path) -> dict[str, Any]:
@@ -367,7 +375,7 @@ def _measure(capture: Capture, capture_id: str, sample_rows: int) -> tuple[Captu
         shapes = _classify(sample, profile.raw)
         first = _first_pass(lazy, profile.raw)
     except pl.exceptions.PolarsError as exc:
-        profile.parse_error = f"{type(exc).__name__}: {exc}"[:MESSAGE_CHARS]
+        profile.parse_error = _message(exc)
         return profile, None
     profile.rows = first["rows"]
     profile.all_blank_rows = first["all_blank_rows"]
@@ -930,7 +938,7 @@ def profile_family(
             try:
                 _second_pass(profile, formats, slash, candidates, epoch_plans[-1][2])
             except pl.exceptions.PolarsError as exc:
-                profile.parse_error = f"{type(exc).__name__}: {exc}"[:MESSAGE_CHARS]
+                profile.parse_error = _message(exc)
 
     fields = field_entries(field_doc)
     measured = [[epoch.column(v) for v in epoch.header] for epoch in epochs]
@@ -1044,8 +1052,21 @@ def build_summary(
     batches: dict[str, str],
     inputs: dict[str, Any],
     unusable: list[dict[str, str]],
+    unprofiled: Mapping[str, int] | None = None,
 ) -> dict[str, Any]:
-    """The ``summary.json`` document (P-7), from the family documents only."""
+    """The ``summary.json`` document (P-7), from the family documents only.
+
+    Args:
+        documents: Family key -> family document.
+        registry: The loaded registry (every package counts toward its batch).
+        batches: The batch map; a package missing from it is ``UNASSIGNED``.
+        inputs: The run's recorded inputs (no host or clock values).
+        unusable: Unusable sidecars, data-root-relative.
+        unprofiled: Usable captures listed but never profiled, by kind.
+
+    Returns:
+        ``{inputs, totals, batches, families, unusable}``.
+    """
     batch_of = {p.package: batches.get(p.package, UNASSIGNED) for p in registry.packages}
     table: dict[str, dict[str, Any]] = {}
     for package in registry.packages:
@@ -1085,7 +1106,10 @@ def build_summary(
     totals = {
         "measured_families": len(documents),
         "csv_captures": sum(len(d["captures"]) for d in documents.values()),
-        "non_csv_captures": sum(d["other_captures"] for d in documents.values()),
+        "non_csv_captures": (unprofiled or {}).get(
+            "non_csv_captures", sum(d["other_captures"] for d in documents.values())
+        ),
+        "files_family_csv_captures": (unprofiled or {}).get("files_family_csv_captures", 0),
         "unusable_captures": len(unusable),
         "multi_epoch_families": sum("multi_epoch" in d["flags"] for d in documents.values()),
         "sibling_candidate_groups": len(sibling_groups),
@@ -1132,7 +1156,8 @@ def render_report(summary: dict[str, Any]) -> str:
         "",
         f"- Measured family count: **{totals['measured_families']}**",
         f"- CSV captures profiled: {totals['csv_captures']} (non-CSV listed, not profiled:"
-        f" {totals['non_csv_captures']}; unusable: {totals['unusable_captures']})",
+        f" {totals['non_csv_captures']}; CSV captures of files families, not profiled:"
+        f" {totals['files_family_csv_captures']}; unusable: {totals['unusable_captures']})",
         f"- Distinct headers: {totals['distinct_headers']}; multi-epoch families:"
         f" {totals['multi_epoch_families']}; sibling-candidate groups:"
         f" {totals['sibling_candidate_groups']}",
@@ -1231,6 +1256,7 @@ def main(argv: list[str] | None = None) -> int:
     documents: dict[str, dict[str, Any]] = {}
     unusable: list[dict[str, str]] = []
     capture_count = 0
+    unprofiled: Counter[str] = Counter()
     dirs = sorted(p for p in root.iterdir() if p.is_dir()) if root.is_dir() else []
     for dataset_dir in dirs:
         key = dataset_dir.name
@@ -1242,9 +1268,11 @@ def main(argv: list[str] | None = None) -> int:
             {"sidecar": _relative(item.sidecar, data_dir), "reason": item.reason}
             for item in scan.unusable
         ]
-        if family.kind != "tabular":
-            continue
         csv_captures = [c for c in scan.captures if _ckan_format(c) == "CSV"]
+        unprofiled["non_csv_captures"] += len(scan.captures) - len(csv_captures)
+        if family.kind != "tabular":
+            unprofiled["files_family_csv_captures"] += len(csv_captures)
+            continue
         if not csv_captures:
             continue
         capture_count += len(csv_captures)
@@ -1267,7 +1295,12 @@ def main(argv: list[str] | None = None) -> int:
         "sample_rows": args.sample_rows,
     }
     summary = build_summary(
-        documents, registry, batches, inputs, sorted(unusable, key=lambda u: u["sidecar"])
+        documents,
+        registry,
+        batches,
+        inputs,
+        sorted(unusable, key=lambda u: u["sidecar"]),
+        unprofiled,
     )
     (out / "families").mkdir(parents=True, exist_ok=True)
     for key, document in sorted(documents.items()):
