@@ -1,0 +1,19 @@
+Auction Name,Application ID,CMU ID,Component ID,Type,Delivery Year,Attribute,Previous,Latest,Change Type,Change Date
+2025-26 (T-4) Four Year Ahead Capacity Auction,S-ST-1-2026-OPL061-00002,OPL061,610001,ST,2026,Description of CMU Components,,MANX Cable Company Coming into the UK,New,2026-07-29
+2025-26 (T-4) Four Year Ahead Capacity Auction,S-ST-1-2026-OPL061-00002,OPL061,610001,ST,2026,Generating Technology Class,,DSR,New,2026-07-29
+2025-26 (T-4) Four Year Ahead Capacity Auction,S-ST-1-2026-OPL061-00002,OPL061,610001,ST,2026,Location and Post Code,,"Manx Cable Company, Substation Bristol Avenue, Bispham, Blackpool FY2 0FB",New,2026-07-29
+2025-26 (T-4) Four Year Ahead Capacity Auction,S-ST-1-2026-OPL061-00002,OPL061,610001,ST,2026,Number of Components,,1,New,2026-07-29
+2025-26 (T-4) Four Year Ahead Capacity Auction,S-ST-1-2026-OPL061-00002,OPL061,610001,ST,2026,OS Grid Reference,,SD 323 397,New,2026-07-29
+2026-27 (T-1) One Year Ahead Capacity Auction,S-ST-1-2026-6DG002-00001,6DG002,NDSR02,ST,2026,Description of CMU Components,Standby generation,,Removed,2026-07-29
+2026-27 (T-1) One Year Ahead Capacity Auction,S-ST-1-2026-6DG002-00001,6DG002,NDSR02,ST,2026,Generating Capacity of on-site Generating Unit,12.49,,Removed,2026-07-29
+2026-27 (T-1) One Year Ahead Capacity Auction,S-ST-1-2026-6DG002-00001,6DG002,NDSR02,ST,2026,Generating Technology Class,DSR,,Removed,2026-07-29
+2026-27 (T-1) One Year Ahead Capacity Auction,S-ST-1-2026-6DG002-00001,6DG002,NDSR02,ST,2026,Location and Post Code,"Lots Road, Chelsea, London SW10 0SW",,Removed,2026-07-29
+2026-27 (T-1) One Year Ahead Capacity Auction,S-ST-1-2026-6DG002-00001,6DG002,NDSR02,ST,2026,Number of Components,1,,Removed,2026-07-29
+2026-27 (T-1) One Year Ahead Capacity Auction,S-ST-1-2026-6DG002-00001,6DG002,NDSR02,ST,2026,OS Grid Reference,TQ 263 770,,Removed,2026-07-29
+2026-27 (T-1) One Year Ahead Capacity Auction,S-ST-1-2026-6DG002-00001,6DG002,NDSR02,ST,2026,Permitted on-Site Generating Unit,Yes,,Removed,2026-07-29
+2026-27 (T-1) One Year Ahead Capacity Auction,S-ST-1-2026-6DG002-00001,6DG002,NDSR02,ST,2026,Primary Fuel of Component,Gas,,Removed,2026-07-29
+2026-27 (T-1) One Year Ahead Capacity Auction,S-ST-1-2026-6DG003-00001,6DG003,NDSR03A,ST,2026,Description of CMU Components,Standby generation,,Removed,2026-07-29
+2026-27 (T-1) One Year Ahead Capacity Auction,S-ST-1-2026-6DG003-00001,6DG003,NDSR03A,ST,2026,Generating Capacity of on-site Generating Unit,6.245,,Removed,2026-07-29
+2026-27 (T-1) One Year Ahead Capacity Auction,A-T-1-2026-GM2629-00001,GM2629,GM2629-01,T-1,2026,Location and Post Code,Not Known,"Stagecoach London - Walthamstow Avenue Bus Garage, 2 Walthamstow Ave, London E4 8ST",Detail,2026-07-29
+2029-30 (T-4) Four Year Ahead Capacity Auction,A-T-4-2029-GM2629-00001,GM2629,GM2629-01,T-4,2029,Location and Post Code,Not Known,"Stagecoach London - Walthamstow Avenue Bus Garage, 2 Walthamstow Ave, London E4 8ST",Detail,2026-07-29
+2026-27 (T-1) One Year Ahead Capacity Auction,A-T-1-2026-GM2622-00001,GM2622,GM2622-01,T-1,2026,Location and Post Code,Not known,"Tunstead Quarry, Waterswallows Road Tunstead House, Buxton, SK17 8TG",Detail,2026-08-05

@@ -17,7 +17,60 @@
       "empty_allowed": true,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Auction Name",
+              "Delivery Year",
+              "Capacity Awarded",
+              "Forecast Cost_GBP"
+            ],
+            "columns": [
+              {
+                "source": "Auction Name",
+                "name": "auction_name",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Delivery Year",
+                "name": "delivery_year",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Capacity Awarded",
+                "name": "capacity_awarded",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Forecast Cost_GBP",
+                "name": "forecast_cost_gbp",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "auction_name",
+          "delivery_year"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified"
+      }
     },
     {
       "key": "capacity_market_auction_static",
@@ -28,7 +81,143 @@
       "empty_allowed": true,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Auction Name",
+              "Clearing Price_GBP per kW per year",
+              "Base Period for the Agreement",
+              "Auction Target Capacity_MW",
+              "Total Volume of Agreements Awarded",
+              "Termination Fee 1 Rate",
+              "Termination Fee 2 Rate",
+              "Termination Fee 3 Rate",
+              "Termination Fee 4 Rate",
+              "Termination Fee 5 Rate",
+              "Termination Fee 6 Rate",
+              "Termination Fee 7 Rate",
+              "Termination Fee 8 Rate",
+              "Termination Fee 9 Rate",
+              "Annual Penalty Cap",
+              "Monthly Penalty Cap"
+            ],
+            "columns": [
+              {
+                "source": "Auction Name",
+                "name": "auction_name",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Clearing Price_GBP per kW per year",
+                "name": "clearing_price_gbp_per_kw_per_year",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Base Period for the Agreement",
+                "name": "base_period_for_the_agreement",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Auction Target Capacity_MW",
+                "name": "auction_target_capacity_mw",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Total Volume of Agreements Awarded",
+                "name": "total_volume_of_agreements_awarded",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Termination Fee 1 Rate",
+                "name": "termination_fee_1_rate",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Termination Fee 2 Rate",
+                "name": "termination_fee_2_rate",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Termination Fee 3 Rate",
+                "name": "termination_fee_3_rate",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Termination Fee 4 Rate",
+                "name": "termination_fee_4_rate",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Termination Fee 5 Rate",
+                "name": "termination_fee_5_rate",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Termination Fee 6 Rate",
+                "name": "termination_fee_6_rate",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Termination Fee 7 Rate",
+                "name": "termination_fee_7_rate",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Termination Fee 8 Rate",
+                "name": "termination_fee_8_rate",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Termination Fee 9 Rate",
+                "name": "termination_fee_9_rate",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Annual Penalty Cap",
+                "name": "annual_penalty_cap",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Monthly Penalty Cap",
+                "name": "monthly_penalty_cap",
+                "dtype": "string",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "auction_name"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified"
+      }
     },
     {
       "key": "capacity_market_de_rating_factors",
@@ -39,7 +228,60 @@
       "empty_allowed": true,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Auction Name",
+              "Primary Fuel Type",
+              "Generating Technology Class",
+              "De Rating Factor"
+            ],
+            "columns": [
+              {
+                "source": "Auction Name",
+                "name": "auction_name",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Primary Fuel Type",
+                "name": "primary_fuel_type",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Generating Technology Class",
+                "name": "generating_technology_class",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "De Rating Factor",
+                "name": "de_rating_factor",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "auction_name",
+          "generating_technology_class"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified"
+      }
     },
     {
       "key": "capacity_market_unit_cmu",
@@ -50,7 +292,586 @@
       "empty_allowed": true,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Auction Name",
+              "Application ID",
+              "CMU ID",
+              "Type",
+              "Auction",
+              "Delivery Year",
+              "Name of Applicant",
+              "Agent Name",
+              "CM Unit Name",
+              "Parent Company",
+              "Secondary Trading Contact_Telephone",
+              "Secondary Trading Contact_Email",
+              "Transmission or Distribution",
+              "CM Unit Type",
+              "CM Unit Category",
+              "Primary Fuel Type",
+              "CMU Technology",
+              "Storage Facility",
+              "Pre Qualification Decision",
+              "Opt Out Status",
+              "Opt Out Reason",
+              "Maximum Obligation Period",
+              "Unproven DSR",
+              "New Build Yet to Satisfy FCM",
+              "Connection Agreement Deferral Declaration",
+              "TEC Deferral",
+              "Amount of Credit Cover",
+              "Planning Consents Conditions",
+              "Connection or DSR Capacity",
+              "Proven DSR Capacity",
+              "DSR Bidding Capacity",
+              "De Rated Capacity",
+              "Pre Refurbishing De Rated Capacity",
+              "Post Refurbishing De Rated Capacity",
+              "Pre Refurbishing CMU Status",
+              "Anticipated De Rated Capacity",
+              "Anticipated Pre Refurbishing De Rated Capacity",
+              "Anticipated Post Refurbishing De Rated Capacity",
+              "Date of Issue of DSR Test Certificate",
+              "DSR Test Method",
+              "CMU confirmed entry into Auction",
+              "Duration of Capacity Agreement in First Bidding Round",
+              "Pre Refurbishment Bidding Status",
+              "Capacity Agreement Awarded",
+              "Duration of Capacity Agreement Awarded",
+              "Unique Agreement Identifier",
+              "Registered Holder",
+              "Date of Issue of Capacity Agreement",
+              "Term of the Capacity Agreement",
+              "Delivery Years for which Agreement Valid",
+              "Auction Acquired Capacity Obligation",
+              "Is FCM required",
+              "Date for Financial Commitment Milestone",
+              "Is Connection Agreement required",
+              "Date for provision of deferred Connection Agreement",
+              "Subject to a Minimum Completion Requirement",
+              "Subject to Substantial Completion Milestone",
+              "Long Stop Date for the Minimum Completion Requirement",
+              "Earliest Date SCM is expected to be achieved",
+              "Latest Date SCM is expected to be achieved",
+              "Is copy of Grid Connection Agreement required",
+              "Date for provision of deferred TEC",
+              "Termination Fee 1 Rate",
+              "Termination Fee 2 Rate",
+              "Termination Fee 3 Rate",
+              "Termination Fee 4 Rate",
+              "Termination Fee 5 Rate",
+              "Annual Penalty Cap",
+              "Monthly Penalty Cap",
+              "Legal Name of any Person with a Security Interest",
+              "Nature of the Security Interest",
+              "Capacity Agreement has been Terminated",
+              "Date of Termination of Capacity Agreement",
+              "List of Traded Capacity Obligations",
+              "Period for which the transfer applies",
+              "Capacity obligation Summary",
+              "Beta Value",
+              "Has Capacity Agreement been Suspended"
+            ],
+            "columns": [
+              {
+                "source": "Auction Name",
+                "name": "auction_name",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Application ID",
+                "name": "application_id",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "CMU ID",
+                "name": "cmu_id",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Type",
+                "name": "type",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Auction",
+                "name": "auction",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Delivery Year",
+                "name": "delivery_year",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Name of Applicant",
+                "name": "name_of_applicant",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Agent Name",
+                "name": "agent_name",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "CM Unit Name",
+                "name": "cm_unit_name",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Parent Company",
+                "name": "parent_company",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Secondary Trading Contact_Telephone",
+                "name": "secondary_trading_contact_telephone",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Secondary Trading Contact_Email",
+                "name": "secondary_trading_contact_email",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Transmission or Distribution",
+                "name": "transmission_or_distribution",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "CM Unit Type",
+                "name": "cm_unit_type",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "CM Unit Category",
+                "name": "cm_unit_category",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Primary Fuel Type",
+                "name": "primary_fuel_type",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "CMU Technology",
+                "name": "cmu_technology",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Storage Facility",
+                "name": "storage_facility",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Pre Qualification Decision",
+                "name": "pre_qualification_decision",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Opt Out Status",
+                "name": "opt_out_status",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Opt Out Reason",
+                "name": "opt_out_reason",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Maximum Obligation Period",
+                "name": "maximum_obligation_period",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Unproven DSR",
+                "name": "unproven_dsr",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "New Build Yet to Satisfy FCM",
+                "name": "new_build_yet_to_satisfy_fcm",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Connection Agreement Deferral Declaration",
+                "name": "connection_agreement_deferral_declaration",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "TEC Deferral",
+                "name": "tec_deferral",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Amount of Credit Cover",
+                "name": "amount_of_credit_cover",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Planning Consents Conditions",
+                "name": "planning_consents_conditions",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Connection or DSR Capacity",
+                "name": "connection_or_dsr_capacity",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Proven DSR Capacity",
+                "name": "proven_dsr_capacity",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "DSR Bidding Capacity",
+                "name": "dsr_bidding_capacity",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "De Rated Capacity",
+                "name": "de_rated_capacity",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Pre Refurbishing De Rated Capacity",
+                "name": "pre_refurbishing_de_rated_capacity",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Post Refurbishing De Rated Capacity",
+                "name": "post_refurbishing_de_rated_capacity",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Pre Refurbishing CMU Status",
+                "name": "pre_refurbishing_cmu_status",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Anticipated De Rated Capacity",
+                "name": "anticipated_de_rated_capacity",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Anticipated Pre Refurbishing De Rated Capacity",
+                "name": "anticipated_pre_refurbishing_de_rated_capacity",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Anticipated Post Refurbishing De Rated Capacity",
+                "name": "anticipated_post_refurbishing_de_rated_capacity",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Date of Issue of DSR Test Certificate",
+                "name": "date_of_issue_of_dsr_test_certificate",
+                "dtype": "date",
+                "format": "%d/%m/%Y",
+                "nullable": true
+              },
+              {
+                "source": "DSR Test Method",
+                "name": "dsr_test_method",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "CMU confirmed entry into Auction",
+                "name": "cmu_confirmed_entry_into_auction",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Duration of Capacity Agreement in First Bidding Round",
+                "name": "duration_of_capacity_agreement_in_first_bidding_round",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Pre Refurbishment Bidding Status",
+                "name": "pre_refurbishment_bidding_status",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Capacity Agreement Awarded",
+                "name": "capacity_agreement_awarded",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Duration of Capacity Agreement Awarded",
+                "name": "duration_of_capacity_agreement_awarded",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Unique Agreement Identifier",
+                "name": "unique_agreement_identifier",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Registered Holder",
+                "name": "registered_holder",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Date of Issue of Capacity Agreement",
+                "name": "date_of_issue_of_capacity_agreement",
+                "dtype": "date",
+                "format": "%d/%m/%Y",
+                "nullable": true
+              },
+              {
+                "source": "Term of the Capacity Agreement",
+                "name": "term_of_the_capacity_agreement",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Delivery Years for which Agreement Valid",
+                "name": "delivery_years_for_which_agreement_valid",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Auction Acquired Capacity Obligation",
+                "name": "auction_acquired_capacity_obligation",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Is FCM required",
+                "name": "is_fcm_required",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Date for Financial Commitment Milestone",
+                "name": "date_for_financial_commitment_milestone",
+                "dtype": "date",
+                "format": "%d/%m/%Y",
+                "nullable": true
+              },
+              {
+                "source": "Is Connection Agreement required",
+                "name": "is_connection_agreement_required",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Date for provision of deferred Connection Agreement",
+                "name": "date_for_provision_of_deferred_connection_agreement",
+                "dtype": "date",
+                "format": "%d/%m/%Y",
+                "nullable": true
+              },
+              {
+                "source": "Subject to a Minimum Completion Requirement",
+                "name": "subject_to_a_minimum_completion_requirement",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Subject to Substantial Completion Milestone",
+                "name": "subject_to_substantial_completion_milestone",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Long Stop Date for the Minimum Completion Requirement",
+                "name": "long_stop_date_for_the_minimum_completion_requirement",
+                "dtype": "date",
+                "format": "%d/%m/%Y",
+                "nullable": true
+              },
+              {
+                "source": "Earliest Date SCM is expected to be achieved",
+                "name": "earliest_date_scm_is_expected_to_be_achieved",
+                "dtype": "date",
+                "format": "%d/%m/%Y",
+                "nullable": true
+              },
+              {
+                "source": "Latest Date SCM is expected to be achieved",
+                "name": "latest_date_scm_is_expected_to_be_achieved",
+                "dtype": "date",
+                "format": "%d/%m/%Y",
+                "nullable": true
+              },
+              {
+                "source": "Is copy of Grid Connection Agreement required",
+                "name": "is_copy_of_grid_connection_agreement_required",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Date for provision of deferred TEC",
+                "name": "date_for_provision_of_deferred_tec",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Termination Fee 1 Rate",
+                "name": "termination_fee_1_rate",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Termination Fee 2 Rate",
+                "name": "termination_fee_2_rate",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Termination Fee 3 Rate",
+                "name": "termination_fee_3_rate",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Termination Fee 4 Rate",
+                "name": "termination_fee_4_rate",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Termination Fee 5 Rate",
+                "name": "termination_fee_5_rate",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Annual Penalty Cap",
+                "name": "annual_penalty_cap",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Monthly Penalty Cap",
+                "name": "monthly_penalty_cap",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Legal Name of any Person with a Security Interest",
+                "name": "legal_name_of_any_person_with_a_security_interest",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Nature of the Security Interest",
+                "name": "nature_of_the_security_interest",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Capacity Agreement has been Terminated",
+                "name": "capacity_agreement_has_been_terminated",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Date of Termination of Capacity Agreement",
+                "name": "date_of_termination_of_capacity_agreement",
+                "dtype": "date",
+                "format": "%d/%m/%Y",
+                "nullable": true
+              },
+              {
+                "source": "List of Traded Capacity Obligations",
+                "name": "list_of_traded_capacity_obligations",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Period for which the transfer applies",
+                "name": "period_for_which_the_transfer_applies",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Capacity obligation Summary",
+                "name": "capacity_obligation_summary",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Beta Value",
+                "name": "beta_value",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Has Capacity Agreement been Suspended",
+                "name": "has_capacity_agreement_been_suspended",
+                "dtype": "string",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "auction_name",
+          "application_id"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified"
+      }
     },
     {
       "key": "capacity_market_unit_cmu_history",
@@ -61,7 +882,112 @@
       "empty_allowed": true,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Auction Name",
+              "Application ID",
+              "CMU ID",
+              "Type",
+              "Delivery Year",
+              "Attribute",
+              "Previous",
+              "Latest",
+              "Change Type",
+              "Change Date"
+            ],
+            "columns": [
+              {
+                "source": "Auction Name",
+                "name": "auction_name",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Application ID",
+                "name": "application_id",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "CMU ID",
+                "name": "cmu_id",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Type",
+                "name": "type",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Delivery Year",
+                "name": "delivery_year",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Attribute",
+                "name": "attribute",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Previous",
+                "name": "previous",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Latest",
+                "name": "latest",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Change Type",
+                "name": "change_type",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Change Date",
+                "name": "change_date",
+                "dtype": "date",
+                "format": "%Y-%m-%d",
+                "nullable": false
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "date_sp1",
+          "date_column": "change_date"
+        },
+        "entity_key": [
+          "auction_name",
+          "application_id",
+          "cmu_id",
+          "type",
+          "delivery_year",
+          "attribute",
+          "previous",
+          "latest",
+          "change_type",
+          "change_date"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified"
+      }
     },
     {
       "key": "capacity_market_component_history",
@@ -72,7 +998,120 @@
       "empty_allowed": true,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Auction Name",
+              "Application ID",
+              "CMU ID",
+              "Component ID",
+              "Type",
+              "Delivery Year",
+              "Attribute",
+              "Previous",
+              "Latest",
+              "Change Type",
+              "Change Date"
+            ],
+            "columns": [
+              {
+                "source": "Auction Name",
+                "name": "auction_name",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Application ID",
+                "name": "application_id",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "CMU ID",
+                "name": "cmu_id",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Component ID",
+                "name": "component_id",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Type",
+                "name": "type",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Delivery Year",
+                "name": "delivery_year",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Attribute",
+                "name": "attribute",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Previous",
+                "name": "previous",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Latest",
+                "name": "latest",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Change Type",
+                "name": "change_type",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Change Date",
+                "name": "change_date",
+                "dtype": "date",
+                "format": "%Y-%m-%d",
+                "nullable": false
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "date_sp1",
+          "date_column": "change_date"
+        },
+        "entity_key": [
+          "auction_name",
+          "application_id",
+          "cmu_id",
+          "component_id",
+          "type",
+          "delivery_year",
+          "attribute",
+          "previous",
+          "latest",
+          "change_type",
+          "change_date"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified"
+      }
     },
     {
       "key": "capacity_market_component_history_pre",
@@ -83,7 +1122,120 @@
       "empty_allowed": true,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Auction Name",
+              "Application ID",
+              "CMU ID",
+              "Component ID",
+              "Type",
+              "Delivery Year",
+              "Attribute",
+              "Previous",
+              "Latest",
+              "Change Type",
+              "Change Date"
+            ],
+            "columns": [
+              {
+                "source": "Auction Name",
+                "name": "auction_name",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Application ID",
+                "name": "application_id",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "CMU ID",
+                "name": "cmu_id",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Component ID",
+                "name": "component_id",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Type",
+                "name": "type",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Delivery Year",
+                "name": "delivery_year",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Attribute",
+                "name": "attribute",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Previous",
+                "name": "previous",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Latest",
+                "name": "latest",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Change Type",
+                "name": "change_type",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Change Date",
+                "name": "change_date",
+                "dtype": "date",
+                "format": "%Y-%m-%d",
+                "nullable": false
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "date_sp1",
+          "date_column": "change_date"
+        },
+        "entity_key": [
+          "auction_name",
+          "application_id",
+          "cmu_id",
+          "component_id",
+          "type",
+          "delivery_year",
+          "attribute",
+          "previous",
+          "latest",
+          "change_type",
+          "change_date"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified"
+      }
     },
     {
       "key": "capacity_market_components",
@@ -94,7 +1246,159 @@
       "empty_allowed": true,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Auction Name",
+              "Application ID",
+              "CMU ID",
+              "Delivery Year",
+              "Component ID",
+              "Type",
+              "Generating Technology Class",
+              "Permitted On Site Generating Unit",
+              "Primary Fuel of Component",
+              "Connection or DSR Capacity",
+              "De Rated Capacity",
+              "Pre Refurbishing De Rated Capacity",
+              "Post Refurbishing De Rated Capacity",
+              "Generating Capacity of On Site Generating Unit",
+              "Description of CMU Components",
+              "Location and Post Code",
+              "OS Grid Reference",
+              "Number of Components"
+            ],
+            "columns": [
+              {
+                "source": "Auction Name",
+                "name": "auction_name",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Application ID",
+                "name": "application_id",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "CMU ID",
+                "name": "cmu_id",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Delivery Year",
+                "name": "delivery_year",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Component ID",
+                "name": "component_id",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Type",
+                "name": "type",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Generating Technology Class",
+                "name": "generating_technology_class",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Permitted On Site Generating Unit",
+                "name": "permitted_on_site_generating_unit",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Primary Fuel of Component",
+                "name": "primary_fuel_of_component",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Connection or DSR Capacity",
+                "name": "connection_or_dsr_capacity",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "De Rated Capacity",
+                "name": "de_rated_capacity",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Pre Refurbishing De Rated Capacity",
+                "name": "pre_refurbishing_de_rated_capacity",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Post Refurbishing De Rated Capacity",
+                "name": "post_refurbishing_de_rated_capacity",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Generating Capacity of On Site Generating Unit",
+                "name": "generating_capacity_of_on_site_generating_unit",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Description of CMU Components",
+                "name": "description_of_cmu_components",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Location and Post Code",
+                "name": "location_and_post_code",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "OS Grid Reference",
+                "name": "os_grid_reference",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Number of Components",
+                "name": "number_of_components",
+                "dtype": "int64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "auction_name",
+          "application_id",
+          "component_id"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified"
+      }
     }
   ],
   "resources": [

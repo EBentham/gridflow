@@ -17,7 +17,67 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "datetime",
+              "Scotland",
+              "England",
+              "Wales"
+            ],
+            "columns": [
+              {
+                "source": "datetime",
+                "name": "datetime",
+                "dtype": "datetime",
+                "format": "%Y-%m-%dT%H:%M:%S",
+                "zone": "UTC",
+                "nullable": false
+              },
+              {
+                "source": "Scotland",
+                "name": "scotland",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "England",
+                "name": "england",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Wales",
+                "name": "wales",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "utc_instant",
+          "column": "datetime"
+        },
+        "entity_key": [
+          "datetime"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: no issue column; which forecast issue a past target's value reflects, and whether values are revised after the period, is undocumented",
+          "unit": "E-SEM"
+        }
+      }
     }
   ],
   "resources": [

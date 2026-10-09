@@ -30,6 +30,9 @@ DATE_COL_SQL_TYPES: dict[str, DateColSqlType] = {
     # FFR ResultSummary archive's `date` (date_sp1).
     "settlement_day": "DATE",
     "date": "DATE",
+    # The capacity-market register histories' reporting date (v0.22-K-CI): the `date_sp1`
+    # anchor of the three change-log families, a calendar DATE like `date`.
+    "change_date": "DATE",
     "timestamp_utc": "TIMESTAMPTZ",
     "implementation_datetime_utc": "TIMESTAMPTZ",
     "ingested_at": "TIMESTAMPTZ",

@@ -41,7 +41,8 @@ from gridflow.silver.schema_manifest import (
 # `embedded_wind_solar_forecast` (B3a/T-17), then to twelve with v0.22-E's six
 # pilot frozen records (ADR-036), each a generated APPEND_ONLY transformer, then
 # to fourteen with v0.22-X's two activation families (ADR-037 P-12), then to
-# sixteen with v0.22-EF's two archive owners (ADR-038).
+# sixteen with v0.22-EF's two archive owners (ADR-038), then to twenty-nine with
+# v0.22-K-CI's thirteen carbon-intensity and capacity-market records.
 _APPEND_ONLY_DATASETS: tuple[tuple[str, str], ...] = (
     ("elexon", "system_prices"),
     ("elexon", "remit"),
@@ -59,6 +60,19 @@ _APPEND_ONLY_DATASETS: tuple[tuple[str, str], ...] = (
     ("neso_data_portal", "ffr_phase2_result_summary_archive"),
     ("neso_data_portal", "embedded_forecast_archive_upload"),
     ("neso_data_portal", "embedded_forecast_archive_dump"),
+    ("neso_data_portal", "national_ci_forecast"),
+    ("neso_data_portal", "regional_ci_forecast"),
+    ("neso_data_portal", "country_ci_forecast"),
+    ("neso_data_portal", "ci_balancing_actions"),
+    ("neso_data_portal", "portal_known_issues"),
+    ("neso_data_portal", "capacity_market_auction_cost"),
+    ("neso_data_portal", "capacity_market_auction_static"),
+    ("neso_data_portal", "capacity_market_de_rating_factors"),
+    ("neso_data_portal", "capacity_market_unit_cmu"),
+    ("neso_data_portal", "capacity_market_unit_cmu_history"),
+    ("neso_data_portal", "capacity_market_component_history"),
+    ("neso_data_portal", "capacity_market_component_history_pre"),
+    ("neso_data_portal", "capacity_market_components"),
 )
 
 
@@ -252,9 +266,9 @@ def test_append_only_set_equals_latest_spec_set() -> None:
     spec_set = set(LATEST_VIEW_SPECS)
 
     # Non-vacuity guard: this invariant must never pass because both sides are
-    # empty (F16) -- sixteen APPEND_ONLY datasets are registered today.
+    # empty (F16) -- twenty-nine APPEND_ONLY datasets are registered today.
     assert len(append_only) > 0
-    assert len(append_only) == 16
+    assert len(append_only) == 29
 
     missing_specs = append_only - spec_set
     extra_specs = spec_set - append_only
@@ -302,6 +316,31 @@ _EXPECTED_APPEND_ONLY_DEPRECATED_ALIASES: dict[tuple[str, str], str | None] = {
         "neso_data_portal",
         "embedded_forecast_archive_dump",
     ): "silver_embedded_forecast_archive_dump",
+    ("neso_data_portal", "national_ci_forecast"): "silver_national_ci_forecast",
+    ("neso_data_portal", "regional_ci_forecast"): "silver_regional_ci_forecast",
+    ("neso_data_portal", "country_ci_forecast"): "silver_country_ci_forecast",
+    ("neso_data_portal", "ci_balancing_actions"): "silver_ci_balancing_actions",
+    ("neso_data_portal", "portal_known_issues"): "silver_portal_known_issues",
+    ("neso_data_portal", "capacity_market_auction_cost"): "silver_capacity_market_auction_cost",
+    ("neso_data_portal", "capacity_market_auction_static"): "silver_capacity_market_auction_static",
+    (
+        "neso_data_portal",
+        "capacity_market_de_rating_factors",
+    ): "silver_capacity_market_de_rating_factors",
+    ("neso_data_portal", "capacity_market_unit_cmu"): "silver_capacity_market_unit_cmu",
+    (
+        "neso_data_portal",
+        "capacity_market_unit_cmu_history",
+    ): "silver_capacity_market_unit_cmu_history",
+    (
+        "neso_data_portal",
+        "capacity_market_component_history",
+    ): "silver_capacity_market_component_history",
+    (
+        "neso_data_portal",
+        "capacity_market_component_history_pre",
+    ): "silver_capacity_market_component_history_pre",
+    ("neso_data_portal", "capacity_market_components"): "silver_capacity_market_components",
 }
 
 
