@@ -130,8 +130,8 @@ def record_dtypes(record: SchemaRecord) -> dict[str, str]:
 
     The typed silver columns in first-appearance order across epochs, then
     ``issue_time`` (when any epoch declares one), ``child_id`` and
-    ``child_crc32`` (container readers, ADR-037 P-11), then
-    :data:`CAPTURE_STAMP_COLUMNS`.
+    ``child_crc32`` (container readers, ADR-037 P-11), ``resource_id`` (a
+    resource-partitioned record, ADR-039), then :data:`CAPTURE_STAMP_COLUMNS`.
     """
     from gridflow.silver.neso_data_portal.readers import CONTAINER_READERS
 
@@ -141,6 +141,8 @@ def record_dtypes(record: SchemaRecord) -> dict[str, str]:
     if record.reader in CONTAINER_READERS:
         out["child_id"] = "string"
         out["child_crc32"] = "int64"
+    if record.latest_partition == "resource_id":
+        out["resource_id"] = "string"
     out.update(
         {
             "timestamp_utc": "datetime",
@@ -405,11 +407,14 @@ def finish_capture(
         published = pl.col("issue_time").cast(_UTC_DATETIME)
     else:
         published = pl.lit(ctx.published_at, dtype=_UTC_DATETIME)
-    frame = frame.with_columns(
+    stamps = [
         published.alias("published_at"),
         pl.lit(ctx.capture_id, dtype=pl.Utf8).alias("bronze_capture_id"),
         pl.lit(ctx.capture_written_at, dtype=_UTC_DATETIME).alias("capture_written_at"),
-    ).select(record_columns(record))
+    ]
+    if record.latest_partition == "resource_id":
+        stamps.append(pl.lit(ctx.resource_id, dtype=pl.Utf8).alias("resource_id"))
+    frame = frame.with_columns(*stamps).select(record_columns(record))
 
     duplicates = frame.select(record.entity_key).is_duplicated().sum()
     if duplicates:

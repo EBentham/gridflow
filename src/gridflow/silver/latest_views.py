@@ -96,6 +96,14 @@ class LatestViewSpec:
     """``whole_capture`` only: the relation of completion records to select from."""
     completion_family: str | None = None
     """``whole_capture`` only: the completion records' ``family`` value."""
+    completion_partition: Literal["resource_id"] | None = None
+    """``whole_capture`` only: one newest complete capture per value of this
+    completion-ledger column (ADR-039), instead of one per family. ``None``
+    renders the per-family text byte for byte."""
+
+    def __post_init__(self) -> None:
+        if self.completion_partition is not None and self.mode != "whole_capture":
+            raise ValueError("completion_partition applies to whole_capture selection only")
 
 
 # BSC settlement-run precedence (II < SF < R1 < R2 < R3 < RF < DF). Secondary
@@ -300,8 +308,7 @@ def latest_select_sql(
         capture = _quote_identifier("bronze_capture_id")
         bound = f" AND c.{_quote_identifier('available_at')} <= {_AS_OF_SQL}" if as_of_param else ""
         order = ", ".join(f"c.{_quote_identifier(c)} DESC NULLS LAST" for c in _WHOLE_CAPTURE_ORDER)
-        return (
-            f"SELECT * FROM {base} WHERE {capture} IN ("
+        eligible = (
             f"SELECT c.{capture} FROM {_quote_identifier(spec.completion_relation)} AS c "
             f"LEFT JOIN (SELECT {capture}, COUNT(*) AS n FROM {base} GROUP BY {capture}) AS b "
             f"ON b.{capture} = c.{capture} "
@@ -311,8 +318,15 @@ def latest_select_sql(
             f"AND c.{_quote_identifier('row_count')} = 0) OR "
             f"(c.{_quote_identifier('outcome')} = 'populated' "
             f"AND b.n = c.{_quote_identifier('row_count')})){bound} "
-            f"ORDER BY {order} LIMIT 1)"
         )
+        if spec.completion_partition is None:
+            winner = f"ORDER BY {order} LIMIT 1"
+        else:
+            # ADR-039: WHERE (eligibility and the as-of bound) runs before
+            # QUALIFY, so each partition's winner is ranked among bounded rows.
+            partition = _quote_identifier(spec.completion_partition)
+            winner = f"QUALIFY ROW_NUMBER() OVER (PARTITION BY c.{partition} ORDER BY {order}) = 1"
+        return f"SELECT * FROM {base} WHERE {capture} IN ({eligible}{winner})"
 
     order_terms = [f"{_quote_identifier(c)} DESC NULLS LAST" for c in selection.order_columns]
     if selection.has_rank:
@@ -506,9 +520,10 @@ def _whole_capture(
     )
     if as_of is not None:
         eligible = eligible.filter(pl.col("available_at") <= as_of)
-    winner = (
-        eligible.sort(list(_WHOLE_CAPTURE_ORDER), descending=True, nulls_last=True)
-        .head(1)
-        .select("bronze_capture_id")
-    )
-    return lf.join(winner, on="bronze_capture_id", how="semi")
+    ranked = eligible.sort(list(_WHOLE_CAPTURE_ORDER), descending=True, nulls_last=True)
+    partition = spec.completion_partition
+    if partition is not None:
+        winners = ranked.unique(subset=[partition], keep="first", maintain_order=True)
+    else:
+        winners = ranked.head(1)
+    return lf.join(winners.select("bronze_capture_id"), on="bronze_capture_id", how="semi")

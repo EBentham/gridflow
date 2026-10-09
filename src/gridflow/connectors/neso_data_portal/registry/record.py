@@ -7,7 +7,7 @@ beside the package files and is validated when the registry loads:
 - the **models** below check each object's own shape (Pydantic, frozen,
   ``extra="forbid"``);
 - :func:`validate_record` checks the record against itself, its family and its
-  package (rules V-1..V-10, V-13), and :func:`validate_silver_targets` checks
+  package (rules V-1..V-10, V-13, V-17), and :func:`validate_silver_targets` checks
   every ``SILVER`` disposition once all files are loaded (V-11). Every failure
   raises :class:`RecordError` naming the rule; the loader re-raises it as a
   ``RegistryError`` naming the file and family.
@@ -72,12 +72,15 @@ RESERVED: frozenset[str] = frozenset(
         "capture_written_at",
         "child_id",
         "child_crc32",
+        "resource_id",
     }
 )
 """Names the engine or the catalogue writes itself (V-2).
 
 ``year``/``month`` are Hive partition names: DuckDB silently replaces a data
 column of the same name with the directory value, and Polars raises (E3).
+``resource_id`` is stamped by the engine on a resource-partitioned record's
+rows (ADR-039).
 """
 
 Dtype = Literal["string", "int64", "float64", "date", "datetime"]
@@ -372,6 +375,9 @@ class SchemaRecord(_Frozen):
         xlsx: The sheet table spec (``reader="xlsx"``, or ``zip_member`` with
             ``inner="xlsx"``).
         zip_member: The member spec (``reader="zip_member"`` only).
+        latest_partition: ``whole_capture`` only: select the newest complete
+            capture per value of this completion-ledger column instead of per
+            family (ADR-039); the engine stamps it on every row (V-17).
     """
 
     version: str = Field(min_length=1)
@@ -388,6 +394,7 @@ class SchemaRecord(_Frozen):
     eligibility: Eligibility | None = None
     xlsx: XlsxSpec | None = None
     zip_member: ZipMemberSpec | None = None
+    latest_partition: Literal["resource_id"] | None = None
 
     @model_validator(mode="after")
     def _shape(self) -> SchemaRecord:
@@ -489,10 +496,11 @@ def validate_record(
     outputs = set(dtypes)
     issue = has_issue_time(record)
     key_set = set(record.entity_key)
-    if not key_set <= outputs | {"issue_time"}:
+    admissible = outputs | {"issue_time"} | ({"resource_id"} if record.latest_partition else set())
+    if not key_set <= admissible:
         raise _fail(
             "V-4",
-            f"entity_key columns {sorted(key_set - outputs - {'issue_time'})} are not outputs",
+            f"entity_key columns {sorted(key_set - admissible)} are not outputs",
         )
     if ("issue_time" in key_set) != issue:
         raise _fail(
@@ -530,6 +538,15 @@ def validate_record(
             "a family holding a datastore resource takes capture_fallback until unit D's "
             "evidence switches it (ADR-035)",
         )
+
+    if record.latest_partition is not None:
+        if record.latest != "whole_capture":
+            raise _fail("V-17", "latest_partition needs whole_capture")
+        if record.latest_partition not in key_set or len(key_set) < 2:
+            raise _fail(
+                "V-17",
+                "a resource-partitioned entity_key holds resource_id and the per-resource grain",
+            )
 
     for sibling in record.siblings:
         if sibling == key or sibling not in package_families:

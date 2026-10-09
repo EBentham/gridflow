@@ -510,7 +510,9 @@ def latest_spec_for_record(record: SchemaRecord, key: str) -> LatestViewSpec:
     ``key_columns`` is the entity key minus ``issue_time`` and the run-type
     column; ordering is ``issue_time`` (when declared), then ``available_at``;
     the run type is ranked; ``capture_written_at`` and ``bronze_capture_id``
-    (plus the run-type column, only when set) break every remaining tie.
+    (plus the run-type column, only when set) break every remaining tie. A
+    ``whole_capture`` record's ``latest_partition`` selects per resource
+    (ADR-039).
     """
     excluded = {"issue_time", record.run_type_column}
     key_columns = tuple(c for c in record.entity_key if c not in excluded)
@@ -527,6 +529,7 @@ def latest_spec_for_record(record: SchemaRecord, key: str) -> LatestViewSpec:
         mode="whole_capture" if whole else "key_latest",
         completion_relation=COMPLETION_RELATION if whole else None,
         completion_family=key if whole else None,
+        completion_partition=record.latest_partition if whole else None,
     )
 
 
