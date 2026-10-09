@@ -23,9 +23,13 @@ from __future__ import annotations
 
 import csv
 import io
+import json
 import os
 import re
+import subprocess
+import sys
 import tempfile
+import textwrap
 from datetime import UTC, date, datetime
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -36,7 +40,6 @@ import pytest
 from _neso_generic_support import write_capture
 
 from gridflow.connectors.neso_data_portal import registry as registry_module
-from gridflow.connectors.neso_data_portal.registry import Held
 from gridflow.silver.latest_views import LATEST_VIEW_SPECS, select_latest_vintage
 from gridflow.silver.neso_data_portal.casting import UnmappedResourceFormatError, epoch_for
 from gridflow.silver.neso_data_portal.completion import (
@@ -60,6 +63,7 @@ FIXTURES = Path(__file__).resolve().parents[1] / "fixtures" / "neso_data_portal"
 DAY = date(2026, 10, 8)
 WRITTEN = datetime(2026, 10, 8, 11, 8, tzinfo=UTC)
 PACKAGE = ("historic-demand-data", "8f2fe0af-871c-488d-8bad-960426f24601")
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
 # filename -> (resource id, resource name, ckan_last_modified, header epoch): the real
 # sidecar identities of the 2026-10-08 captures.
@@ -311,15 +315,49 @@ def test_t_h10_f_latest_serves_every_resource_and_no_overlap(data: Path) -> None
 
 def test_t_h10_g_the_record_is_held_on_na_and_partitioned_per_resource() -> None:
     """Detects the family published before NESO defines ``NA``, a reworded hold
-    question, and a record shape drifting from P-6 (key, selection, vintage, epochs)."""
-    record = _record()
-    assert isinstance(record.eligibility, Held)
-    assert record.eligibility.unit == "E-SEM"
-    assert record.eligibility.question == QUESTION
-    assert record.entity_key == ("resource_id", "settlement_date", "settlement_period")
-    assert record.latest == "whole_capture"
-    assert record.latest_partition == "resource_id"
-    assert record.vintage == "ckan_last_modified"
-    assert record.temporal.kind == "sp_pair"
-    assert len(record.epochs) == 4
-    assert all(epoch.issue.kind == "none" for epoch in record.epochs)
+    question, and a record shape drifting from P-6 (key, selection, vintage, epochs).
+
+    The committed-record contract is read in a fresh interpreter (repo rule: registry
+    tests are subprocess-driven), so nothing collection imported can mask a load failure.
+    """
+    code = textwrap.dedent(
+        f"""
+        import json
+        from gridflow.connectors.neso_data_portal.registry import load_registry
+        record = load_registry().families[{KEY!r}][1].record
+        assert record is not None
+        print(json.dumps({{
+            "status": record.eligibility.status,
+            "unit": record.eligibility.unit,
+            "question": record.eligibility.question,
+            "entity_key": list(record.entity_key),
+            "latest": record.latest,
+            "latest_partition": record.latest_partition,
+            "vintage": record.vintage,
+            "temporal": record.temporal.kind,
+            "epochs": len(record.epochs),
+            "issues": sorted({{e.issue.kind for e in record.epochs}}),
+        }}))
+        """
+    )
+    result = subprocess.run(
+        [sys.executable, "-c", code],
+        cwd=PROJECT_ROOT,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        timeout=120,
+        check=False,
+    )
+    assert result.returncode == 0, "stdout:\n" + result.stdout + "\nstderr:\n" + result.stderr
+    record = json.loads(result.stdout)
+    assert record["status"] == "held"
+    assert record["unit"] == "E-SEM"
+    assert record["question"] == QUESTION
+    assert record["entity_key"] == ["resource_id", "settlement_date", "settlement_period"]
+    assert record["latest"] == "whole_capture"
+    assert record["latest_partition"] == "resource_id"
+    assert record["vintage"] == "ckan_last_modified"
+    assert record["temporal"] == "sp_pair"
+    assert record["epochs"] == 4
+    assert record["issues"] == ["none"]
