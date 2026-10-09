@@ -44,6 +44,7 @@ from __future__ import annotations
 
 import json
 import logging
+import math
 from collections import Counter
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -106,6 +107,7 @@ logger = logging.getLogger(__name__)
 __all__ = [
     "CATEGORIES",
     "DRAINABLE",
+    "OVERLAP_BUCKET_ROWS",
     "STALE_ADJUDICATION",
     "AdjudicatedGap",
     "Gap",
@@ -127,6 +129,8 @@ CATEGORIES: tuple[str, ...] = (
 )
 DRAINABLE: frozenset[str] = frozenset({"missing", "failed", "missing_or_invalid_output"})
 """Plus orphaned (b), told apart from (a) by :attr:`Gap.drainable`."""
+OVERLAP_BUCKET_ROWS = 1_000_000
+"""Rows per hash bucket of the overlap check (H7): bounds its group-by state."""
 STALE_ADJUDICATION = "stale_adjudication"
 """A ledger capture no live gap matches (ADR-040). Not in :data:`CATEGORIES`, so the
 per-category ``SUMMARY`` lines stay byte-identical for a run without entries."""
@@ -481,6 +485,15 @@ def _overlaps(key: str, record: SchemaRecord, data_dir: Path, cutoff: date) -> l
     ``_latest``, so the report and the view agree by construction. One gap per
     selected capture holding any such key; never drainable. A check that cannot
     read an output is one ``overlap check failed`` gap, never a pass.
+
+    **Memory bound (H7, ADR-040).** The family is never materialised whole (a
+    whole-family window over 21.9M rows segfaulted). The selected rows are split
+    into ``ceil(rows / OVERLAP_BUCKET_ROWS)`` buckets by a hash of the grain; each
+    bucket's shared keys come from a streaming ``group_by``; the serving captures
+    come from one streaming semi-join of the selection on those keys, with null
+    equality so a key holding a null still matches. Equal keys (nulls included)
+    hash equal within a process, so a key never spans two buckets and the report
+    does not depend on the bucket count.
     """
     root = PathBuilder(data_dir).silver_dir(SOURCE, key)
     grain = [column for column in record.entity_key if column != "resource_id"]
@@ -494,10 +507,29 @@ def _overlaps(key: str, record: SchemaRecord, data_dir: Path, cutoff: date) -> l
             latest_spec_for_record(record, key),
             completions=completions,
         )
+        rows = pl.scan_parquet(files, hive_partitioning=False).select(pl.len()).collect().item()
+        buckets = max(1, math.ceil(rows / OVERLAP_BUCKET_ROWS))
+        parts: list[pl.DataFrame] = []
+        for index in range(buckets):
+            part = (
+                selected
+                if buckets == 1
+                else selected.filter(pl.struct(grain).hash(seed=0) % buckets == index)
+            )
+            parts.append(
+                part.group_by(grain)
+                .agg(pl.col("resource_id").n_unique().alias("__resources"))
+                .filter(pl.col("__resources") > 1)
+                .select(grain)
+                .collect(engine="streaming")
+            )
+        keys = pl.concat(parts)
+        if keys.is_empty():
+            return []
         shared = (
             selected.select(*grain, "resource_id", "bronze_capture_id")
-            .filter(pl.col("resource_id").n_unique().over(grain) > 1)
-            .collect()
+            .join(keys.lazy(), on=grain, how="semi", nulls_equal=True)
+            .collect(engine="streaming")
         )
     except (OSError, pl.exceptions.PolarsError) as exc:
         return [Gap("overlap", key, None, "-", f"overlap check failed: {exc}")]

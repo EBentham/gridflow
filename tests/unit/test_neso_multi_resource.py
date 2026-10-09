@@ -1021,3 +1021,75 @@ class TestOverlap:
         assert overlaps[0].capture_id == "-" and not overlaps[0].drainable
         assert overlaps[0].detail.startswith("overlap check failed: ")
         assert any(gap.drainable for gap in report.gaps if gap.category != "overlap")
+
+    def test_a8_bucketed_check_reports_the_same_gaps_and_never_windows(
+        self, data: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """A8a (H7): detects the memory-bounded overlap check reporting different captures
+        from the whole-family check, splitting one key across buckets, dropping a key whose
+        grain holds a null (a semi-join without null equality), or still windowing over the
+        whole family. The grain carries a nullable ``unit``: A and B share the null-unit key
+        (P3), and A, B and C share a null-free key (P2). With one bucket per row
+        (``OVERLAP_BUCKET_ROWS = 1``) and with the default, the report equals the literal
+        whole-family report, and a spy on ``pl.Expr.over`` raising ``AssertionError`` (which
+        the check's ``PolarsError`` handler cannot swallow) never fires."""
+        from gridflow.silver.neso_data_portal import reconcile as reconcile_module
+
+        columns = [
+            column("SettlementDate", "settlement_date", "date", nullable=False),
+            column("SettlementPeriod", "settlement_period", "int64", nullable=False),
+            column("Unit", "unit"),
+            column("Value", "value", "float64"),
+        ]
+        rec = partitioned_record(epochs=[epoch(columns)], entity_key=[*PARTITION_KEY, "unit"])
+        generated = install_multi(monkeypatch, data, rec)
+        header = b"SettlementDate,SettlementPeriod,Unit,Value\n"
+        a = capture_multi(
+            data,
+            "A",
+            header + b"2026-10-07,1,U1,1.0\n2026-10-07,2,U1,2.0\n2026-10-07,3,,3.0\n",
+            _t(8),
+        )
+        b = capture_multi(data, "B", header + b"2026-10-07,2,U1,5.0\n2026-10-07,3,,6.0\n", _t(9))
+        c = capture_multi(data, "C", header + b"2026-10-07,2,U1,7.0\n", _t(10))
+        generated.transformers[KEY](data).run(DAY, run_id="r")
+        silver = pl.concat(
+            pl.read_parquet(path, hive_partitioning=False)
+            for path in sorted((data / "silver" / SOURCE / KEY).rglob("*.parquet"))
+        )
+        assert silver.filter(pl.col("unit").is_null()).height == 2, "the null key must reach silver"
+
+        rid = {letter: RESOURCES[letter][0] for letter in RESOURCES}
+
+        def _gap(capture: str, count: int, others: str, peers: tuple[str, ...]) -> Any:
+            served = sorted(rid[letter] for letter in others)
+            detail = (
+                f"{count} key(s) also served by resource(s) {served}; "
+                "first: settlement_date=2026-10-07, settlement_period=2, unit=U1"
+            )
+            return (capture, detail, tuple(sorted(peers)))
+
+        expected = sorted(
+            [_gap(a, 2, "BC", (b, c)), _gap(b, 2, "AC", (a, c)), _gap(c, 1, "AB", (a, b))]
+        )
+
+        def _no_window(*_args: Any, **_kwargs: Any) -> Any:
+            raise AssertionError("the overlap check called a window expression")
+
+        loaded = registry_module.load_registry()
+        reports: list[list[tuple[str, str, tuple[str, ...]]]] = []
+        for bucket_rows in (None, 1):
+            with monkeypatch.context() as patch:
+                if bucket_rows is not None:
+                    patch.setattr(reconcile_module, "OVERLAP_BUCKET_ROWS", bucket_rows)
+                patch.setattr(pl.Expr, "over", _no_window)
+                report = reconcile(data, loaded, [KEY], DAY)
+            reports.append(
+                sorted(
+                    (gap.capture_id, gap.detail, gap.peers)
+                    for gap in report.gaps
+                    if gap.category == "overlap"
+                )
+            )
+        assert reports[0] == expected
+        assert reports[1] == expected
