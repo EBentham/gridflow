@@ -33,6 +33,9 @@ DATE_COL_SQL_TYPES: dict[str, DateColSqlType] = {
     # The capacity-market register histories' reporting date (v0.22-K-CI): the `date_sp1`
     # anchor of the three change-log families, a calendar DATE like `date`.
     "change_date": "DATE",
+    # The demand-forecast cardinal-point families' target day (v0.22-K-DEM-1): the `date_sp1`
+    # anchor of the eight CP forecast records, a calendar DATE like `date`.
+    "targetdate": "DATE",
     "timestamp_utc": "TIMESTAMPTZ",
     "implementation_datetime_utc": "TIMESTAMPTZ",
     "ingested_at": "TIMESTAMPTZ",

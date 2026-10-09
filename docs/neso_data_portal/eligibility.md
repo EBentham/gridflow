@@ -8,25 +8,25 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 
 | Package | Family | Output | Eligibility | Latest | Temporal | Published clock |
 |---|---|---|---|---|---|---|
-| `1-day-ahead-demand-forecast` | `demand_forecast_1d_day_ahead_national` | ingest-only (no silver output) | — | — | — | — |
+| `1-day-ahead-demand-forecast` | `demand_forecast_1d_day_ahead_national` | silver | eligible | whole_capture | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
 | `1-day-ahead-demand-forecast` | `demand_forecast_1d_files` | catalogue only | — | — | — | — |
-| `1-day-ahead-demand-forecast` | `demand_forecast_1d_historic_day_ahead` | ingest-only (no silver output) | — | — | — | — |
+| `1-day-ahead-demand-forecast` | `demand_forecast_1d_historic_day_ahead` | silver | held: TODO: FORECAST_TIMESTAMP zone is undocumented (values carry Z but sit after the file's CKAN last_modified when read as UTC); whether it is the immutable issue instant; some timestamps are vendor-documented email-recovery times (unit E-SEM) | whole_capture | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
 | `14-days-ahead-operational-metered-wind-forecasts` | `metered_wind_forecast_14d` | ingest-only (no silver output) | — | — | — | — |
 | `14-days-ahead-operational-metered-wind-forecasts` | `metered_wind_forecast_14d_windfarm` | ingest-only (no silver output) | — | — | — | — |
 | `14-days-ahead-wind-forecasts` | `wind_forecast_14d_day_ahead_bmu` | ingest-only (no silver output) | — | — | — | — |
 | `14-days-ahead-wind-forecasts` | `wind_forecast_14d_days_ahead` | ingest-only (no silver output) | — | — | — | — |
-| `2-14-days-ahead-national-demand-forecast` | `national_demand_fc_2_14d_days_ahead` | ingest-only (no silver output) | — | — | — | — |
-| `2-14-days-ahead-national-demand-forecast` | `national_demand_fc_2_14d_days_ahead_half` | ingest-only (no silver output) | — | — | — | — |
-| `2-14-days-ahead-national-demand-forecast` | `national_demand_fc_2_14d_historic_day` | ingest-only (no silver output) | — | — | — | — |
-| `2-day-ahead-demand-forecast` | `demand_forecast_2d_day_ahead` | ingest-only (no silver output) | — | — | — | — |
+| `2-14-days-ahead-national-demand-forecast` | `national_demand_fc_2_14d_days_ahead` | silver | eligible | whole_capture | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
+| `2-14-days-ahead-national-demand-forecast` | `national_demand_fc_2_14d_days_ahead_half` | silver | held: TODO: whether GDATETIME (UTC) labels the half-hour end (611/624 rows align as end labels; 2400 closes the date) - vendor confirmation needed; DST-day behaviour unobserved (unit E-SEM) | whole_capture | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
+| `2-14-days-ahead-national-demand-forecast` | `national_demand_fc_2_14d_historic_day` | silver | held: TODO: FORECAST_TIMESTAMP zone is undocumented (values carry Z but sit after the file's CKAN last_modified when read as UTC); whether it is the immutable issue instant; the field has no vendor definition (unit E-SEM) | whole_capture | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
+| `2-day-ahead-demand-forecast` | `demand_forecast_2d_day_ahead` | silver | eligible | whole_capture | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
 | `2-day-ahead-demand-forecast` | `demand_forecast_2d_files` | catalogue only | — | — | — | — |
-| `2-day-ahead-demand-forecast` | `demand_forecast_2d_historic_day_ahead` | ingest-only (no silver output) | — | — | — | — |
+| `2-day-ahead-demand-forecast` | `demand_forecast_2d_historic_day_ahead` | silver | held: TODO: FORECAST_TIMESTAMP zone is undocumented (values carry Z but sit after the file's CKAN last_modified when read as UTC); whether it is the immutable issue instant (unit E-SEM) | whole_capture | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
 | `24-months-ahead-constraint-cost-forecast` | `constraint_cost_fc_24m` | silver | held: TODO: currency unit of Constraint Cost; vendor metadata shows an undecodable symbol before 'm'; confirm GBP million from the NESO data dictionary (unit E-SEM) | key_latest | none | CKAN last_modified of the captured file (ADR-030) |
 | `24-months-ahead-constraint-limits` | `constraint_limits_24m` | ingest-only (no silver output) | — | — | — | — |
 | `24-months-ahead-constraint-limits` | `constraint_limits_24m_files` | catalogue only | — | — | — | — |
-| `7-day-ahead-national-forecast` | `national_forecast_7d_day_ahead_demand` | ingest-only (no silver output) | — | — | — | — |
+| `7-day-ahead-national-forecast` | `national_forecast_7d_day_ahead_demand` | silver | eligible | whole_capture | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
 | `7-day-ahead-national-forecast` | `national_forecast_7d_files` | catalogue only | — | — | — | — |
-| `7-day-ahead-national-forecast` | `national_forecast_7d_historic_day_ahead` | ingest-only (no silver output) | — | — | — | — |
+| `7-day-ahead-national-forecast` | `national_forecast_7d_historic_day_ahead` | silver | held: TODO: FORECAST_TIMESTAMP zone is undocumented (values carry Z but sit after the file's CKAN last_modified when read as UTC); whether it is the immutable issue instant; the field has no vendor definition (unit E-SEM) | whole_capture | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
 | `aahedc-tariffs` | `aahedc_tariffs` | ingest-only (no silver output) | — | — | — | — |
 | `aggregated-bsad` | `aggregated_bsad` | ingest-only (no silver output) | — | — | — | — |
 | `ancillary-services-important-industry-notifications` | `as_industry_notifications_balancing` | ingest-only (no silver output) | — | — | — | — |
@@ -83,7 +83,7 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `daily-balancing-costs-balancing-services-use-of-system` | `daily_balancing_costs_files` | catalogue only | — | — | — | — |
 | `daily-balancing-volume-balancing-services-use-of-system` | `daily_balancing_volume` | ingest-only (no silver output) | — | — | — | — |
 | `daily-balancing-volume-balancing-services-use-of-system` | `daily_balancing_volume_files` | catalogue only | — | — | — | — |
-| `daily-demand-update` | `daily_demand_update` | ingest-only (no silver output) | — | — | — | — |
+| `daily-demand-update` | `daily_demand_update` | silver | held: TODO: zero ND/TSD on FORECAST_ACTUAL_INDICATOR = F rows: a forecast of zero or no forecast? (unit E-SEM) | whole_capture | sp_pair | CKAN last_modified of the captured file (ADR-030) |
 | `daily-demand-update` | `daily_demand_update_files` | catalogue only | — | — | — | — |
 | `daily-opmr` | `daily_opmr` | ingest-only (no silver output) | — | — | — | — |
 | `daily-wind-availability` | `daily_wind_availability` | bespoke silver | eligible | — | — | — |
@@ -463,6 +463,6 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 ## Totals
 
 - Packages: 131 (held: 2)
-- Families: 314: silver 26 (bespoke 3, recorded 23), ingest-only 253, catalogue only 35
-- Silver outputs held: 10
+- Families: 314: silver 36 (bespoke 3, recorded 33), ingest-only 243, catalogue only 35
+- Silver outputs held: 16
 - Resources: 1385
