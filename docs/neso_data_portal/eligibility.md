@@ -320,7 +320,7 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `voltage-requirement` | `voltage_requirement` | ingest-only (no silver output) | — | — | — | — |
 | `voltage-requirement` | `voltage_requirement_files` | catalogue only | — | — | — | — |
 | `weekly-opmr` | `weekly_opmr` | silver | held: TODO: NESO's engineering year/week to target date mapping is undocumented; the body gives a publication date only (unit E-SEM) | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
-| `weekly-wind-availability` | `weekly_wind_availability` | ingest-only (no silver output) | — | — | — | — |
+| `weekly-wind-availability` | `weekly_wind_availability` | silver | held: TODO: NESO does not define the `Week Number` calendar (week system, year, start day, zone), so no target week can be dated; the body also carries 155 week labels against a documented 2-52-week horizon. (unit E-SEM) | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
 | `wind-bmu-boa-volumes` | `wind_bmu_boa_volumes` | ingest-only (no silver output) | — | — | — | — |
 
 ## Resource dispositions per package
@@ -463,6 +463,6 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 ## Totals
 
 - Packages: 131 (held: 2)
-- Families: 314: silver 55 (bespoke 3, recorded 52), ingest-only 224, catalogue only 35
-- Silver outputs held: 26
+- Families: 314: silver 56 (bespoke 3, recorded 53), ingest-only 223, catalogue only 35
+- Silver outputs held: 27
 - Resources: 1385
