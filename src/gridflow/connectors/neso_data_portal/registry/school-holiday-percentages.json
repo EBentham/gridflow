@@ -17,7 +17,95 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Local_Authority",
+              "Multiplier",
+              "Date",
+              "School_Holiday"
+            ],
+            "columns": [
+              {
+                "source": "Local_Authority",
+                "name": "local_authority",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Multiplier",
+                "name": "multiplier",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Date",
+                "name": "date",
+                "dtype": "date",
+                "formats_by_filename": [
+                  [
+                    "school_holiday_2021_22.csv",
+                    "%Y-%m-%d"
+                  ],
+                  [
+                    "school_holiday_2022_23.csv",
+                    "%Y-%m-%d"
+                  ],
+                  [
+                    "school_holiday_2023_24.csv",
+                    "%Y-%m-%d"
+                  ],
+                  [
+                    "school_holiday_2024_25.csv",
+                    "%d/%m/%Y"
+                  ],
+                  [
+                    "school_holiday_2025_26.csv",
+                    "%Y-%m-%d"
+                  ],
+                  [
+                    "school_holiday_2026_27.csv",
+                    "%Y-%m-%d"
+                  ]
+                ],
+                "nullable": true
+              },
+              {
+                "source": "School_Holiday",
+                "name": "school_holiday",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "resource_id",
+          "local_authority",
+          "multiplier",
+          "date",
+          "school_holiday"
+        ],
+        "latest": "whole_capture",
+        "latest_partition": "resource_id",
+        "vintage": "ckan_last_modified",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: the numeric scale of the Total rows: the vendor calls the aggregate a percentage, but the values measure as a fraction equal to the sum of (multiplier x local indicator) within 0.0005; NESO has not stated the encoding",
+          "unit": "E-SEM"
+        }
+      }
     }
   ],
   "resources": [

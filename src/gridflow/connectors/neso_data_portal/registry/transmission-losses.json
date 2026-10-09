@@ -17,7 +17,70 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Financial Year",
+              "Sum of NGET",
+              "Sum of SPT",
+              "Sum of SHETL",
+              "Sum of GB totals"
+            ],
+            "columns": [
+              {
+                "source": "Financial Year",
+                "name": "financial_year",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Sum of NGET",
+                "name": "sum_of_nget",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Sum of SPT",
+                "name": "sum_of_spt",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Sum of SHETL",
+                "name": "sum_of_shetl",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Sum of GB totals",
+                "name": "sum_of_gb_totals",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "financial_year",
+          "sum_of_nget",
+          "sum_of_spt",
+          "sum_of_shetl",
+          "sum_of_gb_totals"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified"
+      }
     },
     {
       "key": "transmission_losses_main",
@@ -28,7 +91,78 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Financial Year",
+              "Month",
+              "NGET",
+              "SPT",
+              "SHETL",
+              "GB totals"
+            ],
+            "columns": [
+              {
+                "source": "Financial Year",
+                "name": "financial_year",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Month",
+                "name": "month_vendor",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "NGET",
+                "name": "nget",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "SPT",
+                "name": "spt",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "SHETL",
+                "name": "shetl",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "GB totals",
+                "name": "gb_totals",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "financial_year",
+          "month_vendor",
+          "nget",
+          "spt",
+          "shetl",
+          "gb_totals"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified"
+      }
     }
   ],
   "resources": [

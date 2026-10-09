@@ -161,7 +161,12 @@ HELD: dict[str, str] = {
     "demand_forecast_1d_historic_day_ahead": _ARCHIVE_Q
     + "; some timestamps are vendor-documented email-recovery times",
     "demand_forecast_2d_historic_day_ahead": _ARCHIVE_Q,
-    "national_forecast_7d_historic_day_ahead": _ARCHIVE_Q + "; the field has no vendor definition",
+    # K-DEM-1-FACTS measured the "after the CKAN last_modified" claim only for the 1-day,
+    # 2-day and 2-14-day archives (RULINGS 534); the 7-day archive makes no such claim.
+    "national_forecast_7d_historic_day_ahead": (
+        "TODO: FORECAST_TIMESTAMP has no vendor definition and its zone is undocumented "
+        "(values carry Z); whether it is the immutable issue instant"
+    ),
     "national_demand_fc_2_14d_historic_day": _ARCHIVE_Q + "; the field has no vendor definition",
     "national_demand_fc_2_14d_days_ahead_half": (
         "TODO: whether GDATETIME (UTC) labels the half-hour end (611/624 rows align as end "

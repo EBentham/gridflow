@@ -26,7 +26,7 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `24-months-ahead-constraint-limits` | `constraint_limits_24m_files` | catalogue only | — | — | — | — |
 | `7-day-ahead-national-forecast` | `national_forecast_7d_day_ahead_demand` | silver | eligible | whole_capture | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
 | `7-day-ahead-national-forecast` | `national_forecast_7d_files` | catalogue only | — | — | — | — |
-| `7-day-ahead-national-forecast` | `national_forecast_7d_historic_day_ahead` | silver | held: TODO: FORECAST_TIMESTAMP zone is undocumented (values carry Z but sit after the file's CKAN last_modified when read as UTC); whether it is the immutable issue instant; the field has no vendor definition (unit E-SEM) | whole_capture | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
+| `7-day-ahead-national-forecast` | `national_forecast_7d_historic_day_ahead` | silver | held: TODO: FORECAST_TIMESTAMP has no vendor definition and its zone is undocumented (values carry Z); whether it is the immutable issue instant (unit E-SEM) | whole_capture | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
 | `aahedc-tariffs` | `aahedc_tariffs` | ingest-only (no silver output) | — | — | — | — |
 | `aggregated-bsad` | `aggregated_bsad` | ingest-only (no silver output) | — | — | — | — |
 | `ancillary-services-important-industry-notifications` | `as_industry_notifications_balancing` | ingest-only (no silver output) | — | — | — | — |
@@ -209,7 +209,7 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `monthly-utilisation-data-of-voltage-contracted-units` | `voltage_units_utilisation` | ingest-only (no silver output) | — | — | — | — |
 | `national-carbon-intensity-forecast` | `national_ci_forecast` | silver | held: TODO: no issue column; which forecast issue a past target's value reflects, and whether values are revised after the period, is undocumented (unit E-SEM) | whole_capture | utc_instant | CKAN last_modified of the captured file (ADR-030) |
 | `national-carbon-intensity-forecast` | `national_ci_forecast_files` | catalogue only | — | — | — | — |
-| `national-demand-balancing-mechanism-units` | `national_demand_bmus` | ingest-only (no silver output) | — | — | — | — |
+| `national-demand-balancing-mechanism-units` | `national_demand_bmus` | silver | eligible | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
 | `negative-reserve-active-power-margin-nrapm-forecast` | `nrapm_forecast_national_daily_days` | ingest-only (no silver output) | — | — | — | — |
 | `negative-reserve-active-power-margin-nrapm-forecast` | `nrapm_forecast_scotland_daily_days` | ingest-only (no silver output) | — | — | — | — |
 | `negative-reserve-active-power-margin-nrapm-forecast` | `nrapm_forecast_weekly_week_national` | ingest-only (no silver output) | — | — | — | — |
@@ -260,7 +260,7 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `resource-adequacy-in-2030s` | `resource_adequacy_2030s_peak_demand` | ingest-only (no silver output) | — | — | — | — |
 | `resource-adequacy-in-2030s` | `resource_adequacy_2030s_portfolio` | ingest-only (no silver output) | — | — | — | — |
 | `resource-adequacy-in-2030s` | `resource_adequacy_2030s_results` | ingest-only (no silver output) | — | — | — | — |
-| `school-holiday-percentages` | `school_holiday_percentages` | ingest-only (no silver output) | — | — | — | — |
+| `school-holiday-percentages` | `school_holiday_percentages` | silver | held: TODO: the numeric scale of the Total rows: the vendor calls the aggregate a percentage, but the values measure as a fraction equal to the sum of (multiplier x local indicator) within 0.0005; NESO has not stated the encoding (unit E-SEM) | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
 | `short-term-operating-reserve-stor-day-ahead-auction-results` | `stor_da_auction_results` | ingest-only (no silver output) | — | — | — | — |
 | `short-term-operating-reserve-stor-day-ahead-buy-curve` | `stor_da_buy_curve` | ingest-only (no silver output) | — | — | — | — |
 | `short-term-operating-reserve-stor-day-ahead-buy-curve` | `stor_da_buy_curve_files` | catalogue only | — | — | — | — |
@@ -293,8 +293,8 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `thermal-constraint-costs` | `thermal_constraint_costs` | ingest-only (no silver output) | — | — | — | — |
 | `thermal-constraint-costs` | `thermal_constraint_costs_files` | catalogue only | — | — | — | — |
 | `transmission-entry-capacity-tec-register` | `tec_register` | silver | eligible | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
-| `transmission-losses` | `transmission_losses_financial_year` | ingest-only (no silver output) | — | — | — | — |
-| `transmission-losses` | `transmission_losses_main` | ingest-only (no silver output) | — | — | — | — |
+| `transmission-losses` | `transmission_losses_financial_year` | silver | eligible | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
+| `transmission-losses` | `transmission_losses_main` | silver | eligible | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
 | `transmission-network-use-of-system-tnuos-tariffs` | `tnuos_tariffs_embedded_export` | ingest-only (no silver output) | — | — | — | — |
 | `transmission-network-use-of-system-tnuos-tariffs` | `tnuos_tariffs_half_hourly_hh_demand` | ingest-only (no silver output) | — | — | — | — |
 | `transmission-network-use-of-system-tnuos-tariffs` | `tnuos_tariffs_local_offshore_generator` | ingest-only (no silver output) | — | — | — | — |
@@ -463,6 +463,6 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 ## Totals
 
 - Packages: 131 (held: 2)
-- Families: 314: silver 37 (bespoke 3, recorded 34), ingest-only 242, catalogue only 35
-- Silver outputs held: 17
+- Families: 314: silver 41 (bespoke 3, recorded 38), ingest-only 238, catalogue only 35
+- Silver outputs held: 18
 - Resources: 1385
