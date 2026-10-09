@@ -540,6 +540,33 @@ DEM2_PACKAGE_FILES = {
     "transmission-losses.json",
 }
 
+GEN1_RECORDED = {
+    "metered_wind_forecast_14d",
+    "metered_wind_forecast_14d_windfarm",
+    "wind_forecast_14d_days_ahead",
+    "wind_forecast_14d_day_ahead_bmu",
+    "da_wind_forecast_day_ahead",
+    "da_wind_forecast_day_ahead_bmu",
+    "da_wind_forecast_historic_day_ahead",
+    "da_wind_forecast_historic_day_ahead_bmu",
+    "nrapm_forecast_national_daily_days",
+    "nrapm_forecast_scotland_daily_days",
+    "nrapm_forecast_weekly_week_national",
+    "nrapm_forecast_weekly_week_scotland",
+    "daily_opmr",
+    "weekly_opmr",
+}
+"""The fourteen wind / margin forecast families unit K-GEN-1 records."""
+
+GEN1_PACKAGE_FILES = {
+    "14-days-ahead-operational-metered-wind-forecasts.json",
+    "14-days-ahead-wind-forecasts.json",
+    "day-ahead-wind-forecast.json",
+    "negative-reserve-active-power-margin-nrapm-forecast.json",
+    "daily-opmr.json",
+    "weekly-opmr.json",
+}
+
 X_RESOURCES_WITH_CHILDREN = 4 + 1 + 39 + 73 + 1
 """Unit X's committed inventories (ADR-037 P-8): CMP workbooks, the ResultSummary ZIP,
 frequency ZIPs, held data containers and the GSP archive with a CSV member."""
@@ -563,6 +590,7 @@ class TestSeededRegistry:
             | DEM1_RECORDED
             | DEM1H_RECORDED
             | DEM2_RECORDED
+            | GEN1_RECORDED
         )
         with_children = [res for _package, res in loaded.resources.values() if res.children]
         assert len(with_children) == X_RESOURCES_WITH_CHILDREN
@@ -587,6 +615,7 @@ class TestSeededRegistry:
             | DEM1_PACKAGE_FILES
             | DEM1H_PACKAGE_FILES
             | DEM2_PACKAGE_FILES
+            | GEN1_PACKAGE_FILES
         )
 
 
