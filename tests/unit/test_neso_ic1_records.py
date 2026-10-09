@@ -1134,9 +1134,9 @@ def test_the_committed_ledger_carries_the_nsl_entry() -> None:
         }))
         """
     )
-    # the whole ledger is the three ruled families (GEN-2H's two, RULINGS 547, and this one):
-    # a stray well-formed entry for another family fails here
-    assert loaded["families"] == [
+    # the ledger opens with the three families ruled by GEN-2H (RULINGS 547) and this unit; later
+    # units append their own entries (K-IC-2: brit_ned) and pin the whole ledger themselves
+    assert loaded["families"][:3] == [
         "metered_wind_output_monthly",
         "wind_bmu_boa_volumes",
         "nsl",

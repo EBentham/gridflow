@@ -48,7 +48,8 @@ from gridflow.silver.schema_manifest import (
 # four demand-reference records, then to fifty-eight with v0.22-K-GEN-1's fourteen wind and
 # margin forecast records, then to fifty-nine with v0.22-K-GEN-2's weekly wind availability
 # record, then to sixty-one with v0.22-GEN-2H's metered wind output and wind BOA volume
-# records, then to seventy-two with v0.22-K-IC-1's eleven interconnector limit records.
+# records, then to seventy-two with v0.22-K-IC-1's eleven interconnector limit records, then to
+# seventy-five with v0.22-K-IC-2's BritNed, Nord Pool price and SOP records.
 _APPEND_ONLY_DATASETS: tuple[tuple[str, str], ...] = (
     ("elexon", "system_prices"),
     ("elexon", "remit"),
@@ -122,6 +123,9 @@ _APPEND_ONLY_DATASETS: tuple[tuple[str, str], ...] = (
     ("neso_data_portal", "nsl"),
     ("neso_data_portal", "viking_ntc"),
     ("neso_data_portal", "viking_link_ntc"),
+    ("neso_data_portal", "brit_ned"),
+    ("neso_data_portal", "nordpool_da_prices"),
+    ("neso_data_portal", "system_operating_plan"),
 )
 
 
@@ -315,9 +319,9 @@ def test_append_only_set_equals_latest_spec_set() -> None:
     spec_set = set(LATEST_VIEW_SPECS)
 
     # Non-vacuity guard: this invariant must never pass because both sides are
-    # empty (F16) -- seventy-two APPEND_ONLY datasets are registered today.
+    # empty (F16) -- seventy-five APPEND_ONLY datasets are registered today.
     assert len(append_only) > 0
-    assert len(append_only) == 72
+    assert len(append_only) == 75
 
     missing_specs = append_only - spec_set
     extra_specs = spec_set - append_only
@@ -487,6 +491,9 @@ _EXPECTED_APPEND_ONLY_DEPRECATED_ALIASES: dict[tuple[str, str], str | None] = {
     ("neso_data_portal", "nsl"): "silver_nsl",
     ("neso_data_portal", "viking_ntc"): "silver_viking_ntc",
     ("neso_data_portal", "viking_link_ntc"): "silver_viking_link_ntc",
+    ("neso_data_portal", "brit_ned"): "silver_brit_ned",
+    ("neso_data_portal", "nordpool_da_prices"): "silver_nordpool_da_prices",
+    ("neso_data_portal", "system_operating_plan"): "silver_system_operating_plan",
 }
 
 

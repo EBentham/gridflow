@@ -36,5 +36,29 @@
     "question": "Is the repeated 2023-10-29 DayAhead 22:00–23:00 row a publication defect, and which value set is authoritative?",
     "evidence": "K-IC-1-FACTS nsl T08/T10; ADR-040",
     "ruling": "565"
+  },
+  {
+    "family": "brit_ned",
+    "category": "overlap",
+    "captures": [
+      "bronze/neso_data_portal/brit_ned/2026/10/08/raw_20261008T085916Z_f43260c8-c559-4415-a369-0eb4b9c4e6b2_87ed618c.csv",
+      "bronze/neso_data_portal/brit_ned/2026/10/08/raw_20261008T085918Z_3e546d9e-32fc-4cbd-bd51-214b106907e6_c654d837.csv"
+    ],
+    "reason": "the 20251229 and 20251231 weekly uploads both publish the 24 hourly labels of 2025-12-31, all 24 To GB / From GB value pairs equal; NESO states no precedence, so both uploads are served (ADR-039)",
+    "question": "Which weekly upload is authoritative for the 24 hourly labels of 2025-12-31 that the 20251229 and 20251231 resources both publish?",
+    "evidence": "K-IC-2-FACTS §2 adjacent overlap; ADR-040",
+    "ruling": "571"
+  },
+  {
+    "family": "brit_ned",
+    "category": "failed",
+    "cause": "DuplicateEntityKeyError",
+    "captures": [
+      "bronze/neso_data_portal/brit_ned/2026/10/08/raw_20261008T085215Z_10432bfd-2102-4eda-8c6d-bed2a4df676b_a7f5cb18.csv"
+    ],
+    "reason": "the 20221012 weekly upload labels 20221012 04:00 - 05:00 twice with different From GB values (1050 and \"1,007\"), so no field key is lossless and the duplicate guard fails the capture; it is never deduplicated and stays unloaded with its failure record",
+    "question": "Which of the two 20221012 04:00 - 05:00 rows (From GB 1050 or 1,007) is the published limit, and is the repeated label a publication defect?",
+    "evidence": "K-IC-2-FACTS §2 g2-g3 (B-OLD); ADR-040",
+    "ruling": "571"
   }
 ]

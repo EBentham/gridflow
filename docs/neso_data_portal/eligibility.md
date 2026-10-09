@@ -43,7 +43,7 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `balancing-services-contract-enactment` | `bs_contract_enactment_balancing_service` | ingest-only (no silver output) | — | — | — | — |
 | `balancing-services-contract-enactment` | `bs_contract_enactment_files` | catalogue only | — | — | — | — |
 | `balancing-services-use-of-system-bsuos-daily-forecast` | `bsuos_daily_forecast` | ingest-only (no silver output) | — | — | — | — |
-| `brit-ned` | `brit_ned` | ingest-only (no silver output) | — | — | — | — |
+| `brit-ned` | `brit_ned` | silver | held: TODO: NESO does not define the operational-date rollover, the GMT/BST mapping or the `(a)`/`(b)` fold markers of the hourly labels, and the bodies carry no issue time, so no label can be dated as an issued limit. (unit E-SEM) | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
 | `bsuos-fixed-tariffs` | `bsuos_fixed_tariffs` | ingest-only (no silver output) | — | — | — | — |
 | `bsuos-monthly-forecast` | `bsuos_monthly_forecast_actual_sum` | ingest-only (no silver output) | — | — | — | — |
 | `bsuos-monthly-forecast` | `bsuos_monthly_forecast_fc_summary` | ingest-only (no silver output) | — | — | — | — |
@@ -91,7 +91,7 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `day-ahead-constraint-flows-and-limits` | `da_constraint_flows_limits` | ingest-only (no silver output) | — | — | — | — |
 | `day-ahead-constraint-flows-and-limits` | `da_constraint_flows_limits_files` | catalogue only | — | — | — | — |
 | `day-ahead-half-hourly-demand-forecast-performance` | `da_demand_fc_performance` | silver | held: TODO: Datetime and Publish_Datetime end in 'Z' but the dictionary states GMT/BST; whether Datetime marks period start or end; Settlement_Period repeats SP4/SP5 on 2021-10-31 and SP2/SP3 on 2022-10-30; whether Publish_Datetime is the publication instant (unit E-SEM) | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
-| `day-ahead-power-exchange-prices-nordpool` | `nordpool_da_prices` | ingest-only (no silver output) | — | — | — | — |
+| `day-ahead-power-exchange-prices-nordpool` | `nordpool_da_prices` | silver | eligible | whole_capture | none | gridflow capture time |
 | `day-ahead-wind-forecast` | `da_wind_forecast_day_ahead` | silver | eligible | whole_capture | utc_instant | CKAN last_modified of the captured file (ADR-030) |
 | `day-ahead-wind-forecast` | `da_wind_forecast_day_ahead_bmu` | silver | eligible | whole_capture | utc_instant | CKAN last_modified of the captured file (ADR-030) |
 | `day-ahead-wind-forecast` | `da_wind_forecast_historic_day_ahead` | silver | held: TODO: Forecast_Timestamp has no vendor zone (its values carry no offset); 192 targets carry two labels and ~14k labels fall at or after target start; the issue zone and when each value was available are undefined (unit E-SEM) | whole_capture | utc_instant | CKAN last_modified of the captured file (ADR-030) |
@@ -288,7 +288,7 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `system-frequency-data` | `system_frequency` | ingest-only (no silver output) | — | — | — | — |
 | `system-inertia` | `system_inertia` | ingest-only (no silver output) | — | — | — | — |
 | `system-inertia-cost` | `system_inertia_cost` | ingest-only (no silver output) | — | — | — | — |
-| `system-operating-plan-sop` | `system_operating_plan` | ingest-only (no silver output) | — | — | — | — |
+| `system-operating-plan-sop` | `system_operating_plan` | silver | held: TODO: the dump returns each plan's latest version and NESO does not state that its values are fixed and public at their creation time, and every target precedes the capture, so the forward-target rule (RULINGS 529) cannot apply. (unit E-SEM) | whole_capture | utc_instant | gridflow capture time |
 | `system-operating-plan-sop` | `system_operating_plan_files` | catalogue only | — | — | — | — |
 | `thermal-constraint-costs` | `thermal_constraint_costs` | ingest-only (no silver output) | — | — | — | — |
 | `thermal-constraint-costs` | `thermal_constraint_costs_files` | catalogue only | — | — | — | — |
@@ -463,6 +463,6 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 ## Totals
 
 - Packages: 131 (held: 2)
-- Families: 314: silver 69 (bespoke 3, recorded 66), ingest-only 210, catalogue only 35
-- Silver outputs held: 39
+- Families: 314: silver 72 (bespoke 3, recorded 69), ingest-only 207, catalogue only 35
+- Silver outputs held: 41
 - Resources: 1385
