@@ -57,20 +57,20 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `building-heat-model` | `building_heat_model_example_output_half` | ingest-only (no silver output) | — | — | — | — |
 | `building-heat-model` | `building_heat_model_files` | catalogue only | — | — | — | — |
 | `building-heat-model` | `building_heat_model_list_input` | ingest-only (no silver output) | — | — | — | — |
-| `capacity-market-register` | `capacity_market_auction_cost` | ingest-only (no silver output) | — | — | — | — |
-| `capacity-market-register` | `capacity_market_auction_static` | ingest-only (no silver output) | — | — | — | — |
-| `capacity-market-register` | `capacity_market_component_history` | ingest-only (no silver output) | — | — | — | — |
-| `capacity-market-register` | `capacity_market_component_history_pre` | ingest-only (no silver output) | — | — | — | — |
-| `capacity-market-register` | `capacity_market_components` | ingest-only (no silver output) | — | — | — | — |
-| `capacity-market-register` | `capacity_market_de_rating_factors` | ingest-only (no silver output) | — | — | — | — |
-| `capacity-market-register` | `capacity_market_unit_cmu` | ingest-only (no silver output) | — | — | — | — |
-| `capacity-market-register` | `capacity_market_unit_cmu_history` | ingest-only (no silver output) | — | — | — | — |
-| `carbon-intensity-of-balancing-actions` | `ci_balancing_actions` | ingest-only (no silver output) | — | — | — | — |
+| `capacity-market-register` | `capacity_market_auction_cost` | silver | eligible | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
+| `capacity-market-register` | `capacity_market_auction_static` | silver | eligible | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
+| `capacity-market-register` | `capacity_market_component_history` | silver | eligible | whole_capture | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
+| `capacity-market-register` | `capacity_market_component_history_pre` | silver | eligible | whole_capture | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
+| `capacity-market-register` | `capacity_market_components` | silver | eligible | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
+| `capacity-market-register` | `capacity_market_de_rating_factors` | silver | eligible | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
+| `capacity-market-register` | `capacity_market_unit_cmu` | silver | eligible | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
+| `capacity-market-register` | `capacity_market_unit_cmu_history` | silver | eligible | whole_capture | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
+| `carbon-intensity-of-balancing-actions` | `ci_balancing_actions` | silver | held: TODO: whether DATETIME marks period start or end (unit E-SEM) | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
 | `carbon-intensity-of-balancing-actions` | `ci_balancing_actions_files` | catalogue only | — | — | — | — |
 | `constraint-breakdown` | `constraint_breakdown` | ingest-only (no silver output) | — | — | — | — |
 | `constraint-management-intertrip-service-information-cmis` | `cmis_intertrip` | ingest-only (no silver output) | — | — | — | — |
 | `contract-transfer-of-obligation` | `contract_transfer_obligation` | ingest-only (no silver output) | — | — | — | — |
-| `country-carbon-intensity-forecast` | `country_ci_forecast` | ingest-only (no silver output) | — | — | — | — |
+| `country-carbon-intensity-forecast` | `country_ci_forecast` | silver | held: TODO: no issue column; which forecast issue a past target's value reflects, and whether values are revised after the period, is undocumented (unit E-SEM) | whole_capture | utc_instant | CKAN last_modified of the captured file (ADR-030) |
 | `current-balancing-services-use-of-system-bsuos-data` | `current_bsuos_cap_adjustments` | silver | eligible | key_latest | sp_pair | CKAN last_modified of the captured file (ADR-030) |
 | `current-balancing-services-use-of-system-bsuos-data` | `current_bsuos_files` | catalogue only | — | — | — | — |
 | `current-balancing-services-use-of-system-bsuos-data` | `current_bsuos_historic_ii` | ingest-only (no silver output) | — | — | — | — |
@@ -87,7 +87,7 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `daily-demand-update` | `daily_demand_update_files` | catalogue only | — | — | — | — |
 | `daily-opmr` | `daily_opmr` | ingest-only (no silver output) | — | — | — | — |
 | `daily-wind-availability` | `daily_wind_availability` | bespoke silver | eligible | — | — | — |
-| `data-portal-planned-changes-known-issues` | `portal_known_issues` | ingest-only (no silver output) | — | — | — | — |
+| `data-portal-planned-changes-known-issues` | `portal_known_issues` | silver | eligible | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
 | `day-ahead-constraint-flows-and-limits` | `da_constraint_flows_limits` | ingest-only (no silver output) | — | — | — | — |
 | `day-ahead-constraint-flows-and-limits` | `da_constraint_flows_limits_files` | catalogue only | — | — | — | — |
 | `day-ahead-half-hourly-demand-forecast-performance` | `da_demand_fc_performance` | silver | held: TODO: Datetime and Publish_Datetime end in 'Z' but the dictionary states GMT/BST; whether Datetime marks period start or end; Settlement_Period repeats SP4/SP5 on 2021-10-31 and SP2/SP3 on 2022-10-30; whether Publish_Datetime is the publication instant (unit E-SEM) | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
@@ -207,7 +207,7 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `long-term-forecasts-for-dc-dm-dr-requirements` | `dc_dm_dr_long_term_fc` | ingest-only (no silver output) | — | — | — | — |
 | `monthly-operational-metered-wind-output` | `metered_wind_output_monthly` | ingest-only (no silver output) | — | — | — | — |
 | `monthly-utilisation-data-of-voltage-contracted-units` | `voltage_units_utilisation` | ingest-only (no silver output) | — | — | — | — |
-| `national-carbon-intensity-forecast` | `national_ci_forecast` | ingest-only (no silver output) | — | — | — | — |
+| `national-carbon-intensity-forecast` | `national_ci_forecast` | silver | held: TODO: no issue column; which forecast issue a past target's value reflects, and whether values are revised after the period, is undocumented (unit E-SEM) | whole_capture | utc_instant | CKAN last_modified of the captured file (ADR-030) |
 | `national-carbon-intensity-forecast` | `national_ci_forecast_files` | catalogue only | — | — | — | — |
 | `national-demand-balancing-mechanism-units` | `national_demand_bmus` | ingest-only (no silver output) | — | — | — | — |
 | `negative-reserve-active-power-margin-nrapm-forecast` | `nrapm_forecast_national_daily_days` | ingest-only (no silver output) | — | — | — | — |
@@ -255,7 +255,7 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `regional-breakdown-of-fes-data-electricity` | `fes_regional_storage_gt_1mw_pre2023` | ingest-only (no silver output) | — | — | — | — |
 | `regional-breakdown-of-fes-data-electricity` | `fes_regional_storage_lt_1mw` | ingest-only (no silver output) | — | — | — | — |
 | `regional-breakdown-of-fes-data-electricity` | `fes_regional_storage_lt_1mw_pre2023` | ingest-only (no silver output) | — | — | — | — |
-| `regional-carbon-intensity-forecast` | `regional_ci_forecast` | ingest-only (no silver output) | — | — | — | — |
+| `regional-carbon-intensity-forecast` | `regional_ci_forecast` | silver | held: TODO: no issue column; which forecast issue a past target's value reflects, and whether values are revised after the period, is undocumented; whether datetime marks period start or end; meaning of negative intensities (min -13.0) (unit E-SEM) | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
 | `regional-carbon-intensity-forecast` | `regional_ci_forecast_files` | catalogue only | — | — | — | — |
 | `resource-adequacy-in-2030s` | `resource_adequacy_2030s_peak_demand` | ingest-only (no silver output) | — | — | — | — |
 | `resource-adequacy-in-2030s` | `resource_adequacy_2030s_portfolio` | ingest-only (no silver output) | — | — | — | — |
@@ -463,6 +463,6 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 ## Totals
 
 - Packages: 131 (held: 2)
-- Families: 314: silver 13 (bespoke 3, recorded 10), ingest-only 266, catalogue only 35
-- Silver outputs held: 6
+- Families: 314: silver 26 (bespoke 3, recorded 23), ingest-only 253, catalogue only 35
+- Silver outputs held: 10
 - Resources: 1385

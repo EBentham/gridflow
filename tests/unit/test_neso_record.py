@@ -472,6 +472,32 @@ EF_RECORDED = {"embedded_forecast_archive_upload", "embedded_forecast_archive_du
 
 EF_PACKAGE_FILES = {"embedded-wind-and-solar-forecasts.json"}
 
+CI_RECORDED = {
+    "national_ci_forecast",
+    "regional_ci_forecast",
+    "country_ci_forecast",
+    "ci_balancing_actions",
+    "portal_known_issues",
+    "capacity_market_auction_cost",
+    "capacity_market_auction_static",
+    "capacity_market_de_rating_factors",
+    "capacity_market_unit_cmu",
+    "capacity_market_unit_cmu_history",
+    "capacity_market_component_history",
+    "capacity_market_component_history_pre",
+    "capacity_market_components",
+}
+"""The thirteen carbon-intensity and capacity-market families unit K-CI records."""
+
+CI_PACKAGE_FILES = {
+    "national-carbon-intensity-forecast.json",
+    "regional-carbon-intensity-forecast.json",
+    "country-carbon-intensity-forecast.json",
+    "carbon-intensity-of-balancing-actions.json",
+    "data-portal-planned-changes-known-issues.json",
+    "capacity-market-register.json",
+}
+
 X_RESOURCES_WITH_CHILDREN = 4 + 1 + 39 + 73 + 1
 """Unit X's committed inventories (ADR-037 P-8): CMP workbooks, the ResultSummary ZIP,
 frequency ZIPs, held data containers and the GSP archive with a CSV member."""
@@ -487,7 +513,7 @@ class TestSeededRegistry:
         assert sum(entry.legacy for entry in entries) == 3
         assert sum(entry.kind == "files" for entry in entries) == 35
         recorded = {entry.key for entry in entries if entry.record is not None}
-        assert recorded == PILOT_RECORDED | X_RECORDED | EF_RECORDED
+        assert recorded == PILOT_RECORDED | X_RECORDED | EF_RECORDED | CI_RECORDED
         with_children = [res for _package, res in loaded.resources.values() if res.children]
         assert len(with_children) == X_RESOURCES_WITH_CHILDREN
 
@@ -503,7 +529,10 @@ class TestSeededRegistry:
             document = json.loads(item.read_text(encoding="utf-8"))
             if any("record" in fam for fam in document["families"]):
                 with_record.add(item.name)
-        assert with_record == PILOT_PACKAGE_FILES | X_PACKAGE_FILES | EF_PACKAGE_FILES
+        assert (
+            with_record
+            == PILOT_PACKAGE_FILES | X_PACKAGE_FILES | EF_PACKAGE_FILES | CI_PACKAGE_FILES
+        )
 
 
 class TestDumpVintageRule:

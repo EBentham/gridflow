@@ -17,7 +17,107 @@
       "empty_allowed": true,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "po",
+              "Change_Issue_Title",
+              "Description",
+              "Dataset_Specific",
+              "File_Specific",
+              "Status",
+              "Change_DateTime_From",
+              "Change_DateTime_To",
+              "Last_Updated",
+              "Notes"
+            ],
+            "columns": [
+              {
+                "source": "po",
+                "name": "po",
+                "dtype": "int64",
+                "nullable": true
+              },
+              {
+                "source": "Change_Issue_Title",
+                "name": "change_issue_title",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Description",
+                "name": "description",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Dataset_Specific",
+                "name": "dataset_specific",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "File_Specific",
+                "name": "file_specific",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Status",
+                "name": "status",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Change_DateTime_From",
+                "name": "change_datetime_from",
+                "dtype": "datetime",
+                "format": "%Y-%m-%dT%H:%M:%S",
+                "zone": "UTC",
+                "nullable": true
+              },
+              {
+                "source": "Change_DateTime_To",
+                "name": "change_datetime_to",
+                "dtype": "datetime",
+                "format": "%Y-%m-%dT%H:%M:%S",
+                "zone": "UTC",
+                "nullable": true
+              },
+              {
+                "source": "Last_Updated",
+                "name": "last_updated",
+                "dtype": "datetime",
+                "format": "%Y-%m-%dT%H:%M:%S",
+                "zone": "UTC",
+                "nullable": true
+              },
+              {
+                "source": "Notes",
+                "name": "notes",
+                "dtype": "string",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "po"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified"
+      }
     }
   ],
   "resources": [

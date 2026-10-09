@@ -1,0 +1,30 @@
+﻿Auction Name,Application ID,CMU ID,Delivery Year,Component ID,Type,Generating Technology Class,Permitted On Site Generating Unit,Primary Fuel of Component,Connection or DSR Capacity,De Rated Capacity,Pre Refurbishing De Rated Capacity,Post Refurbishing De Rated Capacity,Generating Capacity of On Site Generating Unit,Description of CMU Components,Location and Post Code,OS Grid Reference,Number of Components
+2016-17 (TR) Transitional Capacity Auction,A-TR-2016-2015_4-00001,2015_4,2016,000004,TR,,,,,,,,,Industrial Site with Multiple Electro Intensive Processes.,TBC,,1
+2016-17 (TR) Transitional Capacity Auction,A-TR-2016-AMER01-00001,AMER01,2016,W00101,TR,,,,,,,,,A combination of standby generation and load reduction.,Sites across Great Britain. See business plan.,,1
+2016-17 (TR) Transitional Capacity Auction,A-TR-2016-AMER02-00001,AMER02,2016,W00201,TR,,,,,,,,,A combination of standby generation and load reduction.,Sites across Great Britain. See business plan.,,1
+2016-17 (TR) Transitional Capacity Auction,A-TR-2016-AMER03-00001,AMER03,2016,S00101,TR,,,,,,,,,A combination of standby generation and load reduction.,Sites across Great Britain. See business plan.,,1
+2016-17 (TR) Transitional Capacity Auction,A-TR-2016-AMER04-00001,AMER04,2016,S00102,TR,,,,,,,,,A combination of standby generation and load reduction.,Sites across Great Britain. See business plan.,,1
+2016-17 (TR) Transitional Capacity Auction,A-TR-2016-AMER05-00001,AMER05,2016,N00101,TR,,,,,,,,,A combination of standby generation and load reduction.,Sites across Great Britain. See business plan.,,1
+2016-17 (TR) Transitional Capacity Auction,A-TR-2016-AMER06-00001,AMER06,2016,N00102,TR,,,,,,,,,A combination of standby generation and load reduction.,Sites across Great Britain. See business plan.,,1
+2016-17 (TR) Transitional Capacity Auction,A-TR-2016-ANGLCM-00003,ANGLCM,2016,ANGLCM - AggregatedComponent - CHP and autogeneration,TR,CHP and autogeneration,,,,,,,,Aggregated components less than 30KW with a GTC of CHP and autogeneration GTC,Aggregated,Aggregated,1
+2016-17 (TR) Transitional Capacity Auction,A-TR-2016-ANGLCM-00003,ANGLCM,2016,ALTOWW,TR,,,,,,,,,"Generator, Cummins, QST30G4","Alton WTW, Primrose Hill, Holbrook, Ipswich, Suffolk, IP9 2RT",TM 164 359,1
+2016-17 (TR) Transitional Capacity Auction,A-TR-2016-ANGLCM-00003,ANGLCM,2016,ANWIST,TR,,,,,,,,,"Diesel Generator, Cummins  25185949T","Anwick STW, River Lane, Anwick, Lincs, NG34 9PF",TF 113 499,1
+2016-17 (TR) Transitional Capacity Auction,A-TR-2016-ANGLCM-00003,ANGLCM,2016,ARDLW1,TR,,,,,,,,,"Generator 1, Cummins 25204437","Ardleigh WTW, Colchester Rd, Ardliegh, Essex, CO7 7PT",TM 039 282,1
+2016-17 (TR) Transitional Capacity Auction,A-TR-2016-ANGLCM-00003,ANGLCM,2016,ARDLW2,TR,,,,,,,,,"Generator 2, Cummins 25204438","Ardleigh WTW, Colchester Rd, Ardliegh, Essex, CO7 7PT",TM 039 282,1
+2016-17 (TR) Transitional Capacity Auction,A-TR-2016-ANGLCM-00003,ANGLCM,2016,BARHWS,TR,,,,,,,,,"Diesel Generator, Volvo","BARROW HEATH-WS, New Rd, Barrow, Bury St Edmunds, IP29 5DB",TL 779 654,1
+2016-17 (TR) Transitional Capacity Auction,A-TR-2016-ANGLCM-00003,ANGLCM,2016,BARRW1,TR,,,,,,,,,Diesel generator 1. Dorman 8SETCA,"BARROW WW, Off Caistor Rd, Barrow upon Humber, Humberside, DN19 7EA",TA 060 203,1
+2016-17 (TR) Transitional Capacity Auction,A-TR-2016-ANGLCM-00003,ANGLCM,2016,BARRW2,TR,,,,,,,,,Diesel generator 2. Dorman 8SETCA,"BARROW WW, Off Caistor Rd, Barrow upon Humber, Humberside, DN19 7EA",TA 060 203,1
+2016-17 (TR) Transitional Capacity Auction,A-TR-2016-ANGLCM-00003,ANGLCM,2016,BEA1HL,TR,,,,,,,,,"Diesel Generator, MTU, 16V4000","BEANFIELD HL, UPPINGHAM ROAD, MIDDLETON, NORTHANTS. NN17 2UQ",SP 861 886,1
+2016-17 (TR) Transitional Capacity Auction,A-TR-2016-ANGLCM-00003,ANGLCM,2016,BEDFST,TR,,,,,,,,,Diesel Generator,"BEDFORD STW, Meadow Lane, Bedford, Bedford Borough, MK44 3SD",TL 085 493,1
+2016-17 (TR) Transitional Capacity Auction,A-TR-2016-TLGUK1-00001,TLGUK1,2016,N/A,TR,,,,,,,,,Component is a place holder representing the reduction which is available for the CM through load shedding at existing portfolio of BOC production sites.,To be confirmed.,,1
+2017-18 (T-1) One Year Ahead Capacity Auction,A-T-1-2017-ANGEA1-00001,ANGEA1,2017,ANGEA1 - AggregatedComponent - CHP and autogeneration,T-1,CHP and autogeneration,,,,,,,,Aggregated components less than 30KW with a GTC of CHP and autogeneration GTC,Aggregated,Aggregated,2
+2017-18 (T-1) One Year Ahead Capacity Auction,A-T-1-2017-FLXT78-00001,FLXT78,2017,FLXT78 - AggregatedComponent - DSR,T-1,,,,,,,,,Aggregated components less than 30KW for DSR GTC,Aggregated,Aggregated,1
+2017-18 (T-1) One Year Ahead Capacity Auction,A-T-1-2017-FLXT82-00001,FLXT82,2017,FLXT82 - AggregatedComponent - DSR,T-1,,,,,,,,,Aggregated components less than 30KW for DSR GTC,Aggregated,Aggregated,182
+2017-18 (TR) Transitional Capacity Auction,A-TR-2017-ECMU57-00001,ECMU57,2017,ECMU57 - AggregatedComponent - DSR,TR,,,,,,,,,Aggregated components less than 30KW for DSR GTC,Aggregated,Aggregated,6
+2018-19 (T-1) One Year Ahead Capacity Auction,A-T-1-2018-EDSR18-00001,EDSR18,2018,EDSR18,T-1,DSR,,,,,,,,N/A,N/A,,1
+2019-20 (T-1) One Year Ahead Capacity Auction,A-T-1-2019-DR191A-00001,DR191A,2019,DR191A,T-1,DSR,,,,,,,,N/A,N/A,,1
+2019-20 (T-1) One Year Ahead Capacity Auction,A-T-1-2019-DR191B-00001,DR191B,2019,DR191B,T-1,DSR,,,,,,,,N/A,N/A,,1
+2019-20 (T-4) Four Year Ahead Capacity Auction,A-T-4-2019-VWMexe-00001,VWMexe,2019,N/A,T-4,,,,,,,,,Energy from Waste Facility which exports at between 3MW and 3.5MW subject to calorific value of waste and biogenic content.,"Grace Road South, Exeter, EX2 8QE - Energy from Waste  Facility",SX 926 904,1
+2025-26 (T-1) One Year Ahead Capacity Auction,A-T-1-2025-AX0100-00001,AX0100,2025,000000,T-1,DSR,,,,,,,,Aggregated domestic electric vehicle chargers,Eg: BS6,,1
+2025-26 (T-1) One Year Ahead Capacity Auction,A-T-1-2025-AX0101-00001,AX0101,2025,000000,T-1,DSR,,,,,,,,Aggregated domestic electric vehicle chargers,Eg. BS6,,1
+2025-26 (T-1) One Year Ahead Capacity Auction,A-T-1-2025-AX0102-00001,AX0102,2025,000000,T-1,DSR,,,,,,,,Aggregated domestic electric vehicle chargers,Eg: BS6,,1

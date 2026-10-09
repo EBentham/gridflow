@@ -17,7 +17,141 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "datetime",
+              "North Scotland",
+              "South Scotland",
+              "North West England",
+              "North East England",
+              "Yorkshire",
+              "North Wales and Merseyside",
+              "South Wales",
+              "West Midlands",
+              "East Midlands",
+              "East England",
+              "South West England",
+              "South England",
+              "London",
+              "South East England"
+            ],
+            "columns": [
+              {
+                "source": "datetime",
+                "name": "datetime",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "North Scotland",
+                "name": "north_scotland",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "South Scotland",
+                "name": "south_scotland",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "North West England",
+                "name": "north_west_england",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "North East England",
+                "name": "north_east_england",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Yorkshire",
+                "name": "yorkshire",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "North Wales and Merseyside",
+                "name": "north_wales_and_merseyside",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "South Wales",
+                "name": "south_wales",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "West Midlands",
+                "name": "west_midlands",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "East Midlands",
+                "name": "east_midlands",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "East England",
+                "name": "east_england",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "South West England",
+                "name": "south_west_england",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "South England",
+                "name": "south_england",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "London",
+                "name": "london",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "South East England",
+                "name": "south_east_england",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "datetime"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: no issue column; which forecast issue a past target's value reflects, and whether values are revised after the period, is undocumented; whether datetime marks period start or end; meaning of negative intensities (min -13.0)",
+          "unit": "E-SEM"
+        }
+      }
     },
     {
       "key": "regional_ci_forecast_files",
