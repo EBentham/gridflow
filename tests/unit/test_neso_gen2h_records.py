@@ -27,7 +27,10 @@ import hashlib
 import io
 import json
 import os
+import subprocess
+import sys
 import tempfile
+import textwrap
 from datetime import UTC, date, datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
@@ -491,3 +494,107 @@ def test_a6_boa_duplicate_fails_clean_loads_latest_serves_two(data: Path) -> Non
     assert 7.333 in frame["boa_volume"].to_list()
     assert frame["boa_volume"].to_list().count(-1.0) == 3
     assert sorted(frame["generator_name"].to_list()) == sorted(r["Generator_Name"] for r in source)
+
+
+# --------------------------------------------------------------------------- #
+# The committed ledger (T-G2H-7)
+# --------------------------------------------------------------------------- #
+
+_BRONZE = "bronze/neso_data_portal"
+LEDGER = [
+    {
+        "family": METERED,
+        "category": "overlap",
+        "cause": None,
+        "captures": [
+            f"{_BRONZE}/{METERED}/2026/10/08/"
+            "raw_20261008T111243Z_7622b040-977a-45a6-924e-f158df6c29f0_4e39e845.csv",
+            f"{_BRONZE}/{METERED}/2026/10/08/"
+            "raw_20261008T111246Z_c9bc94c4-6d8c-49ff-afff-67c0030bec05_c5079a69.csv",
+        ],
+        "reason": (
+            "the 2025-2026 and 2026-2027 archives both publish 2026-04-01 P1 to 2026-04-05 P1 "
+            "(193 settlement keys) with conflicting values; NESO states no precedence, so both "
+            "rows are served (ADR-039)"
+        ),
+        "question": (
+            "Which archive is authoritative for the 193 settlement keys 2026-04-01 P1 to "
+            "2026-04-05 P1 that the 2025-2026 and 2026-2027 resources both publish?"
+        ),
+        "evidence": "K-GEN-2-FACTS §2 g3 (M-OVERLAP); ADR-040",
+        "ruling": "547",
+    },
+    {
+        "family": BOA,
+        "category": "failed",
+        "cause": "DuplicateEntityKeyError",
+        "captures": [
+            f"{_BRONZE}/{BOA}/2026/10/08/"
+            "raw_20261008T114135Z_28183033-4464-4b3a-a0ff-0efdc5cd6c7a_ec7d49dd.csv",
+            f"{_BRONZE}/{BOA}/2026/10/08/"
+            "raw_20261008T114138Z_6ef6f5f2-2852-4f66-931c-29f8e5b46ddf_f5c84f91.csv",
+            f"{_BRONZE}/{BOA}/2026/10/08/"
+            "raw_20261008T114132Z_d3fbf6c1-7688-4486-8716-b5af0c895a5a_ffdaf731.csv",
+        ],
+        "reason": (
+            "the 2018/19, 2019/20 and 2024/25 archives repeat whole rows (18, 1 and 2 excess), "
+            "so no vendor-column key is lossless and the duplicate guard fails these captures; "
+            "they stay unloaded with their failure records"
+        ),
+        "question": (
+            "What does a repeated identical BOA row mean (separate acceptances, contributions or "
+            "duplication), and can NESO publish an acceptance identifier or a corrected file?"
+        ),
+        "evidence": "K-GEN-2-FACTS §4 g3 (B-ROW-GRAIN); ADR-040",
+        "ruling": "547",
+    },
+]
+"""P-9, verbatim: the capture ids are the 2026-10-08 bronze names (M08, M09; B01, B02, B07)."""
+LEDGER_RESOURCES = {
+    METERED: {
+        "Monthly Operational Metered Wind Output 2025-2026",
+        "Monthly Operational Metered Wind Output 2026-2027",
+    },
+    BOA: {"Wind BOA Volumes 2018/19", "Wind BOA Volumes 2019/20", "Wind BOA Volumes 2024/25"},
+}
+
+
+def test_t_g2h_7_the_package_ledger_is_p9() -> None:
+    """T-G2H-7: detects the committed ledger drifting from the ruled entries (another
+    capture, a wider scope, an edited reason or question) or naming a resource that is not
+    the family's M08/M09 or B01/B02/B07 archive; in a fresh interpreter, so nothing
+    collection imported can mask it."""
+    code = textwrap.dedent(
+        """
+        import json
+        from gridflow.connectors.neso_data_portal.registry import (
+            CAPTURE_ID_PATTERN, load_reconcile_adjudications, load_registry,
+            reconcile_adjudication_problems,
+        )
+        registry = load_registry()
+        entries = load_reconcile_adjudications()
+        assert reconcile_adjudication_problems(registry, entries) == []
+        names = {
+            entry.family: sorted(
+                registry.resources[CAPTURE_ID_PATTERN.fullmatch(c)["rid"]][1].name
+                for c in entry.captures
+            )
+            for entry in entries
+        }
+        print(json.dumps({"entries": [e.model_dump(mode="json") for e in entries],
+                          "names": names}))
+        """
+    )
+    result = subprocess.run(
+        [sys.executable, "-c", code],
+        cwd=Path(__file__).resolve().parents[2],
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        timeout=120,
+        check=False,
+    )
+    assert result.returncode == 0, f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}"
+    loaded = json.loads(result.stdout.strip().splitlines()[-1])
+    assert loaded["entries"] == LEDGER
+    assert {k: set(v) for k, v in loaded["names"].items()} == LEDGER_RESOURCES
