@@ -58,6 +58,15 @@ from gridflow.storage.duckdb import init_catalogue
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 SOURCE = "neso_data_portal"
+DEM2_ADDED = frozenset(
+    {
+        "national_demand_bmus",
+        "school_holiday_percentages",
+        "transmission_losses_main",
+        "transmission_losses_financial_year",
+    }
+)
+"""The four families v0.22-K-DEM-2 records after the golden was written."""
 TS = pl.Datetime("us", "UTC")
 TIE = ("capture_written_at", "bronze_capture_id")
 
@@ -92,7 +101,7 @@ class TestByteUnchanged:
         """Detects any change to an existing family's ``_latest`` SQL (either as-of mode),
         record dump, output columns or DEM-1 engine output against the golden written on
         the untouched base (master ``73fde80``), and any generated family other than
-        ``historic_demand`` appearing.
+        ``historic_demand`` and K-DEM-2's four demand-reference records appearing.
         """
         golden = json.loads(PIN_PATH.read_text(encoding="utf-8"))
         current = json.loads(dump(generated_pin()))
@@ -100,7 +109,7 @@ class TestByteUnchanged:
             assert set(golden[section]) <= set(current[section]), section
             for key, value in golden[section].items():
                 assert current[section][key] == value, (section, key)
-            added = {"historic_demand"} if section != "engine" else set()
+            added = {"historic_demand", *DEM2_ADDED} if section != "engine" else set()
             assert set(current[section]) - set(golden[section]) == added, section
 
 
@@ -694,12 +703,13 @@ class TestRecordRules:
         )
         assert "test_v2_reserved_name[resource_id]" in result.stdout, result.stdout
 
-    def test_t_h6_e_every_committed_record_loads_and_only_historic_demand_partitions(
+    def test_t_h6_e_every_committed_record_loads_and_only_resource_partitioned_families_partition(
         self,
     ) -> None:
         """Detects a committed record broken by V-4/V-17 or the reserved name, and any
-        family other than ``historic_demand`` opting into the partition (in a fresh
-        interpreter, so nothing collection imported can mask it)."""
+        family other than ``historic_demand`` and ``school_holiday_percentages`` opting
+        into the partition (in a fresh interpreter, so nothing collection imported can
+        mask it)."""
         code = textwrap.dedent(
             """
             from gridflow.connectors.neso_data_portal.registry import load_registry
@@ -709,7 +719,7 @@ class TestRecordRules:
                 k for k, (_p, f) in families.items()
                 if f.record is not None and f.record.latest_partition is not None
             )
-            assert partitioned == ["historic_demand"], partitioned
+            assert partitioned == ["historic_demand", "school_holiday_percentages"], partitioned
             print("OK", len(recorded), partitioned)
             """
         )

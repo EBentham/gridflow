@@ -525,6 +525,21 @@ DEM1H_RECORDED = {"historic_demand"}
 
 DEM1H_PACKAGE_FILES = {"historic-demand-data.json"}
 
+DEM2_RECORDED = {
+    "national_demand_bmus",
+    "school_holiday_percentages",
+    "transmission_losses_main",
+    "transmission_losses_financial_year",
+}
+"""The four demand-reference families unit K-DEM-2 records (``demand_profile_dates`` stays
+ingest-only: its body repeats identical rows, RULINGS 538)."""
+
+DEM2_PACKAGE_FILES = {
+    "national-demand-balancing-mechanism-units.json",
+    "school-holiday-percentages.json",
+    "transmission-losses.json",
+}
+
 X_RESOURCES_WITH_CHILDREN = 4 + 1 + 39 + 73 + 1
 """Unit X's committed inventories (ADR-037 P-8): CMP workbooks, the ResultSummary ZIP,
 frequency ZIPs, held data containers and the GSP archive with a CSV member."""
@@ -541,7 +556,13 @@ class TestSeededRegistry:
         assert sum(entry.kind == "files" for entry in entries) == 35
         recorded = {entry.key for entry in entries if entry.record is not None}
         assert recorded == (
-            PILOT_RECORDED | X_RECORDED | EF_RECORDED | CI_RECORDED | DEM1_RECORDED | DEM1H_RECORDED
+            PILOT_RECORDED
+            | X_RECORDED
+            | EF_RECORDED
+            | CI_RECORDED
+            | DEM1_RECORDED
+            | DEM1H_RECORDED
+            | DEM2_RECORDED
         )
         with_children = [res for _package, res in loaded.resources.values() if res.children]
         assert len(with_children) == X_RESOURCES_WITH_CHILDREN
@@ -565,6 +586,7 @@ class TestSeededRegistry:
             | CI_PACKAGE_FILES
             | DEM1_PACKAGE_FILES
             | DEM1H_PACKAGE_FILES
+            | DEM2_PACKAGE_FILES
         )
 
 
