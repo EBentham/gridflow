@@ -150,7 +150,7 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `eac-mock-auction-results` | `eac_mock_results_daily_summary` | ingest-only (no silver output) | — | — | — | — |
 | `eac-mock-auction-results` | `eac_mock_results_sell_orders` | ingest-only (no silver output) | — | — | — | — |
 | `eac-mock-auction-results` | `eac_mock_results_summary` | ingest-only (no silver output) | — | — | — | — |
-| `eleclink` | `eleclink` | ingest-only (no silver output) | — | — | — | — |
+| `eleclink` | `eleclink` | silver | held: TODO: the dump returns past targets (rows before the capture) and NESO does not state that a row is unchanged since its `Data Upload Time GMT`, so historical issued limits are not evidenced, and the archive's Operational Date calendar / rollover and Version meaning are undocumented. (unit E-SEM) | whole_capture per resource_id | none | gridflow capture time |
 | `embedded-register` | `embedded_register` | silver | eligible | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
 | `embedded-wind-and-solar-forecasts` | `embedded_forecast_archive_dump` | silver | held: TODO: Forecast_Datetime is naive; rows before 2026-06-12T11:54:02 measure as UK local time (no 01:xx issue on 2026-03-29); rows from the 2026-06-12 forecast-system migration have crossed no DST transition, so their zone is unmeasured; typed Europe/London, fold earliest (ADR-038); NESO does not document the zone (unit E-SEM) | key_latest | sp_pair | gridflow capture time |
 | `embedded-wind-and-solar-forecasts` | `embedded_forecast_archive_upload` | silver | held: TODO: Forecast_Datetime ends in 'Z' but measures as UK local time (no 01:xx issue on spring-forward nights; one 01:12 issue on fall-back nights, the BST occurrence); typed Europe/London, fold earliest (ADR-038); NESO does not document the zone (unit E-SEM) | key_latest | sp_pair | CKAN last_modified of the captured file (ADR-030) |
@@ -189,10 +189,10 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `historic-gtma-grid-trade-master-agreement-trades-data` | `gtma_trades_data` | ingest-only (no silver output) | — | — | — | — |
 | `historic-gtma-grid-trade-master-agreement-trades-data` | `gtma_trades_data_pre` | ingest-only (no silver output) | — | — | — | — |
 | `historic-gtma-grid-trade-master-agreement-trades-data` | `gtma_trades_fy` | ingest-only (no silver output) | — | — | — | — |
-| `ifa` | `ifa_da_id_weekly_itls` | ingest-only (no silver output) | — | — | — | — |
-| `ifa` | `ifa_itl` | ingest-only (no silver output) | — | — | — | — |
-| `ifa2` | `ifa2_ifa_da_id_weekly_itls` | ingest-only (no silver output) | — | — | — | — |
-| `ifa2` | `ifa2_ifa_itl` | ingest-only (no silver output) | — | — | — | — |
+| `ifa` | `ifa_da_id_weekly_itls` | silver | held: TODO: the archive's operational-date rollover, GMT/BST interpretation and `(a)`/`(b)` repeated-hour labels are undocumented, and every target precedes the upload's last_modified, so the forward-target rule (RULINGS 529) cannot apply. (unit E-SEM) | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
+| `ifa` | `ifa_itl` | silver | held: TODO: the dump returns past targets (rows before the capture) and NESO does not state that a row is unchanged since its `Data Upload Time GMT`, so historical issued limits are not evidenced. (unit E-SEM) | whole_capture | utc_instant | gridflow capture time |
+| `ifa2` | `ifa2_ifa_da_id_weekly_itls` | silver | held: TODO: the archive's operational-date rollover, GMT/BST interpretation and `(a)`/`(b)` repeated-hour labels are undocumented, and every target precedes the upload's last_modified, so the forward-target rule (RULINGS 529) cannot apply. (unit E-SEM) | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
+| `ifa2` | `ifa2_ifa_itl` | silver | held: TODO: the dump returns past targets (rows before the capture) and NESO does not state that a row is unchanged since its `Data Upload Time GMT`, so historical issued limits are not evidenced. (unit E-SEM) | whole_capture | utc_instant | gridflow capture time |
 | `index-linked-contract-volume` | `index_linked_contract_volume` | ingest-only (no silver output) | — | — | — | — |
 | `index-linked-contract-volume` | `index_linked_contract_volume_files` | catalogue only | — | — | — | — |
 | `interconnector-register` | `interconnector_register` | silver | eligible | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
@@ -214,12 +214,12 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `negative-reserve-active-power-margin-nrapm-forecast` | `nrapm_forecast_scotland_daily_days` | silver | eligible | whole_capture | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
 | `negative-reserve-active-power-margin-nrapm-forecast` | `nrapm_forecast_weekly_week_national` | silver | held: TODO: the load-factor and probability columns have no vendor unit or scale, and the dictionary titles and descriptions contradict each other (unit E-SEM) | whole_capture | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
 | `negative-reserve-active-power-margin-nrapm-forecast` | `nrapm_forecast_weekly_week_scotland` | silver | held: TODO: the load-factor and probability columns have no vendor unit or scale, and the dictionary titles and descriptions contradict each other (unit E-SEM) | whole_capture | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
-| `nemolink` | `nemolink_intraday` | ingest-only (no silver output) | — | — | — | — |
-| `nemolink` | `nemolink_nemo_da_id_weekly_ntcs` | ingest-only (no silver output) | — | — | — | — |
-| `nemolink` | `nemolink_ntc` | ingest-only (no silver output) | — | — | — | — |
+| `nemolink` | `nemolink_intraday` | silver | held: TODO: the body has no date, and the resource's lifecycle and the date in its name are undocumented. (unit E-SEM) | whole_capture | none | gridflow capture time |
+| `nemolink` | `nemolink_nemo_da_id_weekly_ntcs` | silver | held: TODO: the archive's operational-date rollover, GMT/BST interpretation and `(a)`/`(b)` repeated-hour labels are undocumented, and every target precedes the upload's last_modified, so the forward-target rule (RULINGS 529) cannot apply. (unit E-SEM) | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
+| `nemolink` | `nemolink_ntc` | silver | held: TODO: the dump returns past targets (rows before the capture) and NESO does not state that a row is unchanged since its `Data Upload Time GMT`, so historical issued limits are not evidenced, and the archive's Operational Date calendar / rollover and Version meaning are undocumented. (unit E-SEM) | whole_capture per resource_id | none | gridflow capture time |
 | `non-bm-ancillary-service-dispatch-platform-asdp-instructions` | `asdp_instructions` | ingest-only (no silver output) | — | — | — | — |
 | `non-bm-ancillary-service-dispatch-platform-asdp-window-prices` | `asdp_window_prices` | ingest-only (no silver output) | — | — | — | — |
-| `nsl` | `nsl` | ingest-only (no silver output) | — | — | — | — |
+| `nsl` | `nsl` | silver | held: TODO: the dump returns past targets (rows before the capture) and NESO does not state that a row is unchanged since its `Data Upload Time GMT`, so historical issued limits are not evidenced, and the archive's Operational Date calendar / rollover and Version meaning are undocumented. (unit E-SEM) | whole_capture per resource_id | none | gridflow capture time |
 | `obligatory-reactive-power-service-orps-utilisation` | `orps_utilisation_files` | catalogue only | — | — | — | — |
 | `obligatory-reactive-power-service-orps-utilisation` | `orps_utilisation_historic_reactive` | ingest-only (no silver output) | — | — | — | — |
 | `obligatory-reactive-power-service-orps-utilisation` | `orps_utilisation_reactive` | ingest-only (no silver output) | — | — | — | — |
@@ -315,8 +315,8 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `tresp-generation-pathways` | `tresp_generation_pathways_la_wales` | ingest-only (no silver output) | — | — | — | — |
 | `tresp-generation-pathways` | `tresp_generation_pathways_resp_region` | ingest-only (no silver output) | — | — | — | — |
 | `upcoming-trades` | `upcoming_trades` | ingest-only (no silver output) | — | — | — | — |
-| `viking` | `viking_link_ntc` | ingest-only (no silver output) | — | — | — | — |
-| `viking` | `viking_ntc` | ingest-only (no silver output) | — | — | — | — |
+| `viking` | `viking_link_ntc` | silver | held: TODO: the dump returns past targets (rows before the capture) and NESO does not state that a row is unchanged since its `Data Upload Time GMT`, so historical issued limits are not evidenced. (unit E-SEM) | whole_capture | utc_instant | gridflow capture time |
+| `viking` | `viking_ntc` | silver | held: TODO: the archive's operational-date rollover and GMT/BST interpretation are undocumented, and every target precedes the upload's last_modified, so the forward-target rule (RULINGS 529) cannot apply. (unit E-SEM) | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
 | `voltage-requirement` | `voltage_requirement` | ingest-only (no silver output) | — | — | — | — |
 | `voltage-requirement` | `voltage_requirement_files` | catalogue only | — | — | — | — |
 | `weekly-opmr` | `weekly_opmr` | silver | held: TODO: NESO's engineering year/week to target date mapping is undocumented; the body gives a publication date only (unit E-SEM) | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
@@ -463,6 +463,6 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 ## Totals
 
 - Packages: 131 (held: 2)
-- Families: 314: silver 58 (bespoke 3, recorded 55), ingest-only 221, catalogue only 35
-- Silver outputs held: 28
+- Families: 314: silver 69 (bespoke 3, recorded 66), ingest-only 210, catalogue only 35
+- Silver outputs held: 39
 - Resources: 1385

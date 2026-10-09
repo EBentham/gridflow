@@ -48,7 +48,7 @@ from gridflow.silver.schema_manifest import (
 # four demand-reference records, then to fifty-eight with v0.22-K-GEN-1's fourteen wind and
 # margin forecast records, then to fifty-nine with v0.22-K-GEN-2's weekly wind availability
 # record, then to sixty-one with v0.22-GEN-2H's metered wind output and wind BOA volume
-# records.
+# records, then to seventy-two with v0.22-K-IC-1's eleven interconnector limit records.
 _APPEND_ONLY_DATASETS: tuple[tuple[str, str], ...] = (
     ("elexon", "system_prices"),
     ("elexon", "remit"),
@@ -111,6 +111,17 @@ _APPEND_ONLY_DATASETS: tuple[tuple[str, str], ...] = (
     ("neso_data_portal", "weekly_wind_availability"),
     ("neso_data_portal", "metered_wind_output_monthly"),
     ("neso_data_portal", "wind_bmu_boa_volumes"),
+    ("neso_data_portal", "eleclink"),
+    ("neso_data_portal", "ifa_itl"),
+    ("neso_data_portal", "ifa_da_id_weekly_itls"),
+    ("neso_data_portal", "ifa2_ifa_itl"),
+    ("neso_data_portal", "ifa2_ifa_da_id_weekly_itls"),
+    ("neso_data_portal", "nemolink_ntc"),
+    ("neso_data_portal", "nemolink_intraday"),
+    ("neso_data_portal", "nemolink_nemo_da_id_weekly_ntcs"),
+    ("neso_data_portal", "nsl"),
+    ("neso_data_portal", "viking_ntc"),
+    ("neso_data_portal", "viking_link_ntc"),
 )
 
 
@@ -304,9 +315,9 @@ def test_append_only_set_equals_latest_spec_set() -> None:
     spec_set = set(LATEST_VIEW_SPECS)
 
     # Non-vacuity guard: this invariant must never pass because both sides are
-    # empty (F16) -- sixty-one APPEND_ONLY datasets are registered today.
+    # empty (F16) -- seventy-two APPEND_ONLY datasets are registered today.
     assert len(append_only) > 0
-    assert len(append_only) == 61
+    assert len(append_only) == 72
 
     missing_specs = append_only - spec_set
     extra_specs = spec_set - append_only
@@ -462,6 +473,20 @@ _EXPECTED_APPEND_ONLY_DEPRECATED_ALIASES: dict[tuple[str, str], str | None] = {
     ("neso_data_portal", "weekly_wind_availability"): "silver_weekly_wind_availability",
     ("neso_data_portal", "metered_wind_output_monthly"): "silver_metered_wind_output_monthly",
     ("neso_data_portal", "wind_bmu_boa_volumes"): "silver_wind_bmu_boa_volumes",
+    ("neso_data_portal", "eleclink"): "silver_eleclink",
+    ("neso_data_portal", "ifa_itl"): "silver_ifa_itl",
+    ("neso_data_portal", "ifa_da_id_weekly_itls"): "silver_ifa_da_id_weekly_itls",
+    ("neso_data_portal", "ifa2_ifa_itl"): "silver_ifa2_ifa_itl",
+    ("neso_data_portal", "ifa2_ifa_da_id_weekly_itls"): "silver_ifa2_ifa_da_id_weekly_itls",
+    ("neso_data_portal", "nemolink_ntc"): "silver_nemolink_ntc",
+    ("neso_data_portal", "nemolink_intraday"): "silver_nemolink_intraday",
+    (
+        "neso_data_portal",
+        "nemolink_nemo_da_id_weekly_ntcs",
+    ): "silver_nemolink_nemo_da_id_weekly_ntcs",
+    ("neso_data_portal", "nsl"): "silver_nsl",
+    ("neso_data_portal", "viking_ntc"): "silver_viking_ntc",
+    ("neso_data_portal", "viking_link_ntc"): "silver_viking_link_ntc",
 }
 
 

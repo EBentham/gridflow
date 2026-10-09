@@ -17,7 +17,64 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Operational Date (YYYY-MM-DD) & Time GMT/BST (HH:MM - HH:MM)",
+              "Flow (MW) to GB",
+              "Flow (MW) from GB",
+              "Reason for restriction"
+            ],
+            "columns": [
+              {
+                "source": "Operational Date (YYYY-MM-DD) & Time GMT/BST (HH:MM - HH:MM)",
+                "name": "operational_date_and_hour",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Flow (MW) to GB",
+                "name": "flow_to_gb_mw",
+                "dtype": "int64",
+                "nullable": true
+              },
+              {
+                "source": "Flow (MW) from GB",
+                "name": "flow_from_gb_mw",
+                "dtype": "int64",
+                "nullable": true
+              },
+              {
+                "source": "Reason for restriction",
+                "name": "reason_for_restriction",
+                "dtype": "string",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "operational_date_and_hour"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: the archive's operational-date rollover, GMT/BST interpretation and `(a)`/`(b)` repeated-hour labels are undocumented, and every target precedes the upload's last_modified, so the forward-target rule (RULINGS 529) cannot apply.",
+          "unit": "E-SEM"
+        }
+      }
     },
     {
       "key": "ifa_itl",
@@ -28,7 +85,93 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Data Upload Time GMT",
+              "Auction Type",
+              "Operational Period Start Date and Time GMT",
+              "Flow in MW To GB",
+              "Reason For Restriction To GB",
+              "Flow in MW From GB",
+              "Reason For Restriction From GB"
+            ],
+            "columns": [
+              {
+                "source": "Data Upload Time GMT",
+                "name": "data_upload_time_gmt",
+                "dtype": "datetime",
+                "format": "%Y-%m-%dT%H:%M:%S",
+                "nullable": true,
+                "zone": "UTC"
+              },
+              {
+                "source": "Auction Type",
+                "name": "auction_type",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Operational Period Start Date and Time GMT",
+                "name": "operational_period_start_gmt",
+                "dtype": "datetime",
+                "format": "%Y-%m-%dT%H:%M:%S",
+                "nullable": false,
+                "zone": "UTC"
+              },
+              {
+                "source": "Flow in MW To GB",
+                "name": "flow_to_gb_mw",
+                "dtype": "int64",
+                "nullable": true
+              },
+              {
+                "source": "Reason For Restriction To GB",
+                "name": "reason_for_restriction_to_gb",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Flow in MW From GB",
+                "name": "flow_from_gb_mw",
+                "dtype": "int64",
+                "nullable": true
+              },
+              {
+                "source": "Reason For Restriction From GB",
+                "name": "reason_for_restriction_from_gb",
+                "dtype": "string",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "data_column",
+              "column": "data_upload_time_gmt"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "utc_instant",
+          "column": "operational_period_start_gmt"
+        },
+        "entity_key": [
+          "issue_time",
+          "auction_type",
+          "operational_period_start_gmt"
+        ],
+        "latest": "whole_capture",
+        "vintage": "capture_fallback",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: the dump returns past targets (rows before the capture) and NESO does not state that a row is unchanged since its `Data Upload Time GMT`, so historical issued limits are not evidenced.",
+          "unit": "E-SEM"
+        }
+      }
     }
   ],
   "resources": [

@@ -596,5 +596,8 @@ def test_t_g2h_7_the_package_ledger_is_p9() -> None:
     )
     assert result.returncode == 0, f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}"
     loaded = json.loads(result.stdout.strip().splitlines()[-1])
-    assert loaded["entries"] == LEDGER
-    assert {k: set(v) for k, v in loaded["names"].items()} == LEDGER_RESOURCES
+    # later units append their own families' entries (K-IC-1: nsl); this pin owns these two
+    mine = [e for e in loaded["entries"] if e["family"] in LEDGER_RESOURCES]
+    assert mine == LEDGER
+    names = {k: set(v) for k, v in loaded["names"].items() if k in LEDGER_RESOURCES}
+    assert names == LEDGER_RESOURCES

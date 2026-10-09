@@ -24,5 +24,17 @@
     "question": "What does a repeated identical BOA row mean (separate acceptances, contributions or duplication), and can NESO publish an acceptance identifier or a corrected file?",
     "evidence": "K-GEN-2-FACTS §4 g3 (B-ROW-GRAIN); ADR-040",
     "ruling": "547"
+  },
+  {
+    "family": "nsl",
+    "category": "failed",
+    "cause": "DuplicateEntityKeyError",
+    "captures": [
+      "bronze/neso_data_portal/nsl/2026/10/08/raw_20261008T111452Z_33646e05-1af1-41b5-a056-9e95fb9f0534_0519d13a.csv"
+    ],
+    "reason": "the archive repeats one whole row (20231029,DayAhead,001,22:00 to 23:00,1400,1437,Network Constraints), so no field key is lossless and the duplicate guard fails the capture; it stays unloaded with its failure record, and the archive's spring and autumn day labels are also irregular",
+    "question": "Is the repeated 2023-10-29 DayAhead 22:00–23:00 row a publication defect, and which value set is authoritative?",
+    "evidence": "K-IC-1-FACTS nsl T08/T10; ADR-040",
+    "ruling": "565"
   }
 ]

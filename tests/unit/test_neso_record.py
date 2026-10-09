@@ -577,6 +577,30 @@ GEN2H_RECORDED = {"metered_wind_output_monthly", "wind_bmu_boa_volumes"}
 
 GEN2H_PACKAGE_FILES = {"monthly-operational-metered-wind-output.json", "wind-bmu-boa-volumes.json"}
 
+IC1_RECORDED = {
+    "eleclink",
+    "ifa_itl",
+    "ifa_da_id_weekly_itls",
+    "ifa2_ifa_itl",
+    "ifa2_ifa_da_id_weekly_itls",
+    "nemolink_ntc",
+    "nemolink_intraday",
+    "nemolink_nemo_da_id_weekly_ntcs",
+    "nsl",
+    "viking_ntc",
+    "viking_link_ntc",
+}
+"""The eleven interconnector limit families unit K-IC-1 records (all held)."""
+
+IC1_PACKAGE_FILES = {
+    "eleclink.json",
+    "ifa.json",
+    "ifa2.json",
+    "nemolink.json",
+    "nsl.json",
+    "viking.json",
+}
+
 X_RESOURCES_WITH_CHILDREN = 4 + 1 + 39 + 73 + 1
 """Unit X's committed inventories (ADR-037 P-8): CMP workbooks, the ResultSummary ZIP,
 frequency ZIPs, held data containers and the GSP archive with a CSV member."""
@@ -603,6 +627,7 @@ class TestSeededRegistry:
             | GEN1_RECORDED
             | GEN2_RECORDED
             | GEN2H_RECORDED
+            | IC1_RECORDED
         )
         with_children = [res for _package, res in loaded.resources.values() if res.children]
         assert len(with_children) == X_RESOURCES_WITH_CHILDREN
@@ -630,6 +655,7 @@ class TestSeededRegistry:
             | GEN1_PACKAGE_FILES
             | GEN2_PACKAGE_FILES
             | GEN2H_PACKAGE_FILES
+            | IC1_PACKAGE_FILES
         )
 
 
