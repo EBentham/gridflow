@@ -86,6 +86,8 @@ GEN1_ADDED = frozenset(
     }
 )
 """The fourteen wind / margin forecast families v0.22-K-GEN-1 records after the golden."""
+GEN2_ADDED = frozenset({"weekly_wind_availability"})
+"""The one weekly wind availability family v0.22-K-GEN-2 records after the golden."""
 REWORDED_HOLDS = {
     "national_forecast_7d_historic_day_ahead": (
         "TODO: FORECAST_TIMESTAMP has no vendor definition and its zone is undocumented "
@@ -128,8 +130,8 @@ class TestByteUnchanged:
         """Detects any change to an existing family's ``_latest`` SQL (either as-of mode),
         record dump, output columns or DEM-1 engine output against the golden written on
         the untouched base (master ``73fde80``), and any generated family other than
-        ``historic_demand``, K-DEM-2's four demand-reference records and K-GEN-1's fourteen
-        wind / margin forecast records appearing.
+        ``historic_demand``, K-DEM-2's four demand-reference records, K-GEN-1's fourteen
+        wind / margin forecast records and K-GEN-2's weekly wind availability record appearing.
         """
         golden = json.loads(PIN_PATH.read_text(encoding="utf-8"))
         for key, question in REWORDED_HOLDS.items():
@@ -140,7 +142,11 @@ class TestByteUnchanged:
             assert set(golden[section]) <= set(current[section]), section
             for key, value in golden[section].items():
                 assert current[section][key] == value, (section, key)
-            added = {"historic_demand", *DEM2_ADDED, *GEN1_ADDED} if section != "engine" else set()
+            added = (
+                {"historic_demand", *DEM2_ADDED, *GEN1_ADDED, *GEN2_ADDED}
+                if section != "engine"
+                else set()
+            )
             assert set(current[section]) - set(golden[section]) == added, section
 
 
