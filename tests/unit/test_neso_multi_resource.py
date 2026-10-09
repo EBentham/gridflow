@@ -89,6 +89,22 @@ GEN1_ADDED = frozenset(
 GEN2_ADDED = frozenset({"weekly_wind_availability"})
 """The one weekly wind availability family v0.22-K-GEN-2 records after the golden."""
 GEN2H_ADDED = frozenset({"metered_wind_output_monthly", "wind_bmu_boa_volumes"})
+IC1_ADDED = frozenset(
+    {
+        "eleclink",
+        "ifa_itl",
+        "ifa_da_id_weekly_itls",
+        "ifa2_ifa_itl",
+        "ifa2_ifa_da_id_weekly_itls",
+        "nemolink_ntc",
+        "nemolink_intraday",
+        "nemolink_nemo_da_id_weekly_ntcs",
+        "nsl",
+        "viking_ntc",
+        "viking_link_ntc",
+    }
+)
+"""The eleven interconnector limit families v0.22-K-IC-1 records after the golden."""
 """The metered wind output and wind BOA volume families v0.22-GEN-2H records after the golden."""
 REWORDED_HOLDS = {
     "national_forecast_7d_historic_day_ahead": (
@@ -146,7 +162,14 @@ class TestByteUnchanged:
             for key, value in golden[section].items():
                 assert current[section][key] == value, (section, key)
             added = (
-                {"historic_demand", *DEM2_ADDED, *GEN1_ADDED, *GEN2_ADDED, *GEN2H_ADDED}
+                {
+                    "historic_demand",
+                    *DEM2_ADDED,
+                    *GEN1_ADDED,
+                    *GEN2_ADDED,
+                    *GEN2H_ADDED,
+                    *IC1_ADDED,
+                }
                 if section != "engine"
                 else set()
             )
@@ -747,7 +770,7 @@ class TestRecordRules:
         self,
     ) -> None:
         """Detects a committed record broken by V-4/V-17 or the reserved name, and any
-        family other than the five resource-partitioned ones opting into the partition (in a
+        family other than the eight resource-partitioned ones opting into the partition (in a
         fresh interpreter, so nothing collection imported can mask it)."""
         code = textwrap.dedent(
             """
@@ -760,8 +783,11 @@ class TestRecordRules:
             )
             assert partitioned == [
                 "da_wind_forecast_historic_day_ahead_bmu",
+                "eleclink",
                 "historic_demand",
                 "metered_wind_output_monthly",
+                "nemolink_ntc",
+                "nsl",
                 "school_holiday_percentages",
                 "wind_bmu_boa_volumes",
             ], partitioned
