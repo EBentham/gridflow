@@ -500,8 +500,8 @@ EXPECTED_DTYPES = {
     "data_upload_time_gmt": "datetime",
     "auction_type": "string",
     "operational_period_start_gmt": "datetime",
-    "flow_to_gb_mw": "int64",
-    "flow_from_gb_mw": "int64",
+    "flow_to_gb_mw": "float64",
+    "flow_from_gb_mw": "float64",
     "reason_for_restriction_to_gb": "string",
     "reason_for_restriction_from_gb": "string",
     "operational_date": "string",
@@ -611,6 +611,8 @@ def test_fixtures_keep_the_vendor_shape() -> None:
     assert any(r["Reason For Reduction"] == "" for r in rows("B2"))
     assert any(r["Reason for restriction"] == "" for r in rows("B4"))
     assert any(r["Reason For Restriction"] == "" for r in rows("B10"))
+    assert any(r["Flow (MW) from GB"].endswith(".75") for r in rows("B10"))
+    assert any(r["Flow (MW) from GB"] == "927.0" for r in rows("B10"))
     assert {r["Auction Type"] for r in rows("B1")} >= {"Day Ahead", "Intraday 1"}
     assert {r["Auction Type"] for r in rows("B2")} >= {"DayAhead", "Intraday1"}
     assert any(
@@ -741,7 +743,7 @@ def test_each_family_is_in_the_package_file_the_spec_names() -> None:
 @pytest.mark.parametrize("alias", LOADABLE)
 def test_fixture_types_with_no_exclusion(data: Path, alias: str) -> None:
     """Detects a family without a generated transformer, a header matching no epoch, a cast
-    the vendor body does not satisfy (an integer MW, a ``%Y-%m-%dT%H:%M:%S`` instant), a
+    the vendor body does not satisfy (a fractional MW, a ``%Y-%m-%dT%H:%M:%S`` instant), a
     clock taken from anywhere but the declared recipe and any row excluded: the capture
     completes with every populated row, zero exclusions, and the generic output columns."""
     meta = CAPTURES[alias]
@@ -790,11 +792,26 @@ def test_text_labels_and_values_survive_byte_identical(data: Path, alias: str) -
     for header in HEADERS[alias]:
         if header.lower().startswith("flow"):
             name = "flow_to_gb_mw" if header.lower().endswith("to gb") else "flow_from_gb_mw"
-            assert frame[name].to_list() == [int(r[header]) for r in source], (alias, name)
-            assert frame.schema[name] == pl.Int64
+            assert frame[name].to_list() == [float(r[header]) for r in source], (alias, name)
+            assert frame.schema[name] == pl.Float64
             zero = [r[header] for r in source].count("0")
             assert frame[name].to_list().count(0) == zero
             assert frame[name].null_count() == 0
+
+
+def test_a_fractional_limit_is_kept_not_a_capture_failure(data: Path) -> None:
+    """Detects a flow column typed as an integer: the Nemo weekly archive publishes limits such
+    as ``927.0`` and ``972.75`` MW, an ``int64`` cast raises and loses the whole capture. Every
+    directional limit in every record is ``float64`` and the fractional values arrive exact."""
+    for key in SHAPES:
+        for epoch in _record(key).epochs:
+            for column in epoch.columns:
+                if column.name.startswith("flow_"):
+                    assert column.dtype == "float64", (key, column.name)
+    _load(data, "B10")
+    frame = _silver(data, "nemolink_nemo_da_id_weekly_ntcs")
+    assert frame.schema["flow_from_gb_mw"] == pl.Float64
+    assert {927.0, 972.75, 559.75} <= set(frame["flow_from_gb_mw"].to_list())
 
 
 @pytest.mark.parametrize("alias", LOADABLE)

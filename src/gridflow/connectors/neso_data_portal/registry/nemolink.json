@@ -40,13 +40,13 @@
               {
                 "source": "Flow (MW) to GB",
                 "name": "flow_to_gb_mw",
-                "dtype": "int64",
+                "dtype": "float64",
                 "nullable": true
               },
               {
                 "source": "Flow (MW) from GB",
                 "name": "flow_from_gb_mw",
-                "dtype": "int64",
+                "dtype": "float64",
                 "nullable": true
               },
               {
@@ -108,13 +108,13 @@
               {
                 "source": "Flow (MW) To GB",
                 "name": "flow_to_gb_mw",
-                "dtype": "int64",
+                "dtype": "float64",
                 "nullable": true
               },
               {
                 "source": "Flow (MW) From GB",
                 "name": "flow_from_gb_mw",
-                "dtype": "int64",
+                "dtype": "float64",
                 "nullable": true
               },
               {
@@ -195,7 +195,7 @@
               {
                 "source": "Flow in MW To GB",
                 "name": "flow_to_gb_mw",
-                "dtype": "int64",
+                "dtype": "float64",
                 "nullable": true
               },
               {
@@ -207,7 +207,7 @@
               {
                 "source": "Flow in MW From GB",
                 "name": "flow_from_gb_mw",
-                "dtype": "int64",
+                "dtype": "float64",
                 "nullable": true
               },
               {
@@ -260,13 +260,13 @@
               {
                 "source": "Flow (MW) To GB",
                 "name": "flow_to_gb_mw",
-                "dtype": "int64",
+                "dtype": "float64",
                 "nullable": true
               },
               {
                 "source": "Flow (MW) From GB",
                 "name": "flow_from_gb_mw",
-                "dtype": "int64",
+                "dtype": "float64",
                 "nullable": true
               },
               {
