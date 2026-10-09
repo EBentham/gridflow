@@ -62,9 +62,19 @@
       "family": "ffr_post_tender_reports_files",
       "disposition": {
         "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
-      }
+        "reason": "data container: child inventory committed by X; records pending in AS-5",
+        "unit": "AS-5"
+      },
+      "children": [
+        {
+          "child": "TR122",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family ffr_post_tender_reports_workbook: record pending in AS-5 (V-11)",
+            "unit": "AS-5"
+          }
+        }
+      ]
     },
     {
       "id": "e692dc29-e94c-4be7-8067-4fc6af8bab22",
@@ -74,9 +84,25 @@
       "family": "ffr_post_tender_reports_files",
       "disposition": {
         "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
-      }
+        "reason": "data container: child inventory committed by X; records pending in AS-5",
+        "unit": "AS-5"
+      },
+      "children": [
+        {
+          "child": "TR121 ",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family ffr_post_tender_reports_workbook: record pending in AS-5 (V-11)",
+            "unit": "AS-5"
+          }
+        },
+        {
+          "child": "Sheet1",
+          "disposition": {
+            "kind": "DOC"
+          }
+        }
+      ]
     },
     {
       "id": "653110b8-4311-4489-81d3-dd6c01043b4e",
@@ -86,9 +112,19 @@
       "family": "ffr_post_tender_reports_files",
       "disposition": {
         "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
-      }
+        "reason": "data container: child inventory committed by X; records pending in AS-5",
+        "unit": "AS-5"
+      },
+      "children": [
+        {
+          "child": "TR120",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family ffr_post_tender_reports_workbook: record pending in AS-5 (V-11)",
+            "unit": "AS-5"
+          }
+        }
+      ]
     },
     {
       "id": "0544683b-0d5e-41a3-ba42-270b2d689fdf",
@@ -98,9 +134,19 @@
       "family": "ffr_post_tender_reports_files",
       "disposition": {
         "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
-      }
+        "reason": "data container: child inventory committed by X; records pending in AS-5",
+        "unit": "AS-5"
+      },
+      "children": [
+        {
+          "child": "TR119",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family ffr_post_tender_reports_workbook: record pending in AS-5 (V-11)",
+            "unit": "AS-5"
+          }
+        }
+      ]
     },
     {
       "id": "d397ffa6-2b7c-4b8f-8cc1-36b267ea6ac1",
@@ -110,9 +156,19 @@
       "family": "ffr_post_tender_reports_files",
       "disposition": {
         "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
-      }
+        "reason": "data container: child inventory committed by X; records pending in AS-5",
+        "unit": "AS-5"
+      },
+      "children": [
+        {
+          "child": "Sheet1",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family ffr_post_tender_reports_workbook: record pending in AS-5 (V-11)",
+            "unit": "AS-5"
+          }
+        }
+      ]
     },
     {
       "id": "8c1dc03e-1463-4a52-94d9-b659ff2127c5",
@@ -122,9 +178,19 @@
       "family": "ffr_post_tender_reports_files",
       "disposition": {
         "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
-      }
+        "reason": "data container: child inventory committed by X; records pending in AS-5",
+        "unit": "AS-5"
+      },
+      "children": [
+        {
+          "child": "TR117",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family ffr_post_tender_reports_workbook: record pending in AS-5 (V-11)",
+            "unit": "AS-5"
+          }
+        }
+      ]
     },
     {
       "id": "1eb0314b-54dc-45f4-80f7-f32e7edda972",
@@ -134,9 +200,19 @@
       "family": "ffr_post_tender_reports_files",
       "disposition": {
         "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
-      }
+        "reason": "data container: child inventory committed by X; records pending in AS-5",
+        "unit": "AS-5"
+      },
+      "children": [
+        {
+          "child": "Sheet1",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family ffr_post_tender_reports_workbook: record pending in AS-5 (V-11)",
+            "unit": "AS-5"
+          }
+        }
+      ]
     },
     {
       "id": "1c1c7788-a0c0-40c9-97fc-03be099995e5",
@@ -146,9 +222,19 @@
       "family": "ffr_post_tender_reports_files",
       "disposition": {
         "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
-      }
+        "reason": "data container: child inventory committed by X; records pending in AS-5",
+        "unit": "AS-5"
+      },
+      "children": [
+        {
+          "child": "TR115 ",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family ffr_post_tender_reports_workbook: record pending in AS-5 (V-11)",
+            "unit": "AS-5"
+          }
+        }
+      ]
     },
     {
       "id": "93802a8f-19ee-4c6b-9fe4-3783085eb0f9",
@@ -158,9 +244,19 @@
       "family": "ffr_post_tender_reports_files",
       "disposition": {
         "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
-      }
+        "reason": "data container: child inventory committed by X; records pending in AS-5",
+        "unit": "AS-5"
+      },
+      "children": [
+        {
+          "child": "Sheet1",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family ffr_post_tender_reports_workbook: record pending in AS-5 (V-11)",
+            "unit": "AS-5"
+          }
+        }
+      ]
     },
     {
       "id": "aa3c7d58-9ed5-460a-bcba-415567abf9fb",
@@ -170,9 +266,19 @@
       "family": "ffr_post_tender_reports_files",
       "disposition": {
         "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
-      }
+        "reason": "data container: child inventory committed by X; records pending in AS-5",
+        "unit": "AS-5"
+      },
+      "children": [
+        {
+          "child": "Sheet1",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family ffr_post_tender_reports_workbook: record pending in AS-5 (V-11)",
+            "unit": "AS-5"
+          }
+        }
+      ]
     },
     {
       "id": "dbaa2bb4-ab77-4297-90f2-a7f27e96f7fb",
@@ -182,9 +288,19 @@
       "family": "ffr_post_tender_reports_files",
       "disposition": {
         "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
-      }
+        "reason": "data container: child inventory committed by X; records pending in AS-5",
+        "unit": "AS-5"
+      },
+      "children": [
+        {
+          "child": "Sheet1",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family ffr_post_tender_reports_workbook: record pending in AS-5 (V-11)",
+            "unit": "AS-5"
+          }
+        }
+      ]
     },
     {
       "id": "d16afe87-cce1-43f2-a36b-d7707ae648d7",
@@ -194,9 +310,19 @@
       "family": "ffr_post_tender_reports_files",
       "disposition": {
         "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
-      }
+        "reason": "data container: child inventory committed by X; records pending in AS-5",
+        "unit": "AS-5"
+      },
+      "children": [
+        {
+          "child": "Sheet1",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family ffr_post_tender_reports_workbook: record pending in AS-5 (V-11)",
+            "unit": "AS-5"
+          }
+        }
+      ]
     },
     {
       "id": "50488f63-b71b-4647-b2d9-95efbddddf17",
@@ -206,9 +332,19 @@
       "family": "ffr_post_tender_reports_files",
       "disposition": {
         "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
-      }
+        "reason": "data container: child inventory committed by X; records pending in AS-5",
+        "unit": "AS-5"
+      },
+      "children": [
+        {
+          "child": "Sheet1",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family ffr_post_tender_reports_workbook: record pending in AS-5 (V-11)",
+            "unit": "AS-5"
+          }
+        }
+      ]
     },
     {
       "id": "27ad6287-1d56-493f-a45f-a6707dc02e14",
@@ -218,9 +354,19 @@
       "family": "ffr_post_tender_reports_files",
       "disposition": {
         "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
-      }
+        "reason": "data container: child inventory committed by X; records pending in AS-5",
+        "unit": "AS-5"
+      },
+      "children": [
+        {
+          "child": "Sheet1",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family ffr_post_tender_reports_workbook: record pending in AS-5 (V-11)",
+            "unit": "AS-5"
+          }
+        }
+      ]
     },
     {
       "id": "31854ad2-0e98-48ab-8893-dc9b9d473091",
@@ -230,9 +376,19 @@
       "family": "ffr_post_tender_reports_files",
       "disposition": {
         "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
-      }
+        "reason": "data container: child inventory committed by X; records pending in AS-5",
+        "unit": "AS-5"
+      },
+      "children": [
+        {
+          "child": "Sheet1",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family ffr_post_tender_reports_workbook: record pending in AS-5 (V-11)",
+            "unit": "AS-5"
+          }
+        }
+      ]
     },
     {
       "id": "2e49daa5-90eb-4157-bcef-6fcf29e75085",
@@ -242,9 +398,19 @@
       "family": "ffr_post_tender_reports_files",
       "disposition": {
         "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
-      }
+        "reason": "data container: child inventory committed by X; records pending in AS-5",
+        "unit": "AS-5"
+      },
+      "children": [
+        {
+          "child": "TR123",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family ffr_post_tender_reports_workbook: record pending in AS-5 (V-11)",
+            "unit": "AS-5"
+          }
+        }
+      ]
     },
     {
       "id": "93dac57b-a373-4fed-ab9f-338336a685e6",
@@ -254,9 +420,19 @@
       "family": "ffr_post_tender_reports_files",
       "disposition": {
         "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
-      }
+        "reason": "data container: child inventory committed by X; records pending in AS-5",
+        "unit": "AS-5"
+      },
+      "children": [
+        {
+          "child": "TR124",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family ffr_post_tender_reports_workbook: record pending in AS-5 (V-11)",
+            "unit": "AS-5"
+          }
+        }
+      ]
     },
     {
       "id": "4bea886e-3aad-4a8d-9bec-1c8e770739b0",
@@ -266,9 +442,19 @@
       "family": "ffr_post_tender_reports_files",
       "disposition": {
         "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
-      }
+        "reason": "data container: child inventory committed by X; records pending in AS-5",
+        "unit": "AS-5"
+      },
+      "children": [
+        {
+          "child": "TR125",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family ffr_post_tender_reports_workbook: record pending in AS-5 (V-11)",
+            "unit": "AS-5"
+          }
+        }
+      ]
     },
     {
       "id": "9137187c-8626-4d28-a538-3dd9eb395644",
@@ -278,9 +464,19 @@
       "family": "ffr_post_tender_reports_files",
       "disposition": {
         "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
-      }
+        "reason": "data container: child inventory committed by X; records pending in AS-5",
+        "unit": "AS-5"
+      },
+      "children": [
+        {
+          "child": "TR126",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family ffr_post_tender_reports_workbook: record pending in AS-5 (V-11)",
+            "unit": "AS-5"
+          }
+        }
+      ]
     },
     {
       "id": "68529290-7992-4891-90bc-68fa9bcb5aeb",
@@ -290,9 +486,19 @@
       "family": "ffr_post_tender_reports_files",
       "disposition": {
         "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
-      }
+        "reason": "data container: child inventory committed by X; records pending in AS-5",
+        "unit": "AS-5"
+      },
+      "children": [
+        {
+          "child": "TR127",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family ffr_post_tender_reports_workbook: record pending in AS-5 (V-11)",
+            "unit": "AS-5"
+          }
+        }
+      ]
     },
     {
       "id": "16773f53-c0f9-4b8c-aaee-ad819e93d405",
@@ -302,9 +508,19 @@
       "family": "ffr_post_tender_reports_files",
       "disposition": {
         "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
-      }
+        "reason": "data container: child inventory committed by X; records pending in AS-5",
+        "unit": "AS-5"
+      },
+      "children": [
+        {
+          "child": "TR127",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family ffr_post_tender_reports_workbook: record pending in AS-5 (V-11)",
+            "unit": "AS-5"
+          }
+        }
+      ]
     },
     {
       "id": "6e6b47ea-afae-4366-bdce-d961bdcb21fe",
@@ -314,9 +530,19 @@
       "family": "ffr_post_tender_reports_files",
       "disposition": {
         "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
-      }
+        "reason": "data container: child inventory committed by X; records pending in AS-5",
+        "unit": "AS-5"
+      },
+      "children": [
+        {
+          "child": "TR128",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family ffr_post_tender_reports_workbook: record pending in AS-5 (V-11)",
+            "unit": "AS-5"
+          }
+        }
+      ]
     },
     {
       "id": "5a1f039a-c6c8-43a2-9ae4-069a0a0b32b2",
@@ -326,9 +552,19 @@
       "family": "ffr_post_tender_reports_files",
       "disposition": {
         "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
-      }
+        "reason": "data container: child inventory committed by X; records pending in AS-5",
+        "unit": "AS-5"
+      },
+      "children": [
+        {
+          "child": "TR129",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family ffr_post_tender_reports_workbook: record pending in AS-5 (V-11)",
+            "unit": "AS-5"
+          }
+        }
+      ]
     },
     {
       "id": "4b4a2e83-094c-4566-90c1-98366469b504",
@@ -338,9 +574,19 @@
       "family": "ffr_post_tender_reports_files",
       "disposition": {
         "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
-      }
+        "reason": "data container: child inventory committed by X; records pending in AS-5",
+        "unit": "AS-5"
+      },
+      "children": [
+        {
+          "child": "TR130",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family ffr_post_tender_reports_workbook: record pending in AS-5 (V-11)",
+            "unit": "AS-5"
+          }
+        }
+      ]
     },
     {
       "id": "c325243e-2a5d-4585-9d56-2207d781d7a2",
@@ -350,9 +596,19 @@
       "family": "ffr_post_tender_reports_files",
       "disposition": {
         "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
-      }
+        "reason": "data container: child inventory committed by X; records pending in AS-5",
+        "unit": "AS-5"
+      },
+      "children": [
+        {
+          "child": "TR131",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family ffr_post_tender_reports_workbook: record pending in AS-5 (V-11)",
+            "unit": "AS-5"
+          }
+        }
+      ]
     },
     {
       "id": "ce75bd6e-5c16-41b5-bf7f-ebf3b44508f3",
@@ -362,9 +618,19 @@
       "family": "ffr_post_tender_reports_files",
       "disposition": {
         "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
-      }
+        "reason": "data container: child inventory committed by X; records pending in AS-5",
+        "unit": "AS-5"
+      },
+      "children": [
+        {
+          "child": "TR132",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family ffr_post_tender_reports_workbook: record pending in AS-5 (V-11)",
+            "unit": "AS-5"
+          }
+        }
+      ]
     },
     {
       "id": "0f72be2e-71d3-4a6e-a19d-c627dd25c3bb",
@@ -374,9 +640,19 @@
       "family": "ffr_post_tender_reports_files",
       "disposition": {
         "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
-      }
+        "reason": "data container: child inventory committed by X; records pending in AS-5",
+        "unit": "AS-5"
+      },
+      "children": [
+        {
+          "child": "TR133",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family ffr_post_tender_reports_workbook: record pending in AS-5 (V-11)",
+            "unit": "AS-5"
+          }
+        }
+      ]
     },
     {
       "id": "36c2cf05-c72b-4d18-91bd-dc2104f6103e",
@@ -386,9 +662,19 @@
       "family": "ffr_post_tender_reports_files",
       "disposition": {
         "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
-      }
+        "reason": "data container: child inventory committed by X; records pending in AS-5",
+        "unit": "AS-5"
+      },
+      "children": [
+        {
+          "child": "TR134",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family ffr_post_tender_reports_workbook: record pending in AS-5 (V-11)",
+            "unit": "AS-5"
+          }
+        }
+      ]
     },
     {
       "id": "7912d65a-451a-4dea-b8eb-4bc5c7af254b",
@@ -398,9 +684,19 @@
       "family": "ffr_post_tender_reports_files",
       "disposition": {
         "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
-      }
+        "reason": "data container: child inventory committed by X; records pending in AS-5",
+        "unit": "AS-5"
+      },
+      "children": [
+        {
+          "child": "TR136",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family ffr_post_tender_reports_workbook: record pending in AS-5 (V-11)",
+            "unit": "AS-5"
+          }
+        }
+      ]
     },
     {
       "id": "eaddd8aa-6cd1-403c-943e-4ffa6ce9ec9b",
@@ -410,9 +706,19 @@
       "family": "ffr_post_tender_reports_files",
       "disposition": {
         "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
-      }
+        "reason": "data container: child inventory committed by X; records pending in AS-5",
+        "unit": "AS-5"
+      },
+      "children": [
+        {
+          "child": "TR135",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family ffr_post_tender_reports_workbook: record pending in AS-5 (V-11)",
+            "unit": "AS-5"
+          }
+        }
+      ]
     },
     {
       "id": "a85e6149-3893-48f6-953a-0a10e796ce8e",
@@ -422,9 +728,19 @@
       "family": "ffr_post_tender_reports_files",
       "disposition": {
         "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
-      }
+        "reason": "data container: child inventory committed by X; records pending in AS-5",
+        "unit": "AS-5"
+      },
+      "children": [
+        {
+          "child": "TR136",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family ffr_post_tender_reports_workbook: record pending in AS-5 (V-11)",
+            "unit": "AS-5"
+          }
+        }
+      ]
     },
     {
       "id": "6e4f83e8-28d8-42f3-8e95-52928e58fb20",
@@ -434,9 +750,19 @@
       "family": "ffr_post_tender_reports_files",
       "disposition": {
         "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
-      }
+        "reason": "data container: child inventory committed by X; records pending in AS-5",
+        "unit": "AS-5"
+      },
+      "children": [
+        {
+          "child": "TR137",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family ffr_post_tender_reports_workbook: record pending in AS-5 (V-11)",
+            "unit": "AS-5"
+          }
+        }
+      ]
     },
     {
       "id": "bc47f2cb-695e-450e-a800-cad8cfecaaf1",
@@ -446,9 +772,19 @@
       "family": "ffr_post_tender_reports_files",
       "disposition": {
         "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
-      }
+        "reason": "data container: child inventory committed by X; records pending in AS-5",
+        "unit": "AS-5"
+      },
+      "children": [
+        {
+          "child": "TR138",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family ffr_post_tender_reports_workbook: record pending in AS-5 (V-11)",
+            "unit": "AS-5"
+          }
+        }
+      ]
     },
     {
       "id": "a5b3f43d-35f9-4384-b35c-a2d78d7bb4ba",
@@ -458,9 +794,19 @@
       "family": "ffr_post_tender_reports_files",
       "disposition": {
         "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
-      }
+        "reason": "data container: child inventory committed by X; records pending in AS-5",
+        "unit": "AS-5"
+      },
+      "children": [
+        {
+          "child": "TR139",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family ffr_post_tender_reports_workbook: COVERED nomination by 9347c45d-bffd-40ee-aa1e-593b41bde9a4 — vintage leg fails: covering last_modified is later",
+            "unit": "AS-5"
+          }
+        }
+      ]
     },
     {
       "id": "9347c45d-bffd-40ee-aa1e-593b41bde9a4",
@@ -492,9 +838,19 @@
       "family": "ffr_post_tender_reports_files",
       "disposition": {
         "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
-      }
+        "reason": "data container: child inventory committed by X; records pending in AS-5",
+        "unit": "AS-5"
+      },
+      "children": [
+        {
+          "child": "TR140",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family ffr_post_tender_reports_workbook: COVERED nomination by fe695206-4729-46f2-a82e-b05ed8552da8 — unproven: proof runs in AS-5 with X's harness",
+            "unit": "AS-5"
+          }
+        }
+      ]
     },
     {
       "id": "5e0afd6e-ab83-480a-938b-e0da0223fcbc",
@@ -515,9 +871,19 @@
       "family": "ffr_post_tender_reports_files",
       "disposition": {
         "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
-      }
+        "reason": "data container: child inventory committed by X; records pending in AS-5",
+        "unit": "AS-5"
+      },
+      "children": [
+        {
+          "child": "TR141",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family ffr_post_tender_reports_workbook: COVERED nomination by 5e0afd6e-ab83-480a-938b-e0da0223fcbc — vintage leg fails: covering last_modified is later",
+            "unit": "AS-5"
+          }
+        }
+      ]
     },
     {
       "id": "1882b277-6349-4513-9939-b39e1992620b",
@@ -538,9 +904,19 @@
       "family": "ffr_post_tender_reports_files",
       "disposition": {
         "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
-      }
+        "reason": "data container: child inventory committed by X; records pending in AS-5",
+        "unit": "AS-5"
+      },
+      "children": [
+        {
+          "child": "TR142",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family ffr_post_tender_reports_workbook: COVERED nomination by 1882b277-6349-4513-9939-b39e1992620b — unproven: proof runs in AS-5 with X's harness",
+            "unit": "AS-5"
+          }
+        }
+      ]
     },
     {
       "id": "990dd811-e65a-4361-87fc-9d07d6c0af45",
@@ -561,9 +937,19 @@
       "family": "ffr_post_tender_reports_files",
       "disposition": {
         "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
-      }
+        "reason": "data container: child inventory committed by X; records pending in AS-5",
+        "unit": "AS-5"
+      },
+      "children": [
+        {
+          "child": "TR143 ",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family ffr_post_tender_reports_workbook: COVERED nomination by 990dd811-e65a-4361-87fc-9d07d6c0af45 — vintage leg fails: covering last_modified is later",
+            "unit": "AS-5"
+          }
+        }
+      ]
     },
     {
       "id": "ceefff8c-7f61-41dd-b567-42774ca487bc",
@@ -584,9 +970,19 @@
       "family": "ffr_post_tender_reports_files",
       "disposition": {
         "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
-      }
+        "reason": "data container: child inventory committed by X; records pending in AS-5",
+        "unit": "AS-5"
+      },
+      "children": [
+        {
+          "child": "TR144",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family ffr_post_tender_reports_workbook: COVERED nomination by ceefff8c-7f61-41dd-b567-42774ca487bc — unproven: proof runs in AS-5 with X's harness",
+            "unit": "AS-5"
+          }
+        }
+      ]
     },
     {
       "id": "61ee31ac-1f2d-4744-add3-bac7878c6010",
@@ -607,9 +1003,19 @@
       "family": "ffr_post_tender_reports_files",
       "disposition": {
         "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
-      }
+        "reason": "data container: child inventory committed by X; records pending in AS-5",
+        "unit": "AS-5"
+      },
+      "children": [
+        {
+          "child": "TR145",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family ffr_post_tender_reports_workbook: COVERED nomination by 61ee31ac-1f2d-4744-add3-bac7878c6010 — unproven: proof runs in AS-5 with X's harness",
+            "unit": "AS-5"
+          }
+        }
+      ]
     },
     {
       "id": "66e127dc-5e95-49b5-bc55-915269d09e1a",
@@ -630,9 +1036,19 @@
       "family": "ffr_post_tender_reports_files",
       "disposition": {
         "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
-      }
+        "reason": "data container: child inventory committed by X; records pending in AS-5",
+        "unit": "AS-5"
+      },
+      "children": [
+        {
+          "child": "TR146",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family ffr_post_tender_reports_workbook: COVERED nomination by 66e127dc-5e95-49b5-bc55-915269d09e1a — vintage leg fails: covering last_modified is later",
+            "unit": "AS-5"
+          }
+        }
+      ]
     },
     {
       "id": "c99081fb-0211-4a1a-9eed-53497f64a6ea",
@@ -653,9 +1069,19 @@
       "family": "ffr_post_tender_reports_files",
       "disposition": {
         "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
-      }
+        "reason": "data container: child inventory committed by X; records pending in AS-5",
+        "unit": "AS-5"
+      },
+      "children": [
+        {
+          "child": "TR147",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family ffr_post_tender_reports_workbook: COVERED nomination by c99081fb-0211-4a1a-9eed-53497f64a6ea — unproven: proof runs in AS-5 with X's harness",
+            "unit": "AS-5"
+          }
+        }
+      ]
     },
     {
       "id": "fc994d78-f7d0-4a29-9ea7-31121931d04c",
@@ -676,9 +1102,19 @@
       "family": "ffr_post_tender_reports_files",
       "disposition": {
         "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
-      }
+        "reason": "data container: child inventory committed by X; records pending in AS-5",
+        "unit": "AS-5"
+      },
+      "children": [
+        {
+          "child": "TR148",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family ffr_post_tender_reports_workbook: COVERED nomination by fc994d78-f7d0-4a29-9ea7-31121931d04c — unproven: proof runs in AS-5 with X's harness",
+            "unit": "AS-5"
+          }
+        }
+      ]
     },
     {
       "id": "a32e86a6-6bd3-422c-996a-7245dcb9b6ee",
@@ -699,9 +1135,19 @@
       "family": "ffr_post_tender_reports_files",
       "disposition": {
         "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
-      }
+        "reason": "data container: child inventory committed by X; records pending in AS-5",
+        "unit": "AS-5"
+      },
+      "children": [
+        {
+          "child": "TR149",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family ffr_post_tender_reports_workbook: COVERED nomination by a32e86a6-6bd3-422c-996a-7245dcb9b6ee — unproven: proof runs in AS-5 with X's harness",
+            "unit": "AS-5"
+          }
+        }
+      ]
     },
     {
       "id": "36164e1d-c6d5-4a58-85b1-74c3a01b0a9b",
@@ -722,9 +1168,19 @@
       "family": "ffr_post_tender_reports_files",
       "disposition": {
         "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
-      }
+        "reason": "data container: child inventory committed by X; records pending in AS-5",
+        "unit": "AS-5"
+      },
+      "children": [
+        {
+          "child": "TR150",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family ffr_post_tender_reports_workbook: COVERED nomination by 36164e1d-c6d5-4a58-85b1-74c3a01b0a9b — vintage leg fails: covering last_modified is later",
+            "unit": "AS-5"
+          }
+        }
+      ]
     },
     {
       "id": "fcc91d6f-e35a-4878-a77d-d2882d01c357",
@@ -745,9 +1201,19 @@
       "family": "ffr_post_tender_reports_files",
       "disposition": {
         "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
-      }
+        "reason": "data container: child inventory committed by X; records pending in AS-5",
+        "unit": "AS-5"
+      },
+      "children": [
+        {
+          "child": "TR151",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family ffr_post_tender_reports_workbook: COVERED nomination by fcc91d6f-e35a-4878-a77d-d2882d01c357 — vintage leg fails: covering last_modified is later",
+            "unit": "AS-5"
+          }
+        }
+      ]
     },
     {
       "id": "7ed768cf-aa45-4577-bc7f-c1b64e534812",
@@ -768,9 +1234,19 @@
       "family": "ffr_post_tender_reports_files",
       "disposition": {
         "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
-      }
+        "reason": "data container: child inventory committed by X; records pending in AS-5",
+        "unit": "AS-5"
+      },
+      "children": [
+        {
+          "child": "TR152",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family ffr_post_tender_reports_workbook: COVERED nomination by 7ed768cf-aa45-4577-bc7f-c1b64e534812 — unproven: proof runs in AS-5 with X's harness",
+            "unit": "AS-5"
+          }
+        }
+      ]
     },
     {
       "id": "854e29a9-3b94-41e0-8bbc-24ec270ae6fd",
@@ -780,9 +1256,19 @@
       "family": "ffr_post_tender_reports_files",
       "disposition": {
         "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
-      }
+        "reason": "data container: child inventory committed by X; records pending in AS-5",
+        "unit": "AS-5"
+      },
+      "children": [
+        {
+          "child": "TR153",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family ffr_post_tender_reports_workbook: COVERED nomination by 178b6c47-6b27-403e-9715-87f41b48a84b — vintage leg fails: covering last_modified is later",
+            "unit": "AS-5"
+          }
+        }
+      ]
     },
     {
       "id": "178b6c47-6b27-403e-9715-87f41b48a84b",
@@ -814,9 +1300,19 @@
       "family": "ffr_post_tender_reports_files",
       "disposition": {
         "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
-      }
+        "reason": "data container: child inventory committed by X; records pending in AS-5",
+        "unit": "AS-5"
+      },
+      "children": [
+        {
+          "child": "TR154",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family ffr_post_tender_reports_workbook: COVERED nomination by 7e48c1ce-b4cf-43fa-afe9-4e6730474944 — vintage leg fails: covering last_modified is later",
+            "unit": "AS-5"
+          }
+        }
+      ]
     },
     {
       "id": "904d2bf0-8396-43c4-8b8a-cafe105fc47c",
@@ -837,9 +1333,19 @@
       "family": "ffr_post_tender_reports_files",
       "disposition": {
         "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
-      }
+        "reason": "data container: child inventory committed by X; records pending in AS-5",
+        "unit": "AS-5"
+      },
+      "children": [
+        {
+          "child": "TR155",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family ffr_post_tender_reports_workbook: COVERED nomination by 904d2bf0-8396-43c4-8b8a-cafe105fc47c — vintage leg fails: covering last_modified is later",
+            "unit": "AS-5"
+          }
+        }
+      ]
     },
     {
       "id": "fd84c085-4ff8-45b4-b2ee-43ad2b052d9f",
@@ -860,9 +1366,19 @@
       "family": "ffr_post_tender_reports_files",
       "disposition": {
         "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
-      }
+        "reason": "data container: child inventory committed by X; records pending in AS-5",
+        "unit": "AS-5"
+      },
+      "children": [
+        {
+          "child": "TR156",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family ffr_post_tender_reports_workbook: COVERED nomination by fd84c085-4ff8-45b4-b2ee-43ad2b052d9f — unproven: proof runs in AS-5 with X's harness",
+            "unit": "AS-5"
+          }
+        }
+      ]
     },
     {
       "id": "bd7cbfb7-a8cb-4b84-bd69-42abff36af0d",
@@ -883,9 +1399,19 @@
       "family": "ffr_post_tender_reports_files",
       "disposition": {
         "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
-      }
+        "reason": "data container: child inventory committed by X; records pending in AS-5",
+        "unit": "AS-5"
+      },
+      "children": [
+        {
+          "child": "TR157",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family ffr_post_tender_reports_workbook: COVERED nomination by bd7cbfb7-a8cb-4b84-bd69-42abff36af0d — unproven: proof runs in AS-5 with X's harness",
+            "unit": "AS-5"
+          }
+        }
+      ]
     },
     {
       "id": "e15891f5-fd65-437f-823f-2906f238d0af",
@@ -906,9 +1432,19 @@
       "family": "ffr_post_tender_reports_files",
       "disposition": {
         "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
-      }
+        "reason": "data container: child inventory committed by X; records pending in AS-5",
+        "unit": "AS-5"
+      },
+      "children": [
+        {
+          "child": "TR158",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family ffr_post_tender_reports_workbook: COVERED nomination by e15891f5-fd65-437f-823f-2906f238d0af — unproven: proof runs in AS-5 with X's harness",
+            "unit": "AS-5"
+          }
+        }
+      ]
     },
     {
       "id": "41c9403d-9618-4eb9-be69-45b9923bcf3f",
@@ -929,9 +1465,19 @@
       "family": "ffr_post_tender_reports_files",
       "disposition": {
         "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
-      }
+        "reason": "data container: child inventory committed by X; records pending in AS-5",
+        "unit": "AS-5"
+      },
+      "children": [
+        {
+          "child": "TR159",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family ffr_post_tender_reports_workbook: COVERED nomination by 41c9403d-9618-4eb9-be69-45b9923bcf3f — unproven: proof runs in AS-5 with X's harness",
+            "unit": "AS-5"
+          }
+        }
+      ]
     },
     {
       "id": "5aa12080-f439-42ab-a806-cf2781750a29",
@@ -941,9 +1487,19 @@
       "family": "ffr_post_tender_reports_files",
       "disposition": {
         "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
-      }
+        "reason": "data container: child inventory committed by X; records pending in AS-5",
+        "unit": "AS-5"
+      },
+      "children": [
+        {
+          "child": "TR160",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family ffr_post_tender_reports_workbook: COVERED nomination by a99bc100-352b-433a-83fc-5514affbbc0e — vintage leg fails: covering last_modified is later",
+            "unit": "AS-5"
+          }
+        }
+      ]
     },
     {
       "id": "a99bc100-352b-433a-83fc-5514affbbc0e",
@@ -975,9 +1531,19 @@
       "family": "ffr_post_tender_reports_files",
       "disposition": {
         "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
-      }
+        "reason": "data container: child inventory committed by X; records pending in AS-5",
+        "unit": "AS-5"
+      },
+      "children": [
+        {
+          "child": "TR161",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family ffr_post_tender_reports_workbook: COVERED nomination by 3d71f7d1-3dd7-40b1-b5f4-708da72a4f67 — unproven: proof runs in AS-5 with X's harness",
+            "unit": "AS-5"
+          }
+        }
+      ]
     },
     {
       "id": "9a707d8f-36dc-4caf-9dfb-5c620e729d75",
@@ -987,9 +1553,19 @@
       "family": "ffr_post_tender_reports_files",
       "disposition": {
         "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
-      }
+        "reason": "data container: child inventory committed by X; records pending in AS-5",
+        "unit": "AS-5"
+      },
+      "children": [
+        {
+          "child": "TR162",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family ffr_post_tender_reports_workbook: COVERED nomination by fd57201c-24f6-4d42-8be2-177dd4b36229 — vintage leg fails: covering last_modified is later",
+            "unit": "AS-5"
+          }
+        }
+      ]
     },
     {
       "id": "fd57201c-24f6-4d42-8be2-177dd4b36229",
@@ -1010,9 +1586,19 @@
       "family": "ffr_post_tender_reports_files",
       "disposition": {
         "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
-      }
+        "reason": "data container: child inventory committed by X; records pending in AS-5",
+        "unit": "AS-5"
+      },
+      "children": [
+        {
+          "child": "TR163",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family ffr_post_tender_reports_workbook: COVERED nomination by fbb1ce86-b2f7-405d-94ac-6cef6f14cceb — vintage leg fails: covering last_modified is later",
+            "unit": "AS-5"
+          }
+        }
+      ]
     },
     {
       "id": "fbb1ce86-b2f7-405d-94ac-6cef6f14cceb",
@@ -1044,9 +1630,19 @@
       "family": "ffr_post_tender_reports_files",
       "disposition": {
         "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
-      }
+        "reason": "data container: child inventory committed by X; records pending in AS-5",
+        "unit": "AS-5"
+      },
+      "children": [
+        {
+          "child": "TR164",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family ffr_post_tender_reports_workbook: COVERED nomination by 2bfa2ab3-7f4e-44d7-a9ab-7342c4b9cd34 — unproven: proof runs in AS-5 with X's harness",
+            "unit": "AS-5"
+          }
+        }
+      ]
     },
     {
       "id": "bec39c50-563c-4ed6-8100-8b519dcbf1ef",
@@ -1067,9 +1663,19 @@
       "family": "ffr_post_tender_reports_files",
       "disposition": {
         "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
-      }
+        "reason": "data container: child inventory committed by X; records pending in AS-5",
+        "unit": "AS-5"
+      },
+      "children": [
+        {
+          "child": "TR165",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family ffr_post_tender_reports_workbook: COVERED nomination by bec39c50-563c-4ed6-8100-8b519dcbf1ef — unproven: proof runs in AS-5 with X's harness",
+            "unit": "AS-5"
+          }
+        }
+      ]
     },
     {
       "id": "59dfabd4-a395-4ddc-a261-2f546a8a3b52",
@@ -1090,9 +1696,19 @@
       "family": "ffr_post_tender_reports_files",
       "disposition": {
         "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
-      }
+        "reason": "data container: child inventory committed by X; records pending in AS-5",
+        "unit": "AS-5"
+      },
+      "children": [
+        {
+          "child": "TR166",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family ffr_post_tender_reports_workbook: COVERED nomination by 59dfabd4-a395-4ddc-a261-2f546a8a3b52 — unproven: proof runs in AS-5 with X's harness",
+            "unit": "AS-5"
+          }
+        }
+      ]
     }
   ]
 }

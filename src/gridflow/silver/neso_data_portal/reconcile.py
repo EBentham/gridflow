@@ -12,7 +12,9 @@ failure record without a valid completion, or an unusable sidecar);
 predicate); ``orphaned`` ((a) a completion whose capture is not expected, (b) a
 generic output whose capture has no completion); ``duplicated`` (two outputs
 carry one capture, or two bespoke captures resolve to one output path);
-``stale_covered`` (a ``COVERED`` grant whose evidence no longer matches).
+``stale_covered`` (a ``COVERED`` grant whose proof inputs, re-derived at the
+cutoff from the grant's registry position, no longer digest to its evidence's
+components, or whose scope is empty; ADR-037 P-13).
 
 **Drain.** Recovers ``missing``, attempt-``failed``,
 ``missing_or_invalid_output`` and orphaned (b), grouped by (family, partition
@@ -26,7 +28,6 @@ second result is what the drain returns. It never touches orphaned (a),
 
 from __future__ import annotations
 
-import hashlib
 import json
 import logging
 from collections import Counter
@@ -37,11 +38,10 @@ from uuid import uuid4
 
 import polars as pl
 
-from gridflow.connectors.neso_data_portal.captures import newest_by_resource, scan_dataset
+from gridflow.connectors.neso_data_portal.captures import scan_dataset
 from gridflow.connectors.neso_data_portal.registry import (
     LEGACY_KEYS,
     CoveredDisposition,
-    SilverDisposition,
 )
 from gridflow.silver.neso_data_portal.completion import (
     NesoCaptureFailedError,
@@ -54,6 +54,14 @@ from gridflow.silver.neso_data_portal.completion import (
     run_bespoke_capture,
     scan_completions,
 )
+from gridflow.silver.neso_data_portal.equivalence import (
+    ProofInputError,
+    Site,
+    comparison_components,
+    fingerprint_of,
+    gather_inputs,
+    scope_index,
+)
 from gridflow.silver.neso_data_portal.generic import (
     FILES_REASON,
     INGEST_ONLY_REASON,
@@ -64,15 +72,11 @@ from gridflow.silver.registry import get_transformer_class
 from gridflow.storage.paths import PathBuilder
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Iterable, Sequence
+    from collections.abc import Callable, Sequence
     from datetime import date
 
     from gridflow.connectors.neso_data_portal.captures import Capture
-    from gridflow.connectors.neso_data_portal.registry import (
-        Disposition,
-        Registry,
-        ResourceEntry,
-    )
+    from gridflow.connectors.neso_data_portal.registry import Registry, ResourceEntry
     from gridflow.silver.base import BaseSilverTransformer
 
 logger = logging.getLogger(__name__)
@@ -84,7 +88,6 @@ __all__ = [
     "ReconcileReport",
     "UnknownFamilyError",
     "drain",
-    "inventory_sha256",
     "reconcile",
 ]
 
@@ -392,103 +395,81 @@ def _family_gaps(
     return gaps, expected
 
 
-def inventory_sha256(resource: ResourceEntry) -> str:
-    """The digest of a resource's registry child inventory (``COVERED`` evidence).
-
-    Ordered ``(child, disposition)`` pairs as canonical JSON; a resource with
-    no children digests the empty list.
-    """
-    document = [
-        [child.child, child.disposition.model_dump(mode="json")] for child in resource.children
-    ]
-    canonical = json.dumps(document, sort_keys=True, separators=(",", ":"))
-    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
-
-
-def _record_version(registry: Registry, resource: ResourceEntry) -> str:
-    target = (
-        resource.disposition.key
-        if isinstance(resource.disposition, SilverDisposition)
-        else resource.family
-    )
-    entry = registry.families.get(target)
-    record = entry[1].record if entry is not None else None
-    return record.version if record is not None else ""
-
-
-def _newest_capture_ids(
-    registry: Registry, data_dir: Path, cutoff: date, directories: Iterable[str]
-) -> dict[str, tuple[str, date]]:
-    paths = PathBuilder(data_dir)
-    captures: list[Capture] = []
-    for dir_key in sorted(set(directories)):
-        scan = scan_dataset(paths.bronze_dir(SOURCE, dir_key), registry, require_provenance=False)
-        captures.extend(c for c in scan.captures if partition_date_of(c.body) <= cutoff)
-    return {
-        resource_id: (capture_id_for(capture.body, data_dir), partition_date_of(capture.body))
-        for resource_id, capture in newest_by_resource(captures).items()
-    }
-
-
 def _stale_covered(
     registry: Registry, data_dir: Path, cutoff: date, families: Sequence[str]
 ) -> list[Gap]:
-    """``stale_covered``: every COVERED grant of the checked families' packages."""
+    """``stale_covered``: every COVERED grant of the checked families' packages (P-13).
+
+    Each grant's proof inputs are gathered from its registry position (the
+    resource and child it sits on, its ``key`` and ``by``) at the cutoff and
+    digested; any component that differs from the evidence, an empty scope or
+    an evidence fingerprint that does not match its components is reported.
+    The directory scan runs once and is shared by every grant.
+    """
     packages = {registry.families[key][0].package for key in families}
-    grants: list[tuple[ResourceEntry, str, Disposition]] = []
+    grants: list[tuple[ResourceEntry, str | None, CoveredDisposition]] = []
     for package in registry.packages:
         if package.package not in packages:
             continue
         for resource in package.resources:
             if isinstance(resource.disposition, CoveredDisposition):
-                grants.append((resource, "-", resource.disposition))
+                grants.append((resource, None, resource.disposition))
             for child in resource.children:
                 if isinstance(child.disposition, CoveredDisposition):
                     grants.append((resource, child.child, child.disposition))
     if not grants:
         return []
-    directories = [resource.family for resource, _child, _grant in grants]
-    for _resource, _child, grant in grants:
-        assert isinstance(grant, CoveredDisposition)
-        covering = registry.resources.get(grant.by)
-        if covering is not None:
-            directories.append(covering[1].family)
-    newest = _newest_capture_ids(registry, data_dir, cutoff, directories)
+    index = scope_index(registry, data_dir)
 
     gaps: list[Gap] = []
     for resource, child_id, grant in grants:
-        assert isinstance(grant, CoveredDisposition)
-        covered_now = newest.get(resource.id)
-        covering_entry = registry.resources.get(grant.by)
-        covering_now = newest.get(grant.by) if covering_entry is not None else None
-        evidence = grant.evidence
         reasons: list[str] = []
-        if evidence is None:
-            reasons.append("no evidence")
+        newest: tuple[str, date] | None = None
+        evidence = grant.evidence
+        if evidence is None or grant.key is None:
+            reasons.append("no evidence or no key")
         else:
-            if covering_entry is None:
-                reasons.append(f"covering resource {grant.by} is not in the registry")
-            if (covered_now[0] if covered_now else "") != evidence.covered_capture:
-                reasons.append("covered resource has a newer capture")
-            if (covering_now[0] if covering_now else "") != evidence.covering_capture:
-                reasons.append("covering resource has a newer capture")
-            if _record_version(registry, resource) != evidence.covered_record_version:
-                reasons.append("covered record version changed")
-            if (
-                covering_entry is not None
-                and _record_version(registry, covering_entry[1]) != evidence.covering_record_version
-            ):
-                reasons.append("covering record version changed")
-            if inventory_sha256(resource) != evidence.inventory_sha256:
-                reasons.append("child inventory changed")
+            try:
+                inputs = gather_inputs(
+                    registry,
+                    data_dir,
+                    Site(resource.id, child_id),
+                    grant.by,
+                    grant.key,
+                    cutoff,
+                    index=index,
+                )
+            except ProofInputError as exc:
+                reasons.append(f"proof inputs unresolvable: {exc}")
+            else:
+                if inputs.covered_scope:
+                    latest = max(
+                        inputs.covered_scope,
+                        key=lambda item: (item.capture.written_at, str(item.capture.body)),
+                    )
+                    newest = (
+                        capture_id_for(latest.capture.body, data_dir),
+                        partition_date_of(latest.capture.body),
+                    )
+                else:
+                    reasons.append("no capture of covered")
+                if not inputs.covering_scope:
+                    reasons.append("no capture of covering")
+                now = comparison_components(inputs)
+                names = sorted(set(now) | set(evidence.components))
+                changed = [n for n in names if now.get(n) != evidence.components.get(n)]
+                if changed:
+                    reasons.append(f"components changed: {', '.join(changed)}")
+                if fingerprint_of(evidence.components) != evidence.fingerprint:
+                    reasons.append("evidence fingerprint does not match its components")
         if reasons:
             gaps.append(
                 Gap(
                     "stale_covered",
                     resource.family,
-                    covered_now[1] if covered_now else None,
-                    covered_now[0] if covered_now else "-",
-                    f"resource {resource.id} child {child_id}: {'; '.join(reasons)}",
+                    newest[1] if newest else None,
+                    newest[0] if newest else "-",
+                    f"resource {resource.id} child {child_id or '-'}: {'; '.join(reasons)}",
                 )
             )
     return gaps

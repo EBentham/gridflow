@@ -32,6 +32,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 from gridflow.silver.date_columns import DATE_COL_SQL_TYPES
 
 __all__ = [
+    "CHILD_SEPARATOR",
     "RESERVED",
     "SILVER_NAME_PATTERN",
     "ColumnSpec",
@@ -43,11 +44,17 @@ __all__ = [
     "RecordError",
     "SchemaRecord",
     "TemporalRecipe",
+    "XlsxSpec",
+    "ZipMemberSpec",
+    "column_index",
     "has_issue_time",
     "silver_columns",
 ]
 
 SILVER_NAME_PATTERN = re.compile(r"^[a-z][a-z0-9_]*$")
+
+CHILD_SEPARATOR = "::"
+"""Joins a workbook member's name to one of its sheets in a container child id (ADR-037 P-3)."""
 
 RESERVED: frozenset[str] = frozenset(
     {
@@ -64,6 +71,7 @@ RESERVED: frozenset[str] = frozenset(
         "bronze_capture_id",
         "capture_written_at",
         "child_id",
+        "child_crc32",
     }
 )
 """Names the engine or the catalogue writes itself (V-2).
@@ -284,6 +292,67 @@ class TemporalRecipe(_Frozen):
         )
 
 
+_COLUMN_RANGE = re.compile(r"^([A-Z]{1,3}):([A-Z]{1,3})$")
+
+
+def column_index(letters: str) -> int:
+    """The 1-based index of an Excel column name (``A`` -> 1, ``AA`` -> 27)."""
+    index = 0
+    for char in letters:
+        index = index * 26 + (ord(char) - ord("A") + 1)
+    return index
+
+
+class XlsxSpec(_Frozen):
+    """Where one sheet's table sits (ADR-037 P-2, P-6).
+
+    Attributes:
+        header_row: The 1-based Excel row of the one header row.
+        columns: The column range, ``"A:J"`` (left <= right).
+        last_row: The 1-based last data row; ``None`` = the sheet's last
+            populated row.
+    """
+
+    header_row: int = Field(ge=1)
+    columns: str
+    last_row: int | None = None
+
+    @model_validator(mode="after")
+    def _shape(self) -> XlsxSpec:
+        match = _COLUMN_RANGE.fullmatch(self.columns)
+        if match is None:
+            raise ValueError(f"xlsx columns {self.columns!r} is not {_COLUMN_RANGE.pattern}")
+        if column_index(match.group(1)) > column_index(match.group(2)):
+            raise ValueError(f"xlsx columns {self.columns!r}: left is after right")
+        return self
+
+    @property
+    def bounds(self) -> tuple[int, int]:
+        """The 1-based ``(first, last)`` column indexes of :attr:`columns`."""
+        left, right = self.columns.split(":")
+        return column_index(left), column_index(right)
+
+
+class ZipMemberSpec(_Frozen):
+    """Which ZIP members a ``zip_member`` record reads and how (ADR-037 P-2, P-7).
+
+    Attributes:
+        member_pattern: ``re.fullmatch`` over the member path; must compile.
+        inner: How a member's bytes are read: ``csv`` or ``xlsx``.
+    """
+
+    member_pattern: str
+    inner: Literal["csv", "xlsx"]
+
+    @model_validator(mode="after")
+    def _shape(self) -> ZipMemberSpec:
+        try:
+            re.compile(self.member_pattern)
+        except re.error as exc:
+            raise ValueError(f"member_pattern does not compile ({exc})") from exc
+        return self
+
+
 class SchemaRecord(_Frozen):
     """One family's frozen schema: reader, epochs, clocks, key and selection.
 
@@ -300,6 +369,9 @@ class SchemaRecord(_Frozen):
         vintage: Where ``published_at`` comes from.
         vintage_evidence: Required for ``issue_time_evidenced`` only.
         eligibility: A per-output publication override; ``None`` inherits.
+        xlsx: The sheet table spec (``reader="xlsx"``, or ``zip_member`` with
+            ``inner="xlsx"``).
+        zip_member: The member spec (``reader="zip_member"`` only).
     """
 
     version: str = Field(min_length=1)
@@ -314,6 +386,8 @@ class SchemaRecord(_Frozen):
     vintage: Literal["ckan_last_modified", "capture_fallback", "issue_time_evidenced"]
     vintage_evidence: str | None = None
     eligibility: Eligibility | None = None
+    xlsx: XlsxSpec | None = None
+    zip_member: ZipMemberSpec | None = None
 
     @model_validator(mode="after")
     def _shape(self) -> SchemaRecord:
@@ -323,7 +397,30 @@ class SchemaRecord(_Frozen):
             raise ValueError(f"unknown encoding {self.encoding!r}") from exc
         if len(set(self.entity_key)) != len(self.entity_key):
             raise ValueError(f"entity_key {list(self.entity_key)} repeats a column")
+        self._reader_specs()
         return self
+
+    def _reader_specs(self) -> None:
+        """V-14: the reader specs match the reader."""
+        if self.reader == "csv":
+            if self.xlsx is not None or self.zip_member is not None:
+                raise ValueError("V-14: reader csv takes no xlsx or zip_member spec")
+        elif self.reader == "xlsx":
+            if self.xlsx is None or self.zip_member is not None:
+                raise ValueError("V-14: reader xlsx takes an xlsx spec and no zip_member spec")
+        else:
+            if self.zip_member is None:
+                raise ValueError("V-14: reader zip_member takes a zip_member spec")
+            if (self.xlsx is not None) != (self.zip_member.inner == "xlsx"):
+                raise ValueError(
+                    "V-14: reader zip_member takes an xlsx spec exactly when inner is xlsx"
+                )
+        if (
+            self.xlsx is not None
+            and self.xlsx.last_row is not None
+            and self.xlsx.last_row <= self.xlsx.header_row
+        ):
+            raise ValueError("V-14: xlsx last_row must be after header_row")
 
 
 def has_issue_time(record: SchemaRecord) -> bool:

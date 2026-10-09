@@ -31,7 +31,13 @@ from gridflow.silver.neso_data_portal.completion import (
 from gridflow.silver.neso_data_portal.daily_wind_availability import (
     DailyWindAvailabilityTransformer,
 )
-from gridflow.silver.neso_data_portal.reconcile import drain, inventory_sha256, reconcile
+from gridflow.silver.neso_data_portal.equivalence import (
+    Site,
+    comparison_components,
+    fingerprint_of,
+    gather_inputs,
+)
+from gridflow.silver.neso_data_portal.reconcile import drain, reconcile
 from gridflow.storage.duckdb import init_catalogue, refresh_views
 
 if TYPE_CHECKING:
@@ -467,8 +473,8 @@ class TestCoveredEvidence:
         self, data: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
     ) -> None:
         covered_rid = _rid(9)
-        covered = _capture(data, "fam_one", 9, BODY, _t(8), name="Covered")
-        covering = _capture(data, "fam_one", 1, BODY, _t(8))
+        _capture(data, "fam_one", 9, BODY, _t(8), name="Covered")
+        _capture(data, "fam_one", 1, BODY, _t(8))
         grant = resource(
             covered_rid,
             "Covered",
@@ -476,20 +482,21 @@ class TestCoveredEvidence:
             disposition={
                 "kind": "COVERED",
                 "by": _rid(1),
-                "evidence": {
-                    "covered_capture": covered,
-                    "covering_capture": covering,
-                    "covered_record_version": "1",
-                    "covering_record_version": "1",
-                    "inventory_sha256": "",
-                },
+                "key": "fam_one",
+                "evidence": {"fingerprint": "", "components": {}},
             },
         )
         registry, generated = _install(
             monkeypatch, data, {"fam_one": {"record": record()}}, extra=[grant], where="_reg_a"
         )
-        digest = inventory_sha256(registry.resources[covered_rid][1])
-        grant["disposition"]["evidence"]["inventory_sha256"] = digest
+        inputs = gather_inputs(
+            registry, data, Site(covered_rid, None), _rid(1), "fam_one", date.fromisoformat(CUTOFF)
+        )
+        components = comparison_components(inputs)
+        grant["disposition"]["evidence"] = {
+            "fingerprint": fingerprint_of(components),
+            "components": components,
+        }
         _registry, generated = _install(
             monkeypatch, data, {"fam_one": {"record": record()}}, extra=[grant], where="_reg_b"
         )
@@ -503,7 +510,7 @@ class TestCoveredEvidence:
         assert stale.startswith(
             f"GAP stale_covered fam_one 2026-10-07 {newer} resource {covered_rid}"
         )
-        assert "covered resource has a newer capture" in stale
+        assert "components changed: covered_scope" in stale
 
 
 class TestLateDrainEquality:

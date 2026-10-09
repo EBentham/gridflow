@@ -34,6 +34,7 @@ from typing import TYPE_CHECKING, Annotated, Any, Literal
 from pydantic import Field, ValidationError
 
 from gridflow.connectors.neso_data_portal.registry.record import (
+    CHILD_SEPARATOR,
     Eligibility,
     Eligible,
     Held,
@@ -118,32 +119,35 @@ class HoldDisposition(_Frozen):
 
 
 class CoveredEvidence(_Frozen):
-    """What a COVERED grant was proven against (ADR-034 P-14 ``stale_covered``).
+    """What a COVERED grant was proven against (ADR-037 P-13).
 
     Attributes:
-        covered_capture: The covered resource's capture id the proof used.
-        covering_capture: The covering resource's capture id the proof used.
-        covered_record_version: The covered side's record version at proof.
-        covering_record_version: The covering side's record version at proof.
-        inventory_sha256: The container child-inventory digest at proof.
+        fingerprint: The SHA-256 of the canonical JSON of ``components``.
+        components: Proof-input component name -> its SHA-256, one per field
+            of ``equivalence.ProofInputs``; reconcile re-derives them
+            (``stale_covered``).
     """
 
-    covered_capture: str
-    covering_capture: str
-    covered_record_version: str
-    covering_record_version: str
-    inventory_sha256: str
+    fingerprint: str
+    components: dict[str, str]
 
 
 class CoveredDisposition(_Frozen):
-    """Proven value-equivalent to another resource.
+    """Proven value-equivalent to another resource (ADR-037 P-13).
 
-    ``evidence`` is required by V-12; it is optional in the model only so the
-    rule can name itself in the load error.
+    Attributes:
+        kind: ``COVERED``.
+        by: The covering resource id (a childless ``SILVER`` resource).
+        key: The recorded family whose record types the covered rows.
+        evidence: The proof's evidence.
+
+    ``key`` and ``evidence`` are required by V-12; they are optional in the
+    model only so the rule can name itself in the load error.
     """
 
     kind: Literal["COVERED"]
     by: str
+    key: str | None = None
     evidence: CoveredEvidence | None = None
 
 
@@ -337,12 +341,6 @@ def _validate_package(name: str, entry: PackageEntry) -> dict[str, frozenset[tup
             )
         seen_pairs.add(pair)
         _validate_children(name, resource)
-        for disposition in _dispositions(resource):
-            if isinstance(disposition, CoveredDisposition) and disposition.evidence is None:
-                raise RegistryError(
-                    f"registry file {name}: family {resource.family!r}: V-12: resource "
-                    f"{resource.id} has a COVERED grant without evidence"
-                )
         names[resource.family].add(pair)
     _validate_records(name, entry)
     return {key: frozenset(pairs) for key, pairs in names.items()}
@@ -425,6 +423,113 @@ def _validate_silver_targets(
                         f"registry file {name}: family {resource.family!r}: resource "
                         f"{resource.id} is SILVER in the non-tabular family {disposition.key!r}"
                     )
+            _validate_container_targets(name, resource, families)
+
+
+def _validate_container_targets(
+    name: str, resource: ResourceEntry, families: dict[str, tuple[PackageEntry, FamilyEntry]]
+) -> None:
+    """V-15 and V-15b (ADR-037 P-5): a SILVER target's reader fits the body's shape.
+
+    V-15, for every recorded target ``k``: a childless resource's ``SILVER(k)``
+    needs ``reader == "csv"``; a child's ``SILVER(k)`` needs a container
+    reader: under ``xlsx`` the child id names a sheet (no ``::``), under
+    ``zip_member`` its member part fullmatches ``member_pattern`` and ``::``
+    is present exactly when ``inner == "xlsx"``. V-15b: a resource with
+    children whose own disposition is ``SILVER(k)`` has every SILVER child
+    targeting exactly ``k``.
+    """
+    where = f"registry file {name}: family {resource.family!r}"
+    own = resource.disposition
+    if resource.children and isinstance(own, SilverDisposition):
+        for child in resource.children:
+            target = child.disposition
+            if isinstance(target, SilverDisposition) and target.key != own.key:
+                raise RegistryError(
+                    f"{where}: V-15b: resource {resource.id} is SILVER({own.key}) but its child "
+                    f"{child.child!r} is SILVER({target.key})"
+                )
+    if not resource.children and isinstance(own, SilverDisposition):
+        record = families[own.key][1].record
+        if record is not None and record.reader != "csv":
+            raise RegistryError(
+                f"{where}: V-15: childless resource {resource.id} is SILVER({own.key}), whose "
+                f"reader {record.reader!r} reads containers"
+            )
+    for child in resource.children:
+        target = child.disposition
+        if not isinstance(target, SilverDisposition):
+            continue
+        record = families[target.key][1].record
+        if record is None:
+            continue
+        label = f"{where}: V-15: resource {resource.id} child {child.child!r} SILVER({target.key})"
+        member, separator, _sheet = child.child.partition(CHILD_SEPARATOR)
+        if record.reader == "csv":
+            raise RegistryError(f"{label}: a csv reader cannot read a container child")
+        if record.reader == "xlsx" and separator:
+            raise RegistryError(f"{label}: an xlsx child names a sheet, not a member")
+        if record.reader == "zip_member":
+            spec = record.zip_member
+            assert spec is not None  # V-14
+            if re.fullmatch(spec.member_pattern, member) is None:
+                raise RegistryError(
+                    f"{label}: member {member!r} does not match {spec.member_pattern!r}"
+                )
+            if bool(separator) != (spec.inner == "xlsx"):
+                raise RegistryError(
+                    f"{label}: '::' appears in a zip_member child exactly when inner is xlsx"
+                )
+
+
+def _validate_covered(
+    file_names: dict[str, str],
+    packages: list[PackageEntry],
+    families: dict[str, tuple[PackageEntry, FamilyEntry]],
+    resources: dict[str, tuple[PackageEntry, ResourceEntry]],
+) -> None:
+    """V-12, after every file is loaded: each COVERED grant is grounded (ADR-037 P-13).
+
+    A grant needs ``evidence`` and a ``key``: a recorded tabular family that
+    is the covered resource's family or lists it in ``siblings``. ``by`` must
+    be another registry resource whose disposition is ``SILVER`` and which has
+    no children.
+    """
+    for entry in packages:
+        name = file_names[entry.package]
+        for resource in entry.resources:
+            for disposition in _dispositions(resource):
+                if not isinstance(disposition, CoveredDisposition):
+                    continue
+                where = f"registry file {name}: family {resource.family!r}: V-12: resource "
+                where += f"{resource.id}"
+                if disposition.evidence is None:
+                    raise RegistryError(f"{where} has a COVERED grant without evidence")
+                if disposition.key is None:
+                    raise RegistryError(f"{where} has a COVERED grant without a key")
+                target = families.get(disposition.key)
+                record = target[1].record if target is not None else None
+                if record is None or target is None or target[1].kind != "tabular":
+                    raise RegistryError(
+                        f"{where}: COVERED key {disposition.key!r} is not a recorded tabular family"
+                    )
+                if disposition.key != resource.family and resource.family not in record.siblings:
+                    raise RegistryError(
+                        f"{where}: COVERED key {disposition.key!r} is neither the resource's "
+                        "family nor a family that lists it as a sibling"
+                    )
+                covering = resources.get(disposition.by)
+                if covering is None or disposition.by == resource.id:
+                    raise RegistryError(
+                        f"{where}: COVERED by {disposition.by!r}, which is not another "
+                        "registry resource"
+                    )
+                by = covering[1]
+                if not isinstance(by.disposition, SilverDisposition) or by.children:
+                    raise RegistryError(
+                        f"{where}: COVERED by {disposition.by}, which is not a childless SILVER "
+                        "resource"
+                    )
 
 
 @cache
@@ -467,6 +572,7 @@ def _load(path: Path | None) -> Registry:
         packages.append(entry)
 
     _validate_silver_targets(file_names, packages, families)
+    _validate_covered(file_names, packages, families, resources)
     packages.sort(key=lambda entry: entry.package)
     return Registry(
         root=path,
@@ -492,7 +598,9 @@ def load_registry(path: Path | None = None) -> Registry:
             resource naming an undeclared family, a SILVER resource outside its
             own tabular family or a recorded sibling owner (V-11), an invalid
             key, a non-compiling ``name_regex``, a frozen schema record breaking
-            V-1..V-10 or V-13, a COVERED grant without evidence (V-12)).
+            V-1..V-10 or V-13, an ungrounded COVERED grant (V-12), a
+            SILVER target whose reader does not fit the body's shape (V-15,
+            V-15b)).
     """
     return _load(None if path is None else Path(path))
 

@@ -39,10 +39,66 @@
       "url_type": "upload",
       "family": "gis_grid_supply_points_files",
       "disposition": {
-        "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
-      }
+        "kind": "GIS"
+      },
+      "children": [
+        {
+          "child": "GSP_regions_20181031.cpg",
+          "disposition": {
+            "kind": "GIS"
+          }
+        },
+        {
+          "child": "GSP_regions_20181031.dbf",
+          "disposition": {
+            "kind": "GIS"
+          }
+        },
+        {
+          "child": "GSP_regions_20181031.prj",
+          "disposition": {
+            "kind": "GIS"
+          }
+        },
+        {
+          "child": "GSP_regions_20181031.sbn",
+          "disposition": {
+            "kind": "GIS"
+          }
+        },
+        {
+          "child": "GSP_regions_20181031.sbx",
+          "disposition": {
+            "kind": "GIS"
+          }
+        },
+        {
+          "child": "GSP_regions_20181031.shp",
+          "disposition": {
+            "kind": "GIS"
+          }
+        },
+        {
+          "child": "GSP_regions_20181031.shp.xml",
+          "disposition": {
+            "kind": "GIS"
+          }
+        },
+        {
+          "child": "GSP_regions_20181031.shx",
+          "disposition": {
+            "kind": "GIS"
+          }
+        },
+        {
+          "child": "view_gsp_gnode_all_20181031.csv",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family gis_gsp_lookup_archive: COVERED nomination by bbe2cc72-a6c6-46e6-8f4e-48b879467368 — byte-identical but covering published 129.559 s later",
+            "unit": "FILE"
+          }
+        }
+      ]
     },
     {
       "id": "a3ed5711-407a-42a9-a63a-011615eea7e0",
@@ -82,9 +138,7 @@
       "url_type": "upload",
       "family": "gis_grid_supply_points_files",
       "disposition": {
-        "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
+        "kind": "GIS"
       }
     },
     {
@@ -94,9 +148,7 @@
       "url_type": "upload",
       "family": "gis_grid_supply_points_files",
       "disposition": {
-        "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
+        "kind": "GIS"
       }
     },
     {
@@ -106,9 +158,7 @@
       "url_type": "upload",
       "family": "gis_grid_supply_points_files",
       "disposition": {
-        "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
+        "kind": "GIS"
       }
     },
     {
@@ -128,9 +178,7 @@
       "url_type": "upload",
       "family": "gis_grid_supply_points_files",
       "disposition": {
-        "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
+        "kind": "GIS"
       }
     },
     {
@@ -140,9 +188,7 @@
       "url_type": "upload",
       "family": "gis_grid_supply_points_files",
       "disposition": {
-        "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
+        "kind": "GIS"
       }
     }
   ]

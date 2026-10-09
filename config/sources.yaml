@@ -828,6 +828,7 @@ sources:
       constraint_limits_24m_files: {endpoint: "/api/3/action/package_show", schedule: "daily", max_query_days: 1}
       contract_transfer_obligation: {endpoint: "/api/3/action/package_show", schedule: "daily", max_query_days: 1}
       country_ci_forecast: {endpoint: "/api/3/action/package_show", schedule: "daily", max_query_days: 1}
+      current_bsuos_cap_adjustments: {endpoint: "/api/3/action/package_show", schedule: "daily", max_query_days: 1}
       current_bsuos_files: {endpoint: "/api/3/action/package_show", schedule: "daily", max_query_days: 1}
       current_bsuos_historic_ii: {endpoint: "/api/3/action/package_show", schedule: "daily", max_query_days: 1}
       current_bsuos_historic_rf: {endpoint: "/api/3/action/package_show", schedule: "daily", max_query_days: 1}
@@ -952,6 +953,7 @@ sources:
       ffr_phase2_auction_phase_results_unit: {endpoint: "/api/3/action/package_show", schedule: "daily", max_query_days: 1}
       ffr_phase2_auction_phase_resultsbyunit: {endpoint: "/api/3/action/package_show", schedule: "daily", max_query_days: 1}
       ffr_phase2_auction_phase_resultsum: {endpoint: "/api/3/action/package_show", schedule: "daily", max_query_days: 1}
+      ffr_phase2_result_summary_archive: {endpoint: "/api/3/action/package_show", schedule: "daily", max_query_days: 1}
       ffr_post_tender_reports_csv: {endpoint: "/api/3/action/package_show", schedule: "daily", max_query_days: 1}
       ffr_post_tender_reports_csv_ext: {endpoint: "/api/3/action/package_show", schedule: "daily", max_query_days: 1}
       ffr_post_tender_reports_ext: {endpoint: "/api/3/action/package_show", schedule: "daily", max_query_days: 1}

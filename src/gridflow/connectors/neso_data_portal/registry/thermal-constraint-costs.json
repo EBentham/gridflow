@@ -40,9 +40,43 @@
       "family": "thermal_constraint_costs_files",
       "disposition": {
         "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
-      }
+        "reason": "data container: child inventory committed by X; records pending in CON",
+        "unit": "CON"
+      },
+      "children": [
+        {
+          "child": "Data",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family thermal_constraint_costs: record pending in CON (V-11)",
+            "unit": "CON"
+          }
+        },
+        {
+          "child": "Map",
+          "disposition": {
+            "kind": "DOC"
+          }
+        },
+        {
+          "child": "Network Diagram E&W",
+          "disposition": {
+            "kind": "DOC"
+          }
+        },
+        {
+          "child": "Network Diagram Scot",
+          "disposition": {
+            "kind": "DOC"
+          }
+        },
+        {
+          "child": "Dates",
+          "disposition": {
+            "kind": "DOC"
+          }
+        }
+      ]
     },
     {
       "id": "a4302916-85af-4a4d-8171-1bdf8f0697a7",
@@ -52,9 +86,43 @@
       "family": "thermal_constraint_costs_files",
       "disposition": {
         "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
-      }
+        "reason": "data container: child inventory committed by X; records pending in CON",
+        "unit": "CON"
+      },
+      "children": [
+        {
+          "child": "Data",
+          "disposition": {
+            "kind": "HOLD",
+            "reason": "proposed family thermal_constraint_costs: record pending in CON (V-11)",
+            "unit": "CON"
+          }
+        },
+        {
+          "child": "Map",
+          "disposition": {
+            "kind": "DOC"
+          }
+        },
+        {
+          "child": "Network Diagram E&W",
+          "disposition": {
+            "kind": "DOC"
+          }
+        },
+        {
+          "child": "Network Diagram Scot",
+          "disposition": {
+            "kind": "DOC"
+          }
+        },
+        {
+          "child": "Dates",
+          "disposition": {
+            "kind": "DOC"
+          }
+        }
+      ]
     },
     {
       "id": "57673696-39ac-4f65-81a2-983577ff7249",

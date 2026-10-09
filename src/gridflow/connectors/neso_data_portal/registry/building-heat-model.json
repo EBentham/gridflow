@@ -72,9 +72,7 @@
       "url_type": "upload",
       "family": "building_heat_model_files",
       "disposition": {
-        "kind": "HOLD",
-        "reason": "non-CSV classification",
-        "unit": "X-R"
+        "kind": "DOC"
       }
     },
     {

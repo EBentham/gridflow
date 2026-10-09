@@ -53,9 +53,11 @@ FORMAT_TALLY = {
     "PPT": 1,
 }
 URL_TYPE_TALLY = {"upload": 1233, "datastore": 152}
-# P-2: CSV 1244 = SILVER 1205 + 39 CSV-declared ZIP bodies held for X-R;
-# XLSX 50 + XLSM 23 + ZIP 19 + 39 = HOLD 131; PDF/PNG/DOC/PPT/TXT = DOC 42.
-DISPOSITION_TALLY = {"SILVER": 1205, "HOLD": 131, "DOC": 42, "GIS": 7}
+# P-2, then unit X's inventories (ADR-037 P-8): the 131 X-R holds became SILVER 44
+# (4 CMP381/395 workbooks, 1 phase-2 ResultSummary ZIP, 39 frequency ZIPs), HOLD 73
+# (data containers awaiting their batch's record), DOC 1 (Building Heat Model) and
+# GIS 13 (shapefile/GeoJSON/GPKG archives).
+DISPOSITION_TALLY = {"SILVER": 1249, "HOLD": 73, "DOC": 43, "GIS": 20}
 
 
 def _run(code: str, *args: str) -> subprocess.CompletedProcess[str]:
@@ -362,19 +364,27 @@ class TestOwnerFacts:
                 _p, family = registry.families['embedded_wind_solar_forecast_archive']
                 assert family.transformer is None and not family.legacy
 
+                # Unit X (ADR-037 P-8) dispositioned every X-R hold and committed
+                # the containers' child inventories; no X-R unit survives.
                 for _p, resource in registry.resources.values():
                     if resource.format in {'XLSX', 'XLSM', 'ZIP'}:
-                        assert resource.disposition.kind == 'HOLD', resource
-                        assert resource.disposition.unit == 'X-R', resource
+                        assert resource.disposition.kind in {'SILVER', 'HOLD', 'DOC', 'GIS'}
+                    for d in (resource.disposition,
+                              *(c.disposition for c in resource.children)):
+                        assert getattr(d, 'unit', None) != 'X-R', resource
                 csv_zip = [
                     r for _p, r in registry.resources.values()
-                    if r.format == 'CSV' and r.disposition.kind == 'HOLD'
+                    if r.format == 'CSV' and r.children
                 ]
                 assert len(csv_zip) == 39, len(csv_zip)
                 assert {registry.resources[r.id][0].package for r in csv_zip} == {
                     'system-frequency-data'
                 }
-                assert all(r.disposition.unit == 'X-R' for r in csv_zip)
+                assert all(
+                    r.disposition.kind == 'SILVER' and r.disposition.key == 'system_frequency'
+                    and len(r.children) == 1
+                    for r in csv_zip
+                )
                 print('OK')
                 """
             )
@@ -772,7 +782,7 @@ class TestAgreement:
                 from gridflow.connectors.neso_data_portal.client import NesoDataPortalConnector
                 config = load_settings().get_source_config('neso_data_portal')
                 configured = set(config.datasets)
-                assert len(FAMILIES) == 310, len(FAMILIES)
+                assert len(FAMILIES) == 312, len(FAMILIES)
                 assert configured == set(FAMILIES), sorted(configured ^ set(FAMILIES))[:5]
                 listed = NesoDataPortalConnector(config).list_datasets()
                 assert listed == list(FAMILIES)
