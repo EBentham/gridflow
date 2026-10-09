@@ -467,6 +467,11 @@ X_PACKAGE_FILES = {
     "phase-2-ffr-auction-results-summary.json",
 }
 
+EF_RECORDED = {"embedded_forecast_archive_upload", "embedded_forecast_archive_dump"}
+"""The two sibling-fed embedded-archive owners unit EF records (ADR-038)."""
+
+EF_PACKAGE_FILES = {"embedded-wind-and-solar-forecasts.json"}
+
 X_RESOURCES_WITH_CHILDREN = 4 + 1 + 39 + 73 + 1
 """Unit X's committed inventories (ADR-037 P-8): CMP workbooks, the ResultSummary ZIP,
 frequency ZIPs, held data containers and the GSP archive with a CSV member."""
@@ -478,11 +483,11 @@ class TestSeededRegistry:
     def test_every_seeded_package_loads_with_no_record(self) -> None:
         loaded = registry_module.load_registry()
         entries = [entry for _package, entry in loaded.families.values()]
-        assert len(entries) == 312
+        assert len(entries) == 314
         assert sum(entry.legacy for entry in entries) == 3
         assert sum(entry.kind == "files" for entry in entries) == 35
         recorded = {entry.key for entry in entries if entry.record is not None}
-        assert recorded == PILOT_RECORDED | X_RECORDED
+        assert recorded == PILOT_RECORDED | X_RECORDED | EF_RECORDED
         with_children = [res for _package, res in loaded.resources.values() if res.children]
         assert len(with_children) == X_RESOURCES_WITH_CHILDREN
 
@@ -498,7 +503,7 @@ class TestSeededRegistry:
             document = json.loads(item.read_text(encoding="utf-8"))
             if any("record" in fam for fam in document["families"]):
                 with_record.add(item.name)
-        assert with_record == PILOT_PACKAGE_FILES | X_PACKAGE_FILES
+        assert with_record == PILOT_PACKAGE_FILES | X_PACKAGE_FILES | EF_PACKAGE_FILES
 
 
 class TestDumpVintageRule:

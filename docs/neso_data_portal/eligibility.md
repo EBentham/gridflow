@@ -152,6 +152,8 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `eac-mock-auction-results` | `eac_mock_results_summary` | ingest-only (no silver output) | — | — | — | — |
 | `eleclink` | `eleclink` | ingest-only (no silver output) | — | — | — | — |
 | `embedded-register` | `embedded_register` | silver | eligible | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
+| `embedded-wind-and-solar-forecasts` | `embedded_forecast_archive_dump` | silver | held: TODO: Forecast_Datetime is naive; rows before 2026-06-12T11:54:02 measure as UK local time (no 01:xx issue on 2026-03-29); rows from the 2026-06-12 forecast-system migration have crossed no DST transition, so their zone is unmeasured; typed Europe/London, fold earliest (ADR-038); NESO does not document the zone (unit E-SEM) | key_latest | sp_pair | gridflow capture time |
+| `embedded-wind-and-solar-forecasts` | `embedded_forecast_archive_upload` | silver | held: TODO: Forecast_Datetime ends in 'Z' but measures as UK local time (no 01:xx issue on spring-forward nights; one 01:12 issue on fall-back nights, the BST occurrence); typed Europe/London, fold earliest (ADR-038); NESO does not document the zone (unit E-SEM) | key_latest | sp_pair | CKAN last_modified of the captured file (ADR-030) |
 | `embedded-wind-and-solar-forecasts` | `embedded_wind_solar_forecast` | bespoke silver | eligible | — | — | — |
 | `embedded-wind-and-solar-forecasts` | `embedded_wind_solar_forecast_archive` | ingest-only (no silver output) | — | — | — | — |
 | `embedded-wind-and-solar-forecasts` | `embedded_wind_solar_forecast_files` | catalogue only | — | — | — | — |
@@ -377,7 +379,7 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `eac-mock-auction-results` | eligible | 8 | 0 | 0 | 0 | 0 |
 | `eleclink` | eligible | 2 | 0 | 0 | 0 | 0 |
 | `embedded-register` | eligible | 1 | 0 | 0 | 0 | 0 |
-| `embedded-wind-and-solar-forecasts` | eligible | 9 | 0 | 1 | 0 | 0 |
+| `embedded-wind-and-solar-forecasts` | eligible | 8 | 0 | 1 | 0 | 1 |
 | `etys-gb-transmission-system-boundaries` | eligible | 0 | 0 | 0 | 1 | 0 |
 | `fes-electricity-demand-summary-data-table-ed1` | eligible | 4 | 0 | 3 | 0 | 0 |
 | `fes-european-electricity-supply-data-table-es2` | eligible | 4 | 0 | 0 | 0 | 0 |
@@ -456,11 +458,11 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `weekly-opmr` | eligible | 1 | 0 | 0 | 0 | 0 |
 | `weekly-wind-availability` | eligible | 1 | 0 | 0 | 0 | 0 |
 | `wind-bmu-boa-volumes` | eligible | 9 | 0 | 0 | 0 | 0 |
-| **Total** | | 1249 | 0 | 43 | 20 | 73 |
+| **Total** | | 1248 | 0 | 43 | 20 | 74 |
 
 ## Totals
 
 - Packages: 131 (held: 2)
-- Families: 312: silver 11 (bespoke 3, recorded 8), ingest-only 266, catalogue only 35
-- Silver outputs held: 4
+- Families: 314: silver 13 (bespoke 3, recorded 10), ingest-only 266, catalogue only 35
+- Silver outputs held: 6
 - Resources: 1385

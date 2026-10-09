@@ -40,7 +40,8 @@ from gridflow.silver.schema_manifest import (
 # that phase's `historic_generation_mix` (B3a/T-16) and to six with its
 # `embedded_wind_solar_forecast` (B3a/T-17), then to twelve with v0.22-E's six
 # pilot frozen records (ADR-036), each a generated APPEND_ONLY transformer, then
-# to fourteen with v0.22-X's two activation families (ADR-037 P-12).
+# to fourteen with v0.22-X's two activation families (ADR-037 P-12), then to
+# sixteen with v0.22-EF's two archive owners (ADR-038).
 _APPEND_ONLY_DATASETS: tuple[tuple[str, str], ...] = (
     ("elexon", "system_prices"),
     ("elexon", "remit"),
@@ -56,6 +57,8 @@ _APPEND_ONLY_DATASETS: tuple[tuple[str, str], ...] = (
     ("neso_data_portal", "constraint_cost_fc_24m"),
     ("neso_data_portal", "current_bsuos_cap_adjustments"),
     ("neso_data_portal", "ffr_phase2_result_summary_archive"),
+    ("neso_data_portal", "embedded_forecast_archive_upload"),
+    ("neso_data_portal", "embedded_forecast_archive_dump"),
 )
 
 
@@ -249,9 +252,9 @@ def test_append_only_set_equals_latest_spec_set() -> None:
     spec_set = set(LATEST_VIEW_SPECS)
 
     # Non-vacuity guard: this invariant must never pass because both sides are
-    # empty (F16) -- fourteen APPEND_ONLY datasets are registered today.
+    # empty (F16) -- sixteen APPEND_ONLY datasets are registered today.
     assert len(append_only) > 0
-    assert len(append_only) == 14
+    assert len(append_only) == 16
 
     missing_specs = append_only - spec_set
     extra_specs = spec_set - append_only
@@ -291,6 +294,14 @@ _EXPECTED_APPEND_ONLY_DEPRECATED_ALIASES: dict[tuple[str, str], str | None] = {
         "neso_data_portal",
         "ffr_phase2_result_summary_archive",
     ): "silver_ffr_phase2_result_summary_archive",
+    (
+        "neso_data_portal",
+        "embedded_forecast_archive_upload",
+    ): "silver_embedded_forecast_archive_upload",
+    (
+        "neso_data_portal",
+        "embedded_forecast_archive_dump",
+    ): "silver_embedded_forecast_archive_dump",
 }
 
 

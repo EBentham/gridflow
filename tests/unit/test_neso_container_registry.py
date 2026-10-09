@@ -181,6 +181,8 @@ class TestCommittedRegistry:
                     if key not in owners
                 )
                 assert fed == ['current_bsuos_cap_adjustments',
+                               'embedded_forecast_archive_dump',
+                               'embedded_forecast_archive_upload',
                                'ffr_phase2_result_summary_archive'], fed
                 for key in fed:
                     record = registry.families[key][1].record
@@ -203,7 +205,7 @@ class TestCommittedRegistry:
                 registry = load_registry()
                 resources = [r for _p, r in registry.resources.values()]
                 kinds = Counter(r.disposition.kind for r in resources)
-                assert dict(kinds) == {'SILVER': 1249, 'HOLD': 73, 'DOC': 43, 'GIS': 20}, kinds
+                assert dict(kinds) == {'SILVER': 1248, 'HOLD': 74, 'DOC': 43, 'GIS': 20}, kinds
                 with_children = [r for r in resources if r.children]
                 assert len(with_children) == 4 + 1 + 39 + 73 + 1, len(with_children)
                 allowed = {'system_frequency', 'thermal_constraint_costs'}

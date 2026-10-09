@@ -57,12 +57,12 @@ def test_t_b1_13_every_configured_key_transforms_without_failure(
     """Detects ``--all`` failing on ingest-only keys (A's C-7), with an empty data dir."""
     pipeline_runner.import_transformers()
     keys = list(load_settings().get_source_config(SOURCE).datasets)
-    assert len(keys) == 312
+    assert len(keys) == 314
     with ingest_context(tmp_path / "data", monkeypatch) as ctx:
         results = pipeline_runner.run_transform(ctx, SOURCE, keys, DAY, DAY)
     failed = [(r.dataset, r.error) for r in results if r.status == "failed"]
     assert failed == []
     families = load_registry().families
     recorded = {key for key, (_package, family) in families.items() if family.record is not None}
-    assert sum(r.skip_reason is not None for r in results) == 312 - 3 - len(recorded)
+    assert sum(r.skip_reason is not None for r in results) == 314 - 3 - len(recorded)
     assert not [r.dataset for r in results if r.dataset in recorded and r.skip_reason is not None]
