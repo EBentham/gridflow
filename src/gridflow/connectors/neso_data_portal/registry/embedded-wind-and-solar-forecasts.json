@@ -26,9 +26,332 @@
       "archetype": "FC",
       "refresh": "intraday",
       "empty_allowed": false,
-      "max_download_bytes": 536870912,
+      "max_download_bytes": 805306368,
       "name_regex": null,
       "transformer": null
+    },
+    {
+      "key": "embedded_forecast_archive_upload",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "FC",
+      "refresh": "intraday",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "DATE_GMT",
+              "TIME_GMT",
+              "SETTLEMENT_DATE",
+              "SETTLEMENT_PERIOD",
+              "EMBEDDED_WIND_FORECAST",
+              "EMBEDDED_WIND_CAPACITY",
+              "EMBEDDED_SOLAR_FORECAST",
+              "EMBEDDED_SOLAR_CAPACITY",
+              "Forecast_Datetime"
+            ],
+            "columns": [
+              {
+                "source": "DATE_GMT",
+                "name": "date_gmt_raw",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "TIME_GMT",
+                "name": "time_gmt_raw",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "SETTLEMENT_DATE",
+                "name": "settlement_date",
+                "dtype": "date",
+                "format": "%Y-%m-%dT00:00:00Z",
+                "nullable": false
+              },
+              {
+                "source": "SETTLEMENT_PERIOD",
+                "name": "settlement_period",
+                "dtype": "int64",
+                "nullable": false,
+                "min": 1,
+                "max": 50
+              },
+              {
+                "source": "EMBEDDED_WIND_FORECAST",
+                "name": "embedded_wind_forecast",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "EMBEDDED_WIND_CAPACITY",
+                "name": "embedded_wind_capacity",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "EMBEDDED_SOLAR_FORECAST",
+                "name": "embedded_solar_forecast",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "EMBEDDED_SOLAR_CAPACITY",
+                "name": "embedded_solar_capacity",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Forecast_Datetime",
+                "name": "forecast_datetime",
+                "dtype": "datetime",
+                "format": "%Y-%m-%dT%H:%M:%SZ",
+                "nullable": false,
+                "zone": "Europe/London",
+                "zone_evidence": "measured, ADR-038: no 01:xx issue on the spring-forward nights 2023-03-26, 2024-03-31 and 2026-03-29; the single 01:12 issue on the fall-back nights 2023-10-29 and 2024-10-27 has its first target ending 00:30 UTC (the BST occurrence)",
+                "ambiguous": "earliest"
+              }
+            ],
+            "issue": {
+              "kind": "data_column",
+              "column": "forecast_datetime"
+            }
+          },
+          {
+            "header": [
+              "DATE_GMT",
+              "TIME_GMT",
+              "SETTLEMENT_DATE",
+              "SETTLEMENT_PERIOD",
+              "EMBEDDED_WIND_FORECAST",
+              "EMBEDDED_WIND_CAPACITY",
+              "EMBEDDED_SOLAR_FORECAST",
+              "EMBEDDED_SOLAR_CAPACITY",
+              "Forecast_Datetime",
+              "source_file"
+            ],
+            "columns": [
+              {
+                "source": "DATE_GMT",
+                "name": "date_gmt_raw",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "TIME_GMT",
+                "name": "time_gmt_raw",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "SETTLEMENT_DATE",
+                "name": "settlement_date",
+                "dtype": "date",
+                "format": "%Y-%m-%dT00:00:00Z",
+                "nullable": false
+              },
+              {
+                "source": "SETTLEMENT_PERIOD",
+                "name": "settlement_period",
+                "dtype": "int64",
+                "nullable": false,
+                "min": 1,
+                "max": 50
+              },
+              {
+                "source": "EMBEDDED_WIND_FORECAST",
+                "name": "embedded_wind_forecast",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "EMBEDDED_WIND_CAPACITY",
+                "name": "embedded_wind_capacity",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "EMBEDDED_SOLAR_FORECAST",
+                "name": "embedded_solar_forecast",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "EMBEDDED_SOLAR_CAPACITY",
+                "name": "embedded_solar_capacity",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Forecast_Datetime",
+                "name": "forecast_datetime",
+                "dtype": "datetime",
+                "format": "%Y-%m-%dT%H:%M:%SZ",
+                "nullable": false,
+                "zone": "Europe/London",
+                "zone_evidence": "measured, ADR-038: no 01:xx issue on the spring-forward nights 2023-03-26, 2024-03-31 and 2026-03-29; the single 01:12 issue on the fall-back nights 2023-10-29 and 2024-10-27 has its first target ending 00:30 UTC (the BST occurrence)",
+                "ambiguous": "earliest"
+              },
+              {
+                "source": "source_file",
+                "name": "source_file",
+                "dtype": "string",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "data_column",
+              "column": "forecast_datetime"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "sp_pair",
+          "date_column": "settlement_date",
+          "period_column": "settlement_period"
+        },
+        "entity_key": [
+          "settlement_date",
+          "settlement_period",
+          "issue_time"
+        ],
+        "latest": "key_latest",
+        "siblings": [
+          "embedded_wind_solar_forecast_archive"
+        ],
+        "vintage": "ckan_last_modified",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: Forecast_Datetime ends in 'Z' but measures as UK local time (no 01:xx issue on spring-forward nights; one 01:12 issue on fall-back nights, the BST occurrence); typed Europe/London, fold earliest (ADR-038); NESO does not document the zone",
+          "unit": "E-SEM"
+        }
+      }
+    },
+    {
+      "key": "embedded_forecast_archive_dump",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "FC",
+      "refresh": "intraday",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "DATE_GMT",
+              "TIME_GMT",
+              "SETTLEMENT_DATE",
+              "SETTLEMENT_PERIOD",
+              "EMBEDDED_WIND_FORECAST",
+              "EMBEDDED_WIND_CAPACITY",
+              "EMBEDDED_SOLAR_FORECAST",
+              "EMBEDDED_SOLAR_CAPACITY",
+              "Forecast_Datetime"
+            ],
+            "columns": [
+              {
+                "source": "DATE_GMT",
+                "name": "date_gmt_raw",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "TIME_GMT",
+                "name": "time_gmt_raw",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "SETTLEMENT_DATE",
+                "name": "settlement_date",
+                "dtype": "date",
+                "format": "%Y-%m-%dT%H:%M:%S",
+                "nullable": false
+              },
+              {
+                "source": "SETTLEMENT_PERIOD",
+                "name": "settlement_period",
+                "dtype": "int64",
+                "nullable": false,
+                "min": 1,
+                "max": 50
+              },
+              {
+                "source": "EMBEDDED_WIND_FORECAST",
+                "name": "embedded_wind_forecast",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "EMBEDDED_WIND_CAPACITY",
+                "name": "embedded_wind_capacity",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "EMBEDDED_SOLAR_FORECAST",
+                "name": "embedded_solar_forecast",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "EMBEDDED_SOLAR_CAPACITY",
+                "name": "embedded_solar_capacity",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Forecast_Datetime",
+                "name": "forecast_datetime",
+                "dtype": "datetime",
+                "format": "%Y-%m-%dT%H:%M:%S",
+                "nullable": false,
+                "zone": "Europe/London",
+                "zone_evidence": "measured, ADR-038: no 01:xx issue on the spring-forward nights 2023-03-26, 2024-03-31 and 2026-03-29; the single 01:12 issue on the fall-back nights 2023-10-29 and 2024-10-27 has its first target ending 00:30 UTC (the BST occurrence)",
+                "ambiguous": "earliest"
+              }
+            ],
+            "issue": {
+              "kind": "data_column",
+              "column": "forecast_datetime"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "sp_pair",
+          "date_column": "settlement_date",
+          "period_column": "settlement_period"
+        },
+        "entity_key": [
+          "settlement_date",
+          "settlement_period",
+          "issue_time"
+        ],
+        "latest": "key_latest",
+        "siblings": [
+          "embedded_wind_solar_forecast_archive"
+        ],
+        "vintage": "capture_fallback",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: Forecast_Datetime is naive; rows before 2026-06-12T11:54:02 measure as UK local time (no 01:xx issue on 2026-03-29); rows from the 2026-06-12 forecast-system migration have crossed no DST transition, so their zone is unmeasured; typed Europe/London, fold earliest (ADR-038); NESO does not document the zone",
+          "unit": "E-SEM"
+        }
+      }
     },
     {
       "key": "embedded_wind_solar_forecast_files",
@@ -71,8 +394,9 @@
       "url_type": "upload",
       "family": "embedded_wind_solar_forecast_archive",
       "disposition": {
-        "kind": "SILVER",
-        "key": "embedded_wind_solar_forecast_archive"
+        "kind": "HOLD",
+        "reason": "vendor body truncated: declared Content-Length equals the 260,472,832 B received, the final row ends mid-value (Forecast_Datetime '2019-12-2') and issues stop at 2019-12-21T03:12; a strict cast fails the whole capture (D-41); re-disposition only after NESO re-uploads (a new last_modified)",
+        "unit": "E-SEM"
       }
     },
     {
@@ -83,7 +407,7 @@
       "family": "embedded_wind_solar_forecast_archive",
       "disposition": {
         "kind": "SILVER",
-        "key": "embedded_wind_solar_forecast_archive"
+        "key": "embedded_forecast_archive_upload"
       }
     },
     {
@@ -94,7 +418,7 @@
       "family": "embedded_wind_solar_forecast_archive",
       "disposition": {
         "kind": "SILVER",
-        "key": "embedded_wind_solar_forecast_archive"
+        "key": "embedded_forecast_archive_upload"
       }
     },
     {
@@ -105,7 +429,7 @@
       "family": "embedded_wind_solar_forecast_archive",
       "disposition": {
         "kind": "SILVER",
-        "key": "embedded_wind_solar_forecast_archive"
+        "key": "embedded_forecast_archive_upload"
       }
     },
     {
@@ -116,7 +440,7 @@
       "family": "embedded_wind_solar_forecast_archive",
       "disposition": {
         "kind": "SILVER",
-        "key": "embedded_wind_solar_forecast_archive"
+        "key": "embedded_forecast_archive_upload"
       }
     },
     {
@@ -127,7 +451,7 @@
       "family": "embedded_wind_solar_forecast_archive",
       "disposition": {
         "kind": "SILVER",
-        "key": "embedded_wind_solar_forecast_archive"
+        "key": "embedded_forecast_archive_upload"
       }
     },
     {
@@ -138,7 +462,7 @@
       "family": "embedded_wind_solar_forecast_archive",
       "disposition": {
         "kind": "SILVER",
-        "key": "embedded_wind_solar_forecast_archive"
+        "key": "embedded_forecast_archive_upload"
       }
     },
     {
@@ -149,7 +473,7 @@
       "family": "embedded_wind_solar_forecast_archive",
       "disposition": {
         "kind": "SILVER",
-        "key": "embedded_wind_solar_forecast_archive"
+        "key": "embedded_forecast_archive_dump"
       }
     }
   ]

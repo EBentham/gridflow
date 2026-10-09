@@ -913,6 +913,8 @@ sources:
       eac_results_summary: {endpoint: "/api/3/action/package_show", schedule: "daily", max_query_days: 1}
       eac_results_summary_fy: {endpoint: "/api/3/action/package_show", schedule: "daily", max_query_days: 1}
       eleclink: {endpoint: "/api/3/action/package_show", schedule: "daily", max_query_days: 1}
+      embedded_forecast_archive_dump: {endpoint: "/api/3/action/package_show", schedule: "daily", max_query_days: 1}
+      embedded_forecast_archive_upload: {endpoint: "/api/3/action/package_show", schedule: "daily", max_query_days: 1}
       embedded_register: {endpoint: "/api/3/action/package_show", schedule: "daily", max_query_days: 1}
       embedded_wind_solar_forecast_archive: {endpoint: "/api/3/action/package_show", schedule: "daily", max_query_days: 1}
       embedded_wind_solar_forecast_files: {endpoint: "/api/3/action/package_show", schedule: "daily", max_query_days: 1}
