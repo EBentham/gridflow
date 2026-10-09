@@ -17,7 +17,94 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Datetime",
+              "Date",
+              "Settlement_Period",
+              "Generator_Name",
+              "Generator_Full_Name",
+              "Region",
+              "Capacity",
+              "Wind_Forecast"
+            ],
+            "columns": [
+              {
+                "source": "Datetime",
+                "name": "datetime",
+                "dtype": "datetime",
+                "format": "%Y-%m-%dT%H:%M:%S",
+                "nullable": false,
+                "zone": "UTC"
+              },
+              {
+                "source": "Date",
+                "name": "date",
+                "dtype": "date",
+                "format": "%Y-%m-%d",
+                "nullable": true
+              },
+              {
+                "source": "Settlement_Period",
+                "name": "settlement_period",
+                "dtype": "int64",
+                "nullable": true,
+                "min": 1,
+                "max": 50
+              },
+              {
+                "source": "Generator_Name",
+                "name": "generator_name",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Generator_Full_Name",
+                "name": "generator_full_name",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Region",
+                "name": "region",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Capacity",
+                "name": "capacity",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Wind_Forecast",
+                "name": "wind_forecast",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "utc_instant",
+          "column": "datetime"
+        },
+        "entity_key": [
+          "datetime",
+          "generator_name"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified"
+      }
     },
     {
       "key": "da_wind_forecast_day_ahead",
@@ -28,7 +115,72 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Datetime_GMT",
+              "Date",
+              "Settlement_period",
+              "Capacity",
+              "Incentive_forecast"
+            ],
+            "columns": [
+              {
+                "source": "Datetime_GMT",
+                "name": "datetime_gmt",
+                "dtype": "datetime",
+                "format": "%Y-%m-%dT%H:%M:%S",
+                "nullable": false,
+                "zone": "UTC"
+              },
+              {
+                "source": "Date",
+                "name": "date",
+                "dtype": "date",
+                "format": "%Y-%m-%d",
+                "nullable": true
+              },
+              {
+                "source": "Settlement_period",
+                "name": "settlement_period",
+                "dtype": "int64",
+                "nullable": true,
+                "min": 1,
+                "max": 50
+              },
+              {
+                "source": "Capacity",
+                "name": "capacity",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Incentive_forecast",
+                "name": "incentive_forecast",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "utc_instant",
+          "column": "datetime_gmt"
+        },
+        "entity_key": [
+          "datetime_gmt"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified"
+      }
     },
     {
       "key": "da_wind_forecast_historic_day_ahead_bmu",
@@ -39,7 +191,114 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Datetime",
+              "Date",
+              "Settlement_Period",
+              "Generator_Name",
+              "Generator_Full_Name",
+              "Region",
+              "Capacity",
+              "Wind_Forecast",
+              "Timestamp"
+            ],
+            "columns": [
+              {
+                "source": "Datetime",
+                "name": "datetime",
+                "dtype": "datetime",
+                "format": "%Y-%m-%dT%H:%M:%S",
+                "nullable": false,
+                "zone": "UTC"
+              },
+              {
+                "source": "Date",
+                "name": "date",
+                "dtype": "date",
+                "format": "%Y-%m-%d",
+                "nullable": true
+              },
+              {
+                "source": "Settlement_Period",
+                "name": "settlement_period",
+                "dtype": "int64",
+                "nullable": true,
+                "min": 1,
+                "max": 50
+              },
+              {
+                "source": "Generator_Name",
+                "name": "generator_name",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Generator_Full_Name",
+                "name": "generator_full_name",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Region",
+                "name": "region",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Capacity",
+                "name": "capacity",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Wind_Forecast",
+                "name": "wind_forecast",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Timestamp",
+                "name": "timestamp",
+                "dtype": "datetime",
+                "format": "%Y-%m-%dT%H:%M:%S",
+                "nullable": false,
+                "zone": "Europe/London",
+                "zone_evidence": "vendor BMU dictionary (historic_day_ahead_wind_bmu_forecasts_2023): Timestamp is UK Time; every observed label is the same morning hour, so no DST fold occurs (K-GEN-1-FACTS GEN1-1)",
+                "ambiguous": "raise"
+              }
+            ],
+            "issue": {
+              "kind": "data_column",
+              "column": "timestamp"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "utc_instant",
+          "column": "datetime"
+        },
+        "entity_key": [
+          "resource_id",
+          "datetime",
+          "generator_name",
+          "issue_time"
+        ],
+        "latest": "whole_capture",
+        "latest_partition": "resource_id",
+        "vintage": "capture_fallback",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: the vendor dictionary gives Timestamp as a UK-time publication instant, but no source shows the archived values are unchanged since that instant",
+          "unit": "E-SEM"
+        }
+      }
     },
     {
       "key": "da_wind_forecast_historic_day_ahead",
@@ -50,7 +309,85 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Datetime_GMT",
+              "Date",
+              "Settlement_period",
+              "Capacity",
+              "Incentive_forecast",
+              "Forecast_Timestamp"
+            ],
+            "columns": [
+              {
+                "source": "Datetime_GMT",
+                "name": "datetime_gmt",
+                "dtype": "datetime",
+                "format": "%Y-%m-%dT%H:%M:%S",
+                "nullable": false,
+                "zone": "UTC"
+              },
+              {
+                "source": "Date",
+                "name": "date",
+                "dtype": "date",
+                "format": "%Y-%m-%d",
+                "nullable": true
+              },
+              {
+                "source": "Settlement_period",
+                "name": "settlement_period",
+                "dtype": "int64",
+                "nullable": true,
+                "min": 1,
+                "max": 50
+              },
+              {
+                "source": "Capacity",
+                "name": "capacity",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Incentive_forecast",
+                "name": "incentive_forecast",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Forecast_Timestamp",
+                "name": "forecast_timestamp",
+                "dtype": "string",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "utc_instant",
+          "column": "datetime_gmt"
+        },
+        "entity_key": [
+          "datetime_gmt",
+          "forecast_timestamp"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: Forecast_Timestamp has no vendor zone (its values carry no offset); 192 targets carry two labels and ~14k labels fall at or after target start; the issue zone and when each value was available are undefined",
+          "unit": "E-SEM"
+        }
+      }
     }
   ],
   "resources": [

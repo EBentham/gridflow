@@ -17,7 +17,144 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "ENG_Week",
+              "ENG_Year",
+              "Publish Date",
+              "Peak Demand Forecast",
+              "Generator Availability",
+              "Maximum IC Import",
+              "Maximum IC Export",
+              "Generation Availability Margin",
+              "Operating Reserve provided by ICs",
+              "OPMR total",
+              "Constrained Plant",
+              "National Surplus",
+              "Minimum Demand Forecast",
+              "High Freq Response Requirement",
+              "Negative Reserve"
+            ],
+            "columns": [
+              {
+                "source": "ENG_Week",
+                "name": "eng_week",
+                "dtype": "int64",
+                "nullable": true
+              },
+              {
+                "source": "ENG_Year",
+                "name": "eng_year",
+                "dtype": "int64",
+                "nullable": true
+              },
+              {
+                "source": "Publish Date",
+                "name": "publish_date",
+                "dtype": "date",
+                "format": "%Y-%m-%d",
+                "nullable": true
+              },
+              {
+                "source": "Peak Demand Forecast",
+                "name": "peak_demand_forecast",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Generator Availability",
+                "name": "generator_availability",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Maximum IC Import",
+                "name": "maximum_ic_import",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Maximum IC Export",
+                "name": "maximum_ic_export",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Generation Availability Margin",
+                "name": "generation_availability_margin",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Operating Reserve provided by ICs",
+                "name": "operating_reserve_provided_by_ics",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "OPMR total",
+                "name": "opmr_total",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Constrained Plant",
+                "name": "constrained_plant",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "National Surplus",
+                "name": "national_surplus",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Minimum Demand Forecast",
+                "name": "minimum_demand_forecast",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "High Freq Response Requirement",
+                "name": "high_freq_response_requirement",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Negative Reserve",
+                "name": "negative_reserve",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "eng_year",
+          "eng_week",
+          "publish_date"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: NESO's engineering year/week to target date mapping is undocumented; the body gives a publication date only",
+          "unit": "E-SEM"
+        }
+      }
     }
   ],
   "resources": [
