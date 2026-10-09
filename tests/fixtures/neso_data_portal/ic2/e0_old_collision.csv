@@ -1,0 +1,13 @@
+Operational Date (YYYY-MM-DD) & Time GMT/BST (HH:MM - HH:MM),Flow (MW) From GB,Flow (MW) To GB,Reason For Restiction
+20221012 23:00 - 00:00,818,1060,System Security
+20221012 00:00 - 01:00,1050,1060,System Security
+20221012 01:00 - 02:00,1050,1060,System Security
+20221012 02:00 - 03:00,1050,1060,System Security
+20221012 03:00 - 04:00,1050,1060,System Security
+20221012 04:00 - 05:00,1050,1060,System Security
+20221012 05:00 - 06:00,1050,1060,System Security
+20221013 02:00 - 03:00,854,1060,System Security
+20221013 03:00 - 04:00,966,1060,System Security
+20221012 04:00 - 05:00,"1,007",1060,System Security
+20221013 05:00 - 06:00,"1,009",1060,System Security
+20221013 06:00 - 07:00,"1,015",1060,System Security
