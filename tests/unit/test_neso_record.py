@@ -558,6 +558,9 @@ GEN1_RECORDED = {
 }
 """The fourteen wind / margin forecast families unit K-GEN-1 records."""
 
+GEN2_RECORDED = {"weekly_wind_availability"}
+"""The one weekly wind availability family unit K-GEN-2 records (held)."""
+
 GEN1_PACKAGE_FILES = {
     "14-days-ahead-operational-metered-wind-forecasts.json",
     "14-days-ahead-wind-forecasts.json",
@@ -566,6 +569,8 @@ GEN1_PACKAGE_FILES = {
     "daily-opmr.json",
     "weekly-opmr.json",
 }
+
+GEN2_PACKAGE_FILES = {"weekly-wind-availability.json"}
 
 X_RESOURCES_WITH_CHILDREN = 4 + 1 + 39 + 73 + 1
 """Unit X's committed inventories (ADR-037 P-8): CMP workbooks, the ResultSummary ZIP,
@@ -591,6 +596,7 @@ class TestSeededRegistry:
             | DEM1H_RECORDED
             | DEM2_RECORDED
             | GEN1_RECORDED
+            | GEN2_RECORDED
         )
         with_children = [res for _package, res in loaded.resources.values() if res.children]
         assert len(with_children) == X_RESOURCES_WITH_CHILDREN
@@ -616,6 +622,7 @@ class TestSeededRegistry:
             | DEM1H_PACKAGE_FILES
             | DEM2_PACKAGE_FILES
             | GEN1_PACKAGE_FILES
+            | GEN2_PACKAGE_FILES
         )
 
 
