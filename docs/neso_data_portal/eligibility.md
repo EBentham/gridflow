@@ -205,7 +205,7 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `local-authority-level-spatial-heat-model-outputs-fes` | `fes_la_heat_model_residential` | ingest-only (no silver output) | — | — | — | — |
 | `long-term-2-52-weeks-ahead-national-demand-forecast` | `demand_forecast_2_52w` | silver | held: TODO: ESI week definition (start and end day, numbering, rollover against calendar_year and financial_year) and why 2027 week 29 appears twice with CDATE_peak 2027-07-21 and 2027-07-22; the NESO dictionary is silent (unit E-SEM) | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
 | `long-term-forecasts-for-dc-dm-dr-requirements` | `dc_dm_dr_long_term_fc` | ingest-only (no silver output) | — | — | — | — |
-| `monthly-operational-metered-wind-output` | `metered_wind_output_monthly` | ingest-only (no silver output) | — | — | — | — |
+| `monthly-operational-metered-wind-output` | `metered_wind_output_monthly` | silver | eligible | whole_capture per resource_id | sp_pair | CKAN last_modified of the captured file (ADR-030) |
 | `monthly-utilisation-data-of-voltage-contracted-units` | `voltage_units_utilisation` | ingest-only (no silver output) | — | — | — | — |
 | `national-carbon-intensity-forecast` | `national_ci_forecast` | silver | held: TODO: no issue column; which forecast issue a past target's value reflects, and whether values are revised after the period, is undocumented (unit E-SEM) | whole_capture | utc_instant | CKAN last_modified of the captured file (ADR-030) |
 | `national-carbon-intensity-forecast` | `national_ci_forecast_files` | catalogue only | — | — | — | — |
@@ -321,7 +321,7 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `voltage-requirement` | `voltage_requirement_files` | catalogue only | — | — | — | — |
 | `weekly-opmr` | `weekly_opmr` | silver | held: TODO: NESO's engineering year/week to target date mapping is undocumented; the body gives a publication date only (unit E-SEM) | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
 | `weekly-wind-availability` | `weekly_wind_availability` | silver | held: TODO: NESO does not define the `Week Number` calendar (week system, year, start day, zone), so no target week can be dated; the body also carries 155 week labels against a documented 2-52-week horizon. (unit E-SEM) | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
-| `wind-bmu-boa-volumes` | `wind_bmu_boa_volumes` | ingest-only (no silver output) | — | — | — | — |
+| `wind-bmu-boa-volumes` | `wind_bmu_boa_volumes` | silver | held: TODO: NESO does not explain whole repeated rows (the 2018/19, 2019/20 and 2024/25 files repeat 21 rows on every column; 2,396 rows repeat date, period and generator), so a row's identity (one acceptance, one contribution or a duplicate) is unknown and the key carries boa_volume; the 2026/27 file also carries 1,044 positive volumes against the dictionary's negative-curtailment definition. (unit E-SEM) | whole_capture per resource_id | sp_pair | CKAN last_modified of the captured file (ADR-030) |
 
 ## Resource dispositions per package
 
@@ -463,6 +463,6 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 ## Totals
 
 - Packages: 131 (held: 2)
-- Families: 314: silver 56 (bespoke 3, recorded 53), ingest-only 223, catalogue only 35
-- Silver outputs held: 27
+- Families: 314: silver 58 (bespoke 3, recorded 55), ingest-only 221, catalogue only 35
+- Silver outputs held: 28
 - Resources: 1385

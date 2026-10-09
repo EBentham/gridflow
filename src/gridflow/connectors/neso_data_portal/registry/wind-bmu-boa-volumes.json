@@ -17,7 +17,81 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Date",
+              "Settlement_Period",
+              "Generator_Name",
+              "Generator_Full_Name",
+              "BOA_Volume"
+            ],
+            "columns": [
+              {
+                "source": "Date",
+                "name": "date",
+                "dtype": "date",
+                "format": "%Y-%m-%d",
+                "nullable": false
+              },
+              {
+                "source": "Settlement_Period",
+                "name": "settlement_period",
+                "dtype": "int64",
+                "nullable": false,
+                "min": 1,
+                "max": 50
+              },
+              {
+                "source": "Generator_Name",
+                "name": "generator_name",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Generator_Full_Name",
+                "name": "generator_full_name",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "BOA_Volume",
+                "name": "boa_volume",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "sp_pair",
+          "date_column": "date",
+          "period_column": "settlement_period"
+        },
+        "entity_key": [
+          "resource_id",
+          "date",
+          "settlement_period",
+          "generator_name",
+          "boa_volume"
+        ],
+        "latest": "whole_capture",
+        "latest_partition": "resource_id",
+        "vintage": "ckan_last_modified",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: NESO does not explain whole repeated rows (the 2018/19, 2019/20 and 2024/25 files repeat 21 rows on every column; 2,396 rows repeat date, period and generator), so a row's identity (one acceptance, one contribution or a duplicate) is unknown and the key carries boa_volume; the 2026/27 file also carries 1,044 positive volumes against the dictionary's negative-curtailment definition.",
+          "unit": "E-SEM"
+        }
+      }
     }
   ],
   "resources": [

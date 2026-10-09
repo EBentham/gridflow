@@ -88,6 +88,8 @@ GEN1_ADDED = frozenset(
 """The fourteen wind / margin forecast families v0.22-K-GEN-1 records after the golden."""
 GEN2_ADDED = frozenset({"weekly_wind_availability"})
 """The one weekly wind availability family v0.22-K-GEN-2 records after the golden."""
+GEN2H_ADDED = frozenset({"metered_wind_output_monthly", "wind_bmu_boa_volumes"})
+"""The metered wind output and wind BOA volume families v0.22-GEN-2H records after the golden."""
 REWORDED_HOLDS = {
     "national_forecast_7d_historic_day_ahead": (
         "TODO: FORECAST_TIMESTAMP has no vendor definition and its zone is undocumented "
@@ -131,7 +133,8 @@ class TestByteUnchanged:
         record dump, output columns or DEM-1 engine output against the golden written on
         the untouched base (master ``73fde80``), and any generated family other than
         ``historic_demand``, K-DEM-2's four demand-reference records, K-GEN-1's fourteen
-        wind / margin forecast records and K-GEN-2's weekly wind availability record appearing.
+        wind / margin forecast records, K-GEN-2's weekly wind availability record and GEN-2H's
+        metered wind output and wind BOA volume records appearing.
         """
         golden = json.loads(PIN_PATH.read_text(encoding="utf-8"))
         for key, question in REWORDED_HOLDS.items():
@@ -143,7 +146,7 @@ class TestByteUnchanged:
             for key, value in golden[section].items():
                 assert current[section][key] == value, (section, key)
             added = (
-                {"historic_demand", *DEM2_ADDED, *GEN1_ADDED, *GEN2_ADDED}
+                {"historic_demand", *DEM2_ADDED, *GEN1_ADDED, *GEN2_ADDED, *GEN2H_ADDED}
                 if section != "engine"
                 else set()
             )
@@ -744,9 +747,8 @@ class TestRecordRules:
         self,
     ) -> None:
         """Detects a committed record broken by V-4/V-17 or the reserved name, and any
-        family other than ``historic_demand`` and ``school_holiday_percentages`` opting
-        into the partition (in a fresh interpreter, so nothing collection imported can
-        mask it)."""
+        family other than the five resource-partitioned ones opting into the partition (in a
+        fresh interpreter, so nothing collection imported can mask it)."""
         code = textwrap.dedent(
             """
             from gridflow.connectors.neso_data_portal.registry import load_registry
@@ -759,7 +761,9 @@ class TestRecordRules:
             assert partitioned == [
                 "da_wind_forecast_historic_day_ahead_bmu",
                 "historic_demand",
+                "metered_wind_output_monthly",
                 "school_holiday_percentages",
+                "wind_bmu_boa_volumes",
             ], partitioned
             print("OK", len(recorded), partitioned)
             """

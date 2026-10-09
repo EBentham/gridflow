@@ -572,6 +572,11 @@ GEN1_PACKAGE_FILES = {
 
 GEN2_PACKAGE_FILES = {"weekly-wind-availability.json"}
 
+GEN2H_RECORDED = {"metered_wind_output_monthly", "wind_bmu_boa_volumes"}
+"""The metered wind output (eligible) and wind BOA volume (held) families unit GEN-2H records."""
+
+GEN2H_PACKAGE_FILES = {"monthly-operational-metered-wind-output.json", "wind-bmu-boa-volumes.json"}
+
 X_RESOURCES_WITH_CHILDREN = 4 + 1 + 39 + 73 + 1
 """Unit X's committed inventories (ADR-037 P-8): CMP workbooks, the ResultSummary ZIP,
 frequency ZIPs, held data containers and the GSP archive with a CSV member."""
@@ -597,6 +602,7 @@ class TestSeededRegistry:
             | DEM2_RECORDED
             | GEN1_RECORDED
             | GEN2_RECORDED
+            | GEN2H_RECORDED
         )
         with_children = [res for _package, res in loaded.resources.values() if res.children]
         assert len(with_children) == X_RESOURCES_WITH_CHILDREN
@@ -623,6 +629,7 @@ class TestSeededRegistry:
             | DEM2_PACKAGE_FILES
             | GEN1_PACKAGE_FILES
             | GEN2_PACKAGE_FILES
+            | GEN2H_PACKAGE_FILES
         )
 
 
