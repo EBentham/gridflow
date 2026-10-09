@@ -183,7 +183,7 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `gis-boundaries-for-gb-generation-charging-zones` | `gis_gen_charging_zones_files` | catalogue only | — | — | — | — |
 | `gis-boundaries-for-gb-grid-supply-points` | `gis_grid_supply_points` | ingest-only (no silver output) | — | — | — | — |
 | `gis-boundaries-for-gb-grid-supply-points` | `gis_grid_supply_points_files` | catalogue only | — | — | — | — |
-| `historic-demand-data` | `historic_demand` | ingest-only (no silver output) | — | — | — | — |
+| `historic-demand-data` | `historic_demand` | silver | held: TODO: literal NA in the epoch-2 bodies (2001-2008, 2023-2025) in TSD, the embedded wind/solar columns, SCOTTISH_TRANSFER and every interconnector flow but IFA: missing, not applicable or zero? NESO defines no meaning; those columns stay text across every epoch until it does. (unit E-SEM) | whole_capture per resource_id | sp_pair | CKAN last_modified of the captured file (ADR-030) |
 | `historic-demand-data` | `historic_demand_files` | catalogue only | — | — | — | — |
 | `historic-generation-mix` | `historic_generation_mix` | bespoke silver | eligible | — | — | — |
 | `historic-gtma-grid-trade-master-agreement-trades-data` | `gtma_trades_data` | ingest-only (no silver output) | — | — | — | — |
@@ -463,6 +463,6 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 ## Totals
 
 - Packages: 131 (held: 2)
-- Families: 314: silver 36 (bespoke 3, recorded 33), ingest-only 243, catalogue only 35
-- Silver outputs held: 16
+- Families: 314: silver 37 (bespoke 3, recorded 34), ingest-only 242, catalogue only 35
+- Silver outputs held: 17
 - Resources: 1385

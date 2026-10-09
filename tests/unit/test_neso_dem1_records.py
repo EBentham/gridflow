@@ -351,14 +351,12 @@ def test_dem1_record_shapes_match_the_unit_table() -> None:
             assert record.eligibility is None, key
 
 
-def test_historic_demand_is_not_recorded_and_stays_ingest_only() -> None:
-    """Detects ``historic_demand`` (26 yearly resources, split to DEM-1H) gaining a record:
-    ``whole_capture`` is per-family ``LIMIT 1`` and would surface one year; its files family
-    and the other ``_files`` families stay documentation only.
+def test_dem1_files_families_stay_documentation_only() -> None:
+    """Detects a documentation-only ``_files`` family gaining a record. ``historic_demand``
+    itself is DEM-1H's (per-resource selection, ADR-039; ``test_neso_dem1h_record.py``).
     """
     families = registry_module.load_registry().families
     for key in (
-        "historic_demand",
         "historic_demand_files",
         "daily_demand_update_files",
         "demand_forecast_1d_files",

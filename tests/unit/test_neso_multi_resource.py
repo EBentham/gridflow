@@ -100,7 +100,8 @@ class TestByteUnchanged:
             assert set(golden[section]) <= set(current[section]), section
             for key, value in golden[section].items():
                 assert current[section][key] == value, (section, key)
-            assert set(current[section]) - set(golden[section]) <= {"historic_demand"}, section
+            added = {"historic_demand"} if section != "engine" else set()
+            assert set(current[section]) - set(golden[section]) == added, section
 
 
 # --------------------------------------------------------------------------- #
@@ -708,7 +709,7 @@ class TestRecordRules:
                 k for k, (_p, f) in families.items()
                 if f.record is not None and f.record.latest_partition is not None
             )
-            assert set(partitioned) <= {"historic_demand"}, partitioned
+            assert partitioned == ["historic_demand"], partitioned
             print("OK", len(recorded), partitioned)
             """
         )
