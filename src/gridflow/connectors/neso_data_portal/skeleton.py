@@ -54,7 +54,7 @@ if TYPE_CHECKING:
         Registry,
         ResourceEntry,
     )
-    from gridflow.connectors.neso_data_portal.registry.record import SchemaRecord
+    from gridflow.connectors.neso_data_portal.registry.record import ColumnSpec, SchemaRecord
 
 __all__ = [
     "ATTRIBUTION",
@@ -180,6 +180,13 @@ def _files(package: PackageEntry) -> list[str]:
     return lines
 
 
+def _format_cell(column: ColumnSpec) -> str:
+    """A column's format, or its per-filename formats (ADR-039), or a dash."""
+    if column.formats_by_filename is not None:
+        return "; ".join(f"`{name}` → `{fmt}`" for name, fmt in column.formats_by_filename)
+    return f"`{column.format}`" if column.format else _DASH
+
+
 def _schema(record: SchemaRecord, fields: Mapping[str, dict[str, Any]]) -> list[str]:
     lines: list[str] = []
     for index, epoch in enumerate(record.epochs, start=1):
@@ -195,7 +202,7 @@ def _schema(record: SchemaRecord, fields: Mapping[str, dict[str, Any]]) -> list[
                 _cell(column.source),
                 f"`{column.name}`",
                 column.dtype,
-                f"`{column.format}`" if column.format else _DASH,
+                _format_cell(column),
                 "yes" if column.nullable else "no",
                 column.zone or _DASH,
                 _cell(unit) if unit else _DASH,
@@ -213,7 +220,8 @@ def _schema(record: SchemaRecord, fields: Mapping[str, dict[str, Any]]) -> list[
         recipe += ": `timestamp_utc` is the capture time"
     lines += [
         "- Entity key: " + ", ".join(f"`{name}`" for name in record.entity_key),
-        f"- Latest: `{record.latest}`",
+        f"- Latest: `{record.latest}`"
+        + (f" per `{record.latest_partition}`" if record.latest_partition is not None else ""),
         f"- Temporal recipe: {recipe}",
         "",
         "| Clock | Meaning |",

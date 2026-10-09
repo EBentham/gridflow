@@ -101,7 +101,12 @@ def _family_row(package: PackageEntry, family: FamilyEntry) -> str:
         record = family.record
         output = "silver"
         eligibility = describe_eligibility(effective_eligibility(package, family))
-        latest, temporal = record.latest, record.temporal.kind
+        latest = (
+            f"{record.latest} per {record.latest_partition}"
+            if record.latest_partition is not None
+            else record.latest
+        )
+        temporal = record.temporal.kind
         clock = CLOCK_LABELS[record.vintage]
     elif family.kind == "tabular":
         output = "ingest-only (no silver output)"

@@ -14,7 +14,9 @@ generic output whose capture has no completion); ``duplicated`` (two outputs
 carry one capture, or two bespoke captures resolve to one output path);
 ``stale_covered`` (a ``COVERED`` grant whose proof inputs, re-derived at the
 cutoff from the grant's registry position, no longer digest to its evidence's
-components, or whose scope is empty; ADR-037 P-13).
+components, or whose scope is empty; ADR-037 P-13); ``overlap`` (a
+resource-partitioned family whose `_latest` serves one entity key from two
+resources' captures, ADR-039).
 
 **Drain.** Recovers ``missing``, attempt-``failed``,
 ``missing_or_invalid_output`` and orphaned (b), grouped by (family, partition
@@ -23,7 +25,7 @@ ids; a bespoke group is one :func:`completion.run_bespoke_capture` per
 capture. A failing capture or group never stops the next. After the last
 group the catalogue is refreshed once and the drain reconciles again; that
 second result is what the drain returns. It never touches orphaned (a),
-``duplicated``, unusable sidecars or ``stale_covered``.
+``duplicated``, unusable sidecars, ``stale_covered`` or ``overlap``.
 """
 
 from __future__ import annotations
@@ -43,6 +45,7 @@ from gridflow.connectors.neso_data_portal.registry import (
     LEGACY_KEYS,
     CoveredDisposition,
 )
+from gridflow.silver.latest_views import select_latest_vintage
 from gridflow.silver.neso_data_portal.completion import (
     NesoCaptureFailedError,
     Versions,
@@ -67,6 +70,7 @@ from gridflow.silver.neso_data_portal.generic import (
     INGEST_ONLY_REASON,
     GenericNesoTransformer,
     families_of,
+    latest_spec_for_record,
 )
 from gridflow.silver.registry import get_transformer_class
 from gridflow.storage.paths import PathBuilder
@@ -77,6 +81,7 @@ if TYPE_CHECKING:
 
     from gridflow.connectors.neso_data_portal.captures import Capture
     from gridflow.connectors.neso_data_portal.registry import Registry, ResourceEntry
+    from gridflow.connectors.neso_data_portal.registry.record import SchemaRecord
     from gridflow.silver.base import BaseSilverTransformer
 
 logger = logging.getLogger(__name__)
@@ -99,6 +104,7 @@ CATEGORIES: tuple[str, ...] = (
     "orphaned",
     "duplicated",
     "stale_covered",
+    "overlap",
 )
 DRAINABLE: frozenset[str] = frozenset({"missing", "failed", "missing_or_invalid_output"})
 """Plus orphaned (b), told apart from (a) by :attr:`Gap.drainable`."""
@@ -395,6 +401,61 @@ def _family_gaps(
     return gaps, expected
 
 
+def _overlaps(key: str, record: SchemaRecord, data_dir: Path, cutoff: date) -> list[Gap]:
+    """``overlap``: entity keys the family's ``_latest`` serves from two resources (ADR-039).
+
+    The selection is :func:`select_latest_vintage` over the family's outputs and
+    its completion records up to the cutoff, the one Polars renderer of
+    ``_latest``, so the report and the view agree by construction. One gap per
+    selected capture holding any such key; never drainable. A check that cannot
+    read an output is one ``overlap check failed`` gap, never a pass.
+    """
+    root = PathBuilder(data_dir).silver_dir(SOURCE, key)
+    grain = [column for column in record.entity_key if column != "resource_id"]
+    try:
+        files = sorted(root.rglob("[!.]*.parquet")) if root.is_dir() else []
+        if not files:
+            return []
+        completions = scan_completions(data_dir, key).filter(pl.col("partition_date") <= cutoff)
+        selected = select_latest_vintage(
+            pl.scan_parquet(files, hive_partitioning=False),
+            latest_spec_for_record(record, key),
+            completions=completions,
+        )
+        shared = (
+            selected.select(*grain, "resource_id", "bronze_capture_id")
+            .filter(pl.col("resource_id").n_unique().over(grain) > 1)
+            .collect()
+        )
+    except (OSError, pl.exceptions.PolarsError) as exc:
+        return [Gap("overlap", key, None, "-", f"overlap check failed: {exc}")]
+
+    resources_by_key: dict[tuple[Any, ...], set[str]] = {}
+    keys_by_capture: dict[str, list[tuple[Any, ...]]] = {}
+    resource_of_capture: dict[str, str] = {}
+    for row in shared.iter_rows(named=True):
+        entity = tuple(row[column] for column in grain)
+        resources_by_key.setdefault(entity, set()).add(row["resource_id"])
+        keys_by_capture.setdefault(row["bronze_capture_id"], []).append(entity)
+        resource_of_capture[row["bronze_capture_id"]] = row["resource_id"]
+    gaps: list[Gap] = []
+    for capture_id, entities in sorted(keys_by_capture.items()):
+        own = resource_of_capture[capture_id]
+        others = sorted(set().union(*(resources_by_key[e] for e in entities)) - {own})
+        first = min(entities, key=lambda e: tuple((v is None, v) for v in e))
+        rendered = ", ".join(f"{c}={v}" for c, v in zip(grain, first, strict=True))
+        gaps.append(
+            Gap(
+                "overlap",
+                key,
+                _partition_or_none(Path(capture_id)),
+                capture_id,
+                f"{len(entities)} key(s) also served by resource(s) {others}; first: {rendered}",
+            )
+        )
+    return gaps
+
+
 def _stale_covered(
     registry: Registry, data_dir: Path, cutoff: date, families: Sequence[str]
 ) -> list[Gap]:
@@ -503,6 +564,9 @@ def reconcile(
     for key in families:
         family_gaps, _expected_pairs = _family_gaps(key, registry, data_dir, cutoff)
         gaps.extend(family_gaps)
+        record = registry.families[key][1].record
+        if record is not None and record.latest_partition is not None:
+            gaps.extend(_overlaps(key, record, data_dir, cutoff))
     gaps.extend(_stale_covered(registry, data_dir, cutoff, families))
     return ReconcileReport(tuple(families), tuple(skipped), tuple(sorted(gaps, key=_sort_key)))
 
