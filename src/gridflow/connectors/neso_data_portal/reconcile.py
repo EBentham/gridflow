@@ -5,8 +5,11 @@
 
 The data root and the DuckDB catalogue come from ``load_settings()``, so
 ``GRIDFLOW_DATA_DIR`` / ``GRIDFLOW_DUCKDB_PATH`` select them. Prints one
-``GAP <category> <family> <partition_date> <capture_id> <detail>`` line per gap,
-then ``SUMMARY`` lines. Exit 0 no gaps, 1 gaps, 2 usage error. The logic lives
+``GAP <category> <family> <partition_date> <capture_id> <detail>`` line per open
+gap, one ``ADJUDICATED ... [ruling <n>; reason: ...; question: ...]`` line per gap
+the registry's reconcile adjudication ledger covers (ADR-040), then ``SUMMARY``
+lines. Exit 0 no open gap (adjudicated gaps may remain and are listed), 1 open
+gaps, 2 usage error or a missing / malformed / unbacked ledger. The logic lives
 in :mod:`gridflow.silver.neso_data_portal.reconcile`.
 """
 
@@ -27,7 +30,7 @@ def _cutoff(value: str) -> date:
 
 
 def main(argv: list[str] | None = None) -> int:
-    """Entry point. Exit 0 clean, 1 gaps, 2 usage."""
+    """Entry point. Exit 0 no open gap, 1 open gaps, 2 usage or ledger error."""
     parser = argparse.ArgumentParser(
         prog="python -m gridflow.connectors.neso_data_portal.reconcile"
     )
@@ -64,12 +67,12 @@ def main(argv: list[str] | None = None) -> int:
             )
         else:
             report = reconcile(data_dir, registry, keys, args.cutoff)
-    except UnknownFamilyError as exc:
+    except (UnknownFamilyError, registry_module.RegistryError) as exc:
         print(str(exc), file=sys.stderr)
         return 2
     for line in report.lines():
         print(line)
-    return 0 if report.clean else 1
+    return 0 if report.passed else 1
 
 
 if __name__ == "__main__":

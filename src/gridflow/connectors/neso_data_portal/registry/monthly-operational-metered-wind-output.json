@@ -17,7 +17,74 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Sett_Date",
+              "Sett_Period",
+              "Scottish Wind Output",
+              "England/Wales Wind Output",
+              "Total"
+            ],
+            "columns": [
+              {
+                "source": "Sett_Date",
+                "name": "sett_date",
+                "dtype": "date",
+                "format": "%Y-%m-%d",
+                "nullable": false
+              },
+              {
+                "source": "Sett_Period",
+                "name": "sett_period",
+                "dtype": "int64",
+                "nullable": false,
+                "min": 1,
+                "max": 50
+              },
+              {
+                "source": "Scottish Wind Output",
+                "name": "scottish_wind_output",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "England/Wales Wind Output",
+                "name": "england_wales_wind_output",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Total",
+                "name": "total",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "sp_pair",
+          "date_column": "sett_date",
+          "period_column": "sett_period"
+        },
+        "entity_key": [
+          "resource_id",
+          "sett_date",
+          "sett_period"
+        ],
+        "latest": "whole_capture",
+        "latest_partition": "resource_id",
+        "vintage": "ckan_last_modified"
+      }
     }
   ],
   "resources": [

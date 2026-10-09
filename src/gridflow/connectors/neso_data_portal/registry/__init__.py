@@ -7,13 +7,16 @@ matrix by ``scripts/seed_neso_registry.py``; the JSON files beside this module
 are the artifact, edited by registry commits from then on.
 
 Layout. Every ``*.json`` here whose name does not start with ``_`` is one
-package. The two ``_``-prefixed ledgers are read by their own loaders and are
+package. The three ``_``-prefixed ledgers are read by their own loaders and are
 never parsed as packages:
 
 - ``_frozen_keys.json`` — keys that have bronze and therefore cannot be renamed
   or removed (P-4's CI pin; the runtime pin reads bronze directory names).
 - ``_adjudications.json`` — snapshot resources the coverage check accepts
   without a capture, each with a recorded seat ruling (P-11).
+- ``_reconcile_adjudications.json`` — vendor-caused reconcile gaps a seat ruling
+  accepts on named captures; reconcile reports them apart from open gaps
+  (ADR-040).
 
 **Test seam.** Runtime consumers call :func:`load_registry` through this module
 attribute at call time and never keep a module-level copy, so a test can
@@ -26,12 +29,13 @@ from __future__ import annotations
 import json
 import re
 from dataclasses import dataclass, field
+from datetime import date
 from functools import cache
 from importlib import resources as importlib_resources
 from pathlib import Path
-from typing import TYPE_CHECKING, Annotated, Any, Literal
+from typing import TYPE_CHECKING, Annotated, Any, Literal, Self
 
-from pydantic import Field, ValidationError
+from pydantic import Field, ValidationError, model_validator
 
 from gridflow.connectors.neso_data_portal.registry.record import (
     CHILD_SEPARATOR,
@@ -49,8 +53,10 @@ if TYPE_CHECKING:
     from importlib.resources.abc import Traversable
 
 __all__ = [
+    "CAPTURE_ID_PATTERN",
     "KEY_PATTERN",
     "LEGACY_KEYS",
+    "RECONCILE_ADJUDICATIONS_FILE",
     "Adjudication",
     "ChildEntry",
     "CoveredEvidence",
@@ -61,15 +67,19 @@ __all__ = [
     "Held",
     "PackageEntry",
     "Registry",
+    "ReconcileAdjudication",
     "RegistryError",
     "ResourceEntry",
     "SchemaRecord",
+    "capture_partition",
     "dump_json",
     "frozen_key_violations",
     "key_collisions",
     "load_adjudications",
     "load_frozen_keys",
+    "load_reconcile_adjudications",
     "load_registry",
+    "reconcile_adjudication_problems",
 ]
 
 KEY_PATTERN = re.compile(r"^[a-z][a-z0-9_]{2,39}$")
@@ -82,6 +92,17 @@ LEGACY_KEYS: frozenset[str] = frozenset(
 
 FROZEN_KEYS_FILE = "_frozen_keys.json"
 ADJUDICATIONS_FILE = "_adjudications.json"
+RECONCILE_ADJUDICATIONS_FILE = "_reconcile_adjudications.json"
+
+# One committed capture: both body-name stamp forms (production seconds, the
+# test helper's microseconds). Anchored, so a wildcard, ``-`` or a directory
+# never names a capture.
+CAPTURE_ID_PATTERN = re.compile(
+    r"^bronze/neso_data_portal/(?P<dir>[a-z][a-z0-9_]{2,39})/(?P<y>\d{4})/(?P<m>\d{2})/"
+    r"(?P<d>\d{2})/raw_\d{8}T\d{6}(?:\d{6})?Z_"
+    r"(?P<rid>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})_[0-9a-f]{8}"
+    r"\.[a-z0-9]+$"
+)
 
 Archetype = Literal["SER", "FC", "REG", "EVT", "SCN", "TAR", "FILE"]
 Refresh = Literal["daily", "adhoc", "frozen", "monthly", "weekly", "intraday"]
@@ -219,6 +240,76 @@ class Adjudication(_Frozen):
     reason: str
     evidence: str
     ruling: str
+
+
+def _capture_match(capture: str) -> re.Match[str] | None:
+    return CAPTURE_ID_PATTERN.fullmatch(capture)
+
+
+def capture_partition(capture: str) -> date:
+    """Return the bronze partition date a ledger capture id is filed under.
+
+    Args:
+        capture: A capture id matching :data:`CAPTURE_ID_PATTERN`.
+
+    Returns:
+        The ``YYYY/MM/DD`` directory as a date.
+
+    Raises:
+        ValueError: The id does not match the pattern or names no real date.
+    """
+    match = _capture_match(capture)
+    if match is None:
+        raise ValueError(f"{capture!r} is not one committed capture id")
+    return date(int(match["y"]), int(match["m"]), int(match["d"]))
+
+
+def _one_line(value: str) -> bool:
+    return bool(value.strip()) and not any(char in value for char in "\r\n\t")
+
+
+class ReconcileAdjudication(_Frozen):
+    """A vendor-caused reconcile gap a seat ruling accepts on named captures (ADR-040).
+
+    Attributes:
+        family: The family key the gaps belong to.
+        category: The gap category. This ``Literal`` is the one allowlist of
+            adjudicable categories (H5).
+        cause: For ``failed``, the failure record's ``error_class``; ``None``
+            for ``overlap``.
+        captures: The exact capture ids covered; an ``overlap`` entry names
+            every capture of the overlap, so a third one stays open.
+        reason: Why the gap is vendor-caused (one line).
+        question: The open question to the vendor (one line).
+        evidence: Where the evidence lives (one line).
+        ruling: The RULINGS line number; never read at runtime.
+    """
+
+    family: str = Field(pattern=KEY_PATTERN.pattern)
+    category: Literal["overlap", "failed"]
+    cause: Literal["DuplicateEntityKeyError"] | None = None
+    captures: tuple[str, ...]
+    reason: str
+    question: str
+    evidence: str
+    ruling: str = Field(pattern=r"^\d+$")
+
+    @model_validator(mode="after")
+    def _narrow(self) -> Self:
+        if (self.category == "failed") != (self.cause is not None):
+            raise ValueError("cause is set exactly when category is 'failed'")
+        if not self.captures:
+            raise ValueError("captures is empty")
+        if len(set(self.captures)) != len(self.captures):
+            raise ValueError("captures repeats a capture")
+        if self.category == "overlap" and len(self.captures) < 2:
+            raise ValueError("an overlap entry names at least two captures")
+        for capture in self.captures:
+            capture_partition(capture)
+        for name in ("reason", "question", "evidence"):
+            if not _one_line(getattr(self, name)):
+                raise ValueError(f"{name} must be one non-empty line")
+        return self
 
 
 @dataclass(frozen=True)
@@ -630,6 +721,80 @@ def load_adjudications(path: Path | None = None) -> tuple[Adjudication, ...]:
         return tuple(Adjudication.model_validate(row) for row in _ledger(path, ADJUDICATIONS_FILE))
     except ValidationError as exc:
         raise RegistryError(f"registry file {ADJUDICATIONS_FILE}: {exc}") from exc
+
+
+def load_reconcile_adjudications(path: Path | None = None) -> tuple[ReconcileAdjudication, ...]:
+    """Load ``_reconcile_adjudications.json`` from ``path`` (``None`` = package data).
+
+    Args:
+        path: A registry directory, or ``None`` for the package data.
+
+    Returns:
+        The entries, in file order.
+
+    Raises:
+        RegistryError: The file is missing or unreadable (absent is never read
+            as empty), an entry fails the model, or two entries share a
+            ``(family, category, capture)``, so at most one entry covers a gap.
+    """
+    try:
+        entries = tuple(
+            ReconcileAdjudication.model_validate(row)
+            for row in _ledger(path, RECONCILE_ADJUDICATIONS_FILE)
+        )
+    except ValidationError as exc:
+        raise RegistryError(f"registry file {RECONCILE_ADJUDICATIONS_FILE}: {exc}") from exc
+    seen: set[tuple[str, str, str]] = set()
+    for entry in entries:
+        for capture in entry.captures:
+            slot = (entry.family, entry.category, capture)
+            if slot in seen:
+                raise RegistryError(
+                    f"registry file {RECONCILE_ADJUDICATIONS_FILE}: two entries cover "
+                    f"{entry.category} {entry.family} {capture}"
+                )
+            seen.add(slot)
+    return entries
+
+
+def reconcile_adjudication_problems(
+    registry: Registry, entries: Iterable[ReconcileAdjudication]
+) -> list[str]:
+    """Return every ledger entry the registry does not back (the referential check).
+
+    An entry's family must be a recorded registry family; each capture must sit
+    under the family's own or a sibling's bronze directory and name a resource
+    of the family's package.
+
+    Args:
+        registry: The loaded registry.
+        entries: The ``_reconcile_adjudications.json`` entries.
+
+    Returns:
+        One message per failing entry and capture; empty when the ledger is backed.
+    """
+    problems: list[str] = []
+    for entry in entries:
+        where = f"reconcile adjudication {entry.category} {entry.family} (ruling {entry.ruling})"
+        owner = registry.families.get(entry.family)
+        if owner is None or owner[1].record is None:
+            problems.append(f"{where}: family has no record")
+            continue
+        package, family = owner
+        assert family.record is not None
+        directories = (entry.family, *family.record.siblings)
+        for capture in entry.captures:
+            match = _capture_match(capture)
+            assert match is not None  # the model validated every capture
+            if match["dir"] not in directories:
+                problems.append(f"{where}: {capture} is not under directory {directories}")
+                continue
+            resource = registry.resources.get(match["rid"])
+            if resource is None or resource[0].package != package.package:
+                problems.append(
+                    f"{where}: resource {match['rid']} is not in package {package.package!r}"
+                )
+    return problems
 
 
 def frozen_key_violations(registry: Registry, frozen: Iterable[FrozenKey]) -> list[str]:

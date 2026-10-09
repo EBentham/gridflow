@@ -88,6 +88,8 @@ GEN1_ADDED = frozenset(
 """The fourteen wind / margin forecast families v0.22-K-GEN-1 records after the golden."""
 GEN2_ADDED = frozenset({"weekly_wind_availability"})
 """The one weekly wind availability family v0.22-K-GEN-2 records after the golden."""
+GEN2H_ADDED = frozenset({"metered_wind_output_monthly", "wind_bmu_boa_volumes"})
+"""The metered wind output and wind BOA volume families v0.22-GEN-2H records after the golden."""
 REWORDED_HOLDS = {
     "national_forecast_7d_historic_day_ahead": (
         "TODO: FORECAST_TIMESTAMP has no vendor definition and its zone is undocumented "
@@ -131,7 +133,8 @@ class TestByteUnchanged:
         record dump, output columns or DEM-1 engine output against the golden written on
         the untouched base (master ``73fde80``), and any generated family other than
         ``historic_demand``, K-DEM-2's four demand-reference records, K-GEN-1's fourteen
-        wind / margin forecast records and K-GEN-2's weekly wind availability record appearing.
+        wind / margin forecast records, K-GEN-2's weekly wind availability record and GEN-2H's
+        metered wind output and wind BOA volume records appearing.
         """
         golden = json.loads(PIN_PATH.read_text(encoding="utf-8"))
         for key, question in REWORDED_HOLDS.items():
@@ -143,7 +146,7 @@ class TestByteUnchanged:
             for key, value in golden[section].items():
                 assert current[section][key] == value, (section, key)
             added = (
-                {"historic_demand", *DEM2_ADDED, *GEN1_ADDED, *GEN2_ADDED}
+                {"historic_demand", *DEM2_ADDED, *GEN1_ADDED, *GEN2_ADDED, *GEN2H_ADDED}
                 if section != "engine"
                 else set()
             )
@@ -744,9 +747,8 @@ class TestRecordRules:
         self,
     ) -> None:
         """Detects a committed record broken by V-4/V-17 or the reserved name, and any
-        family other than ``historic_demand`` and ``school_holiday_percentages`` opting
-        into the partition (in a fresh interpreter, so nothing collection imported can
-        mask it)."""
+        family other than the five resource-partitioned ones opting into the partition (in a
+        fresh interpreter, so nothing collection imported can mask it)."""
         code = textwrap.dedent(
             """
             from gridflow.connectors.neso_data_portal.registry import load_registry
@@ -759,7 +761,9 @@ class TestRecordRules:
             assert partitioned == [
                 "da_wind_forecast_historic_day_ahead_bmu",
                 "historic_demand",
+                "metered_wind_output_monthly",
                 "school_holiday_percentages",
+                "wind_bmu_boa_volumes",
             ], partitioned
             print("OK", len(recorded), partitioned)
             """
@@ -1021,3 +1025,75 @@ class TestOverlap:
         assert overlaps[0].capture_id == "-" and not overlaps[0].drainable
         assert overlaps[0].detail.startswith("overlap check failed: ")
         assert any(gap.drainable for gap in report.gaps if gap.category != "overlap")
+
+    def test_a8_bucketed_check_reports_the_same_gaps_and_never_windows(
+        self, data: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """A8a (H7): detects the memory-bounded overlap check reporting different captures
+        from the whole-family check, splitting one key across buckets, dropping a key whose
+        grain holds a null (a semi-join without null equality), or still windowing over the
+        whole family. The grain carries a nullable ``unit``: A and B share the null-unit key
+        (P3), and A, B and C share a null-free key (P2). With one bucket per row
+        (``OVERLAP_BUCKET_ROWS = 1``) and with the default, the report equals the literal
+        whole-family report, and a spy on ``pl.Expr.over`` raising ``AssertionError`` (which
+        the check's ``PolarsError`` handler cannot swallow) never fires."""
+        from gridflow.silver.neso_data_portal import reconcile as reconcile_module
+
+        columns = [
+            column("SettlementDate", "settlement_date", "date", nullable=False),
+            column("SettlementPeriod", "settlement_period", "int64", nullable=False),
+            column("Unit", "unit"),
+            column("Value", "value", "float64"),
+        ]
+        rec = partitioned_record(epochs=[epoch(columns)], entity_key=[*PARTITION_KEY, "unit"])
+        generated = install_multi(monkeypatch, data, rec)
+        header = b"SettlementDate,SettlementPeriod,Unit,Value\n"
+        a = capture_multi(
+            data,
+            "A",
+            header + b"2026-10-07,1,U1,1.0\n2026-10-07,2,U1,2.0\n2026-10-07,3,,3.0\n",
+            _t(8),
+        )
+        b = capture_multi(data, "B", header + b"2026-10-07,2,U1,5.0\n2026-10-07,3,,6.0\n", _t(9))
+        c = capture_multi(data, "C", header + b"2026-10-07,2,U1,7.0\n", _t(10))
+        generated.transformers[KEY](data).run(DAY, run_id="r")
+        silver = pl.concat(
+            pl.read_parquet(path, hive_partitioning=False)
+            for path in sorted((data / "silver" / SOURCE / KEY).rglob("*.parquet"))
+        )
+        assert silver.filter(pl.col("unit").is_null()).height == 2, "the null key must reach silver"
+
+        rid = {letter: RESOURCES[letter][0] for letter in RESOURCES}
+
+        def _gap(capture: str, count: int, others: str, peers: tuple[str, ...]) -> Any:
+            served = sorted(rid[letter] for letter in others)
+            detail = (
+                f"{count} key(s) also served by resource(s) {served}; "
+                "first: settlement_date=2026-10-07, settlement_period=2, unit=U1"
+            )
+            return (capture, detail, tuple(sorted(peers)))
+
+        expected = sorted(
+            [_gap(a, 2, "BC", (b, c)), _gap(b, 2, "AC", (a, c)), _gap(c, 1, "AB", (a, b))]
+        )
+
+        def _no_window(*_args: Any, **_kwargs: Any) -> Any:
+            raise AssertionError("the overlap check called a window expression")
+
+        loaded = registry_module.load_registry()
+        reports: list[list[tuple[str, str, tuple[str, ...]]]] = []
+        for bucket_rows in (None, 1):
+            with monkeypatch.context() as patch:
+                if bucket_rows is not None:
+                    patch.setattr(reconcile_module, "OVERLAP_BUCKET_ROWS", bucket_rows)
+                patch.setattr(pl.Expr, "over", _no_window)
+                report = reconcile(data, loaded, [KEY], DAY)
+            reports.append(
+                sorted(
+                    (gap.capture_id, gap.detail, gap.peers)
+                    for gap in report.gaps
+                    if gap.category == "overlap"
+                )
+            )
+        assert reports[0] == expected
+        assert reports[1] == expected

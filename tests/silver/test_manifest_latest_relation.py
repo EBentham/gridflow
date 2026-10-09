@@ -47,7 +47,8 @@ from gridflow.silver.schema_manifest import (
 # forty with v0.22-DEM-1H's `historic_demand`, then to forty-four with v0.22-K-DEM-2's
 # four demand-reference records, then to fifty-eight with v0.22-K-GEN-1's fourteen wind and
 # margin forecast records, then to fifty-nine with v0.22-K-GEN-2's weekly wind availability
-# record.
+# record, then to sixty-one with v0.22-GEN-2H's metered wind output and wind BOA volume
+# records.
 _APPEND_ONLY_DATASETS: tuple[tuple[str, str], ...] = (
     ("elexon", "system_prices"),
     ("elexon", "remit"),
@@ -108,6 +109,8 @@ _APPEND_ONLY_DATASETS: tuple[tuple[str, str], ...] = (
     ("neso_data_portal", "daily_opmr"),
     ("neso_data_portal", "weekly_opmr"),
     ("neso_data_portal", "weekly_wind_availability"),
+    ("neso_data_portal", "metered_wind_output_monthly"),
+    ("neso_data_portal", "wind_bmu_boa_volumes"),
 )
 
 
@@ -301,9 +304,9 @@ def test_append_only_set_equals_latest_spec_set() -> None:
     spec_set = set(LATEST_VIEW_SPECS)
 
     # Non-vacuity guard: this invariant must never pass because both sides are
-    # empty (F16) -- fifty-nine APPEND_ONLY datasets are registered today.
+    # empty (F16) -- sixty-one APPEND_ONLY datasets are registered today.
     assert len(append_only) > 0
-    assert len(append_only) == 59
+    assert len(append_only) == 61
 
     missing_specs = append_only - spec_set
     extra_specs = spec_set - append_only
@@ -457,6 +460,8 @@ _EXPECTED_APPEND_ONLY_DEPRECATED_ALIASES: dict[tuple[str, str], str | None] = {
     ("neso_data_portal", "daily_opmr"): "silver_daily_opmr",
     ("neso_data_portal", "weekly_opmr"): "silver_weekly_opmr",
     ("neso_data_portal", "weekly_wind_availability"): "silver_weekly_wind_availability",
+    ("neso_data_portal", "metered_wind_output_monthly"): "silver_metered_wind_output_monthly",
+    ("neso_data_portal", "wind_bmu_boa_volumes"): "silver_wind_bmu_boa_volumes",
 }
 
 

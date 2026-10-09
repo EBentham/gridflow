@@ -18,7 +18,7 @@ original's convention (LF data lines, then one ``\\r\\n`` blank line) and no tes
 fixture's raw bytes.
 
 ``metered_wind_output_monthly`` and ``wind_bmu_boa_volumes`` have no record here: RULINGS 547
-moves them to unit GEN-2H; pinned below.
+moved them to unit GEN-2H, which records them (``test_neso_gen2h_records.py``); pinned below.
 """
 
 from __future__ import annotations
@@ -301,17 +301,18 @@ def test_blank_record_is_dropped_by_the_logged_reader_path(
     assert messages[0].startswith("dropped 1 blank row(s)")
 
 
-def test_the_gen2h_families_still_have_no_record() -> None:
-    """Detects K-GEN-2 absorbing the two families RULINGS 547 moved to unit GEN-2H
-    (``metered_wind_output_monthly`` and ``wind_bmu_boa_volumes``): in a fresh interpreter
-    neither has a record, and this unit's family does."""
+def test_the_gen2h_families_are_recorded_by_gen2h() -> None:
+    """Detects a GEN-2 family losing its record: in a fresh interpreter the two families
+    RULINGS 547 moved to unit GEN-2H (``metered_wind_output_monthly`` and
+    ``wind_bmu_boa_volumes``) and this unit's family all have one."""
     code = textwrap.dedent(
         """
         from gridflow.connectors.neso_data_portal.registry import load_registry
         families = load_registry().families
-        for key in ("metered_wind_output_monthly", "wind_bmu_boa_volumes"):
-            assert families[key][1].record is None, key
-        assert families["weekly_wind_availability"][1].record is not None
+        for key in (
+            "metered_wind_output_monthly", "wind_bmu_boa_volumes", "weekly_wind_availability"
+        ):
+            assert families[key][1].record is not None, key
         print("OK")
         """
     )

@@ -1,0 +1,35 @@
+{
+  "reconcile": {
+    "exit": 1,
+    "lines": [
+      "GAP failed multi 2026-10-07 bronze/neso_data_portal/multi/2026/10/07/raw_20261007T093000000000Z_eeeeeeee-0000-4000-8000-00000000000c_d9e04f8b.csv DuplicateEntityKeyError: neso_data_portal/multi: capture bronze/neso_data_portal/multi/2026/10/07/raw_20261007T093000000000Z_eeeeeeee-0000-4000-8000-00000000000c_d9e04f8b.csv has 2 row(s) sharing an entity key ['resource_id', 'settlement_date', 'settlement_period']; the key is wrong for this data",
+      "GAP missing multi 2026-10-07 bronze/neso_data_portal/multi/2026/10/07/raw_20261007T100000000000Z_eeeeeeee-0000-4000-8000-00000000000a_d1049181.csv no completion",
+      "GAP orphaned multi 2026-10-07 bronze/neso_data_portal/multi/2026/10/07/raw_ghost.csv a: completion without an expected capture",
+      "GAP overlap multi 2026-10-07 bronze/neso_data_portal/multi/2026/10/07/raw_20261007T080000000000Z_eeeeeeee-0000-4000-8000-00000000000a_a5666ada.csv 1 key(s) also served by resource(s) ['eeeeeeee-0000-4000-8000-00000000000b']; first: settlement_date=2026-10-07, settlement_period=2",
+      "GAP overlap multi 2026-10-07 bronze/neso_data_portal/multi/2026/10/07/raw_20261007T090000000000Z_eeeeeeee-0000-4000-8000-00000000000b_dede0730.csv 1 key(s) also served by resource(s) ['eeeeeeee-0000-4000-8000-00000000000a']; first: settlement_date=2026-10-07, settlement_period=2",
+      "SUMMARY families=1 skipped=0 gaps=5",
+      "SUMMARY missing 1",
+      "SUMMARY failed 1",
+      "SUMMARY missing_or_invalid_output 0",
+      "SUMMARY orphaned 1",
+      "SUMMARY duplicated 0",
+      "SUMMARY stale_covered 0",
+      "SUMMARY overlap 2"
+    ]
+  },
+  "drain": {
+    "lines": [
+      "GAP failed multi 2026-10-07 bronze/neso_data_portal/multi/2026/10/07/raw_20261007T093000000000Z_eeeeeeee-0000-4000-8000-00000000000c_d9e04f8b.csv DuplicateEntityKeyError: neso_data_portal/multi: capture bronze/neso_data_portal/multi/2026/10/07/raw_20261007T093000000000Z_eeeeeeee-0000-4000-8000-00000000000c_d9e04f8b.csv has 2 row(s) sharing an entity key ['resource_id', 'settlement_date', 'settlement_period']; the key is wrong for this data",
+      "GAP orphaned multi 2026-10-07 bronze/neso_data_portal/multi/2026/10/07/raw_ghost.csv a: completion without an expected capture",
+      "SUMMARY families=1 skipped=0 gaps=2",
+      "SUMMARY missing 0",
+      "SUMMARY failed 1",
+      "SUMMARY missing_or_invalid_output 0",
+      "SUMMARY orphaned 1",
+      "SUMMARY duplicated 0",
+      "SUMMARY stale_covered 0",
+      "SUMMARY overlap 0",
+      "SUMMARY drained multi 2026-10-07 2"
+    ]
+  }
+}

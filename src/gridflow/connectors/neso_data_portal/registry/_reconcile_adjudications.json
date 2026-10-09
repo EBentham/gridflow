@@ -1,0 +1,28 @@
+[
+  {
+    "family": "metered_wind_output_monthly",
+    "category": "overlap",
+    "captures": [
+      "bronze/neso_data_portal/metered_wind_output_monthly/2026/10/08/raw_20261008T111243Z_7622b040-977a-45a6-924e-f158df6c29f0_4e39e845.csv",
+      "bronze/neso_data_portal/metered_wind_output_monthly/2026/10/08/raw_20261008T111246Z_c9bc94c4-6d8c-49ff-afff-67c0030bec05_c5079a69.csv"
+    ],
+    "reason": "the 2025-2026 and 2026-2027 archives both publish 2026-04-01 P1 to 2026-04-05 P1 (193 settlement keys) with conflicting values; NESO states no precedence, so both rows are served (ADR-039)",
+    "question": "Which archive is authoritative for the 193 settlement keys 2026-04-01 P1 to 2026-04-05 P1 that the 2025-2026 and 2026-2027 resources both publish?",
+    "evidence": "K-GEN-2-FACTS §2 g3 (M-OVERLAP); ADR-040",
+    "ruling": "547"
+  },
+  {
+    "family": "wind_bmu_boa_volumes",
+    "category": "failed",
+    "cause": "DuplicateEntityKeyError",
+    "captures": [
+      "bronze/neso_data_portal/wind_bmu_boa_volumes/2026/10/08/raw_20261008T114135Z_28183033-4464-4b3a-a0ff-0efdc5cd6c7a_ec7d49dd.csv",
+      "bronze/neso_data_portal/wind_bmu_boa_volumes/2026/10/08/raw_20261008T114138Z_6ef6f5f2-2852-4f66-931c-29f8e5b46ddf_f5c84f91.csv",
+      "bronze/neso_data_portal/wind_bmu_boa_volumes/2026/10/08/raw_20261008T114132Z_d3fbf6c1-7688-4486-8716-b5af0c895a5a_ffdaf731.csv"
+    ],
+    "reason": "the 2018/19, 2019/20 and 2024/25 archives repeat whole rows (18, 1 and 2 excess), so no vendor-column key is lossless and the duplicate guard fails these captures; they stay unloaded with their failure records",
+    "question": "What does a repeated identical BOA row mean (separate acceptances, contributions or duplication), and can NESO publish an acceptance identifier or a corrected file?",
+    "evidence": "K-GEN-2-FACTS §4 g3 (B-ROW-GRAIN); ADR-040",
+    "ruling": "547"
+  }
+]

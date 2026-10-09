@@ -18,6 +18,17 @@ components, or whose scope is empty; ADR-037 P-13); ``overlap`` (a
 resource-partitioned family whose `_latest` serves one entity key from two
 resources' captures, ADR-039).
 
+**Adjudication (ADR-040).** After the raw gaps are built, each is matched
+against the registry's ``_reconcile_adjudications.json``: an entry in scope
+(its family checked, every capture at or before the cutoff) covers a gap of
+its family and category on one of its named captures, a ``failed`` gap only
+with the entry's cause, an ``overlap`` gap only when every capture serving its
+shared keys is named too. Covered gaps move to :attr:`ReconcileReport.adjudicated`;
+they are listed (``ADJUDICATED`` lines) but do not fail the run. A named
+capture with no covered gap is a ``stale_adjudication`` gap, which is never
+drainable and never adjudicable. A ledger that fails to load or names what the
+registry does not back raises :class:`RegistryError`.
+
 **Drain.** Recovers ``missing``, attempt-``failed``,
 ``missing_or_invalid_output`` and orphaned (b), grouped by (family, partition
 date): a generic group is one ``run_captures`` call restricted to its capture
@@ -25,13 +36,15 @@ ids; a bespoke group is one :func:`completion.run_bespoke_capture` per
 capture. A failing capture or group never stops the next. After the last
 group the catalogue is refreshed once and the drain reconciles again; that
 second result is what the drain returns. It never touches orphaned (a),
-``duplicated``, unusable sidecars, ``stale_covered`` or ``overlap``.
+``duplicated``, unusable sidecars, ``stale_covered``, ``overlap``,
+``stale_adjudication`` or any adjudicated gap.
 """
 
 from __future__ import annotations
 
 import json
 import logging
+import math
 from collections import Counter
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -44,6 +57,11 @@ from gridflow.connectors.neso_data_portal.captures import scan_dataset
 from gridflow.connectors.neso_data_portal.registry import (
     LEGACY_KEYS,
     CoveredDisposition,
+    ReconcileAdjudication,
+    RegistryError,
+    capture_partition,
+    load_reconcile_adjudications,
+    reconcile_adjudication_problems,
 )
 from gridflow.silver.latest_views import select_latest_vintage
 from gridflow.silver.neso_data_portal.completion import (
@@ -89,6 +107,9 @@ logger = logging.getLogger(__name__)
 __all__ = [
     "CATEGORIES",
     "DRAINABLE",
+    "OVERLAP_BUCKET_ROWS",
+    "STALE_ADJUDICATION",
+    "AdjudicatedGap",
     "Gap",
     "ReconcileReport",
     "UnknownFamilyError",
@@ -108,6 +129,11 @@ CATEGORIES: tuple[str, ...] = (
 )
 DRAINABLE: frozenset[str] = frozenset({"missing", "failed", "missing_or_invalid_output"})
 """Plus orphaned (b), told apart from (a) by :attr:`Gap.drainable`."""
+OVERLAP_BUCKET_ROWS = 1_000_000
+"""Rows per hash bucket of the overlap check (H7): bounds its group-by state."""
+STALE_ADJUDICATION = "stale_adjudication"
+"""A ledger capture no live gap matches (ADR-040). Not in :data:`CATEGORIES`, so the
+per-category ``SUMMARY`` lines stay byte-identical for a run without entries."""
 
 
 class UnknownFamilyError(ValueError):
@@ -119,12 +145,15 @@ class Gap:
     """One reconcile gap.
 
     Attributes:
-        category: One of :data:`CATEGORIES`.
+        category: One of :data:`CATEGORIES`, or :data:`STALE_ADJUDICATION`.
         family: The family key the gap belongs to.
         partition_date: The capture's bronze partition date, when known.
         capture_id: The capture id, or ``-``.
         detail: Free text; for ``orphaned`` it starts ``a:`` or ``b:``.
         drainable: Whether ``--drain`` attempts it.
+        cause: For a ``failed`` gap with a failure record, its ``error_class``.
+        peers: For an ``overlap`` gap, the other selected captures serving any
+            of its shared entity keys, sorted.
     """
 
     category: str
@@ -133,11 +162,37 @@ class Gap:
     capture_id: str
     detail: str
     drainable: bool = False
+    cause: str | None = None
+    peers: tuple[str, ...] = ()
 
     def line(self) -> str:
         """The ``GAP`` output line."""
-        day = self.partition_date.isoformat() if self.partition_date is not None else "-"
-        return f"GAP {self.category} {self.family} {day} {self.capture_id} {self.detail}"
+        return f"GAP {self.category} {self.family} {_day(self)} {self.capture_id} {self.detail}"
+
+
+def _day(gap: Gap) -> str:
+    return gap.partition_date.isoformat() if gap.partition_date is not None else "-"
+
+
+@dataclass(frozen=True)
+class AdjudicatedGap:
+    """A gap a ledger entry covers: reported, but it does not fail the run (ADR-040).
+
+    Attributes:
+        gap: The raw gap.
+        entry: The covering ``_reconcile_adjudications.json`` entry.
+    """
+
+    gap: Gap
+    entry: ReconcileAdjudication
+
+    def line(self) -> str:
+        """The ``ADJUDICATED`` output line: the gap, then its ruling, reason and question."""
+        g, e = self.gap, self.entry
+        return (
+            f"ADJUDICATED {g.category} {g.family} {_day(g)} {g.capture_id} {g.detail} "
+            f"[ruling {e.ruling}; reason: {e.reason}; question: {e.question}]"
+        )
 
 
 @dataclass(frozen=True)
@@ -148,23 +203,37 @@ class ReconcileReport:
         families: The families checked.
         skipped: ``(family, reason)`` for every named or listed family not
             checked (ingest-only, ``files``).
-        gaps: Every gap, in a deterministic order.
+        gaps: Every open gap (including ``stale_adjudication``), in a
+            deterministic order.
         drained: ``(family, partition date, capture count)`` per drained group.
+        adjudicated: Every gap a ledger entry covers, in the same order.
     """
 
     families: tuple[str, ...]
     skipped: tuple[tuple[str, str], ...]
     gaps: tuple[Gap, ...]
     drained: tuple[tuple[str, date, int], ...] = field(default=())
+    adjudicated: tuple[AdjudicatedGap, ...] = field(default=())
+
+    @property
+    def passed(self) -> bool:
+        """Whether no open gap was found (the CLI's exit-0 predicate)."""
+        return not self.gaps
 
     @property
     def clean(self) -> bool:
-        """Whether no gap was found."""
-        return not self.gaps
+        """Whether no gap was found at all: adjudicated gaps are not clean (H2)."""
+        return self.passed and not self.adjudicated
 
     def lines(self) -> list[str]:
-        """Every ``GAP`` line, then the ``SUMMARY`` lines."""
+        """``GAP`` lines, ``ADJUDICATED`` lines, then the ``SUMMARY`` lines.
+
+        Per-category counts are over open gaps; the ``adjudicated`` and
+        ``stale_adjudication`` counts follow only when either is non-zero, so a
+        run without ledger entries prints exactly what it did before ADR-040.
+        """
         out = [gap.line() for gap in self.gaps]
+        out.extend(item.line() for item in self.adjudicated)
         counts = Counter(gap.category for gap in self.gaps)
         out.append(
             "SUMMARY families="
@@ -175,6 +244,9 @@ class ReconcileReport:
         out.extend(
             f"SUMMARY drained {key} {day.isoformat()} {count}" for key, day, count in self.drained
         )
+        if self.adjudicated or counts.get(STALE_ADJUDICATION, 0):
+            out.append(f"SUMMARY adjudicated {len(self.adjudicated)}")
+            out.append(f"SUMMARY {STALE_ADJUDICATION} {counts.get(STALE_ADJUDICATION, 0)}")
         return out
 
 
@@ -357,7 +429,11 @@ def _family_gaps(
         failure = failures.get(capture_id)
         if failure is not None:
             detail = f"{failure.get('error_class', '?')}: {failure.get('message', '')}"
-            gaps.append(Gap("failed", key, pair.partition_date, capture_id, detail, drainable))
+            error_class = failure.get("error_class")
+            cause = error_class if isinstance(error_class, str) else None
+            gaps.append(
+                Gap("failed", key, pair.partition_date, capture_id, detail, drainable, cause)
+            )
         elif row is not None:
             detail = f"completion fails the validity predicate ({row['outcome']})"
             gaps.append(
@@ -409,6 +485,15 @@ def _overlaps(key: str, record: SchemaRecord, data_dir: Path, cutoff: date) -> l
     ``_latest``, so the report and the view agree by construction. One gap per
     selected capture holding any such key; never drainable. A check that cannot
     read an output is one ``overlap check failed`` gap, never a pass.
+
+    **Memory bound (H7, ADR-040).** The family is never materialised whole (a
+    whole-family window over 21.9M rows segfaulted). The selected rows are split
+    into ``ceil(rows / OVERLAP_BUCKET_ROWS)`` buckets by a hash of the grain; each
+    bucket's shared keys come from a streaming ``group_by``; the serving captures
+    come from one streaming semi-join of the selection on those keys, with null
+    equality so a key holding a null still matches. Equal keys (nulls included)
+    hash equal within a process, so a key never spans two buckets and the report
+    does not depend on the bucket count.
     """
     root = PathBuilder(data_dir).silver_dir(SOURCE, key)
     grain = [column for column in record.entity_key if column != "resource_id"]
@@ -422,26 +507,48 @@ def _overlaps(key: str, record: SchemaRecord, data_dir: Path, cutoff: date) -> l
             latest_spec_for_record(record, key),
             completions=completions,
         )
+        rows = pl.scan_parquet(files, hive_partitioning=False).select(pl.len()).collect().item()
+        buckets = max(1, math.ceil(rows / OVERLAP_BUCKET_ROWS))
+        parts: list[pl.DataFrame] = []
+        for index in range(buckets):
+            part = (
+                selected
+                if buckets == 1
+                else selected.filter(pl.struct(grain).hash(seed=0) % buckets == index)
+            )
+            parts.append(
+                part.group_by(grain)
+                .agg(pl.col("resource_id").n_unique().alias("__resources"))
+                .filter(pl.col("__resources") > 1)
+                .select(grain)
+                .collect(engine="streaming")
+            )
+        keys = pl.concat(parts)
+        if keys.is_empty():
+            return []
         shared = (
             selected.select(*grain, "resource_id", "bronze_capture_id")
-            .filter(pl.col("resource_id").n_unique().over(grain) > 1)
-            .collect()
+            .join(keys.lazy(), on=grain, how="semi", nulls_equal=True)
+            .collect(engine="streaming")
         )
     except (OSError, pl.exceptions.PolarsError) as exc:
         return [Gap("overlap", key, None, "-", f"overlap check failed: {exc}")]
 
     resources_by_key: dict[tuple[Any, ...], set[str]] = {}
+    captures_by_key: dict[tuple[Any, ...], set[str]] = {}
     keys_by_capture: dict[str, list[tuple[Any, ...]]] = {}
     resource_of_capture: dict[str, str] = {}
     for row in shared.iter_rows(named=True):
         entity = tuple(row[column] for column in grain)
         resources_by_key.setdefault(entity, set()).add(row["resource_id"])
+        captures_by_key.setdefault(entity, set()).add(row["bronze_capture_id"])
         keys_by_capture.setdefault(row["bronze_capture_id"], []).append(entity)
         resource_of_capture[row["bronze_capture_id"]] = row["resource_id"]
     gaps: list[Gap] = []
     for capture_id, entities in sorted(keys_by_capture.items()):
         own = resource_of_capture[capture_id]
         others = sorted(set().union(*(resources_by_key[e] for e in entities)) - {own})
+        peers = set().union(*(captures_by_key[e] for e in entities)) - {capture_id}
         first = min(entities, key=lambda e: tuple((v is None, v) for v in e))
         rendered = ", ".join(f"{c}={v}" for c, v in zip(grain, first, strict=True))
         gaps.append(
@@ -451,6 +558,7 @@ def _overlaps(key: str, record: SchemaRecord, data_dir: Path, cutoff: date) -> l
                 _partition_or_none(Path(capture_id)),
                 capture_id,
                 f"{len(entities)} key(s) also served by resource(s) {others}; first: {rendered}",
+                peers=tuple(sorted(peers)),
             )
         )
     return gaps
@@ -541,6 +649,65 @@ def _sort_key(gap: Gap) -> tuple[str, str, str, str]:
     return (gap.family, day, gap.category, gap.capture_id)
 
 
+def _covers(entry: ReconcileAdjudication, gap: Gap) -> bool:
+    if gap.family != entry.family or gap.category != entry.category:
+        return False
+    if gap.capture_id not in entry.captures:
+        return False
+    if entry.category == "failed":
+        return gap.cause == entry.cause
+    # An overlap gap always has a peer; an empty set would cover vacuously.
+    return bool(gap.peers) and set(gap.peers) <= set(entry.captures)
+
+
+def _adjudicate(
+    gaps: Sequence[Gap],
+    entries: Sequence[ReconcileAdjudication],
+    families: Sequence[str],
+    cutoff: date,
+) -> tuple[list[Gap], list[AdjudicatedGap], list[Gap]]:
+    """Split raw gaps into (open, adjudicated, stale) per ADR-040.
+
+    An entry is in scope when its family is checked and every capture is filed
+    at or before the cutoff; an out-of-scope entry neither covers nor goes
+    stale, so any gap it names stays open. Each in-scope capture that no
+    covered gap names is one ``stale_adjudication`` gap.
+    """
+    scoped = [
+        entry
+        for entry in entries
+        if entry.family in families
+        and max(capture_partition(capture) for capture in entry.captures) <= cutoff
+    ]
+    open_gaps: list[Gap] = []
+    adjudicated: list[AdjudicatedGap] = []
+    covered: set[tuple[int, str]] = set()
+    for gap in gaps:
+        match = next(
+            ((index, entry) for index, entry in enumerate(scoped) if _covers(entry, gap)), None
+        )
+        if match is None:
+            open_gaps.append(gap)
+            continue
+        index, entry = match
+        adjudicated.append(AdjudicatedGap(gap, entry))
+        covered.add((index, gap.capture_id))
+    stale = [
+        Gap(
+            STALE_ADJUDICATION,
+            entry.family,
+            capture_partition(capture),
+            capture,
+            f"ruling {entry.ruling}: no live {entry.category} gap on this capture matches "
+            "the entry",
+        )
+        for index, entry in enumerate(scoped)
+        for capture in entry.captures
+        if (index, capture) not in covered
+    ]
+    return open_gaps, adjudicated, stale
+
+
 def reconcile(
     data_dir: Path, registry: Registry, keys: Sequence[str] | None, cutoff: date
 ) -> ReconcileReport:
@@ -553,13 +720,20 @@ def reconcile(
         cutoff: The last bronze partition date considered (inclusive).
 
     Returns:
-        The report.
+        The report: open gaps (including ``stale_adjudication``) and, apart,
+        the gaps the registry's reconcile adjudication ledger covers.
 
     Raises:
         UnknownFamilyError: A named key is not a registry family, or a
             checked family has no registered transformer.
+        RegistryError: The adjudication ledger is missing or malformed, or
+            names a family, directory or resource the registry does not back.
     """
     families, skipped = _resolve_scope(registry, keys)
+    entries = load_reconcile_adjudications(registry.root)
+    problems = reconcile_adjudication_problems(registry, entries)
+    if problems:
+        raise RegistryError("; ".join(problems))
     gaps: list[Gap] = []
     for key in families:
         family_gaps, _expected_pairs = _family_gaps(key, registry, data_dir, cutoff)
@@ -568,7 +742,14 @@ def reconcile(
         if record is not None and record.latest_partition is not None:
             gaps.extend(_overlaps(key, record, data_dir, cutoff))
     gaps.extend(_stale_covered(registry, data_dir, cutoff, families))
-    return ReconcileReport(tuple(families), tuple(skipped), tuple(sorted(gaps, key=_sort_key)))
+    open_gaps, adjudicated, stale = _adjudicate(gaps, entries, families, cutoff)
+    return ReconcileReport(
+        tuple(families),
+        tuple(skipped),
+        tuple(sorted([*open_gaps, *stale], key=_sort_key)),
+        (),
+        tuple(sorted(adjudicated, key=lambda item: _sort_key(item.gap))),
+    )
 
 
 def drain(
@@ -590,6 +771,8 @@ def drain(
 
     Returns:
         The reconcile report AFTER the drain, carrying the drained groups.
+        Only open gaps are drained: an adjudicated ``failed`` capture is never
+        re-run, so its failure record is never rewritten.
     """
     before = reconcile(data_dir, registry, keys, cutoff)
     groups: dict[tuple[str, date], set[str]] = {}
@@ -617,4 +800,6 @@ def drain(
     if drained:
         refresh()
     after = reconcile(data_dir, registry, keys, cutoff)
-    return ReconcileReport(after.families, after.skipped, after.gaps, tuple(drained))
+    return ReconcileReport(
+        after.families, after.skipped, after.gaps, tuple(drained), after.adjudicated
+    )

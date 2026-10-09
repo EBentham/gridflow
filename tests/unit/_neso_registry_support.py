@@ -203,8 +203,13 @@ def write_registry(
     *,
     frozen: list[dict[str, str]] | None = None,
     adjudications: list[dict[str, str]] | None = None,
+    reconcile_adjudications: list[dict[str, Any]] | None = None,
 ) -> Path:
-    """Write a registry directory (package files plus both ledgers)."""
+    """Write a registry directory (package files plus the three ledgers).
+
+    The reconcile adjudication ledger is always written (default ``[]``): reconcile
+    refuses a registry directory without it (ADR-040 P-1).
+    """
     directory.mkdir(parents=True, exist_ok=True)
     for document in packages:
         (directory / f"{document['package']}.json").write_text(
@@ -215,6 +220,12 @@ def write_registry(
     )
     (directory / "_adjudications.json").write_text(
         registry_module.dump_json(adjudications if adjudications is not None else []),
+        encoding="utf-8",
+    )
+    (directory / "_reconcile_adjudications.json").write_text(
+        registry_module.dump_json(
+            reconcile_adjudications if reconcile_adjudications is not None else []
+        ),
         encoding="utf-8",
     )
     return directory
