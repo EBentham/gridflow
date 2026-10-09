@@ -823,8 +823,206 @@ class TestRegistrations:
                 root = files('gridflow.connectors.neso_data_portal.registry')
                 names = {item.name for item in root.iterdir() if item.name.endswith('.json')}
                 assert '_frozen_keys.json' in names and '_adjudications.json' in names
+                assert '_reconcile_adjudications.json' in names
                 assert len([n for n in names if not n.startswith('_')]) == 131, len(names)
                 print('OK')
                 """
             )
         )
+
+
+# --------------------------------------------------------------------------- #
+# The reconcile adjudication ledger (v0.22-GEN-2H, ADR-040 P-1)
+# --------------------------------------------------------------------------- #
+
+_CAPTURE = (
+    "bronze/neso_data_portal/fam_one/2026/10/07/raw_20261007T080000000000Z_{rid}_a5666ada.csv"
+)
+_RID_A = "eeeeeeee-0000-4000-8000-00000000000a"
+_RID_B = "eeeeeeee-0000-4000-8000-00000000000b"
+
+
+def _entry(**overrides: Any) -> dict[str, Any]:
+    """A valid ``overlap`` entry over two captures; ``overrides`` break one rule."""
+    entry: dict[str, Any] = {
+        "family": "fam_one",
+        "category": "overlap",
+        "captures": [_CAPTURE.format(rid=_RID_A), _CAPTURE.format(rid=_RID_B)],
+        "reason": "two archives publish one key",
+        "question": "Which archive is authoritative?",
+        "evidence": "FACTS g3",
+        "ruling": "547",
+    }
+    entry.update(overrides)
+    return entry
+
+
+def _failed(**overrides: Any) -> dict[str, Any]:
+    fields: dict[str, Any] = {
+        "category": "failed",
+        "cause": "DuplicateEntityKeyError",
+        "captures": [_CAPTURE.format(rid=_RID_A)],
+    }
+    fields.update(overrides)
+    return _entry(**fields)
+
+
+_LOAD_LEDGER = """
+    import sys
+    from pathlib import Path
+    from gridflow.connectors.neso_data_portal.registry import (
+        RegistryError, load_reconcile_adjudications,
+    )
+    try:
+        entries = load_reconcile_adjudications(Path(sys.argv[1]))
+    except RegistryError as exc:
+        print('REFUSED', exc)
+    else:
+        print('OK', len(entries))
+    """
+
+_NON_ADJUDICABLE = [
+    "missing",
+    "orphaned",
+    "missing_or_invalid_output",
+    "stale_covered",
+    "duplicated",
+    "stale_adjudication",
+]
+_MALFORMED: dict[str, list[dict[str, Any]]] = {
+    **{f"category-{c}": [_entry(category=c)] for c in _NON_ADJUDICABLE},
+    "failed-without-cause": [_entry(category="failed", captures=[_CAPTURE.format(rid=_RID_A)])],
+    "overlap-with-cause": [_entry(cause="DuplicateEntityKeyError")],
+    "other-cause": [_failed(cause="ValueError")],
+    "overlap-one-capture": [_entry(captures=[_CAPTURE.format(rid=_RID_A)])],
+    "no-capture": [_failed(captures=[])],
+    "repeated-capture": [_entry(captures=[_CAPTURE.format(rid=_RID_A)] * 2)],
+    "wildcard-capture": [_failed(captures=["*"])],
+    "dash-capture": [_failed(captures=["-"])],
+    "directory-capture": [_failed(captures=["bronze/neso_data_portal/fam_one/2026/10/07/"])],
+    "glob-capture": [_failed(captures=["bronze/neso_data_portal/fam_one/2026/10/07/raw_*.csv"])],
+    "bad-date": [_failed(captures=[_CAPTURE.format(rid=_RID_A).replace("10/07", "02/30")])],
+    "bad-family": [_failed(family="Fam")],
+    "empty-reason": [_failed(reason="   ")],
+    "multi-line-reason": [_failed(reason="one\ntwo")],
+    "tab-question": [_failed(question="one\ttwo")],
+    "empty-evidence": [_failed(evidence="")],
+    "non-numeric-ruling": [_failed(ruling="R547")],
+    "extra-field": [_failed(scope="family")],
+    "duplicate-entry": [_failed(), _failed(reason="a second entry for the same capture")],
+}
+
+
+class TestReconcileLedger:
+    """P-1: ``_reconcile_adjudications.json`` loads only narrow, explicit entries (H1, H5)."""
+
+    def _load(self, tmp_path: Path, entries: Any) -> str:
+        directory = tmp_path / "registry"
+        directory.mkdir(exist_ok=True)
+        (directory / "_reconcile_adjudications.json").write_text(
+            json.dumps(entries, indent=2) + "\n", encoding="utf-8"
+        )
+        result = _run(_LOAD_LEDGER, str(directory))
+        assert result.returncode == 0, result.stderr
+        return result.stdout
+
+    def test_valid_entries_load(self, tmp_path: Path) -> None:
+        """The positive control every malformed case below breaks one rule of; both stamp
+        forms (seconds and microseconds, E15) are accepted."""
+        seconds = _CAPTURE.format(rid=_RID_B).replace("T080000000000Z", "T080000Z")
+        entries = [_entry(), _failed(), _failed(captures=[seconds])]
+        assert self._load(tmp_path, entries).startswith("OK 3"), entries
+
+    @pytest.mark.parametrize("case", sorted(_MALFORMED))
+    def test_a4_non_adjudicable_entries_fail_validation(self, tmp_path: Path, case: str) -> None:
+        """A4: detects a ledger that adjudicates a gridflow-owned category, a wildcard or
+        directory scope, the overlap check's own ``-`` gap, a cause other than the duplicate
+        guard, an entry a receipt line cannot render, or two entries covering one gap."""
+        out = self._load(tmp_path, _MALFORMED[case])
+        assert out.startswith("REFUSED"), (case, out)
+        assert "_reconcile_adjudications.json" in out, out
+
+    def test_t_reg_1_the_package_ledger_loads_and_matches_the_registry(self) -> None:
+        """T-REG-1: detects a committed ledger that does not load, or names a family,
+        directory or resource the package registry does not back."""
+        _assert_ok(
+            _run(
+                """
+                from gridflow.connectors.neso_data_portal.registry import (
+                    load_reconcile_adjudications, load_registry,
+                    reconcile_adjudication_problems,
+                )
+                entries = load_reconcile_adjudications()
+                problems = reconcile_adjudication_problems(load_registry(), entries)
+                assert problems == [], problems
+                print('OK')
+                """
+            )
+        )
+
+    def test_t_reg_2_a_missing_ledger_is_an_error_not_empty(self, tmp_path: Path) -> None:
+        """T-REG-2: detects a deleted ledger silently reading as no entries."""
+        directory = tmp_path / "registry"
+        directory.mkdir()
+        result = _run(_LOAD_LEDGER, str(directory))
+        assert result.stdout.startswith("REFUSED"), result.stdout
+        assert "_reconcile_adjudications.json" in result.stdout
+
+    def test_t_reg_3_entries_the_registry_does_not_back_are_problems(self, tmp_path: Path) -> None:
+        """T-REG-3: detects an entry on a family without a record, a capture filed under a
+        directory that is neither the family nor a sibling, or a resource of another
+        package."""
+        from _neso_registry_support import family, package, record, resource, write_registry
+
+        foreign = "ffffffff-0000-4000-8000-00000000000f"
+        documents = [
+            package(
+                "pkg-one",
+                "dddddddd-0000-4000-8000-000000000000",
+                [family("fam_one", record=record()), family("fam_raw")],
+                [
+                    resource(_RID_A, "One A", "fam_one"),
+                    resource(_RID_B, "One B", "fam_one"),
+                    resource("eeeeeeee-0000-4000-8000-00000000000c", "Raw", "fam_raw"),
+                ],
+            ),
+            package(
+                "pkg-two",
+                "dddddddd-0000-4000-8000-000000000001",
+                [family("fam_two", record=record())],
+                [resource(foreign, "Two", "fam_two")],
+            ),
+        ]
+        good = _entry()
+        entries = [
+            good,
+            _failed(family="fam_raw", captures=[_CAPTURE.format(rid=_RID_A)]),
+            _failed(captures=[_CAPTURE.format(rid=_RID_A).replace("fam_one", "fam_two")]),
+            _failed(captures=[_CAPTURE.format(rid=foreign)]),
+        ]
+        directory = write_registry(
+            tmp_path / "registry", documents, reconcile_adjudications=entries
+        )
+        result = _run(
+            """
+            import sys
+            from pathlib import Path
+            from gridflow.connectors.neso_data_portal.registry import (
+                load_reconcile_adjudications, load_registry,
+                reconcile_adjudication_problems,
+            )
+            path = Path(sys.argv[1])
+            for problem in reconcile_adjudication_problems(
+                load_registry(path), load_reconcile_adjudications(path)
+            ):
+                print('PROBLEM', problem)
+            print('DONE')
+            """,
+            str(directory),
+        )
+        assert result.returncode == 0, result.stderr
+        problems = [line for line in result.stdout.splitlines() if line.startswith("PROBLEM")]
+        assert len(problems) == 3, result.stdout
+        assert "fam_raw" in problems[0] and "no record" in problems[0], problems
+        assert "fam_two" in problems[1] and "directory" in problems[1], problems
+        assert foreign in problems[2] and "package" in problems[2], problems
