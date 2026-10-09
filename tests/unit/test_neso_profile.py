@@ -361,7 +361,7 @@ class TestEngineCastSemantics:
             if not any(str(v).startswith("TODO:") for v in column.values())
         ]
         assert settled
-        frame.select([casting._cast(spec).alias(spec.name) for spec in settled])
+        frame.select([casting._cast(spec, spec.format).alias(spec.name) for spec in settled])
 
 
 class TestSettlementPeriods:

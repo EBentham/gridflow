@@ -118,7 +118,11 @@ class ColumnSpec(_Frozen):
         source: The vendor header name, exactly as the body carries it.
         name: The silver column name (``^[a-z][a-z0-9_]*$``).
         dtype: The silver type.
-        format: A ``strptime`` format; required for ``date``/``datetime``.
+        format: A ``strptime`` format; a ``datetime`` column requires it, a
+            ``date`` column requires it or ``formats_by_filename``.
+        formats_by_filename: ``date`` only: exact ``(resource_filename, format)``
+            pairs, for one header whose date format differs by resource
+            (ADR-039). An unlisted filename fails the capture; no fallback.
         null_tokens: Vendor spellings read as null before casting.
         nullable: Whether a null survives (``False`` excludes the row, P-4).
         min: Numeric lower bound (inclusive); a breach excludes the row.
@@ -132,6 +136,7 @@ class ColumnSpec(_Frozen):
     name: str
     dtype: Dtype
     format: str | None = None
+    formats_by_filename: tuple[tuple[str, str], ...] | None = None
     null_tokens: tuple[str, ...] = ()
     nullable: bool
     min: float | None = None
@@ -144,7 +149,9 @@ class ColumnSpec(_Frozen):
     def _shape(self) -> ColumnSpec:
         if not SILVER_NAME_PATTERN.fullmatch(self.name):
             raise ValueError(f"column name {self.name!r} is not {SILVER_NAME_PATTERN.pattern}")
-        if self.dtype in ("date", "datetime"):
+        if self.formats_by_filename is not None:
+            self._filename_formats()
+        elif self.dtype in ("date", "datetime"):
             if not self.format:
                 raise ValueError(f"column {self.name!r}: a {self.dtype} column needs a format")
         elif self.format is not None:
@@ -183,6 +190,30 @@ class ColumnSpec(_Frozen):
                     "non-empty zone_evidence and an ambiguous rule"
                 )
         return self
+
+    def _filename_formats(self) -> None:
+        """The per-filename map's shape: ``date`` only, alone, non-empty, unique."""
+        mapping = self.formats_by_filename
+        assert mapping is not None
+        if self.dtype != "date":
+            raise ValueError(
+                f"column {self.name!r}: formats_by_filename applies to date columns only"
+            )
+        if self.format is not None:
+            raise ValueError(
+                f"column {self.name!r}: a date column takes exactly one of format and "
+                "formats_by_filename"
+            )
+        if not mapping:
+            raise ValueError(f"column {self.name!r}: formats_by_filename must be non-empty")
+        if any(not filename or not fmt for filename, fmt in mapping):
+            raise ValueError(
+                f"column {self.name!r}: every formats_by_filename filename and format must be "
+                "non-empty"
+            )
+        filenames = [filename for filename, _fmt in mapping]
+        if len(set(filenames)) != len(filenames):
+            raise ValueError(f"column {self.name!r}: formats_by_filename repeats a filename")
 
     @property
     def is_local(self) -> bool:

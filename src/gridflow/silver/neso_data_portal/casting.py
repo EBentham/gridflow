@@ -47,7 +47,9 @@ __all__ = [
     "ExclusionTally",
     "HeaderEpochError",
     "IssueTimeError",
+    "UnmappedResourceFormatError",
     "epoch_for",
+    "epoch_formats",
     "TypedChild",
     "finish_capture",
     "record_columns",
@@ -88,6 +90,10 @@ class AllRowsExcludedError(Exception):
 
 class DuplicateEntityKeyError(Exception):
     """Two rows of one capture share the entity key: the key is wrong."""
+
+
+class UnmappedResourceFormatError(Exception):
+    """A per-filename date column lists no format for the capture's file (ADR-039)."""
 
 
 @dataclass
@@ -170,8 +176,39 @@ def epoch_for(record: SchemaRecord, header: tuple[str, ...]) -> HeaderEpoch:
     )
 
 
-def _cast(spec: ColumnSpec) -> pl.Expr:
-    """The strict cast of one vendor column (null tokens already applied)."""
+def epoch_formats(epoch: HeaderEpoch, resource_filename: str) -> dict[str, str | None]:
+    """Each vendor column of ``epoch`` -> its ``strptime`` format for this capture.
+
+    A column's scalar ``format``, or the exact ``formats_by_filename`` entry of
+    ``resource_filename`` (ADR-039). No normalisation and no fallback.
+
+    Args:
+        epoch: The matched header epoch.
+        resource_filename: The capture's sidecar ``resource_filename``.
+
+    Returns:
+        Vendor column -> format (``None`` for a column without one).
+
+    Raises:
+        UnmappedResourceFormatError: A mapped column lists no entry for the file.
+    """
+    out: dict[str, str | None] = {}
+    for spec in epoch.columns:
+        if spec.formats_by_filename is None:
+            out[spec.source] = spec.format
+            continue
+        mapping = dict(spec.formats_by_filename)
+        if resource_filename not in mapping:
+            raise UnmappedResourceFormatError(
+                f"column {spec.name!r} ({spec.source}) has no format for resource_filename "
+                f"{resource_filename!r}; mapped: {sorted(mapping)}"
+            )
+        out[spec.source] = mapping[resource_filename]
+    return out
+
+
+def _cast(spec: ColumnSpec, fmt: str | None) -> pl.Expr:
+    """The strict cast of one vendor column under ``fmt`` (null tokens already applied)."""
     col = pl.col(spec.source)
     if spec.dtype == "string":
         return col.cast(pl.Utf8)
@@ -179,13 +216,13 @@ def _cast(spec: ColumnSpec) -> pl.Expr:
         return col.cast(pl.Int64, strict=True)
     if spec.dtype == "float64":
         return col.cast(pl.Float64, strict=True)
-    assert spec.format is not None
+    assert fmt is not None
     if spec.dtype == "date":
-        return col.str.strptime(pl.Date, spec.format, strict=True)
+        return col.str.strptime(pl.Date, fmt, strict=True)
     if spec.zone is None:
-        parsed = col.str.strptime(pl.Datetime("us"), spec.format, strict=True)
+        parsed = col.str.strptime(pl.Datetime("us"), fmt, strict=True)
         return parsed.dt.convert_time_zone("UTC").cast(_UTC_DATETIME)
-    naive = col.str.strptime(pl.Datetime("us"), spec.format, strict=True)
+    naive = col.str.strptime(pl.Datetime("us"), fmt, strict=True)
     if spec.zone == "UTC":
         return naive.dt.replace_time_zone("UTC").cast(_UTC_DATETIME)
     assert spec.ambiguous is not None
@@ -255,15 +292,20 @@ def type_child(table: ChildTable, record: SchemaRecord, ctx: CaptureContext) -> 
     Raises:
         HeaderEpochError: The header matches no epoch.
         IssueTimeError: A null issue time under a recipe other than ``none``.
+        UnmappedResourceFormatError: A per-filename date column does not list
+            the capture's ``resource_filename``.
         polars.exceptions.PolarsError: A value outside the declared null
             tokens did not cast (D-41: the capture fails, nothing is coerced).
     """
     epoch = epoch_for(record, table.header)
+    formats = epoch_formats(epoch, ctx.resource_filename)
     frame = table.frame
     tokened = [_null_tokens(spec) for spec in epoch.columns if spec.null_tokens]
     if tokened:
         frame = frame.with_columns(tokened)
-    frame = frame.select([_cast(spec).alias(spec.name) for spec in epoch.columns])
+    frame = frame.select(
+        [_cast(spec, formats[spec.source]).alias(spec.name) for spec in epoch.columns]
+    )
 
     ordered = silver_columns(record)
     present = set(frame.columns)

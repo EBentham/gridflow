@@ -42,6 +42,7 @@ from gridflow.silver.latest_views import _SETTLEMENT_RUN_RANK, LATEST_VIEW_SPECS
 from gridflow.silver.neso_data_portal.casting import (
     ExclusionTally,
     epoch_for,
+    epoch_formats,
     finish_capture,
     record_dtypes,
     type_child,
@@ -400,7 +401,7 @@ class GenericNesoTransformer(RegisteredRelationsTransformer):
                     f"{ctx.capture_id}: header-only, but {self.dataset} does not allow empty"
                 )
             for table in tables:
-                epoch_for(record, table.header)
+                epoch_formats(epoch_for(record, table.header), ctx.resource_filename)
             record_completion(
                 self.data_dir,
                 completion_row(

@@ -36,20 +36,24 @@ from _neso_registry_support import (
 
 from gridflow.connectors.neso_data_portal import registry as registry_module
 from gridflow.connectors.neso_data_portal.registry import RegistryError, SchemaRecord
-from gridflow.connectors.neso_data_portal.registry.record import RESERVED
+from gridflow.connectors.neso_data_portal.registry.record import RESERVED, ColumnSpec
 from gridflow.silver.latest_views import (
     LATEST_VIEW_SPECS,
     LatestViewSpec,
     latest_select_sql,
     select_latest_vintage,
 )
-from gridflow.silver.neso_data_portal.casting import DuplicateEntityKeyError
+from gridflow.silver.neso_data_portal.casting import (
+    DuplicateEntityKeyError,
+    UnmappedResourceFormatError,
+)
 from gridflow.silver.neso_data_portal.completion import (
     NesoCaptureFailedError,
     capture_id_for,
     read_completion,
     scan_completions,
 )
+from gridflow.silver.neso_data_portal.reconcile import drain, reconcile
 from gridflow.storage.duckdb import init_catalogue
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -725,3 +729,243 @@ class TestRecordRules:
         record's ``exclude_none`` dump and stale every COVERED grant (E14)."""
         plain = SchemaRecord.model_validate(record())
         assert "latest_partition" not in plain.model_dump(mode="json", exclude_none=True)
+
+
+# --------------------------------------------------------------------------- #
+# Per-filename date formats (T-H7, T-H8)
+# --------------------------------------------------------------------------- #
+
+MAPPED = [["a.csv", "%Y-%m-%d"], ["b.csv", "%d/%m/%Y"]]
+
+
+def _date_spec(**fields: Any) -> dict[str, Any]:
+    spec: dict[str, Any] = {"source": "D", "name": "d", "dtype": "date", "nullable": False}
+    spec.update(fields)
+    return spec
+
+
+class TestFormatMapShape:
+    @pytest.mark.parametrize(
+        ("fields", "fragment"),
+        [
+            ({"format": "%Y-%m-%d", "formats_by_filename": MAPPED}, "exactly one"),
+            ({}, "needs a format"),
+            ({"dtype": "datetime", "zone": "UTC", "formats_by_filename": MAPPED}, "date"),
+            ({"dtype": "string", "formats_by_filename": MAPPED}, "date"),
+            ({"dtype": "int64", "formats_by_filename": MAPPED}, "date"),
+            ({"formats_by_filename": []}, "non-empty"),
+            ({"formats_by_filename": [["", "%Y-%m-%d"]]}, "non-empty"),
+            ({"formats_by_filename": [["a.csv", ""]]}, "non-empty"),
+            ({"formats_by_filename": [["a.csv", "%Y"], ["a.csv", "%d"]]}, "repeats"),
+        ],
+        ids=[
+            "both",
+            "neither",
+            "datetime",
+            "string",
+            "int64",
+            "empty-map",
+            "empty-filename",
+            "empty-format",
+            "duplicate-filename",
+        ],
+    )
+    def test_t_h7_a_malformed_map_is_refused_naming_the_column(
+        self, fields: dict[str, Any], fragment: str
+    ) -> None:
+        """Detects an ambiguous or silently ignored per-file format: both or neither of
+        ``format``/map, a map outside ``date``, an empty map or entry, a repeated file."""
+        with pytest.raises(ValueError) as info:
+            ColumnSpec.model_validate(_date_spec(**fields))
+        message = str(info.value)
+        assert "'d'" in message, message
+        assert fragment in message, message
+
+    def test_t_h7_a_valid_map_loads_and_a_scalar_column_dumps_no_map(self) -> None:
+        """The positive control, and E14: a scalar column's dump has no map key."""
+        spec = ColumnSpec.model_validate(_date_spec(formats_by_filename=MAPPED))
+        assert spec.formats_by_filename == (("a.csv", "%Y-%m-%d"), ("b.csv", "%d/%m/%Y"))
+        plain = ColumnSpec.model_validate(_date_spec(format="%Y-%m-%d"))
+        assert "formats_by_filename" not in plain.model_dump(mode="json", exclude_none=True)
+        assert "formats_by_filename" not in json.dumps(
+            SchemaRecord.model_validate(record()).model_dump(mode="json", exclude_none=True)
+        )
+
+
+def mapped_record() -> dict[str, Any]:
+    """``partitioned_record`` with the settlement date mapped per filename."""
+    rec = partitioned_record()
+    date_column = rec["epochs"][0]["columns"][0]
+    del date_column["format"]
+    date_column["formats_by_filename"] = MAPPED
+    return rec
+
+
+def _failure_names(info: pytest.ExceptionInfo[NesoCaptureFailedError]) -> list[str]:
+    return [cls for _capture, cls, _message in info.value.failures]
+
+
+class TestFormatResolution:
+    """T-H8: the capture's ``resource_filename`` picks the format; no fallback."""
+
+    def test_t_h8_a_each_mapped_file_parses_with_its_own_format(
+        self, data: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Detects one format applied to every file, or a lookup by anything other than
+        the exact filename: both files type the same date."""
+        generated = install_multi(monkeypatch, data, mapped_record())
+        capture_multi(data, "A", HEADER + b"2026-10-07,1,1.0\n", _t(8))
+        capture_multi(data, "B", HEADER + b"07/10/2026,2,2.0\n", _t(8))
+        generated.transformers[KEY](data).run(DAY, run_id="r")
+        silver = pl.concat(
+            pl.read_parquet(path, hive_partitioning=False)
+            for path in sorted((data / "silver" / SOURCE / KEY).rglob("*.parquet"))
+        )
+        assert silver["settlement_date"].unique().to_list() == [date(2026, 10, 7)]
+        assert sorted(silver["settlement_period"].to_list()) == [1, 2]
+
+    @pytest.mark.parametrize("empty", [False, True], ids=["populated", "valid-empty"])
+    def test_t_h8_bc_an_unmapped_filename_fails_the_capture(
+        self, data: Path, monkeypatch: pytest.MonkeyPatch, empty: bool
+    ) -> None:
+        """Detects a fallback format (or a skipped check on the header-only path) for a
+        file the record does not name: the capture fails loudly, writes no output and no
+        completion, and reconcile reports it ``failed``."""
+        generated = install_multi(monkeypatch, data, mapped_record())
+        body = HEADER if empty else HEADER + b"2026-10-07,1,1.0\n"
+        extra = {"empty_capture": True} if empty else {}
+        capture_id = capture_multi(data, "C", body, _t(8), **extra)
+        with pytest.raises(NesoCaptureFailedError) as info:
+            generated.transformers[KEY](data).run(DAY, run_id="r")
+        assert _failure_names(info) == [UnmappedResourceFormatError.__name__]
+        message = info.value.failures[0][2]
+        assert "c.csv" in message and "settlement_date" in message and "a.csv" in message
+        assert read_completion(data, KEY, capture_id) is None
+        assert not list(data.rglob("silver/**/*.parquet"))
+        report = reconcile(data, registry_module.load_registry(), [KEY], DAY)
+        assert [(gap.category, gap.capture_id) for gap in report.gaps] == [("failed", capture_id)]
+
+    def test_t_h8_d_a_mapped_format_that_does_not_fit_fails_strictly(
+        self, data: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Detects a lenient parse under a mapped format (D-41): ``b.csv`` is mapped
+        ``%d/%m/%Y`` and carries ISO dates, so the capture fails and writes nothing."""
+        generated = install_multi(monkeypatch, data, mapped_record())
+        capture_id = capture_multi(data, "B", HEADER + b"2026-10-07,1,1.0\n", _t(8))
+        with pytest.raises(NesoCaptureFailedError) as info:
+            generated.transformers[KEY](data).run(DAY, run_id="r")
+        assert len(info.value.failures) == 1
+        assert _failure_names(info)[0] != UnmappedResourceFormatError.__name__
+        assert read_completion(data, KEY, capture_id) is None
+
+
+# --------------------------------------------------------------------------- #
+# Overlap (T-H9)
+# --------------------------------------------------------------------------- #
+
+
+def _overlap_lines(report: Any) -> list[str]:
+    return [gap.line() for gap in report.gaps if gap.category == "overlap"]
+
+
+class TestOverlap:
+    def test_t_h9_a_one_pair_in_two_resources_is_served_and_reported(
+        self, data: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Detects an invented precedence (one resource's row dropped) or an overlap
+        that passes silently: both rows are served by both renderers, reconcile names
+        both captures as non-drainable ``overlap`` gaps, and the drain leaves them."""
+        generated = install_multi(monkeypatch, data)
+        a = capture_multi(data, "A", HEADER + b"2026-10-07,1,1.0\n2026-10-07,2,2.0\n", _t(8))
+        b = capture_multi(data, "B", HEADER + b"2026-10-07,2,5.0\n", _t(9))
+        generated.transformers[KEY](data).run(DAY, run_id="r")
+        db = data / "cat.duckdb"
+        init_catalogue(db, data)
+        assert both_as_of(db, data, KEY, None) == sorted([a, a, b])
+
+        loaded = registry_module.load_registry()
+        report = reconcile(data, loaded, [KEY], DAY)
+        overlaps = [gap for gap in report.gaps if gap.category == "overlap"]
+        assert sorted(gap.capture_id for gap in overlaps) == sorted([a, b])
+        assert all(not gap.drainable for gap in overlaps)
+        assert len(report.gaps) == 2
+        by_capture = {gap.capture_id: gap.detail for gap in overlaps}
+        rid_a, rid_b = RESOURCES["A"][0], RESOURCES["B"][0]
+        assert by_capture[a] == (
+            f"1 key(s) also served by resource(s) ['{rid_b}']; "
+            "first: settlement_date=2026-10-07, settlement_period=2"
+        )
+        assert rid_a in by_capture[b]
+        assert "SUMMARY overlap 2" in report.lines()
+        assert all(gap.partition_date == DAY for gap in overlaps)
+
+        refreshed: list[bool] = []
+        after = drain(data, loaded, [KEY], DAY, lambda: refreshed.append(True))
+        assert after.drained == () and refreshed == []
+        assert _overlap_lines(after) == _overlap_lines(report)
+
+    def test_t_h9_b_a_recreated_uuid_with_the_same_name_overlaps(
+        self, data: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Detects a recreated resource (new UUID, the registered name, ADR-033 P-10)
+        silently shadowing or being shadowed by the old one (FM-7): both are served and
+        both captures are reported ``overlap``."""
+        generated = install_multi(monkeypatch, data)
+        old = capture_multi(data, "A", HEADER + b"2026-10-07,1,1.0\n", _t(8))
+        recreated = {"A": ("eeeeeeee-0000-4000-8000-0000000000ff", RESOURCES["A"][1], "a.csv")}
+        new = capture_multi(data, "A", HEADER + b"2026-10-07,1,2.0\n", _t(9), resources=recreated)
+        generated.transformers[KEY](data).run(DAY, run_id="r")
+        new_completion = read_completion(data, KEY, new)
+        assert new_completion is not None
+        assert new_completion["resource_id"] == recreated["A"][0]
+        report = reconcile(data, registry_module.load_registry(), [KEY], DAY)
+        assert sorted(gap.capture_id for gap in report.gaps) == sorted([old, new])
+        assert {gap.category for gap in report.gaps} == {"overlap"}
+
+    def test_t_h9_c_disjoint_resources_and_unpartitioned_families_report_none(
+        self, data: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Detects a false overlap on disjoint resources, and the check running on a
+        family that did not opt in (where one key across captures is ordinary)."""
+        generated = install_multi(monkeypatch, data)
+        capture_multi(data, "A", HEADER + b"2026-10-07,1,1.0\n", _t(8))
+        capture_multi(data, "B", HEADER + b"2026-10-07,2,2.0\n", _t(8))
+        generated.transformers[KEY](data).run(DAY, run_id="r")
+        report = reconcile(data, registry_module.load_registry(), [KEY], DAY)
+        assert report.clean
+        assert "SUMMARY overlap 0" in report.lines()
+
+    def test_t_h9_c_a_family_without_the_partition_is_never_checked(
+        self, data: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Detects the overlap check reading a family that did not opt in."""
+        plain = partitioned_record(entity_key=["settlement_date", "settlement_period", "value"])
+        del plain["latest_partition"]
+        generated = install_multi(monkeypatch, data, plain)
+        capture_multi(data, "A", HEADER + b"2026-10-07,1,1.0\n", _t(8))
+        generated.transformers[KEY](data).run(DAY, run_id="r")
+        calls: list[str] = []
+        monkeypatch.setattr(
+            "gridflow.silver.neso_data_portal.reconcile._overlaps",
+            lambda key, *args: calls.append(key) or [],
+        )
+        assert reconcile(data, registry_module.load_registry(), [KEY], DAY).clean
+        assert calls == []
+
+    def test_t_h9_d_an_unreadable_output_is_a_failed_check_not_a_pass(
+        self, data: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Detects a check that cannot read an output passing silently, or aborting
+        reconcile before the drainable gap is reported (FM-10): a truncated Parquet
+        yields one ``overlap check failed`` gap beside the invalid-output gap."""
+        generated = install_multi(monkeypatch, data)
+        capture_multi(data, "A", HEADER + b"2026-10-07,1,1.0\n", _t(8))
+        generated.transformers[KEY](data).run(DAY, run_id="r")
+        (output,) = sorted((data / "silver" / SOURCE / KEY).rglob("*.parquet"))
+        output.write_bytes(output.read_bytes()[:40])
+        report = reconcile(data, registry_module.load_registry(), [KEY], DAY)
+        overlaps = [gap for gap in report.gaps if gap.category == "overlap"]
+        assert len(overlaps) == 1
+        assert overlaps[0].capture_id == "-" and not overlaps[0].drainable
+        assert overlaps[0].detail.startswith("overlap check failed: ")
+        assert any(gap.drainable for gap in report.gaps if gap.category != "overlap")
