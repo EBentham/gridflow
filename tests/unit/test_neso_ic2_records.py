@@ -797,19 +797,23 @@ def test_the_repeated_label_fails_the_guard_and_the_clean_part_loads(data: Path)
 
 
 def test_the_0xa0_body_fails_alone_and_nothing_is_altered(data: Path) -> None:
-    """Detects a non-UTF-8 body decoded with replacement or a dropped byte, or one bad capture
+    """Detects a non-UTF-8 body decoded with replacement or a dropped byte, a generic failure
+    class no ledger entry may name (the pre-parse's ``ComputeError``), or one bad capture
     taking the family down: the 20241016 body (two standalone ``0xA0`` bytes) fails by itself
-    with the engine's recorded ``ComputeError``, leaves no completion and no output, and the
-    sibling upload completes with every row and no replacement character anywhere in the
-    silver output. Neither the fixture bytes nor the reader is changed (bronze repair is out of
+    with ``UnicodeDecodeError`` and ``bytes.decode``'s message, leaves no completion and no
+    output, and the sibling upload completes with every row and no replacement character
+    anywhere in the silver output. The fixture bytes are not changed (bronze repair is out of
     scope)."""
     enc, clean = capture(data, "ENC"), capture(data, "E1")
     assert body("ENC").count(b"\xa0") == 2
+    with pytest.raises(UnicodeDecodeError) as decoded:
+        body("ENC").decode("utf-8")
     with pytest.raises(NesoCaptureFailedError) as info:
         get_transformer(SOURCE, "brit_ned", data).run(DAY, run_id="r")
-    assert [(c, cls) for c, cls, _m in info.value.failures] == [(enc, "ComputeError")]
+    assert [(c, cls) for c, cls, _m in info.value.failures] == [(enc, "UnicodeDecodeError")]
     failure = read_failure(data, "brit_ned", enc)
-    assert failure is not None and failure["error_class"] == "ComputeError"
+    assert failure is not None and failure["error_class"] == "UnicodeDecodeError"
+    assert failure["message"] == str(decoded.value)
     assert read_completion(data, "brit_ned", enc) is None
     completion = read_completion(data, "brit_ned", clean)
     assert completion is not None and completion["row_count"] == len(populated("E1"))
@@ -817,6 +821,61 @@ def test_the_0xa0_body_fails_alone_and_nothing_is_altered(data: Path) -> None:
     assert set(silver["bronze_capture_id"].to_list()) == {clean}
     text = "".join(str(v) for column in silver.columns for v in silver[column].to_list())
     assert "�" not in text and "\xa0" not in text
+
+
+def test_the_0xa0_body_without_the_byte_loads(data: Path) -> None:
+    """A1 positive control. Detects a gate that rejects the 20241016 body for anything but its
+    two ``0xA0`` bytes: with them removed the same capture completes with every populated row
+    and leaves no failure record."""
+    raw = body("ENC").replace(b"\xa00", b"0")
+    raw.decode("utf-8")
+    enc = capture(data, "ENC", raw=raw)
+    written = get_transformer(SOURCE, "brit_ned", data).run(DAY, run_id="r")
+    assert written == len(populated("ENC"))
+    assert read_completion(data, "brit_ned", enc) is not None
+    assert read_failure(data, "brit_ned", enc) is None
+
+
+def _large_enc_body() -> bytes:
+    """Over 6 MiB of unique hourly labels under the ENC header (beyond the pre-parse's reach,
+    K-IC-2H PLAN E4), CRLF, the last row carrying ``,\\xa00,``."""
+    lines = [body("ENC").split(b"\r\n")[0]]
+    start = date(2000, 1, 1).toordinal()
+    size, day = 0, 0
+    while size < 6 * (1 << 20) + 1024:
+        label = date.fromordinal(start + day).strftime("%Y%m%d")
+        for hour in range(24):
+            line = f"{label} {hour:02d}:00-{hour + 1:02d}:00,1060,1050,".encode()
+            lines.append(line)
+            size += len(line) + 2
+        day += 1
+    lines[-1] = lines[-1].replace(b",1050,", b",\xa00,")
+    return b"\r\n".join(lines) + b"\r\n"
+
+
+@pytest.mark.parametrize("where", ["header", "large"])
+def test_the_0xa0_class_does_not_depend_on_where_the_byte_is(data: Path, where: str) -> None:
+    """A2. Detects a failure class that depends on the bad byte's position: a ``0xA0`` inside
+    the header name ``Reason for restriction``, or in the last row of a body larger than the
+    pre-parse reads, fails the capture with ``UnicodeDecodeError`` just as a data-row byte
+    does (before the gate both were ``NotCsvBodyError``)."""
+    if where == "header":
+        raw = (
+            body("ENC")
+            .replace(b"\xa00", b"0")
+            .replace(b"Reason for restriction", b"Reason for\xa0restriction")
+        )
+    else:
+        raw = _large_enc_body()
+        assert len(raw) >= 6 * (1 << 20)
+    assert raw.count(b"\xa0") == 1
+    enc = capture(data, "ENC", raw=raw)
+    with pytest.raises(NesoCaptureFailedError) as info:
+        get_transformer(SOURCE, "brit_ned", data).run(DAY, run_id="r")
+    assert [(c, cls) for c, cls, _m in info.value.failures] == [(enc, "UnicodeDecodeError")]
+    failure = read_failure(data, "brit_ned", enc)
+    assert failure is not None and failure["error_class"] == "UnicodeDecodeError"
+    assert read_completion(data, "brit_ned", enc) is None
 
 
 def _entry_template(position: int) -> dict[str, Any]:
@@ -898,7 +957,12 @@ def test_the_0xa0_capture_is_the_one_open_reconcile_gap(
     code, lines = run_cli("brit_ned", "--cutoff", DAY.isoformat())
     assert code == 1, lines
     gaps = [line for line in lines if line.startswith("GAP")]
-    assert len(gaps) == 1 and "failed" in gaps[0] and enc in gaps[0] and "ComputeError" in gaps[0]
+    assert (
+        len(gaps) == 1
+        and "failed" in gaps[0]
+        and enc in gaps[0]
+        and "UnicodeDecodeError" in gaps[0]
+    )
     assert "SUMMARY adjudicated 3" in lines
     with pytest.raises(ValueError, match="DuplicateEntityKeyError"):
         registry_module.ReconcileAdjudication.model_validate(

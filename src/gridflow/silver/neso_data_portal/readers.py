@@ -67,6 +67,7 @@ __all__ = [
 ]
 
 _UTF8_BOM = b"\xef\xbb\xbf"
+_UTF8_CHUNK = 1 << 20
 _SHARED_STRINGS = "xl/sharedStrings.xml"
 
 
@@ -100,17 +101,71 @@ BodyReader = Callable[["Path", "SchemaRecord", tuple[str, ...]], Iterator[ChildT
 """``(body path, record, requested child ids) -> tables``; ``()`` for a plain body."""
 
 
+def _validate_utf8(raw: bytes) -> None:
+    """Validate ``raw`` as strict UTF-8 in bounded chunks, keeping no decoded text.
+
+    Args:
+        raw: The body, BOM included.
+
+    Raises:
+        UnicodeDecodeError: ``raw`` is not valid UTF-8. The exception's object
+            is ``raw`` itself and its positions are absolute in it, so the
+            message equals the one ``raw.decode("utf-8")`` would raise.
+    """
+    decoder = codecs.getincrementaldecoder("utf-8")("strict")
+    view = memoryview(raw)
+    offset = 0
+    base = 0
+    try:
+        while offset < len(view):
+            # The decoder may hold a partial sequence from the previous chunk;
+            # its error positions count from the start of that held prefix.
+            base = offset - len(decoder.getstate()[0])
+            decoder.decode(view[offset : offset + _UTF8_CHUNK], False)
+            offset += _UTF8_CHUNK
+        base = len(raw) - len(decoder.getstate()[0])
+        decoder.decode(b"", True)
+    except UnicodeDecodeError as exc:
+        raise UnicodeDecodeError(
+            exc.encoding, raw, base + exc.start, base + exc.end, exc.reason
+        ) from None
+
+
+def _utf8_body(raw: bytes, record: SchemaRecord) -> bytes:
+    """The body as UTF-8 bytes, strictly checked against ``record.encoding``.
+
+    A UTF-8-alias record's body is validated in bounded chunks and returned as
+    the same object (no copy). Any other encoding is decoded strictly and
+    re-encoded as UTF-8.
+
+    Args:
+        raw: The body as stored.
+        record: The family's record.
+
+    Returns:
+        UTF-8 bytes; ``raw`` itself for a UTF-8-alias record.
+
+    Raises:
+        UnicodeDecodeError: The body is not valid in ``record.encoding``.
+    """
+    if codecs.lookup(record.encoding).name in ("utf-8", "utf-8-sig"):
+        _validate_utf8(raw)
+        return raw
+    return raw.decode(record.encoding, errors="strict").encode("utf-8")
+
+
 def read_csv_body(
     path: Path, record: SchemaRecord, children: tuple[str, ...]
 ) -> Iterator[ChildTable]:
     """Read one CSV body with the record's encoding through unit A's reader.
 
     The body is decoded strictly with ``record.encoding`` and re-encoded as
-    UTF-8 (a UTF-8 body is passed through: :func:`read_csv_bronze_body`
-    validates it strictly itself, and a second copy of a large body would
-    only cost memory). The header is parsed first and handed to the reader as
-    its ``expected_columns``, so unit A's BOM, blank-row and markup rules all
-    apply and the header-to-epoch match happens in P-4.
+    UTF-8; a UTF-8 body is instead validated in bounded chunks and passed
+    through uncopied, so every body that is not valid in ``record.encoding``
+    raises ``UnicodeDecodeError`` before Polars sees it. The header is parsed
+    first and handed to the reader as its ``expected_columns``, so unit A's
+    BOM, blank-row and markup rules all apply and the header-to-epoch match
+    happens in P-4.
 
     Args:
         path: The bronze body.
@@ -126,9 +181,7 @@ def read_csv_body(
     """
     if children:
         raise ContainerInventoryError(f"{path}: a CSV body has no children, asked for {children}")
-    raw = path.read_bytes()
-    if codecs.lookup(record.encoding).name not in ("utf-8", "utf-8-sig"):
-        raw = raw.decode(record.encoding, errors="strict").encode("utf-8")
+    raw = _utf8_body(path.read_bytes(), record)
     body = raw[len(_UTF8_BOM) :] if raw.startswith(_UTF8_BOM) else raw
     header: tuple[str, ...] = ()
     if body.strip() and not body.strip().startswith(b"<"):
@@ -492,9 +545,12 @@ def read_xlsx_body(
 def _csv_member_table(
     raw: bytes, record: SchemaRecord, label: str
 ) -> tuple[tuple[str, ...], pl.DataFrame]:
-    """A CSV member's header and rows, exactly as :func:`read_csv_body` reads a body."""
-    if codecs.lookup(record.encoding).name not in ("utf-8", "utf-8-sig"):
-        raw = raw.decode(record.encoding, errors="strict").encode("utf-8")
+    """A CSV member's header and rows, exactly as :func:`read_csv_body` reads a body.
+
+    Raises:
+        UnicodeDecodeError: The member is not valid in ``record.encoding``.
+    """
+    raw = _utf8_body(raw, record)
     body = raw[len(_UTF8_BOM) :] if raw.startswith(_UTF8_BOM) else raw
     header: tuple[str, ...] = ()
     if body.strip() and not body.strip().startswith(b"<"):
