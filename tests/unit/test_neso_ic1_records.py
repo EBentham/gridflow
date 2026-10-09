@@ -469,7 +469,7 @@ SHAPES: dict[str, Shape] = {
         ("operational_date_and_hour",),
         None,
         "ckan_last_modified",
-        HOLD_D,
+        HOLD_C,
     ),
     "nemolink_nemo_da_id_weekly_ntcs": Shape(
         "nemolink.json",
@@ -480,7 +480,7 @@ SHAPES: dict[str, Shape] = {
         ("operational_date_and_hour",),
         None,
         "ckan_last_modified",
-        HOLD_D,
+        HOLD_C,
     ),
     "nemolink_intraday": Shape(
         "nemolink.json",
@@ -1110,9 +1110,20 @@ def test_the_committed_ledger_carries_the_nsl_entry() -> None:
             registry.resources[CAPTURE_ID_PATTERN.fullmatch(c)["rid"]][1].name
             for e in nsl for c in e.captures
         )
-        print(json.dumps({"entries": [e.model_dump(mode="json") for e in nsl], "names": names}))
+        print(json.dumps({
+            "entries": [e.model_dump(mode="json") for e in nsl],
+            "names": names,
+            "families": [e.family for e in entries],
+        }))
         """
     )
+    # the whole ledger is the three ruled families (GEN-2H's two, RULINGS 547, and this one):
+    # a stray well-formed entry for another family fails here
+    assert loaded["families"] == [
+        "metered_wind_output_monthly",
+        "wind_bmu_boa_volumes",
+        "nsl",
+    ]
     assert loaded["entries"] == [NSL_ENTRY]
     assert loaded["names"] == ["Archived NSL NTC Data"]
 

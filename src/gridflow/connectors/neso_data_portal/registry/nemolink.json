@@ -71,7 +71,7 @@
         "vintage": "ckan_last_modified",
         "eligibility": {
           "status": "held",
-          "question": "TODO: the archive's operational-date rollover, GMT/BST interpretation and `(a)`/`(b)` repeated-hour labels are undocumented, and every target precedes the upload's last_modified, so the forward-target rule (RULINGS 529) cannot apply.",
+          "question": "TODO: the archive's operational-date rollover and GMT/BST interpretation are undocumented, and every target precedes the upload's last_modified, so the forward-target rule (RULINGS 529) cannot apply.",
           "unit": "E-SEM"
         }
       }
