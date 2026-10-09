@@ -334,6 +334,11 @@ def test_dem1_record_shapes_match_the_unit_table() -> None:
         assert record.entity_key == tuple(c.name for c in record.epochs[0].columns), key
         for column in record.epochs[0].columns:
             assert not column.null_tokens, (key, column.name)
+            # only the temporal inputs exclude a row; every other blank is a null (no invented rule)
+            assert column.nullable == (column.name not in record.temporal.inputs), (
+                key,
+                column.name,
+            )
             if column.name == "settlement_period":  # the repo-wide 1..50 bound, never 1..48
                 assert (column.min, column.max) == (1, 50), key
             else:  # no invented bounds on demand, flow or capacity values

@@ -150,7 +150,7 @@
                 "dtype": "datetime",
                 "format": "%Y-%m-%dT%H:%M:%S",
                 "zone": "UTC",
-                "nullable": false
+                "nullable": true
               },
               {
                 "source": "NATIONALDEMAND",
