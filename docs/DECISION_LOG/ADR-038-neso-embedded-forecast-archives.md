@@ -119,8 +119,9 @@ legacy key, the single exact-name member of its selector. `_ISSUE_TOKEN_PATTERN`
 the current and newer live filenames (`202610061925_…`, `202610080725_embedded_forecast.csv`)
 and not `embedded_archive_2025.csv`. The filename token equals CKAN `last_modified` (UTC) to
 the minute, which corroborates D-15. The bespoke transformer, `_bronze.py`, its schema and
-selector are untouched. The bespoke reads only its own exact bronze partition (its
-`BRONZE_SIBLING_DATASETS` is empty), so no archive body reaches it.
+selector are untouched. The bespoke's per-file branch globs only its own exact bronze
+partition (`silver/base.py`, `VINTAGE_PER_BRONZE_FILE`), and its `BRONZE_SIBLING_DATASETS`
+is empty for the covering-partition path, so no archive body reaches it.
 
 **P-7 — no combined live + archive `_latest`.** The dump holds every target of both live
 captures, so ROADMAP unknown (b) expected `_latest` across the keys to be "a sibling read".
