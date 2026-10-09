@@ -17,7 +17,96 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "DAYSAHEAD",
+              "TARGETDATE",
+              "FORECASTDEMAND",
+              "CARDINALPOINT",
+              "CP_TYPE",
+              "CP_ST_TIME",
+              "CP_END_TIME",
+              "F_Point"
+            ],
+            "columns": [
+              {
+                "source": "DAYSAHEAD",
+                "name": "daysahead",
+                "dtype": "int64",
+                "nullable": true
+              },
+              {
+                "source": "TARGETDATE",
+                "name": "targetdate",
+                "dtype": "date",
+                "format": "%Y%m%d",
+                "nullable": false
+              },
+              {
+                "source": "FORECASTDEMAND",
+                "name": "forecastdemand",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "CARDINALPOINT",
+                "name": "cardinalpoint",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "CP_TYPE",
+                "name": "cp_type",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "CP_ST_TIME",
+                "name": "cp_st_time",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "CP_END_TIME",
+                "name": "cp_end_time",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "F_Point",
+                "name": "f_point",
+                "dtype": "string",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "date_sp1",
+          "date_column": "targetdate"
+        },
+        "entity_key": [
+          "daysahead",
+          "targetdate",
+          "forecastdemand",
+          "cardinalpoint",
+          "cp_type",
+          "cp_st_time",
+          "cp_end_time",
+          "f_point"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified"
+      }
     },
     {
       "key": "demand_forecast_2d_historic_day_ahead",
@@ -28,7 +117,109 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "DAYSAHEAD",
+              "TARGETDATE",
+              "FORECASTDEMAND",
+              "CARDINALPOINT",
+              "CP_TYPE",
+              "CP_ST_TIME",
+              "CP_END_TIME",
+              "F_Point",
+              "FORECAST_TIMESTAMP"
+            ],
+            "columns": [
+              {
+                "source": "DAYSAHEAD",
+                "name": "daysahead",
+                "dtype": "int64",
+                "nullable": true
+              },
+              {
+                "source": "TARGETDATE",
+                "name": "targetdate",
+                "dtype": "date",
+                "format": "%Y-%m-%d",
+                "nullable": false
+              },
+              {
+                "source": "FORECASTDEMAND",
+                "name": "forecastdemand",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "CARDINALPOINT",
+                "name": "cardinalpoint",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "CP_TYPE",
+                "name": "cp_type",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "CP_ST_TIME",
+                "name": "cp_st_time",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "CP_END_TIME",
+                "name": "cp_end_time",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "F_Point",
+                "name": "f_point",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "FORECAST_TIMESTAMP",
+                "name": "forecast_timestamp",
+                "dtype": "string",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "date_sp1",
+          "date_column": "targetdate"
+        },
+        "entity_key": [
+          "daysahead",
+          "targetdate",
+          "forecastdemand",
+          "cardinalpoint",
+          "cp_type",
+          "cp_st_time",
+          "cp_end_time",
+          "f_point",
+          "forecast_timestamp"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: FORECAST_TIMESTAMP zone is undocumented (values carry Z but sit after the file's CKAN last_modified when read as UTC); whether it is the immutable issue instant",
+          "unit": "E-SEM"
+        }
+      }
     },
     {
       "key": "demand_forecast_2d_files",

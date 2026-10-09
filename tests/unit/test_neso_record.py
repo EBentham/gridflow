@@ -498,6 +498,28 @@ CI_PACKAGE_FILES = {
     "capacity-market-register.json",
 }
 
+DEM1_RECORDED = {
+    "demand_forecast_1d_day_ahead_national",
+    "demand_forecast_1d_historic_day_ahead",
+    "demand_forecast_2d_day_ahead",
+    "demand_forecast_2d_historic_day_ahead",
+    "national_forecast_7d_day_ahead_demand",
+    "national_forecast_7d_historic_day_ahead",
+    "national_demand_fc_2_14d_days_ahead",
+    "national_demand_fc_2_14d_days_ahead_half",
+    "national_demand_fc_2_14d_historic_day",
+    "daily_demand_update",
+}
+"""The ten demand-forecast families unit K-DEM-1 records (``historic_demand`` is DEM-1H)."""
+
+DEM1_PACKAGE_FILES = {
+    "1-day-ahead-demand-forecast.json",
+    "2-day-ahead-demand-forecast.json",
+    "7-day-ahead-national-forecast.json",
+    "2-14-days-ahead-national-demand-forecast.json",
+    "daily-demand-update.json",
+}
+
 X_RESOURCES_WITH_CHILDREN = 4 + 1 + 39 + 73 + 1
 """Unit X's committed inventories (ADR-037 P-8): CMP workbooks, the ResultSummary ZIP,
 frequency ZIPs, held data containers and the GSP archive with a CSV member."""
@@ -513,7 +535,7 @@ class TestSeededRegistry:
         assert sum(entry.legacy for entry in entries) == 3
         assert sum(entry.kind == "files" for entry in entries) == 35
         recorded = {entry.key for entry in entries if entry.record is not None}
-        assert recorded == PILOT_RECORDED | X_RECORDED | EF_RECORDED | CI_RECORDED
+        assert recorded == (PILOT_RECORDED | X_RECORDED | EF_RECORDED | CI_RECORDED | DEM1_RECORDED)
         with_children = [res for _package, res in loaded.resources.values() if res.children]
         assert len(with_children) == X_RESOURCES_WITH_CHILDREN
 
@@ -529,9 +551,12 @@ class TestSeededRegistry:
             document = json.loads(item.read_text(encoding="utf-8"))
             if any("record" in fam for fam in document["families"]):
                 with_record.add(item.name)
-        assert (
-            with_record
-            == PILOT_PACKAGE_FILES | X_PACKAGE_FILES | EF_PACKAGE_FILES | CI_PACKAGE_FILES
+        assert with_record == (
+            PILOT_PACKAGE_FILES
+            | X_PACKAGE_FILES
+            | EF_PACKAGE_FILES
+            | CI_PACKAGE_FILES
+            | DEM1_PACKAGE_FILES
         )
 
 

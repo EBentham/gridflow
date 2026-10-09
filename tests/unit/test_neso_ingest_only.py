@@ -24,7 +24,7 @@ if TYPE_CHECKING:
     import pytest
 
 SOURCE = "neso_data_portal"
-TABULAR = "demand_forecast_1d_day_ahead_national"
+TABULAR = "historic_demand"  # still ingest-only: split to DEM-1H (RULINGS 528)
 FILES = "demand_forecast_1d_files"
 DAY = datetime(2026, 10, 7, tzinfo=UTC)
 

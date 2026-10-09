@@ -17,7 +17,224 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "SETTLEMENT_DATE",
+              "SETTLEMENT_PERIOD",
+              "ND",
+              "FORECAST_ACTUAL_INDICATOR",
+              "TSD",
+              "ENGLAND_WALES_DEMAND",
+              "EMBEDDED_WIND_GENERATION",
+              "EMBEDDED_WIND_CAPACITY",
+              "EMBEDDED_SOLAR_GENERATION",
+              "EMBEDDED_SOLAR_CAPACITY",
+              "NON_BM_STOR",
+              "PUMP_STORAGE_PUMPING",
+              "SCOTTISH_TRANSFER",
+              "IFA_FLOW",
+              "IFA2_FLOW",
+              "BRITNED_FLOW",
+              "MOYLE_FLOW",
+              "EAST_WEST_FLOW",
+              "NEMO_FLOW",
+              "NSL_FLOW",
+              "ELECLINK_FLOW",
+              "VIKING_FLOW",
+              "GREENLINK_FLOW"
+            ],
+            "columns": [
+              {
+                "source": "SETTLEMENT_DATE",
+                "name": "settlement_date",
+                "dtype": "date",
+                "format": "%Y-%m-%d",
+                "nullable": false
+              },
+              {
+                "source": "SETTLEMENT_PERIOD",
+                "name": "settlement_period",
+                "dtype": "int64",
+                "nullable": false,
+                "min": 1,
+                "max": 50
+              },
+              {
+                "source": "ND",
+                "name": "nd",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "FORECAST_ACTUAL_INDICATOR",
+                "name": "forecast_actual_indicator",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "TSD",
+                "name": "tsd",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "ENGLAND_WALES_DEMAND",
+                "name": "england_wales_demand",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "EMBEDDED_WIND_GENERATION",
+                "name": "embedded_wind_generation",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "EMBEDDED_WIND_CAPACITY",
+                "name": "embedded_wind_capacity",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "EMBEDDED_SOLAR_GENERATION",
+                "name": "embedded_solar_generation",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "EMBEDDED_SOLAR_CAPACITY",
+                "name": "embedded_solar_capacity",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "NON_BM_STOR",
+                "name": "non_bm_stor",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "PUMP_STORAGE_PUMPING",
+                "name": "pump_storage_pumping",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "SCOTTISH_TRANSFER",
+                "name": "scottish_transfer",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "IFA_FLOW",
+                "name": "ifa_flow",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "IFA2_FLOW",
+                "name": "ifa2_flow",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "BRITNED_FLOW",
+                "name": "britned_flow",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "MOYLE_FLOW",
+                "name": "moyle_flow",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "EAST_WEST_FLOW",
+                "name": "east_west_flow",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "NEMO_FLOW",
+                "name": "nemo_flow",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "NSL_FLOW",
+                "name": "nsl_flow",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "ELECLINK_FLOW",
+                "name": "eleclink_flow",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "VIKING_FLOW",
+                "name": "viking_flow",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "GREENLINK_FLOW",
+                "name": "greenlink_flow",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "sp_pair",
+          "date_column": "settlement_date",
+          "period_column": "settlement_period"
+        },
+        "entity_key": [
+          "settlement_date",
+          "settlement_period",
+          "nd",
+          "forecast_actual_indicator",
+          "tsd",
+          "england_wales_demand",
+          "embedded_wind_generation",
+          "embedded_wind_capacity",
+          "embedded_solar_generation",
+          "embedded_solar_capacity",
+          "non_bm_stor",
+          "pump_storage_pumping",
+          "scottish_transfer",
+          "ifa_flow",
+          "ifa2_flow",
+          "britned_flow",
+          "moyle_flow",
+          "east_west_flow",
+          "nemo_flow",
+          "nsl_flow",
+          "eleclink_flow",
+          "viking_flow",
+          "greenlink_flow"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: zero ND/TSD on FORECAST_ACTUAL_INDICATOR = F rows: a forecast of zero or no forecast?",
+          "unit": "E-SEM"
+        }
+      }
     },
     {
       "key": "daily_demand_update_files",
