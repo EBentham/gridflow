@@ -81,7 +81,7 @@ null and `available_at` = the capture's `written_at`. **Mixed families (C-7):** 
 families holding uploads and dumps take `capture_fallback` for their uploads too — honest,
 but later than the upload's `last_modified`. `embedded_wind_solar_forecast_archive` (7
 uploads + the 2026 dump) can take `issue_time_evidenced` only after a registry commit splits
-the dump into its own family.
+the dump into its own family. EF splits the dump into its own owner: ADR-038.
 
 **P-11 — field-info mode.** `python -m gridflow.connectors.neso_data_portal.catalog_snapshot
 --field-info [--snapshot DIR] [--family KEY ...]` verifies the snapshot, then for every
