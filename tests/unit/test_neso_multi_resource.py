@@ -67,6 +67,14 @@ DEM2_ADDED = frozenset(
     }
 )
 """The four families v0.22-K-DEM-2 records after the golden was written."""
+REWORDED_HOLDS = {
+    "national_forecast_7d_historic_day_ahead": (
+        "TODO: FORECAST_TIMESTAMP has no vendor definition and its zone is undocumented "
+        "(values carry Z); whether it is the immutable issue instant"
+    ),
+}
+"""The one hold question reworded since the golden (K-DEM-2, RULINGS 534): the golden's text
+claimed a measurement K-DEM-1-FACTS made only for the 1-day, 2-day and 2-14-day archives."""
 TS = pl.Datetime("us", "UTC")
 TIE = ("capture_written_at", "bronze_capture_id")
 
@@ -104,6 +112,9 @@ class TestByteUnchanged:
         ``historic_demand`` and K-DEM-2's four demand-reference records appearing.
         """
         golden = json.loads(PIN_PATH.read_text(encoding="utf-8"))
+        for key, question in REWORDED_HOLDS.items():
+            assert golden["records"][key]["eligibility"]["question"] != question, key
+            golden["records"][key]["eligibility"]["question"] = question
         current = json.loads(dump(generated_pin()))
         for section in ("sql", "records", "columns", "engine"):
             assert set(golden[section]) <= set(current[section]), section

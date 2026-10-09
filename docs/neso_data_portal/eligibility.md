@@ -26,7 +26,7 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `24-months-ahead-constraint-limits` | `constraint_limits_24m_files` | catalogue only | — | — | — | — |
 | `7-day-ahead-national-forecast` | `national_forecast_7d_day_ahead_demand` | silver | eligible | whole_capture | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
 | `7-day-ahead-national-forecast` | `national_forecast_7d_files` | catalogue only | — | — | — | — |
-| `7-day-ahead-national-forecast` | `national_forecast_7d_historic_day_ahead` | silver | held: TODO: FORECAST_TIMESTAMP zone is undocumented (values carry Z but sit after the file's CKAN last_modified when read as UTC); whether it is the immutable issue instant; the field has no vendor definition (unit E-SEM) | whole_capture | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
+| `7-day-ahead-national-forecast` | `national_forecast_7d_historic_day_ahead` | silver | held: TODO: FORECAST_TIMESTAMP has no vendor definition and its zone is undocumented (values carry Z); whether it is the immutable issue instant (unit E-SEM) | whole_capture | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
 | `aahedc-tariffs` | `aahedc_tariffs` | ingest-only (no silver output) | — | — | — | — |
 | `aggregated-bsad` | `aggregated_bsad` | ingest-only (no silver output) | — | — | — | — |
 | `ancillary-services-important-industry-notifications` | `as_industry_notifications_balancing` | ingest-only (no silver output) | — | — | — | — |

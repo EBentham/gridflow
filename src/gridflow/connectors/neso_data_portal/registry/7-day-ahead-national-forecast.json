@@ -216,7 +216,7 @@
         "vintage": "ckan_last_modified",
         "eligibility": {
           "status": "held",
-          "question": "TODO: FORECAST_TIMESTAMP zone is undocumented (values carry Z but sit after the file's CKAN last_modified when read as UTC); whether it is the immutable issue instant; the field has no vendor definition",
+          "question": "TODO: FORECAST_TIMESTAMP has no vendor definition and its zone is undocumented (values carry Z); whether it is the immutable issue instant",
           "unit": "E-SEM"
         }
       }
