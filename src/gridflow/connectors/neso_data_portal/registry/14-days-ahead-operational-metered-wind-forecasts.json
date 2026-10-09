@@ -17,7 +17,83 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Datetime",
+              "Date",
+              "Settlement_Period",
+              "Capacity",
+              "Wind_Forecast",
+              "ForecastDatetime"
+            ],
+            "columns": [
+              {
+                "source": "Datetime",
+                "name": "datetime",
+                "dtype": "datetime",
+                "format": "%Y-%m-%dT%H:%M:%SZ",
+                "nullable": false,
+                "zone": "UTC"
+              },
+              {
+                "source": "Date",
+                "name": "date",
+                "dtype": "date",
+                "format": "%Y-%m-%d",
+                "nullable": true
+              },
+              {
+                "source": "Settlement_Period",
+                "name": "settlement_period",
+                "dtype": "int64",
+                "nullable": true,
+                "min": 1,
+                "max": 50
+              },
+              {
+                "source": "Capacity",
+                "name": "capacity",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Wind_Forecast",
+                "name": "wind_forecast",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "ForecastDatetime",
+                "name": "forecast_datetime",
+                "dtype": "datetime",
+                "format": "%Y-%m-%dT%H:%M:%SZ",
+                "nullable": false,
+                "zone": "UTC"
+              }
+            ],
+            "issue": {
+              "kind": "data_column",
+              "column": "forecast_datetime"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "utc_instant",
+          "column": "datetime"
+        },
+        "entity_key": [
+          "datetime",
+          "issue_time"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified"
+      }
     },
     {
       "key": "metered_wind_forecast_14d_windfarm",
@@ -28,7 +104,94 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Datetime",
+              "Date",
+              "Settlement_Period",
+              "Generator_Name",
+              "Generator_Full_Name",
+              "Region",
+              "Capacity",
+              "Wind_Forecast"
+            ],
+            "columns": [
+              {
+                "source": "Datetime",
+                "name": "datetime",
+                "dtype": "datetime",
+                "format": "%Y-%m-%dT%H:%M:%SZ",
+                "nullable": false,
+                "zone": "UTC"
+              },
+              {
+                "source": "Date",
+                "name": "date",
+                "dtype": "date",
+                "format": "%Y-%m-%d",
+                "nullable": true
+              },
+              {
+                "source": "Settlement_Period",
+                "name": "settlement_period",
+                "dtype": "int64",
+                "nullable": true,
+                "min": 1,
+                "max": 50
+              },
+              {
+                "source": "Generator_Name",
+                "name": "generator_name",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Generator_Full_Name",
+                "name": "generator_full_name",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Region",
+                "name": "region",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Capacity",
+                "name": "capacity",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Wind_Forecast",
+                "name": "wind_forecast",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "utc_instant",
+          "column": "datetime"
+        },
+        "entity_key": [
+          "datetime",
+          "generator_name"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified"
+      }
     }
   ],
   "resources": [

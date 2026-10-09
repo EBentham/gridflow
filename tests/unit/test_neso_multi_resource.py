@@ -67,6 +67,25 @@ DEM2_ADDED = frozenset(
     }
 )
 """The four families v0.22-K-DEM-2 records after the golden was written."""
+GEN1_ADDED = frozenset(
+    {
+        "metered_wind_forecast_14d",
+        "metered_wind_forecast_14d_windfarm",
+        "wind_forecast_14d_days_ahead",
+        "wind_forecast_14d_day_ahead_bmu",
+        "da_wind_forecast_day_ahead",
+        "da_wind_forecast_day_ahead_bmu",
+        "da_wind_forecast_historic_day_ahead",
+        "da_wind_forecast_historic_day_ahead_bmu",
+        "nrapm_forecast_national_daily_days",
+        "nrapm_forecast_scotland_daily_days",
+        "nrapm_forecast_weekly_week_national",
+        "nrapm_forecast_weekly_week_scotland",
+        "daily_opmr",
+        "weekly_opmr",
+    }
+)
+"""The fourteen wind / margin forecast families v0.22-K-GEN-1 records after the golden."""
 REWORDED_HOLDS = {
     "national_forecast_7d_historic_day_ahead": (
         "TODO: FORECAST_TIMESTAMP has no vendor definition and its zone is undocumented "
@@ -109,7 +128,8 @@ class TestByteUnchanged:
         """Detects any change to an existing family's ``_latest`` SQL (either as-of mode),
         record dump, output columns or DEM-1 engine output against the golden written on
         the untouched base (master ``73fde80``), and any generated family other than
-        ``historic_demand`` and K-DEM-2's four demand-reference records appearing.
+        ``historic_demand``, K-DEM-2's four demand-reference records and K-GEN-1's fourteen
+        wind / margin forecast records appearing.
         """
         golden = json.loads(PIN_PATH.read_text(encoding="utf-8"))
         for key, question in REWORDED_HOLDS.items():
@@ -120,7 +140,7 @@ class TestByteUnchanged:
             assert set(golden[section]) <= set(current[section]), section
             for key, value in golden[section].items():
                 assert current[section][key] == value, (section, key)
-            added = {"historic_demand", *DEM2_ADDED} if section != "engine" else set()
+            added = {"historic_demand", *DEM2_ADDED, *GEN1_ADDED} if section != "engine" else set()
             assert set(current[section]) - set(golden[section]) == added, section
 
 
@@ -730,7 +750,11 @@ class TestRecordRules:
                 k for k, (_p, f) in families.items()
                 if f.record is not None and f.record.latest_partition is not None
             )
-            assert partitioned == ["historic_demand", "school_holiday_percentages"], partitioned
+            assert partitioned == [
+                "da_wind_forecast_historic_day_ahead_bmu",
+                "historic_demand",
+                "school_holiday_percentages",
+            ], partitioned
             print("OK", len(recorded), partitioned)
             """
         )

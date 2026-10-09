@@ -17,7 +17,55 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Date",
+              "CP",
+              "MW away from risk of System Level NRAPM_Forecast Conditions"
+            ],
+            "columns": [
+              {
+                "source": "Date",
+                "name": "date",
+                "dtype": "date",
+                "format": "%Y-%m-%d",
+                "nullable": false
+              },
+              {
+                "source": "CP",
+                "name": "cp",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "MW away from risk of System Level NRAPM_Forecast Conditions",
+                "name": "mw_away_from_risk_of_system_level_nrapm_forecast_conditions",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "date_sp1",
+          "date_column": "date"
+        },
+        "entity_key": [
+          "date",
+          "cp"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified"
+      }
     },
     {
       "key": "nrapm_forecast_scotland_daily_days",
@@ -28,7 +76,55 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Date",
+              "CP",
+              "MW away from risk of Scotland Level NRAPM_Forecast Conditions"
+            ],
+            "columns": [
+              {
+                "source": "Date",
+                "name": "date",
+                "dtype": "date",
+                "format": "%Y-%m-%d",
+                "nullable": false
+              },
+              {
+                "source": "CP",
+                "name": "cp",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "MW away from risk of Scotland Level NRAPM_Forecast Conditions",
+                "name": "mw_away_from_risk_of_scotland_level_nrapm_forecast_conditions",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "date_sp1",
+          "date_column": "date"
+        },
+        "entity_key": [
+          "date",
+          "cp"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified"
+      }
     },
     {
       "key": "nrapm_forecast_weekly_week_national",
@@ -39,7 +135,67 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Week number",
+              "Date",
+              "Wind Load Factor required to cause a System Level NRAPM",
+              "Probability of seeing Wind load factor above"
+            ],
+            "columns": [
+              {
+                "source": "Week number",
+                "name": "week_number",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Date",
+                "name": "date",
+                "dtype": "date",
+                "format": "%Y-%m-%d",
+                "nullable": false
+              },
+              {
+                "source": "Wind Load Factor required to cause a System Level NRAPM",
+                "name": "wind_load_factor_required_to_cause_a_system_level_nrapm",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Probability of seeing Wind load factor above",
+                "name": "probability_of_seeing_wind_load_factor_above",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "date_sp1",
+          "date_column": "date"
+        },
+        "entity_key": [
+          "date",
+          "week_number"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: the load-factor and probability columns have no vendor unit or scale, and the dictionary titles and descriptions contradict each other",
+          "unit": "E-SEM"
+        }
+      }
     },
     {
       "key": "nrapm_forecast_weekly_week_scotland",
@@ -50,7 +206,67 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Week number",
+              "Date",
+              "Wind Load Factor required to cause a Scotland Level NRAPM",
+              "Probability of seeing Wind load factor above"
+            ],
+            "columns": [
+              {
+                "source": "Week number",
+                "name": "week_number",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Date",
+                "name": "date",
+                "dtype": "date",
+                "format": "%Y-%m-%d",
+                "nullable": false
+              },
+              {
+                "source": "Wind Load Factor required to cause a Scotland Level NRAPM",
+                "name": "wind_load_factor_required_to_cause_a_scotland_level_nrapm",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Probability of seeing Wind load factor above",
+                "name": "probability_of_seeing_wind_load_factor_above",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "date_sp1",
+          "date_column": "date"
+        },
+        "entity_key": [
+          "date",
+          "week_number"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: the load-factor and probability columns have no vendor unit or scale, and the dictionary titles and descriptions contradict each other",
+          "unit": "E-SEM"
+        }
+      }
     }
   ],
   "resources": [
