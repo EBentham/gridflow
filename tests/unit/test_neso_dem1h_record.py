@@ -114,7 +114,7 @@ SIDECARS: dict[str, tuple[str, str, str, int]] = {
 LF_FILES = frozenset({"demanddataupdate_2026.csv"})
 
 QUESTION = (
-    "TODO: literal NA in the epoch-2 bodies (2001-2008, 2023-2025) in TSD, the embedded "
+    "TODO: literal NA in the epoch-2 bodies of 2001-2008 in TSD, the embedded "
     "wind/solar columns, SCOTTISH_TRANSFER and every interconnector flow but IFA: missing, not "
     "applicable or zero? NESO defines no meaning; those columns stay text across every epoch "
     "until it does."
@@ -361,3 +361,29 @@ def test_t_h10_g_the_record_is_held_on_na_and_partitioned_per_resource() -> None
     assert record["temporal"] == "sp_pair"
     assert record["epochs"] == 4
     assert record["issues"] == ["none"]
+
+
+MEASURED_NA_YEARS = frozenset(range(2001, 2009))
+"""The ``historic_demand`` resources whose body holds a literal ``NA`` cell, measured by
+streaming all 26 bronze bodies of the 2026-10-08 sweep (v0.22-K-GEN-1, RULINGS 539): each of
+2001-2008 holds literal ``NA`` cells (in the hold's columns, some only in part of those years)
+and none of 2009-2026 does. DEM-1H's docs check had measured 2001-2008; the hold had also named
+2023-2025."""
+
+
+def test_hold_question_names_exactly_the_measured_literal_na_years() -> None:
+    """Detects the hold naming a year range with no literal ``NA``: the question's years
+    (every ``yyyy-yyyy`` range it states) are exactly the measured set, and the committed
+    fixtures agree where they overlap (2001 holds literal ``NA`` cells; the 2009, 2019, 2023,
+    2024, 2025 and 2026 slices hold none)."""
+    stated: set[int] = set()
+    for first, last in re.findall(r"(\d{4})-(\d{4})", QUESTION):
+        stated |= set(range(int(first), int(last) + 1))
+    assert stated == MEASURED_NA_YEARS
+    for filename in SIDECARS:
+        has_na = any(
+            cell == "NA"
+            for row in csv.reader(io.StringIO(body(filename).decode("utf-8-sig"), newline=""))
+            for cell in row
+        )
+        assert has_na == (_year(filename) in MEASURED_NA_YEARS), filename

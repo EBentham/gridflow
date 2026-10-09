@@ -713,7 +713,7 @@
         "vintage": "ckan_last_modified",
         "eligibility": {
           "status": "held",
-          "question": "TODO: literal NA in the epoch-2 bodies (2001-2008, 2023-2025) in TSD, the embedded wind/solar columns, SCOTTISH_TRANSFER and every interconnector flow but IFA: missing, not applicable or zero? NESO defines no meaning; those columns stay text across every epoch until it does.",
+          "question": "TODO: literal NA in the epoch-2 bodies of 2001-2008 in TSD, the embedded wind/solar columns, SCOTTISH_TRANSFER and every interconnector flow but IFA: missing, not applicable or zero? NESO defines no meaning; those columns stay text across every epoch until it does.",
           "unit": "E-SEM"
         }
       }
