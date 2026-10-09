@@ -105,6 +105,8 @@ IC1_ADDED = frozenset(
     }
 )
 """The eleven interconnector limit families v0.22-K-IC-1 records after the golden."""
+IC2_ADDED = frozenset({"brit_ned", "nordpool_da_prices", "system_operating_plan"})
+"""BritNed, Nord Pool day-ahead prices and the SOP table, recorded by v0.22-K-IC-2."""
 """The metered wind output and wind BOA volume families v0.22-GEN-2H records after the golden."""
 REWORDED_HOLDS = {
     "national_forecast_7d_historic_day_ahead": (
@@ -169,6 +171,7 @@ class TestByteUnchanged:
                     *GEN2_ADDED,
                     *GEN2H_ADDED,
                     *IC1_ADDED,
+                    *IC2_ADDED,
                 }
                 if section != "engine"
                 else set()
@@ -770,7 +773,7 @@ class TestRecordRules:
         self,
     ) -> None:
         """Detects a committed record broken by V-4/V-17 or the reserved name, and any
-        family other than the eight resource-partitioned ones opting into the partition (in a
+        family other than the nine resource-partitioned ones opting into the partition (in a
         fresh interpreter, so nothing collection imported can mask it)."""
         code = textwrap.dedent(
             """
@@ -782,6 +785,7 @@ class TestRecordRules:
                 if f.record is not None and f.record.latest_partition is not None
             )
             assert partitioned == [
+                "brit_ned",
                 "da_wind_forecast_historic_day_ahead_bmu",
                 "eleclink",
                 "historic_demand",

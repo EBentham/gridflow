@@ -601,6 +601,15 @@ IC1_PACKAGE_FILES = {
     "viking.json",
 }
 
+IC2_RECORDED = {"brit_ned", "nordpool_da_prices", "system_operating_plan"}
+"""The three families unit K-IC-2 records (BritNed and the SOP held, Nord Pool eligible)."""
+
+IC2_PACKAGE_FILES = {
+    "brit-ned.json",
+    "day-ahead-power-exchange-prices-nordpool.json",
+    "system-operating-plan-sop.json",
+}
+
 X_RESOURCES_WITH_CHILDREN = 4 + 1 + 39 + 73 + 1
 """Unit X's committed inventories (ADR-037 P-8): CMP workbooks, the ResultSummary ZIP,
 frequency ZIPs, held data containers and the GSP archive with a CSV member."""
@@ -628,6 +637,7 @@ class TestSeededRegistry:
             | GEN2_RECORDED
             | GEN2H_RECORDED
             | IC1_RECORDED
+            | IC2_RECORDED
         )
         with_children = [res for _package, res in loaded.resources.values() if res.children]
         assert len(with_children) == X_RESOURCES_WITH_CHILDREN
@@ -656,6 +666,7 @@ class TestSeededRegistry:
             | GEN2_PACKAGE_FILES
             | GEN2H_PACKAGE_FILES
             | IC1_PACKAGE_FILES
+            | IC2_PACKAGE_FILES
         )
 
 

@@ -17,7 +17,697 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "sop_datetime",
+              "report_date",
+              "latest_version",
+              "latest_status",
+              "cardinal_point",
+              "customer_demand_forcast",
+              "station_transformer",
+              "dsbr",
+              "total_sop_demand",
+              "standing_reserve_requirement",
+              "standing_reserve_availability",
+              "standing_reserve_shortfall",
+              "standing_reserve_excess",
+              "standing_res_wind_adj",
+              "net_positive_regulating_reserve",
+              "positive_reg_res_wind_adj",
+              "reserve_for_response",
+              "total_positive_reserve",
+              "percentage_of_standing_reserve_excess",
+              "net_negative_regulating_reserve",
+              "negative_reg_res_wind_adj",
+              "negative_response_reserve",
+              "total_negative_reserve",
+              "maximum_loss_generation",
+              "maximum_loss_demand",
+              "positive_residual",
+              "imbalance",
+              "negative_residual",
+              "sop_report_creation_time_gmt",
+              "sop_d_and_c_time_gmt",
+              "contingency_requirement",
+              "operating_margin_surplus",
+              "trigger_level",
+              "no1_temx",
+              "no1_teol",
+              "no1_temi",
+              "nw1_temx",
+              "nw1_teol",
+              "nw1_temi",
+              "so1_temx",
+              "so1_teol",
+              "so1_temi",
+              "sw1_temx",
+              "sw1_teol",
+              "sw1_temi",
+              "britned_temx",
+              "britned_teol",
+              "britned_temi",
+              "ewic_temx",
+              "ewic_teol",
+              "ewic_temi",
+              "france_temx",
+              "france_teol",
+              "france_temi",
+              "intifa2_temx",
+              "intifa2_teol",
+              "intifa2_temi",
+              "moyle_temx",
+              "moyle_teol",
+              "moyle_temi",
+              "nemo_temx",
+              "nemo_teol",
+              "nemo_temi",
+              "ps_temx",
+              "ps_teol",
+              "ps_temi",
+              "sto_temx",
+              "sto_teol",
+              "sto_temi",
+              "sb_temx",
+              "sb_teol",
+              "sb_temi",
+              "total_temx",
+              "total_teol",
+              "total_temi",
+              "INTNSL_temx",
+              "INTNSL_teol",
+              "INTNSL_temi",
+              "INTELEC_temx",
+              "INTELEC_teol",
+              "INTELEC_temi",
+              "BAT_temx",
+              "BAT_teol",
+              "BAT_temi",
+              "SLR_temx",
+              "SLR_teol",
+              "SLR_temi",
+              "INTGRNL_temx",
+              "INTGRNL_teol",
+              "INTGRNL_temi",
+              "INTVKL_temx",
+              "INTVKL_teol",
+              "INTVKL_temi"
+            ],
+            "columns": [
+              {
+                "source": "sop_datetime",
+                "name": "sop_datetime",
+                "dtype": "datetime",
+                "format": "%Y-%m-%dT%H:%M:%S",
+                "nullable": false,
+                "zone": "UTC"
+              },
+              {
+                "source": "report_date",
+                "name": "report_date",
+                "dtype": "date",
+                "format": "%Y-%m-%dT%H:%M:%S",
+                "nullable": true
+              },
+              {
+                "source": "latest_version",
+                "name": "latest_version",
+                "dtype": "int64",
+                "nullable": true
+              },
+              {
+                "source": "latest_status",
+                "name": "latest_status",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "cardinal_point",
+                "name": "cardinal_point",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "customer_demand_forcast",
+                "name": "customer_demand_forcast",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "station_transformer",
+                "name": "station_transformer",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "dsbr",
+                "name": "dsbr",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "total_sop_demand",
+                "name": "total_sop_demand",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "standing_reserve_requirement",
+                "name": "standing_reserve_requirement",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "standing_reserve_availability",
+                "name": "standing_reserve_availability",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "standing_reserve_shortfall",
+                "name": "standing_reserve_shortfall",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "standing_reserve_excess",
+                "name": "standing_reserve_excess",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "standing_res_wind_adj",
+                "name": "standing_res_wind_adj",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "net_positive_regulating_reserve",
+                "name": "net_positive_regulating_reserve",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "positive_reg_res_wind_adj",
+                "name": "positive_reg_res_wind_adj",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "reserve_for_response",
+                "name": "reserve_for_response",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "total_positive_reserve",
+                "name": "total_positive_reserve",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "percentage_of_standing_reserve_excess",
+                "name": "percentage_of_standing_reserve_excess",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "net_negative_regulating_reserve",
+                "name": "net_negative_regulating_reserve",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "negative_reg_res_wind_adj",
+                "name": "negative_reg_res_wind_adj",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "negative_response_reserve",
+                "name": "negative_response_reserve",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "total_negative_reserve",
+                "name": "total_negative_reserve",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "maximum_loss_generation",
+                "name": "maximum_loss_generation",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "maximum_loss_demand",
+                "name": "maximum_loss_demand",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "positive_residual",
+                "name": "positive_residual",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "imbalance",
+                "name": "imbalance",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "negative_residual",
+                "name": "negative_residual",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "sop_report_creation_time_gmt",
+                "name": "sop_report_creation_time_gmt",
+                "dtype": "datetime",
+                "format": "%Y-%m-%dT%H:%M:%S",
+                "nullable": true,
+                "zone": "UTC"
+              },
+              {
+                "source": "sop_d_and_c_time_gmt",
+                "name": "sop_d_and_c_time_gmt",
+                "dtype": "datetime",
+                "format": "%Y-%m-%dT%H:%M:%S",
+                "nullable": true,
+                "zone": "UTC"
+              },
+              {
+                "source": "contingency_requirement",
+                "name": "contingency_requirement",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "operating_margin_surplus",
+                "name": "operating_margin_surplus",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "trigger_level",
+                "name": "trigger_level",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "no1_temx",
+                "name": "no1_temx",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "no1_teol",
+                "name": "no1_teol",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "no1_temi",
+                "name": "no1_temi",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "nw1_temx",
+                "name": "nw1_temx",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "nw1_teol",
+                "name": "nw1_teol",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "nw1_temi",
+                "name": "nw1_temi",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "so1_temx",
+                "name": "so1_temx",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "so1_teol",
+                "name": "so1_teol",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "so1_temi",
+                "name": "so1_temi",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "sw1_temx",
+                "name": "sw1_temx",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "sw1_teol",
+                "name": "sw1_teol",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "sw1_temi",
+                "name": "sw1_temi",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "britned_temx",
+                "name": "britned_temx",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "britned_teol",
+                "name": "britned_teol",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "britned_temi",
+                "name": "britned_temi",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "ewic_temx",
+                "name": "ewic_temx",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "ewic_teol",
+                "name": "ewic_teol",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "ewic_temi",
+                "name": "ewic_temi",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "france_temx",
+                "name": "france_temx",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "france_teol",
+                "name": "france_teol",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "france_temi",
+                "name": "france_temi",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "intifa2_temx",
+                "name": "intifa2_temx",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "intifa2_teol",
+                "name": "intifa2_teol",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "intifa2_temi",
+                "name": "intifa2_temi",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "moyle_temx",
+                "name": "moyle_temx",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "moyle_teol",
+                "name": "moyle_teol",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "moyle_temi",
+                "name": "moyle_temi",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "nemo_temx",
+                "name": "nemo_temx",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "nemo_teol",
+                "name": "nemo_teol",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "nemo_temi",
+                "name": "nemo_temi",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "ps_temx",
+                "name": "ps_temx",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "ps_teol",
+                "name": "ps_teol",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "ps_temi",
+                "name": "ps_temi",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "sto_temx",
+                "name": "sto_temx",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "sto_teol",
+                "name": "sto_teol",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "sto_temi",
+                "name": "sto_temi",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "sb_temx",
+                "name": "sb_temx",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "sb_teol",
+                "name": "sb_teol",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "sb_temi",
+                "name": "sb_temi",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "total_temx",
+                "name": "total_temx",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "total_teol",
+                "name": "total_teol",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "total_temi",
+                "name": "total_temi",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "INTNSL_temx",
+                "name": "intnsl_temx",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "INTNSL_teol",
+                "name": "intnsl_teol",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "INTNSL_temi",
+                "name": "intnsl_temi",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "INTELEC_temx",
+                "name": "intelec_temx",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "INTELEC_teol",
+                "name": "intelec_teol",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "INTELEC_temi",
+                "name": "intelec_temi",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "BAT_temx",
+                "name": "bat_temx",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "BAT_teol",
+                "name": "bat_teol",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "BAT_temi",
+                "name": "bat_temi",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "SLR_temx",
+                "name": "slr_temx",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "SLR_teol",
+                "name": "slr_teol",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "SLR_temi",
+                "name": "slr_temi",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "INTGRNL_temx",
+                "name": "intgrnl_temx",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "INTGRNL_teol",
+                "name": "intgrnl_teol",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "INTGRNL_temi",
+                "name": "intgrnl_temi",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "INTVKL_temx",
+                "name": "intvkl_temx",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "INTVKL_teol",
+                "name": "intvkl_teol",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "INTVKL_temi",
+                "name": "intvkl_temi",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "data_column",
+              "column": "sop_report_creation_time_gmt"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "utc_instant",
+          "column": "sop_datetime"
+        },
+        "entity_key": [
+          "issue_time",
+          "sop_datetime"
+        ],
+        "latest": "whole_capture",
+        "vintage": "capture_fallback",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: the dump returns each plan's latest version and NESO does not state that its values are fixed and public at their creation time, and every target precedes the capture, so the forward-target rule (RULINGS 529) cannot apply.",
+          "unit": "E-SEM"
+        }
+      }
     },
     {
       "key": "system_operating_plan_files",

@@ -17,7 +17,214 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Operational Date (YYYY-MM-DD) & Time GMT/BST (HH:MM - HH:MM)",
+              "Flow (MW) From GB",
+              "Flow (MW) To GB",
+              "Reason For Restiction"
+            ],
+            "columns": [
+              {
+                "source": "Operational Date (YYYY-MM-DD) & Time GMT/BST (HH:MM - HH:MM)",
+                "name": "operational_date_and_hour",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Flow (MW) From GB",
+                "name": "flow_from_gb_mw_raw",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Flow (MW) To GB",
+                "name": "flow_to_gb_mw_raw",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Reason For Restiction",
+                "name": "reason_for_restriction",
+                "dtype": "string",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          },
+          {
+            "header": [
+              "Operational Date (YYYY-MM-DD) & Time GMT/BST (HH:MM - HH:MM)",
+              "Flow (MW) to GB",
+              "Flow (MW) from GB",
+              "Reason For Restriction"
+            ],
+            "columns": [
+              {
+                "source": "Operational Date (YYYY-MM-DD) & Time GMT/BST (HH:MM - HH:MM)",
+                "name": "operational_date_and_hour",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Flow (MW) to GB",
+                "name": "flow_to_gb_mw_raw",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Flow (MW) from GB",
+                "name": "flow_from_gb_mw_raw",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Reason For Restriction",
+                "name": "reason_for_restriction",
+                "dtype": "string",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          },
+          {
+            "header": [
+              "Operational Date (YYYY-MM-DD) & Time GMT/BST (HH:MM - HH:MM)",
+              "Flow (MW) To GB",
+              "Flow (MW) From GB",
+              "Reason For Restriction"
+            ],
+            "columns": [
+              {
+                "source": "Operational Date (YYYY-MM-DD) & Time GMT/BST (HH:MM - HH:MM)",
+                "name": "operational_date_and_hour",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Flow (MW) To GB",
+                "name": "flow_to_gb_mw_raw",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Flow (MW) From GB",
+                "name": "flow_from_gb_mw_raw",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Reason For Restriction",
+                "name": "reason_for_restriction",
+                "dtype": "string",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          },
+          {
+            "header": [
+              "Operational Date (YYYY-MM-DD) & Time GMT/BST (HH:MM - HH:MM)",
+              "Flow (MW) to GB",
+              "Flow (MW) from GB",
+              "Reason for restriction"
+            ],
+            "columns": [
+              {
+                "source": "Operational Date (YYYY-MM-DD) & Time GMT/BST (HH:MM - HH:MM)",
+                "name": "operational_date_and_hour",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Flow (MW) to GB",
+                "name": "flow_to_gb_mw_raw",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Flow (MW) from GB",
+                "name": "flow_from_gb_mw_raw",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Reason for restriction",
+                "name": "reason_for_restriction",
+                "dtype": "string",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          },
+          {
+            "header": [
+              "Operational Period Start Date and Time GMT",
+              "Flow in MW To GB",
+              "Flow in MW From GB",
+              "Reason for restriction"
+            ],
+            "columns": [
+              {
+                "source": "Operational Period Start Date and Time GMT",
+                "name": "operational_date_and_hour",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Flow in MW To GB",
+                "name": "flow_to_gb_mw_raw",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Flow in MW From GB",
+                "name": "flow_from_gb_mw_raw",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Reason for restriction",
+                "name": "reason_for_restriction",
+                "dtype": "string",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "resource_id",
+          "operational_date_and_hour"
+        ],
+        "latest": "whole_capture",
+        "latest_partition": "resource_id",
+        "vintage": "ckan_last_modified",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: NESO does not define the operational-date rollover, the GMT/BST mapping or the `(a)`/`(b)` fold markers of the hourly labels, and the bodies carry no issue time, so no label can be dated as an issued limit.",
+          "unit": "E-SEM"
+        }
+      }
     }
   ],
   "resources": [
