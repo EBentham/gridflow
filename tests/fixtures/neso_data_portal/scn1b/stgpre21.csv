@@ -1,0 +1,16 @@
+﻿Created by CalcDxStorage.sas,,,For use in ETYS spatial model,,,,
+,,,,,,,
+scenario,tech,year,location,Capacity,wintpk,summam,summpm
+CF,Battery,20,ENDE_1,9.5,0,0,-3.335
+CF,Battery,25,ENDE_1,9.5,0,0,-3.335
+CT,Battery,20,ENDE_1,9.5,0,0,-3.335
+CT,Battery,25,ENDE_1,9.5,0,0,-3.335
+LW,Battery,20,ENDE_1,9.5,0,0,-3.335
+LW,Battery,25,ENDE_1,9.5,0,0,-3.335
+SP,Battery,20,ENDE_1,9.5,0,0,-3.335
+SP,Battery,25,ENDE_1,9.5,0,0,-3.335
+ST,Battery,20,ENDE_1,9.5,0,0,-3.335
+ST,Battery,25,ENDE_1,9.5,0,0,-3.335
+CF,CAES,25,NORT_1,3.3,0,0,-1.65
+CF,CAES,25,NORT_1,3.3,0,0,-1.65
+CF,CAES,25,NORT_1,3.3,0,0,-1.65
