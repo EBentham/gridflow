@@ -1,0 +1,12 @@
+Connection,Scenario,Variable,Category,Type,SubType,2024,2025,2026,2027,2028,2029,2030,2031,2032,2033,2034,2035,2036,2037,2038,2039,2040,2041,2042,2043,2044,2045,2046,2047,2048,2049,2050
+Distributed,Ten Year Outlook,Capacity (MW),Base Load,Biomass,Biomass,,568.957,568.957,568.957,493.737,493.737,453.737,453.737,453.737,372.137,372.137,301.137,301.137,,,,,,,,,,,,,,
+Distributed,Ten Year Outlook,Capacity (MW),Dispatchable,Gas,CCGT,,1257.897,1204.897,1204.897,931.399,835.799,793.199,750.599,697.599,697.599,591.599,591.599,0.0,,,,,,,,,,,,,,
+Distributed,Ten Year Outlook,Consumption (TWh),Storage,Battery,Battery,,0.7721,0.89735,1.23533,1.89867,2.06302,2.68949,3.15324,3.42968,3.53265,3.67358,3.74466,3.8958,,,,,,,,,,,,,,
+Transmission,Ten Year Outlook,Demand Reduction (TWh),Demand,DSR,DSR,,0.0,0.0,0.00364,0.00527,0.01043,0.01363,0.02554,0.02343,0.01674,0.01278,0.01226,0.00872,,,,,,,,,,,,,,
+Distributed,Ten Year Outlook,Generation (TWh),Base Load,Biomass,Biomass,,1.93387,1.45355,0.28838,0.28534,0.24185,0.21794,0.88994,0.48899,0.58068,0.29378,0.31991,0.297,,,,,,,,,,,,,,
+Transmission,Ten Year Outlook,Import (TWh),Interconnectors,Interconnectors,Interconnectors,,45.93466,37.60303,30.4215,36.39705,42.17246,42.08265,39.39125,41.44628,36.60749,37.78334,35.29731,34.58284,,,,,,,,,,,,,,
+Transmission,Ten Year Outlook,Export (TWh),Interconnectors,Interconnectors,Interconnectors,,-10.34854,-14.58479,-21.4518,-27.21402,-26.66395,-33.9612,-40.58302,-42.3133,-48.52178,-63.04588,-69.28405,-79.84808,,,,,,,,,,,,,,
+Transmission,Ten Year Outlook,Netflows (TWh),Interconnectors,Interconnectors,Interconnectors,,35.58611,23.01823,8.9697,9.18303,15.5085,8.12145,-1.19177,-0.86701,-11.91429,-25.26254,-33.98675,-45.26523,,,,,,,,,,,,,,
+Distributed,Ten Year Outlook,Storage Capacity (GWh),Storage,Battery,Battery,,5.08594,6.75376,8.91015,11.39594,12.31032,13.20532,13.85927,14.41184,14.91413,15.46586,15.87206,16.26222,,,,,,,,,,,,,,
+Both,Ten Year Outlook,Demand (TWh),Demand,DACCS,DACCS electrical demand,,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,,,,,,,,,,,,,,
+Both,Ten Year Outlook,Curtailment including DACCS (TWh),Renewable,,,,0.00193,0.1196,0.70743,1.39797,2.1623,7.43433,13.63709,21.53813,32.95046,43.37339,49.81178,58.54435,,,,,,,,,,,,,,
