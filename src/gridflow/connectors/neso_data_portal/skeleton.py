@@ -208,7 +208,18 @@ def _schema(record: SchemaRecord, fields: Mapping[str, dict[str, Any]]) -> list[
                 _cell(unit) if unit else _DASH,
             ]
             lines.append("| " + " | ".join(cells) + " |")
+        unpivot = epoch.unpivot
+        if unpivot is not None:
+            value = unpivot.value
+            lines += [
+                f"| (unpivot) | `projection_year` | int64 | {_DASH} | no | {_DASH} | {_DASH} |",
+                f"| (unpivot) | `value` | {value.dtype} | {_DASH} | "
+                f"{'yes' if value.nullable else 'no'} | {_DASH} | {_DASH} |",
+            ]
         lines.append("")
+        if unpivot is not None:
+            years = ", ".join(f"`{label}` → {year}" for label, year in unpivot.years)
+            lines += [f"Unpivot, epoch {index}: {years}", ""]
     published, available = CLOCKS[record.vintage]
     if record.vintage == "issue_time_evidenced" and record.vintage_evidence:
         published = f"{published}: {record.vintage_evidence}"
@@ -218,10 +229,16 @@ def _schema(record: SchemaRecord, fields: Mapping[str, dict[str, Any]]) -> list[
         recipe += " (" + ", ".join(f"`{name}`" for name in temporal.inputs) + ")"
     if temporal.kind == "none":
         recipe += ": `timestamp_utc` is the capture time"
+    edition = (
+        ["- Edition: " + "; ".join(f"`{name}` → {ed}" for name, ed in record.edition_by_filename)]
+        if record.edition_by_filename is not None
+        else []
+    )
     lines += [
         "- Entity key: " + ", ".join(f"`{name}`" for name in record.entity_key),
         f"- Latest: `{record.latest}`"
         + (f" per `{record.latest_partition}`" if record.latest_partition is not None else ""),
+        *edition,
         f"- Temporal recipe: {recipe}",
         "",
         "| Clock | Meaning |",
