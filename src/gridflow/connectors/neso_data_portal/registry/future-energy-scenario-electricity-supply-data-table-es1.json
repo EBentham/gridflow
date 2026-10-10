@@ -17,7 +17,846 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Connection",
+              "Scenario",
+              "Variable",
+              "Category",
+              "Type",
+              "SubType",
+              "2022",
+              "2023",
+              "2024",
+              "2025",
+              "2026",
+              "2027",
+              "2028",
+              "2029",
+              "2030",
+              "2031",
+              "2032",
+              "2033",
+              "2034",
+              "2035",
+              "2036",
+              "2037",
+              "2038",
+              "2039",
+              "2040",
+              "2041",
+              "2042",
+              "2043",
+              "2044",
+              "2045",
+              "2046",
+              "2047",
+              "2048",
+              "2049",
+              "2050"
+            ],
+            "columns": [
+              {
+                "source": "Connection",
+                "name": "connection",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Scenario",
+                "name": "scenario",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Variable",
+                "name": "variable",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Category",
+                "name": "category",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Type",
+                "name": "type",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "SubType",
+                "name": "sub_type",
+                "dtype": "string",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            },
+            "unpivot": {
+              "years": [
+                [
+                  "2022",
+                  2022
+                ],
+                [
+                  "2023",
+                  2023
+                ],
+                [
+                  "2024",
+                  2024
+                ],
+                [
+                  "2025",
+                  2025
+                ],
+                [
+                  "2026",
+                  2026
+                ],
+                [
+                  "2027",
+                  2027
+                ],
+                [
+                  "2028",
+                  2028
+                ],
+                [
+                  "2029",
+                  2029
+                ],
+                [
+                  "2030",
+                  2030
+                ],
+                [
+                  "2031",
+                  2031
+                ],
+                [
+                  "2032",
+                  2032
+                ],
+                [
+                  "2033",
+                  2033
+                ],
+                [
+                  "2034",
+                  2034
+                ],
+                [
+                  "2035",
+                  2035
+                ],
+                [
+                  "2036",
+                  2036
+                ],
+                [
+                  "2037",
+                  2037
+                ],
+                [
+                  "2038",
+                  2038
+                ],
+                [
+                  "2039",
+                  2039
+                ],
+                [
+                  "2040",
+                  2040
+                ],
+                [
+                  "2041",
+                  2041
+                ],
+                [
+                  "2042",
+                  2042
+                ],
+                [
+                  "2043",
+                  2043
+                ],
+                [
+                  "2044",
+                  2044
+                ],
+                [
+                  "2045",
+                  2045
+                ],
+                [
+                  "2046",
+                  2046
+                ],
+                [
+                  "2047",
+                  2047
+                ],
+                [
+                  "2048",
+                  2048
+                ],
+                [
+                  "2049",
+                  2049
+                ],
+                [
+                  "2050",
+                  2050
+                ]
+              ],
+              "value": {
+                "dtype": "float64",
+                "nullable": true
+              }
+            }
+          },
+          {
+            "header": [
+              "Connection",
+              "Pathway",
+              "Variable",
+              "Category",
+              "Type",
+              "SubType",
+              "2023",
+              "2024",
+              "2025",
+              "2026",
+              "2027",
+              "2028",
+              "2029",
+              "2030",
+              "2031",
+              "2032",
+              "2033",
+              "2034",
+              "2035",
+              "2036",
+              "2037",
+              "2038",
+              "2039",
+              "2040",
+              "2041",
+              "2042",
+              "2043",
+              "2044",
+              "2045",
+              "2046",
+              "2047",
+              "2048",
+              "2049",
+              "2050"
+            ],
+            "columns": [
+              {
+                "source": "Connection",
+                "name": "connection",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Pathway",
+                "name": "pathway",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Variable",
+                "name": "variable",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Category",
+                "name": "category",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Type",
+                "name": "type",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "SubType",
+                "name": "sub_type",
+                "dtype": "string",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            },
+            "unpivot": {
+              "years": [
+                [
+                  "2023",
+                  2023
+                ],
+                [
+                  "2024",
+                  2024
+                ],
+                [
+                  "2025",
+                  2025
+                ],
+                [
+                  "2026",
+                  2026
+                ],
+                [
+                  "2027",
+                  2027
+                ],
+                [
+                  "2028",
+                  2028
+                ],
+                [
+                  "2029",
+                  2029
+                ],
+                [
+                  "2030",
+                  2030
+                ],
+                [
+                  "2031",
+                  2031
+                ],
+                [
+                  "2032",
+                  2032
+                ],
+                [
+                  "2033",
+                  2033
+                ],
+                [
+                  "2034",
+                  2034
+                ],
+                [
+                  "2035",
+                  2035
+                ],
+                [
+                  "2036",
+                  2036
+                ],
+                [
+                  "2037",
+                  2037
+                ],
+                [
+                  "2038",
+                  2038
+                ],
+                [
+                  "2039",
+                  2039
+                ],
+                [
+                  "2040",
+                  2040
+                ],
+                [
+                  "2041",
+                  2041
+                ],
+                [
+                  "2042",
+                  2042
+                ],
+                [
+                  "2043",
+                  2043
+                ],
+                [
+                  "2044",
+                  2044
+                ],
+                [
+                  "2045",
+                  2045
+                ],
+                [
+                  "2046",
+                  2046
+                ],
+                [
+                  "2047",
+                  2047
+                ],
+                [
+                  "2048",
+                  2048
+                ],
+                [
+                  "2049",
+                  2049
+                ],
+                [
+                  "2050",
+                  2050
+                ]
+              ],
+              "value": {
+                "dtype": "float64",
+                "nullable": true
+              }
+            }
+          },
+          {
+            "header": [
+              "Connection",
+              "Pathway",
+              "Variable",
+              "Category",
+              "Type",
+              "SubType",
+              "2024",
+              "2025",
+              "2026",
+              "2027",
+              "2028",
+              "2029",
+              "2030",
+              "2031",
+              "2032",
+              "2033",
+              "2034",
+              "2035",
+              "2036",
+              "2037",
+              "2038",
+              "2039",
+              "2040",
+              "2041",
+              "2042",
+              "2043",
+              "2044",
+              "2045",
+              "2046",
+              "2047",
+              "2048",
+              "2049",
+              "2050"
+            ],
+            "columns": [
+              {
+                "source": "Connection",
+                "name": "connection",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Pathway",
+                "name": "pathway",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Variable",
+                "name": "variable",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Category",
+                "name": "category",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Type",
+                "name": "type",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "SubType",
+                "name": "sub_type",
+                "dtype": "string",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            },
+            "unpivot": {
+              "years": [
+                [
+                  "2024",
+                  2024
+                ],
+                [
+                  "2025",
+                  2025
+                ],
+                [
+                  "2026",
+                  2026
+                ],
+                [
+                  "2027",
+                  2027
+                ],
+                [
+                  "2028",
+                  2028
+                ],
+                [
+                  "2029",
+                  2029
+                ],
+                [
+                  "2030",
+                  2030
+                ],
+                [
+                  "2031",
+                  2031
+                ],
+                [
+                  "2032",
+                  2032
+                ],
+                [
+                  "2033",
+                  2033
+                ],
+                [
+                  "2034",
+                  2034
+                ],
+                [
+                  "2035",
+                  2035
+                ],
+                [
+                  "2036",
+                  2036
+                ],
+                [
+                  "2037",
+                  2037
+                ],
+                [
+                  "2038",
+                  2038
+                ],
+                [
+                  "2039",
+                  2039
+                ],
+                [
+                  "2040",
+                  2040
+                ],
+                [
+                  "2041",
+                  2041
+                ],
+                [
+                  "2042",
+                  2042
+                ],
+                [
+                  "2043",
+                  2043
+                ],
+                [
+                  "2044",
+                  2044
+                ],
+                [
+                  "2045",
+                  2045
+                ],
+                [
+                  "2046",
+                  2046
+                ],
+                [
+                  "2047",
+                  2047
+                ],
+                [
+                  "2048",
+                  2048
+                ],
+                [
+                  "2049",
+                  2049
+                ],
+                [
+                  "2050",
+                  2050
+                ]
+              ],
+              "value": {
+                "dtype": "float64",
+                "nullable": true
+              }
+            }
+          },
+          {
+            "header": [
+              "Connection",
+              "Scenario",
+              "Variable",
+              "Category",
+              "Type",
+              "SubType",
+              "2024",
+              "2025",
+              "2026",
+              "2027",
+              "2028",
+              "2029",
+              "2030",
+              "2031",
+              "2032",
+              "2033",
+              "2034",
+              "2035",
+              "2036",
+              "2037",
+              "2038",
+              "2039",
+              "2040",
+              "2041",
+              "2042",
+              "2043",
+              "2044",
+              "2045",
+              "2046",
+              "2047",
+              "2048",
+              "2049",
+              "2050"
+            ],
+            "columns": [
+              {
+                "source": "Connection",
+                "name": "connection",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Scenario",
+                "name": "scenario",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Variable",
+                "name": "variable",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Category",
+                "name": "category",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Type",
+                "name": "type",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "SubType",
+                "name": "sub_type",
+                "dtype": "string",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            },
+            "unpivot": {
+              "years": [
+                [
+                  "2024",
+                  2024
+                ],
+                [
+                  "2025",
+                  2025
+                ],
+                [
+                  "2026",
+                  2026
+                ],
+                [
+                  "2027",
+                  2027
+                ],
+                [
+                  "2028",
+                  2028
+                ],
+                [
+                  "2029",
+                  2029
+                ],
+                [
+                  "2030",
+                  2030
+                ],
+                [
+                  "2031",
+                  2031
+                ],
+                [
+                  "2032",
+                  2032
+                ],
+                [
+                  "2033",
+                  2033
+                ],
+                [
+                  "2034",
+                  2034
+                ],
+                [
+                  "2035",
+                  2035
+                ],
+                [
+                  "2036",
+                  2036
+                ],
+                [
+                  "2037",
+                  2037
+                ],
+                [
+                  "2038",
+                  2038
+                ],
+                [
+                  "2039",
+                  2039
+                ],
+                [
+                  "2040",
+                  2040
+                ],
+                [
+                  "2041",
+                  2041
+                ],
+                [
+                  "2042",
+                  2042
+                ],
+                [
+                  "2043",
+                  2043
+                ],
+                [
+                  "2044",
+                  2044
+                ],
+                [
+                  "2045",
+                  2045
+                ],
+                [
+                  "2046",
+                  2046
+                ],
+                [
+                  "2047",
+                  2047
+                ],
+                [
+                  "2048",
+                  2048
+                ],
+                [
+                  "2049",
+                  2049
+                ],
+                [
+                  "2050",
+                  2050
+                ]
+              ],
+              "value": {
+                "dtype": "float64",
+                "nullable": true
+              }
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "resource_id",
+          "edition",
+          "connection",
+          "scenario",
+          "pathway",
+          "variable",
+          "category",
+          "type",
+          "sub_type",
+          "projection_year"
+        ],
+        "latest": "whole_capture",
+        "latest_partition": "resource_id",
+        "edition_by_filename": [
+          [
+            "fes2023_es1_v002.csv",
+            2023
+          ],
+          [
+            "fes2024_es1_v002.csv",
+            2024
+          ],
+          [
+            "fes2025_es1_v006.csv",
+            2025
+          ],
+          [
+            "10yo2026_es1_v001.csv",
+            2026
+          ]
+        ],
+        "vintage": "ckan_last_modified",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: for each ES1 edition, what period does a year label denote (calendar, financial or winter year; start or end label)? What does N/A mean in the 2020 edition, and will NESO republish the 2020–2022 tables without preambles, padding and thousands separators?",
+          "unit": "E-SEM"
+        }
+      }
     }
   ],
   "resources": [
@@ -28,8 +867,9 @@
       "url_type": "upload",
       "family": "fes_es1_electricity_supply",
       "disposition": {
-        "kind": "SILVER",
-        "key": "fes_es1_electricity_supply"
+        "kind": "HOLD",
+        "reason": "the 2020 body fails the strict float64 cast on 5456 projection cells (2,645 comma-formatted numbers such as 3,118.00 and 2,811 literal N/A cells of undocumented meaning) and the record has no lexical-number mechanism; re-disposition only after a declared lexical-number mechanism and a vendor meaning for N/A, or a corrected NESO upload (a new last_modified)",
+        "unit": "E-SEM"
       }
     },
     {
@@ -39,8 +879,9 @@
       "url_type": "upload",
       "family": "fes_es1_electricity_supply",
       "disposition": {
-        "kind": "SILVER",
-        "key": "fes_es1_electricity_supply"
+        "kind": "HOLD",
+        "reason": "the 2021 body opens with a title and notes preamble before its table header on physical line 10, which the CSV reader cannot skip, and every nonblank projection cell is whitespace-padded (12184 fail the strict float64 cast, 2899 of them also with thousands separators); re-disposition only after a supported header-row recipe and a lexical-number mechanism, or a corrected NESO upload (a new last_modified)",
+        "unit": "E-SEM"
       }
     },
     {
@@ -50,8 +891,9 @@
       "url_type": "upload",
       "family": "fes_es1_electricity_supply",
       "disposition": {
-        "kind": "SILVER",
-        "key": "fes_es1_electricity_supply"
+        "kind": "HOLD",
+        "reason": "the 2022 body opens with a title and notes preamble before its table header on physical line 10, which the CSV reader cannot skip, and every nonblank projection cell is whitespace-padded (15545 fail the strict float64 cast, 3189 of them also with thousands separators); re-disposition only after a supported header-row recipe and a lexical-number mechanism, or a corrected NESO upload (a new last_modified)",
+        "unit": "E-SEM"
       }
     },
     {

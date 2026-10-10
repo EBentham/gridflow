@@ -174,7 +174,7 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `firm-frequency-response-post-tender-reports` | `ffr_post_tender_reports_csv_ext` | ingest-only (no silver output) | — | — | — | — |
 | `firm-frequency-response-post-tender-reports` | `ffr_post_tender_reports_ext` | ingest-only (no silver output) | — | — | — | — |
 | `firm-frequency-response-post-tender-reports` | `ffr_post_tender_reports_files` | catalogue only | — | — | — | — |
-| `future-energy-scenario-electricity-supply-data-table-es1` | `fes_es1_electricity_supply` | ingest-only (no silver output) | — | — | — | — |
+| `future-energy-scenario-electricity-supply-data-table-es1` | `fes_es1_electricity_supply` | silver | held: TODO: for each ES1 edition, what period does a year label denote (calendar, financial or winter year; start or end label)? What does N/A mean in the 2020 edition, and will NESO republish the 2020–2022 tables without preambles, padding and thousands separators? (unit E-SEM) | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
 | `future-energy-scenario-fes-building-block-data` | `fes_building_blocks_block_definitions` | silver | eligible | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
 | `future-energy-scenario-fes-building-block-data` | `fes_building_blocks_block_licence_area` | silver | eligible | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
 | `future-energy-scenario-fes-building-block-data` | `fes_building_blocks_main` | silver | held: TODO: for each edition, what period does a building-block year label (and the 2019/2020 baseline) denote — calendar year, financial year or winter? And what omitted row-grain dimension makes the 2020–2022 rows unique (repeated building block × GSP × DNO × unit rows with different values)? NESO's dictionaries state neither. (unit E-SEM) | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
@@ -393,7 +393,7 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `fes-whole-system-gas-supply-data-table-ws1` | eligible | 4 | 0 | 0 | 0 | 0 |
 | `fes-whole-system-gas-supply-emissions-data-table-ws2` | eligible | 4 | 0 | 0 | 0 | 0 |
 | `firm-frequency-response-post-tender-reports` | eligible | 28 | 0 | 0 | 0 | 61 |
-| `future-energy-scenario-electricity-supply-data-table-es1` | eligible | 7 | 0 | 0 | 0 | 0 |
+| `future-energy-scenario-electricity-supply-data-table-es1` | eligible | 4 | 0 | 0 | 0 | 3 |
 | `future-energy-scenario-fes-building-block-data` | eligible | 13 | 0 | 0 | 0 | 0 |
 | `gb-system-inertia-bid-and-offer-costs` | eligible | 1 | 0 | 0 | 0 | 0 |
 | `gis-boundaries-for-gb-dno-license-areas` | held: third-party origin cited in package notes; licence carve-out (unit N) | 0 | 0 | 2 | 4 | 0 |
@@ -460,11 +460,11 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `weekly-opmr` | eligible | 1 | 0 | 0 | 0 | 0 |
 | `weekly-wind-availability` | eligible | 1 | 0 | 0 | 0 | 0 |
 | `wind-bmu-boa-volumes` | eligible | 9 | 0 | 0 | 0 | 0 |
-| **Total** | | 1247 | 0 | 43 | 20 | 75 |
+| **Total** | | 1244 | 0 | 43 | 20 | 78 |
 
 ## Totals
 
 - Packages: 131 (held: 2)
-- Families: 316: silver 97 (bespoke 3, recorded 94), ingest-only 184, catalogue only 35
-- Silver outputs held: 52
+- Families: 316: silver 98 (bespoke 3, recorded 95), ingest-only 183, catalogue only 35
+- Silver outputs held: 53
 - Resources: 1385
