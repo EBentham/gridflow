@@ -60,5 +60,17 @@
     "question": "Which of the two 20221012 04:00 - 05:00 rows (From GB 1050 or 1,007) is the published limit, and is the repeated label a publication defect?",
     "evidence": "K-IC-2-FACTS §2 g2-g3 (B-OLD); ADR-040",
     "ruling": "571"
+  },
+  {
+    "family": "brit_ned",
+    "category": "failed",
+    "cause": "UnicodeDecodeError",
+    "captures": [
+      "bronze/neso_data_portal/brit_ned/2026/10/08/raw_20261008T085647Z_811bec71-f099-4474-ba5e-2f9932b39cc2_24bb3d9b.csv"
+    ],
+    "reason": "the 20241016 weekly upload is ASCII except two standalone 0xA0 bytes (a cp1252 or Latin-1 no-break space) in its 20241018 21:00-22:00 and 22:00-23:00 rows, so it is not valid in the record's declared UTF-8 and the capture fails with UnicodeDecodeError; it is never re-decoded and its 144 rows stay unloaded with their failure record",
+    "question": "Which text encoding does resource 811bec71-f099-4474-ba5e-2f9932b39cc2 (BritNed DA & ID Weekly ITLs 20241016) use, and can NESO republish it as UTF-8?",
+    "evidence": "K-IC-2H-SPEC §Problem",
+    "ruling": "575"
   }
 ]

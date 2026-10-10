@@ -6,6 +6,7 @@
 `wind_bmu_boa_volumes`)
 **Amends:** ADR-034 P-14 (reconcile categories, exit code, drain), ADR-039 P-5 (overlap
 detection).
+**Amended by:** v0.22 unit IC-2H (RULINGS 575), §Amendment 1
 **Cross-references:** RULINGS 547 (GEN-2H split), RULINGS 551 (H7, the overlap check's memory
 bound), ADR-033 P-11 (coverage's `_adjudications.json`, a different ledger), K-GEN-2-FACTS §2
 (M-OVERLAP), §4 (B-ROW-GRAIN).
@@ -42,7 +43,8 @@ bronze coverage).
 - `category` is `Literal["overlap", "failed"]`: this is the one allowlist of adjudicable
   categories. `missing`, `orphaned`, `missing_or_invalid_output`, `duplicated`,
   `stale_covered` (gridflow's own faults) and `stale_adjudication` fail validation.
-- `cause` is set exactly for `failed` and is `Literal["DuplicateEntityKeyError"]`.
+- `cause` is set exactly for `failed` and names an allowed failure class (§Amendment 1 lists
+  them).
 - Each capture must full-match one committed capture id (both body-name stamp forms) under a
   real partition date: no wildcard, no `-`, no directory scope. An `overlap` entry names at
   least two captures.
@@ -111,3 +113,32 @@ volume.
 - No data changes: adjudication touches no silver, completion, failure or `_latest` byte; the
   overlap rows stay from both resources and the failed captures stay unloaded with their
   failure records. No dedup, occurrence index, sum or precedence filter.
+
+## Amendment 1 — invalid-encoding bodies (IC-2H, RULINGS 575)
+
+- **Allowed causes.** `cause` is `Literal["DuplicateEntityKeyError", "UnicodeDecodeError"]`.
+  A generic class (`ComputeError`, `Exception`) stays unadjudicable: it names no vendor fault,
+  so an entry naming it could cover a gridflow defect.
+- **Why an invalid-encoding body is vendor-caused.** The `brit_ned` 20241016 weekly upload is
+  one body in an otherwise UTF-8 package: of the 187 BritNed bodies it is the only one that is
+  not valid UTF-8 (two standalone `0xA0` bytes, a cp1252 or Latin-1 no-break space).
+- **The record's declared encoding stays authoritative.** No per-resource encoding, no
+  re-decode, no bronze repair: the capture fails and stays unloaded with its failure record.
+- **The reader guarantee.** Every body that is not valid in `record.encoding` fails with
+  `UnicodeDecodeError` before Polars sees it, wherever the bad byte sits (data row, header,
+  beyond the header pre-parse's reach, a truncated tail, behind a BOM, inside a markup body).
+  A UTF-8 body is validated in bounded chunks and passed on uncopied, so a valid body's bytes
+  and outputs are unchanged. Before this amendment the class depended on the byte's position
+  (`ComputeError` from the header pre-parse, or `NotCsvBodyError`).
+- **Committed entry.** `brit_ned` `failed` (`UnicodeDecodeError`) on
+  `raw_20261008T085647Z_811bec71-f099-4474-ba5e-2f9932b39cc2_24bb3d9b.csv` of 2026-10-08, with
+  the question to NESO: which text encoding the resource uses, and whether it can be
+  republished as UTF-8.
+- **Migration.** A failure record written before the gate keeps its old class (`ComputeError`)
+  until a drain re-runs the capture and rewrites it (atomic replace). Until then reconcile
+  reports the gap open and the entry stale (fail closed, exit 1).
+  - **R-1.** Between the merge and that drain, `reconcile --all` on the real root exits 1 with
+    the B-ENC gap open (`ComputeError`) and one `stale_adjudication`; the drain closes it.
+  - **R-2.** About 100 bodies of 13 not-yet-recorded families (mostly `0xA3`, £) are not valid
+    UTF-8; under a `utf-8` record they would fail with `UnicodeDecodeError`. When those
+    families are recorded, their records must declare the real encoding.
