@@ -1042,8 +1042,9 @@ def test_the_committed_ledger_carries_the_three_brit_ned_entries() -> None:
     scope, an edited reason or question), a ledger the registry rejects, an entry naming a
     resource that is not a BritNed weekly upload, or a stray entry for another family; in a
     fresh interpreter. The whole ledger is the ruled families: GEN-2H's two (547), NSL (565),
-    BritNed's two (571), BritNed's invalid-encoding capture (575) and the 2022 regional FES
-    GSP lookup capture (607), appended last."""
+    BritNed's two (571), BritNed's invalid-encoding capture (575), the 2022 regional FES
+    GSP lookup capture (607) and the three 2020-2022 building block captures (608), appended
+    last."""
     loaded = _fresh_interpreter(
         """
         import json
@@ -1077,6 +1078,9 @@ def test_the_committed_ledger_carries_the_three_brit_ned_entries() -> None:
         "brit_ned",
         "brit_ned",
         "fes_regional_gsp_info",
+        "fes_building_blocks_main",
+        "fes_building_blocks_main",
+        "fes_building_blocks_main",
     ]
     directory = "bronze/neso_data_portal/brit_ned/2026/10/08/"
     overlap, failed, encoding = loaded["entries"]

@@ -84,5 +84,41 @@
     "question": "Which text encoding does resource 000d08b9-12d9-4396-95f8-6b3677664836 (FES 2022 Grid Supply Point Info) use, and can NESO republish it as UTF-8?",
     "evidence": "K-SCN-1-FACTS SCN-1b fes_regional_gsp_info (encoding), K-SCN-1b-SPEC; ADR-040 amendment 1",
     "ruling": "607"
+  },
+  {
+    "family": "fes_building_blocks_main",
+    "category": "failed",
+    "cause": "DuplicateEntityKeyError",
+    "captures": [
+      "bronze/neso_data_portal/fes_building_blocks_main/2026/10/08/raw_20261008T105318Z_bff7061d-fbd3-4d8a-a95b-876affc2033d_4902afc9.csv"
+    ],
+    "reason": "the 2020 body has 1276 excess rows, each tuple of scenario, building block, DNO area, GSP and unit repeated once with different values (e.g. CT, Gen_BB015, Camblesforth, NPg Yorkshire, MW on table rows 11449 and 11702), so no vendor-column key is lossless and the duplicate guard fails the capture; it is never deduplicated and stays unloaded with its failure record",
+    "question": "Which omitted row-grain dimension makes the repeated rows of the FES 2020 building blocks unique, and can NESO publish a corrected file or a row identifier?",
+    "evidence": "K-SCN-1-FACTS SCN-1c fes_building_blocks_main (Full-body key collisions), K-SCN-1c-SPEC; ADR-040",
+    "ruling": "608"
+  },
+  {
+    "family": "fes_building_blocks_main",
+    "category": "failed",
+    "cause": "DuplicateEntityKeyError",
+    "captures": [
+      "bronze/neso_data_portal/fes_building_blocks_main/2026/10/08/raw_20261008T105321Z_5f93098e-1d52-44bf-a375-d3edfb89f8a5_847ddfb0.csv"
+    ],
+    "reason": "the 2021 body has 186 excess rows in 168 repeated tuples of scenario, building block, DNO area, GSP and unit (up to 18 rows per tuple, none identical in every cell; e.g. Central Forecast, Gen_BB001, Ratcliffe, East Midlands, MW on table rows 7 and 8), so no vendor-column key is lossless and the duplicate guard fails the capture; it is never deduplicated and stays unloaded with its failure record",
+    "question": "Which omitted row-grain dimension makes the repeated rows of the FES 2021 building blocks unique, and can NESO publish a corrected file or a row identifier?",
+    "evidence": "K-SCN-1-FACTS SCN-1c fes_building_blocks_main (Full-body key collisions), K-SCN-1c-SPEC; ADR-040",
+    "ruling": "608"
+  },
+  {
+    "family": "fes_building_blocks_main",
+    "category": "failed",
+    "cause": "DuplicateEntityKeyError",
+    "captures": [
+      "bronze/neso_data_portal/fes_building_blocks_main/2026/10/08/raw_20261008T105324Z_36fd3aa9-6e42-418f-b1bb-a31bbfcf2008_e7b4ed31.csv"
+    ],
+    "reason": "the 2022 body has 1177 excess rows in 670 repeated tuples of scenario, building block, DNO area, GSP and unit (up to 141 rows per tuple, 471 excess rows identical in every cell; e.g. Leading the Way, Gen_BB001, Direct(NGET), NGET, MW on table rows 3, 4 and 10), so no vendor-column key is lossless and the duplicate guard fails the capture; it is never deduplicated and stays unloaded with its failure record",
+    "question": "Which omitted row-grain dimension makes the repeated rows of the FES 2022 building blocks unique, and can NESO publish a corrected file or a row identifier?",
+    "evidence": "K-SCN-1-FACTS SCN-1c fes_building_blocks_main (Full-body key collisions), K-SCN-1c-SPEC; ADR-040",
+    "ruling": "608"
   }
 ]

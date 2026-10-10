@@ -1,0 +1,6 @@
+﻿Template,Technology,Building Block ID Number,Technology Detail,Units,Detail,Comments,Alignment with Ofgem Core Scenario Key Drivers
+Generation ,Non-renewable CHP,Gen_BB001,>=1MW,MW,Installed capacity,Non-renewable,Distribution Thermal Generation (MW)
+,,Gen_BB002,<1MW,MW,Installed capacity,Non-renewable excluding domestic Micro CHP,
+,Micro CHP,Gen_BB003,Domestic (G98/G83),MW,Installed capacity,,
+,Non-renewable Engines (Diesel) (non CHP),Gen_BB005,,,,,
+,,Gen_BB015,Onshore Wind >=1MW,,,,

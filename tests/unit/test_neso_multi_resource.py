@@ -142,6 +142,14 @@ SCN1B_ADDED = frozenset(
     }
 )
 """The nine regional-breakdown-of-FES families that v0.22-K-SCN-1b records."""
+SCN1C_ADDED = frozenset(
+    {
+        "fes_building_blocks_main",
+        "fes_building_blocks_block_definitions",
+        "fes_building_blocks_block_licence_area",
+    }
+)
+"""The three FES building block families that v0.22-K-SCN-1c records."""
 REWORDED_HOLDS = {
     "national_forecast_7d_historic_day_ahead": (
         "TODO: FORECAST_TIMESTAMP has no vendor definition and its zone is undocumented "
@@ -187,8 +195,8 @@ class TestByteUnchanged:
         ``historic_demand``, K-DEM-2's four demand-reference records, K-GEN-1's fourteen
         wind / margin forecast records, K-GEN-2's weekly wind availability record, GEN-2H's
         metered wind output and wind BOA volume records, K-IC-1's and K-IC-2's interconnector
-        records, v0.22-SC's FES ED1 record, K-SCN-1a's twelve tRESP records and K-SCN-1b's nine
-        regional FES records appearing.
+        records, v0.22-SC's FES ED1 record, K-SCN-1a's twelve tRESP records, K-SCN-1b's nine
+        regional FES records and K-SCN-1c's three building block records appearing.
         """
         golden = json.loads(PIN_PATH.read_text(encoding="utf-8"))
         for key, question in REWORDED_HOLDS.items():
@@ -211,6 +219,7 @@ class TestByteUnchanged:
                     *SC_ADDED,
                     *SCN1A_ADDED,
                     *SCN1B_ADDED,
+                    *SCN1C_ADDED,
                 }
                 if section != "engine"
                 else set()
@@ -812,7 +821,7 @@ class TestRecordRules:
         self,
     ) -> None:
         """Detects a committed record broken by V-4/V-17 or the reserved name, and any
-        family other than the thirty-one resource-partitioned ones opting into the partition (in a
+        family other than the thirty-four resource-partitioned ones opting into the partition (in a
         fresh interpreter, so nothing collection imported can mask it)."""
         code = textwrap.dedent(
             """
@@ -827,6 +836,9 @@ class TestRecordRules:
                 "brit_ned",
                 "da_wind_forecast_historic_day_ahead_bmu",
                 "eleclink",
+                "fes_building_blocks_block_definitions",
+                "fes_building_blocks_block_licence_area",
+                "fes_building_blocks_main",
                 "fes_ed1_electricity_demand",
                 "fes_regional_demand_active_power",
                 "fes_regional_dg_gt_1mw",

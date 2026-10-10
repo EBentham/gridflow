@@ -650,6 +650,16 @@ SCN1B_RECORDED = {
 
 SCN1B_PACKAGE_FILES = {"regional-breakdown-of-fes-data-electricity.json"}
 
+SCN1C_RECORDED = {
+    "fes_building_blocks_main",
+    "fes_building_blocks_block_definitions",
+    "fes_building_blocks_block_licence_area",
+}
+"""The three FES building block families (two eligible, the unpivoted main held) unit K-SCN-1c
+records."""
+
+SCN1C_PACKAGE_FILES = {"future-energy-scenario-fes-building-block-data.json"}
+
 X_RESOURCES_WITH_CHILDREN = 4 + 1 + 39 + 73 + 1
 """Unit X's committed inventories (ADR-037 P-8): CMP workbooks, the ResultSummary ZIP,
 frequency ZIPs, held data containers and the GSP archive with a CSV member."""
@@ -681,6 +691,7 @@ class TestSeededRegistry:
             | SC_RECORDED
             | SCN1A_RECORDED
             | SCN1B_RECORDED
+            | SCN1C_RECORDED
         )
         with_children = [res for _package, res in loaded.resources.values() if res.children]
         assert len(with_children) == X_RESOURCES_WITH_CHILDREN
@@ -713,6 +724,7 @@ class TestSeededRegistry:
             | SC_PACKAGE_FILES
             | SCN1A_PACKAGE_FILES
             | SCN1B_PACKAGE_FILES
+            | SCN1C_PACKAGE_FILES
         )
 
 

@@ -17,7 +17,425 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Template",
+              "Technology",
+              "Building Block ID Number",
+              "Technology Detail",
+              "Units",
+              "Detail",
+              "Comments",
+              "ESO Additional Notes"
+            ],
+            "columns": [
+              {
+                "source": "Template",
+                "name": "template",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Technology",
+                "name": "technology",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Building Block ID Number",
+                "name": "building_block_id_number",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Technology Detail",
+                "name": "technology_detail",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Units",
+                "name": "units",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Detail",
+                "name": "detail",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Comments",
+                "name": "comments",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "ESO Additional Notes",
+                "name": "eso_additional_notes",
+                "dtype": "string",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          },
+          {
+            "header": [
+              "Template",
+              "Technology",
+              "Building Block ID Number",
+              "Technology Detail",
+              "Units",
+              "Detail",
+              "Comments",
+              "Alignment with Ofgem Core Scenario Key Drivers",
+              "ESO Comments"
+            ],
+            "columns": [
+              {
+                "source": "Template",
+                "name": "template",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Technology",
+                "name": "technology",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Building Block ID Number",
+                "name": "building_block_id_number",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Technology Detail",
+                "name": "technology_detail",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Units",
+                "name": "units",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Detail",
+                "name": "detail",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Comments",
+                "name": "comments",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Alignment with Ofgem Core Scenario Key Drivers",
+                "name": "alignment_with_ofgem_core_scenario_key_drivers",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "ESO Comments",
+                "name": "eso_comments",
+                "dtype": "string",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          },
+          {
+            "header": [
+              "Template",
+              "Technology",
+              "Building Block ID Number",
+              "Technology Detail",
+              "Units",
+              "Detail",
+              "Comments",
+              "",
+              "Alignment with Ofgem Core Scenario Key Drivers",
+              "_duplicated_0",
+              "Included in ESO Data",
+              "ESO Comments"
+            ],
+            "columns": [
+              {
+                "source": "Template",
+                "name": "template",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Technology",
+                "name": "technology",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Building Block ID Number",
+                "name": "building_block_id_number",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Technology Detail",
+                "name": "technology_detail",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Units",
+                "name": "units",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Detail",
+                "name": "detail",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Comments",
+                "name": "comments",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "",
+                "name": "unnamed_8",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Alignment with Ofgem Core Scenario Key Drivers",
+                "name": "alignment_with_ofgem_core_scenario_key_drivers",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "_duplicated_0",
+                "name": "unnamed_10",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Included in ESO Data",
+                "name": "included_in_eso_data",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "ESO Comments",
+                "name": "eso_comments",
+                "dtype": "string",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          },
+          {
+            "header": [
+              "Template",
+              "Technology",
+              "Building Block ID Number",
+              "Technology Detail",
+              "Units",
+              "Detail",
+              "Comments",
+              "Alignment with Ofgem Core Scenario Key Drivers",
+              "Included in ESO Data",
+              "ESO Comments"
+            ],
+            "columns": [
+              {
+                "source": "Template",
+                "name": "template",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Technology",
+                "name": "technology",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Building Block ID Number",
+                "name": "building_block_id_number",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Technology Detail",
+                "name": "technology_detail",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Units",
+                "name": "units",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Detail",
+                "name": "detail",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Comments",
+                "name": "comments",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Alignment with Ofgem Core Scenario Key Drivers",
+                "name": "alignment_with_ofgem_core_scenario_key_drivers",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Included in ESO Data",
+                "name": "included_in_eso_data",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "ESO Comments",
+                "name": "eso_comments",
+                "dtype": "string",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          },
+          {
+            "header": [
+              "Template",
+              "Technology",
+              "Building Block ID Number",
+              "Technology Detail",
+              "Units",
+              "Detail",
+              "Comments",
+              "Alignment with Ofgem Core Scenario Key Drivers"
+            ],
+            "columns": [
+              {
+                "source": "Template",
+                "name": "template",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Technology",
+                "name": "technology",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Building Block ID Number",
+                "name": "building_block_id_number",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Technology Detail",
+                "name": "technology_detail",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Units",
+                "name": "units",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Detail",
+                "name": "detail",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Comments",
+                "name": "comments",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Alignment with Ofgem Core Scenario Key Drivers",
+                "name": "alignment_with_ofgem_core_scenario_key_drivers",
+                "dtype": "string",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "resource_id",
+          "edition",
+          "building_block_id_number"
+        ],
+        "latest": "whole_capture",
+        "latest_partition": "resource_id",
+        "edition_by_filename": [
+          [
+            "building-block-definitions.csv",
+            2020
+          ],
+          [
+            "building-block-definitions-2021.csv",
+            2021
+          ],
+          [
+            "building-block-definitions-2022.csv",
+            2022
+          ],
+          [
+            "building-block-definitions-2023.csv",
+            2023
+          ],
+          [
+            "building-block-definitions-2024.csv",
+            2024
+          ],
+          [
+            "fes2025_bb2_v001.csv",
+            2025
+          ]
+        ],
+        "vintage": "ckan_last_modified"
+      }
     },
     {
       "key": "fes_building_blocks_block_licence_area",
@@ -28,7 +446,89 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Area Type",
+              "FES23 BB Area Name",
+              "Full Licence Name",
+              "Elexon GSP Group",
+              "Elexon GSP Group Name",
+              "FES2024 Area Name",
+              "Comments"
+            ],
+            "columns": [
+              {
+                "source": "Area Type",
+                "name": "area_type",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "FES23 BB Area Name",
+                "name": "fes23_bb_area_name",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Full Licence Name",
+                "name": "full_licence_name",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Elexon GSP Group",
+                "name": "elexon_gsp_group",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Elexon GSP Group Name",
+                "name": "elexon_gsp_group_name",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "FES2024 Area Name",
+                "name": "fes2024_area_name",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Comments",
+                "name": "comments",
+                "dtype": "string",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "resource_id",
+          "edition",
+          "fes23_bb_area_name"
+        ],
+        "latest": "whole_capture",
+        "latest_partition": "resource_id",
+        "edition_by_filename": [
+          [
+            "building-block-licence-area-name-mapping-2024.csv",
+            2024
+          ]
+        ],
+        "vintage": "ckan_last_modified"
+      }
     },
     {
       "key": "fes_building_blocks_main",
@@ -39,7 +539,1336 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Building Block ID Number",
+              "Unit",
+              "DNO License Area",
+              "FES Scenario",
+              "GSP",
+              "Baseline (2019)",
+              "2020",
+              "2021",
+              "2022",
+              "2023",
+              "2024",
+              "2025",
+              "2026",
+              "2027",
+              "2028",
+              "2029",
+              "2030",
+              "2031",
+              "2032",
+              "2033",
+              "2034",
+              "2035",
+              "2036",
+              "2037",
+              "2038",
+              "2039",
+              "2040",
+              "2041",
+              "2042",
+              "2043",
+              "2044",
+              "2045",
+              "2046",
+              "2047",
+              "2048",
+              "2049",
+              "2050",
+              "Comment"
+            ],
+            "columns": [
+              {
+                "source": "Building Block ID Number",
+                "name": "building_block_id_number",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Unit",
+                "name": "unit",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "DNO License Area",
+                "name": "dno_license_area",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "FES Scenario",
+                "name": "fes_scenario",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "GSP",
+                "name": "gsp",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Comment",
+                "name": "comment",
+                "dtype": "string",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            },
+            "unpivot": {
+              "years": [
+                [
+                  "Baseline (2019)",
+                  2019
+                ],
+                [
+                  "2020",
+                  2020
+                ],
+                [
+                  "2021",
+                  2021
+                ],
+                [
+                  "2022",
+                  2022
+                ],
+                [
+                  "2023",
+                  2023
+                ],
+                [
+                  "2024",
+                  2024
+                ],
+                [
+                  "2025",
+                  2025
+                ],
+                [
+                  "2026",
+                  2026
+                ],
+                [
+                  "2027",
+                  2027
+                ],
+                [
+                  "2028",
+                  2028
+                ],
+                [
+                  "2029",
+                  2029
+                ],
+                [
+                  "2030",
+                  2030
+                ],
+                [
+                  "2031",
+                  2031
+                ],
+                [
+                  "2032",
+                  2032
+                ],
+                [
+                  "2033",
+                  2033
+                ],
+                [
+                  "2034",
+                  2034
+                ],
+                [
+                  "2035",
+                  2035
+                ],
+                [
+                  "2036",
+                  2036
+                ],
+                [
+                  "2037",
+                  2037
+                ],
+                [
+                  "2038",
+                  2038
+                ],
+                [
+                  "2039",
+                  2039
+                ],
+                [
+                  "2040",
+                  2040
+                ],
+                [
+                  "2041",
+                  2041
+                ],
+                [
+                  "2042",
+                  2042
+                ],
+                [
+                  "2043",
+                  2043
+                ],
+                [
+                  "2044",
+                  2044
+                ],
+                [
+                  "2045",
+                  2045
+                ],
+                [
+                  "2046",
+                  2046
+                ],
+                [
+                  "2047",
+                  2047
+                ],
+                [
+                  "2048",
+                  2048
+                ],
+                [
+                  "2049",
+                  2049
+                ],
+                [
+                  "2050",
+                  2050
+                ]
+              ],
+              "value": {
+                "dtype": "float64",
+                "nullable": true
+              }
+            }
+          },
+          {
+            "header": [
+              "FES Scenario",
+              "Building Block ID Number",
+              "Unit",
+              "DNO License Area",
+              "GSP",
+              "Share of GSP",
+              "Baseline (2020)",
+              "2021",
+              "2022",
+              "2023",
+              "2024",
+              "2025",
+              "2026",
+              "2027",
+              "2028",
+              "2029",
+              "2030",
+              "2031",
+              "2032",
+              "2033",
+              "2034",
+              "2035",
+              "2036",
+              "2037",
+              "2038",
+              "2039",
+              "2040",
+              "2041",
+              "2042",
+              "2043",
+              "2044",
+              "2045",
+              "2046",
+              "2047",
+              "2048",
+              "2049",
+              "2050",
+              "Comment"
+            ],
+            "columns": [
+              {
+                "source": "FES Scenario",
+                "name": "fes_scenario",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Building Block ID Number",
+                "name": "building_block_id_number",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Unit",
+                "name": "unit",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "DNO License Area",
+                "name": "dno_license_area",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "GSP",
+                "name": "gsp",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Share of GSP",
+                "name": "share_of_gsp",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Comment",
+                "name": "comment",
+                "dtype": "string",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            },
+            "unpivot": {
+              "years": [
+                [
+                  "Baseline (2020)",
+                  2020
+                ],
+                [
+                  "2021",
+                  2021
+                ],
+                [
+                  "2022",
+                  2022
+                ],
+                [
+                  "2023",
+                  2023
+                ],
+                [
+                  "2024",
+                  2024
+                ],
+                [
+                  "2025",
+                  2025
+                ],
+                [
+                  "2026",
+                  2026
+                ],
+                [
+                  "2027",
+                  2027
+                ],
+                [
+                  "2028",
+                  2028
+                ],
+                [
+                  "2029",
+                  2029
+                ],
+                [
+                  "2030",
+                  2030
+                ],
+                [
+                  "2031",
+                  2031
+                ],
+                [
+                  "2032",
+                  2032
+                ],
+                [
+                  "2033",
+                  2033
+                ],
+                [
+                  "2034",
+                  2034
+                ],
+                [
+                  "2035",
+                  2035
+                ],
+                [
+                  "2036",
+                  2036
+                ],
+                [
+                  "2037",
+                  2037
+                ],
+                [
+                  "2038",
+                  2038
+                ],
+                [
+                  "2039",
+                  2039
+                ],
+                [
+                  "2040",
+                  2040
+                ],
+                [
+                  "2041",
+                  2041
+                ],
+                [
+                  "2042",
+                  2042
+                ],
+                [
+                  "2043",
+                  2043
+                ],
+                [
+                  "2044",
+                  2044
+                ],
+                [
+                  "2045",
+                  2045
+                ],
+                [
+                  "2046",
+                  2046
+                ],
+                [
+                  "2047",
+                  2047
+                ],
+                [
+                  "2048",
+                  2048
+                ],
+                [
+                  "2049",
+                  2049
+                ],
+                [
+                  "2050",
+                  2050
+                ]
+              ],
+              "value": {
+                "dtype": "float64",
+                "nullable": true
+              }
+            }
+          },
+          {
+            "header": [
+              "FES Scenario",
+              "Building Block ID Number",
+              "Unit",
+              "DNO License Area",
+              "GSP",
+              "Share of GSP",
+              "2021",
+              "2022",
+              "2023",
+              "2024",
+              "2025",
+              "2026",
+              "2027",
+              "2028",
+              "2029",
+              "2030",
+              "2031",
+              "2032",
+              "2033",
+              "2034",
+              "2035",
+              "2036",
+              "2037",
+              "2038",
+              "2039",
+              "2040",
+              "2041",
+              "2042",
+              "2043",
+              "2044",
+              "2045",
+              "2046",
+              "2047",
+              "2048",
+              "2049",
+              "2050",
+              "Comment"
+            ],
+            "columns": [
+              {
+                "source": "FES Scenario",
+                "name": "fes_scenario",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Building Block ID Number",
+                "name": "building_block_id_number",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Unit",
+                "name": "unit",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "DNO License Area",
+                "name": "dno_license_area",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "GSP",
+                "name": "gsp",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Share of GSP",
+                "name": "share_of_gsp",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Comment",
+                "name": "comment",
+                "dtype": "string",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            },
+            "unpivot": {
+              "years": [
+                [
+                  "2021",
+                  2021
+                ],
+                [
+                  "2022",
+                  2022
+                ],
+                [
+                  "2023",
+                  2023
+                ],
+                [
+                  "2024",
+                  2024
+                ],
+                [
+                  "2025",
+                  2025
+                ],
+                [
+                  "2026",
+                  2026
+                ],
+                [
+                  "2027",
+                  2027
+                ],
+                [
+                  "2028",
+                  2028
+                ],
+                [
+                  "2029",
+                  2029
+                ],
+                [
+                  "2030",
+                  2030
+                ],
+                [
+                  "2031",
+                  2031
+                ],
+                [
+                  "2032",
+                  2032
+                ],
+                [
+                  "2033",
+                  2033
+                ],
+                [
+                  "2034",
+                  2034
+                ],
+                [
+                  "2035",
+                  2035
+                ],
+                [
+                  "2036",
+                  2036
+                ],
+                [
+                  "2037",
+                  2037
+                ],
+                [
+                  "2038",
+                  2038
+                ],
+                [
+                  "2039",
+                  2039
+                ],
+                [
+                  "2040",
+                  2040
+                ],
+                [
+                  "2041",
+                  2041
+                ],
+                [
+                  "2042",
+                  2042
+                ],
+                [
+                  "2043",
+                  2043
+                ],
+                [
+                  "2044",
+                  2044
+                ],
+                [
+                  "2045",
+                  2045
+                ],
+                [
+                  "2046",
+                  2046
+                ],
+                [
+                  "2047",
+                  2047
+                ],
+                [
+                  "2048",
+                  2048
+                ],
+                [
+                  "2049",
+                  2049
+                ],
+                [
+                  "2050",
+                  2050
+                ]
+              ],
+              "value": {
+                "dtype": "float64",
+                "nullable": true
+              }
+            }
+          },
+          {
+            "header": [
+              "FES Scenario",
+              "Building Block ID Number",
+              "Unit",
+              "DNO License Area",
+              "GSP",
+              "Share of GSP",
+              "2022",
+              "2023",
+              "2024",
+              "2025",
+              "2026",
+              "2027",
+              "2028",
+              "2029",
+              "2030",
+              "2031",
+              "2032",
+              "2033",
+              "2034",
+              "2035",
+              "2036",
+              "2037",
+              "2038",
+              "2039",
+              "2040",
+              "2041",
+              "2042",
+              "2043",
+              "2044",
+              "2045",
+              "2046",
+              "2047",
+              "2048",
+              "2049",
+              "2050",
+              "Comment"
+            ],
+            "columns": [
+              {
+                "source": "FES Scenario",
+                "name": "fes_scenario",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Building Block ID Number",
+                "name": "building_block_id_number",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Unit",
+                "name": "unit",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "DNO License Area",
+                "name": "dno_license_area",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "GSP",
+                "name": "gsp",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Share of GSP",
+                "name": "share_of_gsp",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Comment",
+                "name": "comment",
+                "dtype": "string",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            },
+            "unpivot": {
+              "years": [
+                [
+                  "2022",
+                  2022
+                ],
+                [
+                  "2023",
+                  2023
+                ],
+                [
+                  "2024",
+                  2024
+                ],
+                [
+                  "2025",
+                  2025
+                ],
+                [
+                  "2026",
+                  2026
+                ],
+                [
+                  "2027",
+                  2027
+                ],
+                [
+                  "2028",
+                  2028
+                ],
+                [
+                  "2029",
+                  2029
+                ],
+                [
+                  "2030",
+                  2030
+                ],
+                [
+                  "2031",
+                  2031
+                ],
+                [
+                  "2032",
+                  2032
+                ],
+                [
+                  "2033",
+                  2033
+                ],
+                [
+                  "2034",
+                  2034
+                ],
+                [
+                  "2035",
+                  2035
+                ],
+                [
+                  "2036",
+                  2036
+                ],
+                [
+                  "2037",
+                  2037
+                ],
+                [
+                  "2038",
+                  2038
+                ],
+                [
+                  "2039",
+                  2039
+                ],
+                [
+                  "2040",
+                  2040
+                ],
+                [
+                  "2041",
+                  2041
+                ],
+                [
+                  "2042",
+                  2042
+                ],
+                [
+                  "2043",
+                  2043
+                ],
+                [
+                  "2044",
+                  2044
+                ],
+                [
+                  "2045",
+                  2045
+                ],
+                [
+                  "2046",
+                  2046
+                ],
+                [
+                  "2047",
+                  2047
+                ],
+                [
+                  "2048",
+                  2048
+                ],
+                [
+                  "2049",
+                  2049
+                ],
+                [
+                  "2050",
+                  2050
+                ]
+              ],
+              "value": {
+                "dtype": "float64",
+                "nullable": true
+              }
+            }
+          },
+          {
+            "header": [
+              "FES Pathway",
+              "Building Block ID Number",
+              "Unit",
+              "DNO License Area",
+              "GSP",
+              "Share of GSP",
+              "2023",
+              "2024",
+              "2025",
+              "2026",
+              "2027",
+              "2028",
+              "2029",
+              "2030",
+              "2031",
+              "2032",
+              "2033",
+              "2034",
+              "2035",
+              "2036",
+              "2037",
+              "2038",
+              "2039",
+              "2040",
+              "2041",
+              "2042",
+              "2043",
+              "2044",
+              "2045",
+              "2046",
+              "2047",
+              "2048",
+              "2049",
+              "2050",
+              "Comment"
+            ],
+            "columns": [
+              {
+                "source": "FES Pathway",
+                "name": "fes_pathway",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Building Block ID Number",
+                "name": "building_block_id_number",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Unit",
+                "name": "unit",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "DNO License Area",
+                "name": "dno_license_area",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "GSP",
+                "name": "gsp",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Share of GSP",
+                "name": "share_of_gsp",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Comment",
+                "name": "comment",
+                "dtype": "string",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            },
+            "unpivot": {
+              "years": [
+                [
+                  "2023",
+                  2023
+                ],
+                [
+                  "2024",
+                  2024
+                ],
+                [
+                  "2025",
+                  2025
+                ],
+                [
+                  "2026",
+                  2026
+                ],
+                [
+                  "2027",
+                  2027
+                ],
+                [
+                  "2028",
+                  2028
+                ],
+                [
+                  "2029",
+                  2029
+                ],
+                [
+                  "2030",
+                  2030
+                ],
+                [
+                  "2031",
+                  2031
+                ],
+                [
+                  "2032",
+                  2032
+                ],
+                [
+                  "2033",
+                  2033
+                ],
+                [
+                  "2034",
+                  2034
+                ],
+                [
+                  "2035",
+                  2035
+                ],
+                [
+                  "2036",
+                  2036
+                ],
+                [
+                  "2037",
+                  2037
+                ],
+                [
+                  "2038",
+                  2038
+                ],
+                [
+                  "2039",
+                  2039
+                ],
+                [
+                  "2040",
+                  2040
+                ],
+                [
+                  "2041",
+                  2041
+                ],
+                [
+                  "2042",
+                  2042
+                ],
+                [
+                  "2043",
+                  2043
+                ],
+                [
+                  "2044",
+                  2044
+                ],
+                [
+                  "2045",
+                  2045
+                ],
+                [
+                  "2046",
+                  2046
+                ],
+                [
+                  "2047",
+                  2047
+                ],
+                [
+                  "2048",
+                  2048
+                ],
+                [
+                  "2049",
+                  2049
+                ],
+                [
+                  "2050",
+                  2050
+                ]
+              ],
+              "value": {
+                "dtype": "float64",
+                "nullable": true
+              }
+            }
+          },
+          {
+            "header": [
+              "FES Pathway",
+              "Building Block ID Number",
+              "Unit",
+              "DNO License Area",
+              "GSP",
+              "Share of GSP",
+              "2024",
+              "2025",
+              "2026",
+              "2027",
+              "2028",
+              "2029",
+              "2030",
+              "2031",
+              "2032",
+              "2033",
+              "2034",
+              "2035",
+              "2036",
+              "2037",
+              "2038",
+              "2039",
+              "2040",
+              "2041",
+              "2042",
+              "2043",
+              "2044",
+              "2045",
+              "2046",
+              "2047",
+              "2048",
+              "2049",
+              "2050",
+              "Comment"
+            ],
+            "columns": [
+              {
+                "source": "FES Pathway",
+                "name": "fes_pathway",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Building Block ID Number",
+                "name": "building_block_id_number",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Unit",
+                "name": "unit",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "DNO License Area",
+                "name": "dno_license_area",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "GSP",
+                "name": "gsp",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Share of GSP",
+                "name": "share_of_gsp",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Comment",
+                "name": "comment",
+                "dtype": "string",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            },
+            "unpivot": {
+              "years": [
+                [
+                  "2024",
+                  2024
+                ],
+                [
+                  "2025",
+                  2025
+                ],
+                [
+                  "2026",
+                  2026
+                ],
+                [
+                  "2027",
+                  2027
+                ],
+                [
+                  "2028",
+                  2028
+                ],
+                [
+                  "2029",
+                  2029
+                ],
+                [
+                  "2030",
+                  2030
+                ],
+                [
+                  "2031",
+                  2031
+                ],
+                [
+                  "2032",
+                  2032
+                ],
+                [
+                  "2033",
+                  2033
+                ],
+                [
+                  "2034",
+                  2034
+                ],
+                [
+                  "2035",
+                  2035
+                ],
+                [
+                  "2036",
+                  2036
+                ],
+                [
+                  "2037",
+                  2037
+                ],
+                [
+                  "2038",
+                  2038
+                ],
+                [
+                  "2039",
+                  2039
+                ],
+                [
+                  "2040",
+                  2040
+                ],
+                [
+                  "2041",
+                  2041
+                ],
+                [
+                  "2042",
+                  2042
+                ],
+                [
+                  "2043",
+                  2043
+                ],
+                [
+                  "2044",
+                  2044
+                ],
+                [
+                  "2045",
+                  2045
+                ],
+                [
+                  "2046",
+                  2046
+                ],
+                [
+                  "2047",
+                  2047
+                ],
+                [
+                  "2048",
+                  2048
+                ],
+                [
+                  "2049",
+                  2049
+                ],
+                [
+                  "2050",
+                  2050
+                ]
+              ],
+              "value": {
+                "dtype": "float64",
+                "nullable": true
+              }
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "resource_id",
+          "edition",
+          "fes_scenario",
+          "fes_pathway",
+          "building_block_id_number",
+          "dno_license_area",
+          "gsp",
+          "unit",
+          "projection_year"
+        ],
+        "latest": "whole_capture",
+        "latest_partition": "resource_id",
+        "edition_by_filename": [
+          [
+            "fes2020_building_blocks.csv",
+            2020
+          ],
+          [
+            "fes-2021-building-blocks-version-008.csv",
+            2021
+          ],
+          [
+            "fes-2022-building-blocks-version-4.0.csv",
+            2022
+          ],
+          [
+            "fes-2023-building-blocks-version-1.1.csv",
+            2023
+          ],
+          [
+            "fes-2024-building-blocks-version-1.1.csv",
+            2024
+          ],
+          [
+            "fes2025_bb1_v006.csv",
+            2025
+          ]
+        ],
+        "vintage": "ckan_last_modified",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: for each edition, what period does a building-block year label (and the 2019/2020 baseline) denote — calendar year, financial year or winter? And what omitted row-grain dimension makes the 2020–2022 rows unique (repeated building block × GSP × DNO × unit rows with different values)? NESO's dictionaries state neither.",
+          "unit": "E-SEM"
+        }
+      }
     }
   ],
   "resources": [
