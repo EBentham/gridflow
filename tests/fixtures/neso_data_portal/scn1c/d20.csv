@@ -1,0 +1,13 @@
+﻿Template,Technology,Building Block ID Number,Technology Detail,Units,Detail,Comments,ESO Additional Notes
+Generation ,Non-renewable CHP,Gen_BB001,>=1MW,MW,Installed capacity,Non-renewable,
+Generation ,Non-renewable CHP,Gen_BB002,<1MW,MW,Installed capacity,Non-renewable excluding domestic Micro CHP,
+Generation ,Micro CHP,Gen_BB003,Domestic (G98/G83),MW,Installed capacity,,
+Demand,Demand,Dem_BB002c,I&C, MW,Annualised Peak Demand MW (TBC),,"1) Industrial and Commercial ACS Peak Demand
+2) Distribution losses (~6%) added to FES components in table BB1 but NOT transmission losses (2%)
+3) Many FES components do not have losses added to them - this is done later when trying to illustrate system demand and noted when done so in the workbook tables
+4) Components Included: Industrial, Commercial, Rail traction
+"
+,,,,,,,
+,,,,,,,
+,,,,,,,
+,,,,,,,
