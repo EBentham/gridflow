@@ -41,6 +41,7 @@ from _neso_generic_support import write_capture
 from _neso_sc_pin import PIN_PATH
 from test_neso_dem1_records import _short_base
 from test_neso_multi_resource import (
+    BAL1_ADDED,
     CON_ADDED,
     SCN1A_ADDED,
     SCN1B_ADDED,
@@ -596,7 +597,8 @@ class TestSkeletonAndPin:
         """Detects any generated family other than the FES ED1 pilot, the twelve tRESP records
         of K-SCN-1a, the nine regional FES records of K-SCN-1b and the three building block records
         of K-SCN-1c, the ES1 record of K-SCN-1d, the seven constraint-management records of K-CON
-        and the eight system records of K-SYS-1 appearing since the base golden
+        the eight system records of K-SYS-1 and the nine balancing-costs records of K-BAL-1
+        appearing since the base golden
         (master ``34992b6``), and any DEM-1 engine digest added or lost."""
         golden = json.loads(PIN_PATH.read_text(encoding="utf-8"))
         current = json.loads(dump(generated_pin()))
@@ -609,5 +611,6 @@ class TestSkeletonAndPin:
                 *SCN1D_ADDED,
                 *CON_ADDED,
                 *SYS1_ADDED,
+                *BAL1_ADDED,
             }, section
         assert set(current["engine"]) == set(golden["engine"])

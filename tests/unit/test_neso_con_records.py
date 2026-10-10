@@ -1217,8 +1217,8 @@ def _tree_bytes(data: Path, top: str) -> dict[str, bytes]:
 def test_the_committed_ledger_entry_is_the_ruled_text_and_backed_by_the_registry() -> None:
     """Detects the committed entry drifting from the ruling (another capture, another cause, a wider
     scope, a lost question) or naming a resource that is not the day-ahead CSV: the entry is the
-    last one in the ledger before K-SYS-1's six Pathfinder entries, cause
-    ``DuplicateEntityKeyError``, ruling 632, the capture of the day-ahead resource only, and a
+    last one in the ledger before K-SYS-1's six Pathfinder entries and K-BAL-1's overlap entry,
+    cause ``DuplicateEntityKeyError``, ruling 632, the capture of the day-ahead resource only, and a
     one-line reason and question; the registry backs it (the referential check)."""
     entries = registry_module.load_reconcile_adjudications()
     assert reconcile_problems(entries) == []
@@ -1228,7 +1228,7 @@ def test_the_committed_ledger_entry_is_the_ruled_text_and_backed_by_the_registry
     for text in ("reason", "question"):
         assert "\n" not in entry[text] and entry[text].strip()
     assert "1,436" in entry["reason"] and "never deduplicated" in entry["reason"]
-    assert entries[-7].family == "da_constraint_flows_limits"
+    assert entries[-8].family == "da_constraint_flows_limits"
 
 
 def reconcile_problems(entries: Any) -> list[str]:

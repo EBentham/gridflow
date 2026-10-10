@@ -44,7 +44,7 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `balancing-services-contract-enactment` | `bs_contract_enactment_files` | catalogue only | — | — | — | — |
 | `balancing-services-use-of-system-bsuos-daily-forecast` | `bsuos_daily_forecast` | ingest-only (no silver output) | — | — | — | — |
 | `brit-ned` | `brit_ned` | silver | held: TODO: NESO does not define the operational-date rollover, the GMT/BST mapping or the `(a)`/`(b)` fold markers of the hourly labels, and the bodies carry no issue time, so no label can be dated as an issued limit. (unit E-SEM) | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
-| `bsuos-fixed-tariffs` | `bsuos_fixed_tariffs` | ingest-only (no silver output) | — | — | — | — |
+| `bsuos-fixed-tariffs` | `bsuos_fixed_tariffs` | silver | held: TODO: precise issue clock and availability of each publication at its Published Date, and whether historical publication rows are immutable — 15 of 17 targets start on or before the capture vintage, so RULINGS 529's forward-target exception does not apply. (unit E-SEM) | whole_capture | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
 | `bsuos-monthly-forecast` | `bsuos_monthly_forecast_actual_sum` | ingest-only (no silver output) | — | — | — | — |
 | `bsuos-monthly-forecast` | `bsuos_monthly_forecast_fc_summary` | ingest-only (no silver output) | — | — | — | — |
 | `bsuos-monthly-forecast` | `bsuos_monthly_forecast_fc_summary_pct` | ingest-only (no silver output) | — | — | — | — |
@@ -67,18 +67,18 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `capacity-market-register` | `capacity_market_unit_cmu_history` | silver | eligible | whole_capture | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
 | `carbon-intensity-of-balancing-actions` | `ci_balancing_actions` | silver | held: TODO: whether DATETIME marks period start or end (unit E-SEM) | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
 | `carbon-intensity-of-balancing-actions` | `ci_balancing_actions_files` | catalogue only | — | — | — | — |
-| `constraint-breakdown` | `constraint_breakdown` | ingest-only (no silver output) | — | — | — | — |
+| `constraint-breakdown` | `constraint_breakdown` | silver | eligible | whole_capture per resource_id | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
 | `constraint-management-intertrip-service-information-cmis` | `cmis_intertrip` | silver | held: TODO: do the arming/disarming timestamps carry GB local wall time with a mechanically added +00:00 offset, or actual UTC instants? And is the newer arming fee GBP/MWh (header) or GBP/SP (dictionary)? (unit E-SEM) | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
 | `contract-transfer-of-obligation` | `contract_transfer_obligation` | ingest-only (no silver output) | — | — | — | — |
 | `country-carbon-intensity-forecast` | `country_ci_forecast` | silver | held: TODO: no issue column; which forecast issue a past target's value reflects, and whether values are revised after the period, is undocumented (unit E-SEM) | whole_capture | utc_instant | CKAN last_modified of the captured file (ADR-030) |
 | `current-balancing-services-use-of-system-bsuos-data` | `current_bsuos_cap_adjustments` | silver | eligible | key_latest | sp_pair | CKAN last_modified of the captured file (ADR-030) |
 | `current-balancing-services-use-of-system-bsuos-data` | `current_bsuos_files` | catalogue only | — | — | — | — |
-| `current-balancing-services-use-of-system-bsuos-data` | `current_bsuos_historic_ii` | ingest-only (no silver output) | — | — | — | — |
-| `current-balancing-services-use-of-system-bsuos-data` | `current_bsuos_historic_rf` | ingest-only (no silver output) | — | — | — | — |
-| `current-balancing-services-use-of-system-bsuos-data` | `current_bsuos_historic_sf` | ingest-only (no silver output) | — | — | — | — |
-| `current-balancing-services-use-of-system-bsuos-data` | `current_bsuos_ii` | ingest-only (no silver output) | — | — | — | — |
-| `current-balancing-services-use-of-system-bsuos-data` | `current_bsuos_rf` | ingest-only (no silver output) | — | — | — | — |
-| `current-balancing-services-use-of-system-bsuos-data` | `current_bsuos_sf` | ingest-only (no silver output) | — | — | — | — |
+| `current-balancing-services-use-of-system-bsuos-data` | `current_bsuos_historic_ii` | silver | eligible | whole_capture per resource_id | sp_pair | CKAN last_modified of the captured file (ADR-030) |
+| `current-balancing-services-use-of-system-bsuos-data` | `current_bsuos_historic_rf` | silver | eligible | whole_capture per resource_id | sp_pair | CKAN last_modified of the captured file (ADR-030) |
+| `current-balancing-services-use-of-system-bsuos-data` | `current_bsuos_historic_sf` | silver | eligible | whole_capture per resource_id | sp_pair | CKAN last_modified of the captured file (ADR-030) |
+| `current-balancing-services-use-of-system-bsuos-data` | `current_bsuos_ii` | silver | eligible | whole_capture | sp_pair | CKAN last_modified of the captured file (ADR-030) |
+| `current-balancing-services-use-of-system-bsuos-data` | `current_bsuos_rf` | silver | eligible | whole_capture | sp_pair | CKAN last_modified of the captured file (ADR-030) |
+| `current-balancing-services-use-of-system-bsuos-data` | `current_bsuos_sf` | silver | eligible | whole_capture | sp_pair | CKAN last_modified of the captured file (ADR-030) |
 | `daily-balancing-costs-balancing-services-use-of-system` | `daily_balancing_costs` | ingest-only (no silver output) | — | — | — | — |
 | `daily-balancing-costs-balancing-services-use-of-system` | `daily_balancing_costs_files` | catalogue only | — | — | — | — |
 | `daily-balancing-volume-balancing-services-use-of-system` | `daily_balancing_volume` | ingest-only (no silver output) | — | — | — | — |
@@ -178,7 +178,7 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `future-energy-scenario-fes-building-block-data` | `fes_building_blocks_block_definitions` | silver | eligible | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
 | `future-energy-scenario-fes-building-block-data` | `fes_building_blocks_block_licence_area` | silver | eligible | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
 | `future-energy-scenario-fes-building-block-data` | `fes_building_blocks_main` | silver | held: TODO: for each edition, what period does a building-block year label (and the 2019/2020 baseline) denote — calendar year, financial year or winter? And what omitted row-grain dimension makes the 2020–2022 rows unique (repeated building block × GSP × DNO × unit rows with different values)? NESO's dictionaries state neither. (unit E-SEM) | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
-| `gb-system-inertia-bid-and-offer-costs` | `inertia_bid_offer_costs` | ingest-only (no silver output) | — | — | — | — |
+| `gb-system-inertia-bid-and-offer-costs` | `inertia_bid_offer_costs` | silver | held: TODO: the unit denominator — every field dictionary says £/GVA while the package description says £ per GVAs; the exact averaging-day window; what a zero method value means. (unit E-SEM) | whole_capture | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
 | `gis-boundaries-for-gb-dno-license-areas` | `gis_dno_license_areas_files` | catalogue only | — | — | — | — |
 | `gis-boundaries-for-gb-generation-charging-zones` | `gis_gen_charging_zones_files` | catalogue only | — | — | — | — |
 | `gis-boundaries-for-gb-grid-supply-points` | `gis_grid_supply_points` | ingest-only (no silver output) | — | — | — | — |
@@ -466,6 +466,6 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 ## Totals
 
 - Packages: 131 (held: 2)
-- Families: 317: silver 113 (bespoke 3, recorded 110), ingest-only 169, catalogue only 35
-- Silver outputs held: 60
+- Families: 317: silver 122 (bespoke 3, recorded 119), ingest-only 160, catalogue only 35
+- Silver outputs held: 62
 - Resources: 1385

@@ -17,7 +17,88 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Settlement Date",
+              "Settlement Period",
+              "BSUoS Tariff_GBP per MWh",
+              "Volume_MWh",
+              "BSUoS Total Recovery_GBP",
+              "Run Type",
+              "Actual BSUoS Cost_GBP"
+            ],
+            "columns": [
+              {
+                "source": "Settlement Date",
+                "name": "settlement_date",
+                "dtype": "date",
+                "format": "%Y-%m-%dT%H:%M:%S ",
+                "nullable": false
+              },
+              {
+                "source": "Settlement Period",
+                "name": "settlement_period",
+                "dtype": "int64",
+                "nullable": false,
+                "min": 1,
+                "max": 50
+              },
+              {
+                "source": "BSUoS Tariff_GBP per MWh",
+                "name": "bsuos_tariff_gbp_per_mwh",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Volume_MWh",
+                "name": "volume_mwh",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "BSUoS Total Recovery_GBP",
+                "name": "bsuos_total_recovery_gbp",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Run Type",
+                "name": "run_type",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Actual BSUoS Cost_GBP",
+                "name": "actual_bsuos_cost_gbp",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "sp_pair",
+          "date_column": "settlement_date",
+          "period_column": "settlement_period"
+        },
+        "entity_key": [
+          "settlement_date",
+          "settlement_period",
+          "run_type"
+        ],
+        "latest": "whole_capture",
+        "run_type_column": "run_type",
+        "vintage": "ckan_last_modified"
+      }
     },
     {
       "key": "current_bsuos_rf",
@@ -28,7 +109,88 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Settlement Date",
+              "Settlement Period",
+              "BSUoS Tariff_GBP per MWh",
+              "Volume_MWh",
+              "BSUoS Total Recovery_GBP",
+              "Run Type",
+              "Actual BSUoS Cost_GBP"
+            ],
+            "columns": [
+              {
+                "source": "Settlement Date",
+                "name": "settlement_date",
+                "dtype": "date",
+                "format": "%Y-%m-%dT%H:%M:%S ",
+                "nullable": false
+              },
+              {
+                "source": "Settlement Period",
+                "name": "settlement_period",
+                "dtype": "int64",
+                "nullable": false,
+                "min": 1,
+                "max": 50
+              },
+              {
+                "source": "BSUoS Tariff_GBP per MWh",
+                "name": "bsuos_tariff_gbp_per_mwh",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Volume_MWh",
+                "name": "volume_mwh",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "BSUoS Total Recovery_GBP",
+                "name": "bsuos_total_recovery_gbp",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Run Type",
+                "name": "run_type",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Actual BSUoS Cost_GBP",
+                "name": "actual_bsuos_cost_gbp",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "sp_pair",
+          "date_column": "settlement_date",
+          "period_column": "settlement_period"
+        },
+        "entity_key": [
+          "settlement_date",
+          "settlement_period",
+          "run_type"
+        ],
+        "latest": "whole_capture",
+        "run_type_column": "run_type",
+        "vintage": "ckan_last_modified"
+      }
     },
     {
       "key": "current_bsuos_sf",
@@ -39,7 +201,88 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Settlement Date",
+              "Settlement Period",
+              "BSUoS Tariff_GBP per MWh",
+              "Volume_MWh",
+              "BSUoS Total Recovery_GBP",
+              "Run Type",
+              "Actual BSUoS Cost_GBP"
+            ],
+            "columns": [
+              {
+                "source": "Settlement Date",
+                "name": "settlement_date",
+                "dtype": "date",
+                "format": "%Y-%m-%dT%H:%M:%S ",
+                "nullable": false
+              },
+              {
+                "source": "Settlement Period",
+                "name": "settlement_period",
+                "dtype": "int64",
+                "nullable": false,
+                "min": 1,
+                "max": 50
+              },
+              {
+                "source": "BSUoS Tariff_GBP per MWh",
+                "name": "bsuos_tariff_gbp_per_mwh",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Volume_MWh",
+                "name": "volume_mwh",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "BSUoS Total Recovery_GBP",
+                "name": "bsuos_total_recovery_gbp",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Run Type",
+                "name": "run_type",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Actual BSUoS Cost_GBP",
+                "name": "actual_bsuos_cost_gbp",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "sp_pair",
+          "date_column": "settlement_date",
+          "period_column": "settlement_period"
+        },
+        "entity_key": [
+          "settlement_date",
+          "settlement_period",
+          "run_type"
+        ],
+        "latest": "whole_capture",
+        "run_type_column": "run_type",
+        "vintage": "ckan_last_modified"
+      }
     },
     {
       "key": "current_bsuos_historic_ii",
@@ -50,7 +293,247 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Settlement Day",
+              "Settlement Period",
+              "BSUoS Price (£/MWh Hour)",
+              "Half-hourly Charge",
+              "Total Daily BSUoS Charge",
+              "Run Type"
+            ],
+            "columns": [
+              {
+                "source": "Settlement Day",
+                "name": "settlement_day",
+                "dtype": "date",
+                "format": "%Y-%m-%dT%H:%M:%S ",
+                "nullable": false
+              },
+              {
+                "source": "Settlement Period",
+                "name": "settlement_period",
+                "dtype": "int64",
+                "nullable": false,
+                "min": 1,
+                "max": 50
+              },
+              {
+                "source": "BSUoS Price (£/MWh Hour)",
+                "name": "bsuos_price_mwh_hour",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Half-hourly Charge",
+                "name": "half_hourly_charge",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Total Daily BSUoS Charge",
+                "name": "total_daily_bsuos_charge",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Run Type",
+                "name": "run_type",
+                "dtype": "string",
+                "nullable": false
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          },
+          {
+            "header": [
+              "Settlement Day",
+              "Settlement Period",
+              "BSUoS Tariff (£/MWh)",
+              "BSUoS Fund Tariff (£/MWh)",
+              "Volume (MWh)",
+              "BSUoS Recovery (£)",
+              "BSUoS Fund Recovery (£)",
+              "BSUoS Total Recovery (£)",
+              "Run Type",
+              "Actual BSUoS Cost(£)"
+            ],
+            "columns": [
+              {
+                "source": "Settlement Day",
+                "name": "settlement_day",
+                "dtype": "date",
+                "format": "%Y-%m-%dT%H:%M:%S ",
+                "nullable": false
+              },
+              {
+                "source": "Settlement Period",
+                "name": "settlement_period",
+                "dtype": "int64",
+                "nullable": false,
+                "min": 1,
+                "max": 50
+              },
+              {
+                "source": "BSUoS Tariff (£/MWh)",
+                "name": "bsuos_tariff_gbp_per_mwh",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "BSUoS Fund Tariff (£/MWh)",
+                "name": "bsuos_fund_tariff_gbp_per_mwh",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Volume (MWh)",
+                "name": "volume_mwh",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "BSUoS Recovery (£)",
+                "name": "bsuos_recovery_gbp",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "BSUoS Fund Recovery (£)",
+                "name": "bsuos_fund_recovery_gbp",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "BSUoS Total Recovery (£)",
+                "name": "bsuos_total_recovery_gbp",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Run Type",
+                "name": "run_type",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Actual BSUoS Cost(£)",
+                "name": "actual_bsuos_cost_gbp",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          },
+          {
+            "header": [
+              "Settlement Day",
+              "Settlement Period",
+              "BSUoS Tariff (£/MWh)",
+              "BSUoS Fund Tariff (£/MWh)",
+              "Volume (MWh)",
+              "BSUoS Recovery (£)",
+              "BSUoS Fund Recovery (£)",
+              "BSUoS Total Recovery (£)",
+              "Run Type",
+              "Actual BSUoS Cost (£)"
+            ],
+            "columns": [
+              {
+                "source": "Settlement Day",
+                "name": "settlement_day",
+                "dtype": "date",
+                "format": "%Y-%m-%dT%H:%M:%S ",
+                "nullable": false
+              },
+              {
+                "source": "Settlement Period",
+                "name": "settlement_period",
+                "dtype": "int64",
+                "nullable": false,
+                "min": 1,
+                "max": 50
+              },
+              {
+                "source": "BSUoS Tariff (£/MWh)",
+                "name": "bsuos_tariff_gbp_per_mwh",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "BSUoS Fund Tariff (£/MWh)",
+                "name": "bsuos_fund_tariff_gbp_per_mwh",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Volume (MWh)",
+                "name": "volume_mwh",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "BSUoS Recovery (£)",
+                "name": "bsuos_recovery_gbp",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "BSUoS Fund Recovery (£)",
+                "name": "bsuos_fund_recovery_gbp",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "BSUoS Total Recovery (£)",
+                "name": "bsuos_total_recovery_gbp",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Run Type",
+                "name": "run_type",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Actual BSUoS Cost (£)",
+                "name": "actual_bsuos_cost_gbp",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "sp_pair",
+          "date_column": "settlement_day",
+          "period_column": "settlement_period"
+        },
+        "entity_key": [
+          "resource_id",
+          "settlement_day",
+          "settlement_period",
+          "run_type"
+        ],
+        "latest": "whole_capture",
+        "latest_partition": "resource_id",
+        "run_type_column": "run_type",
+        "vintage": "ckan_last_modified"
+      }
     },
     {
       "key": "current_bsuos_historic_rf",
@@ -61,7 +544,165 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Settlement Day",
+              "Settlement Period",
+              "BSUoS Price (£/MWh Hour)",
+              "Half-hourly Charge",
+              "Total Daily BSUoS Charge",
+              "Run Type"
+            ],
+            "columns": [
+              {
+                "source": "Settlement Day",
+                "name": "settlement_day",
+                "dtype": "date",
+                "format": "%Y-%m-%dT%H:%M:%S ",
+                "nullable": false
+              },
+              {
+                "source": "Settlement Period",
+                "name": "settlement_period",
+                "dtype": "int64",
+                "nullable": false,
+                "min": 1,
+                "max": 50
+              },
+              {
+                "source": "BSUoS Price (£/MWh Hour)",
+                "name": "bsuos_price_mwh_hour",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Half-hourly Charge",
+                "name": "half_hourly_charge",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Total Daily BSUoS Charge",
+                "name": "total_daily_bsuos_charge",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Run Type",
+                "name": "run_type",
+                "dtype": "string",
+                "nullable": false
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          },
+          {
+            "header": [
+              "Settlement Day",
+              "Settlement Period",
+              "BSUoS Tariff (£/MWh)",
+              "BSUoS Fund Tariff (£/MWh)",
+              "Volume (MWh)",
+              "BSUoS Recovery (£)",
+              "BSUoS Fund Recovery (£)",
+              "BSUoS Total Recovery ()",
+              "Run Type",
+              "Actual BSUoS Cost (£)"
+            ],
+            "columns": [
+              {
+                "source": "Settlement Day",
+                "name": "settlement_day",
+                "dtype": "date",
+                "format": "%Y-%m-%dT%H:%M:%S ",
+                "nullable": false
+              },
+              {
+                "source": "Settlement Period",
+                "name": "settlement_period",
+                "dtype": "int64",
+                "nullable": false,
+                "min": 1,
+                "max": 50
+              },
+              {
+                "source": "BSUoS Tariff (£/MWh)",
+                "name": "bsuos_tariff_gbp_per_mwh",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "BSUoS Fund Tariff (£/MWh)",
+                "name": "bsuos_fund_tariff_gbp_per_mwh",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Volume (MWh)",
+                "name": "volume_mwh",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "BSUoS Recovery (£)",
+                "name": "bsuos_recovery_gbp",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "BSUoS Fund Recovery (£)",
+                "name": "bsuos_fund_recovery_gbp",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "BSUoS Total Recovery ()",
+                "name": "bsuos_total_recovery_gbp",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Run Type",
+                "name": "run_type",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Actual BSUoS Cost (£)",
+                "name": "actual_bsuos_cost_gbp",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "sp_pair",
+          "date_column": "settlement_day",
+          "period_column": "settlement_period"
+        },
+        "entity_key": [
+          "resource_id",
+          "settlement_day",
+          "settlement_period",
+          "run_type"
+        ],
+        "latest": "whole_capture",
+        "latest_partition": "resource_id",
+        "run_type_column": "run_type",
+        "vintage": "ckan_last_modified"
+      }
     },
     {
       "key": "current_bsuos_historic_sf",
@@ -72,7 +713,165 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Settlement Day",
+              "Settlement Period",
+              "BSUoS Price (£/MWh Hour)",
+              "Half-hourly Charge",
+              "Total Daily BSUoS Charge",
+              "Run Type"
+            ],
+            "columns": [
+              {
+                "source": "Settlement Day",
+                "name": "settlement_day",
+                "dtype": "date",
+                "format": "%Y-%m-%dT%H:%M:%S ",
+                "nullable": false
+              },
+              {
+                "source": "Settlement Period",
+                "name": "settlement_period",
+                "dtype": "int64",
+                "nullable": false,
+                "min": 1,
+                "max": 50
+              },
+              {
+                "source": "BSUoS Price (£/MWh Hour)",
+                "name": "bsuos_price_mwh_hour",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Half-hourly Charge",
+                "name": "half_hourly_charge",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Total Daily BSUoS Charge",
+                "name": "total_daily_bsuos_charge",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Run Type",
+                "name": "run_type",
+                "dtype": "string",
+                "nullable": false
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          },
+          {
+            "header": [
+              "Settlement Day",
+              "Settlement Period",
+              "BSUoS Tariff (£/MWh)",
+              "BSUoS Fund Tariff (£/MWh)",
+              "Volume (MWh)",
+              "BSUoS Recovery (£)",
+              "BSUoS Fund Recovery (£)",
+              "BSUoS Total Recovery ()",
+              "Run Type",
+              "Actual BSUoS Cost (£)"
+            ],
+            "columns": [
+              {
+                "source": "Settlement Day",
+                "name": "settlement_day",
+                "dtype": "date",
+                "format": "%Y-%m-%dT%H:%M:%S ",
+                "nullable": false
+              },
+              {
+                "source": "Settlement Period",
+                "name": "settlement_period",
+                "dtype": "int64",
+                "nullable": false,
+                "min": 1,
+                "max": 50
+              },
+              {
+                "source": "BSUoS Tariff (£/MWh)",
+                "name": "bsuos_tariff_gbp_per_mwh",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "BSUoS Fund Tariff (£/MWh)",
+                "name": "bsuos_fund_tariff_gbp_per_mwh",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Volume (MWh)",
+                "name": "volume_mwh",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "BSUoS Recovery (£)",
+                "name": "bsuos_recovery_gbp",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "BSUoS Fund Recovery (£)",
+                "name": "bsuos_fund_recovery_gbp",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "BSUoS Total Recovery ()",
+                "name": "bsuos_total_recovery_gbp",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Run Type",
+                "name": "run_type",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Actual BSUoS Cost (£)",
+                "name": "actual_bsuos_cost_gbp",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "sp_pair",
+          "date_column": "settlement_day",
+          "period_column": "settlement_period"
+        },
+        "entity_key": [
+          "resource_id",
+          "settlement_day",
+          "settlement_period",
+          "run_type"
+        ],
+        "latest": "whole_capture",
+        "latest_partition": "resource_id",
+        "run_type_column": "run_type",
+        "vintage": "ckan_last_modified"
+      }
     },
     {
       "key": "current_bsuos_files",

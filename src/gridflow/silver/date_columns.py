@@ -47,6 +47,9 @@ DATE_COL_SQL_TYPES: dict[str, DateColSqlType] = {
     # DATE (the first of the month) like `settlement_date`.
     "month_and_year": "DATE",
     "settlement_month": "DATE",
+    # The BSUoS fixed tariffs' first applicable settlement date (v0.22-K-BAL-1): the `date_sp1`
+    # anchor of its record, a calendar DATE like `settlement_date`.
+    "fixed_tariff_start_date": "DATE",
     "timestamp_utc": "TIMESTAMPTZ",
     "implementation_datetime_utc": "TIMESTAMPTZ",
     "ingested_at": "TIMESTAMPTZ",

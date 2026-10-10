@@ -17,7 +17,66 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Date",
+              "Method A: Average bid price",
+              "Method B: Average wind price",
+              "Method C: Highest bid price"
+            ],
+            "columns": [
+              {
+                "source": "Date",
+                "name": "date",
+                "dtype": "date",
+                "format": "%Y-%m-%d",
+                "nullable": false
+              },
+              {
+                "source": "Method A: Average bid price",
+                "name": "method_a_average_bid_price",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Method B: Average wind price",
+                "name": "method_b_average_wind_price",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Method C: Highest bid price",
+                "name": "method_c_highest_bid_price",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "date_sp1",
+          "date_column": "date"
+        },
+        "entity_key": [
+          "date"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: the unit denominator — every field dictionary says £/GVA while the package description says £ per GVAs; the exact averaging-day window; what a zero method value means.",
+          "unit": "E-SEM"
+        }
+      }
     }
   ],
   "resources": [
