@@ -246,15 +246,15 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `phase-2-ffr-auction-results-summary` | `ffr_phase2_auction_phase_resultsum` | ingest-only (no silver output) | — | — | — | — |
 | `phase-2-ffr-auction-results-summary` | `ffr_phase2_result_summary_archive` | silver | held: Phase-2 FFR archive: Date and EFA (1-42) semantics are undocumented; timestamp_utc is date_sp1 of Date, not an EFA block start (unit AS-5) | key_latest | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
 | `quick-reserve-auction-requirement-forecast` | `qr_auction_requirement_fc` | ingest-only (no silver output) | — | — | — | — |
-| `regional-breakdown-of-fes-data-electricity` | `fes_regional_demand_active_power` | ingest-only (no silver output) | — | — | — | — |
-| `regional-breakdown-of-fes-data-electricity` | `fes_regional_dg_gt_1mw` | ingest-only (no silver output) | — | — | — | — |
-| `regional-breakdown-of-fes-data-electricity` | `fes_regional_dg_lt_1mw` | ingest-only (no silver output) | — | — | — | — |
-| `regional-breakdown-of-fes-data-electricity` | `fes_regional_dsr` | ingest-only (no silver output) | — | — | — | — |
-| `regional-breakdown-of-fes-data-electricity` | `fes_regional_gsp_info` | ingest-only (no silver output) | — | — | — | — |
-| `regional-breakdown-of-fes-data-electricity` | `fes_regional_storage_gt_1mw` | ingest-only (no silver output) | — | — | — | — |
-| `regional-breakdown-of-fes-data-electricity` | `fes_regional_storage_gt_1mw_pre2023` | ingest-only (no silver output) | — | — | — | — |
-| `regional-breakdown-of-fes-data-electricity` | `fes_regional_storage_lt_1mw` | ingest-only (no silver output) | — | — | — | — |
-| `regional-breakdown-of-fes-data-electricity` | `fes_regional_storage_lt_1mw_pre2023` | ingest-only (no silver output) | — | — | — | — |
+| `regional-breakdown-of-fes-data-electricity` | `fes_regional_demand_active_power` | silver | eligible | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
+| `regional-breakdown-of-fes-data-electricity` | `fes_regional_dg_gt_1mw` | silver | held: TODO: vendor correction confirming the capacity population/threshold. The >1 MW resource's `capacity` description says sub-1 MW distributed generation ("Total aggregate capacity of sub 1 MW distributed generation of this technology type associated with this location"), contradicting its title and filename; it is not repaired from the filename. (unit E-SEM) | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
+| `regional-breakdown-of-fes-data-electricity` | `fes_regional_dg_lt_1mw` | silver | held: TODO g1: calendar/financial/winter period meaning for this family. TODO g4: correct population and meaning/direction of `capacity`, `wintpk`, `summam`, `summpm`. The 2024 resource dictionary describes storage of at least 1 MW, including negative filling rates, although the resource is distributed generation below 1 MW; settle with the corrected resource dictionary or matching-edition workbook notes. (unit E-SEM) | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
+| `regional-breakdown-of-fes-data-electricity` | `fes_regional_dsr` | silver | eligible | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
+| `regional-breakdown-of-fes-data-electricity` | `fes_regional_gsp_info` | silver | held: TODO: coordinate unit/CRS. The dictionary describes approximate positions but does not establish a declared CRS; obtain the vendor definition. `Latitude` and `Longitude` stay raw strings until the sentinel meaning (the 2021 and 2022 bodies carry six literal `#N/A` cells per coordinate, the 2023 body six blanks) and the coordinate semantics are settled. (unit E-SEM) | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
+| `regional-breakdown-of-fes-data-electricity` | `fes_regional_storage_gt_1mw` | silver | eligible | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
+| `regional-breakdown-of-fes-data-electricity` | `fes_regional_storage_gt_1mw_pre2023` | silver | eligible | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
+| `regional-breakdown-of-fes-data-electricity` | `fes_regional_storage_lt_1mw` | silver | held: TODO: matching-edition vendor definitions resolving population, capacity meaning and sign. The 2023 cardinal descriptions refer to storage charging while `capacity` describes distributed generation, and the 2024 descriptions call the cardinal measures generation output despite the storage-demand title; the pre-2023 storage interpretation is not applied automatically. (unit E-SEM) | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
+| `regional-breakdown-of-fes-data-electricity` | `fes_regional_storage_lt_1mw_pre2023` | silver | eligible | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
 | `regional-carbon-intensity-forecast` | `regional_ci_forecast` | silver | held: TODO: no issue column; which forecast issue a past target's value reflects, and whether values are revised after the period, is undocumented; whether datetime marks period start or end; meaning of negative intensities (min -13.0) (unit E-SEM) | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
 | `regional-carbon-intensity-forecast` | `regional_ci_forecast_files` | catalogue only | — | — | — | — |
 | `resource-adequacy-in-2030s` | `resource_adequacy_2030s_peak_demand` | ingest-only (no silver output) | — | — | — | — |
@@ -429,7 +429,7 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `outturn-voltage-costs` | eligible | 12 | 0 | 1 | 0 | 0 |
 | `phase-2-ffr-auction-results-summary` | eligible | 17 | 0 | 0 | 0 | 3 |
 | `quick-reserve-auction-requirement-forecast` | eligible | 1 | 0 | 0 | 0 | 0 |
-| `regional-breakdown-of-fes-data-electricity` | eligible | 27 | 0 | 0 | 0 | 0 |
+| `regional-breakdown-of-fes-data-electricity` | eligible | 26 | 0 | 0 | 0 | 1 |
 | `regional-carbon-intensity-forecast` | eligible | 1 | 0 | 1 | 0 | 0 |
 | `resource-adequacy-in-2030s` | eligible | 3 | 0 | 0 | 0 | 0 |
 | `school-holiday-percentages` | eligible | 6 | 0 | 0 | 0 | 0 |
@@ -460,11 +460,11 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `weekly-opmr` | eligible | 1 | 0 | 0 | 0 | 0 |
 | `weekly-wind-availability` | eligible | 1 | 0 | 0 | 0 | 0 |
 | `wind-bmu-boa-volumes` | eligible | 9 | 0 | 0 | 0 | 0 |
-| **Total** | | 1248 | 0 | 43 | 20 | 74 |
+| **Total** | | 1247 | 0 | 43 | 20 | 75 |
 
 ## Totals
 
 - Packages: 131 (held: 2)
-- Families: 316: silver 85 (bespoke 3, recorded 82), ingest-only 196, catalogue only 35
-- Silver outputs held: 47
+- Families: 316: silver 94 (bespoke 3, recorded 91), ingest-only 187, catalogue only 35
+- Silver outputs held: 51
 - Resources: 1385

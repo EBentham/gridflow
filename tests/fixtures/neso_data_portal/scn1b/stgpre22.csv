@@ -1,0 +1,31 @@
+scenario,tech,year,location,Capacity,wintpk,summam,summpm
+CF,Battery,21,ALVE1,3.75,0,0,-1.316
+CF,Battery,21,AMEM_1,13.3,0,0,-4.669
+CT,Battery,21,ALVE1,3.75,0,0,-1.316
+CT,Battery,21,AMEM_1,13.3,0,0,-4.669
+CT,Battery,35,ALVE1,3.75,0,0,-1.316
+CT,Battery,35,AMEM_1,152.3,0,0,-53.462
+CT,Battery,50,ALVE1,62.25,0,0,-21.852
+CT,Battery,50,AMEM_1,159.5,0,0,-55.989
+ST,Battery,21,ALVE1,3.75,0,0,-1.316
+ST,Battery,21,AMEM_1,13.3,0,0,-4.669
+ST,Battery,35,ALVE1,3.75,0,0,-1.316
+ST,Battery,35,AMEM_1,152.3,0,0,-53.462
+ST,Battery,50,ALVE1,63.75,0,0,-22.378
+ST,Battery,50,AMEM_1,159.5,0,0,-55.989
+FS,Battery,21,ALVE1,3.75,0,0,-1.316
+FS,Battery,21,AMEM_1,13.3,0,0,-4.669
+FS,Battery,35,ALVE1,3.75,0,0,-1.316
+FS,Battery,35,AMEM_1,152.3,0,0,-53.462
+FS,Battery,50,ALVE1,83.75,0,0,-29.399
+FS,Battery,50,AMEM_1,152.3,0,0,-53.462
+LW,Battery,21,ALVE1,3.75,0,0,-1.316
+LW,Battery,21,AMEM_1,13.3,0,0,-4.669
+LW,Battery,35,ALVE1,3.75,0,0,-1.316
+LW,Battery,35,AMEM_1,152.3,0,0,-53.462
+LW,Battery,50,ALVE1,62.25,0,0,-21.852
+LW,Battery,50,AMEM_1,159.5,0,0,-55.989
+CT,Pumped Storage,25,CONQA1,99.9,0,,
+CT,Pumped Storage,26,CONQA1,99.9,0,,
+CT,Pumped Storage,27,CONQA1,99.9,0,,
+CT,Pumped Storage,28,CONQA1,99.9,0,,

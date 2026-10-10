@@ -207,7 +207,7 @@ class TestCommittedRegistry:
                 registry = load_registry()
                 resources = [r for _p, r in registry.resources.values()]
                 kinds = Counter(r.disposition.kind for r in resources)
-                assert dict(kinds) == {'SILVER': 1248, 'HOLD': 74, 'DOC': 43, 'GIS': 20}, kinds
+                assert dict(kinds) == {'SILVER': 1247, 'HOLD': 75, 'DOC': 43, 'GIS': 20}, kinds
                 with_children = [r for r in resources if r.children]
                 assert len(with_children) == 4 + 1 + 39 + 73 + 1, len(with_children)
                 allowed = {'system_frequency', 'thermal_constraint_costs'}

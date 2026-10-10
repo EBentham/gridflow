@@ -128,6 +128,20 @@ SCN1A_ADDED = frozenset(
 )
 """The ten tRESP pathway CSV families and the two workbook reference families that
 v0.22-K-SCN-1a records."""
+SCN1B_ADDED = frozenset(
+    {
+        "fes_regional_demand_active_power",
+        "fes_regional_dg_gt_1mw",
+        "fes_regional_dg_lt_1mw",
+        "fes_regional_dsr",
+        "fes_regional_gsp_info",
+        "fes_regional_storage_gt_1mw",
+        "fes_regional_storage_gt_1mw_pre2023",
+        "fes_regional_storage_lt_1mw",
+        "fes_regional_storage_lt_1mw_pre2023",
+    }
+)
+"""The nine regional-breakdown-of-FES families that v0.22-K-SCN-1b records."""
 REWORDED_HOLDS = {
     "national_forecast_7d_historic_day_ahead": (
         "TODO: FORECAST_TIMESTAMP has no vendor definition and its zone is undocumented "
@@ -173,7 +187,8 @@ class TestByteUnchanged:
         ``historic_demand``, K-DEM-2's four demand-reference records, K-GEN-1's fourteen
         wind / margin forecast records, K-GEN-2's weekly wind availability record, GEN-2H's
         metered wind output and wind BOA volume records, K-IC-1's and K-IC-2's interconnector
-        records, v0.22-SC's FES ED1 record and K-SCN-1a's twelve tRESP records appearing.
+        records, v0.22-SC's FES ED1 record, K-SCN-1a's twelve tRESP records and K-SCN-1b's nine
+        regional FES records appearing.
         """
         golden = json.loads(PIN_PATH.read_text(encoding="utf-8"))
         for key, question in REWORDED_HOLDS.items():
@@ -195,6 +210,7 @@ class TestByteUnchanged:
                     *IC2_ADDED,
                     *SC_ADDED,
                     *SCN1A_ADDED,
+                    *SCN1B_ADDED,
                 }
                 if section != "engine"
                 else set()
@@ -796,7 +812,7 @@ class TestRecordRules:
         self,
     ) -> None:
         """Detects a committed record broken by V-4/V-17 or the reserved name, and any
-        family other than the twenty-two resource-partitioned ones opting into the partition (in a
+        family other than the thirty-one resource-partitioned ones opting into the partition (in a
         fresh interpreter, so nothing collection imported can mask it)."""
         code = textwrap.dedent(
             """
@@ -812,6 +828,15 @@ class TestRecordRules:
                 "da_wind_forecast_historic_day_ahead_bmu",
                 "eleclink",
                 "fes_ed1_electricity_demand",
+                "fes_regional_demand_active_power",
+                "fes_regional_dg_gt_1mw",
+                "fes_regional_dg_lt_1mw",
+                "fes_regional_dsr",
+                "fes_regional_gsp_info",
+                "fes_regional_storage_gt_1mw",
+                "fes_regional_storage_gt_1mw_pre2023",
+                "fes_regional_storage_lt_1mw",
+                "fes_regional_storage_lt_1mw_pre2023",
                 "historic_demand",
                 "metered_wind_output_monthly",
                 "nemolink_ntc",

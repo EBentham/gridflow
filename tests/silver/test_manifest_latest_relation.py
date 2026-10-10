@@ -51,7 +51,8 @@ from gridflow.silver.schema_manifest import (
 # records, then to seventy-two with v0.22-K-IC-1's eleven interconnector limit records, then to
 # seventy-five with v0.22-K-IC-2's BritNed, Nord Pool price and SOP records, then to
 # seventy-six with v0.22-SC's FES ED1 record, then to eighty-eight with v0.22-K-SCN-1a's ten tRESP
-# pathway records and two workbook reference records.
+# pathway records and two workbook reference records, then to ninety-seven with v0.22-K-SCN-1b's
+# nine regional FES records.
 _APPEND_ONLY_DATASETS: tuple[tuple[str, str], ...] = (
     ("elexon", "system_prices"),
     ("elexon", "remit"),
@@ -141,6 +142,15 @@ _APPEND_ONLY_DATASETS: tuple[tuple[str, str], ...] = (
     ("neso_data_portal", "tresp_generation_pathways_la_scotland"),
     ("neso_data_portal", "tresp_generation_pathways_la_wales"),
     ("neso_data_portal", "tresp_generation_pathways_resp_region"),
+    ("neso_data_portal", "fes_regional_demand_active_power"),
+    ("neso_data_portal", "fes_regional_dg_gt_1mw"),
+    ("neso_data_portal", "fes_regional_dg_lt_1mw"),
+    ("neso_data_portal", "fes_regional_dsr"),
+    ("neso_data_portal", "fes_regional_gsp_info"),
+    ("neso_data_portal", "fes_regional_storage_gt_1mw"),
+    ("neso_data_portal", "fes_regional_storage_gt_1mw_pre2023"),
+    ("neso_data_portal", "fes_regional_storage_lt_1mw"),
+    ("neso_data_portal", "fes_regional_storage_lt_1mw_pre2023"),
 )
 
 
@@ -334,9 +344,9 @@ def test_append_only_set_equals_latest_spec_set() -> None:
     spec_set = set(LATEST_VIEW_SPECS)
 
     # Non-vacuity guard: this invariant must never pass because both sides are
-    # empty (F16) -- eighty-eight APPEND_ONLY datasets are registered today.
+    # empty (F16) -- ninety-seven APPEND_ONLY datasets are registered today.
     assert len(append_only) > 0
-    assert len(append_only) == 88
+    assert len(append_only) == 97
 
     missing_specs = append_only - spec_set
     extra_specs = spec_set - append_only
@@ -546,6 +556,42 @@ _EXPECTED_APPEND_ONLY_DEPRECATED_ALIASES: dict[tuple[str, str], str | None] = {
         "neso_data_portal",
         "tresp_generation_pathways_resp_region",
     ): "silver_tresp_generation_pathways_resp_region",
+    (
+        "neso_data_portal",
+        "fes_regional_demand_active_power",
+    ): "silver_fes_regional_demand_active_power",
+    (
+        "neso_data_portal",
+        "fes_regional_dg_gt_1mw",
+    ): "silver_fes_regional_dg_gt_1mw",
+    (
+        "neso_data_portal",
+        "fes_regional_dg_lt_1mw",
+    ): "silver_fes_regional_dg_lt_1mw",
+    (
+        "neso_data_portal",
+        "fes_regional_dsr",
+    ): "silver_fes_regional_dsr",
+    (
+        "neso_data_portal",
+        "fes_regional_gsp_info",
+    ): "silver_fes_regional_gsp_info",
+    (
+        "neso_data_portal",
+        "fes_regional_storage_gt_1mw",
+    ): "silver_fes_regional_storage_gt_1mw",
+    (
+        "neso_data_portal",
+        "fes_regional_storage_gt_1mw_pre2023",
+    ): "silver_fes_regional_storage_gt_1mw_pre2023",
+    (
+        "neso_data_portal",
+        "fes_regional_storage_lt_1mw",
+    ): "silver_fes_regional_storage_lt_1mw",
+    (
+        "neso_data_portal",
+        "fes_regional_storage_lt_1mw_pre2023",
+    ): "silver_fes_regional_storage_lt_1mw_pre2023",
 }
 
 

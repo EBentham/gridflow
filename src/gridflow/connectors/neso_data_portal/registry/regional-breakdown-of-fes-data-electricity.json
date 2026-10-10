@@ -17,7 +17,106 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "GSP ID",
+              "GSP Group",
+              "Minor FLOP",
+              "Name",
+              "Latitude",
+              "Longitude",
+              "Comments"
+            ],
+            "columns": [
+              {
+                "source": "GSP ID",
+                "name": "gsp_id",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "GSP Group",
+                "name": "gsp_group",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Minor FLOP",
+                "name": "minor_flop",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Name",
+                "name": "name",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Latitude",
+                "name": "latitude",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Longitude",
+                "name": "longitude",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Comments",
+                "name": "comments",
+                "dtype": "string",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "resource_id",
+          "edition",
+          "gsp_id"
+        ],
+        "latest": "whole_capture",
+        "latest_partition": "resource_id",
+        "edition_by_filename": [
+          [
+            "fes2021_regional_breakdown_gsp_info.csv",
+            2021
+          ],
+          [
+            "fes2022_regional_breakdown_gsp_info.csv",
+            2022
+          ],
+          [
+            "fes2023_regional_breakdown_gsp_info.csv",
+            2023
+          ],
+          [
+            "fes2024_regional_breakdown_gsp_info.csv",
+            2024
+          ]
+        ],
+        "vintage": "ckan_last_modified",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: coordinate unit/CRS. The dictionary describes approximate positions but does not establish a declared CRS; obtain the vendor definition. `Latitude` and `Longitude` stay raw strings until the sentinel meaning (the 2021 and 2022 bodies carry six literal `#N/A` cells per coordinate, the 2023 body six blanks) and the coordinate semantics are settled.",
+          "unit": "E-SEM"
+        }
+      }
     },
     {
       "key": "fes_regional_demand_active_power",
@@ -28,7 +127,106 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "scenario",
+              "GSP",
+              "DemandPk",
+              "DemandAM",
+              "DemandPM",
+              "type",
+              "year"
+            ],
+            "columns": [
+              {
+                "source": "scenario",
+                "name": "scenario",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "GSP",
+                "name": "gsp",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "DemandPk",
+                "name": "demand_pk",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "DemandAM",
+                "name": "demand_am",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "DemandPM",
+                "name": "demand_pm",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "type",
+                "name": "type",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "year",
+                "name": "year_label",
+                "dtype": "int64",
+                "nullable": false,
+                "min": 20,
+                "max": 50
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "resource_id",
+          "edition",
+          "scenario",
+          "gsp",
+          "type",
+          "year_label"
+        ],
+        "latest": "whole_capture",
+        "latest_partition": "resource_id",
+        "edition_by_filename": [
+          [
+            "fes2021_regional_breakdown_active_power.csv",
+            2021
+          ],
+          [
+            "fes2022_regional_breakdown_active_power.csv",
+            2022
+          ],
+          [
+            "fes2023_regional_breakdown_active_power.csv",
+            2023
+          ],
+          [
+            "fes2024_regional_breakdown_active_power.csv",
+            2024
+          ]
+        ],
+        "vintage": "ckan_last_modified"
+      }
     },
     {
       "key": "fes_regional_storage_gt_1mw",
@@ -39,7 +237,105 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "scenario",
+              "tech",
+              "year",
+              "location",
+              "Capacity",
+              "wintpk",
+              "summam",
+              "summpm"
+            ],
+            "columns": [
+              {
+                "source": "scenario",
+                "name": "scenario",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "tech",
+                "name": "tech",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "year",
+                "name": "year_label",
+                "dtype": "int64",
+                "nullable": false,
+                "min": 20,
+                "max": 50
+              },
+              {
+                "source": "location",
+                "name": "location",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Capacity",
+                "name": "capacity",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "wintpk",
+                "name": "wintpk",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "summam",
+                "name": "summam",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "summpm",
+                "name": "summpm",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "resource_id",
+          "edition",
+          "scenario",
+          "tech",
+          "location",
+          "year_label"
+        ],
+        "latest": "whole_capture",
+        "latest_partition": "resource_id",
+        "edition_by_filename": [
+          [
+            "fes2023_regional_breakdown_dxstorage_gt1mw.csv",
+            2023
+          ],
+          [
+            "fes2024_regional_breakdown_dxstorage_gt1mw.csv",
+            2024
+          ]
+        ],
+        "vintage": "ckan_last_modified"
+      }
     },
     {
       "key": "fes_regional_storage_lt_1mw",
@@ -50,7 +346,170 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "scenario",
+              "year",
+              "etys_location",
+              "capacity",
+              "wintpk",
+              "summam",
+              "summpm"
+            ],
+            "columns": [
+              {
+                "source": "scenario",
+                "name": "scenario",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "year",
+                "name": "year_label",
+                "dtype": "int64",
+                "nullable": false,
+                "min": 20,
+                "max": 50
+              },
+              {
+                "source": "etys_location",
+                "name": "etys_location",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "capacity",
+                "name": "capacity",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "wintpk",
+                "name": "wintpk",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "summam",
+                "name": "summam",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "summpm",
+                "name": "summpm",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          },
+          {
+            "header": [
+              "scenario",
+              "tech",
+              "year",
+              "etys_location",
+              "capacity",
+              "wintpk",
+              "summam",
+              "summpm"
+            ],
+            "columns": [
+              {
+                "source": "scenario",
+                "name": "scenario",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "tech",
+                "name": "tech",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "year",
+                "name": "year_label",
+                "dtype": "int64",
+                "nullable": false,
+                "min": 20,
+                "max": 50
+              },
+              {
+                "source": "etys_location",
+                "name": "etys_location",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "capacity",
+                "name": "capacity",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "wintpk",
+                "name": "wintpk",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "summam",
+                "name": "summam",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "summpm",
+                "name": "summpm",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "resource_id",
+          "edition",
+          "scenario",
+          "tech",
+          "etys_location",
+          "year_label"
+        ],
+        "latest": "whole_capture",
+        "latest_partition": "resource_id",
+        "edition_by_filename": [
+          [
+            "fes2023_regional_breakdown_dxstorage_sub1mw.csv",
+            2023
+          ],
+          [
+            "fes2024_regional_breakdown_dxstorage_sub1mw.csv",
+            2024
+          ]
+        ],
+        "vintage": "ckan_last_modified",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: matching-edition vendor definitions resolving population, capacity meaning and sign. The 2023 cardinal descriptions refer to storage charging while `capacity` describes distributed generation, and the 2024 descriptions call the cardinal measures generation output despite the storage-demand title; the pre-2023 storage interpretation is not applied automatically.",
+          "unit": "E-SEM"
+        }
+      }
     },
     {
       "key": "fes_regional_dsr",
@@ -61,7 +520,80 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "scenario",
+              "GSP",
+              "DSR",
+              "year"
+            ],
+            "columns": [
+              {
+                "source": "scenario",
+                "name": "scenario",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "GSP",
+                "name": "gsp",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "DSR",
+                "name": "dsr",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "year",
+                "name": "year_label",
+                "dtype": "int64",
+                "nullable": false,
+                "min": 20,
+                "max": 50
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "resource_id",
+          "edition",
+          "scenario",
+          "gsp",
+          "year_label"
+        ],
+        "latest": "whole_capture",
+        "latest_partition": "resource_id",
+        "edition_by_filename": [
+          [
+            "fes2021_regional_breakdown_demand_side_response.csv",
+            2021
+          ],
+          [
+            "fes2022_regional_breakdown_demand_side_response.csv",
+            2022
+          ],
+          [
+            "fes2023_regional_breakdown_demand_side_response.csv",
+            2023
+          ]
+        ],
+        "vintage": "ckan_last_modified"
+      }
     },
     {
       "key": "fes_regional_storage_gt_1mw_pre2023",
@@ -72,7 +604,101 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "scenario",
+              "tech",
+              "year",
+              "location",
+              "Capacity",
+              "wintpk",
+              "summam",
+              "summpm"
+            ],
+            "columns": [
+              {
+                "source": "scenario",
+                "name": "scenario",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "tech",
+                "name": "tech",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "year",
+                "name": "year_label",
+                "dtype": "int64",
+                "nullable": false,
+                "min": 20,
+                "max": 50
+              },
+              {
+                "source": "location",
+                "name": "location",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Capacity",
+                "name": "capacity",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "wintpk",
+                "name": "wintpk",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "summam",
+                "name": "summam",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "summpm",
+                "name": "summpm",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "resource_id",
+          "edition",
+          "scenario",
+          "tech",
+          "location",
+          "year_label"
+        ],
+        "latest": "whole_capture",
+        "latest_partition": "resource_id",
+        "edition_by_filename": [
+          [
+            "fes2022_regional_breakdown_dxstorage_gt1mw.csv",
+            2022
+          ]
+        ],
+        "vintage": "ckan_last_modified"
+      }
     },
     {
       "key": "fes_regional_storage_lt_1mw_pre2023",
@@ -83,7 +709,97 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "scenario",
+              "year",
+              "etys_location",
+              "capacity",
+              "wintpk",
+              "summam",
+              "summpm"
+            ],
+            "columns": [
+              {
+                "source": "scenario",
+                "name": "scenario",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "year",
+                "name": "year_label",
+                "dtype": "int64",
+                "nullable": false,
+                "min": 20,
+                "max": 50
+              },
+              {
+                "source": "etys_location",
+                "name": "etys_location",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "capacity",
+                "name": "capacity",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "wintpk",
+                "name": "wintpk",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "summam",
+                "name": "summam",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "summpm",
+                "name": "summpm",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "resource_id",
+          "edition",
+          "scenario",
+          "etys_location",
+          "year_label"
+        ],
+        "latest": "whole_capture",
+        "latest_partition": "resource_id",
+        "edition_by_filename": [
+          [
+            "fes2021_regional_breakdown_dxstorage_sub1mw.csv",
+            2021
+          ],
+          [
+            "fes2022_regional_breakdown_dxstorage_sub1mw.csv",
+            2022
+          ]
+        ],
+        "vintage": "ckan_last_modified"
+      }
     },
     {
       "key": "fes_regional_dg_gt_1mw",
@@ -94,7 +810,213 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "scenario",
+              "tech",
+              "year",
+              "etys_location",
+              "capacity",
+              "wintpk",
+              "summam",
+              "summpm"
+            ],
+            "columns": [
+              {
+                "source": "scenario",
+                "name": "scenario",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "tech",
+                "name": "tech",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "year",
+                "name": "year_label",
+                "dtype": "int64",
+                "nullable": false,
+                "min": 20,
+                "max": 50
+              },
+              {
+                "source": "etys_location",
+                "name": "etys_location",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "capacity",
+                "name": "capacity",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "wintpk",
+                "name": "wintpk",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "summam",
+                "name": "summam",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "summpm",
+                "name": "summpm",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          },
+          {
+            "header": [
+              "scenario",
+              "tech",
+              "year",
+              "etys_location",
+              "capacity",
+              "wintpk",
+              "summam",
+              "summpm",
+              "",
+              "_duplicated_0",
+              "_duplicated_1",
+              "_duplicated_2"
+            ],
+            "columns": [
+              {
+                "source": "scenario",
+                "name": "scenario",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "tech",
+                "name": "tech",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "year",
+                "name": "year_label",
+                "dtype": "int64",
+                "nullable": false,
+                "min": 20,
+                "max": 50
+              },
+              {
+                "source": "etys_location",
+                "name": "etys_location",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "capacity",
+                "name": "capacity",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "wintpk",
+                "name": "wintpk",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "summam",
+                "name": "summam",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "summpm",
+                "name": "summpm",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "",
+                "name": "unnamed_9",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "_duplicated_0",
+                "name": "unnamed_10",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "_duplicated_1",
+                "name": "unnamed_11",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "_duplicated_2",
+                "name": "note",
+                "dtype": "string",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "resource_id",
+          "edition",
+          "scenario",
+          "tech",
+          "etys_location",
+          "year_label"
+        ],
+        "latest": "whole_capture",
+        "latest_partition": "resource_id",
+        "edition_by_filename": [
+          [
+            "fes2021_regional_breakdown_distributed_generation.csv",
+            2021
+          ],
+          [
+            "fes2022_regional_breakdown_distributed_generation.csv",
+            2022
+          ],
+          [
+            "fes2023_regional_breakdown_distributed_generation.csv",
+            2023
+          ],
+          [
+            "fes2024_regional_breakdown_distributed_generation.csv",
+            2024
+          ]
+        ],
+        "vintage": "ckan_last_modified",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: vendor correction confirming the capacity population/threshold. The >1 MW resource's `capacity` description says sub-1 MW distributed generation (\"Total aggregate capacity of sub 1 MW distributed generation of this technology type associated with this location\"), contradicting its title and filename; it is not repaired from the filename.",
+          "unit": "E-SEM"
+        }
+      }
     },
     {
       "key": "fes_regional_dg_lt_1mw",
@@ -105,7 +1027,118 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "scenario",
+              "tech",
+              "year",
+              "etys_location",
+              "capacity",
+              "wintpk",
+              "summam",
+              "summpm"
+            ],
+            "columns": [
+              {
+                "source": "scenario",
+                "name": "scenario",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "tech",
+                "name": "tech",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "year",
+                "name": "year_label",
+                "dtype": "int64",
+                "nullable": false,
+                "min": 20,
+                "max": 50
+              },
+              {
+                "source": "etys_location",
+                "name": "etys_location",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "capacity",
+                "name": "capacity",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "wintpk",
+                "name": "wintpk",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "summam",
+                "name": "summam",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "summpm",
+                "name": "summpm",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "resource_id",
+          "edition",
+          "scenario",
+          "tech",
+          "etys_location",
+          "year_label"
+        ],
+        "latest": "whole_capture",
+        "latest_partition": "resource_id",
+        "edition_by_filename": [
+          [
+            "fes2021_regional_breakdown_sub1mw_generation.csv",
+            2021
+          ],
+          [
+            "fes2022_regional_breakdown_sub1mw_generation.csv",
+            2022
+          ],
+          [
+            "fes2023_regional_breakdown_sub1mw_generation.csv",
+            2023
+          ],
+          [
+            "fes2024_regional_breakdown_sub1mw_generation.csv",
+            2024
+          ]
+        ],
+        "vintage": "ckan_last_modified",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO g1: calendar/financial/winter period meaning for this family. TODO g4: correct population and meaning/direction of `capacity`, `wintpk`, `summam`, `summpm`. The 2024 resource dictionary describes storage of at least 1 MW, including negative filling rates, although the resource is distributed generation below 1 MW; settle with the corrected resource dictionary or matching-edition workbook notes.",
+          "unit": "E-SEM"
+        }
+      }
     }
   ],
   "resources": [
@@ -127,8 +1160,9 @@
       "url_type": "upload",
       "family": "fes_regional_storage_gt_1mw_pre2023",
       "disposition": {
-        "kind": "SILVER",
-        "key": "fes_regional_storage_gt_1mw_pre2023"
+        "kind": "HOLD",
+        "reason": "the 2021 body opens with a two-line preamble (a generated-file note and a blank line) before its header on physical line 3, which the CSV reader cannot skip, and its table repeats one (scenario, tech, year, location) tuple three times (CF, CAES, 25, NORT_1, table rows 11776-11778, identical values) so the entity key is not unique; re-disposition only after a supported header-row recipe and an authorised duplicate policy, or a corrected NESO upload (a new last_modified)",
+        "unit": "E-SEM"
       }
     },
     {

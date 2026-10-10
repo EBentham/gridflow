@@ -1,0 +1,19 @@
+﻿GSP ID,GSP Group,Minor FLOP,Name,Latitude,Longitude,Comments
+ABNE_P,_P,T4,Abernethy,56.339,-3.294,
+ABTH_1,_K,H2,Aberthaw,51.385,-3.403,
+ABHA1,_L,F6,Abham,50.472,-3.729,
+ACTL_C,_C,A7,Acton Lane 22kV,51.535,-0.257,
+ACTL_2,_H,A7,Acton Lane 66kV,51.535,-0.257,
+ALNE_P,_P,T5,Alness,57.708,-4.274,
+ALST_3,_K,H2,Alpha Steel (Uskmouth),51.549,-2.976,
+ALVE1,_L,F6,Alverdiscott,51.006,-4.137,
+AMEM_1,_A,A6,Amersham Main,51.664,-0.655,
+ARBR_P,_P,T4,Arbroath,56.564,-2.619,
+ARDK_P,_P,T3,Ardkinglas,56.287,-4.956,
+ARMO_P,_P,T1,Ardmore,57.554,-6.645,
+G_EXTRA_13,_P,T2,Rothienorman,#N/A,#N/A,Potential new build GSP within forecast.
+G_EXTRA_14,_P,#N/A,Finstown,#N/A,#N/A,Potential new build GSP within forecast.
+G_EXTRA_15,_N,S6,Lesmahagow,#N/A,#N/A,
+G_EXTRA_16,_N,S6,Moffat,#N/A,#N/A,
+DUNB_A,_N,S6,Dunbar A,#N/A,#N/A,"GSP ""DUNB"" modelled as 2 parts (split busbar) from 2020"
+DUNB_B,_N,S6,Dunbar B ,#N/A,#N/A,"GSP ""DUNB"" modelled as 2 parts (split busbar) from 2020"
