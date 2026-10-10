@@ -22,7 +22,7 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `2-day-ahead-demand-forecast` | `demand_forecast_2d_files` | catalogue only | — | — | — | — |
 | `2-day-ahead-demand-forecast` | `demand_forecast_2d_historic_day_ahead` | silver | held: TODO: FORECAST_TIMESTAMP zone is undocumented (values carry Z but sit after the file's CKAN last_modified when read as UTC); whether it is the immutable issue instant (unit E-SEM) | whole_capture | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
 | `24-months-ahead-constraint-cost-forecast` | `constraint_cost_fc_24m` | silver | held: TODO: currency unit of Constraint Cost; vendor metadata shows an undecodable symbol before 'm'; confirm GBP million from the NESO data dictionary (unit E-SEM) | key_latest | none | CKAN last_modified of the captured file (ADR-030) |
-| `24-months-ahead-constraint-limits` | `constraint_limits_24m` | ingest-only (no silver output) | — | — | — | — |
+| `24-months-ahead-constraint-limits` | `constraint_limits_24m` | silver | held: TODO: what week-numbering convention, week start/end, year-boundary handling and timezone do YEAR/Week No denote, and is each monthly upload a forecast issued before every target week? NESO's dictionary states neither. (unit E-SEM) | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
 | `24-months-ahead-constraint-limits` | `constraint_limits_24m_files` | catalogue only | — | — | — | — |
 | `7-day-ahead-national-forecast` | `national_forecast_7d_day_ahead_demand` | silver | eligible | whole_capture | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
 | `7-day-ahead-national-forecast` | `national_forecast_7d_files` | catalogue only | — | — | — | — |
@@ -68,7 +68,7 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `carbon-intensity-of-balancing-actions` | `ci_balancing_actions` | silver | held: TODO: whether DATETIME marks period start or end (unit E-SEM) | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
 | `carbon-intensity-of-balancing-actions` | `ci_balancing_actions_files` | catalogue only | — | — | — | — |
 | `constraint-breakdown` | `constraint_breakdown` | ingest-only (no silver output) | — | — | — | — |
-| `constraint-management-intertrip-service-information-cmis` | `cmis_intertrip` | ingest-only (no silver output) | — | — | — | — |
+| `constraint-management-intertrip-service-information-cmis` | `cmis_intertrip` | silver | held: TODO: do the arming/disarming timestamps carry GB local wall time with a mechanically added +00:00 offset, or actual UTC instants? And is the newer arming fee GBP/MWh (header) or GBP/SP (dictionary)? (unit E-SEM) | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
 | `contract-transfer-of-obligation` | `contract_transfer_obligation` | ingest-only (no silver output) | — | — | — | — |
 | `country-carbon-intensity-forecast` | `country_ci_forecast` | silver | held: TODO: no issue column; which forecast issue a past target's value reflects, and whether values are revised after the period, is undocumented (unit E-SEM) | whole_capture | utc_instant | CKAN last_modified of the captured file (ADR-030) |
 | `current-balancing-services-use-of-system-bsuos-data` | `current_bsuos_cap_adjustments` | silver | eligible | key_latest | sp_pair | CKAN last_modified of the captured file (ADR-030) |
@@ -88,7 +88,7 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `daily-opmr` | `daily_opmr` | silver | held: TODO: history-bearing body (26,709 targets at or before the CKAN vintage); Publish Date is a date with no issue instant or zone (unit E-SEM) | whole_capture | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
 | `daily-wind-availability` | `daily_wind_availability` | bespoke silver | eligible | — | — | — |
 | `data-portal-planned-changes-known-issues` | `portal_known_issues` | silver | eligible | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
-| `day-ahead-constraint-flows-and-limits` | `da_constraint_flows_limits` | ingest-only (no silver output) | — | — | — | — |
+| `day-ahead-constraint-flows-and-limits` | `da_constraint_flows_limits` | silver | held: TODO: what period start/end and DST-fold treatment does the target timestamp denote, what are Flow_MW's unit and the meaning of blanks and 99999, and what row grain makes the archive unique? The archive has no issue column (RULINGS 529 fails: 732,332 targets precede the vintage). (unit E-SEM) | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
 | `day-ahead-constraint-flows-and-limits` | `da_constraint_flows_limits_files` | catalogue only | — | — | — | — |
 | `day-ahead-half-hourly-demand-forecast-performance` | `da_demand_fc_performance` | silver | held: TODO: Datetime and Publish_Datetime end in 'Z' but the dictionary states GMT/BST; whether Datetime marks period start or end; Settlement_Period repeats SP4/SP5 on 2021-10-31 and SP2/SP3 on 2022-10-30; whether Publish_Datetime is the publication instant (unit E-SEM) | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
 | `day-ahead-power-exchange-prices-nordpool` | `nordpool_da_prices` | silver | eligible | whole_capture | none | gridflow capture time |
@@ -227,7 +227,7 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `obp-non-bm-physical-notifications` | `obp_physical_notifications` | ingest-only (no silver output) | — | — | — | — |
 | `obp-non-bm-reserve-instructions` | `obp_reserve_instructions` | ingest-only (no silver output) | — | — | — | — |
 | `obp-reserve-availability-utilisation-price` | `obp_reserve_avail_price` | ingest-only (no silver output) | — | — | — | — |
-| `operational-transparency-forum-network-congestion-data` | `otf_network_congestion` | ingest-only (no silver output) | — | — | — | — |
+| `operational-transparency-forum-network-congestion-data` | `otf_network_congestion` | silver | held: TODO: is Date a week start, week end or reporting label (38 Saturdays, 15 Sundays, one 8-day step), how are actuals calculated, and when was each forecast issued? 26 targets are on or before the vintage, so the forward-target test fails. (unit E-SEM) | whole_capture | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
 | `optional-downward-flexibility-management-odfm-market-information` | `odfm_market_information_files` | catalogue only | — | — | — | — |
 | `optional-downward-flexibility-management-odfm-market-information` | `odfm_market_information_instructed` | ingest-only (no silver output) | — | — | — | — |
 | `optional-downward-flexibility-management-odfm-market-information` | `odfm_market_information_load_factors` | ingest-only (no silver output) | — | — | — | — |
@@ -290,8 +290,9 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `system-inertia-cost` | `system_inertia_cost` | ingest-only (no silver output) | — | — | — | — |
 | `system-operating-plan-sop` | `system_operating_plan` | silver | held: TODO: the dump returns each plan's latest version and NESO does not state that its values are fixed and public at their creation time, and every target precedes the capture, so the forward-target rule (RULINGS 529) cannot apply. (unit E-SEM) | whole_capture | utc_instant | gridflow capture time |
 | `system-operating-plan-sop` | `system_operating_plan_files` | catalogue only | — | — | — | — |
-| `thermal-constraint-costs` | `thermal_constraint_costs` | ingest-only (no silver output) | — | — | — | — |
+| `thermal-constraint-costs` | `thermal_constraint_costs` | silver | eligible | whole_capture per resource_id | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
 | `thermal-constraint-costs` | `thermal_constraint_costs_files` | catalogue only | — | — | — | — |
+| `thermal-constraint-costs` | `thermal_constraint_costs_xlsx` | silver | eligible | whole_capture per resource_id | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
 | `transmission-entry-capacity-tec-register` | `tec_register` | silver | eligible | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
 | `transmission-losses` | `transmission_losses_financial_year` | silver | eligible | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
 | `transmission-losses` | `transmission_losses_main` | silver | eligible | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
@@ -319,7 +320,7 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `upcoming-trades` | `upcoming_trades` | ingest-only (no silver output) | — | — | — | — |
 | `viking` | `viking_link_ntc` | silver | held: TODO: the dump returns past targets (rows before the capture) and NESO does not state that a row is unchanged since its `Data Upload Time GMT`, so historical issued limits are not evidenced. (unit E-SEM) | whole_capture | utc_instant | gridflow capture time |
 | `viking` | `viking_ntc` | silver | held: TODO: the archive's operational-date rollover and GMT/BST interpretation are undocumented, and every target precedes the upload's last_modified, so the forward-target rule (RULINGS 529) cannot apply. (unit E-SEM) | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
-| `voltage-requirement` | `voltage_requirement` | ingest-only (no silver output) | — | — | — | — |
+| `voltage-requirement` | `voltage_requirement` | silver | held: TODO: what is the overnight operating window and endpoint inclusivity of Start/End Date, what do the reversed ranges mean, which zone/members does each V_ group code cover, and is Last Updated an original issue time with the row available and immutable from then? (unit E-SEM) | whole_capture | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
 | `voltage-requirement` | `voltage_requirement_files` | catalogue only | — | — | — | — |
 | `weekly-opmr` | `weekly_opmr` | silver | held: TODO: NESO's engineering year/week to target date mapping is undocumented; the body gives a publication date only (unit E-SEM) | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
 | `weekly-wind-availability` | `weekly_wind_availability` | silver | held: TODO: NESO does not define the `Week Number` calendar (week system, year, start day, zone), so no target week can be dated; the body also carries 155 week labels against a documented 2-52-week horizon. (unit E-SEM) | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
@@ -448,7 +449,7 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `system-inertia` | eligible | 10 | 0 | 0 | 0 | 0 |
 | `system-inertia-cost` | eligible | 10 | 0 | 0 | 0 | 0 |
 | `system-operating-plan-sop` | eligible | 1 | 0 | 2 | 0 | 0 |
-| `thermal-constraint-costs` | eligible | 6 | 0 | 3 | 0 | 2 |
+| `thermal-constraint-costs` | eligible | 7 | 0 | 3 | 0 | 1 |
 | `transmission-entry-capacity-tec-register` | eligible | 1 | 0 | 0 | 0 | 0 |
 | `transmission-losses` | eligible | 2 | 0 | 0 | 0 | 0 |
 | `transmission-network-use-of-system-tnuos-tariffs` | eligible | 8 | 0 | 0 | 0 | 0 |
@@ -460,11 +461,11 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `weekly-opmr` | eligible | 1 | 0 | 0 | 0 | 0 |
 | `weekly-wind-availability` | eligible | 1 | 0 | 0 | 0 | 0 |
 | `wind-bmu-boa-volumes` | eligible | 9 | 0 | 0 | 0 | 0 |
-| **Total** | | 1244 | 0 | 43 | 20 | 78 |
+| **Total** | | 1245 | 0 | 43 | 20 | 77 |
 
 ## Totals
 
 - Packages: 131 (held: 2)
-- Families: 316: silver 98 (bespoke 3, recorded 95), ingest-only 183, catalogue only 35
-- Silver outputs held: 53
+- Families: 317: silver 105 (bespoke 3, recorded 102), ingest-only 177, catalogue only 35
+- Silver outputs held: 58
 - Resources: 1385

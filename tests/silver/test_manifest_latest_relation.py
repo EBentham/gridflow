@@ -53,7 +53,8 @@ from gridflow.silver.schema_manifest import (
 # seventy-six with v0.22-SC's FES ED1 record, then to eighty-eight with v0.22-K-SCN-1a's ten tRESP
 # pathway records and two workbook reference records, then to ninety-seven with v0.22-K-SCN-1b's
 # nine regional FES records, then to one hundred with v0.22-K-SCN-1c's three building block records,
-# then to one hundred and one with v0.22-K-SCN-1d's ES1 electricity supply record.
+# then to one hundred and one with v0.22-K-SCN-1d's ES1 electricity supply record, then to one
+# hundred and eight with v0.22-K-CON's seven constraint-management records.
 _APPEND_ONLY_DATASETS: tuple[tuple[str, str], ...] = (
     ("elexon", "system_prices"),
     ("elexon", "remit"),
@@ -156,6 +157,13 @@ _APPEND_ONLY_DATASETS: tuple[tuple[str, str], ...] = (
     ("neso_data_portal", "fes_building_blocks_block_definitions"),
     ("neso_data_portal", "fes_building_blocks_block_licence_area"),
     ("neso_data_portal", "fes_es1_electricity_supply"),
+    ("neso_data_portal", "constraint_limits_24m"),
+    ("neso_data_portal", "cmis_intertrip"),
+    ("neso_data_portal", "da_constraint_flows_limits"),
+    ("neso_data_portal", "otf_network_congestion"),
+    ("neso_data_portal", "thermal_constraint_costs"),
+    ("neso_data_portal", "thermal_constraint_costs_xlsx"),
+    ("neso_data_portal", "voltage_requirement"),
 )
 
 
@@ -349,9 +357,9 @@ def test_append_only_set_equals_latest_spec_set() -> None:
     spec_set = set(LATEST_VIEW_SPECS)
 
     # Non-vacuity guard: this invariant must never pass because both sides are
-    # empty (F16) -- one hundred and one APPEND_ONLY datasets are registered today.
+    # empty (F16) -- one hundred and eight APPEND_ONLY datasets are registered today.
     assert len(append_only) > 0
-    assert len(append_only) == 101
+    assert len(append_only) == 108
 
     missing_specs = append_only - spec_set
     extra_specs = spec_set - append_only
@@ -613,6 +621,13 @@ _EXPECTED_APPEND_ONLY_DEPRECATED_ALIASES: dict[tuple[str, str], str | None] = {
         "neso_data_portal",
         "fes_es1_electricity_supply",
     ): "silver_fes_es1_electricity_supply",
+    ("neso_data_portal", "constraint_limits_24m"): "silver_constraint_limits_24m",
+    ("neso_data_portal", "cmis_intertrip"): "silver_cmis_intertrip",
+    ("neso_data_portal", "da_constraint_flows_limits"): "silver_da_constraint_flows_limits",
+    ("neso_data_portal", "otf_network_congestion"): "silver_otf_network_congestion",
+    ("neso_data_portal", "thermal_constraint_costs"): "silver_thermal_constraint_costs",
+    ("neso_data_portal", "thermal_constraint_costs_xlsx"): "silver_thermal_constraint_costs_xlsx",
+    ("neso_data_portal", "voltage_requirement"): "silver_voltage_requirement",
 }
 
 

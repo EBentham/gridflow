@@ -58,8 +58,10 @@ URL_TYPE_TALLY = {"upload": 1233, "datastore": 152}
 # (data containers awaiting their batch's record), DOC 1 (Building Heat Model) and
 # GIS 13 (shapefile/GeoJSON/GPKG archives); then v0.22-K-SCN-1b holds the 2021 above-1 MW storage
 # resource (SILVER 1247, HOLD 75); K-SCN-1c changes no resource disposition; K-SCN-1d holds the
-# 2020-2022 ES1 resources (SILVER 1244, HOLD 78).
-DISPOSITION_TALLY = {"SILVER": 1244, "HOLD": 78, "DOC": 43, "GIS": 20}
+# 2020-2022 ES1 resources (SILVER 1244, HOLD 78); K-CON holds the 2021-22 thermal CSV (comma
+# costs) and dispositions the two thermal workbooks' Data sheet to the XLSX child record
+# (SILVER 1245, HOLD 77).
+DISPOSITION_TALLY = {"SILVER": 1245, "HOLD": 77, "DOC": 43, "GIS": 20}
 
 
 def _run(code: str, *args: str) -> subprocess.CompletedProcess[str]:
@@ -784,7 +786,7 @@ class TestAgreement:
                 from gridflow.connectors.neso_data_portal.client import NesoDataPortalConnector
                 config = load_settings().get_source_config('neso_data_portal')
                 configured = set(config.datasets)
-                assert len(FAMILIES) == 316, len(FAMILIES)
+                assert len(FAMILIES) == 317, len(FAMILIES)
                 assert configured == set(FAMILIES), sorted(configured ^ set(FAMILIES))[:5]
                 listed = NesoDataPortalConnector(config).list_datasets()
                 assert listed == list(FAMILIES)

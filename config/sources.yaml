@@ -1058,6 +1058,7 @@ sources:
       tec_register: {endpoint: "/api/3/action/package_show", schedule: "daily", max_query_days: 1}
       thermal_constraint_costs: {endpoint: "/api/3/action/package_show", schedule: "daily", max_query_days: 1}
       thermal_constraint_costs_files: {endpoint: "/api/3/action/package_show", schedule: "daily", max_query_days: 1}
+      thermal_constraint_costs_xlsx: {endpoint: "/api/3/action/package_show", schedule: "daily", max_query_days: 1}
       tnuos_tariffs_embedded_export: {endpoint: "/api/3/action/package_show", schedule: "daily", max_query_days: 1}
       tnuos_tariffs_half_hourly_hh_demand: {endpoint: "/api/3/action/package_show", schedule: "daily", max_query_days: 1}
       tnuos_tariffs_local_offshore_generator: {endpoint: "/api/3/action/package_show", schedule: "daily", max_query_days: 1}

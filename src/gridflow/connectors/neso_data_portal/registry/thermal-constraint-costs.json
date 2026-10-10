@@ -17,7 +17,57 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Settlement Date",
+              "Constraint Group",
+              "Daily Cost (GBP)"
+            ],
+            "columns": [
+              {
+                "source": "Settlement Date",
+                "name": "settlement_date",
+                "dtype": "date",
+                "format": "%Y-%m-%d",
+                "nullable": false
+              },
+              {
+                "source": "Constraint Group",
+                "name": "constraint_group",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Daily Cost (GBP)",
+                "name": "daily_cost_gbp",
+                "dtype": "int64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "date_sp1",
+          "date_column": "settlement_date"
+        },
+        "entity_key": [
+          "resource_id",
+          "settlement_date",
+          "constraint_group"
+        ],
+        "latest": "whole_capture",
+        "latest_partition": "resource_id",
+        "vintage": "ckan_last_modified"
+      }
     },
     {
       "key": "thermal_constraint_costs_files",
@@ -29,6 +79,74 @@
       "max_download_bytes": 536870912,
       "name_regex": null,
       "transformer": null
+    },
+    {
+      "key": "thermal_constraint_costs_xlsx",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SER",
+      "refresh": "weekly",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "xlsx",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Settlement Date",
+              "Constraint Group",
+              "Daily Cost (GBP)"
+            ],
+            "columns": [
+              {
+                "source": "Settlement Date",
+                "name": "settlement_date",
+                "dtype": "date",
+                "format": "%Y-%m-%d %H:%M:%S",
+                "nullable": false
+              },
+              {
+                "source": "Constraint Group",
+                "name": "constraint_group",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Daily Cost (GBP)",
+                "name": "daily_cost_gbp",
+                "dtype": "int64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "date_sp1",
+          "date_column": "settlement_date"
+        },
+        "entity_key": [
+          "resource_id",
+          "settlement_date",
+          "constraint_group"
+        ],
+        "latest": "whole_capture",
+        "latest_partition": "resource_id",
+        "siblings": [
+          "thermal_constraint_costs_files"
+        ],
+        "vintage": "ckan_last_modified",
+        "xlsx": {
+          "header_row": 1,
+          "columns": "A:C"
+        }
+      }
     }
   ],
   "resources": [
@@ -39,17 +157,15 @@
       "url_type": "upload",
       "family": "thermal_constraint_costs_files",
       "disposition": {
-        "kind": "HOLD",
-        "reason": "data container: child inventory committed by X; records pending in CON",
-        "unit": "CON"
+        "kind": "SILVER",
+        "key": "thermal_constraint_costs_xlsx"
       },
       "children": [
         {
           "child": "Data",
           "disposition": {
-            "kind": "HOLD",
-            "reason": "proposed family thermal_constraint_costs: record pending in CON (V-11)",
-            "unit": "CON"
+            "kind": "SILVER",
+            "key": "thermal_constraint_costs_xlsx"
           }
         },
         {
@@ -85,17 +201,15 @@
       "url_type": "upload",
       "family": "thermal_constraint_costs_files",
       "disposition": {
-        "kind": "HOLD",
-        "reason": "data container: child inventory committed by X; records pending in CON",
-        "unit": "CON"
+        "kind": "SILVER",
+        "key": "thermal_constraint_costs_xlsx"
       },
       "children": [
         {
           "child": "Data",
           "disposition": {
-            "kind": "HOLD",
-            "reason": "proposed family thermal_constraint_costs: record pending in CON (V-11)",
-            "unit": "CON"
+            "kind": "SILVER",
+            "key": "thermal_constraint_costs_xlsx"
           }
         },
         {
@@ -161,8 +275,9 @@
       "url_type": "upload",
       "family": "thermal_constraint_costs",
       "disposition": {
-        "kind": "SILVER",
-        "key": "thermal_constraint_costs"
+        "kind": "HOLD",
+        "reason": "the 2021-22 body has 360 comma-formatted Daily Cost (GBP) values (such as 2,150,551, 1,390,386 and 819,640) that fail the strict int64 cast, and the record has no lexical-number mechanism; re-disposition only after a declared lexical-number mechanism, or a corrected NESO upload (a new last_modified)",
+        "unit": "E-SEM"
       }
     },
     {

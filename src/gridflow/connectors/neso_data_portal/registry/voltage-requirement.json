@@ -17,7 +17,85 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Start Date",
+              "End Date",
+              "Group",
+              "Units",
+              "Notes",
+              "Last Updated"
+            ],
+            "columns": [
+              {
+                "source": "Start Date",
+                "name": "start_date",
+                "dtype": "date",
+                "format": "%Y-%m-%d",
+                "nullable": false
+              },
+              {
+                "source": "End Date",
+                "name": "end_date",
+                "dtype": "date",
+                "format": "%Y-%m-%d",
+                "nullable": true
+              },
+              {
+                "source": "Group",
+                "name": "group",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Units",
+                "name": "units",
+                "dtype": "int64",
+                "nullable": true
+              },
+              {
+                "source": "Notes",
+                "name": "notes",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Last Updated",
+                "name": "last_updated",
+                "dtype": "datetime",
+                "format": "%Y-%m-%dT%H:%MZ",
+                "nullable": false,
+                "zone": "UTC"
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "date_sp1",
+          "date_column": "start_date"
+        },
+        "entity_key": [
+          "start_date",
+          "group",
+          "last_updated"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: what is the overnight operating window and endpoint inclusivity of Start/End Date, what do the reversed ranges mean, which zone/members does each V_ group code cover, and is Last Updated an original issue time with the row available and immutable from then?",
+          "unit": "E-SEM"
+        }
+      }
     },
     {
       "key": "voltage_requirement_files",

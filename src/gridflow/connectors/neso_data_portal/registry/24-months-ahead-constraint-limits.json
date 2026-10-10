@@ -17,7 +17,135 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "YEAR",
+              "Week No",
+              "DRESHEX1",
+              "ESTEX",
+              "FLOWSTH",
+              "GM_SNOW5A",
+              "HARSPNBLY",
+              "NKILGRMO",
+              "SCOTEX",
+              "SEIMPPR2",
+              "SSE_GRM",
+              "SSEN_S",
+              "SSE_SP2",
+              "SSHARN3"
+            ],
+            "columns": [
+              {
+                "source": "YEAR",
+                "name": "year_vendor",
+                "dtype": "int64",
+                "nullable": false
+              },
+              {
+                "source": "Week No",
+                "name": "week_no",
+                "dtype": "int64",
+                "nullable": false
+              },
+              {
+                "source": "DRESHEX1",
+                "name": "dreshex1",
+                "dtype": "int64",
+                "nullable": true
+              },
+              {
+                "source": "ESTEX",
+                "name": "estex",
+                "dtype": "int64",
+                "nullable": true
+              },
+              {
+                "source": "FLOWSTH",
+                "name": "flowsth",
+                "dtype": "int64",
+                "nullable": true
+              },
+              {
+                "source": "GM_SNOW5A",
+                "name": "gm_snow5a",
+                "dtype": "int64",
+                "nullable": true
+              },
+              {
+                "source": "HARSPNBLY",
+                "name": "harspnbly",
+                "dtype": "int64",
+                "nullable": true
+              },
+              {
+                "source": "NKILGRMO",
+                "name": "nkilgrmo",
+                "dtype": "int64",
+                "nullable": true
+              },
+              {
+                "source": "SCOTEX",
+                "name": "scotex",
+                "dtype": "int64",
+                "nullable": true
+              },
+              {
+                "source": "SEIMPPR2",
+                "name": "seimppr2",
+                "dtype": "int64",
+                "nullable": true
+              },
+              {
+                "source": "SSE_GRM",
+                "name": "sse_grm",
+                "dtype": "int64",
+                "nullable": true
+              },
+              {
+                "source": "SSEN_S",
+                "name": "ssen_s",
+                "dtype": "int64",
+                "nullable": true
+              },
+              {
+                "source": "SSE_SP2",
+                "name": "sse_sp2",
+                "dtype": "int64",
+                "nullable": true
+              },
+              {
+                "source": "SSHARN3",
+                "name": "ssharn3",
+                "dtype": "int64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "year_vendor",
+          "week_no"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: what week-numbering convention, week start/end, year-boundary handling and timezone do YEAR/Week No denote, and is each monthly upload a forecast issued before every target week? NESO's dictionary states neither.",
+          "unit": "E-SEM"
+        }
+      }
     },
     {
       "key": "constraint_limits_24m_files",

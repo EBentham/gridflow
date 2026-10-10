@@ -17,7 +17,199 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Date",
+              "Min of B4 B5 - Actual",
+              "B6 - Actual",
+              "B6a - Actual",
+              "B7 - Actual",
+              "GMSNOW - Actual",
+              "LE1 - Actual",
+              "B9 - Actual",
+              "DRESHEX - Actual",
+              "EC5 - Actual",
+              "B15 - Actual",
+              "SC - Actual",
+              "Min of B4 B5 - Forecast",
+              "B6 - Forecast",
+              "B6a - Forecast",
+              "B7 - Forecast",
+              "GMSNOW - Forecast",
+              "LE1 - Forecast",
+              "B9 - Forecast",
+              "DRESHEX - Forecast",
+              "EC5 - Forecast",
+              "B15 - Forecast",
+              "SC - Forecast"
+            ],
+            "columns": [
+              {
+                "source": "Date",
+                "name": "date",
+                "dtype": "date",
+                "format": "%Y-%m-%d",
+                "nullable": false
+              },
+              {
+                "source": "Min of B4 B5 - Actual",
+                "name": "min_of_b4_b5_actual",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "B6 - Actual",
+                "name": "b6_actual",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "B6a - Actual",
+                "name": "b6a_actual",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "B7 - Actual",
+                "name": "b7_actual",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "GMSNOW - Actual",
+                "name": "gmsnow_actual",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "LE1 - Actual",
+                "name": "le1_actual",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "B9 - Actual",
+                "name": "b9_actual",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "DRESHEX - Actual",
+                "name": "dreshex_actual",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "EC5 - Actual",
+                "name": "ec5_actual",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "B15 - Actual",
+                "name": "b15_actual",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "SC - Actual",
+                "name": "sc_actual",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Min of B4 B5 - Forecast",
+                "name": "min_of_b4_b5_forecast",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "B6 - Forecast",
+                "name": "b6_forecast",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "B6a - Forecast",
+                "name": "b6a_forecast",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "B7 - Forecast",
+                "name": "b7_forecast",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "GMSNOW - Forecast",
+                "name": "gmsnow_forecast",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "LE1 - Forecast",
+                "name": "le1_forecast",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "B9 - Forecast",
+                "name": "b9_forecast",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "DRESHEX - Forecast",
+                "name": "dreshex_forecast",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "EC5 - Forecast",
+                "name": "ec5_forecast",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "B15 - Forecast",
+                "name": "b15_forecast",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "SC - Forecast",
+                "name": "sc_forecast",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "date_sp1",
+          "date_column": "date"
+        },
+        "entity_key": [
+          "date"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: is Date a week start, week end or reporting label (38 Saturdays, 15 Sundays, one 8-day step), how are actuals calculated, and when was each forecast issued? 26 targets are on or before the vintage, so the forward-target test fails.",
+          "unit": "E-SEM"
+        }
+      }
     }
   ],
   "resources": [
