@@ -50,7 +50,8 @@ from gridflow.silver.schema_manifest import (
 # record, then to sixty-one with v0.22-GEN-2H's metered wind output and wind BOA volume
 # records, then to seventy-two with v0.22-K-IC-1's eleven interconnector limit records, then to
 # seventy-five with v0.22-K-IC-2's BritNed, Nord Pool price and SOP records, then to
-# seventy-six with v0.22-SC's FES ED1 record.
+# seventy-six with v0.22-SC's FES ED1 record, then to eighty-eight with v0.22-K-SCN-1a's ten tRESP
+# pathway records and two workbook reference records.
 _APPEND_ONLY_DATASETS: tuple[tuple[str, str], ...] = (
     ("elexon", "system_prices"),
     ("elexon", "remit"),
@@ -128,6 +129,18 @@ _APPEND_ONLY_DATASETS: tuple[tuple[str, str], ...] = (
     ("neso_data_portal", "nordpool_da_prices"),
     ("neso_data_portal", "system_operating_plan"),
     ("neso_data_portal", "fes_ed1_electricity_demand"),
+    ("neso_data_portal", "tresp_building_block_definitions"),
+    ("neso_data_portal", "tresp_gsp_area_names"),
+    ("neso_data_portal", "tresp_demand_pathways_gsp"),
+    ("neso_data_portal", "tresp_demand_pathways_la_england"),
+    ("neso_data_portal", "tresp_demand_pathways_la_scotland"),
+    ("neso_data_portal", "tresp_demand_pathways_la_wales"),
+    ("neso_data_portal", "tresp_demand_pathways_resp_region"),
+    ("neso_data_portal", "tresp_generation_pathways_gsp"),
+    ("neso_data_portal", "tresp_generation_pathways_la_england"),
+    ("neso_data_portal", "tresp_generation_pathways_la_scotland"),
+    ("neso_data_portal", "tresp_generation_pathways_la_wales"),
+    ("neso_data_portal", "tresp_generation_pathways_resp_region"),
 )
 
 
@@ -321,9 +334,9 @@ def test_append_only_set_equals_latest_spec_set() -> None:
     spec_set = set(LATEST_VIEW_SPECS)
 
     # Non-vacuity guard: this invariant must never pass because both sides are
-    # empty (F16) -- seventy-six APPEND_ONLY datasets are registered today.
+    # empty (F16) -- eighty-eight APPEND_ONLY datasets are registered today.
     assert len(append_only) > 0
-    assert len(append_only) == 76
+    assert len(append_only) == 88
 
     missing_specs = append_only - spec_set
     extra_specs = spec_set - append_only
@@ -497,6 +510,42 @@ _EXPECTED_APPEND_ONLY_DEPRECATED_ALIASES: dict[tuple[str, str], str | None] = {
     ("neso_data_portal", "nordpool_da_prices"): "silver_nordpool_da_prices",
     ("neso_data_portal", "system_operating_plan"): "silver_system_operating_plan",
     ("neso_data_portal", "fes_ed1_electricity_demand"): "silver_fes_ed1_electricity_demand",
+    (
+        "neso_data_portal",
+        "tresp_building_block_definitions",
+    ): "silver_tresp_building_block_definitions",
+    ("neso_data_portal", "tresp_gsp_area_names"): "silver_tresp_gsp_area_names",
+    ("neso_data_portal", "tresp_demand_pathways_gsp"): "silver_tresp_demand_pathways_gsp",
+    (
+        "neso_data_portal",
+        "tresp_demand_pathways_la_england",
+    ): "silver_tresp_demand_pathways_la_england",
+    (
+        "neso_data_portal",
+        "tresp_demand_pathways_la_scotland",
+    ): "silver_tresp_demand_pathways_la_scotland",
+    ("neso_data_portal", "tresp_demand_pathways_la_wales"): "silver_tresp_demand_pathways_la_wales",
+    (
+        "neso_data_portal",
+        "tresp_demand_pathways_resp_region",
+    ): "silver_tresp_demand_pathways_resp_region",
+    ("neso_data_portal", "tresp_generation_pathways_gsp"): "silver_tresp_generation_pathways_gsp",
+    (
+        "neso_data_portal",
+        "tresp_generation_pathways_la_england",
+    ): "silver_tresp_generation_pathways_la_england",
+    (
+        "neso_data_portal",
+        "tresp_generation_pathways_la_scotland",
+    ): "silver_tresp_generation_pathways_la_scotland",
+    (
+        "neso_data_portal",
+        "tresp_generation_pathways_la_wales",
+    ): "silver_tresp_generation_pathways_la_wales",
+    (
+        "neso_data_portal",
+        "tresp_generation_pathways_resp_region",
+    ): "silver_tresp_generation_pathways_resp_region",
 }
 
 

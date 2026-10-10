@@ -1068,6 +1068,7 @@ sources:
       tnuos_tariffs_transmission_demand: {endpoint: "/api/3/action/package_show", schedule: "daily", max_query_days: 1}
       transmission_losses_financial_year: {endpoint: "/api/3/action/package_show", schedule: "daily", max_query_days: 1}
       transmission_losses_main: {endpoint: "/api/3/action/package_show", schedule: "daily", max_query_days: 1}
+      tresp_building_block_definitions: {endpoint: "/api/3/action/package_show", schedule: "daily", max_query_days: 1}
       tresp_demand_pathways_files: {endpoint: "/api/3/action/package_show", schedule: "daily", max_query_days: 1}
       tresp_demand_pathways_gsp: {endpoint: "/api/3/action/package_show", schedule: "daily", max_query_days: 1}
       tresp_demand_pathways_la_england: {endpoint: "/api/3/action/package_show", schedule: "daily", max_query_days: 1}
@@ -1079,6 +1080,7 @@ sources:
       tresp_generation_pathways_la_scotland: {endpoint: "/api/3/action/package_show", schedule: "daily", max_query_days: 1}
       tresp_generation_pathways_la_wales: {endpoint: "/api/3/action/package_show", schedule: "daily", max_query_days: 1}
       tresp_generation_pathways_resp_region: {endpoint: "/api/3/action/package_show", schedule: "daily", max_query_days: 1}
+      tresp_gsp_area_names: {endpoint: "/api/3/action/package_show", schedule: "daily", max_query_days: 1}
       upcoming_trades: {endpoint: "/api/3/action/package_show", schedule: "daily", max_query_days: 1}
       viking_link_ntc: {endpoint: "/api/3/action/package_show", schedule: "daily", max_query_days: 1}
       viking_ntc: {endpoint: "/api/3/action/package_show", schedule: "daily", max_query_days: 1}

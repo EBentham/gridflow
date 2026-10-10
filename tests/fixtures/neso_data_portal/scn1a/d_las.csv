@@ -1,0 +1,68 @@
+Building_block_id,LAD24CD,LAD24NM,Pathway,Year,Unit,Value
+Dem_BB005_1,S12000005,Clackmannanshire,tRESP - EE,2035,GWh,2.414525
+Dem_BB005_1,S12000005,Clackmannanshire,tRESP - EE,2036,GWh,2.7679868
+Dem_BB005_1,S12000005,Clackmannanshire,tRESP - EE,2050,GWh,8.497488
+Dem_BB005_1,S12000005,Clackmannanshire,tRESP - HE,2035,GWh,2.414525
+Dem_BB005_1,S12000005,Clackmannanshire,tRESP - HE,2036,GWh,2.724496
+Dem_BB005_1,S12000005,Clackmannanshire,tRESP - HE,2050,GWh,7.8314943
+Dem_BB005_1,S12000005,Clackmannanshire,tRESP - HT,2025,GWh,0.90318596
+Dem_BB005_1,S12000005,Clackmannanshire,tRESP - HT,2034,GWh,2.1767192
+Dem_BB005_1,S12000005,Clackmannanshire,tRESP - HT,2035,GWh,2.414525
+Dem_BB005_1,S12000005,Clackmannanshire,tRESP - HT,2036,GWh,2.7873242
+Dem_BB005_1,S12000005,Clackmannanshire,tRESP - HT,2050,GWh,8.854372
+Dem_BB005_1,S12000006,Dumfries and Galloway,tRESP - EE,2035,GWh,7.5072165
+Dem_BB005_1,S12000006,Dumfries and Galloway,tRESP - EE,2036,GWh,8.705759
+Dem_BB005_1,S12000006,Dumfries and Galloway,tRESP - EE,2050,GWh,26.488441
+Dem_BB005_1,S12000006,Dumfries and Galloway,tRESP - HE,2035,GWh,7.5072165
+Dem_BB005_1,S12000006,Dumfries and Galloway,tRESP - HE,2036,GWh,8.3486595
+Dem_BB005_1,S12000006,Dumfries and Galloway,tRESP - HE,2050,GWh,24.017887
+Dem_BB005_1,S12000006,Dumfries and Galloway,tRESP - HT,2025,GWh,1.8572447
+Dem_BB005_1,S12000006,Dumfries and Galloway,tRESP - HT,2034,GWh,6.562356
+Dem_BB005_1,S12000006,Dumfries and Galloway,tRESP - HT,2035,GWh,7.5072165
+Dem_BB005_1,S12000006,Dumfries and Galloway,tRESP - HT,2036,GWh,8.734532
+Dem_BB005_1,S12000006,Dumfries and Galloway,tRESP - HT,2050,GWh,27.358418
+Dem_BB005_2,S12000005,Clackmannanshire,tRESP - EE,2035,m2,71922.086
+Dem_BB005_2,S12000005,Clackmannanshire,tRESP - EE,2036,m2,82450.734
+Dem_BB005_2,S12000005,Clackmannanshire,tRESP - EE,2050,m2,253116.89
+Dem_BB005_2,S12000005,Clackmannanshire,tRESP - HE,2035,m2,71922.086
+Dem_BB005_2,S12000005,Clackmannanshire,tRESP - HE,2036,m2,81155.266
+Dem_BB005_2,S12000005,Clackmannanshire,tRESP - HE,2050,m2,233278.75
+Dem_BB005_2,S12000005,Clackmannanshire,tRESP - HT,2025,m2,26903.436
+Dem_BB005_2,S12000005,Clackmannanshire,tRESP - HT,2034,m2,64838.5
+Dem_BB005_2,S12000005,Clackmannanshire,tRESP - HT,2035,m2,71922.086
+Dem_BB005_2,S12000005,Clackmannanshire,tRESP - HT,2036,m2,83026.75
+Dem_BB005_2,S12000005,Clackmannanshire,tRESP - HT,2050,m2,263747.47
+Dem_BB005_2,S12000006,Dumfries and Galloway,tRESP - EE,2035,m2,223619.4
+Dem_BB005_2,S12000006,Dumfries and Galloway,tRESP - EE,2036,m2,259320.7
+Dem_BB005_2,S12000006,Dumfries and Galloway,tRESP - EE,2050,m2,789018.06
+Dem_BB005_2,S12000006,Dumfries and Galloway,tRESP - HE,2035,m2,223619.4
+Dem_BB005_2,S12000006,Dumfries and Galloway,tRESP - HE,2036,m2,248683.7
+Dem_BB005_2,S12000006,Dumfries and Galloway,tRESP - HE,2050,m2,715427.06
+Dem_BB005_2,S12000006,Dumfries and Galloway,tRESP - HT,2025,m2,55322.23
+Dem_BB005_2,S12000006,Dumfries and Galloway,tRESP - HT,2034,m2,195474.6
+Dem_BB005_2,S12000006,Dumfries and Galloway,tRESP - HT,2035,m2,223619.4
+Dem_BB005_2,S12000006,Dumfries and Galloway,tRESP - HT,2036,m2,260177.77
+Dem_BB005_2,S12000006,Dumfries and Galloway,tRESP - HT,2050,m2,814932.3
+Lct_BB001,S12000005,Clackmannanshire,tRESP - EE,2035,Number,20498.861
+Lct_BB001,S12000005,Clackmannanshire,tRESP - EE,2036,Number,23149.47
+Lct_BB001,S12000005,Clackmannanshire,tRESP - EE,2050,Number,36328.656
+Lct_BB001,S12000005,Clackmannanshire,tRESP - HE,2035,Number,20498.861
+Lct_BB001,S12000005,Clackmannanshire,tRESP - HE,2036,Number,23139.041
+Lct_BB001,S12000005,Clackmannanshire,tRESP - HE,2050,Number,38220.934
+Lct_BB001,S12000005,Clackmannanshire,tRESP - HT,2025,Number,1598.9913
+Lct_BB001,S12000005,Clackmannanshire,tRESP - HT,2034,Number,17836.428
+Lct_BB001,S12000005,Clackmannanshire,tRESP - HT,2035,Number,20498.861
+Lct_BB001,S12000005,Clackmannanshire,tRESP - HT,2036,Number,23160.303
+Lct_BB001,S12000005,Clackmannanshire,tRESP - HT,2050,Number,34919.49
+Lct_BB001,S12000006,Dumfries and Galloway,tRESP - EE,2035,Number,72855.89
+Lct_BB001,S12000006,Dumfries and Galloway,tRESP - EE,2036,Number,82332.08
+Lct_BB001,S12000006,Dumfries and Galloway,tRESP - EE,2050,Number,129504.53
+Lct_BB001,S12000006,Dumfries and Galloway,tRESP - HE,2035,Number,72855.89
+Lct_BB001,S12000006,Dumfries and Galloway,tRESP - HE,2036,Number,82294.36
+Lct_BB001,S12000006,Dumfries and Galloway,tRESP - HE,2050,Number,136256.55
+Lct_BB001,S12000006,Dumfries and Galloway,tRESP - HT,2025,Number,3081.503
+Lct_BB001,S12000006,Dumfries and Galloway,tRESP - HT,2034,Number,63026.953
+Lct_BB001,S12000006,Dumfries and Galloway,tRESP - HT,2035,Number,72855.89
+Lct_BB001,S12000006,Dumfries and Galloway,tRESP - HT,2036,Number,82362.64
+Lct_BB001,S12000006,Dumfries and Galloway,tRESP - HT,2050,Number,124446.805
+Lct_BB002,S12000013,Na h-Eileanan Siar,tRESP - EE,2050,Number,0.0

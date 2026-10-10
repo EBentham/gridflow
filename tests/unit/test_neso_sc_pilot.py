@@ -40,6 +40,7 @@ from _neso_dem1h_pin import dump, generated_pin
 from _neso_generic_support import write_capture
 from _neso_sc_pin import PIN_PATH
 from test_neso_dem1_records import _short_base
+from test_neso_multi_resource import SCN1A_ADDED
 
 from gridflow.connectors.neso_data_portal import skeleton
 from gridflow.connectors.neso_data_portal.registry import Held, load_registry
@@ -567,10 +568,11 @@ class TestSkeletonAndPin:
         ) in page
 
     def test_t_sc8_the_pilot_is_the_only_generated_addition(self) -> None:
-        """Detects any generated family other than the FES ED1 pilot appearing since the
-        base golden (master ``34992b6``), and any DEM-1 engine digest added or lost."""
+        """Detects any generated family other than the FES ED1 pilot and the twelve tRESP
+        records of K-SCN-1a appearing since the base golden (master ``34992b6``), and any DEM-1
+        engine digest added or lost."""
         golden = json.loads(PIN_PATH.read_text(encoding="utf-8"))
         current = json.loads(dump(generated_pin()))
         for section in ("sql", "records", "columns"):
-            assert set(current[section]) - set(golden[section]) == {PILOT}, section
+            assert set(current[section]) - set(golden[section]) == {PILOT, *SCN1A_ADDED}, section
         assert set(current["engine"]) == set(golden["engine"])
