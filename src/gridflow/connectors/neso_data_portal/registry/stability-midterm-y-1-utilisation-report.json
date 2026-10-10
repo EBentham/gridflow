@@ -17,7 +17,81 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "BMU ID",
+              "Inertia (in MVA.s)",
+              "Month & Year",
+              "Utilisation Start Datetime",
+              "Utilisation End Datetime",
+              "Hours Utilised"
+            ],
+            "columns": [
+              {
+                "source": "BMU ID",
+                "name": "bmu_id",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Inertia (in MVA.s)",
+                "name": "inertia_mva_s",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Month & Year",
+                "name": "month_and_year",
+                "dtype": "date",
+                "format": "%b-%y",
+                "nullable": true
+              },
+              {
+                "source": "Utilisation Start Datetime",
+                "name": "utilisation_start_datetime",
+                "dtype": "datetime",
+                "format": "%d/%m/%Y %H:%M",
+                "nullable": false,
+                "zone": "UTC"
+              },
+              {
+                "source": "Utilisation End Datetime",
+                "name": "utilisation_end_datetime",
+                "dtype": "datetime",
+                "format": "%d/%m/%Y %H:%M",
+                "nullable": false,
+                "zone": "UTC"
+              },
+              {
+                "source": "Hours Utilised",
+                "name": "hours_utilised",
+                "dtype": "string",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "utc_instant",
+          "column": "utilisation_start_datetime"
+        },
+        "entity_key": [
+          "bmu_id",
+          "utilisation_start_datetime",
+          "utilisation_end_datetime"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified"
+      }
     }
   ],
   "resources": [

@@ -164,6 +164,19 @@ CON_ADDED = frozenset(
     }
 )
 """The seven constraint-management families that v0.22-K-CON records."""
+SYS1_ADDED = frozenset(
+    {
+        "voltage_units_utilisation",
+        "stability_midterm_y1",
+        "stability_pathfinder_utilisation_report",
+        "stability_pathfinder_availability_report",
+        "system_inertia",
+        "system_inertia_cost",
+        "outturn_voltage_costs_historical",
+        "outturn_voltage_costs_main",
+    }
+)
+"""The eight system families that v0.22-K-SYS-1 records."""
 REWORDED_HOLDS = {
     "national_forecast_7d_historic_day_ahead": (
         "TODO: FORECAST_TIMESTAMP has no vendor definition and its zone is undocumented "
@@ -210,8 +223,8 @@ class TestByteUnchanged:
         wind / margin forecast records, K-GEN-2's weekly wind availability record, GEN-2H's
         metered wind output and wind BOA volume records, K-IC-1's and K-IC-2's interconnector
         records, v0.22-SC's FES ED1 record, K-SCN-1a's twelve tRESP records, K-SCN-1b's nine
-        regional FES records, K-SCN-1c's three building block records, K-SCN-1d's ES1 record and
-        K-CON's seven constraint-management records appearing.
+        regional FES records, K-SCN-1c's three building block records, K-SCN-1d's ES1 record,
+        K-CON's seven constraint-management records and K-SYS-1's eight system records appearing.
         """
         golden = json.loads(PIN_PATH.read_text(encoding="utf-8"))
         for key, question in REWORDED_HOLDS.items():
@@ -237,6 +250,7 @@ class TestByteUnchanged:
                     *SCN1C_ADDED,
                     *SCN1D_ADDED,
                     *CON_ADDED,
+                    *SYS1_ADDED,
                 }
                 if section != "engine"
                 else set()
@@ -838,7 +852,7 @@ class TestRecordRules:
         self,
     ) -> None:
         """Detects a committed record broken by V-4/V-17 or the reserved name, and any
-        family other than the thirty-eight resource-partitioned ones opting into the partition (in a
+        family other than the forty-three resource-partitioned ones opting into the partition (in a
         fresh interpreter, so nothing collection imported can mask it)."""
         code = textwrap.dedent(
             """
@@ -872,7 +886,12 @@ class TestRecordRules:
                 "metered_wind_output_monthly",
                 "nemolink_ntc",
                 "nsl",
+                "outturn_voltage_costs_historical",
                 "school_holiday_percentages",
+                "stability_pathfinder_availability_report",
+                "stability_pathfinder_utilisation_report",
+                "system_inertia",
+                "system_inertia_cost",
                 "thermal_constraint_costs",
                 "thermal_constraint_costs_xlsx",
                 "tresp_building_block_definitions",

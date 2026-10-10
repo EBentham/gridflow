@@ -1044,7 +1044,7 @@ def test_the_committed_ledger_carries_the_three_brit_ned_entries() -> None:
     fresh interpreter. The whole ledger is the ruled families: GEN-2H's two (547), NSL (565),
     BritNed's two (571), BritNed's invalid-encoding capture (575), the 2022 regional FES
     GSP lookup capture (607), the three 2020-2022 building block captures (608) and the
-    day-ahead constraint archive (632), appended last."""
+    day-ahead constraint archive (632) and the six Pathfinder captures (642), appended last."""
     loaded = _fresh_interpreter(
         """
         import json
@@ -1082,6 +1082,12 @@ def test_the_committed_ledger_carries_the_three_brit_ned_entries() -> None:
         "fes_building_blocks_main",
         "fes_building_blocks_main",
         "da_constraint_flows_limits",
+        "stability_pathfinder_utilisation_report",
+        "stability_pathfinder_utilisation_report",
+        "stability_pathfinder_availability_report",
+        "stability_pathfinder_availability_report",
+        "stability_pathfinder_availability_report",
+        "stability_pathfinder_availability_report",
     ]
     directory = "bronze/neso_data_portal/brit_ned/2026/10/08/"
     overlap, failed, encoding = loaded["entries"]

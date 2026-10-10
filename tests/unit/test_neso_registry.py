@@ -60,8 +60,8 @@ URL_TYPE_TALLY = {"upload": 1233, "datastore": 152}
 # resource (SILVER 1247, HOLD 75); K-SCN-1c changes no resource disposition; K-SCN-1d holds the
 # 2020-2022 ES1 resources (SILVER 1244, HOLD 78); K-CON holds the 2021-22 thermal CSV (comma
 # costs) and dispositions the two thermal workbooks' Data sheet to the XLSX child record
-# (SILVER 1245, HOLD 77).
-DISPOSITION_TALLY = {"SILVER": 1245, "HOLD": 77, "DOC": 43, "GIS": 20}
+# (SILVER 1245, HOLD 77); K-SYS-1 holds the 2026 inertia cost resource (SILVER 1244, HOLD 78).
+DISPOSITION_TALLY = {"SILVER": 1244, "HOLD": 78, "DOC": 43, "GIS": 20}
 
 
 def _run(code: str, *args: str) -> subprocess.CompletedProcess[str]:

@@ -54,7 +54,8 @@ from gridflow.silver.schema_manifest import (
 # pathway records and two workbook reference records, then to ninety-seven with v0.22-K-SCN-1b's
 # nine regional FES records, then to one hundred with v0.22-K-SCN-1c's three building block records,
 # then to one hundred and one with v0.22-K-SCN-1d's ES1 electricity supply record, then to one
-# hundred and eight with v0.22-K-CON's seven constraint-management records.
+# hundred and eight with v0.22-K-CON's seven constraint-management records, then to one hundred
+# and sixteen with v0.22-K-SYS-1's eight system records.
 _APPEND_ONLY_DATASETS: tuple[tuple[str, str], ...] = (
     ("elexon", "system_prices"),
     ("elexon", "remit"),
@@ -164,6 +165,14 @@ _APPEND_ONLY_DATASETS: tuple[tuple[str, str], ...] = (
     ("neso_data_portal", "thermal_constraint_costs"),
     ("neso_data_portal", "thermal_constraint_costs_xlsx"),
     ("neso_data_portal", "voltage_requirement"),
+    ("neso_data_portal", "voltage_units_utilisation"),
+    ("neso_data_portal", "stability_midterm_y1"),
+    ("neso_data_portal", "stability_pathfinder_utilisation_report"),
+    ("neso_data_portal", "stability_pathfinder_availability_report"),
+    ("neso_data_portal", "system_inertia"),
+    ("neso_data_portal", "system_inertia_cost"),
+    ("neso_data_portal", "outturn_voltage_costs_historical"),
+    ("neso_data_portal", "outturn_voltage_costs_main"),
 )
 
 
@@ -357,9 +366,9 @@ def test_append_only_set_equals_latest_spec_set() -> None:
     spec_set = set(LATEST_VIEW_SPECS)
 
     # Non-vacuity guard: this invariant must never pass because both sides are
-    # empty (F16) -- one hundred and eight APPEND_ONLY datasets are registered today.
+    # empty (F16) -- one hundred and sixteen APPEND_ONLY datasets are registered today.
     assert len(append_only) > 0
-    assert len(append_only) == 108
+    assert len(append_only) == 116
 
     missing_specs = append_only - spec_set
     extra_specs = spec_set - append_only
@@ -628,6 +637,23 @@ _EXPECTED_APPEND_ONLY_DEPRECATED_ALIASES: dict[tuple[str, str], str | None] = {
     ("neso_data_portal", "thermal_constraint_costs"): "silver_thermal_constraint_costs",
     ("neso_data_portal", "thermal_constraint_costs_xlsx"): "silver_thermal_constraint_costs_xlsx",
     ("neso_data_portal", "voltage_requirement"): "silver_voltage_requirement",
+    ("neso_data_portal", "voltage_units_utilisation"): "silver_voltage_units_utilisation",
+    ("neso_data_portal", "stability_midterm_y1"): "silver_stability_midterm_y1",
+    (
+        "neso_data_portal",
+        "stability_pathfinder_utilisation_report",
+    ): "silver_stability_pathfinder_utilisation_report",
+    (
+        "neso_data_portal",
+        "stability_pathfinder_availability_report",
+    ): "silver_stability_pathfinder_availability_report",
+    ("neso_data_portal", "system_inertia"): "silver_system_inertia",
+    ("neso_data_portal", "system_inertia_cost"): "silver_system_inertia_cost",
+    (
+        "neso_data_portal",
+        "outturn_voltage_costs_historical",
+    ): "silver_outturn_voltage_costs_historical",
+    ("neso_data_portal", "outturn_voltage_costs_main"): "silver_outturn_voltage_costs_main",
 }
 
 

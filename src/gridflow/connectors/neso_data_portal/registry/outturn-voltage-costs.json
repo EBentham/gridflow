@@ -17,7 +17,116 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Settlement Month",
+              "Voltage Constraint Group",
+              "Sync Costs (£m)",
+              "Utilisation Costs (£m)",
+              "Coordinates"
+            ],
+            "columns": [
+              {
+                "source": "Settlement Month",
+                "name": "settlement_month",
+                "dtype": "date",
+                "formats_by_filename": [
+                  [
+                    "voltagecsv-2014_15.csv",
+                    "%d/%m/%Y"
+                  ],
+                  [
+                    "voltagecsv-2015_16.csv",
+                    "%Y-%m-%d"
+                  ],
+                  [
+                    "voltagecsv-2016_17.csv",
+                    "%Y-%m-%d"
+                  ],
+                  [
+                    "voltagecsv-2017_18.csv",
+                    "%Y-%m-%d"
+                  ],
+                  [
+                    "voltagecsv-2018_19.csv",
+                    "%Y-%m-%d"
+                  ],
+                  [
+                    "voltagecsv-2019_20.csv",
+                    "%Y-%m-%d"
+                  ],
+                  [
+                    "voltagecsv-2020_21.csv",
+                    "%Y-%m-%d"
+                  ],
+                  [
+                    "voltagecsv-2021_22.csv",
+                    "%Y-%m-%d"
+                  ],
+                  [
+                    "voltagecsv-2022_23.csv",
+                    "%Y-%m-%d"
+                  ],
+                  [
+                    "voltagecsv-2023_24.csv",
+                    "%Y-%m-%d"
+                  ],
+                  [
+                    "voltagecsv-2024_25.csv",
+                    "%d/%m/%Y"
+                  ]
+                ],
+                "nullable": false
+              },
+              {
+                "source": "Voltage Constraint Group",
+                "name": "voltage_constraint_group",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Sync Costs (£m)",
+                "name": "sync_costs_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Utilisation Costs (£m)",
+                "name": "utilisation_costs_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Coordinates",
+                "name": "coordinates",
+                "dtype": "string",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "month",
+          "date_column": "settlement_month"
+        },
+        "entity_key": [
+          "resource_id",
+          "settlement_month",
+          "voltage_constraint_group"
+        ],
+        "latest": "whole_capture",
+        "latest_partition": "resource_id",
+        "vintage": "ckan_last_modified"
+      }
     },
     {
       "key": "outturn_voltage_costs_main",
@@ -28,7 +137,69 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Settlement Month",
+              "Voltage Constraint Group",
+              "Sync Costs (£m)",
+              "Utilisation Costs (£m)",
+              "Coordinates"
+            ],
+            "columns": [
+              {
+                "source": "Settlement Month",
+                "name": "settlement_month",
+                "dtype": "date",
+                "format": "%d/%m/%Y",
+                "nullable": false
+              },
+              {
+                "source": "Voltage Constraint Group",
+                "name": "voltage_constraint_group",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Sync Costs (£m)",
+                "name": "sync_costs_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Utilisation Costs (£m)",
+                "name": "utilisation_costs_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Coordinates",
+                "name": "coordinates",
+                "dtype": "string",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "month",
+          "date_column": "settlement_month"
+        },
+        "entity_key": [
+          "settlement_month",
+          "voltage_constraint_group"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified"
+      }
     },
     {
       "key": "outturn_voltage_costs_files",

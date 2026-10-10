@@ -42,6 +42,11 @@ DATE_COL_SQL_TYPES: dict[str, DateColSqlType] = {
     # The voltage requirement family's first night (v0.22-K-CON): the `date_sp1` anchor of its
     # record, a calendar DATE like `settlement_date`.
     "start_date": "DATE",
+    # The system batch's `month` anchors (v0.22-K-SYS-1): the voltage utilisation family's
+    # utilisation month and the two voltage cost families' settlement month, each a calendar
+    # DATE (the first of the month) like `settlement_date`.
+    "month_and_year": "DATE",
+    "settlement_month": "DATE",
     "timestamp_utc": "TIMESTAMPTZ",
     "implementation_datetime_utc": "TIMESTAMPTZ",
     "ingested_at": "TIMESTAMPTZ",

@@ -17,7 +17,77 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "UNIT",
+              "Settlement Period Start Date Time",
+              "Settlement Period End Date Time",
+              "Availability Flag",
+              "REMARK"
+            ],
+            "columns": [
+              {
+                "source": "UNIT",
+                "name": "unit",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Settlement Period Start Date Time",
+                "name": "settlement_period_start_date_time",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Settlement Period End Date Time",
+                "name": "settlement_period_end_date_time",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Availability Flag",
+                "name": "availability_flag",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "REMARK",
+                "name": "remark",
+                "dtype": "string",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "resource_id",
+          "unit",
+          "settlement_period_start_date_time",
+          "settlement_period_end_date_time",
+          "availability_flag",
+          "remark"
+        ],
+        "latest": "whole_capture",
+        "latest_partition": "resource_id",
+        "vintage": "ckan_last_modified",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: the timestamp clock (as §3), and what vendor row identity / grain makes the report unique given identical repeated rows?",
+          "unit": "E-SEM"
+        }
+      }
     },
     {
       "key": "stability_pathfinder_utilisation_report",
@@ -28,7 +98,93 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "UNIT",
+              "Settlement Period Start Date Time",
+              "Settlement Period End Date Time",
+              "Instruction Code",
+              "Instruction Issue Time",
+              "Actual Service Start or Cease Time",
+              "Inertia"
+            ],
+            "columns": [
+              {
+                "source": "UNIT",
+                "name": "unit",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Settlement Period Start Date Time",
+                "name": "settlement_period_start_date_time",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Settlement Period End Date Time",
+                "name": "settlement_period_end_date_time",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Instruction Code",
+                "name": "instruction_code",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Instruction Issue Time",
+                "name": "instruction_issue_time",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Actual Service Start or Cease Time",
+                "name": "actual_service_start_or_cease_time",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Inertia",
+                "name": "inertia",
+                "dtype": "int64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "resource_id",
+          "unit",
+          "settlement_period_start_date_time",
+          "settlement_period_end_date_time",
+          "instruction_code",
+          "instruction_issue_time",
+          "actual_service_start_or_cease_time",
+          "inertia"
+        ],
+        "latest": "whole_capture",
+        "latest_partition": "resource_id",
+        "vintage": "ckan_last_modified",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: are the Pathfinder timestamps actual UTC instants or GB local wall times with a mechanically attached +00:00 offset (incl. clock-change periods), what unit/scale is `Inertia`, what does a blank `Inertia` mean, and what vendor row identity distinguishes identical rows?",
+          "unit": "E-SEM"
+        }
+      }
     }
   ],
   "resources": [

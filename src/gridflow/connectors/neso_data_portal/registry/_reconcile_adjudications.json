@@ -132,5 +132,77 @@
     "question": "What row grain (period start or end, fold occurrence or version) makes the day-ahead constraint archive's repeated (Constraint Group, target timestamp) rows unique, and can NESO publish a corrected file or a row identifier?",
     "evidence": "K-CON-FACTS §4 (Reader and key evidence), K-CON-SPEC §3 (unit v0.22-K-CON); ADR-040",
     "ruling": "632"
+  },
+  {
+    "family": "stability_pathfinder_utilisation_report",
+    "category": "failed",
+    "cause": "DuplicateEntityKeyError",
+    "captures": [
+      "bronze/neso_data_portal/stability_pathfinder_utilisation_report/2026/10/08/raw_20261008T112723Z_f43f5d61-b51f-45f9-a7e7-66f2959d38b5_85904720.csv"
+    ],
+    "reason": "the U24 body repeats 1 identical complete row(s) (e.g. LRDSC-1 at 2024-12-05T16:00:00+00:00 on CSV lines 132233 and 132234), so no vendor-column key is lossless and the duplicate guard fails the capture; it is never deduplicated and stays unloaded with its failure record",
+    "question": "What vendor row identity (an instruction or contract identifier) distinguishes the identical repeated Pathfinder utilisation rows, and can NESO publish a corrected file?",
+    "evidence": "K-SYS-1-FACTS §4 g3 (T07), K-SYS-1-SPEC §3 (unit v0.22-K-SYS-1); ADR-040",
+    "ruling": "642"
+  },
+  {
+    "family": "stability_pathfinder_utilisation_report",
+    "category": "failed",
+    "cause": "DuplicateEntityKeyError",
+    "captures": [
+      "bronze/neso_data_portal/stability_pathfinder_utilisation_report/2026/10/08/raw_20261008T112725Z_fc08cdba-1a86-460b-85c4-3d8c0d3d4e42_e7ac1433.csv"
+    ],
+    "reason": "the U25 body repeats 3,964 identical complete row(s) (e.g. THRSC-1 at 2025-05-23T17:30:00+00:00 on CSV lines 30388 and 30389), so no vendor-column key is lossless and the duplicate guard fails the capture; it is never deduplicated and stays unloaded with its failure record",
+    "question": "What vendor row identity (an instruction or contract identifier) distinguishes the identical repeated Pathfinder utilisation rows, and can NESO publish a corrected file?",
+    "evidence": "K-SYS-1-FACTS §4 g3 (T07), K-SYS-1-SPEC §3 (unit v0.22-K-SYS-1); ADR-040",
+    "ruling": "642"
+  },
+  {
+    "family": "stability_pathfinder_availability_report",
+    "category": "failed",
+    "cause": "DuplicateEntityKeyError",
+    "captures": [
+      "bronze/neso_data_portal/stability_pathfinder_availability_report/2026/10/08/raw_20261008T112709Z_a4fd8208-3e36-4f9c-bdc7-435c3734a2da_eeaf24d9.csv"
+    ],
+    "reason": "the A23 body repeats 306 identical complete row(s) (e.g. RASSP-1 at 2023-11-20T00:00:00+00:00 on CSV lines 40995 and 44019), so no vendor-column key is lossless and the duplicate guard fails the capture; it is never deduplicated and stays unloaded with its failure record",
+    "question": "What vendor row identity or grain makes the Pathfinder availability report unique given identical repeated rows, and can NESO publish a corrected file?",
+    "evidence": "K-SYS-1-FACTS §5 g3 (T04), K-SYS-1-SPEC §4 (unit v0.22-K-SYS-1); ADR-040",
+    "ruling": "642"
+  },
+  {
+    "family": "stability_pathfinder_availability_report",
+    "category": "failed",
+    "cause": "DuplicateEntityKeyError",
+    "captures": [
+      "bronze/neso_data_portal/stability_pathfinder_availability_report/2026/10/08/raw_20261008T112712Z_bacc45e5-11ac-4bac-88ef-6872f499db97_7f743fae.csv"
+    ],
+    "reason": "the A24 body repeats 1,003 identical complete row(s) (e.g. KILLSC-2 at 2024-08-25T00:00:00+00:00 on CSV lines 75890 and 75891), so no vendor-column key is lossless and the duplicate guard fails the capture; it is never deduplicated and stays unloaded with its failure record",
+    "question": "What vendor row identity or grain makes the Pathfinder availability report unique given identical repeated rows, and can NESO publish a corrected file?",
+    "evidence": "K-SYS-1-FACTS §5 g3 (T04), K-SYS-1-SPEC §4 (unit v0.22-K-SYS-1); ADR-040",
+    "ruling": "642"
+  },
+  {
+    "family": "stability_pathfinder_availability_report",
+    "category": "failed",
+    "cause": "DuplicateEntityKeyError",
+    "captures": [
+      "bronze/neso_data_portal/stability_pathfinder_availability_report/2026/10/08/raw_20261008T112715Z_1264f36f-27ce-4ed9-aab1-393c7612d6bc_c9e43104.csv"
+    ],
+    "reason": "the A25 body repeats 46,921 identical complete row(s) (e.g. CRUA-3 at 2025-04-02T14:30:00+00:00 on CSV lines 83 and 84), so no vendor-column key is lossless and the duplicate guard fails the capture; it is never deduplicated and stays unloaded with its failure record",
+    "question": "What vendor row identity or grain makes the Pathfinder availability report unique given identical repeated rows, and can NESO publish a corrected file?",
+    "evidence": "K-SYS-1-FACTS §5 g3 (T04), K-SYS-1-SPEC §4 (unit v0.22-K-SYS-1); ADR-040",
+    "ruling": "642"
+  },
+  {
+    "family": "stability_pathfinder_availability_report",
+    "category": "failed",
+    "cause": "DuplicateEntityKeyError",
+    "captures": [
+      "bronze/neso_data_portal/stability_pathfinder_availability_report/2026/10/08/raw_20261008T112717Z_690a9e42-20e2-4b0e-b74f-f3e37cac4bac_cdf0f939.csv"
+    ],
+    "reason": "the A26 body repeats 7,679 identical complete row(s) (e.g. GRAISC-1 at 2026-04-01T00:00:00+00:00 on CSV lines 242 and 243), so no vendor-column key is lossless and the duplicate guard fails the capture; it is never deduplicated and stays unloaded with its failure record",
+    "question": "What vendor row identity or grain makes the Pathfinder availability report unique given identical repeated rows, and can NESO publish a corrected file?",
+    "evidence": "K-SYS-1-FACTS §5 g3 (T04), K-SYS-1-SPEC §4 (unit v0.22-K-SYS-1); ADR-040",
+    "ruling": "642"
   }
 ]
