@@ -660,6 +660,12 @@ records."""
 
 SCN1C_PACKAGE_FILES = {"future-energy-scenario-fes-building-block-data.json"}
 
+SCN1D_RECORDED = {"fes_es1_electricity_supply"}
+"""The FES ES1 electricity supply family (held, three of its seven resources HOLD) unit K-SCN-1d
+records."""
+
+SCN1D_PACKAGE_FILES = {"future-energy-scenario-electricity-supply-data-table-es1.json"}
+
 X_RESOURCES_WITH_CHILDREN = 4 + 1 + 39 + 73 + 1
 """Unit X's committed inventories (ADR-037 P-8): CMP workbooks, the ResultSummary ZIP,
 frequency ZIPs, held data containers and the GSP archive with a CSV member."""
@@ -692,6 +698,7 @@ class TestSeededRegistry:
             | SCN1A_RECORDED
             | SCN1B_RECORDED
             | SCN1C_RECORDED
+            | SCN1D_RECORDED
         )
         with_children = [res for _package, res in loaded.resources.values() if res.children]
         assert len(with_children) == X_RESOURCES_WITH_CHILDREN
@@ -725,6 +732,7 @@ class TestSeededRegistry:
             | SCN1A_PACKAGE_FILES
             | SCN1B_PACKAGE_FILES
             | SCN1C_PACKAGE_FILES
+            | SCN1D_PACKAGE_FILES
         )
 
 
