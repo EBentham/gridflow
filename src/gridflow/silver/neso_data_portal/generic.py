@@ -41,6 +41,7 @@ from gridflow.silver.base import BronzeVouchReason, append_only_run_stamp
 from gridflow.silver.latest_views import _SETTLEMENT_RUN_RANK, LATEST_VIEW_SPECS, LatestViewSpec
 from gridflow.silver.neso_data_portal.casting import (
     ExclusionTally,
+    edition_for,
     epoch_for,
     epoch_formats,
     finish_capture,
@@ -402,6 +403,7 @@ class GenericNesoTransformer(RegisteredRelationsTransformer):
                 )
             for table in tables:
                 epoch_formats(epoch_for(record, table.header), ctx.resource_filename)
+            edition_for(record, ctx.resource_filename)
             record_completion(
                 self.data_dir,
                 completion_row(

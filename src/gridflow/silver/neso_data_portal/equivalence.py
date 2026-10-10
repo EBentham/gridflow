@@ -197,12 +197,16 @@ def metadata_dependencies(record: SchemaRecord) -> tuple[str, ...]:
 
     Always ``url_type`` and ``empty_capture``; plus ``ckan_last_modified`` under
     that vintage, ``resource_filename`` when an epoch takes a filename-token
-    issue time, and ``written_at`` under ``capture_fallback``.
+    issue time or the record maps editions by filename (ADR-042: the derived
+    ``edition`` dimension depends on it), and ``written_at`` under
+    ``capture_fallback``.
     """
     fields = {"url_type", "empty_capture"}
     if record.vintage == "ckan_last_modified":
         fields.add("ckan_last_modified")
     if any(epoch.issue.kind == "filename_token" for epoch in record.epochs):
+        fields.add("resource_filename")
+    if record.edition_by_filename is not None:
         fields.add("resource_filename")
     if record.vintage == "capture_fallback":
         fields.add("written_at")

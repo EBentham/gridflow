@@ -7,7 +7,7 @@ beside the package files and is validated when the registry loads:
 - the **models** below check each object's own shape (Pydantic, frozen,
   ``extra="forbid"``);
 - :func:`validate_record` checks the record against itself, its family and its
-  package (rules V-1..V-10, V-13, V-17), and :func:`validate_silver_targets` checks
+  package (rules V-1..V-10, V-13, V-17, V-18), and :func:`validate_silver_targets` checks
   every ``SILVER`` disposition once all files are loaded (V-11). Every failure
   raises :class:`RecordError` naming the rule; the loader re-raises it as a
   ``RegistryError`` naming the file and family.
@@ -33,8 +33,11 @@ from gridflow.silver.date_columns import DATE_COL_SQL_TYPES
 
 __all__ = [
     "CHILD_SEPARATOR",
+    "EDITION",
+    "PROJECTION_YEAR",
     "RESERVED",
     "SILVER_NAME_PATTERN",
+    "VALUE",
     "ColumnSpec",
     "Eligibility",
     "Eligible",
@@ -44,12 +47,24 @@ __all__ = [
     "RecordError",
     "SchemaRecord",
     "TemporalRecipe",
+    "UnpivotSpec",
+    "ValueSpec",
     "XlsxSpec",
     "ZipMemberSpec",
     "column_index",
+    "epoch_outputs",
     "has_issue_time",
     "silver_columns",
 ]
+
+PROJECTION_YEAR = "projection_year"
+"""The silver name an unpivot epoch gives its declared year (ADR-042)."""
+
+VALUE = "value"
+"""The silver name an unpivot epoch gives its one typed value (ADR-042)."""
+
+EDITION = "edition"
+"""The silver name of the engine's edition stamp (ADR-042)."""
 
 SILVER_NAME_PATTERN = re.compile(r"^[a-z][a-z0-9_]*$")
 
@@ -73,6 +88,7 @@ RESERVED: frozenset[str] = frozenset(
         "child_id",
         "child_crc32",
         "resource_id",
+        EDITION,
     }
 )
 """Names the engine or the catalogue writes itself (V-2).
@@ -80,7 +96,8 @@ RESERVED: frozenset[str] = frozenset(
 ``year``/``month`` are Hive partition names: DuckDB silently replaces a data
 column of the same name with the directory value, and Polars raises (E3).
 ``resource_id`` is stamped by the engine on a resource-partitioned record's
-rows (ADR-039).
+rows (ADR-039). ``edition`` is stamped by the engine on an edition-mapped
+record's rows (ADR-042).
 """
 
 Dtype = Literal["string", "int64", "float64", "date", "datetime"]
@@ -256,29 +273,112 @@ class IssueRecipe(_Frozen):
         return self
 
 
+class ValueSpec(_Frozen):
+    """The one typed value an unpivot epoch's year columns become (ADR-042).
+
+    Attributes:
+        dtype: The silver type of ``value``.
+        nullable: Whether a null survives (``False`` excludes the long row).
+        null_tokens: Vendor spellings read as null before casting.
+        min: Numeric lower bound (inclusive); a breach excludes the long row.
+        max: Numeric upper bound (inclusive); a breach excludes the long row.
+    """
+
+    dtype: Literal["string", "int64", "float64"]
+    nullable: bool
+    null_tokens: tuple[str, ...] = ()
+    min: float | None = None
+    max: float | None = None
+
+    @model_validator(mode="after")
+    def _shape(self) -> ValueSpec:
+        if (self.min is not None or self.max is not None) and self.dtype == "string":
+            raise ValueError("unpivot value: min/max apply to numeric columns only")
+        return self
+
+
+class UnpivotSpec(_Frozen):
+    """An epoch's year columns, reshaped to ``(projection_year, value)`` rows (ADR-042).
+
+    Attributes:
+        years: Exact vendor header label -> declared projection year, in header
+            order. Labels are never parsed: the year is what the record declares.
+        value: The typing of every year cell.
+    """
+
+    years: tuple[tuple[str, int], ...] = Field(min_length=1)
+    value: ValueSpec
+
+    @model_validator(mode="after")
+    def _shape(self) -> UnpivotSpec:
+        labels = [label for label, _year in self.years]
+        if any(not label for label in labels):
+            raise ValueError("unpivot has an empty year label")
+        if len(set(labels)) != len(labels):
+            raise ValueError(f"unpivot repeats a year label: {labels}")
+        years = [year for _label, year in self.years]
+        if len(set(years)) != len(years):
+            raise ValueError(f"unpivot repeats a projection year: {years}")
+        return self
+
+
 class HeaderEpoch(_Frozen):
     """One exact, ordered vendor header and its column typing.
 
     Attributes:
         header: The vendor header, exact and ordered.
-        columns: One :class:`ColumnSpec` per header entry, in header order.
+        columns: One :class:`ColumnSpec` per header entry, in header order; with
+            ``unpivot``, one per header entry that is not a year label.
         issue: This epoch's issue-time recipe.
+        unpivot: The year columns reshaped to long rows (ADR-042); ``None``
+            keeps the epoch wide.
     """
 
     header: tuple[str, ...] = Field(min_length=1)
     columns: tuple[ColumnSpec, ...]
     issue: IssueRecipe
+    unpivot: UnpivotSpec | None = None
 
     @model_validator(mode="after")
     def _shape(self) -> HeaderEpoch:
         if len(set(self.header)) != len(self.header):
             raise ValueError(f"epoch header {list(self.header)} repeats a name")
-        if tuple(column.source for column in self.columns) != self.header:
-            raise ValueError(
-                f"epoch columns {[c.source for c in self.columns]} are not aligned 1:1 with "
-                f"the header {list(self.header)}"
-            )
+        if self.unpivot is None:
+            if tuple(column.source for column in self.columns) != self.header:
+                raise ValueError(
+                    f"epoch columns {[c.source for c in self.columns]} are not aligned 1:1 with "
+                    f"the header {list(self.header)}"
+                )
+            return self
+        self._unpivot_shape(self.unpivot)
         return self
+
+    def _unpivot_shape(self, unpivot: UnpivotSpec) -> None:
+        """The index sources and year labels partition the header, each in header order."""
+        header = list(self.header)
+        sources = [column.source for column in self.columns]
+        labels = [label for label, _year in unpivot.years]
+        where = f"unpivot epoch header {header}"
+        if set(sources) & set(labels):
+            raise ValueError(
+                f"{where}: columns and year labels overlap on {sorted(set(sources) & set(labels))}"
+            )
+        if set(sources) | set(labels) != set(header) or len(sources) + len(labels) != len(header):
+            raise ValueError(
+                f"{where}: columns {sources} and year labels {labels} do not cover the header "
+                "exactly"
+            )
+        position = {name: index for index, name in enumerate(header)}
+        for kind, names in (("columns", sources), ("year labels", labels)):
+            indexes = [position[name] for name in names]
+            if indexes != sorted(indexes):
+                raise ValueError(f"{where}: {kind} {names} are not in header order")
+        generated = {PROJECTION_YEAR, VALUE}
+        if set(sources) & generated:
+            raise ValueError(
+                f"{where}: index column {sorted(set(sources) & generated)} is named like a "
+                "generated column"
+            )
 
 
 class TemporalRecipe(_Frozen):
@@ -409,6 +509,9 @@ class SchemaRecord(_Frozen):
         latest_partition: ``whole_capture`` only: select the newest complete
             capture per value of this completion-ledger column instead of per
             family (ADR-039); the engine stamps it on every row (V-17).
+        edition_by_filename: Exact ``(resource_filename, edition)`` pairs; the
+            engine stamps the capture's edition as ``edition`` (ADR-042). An
+            unlisted filename fails the capture; no fallback.
     """
 
     version: str = Field(min_length=1)
@@ -426,6 +529,7 @@ class SchemaRecord(_Frozen):
     xlsx: XlsxSpec | None = None
     zip_member: ZipMemberSpec | None = None
     latest_partition: Literal["resource_id"] | None = None
+    edition_by_filename: tuple[tuple[str, int], ...] | None = None
 
     @model_validator(mode="after")
     def _shape(self) -> SchemaRecord:
@@ -436,7 +540,20 @@ class SchemaRecord(_Frozen):
         if len(set(self.entity_key)) != len(self.entity_key):
             raise ValueError(f"entity_key {list(self.entity_key)} repeats a column")
         self._reader_specs()
+        if self.edition_by_filename is not None:
+            self._edition_map(self.edition_by_filename)
         return self
+
+    @staticmethod
+    def _edition_map(mapping: tuple[tuple[str, int], ...]) -> None:
+        """The edition map's shape: non-empty, non-empty filenames, each once."""
+        if not mapping:
+            raise ValueError("edition_by_filename must be non-empty")
+        if any(not filename for filename, _edition in mapping):
+            raise ValueError("every edition_by_filename filename must be non-empty")
+        filenames = [filename for filename, _edition in mapping]
+        if len(set(filenames)) != len(filenames):
+            raise ValueError("edition_by_filename repeats a filename")
 
     def _reader_specs(self) -> None:
         """V-14: the reader specs match the reader."""
@@ -466,11 +583,37 @@ def has_issue_time(record: SchemaRecord) -> bool:
     return any(epoch.issue.kind != "none" for epoch in record.epochs)
 
 
+def epoch_outputs(epoch: HeaderEpoch) -> tuple[ColumnSpec, ...]:
+    """The epoch's post-reshape output specs (ADR-042).
+
+    Without ``unpivot`` this is ``epoch.columns`` itself. With it, the index
+    columns, then ``projection_year`` (``int64``, non-nullable) and ``value``
+    (typed by the :class:`ValueSpec`); their ``source`` is their own name, the
+    column the unpivot yields.
+    """
+    if epoch.unpivot is None:
+        return epoch.columns
+    value = epoch.unpivot.value
+    return (
+        *epoch.columns,
+        ColumnSpec(source=PROJECTION_YEAR, name=PROJECTION_YEAR, dtype="int64", nullable=False),
+        ColumnSpec(
+            source=VALUE,
+            name=VALUE,
+            dtype=value.dtype,
+            nullable=value.nullable,
+            null_tokens=value.null_tokens,
+            min=value.min,
+            max=value.max,
+        ),
+    )
+
+
 def silver_columns(record: SchemaRecord) -> dict[str, ColumnSpec]:
-    """Silver name -> first declaring spec, in first-appearance order across epochs."""
+    """Silver name -> first declaring post-reshape spec, in first-appearance order across epochs."""
     seen: dict[str, ColumnSpec] = {}
     for epoch in record.epochs:
-        for column in epoch.columns:
+        for column in epoch_outputs(epoch):
             seen.setdefault(column.name, column)
     return seen
 
@@ -508,10 +651,11 @@ def validate_record(
 
     dtypes: dict[str, str] = {}
     for index, epoch in enumerate(record.epochs):
-        names = [column.name for column in epoch.columns]
+        specs = epoch_outputs(epoch)
+        names = [column.name for column in specs]
         if len(set(names)) != len(names):
             raise _fail("V-1", f"epoch {index} maps two vendor columns to one silver name")
-        for column in epoch.columns:
+        for column in specs:
             if dtypes.setdefault(column.name, column.dtype) != column.dtype:
                 raise _fail(
                     "V-1",
@@ -527,7 +671,12 @@ def validate_record(
     outputs = set(dtypes)
     issue = has_issue_time(record)
     key_set = set(record.entity_key)
-    admissible = outputs | {"issue_time"} | ({"resource_id"} if record.latest_partition else set())
+    admissible = (
+        outputs
+        | {"issue_time"}
+        | ({"resource_id"} if record.latest_partition else set())
+        | ({EDITION} if record.edition_by_filename is not None else set())
+    )
     if not key_set <= admissible:
         raise _fail(
             "V-4",
@@ -579,6 +728,8 @@ def validate_record(
                 "a resource-partitioned entity_key holds resource_id and the per-resource grain",
             )
 
+    _check_scenario(record, key_set)
+
     for sibling in record.siblings:
         if sibling == key or sibling not in package_families:
             raise _fail("V-10", f"sibling {sibling!r} is not another family of this package")
@@ -593,6 +744,30 @@ def validate_record(
                 "V-13",
                 f"date column {date_column!r} is a designated date name the manifest types "
                 f"{DATE_COL_SQL_TYPES[date_column]}",
+            )
+
+
+def _check_scenario(record: SchemaRecord, key_set: set[str]) -> None:
+    """V-18: an unpivot record's year and value, and an edition record's key and selection."""
+    if any(epoch.unpivot is not None for epoch in record.epochs):
+        for index, epoch in enumerate(record.epochs):
+            names = {column.name for column in epoch_outputs(epoch)}
+            if not {PROJECTION_YEAR, VALUE} <= names:
+                raise _fail(
+                    "V-18",
+                    f"epoch {index} does not declare {PROJECTION_YEAR!r} and {VALUE!r}, which "
+                    "an unpivot record's every epoch yields",
+                )
+        if PROJECTION_YEAR not in key_set:
+            raise _fail("V-18", f"an unpivot record's entity_key holds {PROJECTION_YEAR!r}")
+    if record.edition_by_filename is not None:
+        if EDITION not in key_set:
+            raise _fail("V-18", f"an edition-mapped record's entity_key holds {EDITION!r}")
+        if record.latest == "whole_capture" and record.latest_partition != "resource_id":
+            raise _fail(
+                "V-18",
+                "an edition-mapped whole_capture record selects per resource "
+                "(latest_partition resource_id); family scope would keep one edition",
             )
 
 
@@ -611,7 +786,7 @@ def _check_recipe_columns(record: SchemaRecord) -> None:
         required[temporal.column] = "datetime"
 
     for index, epoch in enumerate(record.epochs):
-        by_name = {column.name: column for column in epoch.columns}
+        by_name = {column.name: column for column in epoch_outputs(epoch)}
         for name, dtype in required.items():
             spec = by_name.get(name)
             if spec is None:

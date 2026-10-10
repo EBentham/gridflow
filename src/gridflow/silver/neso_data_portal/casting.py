@@ -4,7 +4,7 @@ ADR-034 P-4 and P-5, in that order and nowhere else:
 
 - :func:`type_child` runs **once per child table**, on the vendor header. It is
   the only typing pass and the only exclusion site. Its exclusion mask is built
-  from the matched epoch's column specs only (**I-2**), so a row is never
+  from the matched epoch's output specs only (**I-2**), so a row is never
   judged by another epoch's rules, and every excluded row is tallied.
 - :func:`finish_capture` runs once per (capture, family) over the concatenated
   children: it accounts the exclusions, derives ``timestamp_utc`` and
@@ -25,7 +25,14 @@ from typing import TYPE_CHECKING
 
 import polars as pl
 
-from gridflow.connectors.neso_data_portal.registry.record import has_issue_time, silver_columns
+from gridflow.connectors.neso_data_portal.registry.record import (
+    EDITION,
+    PROJECTION_YEAR,
+    VALUE,
+    epoch_outputs,
+    has_issue_time,
+    silver_columns,
+)
 from gridflow.schemas.neso_data_portal import is_valid_settlement_period
 from gridflow.utils.time import settlement_period_to_utc
 
@@ -47,7 +54,9 @@ __all__ = [
     "ExclusionTally",
     "HeaderEpochError",
     "IssueTimeError",
+    "UnmappedResourceEditionError",
     "UnmappedResourceFormatError",
+    "edition_for",
     "epoch_for",
     "epoch_formats",
     "TypedChild",
@@ -96,6 +105,10 @@ class UnmappedResourceFormatError(Exception):
     """A per-filename date column lists no format for the capture's file (ADR-039)."""
 
 
+class UnmappedResourceEditionError(Exception):
+    """An edition-mapped record lists no edition for the capture's file (ADR-042)."""
+
+
 @dataclass
 class ExclusionTally:
     """Excluded-row counts per rule plus up to five sample keys.
@@ -134,10 +147,11 @@ class TypedChild:
 def record_dtypes(record: SchemaRecord) -> dict[str, str]:
     """Every output column of P-4/P-5 -> its record dtype, in output order.
 
-    The typed silver columns in first-appearance order across epochs, then
-    ``issue_time`` (when any epoch declares one), ``child_id`` and
-    ``child_crc32`` (container readers, ADR-037 P-11), ``resource_id`` (a
-    resource-partitioned record, ADR-039), then :data:`CAPTURE_STAMP_COLUMNS`.
+    The typed post-reshape silver columns in first-appearance order across
+    epochs, then ``issue_time`` (when any epoch declares one), ``child_id`` and
+    ``child_crc32`` (container readers, ADR-037 P-11), ``edition`` (an
+    edition-mapped record, ADR-042), ``resource_id`` (a resource-partitioned
+    record, ADR-039), then :data:`CAPTURE_STAMP_COLUMNS`.
     """
     from gridflow.silver.neso_data_portal.readers import CONTAINER_READERS
 
@@ -147,6 +161,8 @@ def record_dtypes(record: SchemaRecord) -> dict[str, str]:
     if record.reader in CONTAINER_READERS:
         out["child_id"] = "string"
         out["child_crc32"] = "int64"
+    if record.edition_by_filename is not None:
+        out[EDITION] = "int64"
     if record.latest_partition == "resource_id":
         out["resource_id"] = "string"
     out.update(
@@ -205,6 +221,31 @@ def epoch_formats(epoch: HeaderEpoch, resource_filename: str) -> dict[str, str |
             )
         out[spec.source] = mapping[resource_filename]
     return out
+
+
+def edition_for(record: SchemaRecord, resource_filename: str) -> int | None:
+    """The capture's edition: the exact ``edition_by_filename`` entry (ADR-042).
+
+    No normalisation and no fallback.
+
+    Args:
+        record: The family's record.
+        resource_filename: The capture's sidecar ``resource_filename``.
+
+    Returns:
+        The mapped edition, or ``None`` for a record without an edition map.
+
+    Raises:
+        UnmappedResourceEditionError: The map lists no entry for the file.
+    """
+    if record.edition_by_filename is None:
+        return None
+    mapping = dict(record.edition_by_filename)
+    if resource_filename not in mapping:
+        raise UnmappedResourceEditionError(
+            f"resource_filename {resource_filename!r} has no edition; mapped: {sorted(mapping)}"
+        )
+    return mapping[resource_filename]
 
 
 def _cast(spec: ColumnSpec, fmt: str | None) -> pl.Expr:
@@ -299,13 +340,20 @@ def type_child(table: ChildTable, record: SchemaRecord, ctx: CaptureContext) -> 
     """
     epoch = epoch_for(record, table.header)
     formats = epoch_formats(epoch, ctx.resource_filename)
+    specs = epoch_outputs(epoch)
     frame = table.frame
-    tokened = [_null_tokens(spec) for spec in epoch.columns if spec.null_tokens]
+    if epoch.unpivot is not None:
+        years = dict(epoch.unpivot.years)
+        frame = frame.unpivot(
+            on=list(years),
+            index=[spec.source for spec in epoch.columns],
+            variable_name=PROJECTION_YEAR,
+            value_name=VALUE,
+        ).with_columns(pl.col(PROJECTION_YEAR).replace_strict(years, return_dtype=pl.Int64))
+    tokened = [_null_tokens(spec) for spec in specs if spec.null_tokens]
     if tokened:
         frame = frame.with_columns(tokened)
-    frame = frame.select(
-        [_cast(spec, formats[spec.source]).alias(spec.name) for spec in epoch.columns]
-    )
+    frame = frame.select([_cast(spec, formats.get(spec.source)).alias(spec.name) for spec in specs])
 
     ordered = silver_columns(record)
     present = set(frame.columns)
@@ -341,13 +389,18 @@ def type_child(table: ChildTable, record: SchemaRecord, ctx: CaptureContext) -> 
 def _exclude(
     frame: pl.DataFrame, epoch: HeaderEpoch, record: SchemaRecord
 ) -> tuple[pl.DataFrame, ExclusionTally]:
-    """I-2: one vectorised mask from THIS epoch's specs; tally by first failing rule."""
+    """I-2: one vectorised mask from this epoch's output specs; tally by first failing rule.
+
+    The output specs are post-reshape (ADR-042), so an unpivot epoch is judged
+    per long row: a blank year excludes that year's row only.
+    """
     tally = ExclusionTally()
     if frame.height == 0:
         return frame, tally
-    null_terms = [pl.col(spec.name).is_null() for spec in epoch.columns if not spec.nullable]
+    specs = epoch_outputs(epoch)
+    null_terms = [pl.col(spec.name).is_null() for spec in specs if not spec.nullable]
     range_terms: list[pl.Expr] = []
-    for spec in epoch.columns:
+    for spec in specs:
         if spec.min is not None:
             range_terms.append(pl.col(spec.name).is_not_null() & (pl.col(spec.name) < spec.min))
         if spec.max is not None:
@@ -427,7 +480,10 @@ def finish_capture(
     Raises:
         AllRowsExcludedError: The body had rows and every one was excluded.
         DuplicateEntityKeyError: Two rows share the entity key.
+        UnmappedResourceEditionError: An edition-mapped record lists no
+            edition for the capture's ``resource_filename``.
     """
+    edition = edition_for(record, ctx.resource_filename)
     frame = pl.concat(frames, how="vertical") if len(frames) > 1 else frames[0]
     if tally.total:
         logger.warning(
@@ -454,6 +510,8 @@ def finish_capture(
         pl.lit(ctx.capture_id, dtype=pl.Utf8).alias("bronze_capture_id"),
         pl.lit(ctx.capture_written_at, dtype=_UTC_DATETIME).alias("capture_written_at"),
     ]
+    if edition is not None:
+        stamps.append(pl.lit(edition, dtype=pl.Int64).alias(EDITION))
     if record.latest_partition == "resource_id":
         stamps.append(pl.lit(ctx.resource_id, dtype=pl.Utf8).alias("resource_id"))
     frame = frame.with_columns(*stamps).select(record_columns(record))

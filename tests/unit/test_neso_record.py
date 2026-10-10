@@ -610,6 +610,12 @@ IC2_PACKAGE_FILES = {
     "system-operating-plan-sop.json",
 }
 
+SC_RECORDED = {"fes_ed1_electricity_demand"}
+"""The FES ED1 pilot unit SC records through unpivot and edition (held, ADR-042)."""
+
+SC_PACKAGE_FILES = {"fes-electricity-demand-summary-data-table-ed1.json"}
+"""The one package file unit SC's pilot record lives in."""
+
 X_RESOURCES_WITH_CHILDREN = 4 + 1 + 39 + 73 + 1
 """Unit X's committed inventories (ADR-037 P-8): CMP workbooks, the ResultSummary ZIP,
 frequency ZIPs, held data containers and the GSP archive with a CSV member."""
@@ -638,6 +644,7 @@ class TestSeededRegistry:
             | GEN2H_RECORDED
             | IC1_RECORDED
             | IC2_RECORDED
+            | SC_RECORDED
         )
         with_children = [res for _package, res in loaded.resources.values() if res.children]
         assert len(with_children) == X_RESOURCES_WITH_CHILDREN
@@ -667,6 +674,7 @@ class TestSeededRegistry:
             | GEN2H_PACKAGE_FILES
             | IC1_PACKAGE_FILES
             | IC2_PACKAGE_FILES
+            | SC_PACKAGE_FILES
         )
 
 

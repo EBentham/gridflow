@@ -244,7 +244,13 @@ class TestRefusals:
         assert set(result.refusals[0]["against"][0]["legs"]) == {"i"}
 
     def test_x3_3b_an_edition_column_differs(self, data: Path, monkeypatch: Any) -> None:
-        edition = {"source": "Edition", "name": "edition", "dtype": "string", "nullable": True}
+        # ``edition`` is engine-reserved since ADR-042, so the vendor column takes another name.
+        edition = {
+            "source": "Edition",
+            "name": "edition_label",
+            "dtype": "string",
+            "nullable": True,
+        }
         cols = [*sp_columns(), edition]
         rec = record(epochs=[epoch(cols)])
         world = World(data, monkeypatch, covered_record=rec, covering_record=copy.deepcopy(rec))

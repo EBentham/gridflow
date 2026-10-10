@@ -158,7 +158,7 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `embedded-wind-and-solar-forecasts` | `embedded_wind_solar_forecast_archive` | ingest-only (no silver output) | — | — | — | — |
 | `embedded-wind-and-solar-forecasts` | `embedded_wind_solar_forecast_files` | catalogue only | — | — | — | — |
 | `etys-gb-transmission-system-boundaries` | `etys_boundaries_files` | catalogue only | — | — | — | — |
-| `fes-electricity-demand-summary-data-table-ed1` | `fes_ed1_electricity_demand` | ingest-only (no silver output) | — | — | — | — |
+| `fes-electricity-demand-summary-data-table-ed1` | `fes_ed1_electricity_demand` | silver | held: TODO: For every ED1 variable and edition 2023–2026, what period does a year header denote, and does its integer label denote the starting or ending year? Which same-edition ED2 definition applies to each ED1 Data item, aggregation level and measure, including the 2026 Ten Year Outlook? What does a blank projection cell mean (not modelled, not applicable or zero)? NESO states none of these in the CSVs; projection_year is the vendor's header label and blank cells are kept as null. (unit E-SEM) | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
 | `fes-electricity-demand-summary-data-table-ed1` | `fes_ed1_electricity_demand_files` | catalogue only | — | — | — | — |
 | `fes-european-electricity-supply-data-table-es2` | `fes_es2_european_supply` | ingest-only (no silver output) | — | — | — | — |
 | `fes-flexibility-data-table-data-table-flx1` | `fes_flx1_flexibility` | ingest-only (no silver output) | — | — | — | — |
@@ -463,6 +463,6 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 ## Totals
 
 - Packages: 131 (held: 2)
-- Families: 314: silver 72 (bespoke 3, recorded 69), ingest-only 207, catalogue only 35
-- Silver outputs held: 41
+- Families: 314: silver 73 (bespoke 3, recorded 70), ingest-only 206, catalogue only 35
+- Silver outputs held: 42
 - Resources: 1385

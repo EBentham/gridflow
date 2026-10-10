@@ -108,6 +108,8 @@ IC1_ADDED = frozenset(
 IC2_ADDED = frozenset({"brit_ned", "nordpool_da_prices", "system_operating_plan"})
 """BritNed, Nord Pool day-ahead prices and the SOP table, recorded by v0.22-K-IC-2."""
 """The metered wind output and wind BOA volume families v0.22-GEN-2H records after the golden."""
+SC_ADDED = frozenset({"fes_ed1_electricity_demand"})
+"""The FES ED1 electricity demand pilot v0.22-SC records through unpivot and edition."""
 REWORDED_HOLDS = {
     "national_forecast_7d_historic_day_ahead": (
         "TODO: FORECAST_TIMESTAMP has no vendor definition and its zone is undocumented "
@@ -151,8 +153,9 @@ class TestByteUnchanged:
         record dump, output columns or DEM-1 engine output against the golden written on
         the untouched base (master ``73fde80``), and any generated family other than
         ``historic_demand``, K-DEM-2's four demand-reference records, K-GEN-1's fourteen
-        wind / margin forecast records, K-GEN-2's weekly wind availability record and GEN-2H's
-        metered wind output and wind BOA volume records appearing.
+        wind / margin forecast records, K-GEN-2's weekly wind availability record, GEN-2H's
+        metered wind output and wind BOA volume records, K-IC-1's and K-IC-2's interconnector
+        records and v0.22-SC's FES ED1 record appearing.
         """
         golden = json.loads(PIN_PATH.read_text(encoding="utf-8"))
         for key, question in REWORDED_HOLDS.items():
@@ -172,6 +175,7 @@ class TestByteUnchanged:
                     *GEN2H_ADDED,
                     *IC1_ADDED,
                     *IC2_ADDED,
+                    *SC_ADDED,
                 }
                 if section != "engine"
                 else set()
@@ -773,7 +777,7 @@ class TestRecordRules:
         self,
     ) -> None:
         """Detects a committed record broken by V-4/V-17 or the reserved name, and any
-        family other than the nine resource-partitioned ones opting into the partition (in a
+        family other than the ten resource-partitioned ones opting into the partition (in a
         fresh interpreter, so nothing collection imported can mask it)."""
         code = textwrap.dedent(
             """
@@ -788,6 +792,7 @@ class TestRecordRules:
                 "brit_ned",
                 "da_wind_forecast_historic_day_ahead_bmu",
                 "eleclink",
+                "fes_ed1_electricity_demand",
                 "historic_demand",
                 "metered_wind_output_monthly",
                 "nemolink_ntc",
