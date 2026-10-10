@@ -56,8 +56,9 @@ URL_TYPE_TALLY = {"upload": 1233, "datastore": 152}
 # P-2, then unit X's inventories (ADR-037 P-8): the 131 X-R holds became SILVER 44
 # (4 CMP381/395 workbooks, 1 phase-2 ResultSummary ZIP, 39 frequency ZIPs), HOLD 73
 # (data containers awaiting their batch's record), DOC 1 (Building Heat Model) and
-# GIS 13 (shapefile/GeoJSON/GPKG archives).
-DISPOSITION_TALLY = {"SILVER": 1248, "HOLD": 74, "DOC": 43, "GIS": 20}
+# GIS 13 (shapefile/GeoJSON/GPKG archives); then v0.22-K-SCN-1b holds the 2021 above-1 MW storage
+# resource (SILVER 1247, HOLD 75).
+DISPOSITION_TALLY = {"SILVER": 1247, "HOLD": 75, "DOC": 43, "GIS": 20}
 
 
 def _run(code: str, *args: str) -> subprocess.CompletedProcess[str]:

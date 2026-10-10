@@ -635,6 +635,21 @@ workbook reference families unit K-SCN-1a records."""
 
 SCN1A_PACKAGE_FILES = {"tresp-demand-pathways.json", "tresp-generation-pathways.json"}
 
+SCN1B_RECORDED = {
+    "fes_regional_demand_active_power",
+    "fes_regional_dg_gt_1mw",
+    "fes_regional_dg_lt_1mw",
+    "fes_regional_dsr",
+    "fes_regional_gsp_info",
+    "fes_regional_storage_gt_1mw",
+    "fes_regional_storage_gt_1mw_pre2023",
+    "fes_regional_storage_lt_1mw",
+    "fes_regional_storage_lt_1mw_pre2023",
+}
+"""The nine regional-breakdown-of-FES families (five eligible, four held) unit K-SCN-1b records."""
+
+SCN1B_PACKAGE_FILES = {"regional-breakdown-of-fes-data-electricity.json"}
+
 X_RESOURCES_WITH_CHILDREN = 4 + 1 + 39 + 73 + 1
 """Unit X's committed inventories (ADR-037 P-8): CMP workbooks, the ResultSummary ZIP,
 frequency ZIPs, held data containers and the GSP archive with a CSV member."""
@@ -665,6 +680,7 @@ class TestSeededRegistry:
             | IC2_RECORDED
             | SC_RECORDED
             | SCN1A_RECORDED
+            | SCN1B_RECORDED
         )
         with_children = [res for _package, res in loaded.resources.values() if res.children]
         assert len(with_children) == X_RESOURCES_WITH_CHILDREN
@@ -696,6 +712,7 @@ class TestSeededRegistry:
             | IC2_PACKAGE_FILES
             | SC_PACKAGE_FILES
             | SCN1A_PACKAGE_FILES
+            | SCN1B_PACKAGE_FILES
         )
 
 

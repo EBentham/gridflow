@@ -72,5 +72,17 @@
     "question": "Which text encoding does resource 811bec71-f099-4474-ba5e-2f9932b39cc2 (BritNed DA & ID Weekly ITLs 20241016) use, and can NESO republish it as UTF-8?",
     "evidence": "K-IC-2H-SPEC §Problem",
     "ruling": "575"
+  },
+  {
+    "family": "fes_regional_gsp_info",
+    "category": "failed",
+    "cause": "UnicodeDecodeError",
+    "captures": [
+      "bronze/neso_data_portal/fes_regional_gsp_info/2026/10/08/raw_20261008T105727Z_000d08b9-12d9-4396-95f8-6b3677664836_6a93974d.csv"
+    ],
+    "reason": "the 2022 body is not valid UTF-8 (byte 0x92 at offset 2946, in Clyde's Mill, plausibly a Windows-1252 right single quote) while the 2021, 2023 and 2024 bodies are UTF-8 with a BOM, so the record's one declared encoding fails this capture with UnicodeDecodeError; it is never re-decoded and its 370 rows stay unloaded with their failure record",
+    "question": "Which text encoding does resource 000d08b9-12d9-4396-95f8-6b3677664836 (FES 2022 Grid Supply Point Info) use, and can NESO republish it as UTF-8?",
+    "evidence": "K-SCN-1-FACTS SCN-1b fes_regional_gsp_info (encoding), K-SCN-1b-SPEC; ADR-040 amendment 1",
+    "ruling": "607"
   }
 ]
