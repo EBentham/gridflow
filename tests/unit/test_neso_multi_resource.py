@@ -110,6 +110,24 @@ IC2_ADDED = frozenset({"brit_ned", "nordpool_da_prices", "system_operating_plan"
 """The metered wind output and wind BOA volume families v0.22-GEN-2H records after the golden."""
 SC_ADDED = frozenset({"fes_ed1_electricity_demand"})
 """The FES ED1 electricity demand pilot v0.22-SC records through unpivot and edition."""
+SCN1A_ADDED = frozenset(
+    {
+        "tresp_demand_pathways_gsp",
+        "tresp_demand_pathways_la_england",
+        "tresp_demand_pathways_la_scotland",
+        "tresp_demand_pathways_la_wales",
+        "tresp_demand_pathways_resp_region",
+        "tresp_generation_pathways_gsp",
+        "tresp_generation_pathways_la_england",
+        "tresp_generation_pathways_la_scotland",
+        "tresp_generation_pathways_la_wales",
+        "tresp_generation_pathways_resp_region",
+        "tresp_building_block_definitions",
+        "tresp_gsp_area_names",
+    }
+)
+"""The ten tRESP pathway CSV families and the two workbook reference families that
+v0.22-K-SCN-1a records."""
 REWORDED_HOLDS = {
     "national_forecast_7d_historic_day_ahead": (
         "TODO: FORECAST_TIMESTAMP has no vendor definition and its zone is undocumented "
@@ -155,7 +173,7 @@ class TestByteUnchanged:
         ``historic_demand``, K-DEM-2's four demand-reference records, K-GEN-1's fourteen
         wind / margin forecast records, K-GEN-2's weekly wind availability record, GEN-2H's
         metered wind output and wind BOA volume records, K-IC-1's and K-IC-2's interconnector
-        records and v0.22-SC's FES ED1 record appearing.
+        records, v0.22-SC's FES ED1 record and K-SCN-1a's twelve tRESP records appearing.
         """
         golden = json.loads(PIN_PATH.read_text(encoding="utf-8"))
         for key, question in REWORDED_HOLDS.items():
@@ -176,6 +194,7 @@ class TestByteUnchanged:
                     *IC1_ADDED,
                     *IC2_ADDED,
                     *SC_ADDED,
+                    *SCN1A_ADDED,
                 }
                 if section != "engine"
                 else set()
@@ -777,7 +796,7 @@ class TestRecordRules:
         self,
     ) -> None:
         """Detects a committed record broken by V-4/V-17 or the reserved name, and any
-        family other than the ten resource-partitioned ones opting into the partition (in a
+        family other than the twenty-two resource-partitioned ones opting into the partition (in a
         fresh interpreter, so nothing collection imported can mask it)."""
         code = textwrap.dedent(
             """
@@ -798,6 +817,18 @@ class TestRecordRules:
                 "nemolink_ntc",
                 "nsl",
                 "school_holiday_percentages",
+                "tresp_building_block_definitions",
+                "tresp_demand_pathways_gsp",
+                "tresp_demand_pathways_la_england",
+                "tresp_demand_pathways_la_scotland",
+                "tresp_demand_pathways_la_wales",
+                "tresp_demand_pathways_resp_region",
+                "tresp_generation_pathways_gsp",
+                "tresp_generation_pathways_la_england",
+                "tresp_generation_pathways_la_scotland",
+                "tresp_generation_pathways_la_wales",
+                "tresp_generation_pathways_resp_region",
+                "tresp_gsp_area_names",
                 "wind_bmu_boa_volumes",
             ], partitioned
             print("OK", len(recorded), partitioned)

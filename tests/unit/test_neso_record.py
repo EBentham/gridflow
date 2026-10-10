@@ -616,6 +616,25 @@ SC_RECORDED = {"fes_ed1_electricity_demand"}
 SC_PACKAGE_FILES = {"fes-electricity-demand-summary-data-table-ed1.json"}
 """The one package file unit SC's pilot record lives in."""
 
+SCN1A_RECORDED = {
+    "tresp_demand_pathways_gsp",
+    "tresp_demand_pathways_la_england",
+    "tresp_demand_pathways_la_scotland",
+    "tresp_demand_pathways_la_wales",
+    "tresp_demand_pathways_resp_region",
+    "tresp_generation_pathways_gsp",
+    "tresp_generation_pathways_la_england",
+    "tresp_generation_pathways_la_scotland",
+    "tresp_generation_pathways_la_wales",
+    "tresp_generation_pathways_resp_region",
+    "tresp_building_block_definitions",
+    "tresp_gsp_area_names",
+}
+"""The ten tRESP pathway CSV families (demand held, generation eligible) and the two
+workbook reference families unit K-SCN-1a records."""
+
+SCN1A_PACKAGE_FILES = {"tresp-demand-pathways.json", "tresp-generation-pathways.json"}
+
 X_RESOURCES_WITH_CHILDREN = 4 + 1 + 39 + 73 + 1
 """Unit X's committed inventories (ADR-037 P-8): CMP workbooks, the ResultSummary ZIP,
 frequency ZIPs, held data containers and the GSP archive with a CSV member."""
@@ -627,7 +646,7 @@ class TestSeededRegistry:
     def test_every_seeded_package_loads_with_no_record(self) -> None:
         loaded = registry_module.load_registry()
         entries = [entry for _package, entry in loaded.families.values()]
-        assert len(entries) == 314
+        assert len(entries) == 316
         assert sum(entry.legacy for entry in entries) == 3
         assert sum(entry.kind == "files" for entry in entries) == 35
         recorded = {entry.key for entry in entries if entry.record is not None}
@@ -645,6 +664,7 @@ class TestSeededRegistry:
             | IC1_RECORDED
             | IC2_RECORDED
             | SC_RECORDED
+            | SCN1A_RECORDED
         )
         with_children = [res for _package, res in loaded.resources.values() if res.children]
         assert len(with_children) == X_RESOURCES_WITH_CHILDREN
@@ -675,6 +695,7 @@ class TestSeededRegistry:
             | IC1_PACKAGE_FILES
             | IC2_PACKAGE_FILES
             | SC_PACKAGE_FILES
+            | SCN1A_PACKAGE_FILES
         )
 
 

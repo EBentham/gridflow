@@ -303,17 +303,19 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `transmission-network-use-of-system-tnuos-tariffs` | `tnuos_tariffs_onshore_generator` | ingest-only (no silver output) | — | — | — | — |
 | `transmission-network-use-of-system-tnuos-tariffs` | `tnuos_tariffs_onshore_local_circuit` | ingest-only (no silver output) | — | — | — | — |
 | `transmission-network-use-of-system-tnuos-tariffs` | `tnuos_tariffs_transmission_demand` | ingest-only (no silver output) | — | — | — | — |
+| `tresp-demand-pathways` | `tresp_building_block_definitions` | silver | eligible | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
 | `tresp-demand-pathways` | `tresp_demand_pathways_files` | catalogue only | — | — | — | — |
-| `tresp-demand-pathways` | `tresp_demand_pathways_gsp` | ingest-only (no silver output) | — | — | — | — |
-| `tresp-demand-pathways` | `tresp_demand_pathways_la_england` | ingest-only (no silver output) | — | — | — | — |
-| `tresp-demand-pathways` | `tresp_demand_pathways_la_scotland` | ingest-only (no silver output) | — | — | — | — |
-| `tresp-demand-pathways` | `tresp_demand_pathways_la_wales` | ingest-only (no silver output) | — | — | — | — |
-| `tresp-demand-pathways` | `tresp_demand_pathways_resp_region` | ingest-only (no silver output) | — | — | — | — |
-| `tresp-generation-pathways` | `tresp_generation_pathways_gsp` | ingest-only (no silver output) | — | — | — | — |
-| `tresp-generation-pathways` | `tresp_generation_pathways_la_england` | ingest-only (no silver output) | — | — | — | — |
-| `tresp-generation-pathways` | `tresp_generation_pathways_la_scotland` | ingest-only (no silver output) | — | — | — | — |
-| `tresp-generation-pathways` | `tresp_generation_pathways_la_wales` | ingest-only (no silver output) | — | — | — | — |
-| `tresp-generation-pathways` | `tresp_generation_pathways_resp_region` | ingest-only (no silver output) | — | — | — | — |
+| `tresp-demand-pathways` | `tresp_demand_pathways_gsp` | silver | held: TODO: for the annual-energy building blocks (`Unit` = GWh), what interval does the `Year` label cover — the financial year ending 31 March of that year, the calendar year, or another interval? The tRESP dictionary dates volumes at 31 March but states no interval for annual energy. Also: which FES definition applies to the suffixed ids `Dem_BB005_1/_2`, `Lct_BB015_1/_2` (no exact FES building-block id). (unit E-SEM) | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
+| `tresp-demand-pathways` | `tresp_demand_pathways_la_england` | silver | held: TODO: for the annual-energy building blocks (`Unit` = GWh), what interval does the `Year` label cover — the financial year ending 31 March of that year, the calendar year, or another interval? The tRESP dictionary dates volumes at 31 March but states no interval for annual energy. Also: which FES definition applies to the suffixed ids `Dem_BB005_1/_2`, `Lct_BB015_1/_2` (no exact FES building-block id). (unit E-SEM) | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
+| `tresp-demand-pathways` | `tresp_demand_pathways_la_scotland` | silver | held: TODO: for the annual-energy building blocks (`Unit` = GWh), what interval does the `Year` label cover — the financial year ending 31 March of that year, the calendar year, or another interval? The tRESP dictionary dates volumes at 31 March but states no interval for annual energy. Also: which FES definition applies to the suffixed ids `Dem_BB005_1/_2`, `Lct_BB015_1/_2` (no exact FES building-block id). (unit E-SEM) | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
+| `tresp-demand-pathways` | `tresp_demand_pathways_la_wales` | silver | held: TODO: for the annual-energy building blocks (`Unit` = GWh), what interval does the `Year` label cover — the financial year ending 31 March of that year, the calendar year, or another interval? The tRESP dictionary dates volumes at 31 March but states no interval for annual energy. Also: which FES definition applies to the suffixed ids `Dem_BB005_1/_2`, `Lct_BB015_1/_2` (no exact FES building-block id). (unit E-SEM) | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
+| `tresp-demand-pathways` | `tresp_demand_pathways_resp_region` | silver | held: TODO: for the annual-energy building blocks (`Unit` = GWh), what interval does the `Year` label cover — the financial year ending 31 March of that year, the calendar year, or another interval? The tRESP dictionary dates volumes at 31 March but states no interval for annual energy. Also: which FES definition applies to the suffixed ids `Dem_BB005_1/_2`, `Lct_BB015_1/_2` (no exact FES building-block id). (unit E-SEM) | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
+| `tresp-demand-pathways` | `tresp_gsp_area_names` | silver | eligible | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
+| `tresp-generation-pathways` | `tresp_generation_pathways_gsp` | silver | eligible | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
+| `tresp-generation-pathways` | `tresp_generation_pathways_la_england` | silver | eligible | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
+| `tresp-generation-pathways` | `tresp_generation_pathways_la_scotland` | silver | eligible | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
+| `tresp-generation-pathways` | `tresp_generation_pathways_la_wales` | silver | eligible | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
+| `tresp-generation-pathways` | `tresp_generation_pathways_resp_region` | silver | eligible | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
 | `upcoming-trades` | `upcoming_trades` | ingest-only (no silver output) | — | — | — | — |
 | `viking` | `viking_link_ntc` | silver | held: TODO: the dump returns past targets (rows before the capture) and NESO does not state that a row is unchanged since its `Data Upload Time GMT`, so historical issued limits are not evidenced. (unit E-SEM) | whole_capture | utc_instant | gridflow capture time |
 | `viking` | `viking_ntc` | silver | held: TODO: the archive's operational-date rollover and GMT/BST interpretation are undocumented, and every target precedes the upload's last_modified, so the forward-target rule (RULINGS 529) cannot apply. (unit E-SEM) | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
@@ -463,6 +465,6 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 ## Totals
 
 - Packages: 131 (held: 2)
-- Families: 314: silver 73 (bespoke 3, recorded 70), ingest-only 206, catalogue only 35
-- Silver outputs held: 42
+- Families: 316: silver 85 (bespoke 3, recorded 82), ingest-only 196, catalogue only 35
+- Silver outputs held: 47
 - Resources: 1385

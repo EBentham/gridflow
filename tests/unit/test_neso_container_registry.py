@@ -183,7 +183,9 @@ class TestCommittedRegistry:
                 assert fed == ['current_bsuos_cap_adjustments',
                                'embedded_forecast_archive_dump',
                                'embedded_forecast_archive_upload',
-                               'ffr_phase2_result_summary_archive'], fed
+                               'ffr_phase2_result_summary_archive',
+                               'tresp_building_block_definitions',
+                               'tresp_gsp_area_names'], fed
                 for key in fed:
                     record = registry.families[key][1].record
                     if record is not None:

@@ -17,7 +17,85 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Building_block_id",
+              "tRESP_GSP_area",
+              "Pathway",
+              "Year",
+              "Value",
+              "Unit",
+              "DNO_licence_area"
+            ],
+            "columns": [
+              {
+                "source": "Building_block_id",
+                "name": "building_block_id",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "tRESP_GSP_area",
+                "name": "tresp_gsp_area",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Pathway",
+                "name": "pathway",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Year",
+                "name": "projection_year",
+                "dtype": "int64",
+                "nullable": false
+              },
+              {
+                "source": "Value",
+                "name": "value",
+                "dtype": "float64",
+                "nullable": false
+              },
+              {
+                "source": "Unit",
+                "name": "unit",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "DNO_licence_area",
+                "name": "dno_licence_area",
+                "dtype": "string",
+                "nullable": false
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "resource_id",
+          "building_block_id",
+          "tresp_gsp_area",
+          "pathway",
+          "projection_year"
+        ],
+        "latest": "whole_capture",
+        "latest_partition": "resource_id",
+        "vintage": "ckan_last_modified"
+      }
     },
     {
       "key": "tresp_generation_pathways_resp_region",
@@ -28,7 +106,78 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Building_block_id",
+              "RESP_region",
+              "Pathway",
+              "Year",
+              "Value",
+              "Unit"
+            ],
+            "columns": [
+              {
+                "source": "Building_block_id",
+                "name": "building_block_id",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "RESP_region",
+                "name": "resp_region",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Pathway",
+                "name": "pathway",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Year",
+                "name": "projection_year",
+                "dtype": "int64",
+                "nullable": false
+              },
+              {
+                "source": "Value",
+                "name": "value",
+                "dtype": "float64",
+                "nullable": false
+              },
+              {
+                "source": "Unit",
+                "name": "unit",
+                "dtype": "string",
+                "nullable": false
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "resource_id",
+          "building_block_id",
+          "resp_region",
+          "pathway",
+          "projection_year"
+        ],
+        "latest": "whole_capture",
+        "latest_partition": "resource_id",
+        "vintage": "ckan_last_modified"
+      }
     },
     {
       "key": "tresp_generation_pathways_la_england",
@@ -39,7 +188,85 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Building_block_id",
+              "LAD24CD",
+              "LAD24NM",
+              "Pathway",
+              "Year",
+              "Unit",
+              "Value"
+            ],
+            "columns": [
+              {
+                "source": "Building_block_id",
+                "name": "building_block_id",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "LAD24CD",
+                "name": "lad24cd",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "LAD24NM",
+                "name": "lad24nm",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Pathway",
+                "name": "pathway",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Year",
+                "name": "projection_year",
+                "dtype": "int64",
+                "nullable": false
+              },
+              {
+                "source": "Unit",
+                "name": "unit",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Value",
+                "name": "value",
+                "dtype": "float64",
+                "nullable": false
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "resource_id",
+          "building_block_id",
+          "lad24cd",
+          "pathway",
+          "projection_year"
+        ],
+        "latest": "whole_capture",
+        "latest_partition": "resource_id",
+        "vintage": "ckan_last_modified"
+      }
     },
     {
       "key": "tresp_generation_pathways_la_scotland",
@@ -50,7 +277,85 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Building_block_id",
+              "LAD24CD",
+              "LAD24NM",
+              "Pathway",
+              "Year",
+              "Unit",
+              "Value"
+            ],
+            "columns": [
+              {
+                "source": "Building_block_id",
+                "name": "building_block_id",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "LAD24CD",
+                "name": "lad24cd",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "LAD24NM",
+                "name": "lad24nm",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Pathway",
+                "name": "pathway",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Year",
+                "name": "projection_year",
+                "dtype": "int64",
+                "nullable": false
+              },
+              {
+                "source": "Unit",
+                "name": "unit",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Value",
+                "name": "value",
+                "dtype": "float64",
+                "nullable": false
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "resource_id",
+          "building_block_id",
+          "lad24cd",
+          "pathway",
+          "projection_year"
+        ],
+        "latest": "whole_capture",
+        "latest_partition": "resource_id",
+        "vintage": "ckan_last_modified"
+      }
     },
     {
       "key": "tresp_generation_pathways_la_wales",
@@ -61,7 +366,85 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Building_block_id",
+              "LAD24CD",
+              "LAD24NM",
+              "Pathway",
+              "Year",
+              "Unit",
+              "Value"
+            ],
+            "columns": [
+              {
+                "source": "Building_block_id",
+                "name": "building_block_id",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "LAD24CD",
+                "name": "lad24cd",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "LAD24NM",
+                "name": "lad24nm",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Pathway",
+                "name": "pathway",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Year",
+                "name": "projection_year",
+                "dtype": "int64",
+                "nullable": false
+              },
+              {
+                "source": "Unit",
+                "name": "unit",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Value",
+                "name": "value",
+                "dtype": "float64",
+                "nullable": false
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "resource_id",
+          "building_block_id",
+          "lad24cd",
+          "pathway",
+          "projection_year"
+        ],
+        "latest": "whole_capture",
+        "latest_partition": "resource_id",
+        "vintage": "ckan_last_modified"
+      }
     }
   ],
   "resources": [

@@ -17,7 +17,90 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Building_block_id",
+              "tRESP_GSP_area",
+              "Pathway",
+              "Year",
+              "Value",
+              "Unit",
+              "DNO_licence_area"
+            ],
+            "columns": [
+              {
+                "source": "Building_block_id",
+                "name": "building_block_id",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "tRESP_GSP_area",
+                "name": "tresp_gsp_area",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Pathway",
+                "name": "pathway",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Year",
+                "name": "projection_year",
+                "dtype": "int64",
+                "nullable": false
+              },
+              {
+                "source": "Value",
+                "name": "value",
+                "dtype": "float64",
+                "nullable": false
+              },
+              {
+                "source": "Unit",
+                "name": "unit",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "DNO_licence_area",
+                "name": "dno_licence_area",
+                "dtype": "string",
+                "nullable": false
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "resource_id",
+          "building_block_id",
+          "tresp_gsp_area",
+          "pathway",
+          "projection_year"
+        ],
+        "latest": "whole_capture",
+        "latest_partition": "resource_id",
+        "vintage": "ckan_last_modified",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: for the annual-energy building blocks (`Unit` = GWh), what interval does the `Year` label cover — the financial year ending 31 March of that year, the calendar year, or another interval? The tRESP dictionary dates volumes at 31 March but states no interval for annual energy. Also: which FES definition applies to the suffixed ids `Dem_BB005_1/_2`, `Lct_BB015_1/_2` (no exact FES building-block id).",
+          "unit": "E-SEM"
+        }
+      }
     },
     {
       "key": "tresp_demand_pathways_resp_region",
@@ -28,7 +111,83 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Building_block_id",
+              "RESP_region",
+              "Pathway",
+              "Year",
+              "Value",
+              "Unit"
+            ],
+            "columns": [
+              {
+                "source": "Building_block_id",
+                "name": "building_block_id",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "RESP_region",
+                "name": "resp_region",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Pathway",
+                "name": "pathway",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Year",
+                "name": "projection_year",
+                "dtype": "int64",
+                "nullable": false
+              },
+              {
+                "source": "Value",
+                "name": "value",
+                "dtype": "float64",
+                "nullable": false
+              },
+              {
+                "source": "Unit",
+                "name": "unit",
+                "dtype": "string",
+                "nullable": false
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "resource_id",
+          "building_block_id",
+          "resp_region",
+          "pathway",
+          "projection_year"
+        ],
+        "latest": "whole_capture",
+        "latest_partition": "resource_id",
+        "vintage": "ckan_last_modified",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: for the annual-energy building blocks (`Unit` = GWh), what interval does the `Year` label cover — the financial year ending 31 March of that year, the calendar year, or another interval? The tRESP dictionary dates volumes at 31 March but states no interval for annual energy. Also: which FES definition applies to the suffixed ids `Dem_BB005_1/_2`, `Lct_BB015_1/_2` (no exact FES building-block id).",
+          "unit": "E-SEM"
+        }
+      }
     },
     {
       "key": "tresp_demand_pathways_la_england",
@@ -39,7 +198,90 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Building_block_id",
+              "LAD24CD",
+              "LAD24NM",
+              "Pathway",
+              "Year",
+              "Unit",
+              "Value"
+            ],
+            "columns": [
+              {
+                "source": "Building_block_id",
+                "name": "building_block_id",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "LAD24CD",
+                "name": "lad24cd",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "LAD24NM",
+                "name": "lad24nm",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Pathway",
+                "name": "pathway",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Year",
+                "name": "projection_year",
+                "dtype": "int64",
+                "nullable": false
+              },
+              {
+                "source": "Unit",
+                "name": "unit",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Value",
+                "name": "value",
+                "dtype": "float64",
+                "nullable": false
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "resource_id",
+          "building_block_id",
+          "lad24cd",
+          "pathway",
+          "projection_year"
+        ],
+        "latest": "whole_capture",
+        "latest_partition": "resource_id",
+        "vintage": "ckan_last_modified",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: for the annual-energy building blocks (`Unit` = GWh), what interval does the `Year` label cover — the financial year ending 31 March of that year, the calendar year, or another interval? The tRESP dictionary dates volumes at 31 March but states no interval for annual energy. Also: which FES definition applies to the suffixed ids `Dem_BB005_1/_2`, `Lct_BB015_1/_2` (no exact FES building-block id).",
+          "unit": "E-SEM"
+        }
+      }
     },
     {
       "key": "tresp_demand_pathways_la_scotland",
@@ -50,7 +292,90 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Building_block_id",
+              "LAD24CD",
+              "LAD24NM",
+              "Pathway",
+              "Year",
+              "Unit",
+              "Value"
+            ],
+            "columns": [
+              {
+                "source": "Building_block_id",
+                "name": "building_block_id",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "LAD24CD",
+                "name": "lad24cd",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "LAD24NM",
+                "name": "lad24nm",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Pathway",
+                "name": "pathway",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Year",
+                "name": "projection_year",
+                "dtype": "int64",
+                "nullable": false
+              },
+              {
+                "source": "Unit",
+                "name": "unit",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Value",
+                "name": "value",
+                "dtype": "float64",
+                "nullable": false
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "resource_id",
+          "building_block_id",
+          "lad24cd",
+          "pathway",
+          "projection_year"
+        ],
+        "latest": "whole_capture",
+        "latest_partition": "resource_id",
+        "vintage": "ckan_last_modified",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: for the annual-energy building blocks (`Unit` = GWh), what interval does the `Year` label cover — the financial year ending 31 March of that year, the calendar year, or another interval? The tRESP dictionary dates volumes at 31 March but states no interval for annual energy. Also: which FES definition applies to the suffixed ids `Dem_BB005_1/_2`, `Lct_BB015_1/_2` (no exact FES building-block id).",
+          "unit": "E-SEM"
+        }
+      }
     },
     {
       "key": "tresp_demand_pathways_la_wales",
@@ -61,7 +386,90 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Building_block_id",
+              "LAD24CD",
+              "LAD24NM",
+              "Pathway",
+              "Year",
+              "Unit",
+              "Value"
+            ],
+            "columns": [
+              {
+                "source": "Building_block_id",
+                "name": "building_block_id",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "LAD24CD",
+                "name": "lad24cd",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "LAD24NM",
+                "name": "lad24nm",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Pathway",
+                "name": "pathway",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Year",
+                "name": "projection_year",
+                "dtype": "int64",
+                "nullable": false
+              },
+              {
+                "source": "Unit",
+                "name": "unit",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Value",
+                "name": "value",
+                "dtype": "float64",
+                "nullable": false
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "resource_id",
+          "building_block_id",
+          "lad24cd",
+          "pathway",
+          "projection_year"
+        ],
+        "latest": "whole_capture",
+        "latest_partition": "resource_id",
+        "vintage": "ckan_last_modified",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: for the annual-energy building blocks (`Unit` = GWh), what interval does the `Year` label cover — the financial year ending 31 March of that year, the calendar year, or another interval? The tRESP dictionary dates volumes at 31 March but states no interval for annual energy. Also: which FES definition applies to the suffixed ids `Dem_BB005_1/_2`, `Lct_BB015_1/_2` (no exact FES building-block id).",
+          "unit": "E-SEM"
+        }
+      }
     },
     {
       "key": "tresp_demand_pathways_files",
@@ -73,6 +481,145 @@
       "max_download_bytes": 536870912,
       "name_regex": null,
       "transformer": null
+    },
+    {
+      "key": "tresp_building_block_definitions",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SCN",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "xlsx",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Demand/ Generation/ Storage",
+              "Technology",
+              "FES BB ID Number",
+              "Technology Detail",
+              "Units"
+            ],
+            "columns": [
+              {
+                "source": "Demand/ Generation/ Storage",
+                "name": "demand_generation_storage",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Technology",
+                "name": "technology",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "FES BB ID Number",
+                "name": "fes_bb_id_number",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Technology Detail",
+                "name": "technology_detail",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Units",
+                "name": "units",
+                "dtype": "string",
+                "nullable": false
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "resource_id",
+          "fes_bb_id_number"
+        ],
+        "latest": "whole_capture",
+        "latest_partition": "resource_id",
+        "siblings": [
+          "tresp_demand_pathways_files"
+        ],
+        "vintage": "ckan_last_modified",
+        "xlsx": {
+          "header_row": 1,
+          "columns": "A:E",
+          "last_row": 36
+        }
+      }
+    },
+    {
+      "key": "tresp_gsp_area_names",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SCN",
+      "refresh": "adhoc",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "xlsx",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "tresp_gsp_area",
+              "tresp_gsp_area_name"
+            ],
+            "columns": [
+              {
+                "source": "tresp_gsp_area",
+                "name": "tresp_gsp_area",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "tresp_gsp_area_name",
+                "name": "tresp_gsp_area_name",
+                "dtype": "string",
+                "nullable": false
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "resource_id",
+          "tresp_gsp_area"
+        ],
+        "latest": "whole_capture",
+        "latest_partition": "resource_id",
+        "siblings": [
+          "tresp_demand_pathways_files"
+        ],
+        "vintage": "ckan_last_modified",
+        "xlsx": {
+          "header_row": 1,
+          "columns": "A:B",
+          "last_row": 232
+        }
+      }
     }
   ],
   "resources": [
@@ -159,31 +706,29 @@
       "family": "tresp_demand_pathways_files",
       "disposition": {
         "kind": "HOLD",
-        "reason": "data container: child inventory committed by X; records pending in SCN-1",
+        "reason": "data container: the Building Blocks and GSP Areas with Names sheets feed tresp_building_block_definitions and tresp_gsp_area_names by child; the old building-block sheet stays held (see its child)",
         "unit": "SCN-1"
       },
       "children": [
         {
           "child": "tRESP Building Blocks",
           "disposition": {
-            "kind": "HOLD",
-            "reason": "proposed family tresp_building_block_definitions: record pending in SCN-1 (V-11)",
-            "unit": "SCN-1"
+            "kind": "SILVER",
+            "key": "tresp_building_block_definitions"
           }
         },
         {
           "child": "tRESP GSP Areas with Names",
           "disposition": {
-            "kind": "HOLD",
-            "reason": "proposed family tresp_gsp_area_names: record pending in SCN-1 (V-11)",
-            "unit": "SCN-1"
+            "kind": "SILVER",
+            "key": "tresp_gsp_area_names"
           }
         },
         {
           "child": "tRESP BB list - old",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family tresp_building_block_definitions_old: record pending in SCN-1 (V-11)",
+            "reason": "TODO: the sheet's table has its header in row 3 (A:G) and data in rows 4-46, then a blank row 47 and a live data row 48 (`Alignment framework | Demand | Domestic | Dem_BB001a | Number of domestic customers | Number | Y – GSP`); a recipe ending at row 46 loses that row, one ending at row 48 fails the empty-data-row rule (ADR-037 P-6(d)), and the last_row growth check inspects only the next row, which the blank row would let truncation escape. Needs a vendor-corrected contiguous table or an explicitly supported multi-block/sparse-row recipe; proposed family tresp_building_block_definitions_old: record pending.",
             "unit": "SCN-1"
           }
         }

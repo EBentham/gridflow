@@ -782,7 +782,7 @@ class TestAgreement:
                 from gridflow.connectors.neso_data_portal.client import NesoDataPortalConnector
                 config = load_settings().get_source_config('neso_data_portal')
                 configured = set(config.datasets)
-                assert len(FAMILIES) == 314, len(FAMILIES)
+                assert len(FAMILIES) == 316, len(FAMILIES)
                 assert configured == set(FAMILIES), sorted(configured ^ set(FAMILIES))[:5]
                 listed = NesoDataPortalConnector(config).list_datasets()
                 assert listed == list(FAMILIES)
