@@ -933,49 +933,116 @@ def test_the_committed_brit_ned_entries_adjudicate_the_overlap_and_the_collision
     assert snapshot() == before
 
 
-def test_the_0xa0_capture_is_the_one_open_reconcile_gap(
-    data: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    """Pins the K-IC-2 plan conflict (reported to the seat): the 0xA0 capture fails with
-    ``ComputeError``, but ``ReconcileAdjudication.cause`` is a ``Literal`` allowlist of
-    ``DuplicateEntityKeyError`` only (ADR-040 H5), so no ledger entry can adjudicate it
-    without a registry-model change (out of scope). With the committed entries it is the one
-    open gap and every other gap is adjudicated; the day the allowlist and an entry land, this
-    test is the one to retire."""
+def _tree_bytes(data: Path, top: str) -> dict[str, bytes]:
+    return {
+        p.relative_to(data / top).as_posix(): p.read_bytes()
+        for p in sorted((data / top).rglob("*"))
+        if p.is_file()
+    }
+
+
+def _adjudicate_all_three(data: Path, monkeypatch: pytest.MonkeyPatch) -> dict[str, str]:
+    """Capture ENC, OLD, O1, O2 and E1, run the family (ENC and OLD fail) and install the
+    three committed BritNed entries with their capture ids swapped for the fixture captures'.
+    The capture id of each alias."""
     install_generated(monkeypatch, data / "_registry", [_package_doc("brit-ned.json")])
-    enc, old, o1, o2 = (capture(data, a) for a in ("ENC", "OLD", "O1", "O2"))
-    capture(data, "E1")
+    ids = {a: capture(data, a) for a in ("ENC", "OLD", "O1", "O2", "E1")}
     with pytest.raises(NesoCaptureFailedError):
         get_transformer(SOURCE, "brit_ned", data).run(DAY, run_id="r")
     entries = [
-        {**_entry_template(0), "captures": [o1, o2]},
-        {**_entry_template(1), "captures": [old]},
+        {**_entry_template(0), "captures": [ids["O1"], ids["O2"]]},
+        {**_entry_template(1), "captures": [ids["OLD"]]},
+        {**_entry_template(2), "captures": [ids["ENC"]]},
     ]
     (data / "_registry" / RECONCILE_ADJUDICATIONS_FILE).write_text(
         registry_module.dump_json(entries), encoding="utf-8"
     )
+    return ids
+
+
+def test_the_0xa0_capture_is_adjudicated(data: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """A4. Detects the invalid-encoding capture left as an open gap (reconcile red forever),
+    an entry that does not match its failure record (stale), or an adjudication that alters
+    data: with the three committed BritNed entries every gap is adjudicated, none is open or
+    stale, the ENC line names ``UnicodeDecodeError`` and ruling 575, and the silver and state
+    bytes are equal before and after."""
+    ids = _adjudicate_all_three(data, monkeypatch)
+    before = (_tree_bytes(data, "silver"), _tree_bytes(data, "state"))
+    code, lines = run_cli("brit_ned", "--cutoff", DAY.isoformat())
+    assert code == 0, lines
+    assert [line for line in lines if line.startswith("GAP")] == []
+    assert "SUMMARY adjudicated 4" in lines
+    assert "SUMMARY stale_adjudication 0" in lines
+    encoded = [line for line in lines if ids["ENC"] in line]
+    assert len(encoded) == 1
+    assert encoded[0].startswith("ADJUDICATED failed brit_ned")
+    assert "UnicodeDecodeError" in encoded[0] and "ruling 575" in encoded[0]
+    assert (_tree_bytes(data, "silver"), _tree_bytes(data, "state")) == before
+
+
+def test_a_pre_gate_compute_error_record_is_drained_into_the_ruled_class(
+    data: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """T-MIG (FM-9, FM-11). Detects a pre-gate ``ComputeError`` failure record silently
+    covered by the ``UnicodeDecodeError`` entry, or a drain that re-runs anything but the open
+    gap: with the old record, reconcile exits 1 with the ENC gap open and its entry stale; one
+    drain re-runs only the ENC capture, rewrites its record into ``UnicodeDecodeError`` and
+    passes with all four gaps adjudicated, and the OLD record is byte-unchanged."""
+    from gridflow.silver.neso_data_portal.completion import failure_path, write_failure
+    from gridflow.silver.neso_data_portal.reconcile import drain
+
+    ids = _adjudicate_all_three(data, monkeypatch)
+    enc, old = ids["ENC"], ids["OLD"]
+    write_failure(data, "brit_ned", enc, DAY, pl.exceptions.ComputeError("invalid utf-8 sequence"))
+    old_bytes = failure_path(data, "brit_ned", old).read_bytes()
     code, lines = run_cli("brit_ned", "--cutoff", DAY.isoformat())
     assert code == 1, lines
     gaps = [line for line in lines if line.startswith("GAP")]
-    assert (
-        len(gaps) == 1
-        and "failed" in gaps[0]
-        and enc in gaps[0]
-        and "UnicodeDecodeError" in gaps[0]
-    )
-    assert "SUMMARY adjudicated 3" in lines
-    with pytest.raises(ValueError, match="DuplicateEntityKeyError"):
-        registry_module.ReconcileAdjudication.model_validate(
-            {**_entry_template(1), "captures": [enc], "cause": "ComputeError"}
-        )
+    assert len(gaps) == 2, gaps
+    assert any(g.startswith("GAP failed") and enc in g and "ComputeError" in g for g in gaps), gaps
+    assert any(g.startswith("GAP stale_adjudication") and enc in g for g in gaps), gaps
+    report = drain(data, registry_module.load_registry(), ["brit_ned"], DAY, lambda: None)
+    assert report.drained == (("brit_ned", DAY, 1),)
+    assert report.passed, report.lines()
+    assert len(report.adjudicated) == 4
+    failure = read_failure(data, "brit_ned", enc)
+    assert failure is not None and failure["error_class"] == "UnicodeDecodeError"
+    with pytest.raises(UnicodeDecodeError) as decoded:
+        body("ENC").decode("utf-8")
+    assert failure["message"] == str(decoded.value)
+    assert failure_path(data, "brit_ned", old).read_bytes() == old_bytes
 
 
-def test_the_committed_ledger_carries_the_two_brit_ned_entries() -> None:
+ENCODING_ENTRY: dict[str, Any] = {
+    "family": "brit_ned",
+    "category": "failed",
+    "cause": "UnicodeDecodeError",
+    "captures": [
+        "bronze/neso_data_portal/brit_ned/2026/10/08/"
+        "raw_20261008T085647Z_811bec71-f099-4474-ba5e-2f9932b39cc2_24bb3d9b.csv"
+    ],
+    "reason": (
+        "the 20241016 weekly upload is ASCII except two standalone 0xA0 bytes (a cp1252 or "
+        "Latin-1 no-break space) in its 20241018 21:00-22:00 and 22:00-23:00 rows, so it is not "
+        "valid in the record's declared UTF-8 and the capture fails with UnicodeDecodeError; it "
+        "is never re-decoded and its 144 rows stay unloaded with their failure record"
+    ),
+    "question": (
+        "Which text encoding does resource 811bec71-f099-4474-ba5e-2f9932b39cc2 (BritNed DA & ID "
+        "Weekly ITLs 20241016) use, and can NESO republish it as UTF-8?"
+    ),
+    "evidence": "K-IC-2H-SPEC §Problem",
+    "ruling": "575",
+}
+"""The ruled IC-2H entry (RULINGS 575), field for field."""
+
+
+def test_the_committed_ledger_carries_the_three_brit_ned_entries() -> None:
     """Detects the committed entries drifting from the ruled text (another capture, a wider
     scope, an edited reason or question), a ledger the registry rejects, an entry naming a
     resource that is not a BritNed weekly upload, or a stray entry for another family; in a
-    fresh interpreter. The whole ledger is the ruled families: GEN-2H's two (547), NSL (565) and
-    BritNed's two (571)."""
+    fresh interpreter. The whole ledger is the ruled families: GEN-2H's two (547), NSL (565),
+    BritNed's two (571) and BritNed's invalid-encoding capture (575), appended last."""
     loaded = _fresh_interpreter(
         """
         import json
@@ -1007,9 +1074,10 @@ def test_the_committed_ledger_carries_the_two_brit_ned_entries() -> None:
         "nsl",
         "brit_ned",
         "brit_ned",
+        "brit_ned",
     ]
     directory = "bronze/neso_data_portal/brit_ned/2026/10/08/"
-    overlap, failed = loaded["entries"]
+    overlap, failed, encoding = loaded["entries"]
     assert (overlap["category"], overlap["cause"], overlap["ruling"]) == ("overlap", None, "571")
     assert overlap["captures"] == [
         directory + "raw_20261008T085916Z_f43260c8-c559-4415-a369-0eb4b9c4e6b2_87ed618c.csv",
@@ -1023,11 +1091,13 @@ def test_the_committed_ledger_carries_the_two_brit_ned_entries() -> None:
     assert failed["captures"] == [
         directory + "raw_20261008T085215Z_10432bfd-2102-4eda-8c6d-bed2a4df676b_a7f5cb18.csv"
     ]
-    for entry in loaded["entries"]:
+    for entry in (overlap, failed):
         assert entry["evidence"].startswith("K-IC-2-FACTS §2")
+    assert encoding == ENCODING_ENTRY
     assert loaded["names"] == [
         ["BritNed DA & ID Weekly ITLs 20251229", "BritNed DA & ID Weekly ITLs 20251231"],
         ["BritNed DA & ID Weekly ITLs 20221012"],
+        ["BritNed DA & ID Weekly ITLs 20241016"],
     ]
 
 

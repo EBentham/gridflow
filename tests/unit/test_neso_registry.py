@@ -894,6 +894,8 @@ _MALFORMED: dict[str, list[dict[str, Any]]] = {
     "failed-without-cause": [_entry(category="failed", captures=[_CAPTURE.format(rid=_RID_A)])],
     "overlap-with-cause": [_entry(cause="DuplicateEntityKeyError")],
     "other-cause": [_failed(cause="ValueError")],
+    "compute-error-cause": [_failed(cause="ComputeError")],
+    "exception-cause": [_failed(cause="Exception")],
     "overlap-one-capture": [_entry(captures=[_CAPTURE.format(rid=_RID_A)])],
     "no-capture": [_failed(captures=[])],
     "repeated-capture": [_entry(captures=[_CAPTURE.format(rid=_RID_A)] * 2)],
@@ -928,16 +930,23 @@ class TestReconcileLedger:
 
     def test_valid_entries_load(self, tmp_path: Path) -> None:
         """The positive control every malformed case below breaks one rule of; both stamp
-        forms (seconds and microseconds, E15) are accepted."""
+        forms (seconds and microseconds, E15) are accepted, and so is the invalid-encoding
+        cause (``UnicodeDecodeError``, ADR-040 §Amendment 1)."""
         seconds = _CAPTURE.format(rid=_RID_B).replace("T080000000000Z", "T080000Z")
-        entries = [_entry(), _failed(), _failed(captures=[seconds])]
-        assert self._load(tmp_path, entries).startswith("OK 3"), entries
+        entries = [
+            _entry(),
+            _failed(),
+            _failed(captures=[seconds]),
+            _failed(cause="UnicodeDecodeError", captures=[_CAPTURE.format(rid=_RID_B)]),
+        ]
+        assert self._load(tmp_path, entries).startswith("OK 4"), entries
 
     @pytest.mark.parametrize("case", sorted(_MALFORMED))
     def test_a4_non_adjudicable_entries_fail_validation(self, tmp_path: Path, case: str) -> None:
         """A4: detects a ledger that adjudicates a gridflow-owned category, a wildcard or
-        directory scope, the overlap check's own ``-`` gap, a cause other than the duplicate
-        guard, an entry a receipt line cannot render, or two entries covering one gap."""
+        directory scope, the overlap check's own ``-`` gap, a cause outside the allowlist (a
+        generic ``ComputeError`` or ``Exception`` names no vendor fault), an entry a receipt
+        line cannot render, or two entries covering one gap."""
         out = self._load(tmp_path, _MALFORMED[case])
         assert out.startswith("REFUSED"), (case, out)
         assert "_reconcile_adjudications.json" in out, out

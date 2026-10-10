@@ -275,8 +275,9 @@ class ReconcileAdjudication(_Frozen):
         family: The family key the gaps belong to.
         category: The gap category. This ``Literal`` is the one allowlist of
             adjudicable categories (H5).
-        cause: For ``failed``, the failure record's ``error_class``; ``None``
-            for ``overlap``.
+        cause: For ``failed``, the failure record's ``error_class``, one of
+            the classes a seat may rule vendor-caused (ADR-040 §Amendment 1);
+            ``None`` for ``overlap``.
         captures: The exact capture ids covered; an ``overlap`` entry names
             every capture of the overlap, so a third one stays open.
         reason: Why the gap is vendor-caused (one line).
@@ -287,7 +288,7 @@ class ReconcileAdjudication(_Frozen):
 
     family: str = Field(pattern=KEY_PATTERN.pattern)
     category: Literal["overlap", "failed"]
-    cause: Literal["DuplicateEntityKeyError"] | None = None
+    cause: Literal["DuplicateEntityKeyError", "UnicodeDecodeError"] | None = None
     captures: tuple[str, ...]
     reason: str
     question: str
