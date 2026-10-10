@@ -665,9 +665,30 @@ def _gold_sql_columns(relation_name: str) -> tuple[str, ...]:
     view_name = relation_name.removeprefix("gold_")
     sql_path = Path(__file__).resolve().parents[1] / "gold" / "views" / f"{view_name}.sql"
     sql = sql_path.read_text(encoding="utf-8")
+    return select_list_columns(sql, origin=str(sql_path))
+
+
+def select_list_columns(sql: str, *, origin: str) -> tuple[str, ...]:
+    """Return the public column names of a gold view's SQL text, in order.
+
+    The projection is the first ``SELECT ... FROM`` of the text, one column per
+    line: a trailing ``AS alias`` names the column, otherwise the last dotted
+    part does; a trailing ``--`` comment is cut. So a view's public projection
+    must come first (never a CTE), one column per line (ADR-041).
+
+    Args:
+        sql: The view's SQL text.
+        origin: Where the text came from, for the error message.
+
+    Returns:
+        The projected column names.
+
+    Raises:
+        ValueError: The text has no ``SELECT ... FROM``.
+    """
     match = re.search(r"\bSELECT\b(?P<select>.*?)\bFROM\b", sql, flags=re.IGNORECASE | re.DOTALL)
     if match is None:
-        raise ValueError(f"Could not find SELECT list in {sql_path}")
+        raise ValueError(f"Could not find SELECT list in {origin}")
 
     columns: list[str] = []
     for raw_line in match.group("select").splitlines():
