@@ -1,0 +1,11 @@
+Start Date,End Date,Group,Units,Notes,Last Updated
+2021-03-20,2021-03-21,V_SouthEast,1,,2021-03-19T15:23Z
+2021-03-20,2021-03-21,V_SouthWales,3,,2021-03-19T15:23Z
+2021-03-20,2021-03-21,V_SouthCentral,1,,2021-03-19T15:23Z
+2023-03-27,2023-03-31,V_SouthWales,2,"There is a Pembroke busbar protection outage, meaning that switching at the site is restricted. This outage results in a specific requirement for 2 PEMB units to be available for reactive control between 23:00 and 07:00.",2023-03-24T14:30Z
+2023-07-08,2023-07-09,V_North,7,High probability of a DRAX unit voltage requirement,2023-07-07T15:26Z
+2025-08-19,2025-08-22,V_North,5,,2025-08-15T14:05Z
+2025-08-19,2025-08-22,V_Scotland,2,,2025-08-15T14:05Z
+2025-08-23,2025-08-18,V_SouthEast,0,,2025-08-22T14:05Z
+2025-08-23,2025-08-18,V_SouthWales,1,,2025-08-22T14:05Z
+2025-08-19,2025-08-22,V_North,5,,2025-08-22T14:05Z

@@ -17,7 +17,65 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Constraint Group",
+              "Date_ Time GMT_BST",
+              "Limit_MW",
+              "Flow_MW"
+            ],
+            "columns": [
+              {
+                "source": "Constraint Group",
+                "name": "constraint_group",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Date_ Time GMT_BST",
+                "name": "date_time_gmt_bst_raw",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Limit_MW",
+                "name": "limit_mw",
+                "dtype": "int64",
+                "nullable": true
+              },
+              {
+                "source": "Flow_MW",
+                "name": "flow_mw",
+                "dtype": "int64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "constraint_group",
+          "date_time_gmt_bst_raw"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: what period start/end and DST-fold treatment does the target timestamp denote, what are Flow_MW's unit and the meaning of blanks and 99999, and what row grain makes the archive unique? The archive has no issue column (RULINGS 529 fails: 732,332 targets precede the vintage).",
+          "unit": "E-SEM"
+        }
+      }
     },
     {
       "key": "da_constraint_flows_limits_files",

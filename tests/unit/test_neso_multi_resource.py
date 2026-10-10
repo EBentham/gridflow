@@ -152,6 +152,18 @@ SCN1C_ADDED = frozenset(
 """The three FES building block families that v0.22-K-SCN-1c records."""
 SCN1D_ADDED = frozenset({"fes_es1_electricity_supply"})
 """The FES ES1 electricity supply family that v0.22-K-SCN-1d records."""
+CON_ADDED = frozenset(
+    {
+        "constraint_limits_24m",
+        "cmis_intertrip",
+        "da_constraint_flows_limits",
+        "otf_network_congestion",
+        "thermal_constraint_costs",
+        "thermal_constraint_costs_xlsx",
+        "voltage_requirement",
+    }
+)
+"""The seven constraint-management families that v0.22-K-CON records."""
 REWORDED_HOLDS = {
     "national_forecast_7d_historic_day_ahead": (
         "TODO: FORECAST_TIMESTAMP has no vendor definition and its zone is undocumented "
@@ -198,8 +210,8 @@ class TestByteUnchanged:
         wind / margin forecast records, K-GEN-2's weekly wind availability record, GEN-2H's
         metered wind output and wind BOA volume records, K-IC-1's and K-IC-2's interconnector
         records, v0.22-SC's FES ED1 record, K-SCN-1a's twelve tRESP records, K-SCN-1b's nine
-        regional FES records, K-SCN-1c's three building block records and K-SCN-1d's ES1 record
-        appearing.
+        regional FES records, K-SCN-1c's three building block records, K-SCN-1d's ES1 record and
+        K-CON's seven constraint-management records appearing.
         """
         golden = json.loads(PIN_PATH.read_text(encoding="utf-8"))
         for key, question in REWORDED_HOLDS.items():
@@ -224,6 +236,7 @@ class TestByteUnchanged:
                     *SCN1B_ADDED,
                     *SCN1C_ADDED,
                     *SCN1D_ADDED,
+                    *CON_ADDED,
                 }
                 if section != "engine"
                 else set()
@@ -825,7 +838,7 @@ class TestRecordRules:
         self,
     ) -> None:
         """Detects a committed record broken by V-4/V-17 or the reserved name, and any
-        family other than the thirty-five resource-partitioned ones opting into the partition (in a
+        family other than the thirty-eight resource-partitioned ones opting into the partition (in a
         fresh interpreter, so nothing collection imported can mask it)."""
         code = textwrap.dedent(
             """
@@ -838,6 +851,7 @@ class TestRecordRules:
             )
             assert partitioned == [
                 "brit_ned",
+                "cmis_intertrip",
                 "da_wind_forecast_historic_day_ahead_bmu",
                 "eleclink",
                 "fes_building_blocks_block_definitions",
@@ -859,6 +873,8 @@ class TestRecordRules:
                 "nemolink_ntc",
                 "nsl",
                 "school_holiday_percentages",
+                "thermal_constraint_costs",
+                "thermal_constraint_costs_xlsx",
                 "tresp_building_block_definitions",
                 "tresp_demand_pathways_gsp",
                 "tresp_demand_pathways_la_england",

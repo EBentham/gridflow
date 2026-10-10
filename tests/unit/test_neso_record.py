@@ -666,6 +666,28 @@ records."""
 
 SCN1D_PACKAGE_FILES = {"future-energy-scenario-electricity-supply-data-table-es1.json"}
 
+CON_RECORDED = {
+    "constraint_limits_24m",
+    "cmis_intertrip",
+    "da_constraint_flows_limits",
+    "otf_network_congestion",
+    "thermal_constraint_costs",
+    "thermal_constraint_costs_xlsx",
+    "voltage_requirement",
+}
+"""The seven constraint-management families unit K-CON records (five held, the thermal CSV and
+workbook child eligible, the day-ahead capture adjudicated failed, the 2021-22 thermal resource
+HOLD)."""
+
+CON_PACKAGE_FILES = {
+    "24-months-ahead-constraint-limits.json",
+    "constraint-management-intertrip-service-information-cmis.json",
+    "day-ahead-constraint-flows-and-limits.json",
+    "operational-transparency-forum-network-congestion-data.json",
+    "thermal-constraint-costs.json",
+    "voltage-requirement.json",
+}
+
 X_RESOURCES_WITH_CHILDREN = 4 + 1 + 39 + 73 + 1
 """Unit X's committed inventories (ADR-037 P-8): CMP workbooks, the ResultSummary ZIP,
 frequency ZIPs, held data containers and the GSP archive with a CSV member."""
@@ -677,7 +699,7 @@ class TestSeededRegistry:
     def test_every_seeded_package_loads_with_no_record(self) -> None:
         loaded = registry_module.load_registry()
         entries = [entry for _package, entry in loaded.families.values()]
-        assert len(entries) == 316
+        assert len(entries) == 317
         assert sum(entry.legacy for entry in entries) == 3
         assert sum(entry.kind == "files" for entry in entries) == 35
         recorded = {entry.key for entry in entries if entry.record is not None}
@@ -699,6 +721,7 @@ class TestSeededRegistry:
             | SCN1B_RECORDED
             | SCN1C_RECORDED
             | SCN1D_RECORDED
+            | CON_RECORDED
         )
         with_children = [res for _package, res in loaded.resources.values() if res.children]
         assert len(with_children) == X_RESOURCES_WITH_CHILDREN
@@ -733,6 +756,7 @@ class TestSeededRegistry:
             | SCN1B_PACKAGE_FILES
             | SCN1C_PACKAGE_FILES
             | SCN1D_PACKAGE_FILES
+            | CON_PACKAGE_FILES
         )
 
 

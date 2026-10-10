@@ -39,6 +39,9 @@ DATE_COL_SQL_TYPES: dict[str, DateColSqlType] = {
     # The monthly metered wind output family's settlement day (v0.22-GEN-2H): the sp_pair
     # date of its record, a calendar DATE like `settlement_date`.
     "sett_date": "DATE",
+    # The voltage requirement family's first night (v0.22-K-CON): the `date_sp1` anchor of its
+    # record, a calendar DATE like `settlement_date`.
+    "start_date": "DATE",
     "timestamp_utc": "TIMESTAMPTZ",
     "implementation_datetime_utc": "TIMESTAMPTZ",
     "ingested_at": "TIMESTAMPTZ",

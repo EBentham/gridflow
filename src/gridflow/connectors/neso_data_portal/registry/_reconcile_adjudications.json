@@ -120,5 +120,17 @@
     "question": "Which omitted row-grain dimension makes the repeated rows of the FES 2022 building blocks unique, and can NESO publish a corrected file or a row identifier?",
     "evidence": "K-SCN-1-FACTS SCN-1c fes_building_blocks_main (Full-body key collisions), K-SCN-1c-SPEC; ADR-040",
     "ruling": "608"
+  },
+  {
+    "family": "da_constraint_flows_limits",
+    "category": "failed",
+    "cause": "DuplicateEntityKeyError",
+    "captures": [
+      "bronze/neso_data_portal/da_constraint_flows_limits/2026/10/08/raw_20261008T091659Z_38a18ec1-9e40-465d-93fb-301e80fd1352_437e9f61.csv"
+    ],
+    "reason": "the archive repeats (Constraint Group, target timestamp) keys on 1,436 excess rows, 1,392 of them whole-row duplicates and 44 key groups with differing Limit_MW or Flow_MW values (e.g. ERROEX, 2025-08-12T00:00:00, 265 and -3, on CSV lines 468128 and 468656), so no vendor-column key is lossless and the duplicate guard fails the capture; it is never deduplicated and stays unloaded with its failure record",
+    "question": "What row grain (period start or end, fold occurrence or version) makes the day-ahead constraint archive's repeated (Constraint Group, target timestamp) rows unique, and can NESO publish a corrected file or a row identifier?",
+    "evidence": "K-CON-FACTS §4 (Reader and key evidence), K-CON-SPEC §3 (unit v0.22-K-CON); ADR-040",
+    "ruling": "632"
   }
 ]

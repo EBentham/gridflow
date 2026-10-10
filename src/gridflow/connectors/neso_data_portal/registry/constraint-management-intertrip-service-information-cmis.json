@@ -17,7 +17,125 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "BMU ID",
+              "Arming Date Time",
+              "Disarming Date Time",
+              "Current Arming Fee (£ / SP)",
+              "Cost for this utilisation (£)"
+            ],
+            "columns": [
+              {
+                "source": "BMU ID",
+                "name": "bmu_id",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Arming Date Time",
+                "name": "arming_date_time",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Disarming Date Time",
+                "name": "disarming_date_time",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Current Arming Fee (£ / SP)",
+                "name": "current_arming_fee_gbp_per_sp",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Cost for this utilisation (£)",
+                "name": "utilisation_cost_gbp",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          },
+          {
+            "header": [
+              "BMU ID",
+              "Arming Date Time",
+              "Disarming Date Time",
+              "Current Arming Fee (£ / MWH)",
+              "Cost for this utilisation (£)",
+              "B6/EC5"
+            ],
+            "columns": [
+              {
+                "source": "BMU ID",
+                "name": "bmu_id",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Arming Date Time",
+                "name": "arming_date_time",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Disarming Date Time",
+                "name": "disarming_date_time",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Current Arming Fee (£ / MWH)",
+                "name": "current_arming_fee_gbp_per_mwh",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Cost for this utilisation (£)",
+                "name": "utilisation_cost_gbp",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "B6/EC5",
+                "name": "b6_ec5",
+                "dtype": "string",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "resource_id",
+          "bmu_id",
+          "arming_date_time"
+        ],
+        "latest": "whole_capture",
+        "latest_partition": "resource_id",
+        "vintage": "ckan_last_modified",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: do the arming/disarming timestamps carry GB local wall time with a mechanically added +00:00 offset, or actual UTC instants? And is the newer arming fee GBP/MWh (header) or GBP/SP (dictionary)?",
+          "unit": "E-SEM"
+        }
+      }
     }
   ],
   "resources": [
