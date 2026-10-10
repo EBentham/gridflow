@@ -710,6 +710,27 @@ SYS1_PACKAGE_FILES = {
     "system-inertia.json",
 }
 
+BAL1_RECORDED = {
+    "current_bsuos_ii",
+    "current_bsuos_sf",
+    "current_bsuos_rf",
+    "current_bsuos_historic_ii",
+    "current_bsuos_historic_sf",
+    "current_bsuos_historic_rf",
+    "constraint_breakdown",
+    "bsuos_fixed_tariffs",
+    "inertia_bid_offer_costs",
+}
+"""The nine balancing-costs families unit K-BAL-1 records (seven eligible, tariffs and inertia held,
+the Historic II overlap adjudicated; the two daily balancing families stay without a record)."""
+
+BAL1_PACKAGE_FILES = {
+    "bsuos-fixed-tariffs.json",
+    "constraint-breakdown.json",
+    "current-balancing-services-use-of-system-bsuos-data.json",
+    "gb-system-inertia-bid-and-offer-costs.json",
+}
+
 X_RESOURCES_WITH_CHILDREN = 4 + 1 + 39 + 73 + 1
 """Unit X's committed inventories (ADR-037 P-8): CMP workbooks, the ResultSummary ZIP,
 frequency ZIPs, held data containers and the GSP archive with a CSV member."""
@@ -745,6 +766,7 @@ class TestSeededRegistry:
             | SCN1D_RECORDED
             | CON_RECORDED
             | SYS1_RECORDED
+            | BAL1_RECORDED
         )
         with_children = [res for _package, res in loaded.resources.values() if res.children]
         assert len(with_children) == X_RESOURCES_WITH_CHILDREN
@@ -781,6 +803,7 @@ class TestSeededRegistry:
             | SCN1D_PACKAGE_FILES
             | CON_PACKAGE_FILES
             | SYS1_PACKAGE_FILES
+            | BAL1_PACKAGE_FILES
         )
 
 

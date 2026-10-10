@@ -204,5 +204,17 @@
     "question": "What vendor row identity or grain makes the Pathfinder availability report unique given identical repeated rows, and can NESO publish a corrected file?",
     "evidence": "K-SYS-1-FACTS §5 g3 (T04), K-SYS-1-SPEC §4 (unit v0.22-K-SYS-1); ADR-040",
     "ruling": "642"
+  },
+  {
+    "family": "current_bsuos_historic_ii",
+    "category": "overlap",
+    "captures": [
+      "bronze/neso_data_portal/current_bsuos_historic_ii/2026/10/08/raw_20261008T091620Z_ea47c8e4-caa3-49c7-a442-e9644d330f63_fb7560ad.csv",
+      "bronze/neso_data_portal/current_bsuos_historic_ii/2026/10/08/raw_20261008T091623Z_45e87b67-ed5d-49ea-a149-2b37f467e542_f9a1b348.csv"
+    ],
+    "reason": "the 2024-2025 upload (filename current_ii_bsuos_data.csv, body dated 2025-04-01 to 2025-04-13) and the 2025-2026 upload both publish 624 settlement keys (2025-04-01 to 2025-04-13, run II) with identical values on every key; NESO states no precedence and the 2024-2025 label does not match its dates, so both uploads are served (ADR-039)",
+    "question": "Which Historic II upload is authoritative for the 624 settlement keys 2025-04-01 to 2025-04-13 that the 2024-2025 and 2025-2026 resources both publish, and will NESO correct the label of the 2024-2025 resource?",
+    "evidence": "K-BAL-1-FACTS §current_bsuos_historic_ii / C03, K-BAL-1-SPEC §2 (unit v0.22-K-BAL-1); ADR-040",
+    "ruling": "653"
   }
 ]

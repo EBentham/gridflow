@@ -17,7 +17,84 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Publication",
+              "Fixed Tariff Title",
+              "Published Date",
+              "Fixed Tariff Start Date",
+              "Fixed Tariff End Date",
+              "Fixed Tariff_GBP per MWh"
+            ],
+            "columns": [
+              {
+                "source": "Publication",
+                "name": "publication",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Fixed Tariff Title",
+                "name": "fixed_tariff_title",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Published Date",
+                "name": "published_date",
+                "dtype": "date",
+                "format": "%Y-%m-%d",
+                "nullable": false
+              },
+              {
+                "source": "Fixed Tariff Start Date",
+                "name": "fixed_tariff_start_date",
+                "dtype": "date",
+                "format": "%Y-%m-%d",
+                "nullable": false
+              },
+              {
+                "source": "Fixed Tariff End Date",
+                "name": "fixed_tariff_end_date",
+                "dtype": "date",
+                "format": "%Y-%m-%d",
+                "nullable": false
+              },
+              {
+                "source": "Fixed Tariff_GBP per MWh",
+                "name": "fixed_tariff_gbp_per_mwh",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "date_sp1",
+          "date_column": "fixed_tariff_start_date"
+        },
+        "entity_key": [
+          "publication",
+          "fixed_tariff_title",
+          "published_date"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: precise issue clock and availability of each publication at its Published Date, and whether historical publication rows are immutable — 15 of 17 targets start on or before the capture vintage, so RULINGS 529's forward-target exception does not apply.",
+          "unit": "E-SEM"
+        }
+      }
     }
   ],
   "resources": [

@@ -1324,7 +1324,8 @@ def test_the_committed_ledger_adjudicates_exactly_the_six_pathfinder_captures() 
     lost question or an entry the registry does not back: one ``failed`` /
     ``DuplicateEntityKeyError`` / ruling 642 entry per capture, the utilisation ones on the
     2024-25 and 2025-26 resources, the availability ones on all four, each a one-line reason and
-    question naming the unit; they are the last entries in the ledger; the registry backs them."""
+    question naming the unit; they are the six entries before K-BAL-1's overlap entry; the
+    registry backs them."""
     entries = registry_module.load_reconcile_adjudications()
     assert registry_module.reconcile_adjudication_problems(load_registry(), entries) == []
     util, avail = _entries(U), _entries(A)
@@ -1350,7 +1351,7 @@ def test_the_committed_ledger_adjudicates_exactly_the_six_pathfinder_captures() 
             assert "never deduplicated" in entry["reason"]
             assert "v0.22-K-SYS-1" in entry["evidence"] and "ADR-040" in entry["evidence"]
         assert resources == expected, family
-    assert [e.family for e in entries[-6:]] == [U, U, A, A, A, A]
+    assert [e.family for e in entries[-7:-1]] == [U, U, A, A, A, A]
     reasons = " ".join(e["reason"] for e in util + avail)
     for excess in ("3,964", "306", "1,003", "46,921", "7,679"):
         assert excess in reasons, excess

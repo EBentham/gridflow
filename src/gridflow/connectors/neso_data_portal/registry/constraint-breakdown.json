@@ -17,7 +17,98 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Date",
+              "Reducing largest loss cost",
+              "Increasing system inertia cost",
+              "Voltage constraints cost",
+              "Thermal constraints cost",
+              "Reducing largest loss volume",
+              "Increasing system inertia volume",
+              "Voltage constraints volume",
+              "Thermal constraints volume"
+            ],
+            "columns": [
+              {
+                "source": "Date",
+                "name": "date",
+                "dtype": "date",
+                "format": "%Y-%m-%d",
+                "nullable": false
+              },
+              {
+                "source": "Reducing largest loss cost",
+                "name": "reducing_largest_loss_cost_gbp",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Increasing system inertia cost",
+                "name": "increasing_system_inertia_cost_gbp",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Voltage constraints cost",
+                "name": "voltage_constraints_cost_gbp",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Thermal constraints cost",
+                "name": "thermal_constraints_cost_gbp",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Reducing largest loss volume",
+                "name": "reducing_largest_loss_volume_mwh",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Increasing system inertia volume",
+                "name": "increasing_system_inertia_volume_mwh",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Voltage constraints volume",
+                "name": "voltage_constraints_volume_mwh",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Thermal constraints volume",
+                "name": "thermal_constraints_volume_mwh",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "date_sp1",
+          "date_column": "date"
+        },
+        "entity_key": [
+          "resource_id",
+          "date"
+        ],
+        "latest": "whole_capture",
+        "latest_partition": "resource_id",
+        "vintage": "ckan_last_modified"
+      }
     }
   ],
   "resources": [

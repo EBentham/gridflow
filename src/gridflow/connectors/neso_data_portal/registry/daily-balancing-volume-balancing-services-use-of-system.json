@@ -128,7 +128,7 @@
       "family": "daily_balancing_volume_files",
       "disposition": {
         "kind": "HOLD",
-        "reason": "data container: child inventory committed by X; records pending in BAL-1",
+        "reason": "missing-period list (60 SETT_DATE/SETT_PERIOD pairs) — no child record while the parent family has none; the list does not cover all 70 measured gaps.",
         "unit": "BAL-1"
       },
       "children": [
@@ -136,7 +136,7 @@
           "child": "Missing_Dates_Periods",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family balancing_volume_missing_sp: record pending in BAL-1 (V-11)",
+            "reason": "missing-period list (60 SETT_DATE/SETT_PERIOD pairs) — no child record while the parent family has none; the list does not cover all 70 measured gaps.",
             "unit": "BAL-1"
           }
         }

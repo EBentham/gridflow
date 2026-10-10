@@ -177,6 +177,20 @@ SYS1_ADDED = frozenset(
     }
 )
 """The eight system families that v0.22-K-SYS-1 records."""
+BAL1_ADDED = frozenset(
+    {
+        "current_bsuos_ii",
+        "current_bsuos_sf",
+        "current_bsuos_rf",
+        "current_bsuos_historic_ii",
+        "current_bsuos_historic_sf",
+        "current_bsuos_historic_rf",
+        "constraint_breakdown",
+        "bsuos_fixed_tariffs",
+        "inertia_bid_offer_costs",
+    }
+)
+"""The nine balancing-costs families that v0.22-K-BAL-1 records."""
 REWORDED_HOLDS = {
     "national_forecast_7d_historic_day_ahead": (
         "TODO: FORECAST_TIMESTAMP has no vendor definition and its zone is undocumented "
@@ -224,7 +238,8 @@ class TestByteUnchanged:
         metered wind output and wind BOA volume records, K-IC-1's and K-IC-2's interconnector
         records, v0.22-SC's FES ED1 record, K-SCN-1a's twelve tRESP records, K-SCN-1b's nine
         regional FES records, K-SCN-1c's three building block records, K-SCN-1d's ES1 record,
-        K-CON's seven constraint-management records and K-SYS-1's eight system records appearing.
+        K-CON's seven constraint-management records, K-SYS-1's eight system records and K-BAL-1's
+        nine balancing-costs records appearing.
         """
         golden = json.loads(PIN_PATH.read_text(encoding="utf-8"))
         for key, question in REWORDED_HOLDS.items():
@@ -251,6 +266,7 @@ class TestByteUnchanged:
                     *SCN1D_ADDED,
                     *CON_ADDED,
                     *SYS1_ADDED,
+                    *BAL1_ADDED,
                 }
                 if section != "engine"
                 else set()
@@ -852,7 +868,7 @@ class TestRecordRules:
         self,
     ) -> None:
         """Detects a committed record broken by V-4/V-17 or the reserved name, and any
-        family other than the forty-three resource-partitioned ones opting into the partition (in a
+        family other than the forty-seven resource-partitioned ones opting into the partition (in a
         fresh interpreter, so nothing collection imported can mask it)."""
         code = textwrap.dedent(
             """
@@ -866,6 +882,10 @@ class TestRecordRules:
             assert partitioned == [
                 "brit_ned",
                 "cmis_intertrip",
+                "constraint_breakdown",
+                "current_bsuos_historic_ii",
+                "current_bsuos_historic_rf",
+                "current_bsuos_historic_sf",
                 "da_wind_forecast_historic_day_ahead_bmu",
                 "eleclink",
                 "fes_building_blocks_block_definitions",
