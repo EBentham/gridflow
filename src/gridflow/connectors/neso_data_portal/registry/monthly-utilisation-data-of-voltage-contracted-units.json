@@ -17,7 +17,76 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "BMU ID",
+              "Month and Year",
+              "Location",
+              "Total Injection MVAr",
+              "Total Absorption MVAr",
+              "Total Injection and Absorption MVAr"
+            ],
+            "columns": [
+              {
+                "source": "BMU ID",
+                "name": "bmu_id",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Month and Year",
+                "name": "month_and_year",
+                "dtype": "date",
+                "format": "%b-%y",
+                "nullable": false
+              },
+              {
+                "source": "Location",
+                "name": "location",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Total Injection MVAr",
+                "name": "total_injection_mvar",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Total Absorption MVAr",
+                "name": "total_absorption_mvar",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Total Injection and Absorption MVAr",
+                "name": "total_injection_and_absorption_mvar",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "month",
+          "date_column": "month_and_year"
+        },
+        "entity_key": [
+          "bmu_id",
+          "month_and_year"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified"
+      }
     }
   ],
   "resources": [

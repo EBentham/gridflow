@@ -17,7 +17,123 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Settlement Date",
+              "Cost"
+            ],
+            "columns": [
+              {
+                "source": "Settlement Date",
+                "name": "settlement_date",
+                "dtype": "date",
+                "formats_by_filename": [
+                  [
+                    "inertia_costs17.csv",
+                    "%d/%m/%Y"
+                  ],
+                  [
+                    "inertia_costs18.csv",
+                    "%d/%m/%Y"
+                  ],
+                  [
+                    "inertia_costs19.csv",
+                    "%d/%m/%Y"
+                  ],
+                  [
+                    "inertia_costs20.csv",
+                    "%d/%m/%Y"
+                  ],
+                  [
+                    "inertia_costs22.csv",
+                    "%Y-%m-%d"
+                  ],
+                  [
+                    "inertia_costs.csv",
+                    "%Y-%m-%d"
+                  ]
+                ],
+                "nullable": false
+              },
+              {
+                "source": "Cost",
+                "name": "cost_gbp_per_gvas",
+                "dtype": "int64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          },
+          {
+            "header": [
+              "Settlement Date",
+              "Cost_per_GVAs"
+            ],
+            "columns": [
+              {
+                "source": "Settlement Date",
+                "name": "settlement_date",
+                "dtype": "date",
+                "formats_by_filename": [
+                  [
+                    "inertia_costs17.csv",
+                    "%d/%m/%Y"
+                  ],
+                  [
+                    "inertia_costs18.csv",
+                    "%d/%m/%Y"
+                  ],
+                  [
+                    "inertia_costs19.csv",
+                    "%d/%m/%Y"
+                  ],
+                  [
+                    "inertia_costs20.csv",
+                    "%d/%m/%Y"
+                  ],
+                  [
+                    "inertia_costs22.csv",
+                    "%Y-%m-%d"
+                  ],
+                  [
+                    "inertia_costs.csv",
+                    "%Y-%m-%d"
+                  ]
+                ],
+                "nullable": false
+              },
+              {
+                "source": "Cost_per_GVAs",
+                "name": "cost_gbp_per_gvas",
+                "dtype": "int64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "date_sp1",
+          "date_column": "settlement_date"
+        },
+        "entity_key": [
+          "resource_id",
+          "settlement_date"
+        ],
+        "latest": "whole_capture",
+        "latest_partition": "resource_id",
+        "vintage": "ckan_last_modified"
+      }
     }
   ],
   "resources": [
@@ -127,8 +243,9 @@
       "url_type": "upload",
       "family": "system_inertia_cost",
       "disposition": {
-        "kind": "SILVER",
-        "key": "system_inertia_cost"
+        "kind": "HOLD",
+        "reason": "The captured resource uses `Settlement Date,Cost_per_GVAs` and filename `inertia_costs.csv`, shared with resources whose dates are ISO. Its sole date is `01/04/2026`, which cannot pass their declared ISO cast, and does not independently establish day/month order. ADR-039 maps formats by exact filename, so it cannot distinguish these resources. Re-disposition requires a corrected vendor upload, an explicit distinguishing vendor filename/date contract, or a declared engine mechanism that resolves formats by a sufficient resource discriminator.",
+        "unit": "SYS-1"
       }
     }
   ]

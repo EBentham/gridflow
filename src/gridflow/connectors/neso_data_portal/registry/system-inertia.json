@@ -17,7 +17,67 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Settlement Date",
+              "Settlement Period",
+              "Outturn Inertia",
+              "Market Provided Inertia"
+            ],
+            "columns": [
+              {
+                "source": "Settlement Date",
+                "name": "settlement_date",
+                "dtype": "date",
+                "format": "%Y-%m-%d",
+                "nullable": false
+              },
+              {
+                "source": "Settlement Period",
+                "name": "settlement_period",
+                "dtype": "int64",
+                "nullable": false,
+                "min": 1,
+                "max": 50
+              },
+              {
+                "source": "Outturn Inertia",
+                "name": "outturn_inertia",
+                "dtype": "int64",
+                "nullable": true
+              },
+              {
+                "source": "Market Provided Inertia",
+                "name": "market_provided_inertia",
+                "dtype": "int64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "sp_pair",
+          "date_column": "settlement_date",
+          "period_column": "settlement_period"
+        },
+        "entity_key": [
+          "resource_id",
+          "settlement_date",
+          "settlement_period"
+        ],
+        "latest": "whole_capture",
+        "latest_partition": "resource_id",
+        "vintage": "ckan_last_modified"
+      }
     }
   ],
   "resources": [

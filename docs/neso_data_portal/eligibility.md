@@ -206,7 +206,7 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `long-term-2-52-weeks-ahead-national-demand-forecast` | `demand_forecast_2_52w` | silver | held: TODO: ESI week definition (start and end day, numbering, rollover against calendar_year and financial_year) and why 2027 week 29 appears twice with CDATE_peak 2027-07-21 and 2027-07-22; the NESO dictionary is silent (unit E-SEM) | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
 | `long-term-forecasts-for-dc-dm-dr-requirements` | `dc_dm_dr_long_term_fc` | ingest-only (no silver output) | — | — | — | — |
 | `monthly-operational-metered-wind-output` | `metered_wind_output_monthly` | silver | eligible | whole_capture per resource_id | sp_pair | CKAN last_modified of the captured file (ADR-030) |
-| `monthly-utilisation-data-of-voltage-contracted-units` | `voltage_units_utilisation` | ingest-only (no silver output) | — | — | — | — |
+| `monthly-utilisation-data-of-voltage-contracted-units` | `voltage_units_utilisation` | silver | eligible | whole_capture | month | CKAN last_modified of the captured file (ADR-030) |
 | `national-carbon-intensity-forecast` | `national_ci_forecast` | silver | held: TODO: no issue column; which forecast issue a past target's value reflects, and whether values are revised after the period, is undocumented (unit E-SEM) | whole_capture | utc_instant | CKAN last_modified of the captured file (ADR-030) |
 | `national-carbon-intensity-forecast` | `national_ci_forecast_files` | catalogue only | — | — | — | — |
 | `national-demand-balancing-mechanism-units` | `national_demand_bmus` | silver | eligible | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
@@ -233,8 +233,8 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `optional-downward-flexibility-management-odfm-market-information` | `odfm_market_information_load_factors` | ingest-only (no silver output) | — | — | — | — |
 | `optional-downward-flexibility-management-odfm-market-information` | `odfm_market_information_results` | ingest-only (no silver output) | — | — | — | — |
 | `outturn-voltage-costs` | `outturn_voltage_costs_files` | catalogue only | — | — | — | — |
-| `outturn-voltage-costs` | `outturn_voltage_costs_historical` | ingest-only (no silver output) | — | — | — | — |
-| `outturn-voltage-costs` | `outturn_voltage_costs_main` | ingest-only (no silver output) | — | — | — | — |
+| `outturn-voltage-costs` | `outturn_voltage_costs_historical` | silver | eligible | whole_capture per resource_id | month | CKAN last_modified of the captured file (ADR-030) |
+| `outturn-voltage-costs` | `outturn_voltage_costs_main` | silver | eligible | whole_capture | month | CKAN last_modified of the captured file (ADR-030) |
 | `phase-2-ffr-auction-results-summary` | `ffr_phase2_auction_files` | catalogue only | — | — | — | — |
 | `phase-2-ffr-auction-results-summary` | `ffr_phase2_auction_phase_block_order` | ingest-only (no silver output) | — | — | — | — |
 | `phase-2-ffr-auction-results-summary` | `ffr_phase2_auction_phase_blockorders` | ingest-only (no silver output) | — | — | — | — |
@@ -277,17 +277,17 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `skip-rates` | `skip_rates_summary` | ingest-only (no silver output) | — | — | — | — |
 | `slow-reserve-requirement-forecast` | `slow_reserve_requirement_fc` | ingest-only (no silver output) | — | — | — | — |
 | `ssep-onshore-publication-zone-shapefile` | `ssep_publication_zones_files` | catalogue only | — | — | — | — |
-| `stability-midterm-y-1-utilisation-report` | `stability_midterm_y1` | ingest-only (no silver output) | — | — | — | — |
-| `stability-pathfinder-service-information` | `stability_pathfinder_availability_report` | ingest-only (no silver output) | — | — | — | — |
-| `stability-pathfinder-service-information` | `stability_pathfinder_utilisation_report` | ingest-only (no silver output) | — | — | — | — |
+| `stability-midterm-y-1-utilisation-report` | `stability_midterm_y1` | silver | eligible | whole_capture | utc_instant | CKAN last_modified of the captured file (ADR-030) |
+| `stability-pathfinder-service-information` | `stability_pathfinder_availability_report` | silver | held: TODO: the timestamp clock (as §3), and what vendor row identity / grain makes the report unique given identical repeated rows? (unit E-SEM) | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
+| `stability-pathfinder-service-information` | `stability_pathfinder_utilisation_report` | silver | held: TODO: are the Pathfinder timestamps actual UTC instants or GB local wall times with a mechanically attached +00:00 offset (incl. clock-change periods), what unit/scale is `Inertia`, what does a blank `Inertia` mean, and what vendor row identity distinguishes identical rows? (unit E-SEM) | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
 | `static-firm-frequency-response-auction-results` | `sffr_auction_results_buy_orders` | ingest-only (no silver output) | — | — | — | — |
 | `static-firm-frequency-response-auction-results` | `sffr_auction_results_main` | ingest-only (no silver output) | — | — | — | — |
 | `static-firm-frequency-response-requirement` | `sffr_requirement` | ingest-only (no silver output) | — | — | — | — |
 | `stor-windows` | `stor_windows` | ingest-only (no silver output) | — | — | — | — |
 | `super-stable-export-limit-contract-enactment` | `ssel_contract_enactment` | ingest-only (no silver output) | — | — | — | — |
 | `system-frequency-data` | `system_frequency` | ingest-only (no silver output) | — | — | — | — |
-| `system-inertia` | `system_inertia` | ingest-only (no silver output) | — | — | — | — |
-| `system-inertia-cost` | `system_inertia_cost` | ingest-only (no silver output) | — | — | — | — |
+| `system-inertia` | `system_inertia` | silver | eligible | whole_capture per resource_id | sp_pair | CKAN last_modified of the captured file (ADR-030) |
+| `system-inertia-cost` | `system_inertia_cost` | silver | eligible | whole_capture per resource_id | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
 | `system-operating-plan-sop` | `system_operating_plan` | silver | held: TODO: the dump returns each plan's latest version and NESO does not state that its values are fixed and public at their creation time, and every target precedes the capture, so the forward-target rule (RULINGS 529) cannot apply. (unit E-SEM) | whole_capture | utc_instant | gridflow capture time |
 | `system-operating-plan-sop` | `system_operating_plan_files` | catalogue only | — | — | — | — |
 | `thermal-constraint-costs` | `thermal_constraint_costs` | silver | eligible | whole_capture per resource_id | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
@@ -447,7 +447,7 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `super-stable-export-limit-contract-enactment` | eligible | 6 | 0 | 0 | 0 | 0 |
 | `system-frequency-data` | eligible | 152 | 0 | 0 | 0 | 0 |
 | `system-inertia` | eligible | 10 | 0 | 0 | 0 | 0 |
-| `system-inertia-cost` | eligible | 10 | 0 | 0 | 0 | 0 |
+| `system-inertia-cost` | eligible | 9 | 0 | 0 | 0 | 1 |
 | `system-operating-plan-sop` | eligible | 1 | 0 | 2 | 0 | 0 |
 | `thermal-constraint-costs` | eligible | 7 | 0 | 3 | 0 | 1 |
 | `transmission-entry-capacity-tec-register` | eligible | 1 | 0 | 0 | 0 | 0 |
@@ -461,11 +461,11 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `weekly-opmr` | eligible | 1 | 0 | 0 | 0 | 0 |
 | `weekly-wind-availability` | eligible | 1 | 0 | 0 | 0 | 0 |
 | `wind-bmu-boa-volumes` | eligible | 9 | 0 | 0 | 0 | 0 |
-| **Total** | | 1245 | 0 | 43 | 20 | 77 |
+| **Total** | | 1244 | 0 | 43 | 20 | 78 |
 
 ## Totals
 
 - Packages: 131 (held: 2)
-- Families: 317: silver 105 (bespoke 3, recorded 102), ingest-only 177, catalogue only 35
-- Silver outputs held: 58
+- Families: 317: silver 113 (bespoke 3, recorded 110), ingest-only 169, catalogue only 35
+- Silver outputs held: 60
 - Resources: 1385

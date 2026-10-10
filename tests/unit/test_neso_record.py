@@ -688,6 +688,28 @@ CON_PACKAGE_FILES = {
     "voltage-requirement.json",
 }
 
+SYS1_RECORDED = {
+    "voltage_units_utilisation",
+    "stability_midterm_y1",
+    "stability_pathfinder_utilisation_report",
+    "stability_pathfinder_availability_report",
+    "system_inertia",
+    "system_inertia_cost",
+    "outturn_voltage_costs_historical",
+    "outturn_voltage_costs_main",
+}
+"""The eight system families unit K-SYS-1 records (six eligible, the two Pathfinder reports held,
+six Pathfinder captures adjudicated failed, the 2026 inertia cost resource HOLD)."""
+
+SYS1_PACKAGE_FILES = {
+    "monthly-utilisation-data-of-voltage-contracted-units.json",
+    "outturn-voltage-costs.json",
+    "stability-midterm-y-1-utilisation-report.json",
+    "stability-pathfinder-service-information.json",
+    "system-inertia-cost.json",
+    "system-inertia.json",
+}
+
 X_RESOURCES_WITH_CHILDREN = 4 + 1 + 39 + 73 + 1
 """Unit X's committed inventories (ADR-037 P-8): CMP workbooks, the ResultSummary ZIP,
 frequency ZIPs, held data containers and the GSP archive with a CSV member."""
@@ -722,6 +744,7 @@ class TestSeededRegistry:
             | SCN1C_RECORDED
             | SCN1D_RECORDED
             | CON_RECORDED
+            | SYS1_RECORDED
         )
         with_children = [res for _package, res in loaded.resources.values() if res.children]
         assert len(with_children) == X_RESOURCES_WITH_CHILDREN
@@ -757,6 +780,7 @@ class TestSeededRegistry:
             | SCN1C_PACKAGE_FILES
             | SCN1D_PACKAGE_FILES
             | CON_PACKAGE_FILES
+            | SYS1_PACKAGE_FILES
         )
 
 
