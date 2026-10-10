@@ -57,7 +57,7 @@ URL_TYPE_TALLY = {"upload": 1233, "datastore": 152}
 # (4 CMP381/395 workbooks, 1 phase-2 ResultSummary ZIP, 39 frequency ZIPs), HOLD 73
 # (data containers awaiting their batch's record), DOC 1 (Building Heat Model) and
 # GIS 13 (shapefile/GeoJSON/GPKG archives); then v0.22-K-SCN-1b holds the 2021 above-1 MW storage
-# resource (SILVER 1247, HOLD 75).
+# resource (SILVER 1247, HOLD 75); K-SCN-1c changes no resource disposition.
 DISPOSITION_TALLY = {"SILVER": 1247, "HOLD": 75, "DOC": 43, "GIS": 20}
 
 

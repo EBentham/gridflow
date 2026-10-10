@@ -175,9 +175,9 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `firm-frequency-response-post-tender-reports` | `ffr_post_tender_reports_ext` | ingest-only (no silver output) | — | — | — | — |
 | `firm-frequency-response-post-tender-reports` | `ffr_post_tender_reports_files` | catalogue only | — | — | — | — |
 | `future-energy-scenario-electricity-supply-data-table-es1` | `fes_es1_electricity_supply` | ingest-only (no silver output) | — | — | — | — |
-| `future-energy-scenario-fes-building-block-data` | `fes_building_blocks_block_definitions` | ingest-only (no silver output) | — | — | — | — |
-| `future-energy-scenario-fes-building-block-data` | `fes_building_blocks_block_licence_area` | ingest-only (no silver output) | — | — | — | — |
-| `future-energy-scenario-fes-building-block-data` | `fes_building_blocks_main` | ingest-only (no silver output) | — | — | — | — |
+| `future-energy-scenario-fes-building-block-data` | `fes_building_blocks_block_definitions` | silver | eligible | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
+| `future-energy-scenario-fes-building-block-data` | `fes_building_blocks_block_licence_area` | silver | eligible | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
+| `future-energy-scenario-fes-building-block-data` | `fes_building_blocks_main` | silver | held: TODO: for each edition, what period does a building-block year label (and the 2019/2020 baseline) denote — calendar year, financial year or winter? And what omitted row-grain dimension makes the 2020–2022 rows unique (repeated building block × GSP × DNO × unit rows with different values)? NESO's dictionaries state neither. (unit E-SEM) | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
 | `gb-system-inertia-bid-and-offer-costs` | `inertia_bid_offer_costs` | ingest-only (no silver output) | — | — | — | — |
 | `gis-boundaries-for-gb-dno-license-areas` | `gis_dno_license_areas_files` | catalogue only | — | — | — | — |
 | `gis-boundaries-for-gb-generation-charging-zones` | `gis_gen_charging_zones_files` | catalogue only | — | — | — | — |
@@ -465,6 +465,6 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 ## Totals
 
 - Packages: 131 (held: 2)
-- Families: 316: silver 94 (bespoke 3, recorded 91), ingest-only 187, catalogue only 35
-- Silver outputs held: 51
+- Families: 316: silver 97 (bespoke 3, recorded 94), ingest-only 184, catalogue only 35
+- Silver outputs held: 52
 - Resources: 1385

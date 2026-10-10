@@ -40,7 +40,7 @@ from _neso_dem1h_pin import dump, generated_pin
 from _neso_generic_support import write_capture
 from _neso_sc_pin import PIN_PATH
 from test_neso_dem1_records import _short_base
-from test_neso_multi_resource import SCN1A_ADDED, SCN1B_ADDED
+from test_neso_multi_resource import SCN1A_ADDED, SCN1B_ADDED, SCN1C_ADDED
 
 from gridflow.connectors.neso_data_portal import skeleton
 from gridflow.connectors.neso_data_portal.registry import Held, load_registry
@@ -398,8 +398,9 @@ class TestPilot:
 
     def test_t_sc5_i_only_the_pilot_opts_in(self) -> None:
         """Detects any other committed record setting ``unpivot`` or ``edition_by_filename``
-        (only the pilot, and K-SCN-1b's nine regional FES records which map editions but never
-        unpivot; in a fresh interpreter, so nothing collection imported can mask it)."""
+        (only the pilot, K-SCN-1b's nine regional FES records which map editions but never
+        unpivot, and K-SCN-1c's three building block records, the main one unpivoted; in a fresh
+        interpreter, so nothing collection imported can mask it)."""
         code = textwrap.dedent(
             """
             from gridflow.connectors.neso_data_portal.registry import load_registry
@@ -412,6 +413,9 @@ class TestPilot:
                 )
             )
             assert opted == [
+                "fes_building_blocks_block_definitions",
+                "fes_building_blocks_block_licence_area",
+                "fes_building_blocks_main",
                 "fes_ed1_electricity_demand",
                 "fes_regional_demand_active_power",
                 "fes_regional_dg_gt_1mw",
@@ -581,7 +585,8 @@ class TestSkeletonAndPin:
 
     def test_t_sc8_the_pilot_is_the_only_generated_addition(self) -> None:
         """Detects any generated family other than the FES ED1 pilot, the twelve tRESP records
-        of K-SCN-1a and the nine regional FES records of K-SCN-1b appearing since the base golden
+        of K-SCN-1a, the nine regional FES records of K-SCN-1b and the three building block records
+        of K-SCN-1c appearing since the base golden
         (master ``34992b6``), and any DEM-1 engine digest added or lost."""
         golden = json.loads(PIN_PATH.read_text(encoding="utf-8"))
         current = json.loads(dump(generated_pin()))
@@ -590,5 +595,6 @@ class TestSkeletonAndPin:
                 PILOT,
                 *SCN1A_ADDED,
                 *SCN1B_ADDED,
+                *SCN1C_ADDED,
             }, section
         assert set(current["engine"]) == set(golden["engine"])
