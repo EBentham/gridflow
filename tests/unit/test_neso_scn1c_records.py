@@ -596,22 +596,25 @@ def test_main_has_six_unpivot_epochs_with_the_baselines_mapped() -> None:
 def test_scenario_and_pathway_are_two_nullable_columns_never_merged() -> None:
     """Detects ``FES Scenario`` and ``FES Pathway`` renamed into one label (the vendor does not
     equate them): editions 2020-2023 declare only ``fes_scenario``, 2024-2025 only
-    ``fes_pathway``, both are strings, and both are in the entity key."""
+    ``fes_pathway``, both are nullable strings (null in the other editions' rows), and both
+    are in the entity key."""
     record = _record(MAIN)
     for epoch, edition in zip(record.epochs, range(2020, 2026), strict=True):
         by_source = {c.source: c for c in epoch.columns}
         if edition <= 2023:
             assert "FES Pathway" not in by_source
-            assert (by_source["FES Scenario"].name, by_source["FES Scenario"].dtype) == (
-                "fes_scenario",
-                "string",
-            )
+            assert (
+                by_source["FES Scenario"].name,
+                by_source["FES Scenario"].dtype,
+                by_source["FES Scenario"].nullable,
+            ) == ("fes_scenario", "string", True)
         else:
             assert "FES Scenario" not in by_source
-            assert (by_source["FES Pathway"].name, by_source["FES Pathway"].dtype) == (
-                "fes_pathway",
-                "string",
-            )
+            assert (
+                by_source["FES Pathway"].name,
+                by_source["FES Pathway"].dtype,
+                by_source["FES Pathway"].nullable,
+            ) == ("fes_pathway", "string", True)
     assert {"fes_scenario", "fes_pathway"} <= set(record.entity_key)
 
 
