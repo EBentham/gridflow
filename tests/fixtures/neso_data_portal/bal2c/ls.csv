@@ -1,0 +1,9 @@
+﻿Publication,Year_FY,Published_Date,Voltage,Sum of TEC at Connecting Substation,Connection Type,Tariff
+Forecast,2028,11/05/2026,132kV,<1320 MW,No redundancy,0.414097
+Forecast,2028,11/05/2026,132kV,<1320 MW,Redundancy,0.874864
+Final,2027,30/01/2026,132kV,<1320 MW,No redundancy,0.406178
+Final,2027,30/01/2026,132kV,<1320 MW,Redundancy,0.858134
+Draft,2027,19/12/2025,132kV,<1320 MW,No redundancy,0.405328
+Draft,2027,19/12/2025,132kV,<1320 MW,Redundancy,0.85624
+,,,,,,
+,,,,,,

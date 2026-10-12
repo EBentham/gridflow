@@ -17,7 +17,103 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Publication",
+              "Year_FY",
+              "Published_Date",
+              "Zone_No",
+              "Zone_Name",
+              "Locational_£/kW",
+              "AGIC_£/kW",
+              "PhasedResidual_£/kW",
+              "EET(Floored)_£/kW"
+            ],
+            "columns": [
+              {
+                "source": "Publication",
+                "name": "publication",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Year_FY",
+                "name": "year_fy",
+                "dtype": "int64",
+                "nullable": false
+              },
+              {
+                "source": "Published_Date",
+                "name": "published_date",
+                "dtype": "date",
+                "format": "%d/%m/%Y",
+                "nullable": false
+              },
+              {
+                "source": "Zone_No",
+                "name": "zone_no",
+                "dtype": "int64",
+                "nullable": false
+              },
+              {
+                "source": "Zone_Name",
+                "name": "zone_name",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Locational_£/kW",
+                "name": "locational_gbp_per_kw",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "AGIC_£/kW",
+                "name": "agic_gbp_per_kw",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "PhasedResidual_£/kW",
+                "name": "phased_residual_gbp_per_kw",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "EET(Floored)_£/kW",
+                "name": "eet_floored_gbp_per_kw",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "publication",
+          "year_fy",
+          "published_date",
+          "zone_no"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: TARIFF-ISSUE-AVAILABILITY — each body mixes Forecast/Draft/Final rows with no publication instant; what was available when (publication-level evidence), and how should mixed stages be treated? A publication date alone does not establish availability at midnight.",
+          "unit": "v0.22-K-BAL-2c"
+        }
+      }
     },
     {
       "key": "tnuos_tariffs_half_hourly_hh_demand",
@@ -28,7 +124,103 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Publication",
+              "Year_FY",
+              "Published_Date",
+              "Zone_No",
+              "Zone_Name",
+              "Peak_£/kW",
+              "YearRound_£/kW",
+              "HH_SGD_Adjustment_£/kW",
+              "HHTariff(Floored)_£/kW"
+            ],
+            "columns": [
+              {
+                "source": "Publication",
+                "name": "publication",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Year_FY",
+                "name": "year_fy",
+                "dtype": "int64",
+                "nullable": false
+              },
+              {
+                "source": "Published_Date",
+                "name": "published_date",
+                "dtype": "date",
+                "format": "%d/%m/%Y",
+                "nullable": false
+              },
+              {
+                "source": "Zone_No",
+                "name": "zone_no",
+                "dtype": "int64",
+                "nullable": false
+              },
+              {
+                "source": "Zone_Name",
+                "name": "zone_name",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Peak_£/kW",
+                "name": "peak_gbp_per_kw",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "YearRound_£/kW",
+                "name": "year_round_gbp_per_kw",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "HH_SGD_Adjustment_£/kW",
+                "name": "hh_sgd_adjustment_gbp_per_kw",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "HHTariff(Floored)_£/kW",
+                "name": "hh_tariff_floored_gbp_per_kw",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "publication",
+          "year_fy",
+          "published_date",
+          "zone_no"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: TARIFF-ISSUE-AVAILABILITY — each body mixes Forecast/Draft/Final rows with no publication instant; what was available when (publication-level evidence), and how should mixed stages be treated? A publication date alone does not establish availability at midnight.",
+          "unit": "v0.22-K-BAL-2c"
+        }
+      }
     },
     {
       "key": "tnuos_tariffs_local_offshore_generator",
@@ -39,7 +231,89 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Publication",
+              "Year_FY",
+              "Published_Date",
+              "OffshoreGenerator",
+              "Substation_£/kW",
+              "Circuit_£/kW",
+              "ETUoS_£/kW"
+            ],
+            "columns": [
+              {
+                "source": "Publication",
+                "name": "publication",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Year_FY",
+                "name": "year_fy",
+                "dtype": "int64",
+                "nullable": false
+              },
+              {
+                "source": "Published_Date",
+                "name": "published_date",
+                "dtype": "date",
+                "format": "%d/%m/%Y",
+                "nullable": false
+              },
+              {
+                "source": "OffshoreGenerator",
+                "name": "offshore_generator",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Substation_£/kW",
+                "name": "substation_gbp_per_kw",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Circuit_£/kW",
+                "name": "circuit_gbp_per_kw",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "ETUoS_£/kW",
+                "name": "etuos_gbp_per_kw",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "publication",
+          "year_fy",
+          "published_date",
+          "offshore_generator"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: TARIFF-ISSUE-AVAILABILITY — each body mixes Forecast/Draft/Final rows with no publication instant; what was available when (publication-level evidence), and how should mixed stages be treated? A publication date alone does not establish availability at midnight.",
+          "unit": "v0.22-K-BAL-2c"
+        }
+      }
     },
     {
       "key": "tnuos_tariffs_local_substation_tariff",
@@ -50,7 +324,91 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Publication",
+              "Year_FY",
+              "Published_Date",
+              "Voltage",
+              "Sum of TEC at Connecting Substation",
+              "Connection Type",
+              "Tariff"
+            ],
+            "columns": [
+              {
+                "source": "Publication",
+                "name": "publication",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Year_FY",
+                "name": "year_fy",
+                "dtype": "int64",
+                "nullable": false
+              },
+              {
+                "source": "Published_Date",
+                "name": "published_date",
+                "dtype": "date",
+                "format": "%d/%m/%Y",
+                "nullable": false
+              },
+              {
+                "source": "Voltage",
+                "name": "voltage",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Sum of TEC at Connecting Substation",
+                "name": "sum_of_tec_at_connecting_substation",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Connection Type",
+                "name": "connection_type",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Tariff",
+                "name": "tariff_gbp_per_kw",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "publication",
+          "year_fy",
+          "published_date",
+          "voltage",
+          "sum_of_tec_at_connecting_substation",
+          "connection_type"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: TARIFF-ISSUE-AVAILABILITY — each body mixes Forecast/Draft/Final rows with no publication instant; what was available when (publication-level evidence), and how should mixed stages be treated? A publication date alone does not establish availability at midnight.",
+          "unit": "v0.22-K-BAL-2c"
+        }
+      }
     },
     {
       "key": "tnuos_tariffs_non_half_hourly_nhh_demand",
@@ -61,7 +419,96 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Publication",
+              "Year_FY",
+              "Published_Date",
+              "Zone_No",
+              "Zone_Name",
+              "NHH_Zonal_p/kWh",
+              "NHH_SGD_Adjustment_p/kWh",
+              "NHHTariff(Floored)_p/kWh"
+            ],
+            "columns": [
+              {
+                "source": "Publication",
+                "name": "publication",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Year_FY",
+                "name": "year_fy",
+                "dtype": "int64",
+                "nullable": false
+              },
+              {
+                "source": "Published_Date",
+                "name": "published_date",
+                "dtype": "date",
+                "format": "%d/%m/%Y",
+                "nullable": false
+              },
+              {
+                "source": "Zone_No",
+                "name": "zone_no",
+                "dtype": "int64",
+                "nullable": false
+              },
+              {
+                "source": "Zone_Name",
+                "name": "zone_name",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "NHH_Zonal_p/kWh",
+                "name": "nhh_zonal_p_per_kwh",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "NHH_SGD_Adjustment_p/kWh",
+                "name": "nhh_sgd_adjustment_p_per_kwh",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "NHHTariff(Floored)_p/kWh",
+                "name": "nhh_tariff_floored_p_per_kwh",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "publication",
+          "year_fy",
+          "published_date",
+          "zone_no"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: TARIFF-ISSUE-AVAILABILITY — each body mixes Forecast/Draft/Final rows with no publication instant; what was available when (publication-level evidence), and how should mixed stages be treated? A publication date alone does not establish availability at midnight.",
+          "unit": "v0.22-K-BAL-2c"
+        }
+      }
     },
     {
       "key": "tnuos_tariffs_onshore_generator",
@@ -72,7 +519,110 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Publication",
+              "Year_FY",
+              "Published_Date",
+              "Zone_No",
+              "Zone_Name",
+              "SystemPeak_£/kW",
+              "SharedYearRound_£/kW",
+              "NotSharedYearRound_£/kW",
+              "Residual_£/kW",
+              "SmallGenDiscount_£/kW"
+            ],
+            "columns": [
+              {
+                "source": "Publication",
+                "name": "publication",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Year_FY",
+                "name": "year_fy",
+                "dtype": "int64",
+                "nullable": false
+              },
+              {
+                "source": "Published_Date",
+                "name": "published_date",
+                "dtype": "date",
+                "format": "%d/%m/%Y",
+                "nullable": false
+              },
+              {
+                "source": "Zone_No",
+                "name": "zone_no",
+                "dtype": "int64",
+                "nullable": false
+              },
+              {
+                "source": "Zone_Name",
+                "name": "zone_name",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "SystemPeak_£/kW",
+                "name": "system_peak_gbp_per_kw",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "SharedYearRound_£/kW",
+                "name": "shared_year_round_gbp_per_kw",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "NotSharedYearRound_£/kW",
+                "name": "not_shared_year_round_gbp_per_kw",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Residual_£/kW",
+                "name": "residual_gbp_per_kw",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "SmallGenDiscount_£/kW",
+                "name": "small_gen_discount_gbp_per_kw",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "publication",
+          "year_fy",
+          "published_date",
+          "zone_no"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: TARIFF-ISSUE-AVAILABILITY — each body mixes Forecast/Draft/Final rows with no publication instant; what was available when (publication-level evidence), and how should mixed stages be treated? A publication date alone does not establish availability at midnight.",
+          "unit": "v0.22-K-BAL-2c"
+        }
+      }
     },
     {
       "key": "tnuos_tariffs_onshore_local_circuit",
@@ -83,7 +633,74 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Publication",
+              "Year_FY",
+              "Published_Date",
+              "Substation_Name",
+              "Tariff_£/kW"
+            ],
+            "columns": [
+              {
+                "source": "Publication",
+                "name": "publication",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Year_FY",
+                "name": "year_fy",
+                "dtype": "int64",
+                "nullable": false
+              },
+              {
+                "source": "Published_Date",
+                "name": "published_date",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Substation_Name",
+                "name": "substation_name",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Tariff_£/kW",
+                "name": "tariff_gbp_per_kw",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "publication",
+          "year_fy",
+          "published_date",
+          "substation_name"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: TARIFF-ISSUE-AVAILABILITY — each body mixes Forecast/Draft/Final rows with no publication instant; what was available when (publication-level evidence), and how should mixed stages be treated? A publication date alone does not establish availability at midnight. Are trailing spaces / tab in `Substation_Name` meaningful, or should NESO republish them trimmed?",
+          "unit": "v0.22-K-BAL-2c"
+        }
+      }
     },
     {
       "key": "tnuos_tariffs_transmission_demand",
@@ -94,7 +711,82 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Publication",
+              "Year_FY",
+              "Published_Date",
+              "TDR Band",
+              "TDR Tariff in Â£/(Site Day)",
+              "Notes"
+            ],
+            "columns": [
+              {
+                "source": "Publication",
+                "name": "publication",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Year_FY",
+                "name": "year_fy",
+                "dtype": "int64",
+                "nullable": false
+              },
+              {
+                "source": "Published_Date",
+                "name": "published_date",
+                "dtype": "date",
+                "format": "%d/%m/%Y",
+                "nullable": false
+              },
+              {
+                "source": "TDR Band",
+                "name": "tdr_band",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "TDR Tariff in Â£/(Site Day)",
+                "name": "tdr_tariff",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Notes",
+                "name": "notes",
+                "dtype": "string",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "publication",
+          "year_fy",
+          "published_date",
+          "tdr_band"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: TARIFF-ISSUE-AVAILABILITY — each body mixes Forecast/Draft/Final rows with no publication instant; what was available when (publication-level evidence), and how should mixed stages be treated? A publication date alone does not establish availability at midnight. TODO: TDR-UNMETERED-UNIT — ordinary bands are £/(site day), but the unmetered band's unit conflicts (the dictionary says p/kWh per day, the final tariff statement p/kWh/annum in its summary and p/kWh in its detailed table); which unit does the Unmetered band carry in this column?",
+          "unit": "v0.22-K-BAL-2c"
+        }
+      }
     }
   ],
   "resources": [

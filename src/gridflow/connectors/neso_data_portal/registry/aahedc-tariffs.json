@@ -17,7 +17,81 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Publication Type",
+              "Year FY",
+              "Published Date",
+              "Total Scheme Tariff in p/kwh",
+              "Shetland Tariff in p/kwh",
+              "AAHEDC tariff excluding the Shetland Assistance Amount in p/kwh"
+            ],
+            "columns": [
+              {
+                "source": "Publication Type",
+                "name": "publication_type",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Year FY",
+                "name": "year_fy",
+                "dtype": "int64",
+                "nullable": false
+              },
+              {
+                "source": "Published Date",
+                "name": "published_date",
+                "dtype": "date",
+                "format": "%d/%m/%Y",
+                "nullable": false
+              },
+              {
+                "source": "Total Scheme Tariff in p/kwh",
+                "name": "total_scheme_tariff_p_per_kwh",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Shetland Tariff in p/kwh",
+                "name": "shetland_tariff_p_per_kwh",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "AAHEDC tariff excluding the Shetland Assistance Amount in p/kwh",
+                "name": "tariff_excluding_shetland_assistance_amount_p_per_kwh",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "publication_type",
+          "year_fy",
+          "published_date"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: TARIFF-ISSUE-AVAILABILITY — each body mixes Forecast/Draft/Final rows with no publication instant; what was available when (publication-level evidence), and how should mixed stages be treated? A publication date alone does not establish availability at midnight.",
+          "unit": "v0.22-K-BAL-2c"
+        }
+      }
     }
   ],
   "resources": [

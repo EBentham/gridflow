@@ -1,0 +1,7 @@
+﻿Publication,Year_FY,Published_Date,Zone_No,Zone_Name,Peak_£/kW,YearRound_£/kW,HH_SGD_Adjustment_£/kW,HHTariff(Floored)_£/kW
+Forecast,2028,11/05/2026,1,Northern Scotland,-2.298509,-38.486797,0.000000,0.000000
+Forecast,2028,11/05/2026,2,Southern Scotland,-3.257550,-26.609440,0.000000,0.000000
+Final,2027,30/01/2026,1,Northern Scotland,-2.490073,-37.248832,0.000000,0.000000
+Final,2027,30/01/2026,2,Southern Scotland,-2.966429,-24.811726,0.000000,0.000000
+Draft,2027,19/12/2025,1,Northern Scotland,-2.615112,-41.745256,0.000000,0.000000
+Draft,2027,19/12/2025,2,Southern Scotland,-3.005863,-28.320832,0.000000,0.000000

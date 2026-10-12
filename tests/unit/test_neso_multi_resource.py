@@ -207,6 +207,20 @@ BAL2B_ADDED = frozenset(
     }
 )
 """The nine skip-rate families that v0.22-K-BAL-2b records (two eligible, seven held)."""
+BAL2C_ADDED = frozenset(
+    {
+        "aahedc_tariffs",
+        "tnuos_tariffs_embedded_export",
+        "tnuos_tariffs_half_hourly_hh_demand",
+        "tnuos_tariffs_non_half_hourly_nhh_demand",
+        "tnuos_tariffs_onshore_generator",
+        "tnuos_tariffs_local_offshore_generator",
+        "tnuos_tariffs_local_substation_tariff",
+        "tnuos_tariffs_transmission_demand",
+        "tnuos_tariffs_onshore_local_circuit",
+    }
+)
+"""The AAHEDC and eight TNUoS tariff families that v0.22-K-BAL-2c records (all held)."""
 REWORDED_HOLDS = {
     "national_forecast_7d_historic_day_ahead": (
         "TODO: FORECAST_TIMESTAMP has no vendor definition and its zone is undocumented "
@@ -255,8 +269,8 @@ class TestByteUnchanged:
         records, v0.22-SC's FES ED1 record, K-SCN-1a's twelve tRESP records, K-SCN-1b's nine
         regional FES records, K-SCN-1c's three building block records, K-SCN-1d's ES1 record,
         K-CON's seven constraint-management records, K-SYS-1's eight system records, K-BAL-1's
-        nine balancing-costs records, K-BAL-2a's BSUoS monthly forecast summary record and
-        K-BAL-2b's nine skip-rate records appearing.
+        nine balancing-costs records, K-BAL-2a's BSUoS monthly forecast summary record,
+        K-BAL-2b's nine skip-rate records and K-BAL-2c's nine tariff records appearing.
         """
         golden = json.loads(PIN_PATH.read_text(encoding="utf-8"))
         for key, question in REWORDED_HOLDS.items():
@@ -286,6 +300,7 @@ class TestByteUnchanged:
                     *BAL1_ADDED,
                     *BAL2A_ADDED,
                     *BAL2B_ADDED,
+                    *BAL2C_ADDED,
                 }
                 if section != "engine"
                 else set()
