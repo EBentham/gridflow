@@ -828,6 +828,24 @@ families stay record-less: their bodies repeat whole rows)."""
 
 BAL2B_PACKAGE_FILES = {"skip-rates.json"}
 
+BAL2C_RECORDED = {
+    "aahedc_tariffs",
+    "tnuos_tariffs_embedded_export",
+    "tnuos_tariffs_half_hourly_hh_demand",
+    "tnuos_tariffs_non_half_hourly_nhh_demand",
+    "tnuos_tariffs_onshore_generator",
+    "tnuos_tariffs_local_offshore_generator",
+    "tnuos_tariffs_local_substation_tariff",
+    "tnuos_tariffs_transmission_demand",
+    "tnuos_tariffs_onshore_local_circuit",
+}
+"""The AAHEDC family and the eight TNUoS tariff families unit K-BAL-2c records (all nine held)."""
+
+BAL2C_PACKAGE_FILES = {
+    "aahedc-tariffs.json",
+    "transmission-network-use-of-system-tnuos-tariffs.json",
+}
+
 X_RESOURCES_WITH_CHILDREN = 4 + 1 + 39 + 73 + 1
 """Unit X's committed inventories (ADR-037 P-8): CMP workbooks, the ResultSummary ZIP,
 frequency ZIPs, held data containers and the GSP archive with a CSV member."""
@@ -866,6 +884,7 @@ class TestSeededRegistry:
             | BAL1_RECORDED
             | BAL2A_RECORDED
             | BAL2B_RECORDED
+            | BAL2C_RECORDED
         )
         with_children = [res for _package, res in loaded.resources.values() if res.children]
         assert len(with_children) == X_RESOURCES_WITH_CHILDREN
@@ -905,6 +924,7 @@ class TestSeededRegistry:
             | BAL1_PACKAGE_FILES
             | BAL2A_PACKAGE_FILES
             | BAL2B_PACKAGE_FILES
+            | BAL2C_PACKAGE_FILES
         )
 
 

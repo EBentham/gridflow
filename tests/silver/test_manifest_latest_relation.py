@@ -58,7 +58,8 @@ from gridflow.silver.schema_manifest import (
 # and sixteen with v0.22-K-SYS-1's eight system records, then to one hundred and twenty-five with
 # v0.22-K-BAL-1's nine balancing-costs records, then to one hundred and twenty-six with
 # v0.22-K-BAL-2a's BSUoS monthly forecast summary record, then to one hundred and thirty-five with
-# v0.22-K-BAL-2b's nine skip-rate records.
+# v0.22-K-BAL-2b's nine skip-rate records, then to one hundred and forty-four with
+# v0.22-K-BAL-2c's nine tariff records.
 _APPEND_ONLY_DATASETS: tuple[tuple[str, str], ...] = (
     ("elexon", "system_prices"),
     ("elexon", "remit"),
@@ -195,6 +196,15 @@ _APPEND_ONLY_DATASETS: tuple[tuple[str, str], ...] = (
     ("neso_data_portal", "skip_rates_exclusion_reasons"),
     ("neso_data_portal", "skip_rates_stage6_acceptance"),
     ("neso_data_portal", "skip_rates_stage6_psa"),
+    ("neso_data_portal", "aahedc_tariffs"),
+    ("neso_data_portal", "tnuos_tariffs_embedded_export"),
+    ("neso_data_portal", "tnuos_tariffs_half_hourly_hh_demand"),
+    ("neso_data_portal", "tnuos_tariffs_non_half_hourly_nhh_demand"),
+    ("neso_data_portal", "tnuos_tariffs_onshore_generator"),
+    ("neso_data_portal", "tnuos_tariffs_local_offshore_generator"),
+    ("neso_data_portal", "tnuos_tariffs_local_substation_tariff"),
+    ("neso_data_portal", "tnuos_tariffs_transmission_demand"),
+    ("neso_data_portal", "tnuos_tariffs_onshore_local_circuit"),
 )
 
 
@@ -388,9 +398,9 @@ def test_append_only_set_equals_latest_spec_set() -> None:
     spec_set = set(LATEST_VIEW_SPECS)
 
     # Non-vacuity guard: this invariant must never pass because both sides are
-    # empty (F16) -- one hundred and thirty-five APPEND_ONLY datasets are registered today.
+    # empty (F16) -- one hundred and forty-four APPEND_ONLY datasets are registered today.
     assert len(append_only) > 0
-    assert len(append_only) == 135
+    assert len(append_only) == 144
 
     missing_specs = append_only - spec_set
     extra_specs = spec_set - append_only
@@ -707,6 +717,36 @@ _EXPECTED_APPEND_ONLY_DEPRECATED_ALIASES: dict[tuple[str, str], str | None] = {
     ("neso_data_portal", "skip_rates_exclusion_reasons"): "silver_skip_rates_exclusion_reasons",
     ("neso_data_portal", "skip_rates_stage6_acceptance"): "silver_skip_rates_stage6_acceptance",
     ("neso_data_portal", "skip_rates_stage6_psa"): "silver_skip_rates_stage6_psa",
+    ("neso_data_portal", "aahedc_tariffs"): "silver_aahedc_tariffs",
+    ("neso_data_portal", "tnuos_tariffs_embedded_export"): "silver_tnuos_tariffs_embedded_export",
+    (
+        "neso_data_portal",
+        "tnuos_tariffs_half_hourly_hh_demand",
+    ): "silver_tnuos_tariffs_half_hourly_hh_demand",
+    (
+        "neso_data_portal",
+        "tnuos_tariffs_non_half_hourly_nhh_demand",
+    ): "silver_tnuos_tariffs_non_half_hourly_nhh_demand",
+    (
+        "neso_data_portal",
+        "tnuos_tariffs_onshore_generator",
+    ): "silver_tnuos_tariffs_onshore_generator",
+    (
+        "neso_data_portal",
+        "tnuos_tariffs_local_offshore_generator",
+    ): "silver_tnuos_tariffs_local_offshore_generator",
+    (
+        "neso_data_portal",
+        "tnuos_tariffs_local_substation_tariff",
+    ): "silver_tnuos_tariffs_local_substation_tariff",
+    (
+        "neso_data_portal",
+        "tnuos_tariffs_transmission_demand",
+    ): "silver_tnuos_tariffs_transmission_demand",
+    (
+        "neso_data_portal",
+        "tnuos_tariffs_onshore_local_circuit",
+    ): "silver_tnuos_tariffs_onshore_local_circuit",
 }
 
 
