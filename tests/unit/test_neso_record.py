@@ -210,6 +210,21 @@ class TestRules:
                 family_url_types=frozenset({"upload"}),
             )
 
+    def test_v19_a_key_column_cannot_be_trimmed(self, tmp_path: Path) -> None:
+        """Detects a trimmed key column: trimming would merge entity keys that
+        differ only by padding (BAL-2aH). Positive control: the non-key value."""
+        cols = sp_columns()
+        cols[1] = column(
+            "SettlementPeriod", "settlement_period", "int64", nullable=False, trim="ascii"
+        )
+        _refused(tmp_path, "V-19", _with_columns(cols))
+        control = sp_columns()
+        control[3] = column("Value", "value", "float64", trim="ascii")
+        loaded = _load(tmp_path / "control", _with_columns(control))
+        entry = loaded.families["gen_series"][1].record
+        assert entry is not None
+        assert entry.epochs[0].columns[3].trim == "ascii"
+
     def test_v10_sibling_outside_the_package(self, tmp_path: Path) -> None:
         _refused(tmp_path, "V-10", record(siblings=("elsewhere",)))
 
@@ -413,11 +428,71 @@ class TestColumnShapes:
                 "zone_evidence": "x",
                 "ambiguous": "raise",
             },
+            {"source": "S", "name": "s", "dtype": "string", "nullable": True, "trim": "ascii"},
+            {
+                "source": "D",
+                "name": "d",
+                "dtype": "date",
+                "nullable": True,
+                "format": "%Y-%m-%d",
+                "trim": "ascii",
+            },
+            {
+                "source": "T",
+                "name": "t",
+                "dtype": "datetime",
+                "nullable": True,
+                "format": "%Y-%m-%d %H:%M",
+                "zone": "UTC",
+                "trim": "ascii",
+            },
+            {"source": "V", "name": "v", "dtype": "float64", "nullable": True, "trim": "unicode"},
+            {"source": "V", "name": "v", "dtype": "float64", "nullable": True, "trim": True},
+            {
+                "source": "V",
+                "name": "v",
+                "dtype": "float64",
+                "nullable": True,
+                "trim": "ascii",
+                "null_tokens": [" - "],
+            },
         ],
     )
     def test_malformed_column_specs_are_rejected(self, spec: dict[str, Any]) -> None:
         with pytest.raises(ValueError):
             ColumnSpec.model_validate(spec)
+
+    @pytest.mark.parametrize("dtype", ["float64", "int64"])
+    def test_a_trimmed_numeric_spec_is_accepted(self, dtype: str) -> None:
+        """Detects the opt-in edge trim being refused on a numeric column (BAL-2aH)."""
+        spec = ColumnSpec.model_validate(
+            {
+                "source": "V",
+                "name": "v",
+                "dtype": dtype,
+                "nullable": True,
+                "null_tokens": ["-"],
+                "trim": "ascii",
+            }
+        )
+        assert spec.trim == "ascii"
+
+    def test_the_default_dump_carries_no_trim(self) -> None:
+        """T-DUMP. Detects a ``trim`` key entering every record's dump, which would
+        change every equivalence fingerprint and golden pin."""
+        dumped = SchemaRecord.model_validate(record()).model_dump(mode="json", exclude_none=True)
+        for each in dumped["epochs"]:
+            for spec in each["columns"]:
+                assert "trim" not in spec, spec
+
+    def test_an_opted_in_trim_round_trips(self) -> None:
+        """T-DUMP. Detects the opt-in being lost through a dump and reload."""
+        cols = sp_columns()
+        cols[3] = column("Value", "value", "float64", trim="ascii")
+        loaded = SchemaRecord.model_validate(_with_columns(cols))
+        again = SchemaRecord.model_validate(loaded.model_dump(mode="json"))
+        assert again == loaded
+        assert again.epochs[0].columns[3].trim == "ascii"
 
     def test_an_iana_zone_with_evidence_and_a_rule_is_accepted(self) -> None:
         spec = ColumnSpec.model_validate(

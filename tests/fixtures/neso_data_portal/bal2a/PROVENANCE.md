@@ -15,7 +15,9 @@ endings, so the tests rebuild the originals' CRLF convention. Nothing is repaire
 | `f10.csv` | `3ed31178-bd64-41ce-8665-85b77db7aaaf` | `bsuos-forecast-july-2023.csv` | `b8712273` | F10 | bare `Volume` (T127), `%d/%m/%Y` months |
 | `f11.csv` | `60ee18d3-b999-4413-aac5-82a30d2a982c` | `bsuos-forecast-aug-2023.csv` | `8c474091` | F11 | `Estimated BSUoS Volume (TWh)`, `%d/%m/%Y` months |
 | `f12.csv` | `963cf73a-138e-4521-986b-12079f45b78d` | `bsuos-forecast-feb-2024.csv` | `6aad5684` | F12 | `21/22 Under-Recovered Costs (£m)`, plain cells |
-| `f12p.csv` | `9120ae56-f4b5-4512-baaa-e20f8b31a014` | `bsuos-forecast-mar-2024.csv` | `6fa32059` | F12 | same header as `f12`; **padded numerals (` 4.0 `) and the ` -   ` token** |
+| `f12p.csv` | `9120ae56-f4b5-4512-baaa-e20f8b31a014` | `bsuos-forecast-mar-2024.csv` | `6fa32059` | F12 | March 2024: same header as `f12`; **padded numerals (` 4.0 `) and the ` -   ` token** |
+| `f12q.csv` | `0bef1780-082d-46ec-90af-62b3d0586061` | `bsuos-forecast-apr-2024.csv` | `ffdaf329` | F12 | April 2024: one padded numeral ` 4.23 `, the ` -   ` token, a blank row |
+| `f12r.csv` | `ebdd84ac-02cb-4552-a427-9b0dc56f5482` | `bsuos-forecast-may-2024.csv` | `78eccd25` | F12 | May 2024: the ` -   ` token only |
 | `f13.csv` | `2d5f0be1-2aab-4ab7-af28-c67a2f38db6b` | `bsuos-forecast-august-2024.csv` | `6b685bfe` | F13 | final shape, unpadded headers, `Additional NESO Framework Costs (£m)` |
 | `f14.csv` | `495879f8-4605-4ade-b4d1-7b1d37a163fa` | `bsuos-forecast-march-2025.csv` | `3bcad14f` | F14 | final shape, one leading and one trailing space on the last six headers, a blank row, `%d/%m/%Y` |
 | `f15.csv` | `b458c4e5-ab80-43e5-907e-6c7069350390` | `bsuos-forecast-october-2026.csv` | `e402fce2` | F15 | the newest body; exact F15 padding |
@@ -25,15 +27,16 @@ Reader epochs: F13, F14 and F15 are one reader epoch (the reader strips header-e
 The 53 valid-UTF-8 resources fall in 8 reader epochs; the 22 invalid ones (F0-F3, F6, F9) fail the
 UTF-8 gate before epoch matching.
 
-## Seat ruling 678: the three strict-cast failures stay open
+## Seat ruling 678 / BAL-2aH: the three March-May 2024 captures
 
-FACTS T128/T129 say no nonblank numeric token fails a `float64` cast. Three F12 resources do:
+FACTS T128/T129 say no nonblank numeric token fails a `float64` cast. Three F12 resources did:
 March, April and May 2024 (`9120ae56`, `0bef1780`, `ebdd84ac`) carry the accounting-format token
 ` -   ` in `Winter Security of Supply Cost (£m)` and `21/22 Under-Recovered Costs (£m)` (105 cells,
 beside `0` in the neighbouring February 2024 and January 2024 editions for the same target months),
-and March and April 2024 also pad numerals (` 4.0 `, 27 cells). The engine's cast is strict, has no
-trim and a null token would turn a probable zero into null, so those three captures fail with
-`InvalidOperationError` and load nothing (D-41). The fixture `f12p.csv` pins that. Ruling 678: no adjudication entry
-(`InvalidOperationError` is not an ADR-040 cause) and no new mechanism; the three stay open `failed`
-gaps until the follow-up unit BAL-2aH adds lexical numeric cleanup. Real-body count: 75 captures = 22
-adjudicated `UnicodeDecodeError` + 3 open `InvalidOperationError` + 50 loaded.
+and March and April 2024 also pad numerals (` 4.0 `). Under ruling 678 they first failed the strict
+cast with `InvalidOperationError` (no ADR-040 cause, no adjudication entry). Since BAL-2aH (ADR-034
+§Amendment 1) those two F12 columns declare `trim: "ascii"` and the null token `-`: a padded numeral
+is edge-trimmed and the dash loads as null. Its meaning (zero or not-available) stays open in the
+record's held question; a zero ruling re-transforms the three captures from bronze. Any other value
+still fails the capture. `f12p.csv`, `f12q.csv` and `f12r.csv` pin the load. Real-body count: 75
+captures = 22 adjudicated `UnicodeDecodeError` + 53 loaded, 1,272 rows.

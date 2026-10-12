@@ -7,7 +7,7 @@ beside the package files and is validated when the registry loads:
 - the **models** below check each object's own shape (Pydantic, frozen,
   ``extra="forbid"``);
 - :func:`validate_record` checks the record against itself, its family and its
-  package (rules V-1..V-10, V-13, V-17, V-18), and :func:`validate_silver_targets` checks
+  package (rules V-1..V-10, V-13, V-17, V-18, V-19), and :func:`validate_silver_targets` checks
   every ``SILVER`` disposition once all files are loaded (V-11). Every failure
   raises :class:`RecordError` naming the rule; the loader re-raises it as a
   ``RegistryError`` naming the file and family.
@@ -34,6 +34,7 @@ from gridflow.silver.date_columns import DATE_COL_SQL_TYPES
 __all__ = [
     "CHILD_SEPARATOR",
     "EDITION",
+    "NUMERIC_TRIM_CHARS",
     "PROJECTION_YEAR",
     "RESERVED",
     "SILVER_NAME_PATTERN",
@@ -65,6 +66,14 @@ VALUE = "value"
 
 EDITION = "edition"
 """The silver name of the engine's edition stamp (ADR-042)."""
+
+NUMERIC_TRIM_CHARS = " \t\n\r\v\f"
+"""The ASCII whitespace a ``trim: "ascii"`` column strips from both ends of a cell.
+
+NBSP (U+00A0) and other Unicode spaces are excluded: they are not ASCII, the
+measured vendor cells carry only U+0020, and including them would widen the
+cleanup past what the bodies show. This is the only definition of the set.
+"""
 
 SILVER_NAME_PATTERN = re.compile(r"^[a-z][a-z0-9_]*$")
 
@@ -147,6 +156,10 @@ class ColumnSpec(_Frozen):
         zone: ``None`` (the format carries ``%z``), ``"UTC"``, or an IANA zone.
         zone_evidence: Why an IANA zone is the vendor's (required with one).
         ambiguous: How an IANA zone's repeated hour resolves.
+        trim: ``"ascii"``: strip :data:`NUMERIC_TRIM_CHARS` from both ends of
+            each cell before the null-token match and the cast (numeric non-key
+            columns only, V-19). ``None``, the default, is omitted from every
+            ``exclude_none`` dump.
     """
 
     source: str
@@ -161,6 +174,7 @@ class ColumnSpec(_Frozen):
     zone: str | None = None
     zone_evidence: str | None = None
     ambiguous: Literal["earliest", "latest", "raise"] | None = None
+    trim: Literal["ascii"] | None = None
 
     @model_validator(mode="after")
     def _shape(self) -> ColumnSpec:
@@ -178,6 +192,14 @@ class ColumnSpec(_Frozen):
             "float64",
         ):
             raise ValueError(f"column {self.name!r}: min/max apply to numeric columns only")
+        if self.trim is not None:
+            if self.dtype not in ("int64", "float64"):
+                raise ValueError(f"column {self.name!r}: trim applies to numeric columns only")
+            if any(token != token.strip(NUMERIC_TRIM_CHARS) for token in self.null_tokens):
+                raise ValueError(
+                    f"column {self.name!r}: a trimmed column's null tokens carry no edge "
+                    "whitespace (they could never match)"
+                )
         if self.dtype != "datetime":
             if self.zone is not None or self.zone_evidence is not None or self.ambiguous:
                 raise ValueError(f"column {self.name!r}: zone rules apply to datetime only")
@@ -686,6 +708,10 @@ def validate_record(
         raise _fail(
             "V-4", "issue_time must be in entity_key exactly when some epoch declares an issue time"
         )
+    for epoch in record.epochs:
+        for spec in epoch_outputs(epoch):
+            if spec.trim is not None and spec.name in key_set:
+                raise _fail("V-19", f"column {spec.name!r} is in entity_key and cannot be trimmed")
 
     if record.run_type_column is not None and (
         dtypes.get(record.run_type_column) != "string" or record.run_type_column not in key_set
