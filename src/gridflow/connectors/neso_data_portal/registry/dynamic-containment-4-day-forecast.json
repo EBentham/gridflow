@@ -17,7 +17,93 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Date",
+              "Service_Type",
+              "EFA_1",
+              "EFA_2",
+              "EFA_3",
+              "EFA_4",
+              "EFA_5",
+              "EFA_6"
+            ],
+            "columns": [
+              {
+                "source": "Date",
+                "name": "date",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Service_Type",
+                "name": "service_type",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "EFA_1",
+                "name": "efa_1",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "EFA_2",
+                "name": "efa_2",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "EFA_3",
+                "name": "efa_3",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "EFA_4",
+                "name": "efa_4",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "EFA_5",
+                "name": "efa_5",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "EFA_6",
+                "name": "efa_6",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "date",
+          "service_type"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: DC-DATE-ORDER — `Date` is published as dd/mm/yyyy or mm/dd/yyyy? The dictionary documents ISO dates; every captured value is ambiguous.",
+          "unit": "v0.22-K-AS-1"
+        }
+      }
     },
     {
       "key": "dc_forecast_4d_history",
@@ -28,7 +114,103 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Forecast_Created",
+              "Forecast_Target_Date",
+              "Service_Type",
+              "EFA_1",
+              "EFA_2",
+              "EFA_3",
+              "EFA_4",
+              "EFA_5",
+              "EFA_6"
+            ],
+            "columns": [
+              {
+                "source": "Forecast_Created",
+                "name": "forecast_created",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Forecast_Target_Date",
+                "name": "forecast_target_date",
+                "dtype": "date",
+                "format": "%d/%m/%Y",
+                "nullable": false
+              },
+              {
+                "source": "Service_Type",
+                "name": "service_type",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "EFA_1",
+                "name": "efa_1",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "EFA_2",
+                "name": "efa_2",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "EFA_3",
+                "name": "efa_3",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "EFA_4",
+                "name": "efa_4",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "EFA_5",
+                "name": "efa_5",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "EFA_6",
+                "name": "efa_6",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "date_sp1",
+          "date_column": "forecast_target_date"
+        },
+        "entity_key": [
+          "forecast_created",
+          "forecast_target_date",
+          "service_type"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: DC-HISTORY-ISSUE — when was each creation-labelled issue published? 8 rows are created after the upload's last-modified date and 15 creation dates are missing from the archive.",
+          "unit": "v0.22-K-AS-1"
+        }
+      }
     }
   ],
   "resources": [

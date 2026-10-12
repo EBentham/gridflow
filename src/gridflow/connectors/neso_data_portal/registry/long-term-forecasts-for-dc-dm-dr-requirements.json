@@ -17,7 +17,85 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Forecast Created",
+              "Forecast Target Month",
+              "Service Type",
+              "EFA",
+              "Interval",
+              "Possibilities"
+            ],
+            "columns": [
+              {
+                "source": "Forecast Created",
+                "name": "forecast_created",
+                "dtype": "date",
+                "format": "%Y-%m-%d",
+                "nullable": false
+              },
+              {
+                "source": "Forecast Target Month",
+                "name": "forecast_target_month",
+                "dtype": "date",
+                "format": "%Y-%m-%d",
+                "nullable": false
+              },
+              {
+                "source": "Service Type",
+                "name": "service_type",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "EFA",
+                "name": "efa",
+                "dtype": "int64",
+                "nullable": false
+              },
+              {
+                "source": "Interval",
+                "name": "interval",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Possibilities",
+                "name": "possibilities",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "month",
+          "date_column": "forecast_target_month"
+        },
+        "entity_key": [
+          "forecast_created",
+          "forecast_target_month",
+          "service_type",
+          "efa",
+          "interval"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: DX-LT-INTERVAL — what unit and which inclusive endpoint do the `Interval` bands (`0-200` … `1600-1800`) use, and when was the creation-dated forecast available? 324 rows target the creation month.",
+          "unit": "v0.22-K-AS-1"
+        }
+      }
     }
   ],
   "resources": [

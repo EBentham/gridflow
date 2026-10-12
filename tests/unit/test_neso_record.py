@@ -868,6 +868,28 @@ TRD_PACKAGE_FILES = {
     "upcoming-trades.json",
 }
 
+AS1_RECORDED = {
+    "br_auction_requirement_fc_da",
+    "br_auction_requirement_fc_da_archive",
+    "br_auction_requirement_fc_medium_term",
+    "dc_forecast_4d",
+    "dc_forecast_4d_history",
+    "dm_requirements",
+    "dr_requirements",
+    "dc_dm_dr_long_term_fc",
+    "qr_auction_requirement_fc",
+}
+"""The nine ancillary-services families unit K-AS-1 records (four eligible, five held)."""
+
+AS1_PACKAGE_FILES = {
+    "balancing-reserve-auction-requirement-forecast.json",
+    "dynamic-containment-4-day-forecast.json",
+    "dynamic-moderation-requirements.json",
+    "dynamic-regulation-requirements.json",
+    "long-term-forecasts-for-dc-dm-dr-requirements.json",
+    "quick-reserve-auction-requirement-forecast.json",
+}
+
 X_RESOURCES_WITH_CHILDREN = 4 + 1 + 39 + 73 + 1
 """Unit X's committed inventories (ADR-037 P-8): CMP workbooks, the ResultSummary ZIP,
 frequency ZIPs, held data containers and the GSP archive with a CSV member."""
@@ -908,6 +930,7 @@ class TestSeededRegistry:
             | BAL2B_RECORDED
             | BAL2C_RECORDED
             | TRD_RECORDED
+            | AS1_RECORDED
         )
         with_children = [res for _package, res in loaded.resources.values() if res.children]
         assert len(with_children) == X_RESOURCES_WITH_CHILDREN
@@ -949,6 +972,7 @@ class TestSeededRegistry:
             | BAL2B_PACKAGE_FILES
             | BAL2C_PACKAGE_FILES
             | TRD_PACKAGE_FILES
+            | AS1_PACKAGE_FILES
         )
 
 

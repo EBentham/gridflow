@@ -235,6 +235,20 @@ TRD_ADDED = frozenset(
     }
 )
 """The nine trading families that v0.22-K-TRD records (two eligible, seven held)."""
+AS1_ADDED = frozenset(
+    {
+        "br_auction_requirement_fc_da",
+        "br_auction_requirement_fc_da_archive",
+        "br_auction_requirement_fc_medium_term",
+        "dc_forecast_4d",
+        "dc_forecast_4d_history",
+        "dm_requirements",
+        "dr_requirements",
+        "dc_dm_dr_long_term_fc",
+        "qr_auction_requirement_fc",
+    }
+)
+"""The nine ancillary-services families that v0.22-K-AS-1 records (four eligible, five held)."""
 REWORDED_HOLDS = {
     "national_forecast_7d_historic_day_ahead": (
         "TODO: FORECAST_TIMESTAMP has no vendor definition and its zone is undocumented "
@@ -284,8 +298,8 @@ class TestByteUnchanged:
         regional FES records, K-SCN-1c's three building block records, K-SCN-1d's ES1 record,
         K-CON's seven constraint-management records, K-SYS-1's eight system records, K-BAL-1's
         nine balancing-costs records, K-BAL-2a's BSUoS monthly forecast summary record,
-        K-BAL-2b's nine skip-rate records, K-BAL-2c's nine tariff records and K-TRD's nine
-        trading records appearing.
+        K-BAL-2b's nine skip-rate records, K-BAL-2c's nine tariff records, K-TRD's nine
+        trading records and K-AS-1's nine ancillary-services records appearing.
         """
         golden = json.loads(PIN_PATH.read_text(encoding="utf-8"))
         for key, question in REWORDED_HOLDS.items():
@@ -317,6 +331,7 @@ class TestByteUnchanged:
                     *BAL2B_ADDED,
                     *BAL2C_ADDED,
                     *TRD_ADDED,
+                    *AS1_ADDED,
                 }
                 if section != "engine"
                 else set()
@@ -918,7 +933,7 @@ class TestRecordRules:
         self,
     ) -> None:
         """Detects a committed record broken by V-4/V-17 or the reserved name, and any
-        family other than the fifty-six resource-partitioned ones opting into the partition (in a
+        family other than the fifty-seven resource-partitioned ones opting into the partition (in a
         fresh interpreter, so nothing collection imported can mask it)."""
         code = textwrap.dedent(
             """
@@ -930,6 +945,7 @@ class TestRecordRules:
                 if f.record is not None and f.record.latest_partition is not None
             )
             assert partitioned == [
+                "br_auction_requirement_fc_medium_term",
                 "brit_ned",
                 "bs_contract_enactment_balancing",
                 "bsuos_monthly_forecast_fc_summary",
