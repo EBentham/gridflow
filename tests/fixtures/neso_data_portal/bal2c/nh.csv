@@ -1,0 +1,7 @@
+﻿Publication,Year_FY,Published_Date,Zone_No,Zone_Name,NHH_Zonal_p/kWh,NHH_SGD_Adjustment_p/kWh,NHHTariff(Floored)_p/kWh
+Forecast,2028,11/05/2026,1,Northern Scotland,0.000000,0.000000,0.000000
+Forecast,2028,11/05/2026,2,Southern Scotland,0.000000,0.000000,0.000000
+Final,2027,30/01/2026,1,Northern Scotland,0.000000,0.000000,0.000000
+Final,2027,30/01/2026,2,Southern Scotland,0.000000,0.000000,0.000000
+Draft,2027,19/12/2025,1,Northern Scotland,0.000000,0.000000,0.000000
+Draft,2027,19/12/2025,2,Southern Scotland,0.000000,0.000000,0.000000

@@ -1,0 +1,7 @@
+﻿Publication,Year_FY,Published_Date,Zone_No,Zone_Name,Locational_£/kW,AGIC_£/kW,PhasedResidual_£/kW,EET(Floored)_£/kW
+Forecast,2028,11/05/2026,1,Northern Scotland,-40.785306,3.204673,0,0
+Forecast,2028,11/05/2026,2,Southern Scotland,-29.86699,3.204673,0,0
+Final,2027,30/01/2026,1,Northern Scotland,-39.738905,3.143391,0,0
+Final,2027,30/01/2026,2,Southern Scotland,-27.778155,3.143391,0,0
+Draft,2027,19/12/2025,1,Northern Scotland,-44.360368,3.158116,0,0
+Draft,2027,19/12/2025,2,Southern Scotland,-31.326695,3.158116,0,0

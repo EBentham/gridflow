@@ -1,0 +1,7 @@
+﻿Publication,Year_FY,Published_Date,Zone_No,Zone_Name,SystemPeak_£/kW,SharedYearRound_£/kW,NotSharedYearRound_£/kW,Residual_£/kW,SmallGenDiscount_£/kW
+Forecast,2028,11/05/2026,1,North Scotland,3.441861,33.683697,14.895360,-2.114050,0.000000
+Forecast,2028,11/05/2026,2,East Aberdeenshire,5.553769,20.896191,14.895360,-2.114050,0.000000
+Final,2027,30/01/2026,1,North Scotland,3.628060,26.532717,17.674559,-2.476760,0.000000
+Final,2027,30/01/2026,2,East Aberdeenshire,5.307833,14.646253,17.674559,-2.476760,0.000000
+Draft,2027,19/12/2025,1,North Scotland,3.658632,29.438112,19.444459,-2.906397,0.000000
+Draft,2027,19/12/2025,2,East Aberdeenshire,5.416844,15.280894,19.444459,-2.906397,0.000000
