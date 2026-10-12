@@ -50,7 +50,1114 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Month",
+              "Energy_Imbalance_£m",
+              "Positive_Reserve_£m",
+              "Negative_Reserve_£m",
+              "Frequency_Control_£m",
+              "Other_£m",
+              "Constraints_£m",
+              "Restoration_£m",
+              "Balancing Costs (Central) £m",
+              "Estimated Internal BSUoS & ESO Incentive £m",
+              "BSUoS Cost Recovery £m",
+              "ALoMCP £m",
+              "CMP345/350 Deferred Costs £m",
+              "CMP381 Deferred Costs £m",
+              "Estimated BSUoS Volume (TWh)",
+              ""
+            ],
+            "columns": [
+              {
+                "source": "Month",
+                "name": "month_vendor",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Energy_Imbalance_£m",
+                "name": "energy_imbalance_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Positive_Reserve_£m",
+                "name": "positive_reserve_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Negative_Reserve_£m",
+                "name": "negative_reserve_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Frequency_Control_£m",
+                "name": "frequency_control_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Other_£m",
+                "name": "other_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Constraints_£m",
+                "name": "constraints_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Restoration_£m",
+                "name": "restoration_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Balancing Costs (Central) £m",
+                "name": "balancing_costs_central_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Estimated Internal BSUoS & ESO Incentive £m",
+                "name": "estimated_internal_bsuos_eso_incentive_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "BSUoS Cost Recovery £m",
+                "name": "bsuos_cost_recovery_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "ALoMCP £m",
+                "name": "alomcp_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "CMP345/350 Deferred Costs £m",
+                "name": "cmp345_350_deferred_costs_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "CMP381 Deferred Costs £m",
+                "name": "cmp381_deferred_costs_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Estimated BSUoS Volume (TWh)",
+                "name": "estimated_bsuos_volume_twh",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "",
+                "name": "unnamed_16",
+                "dtype": "string",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          },
+          {
+            "header": [
+              "Month",
+              "Energy_Imbalance_£m",
+              "Positive_Reserve_£m",
+              "Negative_Reserve_£m",
+              "Frequency_Control_£m",
+              "Other_£m",
+              "Constraints_£m",
+              "Balancing Costs (Central) £m",
+              "Estimated Internal BSUoS & ESO Incentive £m",
+              "BSUoS Cost Recovery £m",
+              "ALoMCP £m",
+              "CMP345/350 Deferred Costs £m",
+              "CMP381 Deferred Costs £m",
+              "Estimated BSUoS Volume (TWh)",
+              ""
+            ],
+            "columns": [
+              {
+                "source": "Month",
+                "name": "month_vendor",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Energy_Imbalance_£m",
+                "name": "energy_imbalance_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Positive_Reserve_£m",
+                "name": "positive_reserve_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Negative_Reserve_£m",
+                "name": "negative_reserve_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Frequency_Control_£m",
+                "name": "frequency_control_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Other_£m",
+                "name": "other_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Constraints_£m",
+                "name": "constraints_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Balancing Costs (Central) £m",
+                "name": "balancing_costs_central_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Estimated Internal BSUoS & ESO Incentive £m",
+                "name": "estimated_internal_bsuos_eso_incentive_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "BSUoS Cost Recovery £m",
+                "name": "bsuos_cost_recovery_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "ALoMCP £m",
+                "name": "alomcp_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "CMP345/350 Deferred Costs £m",
+                "name": "cmp345_350_deferred_costs_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "CMP381 Deferred Costs £m",
+                "name": "cmp381_deferred_costs_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Estimated BSUoS Volume (TWh)",
+                "name": "estimated_bsuos_volume_twh",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "",
+                "name": "unnamed_15",
+                "dtype": "string",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          },
+          {
+            "header": [
+              "Month",
+              "Energy_Imbalance_£m",
+              "Positive_Reserve_£m",
+              "Negative_Reserve_£m",
+              "Frequency_Control_£m",
+              "Other_£m",
+              "Constraints_£m",
+              "Restoration_£m",
+              "Balancing Costs (Central) £m",
+              "Estimated Internal BSUoS & ESO Incentive £m",
+              "ALoMCP £m",
+              "CMP381 Deferred Costs £m",
+              "Estimated BSUoS Volume (TWh)"
+            ],
+            "columns": [
+              {
+                "source": "Month",
+                "name": "month_vendor",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Energy_Imbalance_£m",
+                "name": "energy_imbalance_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Positive_Reserve_£m",
+                "name": "positive_reserve_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Negative_Reserve_£m",
+                "name": "negative_reserve_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Frequency_Control_£m",
+                "name": "frequency_control_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Other_£m",
+                "name": "other_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Constraints_£m",
+                "name": "constraints_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Restoration_£m",
+                "name": "restoration_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Balancing Costs (Central) £m",
+                "name": "balancing_costs_central_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Estimated Internal BSUoS & ESO Incentive £m",
+                "name": "estimated_internal_bsuos_eso_incentive_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "ALoMCP £m",
+                "name": "alomcp_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "CMP381 Deferred Costs £m",
+                "name": "cmp381_deferred_costs_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Estimated BSUoS Volume (TWh)",
+                "name": "estimated_bsuos_volume_twh",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          },
+          {
+            "header": [
+              "Month",
+              "Energy_Imbalance_£m",
+              "Positive_Reserve_£m",
+              "Negative_Reserve_£m",
+              "Frequency_Control_£m",
+              "Other_£m",
+              "Constraints_£m",
+              "Restoration_£m",
+              "Balancing Costs (Central) £m",
+              "Estimated Internal BSUoS & ESO Incentive £m",
+              "ALoMCP £m",
+              "CMP381 Deferred Costs £m",
+              "Winter Contingency Cost (Central) £m",
+              "Estimated BSUoS Volume (TWh)"
+            ],
+            "columns": [
+              {
+                "source": "Month",
+                "name": "month_vendor",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Energy_Imbalance_£m",
+                "name": "energy_imbalance_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Positive_Reserve_£m",
+                "name": "positive_reserve_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Negative_Reserve_£m",
+                "name": "negative_reserve_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Frequency_Control_£m",
+                "name": "frequency_control_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Other_£m",
+                "name": "other_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Constraints_£m",
+                "name": "constraints_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Restoration_£m",
+                "name": "restoration_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Balancing Costs (Central) £m",
+                "name": "balancing_costs_central_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Estimated Internal BSUoS & ESO Incentive £m",
+                "name": "estimated_internal_bsuos_eso_incentive_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "ALoMCP £m",
+                "name": "alomcp_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "CMP381 Deferred Costs £m",
+                "name": "cmp381_deferred_costs_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Winter Contingency Cost (Central) £m",
+                "name": "winter_contingency_cost_central_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Estimated BSUoS Volume (TWh)",
+                "name": "estimated_bsuos_volume_twh",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          },
+          {
+            "header": [
+              "Month",
+              "Energy_Imbalance_£m",
+              "Positive_Reserve_£m",
+              "Negative_Reserve_£m",
+              "Frequency_Control_£m",
+              "Constraints_£m",
+              "Other_£m",
+              "Restoration_£m",
+              "Balancing Costs (Central) £m",
+              "Estimated Internal BSUoS & ESO Incentive £m",
+              "ALoMCP £m",
+              "CMP381 Deferred Costs £m",
+              "Winter Contingency Cost (Central) £m",
+              "Winter Security of Supply Cost (£m)",
+              "Volume"
+            ],
+            "columns": [
+              {
+                "source": "Month",
+                "name": "month_vendor",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Energy_Imbalance_£m",
+                "name": "energy_imbalance_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Positive_Reserve_£m",
+                "name": "positive_reserve_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Negative_Reserve_£m",
+                "name": "negative_reserve_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Frequency_Control_£m",
+                "name": "frequency_control_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Constraints_£m",
+                "name": "constraints_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Other_£m",
+                "name": "other_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Restoration_£m",
+                "name": "restoration_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Balancing Costs (Central) £m",
+                "name": "balancing_costs_central_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Estimated Internal BSUoS & ESO Incentive £m",
+                "name": "estimated_internal_bsuos_eso_incentive_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "ALoMCP £m",
+                "name": "alomcp_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "CMP381 Deferred Costs £m",
+                "name": "cmp381_deferred_costs_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Winter Contingency Cost (Central) £m",
+                "name": "winter_contingency_cost_central_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Winter Security of Supply Cost (£m)",
+                "name": "winter_security_of_supply_cost_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Volume",
+                "name": "volume",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          },
+          {
+            "header": [
+              "Month",
+              "Energy_Imbalance_£m",
+              "Positive_Reserve_£m",
+              "Negative_Reserve_£m",
+              "Frequency_Control_£m",
+              "Constraints_£m",
+              "Other_£m",
+              "Restoration_£m",
+              "Balancing Costs (Central) £m",
+              "Estimated Internal BSUoS & ESO Incentive £m",
+              "Winter Security of Supply Cost (£m)",
+              "Estimated BSUoS Volume (TWh)"
+            ],
+            "columns": [
+              {
+                "source": "Month",
+                "name": "month_vendor",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Energy_Imbalance_£m",
+                "name": "energy_imbalance_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Positive_Reserve_£m",
+                "name": "positive_reserve_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Negative_Reserve_£m",
+                "name": "negative_reserve_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Frequency_Control_£m",
+                "name": "frequency_control_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Constraints_£m",
+                "name": "constraints_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Other_£m",
+                "name": "other_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Restoration_£m",
+                "name": "restoration_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Balancing Costs (Central) £m",
+                "name": "balancing_costs_central_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Estimated Internal BSUoS & ESO Incentive £m",
+                "name": "estimated_internal_bsuos_eso_incentive_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Winter Security of Supply Cost (£m)",
+                "name": "winter_security_of_supply_cost_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Estimated BSUoS Volume (TWh)",
+                "name": "estimated_bsuos_volume_twh",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          },
+          {
+            "header": [
+              "Month",
+              "Energy_Imbalance_£m",
+              "Positive_Reserve_£m",
+              "Negative_Reserve_£m",
+              "Frequency_Control_£m",
+              "Constraints_£m",
+              "Other_£m",
+              "Restoration_£m",
+              "Balancing Costs (Central) £m",
+              "Estimated Internal BSUoS & ESO Incentive £m",
+              "Winter Security of Supply Cost (£m)",
+              "21/22 Under-Recovered Costs (£m)",
+              "Estimated BSUoS Volume (TWh)"
+            ],
+            "columns": [
+              {
+                "source": "Month",
+                "name": "month_vendor",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Energy_Imbalance_£m",
+                "name": "energy_imbalance_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Positive_Reserve_£m",
+                "name": "positive_reserve_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Negative_Reserve_£m",
+                "name": "negative_reserve_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Frequency_Control_£m",
+                "name": "frequency_control_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Constraints_£m",
+                "name": "constraints_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Other_£m",
+                "name": "other_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Restoration_£m",
+                "name": "restoration_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Balancing Costs (Central) £m",
+                "name": "balancing_costs_central_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Estimated Internal BSUoS & ESO Incentive £m",
+                "name": "estimated_internal_bsuos_eso_incentive_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Winter Security of Supply Cost (£m)",
+                "name": "winter_security_of_supply_cost_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "21/22 Under-Recovered Costs (£m)",
+                "name": "under_recovered_costs_21_22_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Estimated BSUoS Volume (TWh)",
+                "name": "estimated_bsuos_volume_twh",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          },
+          {
+            "header": [
+              "Month",
+              "Energy_Imbalance_£m",
+              "Positive_Reserve_£m",
+              "Negative_Reserve_£m",
+              "Frequency_Control_£m",
+              "Constraints_£m",
+              "Other_£m",
+              "Restoration_£m",
+              "Balancing Costs (Central) £m",
+              "Estimated Internal BSUoS & ESO Incentive £m",
+              "Winter Security of Supply Cost (£m)",
+              "21/22 Under-Recovered Costs (£m)",
+              "CMP398/412 Claim Costs (£m)",
+              "Interest Repayment (£m)",
+              "Additional NESO Framework Costs (£m)",
+              "Estimated BSUoS Volume (TWh)"
+            ],
+            "columns": [
+              {
+                "source": "Month",
+                "name": "month_vendor",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Energy_Imbalance_£m",
+                "name": "energy_imbalance_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Positive_Reserve_£m",
+                "name": "positive_reserve_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Negative_Reserve_£m",
+                "name": "negative_reserve_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Frequency_Control_£m",
+                "name": "frequency_control_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Constraints_£m",
+                "name": "constraints_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Other_£m",
+                "name": "other_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Restoration_£m",
+                "name": "restoration_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Balancing Costs (Central) £m",
+                "name": "balancing_costs_central_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Estimated Internal BSUoS & ESO Incentive £m",
+                "name": "estimated_internal_bsuos_eso_incentive_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Winter Security of Supply Cost (£m)",
+                "name": "winter_security_of_supply_cost_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "21/22 Under-Recovered Costs (£m)",
+                "name": "under_recovered_costs_21_22_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "CMP398/412 Claim Costs (£m)",
+                "name": "cmp398_412_claim_costs_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Interest Repayment (£m)",
+                "name": "interest_repayment_gbp_m",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Additional NESO Framework Costs (£m)",
+                "name": "additional_neso_framework_costs",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Estimated BSUoS Volume (TWh)",
+                "name": "estimated_bsuos_volume_twh",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "resource_id",
+          "edition",
+          "month_vendor"
+        ],
+        "latest": "whole_capture",
+        "latest_partition": "resource_id",
+        "edition_by_filename": [
+          [
+            "bsuos-forecast-february-2022-csv.csv",
+            202202
+          ],
+          [
+            "bsuos-forecast-march-2022-csv.csv",
+            202203
+          ],
+          [
+            "bsuos-forecast-april-2022_2.csv",
+            202204
+          ],
+          [
+            "bsuos-forecast-june-2022.csv",
+            202206
+          ],
+          [
+            "bsuos-forecast-july-2022.csv",
+            202207
+          ],
+          [
+            "bsuos-forecast-august-2022.csv",
+            202208
+          ],
+          [
+            "bsuos-forecast-september-2022.csv",
+            202209
+          ],
+          [
+            "bsuos-forecast-october-2022.csv",
+            202210
+          ],
+          [
+            "bsuos-forecast-november-2022.csv",
+            202211
+          ],
+          [
+            "bsuos-forecast-december-2022.csv",
+            202212
+          ],
+          [
+            "bsuos-forecast-jan23.csv",
+            202301
+          ],
+          [
+            "bsuos-forecast-february-2023.csv",
+            202302
+          ],
+          [
+            "bsuos-forecast-march-2023.csv",
+            202303
+          ],
+          [
+            "bsuos-forecast-july-2023.csv",
+            202307
+          ],
+          [
+            "bsuos-forecast-aug-2023.csv",
+            202308
+          ],
+          [
+            "bsuos-forecast-sep-2023.csv",
+            202309
+          ],
+          [
+            "bsuos-forecast-oct-2023.csv",
+            202310
+          ],
+          [
+            "bsuos-forecast-nov-2023.csv",
+            202311
+          ],
+          [
+            "bsuos-forecast-dec-2023.csv",
+            202312
+          ],
+          [
+            "bsuos-forecast-jan-2024.csv",
+            202401
+          ],
+          [
+            "bsuos-forecast-feb-2024.csv",
+            202402
+          ],
+          [
+            "bsuos-forecast-mar-2024.csv",
+            202403
+          ],
+          [
+            "bsuos-forecast-apr-2024.csv",
+            202404
+          ],
+          [
+            "bsuos-forecast-may-2024.csv",
+            202405
+          ],
+          [
+            "bsuos-forecast-june-2024-v1.1.csv",
+            202406
+          ],
+          [
+            "bsuos-forecast-july-2024.csv",
+            202407
+          ],
+          [
+            "bsuos-forecast-august-2024.csv",
+            202408
+          ],
+          [
+            "bsuos-forecast-september-2024.csv",
+            202409
+          ],
+          [
+            "bsuos-forecast-october-2024.csv",
+            202410
+          ],
+          [
+            "bsuos-forecast-november-2024.csv",
+            202411
+          ],
+          [
+            "bsuos-forecast-december-2024.csv",
+            202412
+          ],
+          [
+            "bsuos-forecast-january-2025.csv",
+            202501
+          ],
+          [
+            "bsuos-forecast-february-2025.csv",
+            202502
+          ],
+          [
+            "bsuos-forecast-march-2025.csv",
+            202503
+          ],
+          [
+            "bsuos-forecast-april-2025.csv",
+            202504
+          ],
+          [
+            "bsuos-forecast-may-2025.csv",
+            202505
+          ],
+          [
+            "bsuos-forecast-june-2025.csv",
+            202506
+          ],
+          [
+            "bsuos-forecast-july-2025.csv",
+            202507
+          ],
+          [
+            "bsuos-forecast-aug-2025-2.csv",
+            202508
+          ],
+          [
+            "bsuos-forecast-sep-2025.csv",
+            202509
+          ],
+          [
+            "bsuos-forecast-october-2025.csv",
+            202510
+          ],
+          [
+            "bsuos-forecast-november-2025.csv",
+            202511
+          ],
+          [
+            "bsuos-forecast-december-2025.csv",
+            202512
+          ],
+          [
+            "bsuos-forecast-january-2026.csv",
+            202601
+          ],
+          [
+            "bsuos-forecast-february-2026.csv",
+            202602
+          ],
+          [
+            "bsuos-forecast-march-2026.csv",
+            202603
+          ],
+          [
+            "bsuos-forecast-april-2026.csv",
+            202604
+          ],
+          [
+            "bsuos-forecast-may-2026.csv",
+            202605
+          ],
+          [
+            "bsuos-forecast-june-2026.csv",
+            202606
+          ],
+          [
+            "bsuos-forecast-july-2026.csv",
+            202607
+          ],
+          [
+            "bsuos-forecast-august-2026.csv",
+            202608
+          ],
+          [
+            "bsuos-forecast-september-2026-v2.csv",
+            202609
+          ],
+          [
+            "bsuos-forecast-october-2026.csv",
+            202610
+          ]
+        ],
+        "vintage": "ckan_last_modified",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: the issue instant and availability of each monthly edition (filename month is an edition label, not an issue time); 51 of 53 loaded editions include targets on or before their upload (RULINGS 529 forward-target rule fails); the target-month clock (BSUOS-MONTH-CLOCK); the units of bare `Volume` (July 2023) and `Additional NESO Framework Costs (£m)` (dictionary says TWh).",
+          "unit": "v0.22-K-BAL-2a"
+        }
+      }
     },
     {
       "key": "bsuos_monthly_forecast_fc_summary_pct",
@@ -117,7 +1224,7 @@
       "family": "bsuos_monthly_forecast_files",
       "disposition": {
         "kind": "HOLD",
-        "reason": "data container: child inventory committed by X; records pending in BAL-2",
+        "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
         "unit": "BAL-2"
       },
       "children": [
@@ -125,7 +1232,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_april_19_data.xlsx::Actual",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_actual: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -133,7 +1240,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_april_19_data.xlsx::Forecast",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_forecast: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -147,7 +1254,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_april_19_data.xlsx::Forecast Data For Import",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_forecast_data_for_import: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -155,7 +1262,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_april_19_data.xlsx::Actual Data For Import",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_actual_data_for_import: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -163,7 +1270,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_april_19_data.xlsx::Data_store",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_data_store: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -171,7 +1278,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_april_19_data.xlsx::Error Stats",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_error_stats: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -179,7 +1286,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_april_19_data.xlsx::Data",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_data: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -187,7 +1294,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_april_19_data.xlsx::Monthly Summary Actual",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_monthly_summary_actual: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -195,7 +1302,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_april_19_data.xlsx::Weekly Summary Actual",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_weekly_summary_actual: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -203,7 +1310,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_april_19_data.xlsx::Monthly Summary Forecast",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_monthly_summary_forecast: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -211,7 +1318,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_april_19_data.xlsx::All Monthly",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_all_monthly: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -219,7 +1326,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_dec_19_data.xlsx::Actual",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_actual: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -227,7 +1334,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_dec_19_data.xlsx::Forecast",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_forecast: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -241,7 +1348,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_dec_19_data.xlsx::Monthly Summary Actual",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_monthly_summary_actual: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -249,7 +1356,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_dec_19_data.xlsx::Weekly Summary Actual",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_weekly_summary_actual: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -257,7 +1364,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_dec_19_data.xlsx::Monthly Summary Forecast",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_monthly_summary_forecast: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -265,7 +1372,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_dec_19_data.xlsx::All Monthly",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_all_monthly: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -273,7 +1380,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_feb_20_data.xlsx::Actual",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_actual: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -281,7 +1388,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_feb_20_data.xlsx::Forecast",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_forecast: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -295,7 +1402,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_feb_20_data.xlsx::Monthly Summary Actual",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_monthly_summary_actual: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -303,7 +1410,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_feb_20_data.xlsx::Weekly Summary Actual",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_weekly_summary_actual: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -311,7 +1418,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_feb_20_data.xlsx::Monthly Summary Forecast",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_monthly_summary_forecast: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -319,7 +1426,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_feb_20_data.xlsx::All Monthly",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_all_monthly: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -327,7 +1434,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_february_19_data.xlsx::Actual",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_actual: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -335,7 +1442,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_february_19_data.xlsx::Forecast",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_forecast: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -349,7 +1456,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_february_19_data.xlsx::Forecast Data For Import",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_forecast_data_for_import: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -357,7 +1464,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_february_19_data.xlsx::Actual Data For Import",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_actual_data_for_import: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -365,7 +1472,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_february_19_data.xlsx::Data_store",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_data_store: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -373,7 +1480,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_february_19_data.xlsx::Error Stats",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_error_stats: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -381,7 +1488,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_february_19_data.xlsx::Data",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_data: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -389,7 +1496,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_february_19_data.xlsx::Monthly Summary Actual",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_monthly_summary_actual: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -397,7 +1504,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_february_19_data.xlsx::Weekly Summary Actual",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_weekly_summary_actual: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -405,7 +1512,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_february_19_data.xlsx::ROCOF",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_rocof: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -413,7 +1520,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_february_19_data.xlsx::Monthly Summary Forecast",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_monthly_summary_forecast: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -421,7 +1528,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_february_19_data.xlsx::All Monthly",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_all_monthly: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -429,7 +1536,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_jan_20_data.xlsx::Actual",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_actual: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -437,7 +1544,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_jan_20_data.xlsx::Forecast",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_forecast: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -451,7 +1558,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_jan_20_data.xlsx::Monthly Summary Actual",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_monthly_summary_actual: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -459,7 +1566,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_jan_20_data.xlsx::Weekly Summary Actual",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_weekly_summary_actual: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -467,7 +1574,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_jan_20_data.xlsx::Monthly Summary Forecast",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_monthly_summary_forecast: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -475,7 +1582,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_jan_20_data.xlsx::All Monthly",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_all_monthly: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -483,7 +1590,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_january_19_data.xlsx::Actual",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_actual: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -491,7 +1598,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_january_19_data.xlsx::Forecast",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_forecast: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -505,7 +1612,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_january_19_data.xlsx::Forecast Data For Import",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_forecast_data_for_import: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -513,7 +1620,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_january_19_data.xlsx::Actual Data For Import",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_actual_data_for_import: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -521,7 +1628,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_january_19_data.xlsx::Data_store",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_data_store: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -529,7 +1636,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_january_19_data.xlsx::Error Stats",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_error_stats: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -537,7 +1644,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_january_19_data.xlsx::Data",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_data: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -545,7 +1652,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_january_19_data.xlsx::Monthly Summary Actual",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_monthly_summary_actual: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -553,7 +1660,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_january_19_data.xlsx::Weekly Summary Actual",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_weekly_summary_actual: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -561,7 +1668,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_january_19_data.xlsx::Monthly Summary Forecast",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_monthly_summary_forecast: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -569,7 +1676,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_january_19_data.xlsx::All Monthly",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_all_monthly: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -577,7 +1684,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_mar_20_data.xlsx::Actual",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_actual: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -585,7 +1692,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_mar_20_data.xlsx::Forecast",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_forecast: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -599,7 +1706,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_mar_20_data.xlsx::Monthly Summary Forecast",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_monthly_summary_forecast: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -607,7 +1714,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_mar_20_data.xlsx::Weekly Summary Actual",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_weekly_summary_actual: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -615,7 +1722,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_mar_20_data.xlsx::Monthly Summary Actual",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_monthly_summary_actual: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -623,7 +1730,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_mar_20_data.xlsx::All Monthly",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_all_monthly: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -631,7 +1738,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_may_19_data.xlsx::Actual",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_actual: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -639,7 +1746,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_may_19_data.xlsx::Forecast",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_forecast: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -653,7 +1760,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_may_19_data.xlsx::Forecast Data For Import",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_forecast_data_for_import: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -661,7 +1768,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_may_19_data.xlsx::Actual Data For Import",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_actual_data_for_import: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -669,7 +1776,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_may_19_data.xlsx::Data_store",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_data_store: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -677,7 +1784,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_may_19_data.xlsx::Error Stats",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_error_stats: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -685,7 +1792,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_may_19_data.xlsx::Data",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_data: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -693,7 +1800,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_may_19_data.xlsx::Monthly Summary Actual",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_monthly_summary_actual: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -701,7 +1808,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_may_19_data.xlsx::Weekly Summary Actual",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_weekly_summary_actual: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -709,7 +1816,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_may_19_data.xlsx::Monthly Summary Forecast",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_monthly_summary_forecast: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -717,7 +1824,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_may_19_data.xlsx::All Monthly",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_all_monthly: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -725,7 +1832,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_nov_19_data.xlsx::Actual",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_actual: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -733,7 +1840,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_nov_19_data.xlsx::Forecast",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_forecast: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -747,7 +1854,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_nov_19_data.xlsx::Monthly Summary Actual",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_monthly_summary_actual: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -755,7 +1862,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_nov_19_data.xlsx::Weekly Summary Actual",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_weekly_summary_actual: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -763,7 +1870,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_nov_19_data.xlsx::Monthly Summary Forecast",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_monthly_summary_forecast: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -771,7 +1878,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_nov_19_data.xlsx::All Monthly",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_all_monthly: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -779,7 +1886,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_oct_19_data.xlsx::Actual",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_actual: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -787,7 +1894,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_oct_19_data.xlsx::Forecast",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_forecast: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -801,7 +1908,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_oct_19_data.xlsx::Monthly Summary Actual",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_monthly_summary_actual: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -809,7 +1916,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_oct_19_data.xlsx::Weekly Summary Actual",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_weekly_summary_actual: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -817,7 +1924,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_oct_19_data.xlsx::Monthly Summary Forecast",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_monthly_summary_forecast: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -825,7 +1932,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/bsuos_report_oct_19_data.xlsx::All Monthly",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_all_monthly: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -833,7 +1940,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/busos_report_aug_19_data.xlsx::Actual",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_actual: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -841,7 +1948,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/busos_report_aug_19_data.xlsx::Forecast",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_forecast: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -855,7 +1962,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/busos_report_aug_19_data.xlsx::Forecast Data For Import",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_forecast_data_for_import: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -863,7 +1970,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/busos_report_aug_19_data.xlsx::Actual Data For Import",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_actual_data_for_import: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -871,7 +1978,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/busos_report_aug_19_data.xlsx::Data_store",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_data_store: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -879,7 +1986,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/busos_report_aug_19_data.xlsx::Error Stats",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_error_stats: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -887,7 +1994,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/busos_report_aug_19_data.xlsx::Data",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_data: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -895,7 +2002,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/busos_report_aug_19_data.xlsx::Monthly Summary Actual",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_monthly_summary_actual: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -903,7 +2010,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/busos_report_aug_19_data.xlsx::Weekly Summary Actual",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_weekly_summary_actual: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -911,7 +2018,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/busos_report_aug_19_data.xlsx::Monthly Summary Forecast",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_monthly_summary_forecast: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -919,7 +2026,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/busos_report_aug_19_data.xlsx::All Monthly",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_all_monthly: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -927,7 +2034,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/busos_report_jul_19_data.xlsx::Actual",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_actual: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -935,7 +2042,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/busos_report_jul_19_data.xlsx::Forecast",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_forecast: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -949,7 +2056,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/busos_report_jul_19_data.xlsx::Forecast Data For Import",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_forecast_data_for_import: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -957,7 +2064,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/busos_report_jul_19_data.xlsx::Actual Data For Import",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_actual_data_for_import: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -965,7 +2072,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/busos_report_jul_19_data.xlsx::Data_store",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_data_store: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -973,7 +2080,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/busos_report_jul_19_data.xlsx::Error Stats",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_error_stats: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -981,7 +2088,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/busos_report_jul_19_data.xlsx::Data",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_data: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -989,7 +2096,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/busos_report_jul_19_data.xlsx::Monthly Summary Actual",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_monthly_summary_actual: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -997,7 +2104,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/busos_report_jul_19_data.xlsx::Weekly Summary Actual",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_weekly_summary_actual: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -1005,7 +2112,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/busos_report_jul_19_data.xlsx::Monthly Summary Forecast",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_monthly_summary_forecast: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -1013,7 +2120,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/busos_report_jul_19_data.xlsx::All Monthly",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_all_monthly: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -1021,7 +2128,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/busos_report_jun_19_data.xlsx::Actual",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_actual: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -1029,7 +2136,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/busos_report_jun_19_data.xlsx::Forecast",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_forecast: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -1043,7 +2150,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/busos_report_jun_19_data.xlsx::Forecast Data For Import",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_forecast_data_for_import: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -1051,7 +2158,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/busos_report_jun_19_data.xlsx::Actual Data For Import",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_actual_data_for_import: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -1059,7 +2166,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/busos_report_jun_19_data.xlsx::Data_store",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_data_store: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -1067,7 +2174,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/busos_report_jun_19_data.xlsx::Error Stats",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_error_stats: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -1075,7 +2182,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/busos_report_jun_19_data.xlsx::Data",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_data: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -1083,7 +2190,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/busos_report_jun_19_data.xlsx::Monthly Summary Actual",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_monthly_summary_actual: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -1091,7 +2198,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/busos_report_jun_19_data.xlsx::Weekly Summary Actual",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_weekly_summary_actual: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -1099,7 +2206,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/busos_report_jun_19_data.xlsx::Monthly Summary Forecast",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_monthly_summary_forecast: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -1107,7 +2214,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/busos_report_jun_19_data.xlsx::All Monthly",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_all_monthly: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -1115,7 +2222,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/busos_report_march_19_data.xlsx::Actual",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_actual: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -1123,7 +2230,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/busos_report_march_19_data.xlsx::Forecast",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_forecast: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -1137,7 +2244,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/busos_report_march_19_data.xlsx::Forecast Data For Import",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_forecast_data_for_import: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -1145,7 +2252,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/busos_report_march_19_data.xlsx::Actual Data For Import",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_actual_data_for_import: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -1153,7 +2260,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/busos_report_march_19_data.xlsx::Data_store",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_data_store: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -1161,7 +2268,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/busos_report_march_19_data.xlsx::Error Stats",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_error_stats: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -1169,7 +2276,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/busos_report_march_19_data.xlsx::Data",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_data: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -1177,7 +2284,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/busos_report_march_19_data.xlsx::Monthly Summary Actual",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_monthly_summary_actual: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -1185,7 +2292,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/busos_report_march_19_data.xlsx::Weekly Summary Actual",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_weekly_summary_actual: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -1193,7 +2300,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/busos_report_march_19_data.xlsx::Monthly Summary Forecast",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_monthly_summary_forecast: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -1201,7 +2308,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/busos_report_march_19_data.xlsx::All Monthly",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_all_monthly: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -1209,7 +2316,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/busos_report_sep_19_data.xlsx::Actual",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_actual: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -1217,7 +2324,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/busos_report_sep_19_data.xlsx::Forecast",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_forecast: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -1231,7 +2338,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/busos_report_sep_19_data.xlsx::Forecast Data For Import",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_forecast_data_for_import: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -1239,7 +2346,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/busos_report_sep_19_data.xlsx::Actual Data For Import",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_actual_data_for_import: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -1247,7 +2354,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/busos_report_sep_19_data.xlsx::Data_store",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_data_store: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -1255,7 +2362,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/busos_report_sep_19_data.xlsx::Error Stats",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_error_stats: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -1263,7 +2370,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/busos_report_sep_19_data.xlsx::Data",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_data: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -1271,7 +2378,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/busos_report_sep_19_data.xlsx::Monthly Summary Actual",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_monthly_summary_actual: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -1279,7 +2386,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/busos_report_sep_19_data.xlsx::Weekly Summary Actual",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_weekly_summary_actual: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -1287,7 +2394,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/busos_report_sep_19_data.xlsx::Monthly Summary Forecast",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_monthly_summary_forecast: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         },
@@ -1295,7 +2402,7 @@
           "child": "BSUoS Report Jan 19 - Mar 20/busos_report_sep_19_data.xlsx::All Monthly",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family bsuos_mfc_wb_all_monthly: record pending in BAL-2 (V-11)",
+            "reason": "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, time and issue semantics unsettled per child (FACTS BAL-2a-3); no overlap establishes COVERED.",
             "unit": "BAL-2"
           }
         }

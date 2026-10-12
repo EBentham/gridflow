@@ -731,6 +731,12 @@ BAL1_PACKAGE_FILES = {
     "gb-system-inertia-bid-and-offer-costs.json",
 }
 
+BAL2A_RECORDED = {"bsuos_monthly_forecast_fc_summary"}
+"""The BSUoS monthly forecast summary family unit K-BAL-2a records (held; the eight other BSUoS
+families have no record: every newest body is invalid UTF-8 or carries no run)."""
+
+BAL2A_PACKAGE_FILES = {"bsuos-monthly-forecast.json"}
+
 X_RESOURCES_WITH_CHILDREN = 4 + 1 + 39 + 73 + 1
 """Unit X's committed inventories (ADR-037 P-8): CMP workbooks, the ResultSummary ZIP,
 frequency ZIPs, held data containers and the GSP archive with a CSV member."""
@@ -767,6 +773,7 @@ class TestSeededRegistry:
             | CON_RECORDED
             | SYS1_RECORDED
             | BAL1_RECORDED
+            | BAL2A_RECORDED
         )
         with_children = [res for _package, res in loaded.resources.values() if res.children]
         assert len(with_children) == X_RESOURCES_WITH_CHILDREN
@@ -804,6 +811,7 @@ class TestSeededRegistry:
             | CON_PACKAGE_FILES
             | SYS1_PACKAGE_FILES
             | BAL1_PACKAGE_FILES
+            | BAL2A_PACKAGE_FILES
         )
 
 

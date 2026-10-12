@@ -42,6 +42,7 @@ from _neso_sc_pin import PIN_PATH
 from test_neso_dem1_records import _short_base
 from test_neso_multi_resource import (
     BAL1_ADDED,
+    BAL2A_ADDED,
     CON_ADDED,
     SCN1A_ADDED,
     SCN1B_ADDED,
@@ -408,8 +409,9 @@ class TestPilot:
         """Detects any other committed record setting ``unpivot`` or ``edition_by_filename``
         (only the pilot, K-SCN-1b's nine regional FES records which map editions but never
         unpivot, and K-SCN-1c's three building block records, the main one unpivoted, and K-SCN-1d's
-        ES1 record, unpivoted too; in a fresh interpreter, so nothing collection imported can mask
-        it)."""
+        ES1 record, unpivoted too, and K-BAL-2a's BSUoS monthly forecast summary record, which
+        maps editions without unpivoting; in a fresh interpreter, so nothing collection imported
+        can mask it)."""
         code = textwrap.dedent(
             """
             from gridflow.connectors.neso_data_portal.registry import load_registry
@@ -422,6 +424,7 @@ class TestPilot:
                 )
             )
             assert opted == [
+                "bsuos_monthly_forecast_fc_summary",
                 "fes_building_blocks_block_definitions",
                 "fes_building_blocks_block_licence_area",
                 "fes_building_blocks_main",
@@ -597,8 +600,8 @@ class TestSkeletonAndPin:
         """Detects any generated family other than the FES ED1 pilot, the twelve tRESP records
         of K-SCN-1a, the nine regional FES records of K-SCN-1b and the three building block records
         of K-SCN-1c, the ES1 record of K-SCN-1d, the seven constraint-management records of K-CON
-        the eight system records of K-SYS-1 and the nine balancing-costs records of K-BAL-1
-        appearing since the base golden
+        the eight system records of K-SYS-1, the nine balancing-costs records of K-BAL-1 and the
+        BSUoS monthly forecast summary record of K-BAL-2a appearing since the base golden
         (master ``34992b6``), and any DEM-1 engine digest added or lost."""
         golden = json.loads(PIN_PATH.read_text(encoding="utf-8"))
         current = json.loads(dump(generated_pin()))
@@ -612,5 +615,6 @@ class TestSkeletonAndPin:
                 *CON_ADDED,
                 *SYS1_ADDED,
                 *BAL1_ADDED,
+                *BAL2A_ADDED,
             }, section
         assert set(current["engine"]) == set(golden["engine"])
