@@ -39,8 +39,8 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `balancing-reserve-auction-requirement-forecast` | `br_auction_requirement_fc_da_archive` | ingest-only (no silver output) | — | — | — | — |
 | `balancing-reserve-auction-requirement-forecast` | `br_auction_requirement_fc_medium_term` | ingest-only (no silver output) | — | — | — | — |
 | `balancing-services-adjustment-data-forward-contracts` | `bsad_forward_contracts` | ingest-only (no silver output) | — | — | — | — |
-| `balancing-services-contract-enactment` | `bs_contract_enactment_balancing` | ingest-only (no silver output) | — | — | — | — |
-| `balancing-services-contract-enactment` | `bs_contract_enactment_balancing_service` | ingest-only (no silver output) | — | — | — | — |
+| `balancing-services-contract-enactment` | `bs_contract_enactment_balancing` | silver | held: TODO: COST-DIMENSION — the dictionary labels `Cost` £/h but describes it as total cost (price × volume × duration); which is published? (unit v0.22-K-TRD) | whole_capture per resource_id | utc_instant | gridflow capture time |
+| `balancing-services-contract-enactment` | `bs_contract_enactment_balancing_service` | silver | held: TODO: LEGACY-BS-CLOCK — start times truncated to dates, end/update clocks undocumented; what instants were published? (unit v0.22-K-TRD) | whole_capture | none | gridflow capture time |
 | `balancing-services-contract-enactment` | `bs_contract_enactment_files` | catalogue only | — | — | — | — |
 | `balancing-services-use-of-system-bsuos-daily-forecast` | `bsuos_daily_forecast` | ingest-only (no silver output) | — | — | — | — |
 | `brit-ned` | `brit_ned` | silver | held: TODO: NESO does not define the operational-date rollover, the GMT/BST mapping or the `(a)`/`(b)` fold markers of the hourly labels, and the bodies carry no issue time, so no label can be dated as an issued limit. (unit E-SEM) | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
@@ -186,17 +186,17 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `historic-demand-data` | `historic_demand` | silver | held: TODO: literal NA in the epoch-2 bodies of 2001-2008 in TSD, the embedded wind/solar columns, SCOTTISH_TRANSFER and every interconnector flow but IFA: missing, not applicable or zero? NESO defines no meaning; those columns stay text across every epoch until it does. (unit E-SEM) | whole_capture per resource_id | sp_pair | CKAN last_modified of the captured file (ADR-030) |
 | `historic-demand-data` | `historic_demand_files` | catalogue only | — | — | — | — |
 | `historic-generation-mix` | `historic_generation_mix` | bespoke silver | eligible | — | — | — |
-| `historic-gtma-grid-trade-master-agreement-trades-data` | `gtma_trades_data` | ingest-only (no silver output) | — | — | — | — |
-| `historic-gtma-grid-trade-master-agreement-trades-data` | `gtma_trades_data_pre` | ingest-only (no silver output) | — | — | — | — |
-| `historic-gtma-grid-trade-master-agreement-trades-data` | `gtma_trades_fy` | ingest-only (no silver output) | — | — | — | — |
+| `historic-gtma-grid-trade-master-agreement-trades-data` | `gtma_trades_data` | silver | eligible | whole_capture per resource_id | utc_instant | CKAN last_modified of the captured file (ADR-030) |
+| `historic-gtma-grid-trade-master-agreement-trades-data` | `gtma_trades_data_pre` | silver | eligible | whole_capture | utc_instant | CKAN last_modified of the captured file (ADR-030) |
+| `historic-gtma-grid-trade-master-agreement-trades-data` | `gtma_trades_fy` | silver | held: TODO: COST-DIMENSION — the dictionary labels `Cost` £/h but describes it as total cost (price × volume × duration); which is published? (unit v0.22-K-TRD) | whole_capture per resource_id | utc_instant | gridflow capture time |
 | `ifa` | `ifa_da_id_weekly_itls` | silver | held: TODO: the archive's operational-date rollover, GMT/BST interpretation and `(a)`/`(b)` repeated-hour labels are undocumented, and every target precedes the upload's last_modified, so the forward-target rule (RULINGS 529) cannot apply. (unit E-SEM) | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
 | `ifa` | `ifa_itl` | silver | held: TODO: the dump returns past targets (rows before the capture) and NESO does not state that a row is unchanged since its `Data Upload Time GMT`, so historical issued limits are not evidenced. (unit E-SEM) | whole_capture | utc_instant | gridflow capture time |
 | `ifa2` | `ifa2_ifa_da_id_weekly_itls` | silver | held: TODO: the archive's operational-date rollover and GMT/BST interpretation are undocumented, and every target precedes the upload's last_modified, so the forward-target rule (RULINGS 529) cannot apply. (unit E-SEM) | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
 | `ifa2` | `ifa2_ifa_itl` | silver | held: TODO: the dump returns past targets (rows before the capture) and NESO does not state that a row is unchanged since its `Data Upload Time GMT`, so historical issued limits are not evidenced. (unit E-SEM) | whole_capture | utc_instant | gridflow capture time |
-| `index-linked-contract-volume` | `index_linked_contract_volume` | ingest-only (no silver output) | — | — | — | — |
+| `index-linked-contract-volume` | `index_linked_contract_volume` | silver | held: TODO: COST-DIMENSION — the dictionary labels `Cost` £/h but describes it as total cost (price × volume × duration); which is published? (unit v0.22-K-TRD) | whole_capture per resource_id | utc_instant | gridflow capture time |
 | `index-linked-contract-volume` | `index_linked_contract_volume_files` | catalogue only | — | — | — | — |
 | `interconnector-register` | `interconnector_register` | silver | eligible | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
-| `interconnector-requirement-and-auction-summary-data` | `ic_requirement_auction` | ingest-only (no silver output) | — | — | — | — |
+| `interconnector-requirement-and-auction-summary-data` | `ic_requirement_auction` | silver | held: TODO: IC-ISSUE-AVAILABILITY — lots are mutable forward requirements later overwritten with outcomes (28,326 targets on/before the capture, 2 after); what was available when? (unit v0.22-K-TRD) | whole_capture | utc_instant | gridflow capture time |
 | `interconnector-requirement-and-auction-summary-data` | `ic_requirement_auction_files` | catalogue only | — | — | — | — |
 | `levelised-cost-of-green-hydrogen` | `lcoh_capex_opex_input_assumptions_pem` | ingest-only (no silver output) | — | — | — | — |
 | `levelised-cost-of-green-hydrogen` | `lcoh_levelised_cost_blue_hydrogen` | ingest-only (no silver output) | — | — | — | — |
@@ -284,7 +284,7 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `static-firm-frequency-response-auction-results` | `sffr_auction_results_main` | ingest-only (no silver output) | — | — | — | — |
 | `static-firm-frequency-response-requirement` | `sffr_requirement` | ingest-only (no silver output) | — | — | — | — |
 | `stor-windows` | `stor_windows` | ingest-only (no silver output) | — | — | — | — |
-| `super-stable-export-limit-contract-enactment` | `ssel_contract_enactment` | ingest-only (no silver output) | — | — | — | — |
+| `super-stable-export-limit-contract-enactment` | `ssel_contract_enactment` | silver | held: TODO: COST-DIMENSION — the dictionary labels `Cost` £/h but describes it as total cost (price × volume × duration); which is published? (unit v0.22-K-TRD) | whole_capture per resource_id | utc_instant | gridflow capture time |
 | `system-frequency-data` | `system_frequency` | ingest-only (no silver output) | — | — | — | — |
 | `system-inertia` | `system_inertia` | silver | eligible | whole_capture per resource_id | sp_pair | CKAN last_modified of the captured file (ADR-030) |
 | `system-inertia-cost` | `system_inertia_cost` | silver | eligible | whole_capture per resource_id | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
@@ -317,7 +317,7 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `tresp-generation-pathways` | `tresp_generation_pathways_la_scotland` | silver | eligible | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
 | `tresp-generation-pathways` | `tresp_generation_pathways_la_wales` | silver | eligible | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
 | `tresp-generation-pathways` | `tresp_generation_pathways_resp_region` | silver | eligible | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
-| `upcoming-trades` | `upcoming_trades` | ingest-only (no silver output) | — | — | — | — |
+| `upcoming-trades` | `upcoming_trades` | silver | held: TODO: UPCOMING-VOLUME-FORMULA — `Volume` is labelled MWh but described as average with duration in the cost formula; MW or MWh? Also `Last_Updated` clock undocumented. (unit v0.22-K-TRD) | whole_capture | sp_pair | gridflow capture time |
 | `viking` | `viking_link_ntc` | silver | held: TODO: the dump returns past targets (rows before the capture) and NESO does not state that a row is unchanged since its `Data Upload Time GMT`, so historical issued limits are not evidenced. (unit E-SEM) | whole_capture | utc_instant | gridflow capture time |
 | `viking` | `viking_ntc` | silver | held: TODO: the archive's operational-date rollover and GMT/BST interpretation are undocumented, and every target precedes the upload's last_modified, so the forward-target rule (RULINGS 529) cannot apply. (unit E-SEM) | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
 | `voltage-requirement` | `voltage_requirement` | silver | held: TODO: what is the overnight operating window and endpoint inclusivity of Start/End Date, what do the reversed ranges mean, which zone/members does each V_ group code cover, and is Last Updated an original issue time with the row available and immutable from then? (unit E-SEM) | whole_capture | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
@@ -402,7 +402,7 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `gis-boundaries-for-gb-grid-supply-points` | eligible | 1 | 0 | 1 | 8 | 0 |
 | `historic-demand-data` | eligible | 26 | 0 | 1 | 0 | 0 |
 | `historic-generation-mix` | eligible | 1 | 0 | 0 | 0 | 0 |
-| `historic-gtma-grid-trade-master-agreement-trades-data` | eligible | 13 | 0 | 0 | 0 | 0 |
+| `historic-gtma-grid-trade-master-agreement-trades-data` | eligible | 12 | 0 | 0 | 0 | 1 |
 | `ifa` | eligible | 2 | 0 | 0 | 0 | 0 |
 | `ifa2` | eligible | 2 | 0 | 0 | 0 | 0 |
 | `index-linked-contract-volume` | eligible | 4 | 0 | 0 | 0 | 1 |
@@ -461,11 +461,11 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `weekly-opmr` | eligible | 1 | 0 | 0 | 0 | 0 |
 | `weekly-wind-availability` | eligible | 1 | 0 | 0 | 0 | 0 |
 | `wind-bmu-boa-volumes` | eligible | 9 | 0 | 0 | 0 | 0 |
-| **Total** | | 1244 | 0 | 43 | 20 | 78 |
+| **Total** | | 1243 | 0 | 43 | 20 | 79 |
 
 ## Totals
 
 - Packages: 131 (held: 2)
-- Families: 317: silver 141 (bespoke 3, recorded 138), ingest-only 141, catalogue only 35
-- Silver outputs held: 79
+- Families: 317: silver 150 (bespoke 3, recorded 147), ingest-only 132, catalogue only 35
+- Silver outputs held: 86
 - Resources: 1385

@@ -17,7 +17,115 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "ID",
+              "StartTime",
+              "EndTime",
+              "Volume",
+              "Price",
+              "Cost",
+              "SO_Flag",
+              "Reason",
+              "Note",
+              "Last_Updated"
+            ],
+            "columns": [
+              {
+                "source": "ID",
+                "name": "id",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "StartTime",
+                "name": "starttime",
+                "dtype": "datetime",
+                "format": "%Y-%m-%dT%H:%M:%S",
+                "nullable": false,
+                "zone": "UTC"
+              },
+              {
+                "source": "EndTime",
+                "name": "endtime",
+                "dtype": "datetime",
+                "format": "%Y-%m-%dT%H:%M:%S",
+                "nullable": true,
+                "zone": "UTC"
+              },
+              {
+                "source": "Volume",
+                "name": "volume",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Price",
+                "name": "price",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Cost",
+                "name": "cost",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "SO_Flag",
+                "name": "so_flag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Reason",
+                "name": "reason",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Note",
+                "name": "note",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Last_Updated",
+                "name": "last_updated",
+                "dtype": "datetime",
+                "format": "%Y-%m-%dT%H:%M:%S",
+                "nullable": true,
+                "zone": "UTC"
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "utc_instant",
+          "column": "starttime"
+        },
+        "entity_key": [
+          "resource_id",
+          "id"
+        ],
+        "latest": "whole_capture",
+        "latest_partition": "resource_id",
+        "vintage": "capture_fallback",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: COST-DIMENSION — the dictionary labels `Cost` £/h but describes it as total cost (price × volume × duration); which is published?",
+          "unit": "v0.22-K-TRD"
+        }
+      }
     },
     {
       "key": "gtma_trades_data",
@@ -28,7 +136,87 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Trade ID",
+              "Start Time",
+              "End Time",
+              "Volume",
+              "Price",
+              "Cost",
+              "SO Flag"
+            ],
+            "columns": [
+              {
+                "source": "Trade ID",
+                "name": "trade_id",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Start Time",
+                "name": "start_time",
+                "dtype": "datetime",
+                "format": "%Y-%m-%dT%H:%M:%SZ",
+                "nullable": false,
+                "zone": "UTC"
+              },
+              {
+                "source": "End Time",
+                "name": "end_time",
+                "dtype": "datetime",
+                "format": "%Y-%m-%dT%H:%M:%SZ",
+                "nullable": true,
+                "zone": "UTC"
+              },
+              {
+                "source": "Volume",
+                "name": "volume",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Price",
+                "name": "price",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Cost",
+                "name": "cost",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "SO Flag",
+                "name": "so_flag",
+                "dtype": "string",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "utc_instant",
+          "column": "start_time"
+        },
+        "entity_key": [
+          "resource_id",
+          "trade_id"
+        ],
+        "latest": "whole_capture",
+        "latest_partition": "resource_id",
+        "vintage": "ckan_last_modified"
+      }
     },
     {
       "key": "gtma_trades_data_pre",
@@ -39,7 +227,85 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Trade ID",
+              "Start Time",
+              "End Time",
+              "Volume",
+              "Price",
+              "Cost",
+              "SO Flag"
+            ],
+            "columns": [
+              {
+                "source": "Trade ID",
+                "name": "trade_id",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Start Time",
+                "name": "start_time",
+                "dtype": "datetime",
+                "format": "%Y-%m-%dT%H:%M:%SZ",
+                "nullable": false,
+                "zone": "UTC"
+              },
+              {
+                "source": "End Time",
+                "name": "end_time",
+                "dtype": "datetime",
+                "format": "%Y-%m-%dT%H:%M:%SZ",
+                "nullable": true,
+                "zone": "UTC"
+              },
+              {
+                "source": "Volume",
+                "name": "volume",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Price",
+                "name": "price",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Cost",
+                "name": "cost",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "SO Flag",
+                "name": "so_flag",
+                "dtype": "string",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "utc_instant",
+          "column": "start_time"
+        },
+        "entity_key": [
+          "trade_id"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified"
+      }
     }
   ],
   "resources": [
@@ -105,8 +371,9 @@
       "url_type": "upload",
       "family": "gtma_trades_data",
       "disposition": {
-        "kind": "SILVER",
-        "key": "gtma_trades_data"
+        "kind": "HOLD",
+        "reason": "TODO: GTMA-2020-DUPLICATES — identifiers ES00104406–ES00104415 each appear twice as identical full rows; publication defect or distinct trades needing another identifier?",
+        "unit": "v0.22-K-TRD"
       }
     },
     {

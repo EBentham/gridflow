@@ -51,6 +51,7 @@ from test_neso_multi_resource import (
     SCN1C_ADDED,
     SCN1D_ADDED,
     SYS1_ADDED,
+    TRD_ADDED,
 )
 
 from gridflow.connectors.neso_data_portal import skeleton
@@ -604,8 +605,8 @@ class TestSkeletonAndPin:
         of K-SCN-1c, the ES1 record of K-SCN-1d, the seven constraint-management records of K-CON
         the eight system records of K-SYS-1, the nine balancing-costs records of K-BAL-1 and the
         BSUoS monthly forecast summary record of K-BAL-2a, the nine skip-rate records of K-BAL-2b
-        and the nine tariff records of K-BAL-2c appearing since the base golden
-        (master ``34992b6``), and any DEM-1 engine digest added or lost."""
+        the nine tariff records of K-BAL-2c and the nine trading records of K-TRD appearing since
+        the base golden (master ``34992b6``), and any DEM-1 engine digest added or lost."""
         golden = json.loads(PIN_PATH.read_text(encoding="utf-8"))
         current = json.loads(dump(generated_pin()))
         for section in ("sql", "records", "columns"):
@@ -621,5 +622,6 @@ class TestSkeletonAndPin:
                 *BAL2A_ADDED,
                 *BAL2B_ADDED,
                 *BAL2C_ADDED,
+                *TRD_ADDED,
             }, section
         assert set(current["engine"]) == set(golden["engine"])

@@ -1,0 +1,7 @@
+Record,Counterparty,Unit,Start Time,End Time,Volume,Price,Notes,Last Updated
+2021_07_02-1,Inovyn,Runcorn Site,2021-07-02,2021-07-03T05:00:00,0,0,"Reactive Contract,62MVAr at ORPS rate",2021-07-02T14:43:33
+2021_04_01-1,Inovyn,Runcorn Site,2021-04-01,2021-04-02T05:00:00,0,0,"Reactive Contract,70MVAr at ORPS rate",2021-07-02T14:43:33
+2021_04_07-1,Inovyn,Runcorn Site,2021-04-07,2020-04-08T05:00:00,0,0,"Reactive Contract,62MVAr at ORPS rate",2021-07-02T14:43:33
+2021_10_29-1,Wood Plc,Carscreugh,2021-10-29,2021-10-30T06:00:00,-5.05,-124,Thermal Constraint,2021-10-29T22:33:42
+2021_11_01-1,Natural Power,Barlockhart,2021-11-01,2021-11-01T21:00:00,-6.1,150,Thermal Constraint,2021-11-01T10:01:36
+2021_11_12-1,Wood Plc,Carscreugh,2021-11-12,2021-11-12T15:00:00,-9.2,-124,Thermal Constraint,2021-11-12T09:38:06

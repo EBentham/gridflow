@@ -17,7 +17,136 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "ID",
+              "StartTime",
+              "EndTime",
+              "Volume",
+              "Price",
+              "Cost",
+              "SO_Flag",
+              "Reason",
+              "AssetID",
+              "CP_Name",
+              "Area",
+              "Note",
+              "Last_Updated"
+            ],
+            "columns": [
+              {
+                "source": "ID",
+                "name": "id",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "StartTime",
+                "name": "starttime",
+                "dtype": "datetime",
+                "format": "%Y-%m-%dT%H:%M:%S",
+                "nullable": false,
+                "zone": "UTC"
+              },
+              {
+                "source": "EndTime",
+                "name": "endtime",
+                "dtype": "datetime",
+                "format": "%Y-%m-%dT%H:%M:%S",
+                "nullable": true,
+                "zone": "UTC"
+              },
+              {
+                "source": "Volume",
+                "name": "volume",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Price",
+                "name": "price",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Cost",
+                "name": "cost",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "SO_Flag",
+                "name": "so_flag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Reason",
+                "name": "reason",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "AssetID",
+                "name": "asset_id",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "CP_Name",
+                "name": "cp_name",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Area",
+                "name": "area",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Note",
+                "name": "note",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Last_Updated",
+                "name": "last_updated",
+                "dtype": "datetime",
+                "format": "%Y-%m-%dT%H:%M:%S",
+                "nullable": true,
+                "zone": "UTC"
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "utc_instant",
+          "column": "starttime"
+        },
+        "entity_key": [
+          "resource_id",
+          "id"
+        ],
+        "latest": "whole_capture",
+        "latest_partition": "resource_id",
+        "vintage": "capture_fallback",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: COST-DIMENSION — the dictionary labels `Cost` £/h but describes it as total cost (price × volume × duration); which is published?",
+          "unit": "v0.22-K-TRD"
+        }
+      }
     },
     {
       "key": "index_linked_contract_volume_files",

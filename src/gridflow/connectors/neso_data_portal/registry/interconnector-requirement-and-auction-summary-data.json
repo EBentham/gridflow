@@ -17,7 +17,206 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Published DateTime",
+              "Notes",
+              "Auction ID",
+              "Auction Lot ID",
+              "Buy Sell",
+              "Volume Required",
+              "Qualified IC",
+              "Start Time",
+              "End Time",
+              "Bid Deadline",
+              "Default Price",
+              "Clearing Price",
+              "Best Price",
+              "VWA Price",
+              "Cleared Volume",
+              "Total Bid Volume",
+              "IFA1 Volume",
+              "BN Volume",
+              "NEMO Volume",
+              "IFA2 Volume",
+              "EL Volume",
+              "VKL Volume",
+              "System Flag"
+            ],
+            "columns": [
+              {
+                "source": "Published DateTime",
+                "name": "published_datetime",
+                "dtype": "datetime",
+                "format": "%Y-%m-%dT%H:%M:%S",
+                "nullable": true,
+                "zone": "UTC"
+              },
+              {
+                "source": "Notes",
+                "name": "notes",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Auction ID",
+                "name": "auction_id",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Auction Lot ID",
+                "name": "auction_lot_id",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Buy Sell",
+                "name": "buy_sell",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Volume Required",
+                "name": "volume_required",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Qualified IC",
+                "name": "qualified_ic",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Start Time",
+                "name": "start_time",
+                "dtype": "datetime",
+                "format": "%Y-%m-%dT%H:%M:%S",
+                "nullable": false,
+                "zone": "UTC"
+              },
+              {
+                "source": "End Time",
+                "name": "end_time",
+                "dtype": "datetime",
+                "format": "%Y-%m-%dT%H:%M:%S",
+                "nullable": true,
+                "zone": "UTC"
+              },
+              {
+                "source": "Bid Deadline",
+                "name": "bid_deadline",
+                "dtype": "datetime",
+                "format": "%Y-%m-%dT%H:%M:%S",
+                "nullable": true,
+                "zone": "UTC"
+              },
+              {
+                "source": "Default Price",
+                "name": "default_price",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Clearing Price",
+                "name": "clearing_price",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Best Price",
+                "name": "best_price",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "VWA Price",
+                "name": "vwa_price",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Cleared Volume",
+                "name": "cleared_volume",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Total Bid Volume",
+                "name": "total_bid_volume",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "IFA1 Volume",
+                "name": "ifa1_volume",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "BN Volume",
+                "name": "bn_volume",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "NEMO Volume",
+                "name": "nemo_volume",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "IFA2 Volume",
+                "name": "ifa2_volume",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "EL Volume",
+                "name": "el_volume",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "VKL Volume",
+                "name": "vkl_volume",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "System Flag",
+                "name": "system_flag",
+                "dtype": "string",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "utc_instant",
+          "column": "start_time"
+        },
+        "entity_key": [
+          "auction_lot_id"
+        ],
+        "latest": "whole_capture",
+        "vintage": "capture_fallback",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: IC-ISSUE-AVAILABILITY — lots are mutable forward requirements later overwritten with outcomes (28,326 targets on/before the capture, 2 after); what was available when?",
+          "unit": "v0.22-K-TRD"
+        }
+      }
     },
     {
       "key": "ic_requirement_auction_files",
