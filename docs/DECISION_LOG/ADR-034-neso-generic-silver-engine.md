@@ -4,6 +4,7 @@
 **Date:** 2026-10-07
 **Phase:** v0.22 unit B (generic silver engine)
 **Amends:** ADR-033 C-7 (closed by P-13 below).
+**Amended by:** v0.22 unit BAL-2aH (RULINGS 678/680), §Amendment 1
 **Cross-references:** ADR-022 (enum sentinels), ADR-024 (schema manifest), ADR-025 (`_latest`
 views), ADR-028 (bronze vouching), ADR-029 (bronze retention, silver rebuildability),
 ADR-030 (NESO source), ADR-033 (registry, upload leg).
@@ -21,11 +22,12 @@ for 5, measured at `d7cf513`).
 
 **P-1 — a frozen schema record per family.** `FamilyEntry.record` (`registry/record.py`)
 declares, per exact vendor header (an *epoch*), each column's silver name, dtype, format,
-null tokens, nullability and bounds; the temporal recipe; the entity key; `key_latest` or
-`whole_capture` selection; the run-type column; siblings; and the vintage recipe
-(`ckan_last_modified`, `capture_fallback`, `issue_time_evidenced` with evidence). Load-time
-rules V-1..V-13 reject a record that cannot be honoured, at the one validation site. A
-family with a record is transformed by the generic engine; without one it is ingest-only.
+null tokens, an opt-in numeric edge trim, nullability and bounds; the temporal recipe; the
+entity key; `key_latest` or `whole_capture` selection; the run-type column; siblings; and the
+vintage recipe (`ckan_last_modified`, `capture_fallback`, `issue_time_evidenced` with
+evidence). Load-time rules V-1..V-13 (and V-19, §Amendment 1) reject a record that cannot be
+honoured, at the one validation site. A family with a record is transformed by the generic
+engine; without one it is ingest-only.
 
 **P-2 / P-6 — one capture, one output, one run id.** A capture's id is its body's
 data-root-relative POSIX path; its partition date is the bronze date directory. The engine
@@ -35,9 +37,9 @@ to replace a file that holds another capture's rows. `run(date)` resolves one ru
 whole call, so every output it writes carries the same `source_run_id`; the run id is
 lineage only, and every clock comes from the sidecar and the record.
 
-**P-4 / P-5 — typing order (I-2).** Each child is typed under its own epoch: null tokens,
-casts, then exclusion of non-nullable nulls and bound breaches, counted per child and rule.
-Only then, capture-wide: `timestamp_utc` from the temporal recipe, `published_at`,
+**P-4 / P-5 — typing order (I-2).** Each child is typed under its own epoch: the opt-in edge
+trim, null tokens, casts, then exclusion of non-nullable nulls and bound breaches, counted
+per child and rule. Only then, capture-wide: `timestamp_utc` from the temporal recipe, `published_at`,
 `bronze_capture_id`, `capture_written_at`, and the entity-key uniqueness check. A row is
 judged only by its own epoch's rules. A header-only body is a valid empty capture only when
 unit A's `empty_capture` marker is set and the family allows empty; any other empty or
@@ -136,3 +138,38 @@ and 2.98 GB for 5.
 the offline profiler that proposes the rest.
 
 Forward pointer: ADR-037 supersedes the registry-side inventory digest and the capture-id COVERED pins.
+
+## Amendment 1 — opt-in numeric edge trim (BAL-2aH, RULINGS 678/680)
+
+**The field.** `ColumnSpec.trim: "ascii" | None` (default `None`). `"ascii"` strips
+`NUMERIC_TRIM_CHARS` (`" \t\n\r\v\f"`, defined once in `registry/record.py`) from both ends of
+each cell of that column. It is accepted on `int64` and `float64` columns only, and a trimmed
+column's null tokens may carry no edge whitespace (such a token could never match). V-19 refuses
+a record that trims a column in its `entity_key`: trimming a key would merge keys that differ
+only by padding. A record without the field dumps exactly as before (`exclude_none`), so no
+equivalence fingerprint or golden pin changes.
+
+**The order.** In `type_child`, after the unpivot and before P-4's token match: edge trim, then
+null tokens, then the strict cast. A value that is neither a declared token nor a number after
+the trim (inner spaces, a comma number, a word, an all-whitespace cell) still fails the capture
+with `InvalidOperationError`, which is not an ADR-040 adjudication cause (RULINGS 678).
+
+**Why not NBSP.** U+00A0 and other Unicode spaces are not ASCII, the measured cells carry only
+U+0020, and admitting them would widen the cleanup past what the vendor bodies show. A Unicode
+space at a cell edge fails the capture as before.
+
+**Versions unchanged.** Neither the record version nor `ENGINE_VERSION` moves. The trim is
+monotone: every cell the strict cast accepts untrimmed types to the identical value trimmed, so
+every completion written under the old record is still a true statement about the new one; the
+two paths differ only on cells that used to fail. A bump would re-transform unchanged outputs.
+
+**The one opted-in record.** `bsuos_monthly_forecast_fc_summary`, epoch index 6 (the F12
+header) only: `Winter Security of Supply Cost (£m)` and `21/22 Under-Recovered Costs (£m)` take
+`trim: "ascii"` and `null_tokens: ["-"]`, which loads March-May 2024 (padded numerals and the
+accounting token ` -   `). Disposition (class 3): the dash loads as null; whether it means zero
+or not-available stays in the record's held question, and a ruling for zero re-transforms those
+captures from immutable bronze.
+
+**Residual R-1.** The opt-in is as wide as the evidence: a padded body in a non-opted epoch
+(the final F13-F15 epoch repeats both columns without the trim) or family still fails loud with
+`InvalidOperationError` and leaves a visible `failed` gap until a record change opts it in.
