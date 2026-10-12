@@ -1,0 +1,4 @@
+Auction Date,Service Delivery Date,Service Window,Service window start time,Service Window End Time,Positive Balancing Reserve Requirement MW,Negative Balancing Reserve Requirement MW,Forecast produced on,Forecast type
+2026-10-08,2026-10-09,1,2026-10-08 23:00:00,2026-10-08 23:29:00,200,1450,2026-10-07,Dayahead
+2026-10-08,2026-10-09,2,2026-10-08 23:30:00,2026-10-08 23:59:00,200,1450,2026-10-07,Dayahead
+2026-10-08,2026-10-09,3,2026-10-09 00:00:00,2026-10-09 00:29:00,200,1450,2026-10-07,Dayahead
