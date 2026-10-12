@@ -1,0 +1,7 @@
+date,bm_unit,fuel,bid_offer,excluded_from_accepted_or_feasible_merit_stack,exclusion_stage,pair_id,average_price_per_MWh,excluded_volume_MWh,exclusion_reason
+2026-10-01T00:00:00,ASHWW-1,WIND,Offer,Feasible Merit,1,1,97.92,2.01,Wind offer
+2026-10-01T00:00:00,BNWKW-1,WIND,Offer,Feasible Merit,1,1,89.0,0.5,Wind offer
+2026-10-01T00:00:00,BROCW-1,WIND,Offer,Feasible Merit,1,1,150.0,2.42,Wind offer
+2026-10-01T00:00:00,AG-ASTK08,BATTERY,Bid,Feasible Merit,2,-1,98.1,0.08,Behind constraint
+2026-10-01T00:00:00,RHEI-4,,Offer,Feasible Merit,5,1,185.0,1.42,Inaccessible long notice unit
+2026-10-01T01:35:00,SGRWO-1,WIND,Offer,Accepted,1,-1,0.0,1.67,Wind offer

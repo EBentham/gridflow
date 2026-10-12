@@ -1,0 +1,7 @@
+settlement_period_start,bid_offer,fuel,relative_technology_skip_rate,technology_specific_skip_rate,fuel_in_merit_volume_MWh,fuel_skipped_volume_MWh
+2024-12-15T00:00:00,Bid,PS,100.0,100.0,0.01,0.01
+2024-12-15T00:00:00,Offer,,0.0,0.0,0.02,0.0
+2024-12-15T00:00:00,Offer,BATTERY,43.19,60.32,206.78,124.74
+2024-12-15T00:00:00,Offer,CCGT,0.52,1.83,81.99,1.5
+2024-12-15T00:30:00,Bid,CCGT,0.0,0.0,0.03,0.0
+2024-12-15T01:30:00,Offer,,0.0,0.0,1.35,0.0

@@ -1,0 +1,9 @@
+settlement_period_start,stage,bm_skip_rate_offers_percent,bm_total_volume_skipped_offers_MWh,post_system_action_skip_rate_offers_percent,post_system_action_total_volume_skipped_offers_MWh,bm_skip_rate_bids_percent,bm_total_volume_skipped_bids_MWh,post_system_action_skip_rate_bids_percent,post_system_action_total_volume_skipped_bids_MWh
+2024-12-15T00:00:00,0,38.22,398.97,38.22,398.97,55.26,644.01,55.26,644.01
+2024-12-15T00:00:00,1,36.93,385.51,36.93,385.51,55.26,644.01,55.26,644.01
+2024-12-15T00:00:00,2,36.9,385.19,36.9,385.19,0,0.02,100,0.02
+2024-12-15T00:00:00,3,12.29,128.32,44.43,128.32,0,0.02,100,0.02
+2024-12-15T00:00:00,4,12.25,127.88,44.28,127.88,0,0.02,100,0.02
+2024-12-15T00:00:00,5,12.09,126.24,43.71,126.24,0,0.01,100,0.01
+2024-12-15T00:30:00,0,39.23,467.76,39.23,467.76,55.53,641.55,55.53,641.55
+2025-03-11T10:30:00,0,,,,,,,,

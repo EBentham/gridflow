@@ -1,0 +1,6 @@
+﻿month,bm_unit,bid_offer,fuel_type,skipped_volume_mwh,in_merit_volume_mwh,skip_rate
+2024-12,ROTHW-1,Bid,WIND,575.7,575.7,100
+2024-12,CLAC-1,Bid,NPSHYD,1040.78,3889.23,26.8
+2024-12,VKNGW-4,Bid,WIND,1005.84,25021.83,4
+2024-12,AFTOW-1,Bid,WIND,0,30.96,0
+2024-12,AG-NSTK01,Bid,,12.88,12.88,100
