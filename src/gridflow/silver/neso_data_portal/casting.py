@@ -27,6 +27,7 @@ import polars as pl
 
 from gridflow.connectors.neso_data_portal.registry.record import (
     EDITION,
+    NUMERIC_TRIM_CHARS,
     PROJECTION_YEAR,
     VALUE,
     epoch_outputs,
@@ -321,6 +322,10 @@ def _sample(frame: pl.DataFrame, key: tuple[str, ...]) -> list[str]:
 def type_child(table: ChildTable, record: SchemaRecord, ctx: CaptureContext) -> TypedChild:
     """Type one child table under its own epoch and exclude its invalid rows (P-4).
 
+    Each opted-in numeric column (``trim``) is edge-trimmed of
+    :data:`NUMERIC_TRIM_CHARS`, then null tokens are matched, then the strict
+    cast runs; a value outside the tokens still fails the capture.
+
     Args:
         table: An all-``Utf8`` table from a reader.
         record: The family's record.
@@ -350,6 +355,13 @@ def type_child(table: ChildTable, record: SchemaRecord, ctx: CaptureContext) -> 
             variable_name=PROJECTION_YEAR,
             value_name=VALUE,
         ).with_columns(pl.col(PROJECTION_YEAR).replace_strict(years, return_dtype=pl.Int64))
+    trimmed = [
+        pl.col(spec.source).str.strip_chars(NUMERIC_TRIM_CHARS)
+        for spec in specs
+        if spec.trim is not None
+    ]
+    if trimmed:
+        frame = frame.with_columns(trimmed)
     tokened = [_null_tokens(spec) for spec in specs if spec.null_tokens]
     if tokened:
         frame = frame.with_columns(tokened)

@@ -10,6 +10,7 @@ captures still written) live in ``test_neso_generic_engine.py``.
 from __future__ import annotations
 
 import logging
+import math
 from datetime import UTC, date, datetime
 from pathlib import Path
 from typing import Any
@@ -412,3 +413,130 @@ class TestPublishedAt:
             ctx=_ctx(resource_filename="202610070930_f.csv", published_at=None),
         )
         assert out["published_at"].to_list() == [datetime(2026, 10, 7, 9, 30, tzinfo=UTC)]
+
+
+COUNT_HEADER = [*SP_HEADER, "Count"]
+
+
+def _numeric(
+    dtype: str = "float64",
+    *,
+    trim: bool = False,
+    tokens: list[str] | None = None,
+    count_trim: bool = False,
+) -> SchemaRecord:
+    """The sp record with ``Value`` typed ``dtype`` and a non-key int64 ``Count``."""
+    value_extra: dict[str, Any] = {}
+    if trim:
+        value_extra["trim"] = "ascii"
+    if tokens is not None:
+        value_extra["null_tokens"] = tokens
+    count_extra: dict[str, Any] = {"trim": "ascii"} if count_trim else {}
+    cols = [
+        *sp_columns()[:3],
+        column("Value", "value", dtype, **value_extra),
+        column("Count", "count", "int64", **count_extra),
+    ]
+    return _rec(epochs=[epoch(cols)])
+
+
+def _values(rec: SchemaRecord, cell: str | None, count: str | None = "1") -> list[Any]:
+    out = _run(rec, _table(COUNT_HEADER, [["2026-10-07", "1", "A", cell, count]]))
+    return list(out["value"].to_list())
+
+
+def _raises_invalid(rec: SchemaRecord, cell: str | None, count: str | None = "1") -> None:
+    with pytest.raises(pl.exceptions.PolarsError) as info:
+        _values(rec, cell, count)
+    assert type(info.value) is pl.exceptions.InvalidOperationError, type(info.value)
+
+
+class TestNumericEdgeTrim:
+    """BAL-2aH: the opt-in ASCII edge trim runs before the token match and the strict cast."""
+
+    def test_t_trim_1_a_padded_numeral_loads_only_when_opted_in(self) -> None:
+        """A1. Detects a padded numeral failing despite the opt-in, or loading without it."""
+        assert _values(_numeric(trim=True), " 4.0 ") == [4.0]
+        _raises_invalid(_numeric(), " 4.0 ")
+
+    def test_t_trim_2_a_padded_token_is_null_only_when_opted_in(self) -> None:
+        """A2. Detects the padded dash not matching the token after the trim."""
+        assert _values(_numeric(trim=True, tokens=["-"]), " -   ") == [None]
+        _raises_invalid(_numeric(tokens=["-"]), " -   ")
+
+    @pytest.mark.parametrize("cell", ["1 234", "n/a", "1,234"])
+    def test_t_trim_3_a_value_neither_token_nor_number_still_fails(self, cell: str) -> None:
+        """A3. Detects the trim widening into coercion (inner spaces, commas, words)."""
+        _raises_invalid(_numeric(trim=True, tokens=["-"]), cell)
+
+    def test_t_trim_4_the_trimmed_set_is_exactly_ascii_whitespace(self) -> None:
+        """Detects NBSP (or any non-ASCII space) entering the trim set, or an ASCII
+        whitespace character missing from it."""
+        from gridflow.connectors.neso_data_portal.registry.record import NUMERIC_TRIM_CHARS
+
+        assert NUMERIC_TRIM_CHARS == " \t\n\r\v\f"
+        rec = _numeric(trim=True)
+        _raises_invalid(rec, "\u00a04.0\u00a0")
+        for cell in ("\t4.0\t", "4.0\n", "\x0b4.0\x0c", "\r4.0 "):
+            assert _values(rec, cell) == [4.0], repr(cell)
+
+    def test_t_trim_5_an_all_space_cell_fails_and_a_null_stays_null(self) -> None:
+        """Detects an all-whitespace cell becoming a silent null."""
+        rec = _numeric(trim=True, tokens=["-"])
+        _raises_invalid(rec, "   ")
+        assert _values(rec, None) == [None]
+
+    def test_t_trim_6_the_trim_precedes_the_token_match(self) -> None:
+        """Detects the trim running after the token match (then ``' - '`` fails the cast)."""
+        assert _values(_numeric(trim=True, tokens=["-"]), " - ") == [None]
+
+    def test_t_trim_7_only_the_opted_in_column_is_trimmed(self) -> None:
+        """Detects the trim reaching a string key or a non-opted numeric column."""
+        rec = _numeric(trim=True)
+        out = _run(rec, _table(COUNT_HEADER, [["2026-10-07", "1", " A ", " 4.0 ", "7"]]))
+        assert out["unit"].to_list() == [" A "]
+        assert out["value"].to_list() == [4.0]
+        assert out["count"].to_list() == [7]
+        _raises_invalid(rec, " 4.0 ", " 7 ")
+
+    def test_t_trim_8_an_int64_column_is_trimmed(self) -> None:
+        """Detects the trim applying to float64 only."""
+        out = _run(
+            _numeric(count_trim=True),
+            _table(COUNT_HEADER, [["2026-10-07", "1", "A", "4.0", " 7 "]]),
+        )
+        assert out["count"].to_list() == [7]
+
+    @pytest.mark.parametrize("dtype", ["float64", "int64"])
+    def test_t_mono_the_trim_never_changes_a_value_that_loads_untrimmed(self, dtype: str) -> None:
+        """I-3. Detects the trim altering any cell the strict cast already accepts, so
+        no v1-loaded output could change under the amended record."""
+        cells: list[str | None] = [
+            "4.0",
+            "-4.0",
+            "+4.0",
+            ".5",
+            "1e3",
+            "NaN",
+            "inf",
+            "0",
+            "7",
+            "-7",
+            "-",
+            None,
+        ]
+        plain = _numeric(dtype, tokens=["-"])
+        trimmed = _numeric(dtype, trim=True, tokens=["-"])
+        successes = 0
+        for cell in cells:
+            try:
+                before = _values(plain, cell)
+            except pl.exceptions.InvalidOperationError:
+                continue
+            successes += 1
+            after = _values(trimmed, cell)
+            if before[0] is not None and isinstance(before[0], float) and math.isnan(before[0]):
+                assert math.isnan(after[0]), repr(cell)
+            else:
+                assert after == before, repr(cell)
+        assert successes >= 4, f"{dtype}: only {successes} untrimmed successes"
