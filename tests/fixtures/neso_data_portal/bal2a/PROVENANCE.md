@@ -25,7 +25,7 @@ Reader epochs: F13, F14 and F15 are one reader epoch (the reader strips header-e
 The 53 valid-UTF-8 resources fall in 8 reader epochs; the 22 invalid ones (F0-F3, F6, F9) fail the
 UTF-8 gate before epoch matching.
 
-## Open conflict with the unit spec (found by running the mechanism)
+## Seat ruling 678: the three strict-cast failures stay open
 
 FACTS T128/T129 say no nonblank numeric token fails a `float64` cast. Three F12 resources do:
 March, April and May 2024 (`9120ae56`, `0bef1780`, `ebdd84ac`) carry the accounting-format token
@@ -33,4 +33,7 @@ March, April and May 2024 (`9120ae56`, `0bef1780`, `ebdd84ac`) carry the account
 beside `0` in the neighbouring February 2024 and January 2024 editions for the same target months),
 and March and April 2024 also pad numerals (` 4.0 `, 27 cells). The engine's cast is strict, has no
 trim and a null token would turn a probable zero into null, so those three captures fail with
-`InvalidOperationError` and load nothing (D-41). The fixture `f12p.csv` pins that.
+`InvalidOperationError` and load nothing (D-41). The fixture `f12p.csv` pins that. Ruling 678: no adjudication entry
+(`InvalidOperationError` is not an ADR-040 cause) and no new mechanism; the three stay open `failed`
+gaps until the follow-up unit BAL-2aH adds lexical numeric cleanup. Real-body count: 75 captures = 22
+adjudicated `UnicodeDecodeError` + 3 open `InvalidOperationError` + 50 loaded.

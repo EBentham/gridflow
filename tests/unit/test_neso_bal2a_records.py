@@ -25,9 +25,10 @@ Record decisions under test (K-BAL-2-FACTS g1-g5, §4, K-BAL-2a-SPEC):
   header says £m, the dictionary TWh). Trailing anonymous headers stay nullable string columns.
 - Held: the issue instant, the forward-target rule and the units are open (the record model has no
   notes field, so the TODOs live in the held question and in ``PROVENANCE.md``).
-- Open conflict with the spec, found by running the mechanism: March, April and May 2024 carry the
-  accounting token `` -   `` (and padded numerals), which the strict cast refuses; those three
-  captures fail with ``InvalidOperationError`` rather than load a guess (D-41).
+- Seat ruling 678: March, April and May 2024 carry the accounting token `` -   `` (and padded
+  numerals), which the strict cast refuses; those three captures fail with
+  ``InvalidOperationError`` rather than load a guess (D-41) and stay open ``failed`` gaps with no
+  adjudication entry. The lexical cleanup is the follow-up unit BAL-2aH.
 
 ``git`` normalises a committed CSV fixture's line endings, so :func:`body` rebuilds the bronze
 originals' CRLF convention; a BOM stays where the original had one."""
@@ -87,10 +88,13 @@ UNIT = "v0.22-K-BAL-2a"
 
 HELD_QUESTION = (
     "TODO: the issue instant and availability of each monthly edition (filename month is an "
-    "edition label, not an issue time); 51 of 53 loaded editions include targets on or before "
-    "their upload (RULINGS 529 forward-target rule fails); the target-month clock "
+    "edition label, not an issue time); 50 of the 53 UTF-8 editions load, and March-May 2024 "
+    "fail the strict numeric cast until BAL-2aH lands; the loaded editions include targets on or "
+    "before their upload (RULINGS 529 forward-target rule fails); the target-month clock "
     "(BSUOS-MONTH-CLOCK); the units of bare `Volume` (July 2023) and `Additional NESO Framework "
-    f"Costs ({POUND}m)` (dictionary says TWh)."
+    f"Costs ({POUND}m)` (dictionary says TWh); and whether `' - '` in a cost column means zero "
+    "(the January and February 2024 editions read `0` for the same target months) or "
+    "not-available."
 )
 FILES_HOLD = (
     "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, "
@@ -706,11 +710,12 @@ def test_march_to_may_2024_numerals_the_strict_cast_refuses_fail_the_capture_not
     data: Path,
 ) -> None:
     """Detects a vendor token coerced to null or zero (FACTS g5: no undocumented token becomes
-    null) or the padded numerals trimmed by guess. OPEN CONFLICT WITH THE SPEC (found by running
-    the mechanism): the March 2024 slice (padded ``' 4.0 '`` and the accounting token ``' -   '``)
-    fails its capture with the strict-cast ``InvalidOperationError`` (D-41), writes no row and
-    leaves a failure record, while the same-epoch February 2024 slice with plain cells loads. A
-    seat ruling is needed: adjudicate the three captures, or add a trim / zero-token mechanism."""
+    null) or the padded numerals trimmed by guess. The March 2024 slice (padded ``' 4.0 '`` and the
+    accounting token ``' -   '``) fails its capture with the strict-cast ``InvalidOperationError``
+    (D-41), writes no row and leaves a failure record, while the same-epoch February 2024 slice
+    with plain cells loads. Seat ruling 678: the three captures (March-May 2024) stay open
+    ``failed`` gaps with no adjudication entry (``InvalidOperationError`` is not an ADR-040 cause);
+    the lexical numeric cleanup is the follow-up unit BAL-2aH."""
     clean = capture(data, "f12")
     padded = capture(data, "f12p")
     with pytest.raises(NesoCaptureFailedError) as info:

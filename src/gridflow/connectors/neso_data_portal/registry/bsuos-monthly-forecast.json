@@ -1154,7 +1154,7 @@
         "vintage": "ckan_last_modified",
         "eligibility": {
           "status": "held",
-          "question": "TODO: the issue instant and availability of each monthly edition (filename month is an edition label, not an issue time); 51 of 53 loaded editions include targets on or before their upload (RULINGS 529 forward-target rule fails); the target-month clock (BSUOS-MONTH-CLOCK); the units of bare `Volume` (July 2023) and `Additional NESO Framework Costs (£m)` (dictionary says TWh).",
+          "question": "TODO: the issue instant and availability of each monthly edition (filename month is an edition label, not an issue time); 50 of the 53 UTF-8 editions load, and March-May 2024 fail the strict numeric cast until BAL-2aH lands; the loaded editions include targets on or before their upload (RULINGS 529 forward-target rule fails); the target-month clock (BSUOS-MONTH-CLOCK); the units of bare `Volume` (July 2023) and `Additional NESO Framework Costs (£m)` (dictionary says TWh); and whether `' - '` in a cost column means zero (the January and February 2024 editions read `0` for the same target months) or not-available.",
           "unit": "v0.22-K-BAL-2a"
         }
       }
