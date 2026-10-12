@@ -25,10 +25,12 @@ Record decisions under test (K-BAL-2-FACTS g1-g5, §4, K-BAL-2a-SPEC):
   header says £m, the dictionary TWh). Trailing anonymous headers stay nullable string columns.
 - Held: the issue instant, the forward-target rule and the units are open (the record model has no
   notes field, so the TODOs live in the held question and in ``PROVENANCE.md``).
-- Seat ruling 678: March, April and May 2024 carry the accounting token `` -   `` (and padded
-  numerals), which the strict cast refuses; those three captures fail with
-  ``InvalidOperationError`` rather than load a guess (D-41) and stay open ``failed`` gaps with no
-  adjudication entry. The lexical cleanup is the follow-up unit BAL-2aH.
+- Seat ruling 678 / BAL-2aH: March, April and May 2024 carry the accounting token `` -   `` (and
+  March and April pad numerals). Since BAL-2aH the three captures load: the two F12 cost columns
+  (``Winter Security of Supply Cost (£m)``, ``21/22 Under-Recovered Costs (£m)``) declare
+  ``trim: "ascii"`` and the null token ``-``, so a padded numeral is edge-trimmed and the dash is
+  read as null (its meaning, zero or not-available, stays held). Any other value still fails the
+  strict cast (D-41).
 
 ``git`` normalises a committed CSV fixture's line endings, so :func:`body` rebuilds the bronze
 originals' CRLF convention; a BOM stays where the original had one."""
@@ -60,7 +62,11 @@ from gridflow.connectors.neso_data_portal.registry import (
     SilverDisposition,
     load_registry,
 )
-from gridflow.connectors.neso_data_portal.registry.record import has_issue_time
+from gridflow.connectors.neso_data_portal.registry.record import (
+    NUMERIC_TRIM_CHARS,
+    epoch_outputs,
+    has_issue_time,
+)
 from gridflow.silver.neso_data_portal import generic
 from gridflow.silver.neso_data_portal.completion import (
     NesoCaptureFailedError,
@@ -88,13 +94,13 @@ UNIT = "v0.22-K-BAL-2a"
 
 HELD_QUESTION = (
     "TODO: the issue instant and availability of each monthly edition (filename month is an "
-    "edition label, not an issue time); 50 of the 53 UTF-8 editions load, and March-May 2024 "
-    "fail the strict numeric cast until BAL-2aH lands; the loaded editions include targets on or "
-    "before their upload (RULINGS 529 forward-target rule fails); the target-month clock "
+    "edition label, not an issue time); all 53 UTF-8 editions load, and March-May 2024 load the "
+    "accounting token as null (RULINGS 678); the loaded editions include targets on or before "
+    "their upload (RULINGS 529 forward-target rule fails); the target-month clock "
     "(BSUOS-MONTH-CLOCK); the units of bare `Volume` (July 2023) and `Additional NESO Framework "
     f"Costs ({POUND}m)` (dictionary says TWh); and whether `' - '` in a cost column means zero "
     "(the January and February 2024 editions read `0` for the same target months) or "
-    "not-available."
+    "not-available; a zero ruling re-transforms March-May 2024 from bronze."
 )
 FILES_HOLD = (
     "TODO: WORKBOOK-CHILD-RECORDS — 15 workbooks / 151 sheets; table bounds, identifiers, units, "
@@ -170,6 +176,8 @@ EPOCH_HEADERS: dict[str, list[str]] = {
     "f11": [*J, WINTER, TWH],
     "f12": [*J, WINTER, UNDER, TWH],
     "f12p": [*J, WINTER, UNDER, TWH],
+    "f12q": [*J, WINTER, UNDER, TWH],
+    "f12r": [*J, WINTER, UNDER, TWH],
     "f13": [
         *J,
         WINTER,
@@ -200,7 +208,9 @@ EPOCH_HEADERS["f15"] = [
     f"{FINAL_TAIL[3]} ",
 ]
 CLEAN = ("f4", "f5", "f7", "f8", "f10", "f11", "f12", "f13", "f14", "f15")
-BLANK_ROWS = {"f4": 1, "f5": 1, "f14": 1}
+BLANK_ROWS = {"f4": 1, "f5": 1, "f14": 1, "f12q": 1}
+PADDED = ("f12p", "f12q", "f12r")
+"""The March-May 2024 slices: the ``' -   '`` token (and padded numerals in March and April)."""
 
 
 @dataclass(frozen=True)
@@ -280,6 +290,22 @@ CAPTURES: dict[str, Capture] = {
         "2024-02-15T10:22:00.124305",
         "2026-10-08T09:10:08.826909+00:00",
     ),
+    "f12q": Capture(
+        "f12q.csv",
+        "0bef1780-082d-46ec-90af-62b3d0586061",
+        "Monthly BSUoS Forecast Summary April 2024",
+        "bsuos-forecast-apr-2024.csv",
+        "2024-03-15T11:07:56.511673",
+        "2026-10-08T09:10:11.846239+00:00",
+    ),
+    "f12r": Capture(
+        "f12r.csv",
+        "ebdd84ac-02cb-4552-a427-9b0dc56f5482",
+        "Monthly BSUoS Forecast Summary May 2024",
+        "bsuos-forecast-may-2024.csv",
+        "2024-04-15T16:27:30.492321",
+        "2026-10-08T09:10:14.862896+00:00",
+    ),
     "f13": Capture(
         "f13.csv",
         "2d5f0be1-2aab-4ab7-af28-c67a2f38db6b",
@@ -321,6 +347,9 @@ EDITION_OF = {
     "f10": 202307,
     "f11": 202308,
     "f12": 202402,
+    "f12p": 202403,
+    "f12q": 202404,
+    "f12r": 202405,
     "f13": 202408,
     "f14": 202503,
     "f15": 202610,
@@ -459,12 +488,12 @@ def test_fixtures_keep_the_vendor_shape() -> None:
     """Detects a fixture cut that lost what the tests below rely on: each exact raw header
     (incl. the ``£`` spellings, the bare ``Volume``, the trailing anonymous field and the
     F14/F15 padding), CRLF endings, the BOMs, the wholly blank rows, both Month spellings, the
-    accounting token and padded numerals of March 2024, and the standalone ``0xA3`` bytes of the
-    invalid body."""
+    accounting token and padded numerals of March and April 2024 (May has the token only), and the
+    standalone ``0xA3`` bytes of the invalid body."""
     for alias, expected in EPOCH_HEADERS.items():
         assert header(alias) == expected, alias
         assert body(alias).count(b"\r\n") == body(alias).count(b"\n"), alias
-    for alias in ("f4", "f5", "f10", "f11", "f12", "f12p", "f13", "f14", "f15"):
+    for alias in ("f4", "f5", "f10", "f11", "f12", "f12p", "f12q", "f12r", "f13", "f14", "f15"):
         assert body(alias).startswith(b"\xef\xbb\xbf"), alias
     for alias in ("f7", "f8"):
         assert not body(alias).startswith(b"\xef\xbb\xbf"), alias
@@ -479,6 +508,14 @@ def test_fixtures_keep_the_vendor_shape() -> None:
         v != v.strip() and v.strip() not in ("-", "") for r in rows("f12p") for v in r.values()
     )
     assert body("f12").count(b" -   ") == 0
+    for alias in ("f12q", "f12r"):
+        assert any(" -   " in r.values() for r in rows(alias)), alias
+    assert any(
+        v != v.strip() and v.strip() not in ("-", "") for r in rows("f12q") for v in r.values()
+    )
+    assert not any(
+        v != v.strip() and v.strip() not in ("-", "") for r in rows("f12r") for v in r.values()
+    )
     assert b"\xa3" in body("bad").split(b"\r\n", 1)[0]
     with pytest.raises(UnicodeDecodeError):
         body("bad").decode("utf-8")
@@ -534,10 +571,11 @@ def test_units_only_where_the_header_declares_them_and_unknowns_stay_unit_less()
     bare ``Volume`` its own unit-less ``volume`` (never merged with the TWh column), the
     framework-cost header unit-less (its dictionary unit conflicts), ``Month`` the non-nullable
     string ``month_vendor`` (``month`` is reserved) and each trailing anonymous header a nullable
-    string never dropped."""
+    string never dropped. Only the two F12 cost columns (epoch index 6) take the BAL-2aH edge
+    trim and the ``-`` null token; every other numeric column takes neither."""
     record = _record()
     seen: dict[str, str] = {}
-    for epoch in record.epochs:
+    for index, epoch in enumerate(record.epochs):
         for col in epoch.columns:
             seen[col.source] = col.name
             if col.source == "Month":
@@ -546,7 +584,11 @@ def test_units_only_where_the_header_declares_them_and_unknowns_stay_unit_less()
                 assert col.dtype == "string" and col.nullable and col.name.startswith("unnamed_")
             else:
                 assert col.dtype == "float64" and col.nullable, col.source
-                assert col.min is None and col.max is None and col.null_tokens == ()
+                assert col.min is None and col.max is None
+                if index == 6 and col.source in (WINTER, UNDER):
+                    assert (col.null_tokens, col.trim) == (("-",), "ascii"), col.source
+                else:
+                    assert (col.null_tokens, col.trim) == ((), None), (index, col.source)
             if col.source.endswith(f"{POUND}m") or col.source.endswith(f"{POUND}m)"):
                 if "Framework" in col.source:
                     assert col.name == "additional_neso_framework_costs"
@@ -706,28 +748,59 @@ def test_an_unmapped_filename_fails_the_capture_and_loads_nothing(data: Path) ->
     assert _no_silver(data)
 
 
-def test_march_to_may_2024_numerals_the_strict_cast_refuses_fail_the_capture_not_a_guess(
-    data: Path,
-) -> None:
-    """Detects a vendor token coerced to null or zero (FACTS g5: no undocumented token becomes
-    null) or the padded numerals trimmed by guess. The March 2024 slice (padded ``' 4.0 '`` and the
-    accounting token ``' -   '``) fails its capture with the strict-cast ``InvalidOperationError``
-    (D-41), writes no row and leaves a failure record, while the same-epoch February 2024 slice
-    with plain cells loads. Seat ruling 678: the three captures (March-May 2024) stay open
-    ``failed`` gaps with no adjudication entry (``InvalidOperationError`` is not an ADR-040 cause);
-    the lexical numeric cleanup is the follow-up unit BAL-2aH."""
-    clean = capture(data, "f12")
-    padded = capture(data, "f12p")
-    with pytest.raises(NesoCaptureFailedError) as info:
-        get_transformer(SOURCE, FAMILY, data).run(DAY, run_id="r")
-    assert [(c, cls) for c, cls, _m in info.value.failures] == [(padded, "InvalidOperationError")]
-    failure = read_failure(data, FAMILY, padded)
-    assert failure is not None and failure["error_class"] == "InvalidOperationError"
-    assert read_completion(data, FAMILY, padded) is None
-    done = read_completion(data, FAMILY, clean)
-    assert done is not None and done["outcome"] == "populated"
+def test_march_to_may_2024_load_with_padding_trimmed_and_the_dash_null(data: Path) -> None:
+    """Detects the March-May 2024 captures still failing the strict cast, a padded numeral
+    mis-read, or the accounting token ``' -   '`` loaded as anything but null (seat ruling 678,
+    BAL-2aH): the February 2024 slice and the three padded slices all complete ``populated``
+    with zero exclusions and no failure record, each edition is stamped, every float equals its
+    edge-trimmed cell (the dash and blank are null) and the dash cells are counted exactly."""
+    ids = {alias: capture(data, alias) for alias in ("f12", *PADDED)}
+    get_transformer(SOURCE, FAMILY, data).run(DAY, run_id="r")
+    for alias, capture_id in ids.items():
+        done = read_completion(data, FAMILY, capture_id)
+        assert done is not None, alias
+        assert (done["outcome"], done["rows_excluded"]) == ("populated", 0), alias
+        assert read_failure(data, FAMILY, capture_id) is None, alias
     frame = _silver(data)
-    assert set(frame["edition"].to_list()) == {EDITION_OF["f12"]}
+    assert set(frame["edition"].to_list()) == {202402, 202403, 202404, 202405}
+    dash_nulls: dict[str, int] = {}
+    for alias in PADDED:
+        source = rows(alias)
+        part = frame.filter(pl.col("resource_id") == CAPTURES[alias].resource_id)
+        assert part["edition"].to_list() == [EDITION_OF[alias]] * len(source), alias
+        assert part["month_vendor"].to_list() == [r["Month"] for r in source], alias
+        dashes = 0
+        for position, raw_name in enumerate(header(alias)):
+            if raw_name.strip() == "Month":
+                continue
+            name = _silver_name(alias, raw_name, position)
+            expected: list[float | None] = []
+            for r in source:
+                cell = r[raw_name].strip(NUMERIC_TRIM_CHARS)
+                if cell == "-":
+                    dashes += 1
+                expected.append(None if cell in ("-", "") else float(cell))
+            assert part[name].to_list() == expected, (alias, name)
+        dash_nulls[alias] = dashes
+    assert dash_nulls == {"f12p": 4, "f12q": 5, "f12r": 6}
+
+
+def test_only_the_f12_cost_columns_opt_into_the_trim() -> None:
+    """T-SCOPE. Detects the edge trim widened past the measured bodies: across every record of
+    the committed registry, only fc_summary epoch index 6's two cost columns declare ``trim``;
+    the final epoch's same two sources take neither the trim nor the token (FM-6)."""
+    opted: list[tuple[str, int, str]] = []
+    for key, (_package, entry) in load_registry().families.items():
+        if entry.record is None:
+            continue
+        for index, epoch in enumerate(entry.record.epochs):
+            for col in epoch_outputs(epoch):
+                if col.trim is not None:
+                    opted.append((key, index, col.source))
+    assert sorted(opted) == sorted([(FAMILY, 6, WINTER), (FAMILY, 6, UNDER)])
+    for col in _record().epochs[7].columns:
+        if col.source in (WINTER, UNDER):
+            assert (col.trim, col.null_tokens) == (None, ()), col.source
 
 
 # --------------------------------------------------------------------------- #
