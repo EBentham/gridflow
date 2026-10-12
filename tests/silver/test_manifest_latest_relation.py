@@ -56,7 +56,8 @@ from gridflow.silver.schema_manifest import (
 # then to one hundred and one with v0.22-K-SCN-1d's ES1 electricity supply record, then to one
 # hundred and eight with v0.22-K-CON's seven constraint-management records, then to one hundred
 # and sixteen with v0.22-K-SYS-1's eight system records, then to one hundred and twenty-five with
-# v0.22-K-BAL-1's nine balancing-costs records.
+# v0.22-K-BAL-1's nine balancing-costs records, then to one hundred and twenty-six with
+# v0.22-K-BAL-2a's BSUoS monthly forecast summary record.
 _APPEND_ONLY_DATASETS: tuple[tuple[str, str], ...] = (
     ("elexon", "system_prices"),
     ("elexon", "remit"),
@@ -183,6 +184,7 @@ _APPEND_ONLY_DATASETS: tuple[tuple[str, str], ...] = (
     ("neso_data_portal", "constraint_breakdown"),
     ("neso_data_portal", "bsuos_fixed_tariffs"),
     ("neso_data_portal", "inertia_bid_offer_costs"),
+    ("neso_data_portal", "bsuos_monthly_forecast_fc_summary"),
 )
 
 
@@ -376,9 +378,9 @@ def test_append_only_set_equals_latest_spec_set() -> None:
     spec_set = set(LATEST_VIEW_SPECS)
 
     # Non-vacuity guard: this invariant must never pass because both sides are
-    # empty (F16) -- one hundred and twenty-five APPEND_ONLY datasets are registered today.
+    # empty (F16) -- one hundred and twenty-six APPEND_ONLY datasets are registered today.
     assert len(append_only) > 0
-    assert len(append_only) == 125
+    assert len(append_only) == 126
 
     missing_specs = append_only - spec_set
     extra_specs = spec_set - append_only
@@ -673,6 +675,10 @@ _EXPECTED_APPEND_ONLY_DEPRECATED_ALIASES: dict[tuple[str, str], str | None] = {
     ("neso_data_portal", "constraint_breakdown"): "silver_constraint_breakdown",
     ("neso_data_portal", "bsuos_fixed_tariffs"): "silver_bsuos_fixed_tariffs",
     ("neso_data_portal", "inertia_bid_offer_costs"): "silver_inertia_bid_offer_costs",
+    (
+        "neso_data_portal",
+        "bsuos_monthly_forecast_fc_summary",
+    ): "silver_bsuos_monthly_forecast_fc_summary",
 }
 
 

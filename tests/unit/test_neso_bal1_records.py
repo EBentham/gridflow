@@ -1270,7 +1270,7 @@ def test_the_committed_ledger_adjudicates_exactly_the_hi3_hi4_overlap() -> None:
     captures, a wider scope, a dropped cause or ruling, or an entry the registry does not back: one
     ``overlap`` entry (no cause) of ruling 653 for the 2024-2025 and 2025-2026 Historic II captures
     only, a one-line reason and question naming 624 keys, evidence naming the FACTS and this unit
-    and ADR-040, last in the ledger; the registry backs it; and no other BAL-1 family has an
+    and ADR-040, once in the ledger; the registry backs it; and no other BAL-1 family has an
     entry."""
     entries = registry_module.load_reconcile_adjudications()
     assert registry_module.reconcile_adjudication_problems(load_registry(), entries) == []
@@ -1290,7 +1290,7 @@ def test_the_committed_ledger_adjudicates_exactly_the_hi3_hi4_overlap() -> None:
         assert "\n" not in entry[text] and entry[text].strip()
     assert "624" in entry["reason"] and "624" in entry["question"]
     assert "ADR-040" in entry["evidence"] and "v0.22-K-BAL-1" in entry["evidence"]
-    assert entries[-1].family == "current_bsuos_historic_ii"
+    assert [e.family for e in entries].count("current_bsuos_historic_ii") == 1
     others = {e.family for e in entries} & (set(FAMILIES) | set(DAILY))
     assert others == {"current_bsuos_historic_ii"}
 

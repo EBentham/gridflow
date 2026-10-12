@@ -191,6 +191,8 @@ BAL1_ADDED = frozenset(
     }
 )
 """The nine balancing-costs families that v0.22-K-BAL-1 records."""
+BAL2A_ADDED = frozenset({"bsuos_monthly_forecast_fc_summary"})
+"""The BSUoS monthly forecast summary family that v0.22-K-BAL-2a records (held)."""
 REWORDED_HOLDS = {
     "national_forecast_7d_historic_day_ahead": (
         "TODO: FORECAST_TIMESTAMP has no vendor definition and its zone is undocumented "
@@ -238,8 +240,9 @@ class TestByteUnchanged:
         metered wind output and wind BOA volume records, K-IC-1's and K-IC-2's interconnector
         records, v0.22-SC's FES ED1 record, K-SCN-1a's twelve tRESP records, K-SCN-1b's nine
         regional FES records, K-SCN-1c's three building block records, K-SCN-1d's ES1 record,
-        K-CON's seven constraint-management records, K-SYS-1's eight system records and K-BAL-1's
-        nine balancing-costs records appearing.
+        K-CON's seven constraint-management records, K-SYS-1's eight system records, K-BAL-1's
+        nine balancing-costs records and K-BAL-2a's BSUoS monthly forecast summary record
+        appearing.
         """
         golden = json.loads(PIN_PATH.read_text(encoding="utf-8"))
         for key, question in REWORDED_HOLDS.items():
@@ -267,6 +270,7 @@ class TestByteUnchanged:
                     *CON_ADDED,
                     *SYS1_ADDED,
                     *BAL1_ADDED,
+                    *BAL2A_ADDED,
                 }
                 if section != "engine"
                 else set()
@@ -868,7 +872,7 @@ class TestRecordRules:
         self,
     ) -> None:
         """Detects a committed record broken by V-4/V-17 or the reserved name, and any
-        family other than the forty-seven resource-partitioned ones opting into the partition (in a
+        family other than the forty-eight resource-partitioned ones opting into the partition (in a
         fresh interpreter, so nothing collection imported can mask it)."""
         code = textwrap.dedent(
             """
@@ -881,6 +885,7 @@ class TestRecordRules:
             )
             assert partitioned == [
                 "brit_ned",
+                "bsuos_monthly_forecast_fc_summary",
                 "cmis_intertrip",
                 "constraint_breakdown",
                 "current_bsuos_historic_ii",

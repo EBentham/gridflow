@@ -216,5 +216,38 @@
     "question": "Which Historic II upload is authoritative for the 624 settlement keys 2025-04-01 to 2025-04-13 that the 2024-2025 and 2025-2026 resources both publish, and will NESO correct the label of the 2024-2025 resource?",
     "evidence": "K-BAL-1-FACTS §current_bsuos_historic_ii / C03, K-BAL-1-SPEC §2 (unit v0.22-K-BAL-1); ADR-040",
     "ruling": "653"
+  },
+  {
+    "family": "bsuos_monthly_forecast_fc_summary",
+    "category": "failed",
+    "cause": "UnicodeDecodeError",
+    "captures": [
+      "bronze/neso_data_portal/bsuos_monthly_forecast_fc_summary/2026/10/08/raw_20261008T090805Z_ef004890-679a-4d28-ac00-427ff6e7260d_d99b04d9.csv",
+      "bronze/neso_data_portal/bsuos_monthly_forecast_fc_summary/2026/10/08/raw_20261008T090807Z_46d81790-4b05-404b-b12b-6262bbb55cd2_bc370648.csv",
+      "bronze/neso_data_portal/bsuos_monthly_forecast_fc_summary/2026/10/08/raw_20261008T090810Z_f5c20630-1330-4a33-99bb-8b33a28d5cbb_9987b80b.csv",
+      "bronze/neso_data_portal/bsuos_monthly_forecast_fc_summary/2026/10/08/raw_20261008T090813Z_bdd9b33f-7055-46b2-af73-2fd958c39288_e11ba9ca.csv",
+      "bronze/neso_data_portal/bsuos_monthly_forecast_fc_summary/2026/10/08/raw_20261008T090815Z_b41ca68b-9248-4442-a158-664e13e6f9c8_8b653d96.csv",
+      "bronze/neso_data_portal/bsuos_monthly_forecast_fc_summary/2026/10/08/raw_20261008T090820Z_35cceee7-cea0-4e3d-95d3-e9937106d6a9_5b2c385c.csv",
+      "bronze/neso_data_portal/bsuos_monthly_forecast_fc_summary/2026/10/08/raw_20261008T090823Z_d56a5b59-2a59-4fb4-be01-71f1de01e6bd_4f9f36e6.csv",
+      "bronze/neso_data_portal/bsuos_monthly_forecast_fc_summary/2026/10/08/raw_20261008T090826Z_11af9f47-0adf-475e-8bc4-0265db7903b4_a694407a.csv",
+      "bronze/neso_data_portal/bsuos_monthly_forecast_fc_summary/2026/10/08/raw_20261008T090829Z_3c0ee750-c753-4bf3-8de2-aa93924499b6_ccf4169d.csv",
+      "bronze/neso_data_portal/bsuos_monthly_forecast_fc_summary/2026/10/08/raw_20261008T090832Z_772a145f-78d9-4049-aa27-dafb2bef2f68_f7d2be5e.csv",
+      "bronze/neso_data_portal/bsuos_monthly_forecast_fc_summary/2026/10/08/raw_20261008T090835Z_e448a3bc-fd28-4fd1-a36b-2abea6c37ed2_e70f4512.csv",
+      "bronze/neso_data_portal/bsuos_monthly_forecast_fc_summary/2026/10/08/raw_20261008T090837Z_f8c698d9-244c-4eaf-9599-4f466224afac_3842216e.csv",
+      "bronze/neso_data_portal/bsuos_monthly_forecast_fc_summary/2026/10/08/raw_20261008T090840Z_46fe0789-9da3-4fb8-9788-22632cb325fb_54474436.csv",
+      "bronze/neso_data_portal/bsuos_monthly_forecast_fc_summary/2026/10/08/raw_20261008T090843Z_c3e4060e-40d9-4b7a-8de1-7cfd5930649a_09d040bf.csv",
+      "bronze/neso_data_portal/bsuos_monthly_forecast_fc_summary/2026/10/08/raw_20261008T090845Z_c7040e92-95ca-41d5-b6a2-3c29b58260c3_ba780d44.csv",
+      "bronze/neso_data_portal/bsuos_monthly_forecast_fc_summary/2026/10/08/raw_20261008T090848Z_84ee9c82-928a-44ff-a932-ca56cf8b14ec_b940d806.csv",
+      "bronze/neso_data_portal/bsuos_monthly_forecast_fc_summary/2026/10/08/raw_20261008T090851Z_5b443736-832a-4412-be9c-0288e3ddb199_37e238ff.csv",
+      "bronze/neso_data_portal/bsuos_monthly_forecast_fc_summary/2026/10/08/raw_20261008T090854Z_e76b08ff-bc9a-422e-88e0-e7e325ec7d82_0f685549.csv",
+      "bronze/neso_data_portal/bsuos_monthly_forecast_fc_summary/2026/10/08/raw_20261008T090905Z_69bbddf1-2299-4908-b6d5-979cec86130e_9a7d5080.csv",
+      "bronze/neso_data_portal/bsuos_monthly_forecast_fc_summary/2026/10/08/raw_20261008T090936Z_ff6bd12f-7c0b-4d0a-a477-5c8113ffa14d_257ab43d.csv",
+      "bronze/neso_data_portal/bsuos_monthly_forecast_fc_summary/2026/10/08/raw_20261008T090939Z_578b493e-db5c-41e3-8b52-f91c5f80389c_f12eee08.csv",
+      "bronze/neso_data_portal/bsuos_monthly_forecast_fc_summary/2026/10/08/raw_20261008T090942Z_df1959c4-144f-4dd7-a89b-686a5ad404d0_9f82ee40.csv"
+    ],
+    "reason": "bodies carry standalone 0xA3 bytes (a cp1252/Latin-1 pound sign) in currency headers; not valid in the record's UTF-8; never re-decoded, so each of the 22 captures (March 2020 to December 2021, May 2022 and April to June 2023 editions) fails with UnicodeDecodeError and stays unloaded with its failure record. The November 2020 resource (b41ca68b-9248-4442-a158-664e13e6f9c8, monthly-bsuos-actual-summary-13112020.csv) is a misplaced actual-summary body, byte-identical to actual_sum resource 42f21a68-6700-4585-b63b-bc0080a99d2b (SHA-256 8b653d96f5003061ec6142d2aaf506d40c6832a0570ba813663c73d049550e41)",
+    "question": "Which text encoding do these 22 resources use, and can NESO republish them as UTF-8?",
+    "evidence": "K-BAL-2-FACTS §4 T130; ADR-040 amendment 1",
+    "ruling": "667"
   }
 ]
