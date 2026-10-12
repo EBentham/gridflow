@@ -28,7 +28,114 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "date",
+              "bm_unit",
+              "fuel",
+              "bid_offer",
+              "excluded_from_accepted_or_feasible_merit_stack",
+              "exclusion_stage",
+              "pair_id",
+              "average_price_per_MWh",
+              "excluded_volume_MWh",
+              "exclusion_reason"
+            ],
+            "columns": [
+              {
+                "source": "date",
+                "name": "date_vendor",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "bm_unit",
+                "name": "bm_unit",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "fuel",
+                "name": "fuel",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "bid_offer",
+                "name": "bid_offer",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "excluded_from_accepted_or_feasible_merit_stack",
+                "name": "excluded_from_accepted_or_feasible_merit_stack",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "exclusion_stage",
+                "name": "exclusion_stage",
+                "dtype": "int64",
+                "nullable": false
+              },
+              {
+                "source": "pair_id",
+                "name": "pair_id",
+                "dtype": "int64",
+                "nullable": false
+              },
+              {
+                "source": "average_price_per_MWh",
+                "name": "average_price_per_mwh",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "excluded_volume_MWh",
+                "name": "excluded_volume_mwh",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "exclusion_reason",
+                "name": "exclusion_reason",
+                "dtype": "string",
+                "nullable": false
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "resource_id",
+          "date_vendor",
+          "bm_unit",
+          "bid_offer",
+          "excluded_from_accepted_or_feasible_merit_stack",
+          "exclusion_stage",
+          "pair_id",
+          "exclusion_reason"
+        ],
+        "latest": "whole_capture",
+        "latest_partition": "resource_id",
+        "vintage": "ckan_last_modified",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: SKIP-DATE-ENDPOINT — does the five-minute `date` stamp mark the slice start or end?",
+          "unit": "v0.22-K-BAL-2b"
+        }
+      }
     },
     {
       "key": "skip_rates_in_merit_all_bm",
@@ -39,7 +146,119 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "date",
+              "bm_unit",
+              "fuel",
+              "bid_offer",
+              "stage",
+              "available_volume_MWh",
+              "average_price_per_MWh",
+              "pair_id",
+              "accepted_volume_MWh",
+              "in_merit_volume_MWh",
+              "skipped_volume_MWh"
+            ],
+            "columns": [
+              {
+                "source": "date",
+                "name": "date_vendor",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "bm_unit",
+                "name": "bm_unit",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "fuel",
+                "name": "fuel",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "bid_offer",
+                "name": "bid_offer",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "stage",
+                "name": "stage",
+                "dtype": "int64",
+                "nullable": false
+              },
+              {
+                "source": "available_volume_MWh",
+                "name": "available_volume_mwh",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "average_price_per_MWh",
+                "name": "average_price_per_mwh",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "pair_id",
+                "name": "pair_id",
+                "dtype": "int64",
+                "nullable": false
+              },
+              {
+                "source": "accepted_volume_MWh",
+                "name": "accepted_volume_mwh",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "in_merit_volume_MWh",
+                "name": "in_merit_volume_mwh",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "skipped_volume_MWh",
+                "name": "skipped_volume_mwh",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "resource_id",
+          "date_vendor",
+          "bm_unit",
+          "bid_offer",
+          "stage",
+          "pair_id"
+        ],
+        "latest": "whole_capture",
+        "latest_partition": "resource_id",
+        "vintage": "ckan_last_modified",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: SKIP-DATE-ENDPOINT — does the five-minute `date` stamp mark the slice start or end? TODO: ALL-BM-SEPTEMBER-COVERAGE — resource ca3587a2-ae0d-47db-b0a1-4d681af8bced holds 30 September 2026 only (387,189 rows).",
+          "unit": "v0.22-K-BAL-2b"
+        }
+      }
     },
     {
       "key": "skip_rates_in_merit_psa",
@@ -50,7 +269,119 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "date",
+              "bm_unit",
+              "fuel",
+              "bid_offer",
+              "stage",
+              "available_volume_MWh",
+              "average_price_per_MWh",
+              "pair_id",
+              "accepted_volume_MWh",
+              "in_merit_volume_MWh",
+              "skipped_volume_MWh"
+            ],
+            "columns": [
+              {
+                "source": "date",
+                "name": "date_vendor",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "bm_unit",
+                "name": "bm_unit",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "fuel",
+                "name": "fuel",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "bid_offer",
+                "name": "bid_offer",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "stage",
+                "name": "stage",
+                "dtype": "int64",
+                "nullable": false
+              },
+              {
+                "source": "available_volume_MWh",
+                "name": "available_volume_mwh",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "average_price_per_MWh",
+                "name": "average_price_per_mwh",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "pair_id",
+                "name": "pair_id",
+                "dtype": "int64",
+                "nullable": false
+              },
+              {
+                "source": "accepted_volume_MWh",
+                "name": "accepted_volume_mwh",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "in_merit_volume_MWh",
+                "name": "in_merit_volume_mwh",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "skipped_volume_MWh",
+                "name": "skipped_volume_mwh",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "resource_id",
+          "date_vendor",
+          "bm_unit",
+          "bid_offer",
+          "stage",
+          "pair_id"
+        ],
+        "latest": "whole_capture",
+        "latest_partition": "resource_id",
+        "vintage": "ckan_last_modified",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: SKIP-DATE-ENDPOINT — does the five-minute `date` stamp mark the slice start or end? TODO: PSA-MARCH/SEPTEMBER-COVERAGE — resource a04c4c6e-0526-42b4-99d0-eb114beba8a2 stops at exactly 3,200,000 rows on 2026-03-24T15:45:00, and resource 38421f3d-8949-4dcf-81cf-0295a8688086 holds 30 September 2026 only (273,888 rows).",
+          "unit": "v0.22-K-BAL-2b"
+        }
+      }
     },
     {
       "key": "skip_rates_stage6_acceptance",
@@ -61,7 +392,96 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "date",
+              "stage",
+              "bm_unit",
+              "fuel",
+              "bid_offer",
+              "pair_id",
+              "average_price_per_MWh",
+              "accepted_volume_MWh"
+            ],
+            "columns": [
+              {
+                "source": "date",
+                "name": "date_vendor",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "stage",
+                "name": "stage",
+                "dtype": "int64",
+                "nullable": false
+              },
+              {
+                "source": "bm_unit",
+                "name": "bm_unit",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "fuel",
+                "name": "fuel",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "bid_offer",
+                "name": "bid_offer",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "pair_id",
+                "name": "pair_id",
+                "dtype": "int64",
+                "nullable": false
+              },
+              {
+                "source": "average_price_per_MWh",
+                "name": "average_price_per_mwh",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "accepted_volume_MWh",
+                "name": "accepted_volume_mwh",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "date_vendor",
+          "bm_unit",
+          "bid_offer",
+          "stage",
+          "pair_id"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: SKIP-DATE-ENDPOINT — does the five-minute `date` stamp mark the slice start or end?",
+          "unit": "v0.22-K-BAL-2b"
+        }
+      }
     },
     {
       "key": "skip_rates_summary",
@@ -72,7 +492,105 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "settlement_period_start",
+              "stage",
+              "bm_skip_rate_offers_percent",
+              "bm_total_volume_skipped_offers_MWh",
+              "post_system_action_skip_rate_offers_percent",
+              "post_system_action_total_volume_skipped_offers_MWh",
+              "bm_skip_rate_bids_percent",
+              "bm_total_volume_skipped_bids_MWh",
+              "post_system_action_skip_rate_bids_percent",
+              "post_system_action_total_volume_skipped_bids_MWh"
+            ],
+            "columns": [
+              {
+                "source": "settlement_period_start",
+                "name": "settlement_period_start",
+                "dtype": "datetime",
+                "format": "%Y-%m-%dT%H:%M:%S",
+                "nullable": false,
+                "zone": "UTC"
+              },
+              {
+                "source": "stage",
+                "name": "stage",
+                "dtype": "int64",
+                "nullable": false
+              },
+              {
+                "source": "bm_skip_rate_offers_percent",
+                "name": "bm_skip_rate_offers_percent",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "bm_total_volume_skipped_offers_MWh",
+                "name": "bm_total_volume_skipped_offers_mwh",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "post_system_action_skip_rate_offers_percent",
+                "name": "post_system_action_skip_rate_offers_percent",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "post_system_action_total_volume_skipped_offers_MWh",
+                "name": "post_system_action_total_volume_skipped_offers_mwh",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "bm_skip_rate_bids_percent",
+                "name": "bm_skip_rate_bids_percent",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "bm_total_volume_skipped_bids_MWh",
+                "name": "bm_total_volume_skipped_bids_mwh",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "post_system_action_skip_rate_bids_percent",
+                "name": "post_system_action_skip_rate_bids_percent",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "post_system_action_total_volume_skipped_bids_MWh",
+                "name": "post_system_action_total_volume_skipped_bids_mwh",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "utc_instant",
+          "column": "settlement_period_start"
+        },
+        "entity_key": [
+          "settlement_period_start",
+          "stage"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified"
+      }
     },
     {
       "key": "skip_rates_behind_constraints_bmu",
@@ -83,7 +601,87 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "month",
+              "bm_unit",
+              "bid_offer",
+              "fuel_type",
+              "skipped_volume_mwh",
+              "in_merit_volume_mwh",
+              "skip_rate"
+            ],
+            "columns": [
+              {
+                "source": "month",
+                "name": "month_vendor",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "bm_unit",
+                "name": "bm_unit",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "bid_offer",
+                "name": "bid_offer",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "fuel_type",
+                "name": "fuel_type",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "skipped_volume_mwh",
+                "name": "skipped_volume_mwh",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "in_merit_volume_mwh",
+                "name": "in_merit_volume_mwh",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "skip_rate",
+                "name": "skip_rate",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "month_vendor",
+          "bm_unit",
+          "bid_offer"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: CONSTRAINT-RATE-DENOMINATOR — the dictionary says percentage of in-merit volume skipped, the methodology presentation uses accepted volume; which denominator is the published rate? Also no month-boundary recipe for a UTC month.",
+          "unit": "v0.22-K-BAL-2b"
+        }
+      }
     },
     {
       "key": "skip_rates_behind_constraints_cons",
@@ -94,7 +692,72 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "month",
+              "constraint",
+              "skipped_volume_mwh",
+              "in_merit_volume_mwh",
+              "skip_rate"
+            ],
+            "columns": [
+              {
+                "source": "month",
+                "name": "month_vendor",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "constraint",
+                "name": "constraint",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "skipped_volume_mwh",
+                "name": "skipped_volume_mwh",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "in_merit_volume_mwh",
+                "name": "in_merit_volume_mwh",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "skip_rate",
+                "name": "skip_rate",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "month_vendor",
+          "constraint"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: CONSTRAINT-RATE-DENOMINATOR — the dictionary says percentage of in-merit volume skipped, the methodology presentation uses accepted volume; which denominator is the published rate? Also no month-boundary recipe for a UTC month.",
+          "unit": "v0.22-K-BAL-2b"
+        }
+      }
     },
     {
       "key": "skip_rates_stage5_dsf_technology",
@@ -116,7 +779,117 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "date",
+              "bm_unit",
+              "fuel",
+              "bid_offer",
+              "stage",
+              "available_volume_MWh",
+              "average_price_per_MWh",
+              "pair_id",
+              "accepted_volume_MWh",
+              "in_merit_volume_MWh",
+              "skipped_volume_MWh"
+            ],
+            "columns": [
+              {
+                "source": "date",
+                "name": "date_vendor",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "bm_unit",
+                "name": "bm_unit",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "fuel",
+                "name": "fuel",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "bid_offer",
+                "name": "bid_offer",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "stage",
+                "name": "stage",
+                "dtype": "int64",
+                "nullable": false
+              },
+              {
+                "source": "available_volume_MWh",
+                "name": "available_volume_mwh",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "average_price_per_MWh",
+                "name": "average_price_per_mwh",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "pair_id",
+                "name": "pair_id",
+                "dtype": "int64",
+                "nullable": false
+              },
+              {
+                "source": "accepted_volume_MWh",
+                "name": "accepted_volume_mwh",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "in_merit_volume_MWh",
+                "name": "in_merit_volume_mwh",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "skipped_volume_MWh",
+                "name": "skipped_volume_mwh",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "date_vendor",
+          "bm_unit",
+          "bid_offer",
+          "stage",
+          "pair_id"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: SKIP-DATE-ENDPOINT — does the five-minute `date` stamp mark the slice start or end?",
+          "unit": "v0.22-K-BAL-2b"
+        }
+      }
     },
     {
       "key": "skip_rates_stage5_psa_technology",
@@ -127,7 +900,85 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "settlement_period_start",
+              "bid_offer",
+              "fuel",
+              "relative_technology_skip_rate",
+              "technology_specific_skip_rate",
+              "fuel_in_merit_volume_MWh",
+              "fuel_skipped_volume_MWh"
+            ],
+            "columns": [
+              {
+                "source": "settlement_period_start",
+                "name": "settlement_period_start",
+                "dtype": "datetime",
+                "format": "%Y-%m-%dT%H:%M:%S",
+                "nullable": false,
+                "zone": "UTC"
+              },
+              {
+                "source": "bid_offer",
+                "name": "bid_offer",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "fuel",
+                "name": "fuel",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "relative_technology_skip_rate",
+                "name": "relative_technology_skip_rate",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "technology_specific_skip_rate",
+                "name": "technology_specific_skip_rate",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "fuel_in_merit_volume_MWh",
+                "name": "fuel_in_merit_volume_mwh",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "fuel_skipped_volume_MWh",
+                "name": "fuel_skipped_volume_mwh",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "utc_instant",
+          "column": "settlement_period_start"
+        },
+        "entity_key": [
+          "settlement_period_start",
+          "bid_offer",
+          "fuel"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified"
+      }
     }
   ],
   "resources": [

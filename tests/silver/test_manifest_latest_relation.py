@@ -57,7 +57,8 @@ from gridflow.silver.schema_manifest import (
 # hundred and eight with v0.22-K-CON's seven constraint-management records, then to one hundred
 # and sixteen with v0.22-K-SYS-1's eight system records, then to one hundred and twenty-five with
 # v0.22-K-BAL-1's nine balancing-costs records, then to one hundred and twenty-six with
-# v0.22-K-BAL-2a's BSUoS monthly forecast summary record.
+# v0.22-K-BAL-2a's BSUoS monthly forecast summary record, then to one hundred and thirty-five with
+# v0.22-K-BAL-2b's nine skip-rate records.
 _APPEND_ONLY_DATASETS: tuple[tuple[str, str], ...] = (
     ("elexon", "system_prices"),
     ("elexon", "remit"),
@@ -185,6 +186,15 @@ _APPEND_ONLY_DATASETS: tuple[tuple[str, str], ...] = (
     ("neso_data_portal", "bsuos_fixed_tariffs"),
     ("neso_data_portal", "inertia_bid_offer_costs"),
     ("neso_data_portal", "bsuos_monthly_forecast_fc_summary"),
+    ("neso_data_portal", "skip_rates_summary"),
+    ("neso_data_portal", "skip_rates_stage5_psa_technology"),
+    ("neso_data_portal", "skip_rates_behind_constraints_bmu"),
+    ("neso_data_portal", "skip_rates_behind_constraints_cons"),
+    ("neso_data_portal", "skip_rates_in_merit_all_bm"),
+    ("neso_data_portal", "skip_rates_in_merit_psa"),
+    ("neso_data_portal", "skip_rates_exclusion_reasons"),
+    ("neso_data_portal", "skip_rates_stage6_acceptance"),
+    ("neso_data_portal", "skip_rates_stage6_psa"),
 )
 
 
@@ -378,9 +388,9 @@ def test_append_only_set_equals_latest_spec_set() -> None:
     spec_set = set(LATEST_VIEW_SPECS)
 
     # Non-vacuity guard: this invariant must never pass because both sides are
-    # empty (F16) -- one hundred and twenty-six APPEND_ONLY datasets are registered today.
+    # empty (F16) -- one hundred and thirty-five APPEND_ONLY datasets are registered today.
     assert len(append_only) > 0
-    assert len(append_only) == 126
+    assert len(append_only) == 135
 
     missing_specs = append_only - spec_set
     extra_specs = spec_set - append_only
@@ -679,6 +689,24 @@ _EXPECTED_APPEND_ONLY_DEPRECATED_ALIASES: dict[tuple[str, str], str | None] = {
         "neso_data_portal",
         "bsuos_monthly_forecast_fc_summary",
     ): "silver_bsuos_monthly_forecast_fc_summary",
+    ("neso_data_portal", "skip_rates_summary"): "silver_skip_rates_summary",
+    (
+        "neso_data_portal",
+        "skip_rates_stage5_psa_technology",
+    ): "silver_skip_rates_stage5_psa_technology",
+    (
+        "neso_data_portal",
+        "skip_rates_behind_constraints_bmu",
+    ): "silver_skip_rates_behind_constraints_bmu",
+    (
+        "neso_data_portal",
+        "skip_rates_behind_constraints_cons",
+    ): "silver_skip_rates_behind_constraints_cons",
+    ("neso_data_portal", "skip_rates_in_merit_all_bm"): "silver_skip_rates_in_merit_all_bm",
+    ("neso_data_portal", "skip_rates_in_merit_psa"): "silver_skip_rates_in_merit_psa",
+    ("neso_data_portal", "skip_rates_exclusion_reasons"): "silver_skip_rates_exclusion_reasons",
+    ("neso_data_portal", "skip_rates_stage6_acceptance"): "silver_skip_rates_stage6_acceptance",
+    ("neso_data_portal", "skip_rates_stage6_psa"): "silver_skip_rates_stage6_psa",
 }
 
 

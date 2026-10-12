@@ -812,6 +812,22 @@ families have no record: every newest body is invalid UTF-8 or carries no run)."
 
 BAL2A_PACKAGE_FILES = {"bsuos-monthly-forecast.json"}
 
+BAL2B_RECORDED = {
+    "skip_rates_summary",
+    "skip_rates_stage5_psa_technology",
+    "skip_rates_behind_constraints_bmu",
+    "skip_rates_behind_constraints_cons",
+    "skip_rates_in_merit_all_bm",
+    "skip_rates_in_merit_psa",
+    "skip_rates_exclusion_reasons",
+    "skip_rates_stage6_acceptance",
+    "skip_rates_stage6_psa",
+}
+"""The nine skip-rate families unit K-BAL-2b records (two eligible, seven held; the two DSF
+families stay record-less: their bodies repeat whole rows)."""
+
+BAL2B_PACKAGE_FILES = {"skip-rates.json"}
+
 X_RESOURCES_WITH_CHILDREN = 4 + 1 + 39 + 73 + 1
 """Unit X's committed inventories (ADR-037 P-8): CMP workbooks, the ResultSummary ZIP,
 frequency ZIPs, held data containers and the GSP archive with a CSV member."""
@@ -849,6 +865,7 @@ class TestSeededRegistry:
             | SYS1_RECORDED
             | BAL1_RECORDED
             | BAL2A_RECORDED
+            | BAL2B_RECORDED
         )
         with_children = [res for _package, res in loaded.resources.values() if res.children]
         assert len(with_children) == X_RESOURCES_WITH_CHILDREN
@@ -887,6 +904,7 @@ class TestSeededRegistry:
             | SYS1_PACKAGE_FILES
             | BAL1_PACKAGE_FILES
             | BAL2A_PACKAGE_FILES
+            | BAL2B_PACKAGE_FILES
         )
 
 
