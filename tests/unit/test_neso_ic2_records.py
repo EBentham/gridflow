@@ -1092,6 +1092,7 @@ def test_the_committed_ledger_carries_the_three_brit_ned_entries() -> None:
         "stability_pathfinder_availability_report",
         "current_bsuos_historic_ii",
         "bsuos_monthly_forecast_fc_summary",
+        "gtma_trades_fy",
     ]
     directory = "bronze/neso_data_portal/brit_ned/2026/10/08/"
     overlap, failed, encoding = loaded["entries"]

@@ -1351,7 +1351,7 @@ def test_the_committed_ledger_adjudicates_exactly_the_six_pathfinder_captures() 
             assert "never deduplicated" in entry["reason"]
             assert "v0.22-K-SYS-1" in entry["evidence"] and "ADR-040" in entry["evidence"]
         assert resources == expected, family
-    assert [e.family for e in entries[-8:-2]] == [U, U, A, A, A, A]
+    assert [e.family for e in entries[-9:-3]] == [U, U, A, A, A, A]
     reasons = " ".join(e["reason"] for e in util + avail)
     for excess in ("3,964", "306", "1,003", "46,921", "7,679"):
         assert excess in reasons, excess

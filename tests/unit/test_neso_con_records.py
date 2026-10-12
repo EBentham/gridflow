@@ -1218,9 +1218,9 @@ def test_the_committed_ledger_entry_is_the_ruled_text_and_backed_by_the_registry
     """Detects the committed entry drifting from the ruling (another capture, another cause, a wider
     scope, a lost question) or naming a resource that is not the day-ahead CSV: the entry is the
     last one in the ledger before K-SYS-1's six Pathfinder entries, K-BAL-1's overlap entry and
-    K-BAL-2a's invalid-encoding entry, cause ``DuplicateEntityKeyError``, ruling 632, the capture
-    of the day-ahead resource only, and a one-line reason and question; the registry backs it
-    (the referential check)."""
+    K-BAL-2a's invalid-encoding entry and K-TRD's GTMA FY overlap entry, cause
+    ``DuplicateEntityKeyError``, ruling 632, the capture of the day-ahead resource only, and a
+    one-line reason and question; the registry backs it (the referential check)."""
     entries = registry_module.load_reconcile_adjudications()
     assert reconcile_problems(entries) == []
     entry = _entry()
@@ -1229,7 +1229,7 @@ def test_the_committed_ledger_entry_is_the_ruled_text_and_backed_by_the_registry
     for text in ("reason", "question"):
         assert "\n" not in entry[text] and entry[text].strip()
     assert "1,436" in entry["reason"] and "never deduplicated" in entry["reason"]
-    assert entries[-9].family == "da_constraint_flows_limits"
+    assert entries[-10].family == "da_constraint_flows_limits"
 
 
 def reconcile_problems(entries: Any) -> list[str]:

@@ -17,7 +17,113 @@
       "empty_allowed": true,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "ID",
+              "Date",
+              "SP",
+              "Volume",
+              "Price",
+              "Cost",
+              "SO_Flag",
+              "Reason",
+              "Note",
+              "Last_Updated"
+            ],
+            "columns": [
+              {
+                "source": "ID",
+                "name": "id",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Date",
+                "name": "date",
+                "dtype": "date",
+                "format": "%Y-%m-%d",
+                "nullable": false
+              },
+              {
+                "source": "SP",
+                "name": "sp",
+                "dtype": "int64",
+                "nullable": false,
+                "min": 1,
+                "max": 50
+              },
+              {
+                "source": "Volume",
+                "name": "volume",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Price",
+                "name": "price",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Cost",
+                "name": "cost",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "SO_Flag",
+                "name": "so_flag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Reason",
+                "name": "reason",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Note",
+                "name": "note",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Last_Updated",
+                "name": "last_updated",
+                "dtype": "string",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "sp_pair",
+          "date_column": "date",
+          "period_column": "sp"
+        },
+        "entity_key": [
+          "id",
+          "date",
+          "sp"
+        ],
+        "latest": "whole_capture",
+        "vintage": "capture_fallback",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: UPCOMING-VOLUME-FORMULA — `Volume` is labelled MWh but described as average with duration in the cost formula; MW or MWh? Also `Last_Updated` clock undocumented.",
+          "unit": "v0.22-K-TRD"
+        }
+      }
     }
   ],
   "resources": [

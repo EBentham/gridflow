@@ -249,5 +249,17 @@
     "question": "Which text encoding do these 22 resources use, and can NESO republish them as UTF-8?",
     "evidence": "K-BAL-2-FACTS §4 T130; ADR-040 amendment 1",
     "ruling": "667"
+  },
+  {
+    "family": "gtma_trades_fy",
+    "category": "overlap",
+    "captures": [
+      "bronze/neso_data_portal/gtma_trades_fy/2026/10/08/raw_20261008T110459Z_11a2f532-a7ce-46f8-9d82-88b3289daa82_0bfba80a.csv",
+      "bronze/neso_data_portal/gtma_trades_fy/2026/10/08/raw_20261008T110530Z_83b1d432-f8b4-4393-a8fd-bcaeb6bd7620_cf692e7b.csv"
+    ],
+    "reason": "the 2021-22 and 2022-23 financial-year resources both publish nine identical rows (ES00165376 to ES00165384, delivery windows starting 2022-04-01T06:00:00 or 07:00:00) on every raw column; NESO states no precedence, so both resources are served (ADR-039)",
+    "question": "Which financial-year resource is authoritative for the nine trades ES00165376 to ES00165384 that the 2021-22 and 2022-23 GTMA resources both publish?",
+    "evidence": "K-TRD-FACTS §3.5; ADR-040",
+    "ruling": "707"
   }
 ]

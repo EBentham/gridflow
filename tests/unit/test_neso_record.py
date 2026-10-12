@@ -846,6 +846,28 @@ BAL2C_PACKAGE_FILES = {
     "transmission-network-use-of-system-tnuos-tariffs.json",
 }
 
+TRD_RECORDED = {
+    "bs_contract_enactment_balancing",
+    "bs_contract_enactment_balancing_service",
+    "gtma_trades_data",
+    "gtma_trades_data_pre",
+    "gtma_trades_fy",
+    "index_linked_contract_volume",
+    "ic_requirement_auction",
+    "ssel_contract_enactment",
+    "upcoming_trades",
+}
+"""The nine trading families unit K-TRD records (two eligible, seven held)."""
+
+TRD_PACKAGE_FILES = {
+    "balancing-services-contract-enactment.json",
+    "historic-gtma-grid-trade-master-agreement-trades-data.json",
+    "index-linked-contract-volume.json",
+    "interconnector-requirement-and-auction-summary-data.json",
+    "super-stable-export-limit-contract-enactment.json",
+    "upcoming-trades.json",
+}
+
 X_RESOURCES_WITH_CHILDREN = 4 + 1 + 39 + 73 + 1
 """Unit X's committed inventories (ADR-037 P-8): CMP workbooks, the ResultSummary ZIP,
 frequency ZIPs, held data containers and the GSP archive with a CSV member."""
@@ -885,6 +907,7 @@ class TestSeededRegistry:
             | BAL2A_RECORDED
             | BAL2B_RECORDED
             | BAL2C_RECORDED
+            | TRD_RECORDED
         )
         with_children = [res for _package, res in loaded.resources.values() if res.children]
         assert len(with_children) == X_RESOURCES_WITH_CHILDREN
@@ -925,6 +948,7 @@ class TestSeededRegistry:
             | BAL2A_PACKAGE_FILES
             | BAL2B_PACKAGE_FILES
             | BAL2C_PACKAGE_FILES
+            | TRD_PACKAGE_FILES
         )
 
 

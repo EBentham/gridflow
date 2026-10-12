@@ -59,7 +59,8 @@ from gridflow.silver.schema_manifest import (
 # v0.22-K-BAL-1's nine balancing-costs records, then to one hundred and twenty-six with
 # v0.22-K-BAL-2a's BSUoS monthly forecast summary record, then to one hundred and thirty-five with
 # v0.22-K-BAL-2b's nine skip-rate records, then to one hundred and forty-four with
-# v0.22-K-BAL-2c's nine tariff records.
+# v0.22-K-BAL-2c's nine tariff records, then to one hundred and fifty-three with
+# v0.22-K-TRD's nine trading records.
 _APPEND_ONLY_DATASETS: tuple[tuple[str, str], ...] = (
     ("elexon", "system_prices"),
     ("elexon", "remit"),
@@ -205,6 +206,15 @@ _APPEND_ONLY_DATASETS: tuple[tuple[str, str], ...] = (
     ("neso_data_portal", "tnuos_tariffs_local_substation_tariff"),
     ("neso_data_portal", "tnuos_tariffs_transmission_demand"),
     ("neso_data_portal", "tnuos_tariffs_onshore_local_circuit"),
+    ("neso_data_portal", "bs_contract_enactment_balancing"),
+    ("neso_data_portal", "bs_contract_enactment_balancing_service"),
+    ("neso_data_portal", "gtma_trades_data"),
+    ("neso_data_portal", "gtma_trades_data_pre"),
+    ("neso_data_portal", "gtma_trades_fy"),
+    ("neso_data_portal", "index_linked_contract_volume"),
+    ("neso_data_portal", "ic_requirement_auction"),
+    ("neso_data_portal", "ssel_contract_enactment"),
+    ("neso_data_portal", "upcoming_trades"),
 )
 
 
@@ -398,9 +408,9 @@ def test_append_only_set_equals_latest_spec_set() -> None:
     spec_set = set(LATEST_VIEW_SPECS)
 
     # Non-vacuity guard: this invariant must never pass because both sides are
-    # empty (F16) -- one hundred and forty-four APPEND_ONLY datasets are registered today.
+    # empty (F16) -- one hundred and fifty-three APPEND_ONLY datasets are registered today.
     assert len(append_only) > 0
-    assert len(append_only) == 144
+    assert len(append_only) == 153
 
     missing_specs = append_only - spec_set
     extra_specs = spec_set - append_only
@@ -747,6 +757,21 @@ _EXPECTED_APPEND_ONLY_DEPRECATED_ALIASES: dict[tuple[str, str], str | None] = {
         "neso_data_portal",
         "tnuos_tariffs_onshore_local_circuit",
     ): "silver_tnuos_tariffs_onshore_local_circuit",
+    (
+        "neso_data_portal",
+        "bs_contract_enactment_balancing",
+    ): "silver_bs_contract_enactment_balancing",
+    (
+        "neso_data_portal",
+        "bs_contract_enactment_balancing_service",
+    ): "silver_bs_contract_enactment_balancing_service",
+    ("neso_data_portal", "gtma_trades_data"): "silver_gtma_trades_data",
+    ("neso_data_portal", "gtma_trades_data_pre"): "silver_gtma_trades_data_pre",
+    ("neso_data_portal", "gtma_trades_fy"): "silver_gtma_trades_fy",
+    ("neso_data_portal", "index_linked_contract_volume"): "silver_index_linked_contract_volume",
+    ("neso_data_portal", "ic_requirement_auction"): "silver_ic_requirement_auction",
+    ("neso_data_portal", "ssel_contract_enactment"): "silver_ssel_contract_enactment",
+    ("neso_data_portal", "upcoming_trades"): "silver_upcoming_trades",
 }
 
 
