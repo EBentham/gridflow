@@ -193,6 +193,20 @@ BAL1_ADDED = frozenset(
 """The nine balancing-costs families that v0.22-K-BAL-1 records."""
 BAL2A_ADDED = frozenset({"bsuos_monthly_forecast_fc_summary"})
 """The BSUoS monthly forecast summary family that v0.22-K-BAL-2a records (held)."""
+BAL2B_ADDED = frozenset(
+    {
+        "skip_rates_summary",
+        "skip_rates_stage5_psa_technology",
+        "skip_rates_behind_constraints_bmu",
+        "skip_rates_behind_constraints_cons",
+        "skip_rates_in_merit_all_bm",
+        "skip_rates_in_merit_psa",
+        "skip_rates_exclusion_reasons",
+        "skip_rates_stage6_acceptance",
+        "skip_rates_stage6_psa",
+    }
+)
+"""The nine skip-rate families that v0.22-K-BAL-2b records (two eligible, seven held)."""
 REWORDED_HOLDS = {
     "national_forecast_7d_historic_day_ahead": (
         "TODO: FORECAST_TIMESTAMP has no vendor definition and its zone is undocumented "
@@ -241,8 +255,8 @@ class TestByteUnchanged:
         records, v0.22-SC's FES ED1 record, K-SCN-1a's twelve tRESP records, K-SCN-1b's nine
         regional FES records, K-SCN-1c's three building block records, K-SCN-1d's ES1 record,
         K-CON's seven constraint-management records, K-SYS-1's eight system records, K-BAL-1's
-        nine balancing-costs records and K-BAL-2a's BSUoS monthly forecast summary record
-        appearing.
+        nine balancing-costs records, K-BAL-2a's BSUoS monthly forecast summary record and
+        K-BAL-2b's nine skip-rate records appearing.
         """
         golden = json.loads(PIN_PATH.read_text(encoding="utf-8"))
         for key, question in REWORDED_HOLDS.items():
@@ -271,6 +285,7 @@ class TestByteUnchanged:
                     *SYS1_ADDED,
                     *BAL1_ADDED,
                     *BAL2A_ADDED,
+                    *BAL2B_ADDED,
                 }
                 if section != "engine"
                 else set()
@@ -872,7 +887,7 @@ class TestRecordRules:
         self,
     ) -> None:
         """Detects a committed record broken by V-4/V-17 or the reserved name, and any
-        family other than the forty-eight resource-partitioned ones opting into the partition (in a
+        family other than the fifty-one resource-partitioned ones opting into the partition (in a
         fresh interpreter, so nothing collection imported can mask it)."""
         code = textwrap.dedent(
             """
@@ -913,6 +928,9 @@ class TestRecordRules:
                 "nsl",
                 "outturn_voltage_costs_historical",
                 "school_holiday_percentages",
+                "skip_rates_exclusion_reasons",
+                "skip_rates_in_merit_all_bm",
+                "skip_rates_in_merit_psa",
                 "stability_pathfinder_availability_report",
                 "stability_pathfinder_utilisation_report",
                 "system_inertia",

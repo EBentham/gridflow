@@ -1,0 +1,6 @@
+date,bm_unit,fuel,bid_offer,stage,available_volume_MWh,average_price_per_MWh,pair_id,accepted_volume_MWh,in_merit_volume_MWh,skipped_volume_MWh
+2025-01-01T00:00:00Z,MOWWO-1,WIND,Bid,0,3.33,-43.79,-1,0.0,3.33,3.33
+2025-01-01T00:00:00Z,MOYEW-1,WIND,Offer,0,1.76,94.0,1,0.0,1.76,1.76
+2025-01-01T00:00:00Z,MOWWO-3,WIND,Bid,0,8.0,-43.79,-1,0.0,8.0,8.0
+2025-01-01T00:00:00Z,GFSE02,,Offer,0,0.42,54.74,1,0.0,0.42,0.42
+2025-01-01T00:00:00Z,MOWWO-3,WIND,Bid,1,8.0,-43.79,-1,0.0,8.0,8.0

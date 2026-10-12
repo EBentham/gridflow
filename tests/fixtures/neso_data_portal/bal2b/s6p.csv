@@ -1,0 +1,7 @@
+﻿date,bm_unit,fuel,bid_offer,stage,available_volume_MWh,average_price_per_MWh,pair_id,accepted_volume_MWh,in_merit_volume_MWh,skipped_volume_MWh
+2024-12-15T00:00:00Z,AG-AOCT01,BATTERY,Offer,6,0.08,100.0,1,0.0,0.08,0.08
+2024-12-15T00:00:00Z,AG-ASTK05,BATTERY,Offer,6,0.08,88.35,1,0.0,0.08,0.08
+2024-12-15T00:00:00Z,AG-ASTK05,BATTERY,Offer,6,0.18,95.55,2,0.0,0.18,0.18
+2024-12-15T00:00:00Z,ROCK-1,CCGT,Offer,6,28.5,107.8,1,11.67,10.27,0.0
+2024-12-15T00:05:00Z,GFSE02,,Offer,6,0.01,93.22,1,0.01,0.01,0.0
+2024-12-15T00:25:00Z,CHAPB-1,BATTERY,Offer,6,0.01,61.26,-1,0.01,0.01,0.0

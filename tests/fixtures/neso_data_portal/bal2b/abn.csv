@@ -1,0 +1,5 @@
+date,bm_unit,fuel,bid_offer,stage,available_volume_MWh,average_price_per_MWh,pair_id,accepted_volume_MWh,in_merit_volume_MWh,skipped_volume_MWh
+2026-10-01T00:00:00,AG-ASTK08,BATTERY,Bid,0,0.08,98.1,-1,0.0,0.08,0.08
+2026-10-01T00:00:00,AG-ASTK08,BATTERY,Offer,0,0.08,186.0,1,0.0,0.08,0.08
+2026-10-01T00:00:00,AG-BFLX04,BATTERY,Offer,0,1.0,179.19,1,0.0,1.0,1.0
+2026-10-01T00:00:00,RHEI-4,,Offer,0,1.42,185.0,1,0.0,1.42,1.42

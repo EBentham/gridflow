@@ -264,17 +264,17 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `short-term-operating-reserve-stor-day-ahead-auction-results` | `stor_da_auction_results` | ingest-only (no silver output) | — | — | — | — |
 | `short-term-operating-reserve-stor-day-ahead-buy-curve` | `stor_da_buy_curve` | ingest-only (no silver output) | — | — | — | — |
 | `short-term-operating-reserve-stor-day-ahead-buy-curve` | `stor_da_buy_curve_files` | catalogue only | — | — | — | — |
-| `skip-rates` | `skip_rates_behind_constraints_bmu` | ingest-only (no silver output) | — | — | — | — |
-| `skip-rates` | `skip_rates_behind_constraints_cons` | ingest-only (no silver output) | — | — | — | — |
-| `skip-rates` | `skip_rates_exclusion_reasons` | ingest-only (no silver output) | — | — | — | — |
-| `skip-rates` | `skip_rates_in_merit_all_bm` | ingest-only (no silver output) | — | — | — | — |
-| `skip-rates` | `skip_rates_in_merit_psa` | ingest-only (no silver output) | — | — | — | — |
+| `skip-rates` | `skip_rates_behind_constraints_bmu` | silver | held: TODO: CONSTRAINT-RATE-DENOMINATOR — the dictionary says percentage of in-merit volume skipped, the methodology presentation uses accepted volume; which denominator is the published rate? Also no month-boundary recipe for a UTC month. (unit v0.22-K-BAL-2b) | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
+| `skip-rates` | `skip_rates_behind_constraints_cons` | silver | held: TODO: CONSTRAINT-RATE-DENOMINATOR — the dictionary says percentage of in-merit volume skipped, the methodology presentation uses accepted volume; which denominator is the published rate? Also no month-boundary recipe for a UTC month. (unit v0.22-K-BAL-2b) | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
+| `skip-rates` | `skip_rates_exclusion_reasons` | silver | held: TODO: SKIP-DATE-ENDPOINT — does the five-minute `date` stamp mark the slice start or end? (unit v0.22-K-BAL-2b) | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
+| `skip-rates` | `skip_rates_in_merit_all_bm` | silver | held: TODO: SKIP-DATE-ENDPOINT — does the five-minute `date` stamp mark the slice start or end? TODO: ALL-BM-SEPTEMBER-COVERAGE — resource ca3587a2-ae0d-47db-b0a1-4d681af8bced holds 30 September 2026 only (387,189 rows). (unit v0.22-K-BAL-2b) | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
+| `skip-rates` | `skip_rates_in_merit_psa` | silver | held: TODO: SKIP-DATE-ENDPOINT — does the five-minute `date` stamp mark the slice start or end? TODO: PSA-MARCH/SEPTEMBER-COVERAGE — resource a04c4c6e-0526-42b4-99d0-eb114beba8a2 stops at exactly 3,200,000 rows on 2026-03-24T15:45:00, and resource 38421f3d-8949-4dcf-81cf-0295a8688086 holds 30 September 2026 only (273,888 rows). (unit v0.22-K-BAL-2b) | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
 | `skip-rates` | `skip_rates_in_merit_psa_dsf_unit` | ingest-only (no silver output) | — | — | — | — |
 | `skip-rates` | `skip_rates_stage5_dsf_technology` | ingest-only (no silver output) | — | — | — | — |
-| `skip-rates` | `skip_rates_stage5_psa_technology` | ingest-only (no silver output) | — | — | — | — |
-| `skip-rates` | `skip_rates_stage6_acceptance` | ingest-only (no silver output) | — | — | — | — |
-| `skip-rates` | `skip_rates_stage6_psa` | ingest-only (no silver output) | — | — | — | — |
-| `skip-rates` | `skip_rates_summary` | ingest-only (no silver output) | — | — | — | — |
+| `skip-rates` | `skip_rates_stage5_psa_technology` | silver | eligible | whole_capture | utc_instant | CKAN last_modified of the captured file (ADR-030) |
+| `skip-rates` | `skip_rates_stage6_acceptance` | silver | held: TODO: SKIP-DATE-ENDPOINT — does the five-minute `date` stamp mark the slice start or end? (unit v0.22-K-BAL-2b) | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
+| `skip-rates` | `skip_rates_stage6_psa` | silver | held: TODO: SKIP-DATE-ENDPOINT — does the five-minute `date` stamp mark the slice start or end? (unit v0.22-K-BAL-2b) | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
+| `skip-rates` | `skip_rates_summary` | silver | eligible | whole_capture | utc_instant | CKAN last_modified of the captured file (ADR-030) |
 | `slow-reserve-requirement-forecast` | `slow_reserve_requirement_fc` | ingest-only (no silver output) | — | — | — | — |
 | `ssep-onshore-publication-zone-shapefile` | `ssep_publication_zones_files` | catalogue only | — | — | — | — |
 | `stability-midterm-y-1-utilisation-report` | `stability_midterm_y1` | silver | eligible | whole_capture | utc_instant | CKAN last_modified of the captured file (ADR-030) |
@@ -466,6 +466,6 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 ## Totals
 
 - Packages: 131 (held: 2)
-- Families: 317: silver 123 (bespoke 3, recorded 120), ingest-only 159, catalogue only 35
-- Silver outputs held: 63
+- Families: 317: silver 132 (bespoke 3, recorded 129), ingest-only 150, catalogue only 35
+- Silver outputs held: 70
 - Resources: 1385
