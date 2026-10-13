@@ -1106,13 +1106,30 @@ def test_the_two_unfaithful_ffr_files_are_resource_holds_not_adjudications() -> 
     assert ids <= {r["id"] for r in silver} | {TR147_ID}
 
 
-def test_the_ledger_names_none_of_the_eleven_families_and_nothing_is_adjudicated() -> None:
-    """Detects an ADR-040 adjudication filed for this unit: every admitted capture loads and the two
-    unfaithful files are resource holds, so the committed reconcile ledger has no entry for any of
-    the eleven families and still validates against the registry."""
+def test_the_ledger_names_only_the_ffr_162_198_overlap_for_the_eleven_families() -> None:
+    """Detects an ADR-040 adjudication filed for this unit's own captures, or the post-merge
+    ``overlap`` gap left open: every admitted capture loads and the two unfaithful files are
+    resource holds, so the only ledger entry for the eleven families is the seat-ruled (780)
+    ``overlap`` of tender_ref 162.198, byte-identical in the three consecutive monthly resources
+    fd57201c, fbb1ce86 and 2bfa2ab3 of the owner family, and the ledger still validates."""
     entries = registry_module.load_reconcile_adjudications()
     assert registry_module.reconcile_adjudication_problems(load_registry(), entries) == []
-    assert {e.family for e in entries} & set(ALL_FAMILIES) == set()
+    named = [e for e in entries if e.family in set(ALL_FAMILIES)]
+    assert len(named) == 1
+    (entry,) = named
+    assert (entry.family, entry.category, entry.cause, entry.ruling) == (
+        FFR,
+        "overlap",
+        None,
+        "780",
+    )
+    resources = set()
+    for path in entry.captures:
+        match = registry_module.CAPTURE_ID_PATTERN.fullmatch(path)
+        assert match is not None
+        resources.add(match.group("rid"))
+    assert len(entry.captures) == 3
+    assert {r[:8] for r in resources} == {"fd57201c", "fbb1ce86", "2bfa2ab3"}
 
 
 # --------------------------------------------------------------------------- #

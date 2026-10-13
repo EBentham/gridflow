@@ -299,5 +299,18 @@
     "question": "Which value set is authoritative for the repeated 2020-21 settlement periods (e.g. 25/08/2020 P1), and what does the repeated identical 2016-17 row mean?",
     "evidence": "K-AS-4-FACTS §3 / §4 (g3, g6); ADR-040",
     "ruling": "748"
+  },
+  {
+    "family": "ffr_post_tender_reports_csv_ext",
+    "category": "overlap",
+    "captures": [
+      "bronze/neso_data_portal/ffr_post_tender_reports_csv_ext/2026/10/08/raw_20261008T110029Z_fd57201c-24f6-4d42-8be2-177dd4b36229_422e0d1d.csv",
+      "bronze/neso_data_portal/ffr_post_tender_reports_csv_ext/2026/10/08/raw_20261008T110032Z_fbb1ce86-b2f7-405d-94ac-6cef6f14cceb_0f21c976.csv",
+      "bronze/neso_data_portal/ffr_post_tender_reports_csv_ext/2026/10/08/raw_20261008T110034Z_2bfa2ab3-7f4e-44d7-a9ab-7342c4b9cd34_3afe4e88.csv"
+    ],
+    "reason": "tender_ref 162.198 (Centrica AG-CBS06B, Rejected, 30/06/2023 to 31/07/2023) is published byte-identical in every business column in three consecutive monthly resources (published 2023-06-15, 2023-07-18, 2023-08-11); NESO states no precedence, so all three rows are served (ADR-039)",
+    "question": "Which monthly post-tender report is authoritative for tender_ref 162.198 that the three consecutive monthly resources fd57201c, fbb1ce86 and 2bfa2ab3 all publish?",
+    "evidence": "K-AS-5a post-merge reconcile (3 overlap gaps on ffr_post_tender_reports_csv_ext); ADR-040",
+    "ruling": "780"
   }
 ]
