@@ -66,7 +66,8 @@ from gridflow.silver.schema_manifest import (
 # v0.22-K-AS-3a's eleven EAC auction-result records, then to one hundred and ninety-four with
 # v0.22-K-AS-3b's ten mock EAC, ORPS and OBP records, then to two hundred and one with
 # v0.22-K-AS-4a's seven BSAD and legacy Dynamic Containment records, then to two hundred and nine
-# with v0.22-K-AS-4b's eight EAC-BR archive and mock records.
+# with v0.22-K-AS-4b's eight EAC-BR archive and mock records, then to two hundred and sixteen
+# with v0.22-K-AS-5a's seven FFR post-tender and Phase-2 FFR auction records.
 _APPEND_ONLY_DATASETS: tuple[tuple[str, str], ...] = (
     ("elexon", "system_prices"),
     ("elexon", "remit"),
@@ -277,6 +278,13 @@ _APPEND_ONLY_DATASETS: tuple[tuple[str, str], ...] = (
     ("neso_data_portal", "eac_br_mock_results_buy_orders"),
     ("neso_data_portal", "eac_br_mock_results_sell_orders"),
     ("neso_data_portal", "eac_br_mock_results_summary"),
+    ("neso_data_portal", "ffr_post_tender_reports_csv_ext"),
+    ("neso_data_portal", "ffr_phase2_auction_phase_block_order"),
+    ("neso_data_portal", "ffr_phase2_auction_phase_blockorders"),
+    ("neso_data_portal", "ffr_phase2_auction_phase_linear_orders"),
+    ("neso_data_portal", "ffr_phase2_auction_phase_linearorders"),
+    ("neso_data_portal", "ffr_phase2_auction_phase_resultsbyunit"),
+    ("neso_data_portal", "ffr_phase2_auction_phase_resultsum"),
 )
 
 
@@ -470,9 +478,9 @@ def test_append_only_set_equals_latest_spec_set() -> None:
     spec_set = set(LATEST_VIEW_SPECS)
 
     # Non-vacuity guard: this invariant must never pass because both sides are
-    # empty (F16) -- two hundred and nine APPEND_ONLY datasets are registered today.
+    # empty (F16) -- two hundred and sixteen APPEND_ONLY datasets are registered today.
     assert len(append_only) > 0
-    assert len(append_only) == 209
+    assert len(append_only) == 216
 
     missing_specs = append_only - spec_set
     extra_specs = spec_set - append_only
@@ -941,6 +949,34 @@ _EXPECTED_APPEND_ONLY_DEPRECATED_ALIASES: dict[tuple[str, str], str | None] = {
         "eac_br_mock_results_sell_orders",
     ): "silver_eac_br_mock_results_sell_orders",
     ("neso_data_portal", "eac_br_mock_results_summary"): "silver_eac_br_mock_results_summary",
+    (
+        "neso_data_portal",
+        "ffr_post_tender_reports_csv_ext",
+    ): "silver_ffr_post_tender_reports_csv_ext",
+    (
+        "neso_data_portal",
+        "ffr_phase2_auction_phase_block_order",
+    ): "silver_ffr_phase2_auction_phase_block_order",
+    (
+        "neso_data_portal",
+        "ffr_phase2_auction_phase_blockorders",
+    ): "silver_ffr_phase2_auction_phase_blockorders",
+    (
+        "neso_data_portal",
+        "ffr_phase2_auction_phase_linear_orders",
+    ): "silver_ffr_phase2_auction_phase_linear_orders",
+    (
+        "neso_data_portal",
+        "ffr_phase2_auction_phase_linearorders",
+    ): "silver_ffr_phase2_auction_phase_linearorders",
+    (
+        "neso_data_portal",
+        "ffr_phase2_auction_phase_resultsbyunit",
+    ): "silver_ffr_phase2_auction_phase_resultsbyunit",
+    (
+        "neso_data_portal",
+        "ffr_phase2_auction_phase_resultsum",
+    ): "silver_ffr_phase2_auction_phase_resultsum",
 }
 
 

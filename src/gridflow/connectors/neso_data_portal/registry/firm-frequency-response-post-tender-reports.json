@@ -28,7 +28,641 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Tender Ref",
+              "Status",
+              "Rejection Codes",
+              "Company Name",
+              "Tendered Unit \n(BMU/Unit ID)",
+              "TO connection  /  DNO connection",
+              "Generation Type",
+              "Start Date",
+              "End Date",
+              "Tendered Period \n(dd.mm.yy - dd.mm.yy)",
+              "Applicable FFR Capability Data Table",
+              "Tendered Frames per Service Day - From (Mon-Fri)",
+              "Tendered Frames per Service Day - To (Mon- Fri)",
+              "Tendered Frames per Service Day - Duration (Mon-Fri)",
+              "Tendered Frames per Service Day - From (Saturday)",
+              "Tendered Frames per Service Day - To (Saturday)",
+              "Tendered Frames per Service Day - Duration (Saturday)",
+              "Tendered Frames per Service Day - From (Sunday/Bank Holidays)",
+              "Tendered Frames per Service Day - To (Sunday/Bank Holidays)",
+              "Tendered Frames per Service Day - Duration (Sunday/Bank Hol)",
+              "Tendered Prices - Availability Fee (£/h)",
+              "Tendered Prices - Nomination Fee (£/h)",
+              "Tendered Prices -  Window Initiation Fee (£/window)",
+              "BMUs  Only",
+              "Maximum Part Load Point (MW)",
+              "Minimum Part Load Point (MW)",
+              "Minimum MEL (MW)",
+              "Maximum SEL (MW)",
+              "Primary Response (max.) @ 0.2Hz (MW)",
+              "Primary Response (max.) @ 0.5Hz (MW)",
+              "Primary Response (max.) @ 0.8Hz (MW)",
+              "Secondary Response (max.) @ 0.2/0.2Hz (MW)",
+              "Secondary Response (max.) @ 0.5/0.5Hz (MW)",
+              "High Frequency Response (max.) @ 0.2Hz (MW)",
+              "High Frequency Response (max.) @ 0.5Hz (MW)",
+              "Are you adding volume as per detail change provision",
+              "Please state the accepted tender that you are stacking onto",
+              "Please state if this is an all or nothing bid.",
+              "Please indicate if this is a mutually exclusive tender",
+              "Automatic Response Energy Deliverable by 10s (MW)",
+              "Automatic Response Energy Deliverable by 30s (MW)",
+              "Post code",
+              "Comments"
+            ],
+            "columns": [
+              {
+                "source": "Tender Ref",
+                "name": "tender_ref",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Status",
+                "name": "status",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Rejection Codes",
+                "name": "rejection_codes",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Company Name",
+                "name": "company_name",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Tendered Unit \n(BMU/Unit ID)",
+                "name": "tendered_unit",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "TO connection  /  DNO connection",
+                "name": "connection_type",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Generation Type",
+                "name": "generation_type",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Start Date",
+                "name": "start_date",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "End Date",
+                "name": "end_date",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Tendered Period \n(dd.mm.yy - dd.mm.yy)",
+                "name": "tendered_period",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Applicable FFR Capability Data Table",
+                "name": "capability_data_table",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Tendered Frames per Service Day - From (Mon-Fri)",
+                "name": "frame_from_mon_fri",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Tendered Frames per Service Day - To (Mon- Fri)",
+                "name": "frame_to_mon_fri",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Tendered Frames per Service Day - Duration (Mon-Fri)",
+                "name": "frame_duration_mon_fri",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Tendered Frames per Service Day - From (Saturday)",
+                "name": "frame_from_sat",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Tendered Frames per Service Day - To (Saturday)",
+                "name": "frame_to_sat",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Tendered Frames per Service Day - Duration (Saturday)",
+                "name": "frame_duration_sat",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Tendered Frames per Service Day - From (Sunday/Bank Holidays)",
+                "name": "frame_from_sun_bh",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Tendered Frames per Service Day - To (Sunday/Bank Holidays)",
+                "name": "frame_to_sun_bh",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Tendered Frames per Service Day - Duration (Sunday/Bank Hol)",
+                "name": "frame_duration_sun_bh",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Tendered Prices - Availability Fee (£/h)",
+                "name": "availability_fee",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Tendered Prices - Nomination Fee (£/h)",
+                "name": "nomination_fee",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Tendered Prices -  Window Initiation Fee (£/window)",
+                "name": "window_initiation_fee",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "BMUs  Only",
+                "name": "bmus_only",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Maximum Part Load Point (MW)",
+                "name": "max_part_load_point",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Minimum Part Load Point (MW)",
+                "name": "min_part_load_point",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Minimum MEL (MW)",
+                "name": "min_mel",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Maximum SEL (MW)",
+                "name": "max_sel",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Primary Response (max.) @ 0.2Hz (MW)",
+                "name": "primary_response_0_2hz",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Primary Response (max.) @ 0.5Hz (MW)",
+                "name": "primary_response_0_5hz",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Primary Response (max.) @ 0.8Hz (MW)",
+                "name": "primary_response_0_8hz",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Secondary Response (max.) @ 0.2/0.2Hz (MW)",
+                "name": "secondary_response_0_2hz",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Secondary Response (max.) @ 0.5/0.5Hz (MW)",
+                "name": "secondary_response_0_5hz",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "High Frequency Response (max.) @ 0.2Hz (MW)",
+                "name": "high_frequency_response_0_2hz",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "High Frequency Response (max.) @ 0.5Hz (MW)",
+                "name": "high_frequency_response_0_5hz",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Are you adding volume as per detail change provision",
+                "name": "detail_change_volume",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Please state the accepted tender that you are stacking onto",
+                "name": "stacked_onto_tender",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Please state if this is an all or nothing bid.",
+                "name": "all_or_nothing_bid",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Please indicate if this is a mutually exclusive tender",
+                "name": "mutually_exclusive_tender",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Automatic Response Energy Deliverable by 10s (MW)",
+                "name": "auto_response_10s",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Automatic Response Energy Deliverable by 30s (MW)",
+                "name": "auto_response_30s",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Post code",
+                "name": "post_code",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Comments",
+                "name": "comments",
+                "dtype": "string",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          },
+          {
+            "header": [
+              "Tender Ref",
+              "Status",
+              "Rejection Codes",
+              "Company Name",
+              "Tendered Unit \n(BMU/Unit ID)",
+              "TO connection  /  DNO connection",
+              "Generation Type",
+              "Start Date",
+              "End Date",
+              "Tendered Period \n(dd.mm.yy - dd.mm.yy)",
+              "Applicable FFR Capability Data Table",
+              "Tendered Frames per Service Day - From (Mon-Fri)",
+              "Tendered Frames per Service Day - To (Mon- Fri)",
+              "Tendered Frames per Service Day - Duration (Mon-Fri)",
+              "Tendered Frames per Service Day - From (Saturday)",
+              "Tendered Frames per Service Day - To (Saturday)",
+              "Tendered Frames per Service Day - Duration (Saturday)",
+              "Tendered Frames per Service Day - From (Sunday/Bank Holidays)",
+              "Tendered Frames per Service Day - To (Sunday/Bank Holidays)",
+              "Tendered Frames per Service Day - Duration (Sunday/Bank Hol)",
+              "Tendered Prices - Availability Fee (£/h)",
+              "Tendered Prices - Nomination Fee (£/h)",
+              "Tendered Prices -  Window Initiation Fee (£/window)",
+              "BMUs  Only",
+              "Maximum Part Load Point (MW)",
+              "Minimum Part Load Point (MW)",
+              "Minimum MEL (MW)",
+              "Maximum SEL (MW)",
+              "Primary Response (max.) @ 0.2Hz (MW)",
+              "Primary Response (max.) @ 0.5Hz (MW)",
+              "Primary Response (max.) @ 0.8Hz (MW)",
+              "Secondary Response (max.) @ 0.2/0.2Hz (MW)",
+              "Secondary Response (max.) @ 0.5/0.5Hz (MW)",
+              "High Frequency Response (max.) @ 0.2Hz (MW)",
+              "High Frequency Response (max.) @ 0.5Hz (MW)",
+              "Are you adding volume as per detail change provision",
+              "Please state the accepted tender that you are stacking onto",
+              "Please state if this is an all or nothing bid.",
+              "Please indicate if this is a mutually exclusive tender",
+              "Automatic Response Energy Deliverable by 10s (MW)",
+              "Automatic Response Energy Deliverable by 30s (MW)",
+              "Comments"
+            ],
+            "columns": [
+              {
+                "source": "Tender Ref",
+                "name": "tender_ref",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Status",
+                "name": "status",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Rejection Codes",
+                "name": "rejection_codes",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Company Name",
+                "name": "company_name",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Tendered Unit \n(BMU/Unit ID)",
+                "name": "tendered_unit",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "TO connection  /  DNO connection",
+                "name": "connection_type",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Generation Type",
+                "name": "generation_type",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Start Date",
+                "name": "start_date",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "End Date",
+                "name": "end_date",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Tendered Period \n(dd.mm.yy - dd.mm.yy)",
+                "name": "tendered_period",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Applicable FFR Capability Data Table",
+                "name": "capability_data_table",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Tendered Frames per Service Day - From (Mon-Fri)",
+                "name": "frame_from_mon_fri",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Tendered Frames per Service Day - To (Mon- Fri)",
+                "name": "frame_to_mon_fri",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Tendered Frames per Service Day - Duration (Mon-Fri)",
+                "name": "frame_duration_mon_fri",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Tendered Frames per Service Day - From (Saturday)",
+                "name": "frame_from_sat",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Tendered Frames per Service Day - To (Saturday)",
+                "name": "frame_to_sat",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Tendered Frames per Service Day - Duration (Saturday)",
+                "name": "frame_duration_sat",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Tendered Frames per Service Day - From (Sunday/Bank Holidays)",
+                "name": "frame_from_sun_bh",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Tendered Frames per Service Day - To (Sunday/Bank Holidays)",
+                "name": "frame_to_sun_bh",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Tendered Frames per Service Day - Duration (Sunday/Bank Hol)",
+                "name": "frame_duration_sun_bh",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Tendered Prices - Availability Fee (£/h)",
+                "name": "availability_fee",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Tendered Prices - Nomination Fee (£/h)",
+                "name": "nomination_fee",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Tendered Prices -  Window Initiation Fee (£/window)",
+                "name": "window_initiation_fee",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "BMUs  Only",
+                "name": "bmus_only",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Maximum Part Load Point (MW)",
+                "name": "max_part_load_point",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Minimum Part Load Point (MW)",
+                "name": "min_part_load_point",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Minimum MEL (MW)",
+                "name": "min_mel",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Maximum SEL (MW)",
+                "name": "max_sel",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Primary Response (max.) @ 0.2Hz (MW)",
+                "name": "primary_response_0_2hz",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Primary Response (max.) @ 0.5Hz (MW)",
+                "name": "primary_response_0_5hz",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Primary Response (max.) @ 0.8Hz (MW)",
+                "name": "primary_response_0_8hz",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Secondary Response (max.) @ 0.2/0.2Hz (MW)",
+                "name": "secondary_response_0_2hz",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Secondary Response (max.) @ 0.5/0.5Hz (MW)",
+                "name": "secondary_response_0_5hz",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "High Frequency Response (max.) @ 0.2Hz (MW)",
+                "name": "high_frequency_response_0_2hz",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "High Frequency Response (max.) @ 0.5Hz (MW)",
+                "name": "high_frequency_response_0_5hz",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Are you adding volume as per detail change provision",
+                "name": "detail_change_volume",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Please state the accepted tender that you are stacking onto",
+                "name": "stacked_onto_tender",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Please state if this is an all or nothing bid.",
+                "name": "all_or_nothing_bid",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Please indicate if this is a mutually exclusive tender",
+                "name": "mutually_exclusive_tender",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Automatic Response Energy Deliverable by 10s (MW)",
+                "name": "auto_response_10s",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Automatic Response Energy Deliverable by 30s (MW)",
+                "name": "auto_response_30s",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Comments",
+                "name": "comments",
+                "dtype": "string",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "resource_id",
+          "tender_ref"
+        ],
+        "latest": "whole_capture",
+        "latest_partition": "resource_id",
+        "siblings": [
+          "ffr_post_tender_reports_csv",
+          "ffr_post_tender_reports_ext"
+        ],
+        "vintage": "ckan_last_modified"
+      }
     },
     {
       "key": "ffr_post_tender_reports_ext",
@@ -893,7 +1527,7 @@
       "family": "ffr_post_tender_reports_ext",
       "disposition": {
         "kind": "SILVER",
-        "key": "ffr_post_tender_reports_ext"
+        "key": "ffr_post_tender_reports_csv_ext"
       }
     },
     {
@@ -926,7 +1560,7 @@
       "family": "ffr_post_tender_reports_ext",
       "disposition": {
         "kind": "SILVER",
-        "key": "ffr_post_tender_reports_ext"
+        "key": "ffr_post_tender_reports_csv_ext"
       }
     },
     {
@@ -959,7 +1593,7 @@
       "family": "ffr_post_tender_reports_csv",
       "disposition": {
         "kind": "SILVER",
-        "key": "ffr_post_tender_reports_csv"
+        "key": "ffr_post_tender_reports_csv_ext"
       }
     },
     {
@@ -1057,8 +1691,9 @@
       "url_type": "upload",
       "family": "ffr_post_tender_reports_csv_ext",
       "disposition": {
-        "kind": "SILVER",
-        "key": "ffr_post_tender_reports_csv_ext"
+        "kind": "HOLD",
+        "reason": "TODO: FFR-TR147-THOUSANDS-SEPARATOR — the TR147 (March 2022) CSV EXT writes one availability fee as `1,366.61`, an internal thousands separator that fails the record's strict float64 cast and that the lexical trim does not remove (FACTS l.256); re-disposition only after a declared lexical-number mechanism or a corrected NESO upload (a new last_modified)",
+        "unit": "v0.22-K-AS-5a"
       }
     },
     {
@@ -1288,8 +1923,9 @@
       "url_type": "upload",
       "family": "ffr_post_tender_reports_csv_ext",
       "disposition": {
-        "kind": "SILVER",
-        "key": "ffr_post_tender_reports_csv_ext"
+        "kind": "HOLD",
+        "reason": "TODO: FFR-TR154-ORPHAN-ROWS — the TR154 (October 2022) CSV EXT carries 10 nonblank rows with no Tender Ref (FACTS l.219, l.259), so the (resource_id, tender_ref) key cannot hold every row and a non-nullable key would silently exclude them; are they continuations of another tender or a publication defect NESO can correct?",
+        "unit": "v0.22-K-AS-5a"
       }
     },
     {
