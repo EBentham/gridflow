@@ -1,0 +1,4 @@
+registeredAuctionParticipant,auctionUnit,serviceType,auctionProduct,executedQuantity,clearingPrice,deliveryStart,deliveryEnd,technologyType,postCode,unitResultID
+ANESCO LIMITED,ANSC-001,Response,DCH,1.0,3.86,2023-11-02T23:00:00,2023-11-03T03:00:00,,,1#||#41#||#DCH#||#13
+ANESCO LIMITED,ANSC-001,Response,DCL,0.0,0.26,2023-11-02T23:00:00,2023-11-03T03:00:00,,,1#||#41#||#DCL#||#25
+ANESCO LIMITED,ANSC-001,Response,DMH,0.0,5.37,2023-11-02T23:00:00,2023-11-03T03:00:00,,,1#||#41#||#DMH#||#31

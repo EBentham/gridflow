@@ -1,0 +1,5 @@
+auctionID,orderID,serviceType,auctionProduct,deliveryStart,deliveryEnd,quantity,price,substitutabilityFamily,paradoxicallyAcceptanceAllowed,orderEntryTime,acceptanceRatio,status,executedQuantity,clearingPrice,reasonRejected,joinedFamily
+2661,1523637,Response,DRH,2026-04-01T10:00:00,2026-04-01T14:00:00,6,28.79,,True,2026-03-31T10:37:22,1.0,EXECUTED,6,-5.29,,
+2661,1523640,Response,DRH,2026-04-01T10:00:00,2026-04-01T14:00:00,20,0.0,,True,2026-03-31T10:37:22,1.0,EXECUTED,20,-5.29,,
+2661,1523639,Response,DRH,2026-04-01T10:00:00,2026-04-01T14:00:00,462,29.29,,False,2026-03-31T10:37:22,1.0,EXECUTED,462,-5.29,,
+2758,2405348,Response,DMH,2026-06-23T06:00:00,2026-06-23T10:00:00,20,0,,true,2026-06-22T11:31:50,1.049999949856768,EXECUTED,21,-2.81,,

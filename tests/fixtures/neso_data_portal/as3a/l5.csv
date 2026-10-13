@@ -1,0 +1,4 @@
+registeredAuctionParticipant,auctionUnit,serviceType,auctionProduct,executedQuantity,clearingPrice,deliveryStart,deliveryEnd,technologyType,postCode,unitResultID
+Statkraft Markets GmbH,PYEB-01,Slow Reserve,PSR,5,0.8,2026-10-08T20:00:00,2026-10-08T20:30:00,Gas Reciprocating Engines,DE55 4NX,2865#||#3984#||#PSR#||#212343
+EDF Energy Customers Ltd,BREDB-1,Quick Reserve,PQR,4,0,2026-10-08T04:00:00,2026-10-08T04:30:00,Batteries,SK6 2BS,2865#||#2674#||#PQR#||#212263
+FORSA TRADING LIMITED,CRRH-01,Slow Reserve,PSR,20,0.86,2026-10-08T05:00:00,2026-10-08T05:30:00,Gas Reciprocating Engines,DN48DE,2865#||#3997#||#PSR#||#212313
