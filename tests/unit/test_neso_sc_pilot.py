@@ -43,6 +43,7 @@ from test_neso_dem1_records import _short_base
 from test_neso_multi_resource import (
     AS1_ADDED,
     AS2_ADDED,
+    AS3A_ADDED,
     BAL1_ADDED,
     BAL2A_ADDED,
     BAL2B_ADDED,
@@ -608,7 +609,8 @@ class TestSkeletonAndPin:
         the eight system records of K-SYS-1, the nine balancing-costs records of K-BAL-1 and the
         BSUoS monthly forecast summary record of K-BAL-2a, the nine skip-rate records of K-BAL-2b
         the nine tariff records of K-BAL-2c, the nine trading records of K-TRD, the nine
-        ancillary-services records of K-AS-1 and the eleven of K-AS-2 appearing since the base
+        ancillary-services records of K-AS-1, the eleven of K-AS-2 and the eleven EAC auction-result
+        records of K-AS-3a appearing since the base
         golden (master ``34992b6``), and any DEM-1 engine digest added or lost."""
         golden = json.loads(PIN_PATH.read_text(encoding="utf-8"))
         current = json.loads(dump(generated_pin()))
@@ -628,5 +630,6 @@ class TestSkeletonAndPin:
                 *TRD_ADDED,
                 *AS1_ADDED,
                 *AS2_ADDED,
+                *AS3A_ADDED,
             }, section
         assert set(current["engine"]) == set(golden["engine"])

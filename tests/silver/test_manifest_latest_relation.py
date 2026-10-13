@@ -62,7 +62,8 @@ from gridflow.silver.schema_manifest import (
 # v0.22-K-BAL-2c's nine tariff records, then to one hundred and fifty-three with
 # v0.22-K-TRD's nine trading records, then to one hundred and sixty-two with
 # v0.22-K-AS-1's nine ancillary-services records, then to one hundred and seventy-three with
-# v0.22-K-AS-2's eleven ancillary-services records.
+# v0.22-K-AS-2's eleven ancillary-services records, then to one hundred and eighty-four with
+# v0.22-K-AS-3a's eleven EAC auction-result records.
 _APPEND_ONLY_DATASETS: tuple[tuple[str, str], ...] = (
     ("elexon", "system_prices"),
     ("elexon", "remit"),
@@ -237,6 +238,17 @@ _APPEND_ONLY_DATASETS: tuple[tuple[str, str], ...] = (
     ("neso_data_portal", "sffr_auction_results_buy_orders"),
     ("neso_data_portal", "sffr_requirement"),
     ("neso_data_portal", "stor_windows"),
+    ("neso_data_portal", "eac_results_by_unit"),
+    ("neso_data_portal", "eac_results_by_unit_fy"),
+    ("neso_data_portal", "eac_results_daily_by_unit"),
+    ("neso_data_portal", "eac_results_buy_orders"),
+    ("neso_data_portal", "eac_results_buy_orders_fy"),
+    ("neso_data_portal", "eac_results_daily_buy_orders"),
+    ("neso_data_portal", "eac_results_summary"),
+    ("neso_data_portal", "eac_results_summary_fy"),
+    ("neso_data_portal", "eac_results_daily_summary"),
+    ("neso_data_portal", "eac_results_sell_orders"),
+    ("neso_data_portal", "eac_results_daily_sell_orders"),
 )
 
 
@@ -430,9 +442,9 @@ def test_append_only_set_equals_latest_spec_set() -> None:
     spec_set = set(LATEST_VIEW_SPECS)
 
     # Non-vacuity guard: this invariant must never pass because both sides are
-    # empty (F16) -- one hundred and seventy-three APPEND_ONLY datasets are registered today.
+    # empty (F16) -- one hundred and eighty-four APPEND_ONLY datasets are registered today.
     assert len(append_only) > 0
-    assert len(append_only) == 173
+    assert len(append_only) == 184
 
     missing_specs = append_only - spec_set
     extra_specs = spec_set - append_only
@@ -841,6 +853,17 @@ _EXPECTED_APPEND_ONLY_DEPRECATED_ALIASES: dict[tuple[str, str], str | None] = {
     ): "silver_sffr_auction_results_buy_orders",
     ("neso_data_portal", "sffr_requirement"): "silver_sffr_requirement",
     ("neso_data_portal", "stor_windows"): "silver_stor_windows",
+    ("neso_data_portal", "eac_results_by_unit"): "silver_eac_results_by_unit",
+    ("neso_data_portal", "eac_results_by_unit_fy"): "silver_eac_results_by_unit_fy",
+    ("neso_data_portal", "eac_results_daily_by_unit"): "silver_eac_results_daily_by_unit",
+    ("neso_data_portal", "eac_results_buy_orders"): "silver_eac_results_buy_orders",
+    ("neso_data_portal", "eac_results_buy_orders_fy"): "silver_eac_results_buy_orders_fy",
+    ("neso_data_portal", "eac_results_daily_buy_orders"): "silver_eac_results_daily_buy_orders",
+    ("neso_data_portal", "eac_results_summary"): "silver_eac_results_summary",
+    ("neso_data_portal", "eac_results_summary_fy"): "silver_eac_results_summary_fy",
+    ("neso_data_portal", "eac_results_daily_summary"): "silver_eac_results_daily_summary",
+    ("neso_data_portal", "eac_results_sell_orders"): "silver_eac_results_sell_orders",
+    ("neso_data_portal", "eac_results_daily_sell_orders"): "silver_eac_results_daily_sell_orders",
 }
 
 

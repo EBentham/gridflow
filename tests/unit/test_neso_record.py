@@ -896,6 +896,21 @@ AS2_RECORDED = {
 }
 """The eleven ancillary-services families unit K-AS-2 records (nine eligible, two held)."""
 
+AS3A_RECORDED = {
+    "eac_results_by_unit",
+    "eac_results_by_unit_fy",
+    "eac_results_daily_by_unit",
+    "eac_results_buy_orders",
+    "eac_results_buy_orders_fy",
+    "eac_results_daily_buy_orders",
+    "eac_results_summary",
+    "eac_results_summary_fy",
+    "eac_results_daily_summary",
+    "eac_results_sell_orders",
+    "eac_results_daily_sell_orders",
+}
+"""The eleven EAC auction-result families unit K-AS-3a records (all eligible)."""
+
 AS1_PACKAGE_FILES = {
     "balancing-reserve-auction-requirement-forecast.json",
     "dynamic-containment-4-day-forecast.json",
@@ -903,6 +918,10 @@ AS1_PACKAGE_FILES = {
     "dynamic-regulation-requirements.json",
     "long-term-forecasts-for-dc-dm-dr-requirements.json",
     "quick-reserve-auction-requirement-forecast.json",
+}
+
+AS3A_PACKAGE_FILES = {
+    "eac-auction-results.json",
 }
 
 AS2_PACKAGE_FILES = {
@@ -955,6 +974,7 @@ class TestSeededRegistry:
             | TRD_RECORDED
             | AS1_RECORDED
             | AS2_RECORDED
+            | AS3A_RECORDED
         )
         with_children = [res for _package, res in loaded.resources.values() if res.children]
         assert len(with_children) == X_RESOURCES_WITH_CHILDREN
@@ -998,6 +1018,7 @@ class TestSeededRegistry:
             | TRD_PACKAGE_FILES
             | AS1_PACKAGE_FILES
             | AS2_PACKAGE_FILES
+            | AS3A_PACKAGE_FILES
         )
 
 
