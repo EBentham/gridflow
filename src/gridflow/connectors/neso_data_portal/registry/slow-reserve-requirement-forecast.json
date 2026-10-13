@@ -17,7 +17,92 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Auction Date",
+              "Service Delivery Date",
+              "Service Window",
+              "Service Window Start Time",
+              "Service Window End Time",
+              "Positive Slow Reserve Requirement MW",
+              "Negative Slow Reserve Requirement MW",
+              "Forecast produced on"
+            ],
+            "columns": [
+              {
+                "source": "Auction Date",
+                "name": "auction_date",
+                "dtype": "date",
+                "format": "%d/%m/%Y",
+                "nullable": false
+              },
+              {
+                "source": "Service Delivery Date",
+                "name": "service_delivery_date",
+                "dtype": "date",
+                "format": "%d/%m/%Y",
+                "nullable": false
+              },
+              {
+                "source": "Service Window",
+                "name": "service_window",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Service Window Start Time",
+                "name": "service_window_start_time",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Service Window End Time",
+                "name": "service_window_end_time",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Positive Slow Reserve Requirement MW",
+                "name": "positive_slow_reserve_requirement_mw",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Negative Slow Reserve Requirement MW",
+                "name": "negative_slow_reserve_requirement_mw",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Forecast produced on",
+                "name": "forecast_produced_on",
+                "dtype": "date",
+                "format": "%d/%m/%Y",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "date_sp1",
+          "date_column": "service_delivery_date"
+        },
+        "entity_key": [
+          "auction_date",
+          "service_window"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified"
+      }
     }
   ],
   "resources": [

@@ -17,7 +17,82 @@
       "empty_allowed": true,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Date",
+              "Season",
+              "WD_NWD",
+              "Window 1 Start Time",
+              "Window 1 End Time",
+              "Window 2 Start Time",
+              "Window 2 End Time"
+            ],
+            "columns": [
+              {
+                "source": "Date",
+                "name": "date",
+                "dtype": "date",
+                "format": "%d/%m/%Y",
+                "nullable": false
+              },
+              {
+                "source": "Season",
+                "name": "season",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "WD_NWD",
+                "name": "wd_nwd",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Window 1 Start Time",
+                "name": "window_1_start_time",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Window 1 End Time",
+                "name": "window_1_end_time",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Window 2 Start Time",
+                "name": "window_2_start_time",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Window 2 End Time",
+                "name": "window_2_end_time",
+                "dtype": "string",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "date_sp1",
+          "date_column": "date"
+        },
+        "entity_key": [
+          "date"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified"
+      }
     }
   ],
   "resources": [

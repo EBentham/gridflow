@@ -29,12 +29,12 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `7-day-ahead-national-forecast` | `national_forecast_7d_historic_day_ahead` | silver | held: TODO: FORECAST_TIMESTAMP has no vendor definition and its zone is undocumented (values carry Z); whether it is the immutable issue instant (unit E-SEM) | whole_capture | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
 | `aahedc-tariffs` | `aahedc_tariffs` | silver | held: TODO: TARIFF-ISSUE-AVAILABILITY — each body mixes Forecast/Draft/Final rows with no publication instant; what was available when (publication-level evidence), and how should mixed stages be treated? A publication date alone does not establish availability at midnight. (unit v0.22-K-BAL-2c) | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
 | `aggregated-bsad` | `aggregated_bsad` | ingest-only (no silver output) | — | — | — | — |
-| `ancillary-services-important-industry-notifications` | `as_industry_notifications_balancing` | ingest-only (no silver output) | — | — | — | — |
-| `ancillary-services-important-industry-notifications` | `as_industry_notifications_dc_dm_dr` | ingest-only (no silver output) | — | — | — | — |
-| `ancillary-services-important-industry-notifications` | `as_industry_notifications_quick_reserve` | ingest-only (no silver output) | — | — | — | — |
-| `ancillary-services-important-industry-notifications` | `as_industry_notifications_sffr_important` | ingest-only (no silver output) | — | — | — | — |
-| `ancillary-services-important-industry-notifications` | `as_industry_notifications_slow_reserve` | ingest-only (no silver output) | — | — | — | — |
-| `ancillary-services-important-industry-notifications` | `as_industry_notifications_stor_important` | ingest-only (no silver output) | — | — | — | — |
+| `ancillary-services-important-industry-notifications` | `as_industry_notifications_balancing` | silver | eligible | whole_capture | local_instant | CKAN last_modified of the captured file (ADR-030) |
+| `ancillary-services-important-industry-notifications` | `as_industry_notifications_dc_dm_dr` | silver | eligible | whole_capture | local_instant | CKAN last_modified of the captured file (ADR-030) |
+| `ancillary-services-important-industry-notifications` | `as_industry_notifications_quick_reserve` | silver | eligible | whole_capture | local_instant | CKAN last_modified of the captured file (ADR-030) |
+| `ancillary-services-important-industry-notifications` | `as_industry_notifications_sffr_important` | silver | held: TODO: SFFR-NOTIFICATION-DATE-ORDER — is `01/03/2024 10:00` day-first or month-first, and is the single "Example note" row a real notification or a template placeholder? (unit v0.22-K-AS-2) | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
+| `ancillary-services-important-industry-notifications` | `as_industry_notifications_slow_reserve` | silver | eligible | whole_capture | local_instant | CKAN last_modified of the captured file (ADR-030) |
+| `ancillary-services-important-industry-notifications` | `as_industry_notifications_stor_important` | silver | eligible | whole_capture | local_instant | CKAN last_modified of the captured file (ADR-030) |
 | `balancing-reserve-auction-requirement-forecast` | `br_auction_requirement_fc_da` | silver | eligible | whole_capture | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
 | `balancing-reserve-auction-requirement-forecast` | `br_auction_requirement_fc_da_archive` | silver | held: TODO: BR-ARCHIVE-AVAILABILITY — archive rows carry only a production date (944 labels, leads of 2 and 15 days); when was each forecast published, and are archived values ever amended? (unit v0.22-K-AS-1) | whole_capture | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
 | `balancing-reserve-auction-requirement-forecast` | `br_auction_requirement_fc_medium_term` | silver | held: TODO: BR-MT-ARCHIVE-AVAILABILITY — the archive resource's targets are past (46,349 window starts on/before the vintage) and its production dates carry no publication instant; when was each medium-term forecast available? (unit v0.22-K-AS-1) | whole_capture per resource_id | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
@@ -275,15 +275,15 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `skip-rates` | `skip_rates_stage6_acceptance` | silver | held: TODO: SKIP-DATE-ENDPOINT — does the five-minute `date` stamp mark the slice start or end? (unit v0.22-K-BAL-2b) | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
 | `skip-rates` | `skip_rates_stage6_psa` | silver | held: TODO: SKIP-DATE-ENDPOINT — does the five-minute `date` stamp mark the slice start or end? (unit v0.22-K-BAL-2b) | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
 | `skip-rates` | `skip_rates_summary` | silver | eligible | whole_capture | utc_instant | CKAN last_modified of the captured file (ADR-030) |
-| `slow-reserve-requirement-forecast` | `slow_reserve_requirement_fc` | ingest-only (no silver output) | — | — | — | — |
+| `slow-reserve-requirement-forecast` | `slow_reserve_requirement_fc` | silver | eligible | whole_capture | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
 | `ssep-onshore-publication-zone-shapefile` | `ssep_publication_zones_files` | catalogue only | — | — | — | — |
 | `stability-midterm-y-1-utilisation-report` | `stability_midterm_y1` | silver | eligible | whole_capture | utc_instant | CKAN last_modified of the captured file (ADR-030) |
 | `stability-pathfinder-service-information` | `stability_pathfinder_availability_report` | silver | held: TODO: the timestamp clock (as §3), and what vendor row identity / grain makes the report unique given identical repeated rows? (unit E-SEM) | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
 | `stability-pathfinder-service-information` | `stability_pathfinder_utilisation_report` | silver | held: TODO: are the Pathfinder timestamps actual UTC instants or GB local wall times with a mechanically attached +00:00 offset (incl. clock-change periods), what unit/scale is `Inertia`, what does a blank `Inertia` mean, and what vendor row identity distinguishes identical rows? (unit E-SEM) | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
-| `static-firm-frequency-response-auction-results` | `sffr_auction_results_buy_orders` | ingest-only (no silver output) | — | — | — | — |
-| `static-firm-frequency-response-auction-results` | `sffr_auction_results_main` | ingest-only (no silver output) | — | — | — | — |
-| `static-firm-frequency-response-requirement` | `sffr_requirement` | ingest-only (no silver output) | — | — | — | — |
-| `stor-windows` | `stor_windows` | ingest-only (no silver output) | — | — | — | — |
+| `static-firm-frequency-response-auction-results` | `sffr_auction_results_buy_orders` | silver | held: TODO: SFFR-BUY-CURVE-CELL-UNITS — the dictionary labels the band columns MW but describes their cells as prices (the `200` entry has no unit); what monetary unit are the cells? (unit v0.22-K-AS-2) | whole_capture | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
+| `static-firm-frequency-response-auction-results` | `sffr_auction_results_main` | silver | eligible | whole_capture | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
+| `static-firm-frequency-response-requirement` | `sffr_requirement` | silver | eligible | whole_capture | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
+| `stor-windows` | `stor_windows` | silver | eligible | whole_capture | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
 | `super-stable-export-limit-contract-enactment` | `ssel_contract_enactment` | silver | held: TODO: COST-DIMENSION — the dictionary labels `Cost` £/h but describes it as total cost (price × volume × duration); which is published? (unit v0.22-K-TRD) | whole_capture per resource_id | utc_instant | gridflow capture time |
 | `system-frequency-data` | `system_frequency` | ingest-only (no silver output) | — | — | — | — |
 | `system-inertia` | `system_inertia` | silver | eligible | whole_capture per resource_id | sp_pair | CKAN last_modified of the captured file (ADR-030) |
@@ -466,6 +466,6 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 ## Totals
 
 - Packages: 131 (held: 2)
-- Families: 317: silver 159 (bespoke 3, recorded 156), ingest-only 123, catalogue only 35
-- Silver outputs held: 91
+- Families: 317: silver 170 (bespoke 3, recorded 167), ingest-only 112, catalogue only 35
+- Silver outputs held: 93
 - Resources: 1385

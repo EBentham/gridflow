@@ -17,7 +17,123 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "EFA Date",
+              "EFA",
+              "25",
+              "50",
+              "75",
+              "100",
+              "125",
+              "150",
+              "175",
+              "200",
+              "225",
+              "250"
+            ],
+            "columns": [
+              {
+                "source": "EFA Date",
+                "name": "efa_date",
+                "dtype": "date",
+                "format": "%Y-%m-%d",
+                "nullable": false
+              },
+              {
+                "source": "EFA",
+                "name": "efa",
+                "dtype": "int64",
+                "nullable": false
+              },
+              {
+                "source": "25",
+                "name": "c_25",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "50",
+                "name": "c_50",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "75",
+                "name": "c_75",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "100",
+                "name": "c_100",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "125",
+                "name": "c_125",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "150",
+                "name": "c_150",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "175",
+                "name": "c_175",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "200",
+                "name": "c_200",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "225",
+                "name": "c_225",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "250",
+                "name": "c_250",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "date_sp1",
+          "date_column": "efa_date"
+        },
+        "entity_key": [
+          "efa_date",
+          "efa"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: SFFR-BUY-CURVE-CELL-UNITS — the dictionary labels the band columns MW but describes their cells as prices (the `200` entry has no unit); what monetary unit are the cells?",
+          "unit": "v0.22-K-AS-2"
+        }
+      }
     },
     {
       "key": "sffr_auction_results_main",
@@ -28,7 +144,140 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Date",
+              "Provider",
+              "Unit",
+              "Delivery Start",
+              "Delivery End",
+              "EFA",
+              "Service",
+              "Status",
+              "Volume",
+              "Accepted Volume",
+              "Price",
+              "Clearing Price",
+              "Technology Type",
+              "Location",
+              "Rank"
+            ],
+            "columns": [
+              {
+                "source": "Date",
+                "name": "date",
+                "dtype": "date",
+                "format": "%Y-%m-%d",
+                "nullable": false
+              },
+              {
+                "source": "Provider",
+                "name": "provider",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Unit",
+                "name": "unit",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Delivery Start",
+                "name": "delivery_start",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Delivery End",
+                "name": "delivery_end",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "EFA",
+                "name": "efa",
+                "dtype": "int64",
+                "nullable": false
+              },
+              {
+                "source": "Service",
+                "name": "service",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Status",
+                "name": "status",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Volume",
+                "name": "volume",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Accepted Volume",
+                "name": "accepted_volume",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Price",
+                "name": "price",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Clearing Price",
+                "name": "clearing_price",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Technology Type",
+                "name": "technology_type",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Location",
+                "name": "location",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Rank",
+                "name": "rank",
+                "dtype": "int64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "date_sp1",
+          "date_column": "date"
+        },
+        "entity_key": [
+          "date",
+          "unit",
+          "efa"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified"
+      }
     }
   ],
   "resources": [

@@ -17,7 +17,86 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Notification Issued Date Time",
+              "Service",
+              "Description",
+              "Effective From Date Time",
+              "Effective To Date Time",
+              "Notes"
+            ],
+            "columns": [
+              {
+                "source": "Notification Issued Date Time",
+                "name": "notification_issued_date_time",
+                "dtype": "datetime",
+                "format": "%d/%m/%Y %H:%M",
+                "nullable": false,
+                "zone": "Europe/London",
+                "zone_evidence": "vendor field dictionary (ancillary-services-important-industry-notifications): the notification issue, effective-from and effective-to clocks are UK local time; no ambiguous or nonexistent local value occurs in the captured body (K-AS-2-FACTS section 3, C06)",
+                "ambiguous": "raise"
+              },
+              {
+                "source": "Service",
+                "name": "service",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Description",
+                "name": "description",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Effective From Date Time",
+                "name": "effective_from_date_time",
+                "dtype": "datetime",
+                "format": "%d/%m/%Y %H:%M",
+                "nullable": false,
+                "zone": "Europe/London",
+                "zone_evidence": "vendor field dictionary (ancillary-services-important-industry-notifications): the notification issue, effective-from and effective-to clocks are UK local time; no ambiguous or nonexistent local value occurs in the captured body (K-AS-2-FACTS section 3, C06)",
+                "ambiguous": "raise"
+              },
+              {
+                "source": "Effective To Date Time",
+                "name": "effective_to_date_time",
+                "dtype": "datetime",
+                "format": "%d/%m/%Y %H:%M",
+                "nullable": true,
+                "zone": "Europe/London",
+                "zone_evidence": "vendor field dictionary (ancillary-services-important-industry-notifications): the notification issue, effective-from and effective-to clocks are UK local time; no ambiguous or nonexistent local value occurs in the captured body (K-AS-2-FACTS section 3, C06)",
+                "ambiguous": "raise"
+              },
+              {
+                "source": "Notes",
+                "name": "notes",
+                "dtype": "string",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "local_instant",
+          "column": "notification_issued_date_time"
+        },
+        "entity_key": [
+          "notification_issued_date_time"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified"
+      }
     },
     {
       "key": "as_industry_notifications_dc_dm_dr",
@@ -28,7 +107,86 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Notification Issued Date Time",
+              "Service",
+              "Description",
+              "Effective From Date Time",
+              "Effective To Date Time",
+              "Notes"
+            ],
+            "columns": [
+              {
+                "source": "Notification Issued Date Time",
+                "name": "notification_issued_date_time",
+                "dtype": "datetime",
+                "format": "%d/%m/%Y %H:%M",
+                "nullable": false,
+                "zone": "Europe/London",
+                "zone_evidence": "vendor field dictionary (ancillary-services-important-industry-notifications): the notification issue, effective-from and effective-to clocks are UK local time; no ambiguous or nonexistent local value occurs in the captured body (K-AS-2-FACTS section 3, C06)",
+                "ambiguous": "raise"
+              },
+              {
+                "source": "Service",
+                "name": "service",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Description",
+                "name": "description",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Effective From Date Time",
+                "name": "effective_from_date_time",
+                "dtype": "datetime",
+                "format": "%d/%m/%Y %H:%M",
+                "nullable": false,
+                "zone": "Europe/London",
+                "zone_evidence": "vendor field dictionary (ancillary-services-important-industry-notifications): the notification issue, effective-from and effective-to clocks are UK local time; no ambiguous or nonexistent local value occurs in the captured body (K-AS-2-FACTS section 3, C06)",
+                "ambiguous": "raise"
+              },
+              {
+                "source": "Effective To Date Time",
+                "name": "effective_to_date_time",
+                "dtype": "datetime",
+                "format": "%d/%m/%Y %H:%M",
+                "nullable": true,
+                "zone": "Europe/London",
+                "zone_evidence": "vendor field dictionary (ancillary-services-important-industry-notifications): the notification issue, effective-from and effective-to clocks are UK local time; no ambiguous or nonexistent local value occurs in the captured body (K-AS-2-FACTS section 3, C06)",
+                "ambiguous": "raise"
+              },
+              {
+                "source": "Notes",
+                "name": "notes",
+                "dtype": "string",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "local_instant",
+          "column": "notification_issued_date_time"
+        },
+        "entity_key": [
+          "notification_issued_date_time"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified"
+      }
     },
     {
       "key": "as_industry_notifications_quick_reserve",
@@ -39,7 +197,79 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Notification Issued Date Time",
+              "Description",
+              "Effective From Date Time",
+              "Effective To Date Time",
+              "Notes"
+            ],
+            "columns": [
+              {
+                "source": "Notification Issued Date Time",
+                "name": "notification_issued_date_time",
+                "dtype": "datetime",
+                "format": "%d/%m/%Y %H:%M",
+                "nullable": false,
+                "zone": "Europe/London",
+                "zone_evidence": "vendor field dictionary (ancillary-services-important-industry-notifications): the notification issue, effective-from and effective-to clocks are UK local time; no ambiguous or nonexistent local value occurs in the captured body (K-AS-2-FACTS section 3, C06)",
+                "ambiguous": "raise"
+              },
+              {
+                "source": "Description",
+                "name": "description",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Effective From Date Time",
+                "name": "effective_from_date_time",
+                "dtype": "datetime",
+                "format": "%d/%m/%Y %H:%M",
+                "nullable": false,
+                "zone": "Europe/London",
+                "zone_evidence": "vendor field dictionary (ancillary-services-important-industry-notifications): the notification issue, effective-from and effective-to clocks are UK local time; no ambiguous or nonexistent local value occurs in the captured body (K-AS-2-FACTS section 3, C06)",
+                "ambiguous": "raise"
+              },
+              {
+                "source": "Effective To Date Time",
+                "name": "effective_to_date_time",
+                "dtype": "datetime",
+                "format": "%d/%m/%Y %H:%M",
+                "nullable": true,
+                "zone": "Europe/London",
+                "zone_evidence": "vendor field dictionary (ancillary-services-important-industry-notifications): the notification issue, effective-from and effective-to clocks are UK local time; no ambiguous or nonexistent local value occurs in the captured body (K-AS-2-FACTS section 3, C06)",
+                "ambiguous": "raise"
+              },
+              {
+                "source": "Notes",
+                "name": "notes",
+                "dtype": "string",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "local_instant",
+          "column": "notification_issued_date_time"
+        },
+        "entity_key": [
+          "notification_issued_date_time"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified"
+      }
     },
     {
       "key": "as_industry_notifications_sffr_important",
@@ -50,7 +280,78 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Notification Issued Date Time",
+              "Service",
+              "Description",
+              "Effective From Date Time",
+              "Effective To Date Time",
+              "Notes"
+            ],
+            "columns": [
+              {
+                "source": "Notification Issued Date Time",
+                "name": "notification_issued_date_time",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Service",
+                "name": "service",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Description",
+                "name": "description",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Effective From Date Time",
+                "name": "effective_from_date_time",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Effective To Date Time",
+                "name": "effective_to_date_time",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Notes",
+                "name": "notes",
+                "dtype": "string",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "notification_issued_date_time"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: SFFR-NOTIFICATION-DATE-ORDER — is `01/03/2024 10:00` day-first or month-first, and is the single \"Example note\" row a real notification or a template placeholder?",
+          "unit": "v0.22-K-AS-2"
+        }
+      }
     },
     {
       "key": "as_industry_notifications_slow_reserve",
@@ -61,7 +362,79 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Notification Issued Date Time",
+              "Description",
+              "Effective From Date Time",
+              "Effective To Date Time",
+              "Notes"
+            ],
+            "columns": [
+              {
+                "source": "Notification Issued Date Time",
+                "name": "notification_issued_date_time",
+                "dtype": "datetime",
+                "format": "%d/%m/%Y %H:%M",
+                "nullable": false,
+                "zone": "Europe/London",
+                "zone_evidence": "vendor field dictionary (ancillary-services-important-industry-notifications): the notification issue, effective-from and effective-to clocks are UK local time; no ambiguous or nonexistent local value occurs in the captured body (K-AS-2-FACTS section 3, C06)",
+                "ambiguous": "raise"
+              },
+              {
+                "source": "Description",
+                "name": "description",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Effective From Date Time",
+                "name": "effective_from_date_time",
+                "dtype": "datetime",
+                "format": "%d/%m/%Y %H:%M",
+                "nullable": false,
+                "zone": "Europe/London",
+                "zone_evidence": "vendor field dictionary (ancillary-services-important-industry-notifications): the notification issue, effective-from and effective-to clocks are UK local time; no ambiguous or nonexistent local value occurs in the captured body (K-AS-2-FACTS section 3, C06)",
+                "ambiguous": "raise"
+              },
+              {
+                "source": "Effective To Date Time",
+                "name": "effective_to_date_time",
+                "dtype": "datetime",
+                "format": "%d/%m/%Y %H:%M",
+                "nullable": true,
+                "zone": "Europe/London",
+                "zone_evidence": "vendor field dictionary (ancillary-services-important-industry-notifications): the notification issue, effective-from and effective-to clocks are UK local time; no ambiguous or nonexistent local value occurs in the captured body (K-AS-2-FACTS section 3, C06)",
+                "ambiguous": "raise"
+              },
+              {
+                "source": "Notes",
+                "name": "notes",
+                "dtype": "string",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "local_instant",
+          "column": "notification_issued_date_time"
+        },
+        "entity_key": [
+          "notification_issued_date_time"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified"
+      }
     },
     {
       "key": "as_industry_notifications_stor_important",
@@ -72,7 +445,86 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Notification Issued Date Time",
+              "Service",
+              "Description",
+              "Effective From Date Time",
+              "Effective To Date Time",
+              "Notes"
+            ],
+            "columns": [
+              {
+                "source": "Notification Issued Date Time",
+                "name": "notification_issued_date_time",
+                "dtype": "datetime",
+                "format": "%d/%m/%Y %H:%M",
+                "nullable": false,
+                "zone": "Europe/London",
+                "zone_evidence": "vendor field dictionary (ancillary-services-important-industry-notifications): the notification issue, effective-from and effective-to clocks are UK local time; no ambiguous or nonexistent local value occurs in the captured body (K-AS-2-FACTS section 3, C06)",
+                "ambiguous": "raise"
+              },
+              {
+                "source": "Service",
+                "name": "service",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Description",
+                "name": "description",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Effective From Date Time",
+                "name": "effective_from_date_time",
+                "dtype": "datetime",
+                "format": "%d/%m/%Y %H:%M",
+                "nullable": false,
+                "zone": "Europe/London",
+                "zone_evidence": "vendor field dictionary (ancillary-services-important-industry-notifications): the notification issue, effective-from and effective-to clocks are UK local time; no ambiguous or nonexistent local value occurs in the captured body (K-AS-2-FACTS section 3, C06)",
+                "ambiguous": "raise"
+              },
+              {
+                "source": "Effective To Date Time",
+                "name": "effective_to_date_time",
+                "dtype": "datetime",
+                "format": "%d/%m/%Y %H:%M",
+                "nullable": true,
+                "zone": "Europe/London",
+                "zone_evidence": "vendor field dictionary (ancillary-services-important-industry-notifications): the notification issue, effective-from and effective-to clocks are UK local time; no ambiguous or nonexistent local value occurs in the captured body (K-AS-2-FACTS section 3, C06)",
+                "ambiguous": "raise"
+              },
+              {
+                "source": "Notes",
+                "name": "notes",
+                "dtype": "string",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "local_instant",
+          "column": "notification_issued_date_time"
+        },
+        "entity_key": [
+          "notification_issued_date_time"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified"
+      }
     }
   ],
   "resources": [
