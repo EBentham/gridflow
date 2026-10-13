@@ -28,7 +28,67 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Settlement Period",
+              "ODFM Instructed MW",
+              "Time",
+              "Date"
+            ],
+            "columns": [
+              {
+                "source": "Settlement Period",
+                "name": "settlement_period",
+                "dtype": "int64",
+                "nullable": false,
+                "min": 1,
+                "max": 50
+              },
+              {
+                "source": "ODFM Instructed MW",
+                "name": "odfm_instructed_mw",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Time",
+                "name": "time_label",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Date",
+                "name": "settlement_date",
+                "dtype": "date",
+                "format": "%d/%m/%Y",
+                "nullable": false
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "sp_pair",
+          "date_column": "settlement_date",
+          "period_column": "settlement_period"
+        },
+        "entity_key": [
+          "resource_id",
+          "settlement_date",
+          "settlement_period"
+        ],
+        "latest": "whole_capture",
+        "latest_partition": "resource_id",
+        "vintage": "ckan_last_modified"
+      }
     },
     {
       "key": "odfm_market_information_load_factors",
@@ -39,7 +99,337 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Datetime",
+              "Scottish Hydro Wind",
+              "Scottish Power Wind",
+              "Electricity North West Wind",
+              "NPG North East Wind",
+              "NPG Yorkshire Wind",
+              "SP Manweb Wind",
+              "WPD West Midlands Wind",
+              "WPD East Midlands Wind",
+              "UKPN East Anglia Wind",
+              "UKPN London Wind",
+              "WPD South Wales Wind",
+              "WPD South West Wind",
+              "SSE South Wind",
+              "UKPN South East Wind",
+              "Scottish Hydro Solar",
+              "Scottish Power Solar",
+              "Electricity North West Solar",
+              "NPG North East Solar",
+              "NPG Yorkshire Solar",
+              "SP Manweb Solar",
+              "WPD West Midlands Solar",
+              "WPD East Midlands Solar",
+              "UKPN East Anglia Solar",
+              "UKPN London Solar",
+              "WPD South Wales Solar",
+              "WPD South West Solar",
+              "SSE South Solar",
+              "UKPN South East Solar",
+              "Scottish Hydro Other",
+              "Scottish Power Other",
+              "Electricity North West Other",
+              "NPG North East Other",
+              "NPG Yorkshire Other",
+              "SP Manweb Other",
+              "WPD West Midlands Other",
+              "WPD East Midlands Other",
+              "UKPN East Anglia Other",
+              "UKPN London Other",
+              "WPD South Wales Other",
+              "WPD South West Other",
+              "SSE South Other",
+              "UKPN South East Other"
+            ],
+            "columns": [
+              {
+                "source": "Datetime",
+                "name": "datetime",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Scottish Hydro Wind",
+                "name": "scottish_hydro_wind",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Scottish Power Wind",
+                "name": "scottish_power_wind",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Electricity North West Wind",
+                "name": "electricity_north_west_wind",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "NPG North East Wind",
+                "name": "npg_north_east_wind",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "NPG Yorkshire Wind",
+                "name": "npg_yorkshire_wind",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "SP Manweb Wind",
+                "name": "sp_manweb_wind",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "WPD West Midlands Wind",
+                "name": "wpd_west_midlands_wind",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "WPD East Midlands Wind",
+                "name": "wpd_east_midlands_wind",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "UKPN East Anglia Wind",
+                "name": "ukpn_east_anglia_wind",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "UKPN London Wind",
+                "name": "ukpn_london_wind",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "WPD South Wales Wind",
+                "name": "wpd_south_wales_wind",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "WPD South West Wind",
+                "name": "wpd_south_west_wind",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "SSE South Wind",
+                "name": "sse_south_wind",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "UKPN South East Wind",
+                "name": "ukpn_south_east_wind",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Scottish Hydro Solar",
+                "name": "scottish_hydro_solar",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Scottish Power Solar",
+                "name": "scottish_power_solar",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Electricity North West Solar",
+                "name": "electricity_north_west_solar",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "NPG North East Solar",
+                "name": "npg_north_east_solar",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "NPG Yorkshire Solar",
+                "name": "npg_yorkshire_solar",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "SP Manweb Solar",
+                "name": "sp_manweb_solar",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "WPD West Midlands Solar",
+                "name": "wpd_west_midlands_solar",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "WPD East Midlands Solar",
+                "name": "wpd_east_midlands_solar",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "UKPN East Anglia Solar",
+                "name": "ukpn_east_anglia_solar",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "UKPN London Solar",
+                "name": "ukpn_london_solar",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "WPD South Wales Solar",
+                "name": "wpd_south_wales_solar",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "WPD South West Solar",
+                "name": "wpd_south_west_solar",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "SSE South Solar",
+                "name": "sse_south_solar",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "UKPN South East Solar",
+                "name": "ukpn_south_east_solar",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Scottish Hydro Other",
+                "name": "scottish_hydro_other",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Scottish Power Other",
+                "name": "scottish_power_other",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Electricity North West Other",
+                "name": "electricity_north_west_other",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "NPG North East Other",
+                "name": "npg_north_east_other",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "NPG Yorkshire Other",
+                "name": "npg_yorkshire_other",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "SP Manweb Other",
+                "name": "sp_manweb_other",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "WPD West Midlands Other",
+                "name": "wpd_west_midlands_other",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "WPD East Midlands Other",
+                "name": "wpd_east_midlands_other",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "UKPN East Anglia Other",
+                "name": "ukpn_east_anglia_other",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "UKPN London Other",
+                "name": "ukpn_london_other",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "WPD South Wales Other",
+                "name": "wpd_south_wales_other",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "WPD South West Other",
+                "name": "wpd_south_west_other",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "SSE South Other",
+                "name": "sse_south_other",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "UKPN South East Other",
+                "name": "ukpn_south_east_other",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "datetime"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: ODFM-LOAD-FACTOR-CLOCK-SCALE — the ODFM load-factor upload does not state the time zone or the period start / end convention of its Datetime labels, nor whether its values are fractional factors or percentage numbers (the market report discusses load factors in percentage terms); which clock and which scale does it publish?",
+          "unit": "v0.22-K-AS-5b"
+        }
+      }
     },
     {
       "key": "odfm_market_information_files",
@@ -132,8 +522,9 @@
       "url_type": "upload",
       "family": "odfm_market_information_instructed",
       "disposition": {
-        "kind": "SILVER",
-        "key": "odfm_market_information_instructed"
+        "kind": "HOLD",
+        "reason": "TODO: ODFM-INSTRUCTED-V1 — the first \"ODFM Instructed Volume for 05-07-2020\" upload has 46 unnamed trailing header cells (a frozen header cannot hold repeated blank names) and every Settlement Period label is one period behind its Time label (49 of 49 rows); NESO's V2 republication corrects the periods and changes 36 of the 49 instructed volumes, and V2 is the loaded version. Is V1 withdrawn, or does it carry a different meaning?",
+        "unit": "v0.22-K-AS-5b"
       }
     },
     {

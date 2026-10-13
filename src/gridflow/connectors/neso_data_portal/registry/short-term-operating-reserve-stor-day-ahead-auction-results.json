@@ -17,7 +17,148 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Service Name",
+              "Tender Round ID",
+              "Buy Curve ID",
+              "Tender Submission ID",
+              "Service Delivery From",
+              "Service Delivery To",
+              "Unit ID",
+              "Company Name",
+              "BM/NBM",
+              "Fuel Type",
+              "Tendered MW",
+              "Minimum Acceptable MW",
+              "Contracted MW",
+              "Tendered Availability Price",
+              "Market Clearing Price",
+              "Status"
+            ],
+            "columns": [
+              {
+                "source": "Service Name",
+                "name": "service_name",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Tender Round ID",
+                "name": "tender_round_id",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Buy Curve ID",
+                "name": "buy_curve_id",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Tender Submission ID",
+                "name": "tender_submission_id",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Service Delivery From",
+                "name": "service_delivery_from",
+                "dtype": "datetime",
+                "format": "%Y-%m-%d %H:%M:%SZ",
+                "nullable": false,
+                "zone": "UTC"
+              },
+              {
+                "source": "Service Delivery To",
+                "name": "service_delivery_to",
+                "dtype": "datetime",
+                "format": "%Y-%m-%d %H:%M:%SZ",
+                "nullable": true,
+                "zone": "UTC"
+              },
+              {
+                "source": "Unit ID",
+                "name": "unit_id",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Company Name",
+                "name": "company_name",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "BM/NBM",
+                "name": "bm_nbm",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Fuel Type",
+                "name": "fuel_type",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Tendered MW",
+                "name": "tendered_mw",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Minimum Acceptable MW",
+                "name": "minimum_acceptable_mw",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Contracted MW",
+                "name": "contracted_mw",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Tendered Availability Price",
+                "name": "tendered_availability_price",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Market Clearing Price",
+                "name": "market_clearing_price",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Status",
+                "name": "status",
+                "dtype": "string",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "utc_instant",
+          "column": "service_delivery_from"
+        },
+        "entity_key": [
+          "tender_submission_id"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified"
+      }
     }
   ],
   "resources": [
