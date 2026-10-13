@@ -64,7 +64,8 @@ from gridflow.silver.schema_manifest import (
 # v0.22-K-AS-1's nine ancillary-services records, then to one hundred and seventy-three with
 # v0.22-K-AS-2's eleven ancillary-services records, then to one hundred and eighty-four with
 # v0.22-K-AS-3a's eleven EAC auction-result records, then to one hundred and ninety-four with
-# v0.22-K-AS-3b's ten mock EAC, ORPS and OBP records.
+# v0.22-K-AS-3b's ten mock EAC, ORPS and OBP records, then to two hundred and one with
+# v0.22-K-AS-4a's seven BSAD and legacy Dynamic Containment records.
 _APPEND_ONLY_DATASETS: tuple[tuple[str, str], ...] = (
     ("elexon", "system_prices"),
     ("elexon", "remit"),
@@ -260,6 +261,13 @@ _APPEND_ONLY_DATASETS: tuple[tuple[str, str], ...] = (
     ("neso_data_portal", "obp_physical_notifications"),
     ("neso_data_portal", "obp_reserve_instructions"),
     ("neso_data_portal", "obp_reserve_avail_price"),
+    ("neso_data_portal", "aggregated_bsad"),
+    ("neso_data_portal", "bsad_forward_contracts"),
+    ("neso_data_portal", "dynamic_containment_masterdata"),
+    ("neso_data_portal", "dynamic_containment_dc_dr_dm_results_sum"),
+    ("neso_data_portal", "dynamic_containment_dc_dr_dm_results"),
+    ("neso_data_portal", "dynamic_containment_dc_dr_dm_linear"),
+    ("neso_data_portal", "dynamic_containment_dc_dr_dm_block"),
 )
 
 
@@ -453,9 +461,9 @@ def test_append_only_set_equals_latest_spec_set() -> None:
     spec_set = set(LATEST_VIEW_SPECS)
 
     # Non-vacuity guard: this invariant must never pass because both sides are
-    # empty (F16) -- one hundred and ninety-four APPEND_ONLY datasets are registered today.
+    # empty (F16) -- two hundred and one APPEND_ONLY datasets are registered today.
     assert len(append_only) > 0
-    assert len(append_only) == 194
+    assert len(append_only) == 201
 
     missing_specs = append_only - spec_set
     extra_specs = spec_set - append_only
@@ -891,6 +899,25 @@ _EXPECTED_APPEND_ONLY_DEPRECATED_ALIASES: dict[tuple[str, str], str | None] = {
     ("neso_data_portal", "obp_physical_notifications"): "silver_obp_physical_notifications",
     ("neso_data_portal", "obp_reserve_instructions"): "silver_obp_reserve_instructions",
     ("neso_data_portal", "obp_reserve_avail_price"): "silver_obp_reserve_avail_price",
+    ("neso_data_portal", "aggregated_bsad"): "silver_aggregated_bsad",
+    ("neso_data_portal", "bsad_forward_contracts"): "silver_bsad_forward_contracts",
+    ("neso_data_portal", "dynamic_containment_masterdata"): "silver_dynamic_containment_masterdata",
+    (
+        "neso_data_portal",
+        "dynamic_containment_dc_dr_dm_results_sum",
+    ): "silver_dynamic_containment_dc_dr_dm_results_sum",
+    (
+        "neso_data_portal",
+        "dynamic_containment_dc_dr_dm_results",
+    ): "silver_dynamic_containment_dc_dr_dm_results",
+    (
+        "neso_data_portal",
+        "dynamic_containment_dc_dr_dm_linear",
+    ): "silver_dynamic_containment_dc_dr_dm_linear",
+    (
+        "neso_data_portal",
+        "dynamic_containment_dc_dr_dm_block",
+    ): "silver_dynamic_containment_dc_dr_dm_block",
 }
 
 

@@ -24,7 +24,7 @@ if TYPE_CHECKING:
     import pytest
 
 SOURCE = "neso_data_portal"
-TABULAR = "aggregated_bsad"
+TABULAR = "disaggregated_bsad"
 FILES = "demand_forecast_1d_files"
 DAY = datetime(2026, 10, 7, tzinfo=UTC)
 

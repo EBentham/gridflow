@@ -17,7 +17,163 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Date",
+              "Settlement Period",
+              "BCA (£)",
+              "BSA (MWh)",
+              "BVA (MWh)",
+              "SCA (£)",
+              "SSA (MWh)",
+              "SVA (MWh)"
+            ],
+            "columns": [
+              {
+                "source": "Date",
+                "name": "settlement_date",
+                "dtype": "date",
+                "format": "%d/%m/%Y",
+                "nullable": false
+              },
+              {
+                "source": "Settlement Period",
+                "name": "settlement_period",
+                "dtype": "int64",
+                "nullable": false,
+                "min": 1,
+                "max": 50
+              },
+              {
+                "source": "BCA (£)",
+                "name": "bca",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "BSA (MWh)",
+                "name": "bsa",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "BVA (MWh)",
+                "name": "bva",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "SCA (£)",
+                "name": "sca",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "SSA (MWh)",
+                "name": "ssa",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "SVA (MWh)",
+                "name": "sva",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          },
+          {
+            "header": [
+              "Date",
+              "SettlementPeriod",
+              "BCA",
+              "BSA",
+              "BVA",
+              "SCA",
+              "SSA",
+              "SVA"
+            ],
+            "columns": [
+              {
+                "source": "Date",
+                "name": "settlement_date",
+                "dtype": "date",
+                "format": "%Y-%m-%d",
+                "nullable": false
+              },
+              {
+                "source": "SettlementPeriod",
+                "name": "settlement_period",
+                "dtype": "int64",
+                "nullable": false,
+                "min": 1,
+                "max": 50
+              },
+              {
+                "source": "BCA",
+                "name": "bca",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "BSA",
+                "name": "bsa",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "BVA",
+                "name": "bva",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "SCA",
+                "name": "sca",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "SSA",
+                "name": "ssa",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "SVA",
+                "name": "sva",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "sp_pair",
+          "date_column": "settlement_date",
+          "period_column": "settlement_period"
+        },
+        "entity_key": [
+          "resource_id",
+          "settlement_date",
+          "settlement_period"
+        ],
+        "latest": "whole_capture",
+        "latest_partition": "resource_id",
+        "vintage": "capture_fallback"
+      }
     }
   ],
   "resources": [

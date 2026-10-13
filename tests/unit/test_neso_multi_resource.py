@@ -296,6 +296,19 @@ AS3B_ADDED = frozenset(
     }
 )
 """The ten mock EAC, ORPS and OBP families v0.22-K-AS-3b records (three eligible, seven held)."""
+AS4A_ADDED = frozenset(
+    {
+        "aggregated_bsad",
+        "bsad_forward_contracts",
+        "dynamic_containment_masterdata",
+        "dynamic_containment_dc_dr_dm_results_sum",
+        "dynamic_containment_dc_dr_dm_results",
+        "dynamic_containment_dc_dr_dm_linear",
+        "dynamic_containment_dc_dr_dm_block",
+    }
+)
+"""The seven BSAD and legacy Dynamic Containment families v0.22-K-AS-4a records (five eligible,
+two held)."""
 REWORDED_HOLDS = {
     "national_forecast_7d_historic_day_ahead": (
         "TODO: FORECAST_TIMESTAMP has no vendor definition and its zone is undocumented "
@@ -384,6 +397,7 @@ class TestByteUnchanged:
                     *AS2_ADDED,
                     *AS3A_ADDED,
                     *AS3B_ADDED,
+                    *AS4A_ADDED,
                 }
                 if section != "engine"
                 else set()
@@ -985,7 +999,7 @@ class TestRecordRules:
         self,
     ) -> None:
         """Detects a committed record broken by V-4/V-17 or the reserved name, and any
-        family other than the sixty-one resource-partitioned ones opting into the partition (in a
+        family other than the sixty-three resource-partitioned ones opting into the partition (in a
         fresh interpreter, so nothing collection imported can mask it)."""
         code = textwrap.dedent(
             """
@@ -997,9 +1011,11 @@ class TestRecordRules:
                 if f.record is not None and f.record.latest_partition is not None
             )
             assert partitioned == [
+                "aggregated_bsad",
                 "br_auction_requirement_fc_medium_term",
                 "brit_ned",
                 "bs_contract_enactment_balancing",
+                "bsad_forward_contracts",
                 "bsuos_monthly_forecast_fc_summary",
                 "cmis_intertrip",
                 "constraint_breakdown",

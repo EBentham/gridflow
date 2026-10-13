@@ -17,7 +17,199 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "MarketName",
+              "BiddingLevelName",
+              "MemberName",
+              "OrderID",
+              "Portfolio",
+              "OrderEntryTime",
+              "OrderEntryUser",
+              "SettlementCurrency",
+              "ClearingPrice",
+              "Price",
+              "MAR",
+              "Status",
+              "BlockCode",
+              "BlockCodePRM",
+              "Paradoxically",
+              "OrderPeriodID",
+              "TradeID",
+              "EFA",
+              "DeliveryStart",
+              "DeliveryEnd",
+              "ExecutedVolume",
+              "Volume",
+              "Invalid",
+              "Bid Validity"
+            ],
+            "columns": [
+              {
+                "source": "MarketName",
+                "name": "market_name",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "BiddingLevelName",
+                "name": "bidding_level_name",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "MemberName",
+                "name": "member_name",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "OrderID",
+                "name": "order_id",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Portfolio",
+                "name": "portfolio",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "OrderEntryTime",
+                "name": "order_entry_time",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "OrderEntryUser",
+                "name": "order_entry_user",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "SettlementCurrency",
+                "name": "settlement_currency",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "ClearingPrice",
+                "name": "clearing_price",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Price",
+                "name": "price",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "MAR",
+                "name": "mar",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Status",
+                "name": "status",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "BlockCode",
+                "name": "block_code",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "BlockCodePRM",
+                "name": "block_code_prm",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Paradoxically",
+                "name": "paradoxically",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "OrderPeriodID",
+                "name": "order_period_id",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "TradeID",
+                "name": "trade_id",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "EFA",
+                "name": "efa",
+                "dtype": "int64",
+                "nullable": true
+              },
+              {
+                "source": "DeliveryStart",
+                "name": "delivery_start",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "DeliveryEnd",
+                "name": "delivery_end",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "ExecutedVolume",
+                "name": "executed_volume",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Volume",
+                "name": "volume",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Invalid",
+                "name": "invalid",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Bid Validity",
+                "name": "bid_validity",
+                "dtype": "string",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "order_period_id"
+        ],
+        "latest": "whole_capture",
+        "vintage": "capture_fallback"
+      }
     },
     {
       "key": "dynamic_containment_dc_dr_dm_linear",
@@ -28,7 +220,582 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "MarketName",
+              "BiddingLevelName",
+              "MemberName",
+              "OrderID",
+              "Portfolio",
+              "OrderEntryTime",
+              "OrderEntryUser",
+              "SettlementCurrency",
+              "OrderPeriodID",
+              "TradeID",
+              "EFA",
+              "DeliveryStart",
+              "DeliveryEnd",
+              "ExecutedVolume",
+              "1P",
+              "1V",
+              "2P",
+              "2V",
+              "3P",
+              "3V",
+              "4P",
+              "4V",
+              "5P",
+              "5V",
+              "6P",
+              "6V",
+              "7P",
+              "7V",
+              "8P",
+              "8V",
+              "9P",
+              "9V",
+              "10P",
+              "10V",
+              "11P",
+              "11V",
+              "12P",
+              "12V",
+              "13P",
+              "13V",
+              "14P",
+              "14V",
+              "15P",
+              "15V",
+              "16P",
+              "16V",
+              "17P",
+              "17V",
+              "18P",
+              "18V",
+              "19P",
+              "19V",
+              "20P",
+              "20V",
+              "21P",
+              "21V",
+              "22P",
+              "22V",
+              "23P",
+              "23V",
+              "24P",
+              "24V",
+              "25P",
+              "25V",
+              "26P",
+              "26V",
+              "27P",
+              "27V",
+              "28P",
+              "28V",
+              "29P",
+              "29V",
+              "30P",
+              "30V",
+              "31P",
+              "31V",
+              "32P",
+              "32V"
+            ],
+            "columns": [
+              {
+                "source": "MarketName",
+                "name": "market_name",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "BiddingLevelName",
+                "name": "bidding_level_name",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "MemberName",
+                "name": "member_name",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "OrderID",
+                "name": "order_id",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Portfolio",
+                "name": "portfolio",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "OrderEntryTime",
+                "name": "order_entry_time",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "OrderEntryUser",
+                "name": "order_entry_user",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "SettlementCurrency",
+                "name": "settlement_currency",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "OrderPeriodID",
+                "name": "order_period_id",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "TradeID",
+                "name": "trade_id",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "EFA",
+                "name": "efa",
+                "dtype": "int64",
+                "nullable": true
+              },
+              {
+                "source": "DeliveryStart",
+                "name": "delivery_start",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "DeliveryEnd",
+                "name": "delivery_end",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "ExecutedVolume",
+                "name": "executed_volume",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "1P",
+                "name": "p1",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "1V",
+                "name": "v1",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "2P",
+                "name": "p2",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "2V",
+                "name": "v2",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "3P",
+                "name": "p3",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "3V",
+                "name": "v3",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "4P",
+                "name": "p4",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "4V",
+                "name": "v4",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "5P",
+                "name": "p5",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "5V",
+                "name": "v5",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "6P",
+                "name": "p6",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "6V",
+                "name": "v6",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "7P",
+                "name": "p7",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "7V",
+                "name": "v7",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "8P",
+                "name": "p8",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "8V",
+                "name": "v8",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "9P",
+                "name": "p9",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "9V",
+                "name": "v9",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "10P",
+                "name": "p10",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "10V",
+                "name": "v10",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "11P",
+                "name": "p11",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "11V",
+                "name": "v11",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "12P",
+                "name": "p12",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "12V",
+                "name": "v12",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "13P",
+                "name": "p13",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "13V",
+                "name": "v13",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "14P",
+                "name": "p14",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "14V",
+                "name": "v14",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "15P",
+                "name": "p15",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "15V",
+                "name": "v15",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "16P",
+                "name": "p16",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "16V",
+                "name": "v16",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "17P",
+                "name": "p17",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "17V",
+                "name": "v17",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "18P",
+                "name": "p18",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "18V",
+                "name": "v18",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "19P",
+                "name": "p19",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "19V",
+                "name": "v19",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "20P",
+                "name": "p20",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "20V",
+                "name": "v20",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "21P",
+                "name": "p21",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "21V",
+                "name": "v21",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "22P",
+                "name": "p22",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "22V",
+                "name": "v22",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "23P",
+                "name": "p23",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "23V",
+                "name": "v23",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "24P",
+                "name": "p24",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "24V",
+                "name": "v24",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "25P",
+                "name": "p25",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "25V",
+                "name": "v25",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "26P",
+                "name": "p26",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "26V",
+                "name": "v26",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "27P",
+                "name": "p27",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "27V",
+                "name": "v27",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "28P",
+                "name": "p28",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "28V",
+                "name": "v28",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "29P",
+                "name": "p29",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "29V",
+                "name": "v29",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "30P",
+                "name": "p30",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "30V",
+                "name": "v30",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "31P",
+                "name": "p31",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "31V",
+                "name": "v31",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "32P",
+                "name": "p32",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "32V",
+                "name": "v32",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "order_period_id"
+        ],
+        "latest": "whole_capture",
+        "vintage": "capture_fallback",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: DC-LINEAR-PRICE-UNITS — the linear-orders dictionary declares the nP price points in conflicting units (1P–4P, 6P–10P, 15P–20P, 25P–30P £/MW; 5P MW with test-placeholder text; 11P–14P, 21P–24P, 31P–32P MW) while the auction guide calls every nP a price; what is the unit and hour basis of each nP column? (nV and ExecutedVolume are MW.)",
+          "unit": "v0.22-K-AS-4a"
+        }
+      }
     },
     {
       "key": "dynamic_containment_dc_dr_dm_results",
@@ -39,7 +806,120 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Company",
+              "Unit Name",
+              "EFA Date",
+              "Delivery Start",
+              "Delivery End",
+              "EFA",
+              "Service",
+              "Cleared Volume",
+              "Clearing Price",
+              "Technology Type",
+              "Location",
+              "Cancelled"
+            ],
+            "columns": [
+              {
+                "source": "Company",
+                "name": "company",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Unit Name",
+                "name": "unit_name",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "EFA Date",
+                "name": "efa_date",
+                "dtype": "date",
+                "format": "%Y-%m-%d",
+                "nullable": false
+              },
+              {
+                "source": "Delivery Start",
+                "name": "delivery_start",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Delivery End",
+                "name": "delivery_end",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "EFA",
+                "name": "efa",
+                "dtype": "int64",
+                "nullable": false
+              },
+              {
+                "source": "Service",
+                "name": "service",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Cleared Volume",
+                "name": "cleared_volume",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Clearing Price",
+                "name": "clearing_price",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Technology Type",
+                "name": "technology_type",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Location",
+                "name": "location",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Cancelled",
+                "name": "cancelled",
+                "dtype": "string",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "date_sp1",
+          "date_column": "efa_date"
+        },
+        "entity_key": [
+          "unit_name",
+          "efa_date",
+          "efa",
+          "service"
+        ],
+        "latest": "whole_capture",
+        "vintage": "capture_fallback"
+      }
     },
     {
       "key": "dynamic_containment_dc_dr_dm_results_sum",
@@ -50,7 +930,89 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Service",
+              "EFA Date",
+              "Delivery Start",
+              "Delivery End",
+              "EFA",
+              "Cleared Volume",
+              "Clearing Price"
+            ],
+            "columns": [
+              {
+                "source": "Service",
+                "name": "service",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "EFA Date",
+                "name": "efa_date",
+                "dtype": "date",
+                "format": "%Y-%m-%d",
+                "nullable": false
+              },
+              {
+                "source": "Delivery Start",
+                "name": "delivery_start",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Delivery End",
+                "name": "delivery_end",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "EFA",
+                "name": "efa",
+                "dtype": "int64",
+                "nullable": false
+              },
+              {
+                "source": "Cleared Volume",
+                "name": "cleared_volume",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Clearing Price",
+                "name": "clearing_price",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "date_sp1",
+          "date_column": "efa_date"
+        },
+        "entity_key": [
+          "service",
+          "efa_date",
+          "efa"
+        ],
+        "latest": "whole_capture",
+        "vintage": "capture_fallback",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: DC-SUMMARY-PRICE-UNIT — the DC/DR/DM results-summary dictionary describes Clearing Price as a price per MW per hour but gives its unit as £/MW (the by-unit results table states £/MW/h); which rate dimension does this export publish? (The delivery start/end cells are naive and their export clock is also undocumented.)",
+          "unit": "v0.22-K-AS-4a"
+        }
+      }
     },
     {
       "key": "dynamic_containment_masterdata",
@@ -61,7 +1023,163 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Market Name",
+              "Delivery Date",
+              "Unique bid number",
+              "Response Unit",
+              "Unit type",
+              "Agent/Applicant",
+              "Related Entity",
+              "Volume offered",
+              "Volume Accepted",
+              "Delivery Start UTC",
+              "Delivery End UTC",
+              "Service Duration",
+              "Availability Fee",
+              "Total Cost",
+              "RTM/no RTM",
+              "Accepted/Rejected",
+              "Rejection code",
+              "Technology Type"
+            ],
+            "columns": [
+              {
+                "source": "Market Name",
+                "name": "market_name",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Delivery Date",
+                "name": "delivery_date",
+                "dtype": "date",
+                "format": "%d/%m/%Y",
+                "nullable": true
+              },
+              {
+                "source": "Unique bid number",
+                "name": "unique_bid_number",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Response Unit",
+                "name": "response_unit",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Unit type",
+                "name": "unit_type",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Agent/Applicant",
+                "name": "agent_applicant",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Related Entity",
+                "name": "related_entity",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Volume offered",
+                "name": "volume_offered",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Volume Accepted",
+                "name": "volume_accepted",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Delivery Start UTC",
+                "name": "delivery_start",
+                "dtype": "datetime",
+                "format": "%Y-%m-%dT%H:%M:%SZ",
+                "nullable": false,
+                "zone": "UTC"
+              },
+              {
+                "source": "Delivery End UTC",
+                "name": "delivery_end",
+                "dtype": "datetime",
+                "format": "%Y-%m-%dT%H:%M:%SZ",
+                "nullable": true,
+                "zone": "UTC"
+              },
+              {
+                "source": "Service Duration",
+                "name": "service_duration",
+                "dtype": "int64",
+                "nullable": true
+              },
+              {
+                "source": "Availability Fee",
+                "name": "availability_fee",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Total Cost",
+                "name": "total_cost",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "RTM/no RTM",
+                "name": "rtm_no_rtm",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Accepted/Rejected",
+                "name": "accepted_rejected",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Rejection code",
+                "name": "rejection_code",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Technology Type",
+                "name": "technology_type",
+                "dtype": "string",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "utc_instant",
+          "column": "delivery_start"
+        },
+        "entity_key": [
+          "unique_bid_number"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified"
+      }
     }
   ],
   "resources": [
