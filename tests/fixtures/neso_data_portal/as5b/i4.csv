@@ -1,0 +1,3 @@
+EntryID,ServiceType,InstructionStartDateTime,MW,IndicativePrice,InstructionCeaseDateTime,DispatchDateTimeStamp,CeaseDateTimeStamp,PartyID,AssetID,Tendered
+31594,Non-BM Fast Reserve,2023-09-01T09:20:00,80,132,2023-09-01T09:28:25,2023-09-01T09:17:56,2023-09-01T09:25:56,UKPR,OFR-UKPR-3,Non-tendered
+32294,Non-BM Fast Reserve,2023-09-26T14:29:00,86,153,2023-09-26T15:01:05,2023-09-26T14:26:06,2023-09-26T14:59:06,UKPR,OFR-UKPR-7,Non-Tendered

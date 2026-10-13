@@ -335,6 +335,17 @@ AS5A_ADDED = frozenset(
 )
 """The seven FFR post-tender and Phase-2 FFR auction families v0.22-K-AS-5a records (five eligible,
 two held)."""
+AS5B_ADDED = frozenset(
+    {
+        "asdp_instructions",
+        "asdp_window_prices",
+        "odfm_market_information_instructed",
+        "odfm_market_information_load_factors",
+        "stor_da_auction_results",
+    }
+)
+"""The five ASDP, ODFM and STOR day-ahead families v0.22-K-AS-5b records (three eligible, two
+held)."""
 REWORDED_HOLDS = {
     "national_forecast_7d_historic_day_ahead": (
         "TODO: FORECAST_TIMESTAMP has no vendor definition and its zone is undocumented "
@@ -426,6 +437,7 @@ class TestByteUnchanged:
                     *AS4A_ADDED,
                     *AS4B_ADDED,
                     *AS5A_ADDED,
+                    *AS5B_ADDED,
                 }
                 if section != "engine"
                 else set()
@@ -1027,7 +1039,7 @@ class TestRecordRules:
         self,
     ) -> None:
         """Detects a committed record broken by V-4/V-17 or the reserved name, and any
-        family other than the sixty-three resource-partitioned ones opting into the partition (in a
+        family other than the sixty-six resource-partitioned ones opting into the partition (in a
         fresh interpreter, so nothing collection imported can mask it)."""
         code = textwrap.dedent(
             """
@@ -1040,6 +1052,8 @@ class TestRecordRules:
             )
             assert partitioned == [
                 "aggregated_bsad",
+                "asdp_instructions",
+                "asdp_window_prices",
                 "br_auction_requirement_fc_medium_term",
                 "brit_ned",
                 "bs_contract_enactment_balancing",
@@ -1080,6 +1094,7 @@ class TestRecordRules:
                 "metered_wind_output_monthly",
                 "nemolink_ntc",
                 "nsl",
+                "odfm_market_information_instructed",
                 "outturn_voltage_costs_historical",
                 "school_holiday_percentages",
                 "skip_rates_exclusion_reasons",

@@ -1,0 +1,3 @@
+# Keep the vendor bytes exactly: CRLF terminators (the ODFM and STOR bodies) and LF (the ASDP
+# datastore dumps) must survive git unchanged.
+*.csv -text

@@ -1,0 +1,8 @@
+Service Name,Tender Round ID,Buy Curve ID,Tender Submission ID,Service Delivery From,Service Delivery To,Unit ID,Company Name,BM/NBM,Fuel Type,Tendered MW,Minimum Acceptable MW,Contracted MW,Tendered Availability Price,Market Clearing Price,Status
+Short Term Operating Reserve,TRN-3557,BCN-00001877,TS-127201,2026-03-31 04:00:00Z,2026-04-01 04:00:00Z,LBAR-1G,RWE GENERATION UK PLC,BM,OCGT,15,15,15,0.56,1.48,Accepted
+Short Term Operating Reserve,TRN-3557,BCN-00001877,TS-127216,2026-03-31 04:00:00Z,2026-04-01 04:00:00Z,AG-LUKP01,UK Power Reserve Ltd,BM,Other,6,6,,3.4,,Rejected
+Short Term Operating Reserve,TRN-3554,BCN-00001874,TS-126976,2026-03-28 05:00:00Z,2026-03-29 04:00:00Z,UKPRA-9,UK Power Reserve Ltd,NBM,Gas Reciprocating Engines,4,4,4,0.3,1.06,Accepted
+Short Term Operating Reserve,TRN-3535,BCN-00001855,TS-125060,2026-03-09 05:00:00Z,2026-03-10 05:00:00Z,UKPRA-18,UK Power Reserve Ltd,NBM,Gas Reciprocating Engines,20,0,,17.9,,Rejected
+Short Term Operating Reserve,TRN-3400,BCN-00001716,TS-113182,2025-10-25 04:00:00Z,2025-10-26 05:00:00Z,DRAXX-9G,DRAX POWER LIMITED,BM,OCGT,32,32,32,0.01,9.13,Accepted
+Short Term Operating Reserve,TRN-3120,,TS-094251,2025-01-19 05:00:00Z,2025-01-20 05:00:00Z,PETEM3,RIVER NENE POWER LIMITED,BM,Gas Reciprocating Engines,48,,,16.98,,Rejected
+Short Term Operating Reserve,TRN-1921,BCN-00000528,TS-027918,2022-09-07 04:00:00Z,2022-09-08 04:00:00Z,,CENTRICA BUSINESS SOLUTIONS UK OPTIMISATION LIMITED,BM,Diesel,19,19,19,3.95,5,Accepted

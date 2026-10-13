@@ -63,8 +63,9 @@ URL_TYPE_TALLY = {"upload": 1233, "datastore": 152}
 # (SILVER 1245, HOLD 77); K-SYS-1 holds the 2026 inertia cost resource (SILVER 1244, HOLD 78);
 # K-TRD holds the GTMA 2020-21 upload with repeated identical rows (SILVER 1243, HOLD 79); K-AS-3b
 # holds the ORPS current long table (repeated complete row, SILVER 1242, HOLD 80); K-AS-5a holds the
-# FFR TR147 (thousands separator) and TR154 (orphan rows) CSV EXT resources (SILVER 1240, HOLD 82).
-DISPOSITION_TALLY = {"SILVER": 1240, "HOLD": 82, "DOC": 43, "GIS": 20}
+# FFR TR147 (thousands separator) and TR154 (orphan rows) CSV EXT resources (SILVER 1240, HOLD 82);
+# K-AS-5b holds the ODFM instructed V1 upload (SILVER 1239, HOLD 83).
+DISPOSITION_TALLY = {"SILVER": 1239, "HOLD": 83, "DOC": 43, "GIS": 20}
 
 
 def _run(code: str, *args: str) -> subprocess.CompletedProcess[str]:
