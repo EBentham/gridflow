@@ -1045,8 +1045,8 @@ def test_the_committed_ledger_carries_the_three_brit_ned_entries() -> None:
     BritNed's two (571), BritNed's invalid-encoding capture (575), the 2022 regional FES
     GSP lookup capture (607), the three 2020-2022 building block captures (608) and the
     day-ahead constraint archive (632), the six Pathfinder captures (642), the Historic II
-    overlap (653) and the 22 invalid-encoding BSUoS monthly forecast captures (667), appended
-    last."""
+    overlap (653), the 22 invalid-encoding BSUoS monthly forecast captures (667), the GTMA FY
+    overlap (707) and the five BSAD failed captures (748), appended last."""
     loaded = _fresh_interpreter(
         """
         import json
@@ -1093,6 +1093,9 @@ def test_the_committed_ledger_carries_the_three_brit_ned_entries() -> None:
         "current_bsuos_historic_ii",
         "bsuos_monthly_forecast_fc_summary",
         "gtma_trades_fy",
+        "aggregated_bsad",
+        "aggregated_bsad",
+        "bsad_forward_contracts",
     ]
     directory = "bronze/neso_data_portal/brit_ned/2026/10/08/"
     overlap, failed, encoding = loaded["entries"]

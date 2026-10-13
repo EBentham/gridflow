@@ -28,7 +28,7 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `7-day-ahead-national-forecast` | `national_forecast_7d_files` | catalogue only | — | — | — | — |
 | `7-day-ahead-national-forecast` | `national_forecast_7d_historic_day_ahead` | silver | held: TODO: FORECAST_TIMESTAMP has no vendor definition and its zone is undocumented (values carry Z); whether it is the immutable issue instant (unit E-SEM) | whole_capture | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
 | `aahedc-tariffs` | `aahedc_tariffs` | silver | held: TODO: TARIFF-ISSUE-AVAILABILITY — each body mixes Forecast/Draft/Final rows with no publication instant; what was available when (publication-level evidence), and how should mixed stages be treated? A publication date alone does not establish availability at midnight. (unit v0.22-K-BAL-2c) | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
-| `aggregated-bsad` | `aggregated_bsad` | ingest-only (no silver output) | — | — | — | — |
+| `aggregated-bsad` | `aggregated_bsad` | silver | eligible | whole_capture per resource_id | sp_pair | gridflow capture time |
 | `ancillary-services-important-industry-notifications` | `as_industry_notifications_balancing` | silver | eligible | whole_capture | local_instant | CKAN last_modified of the captured file (ADR-030) |
 | `ancillary-services-important-industry-notifications` | `as_industry_notifications_dc_dm_dr` | silver | eligible | whole_capture | local_instant | CKAN last_modified of the captured file (ADR-030) |
 | `ancillary-services-important-industry-notifications` | `as_industry_notifications_quick_reserve` | silver | eligible | whole_capture | local_instant | CKAN last_modified of the captured file (ADR-030) |
@@ -38,7 +38,7 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `balancing-reserve-auction-requirement-forecast` | `br_auction_requirement_fc_da` | silver | eligible | whole_capture | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
 | `balancing-reserve-auction-requirement-forecast` | `br_auction_requirement_fc_da_archive` | silver | held: TODO: BR-ARCHIVE-AVAILABILITY — archive rows carry only a production date (944 labels, leads of 2 and 15 days); when was each forecast published, and are archived values ever amended? (unit v0.22-K-AS-1) | whole_capture | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
 | `balancing-reserve-auction-requirement-forecast` | `br_auction_requirement_fc_medium_term` | silver | held: TODO: BR-MT-ARCHIVE-AVAILABILITY — the archive resource's targets are past (46,349 window starts on/before the vintage) and its production dates carry no publication instant; when was each medium-term forecast available? (unit v0.22-K-AS-1) | whole_capture per resource_id | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
-| `balancing-services-adjustment-data-forward-contracts` | `bsad_forward_contracts` | ingest-only (no silver output) | — | — | — | — |
+| `balancing-services-adjustment-data-forward-contracts` | `bsad_forward_contracts` | silver | eligible | whole_capture per resource_id | sp_pair | gridflow capture time |
 | `balancing-services-contract-enactment` | `bs_contract_enactment_balancing` | silver | held: TODO: COST-DIMENSION — the dictionary labels `Cost` £/h but describes it as total cost (price × volume × duration); which is published? (unit v0.22-K-TRD) | whole_capture per resource_id | utc_instant | gridflow capture time |
 | `balancing-services-contract-enactment` | `bs_contract_enactment_balancing_service` | silver | held: TODO: LEGACY-BS-CLOCK — start times truncated to dates, end/update clocks undocumented; what instants were published? (unit v0.22-K-TRD) | whole_capture | none | gridflow capture time |
 | `balancing-services-contract-enactment` | `bs_contract_enactment_files` | catalogue only | — | — | — | — |
@@ -116,11 +116,11 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `disaggregated-bsad` | `disaggregated_bsad` | ingest-only (no silver output) | — | — | — | — |
 | `dynamic-containment-4-day-forecast` | `dc_forecast_4d` | silver | held: TODO: DC-DATE-ORDER — `Date` is published as dd/mm/yyyy or mm/dd/yyyy? The dictionary documents ISO dates; every captured value is ambiguous. (unit v0.22-K-AS-1) | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
 | `dynamic-containment-4-day-forecast` | `dc_forecast_4d_history` | silver | held: TODO: DC-HISTORY-ISSUE — when was each creation-labelled issue published? 8 rows are created after the upload's last-modified date and 15 creation dates are missing from the archive. (unit v0.22-K-AS-1) | whole_capture | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
-| `dynamic-containment-data` | `dynamic_containment_dc_dr_dm_block` | ingest-only (no silver output) | — | — | — | — |
-| `dynamic-containment-data` | `dynamic_containment_dc_dr_dm_linear` | ingest-only (no silver output) | — | — | — | — |
-| `dynamic-containment-data` | `dynamic_containment_dc_dr_dm_results` | ingest-only (no silver output) | — | — | — | — |
-| `dynamic-containment-data` | `dynamic_containment_dc_dr_dm_results_sum` | ingest-only (no silver output) | — | — | — | — |
-| `dynamic-containment-data` | `dynamic_containment_masterdata` | ingest-only (no silver output) | — | — | — | — |
+| `dynamic-containment-data` | `dynamic_containment_dc_dr_dm_block` | silver | eligible | whole_capture | none | gridflow capture time |
+| `dynamic-containment-data` | `dynamic_containment_dc_dr_dm_linear` | silver | held: TODO: DC-LINEAR-PRICE-UNITS — the linear-orders dictionary declares the nP price points in conflicting units (1P–4P, 6P–10P, 15P–20P, 25P–30P £/MW; 5P MW with test-placeholder text; 11P–14P, 21P–24P, 31P–32P MW) while the auction guide calls every nP a price; what is the unit and hour basis of each nP column? (nV and ExecutedVolume are MW.) (unit v0.22-K-AS-4a) | whole_capture | none | gridflow capture time |
+| `dynamic-containment-data` | `dynamic_containment_dc_dr_dm_results` | silver | eligible | whole_capture | date_sp1 | gridflow capture time |
+| `dynamic-containment-data` | `dynamic_containment_dc_dr_dm_results_sum` | silver | held: TODO: DC-SUMMARY-PRICE-UNIT — the DC/DR/DM results-summary dictionary describes Clearing Price as a price per MW per hour but gives its unit as £/MW (the by-unit results table states £/MW/h); which rate dimension does this export publish? (The delivery start/end cells are naive and their export clock is also undocumented.) (unit v0.22-K-AS-4a) | whole_capture | date_sp1 | gridflow capture time |
+| `dynamic-containment-data` | `dynamic_containment_masterdata` | silver | eligible | whole_capture | utc_instant | CKAN last_modified of the captured file (ADR-030) |
 | `dynamic-moderation-requirements` | `dm_requirements` | silver | eligible | whole_capture | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
 | `dynamic-regulation-requirements` | `dr_requirements` | silver | eligible | whole_capture | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
 | `eac-auction-results` | `eac_results_buy_orders` | silver | eligible | whole_capture | utc_instant | gridflow capture time |
@@ -466,6 +466,6 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 ## Totals
 
 - Packages: 131 (held: 3)
-- Families: 317: silver 191 (bespoke 3, recorded 188), ingest-only 91, catalogue only 35
-- Silver outputs held: 100
+- Families: 317: silver 198 (bespoke 3, recorded 195), ingest-only 84, catalogue only 35
+- Silver outputs held: 102
 - Resources: 1385

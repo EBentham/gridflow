@@ -17,7 +17,191 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Date",
+              "Settlement Period",
+              "EBCA (£)",
+              "EBVA (MWh)",
+              "SBVA (MWh)",
+              "BPA (£/MWh)",
+              "ESCA (£)",
+              "ESVA (MWh)",
+              "SSVA (MWh)",
+              "SPA (£/MWh)"
+            ],
+            "columns": [
+              {
+                "source": "Date",
+                "name": "settlement_date",
+                "dtype": "date",
+                "format": "%d/%m/%Y",
+                "nullable": false
+              },
+              {
+                "source": "Settlement Period",
+                "name": "settlement_period",
+                "dtype": "int64",
+                "nullable": false,
+                "min": 1,
+                "max": 50
+              },
+              {
+                "source": "EBCA (£)",
+                "name": "ebca",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "EBVA (MWh)",
+                "name": "ebva",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "SBVA (MWh)",
+                "name": "sbva",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "BPA (£/MWh)",
+                "name": "bpa",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "ESCA (£)",
+                "name": "esca",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "ESVA (MWh)",
+                "name": "esva",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "SSVA (MWh)",
+                "name": "ssva",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "SPA (£/MWh)",
+                "name": "spa",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          },
+          {
+            "header": [
+              "Date",
+              "SettlementPeriod",
+              "EBCA",
+              "EBVA",
+              "SBVA",
+              "BPA",
+              "ESCA",
+              "ESVA",
+              "SSVA",
+              "SPA"
+            ],
+            "columns": [
+              {
+                "source": "Date",
+                "name": "settlement_date",
+                "dtype": "date",
+                "format": "%Y-%m-%d",
+                "nullable": false
+              },
+              {
+                "source": "SettlementPeriod",
+                "name": "settlement_period",
+                "dtype": "int64",
+                "nullable": false,
+                "min": 1,
+                "max": 50
+              },
+              {
+                "source": "EBCA",
+                "name": "ebca",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "EBVA",
+                "name": "ebva",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "SBVA",
+                "name": "sbva",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "BPA",
+                "name": "bpa",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "ESCA",
+                "name": "esca",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "ESVA",
+                "name": "esva",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "SSVA",
+                "name": "ssva",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "SPA",
+                "name": "spa",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "sp_pair",
+          "date_column": "settlement_date",
+          "period_column": "settlement_period"
+        },
+        "entity_key": [
+          "resource_id",
+          "settlement_date",
+          "settlement_period"
+        ],
+        "latest": "whole_capture",
+        "latest_partition": "resource_id",
+        "vintage": "capture_fallback"
+      }
     }
   ],
   "resources": [

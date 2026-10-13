@@ -261,5 +261,43 @@
     "question": "Which financial-year resource is authoritative for the nine trades ES00165376 to ES00165384 that the 2021-22 and 2022-23 GTMA resources both publish?",
     "evidence": "K-TRD-FACTS §3.5; ADR-040",
     "ruling": "707"
+  },
+  {
+    "family": "aggregated_bsad",
+    "category": "failed",
+    "cause": "UnicodeDecodeError",
+    "captures": [
+      "bronze/neso_data_portal/aggregated_bsad/2026/10/08/raw_20261008T081304Z_d39fcf5e-32f9-4e44-a69d-b622effc165d_27a4c4d6.csv",
+      "bronze/neso_data_portal/aggregated_bsad/2026/10/08/raw_20261008T081307Z_44851379-3eeb-426f-81ea-a4bc34f6edbb_502880ea.csv"
+    ],
+    "reason": "the 2013-14 and 2014-15 uploads carry a standalone 0xA3 header byte, so they are not valid UTF-8 and fail under the record's declared encoding; they stay unloaded with their failure records (2013-14 also repeats 18 identical rows; 2014-15 covers only 2014-04-01 to 2014-06-02)",
+    "question": "Which text encoding do the 2013-14 and 2014-15 Aggregated BSAD uploads use, and can NESO republish them in UTF-8 (and say whether 2014-15 is complete)?",
+    "evidence": "K-AS-4-FACTS §3 / §4 (g3, g6); ADR-040",
+    "ruling": "748"
+  },
+  {
+    "family": "aggregated_bsad",
+    "category": "failed",
+    "cause": "DuplicateEntityKeyError",
+    "captures": [
+      "bronze/neso_data_portal/aggregated_bsad/2026/10/08/raw_20261008T081325Z_ec526741-f629-4620-9e31-d14da373392e_ddc7639c.csv"
+    ],
+    "reason": "the 2020-21 file repeats 11 settlement periods (all-zero rows on 27/06/2020) identical on every column, so no key is lossless and the duplicate guard fails the capture; it stays unloaded with its failure record",
+    "question": "Is the repeated all-zero 27/06/2020 block a publication defect, and can NESO publish a corrected 2020-21 file?",
+    "evidence": "K-AS-4-FACTS §3 / §4 (g3, g6); ADR-040",
+    "ruling": "748"
+  },
+  {
+    "family": "bsad_forward_contracts",
+    "category": "failed",
+    "cause": "DuplicateEntityKeyError",
+    "captures": [
+      "bronze/neso_data_portal/bsad_forward_contracts/2026/10/08/raw_20261008T090344Z_30ba12a9-9a9e-4dbb-a69e-ad256d274b04_f0aeb0c5.csv",
+      "bronze/neso_data_portal/bsad_forward_contracts/2026/10/08/raw_20261008T090355Z_5d0f2119-1ba6-4d7d-8db5-ea4e23720aa9_070a68c3.csv"
+    ],
+    "reason": "2016-17 repeats 2 settlement periods with identical rows; 2020-21 repeats 16 with conflicting values (25/08/2020 P1: BSA 235 / SSA 170.5 against all zero) and no revision label, so the duplicate guard fails both captures; they stay unloaded with their failure records",
+    "question": "Which value set is authoritative for the repeated 2020-21 settlement periods (e.g. 25/08/2020 P1), and what does the repeated identical 2016-17 row mean?",
+    "evidence": "K-AS-4-FACTS §3 / §4 (g3, g6); ADR-040",
+    "ruling": "748"
   }
 ]
