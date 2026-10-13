@@ -134,14 +134,14 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `eac-auction-results` | `eac_results_sell_orders` | silver | eligible | whole_capture per resource_id | none | gridflow capture time |
 | `eac-auction-results` | `eac_results_summary` | silver | eligible | whole_capture | utc_instant | gridflow capture time |
 | `eac-auction-results` | `eac_results_summary_fy` | silver | eligible | whole_capture per resource_id | utc_instant | CKAN last_modified of the captured file (ADR-030) |
-| `eac-br-auction-results` | `eac_br_results_buy_orders` | ingest-only (no silver output) | — | — | — | — |
-| `eac-br-auction-results` | `eac_br_results_by_unit` | ingest-only (no silver output) | — | — | — | — |
-| `eac-br-auction-results` | `eac_br_results_sell_orders` | ingest-only (no silver output) | — | — | — | — |
-| `eac-br-auction-results` | `eac_br_results_summary` | ingest-only (no silver output) | — | — | — | — |
-| `eac-br-mock-auction-results` | `eac_br_mock_results_buy_orders` | ingest-only (no silver output) | — | — | — | — |
-| `eac-br-mock-auction-results` | `eac_br_mock_results_by_unit` | ingest-only (no silver output) | — | — | — | — |
-| `eac-br-mock-auction-results` | `eac_br_mock_results_sell_orders` | ingest-only (no silver output) | — | — | — | — |
-| `eac-br-mock-auction-results` | `eac_br_mock_results_summary` | ingest-only (no silver output) | — | — | — | — |
+| `eac-br-auction-results` | `eac_br_results_buy_orders` | silver | eligible | whole_capture | none | gridflow capture time |
+| `eac-br-auction-results` | `eac_br_results_by_unit` | silver | eligible | whole_capture | none | gridflow capture time |
+| `eac-br-auction-results` | `eac_br_results_sell_orders` | silver | eligible | whole_capture | none | gridflow capture time |
+| `eac-br-auction-results` | `eac_br_results_summary` | silver | eligible | whole_capture | none | gridflow capture time |
+| `eac-br-mock-auction-results` | `eac_br_mock_results_buy_orders` | silver | held: TODO: EAC-BR-MOCK-TEST-DATA — NESO publishes these resources as outcomes of EAC-BR mock auction runs, not live Balancing Reserve procurement; publish only under an explicit mock/test label with separate provenance, and never join them to live EAC or EAC-BR results on auction id (the measured mock id sets are disjoint from the 596 BR archive ids, which is not a namespace guarantee). (unit v0.22-K-AS-4b) | whole_capture | none | gridflow capture time |
+| `eac-br-mock-auction-results` | `eac_br_mock_results_by_unit` | silver | held: TODO: EAC-BR-MOCK-TEST-DATA — NESO publishes these resources as outcomes of EAC-BR mock auction runs, not live Balancing Reserve procurement; publish only under an explicit mock/test label with separate provenance, and never join them to live EAC or EAC-BR results on auction id (the measured mock id sets are disjoint from the 596 BR archive ids, which is not a namespace guarantee). (unit v0.22-K-AS-4b) | whole_capture | none | gridflow capture time |
+| `eac-br-mock-auction-results` | `eac_br_mock_results_sell_orders` | silver | held: TODO: EAC-BR-MOCK-TEST-DATA — NESO publishes these resources as outcomes of EAC-BR mock auction runs, not live Balancing Reserve procurement; publish only under an explicit mock/test label with separate provenance, and never join them to live EAC or EAC-BR results on auction id (the measured mock id sets are disjoint from the 596 BR archive ids, which is not a namespace guarantee). (unit v0.22-K-AS-4b) | whole_capture | none | gridflow capture time |
+| `eac-br-mock-auction-results` | `eac_br_mock_results_summary` | silver | held: TODO: EAC-BR-MOCK-TEST-DATA — NESO publishes these resources as outcomes of EAC-BR mock auction runs, not live Balancing Reserve procurement; publish only under an explicit mock/test label with separate provenance, and never join them to live EAC or EAC-BR results on auction id (the measured mock id sets are disjoint from the 596 BR archive ids, which is not a namespace guarantee). (unit v0.22-K-AS-4b) | whole_capture | none | gridflow capture time |
 | `eac-mock-auction-results` | `eac_mock_results_buy_orders` | silver | held: TODO: EAC-MOCK-TEST-DATA — NESO publishes these resources as outcomes of mock auction runs, not live procurement; publish only under an explicit test/mock label with separate provenance, and never join them to live EAC on auction id (mock ids 1–22 are reused for different dates). (unit v0.22-K-AS-3b) | whole_capture | none | gridflow capture time |
 | `eac-mock-auction-results` | `eac_mock_results_by_unit` | silver | held: TODO: EAC-MOCK-TEST-DATA — NESO publishes these resources as outcomes of mock auction runs, not live procurement; publish only under an explicit test/mock label with separate provenance, and never join them to live EAC on auction id (mock ids 1–22 are reused for different dates). (unit v0.22-K-AS-3b) | whole_capture | none | gridflow capture time |
 | `eac-mock-auction-results` | `eac_mock_results_daily_buy_orders` | ingest-only (no silver output) | — | — | — | — |
@@ -378,7 +378,7 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `dynamic-regulation-requirements` | eligible | 1 | 0 | 0 | 0 | 0 |
 | `eac-auction-results` | eligible | 52 | 0 | 0 | 0 | 0 |
 | `eac-br-auction-results` | eligible | 4 | 0 | 0 | 0 | 0 |
-| `eac-br-mock-auction-results` | eligible | 4 | 0 | 0 | 0 | 0 |
+| `eac-br-mock-auction-results` | held: TODO: EAC-BR-MOCK-TEST-DATA — NESO publishes these resources as outcomes of EAC-BR mock auction runs, not live Balancing Reserve procurement; publish only under an explicit mock/test label with separate provenance, and never join them to live EAC or EAC-BR results on auction id (the measured mock id sets are disjoint from the 596 BR archive ids, which is not a namespace guarantee). (unit v0.22-K-AS-4b) | 4 | 0 | 0 | 0 | 0 |
 | `eac-mock-auction-results` | held: TODO: EAC-MOCK-TEST-DATA — NESO publishes these resources as outcomes of mock auction runs, not live procurement; publish only under an explicit test/mock label with separate provenance, and never join them to live EAC on auction id (mock ids 1–22 are reused for different dates). (unit v0.22-K-AS-3b) | 8 | 0 | 0 | 0 | 0 |
 | `eleclink` | eligible | 2 | 0 | 0 | 0 | 0 |
 | `embedded-register` | eligible | 1 | 0 | 0 | 0 | 0 |
@@ -465,7 +465,7 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 
 ## Totals
 
-- Packages: 131 (held: 3)
-- Families: 317: silver 198 (bespoke 3, recorded 195), ingest-only 84, catalogue only 35
-- Silver outputs held: 102
+- Packages: 131 (held: 4)
+- Families: 317: silver 206 (bespoke 3, recorded 203), ingest-only 76, catalogue only 35
+- Silver outputs held: 106
 - Resources: 1385

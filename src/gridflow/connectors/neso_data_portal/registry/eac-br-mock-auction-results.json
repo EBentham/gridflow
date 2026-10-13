@@ -5,7 +5,9 @@
   "archetype": "EVT",
   "refresh": "frozen",
   "eligibility": {
-    "status": "eligible"
+    "status": "held",
+    "question": "TODO: EAC-BR-MOCK-TEST-DATA — NESO publishes these resources as outcomes of EAC-BR mock auction runs, not live Balancing Reserve procurement; publish only under an explicit mock/test label with separate provenance, and never join them to live EAC or EAC-BR results on auction id (the measured mock id sets are disjoint from the 596 BR archive ids, which is not a namespace guarantee).",
+    "unit": "v0.22-K-AS-4b"
   },
   "families": [
     {
@@ -17,7 +19,156 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "auctionID",
+              "orderID",
+              "serviceType",
+              "auctionProduct",
+              "deliveryStart",
+              "deliveryEnd",
+              "quantity",
+              "price",
+              "joinedFamily",
+              "substitutabilityFamily",
+              "paradoxicallyAcceptanceAllowed",
+              "orderEntryTime",
+              "acceptanceRatio",
+              "status",
+              "executedQuantity",
+              "clearingPrice",
+              "reasonRejected"
+            ],
+            "columns": [
+              {
+                "source": "auctionID",
+                "name": "auction_id",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "orderID",
+                "name": "order_id",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "serviceType",
+                "name": "service_type",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "auctionProduct",
+                "name": "auction_product",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "deliveryStart",
+                "name": "delivery_start",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "deliveryEnd",
+                "name": "delivery_end",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "quantity",
+                "name": "quantity",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "price",
+                "name": "price",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "joinedFamily",
+                "name": "joined_family",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "substitutabilityFamily",
+                "name": "substitutability_family",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "paradoxicallyAcceptanceAllowed",
+                "name": "paradoxically_acceptance_allowed",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "orderEntryTime",
+                "name": "order_entry_time",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "acceptanceRatio",
+                "name": "acceptance_ratio",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "status",
+                "name": "status",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "executedQuantity",
+                "name": "executed_quantity",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "clearingPrice",
+                "name": "clearing_price",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "reasonRejected",
+                "name": "reason_rejected",
+                "dtype": "string",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "auction_id",
+          "order_id"
+        ],
+        "latest": "whole_capture",
+        "vintage": "capture_fallback",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: BR-MOCK-EXPORT-CLOCK — the EAC-BR mock package and its dictionaries do not state the clock of the naive deliveryStart / deliveryEnd / orderEntryTime cells, the live EAC package's UTC declaration does not extend to it, and the captured dates span February–September 2024 (both GMT and BST), so the clock cannot be inferred; which clock do the mock exports use? (Mock / test data, not procurement results.)",
+          "unit": "v0.22-K-AS-4b"
+        }
+      }
     },
     {
       "key": "eac_br_mock_results_by_unit",
@@ -28,7 +179,113 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "registeredAuctionParticipant",
+              "auctionUnit",
+              "serviceType",
+              "auctionProduct",
+              "executedQuantity",
+              "clearingPrice",
+              "deliveryStart",
+              "deliveryEnd",
+              "technologyType",
+              "postCode",
+              "unitResultID"
+            ],
+            "columns": [
+              {
+                "source": "registeredAuctionParticipant",
+                "name": "registered_auction_participant",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "auctionUnit",
+                "name": "auction_unit",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "serviceType",
+                "name": "service_type",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "auctionProduct",
+                "name": "auction_product",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "executedQuantity",
+                "name": "executed_quantity",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "clearingPrice",
+                "name": "clearing_price",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "deliveryStart",
+                "name": "delivery_start",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "deliveryEnd",
+                "name": "delivery_end",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "technologyType",
+                "name": "technology_type",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "postCode",
+                "name": "post_code",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "unitResultID",
+                "name": "unit_result_id",
+                "dtype": "string",
+                "nullable": false
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "unit_result_id"
+        ],
+        "latest": "whole_capture",
+        "vintage": "capture_fallback",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: BR-MOCK-EXPORT-CLOCK — the EAC-BR mock package and its dictionaries do not state the clock of the naive deliveryStart / deliveryEnd / orderEntryTime cells, the live EAC package's UTC declaration does not extend to it, and the captured dates span February–September 2024 (both GMT and BST), so the clock cannot be inferred; which clock do the mock exports use? (Mock / test data, not procurement results.)",
+          "unit": "v0.22-K-AS-4b"
+        }
+      }
     },
     {
       "key": "eac_br_mock_results_summary",
@@ -39,7 +296,87 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "auctionID",
+              "auctionProduct",
+              "serviceType",
+              "deliveryStart",
+              "deliveryEnd",
+              "clearedVolume",
+              "clearingPrice"
+            ],
+            "columns": [
+              {
+                "source": "auctionID",
+                "name": "auction_id",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "auctionProduct",
+                "name": "auction_product",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "serviceType",
+                "name": "service_type",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "deliveryStart",
+                "name": "delivery_start",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "deliveryEnd",
+                "name": "delivery_end",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "clearedVolume",
+                "name": "cleared_volume",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "clearingPrice",
+                "name": "clearing_price",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "auction_id",
+          "auction_product",
+          "delivery_start"
+        ],
+        "latest": "whole_capture",
+        "vintage": "capture_fallback",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: BR-MOCK-EXPORT-CLOCK — the EAC-BR mock package and its dictionaries do not state the clock of the naive deliveryStart / deliveryEnd / orderEntryTime cells, the live EAC package's UTC declaration does not extend to it, and the captured dates span February–September 2024 (both GMT and BST), so the clock cannot be inferred; which clock do the mock exports use? (Mock / test data, not procurement results.)",
+          "unit": "v0.22-K-AS-4b"
+        }
+      }
     },
     {
       "key": "eac_br_mock_results_sell_orders",
@@ -50,7 +387,177 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "auctionID",
+              "registeredAuctionParticipant",
+              "auctionUnit",
+              "basketID",
+              "serviceType",
+              "deliveryStart",
+              "deliveryEnd",
+              "orderID",
+              "orderType",
+              "auctionProduct",
+              "productID",
+              "quantity",
+              "priceLimit",
+              "loopedBasketID",
+              "orderEntryTime",
+              "acceptanceRatio",
+              "status",
+              "executedQuantity",
+              "clearingPrice",
+              "reasonRejected"
+            ],
+            "columns": [
+              {
+                "source": "auctionID",
+                "name": "auction_id",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "registeredAuctionParticipant",
+                "name": "registered_auction_participant",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "auctionUnit",
+                "name": "auction_unit",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "basketID",
+                "name": "basket_id",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "serviceType",
+                "name": "service_type",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "deliveryStart",
+                "name": "delivery_start",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "deliveryEnd",
+                "name": "delivery_end",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "orderID",
+                "name": "order_id",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "orderType",
+                "name": "order_type",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "auctionProduct",
+                "name": "auction_product",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "productID",
+                "name": "product_id",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "quantity",
+                "name": "quantity",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "priceLimit",
+                "name": "price_limit",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "loopedBasketID",
+                "name": "looped_basket_id",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "orderEntryTime",
+                "name": "order_entry_time",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "acceptanceRatio",
+                "name": "acceptance_ratio",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "status",
+                "name": "status",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "executedQuantity",
+                "name": "executed_quantity",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "clearingPrice",
+                "name": "clearing_price",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "reasonRejected",
+                "name": "reason_rejected",
+                "dtype": "string",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "auction_id",
+          "order_id"
+        ],
+        "latest": "whole_capture",
+        "vintage": "capture_fallback",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: BR-MOCK-EXPORT-CLOCK — the EAC-BR mock package and its dictionaries do not state the clock of the naive deliveryStart / deliveryEnd / orderEntryTime cells, the live EAC package's UTC declaration does not extend to it, and the captured dates span February–September 2024 (both GMT and BST), so the clock cannot be inferred; which clock do the mock exports use? (Mock / test data, not procurement results.)",
+          "unit": "v0.22-K-AS-4b"
+        }
+      }
     }
   ],
   "resources": [

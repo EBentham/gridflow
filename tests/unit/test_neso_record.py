@@ -937,6 +937,18 @@ AS4A_RECORDED = {
 """The seven BSAD and legacy Dynamic Containment families unit K-AS-4a records (five eligible, two
 held)."""
 
+AS4B_RECORDED = {
+    "eac_br_results_by_unit",
+    "eac_br_results_buy_orders",
+    "eac_br_results_summary",
+    "eac_br_results_sell_orders",
+    "eac_br_mock_results_by_unit",
+    "eac_br_mock_results_buy_orders",
+    "eac_br_mock_results_sell_orders",
+    "eac_br_mock_results_summary",
+}
+"""The eight EAC-BR archive and mock families unit K-AS-4b records (four eligible, four held)."""
+
 AS1_PACKAGE_FILES = {
     "balancing-reserve-auction-requirement-forecast.json",
     "dynamic-containment-4-day-forecast.json",
@@ -954,6 +966,11 @@ AS4A_PACKAGE_FILES = {
     "aggregated-bsad.json",
     "balancing-services-adjustment-data-forward-contracts.json",
     "dynamic-containment-data.json",
+}
+
+AS4B_PACKAGE_FILES = {
+    "eac-br-auction-results.json",
+    "eac-br-mock-auction-results.json",
 }
 
 AS3B_PACKAGE_FILES = {
@@ -1017,6 +1034,7 @@ class TestSeededRegistry:
             | AS3A_RECORDED
             | AS3B_RECORDED
             | AS4A_RECORDED
+            | AS4B_RECORDED
         )
         with_children = [res for _package, res in loaded.resources.values() if res.children]
         assert len(with_children) == X_RESOURCES_WITH_CHILDREN
@@ -1063,6 +1081,7 @@ class TestSeededRegistry:
             | AS3A_PACKAGE_FILES
             | AS3B_PACKAGE_FILES
             | AS4A_PACKAGE_FILES
+            | AS4B_PACKAGE_FILES
         )
 
 

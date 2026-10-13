@@ -1,0 +1,4 @@
+registeredAuctionParticipant,auctionUnit,serviceType,auctionProduct,executedQuantity,clearingPrice,deliveryStart,deliveryEnd,technologyType,postCode,unitResultID
+QUORUM DEV,QUORM-1,Balancing Reserve,NBR,40.0,4.0,2024-02-15T13:30:00,2024-02-15T14:00:00,,,1#||#183#||#NBR#||#30
+FLEXITRICITY LIMITED,AG-BFLX03,Balancing Reserve,PBR,5.0,0.01,2024-02-15T08:00:00,2024-02-15T08:30:00,,,1#||#239#||#PBR#||#67
+RWE GENERATION UK PLC,PEMB-11,Balancing Reserve,NBR,11.0,0.01,2024-06-19T04:30:00,2024-06-19T05:00:00,,,4#||#199#||#NBR#||#14

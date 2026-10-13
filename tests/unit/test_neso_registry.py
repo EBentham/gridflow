@@ -358,7 +358,11 @@ class TestOwnerFacts:
                 assert mock.eligibility.unit == 'v0.22-K-AS-3b', mock.eligibility
                 held = sorted(p.package for p in registry.packages
                               if p.eligibility.status == 'held')
-                assert held == ['eac-mock-auction-results',
+                br_mock = packages['eac-br-mock-auction-results']
+                assert br_mock.eligibility.status == 'held', br_mock.eligibility
+                assert br_mock.eligibility.unit == 'v0.22-K-AS-4b', br_mock.eligibility
+                assert held == ['eac-br-mock-auction-results',
+                                'eac-mock-auction-results',
                                 'gis-boundaries-for-gb-dno-license-areas',
                                 'levelised-cost-of-green-hydrogen'], held
 

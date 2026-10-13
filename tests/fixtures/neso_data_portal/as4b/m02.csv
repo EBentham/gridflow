@@ -1,0 +1,5 @@
+auctionID,orderID,serviceType,auctionProduct,deliveryStart,deliveryEnd,quantity,price,joinedFamily,substitutabilityFamily,paradoxicallyAcceptanceAllowed,orderEntryTime,acceptanceRatio,status,executedQuantity,clearingPrice,reasonRejected
+5,481,Balancing Reserve,NBR,2024-06-19T22:00:00,2024-06-19T22:30:00,400.0,1.55,,,false,2024-06-16T10:33:59,0.0,REJECTED,0.0,0.0,33
+5,482,Balancing Reserve,NBR,2024-06-19T22:00:00,2024-06-19T22:30:00,50.0,0.0,,,true,2024-06-16T10:33:59,0.0,REJECTED,0.0,0.0,31
+1,577,Balancing Reserve,PBR,2024-02-15T15:00:00,2024-02-15T15:30:00,200.0,8.0,,,false,2024-02-13T17:29:36,0.65,PARTIALLY_EXECUTED,130.0,6.0,
+4,2690,Balancing Reserve,PBR,2024-02-17T23:00:00,2024-02-17T23:30:00,100.0,7.86,1,,true,2024-02-16T14:19:21,0.179999999000576,PARTIALLY_EXECUTED,18.0,10.0,
