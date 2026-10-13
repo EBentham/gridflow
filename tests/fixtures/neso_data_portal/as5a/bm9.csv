@@ -1,0 +1,5 @@
+MarketName,BiddingLevelName,MemberName,OrderID,Portfolio,OrderEntryTime,OrderEntryUser,SettlementCurrency,ClearingPrice,Price,MAR,Status,BlockCode,BlockCodePRM,Paradoxically,OrderPeriodID,TradeID,EFA,DeliveryStart,DeliveryEnd,ExecutedVolume,Volume,Invalid,Bid Validity
+DLH,DLH,FLEXITRICITY LIMITED,1E+14,AG-EFLX01,05/12/2019 15:47,ESO-103-A,GBP,6.07,4,1,Executed,C01,NA,No,1E+14,1E+14,5,07/12/2019 15:00,07/12/2019 19:00,-19,-19,FALSE,
+DLH,DLH,FLEXITRICITY LIMITED,1E+14,AG-EFLX01,05/12/2019 15:47,ESO-103-A,GBP,7.91,4,1,Executed,C01,NA,No,1E+14,1E+14,6,07/12/2019 19:00,07/12/2019 23:00,-19,-19,FALSE,
+LFS,LFS,KIWI POWER LTD,1E+14,UF_KWP01,09/01/2020 13:43,ESO-105-A,GBP,3.35,999,1,Rejected,C01,NA,No,1E+14,1E+14,39,17/01/2020 07:00,17/01/2020 11:00,0,-20,FALSE,Offered volume is over tested volume
+LFS,LFS,KIWI POWER LTD,1E+14,UF_KWP01,09/01/2020 13:43,ESO-105-A,GBP,3.35,999,1,Rejected,C01,NA,No,1E+14,1E+14,41,17/01/2020 15:00,17/01/2020 19:00,0,-20,FALSE,Offered volume is over tested volume
