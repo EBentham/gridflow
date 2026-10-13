@@ -1,0 +1,4 @@
+auctionID,registeredAuctionParticipant,auctionUnit,basketID,serviceType,deliveryStart,deliveryEnd,orderID,orderType,auctionProduct,productID,quantity,priceLimit,loopedBasketID,orderEntryTime,acceptanceRatio,status,executedQuantity,clearingPrice,reasonRejected,flexibleGroupID,minimumConsecutiveWindows
+1,STATKRAFT MARKETS GMBH,AG-ASTK01,36,Balancing Reserve,2026-02-23T23:00:00,2026-02-23T23:30:00,154,CHILD,PBR,2,2.0,4.0,,2026-02-16T15:36:47,0.0,REJECTED,0.0,0.0,21,,
+1,STATKRAFT MARKETS GMBH,AG-ASTK01,36,Balancing Reserve,2026-02-23T23:00:00,2026-02-23T23:30:00,153,CHILD,NBR,2,2.0,4.0,,2026-02-16T15:36:47,0.0,REJECTED,0.0,0.0,21,,
+1,STATKRAFT MARKETS GMBH,AG-ASTK01,36,Balancing Reserve,2026-02-23T23:00:00,2026-02-23T23:30:00,152,PARENT,PBR,1,1.0,3.0,,2026-02-16T15:36:47,0.0,REJECTED,0.0,0.0,11,,

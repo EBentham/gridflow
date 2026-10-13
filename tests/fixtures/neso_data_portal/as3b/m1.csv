@@ -1,0 +1,4 @@
+registeredAuctionParticipant,auctionUnit,serviceType,auctionProduct,executedQuantity,clearingPrice,deliveryStart,deliveryEnd,technologyType,postCode,unitResultID
+STATKRAFT MARKETS GMBH,AG-MSTK02,Slow Reserve,PSR,5.0,5.0,2026-02-24T16:30:00,2026-02-24T17:00:00,,,1#||#121#||#PSR#||#210
+STATKRAFT MARKETS GMBH,AG-DSTK06,Slow Reserve,PSR,5.0,5.0,2026-02-24T07:30:00,2026-02-24T08:00:00,,,1#||#37#||#PSR#||#192
+STATKRAFT MARKETS GMBH,AG-ASTK02,Quick Reserve,PQR,3.0,2.44,2026-02-24T03:30:00,2026-02-24T04:00:00,,,1#||#16#||#PQR#||#136
