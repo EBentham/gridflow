@@ -1,0 +1,3 @@
+# Keep the vendor bytes exactly: the notification bodies carry a lone LF inside a quoted cell and
+# a BOM, which an end-of-line rewrite would corrupt.
+*.csv -text
