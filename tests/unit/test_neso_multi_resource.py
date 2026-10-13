@@ -281,6 +281,21 @@ AS3A_ADDED = frozenset(
     }
 )
 """The eleven EAC auction-result families that v0.22-K-AS-3a records (all eligible)."""
+AS3B_ADDED = frozenset(
+    {
+        "eac_mock_results_by_unit",
+        "eac_mock_results_buy_orders",
+        "eac_mock_results_summary",
+        "eac_mock_results_sell_orders",
+        "orps_utilisation_historic_reactive",
+        "orps_utilisation_reactive",
+        "orps_utilisation_reactive_default",
+        "obp_physical_notifications",
+        "obp_reserve_instructions",
+        "obp_reserve_avail_price",
+    }
+)
+"""The ten mock EAC, ORPS and OBP families v0.22-K-AS-3b records (three eligible, seven held)."""
 REWORDED_HOLDS = {
     "national_forecast_7d_historic_day_ahead": (
         "TODO: FORECAST_TIMESTAMP has no vendor definition and its zone is undocumented "
@@ -332,7 +347,8 @@ class TestByteUnchanged:
         nine balancing-costs records, K-BAL-2a's BSUoS monthly forecast summary record,
         K-BAL-2b's nine skip-rate records, K-BAL-2c's nine tariff records, K-TRD's nine
         trading records, K-AS-1's nine ancillary-services records, K-AS-2's eleven
-        ancillary-services records and K-AS-3a's eleven EAC auction-result records appearing.
+        ancillary-services records, K-AS-3a's eleven EAC auction-result records and K-AS-3b's ten
+        mock EAC, ORPS and OBP records appearing.
         """
         golden = json.loads(PIN_PATH.read_text(encoding="utf-8"))
         for key, question in REWORDED_HOLDS.items():
@@ -367,6 +383,7 @@ class TestByteUnchanged:
                     *AS1_ADDED,
                     *AS2_ADDED,
                     *AS3A_ADDED,
+                    *AS3B_ADDED,
                 }
                 if section != "engine"
                 else set()
