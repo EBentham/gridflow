@@ -123,17 +123,17 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `dynamic-containment-data` | `dynamic_containment_masterdata` | ingest-only (no silver output) | — | — | — | — |
 | `dynamic-moderation-requirements` | `dm_requirements` | silver | eligible | whole_capture | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
 | `dynamic-regulation-requirements` | `dr_requirements` | silver | eligible | whole_capture | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
-| `eac-auction-results` | `eac_results_buy_orders` | ingest-only (no silver output) | — | — | — | — |
-| `eac-auction-results` | `eac_results_buy_orders_fy` | ingest-only (no silver output) | — | — | — | — |
-| `eac-auction-results` | `eac_results_by_unit` | ingest-only (no silver output) | — | — | — | — |
-| `eac-auction-results` | `eac_results_by_unit_fy` | ingest-only (no silver output) | — | — | — | — |
-| `eac-auction-results` | `eac_results_daily_buy_orders` | ingest-only (no silver output) | — | — | — | — |
-| `eac-auction-results` | `eac_results_daily_by_unit` | ingest-only (no silver output) | — | — | — | — |
-| `eac-auction-results` | `eac_results_daily_sell_orders` | ingest-only (no silver output) | — | — | — | — |
-| `eac-auction-results` | `eac_results_daily_summary` | ingest-only (no silver output) | — | — | — | — |
-| `eac-auction-results` | `eac_results_sell_orders` | ingest-only (no silver output) | — | — | — | — |
-| `eac-auction-results` | `eac_results_summary` | ingest-only (no silver output) | — | — | — | — |
-| `eac-auction-results` | `eac_results_summary_fy` | ingest-only (no silver output) | — | — | — | — |
+| `eac-auction-results` | `eac_results_buy_orders` | silver | eligible | whole_capture | utc_instant | gridflow capture time |
+| `eac-auction-results` | `eac_results_buy_orders_fy` | silver | eligible | whole_capture per resource_id | utc_instant | CKAN last_modified of the captured file (ADR-030) |
+| `eac-auction-results` | `eac_results_by_unit` | silver | eligible | whole_capture | utc_instant | gridflow capture time |
+| `eac-auction-results` | `eac_results_by_unit_fy` | silver | eligible | whole_capture per resource_id | utc_instant | CKAN last_modified of the captured file (ADR-030) |
+| `eac-auction-results` | `eac_results_daily_buy_orders` | silver | eligible | whole_capture | utc_instant | CKAN last_modified of the captured file (ADR-030) |
+| `eac-auction-results` | `eac_results_daily_by_unit` | silver | eligible | whole_capture | utc_instant | CKAN last_modified of the captured file (ADR-030) |
+| `eac-auction-results` | `eac_results_daily_sell_orders` | silver | eligible | whole_capture | utc_instant | CKAN last_modified of the captured file (ADR-030) |
+| `eac-auction-results` | `eac_results_daily_summary` | silver | eligible | whole_capture | utc_instant | CKAN last_modified of the captured file (ADR-030) |
+| `eac-auction-results` | `eac_results_sell_orders` | silver | eligible | whole_capture per resource_id | none | gridflow capture time |
+| `eac-auction-results` | `eac_results_summary` | silver | eligible | whole_capture | utc_instant | gridflow capture time |
+| `eac-auction-results` | `eac_results_summary_fy` | silver | eligible | whole_capture per resource_id | utc_instant | CKAN last_modified of the captured file (ADR-030) |
 | `eac-br-auction-results` | `eac_br_results_buy_orders` | ingest-only (no silver output) | — | — | — | — |
 | `eac-br-auction-results` | `eac_br_results_by_unit` | ingest-only (no silver output) | — | — | — | — |
 | `eac-br-auction-results` | `eac_br_results_sell_orders` | ingest-only (no silver output) | — | — | — | — |
@@ -466,6 +466,6 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 ## Totals
 
 - Packages: 131 (held: 2)
-- Families: 317: silver 170 (bespoke 3, recorded 167), ingest-only 112, catalogue only 35
+- Families: 317: silver 181 (bespoke 3, recorded 178), ingest-only 101, catalogue only 35
 - Silver outputs held: 93
 - Resources: 1385

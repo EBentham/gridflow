@@ -1,0 +1,3 @@
+# Keep the vendor bytes exactly: the bodies end lines with a lone LF, which an end-of-line
+# rewrite would turn into CRLF.
+*.csv -text

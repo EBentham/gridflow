@@ -1,0 +1,4 @@
+auctionID,registeredAuctionParticipant,auctionUnit,basketID,serviceType,deliveryStart,deliveryEnd,orderID,orderType,auctionProduct,productID,quantity,priceLimit,loopedBasketID,orderEntryTime,acceptanceRatio,status,executedQuantity,clearingPrice,reasonRejected,flexibleGroupID,minimumConsecutiveWindows
+2858,BP Gas Marketing Limited,FBPG01,29544835,Response,2026-10-01T10:00:00,2026-10-01T14:00:00,73181684,CHILD,DRH,6,3,-12.49,,2026-09-30T11:10:41,0.0,REJECTED,0,-13.29,21,,
+2858,EDF ENERGY CUSTOMERS LIMITED,BLPFB-1,29561388,Response,2026-09-30T22:00:00,2026-10-01T02:00:00,73208596,CHILD,DML,6,1,12.52,,2026-09-30T11:34:19,0.0,REJECTED,0,4.24,21,,
+2858,EDF ENERGY CUSTOMERS LIMITED,BLHLB-3,29547484,Response,2026-10-01T10:00:00,2026-10-01T14:00:00,73189948,CHILD,DML,5,8,9.06,,2026-09-30T11:30:47,0.0,REJECTED,0,6.53,21,,

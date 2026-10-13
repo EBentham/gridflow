@@ -1,0 +1,4 @@
+auctionID,orderID,serviceType,auctionProduct,deliveryStart,deliveryEnd,quantity,price,substitutabilityFamily,paradoxicallyAcceptanceAllowed,orderEntryTime,acceptanceRatio,status,executedQuantity,clearingPrice,reasonRejected,joinedFamily
+1,1123,Response,DCH,2023-11-02T23:00:00,2023-11-03T03:00:00,523.0,35.55,,false,2023-11-02T13:22:01,1.0,EXECUTED,523.0,3.86,,
+1,1122,Response,DCH,2023-11-02T23:00:00,2023-11-03T03:00:00,224.0,20.31,,true,2023-11-02T13:22:01,1.0,EXECUTED,224.0,3.86,,
+9,5667,Response,DMH,2023-11-11T15:00:00,2023-11-11T19:00:00,144.0,8.77,,false,2023-11-10T13:24:02,1.0,EXECUTED,144.0,-1.0,,

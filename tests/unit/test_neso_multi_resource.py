@@ -265,6 +265,22 @@ AS2_ADDED = frozenset(
     }
 )
 """The eleven ancillary-services families that v0.22-K-AS-2 records (nine eligible, two held)."""
+AS3A_ADDED = frozenset(
+    {
+        "eac_results_by_unit",
+        "eac_results_by_unit_fy",
+        "eac_results_daily_by_unit",
+        "eac_results_buy_orders",
+        "eac_results_buy_orders_fy",
+        "eac_results_daily_buy_orders",
+        "eac_results_summary",
+        "eac_results_summary_fy",
+        "eac_results_daily_summary",
+        "eac_results_sell_orders",
+        "eac_results_daily_sell_orders",
+    }
+)
+"""The eleven EAC auction-result families that v0.22-K-AS-3a records (all eligible)."""
 REWORDED_HOLDS = {
     "national_forecast_7d_historic_day_ahead": (
         "TODO: FORECAST_TIMESTAMP has no vendor definition and its zone is undocumented "
@@ -315,8 +331,8 @@ class TestByteUnchanged:
         K-CON's seven constraint-management records, K-SYS-1's eight system records, K-BAL-1's
         nine balancing-costs records, K-BAL-2a's BSUoS monthly forecast summary record,
         K-BAL-2b's nine skip-rate records, K-BAL-2c's nine tariff records, K-TRD's nine
-        trading records, K-AS-1's nine ancillary-services records and K-AS-2's eleven
-        ancillary-services records appearing.
+        trading records, K-AS-1's nine ancillary-services records, K-AS-2's eleven
+        ancillary-services records and K-AS-3a's eleven EAC auction-result records appearing.
         """
         golden = json.loads(PIN_PATH.read_text(encoding="utf-8"))
         for key, question in REWORDED_HOLDS.items():
@@ -350,6 +366,7 @@ class TestByteUnchanged:
                     *TRD_ADDED,
                     *AS1_ADDED,
                     *AS2_ADDED,
+                    *AS3A_ADDED,
                 }
                 if section != "engine"
                 else set()
@@ -951,7 +968,7 @@ class TestRecordRules:
         self,
     ) -> None:
         """Detects a committed record broken by V-4/V-17 or the reserved name, and any
-        family other than the fifty-seven resource-partitioned ones opting into the partition (in a
+        family other than the sixty-one resource-partitioned ones opting into the partition (in a
         fresh interpreter, so nothing collection imported can mask it)."""
         code = textwrap.dedent(
             """
@@ -973,6 +990,10 @@ class TestRecordRules:
                 "current_bsuos_historic_rf",
                 "current_bsuos_historic_sf",
                 "da_wind_forecast_historic_day_ahead_bmu",
+                "eac_results_buy_orders_fy",
+                "eac_results_by_unit_fy",
+                "eac_results_sell_orders",
+                "eac_results_summary_fy",
                 "eleclink",
                 "fes_building_blocks_block_definitions",
                 "fes_building_blocks_block_licence_area",
