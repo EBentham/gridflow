@@ -1,0 +1,6 @@
+registeredAuctionParticipant,auctionUnit,serviceType,auctionProduct,executedQuantity,clearingPrice,deliveryStart,deliveryEnd,technologyType,postCode,unitResultID
+TESLA MOTORS LIMITED,BHOLB-1,Balancing Reserve,NBR,3.0,0.0,2024-03-13T15:00:00,2024-03-13T15:30:00,Batteries,BH15,152#||#73#||#NBR#||#4785
+TESLA MOTORS LIMITED,ILMEB-1,Balancing Reserve,PBR,24.0,10.0,2024-03-13T16:00:00,2024-03-13T16:30:00,Batteries,HP17 8NE,152#||#229#||#PBR#||#4835
+STATKRAFT MARKETS GMBH,AG-HSTK02,Balancing Reserve,PBR,21.0,15.0,2024-03-13T12:00:00,2024-03-13T12:30:00,Batteries,"",152#||#18#||#PBR#||#4827
+VPI POWER LIMITED,HUMR-1,Balancing Reserve,PBR,50.0,2.99,2024-03-18T20:30:00,2024-03-18T21:00:00,"","",163#||#320#||#PBR#||#5504
+CONRAD ENERGY (TRADING) LIMITED,BSPHM-1,Balancing Reserve,PBR,20.0,3.76,2024-04-01T16:30:00,2024-04-01T17:00:00,Gas Reciprocating Engines,FY2 0JF,191#||#349#||#PBR#||#7342

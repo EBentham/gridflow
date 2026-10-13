@@ -275,7 +275,8 @@ print("OK")
 
 def test_ef8_the_raised_cap_is_this_family_only() -> None:
     """Detects the 2025 upload (645,655,728 B) still refused at the archive's cap, or a
-    cap raised on any other family (P-2)."""
+    cap raised on any other family (P-2) beyond the one recorded raise: the EAC-BR sell
+    orders' dump (K-AS-4b, 805,306,368 B, P1 estimated ~561 MB)."""
     code = (
         _CONSTANTS
         + """
@@ -286,7 +287,8 @@ families = build_families(load_registry())
 cap = families[ARCHIVE].max_download_bytes
 assert cap == 805306368 and cap > 645655728, cap
 above = sorted(k for k, f in families.items() if f.max_download_bytes > 536870912)
-assert above == [ARCHIVE], above
+assert above == sorted([ARCHIVE, "eac_br_results_sell_orders"]), above
+assert families["eac_br_results_sell_orders"].max_download_bytes == 805306368
 assert families[LIVE].max_download_bytes == 8388608
 assert families["embedded_wind_solar_forecast_files"].max_download_bytes == 536870912
 print("OK")

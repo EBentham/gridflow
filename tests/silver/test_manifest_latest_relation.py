@@ -65,7 +65,8 @@ from gridflow.silver.schema_manifest import (
 # v0.22-K-AS-2's eleven ancillary-services records, then to one hundred and eighty-four with
 # v0.22-K-AS-3a's eleven EAC auction-result records, then to one hundred and ninety-four with
 # v0.22-K-AS-3b's ten mock EAC, ORPS and OBP records, then to two hundred and one with
-# v0.22-K-AS-4a's seven BSAD and legacy Dynamic Containment records.
+# v0.22-K-AS-4a's seven BSAD and legacy Dynamic Containment records, then to two hundred and nine
+# with v0.22-K-AS-4b's eight EAC-BR archive and mock records.
 _APPEND_ONLY_DATASETS: tuple[tuple[str, str], ...] = (
     ("elexon", "system_prices"),
     ("elexon", "remit"),
@@ -268,6 +269,14 @@ _APPEND_ONLY_DATASETS: tuple[tuple[str, str], ...] = (
     ("neso_data_portal", "dynamic_containment_dc_dr_dm_results"),
     ("neso_data_portal", "dynamic_containment_dc_dr_dm_linear"),
     ("neso_data_portal", "dynamic_containment_dc_dr_dm_block"),
+    ("neso_data_portal", "eac_br_results_by_unit"),
+    ("neso_data_portal", "eac_br_results_buy_orders"),
+    ("neso_data_portal", "eac_br_results_summary"),
+    ("neso_data_portal", "eac_br_results_sell_orders"),
+    ("neso_data_portal", "eac_br_mock_results_by_unit"),
+    ("neso_data_portal", "eac_br_mock_results_buy_orders"),
+    ("neso_data_portal", "eac_br_mock_results_sell_orders"),
+    ("neso_data_portal", "eac_br_mock_results_summary"),
 )
 
 
@@ -461,9 +470,9 @@ def test_append_only_set_equals_latest_spec_set() -> None:
     spec_set = set(LATEST_VIEW_SPECS)
 
     # Non-vacuity guard: this invariant must never pass because both sides are
-    # empty (F16) -- two hundred and one APPEND_ONLY datasets are registered today.
+    # empty (F16) -- two hundred and nine APPEND_ONLY datasets are registered today.
     assert len(append_only) > 0
-    assert len(append_only) == 201
+    assert len(append_only) == 209
 
     missing_specs = append_only - spec_set
     extra_specs = spec_set - append_only
@@ -918,6 +927,20 @@ _EXPECTED_APPEND_ONLY_DEPRECATED_ALIASES: dict[tuple[str, str], str | None] = {
         "neso_data_portal",
         "dynamic_containment_dc_dr_dm_block",
     ): "silver_dynamic_containment_dc_dr_dm_block",
+    ("neso_data_portal", "eac_br_results_by_unit"): "silver_eac_br_results_by_unit",
+    ("neso_data_portal", "eac_br_results_buy_orders"): "silver_eac_br_results_buy_orders",
+    ("neso_data_portal", "eac_br_results_summary"): "silver_eac_br_results_summary",
+    ("neso_data_portal", "eac_br_results_sell_orders"): "silver_eac_br_results_sell_orders",
+    ("neso_data_portal", "eac_br_mock_results_by_unit"): "silver_eac_br_mock_results_by_unit",
+    (
+        "neso_data_portal",
+        "eac_br_mock_results_buy_orders",
+    ): "silver_eac_br_mock_results_buy_orders",
+    (
+        "neso_data_portal",
+        "eac_br_mock_results_sell_orders",
+    ): "silver_eac_br_mock_results_sell_orders",
+    ("neso_data_portal", "eac_br_mock_results_summary"): "silver_eac_br_mock_results_summary",
 }
 
 

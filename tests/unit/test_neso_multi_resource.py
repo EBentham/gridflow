@@ -309,6 +309,19 @@ AS4A_ADDED = frozenset(
 )
 """The seven BSAD and legacy Dynamic Containment families v0.22-K-AS-4a records (five eligible,
 two held)."""
+AS4B_ADDED = frozenset(
+    {
+        "eac_br_results_by_unit",
+        "eac_br_results_buy_orders",
+        "eac_br_results_summary",
+        "eac_br_results_sell_orders",
+        "eac_br_mock_results_by_unit",
+        "eac_br_mock_results_buy_orders",
+        "eac_br_mock_results_sell_orders",
+        "eac_br_mock_results_summary",
+    }
+)
+"""The eight EAC-BR archive and mock families v0.22-K-AS-4b records (four eligible, four held)."""
 REWORDED_HOLDS = {
     "national_forecast_7d_historic_day_ahead": (
         "TODO: FORECAST_TIMESTAMP has no vendor definition and its zone is undocumented "
@@ -398,6 +411,7 @@ class TestByteUnchanged:
                     *AS3A_ADDED,
                     *AS3B_ADDED,
                     *AS4A_ADDED,
+                    *AS4B_ADDED,
                 }
                 if section != "engine"
                 else set()
