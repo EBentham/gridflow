@@ -1,0 +1,8 @@
+Market Name,Delivery Date,Unique bid number,Response Unit,Unit type,Agent/Applicant,Related Entity,Volume offered,Volume Accepted,Delivery Start UTC,Delivery End UTC,Service Duration,Availability Fee,Total Cost,RTM/no RTM,Accepted/Rejected,Rejection code,Technology Type
+DC LF,02/10/2020,20201002 AG-MFLX02,AG-MFLX02,BM,Flexitricity Limited,N/A,49,49,2020-10-01T22:00:00Z,2020-10-02T22:00:00Z,24,15.03,17675.28,RTM,Accepted,,Battery
+DC LF,02/10/2020,20201002 AG-HEL00G,AG-HEL00G,BM,Habitat Energy Limited,N/A,49,0,2020-10-01T22:00:00Z,2020-10-02T22:00:00Z,24,24,,RTM,Rejected,1,Battery
+Withdraw,02/10/2020,20201002 DBESSA-33,DBESSA-33,Non-BM,Zenobe Energy Limited,BESS HODLCO 3 LIMITED,8,0,2020-10-01T22:00:00Z,2020-10-02T22:00:00Z,24,,,no RTM,Rejected,5,Battery
+DC LF,14/10/2020,20201014 AFFR1,AFFR1,Non-BM,UK Power Reserve Ltd,NA,18,18,2020-10-13T22:00:00Z,2020-10-14T22:00:00Z,24,16.99,7339.68,no RTM,Accepted,,Battery
+DC LF,25/10/2020,20201025 AG-MFLX02,AG-MFLX02,BM,Flexitricity Limited,N/A,49,49,2020-10-24T22:00:00Z,2020-10-25T23:00:00Z,25,16.99,20812.75,RTM,Accepted,,Battery
+DC LF,17/02/2021,20210217 UF_OSS01,UF_OSS01,Non-BM,Origami Energy Limited ,N/A,9,9,2021-02-16T23:00:00Z,2021-02-17T23:00:00Z,24,17,3672,no RTM,Accepted,,Battery
+Withdraw,28/03/2021,20210328 AG-FLX00L,AG-FLX00L,BM,Flexitricity Limited,N/A,4,0,2021-03-27T23:00:00Z,2021-03-28T22:00:00Z,23,0,,RTM,Rejected,5,Battery

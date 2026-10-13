@@ -1,0 +1,3 @@
+# Keep the vendor bytes exactly: the uploads end lines with CRLF, the datastore bodies with a lone
+# LF; an end-of-line rewrite would change them (and a01 is not valid UTF-8).
+*.csv -text
