@@ -67,7 +67,8 @@ from gridflow.silver.schema_manifest import (
 # v0.22-K-AS-3b's ten mock EAC, ORPS and OBP records, then to two hundred and one with
 # v0.22-K-AS-4a's seven BSAD and legacy Dynamic Containment records, then to two hundred and nine
 # with v0.22-K-AS-4b's eight EAC-BR archive and mock records, then to two hundred and sixteen
-# with v0.22-K-AS-5a's seven FFR post-tender and Phase-2 FFR auction records.
+# with v0.22-K-AS-5a's seven FFR post-tender and Phase-2 FFR auction records, then to two hundred
+# and twenty-one with v0.22-K-AS-5b's five ASDP, ODFM and STOR day-ahead records.
 _APPEND_ONLY_DATASETS: tuple[tuple[str, str], ...] = (
     ("elexon", "system_prices"),
     ("elexon", "remit"),
@@ -285,6 +286,11 @@ _APPEND_ONLY_DATASETS: tuple[tuple[str, str], ...] = (
     ("neso_data_portal", "ffr_phase2_auction_phase_linearorders"),
     ("neso_data_portal", "ffr_phase2_auction_phase_resultsbyunit"),
     ("neso_data_portal", "ffr_phase2_auction_phase_resultsum"),
+    ("neso_data_portal", "asdp_instructions"),
+    ("neso_data_portal", "asdp_window_prices"),
+    ("neso_data_portal", "odfm_market_information_instructed"),
+    ("neso_data_portal", "odfm_market_information_load_factors"),
+    ("neso_data_portal", "stor_da_auction_results"),
 )
 
 
@@ -478,9 +484,9 @@ def test_append_only_set_equals_latest_spec_set() -> None:
     spec_set = set(LATEST_VIEW_SPECS)
 
     # Non-vacuity guard: this invariant must never pass because both sides are
-    # empty (F16) -- two hundred and sixteen APPEND_ONLY datasets are registered today.
+    # empty (F16) -- two hundred and twenty-one APPEND_ONLY datasets are registered today.
     assert len(append_only) > 0
-    assert len(append_only) == 216
+    assert len(append_only) == 221
 
     missing_specs = append_only - spec_set
     extra_specs = spec_set - append_only
@@ -977,6 +983,17 @@ _EXPECTED_APPEND_ONLY_DEPRECATED_ALIASES: dict[tuple[str, str], str | None] = {
         "neso_data_portal",
         "ffr_phase2_auction_phase_resultsum",
     ): "silver_ffr_phase2_auction_phase_resultsum",
+    ("neso_data_portal", "asdp_instructions"): "silver_asdp_instructions",
+    ("neso_data_portal", "asdp_window_prices"): "silver_asdp_window_prices",
+    (
+        "neso_data_portal",
+        "odfm_market_information_instructed",
+    ): "silver_odfm_market_information_instructed",
+    (
+        "neso_data_portal",
+        "odfm_market_information_load_factors",
+    ): "silver_odfm_market_information_load_factors",
+    ("neso_data_portal", "stor_da_auction_results"): "silver_stor_da_auction_results",
 }
 
 

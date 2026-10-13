@@ -63,8 +63,9 @@ URL_TYPE_TALLY = {"upload": 1233, "datastore": 152}
 # (SILVER 1245, HOLD 77); K-SYS-1 holds the 2026 inertia cost resource (SILVER 1244, HOLD 78);
 # K-TRD holds the GTMA 2020-21 upload with repeated identical rows (SILVER 1243, HOLD 79); K-AS-3b
 # holds the ORPS current long table (repeated complete row, SILVER 1242, HOLD 80); K-AS-5a holds the
-# FFR TR147 (thousands separator) and TR154 (orphan rows) CSV EXT resources (SILVER 1240, HOLD 82).
-DISPOSITION_TALLY = {"SILVER": 1240, "HOLD": 82, "DOC": 43, "GIS": 20}
+# FFR TR147 (thousands separator) and TR154 (orphan rows) CSV EXT resources (SILVER 1240, HOLD 82);
+# K-AS-5b holds the ODFM instructed V1 upload (SILVER 1239, HOLD 83).
+DISPOSITION_TALLY = {"SILVER": 1239, "HOLD": 83, "DOC": 43, "GIS": 20}
 
 
 def _run(code: str, *args: str) -> subprocess.CompletedProcess[str]:
@@ -428,7 +429,7 @@ class TestFreezeLedger:
         _assert_ok(_run(self._CHECK))
 
     def test_t_f1_the_ledger_freezes_every_swept_key(self) -> None:
-        """T-F1: the 301 swept keys plus the legacy three, sorted, packages honoured.
+        """T-F1: the 301 swept keys, the legacy three and six catch-up keys, sorted, honoured.
 
         Detects a ledger that does not cover the S sweep's bronze (3 rows on
         master), a repeated or unsorted key, or a row whose package disagrees
@@ -442,7 +443,7 @@ class TestFreezeLedger:
             )
             frozen = load_frozen_keys()
             keys = [row.key for row in frozen]
-            assert len(keys) == 304, len(keys)
+            assert len(keys) == 310, len(keys)
             assert len(set(keys)) == len(keys), 'repeated key'
             assert keys == sorted(keys), 'not sorted by key'
             registry = load_registry()
@@ -453,6 +454,11 @@ class TestFreezeLedger:
             assert not wrong, wrong
             assert {'daily_wind_availability', 'embedded_wind_solar_forecast',
                     'historic_generation_mix'} <= set(keys)
+            assert {
+                'eac_br_results_sell_orders', 'eac_mock_results_daily_buy_orders',
+                'eac_mock_results_daily_by_unit', 'eac_mock_results_daily_sell_orders',
+                'eac_mock_results_daily_summary', 'voltage_units_utilisation',
+            } <= set(keys), 'the six AS-4b families with bronze are missing from the ledger'
             print('OK')
             """
         )

@@ -17,7 +17,175 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "EntryID",
+              "ServiceType",
+              "InstructionStartDateTime",
+              "MW",
+              "IndicativePrice",
+              "InstructionCeaseDateTime",
+              "DispatchDateTimeStamp",
+              "CeaseDateTimeStamp"
+            ],
+            "columns": [
+              {
+                "source": "EntryID",
+                "name": "entry_id",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "ServiceType",
+                "name": "service_type",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "InstructionStartDateTime",
+                "name": "instruction_start_date_time",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "MW",
+                "name": "mw",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "IndicativePrice",
+                "name": "indicative_price",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "InstructionCeaseDateTime",
+                "name": "instruction_cease_date_time",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "DispatchDateTimeStamp",
+                "name": "dispatch_date_time_stamp",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "CeaseDateTimeStamp",
+                "name": "cease_date_time_stamp",
+                "dtype": "string",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          },
+          {
+            "header": [
+              "EntryID",
+              "ServiceType",
+              "InstructionStartDateTime",
+              "MW",
+              "IndicativePrice",
+              "InstructionCeaseDateTime",
+              "DispatchDateTimeStamp",
+              "CeaseDateTimeStamp",
+              "PartyID",
+              "AssetID",
+              "Tendered"
+            ],
+            "columns": [
+              {
+                "source": "EntryID",
+                "name": "entry_id",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "ServiceType",
+                "name": "service_type",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "InstructionStartDateTime",
+                "name": "instruction_start_date_time",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "MW",
+                "name": "mw",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "IndicativePrice",
+                "name": "indicative_price",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "InstructionCeaseDateTime",
+                "name": "instruction_cease_date_time",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "DispatchDateTimeStamp",
+                "name": "dispatch_date_time_stamp",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "CeaseDateTimeStamp",
+                "name": "cease_date_time_stamp",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "PartyID",
+                "name": "party_id",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "AssetID",
+                "name": "asset_id",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Tendered",
+                "name": "tendered",
+                "dtype": "string",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "resource_id",
+          "entry_id"
+        ],
+        "latest": "whole_capture",
+        "latest_partition": "resource_id",
+        "vintage": "capture_fallback"
+      }
     }
   ],
   "resources": [

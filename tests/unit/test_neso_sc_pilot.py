@@ -48,6 +48,7 @@ from test_neso_multi_resource import (
     AS4A_ADDED,
     AS4B_ADDED,
     AS5A_ADDED,
+    AS5B_ADDED,
     BAL1_ADDED,
     BAL2A_ADDED,
     BAL2B_ADDED,
@@ -639,5 +640,6 @@ class TestSkeletonAndPin:
                 *AS4A_ADDED,
                 *AS4B_ADDED,
                 *AS5A_ADDED,
+                *AS5B_ADDED,
             }, section
         assert set(current["engine"]) == set(golden["engine"])

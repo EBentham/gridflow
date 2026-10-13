@@ -448,6 +448,10 @@
     "package": "eac-br-auction-results"
   },
   {
+    "key": "eac_br_results_sell_orders",
+    "package": "eac-br-auction-results"
+  },
+  {
     "key": "eac_br_results_summary",
     "package": "eac-br-auction-results"
   },
@@ -457,6 +461,22 @@
   },
   {
     "key": "eac_mock_results_by_unit",
+    "package": "eac-mock-auction-results"
+  },
+  {
+    "key": "eac_mock_results_daily_buy_orders",
+    "package": "eac-mock-auction-results"
+  },
+  {
+    "key": "eac_mock_results_daily_by_unit",
+    "package": "eac-mock-auction-results"
+  },
+  {
+    "key": "eac_mock_results_daily_sell_orders",
+    "package": "eac-mock-auction-results"
+  },
+  {
+    "key": "eac_mock_results_daily_summary",
     "package": "eac-mock-auction-results"
   },
   {
@@ -1194,6 +1214,10 @@
   {
     "key": "voltage_requirement_files",
     "package": "voltage-requirement"
+  },
+  {
+    "key": "voltage_units_utilisation",
+    "package": "monthly-utilisation-data-of-voltage-contracted-units"
   },
   {
     "key": "weekly_opmr",

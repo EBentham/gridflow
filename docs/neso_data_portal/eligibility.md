@@ -217,8 +217,8 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `nemolink` | `nemolink_intraday` | silver | held: TODO: the body has no date, and the resource's lifecycle and the date in its name are undocumented. (unit E-SEM) | whole_capture | none | gridflow capture time |
 | `nemolink` | `nemolink_nemo_da_id_weekly_ntcs` | silver | held: TODO: the archive's operational-date rollover and GMT/BST interpretation are undocumented, and every target precedes the upload's last_modified, so the forward-target rule (RULINGS 529) cannot apply. (unit E-SEM) | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
 | `nemolink` | `nemolink_ntc` | silver | held: TODO: the dump returns past targets (rows before the capture) and NESO does not state that a row is unchanged since its `Data Upload Time GMT`, so historical issued limits are not evidenced, and the archive's Operational Date calendar / rollover and Version meaning are undocumented. (unit E-SEM) | whole_capture per resource_id | none | gridflow capture time |
-| `non-bm-ancillary-service-dispatch-platform-asdp-instructions` | `asdp_instructions` | ingest-only (no silver output) | — | — | — | — |
-| `non-bm-ancillary-service-dispatch-platform-asdp-window-prices` | `asdp_window_prices` | ingest-only (no silver output) | — | — | — | — |
+| `non-bm-ancillary-service-dispatch-platform-asdp-instructions` | `asdp_instructions` | silver | eligible | whole_capture per resource_id | none | gridflow capture time |
+| `non-bm-ancillary-service-dispatch-platform-asdp-window-prices` | `asdp_window_prices` | silver | held: TODO: ASDP-WINDOW-PRICE-UNIT — the ASDP window-price dictionary calls WindowPrice only an indicative price and gives no currency, energy or time denominator, and the instruction table's £/MWh cannot be transferred because both are "indicative prices"; which unit does WindowPrice carry (for example £/MWh or £/MW/h)? (Settlement-period and creation times are naive with an undocumented export clock.) (unit v0.22-K-AS-5b) | whole_capture per resource_id | none | gridflow capture time |
 | `nsl` | `nsl` | silver | held: TODO: the dump returns past targets (rows before the capture) and NESO does not state that a row is unchanged since its `Data Upload Time GMT`, so historical issued limits are not evidenced, and the archive's Operational Date calendar / rollover and Version meaning are undocumented. (unit E-SEM) | whole_capture per resource_id | none | gridflow capture time |
 | `obligatory-reactive-power-service-orps-utilisation` | `orps_utilisation_files` | catalogue only | — | — | — | — |
 | `obligatory-reactive-power-service-orps-utilisation` | `orps_utilisation_historic_reactive` | silver | held: TODO: ORPS-HIST-DASH / ORPS-HIST-IDENTITY — what does the padded `-` cell mean (zero, not reported, not applicable)? And the identity (SPLN, SPLN_01Z, D, M) appears twice (rows 181 and 277) with 234 different values: are these two distinct entries, and what distinguishes them? (unit v0.22-K-AS-3b) | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
@@ -229,8 +229,8 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `obp-reserve-availability-utilisation-price` | `obp_reserve_avail_price` | silver | eligible | whole_capture | utc_instant | CKAN last_modified of the captured file (ADR-030) |
 | `operational-transparency-forum-network-congestion-data` | `otf_network_congestion` | silver | held: TODO: is Date a week start, week end or reporting label (38 Saturdays, 15 Sundays, one 8-day step), how are actuals calculated, and when was each forecast issued? 26 targets are on or before the vintage, so the forward-target test fails. (unit E-SEM) | whole_capture | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
 | `optional-downward-flexibility-management-odfm-market-information` | `odfm_market_information_files` | catalogue only | — | — | — | — |
-| `optional-downward-flexibility-management-odfm-market-information` | `odfm_market_information_instructed` | ingest-only (no silver output) | — | — | — | — |
-| `optional-downward-flexibility-management-odfm-market-information` | `odfm_market_information_load_factors` | ingest-only (no silver output) | — | — | — | — |
+| `optional-downward-flexibility-management-odfm-market-information` | `odfm_market_information_instructed` | silver | eligible | whole_capture per resource_id | sp_pair | CKAN last_modified of the captured file (ADR-030) |
+| `optional-downward-flexibility-management-odfm-market-information` | `odfm_market_information_load_factors` | silver | held: TODO: ODFM-LOAD-FACTOR-CLOCK-SCALE — the ODFM load-factor upload does not state the time zone or the period start / end convention of its Datetime labels, nor whether its values are fractional factors or percentage numbers (the market report discusses load factors in percentage terms); which clock and which scale does it publish? (unit v0.22-K-AS-5b) | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
 | `optional-downward-flexibility-management-odfm-market-information` | `odfm_market_information_results` | ingest-only (no silver output) | — | — | — | — |
 | `outturn-voltage-costs` | `outturn_voltage_costs_files` | catalogue only | — | — | — | — |
 | `outturn-voltage-costs` | `outturn_voltage_costs_historical` | silver | eligible | whole_capture per resource_id | month | CKAN last_modified of the captured file (ADR-030) |
@@ -261,7 +261,7 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `resource-adequacy-in-2030s` | `resource_adequacy_2030s_portfolio` | ingest-only (no silver output) | — | — | — | — |
 | `resource-adequacy-in-2030s` | `resource_adequacy_2030s_results` | ingest-only (no silver output) | — | — | — | — |
 | `school-holiday-percentages` | `school_holiday_percentages` | silver | held: TODO: the numeric scale of the Total rows: the vendor calls the aggregate a percentage, but the values measure as a fraction equal to the sum of (multiplier x local indicator) within 0.0005; NESO has not stated the encoding (unit E-SEM) | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
-| `short-term-operating-reserve-stor-day-ahead-auction-results` | `stor_da_auction_results` | ingest-only (no silver output) | — | — | — | — |
+| `short-term-operating-reserve-stor-day-ahead-auction-results` | `stor_da_auction_results` | silver | eligible | whole_capture | utc_instant | CKAN last_modified of the captured file (ADR-030) |
 | `short-term-operating-reserve-stor-day-ahead-buy-curve` | `stor_da_buy_curve` | ingest-only (no silver output) | — | — | — | — |
 | `short-term-operating-reserve-stor-day-ahead-buy-curve` | `stor_da_buy_curve_files` | catalogue only | — | — | — | — |
 | `skip-rates` | `skip_rates_behind_constraints_bmu` | silver | held: TODO: CONSTRAINT-RATE-DENOMINATOR — the dictionary says percentage of in-merit volume skipped, the methodology presentation uses accepted volume; which denominator is the published rate? Also no month-boundary recipe for a UTC month. (unit v0.22-K-BAL-2b) | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
@@ -426,7 +426,7 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `obp-non-bm-reserve-instructions` | eligible | 1 | 0 | 0 | 0 | 0 |
 | `obp-reserve-availability-utilisation-price` | eligible | 1 | 0 | 0 | 0 | 0 |
 | `operational-transparency-forum-network-congestion-data` | eligible | 1 | 0 | 0 | 0 | 0 |
-| `optional-downward-flexibility-management-odfm-market-information` | eligible | 5 | 0 | 8 | 0 | 0 |
+| `optional-downward-flexibility-management-odfm-market-information` | eligible | 4 | 0 | 8 | 0 | 1 |
 | `outturn-voltage-costs` | eligible | 12 | 0 | 1 | 0 | 0 |
 | `phase-2-ffr-auction-results-summary` | eligible | 17 | 0 | 0 | 0 | 3 |
 | `quick-reserve-auction-requirement-forecast` | eligible | 1 | 0 | 0 | 0 | 0 |
@@ -461,11 +461,11 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `weekly-opmr` | eligible | 1 | 0 | 0 | 0 | 0 |
 | `weekly-wind-availability` | eligible | 1 | 0 | 0 | 0 | 0 |
 | `wind-bmu-boa-volumes` | eligible | 9 | 0 | 0 | 0 | 0 |
-| **Total** | | 1240 | 0 | 43 | 20 | 82 |
+| **Total** | | 1239 | 0 | 43 | 20 | 83 |
 
 ## Totals
 
 - Packages: 131 (held: 4)
-- Families: 317: silver 213 (bespoke 3, recorded 210), ingest-only 69, catalogue only 35
-- Silver outputs held: 108
+- Families: 317: silver 218 (bespoke 3, recorded 215), ingest-only 64, catalogue only 35
+- Silver outputs held: 110
 - Resources: 1385

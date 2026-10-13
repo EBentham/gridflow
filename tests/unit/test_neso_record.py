@@ -961,6 +961,16 @@ AS5A_RECORDED = {
 """The seven FFR post-tender and Phase-2 FFR auction families unit K-AS-5a records (five eligible,
 two held)."""
 
+AS5B_RECORDED = {
+    "asdp_instructions",
+    "asdp_window_prices",
+    "odfm_market_information_instructed",
+    "odfm_market_information_load_factors",
+    "stor_da_auction_results",
+}
+"""The five ASDP, ODFM and STOR day-ahead families unit K-AS-5b records (three eligible, two
+held)."""
+
 AS1_PACKAGE_FILES = {
     "balancing-reserve-auction-requirement-forecast.json",
     "dynamic-containment-4-day-forecast.json",
@@ -988,6 +998,13 @@ AS4B_PACKAGE_FILES = {
 AS5A_PACKAGE_FILES = {
     "firm-frequency-response-post-tender-reports.json",
     "phase-2-ffr-auction-results-summary.json",
+}
+
+AS5B_PACKAGE_FILES = {
+    "non-bm-ancillary-service-dispatch-platform-asdp-instructions.json",
+    "non-bm-ancillary-service-dispatch-platform-asdp-window-prices.json",
+    "optional-downward-flexibility-management-odfm-market-information.json",
+    "short-term-operating-reserve-stor-day-ahead-auction-results.json",
 }
 
 AS3B_PACKAGE_FILES = {
@@ -1053,6 +1070,7 @@ class TestSeededRegistry:
             | AS4A_RECORDED
             | AS4B_RECORDED
             | AS5A_RECORDED
+            | AS5B_RECORDED
         )
         with_children = [res for _package, res in loaded.resources.values() if res.children]
         assert len(with_children) == X_RESOURCES_WITH_CHILDREN
@@ -1101,6 +1119,7 @@ class TestSeededRegistry:
             | AS4A_PACKAGE_FILES
             | AS4B_PACKAGE_FILES
             | AS5A_PACKAGE_FILES
+            | AS5B_PACKAGE_FILES
         )
 
 
