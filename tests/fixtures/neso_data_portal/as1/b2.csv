@@ -1,0 +1,7 @@
+Auction Date,Service Delivery Date,Service Window,Service window start time,Service Window End Time,Positive Balancing Reserve Requirement MW,Negative Balancing Reserve Requirement MW,Forecast produced on,Forecast type
+2024-02-14,2024-02-15,1,2024-02-14 23:00:00,2024-02-14 23:29:00,400,400,2024-02-13,Dayahead
+2024-02-14,2024-02-15,2,2024-02-14 23:30:00,2024-02-14 23:59:00,400,400,2024-02-13,Dayahead
+2024-02-27,2024-02-28,1,2024-02-27 23:00:00,2024-02-27 23:29:00,0,0,2024-02-26,Dayahead
+2024-02-27,2024-02-28,2,2024-02-27 23:30:00,2024-02-27 23:59:00,0,0,2024-02-26,Dayahead
+2024-07-04,2024-07-05,46,2024-07-05 21:30:00,2024-07-05 21:59:00,400,400,2024-06-20,Dayahead
+2024-07-04,2024-07-05,1,2024-07-04 23:00:00,2024-07-04 23:29:00,400,400,2024-07-03,Dayahead

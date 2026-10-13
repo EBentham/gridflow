@@ -50,6 +50,14 @@ DATE_COL_SQL_TYPES: dict[str, DateColSqlType] = {
     # The BSUoS fixed tariffs' first applicable settlement date (v0.22-K-BAL-1): the `date_sp1`
     # anchor of its record, a calendar DATE like `settlement_date`.
     "fixed_tariff_start_date": "DATE",
+    # The ancillary-services batch's `date_sp1` / `month` anchors (v0.22-K-AS-1): the BR / QR
+    # service delivery date, the DC history target date, the DM / DR EFA date and the long-term
+    # target month, each a calendar DATE (a label anchor, not an EFA or window start) like
+    # `settlement_date`.
+    "service_delivery_date": "DATE",
+    "forecast_target_date": "DATE",
+    "efa_date": "DATE",
+    "forecast_target_month": "DATE",
     "timestamp_utc": "TIMESTAMPTZ",
     "implementation_datetime_utc": "TIMESTAMPTZ",
     "ingested_at": "TIMESTAMPTZ",

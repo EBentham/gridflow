@@ -17,7 +17,90 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "EFA_DATE",
+              "Service",
+              "EFA1",
+              "EFA2",
+              "EFA3",
+              "EFA4",
+              "EFA5",
+              "EFA6"
+            ],
+            "columns": [
+              {
+                "source": "EFA_DATE",
+                "name": "efa_date",
+                "dtype": "date",
+                "format": "%d/%m/%Y",
+                "nullable": false
+              },
+              {
+                "source": "Service",
+                "name": "service",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "EFA1",
+                "name": "efa1",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "EFA2",
+                "name": "efa2",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "EFA3",
+                "name": "efa3",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "EFA4",
+                "name": "efa4",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "EFA5",
+                "name": "efa5",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "EFA6",
+                "name": "efa6",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "date_sp1",
+          "date_column": "efa_date"
+        },
+        "entity_key": [
+          "efa_date",
+          "service"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified"
+      }
     }
   ],
   "resources": [

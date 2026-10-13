@@ -35,9 +35,9 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `ancillary-services-important-industry-notifications` | `as_industry_notifications_sffr_important` | ingest-only (no silver output) | — | — | — | — |
 | `ancillary-services-important-industry-notifications` | `as_industry_notifications_slow_reserve` | ingest-only (no silver output) | — | — | — | — |
 | `ancillary-services-important-industry-notifications` | `as_industry_notifications_stor_important` | ingest-only (no silver output) | — | — | — | — |
-| `balancing-reserve-auction-requirement-forecast` | `br_auction_requirement_fc_da` | ingest-only (no silver output) | — | — | — | — |
-| `balancing-reserve-auction-requirement-forecast` | `br_auction_requirement_fc_da_archive` | ingest-only (no silver output) | — | — | — | — |
-| `balancing-reserve-auction-requirement-forecast` | `br_auction_requirement_fc_medium_term` | ingest-only (no silver output) | — | — | — | — |
+| `balancing-reserve-auction-requirement-forecast` | `br_auction_requirement_fc_da` | silver | eligible | whole_capture | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
+| `balancing-reserve-auction-requirement-forecast` | `br_auction_requirement_fc_da_archive` | silver | held: TODO: BR-ARCHIVE-AVAILABILITY — archive rows carry only a production date (944 labels, leads of 2 and 15 days); when was each forecast published, and are archived values ever amended? (unit v0.22-K-AS-1) | whole_capture | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
+| `balancing-reserve-auction-requirement-forecast` | `br_auction_requirement_fc_medium_term` | silver | held: TODO: BR-MT-ARCHIVE-AVAILABILITY — the archive resource's targets are past (46,349 window starts on/before the vintage) and its production dates carry no publication instant; when was each medium-term forecast available? (unit v0.22-K-AS-1) | whole_capture per resource_id | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
 | `balancing-services-adjustment-data-forward-contracts` | `bsad_forward_contracts` | ingest-only (no silver output) | — | — | — | — |
 | `balancing-services-contract-enactment` | `bs_contract_enactment_balancing` | silver | held: TODO: COST-DIMENSION — the dictionary labels `Cost` £/h but describes it as total cost (price × volume × duration); which is published? (unit v0.22-K-TRD) | whole_capture per resource_id | utc_instant | gridflow capture time |
 | `balancing-services-contract-enactment` | `bs_contract_enactment_balancing_service` | silver | held: TODO: LEGACY-BS-CLOCK — start times truncated to dates, end/update clocks undocumented; what instants were published? (unit v0.22-K-TRD) | whole_capture | none | gridflow capture time |
@@ -114,15 +114,15 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `demand-flexibility-service-test-events` | `dfs_test_events_utilisation_report_sum` | ingest-only (no silver output) | — | — | — | — |
 | `demand-profile-dates` | `demand_profile_dates` | ingest-only (no silver output) | — | — | — | — |
 | `disaggregated-bsad` | `disaggregated_bsad` | ingest-only (no silver output) | — | — | — | — |
-| `dynamic-containment-4-day-forecast` | `dc_forecast_4d` | ingest-only (no silver output) | — | — | — | — |
-| `dynamic-containment-4-day-forecast` | `dc_forecast_4d_history` | ingest-only (no silver output) | — | — | — | — |
+| `dynamic-containment-4-day-forecast` | `dc_forecast_4d` | silver | held: TODO: DC-DATE-ORDER — `Date` is published as dd/mm/yyyy or mm/dd/yyyy? The dictionary documents ISO dates; every captured value is ambiguous. (unit v0.22-K-AS-1) | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
+| `dynamic-containment-4-day-forecast` | `dc_forecast_4d_history` | silver | held: TODO: DC-HISTORY-ISSUE — when was each creation-labelled issue published? 8 rows are created after the upload's last-modified date and 15 creation dates are missing from the archive. (unit v0.22-K-AS-1) | whole_capture | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
 | `dynamic-containment-data` | `dynamic_containment_dc_dr_dm_block` | ingest-only (no silver output) | — | — | — | — |
 | `dynamic-containment-data` | `dynamic_containment_dc_dr_dm_linear` | ingest-only (no silver output) | — | — | — | — |
 | `dynamic-containment-data` | `dynamic_containment_dc_dr_dm_results` | ingest-only (no silver output) | — | — | — | — |
 | `dynamic-containment-data` | `dynamic_containment_dc_dr_dm_results_sum` | ingest-only (no silver output) | — | — | — | — |
 | `dynamic-containment-data` | `dynamic_containment_masterdata` | ingest-only (no silver output) | — | — | — | — |
-| `dynamic-moderation-requirements` | `dm_requirements` | ingest-only (no silver output) | — | — | — | — |
-| `dynamic-regulation-requirements` | `dr_requirements` | ingest-only (no silver output) | — | — | — | — |
+| `dynamic-moderation-requirements` | `dm_requirements` | silver | eligible | whole_capture | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
+| `dynamic-regulation-requirements` | `dr_requirements` | silver | eligible | whole_capture | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
 | `eac-auction-results` | `eac_results_buy_orders` | ingest-only (no silver output) | — | — | — | — |
 | `eac-auction-results` | `eac_results_buy_orders_fy` | ingest-only (no silver output) | — | — | — | — |
 | `eac-auction-results` | `eac_results_by_unit` | ingest-only (no silver output) | — | — | — | — |
@@ -204,7 +204,7 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `local-authority-level-spatial-heat-model-outputs-fes` | `fes_la_heat_model_domestic` | ingest-only (no silver output) | — | — | — | — |
 | `local-authority-level-spatial-heat-model-outputs-fes` | `fes_la_heat_model_residential` | ingest-only (no silver output) | — | — | — | — |
 | `long-term-2-52-weeks-ahead-national-demand-forecast` | `demand_forecast_2_52w` | silver | held: TODO: ESI week definition (start and end day, numbering, rollover against calendar_year and financial_year) and why 2027 week 29 appears twice with CDATE_peak 2027-07-21 and 2027-07-22; the NESO dictionary is silent (unit E-SEM) | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
-| `long-term-forecasts-for-dc-dm-dr-requirements` | `dc_dm_dr_long_term_fc` | ingest-only (no silver output) | — | — | — | — |
+| `long-term-forecasts-for-dc-dm-dr-requirements` | `dc_dm_dr_long_term_fc` | silver | held: TODO: DX-LT-INTERVAL — what unit and which inclusive endpoint do the `Interval` bands (`0-200` … `1600-1800`) use, and when was the creation-dated forecast available? 324 rows target the creation month. (unit v0.22-K-AS-1) | whole_capture | month | CKAN last_modified of the captured file (ADR-030) |
 | `monthly-operational-metered-wind-output` | `metered_wind_output_monthly` | silver | eligible | whole_capture per resource_id | sp_pair | CKAN last_modified of the captured file (ADR-030) |
 | `monthly-utilisation-data-of-voltage-contracted-units` | `voltage_units_utilisation` | silver | eligible | whole_capture | month | CKAN last_modified of the captured file (ADR-030) |
 | `national-carbon-intensity-forecast` | `national_ci_forecast` | silver | held: TODO: no issue column; which forecast issue a past target's value reflects, and whether values are revised after the period, is undocumented (unit E-SEM) | whole_capture | utc_instant | CKAN last_modified of the captured file (ADR-030) |
@@ -245,7 +245,7 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `phase-2-ffr-auction-results-summary` | `ffr_phase2_auction_phase_resultsbyunit` | ingest-only (no silver output) | — | — | — | — |
 | `phase-2-ffr-auction-results-summary` | `ffr_phase2_auction_phase_resultsum` | ingest-only (no silver output) | — | — | — | — |
 | `phase-2-ffr-auction-results-summary` | `ffr_phase2_result_summary_archive` | silver | held: Phase-2 FFR archive: Date and EFA (1-42) semantics are undocumented; timestamp_utc is date_sp1 of Date, not an EFA block start (unit AS-5) | key_latest | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
-| `quick-reserve-auction-requirement-forecast` | `qr_auction_requirement_fc` | ingest-only (no silver output) | — | — | — | — |
+| `quick-reserve-auction-requirement-forecast` | `qr_auction_requirement_fc` | silver | eligible | whole_capture | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
 | `regional-breakdown-of-fes-data-electricity` | `fes_regional_demand_active_power` | silver | eligible | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
 | `regional-breakdown-of-fes-data-electricity` | `fes_regional_dg_gt_1mw` | silver | held: TODO: vendor correction confirming the capacity population/threshold. The >1 MW resource's `capacity` description says sub-1 MW distributed generation ("Total aggregate capacity of sub 1 MW distributed generation of this technology type associated with this location"), contradicting its title and filename; it is not repaired from the filename. (unit E-SEM) | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
 | `regional-breakdown-of-fes-data-electricity` | `fes_regional_dg_lt_1mw` | silver | held: TODO g1: calendar/financial/winter period meaning for this family. TODO g4: correct population and meaning/direction of `capacity`, `wintpk`, `summam`, `summpm`. The 2024 resource dictionary describes storage of at least 1 MW, including negative filling rates, although the resource is distributed generation below 1 MW; settle with the corrected resource dictionary or matching-edition workbook notes. (unit E-SEM) | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
@@ -466,6 +466,6 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 ## Totals
 
 - Packages: 131 (held: 2)
-- Families: 317: silver 150 (bespoke 3, recorded 147), ingest-only 132, catalogue only 35
-- Silver outputs held: 86
+- Families: 317: silver 159 (bespoke 3, recorded 156), ingest-only 123, catalogue only 35
+- Silver outputs held: 91
 - Resources: 1385
