@@ -911,6 +911,20 @@ AS3A_RECORDED = {
 }
 """The eleven EAC auction-result families unit K-AS-3a records (all eligible)."""
 
+AS3B_RECORDED = {
+    "eac_mock_results_by_unit",
+    "eac_mock_results_buy_orders",
+    "eac_mock_results_summary",
+    "eac_mock_results_sell_orders",
+    "orps_utilisation_historic_reactive",
+    "orps_utilisation_reactive",
+    "orps_utilisation_reactive_default",
+    "obp_physical_notifications",
+    "obp_reserve_instructions",
+    "obp_reserve_avail_price",
+}
+"""The ten mock EAC, ORPS and OBP families unit K-AS-3b records (three eligible, seven held)."""
+
 AS1_PACKAGE_FILES = {
     "balancing-reserve-auction-requirement-forecast.json",
     "dynamic-containment-4-day-forecast.json",
@@ -922,6 +936,14 @@ AS1_PACKAGE_FILES = {
 
 AS3A_PACKAGE_FILES = {
     "eac-auction-results.json",
+}
+
+AS3B_PACKAGE_FILES = {
+    "eac-mock-auction-results.json",
+    "obligatory-reactive-power-service-orps-utilisation.json",
+    "obp-non-bm-physical-notifications.json",
+    "obp-non-bm-reserve-instructions.json",
+    "obp-reserve-availability-utilisation-price.json",
 }
 
 AS2_PACKAGE_FILES = {
@@ -975,6 +997,7 @@ class TestSeededRegistry:
             | AS1_RECORDED
             | AS2_RECORDED
             | AS3A_RECORDED
+            | AS3B_RECORDED
         )
         with_children = [res for _package, res in loaded.resources.values() if res.children]
         assert len(with_children) == X_RESOURCES_WITH_CHILDREN
@@ -1019,6 +1042,7 @@ class TestSeededRegistry:
             | AS1_PACKAGE_FILES
             | AS2_PACKAGE_FILES
             | AS3A_PACKAGE_FILES
+            | AS3B_PACKAGE_FILES
         )
 
 

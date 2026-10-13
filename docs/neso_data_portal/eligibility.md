@@ -142,14 +142,14 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `eac-br-mock-auction-results` | `eac_br_mock_results_by_unit` | ingest-only (no silver output) | — | — | — | — |
 | `eac-br-mock-auction-results` | `eac_br_mock_results_sell_orders` | ingest-only (no silver output) | — | — | — | — |
 | `eac-br-mock-auction-results` | `eac_br_mock_results_summary` | ingest-only (no silver output) | — | — | — | — |
-| `eac-mock-auction-results` | `eac_mock_results_buy_orders` | ingest-only (no silver output) | — | — | — | — |
-| `eac-mock-auction-results` | `eac_mock_results_by_unit` | ingest-only (no silver output) | — | — | — | — |
+| `eac-mock-auction-results` | `eac_mock_results_buy_orders` | silver | held: TODO: EAC-MOCK-TEST-DATA — NESO publishes these resources as outcomes of mock auction runs, not live procurement; publish only under an explicit test/mock label with separate provenance, and never join them to live EAC on auction id (mock ids 1–22 are reused for different dates). (unit v0.22-K-AS-3b) | whole_capture | none | gridflow capture time |
+| `eac-mock-auction-results` | `eac_mock_results_by_unit` | silver | held: TODO: EAC-MOCK-TEST-DATA — NESO publishes these resources as outcomes of mock auction runs, not live procurement; publish only under an explicit test/mock label with separate provenance, and never join them to live EAC on auction id (mock ids 1–22 are reused for different dates). (unit v0.22-K-AS-3b) | whole_capture | none | gridflow capture time |
 | `eac-mock-auction-results` | `eac_mock_results_daily_buy_orders` | ingest-only (no silver output) | — | — | — | — |
 | `eac-mock-auction-results` | `eac_mock_results_daily_by_unit` | ingest-only (no silver output) | — | — | — | — |
 | `eac-mock-auction-results` | `eac_mock_results_daily_sell_orders` | ingest-only (no silver output) | — | — | — | — |
 | `eac-mock-auction-results` | `eac_mock_results_daily_summary` | ingest-only (no silver output) | — | — | — | — |
-| `eac-mock-auction-results` | `eac_mock_results_sell_orders` | ingest-only (no silver output) | — | — | — | — |
-| `eac-mock-auction-results` | `eac_mock_results_summary` | ingest-only (no silver output) | — | — | — | — |
+| `eac-mock-auction-results` | `eac_mock_results_sell_orders` | silver | held: TODO: EAC-MOCK-TEST-DATA — NESO publishes these resources as outcomes of mock auction runs, not live procurement; publish only under an explicit test/mock label with separate provenance, and never join them to live EAC on auction id (mock ids 1–22 are reused for different dates). (unit v0.22-K-AS-3b) | whole_capture | none | gridflow capture time |
+| `eac-mock-auction-results` | `eac_mock_results_summary` | silver | held: TODO: EAC-MOCK-TEST-DATA — NESO publishes these resources as outcomes of mock auction runs, not live procurement; publish only under an explicit test/mock label with separate provenance, and never join them to live EAC on auction id (mock ids 1–22 are reused for different dates). (unit v0.22-K-AS-3b) | whole_capture | none | gridflow capture time |
 | `eleclink` | `eleclink` | silver | held: TODO: the dump returns past targets (rows before the capture) and NESO does not state that a row is unchanged since its `Data Upload Time GMT`, so historical issued limits are not evidenced, and the archive's Operational Date calendar / rollover and Version meaning are undocumented. (unit E-SEM) | whole_capture per resource_id | none | gridflow capture time |
 | `embedded-register` | `embedded_register` | silver | eligible | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
 | `embedded-wind-and-solar-forecasts` | `embedded_forecast_archive_dump` | silver | held: TODO: Forecast_Datetime is naive; rows before 2026-06-12T11:54:02 measure as UK local time (no 01:xx issue on 2026-03-29); rows from the 2026-06-12 forecast-system migration have crossed no DST transition, so their zone is unmeasured; typed Europe/London, fold earliest (ADR-038); NESO does not document the zone (unit E-SEM) | key_latest | sp_pair | gridflow capture time |
@@ -221,12 +221,12 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `non-bm-ancillary-service-dispatch-platform-asdp-window-prices` | `asdp_window_prices` | ingest-only (no silver output) | — | — | — | — |
 | `nsl` | `nsl` | silver | held: TODO: the dump returns past targets (rows before the capture) and NESO does not state that a row is unchanged since its `Data Upload Time GMT`, so historical issued limits are not evidenced, and the archive's Operational Date calendar / rollover and Version meaning are undocumented. (unit E-SEM) | whole_capture per resource_id | none | gridflow capture time |
 | `obligatory-reactive-power-service-orps-utilisation` | `orps_utilisation_files` | catalogue only | — | — | — | — |
-| `obligatory-reactive-power-service-orps-utilisation` | `orps_utilisation_historic_reactive` | ingest-only (no silver output) | — | — | — | — |
-| `obligatory-reactive-power-service-orps-utilisation` | `orps_utilisation_reactive` | ingest-only (no silver output) | — | — | — | — |
-| `obligatory-reactive-power-service-orps-utilisation` | `orps_utilisation_reactive_default` | ingest-only (no silver output) | — | — | — | — |
-| `obp-non-bm-physical-notifications` | `obp_physical_notifications` | ingest-only (no silver output) | — | — | — | — |
-| `obp-non-bm-reserve-instructions` | `obp_reserve_instructions` | ingest-only (no silver output) | — | — | — | — |
-| `obp-reserve-availability-utilisation-price` | `obp_reserve_avail_price` | ingest-only (no silver output) | — | — | — | — |
+| `obligatory-reactive-power-service-orps-utilisation` | `orps_utilisation_historic_reactive` | silver | held: TODO: ORPS-HIST-DASH / ORPS-HIST-IDENTITY — what does the padded `-` cell mean (zero, not reported, not applicable)? And the identity (SPLN, SPLN_01Z, D, M) appears twice (rows 181 and 277) with 234 different values: are these two distinct entries, and what distinguishes them? (unit v0.22-K-AS-3b) | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
+| `obligatory-reactive-power-service-orps-utilisation` | `orps_utilisation_reactive` | silver | held: TODO: ORPS-REACTIVE-ARCHIVE — the current long table restates every unit/month of this Apr-20 … Dec-24 archive but differs on 241 values and publishes 2,895 of its blanks as 0; is this archive superseded, and does a blank mean zero or not reported? (unit v0.22-K-AS-3b) | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
+| `obligatory-reactive-power-service-orps-utilisation` | `orps_utilisation_reactive_default` | silver | held: TODO: ORPS-PRICE-INPUT-UNITS — the dictionary labels HPIm, PAPIm and PPIm only "£" and NESO's default-payment guidance calls them power-price inputs without a denominator; what unit are they in this export? (FRPIm is a dimensionless RPI index, Im a dimensionless indexation factor, X = 1 / X = 0.2 are £/MVArh rates.) (unit v0.22-K-AS-3b) | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
+| `obp-non-bm-physical-notifications` | `obp_physical_notifications` | silver | eligible | whole_capture | utc_instant | CKAN last_modified of the captured file (ADR-030) |
+| `obp-non-bm-reserve-instructions` | `obp_reserve_instructions` | silver | eligible | whole_capture | utc_instant | CKAN last_modified of the captured file (ADR-030) |
+| `obp-reserve-availability-utilisation-price` | `obp_reserve_avail_price` | silver | eligible | whole_capture | utc_instant | CKAN last_modified of the captured file (ADR-030) |
 | `operational-transparency-forum-network-congestion-data` | `otf_network_congestion` | silver | held: TODO: is Date a week start, week end or reporting label (38 Saturdays, 15 Sundays, one 8-day step), how are actuals calculated, and when was each forecast issued? 26 targets are on or before the vintage, so the forward-target test fails. (unit E-SEM) | whole_capture | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
 | `optional-downward-flexibility-management-odfm-market-information` | `odfm_market_information_files` | catalogue only | — | — | — | — |
 | `optional-downward-flexibility-management-odfm-market-information` | `odfm_market_information_instructed` | ingest-only (no silver output) | — | — | — | — |
@@ -379,7 +379,7 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `eac-auction-results` | eligible | 52 | 0 | 0 | 0 | 0 |
 | `eac-br-auction-results` | eligible | 4 | 0 | 0 | 0 | 0 |
 | `eac-br-mock-auction-results` | eligible | 4 | 0 | 0 | 0 | 0 |
-| `eac-mock-auction-results` | eligible | 8 | 0 | 0 | 0 | 0 |
+| `eac-mock-auction-results` | held: TODO: EAC-MOCK-TEST-DATA — NESO publishes these resources as outcomes of mock auction runs, not live procurement; publish only under an explicit test/mock label with separate provenance, and never join them to live EAC on auction id (mock ids 1–22 are reused for different dates). (unit v0.22-K-AS-3b) | 8 | 0 | 0 | 0 | 0 |
 | `eleclink` | eligible | 2 | 0 | 0 | 0 | 0 |
 | `embedded-register` | eligible | 1 | 0 | 0 | 0 | 0 |
 | `embedded-wind-and-solar-forecasts` | eligible | 8 | 0 | 1 | 0 | 1 |
@@ -421,7 +421,7 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `non-bm-ancillary-service-dispatch-platform-asdp-instructions` | eligible | 70 | 0 | 0 | 0 | 0 |
 | `non-bm-ancillary-service-dispatch-platform-asdp-window-prices` | eligible | 2 | 0 | 0 | 0 | 0 |
 | `nsl` | eligible | 2 | 0 | 0 | 0 | 0 |
-| `obligatory-reactive-power-service-orps-utilisation` | eligible | 4 | 0 | 2 | 0 | 1 |
+| `obligatory-reactive-power-service-orps-utilisation` | eligible | 3 | 0 | 2 | 0 | 2 |
 | `obp-non-bm-physical-notifications` | eligible | 1 | 0 | 0 | 0 | 0 |
 | `obp-non-bm-reserve-instructions` | eligible | 1 | 0 | 0 | 0 | 0 |
 | `obp-reserve-availability-utilisation-price` | eligible | 1 | 0 | 0 | 0 | 0 |
@@ -461,11 +461,11 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `weekly-opmr` | eligible | 1 | 0 | 0 | 0 | 0 |
 | `weekly-wind-availability` | eligible | 1 | 0 | 0 | 0 | 0 |
 | `wind-bmu-boa-volumes` | eligible | 9 | 0 | 0 | 0 | 0 |
-| **Total** | | 1243 | 0 | 43 | 20 | 79 |
+| **Total** | | 1242 | 0 | 43 | 20 | 80 |
 
 ## Totals
 
-- Packages: 131 (held: 2)
-- Families: 317: silver 181 (bespoke 3, recorded 178), ingest-only 101, catalogue only 35
-- Silver outputs held: 93
+- Packages: 131 (held: 3)
+- Families: 317: silver 191 (bespoke 3, recorded 188), ingest-only 91, catalogue only 35
+- Silver outputs held: 100
 - Resources: 1385

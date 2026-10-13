@@ -17,7 +17,95 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Data",
+              "Unit ID",
+              "Time From",
+              "Time To",
+              "Pair ID",
+              "Availability Power",
+              "Utilisation Price",
+              "Service ID"
+            ],
+            "columns": [
+              {
+                "source": "Data",
+                "name": "data",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Unit ID",
+                "name": "unit_id",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Time From",
+                "name": "time_from",
+                "dtype": "datetime",
+                "format": "%Y-%m-%dT%H:%M:%S",
+                "nullable": false,
+                "zone": "UTC"
+              },
+              {
+                "source": "Time To",
+                "name": "time_to",
+                "dtype": "datetime",
+                "format": "%Y-%m-%dT%H:%M:%S",
+                "nullable": true,
+                "zone": "UTC"
+              },
+              {
+                "source": "Pair ID",
+                "name": "pair_id",
+                "dtype": "int64",
+                "nullable": false
+              },
+              {
+                "source": "Availability Power",
+                "name": "availability_power",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Utilisation Price",
+                "name": "utilisation_price",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Service ID",
+                "name": "service_id",
+                "dtype": "string",
+                "nullable": false
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "utc_instant",
+          "column": "time_from"
+        },
+        "entity_key": [
+          "unit_id",
+          "time_from",
+          "pair_id",
+          "service_id"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified"
+      }
     }
   ],
   "resources": [

@@ -1,0 +1,4 @@
+auctionID,orderID,serviceType,auctionProduct,deliveryStart,deliveryEnd,quantity,price,substitutabilityFamily,paradoxicallyAcceptanceAllowed,orderEntryTime,acceptanceRatio,status,executedQuantity,clearingPrice,reasonRejected,joinedFamily
+1,1,Slow Reserve,NSR,2026-02-23T23:00:00,2026-02-23T23:30:00,1800.0,5.0,,false,2026-02-20T13:44:19,0.009999999827968,PARTIALLY_EXECUTED,18.0,4.76,,
+1,2,Slow Reserve,NSR,2026-02-23T23:00:00,2026-02-23T23:30:00,200.0,0.0,,true,2026-02-20T13:44:19,0.0,REJECTED,0.0,4.76,31,
+1,3,Slow Reserve,NSR,2026-02-23T23:30:00,2026-02-24T00:00:00,1800.0,5.0,,false,2026-02-20T13:44:19,0.009999999827968,PARTIALLY_EXECUTED,18.0,4.76,,

@@ -61,8 +61,9 @@ URL_TYPE_TALLY = {"upload": 1233, "datastore": 152}
 # 2020-2022 ES1 resources (SILVER 1244, HOLD 78); K-CON holds the 2021-22 thermal CSV (comma
 # costs) and dispositions the two thermal workbooks' Data sheet to the XLSX child record
 # (SILVER 1245, HOLD 77); K-SYS-1 holds the 2026 inertia cost resource (SILVER 1244, HOLD 78);
-# K-TRD holds the GTMA 2020-21 upload with repeated identical rows (SILVER 1243, HOLD 79).
-DISPOSITION_TALLY = {"SILVER": 1243, "HOLD": 79, "DOC": 43, "GIS": 20}
+# K-TRD holds the GTMA 2020-21 upload with repeated identical rows (SILVER 1243, HOLD 79); K-AS-3b
+# holds the ORPS current long table (repeated complete row, SILVER 1242, HOLD 80).
+DISPOSITION_TALLY = {"SILVER": 1242, "HOLD": 80, "DOC": 43, "GIS": 20}
 
 
 def _run(code: str, *args: str) -> subprocess.CompletedProcess[str]:
@@ -352,9 +353,13 @@ class TestOwnerFacts:
                              'gis-boundaries-for-gb-dno-license-areas'):
                     assert packages[slug].eligibility.status == 'held', slug
                     assert packages[slug].eligibility.unit == 'N', slug
+                mock = packages['eac-mock-auction-results']
+                assert mock.eligibility.status == 'held', mock.eligibility
+                assert mock.eligibility.unit == 'v0.22-K-AS-3b', mock.eligibility
                 held = sorted(p.package for p in registry.packages
                               if p.eligibility.status == 'held')
-                assert held == ['gis-boundaries-for-gb-dno-license-areas',
+                assert held == ['eac-mock-auction-results',
+                                'gis-boundaries-for-gb-dno-license-areas',
                                 'levelised-cost-of-green-hydrogen'], held
 
                 embedded = packages['embedded-wind-and-solar-forecasts']

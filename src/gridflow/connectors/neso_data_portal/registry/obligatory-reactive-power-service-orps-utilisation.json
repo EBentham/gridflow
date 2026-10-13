@@ -17,7 +17,1939 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Company",
+              "Unit",
+              "Default/Market",
+              "Location",
+              "Oct 13 - LEAD",
+              "Oct 13  - LAG",
+              "Oct 13  - TOTAL",
+              "Nov 13 - LEAD",
+              "Nov 13 - LAG",
+              "Nov 13 - TOTAL",
+              "Dec 13 - LEAD",
+              "Dec 13 -LAG",
+              "Dec 13 - TOTAL",
+              "Jan 14 - LEAD",
+              "Jan 14 - LAG",
+              "Jan 14 - TOTAL",
+              "Feb 14 - LEAD",
+              "Feb 14- LAG",
+              "Feb 14 - TOTAL",
+              "Mar 14 - LEAD",
+              "Mar 14  - LAG",
+              "Mar 14 - TOTAL",
+              "Apr 14 - LEAD",
+              "Apr 14  - LAG",
+              "Apr 14   - TOTAL",
+              "May 14 - LEAD",
+              "May 14 - LAG",
+              "May 14 - TOTAL",
+              "Jun 14 - LEAD",
+              "Jun 14 -LAG",
+              "Jun 14 - TOTAL",
+              "Jul 14 - LEAD",
+              "Jul 14  - LAG",
+              "Jul 14  - TOTAL",
+              "Aug 14 - LEAD",
+              "Aug 14 - LAG",
+              "Aug 14  - TOTAL",
+              "Sep 14- LEAD",
+              "Sep 14  - LAG",
+              "Sep 14- TOTAL",
+              "Oct 14- LEAD",
+              "Oct 14- LAG",
+              "Oct 14   - TOTAL",
+              "Nov 14 - LEAD",
+              "Nov 14- LAG",
+              "Nov 14- TOTAL",
+              "Dec 14 - LEAD",
+              "Dec 14  -LAG",
+              "Dec 14  - TOTAL",
+              "Jan 15 - LEAD",
+              "Jan 15  - LAG",
+              "Jan 15 - TOTAL",
+              "Feb 15 - LEAD",
+              "Feb 15  - LAG",
+              "Feb 15 - TOTAL",
+              "Mar 15- LEAD",
+              "Mar 15  - LAG",
+              "Mar 15- TOTAL",
+              "Apr 15- LEAD",
+              "Apr 15- LAG",
+              "Apr 15  - TOTAL",
+              "May 15 - LEAD",
+              "May 15- LAG",
+              "May 15- TOTAL",
+              "Jun 15 - LEAD",
+              "Jun 15  -LAG",
+              "Jun 15  - TOTAL",
+              "Jul 15 - LEAD",
+              "Jul 15  - LAG",
+              "Jul 15  - TOTAL",
+              "Aug 15 - LEAD",
+              "Aug 15  - LAG",
+              "Aug 15  - TOTAL",
+              "Sep 15- LEAD",
+              "Sep 15 - LAG",
+              "Sep 15- TOTAL",
+              "Oct 15- LEAD",
+              "Oct 15- LAG",
+              "Oct 15  - TOTAL",
+              "Nov 15 - LEAD",
+              "Nov 15- LAG",
+              "Nov 15- TOTAL",
+              "Dec 15 - LEAD",
+              "Dec 15  -LAG",
+              "Dec 15  - TOTAL",
+              "Jan 16 - LEAD",
+              "Jan 16  - LAG",
+              "Jan 16   - TOTAL",
+              "Feb 16 - LEAD",
+              "Feb 16- LAG",
+              "Feb 16 - TOTAL",
+              "Mar 16 - LEAD",
+              "Mar 16  - LAG",
+              "Mar 16 - TOTAL",
+              "Apr 16 - LEAD",
+              "Apr 16  - LAG",
+              "Apr 16- TOTAL",
+              "May 16 - LEAD",
+              "May 16 - LAG",
+              "May 16 - TOTAL",
+              "Jun 16 - LEAD",
+              "Jun 16 -LAG",
+              "Jun 16- TOTAL",
+              "Jul 16 - LEAD",
+              "Jul 16 - LAG",
+              "Jul 16 - TOTAL",
+              "Aug 16 - LEAD",
+              "Aug 16- LAG",
+              "Aug 16 - TOTAL",
+              "Sep 16 - LEAD",
+              "Sep 16  - LAG",
+              "Sep 16  - TOTAL",
+              "Oct 16 - LEAD",
+              "Oct 16  - LAG",
+              "Oct 16 - TOTAL",
+              "Nov 16 - LEAD",
+              "Nov 16 - LAG",
+              "Nov 16 - TOTAL",
+              "Dec 16 - LEAD",
+              "Dec 16 -LAG",
+              "Dec 16 - TOTAL",
+              "Jan 17 - LEAD",
+              "Jan 17 - LAG",
+              "Jan 17 - TOTAL",
+              "Feb 17 - LEAD",
+              "Feb 17 - LAG",
+              "Feb 17 - TOTAL",
+              "Mar 17- LEAD",
+              "Mar 17  - LAG",
+              "Mar 17 - TOTAL",
+              "Apr 17 - LEAD",
+              "Apr 17  - LAG",
+              "Apr 17 - TOTAL",
+              "May 17 - LEAD",
+              "May 17 - LAG",
+              "May 17 - TOTAL",
+              "Jun 17 - LEAD",
+              "Jun 17  -LAG",
+              "Jun 17  - TOTAL",
+              "Jul 17 - LEAD",
+              "Jul 17 - LAG",
+              "Jul 17- TOTAL",
+              "Aug 17 - LEAD",
+              "Aug 17 - LAG",
+              "Aug 17 - TOTAL",
+              "Sep 17- LEAD",
+              "Sep 17  - LAG",
+              "Sep 17 - TOTAL",
+              "Oct 17 - LEAD",
+              "Oct 17  - LAG",
+              "Oct 17 - TOTAL",
+              "Nov 17 - LEAD",
+              "Nov 17 - LAG",
+              "Nov 17 - TOTAL",
+              "Dec 17 - LEAD",
+              "Dec 17  -LAG",
+              "Dec 17  - TOTAL",
+              "Jan 18 - LEAD",
+              "Jan 18  - LAG",
+              "Jan 18 - TOTAL",
+              "Feb 18 - LEAD",
+              "Feb 18 - LAG",
+              "Feb 18 - TOTAL",
+              "Mar 18 - LEAD",
+              "Mar 18  - LAG",
+              "Mar 18 - TOTAL",
+              "Apr 18 - LEAD",
+              "Apr 18  - LAG",
+              "Apr 18 - TOTAL",
+              "May 18 - LEAD",
+              "May 18 - LAG",
+              "May 18 - TOTAL",
+              "Jun 18 - LEAD",
+              "Jun 18 -LAG",
+              "Jun 18  - TOTAL",
+              "Jul 18 - LEAD",
+              "Jul 18  - LAG",
+              "Jul 18 - TOTAL",
+              "Aug 18 - LEAD",
+              "Aug 18 - LAG",
+              "Aug 18 - TOTAL",
+              "Sep 18 - LEAD",
+              "Sep 18  - LAG",
+              "Sep 18 - TOTAL",
+              "Oct 18 - LEAD",
+              "Oct 18  - LAG",
+              "Oct 18 - TOTAL",
+              "Nov 18 - LEAD",
+              "Nov 18 - LAG",
+              "Nov 18 - TOTAL",
+              "Dec 18 - LEAD",
+              "Dec 18 -LAG",
+              "Dec 18  - TOTAL",
+              "Jan 19 - LEAD",
+              "Jan 19  - LAG",
+              "Jan 19 - TOTAL",
+              "Feb 19 - LEAD",
+              "Feb 19 - LAG",
+              "Feb 19- TOTAL",
+              "Mar 19 - LEAD",
+              "Mar 19  - LAG",
+              "Mar 19 - TOTAL",
+              "Apr 19 - LEAD",
+              "Apr 19 -LAG",
+              "Apr 19- TOTAL",
+              "May 19 - LEAD",
+              "May 19 -LAG",
+              "May 19- TOTAL",
+              "Jun 19 - LEAD",
+              "Jun 19 -LAG",
+              "Jun 19- TOTAL",
+              "Jul 19 - LEAD",
+              "Jul 19 -LAG",
+              "Jul 19- TOTAL",
+              "Aug 19 - LEAD",
+              "Aug 19 -LAG",
+              "Aug 19- TOTAL",
+              "Sep 19 - LEAD",
+              "Sep 19 -LAG",
+              "Sep 19- TOTAL",
+              "Oct 19 -LEAD",
+              "Oct 19 - LAG",
+              "Oct -19 TOTAL",
+              "Nov 19 -LEAD",
+              "Nov 19 - LAG",
+              "Nov -19 TOTAL",
+              "Dec 19 -LEAD",
+              "Dec 19 - LAG",
+              "Dec 19 - TOTAL",
+              "Jan 20 -LEAD",
+              "Jan 20 - LAG",
+              "Jan 20 - TOTAL",
+              "Feb 20 -LEAD",
+              "Feb 20 - LAG",
+              "Feb 20 - TOTAL",
+              "Mar 20 -LEAD",
+              "Mar 20 - LAG",
+              "Mar 20 - TOTAL"
+            ],
+            "columns": [
+              {
+                "source": "Company",
+                "name": "company",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Unit",
+                "name": "unit",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Default/Market",
+                "name": "default_market",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Location",
+                "name": "location",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Oct 13 - LEAD",
+                "name": "oct_13_lead",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Oct 13  - LAG",
+                "name": "oct_13_lag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Oct 13  - TOTAL",
+                "name": "oct_13_total",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Nov 13 - LEAD",
+                "name": "nov_13_lead",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Nov 13 - LAG",
+                "name": "nov_13_lag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Nov 13 - TOTAL",
+                "name": "nov_13_total",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Dec 13 - LEAD",
+                "name": "dec_13_lead",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Dec 13 -LAG",
+                "name": "dec_13_lag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Dec 13 - TOTAL",
+                "name": "dec_13_total",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Jan 14 - LEAD",
+                "name": "jan_14_lead",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Jan 14 - LAG",
+                "name": "jan_14_lag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Jan 14 - TOTAL",
+                "name": "jan_14_total",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Feb 14 - LEAD",
+                "name": "feb_14_lead",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Feb 14- LAG",
+                "name": "feb_14_lag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Feb 14 - TOTAL",
+                "name": "feb_14_total",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Mar 14 - LEAD",
+                "name": "mar_14_lead",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Mar 14  - LAG",
+                "name": "mar_14_lag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Mar 14 - TOTAL",
+                "name": "mar_14_total",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Apr 14 - LEAD",
+                "name": "apr_14_lead",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Apr 14  - LAG",
+                "name": "apr_14_lag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Apr 14   - TOTAL",
+                "name": "apr_14_total",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "May 14 - LEAD",
+                "name": "may_14_lead",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "May 14 - LAG",
+                "name": "may_14_lag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "May 14 - TOTAL",
+                "name": "may_14_total",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Jun 14 - LEAD",
+                "name": "jun_14_lead",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Jun 14 -LAG",
+                "name": "jun_14_lag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Jun 14 - TOTAL",
+                "name": "jun_14_total",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Jul 14 - LEAD",
+                "name": "jul_14_lead",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Jul 14  - LAG",
+                "name": "jul_14_lag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Jul 14  - TOTAL",
+                "name": "jul_14_total",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Aug 14 - LEAD",
+                "name": "aug_14_lead",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Aug 14 - LAG",
+                "name": "aug_14_lag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Aug 14  - TOTAL",
+                "name": "aug_14_total",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Sep 14- LEAD",
+                "name": "sep_14_lead",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Sep 14  - LAG",
+                "name": "sep_14_lag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Sep 14- TOTAL",
+                "name": "sep_14_total",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Oct 14- LEAD",
+                "name": "oct_14_lead",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Oct 14- LAG",
+                "name": "oct_14_lag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Oct 14   - TOTAL",
+                "name": "oct_14_total",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Nov 14 - LEAD",
+                "name": "nov_14_lead",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Nov 14- LAG",
+                "name": "nov_14_lag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Nov 14- TOTAL",
+                "name": "nov_14_total",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Dec 14 - LEAD",
+                "name": "dec_14_lead",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Dec 14  -LAG",
+                "name": "dec_14_lag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Dec 14  - TOTAL",
+                "name": "dec_14_total",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Jan 15 - LEAD",
+                "name": "jan_15_lead",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Jan 15  - LAG",
+                "name": "jan_15_lag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Jan 15 - TOTAL",
+                "name": "jan_15_total",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Feb 15 - LEAD",
+                "name": "feb_15_lead",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Feb 15  - LAG",
+                "name": "feb_15_lag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Feb 15 - TOTAL",
+                "name": "feb_15_total",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Mar 15- LEAD",
+                "name": "mar_15_lead",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Mar 15  - LAG",
+                "name": "mar_15_lag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Mar 15- TOTAL",
+                "name": "mar_15_total",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Apr 15- LEAD",
+                "name": "apr_15_lead",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Apr 15- LAG",
+                "name": "apr_15_lag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Apr 15  - TOTAL",
+                "name": "apr_15_total",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "May 15 - LEAD",
+                "name": "may_15_lead",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "May 15- LAG",
+                "name": "may_15_lag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "May 15- TOTAL",
+                "name": "may_15_total",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Jun 15 - LEAD",
+                "name": "jun_15_lead",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Jun 15  -LAG",
+                "name": "jun_15_lag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Jun 15  - TOTAL",
+                "name": "jun_15_total",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Jul 15 - LEAD",
+                "name": "jul_15_lead",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Jul 15  - LAG",
+                "name": "jul_15_lag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Jul 15  - TOTAL",
+                "name": "jul_15_total",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Aug 15 - LEAD",
+                "name": "aug_15_lead",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Aug 15  - LAG",
+                "name": "aug_15_lag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Aug 15  - TOTAL",
+                "name": "aug_15_total",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Sep 15- LEAD",
+                "name": "sep_15_lead",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Sep 15 - LAG",
+                "name": "sep_15_lag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Sep 15- TOTAL",
+                "name": "sep_15_total",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Oct 15- LEAD",
+                "name": "oct_15_lead",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Oct 15- LAG",
+                "name": "oct_15_lag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Oct 15  - TOTAL",
+                "name": "oct_15_total",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Nov 15 - LEAD",
+                "name": "nov_15_lead",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Nov 15- LAG",
+                "name": "nov_15_lag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Nov 15- TOTAL",
+                "name": "nov_15_total",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Dec 15 - LEAD",
+                "name": "dec_15_lead",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Dec 15  -LAG",
+                "name": "dec_15_lag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Dec 15  - TOTAL",
+                "name": "dec_15_total",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Jan 16 - LEAD",
+                "name": "jan_16_lead",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Jan 16  - LAG",
+                "name": "jan_16_lag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Jan 16   - TOTAL",
+                "name": "jan_16_total",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Feb 16 - LEAD",
+                "name": "feb_16_lead",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Feb 16- LAG",
+                "name": "feb_16_lag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Feb 16 - TOTAL",
+                "name": "feb_16_total",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Mar 16 - LEAD",
+                "name": "mar_16_lead",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Mar 16  - LAG",
+                "name": "mar_16_lag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Mar 16 - TOTAL",
+                "name": "mar_16_total",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Apr 16 - LEAD",
+                "name": "apr_16_lead",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Apr 16  - LAG",
+                "name": "apr_16_lag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Apr 16- TOTAL",
+                "name": "apr_16_total",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "May 16 - LEAD",
+                "name": "may_16_lead",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "May 16 - LAG",
+                "name": "may_16_lag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "May 16 - TOTAL",
+                "name": "may_16_total",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Jun 16 - LEAD",
+                "name": "jun_16_lead",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Jun 16 -LAG",
+                "name": "jun_16_lag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Jun 16- TOTAL",
+                "name": "jun_16_total",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Jul 16 - LEAD",
+                "name": "jul_16_lead",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Jul 16 - LAG",
+                "name": "jul_16_lag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Jul 16 - TOTAL",
+                "name": "jul_16_total",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Aug 16 - LEAD",
+                "name": "aug_16_lead",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Aug 16- LAG",
+                "name": "aug_16_lag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Aug 16 - TOTAL",
+                "name": "aug_16_total",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Sep 16 - LEAD",
+                "name": "sep_16_lead",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Sep 16  - LAG",
+                "name": "sep_16_lag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Sep 16  - TOTAL",
+                "name": "sep_16_total",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Oct 16 - LEAD",
+                "name": "oct_16_lead",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Oct 16  - LAG",
+                "name": "oct_16_lag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Oct 16 - TOTAL",
+                "name": "oct_16_total",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Nov 16 - LEAD",
+                "name": "nov_16_lead",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Nov 16 - LAG",
+                "name": "nov_16_lag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Nov 16 - TOTAL",
+                "name": "nov_16_total",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Dec 16 - LEAD",
+                "name": "dec_16_lead",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Dec 16 -LAG",
+                "name": "dec_16_lag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Dec 16 - TOTAL",
+                "name": "dec_16_total",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Jan 17 - LEAD",
+                "name": "jan_17_lead",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Jan 17 - LAG",
+                "name": "jan_17_lag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Jan 17 - TOTAL",
+                "name": "jan_17_total",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Feb 17 - LEAD",
+                "name": "feb_17_lead",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Feb 17 - LAG",
+                "name": "feb_17_lag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Feb 17 - TOTAL",
+                "name": "feb_17_total",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Mar 17- LEAD",
+                "name": "mar_17_lead",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Mar 17  - LAG",
+                "name": "mar_17_lag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Mar 17 - TOTAL",
+                "name": "mar_17_total",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Apr 17 - LEAD",
+                "name": "apr_17_lead",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Apr 17  - LAG",
+                "name": "apr_17_lag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Apr 17 - TOTAL",
+                "name": "apr_17_total",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "May 17 - LEAD",
+                "name": "may_17_lead",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "May 17 - LAG",
+                "name": "may_17_lag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "May 17 - TOTAL",
+                "name": "may_17_total",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Jun 17 - LEAD",
+                "name": "jun_17_lead",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Jun 17  -LAG",
+                "name": "jun_17_lag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Jun 17  - TOTAL",
+                "name": "jun_17_total",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Jul 17 - LEAD",
+                "name": "jul_17_lead",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Jul 17 - LAG",
+                "name": "jul_17_lag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Jul 17- TOTAL",
+                "name": "jul_17_total",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Aug 17 - LEAD",
+                "name": "aug_17_lead",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Aug 17 - LAG",
+                "name": "aug_17_lag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Aug 17 - TOTAL",
+                "name": "aug_17_total",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Sep 17- LEAD",
+                "name": "sep_17_lead",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Sep 17  - LAG",
+                "name": "sep_17_lag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Sep 17 - TOTAL",
+                "name": "sep_17_total",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Oct 17 - LEAD",
+                "name": "oct_17_lead",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Oct 17  - LAG",
+                "name": "oct_17_lag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Oct 17 - TOTAL",
+                "name": "oct_17_total",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Nov 17 - LEAD",
+                "name": "nov_17_lead",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Nov 17 - LAG",
+                "name": "nov_17_lag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Nov 17 - TOTAL",
+                "name": "nov_17_total",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Dec 17 - LEAD",
+                "name": "dec_17_lead",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Dec 17  -LAG",
+                "name": "dec_17_lag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Dec 17  - TOTAL",
+                "name": "dec_17_total",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Jan 18 - LEAD",
+                "name": "jan_18_lead",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Jan 18  - LAG",
+                "name": "jan_18_lag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Jan 18 - TOTAL",
+                "name": "jan_18_total",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Feb 18 - LEAD",
+                "name": "feb_18_lead",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Feb 18 - LAG",
+                "name": "feb_18_lag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Feb 18 - TOTAL",
+                "name": "feb_18_total",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Mar 18 - LEAD",
+                "name": "mar_18_lead",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Mar 18  - LAG",
+                "name": "mar_18_lag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Mar 18 - TOTAL",
+                "name": "mar_18_total",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Apr 18 - LEAD",
+                "name": "apr_18_lead",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Apr 18  - LAG",
+                "name": "apr_18_lag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Apr 18 - TOTAL",
+                "name": "apr_18_total",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "May 18 - LEAD",
+                "name": "may_18_lead",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "May 18 - LAG",
+                "name": "may_18_lag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "May 18 - TOTAL",
+                "name": "may_18_total",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Jun 18 - LEAD",
+                "name": "jun_18_lead",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Jun 18 -LAG",
+                "name": "jun_18_lag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Jun 18  - TOTAL",
+                "name": "jun_18_total",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Jul 18 - LEAD",
+                "name": "jul_18_lead",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Jul 18  - LAG",
+                "name": "jul_18_lag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Jul 18 - TOTAL",
+                "name": "jul_18_total",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Aug 18 - LEAD",
+                "name": "aug_18_lead",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Aug 18 - LAG",
+                "name": "aug_18_lag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Aug 18 - TOTAL",
+                "name": "aug_18_total",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Sep 18 - LEAD",
+                "name": "sep_18_lead",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Sep 18  - LAG",
+                "name": "sep_18_lag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Sep 18 - TOTAL",
+                "name": "sep_18_total",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Oct 18 - LEAD",
+                "name": "oct_18_lead",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Oct 18  - LAG",
+                "name": "oct_18_lag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Oct 18 - TOTAL",
+                "name": "oct_18_total",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Nov 18 - LEAD",
+                "name": "nov_18_lead",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Nov 18 - LAG",
+                "name": "nov_18_lag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Nov 18 - TOTAL",
+                "name": "nov_18_total",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Dec 18 - LEAD",
+                "name": "dec_18_lead",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Dec 18 -LAG",
+                "name": "dec_18_lag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Dec 18  - TOTAL",
+                "name": "dec_18_total",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Jan 19 - LEAD",
+                "name": "jan_19_lead",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Jan 19  - LAG",
+                "name": "jan_19_lag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Jan 19 - TOTAL",
+                "name": "jan_19_total",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Feb 19 - LEAD",
+                "name": "feb_19_lead",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Feb 19 - LAG",
+                "name": "feb_19_lag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Feb 19- TOTAL",
+                "name": "feb_19_total",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Mar 19 - LEAD",
+                "name": "mar_19_lead",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Mar 19  - LAG",
+                "name": "mar_19_lag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Mar 19 - TOTAL",
+                "name": "mar_19_total",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Apr 19 - LEAD",
+                "name": "apr_19_lead",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Apr 19 -LAG",
+                "name": "apr_19_lag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Apr 19- TOTAL",
+                "name": "apr_19_total",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "May 19 - LEAD",
+                "name": "may_19_lead",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "May 19 -LAG",
+                "name": "may_19_lag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "May 19- TOTAL",
+                "name": "may_19_total",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Jun 19 - LEAD",
+                "name": "jun_19_lead",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Jun 19 -LAG",
+                "name": "jun_19_lag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Jun 19- TOTAL",
+                "name": "jun_19_total",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Jul 19 - LEAD",
+                "name": "jul_19_lead",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Jul 19 -LAG",
+                "name": "jul_19_lag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Jul 19- TOTAL",
+                "name": "jul_19_total",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Aug 19 - LEAD",
+                "name": "aug_19_lead",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Aug 19 -LAG",
+                "name": "aug_19_lag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Aug 19- TOTAL",
+                "name": "aug_19_total",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Sep 19 - LEAD",
+                "name": "sep_19_lead",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Sep 19 -LAG",
+                "name": "sep_19_lag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Sep 19- TOTAL",
+                "name": "sep_19_total",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Oct 19 -LEAD",
+                "name": "oct_19_lead",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Oct 19 - LAG",
+                "name": "oct_19_lag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Oct -19 TOTAL",
+                "name": "oct_19_total",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Nov 19 -LEAD",
+                "name": "nov_19_lead",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Nov 19 - LAG",
+                "name": "nov_19_lag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Nov -19 TOTAL",
+                "name": "nov_19_total",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Dec 19 -LEAD",
+                "name": "dec_19_lead",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Dec 19 - LAG",
+                "name": "dec_19_lag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Dec 19 - TOTAL",
+                "name": "dec_19_total",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Jan 20 -LEAD",
+                "name": "jan_20_lead",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Jan 20 - LAG",
+                "name": "jan_20_lag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Jan 20 - TOTAL",
+                "name": "jan_20_total",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Feb 20 -LEAD",
+                "name": "feb_20_lead",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Feb 20 - LAG",
+                "name": "feb_20_lag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Feb 20 - TOTAL",
+                "name": "feb_20_total",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Mar 20 -LEAD",
+                "name": "mar_20_lead",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Mar 20 - LAG",
+                "name": "mar_20_lag",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Mar 20 - TOTAL",
+                "name": "mar_20_total",
+                "dtype": "string",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "company",
+          "unit",
+          "default_market",
+          "location",
+          "oct_13_lead",
+          "oct_13_lag",
+          "oct_13_total",
+          "nov_13_lead",
+          "nov_13_lag",
+          "nov_13_total",
+          "dec_13_lead",
+          "dec_13_lag",
+          "dec_13_total",
+          "jan_14_lead",
+          "jan_14_lag",
+          "jan_14_total",
+          "feb_14_lead",
+          "feb_14_lag",
+          "feb_14_total",
+          "mar_14_lead",
+          "mar_14_lag",
+          "mar_14_total",
+          "apr_14_lead",
+          "apr_14_lag",
+          "apr_14_total",
+          "may_14_lead",
+          "may_14_lag",
+          "may_14_total",
+          "jun_14_lead",
+          "jun_14_lag",
+          "jun_14_total",
+          "jul_14_lead",
+          "jul_14_lag",
+          "jul_14_total",
+          "aug_14_lead",
+          "aug_14_lag",
+          "aug_14_total",
+          "sep_14_lead",
+          "sep_14_lag",
+          "sep_14_total",
+          "oct_14_lead",
+          "oct_14_lag",
+          "oct_14_total",
+          "nov_14_lead",
+          "nov_14_lag",
+          "nov_14_total",
+          "dec_14_lead",
+          "dec_14_lag",
+          "dec_14_total",
+          "jan_15_lead",
+          "jan_15_lag",
+          "jan_15_total",
+          "feb_15_lead",
+          "feb_15_lag",
+          "feb_15_total",
+          "mar_15_lead",
+          "mar_15_lag",
+          "mar_15_total",
+          "apr_15_lead",
+          "apr_15_lag",
+          "apr_15_total",
+          "may_15_lead",
+          "may_15_lag",
+          "may_15_total",
+          "jun_15_lead",
+          "jun_15_lag",
+          "jun_15_total",
+          "jul_15_lead",
+          "jul_15_lag",
+          "jul_15_total",
+          "aug_15_lead",
+          "aug_15_lag",
+          "aug_15_total",
+          "sep_15_lead",
+          "sep_15_lag",
+          "sep_15_total",
+          "oct_15_lead",
+          "oct_15_lag",
+          "oct_15_total",
+          "nov_15_lead",
+          "nov_15_lag",
+          "nov_15_total",
+          "dec_15_lead",
+          "dec_15_lag",
+          "dec_15_total",
+          "jan_16_lead",
+          "jan_16_lag",
+          "jan_16_total",
+          "feb_16_lead",
+          "feb_16_lag",
+          "feb_16_total",
+          "mar_16_lead",
+          "mar_16_lag",
+          "mar_16_total",
+          "apr_16_lead",
+          "apr_16_lag",
+          "apr_16_total",
+          "may_16_lead",
+          "may_16_lag",
+          "may_16_total",
+          "jun_16_lead",
+          "jun_16_lag",
+          "jun_16_total",
+          "jul_16_lead",
+          "jul_16_lag",
+          "jul_16_total",
+          "aug_16_lead",
+          "aug_16_lag",
+          "aug_16_total",
+          "sep_16_lead",
+          "sep_16_lag",
+          "sep_16_total",
+          "oct_16_lead",
+          "oct_16_lag",
+          "oct_16_total",
+          "nov_16_lead",
+          "nov_16_lag",
+          "nov_16_total",
+          "dec_16_lead",
+          "dec_16_lag",
+          "dec_16_total",
+          "jan_17_lead",
+          "jan_17_lag",
+          "jan_17_total",
+          "feb_17_lead",
+          "feb_17_lag",
+          "feb_17_total",
+          "mar_17_lead",
+          "mar_17_lag",
+          "mar_17_total",
+          "apr_17_lead",
+          "apr_17_lag",
+          "apr_17_total",
+          "may_17_lead",
+          "may_17_lag",
+          "may_17_total",
+          "jun_17_lead",
+          "jun_17_lag",
+          "jun_17_total",
+          "jul_17_lead",
+          "jul_17_lag",
+          "jul_17_total",
+          "aug_17_lead",
+          "aug_17_lag",
+          "aug_17_total",
+          "sep_17_lead",
+          "sep_17_lag",
+          "sep_17_total",
+          "oct_17_lead",
+          "oct_17_lag",
+          "oct_17_total",
+          "nov_17_lead",
+          "nov_17_lag",
+          "nov_17_total",
+          "dec_17_lead",
+          "dec_17_lag",
+          "dec_17_total",
+          "jan_18_lead",
+          "jan_18_lag",
+          "jan_18_total",
+          "feb_18_lead",
+          "feb_18_lag",
+          "feb_18_total",
+          "mar_18_lead",
+          "mar_18_lag",
+          "mar_18_total",
+          "apr_18_lead",
+          "apr_18_lag",
+          "apr_18_total",
+          "may_18_lead",
+          "may_18_lag",
+          "may_18_total",
+          "jun_18_lead",
+          "jun_18_lag",
+          "jun_18_total",
+          "jul_18_lead",
+          "jul_18_lag",
+          "jul_18_total",
+          "aug_18_lead",
+          "aug_18_lag",
+          "aug_18_total",
+          "sep_18_lead",
+          "sep_18_lag",
+          "sep_18_total",
+          "oct_18_lead",
+          "oct_18_lag",
+          "oct_18_total",
+          "nov_18_lead",
+          "nov_18_lag",
+          "nov_18_total",
+          "dec_18_lead",
+          "dec_18_lag",
+          "dec_18_total",
+          "jan_19_lead",
+          "jan_19_lag",
+          "jan_19_total",
+          "feb_19_lead",
+          "feb_19_lag",
+          "feb_19_total",
+          "mar_19_lead",
+          "mar_19_lag",
+          "mar_19_total",
+          "apr_19_lead",
+          "apr_19_lag",
+          "apr_19_total",
+          "may_19_lead",
+          "may_19_lag",
+          "may_19_total",
+          "jun_19_lead",
+          "jun_19_lag",
+          "jun_19_total",
+          "jul_19_lead",
+          "jul_19_lag",
+          "jul_19_total",
+          "aug_19_lead",
+          "aug_19_lag",
+          "aug_19_total",
+          "sep_19_lead",
+          "sep_19_lag",
+          "sep_19_total",
+          "oct_19_lead",
+          "oct_19_lag",
+          "oct_19_total",
+          "nov_19_lead",
+          "nov_19_lag",
+          "nov_19_total",
+          "dec_19_lead",
+          "dec_19_lag",
+          "dec_19_total",
+          "jan_20_lead",
+          "jan_20_lag",
+          "jan_20_total",
+          "feb_20_lead",
+          "feb_20_lag",
+          "feb_20_total",
+          "mar_20_lead",
+          "mar_20_lag",
+          "mar_20_total"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: ORPS-HIST-DASH / ORPS-HIST-IDENTITY — what does the padded `-` cell mean (zero, not reported, not applicable)? And the identity (SPLN, SPLN_01Z, D, M) appears twice (rows 181 and 277) with 234 different values: are these two distinct entries, and what distinguishes them?",
+          "unit": "v0.22-K-AS-3b"
+        }
+      }
     },
     {
       "key": "orps_utilisation_reactive_default",
@@ -28,7 +1960,100 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Year",
+              "Month",
+              "HPIm",
+              "PAPIm",
+              "PPIm",
+              "FRPIm",
+              "Im",
+              "X = 1",
+              "X = 0.2"
+            ],
+            "columns": [
+              {
+                "source": "Year",
+                "name": "year_vendor",
+                "dtype": "int64",
+                "nullable": false
+              },
+              {
+                "source": "Month",
+                "name": "month_vendor",
+                "dtype": "int64",
+                "nullable": false
+              },
+              {
+                "source": "HPIm",
+                "name": "hpim",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "PAPIm",
+                "name": "papim",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "PPIm",
+                "name": "ppim",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "FRPIm",
+                "name": "frpim",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Im",
+                "name": "im",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "X = 1",
+                "name": "x_1",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "X = 0.2",
+                "name": "x_0_2",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "year_vendor",
+          "month_vendor"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: ORPS-PRICE-INPUT-UNITS — the dictionary labels HPIm, PAPIm and PPIm only \"£\" and NESO's default-payment guidance calls them power-price inputs without a denominator; what unit are they in this export? (FRPIm is a dimensionless RPI index, Im a dimensionless indexation factor, X = 1 / X = 0.2 are £/MVArh rates.)",
+          "unit": "v0.22-K-AS-3b"
+        }
+      }
     },
     {
       "key": "orps_utilisation_reactive",
@@ -39,7 +2064,1271 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "id",
+              "Company",
+              "Unit",
+              "Default/Market",
+              "Location",
+              "Apr 20 -LEAD",
+              "Apr 20 - LAG",
+              "Apr 20 - TOTAL",
+              "May 20 -LEAD",
+              "May 20 - LAG",
+              "May 20 - TOTAL",
+              "Jun 20 -LEAD",
+              "Jun 20 - LAG",
+              "Jun 20 - TOTAL",
+              "Jul 20 -LEAD",
+              "Jul 20 - LAG",
+              "Jul 20 - TOTAL",
+              "Aug 20 -LEAD",
+              "Aug 20 - LAG",
+              "Aug 20 - TOTAL",
+              "Sep 20 -LEAD",
+              "Sep 20 - LAG",
+              "Sep 20 - TOTAL",
+              "Oct 20 -LEAD",
+              "Oct 20 - LAG",
+              "Oct 20 - TOTAL",
+              "Nov 20 -LEAD",
+              "Nov 20 - LAG",
+              "Nov 20 - TOTAL",
+              "Dec 20 -LEAD",
+              "Dec 20 - LAG",
+              "Dec 20 - TOTAL",
+              "Jan 21 -LEAD",
+              "Jan 21 - LAG",
+              "Jan 21 - TOTAL",
+              "Feb 21 -LEAD",
+              "Feb 21 - LAG",
+              "Feb 21 - TOTAL",
+              "Mar 21 -LEAD",
+              "Mar 21 - LAG",
+              "Mar 21 - TOTAL",
+              "Apr 21 -LEAD",
+              "Apr 21 - LAG",
+              "Apr 21 - TOTAL",
+              "May 21 -LEAD",
+              "May 21 - LAG",
+              "May 21 - TOTAL",
+              "Jun 21 -LEAD",
+              "Jun 21 - LAG",
+              "Jun 21 - TOTAL",
+              "Jul 21 -LEAD",
+              "Jul 21 - LAG",
+              "Jul 21 - TOTAL",
+              "Aug 21 -LEAD",
+              "Aug 21 - LAG",
+              "Aug 21 - TOTAL",
+              "Sep 21 -LEAD",
+              "Sep 21 - LAG",
+              "Sep 21 - TOTAL",
+              "Oct 21 -LEAD",
+              "Oct 21 - LAG",
+              "Oct 21 - TOTAL",
+              "Nov 21 -LEAD",
+              "Nov  21 - LAG",
+              "Nov  21 - TOTAL",
+              "Dec 21 - LEAD",
+              "Dec 21 - LAG",
+              "Dec 21 - Total",
+              "Jan 22 - LEAD",
+              "Jan 22 - LAG",
+              "Jan 22 - Total",
+              "Feb 22 - LEAD",
+              "Feb 22 - LAG",
+              "Feb 22 - Total",
+              "Mar 22 - LEAD",
+              "Mar 22 - LAG",
+              "Mar 22 - Total",
+              "Apr 22 - LEAD",
+              "Apr 22 - LAG",
+              "Apr 22 - Total",
+              "May 22 - LEAD",
+              "May 22 - LAG",
+              "May 22 - Total",
+              "Jun 22 - LEAD",
+              "Jun 22 - LAG",
+              "Jun 22 - Total",
+              "Jul 22 - LEAD",
+              "Jul 22 - LAG",
+              "Jul 22 - Total",
+              "Aug 22 - LEAD",
+              "Aug 22 - LAG",
+              "Aug 22 - Total",
+              "Sep 22 - LEAD",
+              "Sep 22 - LAG",
+              "Sep 22 - Total",
+              "Oct 22 - LEAD",
+              "Oct 22 - LAG",
+              "Oct 22 - Total",
+              "Nov 22 - LEAD",
+              "Nov 22 - LAG",
+              "Nov 22 - Total",
+              "Dec 22 - LEAD",
+              "Dec 22 - LAG",
+              "Dec 22 - Total",
+              "Jan 23 - LEAD",
+              "Jan 23 - LAG",
+              "Jan 23 - Total",
+              "Feb 23 - LEAD",
+              "Feb 23 - LAG",
+              "Feb 23 - Total",
+              "Mar 23 - LEAD",
+              "Mar 23 - LAG",
+              "Mar 23 - Total",
+              "Apr 23 - LEAD",
+              "Apr 23 - LAG",
+              "Apr 23 - Total",
+              "May 23 - LEAD",
+              "May 23 - LAG",
+              "May 23 - Total",
+              "June 23 - LEAD",
+              "June 23 - LAG",
+              "June 23 - Total",
+              "July 23 - LEAD",
+              "July 23 - LAG",
+              "July 23 - Total",
+              "Aug 23 - LEAD",
+              "Aug 23 - LAG",
+              "Aug 23 - Total",
+              "Sep 23 - LEAD",
+              "Sep 23 - LAG",
+              "Sep 23 - Total",
+              "Oct 23 - LEAD",
+              "Oct 23 - LAG",
+              "Oct 23 - Total",
+              "Nov 23 - LEAD",
+              "Nov 23 - LAG",
+              "Nov 23 - Total",
+              "Dec 23 - LEAD",
+              "Dec 23 - LAG",
+              "Dec 23 - Total",
+              "Jan 24 - LEAD",
+              "Jan 24 - LAG",
+              "Jan 24 - Total",
+              "Feb 24 - LEAD",
+              "Feb 24 - LAG",
+              "Feb 24 - Total",
+              "Mar 24 - LEAD",
+              "Mar 24 - LAG",
+              "Mar 24 - Total",
+              "Apr 24 - LEAD",
+              "Apr 24 - LAG",
+              "Apr 24 - Total",
+              "May 24 - LEAD",
+              "May 24 - LAG",
+              "May 24 - Total",
+              "June 24 - LEAD",
+              "June 24 - LAG",
+              "June 24 - Total",
+              "July 24 - LEAD",
+              "July 24 - LAG",
+              "July 24 - Total",
+              "Aug 24 - LEAD",
+              "Aug 24 - LAG",
+              "Aug 24 - Total",
+              "Sep 24 - LEAD",
+              "Sep 24 - LAG",
+              "Sep 24 - Total",
+              "Oct 24 - LEAD",
+              "Oct 24 - LAG",
+              "Oct 24 - Total",
+              "Nov 24 - LEAD",
+              "Nov 24 - LAG",
+              "Nov 24 - Total",
+              "Dec 24 - LEAD",
+              "Dec 24 - LAG",
+              "Dec 24 - Total"
+            ],
+            "columns": [
+              {
+                "source": "id",
+                "name": "id",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Company",
+                "name": "company",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Unit",
+                "name": "unit",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Default/Market",
+                "name": "default_market",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Location",
+                "name": "location",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Apr 20 -LEAD",
+                "name": "apr_20_lead",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Apr 20 - LAG",
+                "name": "apr_20_lag",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Apr 20 - TOTAL",
+                "name": "apr_20_total",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "May 20 -LEAD",
+                "name": "may_20_lead",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "May 20 - LAG",
+                "name": "may_20_lag",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "May 20 - TOTAL",
+                "name": "may_20_total",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Jun 20 -LEAD",
+                "name": "jun_20_lead",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Jun 20 - LAG",
+                "name": "jun_20_lag",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Jun 20 - TOTAL",
+                "name": "jun_20_total",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Jul 20 -LEAD",
+                "name": "jul_20_lead",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Jul 20 - LAG",
+                "name": "jul_20_lag",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Jul 20 - TOTAL",
+                "name": "jul_20_total",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Aug 20 -LEAD",
+                "name": "aug_20_lead",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Aug 20 - LAG",
+                "name": "aug_20_lag",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Aug 20 - TOTAL",
+                "name": "aug_20_total",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Sep 20 -LEAD",
+                "name": "sep_20_lead",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Sep 20 - LAG",
+                "name": "sep_20_lag",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Sep 20 - TOTAL",
+                "name": "sep_20_total",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Oct 20 -LEAD",
+                "name": "oct_20_lead",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Oct 20 - LAG",
+                "name": "oct_20_lag",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Oct 20 - TOTAL",
+                "name": "oct_20_total",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Nov 20 -LEAD",
+                "name": "nov_20_lead",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Nov 20 - LAG",
+                "name": "nov_20_lag",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Nov 20 - TOTAL",
+                "name": "nov_20_total",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Dec 20 -LEAD",
+                "name": "dec_20_lead",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Dec 20 - LAG",
+                "name": "dec_20_lag",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Dec 20 - TOTAL",
+                "name": "dec_20_total",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Jan 21 -LEAD",
+                "name": "jan_21_lead",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Jan 21 - LAG",
+                "name": "jan_21_lag",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Jan 21 - TOTAL",
+                "name": "jan_21_total",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Feb 21 -LEAD",
+                "name": "feb_21_lead",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Feb 21 - LAG",
+                "name": "feb_21_lag",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Feb 21 - TOTAL",
+                "name": "feb_21_total",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Mar 21 -LEAD",
+                "name": "mar_21_lead",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Mar 21 - LAG",
+                "name": "mar_21_lag",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Mar 21 - TOTAL",
+                "name": "mar_21_total",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Apr 21 -LEAD",
+                "name": "apr_21_lead",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Apr 21 - LAG",
+                "name": "apr_21_lag",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Apr 21 - TOTAL",
+                "name": "apr_21_total",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "May 21 -LEAD",
+                "name": "may_21_lead",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "May 21 - LAG",
+                "name": "may_21_lag",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "May 21 - TOTAL",
+                "name": "may_21_total",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Jun 21 -LEAD",
+                "name": "jun_21_lead",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Jun 21 - LAG",
+                "name": "jun_21_lag",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Jun 21 - TOTAL",
+                "name": "jun_21_total",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Jul 21 -LEAD",
+                "name": "jul_21_lead",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Jul 21 - LAG",
+                "name": "jul_21_lag",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Jul 21 - TOTAL",
+                "name": "jul_21_total",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Aug 21 -LEAD",
+                "name": "aug_21_lead",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Aug 21 - LAG",
+                "name": "aug_21_lag",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Aug 21 - TOTAL",
+                "name": "aug_21_total",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Sep 21 -LEAD",
+                "name": "sep_21_lead",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Sep 21 - LAG",
+                "name": "sep_21_lag",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Sep 21 - TOTAL",
+                "name": "sep_21_total",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Oct 21 -LEAD",
+                "name": "oct_21_lead",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Oct 21 - LAG",
+                "name": "oct_21_lag",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Oct 21 - TOTAL",
+                "name": "oct_21_total",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Nov 21 -LEAD",
+                "name": "nov_21_lead",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Nov  21 - LAG",
+                "name": "nov_21_lag",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Nov  21 - TOTAL",
+                "name": "nov_21_total",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Dec 21 - LEAD",
+                "name": "dec_21_lead",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Dec 21 - LAG",
+                "name": "dec_21_lag",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Dec 21 - Total",
+                "name": "dec_21_total",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Jan 22 - LEAD",
+                "name": "jan_22_lead",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Jan 22 - LAG",
+                "name": "jan_22_lag",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Jan 22 - Total",
+                "name": "jan_22_total",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Feb 22 - LEAD",
+                "name": "feb_22_lead",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Feb 22 - LAG",
+                "name": "feb_22_lag",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Feb 22 - Total",
+                "name": "feb_22_total",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Mar 22 - LEAD",
+                "name": "mar_22_lead",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Mar 22 - LAG",
+                "name": "mar_22_lag",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Mar 22 - Total",
+                "name": "mar_22_total",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Apr 22 - LEAD",
+                "name": "apr_22_lead",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Apr 22 - LAG",
+                "name": "apr_22_lag",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Apr 22 - Total",
+                "name": "apr_22_total",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "May 22 - LEAD",
+                "name": "may_22_lead",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "May 22 - LAG",
+                "name": "may_22_lag",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "May 22 - Total",
+                "name": "may_22_total",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Jun 22 - LEAD",
+                "name": "jun_22_lead",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Jun 22 - LAG",
+                "name": "jun_22_lag",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Jun 22 - Total",
+                "name": "jun_22_total",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Jul 22 - LEAD",
+                "name": "jul_22_lead",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Jul 22 - LAG",
+                "name": "jul_22_lag",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Jul 22 - Total",
+                "name": "jul_22_total",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Aug 22 - LEAD",
+                "name": "aug_22_lead",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Aug 22 - LAG",
+                "name": "aug_22_lag",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Aug 22 - Total",
+                "name": "aug_22_total",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Sep 22 - LEAD",
+                "name": "sep_22_lead",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Sep 22 - LAG",
+                "name": "sep_22_lag",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Sep 22 - Total",
+                "name": "sep_22_total",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Oct 22 - LEAD",
+                "name": "oct_22_lead",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Oct 22 - LAG",
+                "name": "oct_22_lag",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Oct 22 - Total",
+                "name": "oct_22_total",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Nov 22 - LEAD",
+                "name": "nov_22_lead",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Nov 22 - LAG",
+                "name": "nov_22_lag",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Nov 22 - Total",
+                "name": "nov_22_total",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Dec 22 - LEAD",
+                "name": "dec_22_lead",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Dec 22 - LAG",
+                "name": "dec_22_lag",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Dec 22 - Total",
+                "name": "dec_22_total",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Jan 23 - LEAD",
+                "name": "jan_23_lead",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Jan 23 - LAG",
+                "name": "jan_23_lag",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Jan 23 - Total",
+                "name": "jan_23_total",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Feb 23 - LEAD",
+                "name": "feb_23_lead",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Feb 23 - LAG",
+                "name": "feb_23_lag",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Feb 23 - Total",
+                "name": "feb_23_total",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Mar 23 - LEAD",
+                "name": "mar_23_lead",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Mar 23 - LAG",
+                "name": "mar_23_lag",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Mar 23 - Total",
+                "name": "mar_23_total",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Apr 23 - LEAD",
+                "name": "apr_23_lead",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Apr 23 - LAG",
+                "name": "apr_23_lag",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Apr 23 - Total",
+                "name": "apr_23_total",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "May 23 - LEAD",
+                "name": "may_23_lead",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "May 23 - LAG",
+                "name": "may_23_lag",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "May 23 - Total",
+                "name": "may_23_total",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "June 23 - LEAD",
+                "name": "june_23_lead",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "June 23 - LAG",
+                "name": "june_23_lag",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "June 23 - Total",
+                "name": "june_23_total",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "July 23 - LEAD",
+                "name": "july_23_lead",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "July 23 - LAG",
+                "name": "july_23_lag",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "July 23 - Total",
+                "name": "july_23_total",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Aug 23 - LEAD",
+                "name": "aug_23_lead",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Aug 23 - LAG",
+                "name": "aug_23_lag",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Aug 23 - Total",
+                "name": "aug_23_total",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Sep 23 - LEAD",
+                "name": "sep_23_lead",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Sep 23 - LAG",
+                "name": "sep_23_lag",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Sep 23 - Total",
+                "name": "sep_23_total",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Oct 23 - LEAD",
+                "name": "oct_23_lead",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Oct 23 - LAG",
+                "name": "oct_23_lag",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Oct 23 - Total",
+                "name": "oct_23_total",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Nov 23 - LEAD",
+                "name": "nov_23_lead",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Nov 23 - LAG",
+                "name": "nov_23_lag",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Nov 23 - Total",
+                "name": "nov_23_total",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Dec 23 - LEAD",
+                "name": "dec_23_lead",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Dec 23 - LAG",
+                "name": "dec_23_lag",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Dec 23 - Total",
+                "name": "dec_23_total",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Jan 24 - LEAD",
+                "name": "jan_24_lead",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Jan 24 - LAG",
+                "name": "jan_24_lag",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Jan 24 - Total",
+                "name": "jan_24_total",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Feb 24 - LEAD",
+                "name": "feb_24_lead",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Feb 24 - LAG",
+                "name": "feb_24_lag",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Feb 24 - Total",
+                "name": "feb_24_total",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Mar 24 - LEAD",
+                "name": "mar_24_lead",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Mar 24 - LAG",
+                "name": "mar_24_lag",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Mar 24 - Total",
+                "name": "mar_24_total",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Apr 24 - LEAD",
+                "name": "apr_24_lead",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Apr 24 - LAG",
+                "name": "apr_24_lag",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Apr 24 - Total",
+                "name": "apr_24_total",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "May 24 - LEAD",
+                "name": "may_24_lead",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "May 24 - LAG",
+                "name": "may_24_lag",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "May 24 - Total",
+                "name": "may_24_total",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "June 24 - LEAD",
+                "name": "june_24_lead",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "June 24 - LAG",
+                "name": "june_24_lag",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "June 24 - Total",
+                "name": "june_24_total",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "July 24 - LEAD",
+                "name": "july_24_lead",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "July 24 - LAG",
+                "name": "july_24_lag",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "July 24 - Total",
+                "name": "july_24_total",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Aug 24 - LEAD",
+                "name": "aug_24_lead",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Aug 24 - LAG",
+                "name": "aug_24_lag",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Aug 24 - Total",
+                "name": "aug_24_total",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Sep 24 - LEAD",
+                "name": "sep_24_lead",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Sep 24 - LAG",
+                "name": "sep_24_lag",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Sep 24 - Total",
+                "name": "sep_24_total",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Oct 24 - LEAD",
+                "name": "oct_24_lead",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Oct 24 - LAG",
+                "name": "oct_24_lag",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Oct 24 - Total",
+                "name": "oct_24_total",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Nov 24 - LEAD",
+                "name": "nov_24_lead",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Nov 24 - LAG",
+                "name": "nov_24_lag",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Nov 24 - Total",
+                "name": "nov_24_total",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Dec 24 - LEAD",
+                "name": "dec_24_lead",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Dec 24 - LAG",
+                "name": "dec_24_lag",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Dec 24 - Total",
+                "name": "dec_24_total",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "company",
+          "unit",
+          "default_market",
+          "location"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: ORPS-REACTIVE-ARCHIVE — the current long table restates every unit/month of this Apr-20 … Dec-24 archive but differs on 241 values and publishes 2,895 of its blanks as 0; is this archive superseded, and does a blank mean zero or not reported?",
+          "unit": "v0.22-K-AS-3b"
+        }
+      }
     },
     {
       "key": "orps_utilisation_files",
@@ -62,272 +3351,272 @@
       "family": "orps_utilisation_files",
       "disposition": {
         "kind": "HOLD",
-        "reason": "data container: child inventory committed by X; records pending in AS-3",
-        "unit": "AS-3"
+        "reason": "TODO: ORPS-WORKBOOK-LAYOUT — merged monthly headers, notes and totals; the ADR-037 single-block XLSX reader cannot read a sheet faithfully; re-disposition only after a reader unit with per-sheet flattened headers and verified table boundaries",
+        "unit": "v0.22-K-AS-3b"
       },
       "children": [
         {
           "child": "Oct00-Mar05",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family orps_utilisation_workbook: record pending in AS-3 (V-11)",
-            "unit": "AS-3"
+            "reason": "TODO: ORPS-WORKBOOK-LAYOUT — merged monthly headers, notes and totals; the ADR-037 single-block XLSX reader cannot read a sheet faithfully; re-disposition only after a reader unit with per-sheet flattened headers and verified table boundaries",
+            "unit": "v0.22-K-AS-3b"
           }
         },
         {
           "child": "Apr05-Sep06",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family orps_utilisation_workbook: record pending in AS-3 (V-11)",
-            "unit": "AS-3"
+            "reason": "TODO: ORPS-WORKBOOK-LAYOUT — merged monthly headers, notes and totals; the ADR-037 single-block XLSX reader cannot read a sheet faithfully; re-disposition only after a reader unit with per-sheet flattened headers and verified table boundaries",
+            "unit": "v0.22-K-AS-3b"
           }
         },
         {
           "child": "Oct06-Mar07",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family orps_utilisation_workbook: record pending in AS-3 (V-11)",
-            "unit": "AS-3"
+            "reason": "TODO: ORPS-WORKBOOK-LAYOUT — merged monthly headers, notes and totals; the ADR-037 single-block XLSX reader cannot read a sheet faithfully; re-disposition only after a reader unit with per-sheet flattened headers and verified table boundaries",
+            "unit": "v0.22-K-AS-3b"
           }
         },
         {
           "child": "Apr07-Sep07",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family orps_utilisation_workbook: record pending in AS-3 (V-11)",
-            "unit": "AS-3"
+            "reason": "TODO: ORPS-WORKBOOK-LAYOUT — merged monthly headers, notes and totals; the ADR-037 single-block XLSX reader cannot read a sheet faithfully; re-disposition only after a reader unit with per-sheet flattened headers and verified table boundaries",
+            "unit": "v0.22-K-AS-3b"
           }
         },
         {
           "child": "Oct07-Mar08",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family orps_utilisation_workbook: record pending in AS-3 (V-11)",
-            "unit": "AS-3"
+            "reason": "TODO: ORPS-WORKBOOK-LAYOUT — merged monthly headers, notes and totals; the ADR-037 single-block XLSX reader cannot read a sheet faithfully; re-disposition only after a reader unit with per-sheet flattened headers and verified table boundaries",
+            "unit": "v0.22-K-AS-3b"
           }
         },
         {
           "child": "Apr08-Sep08",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family orps_utilisation_workbook: record pending in AS-3 (V-11)",
-            "unit": "AS-3"
+            "reason": "TODO: ORPS-WORKBOOK-LAYOUT — merged monthly headers, notes and totals; the ADR-037 single-block XLSX reader cannot read a sheet faithfully; re-disposition only after a reader unit with per-sheet flattened headers and verified table boundaries",
+            "unit": "v0.22-K-AS-3b"
           }
         },
         {
           "child": "Oct08-Mar09",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family orps_utilisation_workbook: record pending in AS-3 (V-11)",
-            "unit": "AS-3"
+            "reason": "TODO: ORPS-WORKBOOK-LAYOUT — merged monthly headers, notes and totals; the ADR-037 single-block XLSX reader cannot read a sheet faithfully; re-disposition only after a reader unit with per-sheet flattened headers and verified table boundaries",
+            "unit": "v0.22-K-AS-3b"
           }
         },
         {
           "child": "Apr09-Sep09",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family orps_utilisation_workbook: record pending in AS-3 (V-11)",
-            "unit": "AS-3"
+            "reason": "TODO: ORPS-WORKBOOK-LAYOUT — merged monthly headers, notes and totals; the ADR-037 single-block XLSX reader cannot read a sheet faithfully; re-disposition only after a reader unit with per-sheet flattened headers and verified table boundaries",
+            "unit": "v0.22-K-AS-3b"
           }
         },
         {
           "child": "Oct09-Mar10",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family orps_utilisation_workbook: record pending in AS-3 (V-11)",
-            "unit": "AS-3"
+            "reason": "TODO: ORPS-WORKBOOK-LAYOUT — merged monthly headers, notes and totals; the ADR-037 single-block XLSX reader cannot read a sheet faithfully; re-disposition only after a reader unit with per-sheet flattened headers and verified table boundaries",
+            "unit": "v0.22-K-AS-3b"
           }
         },
         {
           "child": "Apr10-Sep10",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family orps_utilisation_workbook: record pending in AS-3 (V-11)",
-            "unit": "AS-3"
+            "reason": "TODO: ORPS-WORKBOOK-LAYOUT — merged monthly headers, notes and totals; the ADR-037 single-block XLSX reader cannot read a sheet faithfully; re-disposition only after a reader unit with per-sheet flattened headers and verified table boundaries",
+            "unit": "v0.22-K-AS-3b"
           }
         },
         {
           "child": "Oct10-Mar11",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family orps_utilisation_workbook: record pending in AS-3 (V-11)",
-            "unit": "AS-3"
+            "reason": "TODO: ORPS-WORKBOOK-LAYOUT — merged monthly headers, notes and totals; the ADR-037 single-block XLSX reader cannot read a sheet faithfully; re-disposition only after a reader unit with per-sheet flattened headers and verified table boundaries",
+            "unit": "v0.22-K-AS-3b"
           }
         },
         {
           "child": "Apr11-Sep11",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family orps_utilisation_workbook: record pending in AS-3 (V-11)",
-            "unit": "AS-3"
+            "reason": "TODO: ORPS-WORKBOOK-LAYOUT — merged monthly headers, notes and totals; the ADR-037 single-block XLSX reader cannot read a sheet faithfully; re-disposition only after a reader unit with per-sheet flattened headers and verified table boundaries",
+            "unit": "v0.22-K-AS-3b"
           }
         },
         {
           "child": "Oct11-Mar12",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family orps_utilisation_workbook: record pending in AS-3 (V-11)",
-            "unit": "AS-3"
+            "reason": "TODO: ORPS-WORKBOOK-LAYOUT — merged monthly headers, notes and totals; the ADR-037 single-block XLSX reader cannot read a sheet faithfully; re-disposition only after a reader unit with per-sheet flattened headers and verified table boundaries",
+            "unit": "v0.22-K-AS-3b"
           }
         },
         {
           "child": "Apr12-Sep12 ",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family orps_utilisation_workbook: record pending in AS-3 (V-11)",
-            "unit": "AS-3"
+            "reason": "TODO: ORPS-WORKBOOK-LAYOUT — merged monthly headers, notes and totals; the ADR-037 single-block XLSX reader cannot read a sheet faithfully; re-disposition only after a reader unit with per-sheet flattened headers and verified table boundaries",
+            "unit": "v0.22-K-AS-3b"
           }
         },
         {
           "child": "Oct12-Mar13",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family orps_utilisation_workbook: record pending in AS-3 (V-11)",
-            "unit": "AS-3"
+            "reason": "TODO: ORPS-WORKBOOK-LAYOUT — merged monthly headers, notes and totals; the ADR-037 single-block XLSX reader cannot read a sheet faithfully; re-disposition only after a reader unit with per-sheet flattened headers and verified table boundaries",
+            "unit": "v0.22-K-AS-3b"
           }
         },
         {
           "child": "Apr13-Sep13",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family orps_utilisation_workbook: record pending in AS-3 (V-11)",
-            "unit": "AS-3"
+            "reason": "TODO: ORPS-WORKBOOK-LAYOUT — merged monthly headers, notes and totals; the ADR-037 single-block XLSX reader cannot read a sheet faithfully; re-disposition only after a reader unit with per-sheet flattened headers and verified table boundaries",
+            "unit": "v0.22-K-AS-3b"
           }
         },
         {
           "child": "Oct13-Mar14",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family orps_utilisation_workbook: record pending in AS-3 (V-11)",
-            "unit": "AS-3"
+            "reason": "TODO: ORPS-WORKBOOK-LAYOUT — merged monthly headers, notes and totals; the ADR-037 single-block XLSX reader cannot read a sheet faithfully; re-disposition only after a reader unit with per-sheet flattened headers and verified table boundaries",
+            "unit": "v0.22-K-AS-3b"
           }
         },
         {
           "child": "Apr14-Sep14",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family orps_utilisation_workbook: record pending in AS-3 (V-11)",
-            "unit": "AS-3"
+            "reason": "TODO: ORPS-WORKBOOK-LAYOUT — merged monthly headers, notes and totals; the ADR-037 single-block XLSX reader cannot read a sheet faithfully; re-disposition only after a reader unit with per-sheet flattened headers and verified table boundaries",
+            "unit": "v0.22-K-AS-3b"
           }
         },
         {
           "child": "Oct14-Mar15",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family orps_utilisation_workbook: record pending in AS-3 (V-11)",
-            "unit": "AS-3"
+            "reason": "TODO: ORPS-WORKBOOK-LAYOUT — merged monthly headers, notes and totals; the ADR-037 single-block XLSX reader cannot read a sheet faithfully; re-disposition only after a reader unit with per-sheet flattened headers and verified table boundaries",
+            "unit": "v0.22-K-AS-3b"
           }
         },
         {
           "child": "Apr15-Sep15",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family orps_utilisation_workbook: record pending in AS-3 (V-11)",
-            "unit": "AS-3"
+            "reason": "TODO: ORPS-WORKBOOK-LAYOUT — merged monthly headers, notes and totals; the ADR-037 single-block XLSX reader cannot read a sheet faithfully; re-disposition only after a reader unit with per-sheet flattened headers and verified table boundaries",
+            "unit": "v0.22-K-AS-3b"
           }
         },
         {
           "child": "Oct15-Mar16",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family orps_utilisation_workbook: record pending in AS-3 (V-11)",
-            "unit": "AS-3"
+            "reason": "TODO: ORPS-WORKBOOK-LAYOUT — merged monthly headers, notes and totals; the ADR-037 single-block XLSX reader cannot read a sheet faithfully; re-disposition only after a reader unit with per-sheet flattened headers and verified table boundaries",
+            "unit": "v0.22-K-AS-3b"
           }
         },
         {
           "child": "Apr16-Sep16",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family orps_utilisation_workbook: record pending in AS-3 (V-11)",
-            "unit": "AS-3"
+            "reason": "TODO: ORPS-WORKBOOK-LAYOUT — merged monthly headers, notes and totals; the ADR-037 single-block XLSX reader cannot read a sheet faithfully; re-disposition only after a reader unit with per-sheet flattened headers and verified table boundaries",
+            "unit": "v0.22-K-AS-3b"
           }
         },
         {
           "child": "Oct16-Mar17",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family orps_utilisation_workbook: record pending in AS-3 (V-11)",
-            "unit": "AS-3"
+            "reason": "TODO: ORPS-WORKBOOK-LAYOUT — merged monthly headers, notes and totals; the ADR-037 single-block XLSX reader cannot read a sheet faithfully; re-disposition only after a reader unit with per-sheet flattened headers and verified table boundaries",
+            "unit": "v0.22-K-AS-3b"
           }
         },
         {
           "child": "Apr17-Sep17",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family orps_utilisation_workbook: record pending in AS-3 (V-11)",
-            "unit": "AS-3"
+            "reason": "TODO: ORPS-WORKBOOK-LAYOUT — merged monthly headers, notes and totals; the ADR-037 single-block XLSX reader cannot read a sheet faithfully; re-disposition only after a reader unit with per-sheet flattened headers and verified table boundaries",
+            "unit": "v0.22-K-AS-3b"
           }
         },
         {
           "child": "Oct17-Mar18",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family orps_utilisation_workbook: record pending in AS-3 (V-11)",
-            "unit": "AS-3"
+            "reason": "TODO: ORPS-WORKBOOK-LAYOUT — merged monthly headers, notes and totals; the ADR-037 single-block XLSX reader cannot read a sheet faithfully; re-disposition only after a reader unit with per-sheet flattened headers and verified table boundaries",
+            "unit": "v0.22-K-AS-3b"
           }
         },
         {
           "child": "Apr18 - Sep 18",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family orps_utilisation_workbook: record pending in AS-3 (V-11)",
-            "unit": "AS-3"
+            "reason": "TODO: ORPS-WORKBOOK-LAYOUT — merged monthly headers, notes and totals; the ADR-037 single-block XLSX reader cannot read a sheet faithfully; re-disposition only after a reader unit with per-sheet flattened headers and verified table boundaries",
+            "unit": "v0.22-K-AS-3b"
           }
         },
         {
           "child": "Oct 18 - Mar19",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family orps_utilisation_workbook: record pending in AS-3 (V-11)",
-            "unit": "AS-3"
+            "reason": "TODO: ORPS-WORKBOOK-LAYOUT — merged monthly headers, notes and totals; the ADR-037 single-block XLSX reader cannot read a sheet faithfully; re-disposition only after a reader unit with per-sheet flattened headers and verified table boundaries",
+            "unit": "v0.22-K-AS-3b"
           }
         },
         {
           "child": "Apr 19 - Sep 19",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family orps_utilisation_workbook: record pending in AS-3 (V-11)",
-            "unit": "AS-3"
+            "reason": "TODO: ORPS-WORKBOOK-LAYOUT — merged monthly headers, notes and totals; the ADR-037 single-block XLSX reader cannot read a sheet faithfully; re-disposition only after a reader unit with per-sheet flattened headers and verified table boundaries",
+            "unit": "v0.22-K-AS-3b"
           }
         },
         {
           "child": "Oct 19 - Mar 20",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family orps_utilisation_workbook: record pending in AS-3 (V-11)",
-            "unit": "AS-3"
+            "reason": "TODO: ORPS-WORKBOOK-LAYOUT — merged monthly headers, notes and totals; the ADR-037 single-block XLSX reader cannot read a sheet faithfully; re-disposition only after a reader unit with per-sheet flattened headers and verified table boundaries",
+            "unit": "v0.22-K-AS-3b"
           }
         },
         {
           "child": "Apr 20 - Sep 20",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family orps_utilisation_workbook: record pending in AS-3 (V-11)",
-            "unit": "AS-3"
+            "reason": "TODO: ORPS-WORKBOOK-LAYOUT — merged monthly headers, notes and totals; the ADR-037 single-block XLSX reader cannot read a sheet faithfully; re-disposition only after a reader unit with per-sheet flattened headers and verified table boundaries",
+            "unit": "v0.22-K-AS-3b"
           }
         },
         {
           "child": "Oct 20 - Mar 21 ",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family orps_utilisation_workbook: record pending in AS-3 (V-11)",
-            "unit": "AS-3"
+            "reason": "TODO: ORPS-WORKBOOK-LAYOUT — merged monthly headers, notes and totals; the ADR-037 single-block XLSX reader cannot read a sheet faithfully; re-disposition only after a reader unit with per-sheet flattened headers and verified table boundaries",
+            "unit": "v0.22-K-AS-3b"
           }
         },
         {
           "child": "Apr 21 - Sep 21",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family orps_utilisation_workbook: record pending in AS-3 (V-11)",
-            "unit": "AS-3"
+            "reason": "TODO: ORPS-WORKBOOK-LAYOUT — merged monthly headers, notes and totals; the ADR-037 single-block XLSX reader cannot read a sheet faithfully; re-disposition only after a reader unit with per-sheet flattened headers and verified table boundaries",
+            "unit": "v0.22-K-AS-3b"
           }
         },
         {
           "child": "Oct 21 - Mar 22",
           "disposition": {
             "kind": "HOLD",
-            "reason": "proposed family orps_utilisation_workbook: record pending in AS-3 (V-11)",
-            "unit": "AS-3"
+            "reason": "TODO: ORPS-WORKBOOK-LAYOUT — merged monthly headers, notes and totals; the ADR-037 single-block XLSX reader cannot read a sheet faithfully; re-disposition only after a reader unit with per-sheet flattened headers and verified table boundaries",
+            "unit": "v0.22-K-AS-3b"
           }
         }
       ]
@@ -392,8 +3681,9 @@
       "url_type": "upload",
       "family": "orps_utilisation_reactive",
       "disposition": {
-        "kind": "SILVER",
-        "key": "orps_utilisation_reactive"
+        "kind": "HOLD",
+        "reason": "TODO: ORPS-REACTIVE-LONG-DUPLICATE — the current long table repeats the complete row SKWF,SAKNW-1,D,SC,May-25,0,0,0 twice, so no key passes the duplicate guard (RULINGS 538); publication defect or two distinct utilisations? Re-disposition only after a corrected NESO upload (a new last_modified) or a vendor identity column",
+        "unit": "v0.22-K-AS-3b"
       }
     }
   ]

@@ -17,7 +17,113 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Instruction ID",
+              "Sequence",
+              "Unit ID",
+              "Service ID",
+              "Instruction Point Type",
+              "Issue Datetime",
+              "Point Datetime",
+              "Target MW",
+              "Target Price",
+              "Instruction Point ID",
+              "Instruction Status"
+            ],
+            "columns": [
+              {
+                "source": "Instruction ID",
+                "name": "instruction_id",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Sequence",
+                "name": "sequence",
+                "dtype": "int64",
+                "nullable": true
+              },
+              {
+                "source": "Unit ID",
+                "name": "unit_id",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Service ID",
+                "name": "service_id",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Instruction Point Type",
+                "name": "instruction_point_type",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Issue Datetime",
+                "name": "issue_datetime",
+                "dtype": "datetime",
+                "format": "%Y-%m-%dT%H:%M:%S",
+                "nullable": true,
+                "zone": "UTC"
+              },
+              {
+                "source": "Point Datetime",
+                "name": "point_datetime",
+                "dtype": "datetime",
+                "format": "%Y-%m-%dT%H:%M:%S",
+                "nullable": false,
+                "zone": "UTC"
+              },
+              {
+                "source": "Target MW",
+                "name": "target_mw",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Target Price",
+                "name": "target_price",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Instruction Point ID",
+                "name": "instruction_point_id",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Instruction Status",
+                "name": "instruction_status",
+                "dtype": "string",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "utc_instant",
+          "column": "point_datetime"
+        },
+        "entity_key": [
+          "instruction_point_id"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified"
+      }
     }
   ],
   "resources": [
