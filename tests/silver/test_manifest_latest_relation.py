@@ -61,7 +61,8 @@ from gridflow.silver.schema_manifest import (
 # v0.22-K-BAL-2b's nine skip-rate records, then to one hundred and forty-four with
 # v0.22-K-BAL-2c's nine tariff records, then to one hundred and fifty-three with
 # v0.22-K-TRD's nine trading records, then to one hundred and sixty-two with
-# v0.22-K-AS-1's nine ancillary-services records.
+# v0.22-K-AS-1's nine ancillary-services records, then to one hundred and seventy-three with
+# v0.22-K-AS-2's eleven ancillary-services records.
 _APPEND_ONLY_DATASETS: tuple[tuple[str, str], ...] = (
     ("elexon", "system_prices"),
     ("elexon", "remit"),
@@ -225,6 +226,17 @@ _APPEND_ONLY_DATASETS: tuple[tuple[str, str], ...] = (
     ("neso_data_portal", "dr_requirements"),
     ("neso_data_portal", "dc_dm_dr_long_term_fc"),
     ("neso_data_portal", "qr_auction_requirement_fc"),
+    ("neso_data_portal", "as_industry_notifications_balancing"),
+    ("neso_data_portal", "as_industry_notifications_dc_dm_dr"),
+    ("neso_data_portal", "as_industry_notifications_quick_reserve"),
+    ("neso_data_portal", "as_industry_notifications_sffr_important"),
+    ("neso_data_portal", "as_industry_notifications_slow_reserve"),
+    ("neso_data_portal", "as_industry_notifications_stor_important"),
+    ("neso_data_portal", "slow_reserve_requirement_fc"),
+    ("neso_data_portal", "sffr_auction_results_main"),
+    ("neso_data_portal", "sffr_auction_results_buy_orders"),
+    ("neso_data_portal", "sffr_requirement"),
+    ("neso_data_portal", "stor_windows"),
 )
 
 
@@ -418,9 +430,9 @@ def test_append_only_set_equals_latest_spec_set() -> None:
     spec_set = set(LATEST_VIEW_SPECS)
 
     # Non-vacuity guard: this invariant must never pass because both sides are
-    # empty (F16) -- one hundred and sixty-two APPEND_ONLY datasets are registered today.
+    # empty (F16) -- one hundred and seventy-three APPEND_ONLY datasets are registered today.
     assert len(append_only) > 0
-    assert len(append_only) == 162
+    assert len(append_only) == 173
 
     missing_specs = append_only - spec_set
     extra_specs = spec_set - append_only
@@ -797,6 +809,38 @@ _EXPECTED_APPEND_ONLY_DEPRECATED_ALIASES: dict[tuple[str, str], str | None] = {
     ("neso_data_portal", "dr_requirements"): "silver_dr_requirements",
     ("neso_data_portal", "dc_dm_dr_long_term_fc"): "silver_dc_dm_dr_long_term_fc",
     ("neso_data_portal", "qr_auction_requirement_fc"): "silver_qr_auction_requirement_fc",
+    (
+        "neso_data_portal",
+        "as_industry_notifications_balancing",
+    ): "silver_as_industry_notifications_balancing",
+    (
+        "neso_data_portal",
+        "as_industry_notifications_dc_dm_dr",
+    ): "silver_as_industry_notifications_dc_dm_dr",
+    (
+        "neso_data_portal",
+        "as_industry_notifications_quick_reserve",
+    ): "silver_as_industry_notifications_quick_reserve",
+    (
+        "neso_data_portal",
+        "as_industry_notifications_sffr_important",
+    ): "silver_as_industry_notifications_sffr_important",
+    (
+        "neso_data_portal",
+        "as_industry_notifications_slow_reserve",
+    ): "silver_as_industry_notifications_slow_reserve",
+    (
+        "neso_data_portal",
+        "as_industry_notifications_stor_important",
+    ): "silver_as_industry_notifications_stor_important",
+    ("neso_data_portal", "slow_reserve_requirement_fc"): "silver_slow_reserve_requirement_fc",
+    ("neso_data_portal", "sffr_auction_results_main"): "silver_sffr_auction_results_main",
+    (
+        "neso_data_portal",
+        "sffr_auction_results_buy_orders",
+    ): "silver_sffr_auction_results_buy_orders",
+    ("neso_data_portal", "sffr_requirement"): "silver_sffr_requirement",
+    ("neso_data_portal", "stor_windows"): "silver_stor_windows",
 }
 
 

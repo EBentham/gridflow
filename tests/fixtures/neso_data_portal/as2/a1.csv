@@ -1,0 +1,7 @@
+Date,Provider,Unit,Delivery Start,Delivery End,EFA,Service,Status,Volume,Accepted Volume,Price,Clearing Price,Technology Type,Location,Rank
+2023-04-01,Centrica Business Solutions Uk Optimisation UK Ltd,CBSO-2,2023-03-31 23:00:00,2023-04-01 03:00:00,1,SFFR,Accepted,7.0,7.0,0.7,4.5,Diesel,BS2 8HW,20
+2023-04-01,Zenobe Energy Ltd,DBESSH-33,2023-03-31 23:00:00,2023-04-01 03:00:00,1,SFFR,Accepted,9.0,9.0,1.0,4.5,Batteries,BN44,5
+2023-04-01,First Renewable Alpha Ltd,FRASFFR,2023-03-31 23:00:00,2023-04-01 03:00:00,1,SFFR,Accepted,20.0,20.0,3.5,4.5,Diesel,PL32 9SW,15
+2023-04-01,Equivalence Energy,IPSWB-1,2023-03-31 23:00:00,2023-04-01 03:00:00,1,SFFR,Rejected,20.0,0.0,4.5,4.5,Diesel,IP3 0BS,21
+2023-04-01,Peak Gen Power 13 Limited,PGFFR-6,2023-03-31 23:00:00,2023-04-01 03:00:00,1,SFFR,Rejected,18.0,0.0,4.68,4.5,Diesel,PO15 5UB,11
+2023-09-04,Zenobe Energy Ltd,EVZE-01,2023-09-04 07:00:00,2023-09-04 11:00:00,3,SFFR,Accepted,1.0,1.0,1.0,5.2,,,12

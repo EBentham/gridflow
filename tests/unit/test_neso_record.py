@@ -881,6 +881,21 @@ AS1_RECORDED = {
 }
 """The nine ancillary-services families unit K-AS-1 records (four eligible, five held)."""
 
+AS2_RECORDED = {
+    "as_industry_notifications_balancing",
+    "as_industry_notifications_dc_dm_dr",
+    "as_industry_notifications_quick_reserve",
+    "as_industry_notifications_sffr_important",
+    "as_industry_notifications_slow_reserve",
+    "as_industry_notifications_stor_important",
+    "slow_reserve_requirement_fc",
+    "sffr_auction_results_main",
+    "sffr_auction_results_buy_orders",
+    "sffr_requirement",
+    "stor_windows",
+}
+"""The eleven ancillary-services families unit K-AS-2 records (nine eligible, two held)."""
+
 AS1_PACKAGE_FILES = {
     "balancing-reserve-auction-requirement-forecast.json",
     "dynamic-containment-4-day-forecast.json",
@@ -888,6 +903,14 @@ AS1_PACKAGE_FILES = {
     "dynamic-regulation-requirements.json",
     "long-term-forecasts-for-dc-dm-dr-requirements.json",
     "quick-reserve-auction-requirement-forecast.json",
+}
+
+AS2_PACKAGE_FILES = {
+    "ancillary-services-important-industry-notifications.json",
+    "slow-reserve-requirement-forecast.json",
+    "static-firm-frequency-response-auction-results.json",
+    "static-firm-frequency-response-requirement.json",
+    "stor-windows.json",
 }
 
 X_RESOURCES_WITH_CHILDREN = 4 + 1 + 39 + 73 + 1
@@ -931,6 +954,7 @@ class TestSeededRegistry:
             | BAL2C_RECORDED
             | TRD_RECORDED
             | AS1_RECORDED
+            | AS2_RECORDED
         )
         with_children = [res for _package, res in loaded.resources.values() if res.children]
         assert len(with_children) == X_RESOURCES_WITH_CHILDREN
@@ -973,6 +997,7 @@ class TestSeededRegistry:
             | BAL2C_PACKAGE_FILES
             | TRD_PACKAGE_FILES
             | AS1_PACKAGE_FILES
+            | AS2_PACKAGE_FILES
         )
 
 
