@@ -1,0 +1,3 @@
+# Keep the vendor bytes exactly: CRLF terminators, a UTF-8 BOM on the FFR bodies and embedded
+# line feeds inside quoted cells must survive git unchanged.
+*.csv -text

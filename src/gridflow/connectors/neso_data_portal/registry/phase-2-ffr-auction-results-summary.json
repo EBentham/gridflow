@@ -17,7 +17,199 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "MarketName",
+              "BiddingLevelName",
+              "MemberName",
+              "OrderID",
+              "Portfolio",
+              "OrderEntryTime",
+              "OrderEntryUser",
+              "SettlementCurrency",
+              "ClearingPrice",
+              "Price",
+              "MAR",
+              "Status",
+              "BlockCode",
+              "BlockCodePRM",
+              "Paradoxically",
+              "OrderPeriodID",
+              "TradeID",
+              "EFA",
+              "DeliveryStart",
+              "DeliveryEnd",
+              "ExecutedVolume",
+              "Volume",
+              "Invalid",
+              "Bid Validity"
+            ],
+            "columns": [
+              {
+                "source": "MarketName",
+                "name": "market_name",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "BiddingLevelName",
+                "name": "bidding_level_name",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "MemberName",
+                "name": "member_name",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "OrderID",
+                "name": "order_id",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Portfolio",
+                "name": "portfolio",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "OrderEntryTime",
+                "name": "order_entry_time",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "OrderEntryUser",
+                "name": "order_entry_user",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "SettlementCurrency",
+                "name": "settlement_currency",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "ClearingPrice",
+                "name": "clearing_price",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Price",
+                "name": "price",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "MAR",
+                "name": "mar",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Status",
+                "name": "status",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "BlockCode",
+                "name": "block_code",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "BlockCodePRM",
+                "name": "block_code_prm",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Paradoxically",
+                "name": "paradoxically",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "OrderPeriodID",
+                "name": "order_period_id",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "TradeID",
+                "name": "trade_id",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "EFA",
+                "name": "efa",
+                "dtype": "int64",
+                "nullable": true
+              },
+              {
+                "source": "DeliveryStart",
+                "name": "delivery_start",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "DeliveryEnd",
+                "name": "delivery_end",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "ExecutedVolume",
+                "name": "executed_volume",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Volume",
+                "name": "volume",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Invalid",
+                "name": "invalid",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Bid Validity",
+                "name": "bid_validity",
+                "dtype": "string",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "order_id"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified"
+      }
     },
     {
       "key": "ffr_phase2_auction_phase_blockorders",
@@ -28,7 +220,229 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "MarketName",
+              "BiddingLevelName",
+              "MemberName",
+              "OrderID",
+              "Portfolio",
+              "OrderEntryTime",
+              "OrderEntryUser",
+              "SettlementCurrency",
+              "ClearingPrice",
+              "Price",
+              "MAR",
+              "Status",
+              "BlockCode",
+              "BlockCodePRM",
+              "Paradoxically",
+              "OrderPeriodID",
+              "TradeID",
+              "EFA",
+              "DeliveryStart",
+              "DeliveryEnd",
+              "ExecutedVolume",
+              "Volume",
+              "Invalid",
+              "Bid Validity"
+            ],
+            "columns": [
+              {
+                "source": "MarketName",
+                "name": "market_name",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "BiddingLevelName",
+                "name": "bidding_level_name",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "MemberName",
+                "name": "member_name",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "OrderID",
+                "name": "order_id",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Portfolio",
+                "name": "portfolio",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "OrderEntryTime",
+                "name": "order_entry_time",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "OrderEntryUser",
+                "name": "order_entry_user",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "SettlementCurrency",
+                "name": "settlement_currency",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "ClearingPrice",
+                "name": "clearing_price",
+                "dtype": "float64",
+                "nullable": false
+              },
+              {
+                "source": "Price",
+                "name": "price",
+                "dtype": "float64",
+                "nullable": false
+              },
+              {
+                "source": "MAR",
+                "name": "mar",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Status",
+                "name": "status",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "BlockCode",
+                "name": "block_code",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "BlockCodePRM",
+                "name": "block_code_prm",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Paradoxically",
+                "name": "paradoxically",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "OrderPeriodID",
+                "name": "order_period_id",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "TradeID",
+                "name": "trade_id",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "EFA",
+                "name": "efa",
+                "dtype": "int64",
+                "nullable": false
+              },
+              {
+                "source": "DeliveryStart",
+                "name": "delivery_start",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "DeliveryEnd",
+                "name": "delivery_end",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "ExecutedVolume",
+                "name": "executed_volume",
+                "dtype": "float64",
+                "nullable": false
+              },
+              {
+                "source": "Volume",
+                "name": "volume",
+                "dtype": "float64",
+                "nullable": false
+              },
+              {
+                "source": "Invalid",
+                "name": "invalid",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Bid Validity",
+                "name": "bid_validity",
+                "dtype": "string",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "resource_id",
+          "market_name",
+          "bidding_level_name",
+          "member_name",
+          "order_id",
+          "portfolio",
+          "order_entry_time",
+          "order_entry_user",
+          "settlement_currency",
+          "clearing_price",
+          "price",
+          "mar",
+          "status",
+          "block_code",
+          "block_code_prm",
+          "paradoxically",
+          "order_period_id",
+          "trade_id",
+          "efa",
+          "delivery_start",
+          "delivery_end",
+          "executed_volume",
+          "volume",
+          "invalid",
+          "bid_validity"
+        ],
+        "latest": "whole_capture",
+        "latest_partition": "resource_id",
+        "vintage": "ckan_last_modified",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: PHASE2-MASTER-ORDER-ID — the three Phase-2 FFR BlockOrders masterdata exports write OrderID, OrderPeriodID and TradeID in spreadsheet scientific notation (1E+14, 1.00E+14), so no row keeps a recoverable order identity and the record's key is the complete row; can NESO republish the masters with full identifiers? (The 2019-2020 master dictionary and the trial evaluation describe hourly capacity prices while the newest dictionary labels prices £/MW; delivery and entry times are naive with an undocumented export clock.)",
+          "unit": "v0.22-K-AS-5a"
+        }
+      }
     },
     {
       "key": "ffr_phase2_auction_phase_linear_orders",
@@ -39,7 +453,185 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "MarketName",
+              "BiddingLevelName",
+              "MemberName",
+              "OrderID",
+              "Portfolio",
+              "OrderEntryTime",
+              "OrderEntryUser",
+              "SettlementCurrency",
+              "OrderPeriodID",
+              "TradeID",
+              "EFA",
+              "DeliveryStart",
+              "DeliveryEnd",
+              "ExecutedVolume",
+              "1P",
+              "1V",
+              "2P",
+              "2V",
+              "3P",
+              "3V",
+              "4P",
+              "4V"
+            ],
+            "columns": [
+              {
+                "source": "MarketName",
+                "name": "market_name",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "BiddingLevelName",
+                "name": "bidding_level_name",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "MemberName",
+                "name": "member_name",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "OrderID",
+                "name": "order_id",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Portfolio",
+                "name": "portfolio",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "OrderEntryTime",
+                "name": "order_entry_time",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "OrderEntryUser",
+                "name": "order_entry_user",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "SettlementCurrency",
+                "name": "settlement_currency",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "OrderPeriodID",
+                "name": "order_period_id",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "TradeID",
+                "name": "trade_id",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "EFA",
+                "name": "efa",
+                "dtype": "int64",
+                "nullable": true
+              },
+              {
+                "source": "DeliveryStart",
+                "name": "delivery_start",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "DeliveryEnd",
+                "name": "delivery_end",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "ExecutedVolume",
+                "name": "executed_volume",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "1P",
+                "name": "p1",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "1V",
+                "name": "v1",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "2P",
+                "name": "p2",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "2V",
+                "name": "v2",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "3P",
+                "name": "p3",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "3V",
+                "name": "v3",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "4P",
+                "name": "p4",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "4V",
+                "name": "v4",
+                "dtype": "string",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "order_period_id"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified"
+      }
     },
     {
       "key": "ffr_phase2_auction_phase_linearorders",
@@ -50,7 +642,188 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "MarketName",
+              "BiddingLevelName",
+              "MemberName",
+              "OrderID",
+              "Portfolio",
+              "OrderEntryTime",
+              "OrderEntryUser",
+              "SettlementCurrency",
+              "OrderPeriodID",
+              "TradeID",
+              "EFA",
+              "DeliveryStart",
+              "DeliveryEnd",
+              "ExecutedVolume",
+              "1P",
+              "1V",
+              "2P",
+              "2V",
+              "3P",
+              "3V",
+              "4P",
+              "4V"
+            ],
+            "columns": [
+              {
+                "source": "MarketName",
+                "name": "market_name",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "BiddingLevelName",
+                "name": "bidding_level_name",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "MemberName",
+                "name": "member_name",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "OrderID",
+                "name": "order_id",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Portfolio",
+                "name": "portfolio",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "OrderEntryTime",
+                "name": "order_entry_time",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "OrderEntryUser",
+                "name": "order_entry_user",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "SettlementCurrency",
+                "name": "settlement_currency",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "OrderPeriodID",
+                "name": "order_period_id",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "TradeID",
+                "name": "trade_id",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "EFA",
+                "name": "efa",
+                "dtype": "int64",
+                "nullable": true
+              },
+              {
+                "source": "DeliveryStart",
+                "name": "delivery_start",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "DeliveryEnd",
+                "name": "delivery_end",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "ExecutedVolume",
+                "name": "executed_volume",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "1P",
+                "name": "p1",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "1V",
+                "name": "v1",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "2P",
+                "name": "p2",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "2V",
+                "name": "v2",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "3P",
+                "name": "p3",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "3V",
+                "name": "v3",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "4P",
+                "name": "p4",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "4V",
+                "name": "v4",
+                "dtype": "string",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "resource_id",
+          "market_name",
+          "delivery_start"
+        ],
+        "latest": "whole_capture",
+        "latest_partition": "resource_id",
+        "vintage": "ckan_last_modified"
+      }
     },
     {
       "key": "ffr_phase2_auction_phase_results_unit",
@@ -83,7 +856,126 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Company",
+              "Unit Name",
+              "EFA Date",
+              "Delivery Start",
+              "Delivery End",
+              "EFA",
+              "Service",
+              "Cleared Volume",
+              "Clearing Price",
+              "Cancelled"
+            ],
+            "columns": [
+              {
+                "source": "Company",
+                "name": "company",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Unit Name",
+                "name": "unit_name",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "EFA Date",
+                "name": "efa_date",
+                "dtype": "date",
+                "formats_by_filename": [
+                  [
+                    "ngeso_fra-weekly_2021-11-26_resultsbyunit.csv",
+                    "%Y-%m-%d"
+                  ],
+                  [
+                    "phase-2-ffr-auction-resultsbyunit-masterdata-2019-2020.csv",
+                    "%d/%m/%Y"
+                  ],
+                  [
+                    "phase-2-ffr-auction-resultsbyunit-masterdata-2020-2021.csv",
+                    "%d/%m/%Y"
+                  ],
+                  [
+                    "phase-2-ffr-auction-resultsbyunit-masterdata-2021-2022.csv",
+                    "%d/%m/%Y"
+                  ]
+                ],
+                "nullable": false
+              },
+              {
+                "source": "Delivery Start",
+                "name": "delivery_start",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Delivery End",
+                "name": "delivery_end",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "EFA",
+                "name": "efa",
+                "dtype": "int64",
+                "nullable": false
+              },
+              {
+                "source": "Service",
+                "name": "service",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Cleared Volume",
+                "name": "cleared_volume",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Clearing Price",
+                "name": "clearing_price",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Cancelled",
+                "name": "cancelled",
+                "dtype": "string",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "date_sp1",
+          "date_column": "efa_date"
+        },
+        "entity_key": [
+          "unit_name",
+          "efa_date",
+          "efa",
+          "service"
+        ],
+        "latest": "key_latest",
+        "siblings": [
+          "ffr_phase2_auction_phase_results_unit"
+        ],
+        "vintage": "ckan_last_modified"
+      }
     },
     {
       "key": "ffr_phase2_auction_phase_resultsum",
@@ -94,7 +986,109 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Service",
+              "EFA Date",
+              "Delivery Start",
+              "Delivery End",
+              "EFA",
+              "Cleared Volume",
+              "Clearing Price"
+            ],
+            "columns": [
+              {
+                "source": "Service",
+                "name": "service",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "EFA Date",
+                "name": "efa_date",
+                "dtype": "date",
+                "formats_by_filename": [
+                  [
+                    "ngeso_fra-weekly_2021-11-26_resultsummary.csv",
+                    "%Y-%m-%d"
+                  ],
+                  [
+                    "phase-2-ffr-auction-resultsummary-masterdata-2019-2020.csv",
+                    "%d/%m/%Y"
+                  ],
+                  [
+                    "phase-2-ffr-auction-resultsummary-masterdata-2020-2021.csv",
+                    "%d/%m/%Y"
+                  ],
+                  [
+                    "phase-2-ffr-auction-resultsummary-masterdata-2021-2022.csv",
+                    "%d/%m/%Y"
+                  ]
+                ],
+                "nullable": false
+              },
+              {
+                "source": "Delivery Start",
+                "name": "delivery_start",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Delivery End",
+                "name": "delivery_end",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "EFA",
+                "name": "efa",
+                "dtype": "int64",
+                "nullable": false
+              },
+              {
+                "source": "Cleared Volume",
+                "name": "cleared_volume",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Clearing Price",
+                "name": "clearing_price",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "date_sp1",
+          "date_column": "efa_date"
+        },
+        "entity_key": [
+          "service",
+          "efa_date",
+          "efa"
+        ],
+        "latest": "key_latest",
+        "siblings": [
+          "ffr_phase2_auction_phase_results_sum"
+        ],
+        "vintage": "ckan_last_modified",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: PHASE2-SUMMARY-PRICE-UNIT — the weekly results-summary dictionary gives Clearing Price the unit £/MW while describing it as the cleared price per MW per hour, and the masterdata dictionary gives it no unit (\"number\"); the by-unit results tables state £/MW/h. Which rate dimension does the summary export publish? (Delivery start / end cells are naive with an undocumented export clock.)",
+          "unit": "v0.22-K-AS-5a"
+        }
+      }
     },
     {
       "key": "ffr_phase2_auction_files",
@@ -492,7 +1486,7 @@
       "family": "ffr_phase2_auction_phase_results_sum",
       "disposition": {
         "kind": "SILVER",
-        "key": "ffr_phase2_auction_phase_results_sum"
+        "key": "ffr_phase2_auction_phase_resultsum"
       }
     },
     {
@@ -503,7 +1497,7 @@
       "family": "ffr_phase2_auction_phase_results_unit",
       "disposition": {
         "kind": "SILVER",
-        "key": "ffr_phase2_auction_phase_results_unit"
+        "key": "ffr_phase2_auction_phase_resultsbyunit"
       }
     },
     {

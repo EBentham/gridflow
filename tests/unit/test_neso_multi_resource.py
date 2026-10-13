@@ -322,6 +322,19 @@ AS4B_ADDED = frozenset(
     }
 )
 """The eight EAC-BR archive and mock families v0.22-K-AS-4b records (four eligible, four held)."""
+AS5A_ADDED = frozenset(
+    {
+        "ffr_post_tender_reports_csv_ext",
+        "ffr_phase2_auction_phase_block_order",
+        "ffr_phase2_auction_phase_blockorders",
+        "ffr_phase2_auction_phase_linear_orders",
+        "ffr_phase2_auction_phase_linearorders",
+        "ffr_phase2_auction_phase_resultsbyunit",
+        "ffr_phase2_auction_phase_resultsum",
+    }
+)
+"""The seven FFR post-tender and Phase-2 FFR auction families v0.22-K-AS-5a records (five eligible,
+two held)."""
 REWORDED_HOLDS = {
     "national_forecast_7d_historic_day_ahead": (
         "TODO: FORECAST_TIMESTAMP has no vendor definition and its zone is undocumented "
@@ -412,6 +425,7 @@ class TestByteUnchanged:
                     *AS3B_ADDED,
                     *AS4A_ADDED,
                     *AS4B_ADDED,
+                    *AS5A_ADDED,
                 }
                 if section != "engine"
                 else set()
@@ -1056,6 +1070,9 @@ class TestRecordRules:
                 "fes_regional_storage_gt_1mw_pre2023",
                 "fes_regional_storage_lt_1mw",
                 "fes_regional_storage_lt_1mw_pre2023",
+                "ffr_phase2_auction_phase_blockorders",
+                "ffr_phase2_auction_phase_linearorders",
+                "ffr_post_tender_reports_csv_ext",
                 "gtma_trades_data",
                 "gtma_trades_fy",
                 "historic_demand",

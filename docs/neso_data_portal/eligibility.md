@@ -171,7 +171,7 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `fes-whole-system-gas-supply-data-table-ws1` | `fes_ws1_gas_supply` | ingest-only (no silver output) | — | — | — | — |
 | `fes-whole-system-gas-supply-emissions-data-table-ws2` | `fes_ws2_gas_emissions` | ingest-only (no silver output) | — | — | — | — |
 | `firm-frequency-response-post-tender-reports` | `ffr_post_tender_reports_csv` | ingest-only (no silver output) | — | — | — | — |
-| `firm-frequency-response-post-tender-reports` | `ffr_post_tender_reports_csv_ext` | ingest-only (no silver output) | — | — | — | — |
+| `firm-frequency-response-post-tender-reports` | `ffr_post_tender_reports_csv_ext` | silver | eligible | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
 | `firm-frequency-response-post-tender-reports` | `ffr_post_tender_reports_ext` | ingest-only (no silver output) | — | — | — | — |
 | `firm-frequency-response-post-tender-reports` | `ffr_post_tender_reports_files` | catalogue only | — | — | — | — |
 | `future-energy-scenario-electricity-supply-data-table-es1` | `fes_es1_electricity_supply` | silver | held: TODO: for each ES1 edition, what period does a year label denote (calendar, financial or winter year; start or end label)? What does N/A mean in the 2020 edition, and will NESO republish the 2020–2022 tables without preambles, padding and thousands separators? (unit E-SEM) | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
@@ -236,14 +236,14 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `outturn-voltage-costs` | `outturn_voltage_costs_historical` | silver | eligible | whole_capture per resource_id | month | CKAN last_modified of the captured file (ADR-030) |
 | `outturn-voltage-costs` | `outturn_voltage_costs_main` | silver | eligible | whole_capture | month | CKAN last_modified of the captured file (ADR-030) |
 | `phase-2-ffr-auction-results-summary` | `ffr_phase2_auction_files` | catalogue only | — | — | — | — |
-| `phase-2-ffr-auction-results-summary` | `ffr_phase2_auction_phase_block_order` | ingest-only (no silver output) | — | — | — | — |
-| `phase-2-ffr-auction-results-summary` | `ffr_phase2_auction_phase_blockorders` | ingest-only (no silver output) | — | — | — | — |
-| `phase-2-ffr-auction-results-summary` | `ffr_phase2_auction_phase_linear_orders` | ingest-only (no silver output) | — | — | — | — |
-| `phase-2-ffr-auction-results-summary` | `ffr_phase2_auction_phase_linearorders` | ingest-only (no silver output) | — | — | — | — |
+| `phase-2-ffr-auction-results-summary` | `ffr_phase2_auction_phase_block_order` | silver | eligible | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
+| `phase-2-ffr-auction-results-summary` | `ffr_phase2_auction_phase_blockorders` | silver | held: TODO: PHASE2-MASTER-ORDER-ID — the three Phase-2 FFR BlockOrders masterdata exports write OrderID, OrderPeriodID and TradeID in spreadsheet scientific notation (1E+14, 1.00E+14), so no row keeps a recoverable order identity and the record's key is the complete row; can NESO republish the masters with full identifiers? (The 2019-2020 master dictionary and the trial evaluation describe hourly capacity prices while the newest dictionary labels prices £/MW; delivery and entry times are naive with an undocumented export clock.) (unit v0.22-K-AS-5a) | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
+| `phase-2-ffr-auction-results-summary` | `ffr_phase2_auction_phase_linear_orders` | silver | eligible | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
+| `phase-2-ffr-auction-results-summary` | `ffr_phase2_auction_phase_linearorders` | silver | eligible | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
 | `phase-2-ffr-auction-results-summary` | `ffr_phase2_auction_phase_results_sum` | ingest-only (no silver output) | — | — | — | — |
 | `phase-2-ffr-auction-results-summary` | `ffr_phase2_auction_phase_results_unit` | ingest-only (no silver output) | — | — | — | — |
-| `phase-2-ffr-auction-results-summary` | `ffr_phase2_auction_phase_resultsbyunit` | ingest-only (no silver output) | — | — | — | — |
-| `phase-2-ffr-auction-results-summary` | `ffr_phase2_auction_phase_resultsum` | ingest-only (no silver output) | — | — | — | — |
+| `phase-2-ffr-auction-results-summary` | `ffr_phase2_auction_phase_resultsbyunit` | silver | eligible | key_latest | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
+| `phase-2-ffr-auction-results-summary` | `ffr_phase2_auction_phase_resultsum` | silver | held: TODO: PHASE2-SUMMARY-PRICE-UNIT — the weekly results-summary dictionary gives Clearing Price the unit £/MW while describing it as the cleared price per MW per hour, and the masterdata dictionary gives it no unit ("number"); the by-unit results tables state £/MW/h. Which rate dimension does the summary export publish? (Delivery start / end cells are naive with an undocumented export clock.) (unit v0.22-K-AS-5a) | key_latest | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
 | `phase-2-ffr-auction-results-summary` | `ffr_phase2_result_summary_archive` | silver | held: Phase-2 FFR archive: Date and EFA (1-42) semantics are undocumented; timestamp_utc is date_sp1 of Date, not an EFA block start (unit AS-5) | key_latest | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
 | `quick-reserve-auction-requirement-forecast` | `qr_auction_requirement_fc` | silver | eligible | whole_capture | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
 | `regional-breakdown-of-fes-data-electricity` | `fes_regional_demand_active_power` | silver | eligible | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
@@ -393,7 +393,7 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `fes-road-transport-summary-data-table-ed5` | eligible | 4 | 0 | 0 | 0 | 0 |
 | `fes-whole-system-gas-supply-data-table-ws1` | eligible | 4 | 0 | 0 | 0 | 0 |
 | `fes-whole-system-gas-supply-emissions-data-table-ws2` | eligible | 4 | 0 | 0 | 0 | 0 |
-| `firm-frequency-response-post-tender-reports` | eligible | 28 | 0 | 0 | 0 | 61 |
+| `firm-frequency-response-post-tender-reports` | eligible | 26 | 0 | 0 | 0 | 63 |
 | `future-energy-scenario-electricity-supply-data-table-es1` | eligible | 4 | 0 | 0 | 0 | 3 |
 | `future-energy-scenario-fes-building-block-data` | eligible | 13 | 0 | 0 | 0 | 0 |
 | `gb-system-inertia-bid-and-offer-costs` | eligible | 1 | 0 | 0 | 0 | 0 |
@@ -461,11 +461,11 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `weekly-opmr` | eligible | 1 | 0 | 0 | 0 | 0 |
 | `weekly-wind-availability` | eligible | 1 | 0 | 0 | 0 | 0 |
 | `wind-bmu-boa-volumes` | eligible | 9 | 0 | 0 | 0 | 0 |
-| **Total** | | 1242 | 0 | 43 | 20 | 80 |
+| **Total** | | 1240 | 0 | 43 | 20 | 82 |
 
 ## Totals
 
 - Packages: 131 (held: 4)
-- Families: 317: silver 206 (bespoke 3, recorded 203), ingest-only 76, catalogue only 35
-- Silver outputs held: 106
+- Families: 317: silver 213 (bespoke 3, recorded 210), ingest-only 69, catalogue only 35
+- Silver outputs held: 108
 - Resources: 1385
