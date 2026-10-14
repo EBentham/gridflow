@@ -1007,6 +1007,22 @@ DFSB_RECORDED = {
 """The twelve frozen Demand Flexibility Service families (2023/24 service, 2022/23 live events and
 test events) unit K-DFS-b records (ten eligible, two held)."""
 
+SCN2A_RECORDED = {
+    "fes_es2_european_supply",
+    "fes_flx1_flexibility",
+    "fes_ed5_road_transport",
+    "fes_ed6_road_transport_notes",
+}
+"""The FES ES2, FLX1, ED5 and ED6 families unit K-SCN-2a records (three held, ED6 eligible; two
+resources HOLD)."""
+
+SCN2A_PACKAGE_FILES = {
+    "fes-european-electricity-supply-data-table-es2.json",
+    "fes-flexibility-data-table-data-table-flx1.json",
+    "fes-road-transport-summary-data-table-ed5.json",
+    "fes-road-transport-notes-data-table-ed6.json",
+}
+
 AS1_PACKAGE_FILES = {
     "balancing-reserve-auction-requirement-forecast.json",
     "dynamic-containment-4-day-forecast.json",
@@ -1121,6 +1137,7 @@ class TestSeededRegistry:
             | AS5C_RECORDED
             | DFSA_RECORDED
             | DFSB_RECORDED
+            | SCN2A_RECORDED
         )
         with_children = [res for _package, res in loaded.resources.values() if res.children]
         assert len(with_children) == X_RESOURCES_WITH_CHILDREN
@@ -1172,6 +1189,7 @@ class TestSeededRegistry:
             | AS5B_PACKAGE_FILES
             | DFSA_PACKAGE_FILES
             | DFSB_PACKAGE_FILES
+            | SCN2A_PACKAGE_FILES
         )
 
 

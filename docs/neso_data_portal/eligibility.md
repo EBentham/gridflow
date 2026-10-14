@@ -160,14 +160,14 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `etys-gb-transmission-system-boundaries` | `etys_boundaries_files` | catalogue only | — | — | — | — |
 | `fes-electricity-demand-summary-data-table-ed1` | `fes_ed1_electricity_demand` | silver | held: TODO: For every ED1 variable and edition 2023–2026, what period does a year header denote, and does its integer label denote the starting or ending year? Which same-edition ED2 definition applies to each ED1 Data item, aggregation level and measure, including the 2026 Ten Year Outlook? What does a blank projection cell mean (not modelled, not applicable or zero)? NESO states none of these in the CSVs; projection_year is the vendor's header label and blank cells are kept as null. (unit E-SEM) | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
 | `fes-electricity-demand-summary-data-table-ed1` | `fes_ed1_electricity_demand_files` | catalogue only | — | — | — | — |
-| `fes-european-electricity-supply-data-table-es2` | `fes_es2_european_supply` | ingest-only (no silver output) | — | — | — | — |
-| `fes-flexibility-data-table-data-table-flx1` | `fes_flx1_flexibility` | ingest-only (no silver output) | — | — | — | — |
+| `fes-european-electricity-supply-data-table-es2` | `fes_es2_european_supply` | silver | held: TODO: For each quantitative ES2 edition, what interval does `Demand (TWh)` cover, and what observation date does `Capacity (MW)` represent? Does a year label denote the starting or ending year? What does a blank projection cell mean? Is `10yo2026_es2_v001.csv` intentionally a notes resource, or was the European electricity supply table replaced by an incorrect upload? Please identify or republish the quantitative European supply resource for this edition. (unit E-SEM) | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
+| `fes-flexibility-data-table-data-table-flx1` | `fes_flx1_flexibility` | silver | held: TODO: For each FLX1 edition and measure, what interval or observation date does its year label denote, including annual interconnector energy, storage energy potential, installed capacity and flexibility at peak? Does a winter-related label identify the starting or ending year? What does a blank projection cell mean? Can NESO republish `fes2023_flx1_v001.csv` without numeric edge whitespace, or will a separately authorized engine change permit explicitly declared ASCII trimming of unpivot values? (unit E-SEM) | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
 | `fes-natural-gas-demand-definitions-ed4` | `fes_ed4_gas_demand_defs` | ingest-only (no silver output) | — | — | — | — |
 | `fes-natural-gas-residential-and-non-domestic-i-c-heat-demand-summary-data-table-ed3` | `fes_ed3_heat_demand_natural_gas` | ingest-only (no silver output) | — | — | — | — |
 | `fes-natural-gas-residential-and-non-domestic-i-c-heat-demand-summary-data-table-ed3` | `fes_ed3_heat_demand_natural_gas_sum_ed` | ingest-only (no silver output) | — | — | — | — |
 | `fes-natural-gas-residential-and-non-domestic-i-c-heat-demand-summary-data-table-ed3` | `fes_ed3_heat_demand_sum_ed` | ingest-only (no silver output) | — | — | — | — |
-| `fes-road-transport-notes-data-table-ed6` | `fes_ed6_road_transport_notes` | ingest-only (no silver output) | — | — | — | — |
-| `fes-road-transport-summary-data-table-ed5` | `fes_ed5_road_transport` | ingest-only (no silver output) | — | — | — | — |
+| `fes-road-transport-notes-data-table-ed6` | `fes_ed6_road_transport_notes` | silver | eligible | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
+| `fes-road-transport-summary-data-table-ed5` | `fes_ed5_road_transport` | silver | held: TODO: For each ED5 annual-energy, vehicle-count and capacity item, what interval or observation date does the year label denote? For winter-peak items, does the integer label identify the starting or ending winter year? What does a blank projection cell mean? (unit E-SEM) | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
 | `fes-whole-system-gas-supply-data-table-ws1` | `fes_ws1_gas_supply` | ingest-only (no silver output) | — | — | — | — |
 | `fes-whole-system-gas-supply-emissions-data-table-ws2` | `fes_ws2_gas_emissions` | ingest-only (no silver output) | — | — | — | — |
 | `firm-frequency-response-post-tender-reports` | `ffr_post_tender_reports_csv` | ingest-only (no silver output) | — | — | — | — |
@@ -389,8 +389,8 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `embedded-wind-and-solar-forecasts` | eligible | 8 | 0 | 1 | 0 | 1 |
 | `etys-gb-transmission-system-boundaries` | eligible | 0 | 0 | 0 | 1 | 0 |
 | `fes-electricity-demand-summary-data-table-ed1` | eligible | 4 | 0 | 3 | 0 | 0 |
-| `fes-european-electricity-supply-data-table-es2` | eligible | 4 | 0 | 0 | 0 | 0 |
-| `fes-flexibility-data-table-data-table-flx1` | eligible | 4 | 0 | 0 | 0 | 0 |
+| `fes-european-electricity-supply-data-table-es2` | eligible | 3 | 0 | 0 | 0 | 1 |
+| `fes-flexibility-data-table-data-table-flx1` | eligible | 3 | 0 | 0 | 0 | 1 |
 | `fes-natural-gas-demand-definitions-ed4` | eligible | 4 | 0 | 0 | 0 | 0 |
 | `fes-natural-gas-residential-and-non-domestic-i-c-heat-demand-summary-data-table-ed3` | eligible | 6 | 0 | 0 | 0 | 0 |
 | `fes-road-transport-notes-data-table-ed6` | eligible | 4 | 0 | 0 | 0 | 0 |
@@ -465,11 +465,11 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `weekly-opmr` | eligible | 1 | 0 | 0 | 0 | 0 |
 | `weekly-wind-availability` | eligible | 1 | 0 | 0 | 0 | 0 |
 | `wind-bmu-boa-volumes` | eligible | 9 | 0 | 0 | 0 | 0 |
-| **Total** | | 1301 | 0 | 43 | 20 | 21 |
+| **Total** | | 1299 | 0 | 43 | 20 | 23 |
 
 ## Totals
 
 - Packages: 131 (held: 4)
-- Families: 321: silver 239 (bespoke 3, recorded 236), ingest-only 47, catalogue only 35
-- Silver outputs held: 116
+- Families: 321: silver 243 (bespoke 3, recorded 240), ingest-only 43, catalogue only 35
+- Silver outputs held: 119
 - Resources: 1385

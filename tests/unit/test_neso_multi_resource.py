@@ -385,6 +385,16 @@ DFSB_ADDED = frozenset(
 )
 """The twelve frozen Demand Flexibility Service families (2023/24 service, 2022/23 live events and
 test events) v0.22-K-DFS-b records (ten eligible, two held)."""
+SCN2A_ADDED = frozenset(
+    {
+        "fes_es2_european_supply",
+        "fes_flx1_flexibility",
+        "fes_ed5_road_transport",
+        "fes_ed6_road_transport_notes",
+    }
+)
+"""The FES ES2, FLX1, ED5 and ED6 families that v0.22-K-SCN-2a records (three held, ED6
+eligible)."""
 REWORDED_HOLDS = {
     "national_forecast_7d_historic_day_ahead": (
         "TODO: FORECAST_TIMESTAMP has no vendor definition and its zone is undocumented "
@@ -480,6 +490,7 @@ class TestByteUnchanged:
                     *AS5C_ADDED,
                     *DFSA_ADDED,
                     *DFSB_ADDED,
+                    *SCN2A_ADDED,
                 }
                 if section != "engine"
                 else set()
@@ -1081,7 +1092,7 @@ class TestRecordRules:
         self,
     ) -> None:
         """Detects a committed record broken by V-4/V-17 or the reserved name, and any
-        family other than the seventy resource-partitioned ones opting into the partition (in a
+        family other than the seventy-four resource-partitioned ones opting into the partition (in a
         fresh interpreter, so nothing collection imported can mask it)."""
         code = textwrap.dedent(
             """
@@ -1120,7 +1131,11 @@ class TestRecordRules:
                 "fes_building_blocks_block_licence_area",
                 "fes_building_blocks_main",
                 "fes_ed1_electricity_demand",
+                "fes_ed5_road_transport",
+                "fes_ed6_road_transport_notes",
                 "fes_es1_electricity_supply",
+                "fes_es2_european_supply",
+                "fes_flx1_flexibility",
                 "fes_regional_demand_active_power",
                 "fes_regional_dg_gt_1mw",
                 "fes_regional_dg_lt_1mw",
