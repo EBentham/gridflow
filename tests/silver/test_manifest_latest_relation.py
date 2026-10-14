@@ -68,7 +68,8 @@ from gridflow.silver.schema_manifest import (
 # v0.22-K-AS-4a's seven BSAD and legacy Dynamic Containment records, then to two hundred and nine
 # with v0.22-K-AS-4b's eight EAC-BR archive and mock records, then to two hundred and sixteen
 # with v0.22-K-AS-5a's seven FFR post-tender and Phase-2 FFR auction records, then to two hundred
-# and twenty-one with v0.22-K-AS-5b's five ASDP, ODFM and STOR day-ahead records.
+# and twenty-one with v0.22-K-AS-5b's five ASDP, ODFM and STOR day-ahead records, then to two
+# hundred and thirty with v0.22-K-DFS-a's four DFS records and the STOR day-ahead buy curve.
 _APPEND_ONLY_DATASETS: tuple[tuple[str, str], ...] = (
     ("elexon", "system_prices"),
     ("elexon", "remit"),
@@ -295,6 +296,11 @@ _APPEND_ONLY_DATASETS: tuple[tuple[str, str], ...] = (
     ("neso_data_portal", "ffr_phase2_blockorders_archive"),
     ("neso_data_portal", "ffr_phase2_linearorders_archive"),
     ("neso_data_portal", "ffr_phase2_results_by_unit_archive"),
+    ("neso_data_portal", "demand_flexibility_service_requirement"),
+    ("neso_data_portal", "demand_flexibility_industry_notification"),
+    ("neso_data_portal", "demand_flexibility_utilisation_report"),
+    ("neso_data_portal", "demand_flexibility_utilisation_summary"),
+    ("neso_data_portal", "stor_da_buy_curve"),
 )
 
 
@@ -488,9 +494,9 @@ def test_append_only_set_equals_latest_spec_set() -> None:
     spec_set = set(LATEST_VIEW_SPECS)
 
     # Non-vacuity guard: this invariant must never pass because both sides are
-    # empty (F16) -- two hundred and twenty-five APPEND_ONLY datasets are registered today.
+    # empty (F16) -- two hundred and thirty APPEND_ONLY datasets are registered today.
     assert len(append_only) > 0
-    assert len(append_only) == 225
+    assert len(append_only) == 230
 
     missing_specs = append_only - spec_set
     extra_specs = spec_set - append_only
@@ -1014,6 +1020,23 @@ _EXPECTED_APPEND_ONLY_DEPRECATED_ALIASES: dict[tuple[str, str], str | None] = {
         "neso_data_portal",
         "ffr_phase2_results_by_unit_archive",
     ): "silver_ffr_phase2_results_by_unit_archive",
+    (
+        "neso_data_portal",
+        "demand_flexibility_service_requirement",
+    ): "silver_demand_flexibility_service_requirement",
+    (
+        "neso_data_portal",
+        "demand_flexibility_industry_notification",
+    ): "silver_demand_flexibility_industry_notification",
+    (
+        "neso_data_portal",
+        "demand_flexibility_utilisation_report",
+    ): "silver_demand_flexibility_utilisation_report",
+    (
+        "neso_data_portal",
+        "demand_flexibility_utilisation_summary",
+    ): "silver_demand_flexibility_utilisation_summary",
+    ("neso_data_portal", "stor_da_buy_curve"): "silver_stor_da_buy_curve",
 }
 
 

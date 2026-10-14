@@ -58,6 +58,11 @@ DATE_COL_SQL_TYPES: dict[str, DateColSqlType] = {
     "forecast_target_date": "DATE",
     "efa_date": "DATE",
     "forecast_target_month": "DATE",
+    # The demand flexibility service's `date_sp1` anchors (v0.22-K-DFS): the DFS service
+    # (delivery) date and the industry-notification posting date, calendar DATEs like
+    # `settlement_date` (label anchors, not window starts).
+    "delivery_date": "DATE",
+    "notification_issued_date": "DATE",
     "timestamp_utc": "TIMESTAMPTZ",
     "implementation_datetime_utc": "TIMESTAMPTZ",
     "ingested_at": "TIMESTAMPTZ",

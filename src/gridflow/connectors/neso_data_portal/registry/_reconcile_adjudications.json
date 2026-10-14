@@ -312,5 +312,41 @@
     "question": "Which monthly post-tender report is authoritative for tender_ref 162.198 that the three consecutive monthly resources fd57201c, fbb1ce86 and 2bfa2ab3 all publish?",
     "evidence": "K-AS-5a post-merge reconcile (3 overlap gaps on ffr_post_tender_reports_csv_ext); ADR-040",
     "ruling": "780"
+  },
+  {
+    "family": "ffr_post_tender_reports_workbook",
+    "category": "overlap",
+    "captures": [
+      "bronze/neso_data_portal/ffr_post_tender_reports_files/2026/10/08/raw_20261008T110146Z_68529290-7992-4891-90bc-68fa9bcb5aeb_f809748e.xlsx",
+      "bronze/neso_data_portal/ffr_post_tender_reports_files/2026/10/08/raw_20261008T110149Z_16773f53-c0f9-4b8c-aaee-ad819e93d405_1935b9c1.xlsx"
+    ],
+    "reason": "the TR127 (July 2020) post-tender workbook and its \"Amended\" edition (available 2020-07-16 and 2020-07-30) both publish the same 175 tender refs; the amended edition changes status and rejection_codes on 9 rows (Rejected / 1.2 to Accepted / NA) and is otherwise equal; NESO states no supersession rule, so both editions are served (ADR-039) and never deduplicated",
+    "question": "Does the amended TR127 workbook (16773f53) supersede the original (68529290) for its 175 tender refs, so that consumers should read only the amended edition?",
+    "evidence": "K-AS-5c post-merge reconcile (2 overlap gaps on ffr_post_tender_reports_workbook, TR127); K-DFS-a SW-5; ADR-040",
+    "ruling": "798"
+  },
+  {
+    "family": "ffr_post_tender_reports_workbook",
+    "category": "overlap",
+    "captures": [
+      "bronze/neso_data_portal/ffr_post_tender_reports_files/2026/10/08/raw_20261008T110212Z_7912d65a-451a-4dea-b8eb-4bc5c7af254b_1b094f9d.xlsm",
+      "bronze/neso_data_portal/ffr_post_tender_reports_files/2026/10/08/raw_20261008T110217Z_a85e6149-3893-48f6-953a-0a10e796ce8e_29db37cf.xlsm"
+    ],
+    "reason": "the TR136 (April 2021) EXT post-tender workbook and its \"Amended\" edition (available 2021-04-20 and 2021-05-07) both publish the same 132 tender refs; the amended edition changes status and rejection_codes on 9 rows (Rejected / 2 to Accepted / NA) and is otherwise equal; NESO states no supersession rule, so both editions are served (ADR-039) and never deduplicated",
+    "question": "Does the amended TR136 workbook (a85e6149) supersede the original (7912d65a) for its 132 tender refs, so that consumers should read only the amended edition?",
+    "evidence": "K-AS-5c post-merge reconcile (2 overlap gaps on ffr_post_tender_reports_workbook, TR136); K-DFS-a SW-5; ADR-040",
+    "ruling": "798"
+  },
+  {
+    "family": "demand_flexibility_utilisation_report",
+    "category": "failed",
+    "cause": "DuplicateEntityKeyError",
+    "captures": [
+      "bronze/neso_data_portal/demand_flexibility_utilisation_report/2026/10/08/raw_20261008T100537Z_cc36fff5-5f6f-4fde-8932-c935d982ecd8_133d0160.csv"
+    ],
+    "reason": "the DFS Utilisation Report (Archive 2025/2026) upload repeats four whole rows identical on every published column (AXLE-01 and AXLE-03, 2025-01-05 16:00 and 16:30, all Rejected), so no key is lossless and the duplicate guard fails the capture; it stays unloaded with its failure record and is never deduplicated",
+    "question": "Are the repeated AXLE-01 and AXLE-03 rows of 2025-01-05 16:00 and 16:30 in the archive utilisation report separate bids or a publication defect, and can NESO publish a corrected file or a bid identifier?",
+    "evidence": "K-DFS-FACTS demand_flexibility_utilisation_report g3 (TODO: ARCHIVE-REPORT-IDENTITY); ADR-040",
+    "ruling": "804"
   }
 ]

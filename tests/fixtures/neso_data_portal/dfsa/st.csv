@@ -1,0 +1,10 @@
+Buy Curve Name,Service Catalog,Curve to be applied to,Effective From Date,Effective To Date,Buy Curve Step: Buy Curve Step Id,MW,Availability Price (£/MWh),Buy Curve: Buy Curve ID
+BCN-Short Term Operating Reserve-00000000,Short Term Operating Reserve,Service Period - All Operational Day windows,2021-04-01 04:00:00Z,2021-04-02 04:00:00Z,BCS-0000,1311,0,BCN-00000000
+BCN-Short Term Operating Reserve-00000000,Short Term Operating Reserve,Service Period - All Operational Day windows,2021-04-01 04:00:00Z,2021-04-02 04:00:00Z,BCS-0001,1311,6.78,BCN-00000000
+BCN-Short Term Operating Reserve-00000000,Short Term Operating Reserve,Service Period - All Operational Day windows,2021-04-01 04:00:00Z,2021-04-02 04:00:00Z,BCS-0002,0,6.78,BCN-00000000
+BCN-Short Term Operating Reserve-00000214,Short Term Operating Reserve,Service Period - All Operational Day windows,2021-10-30 04:00:00Z,2021-10-31 05:00:00Z,BCS-0642,1310,0,BCN-00000214
+BCN-Short Term Operating Reserve-00000214,Short Term Operating Reserve,Service Period - All Operational Day windows,2021-10-30 04:00:00Z,2021-10-31 05:00:00Z,BCS-0643,1310,9.89,BCN-00000214
+BCN-Short Term Operating Reserve-00000214,Short Term Operating Reserve,Service Period - All Operational Day windows,2021-10-30 04:00:00Z,2021-10-31 05:00:00Z,BCS-0644,0,9.89,BCN-00000214
+BCN-Short Term Operating Reserve-00000362,Short Term Operating Reserve,Service Period - All Operational Day windows,2022-03-26 05:00:00Z,2022-03-27 04:00:00Z,BCS-1087,1340,13.1,BCN-00000362
+BCN-Short Term Operating Reserve-00000362,Short Term Operating Reserve,Service Period - All Operational Day windows,2022-03-26 05:00:00Z,2022-03-27 04:00:00Z,BCS-1088,0,13.1,BCN-00000362
+BCN-Short Term Operating Reserve-00000362,Short Term Operating Reserve,Service Period - All Operational Day windows,2022-03-26 05:00:00Z,2022-03-27 04:00:00Z,BCS-1086,1340,0,BCN-00000362

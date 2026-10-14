@@ -96,10 +96,10 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `day-ahead-wind-forecast` | `da_wind_forecast_day_ahead_bmu` | silver | eligible | whole_capture | utc_instant | CKAN last_modified of the captured file (ADR-030) |
 | `day-ahead-wind-forecast` | `da_wind_forecast_historic_day_ahead` | silver | held: TODO: Forecast_Timestamp has no vendor zone (its values carry no offset); 192 targets carry two labels and ~14k labels fall at or after target start; the issue zone and when each value was available are undefined (unit E-SEM) | whole_capture | utc_instant | CKAN last_modified of the captured file (ADR-030) |
 | `day-ahead-wind-forecast` | `da_wind_forecast_historic_day_ahead_bmu` | silver | held: TODO: the vendor dictionary gives Timestamp as a UK-time publication instant, but no source shows the archived values are unchanged since that instant (unit E-SEM) | whole_capture per resource_id | utc_instant | gridflow capture time |
-| `demand-flexibility` | `demand_flexibility_industry_notification` | ingest-only (no silver output) | — | — | — | — |
-| `demand-flexibility` | `demand_flexibility_service_requirement` | ingest-only (no silver output) | — | — | — | — |
-| `demand-flexibility` | `demand_flexibility_utilisation_report` | ingest-only (no silver output) | — | — | — | — |
-| `demand-flexibility` | `demand_flexibility_utilisation_summary` | ingest-only (no silver output) | — | — | — | — |
+| `demand-flexibility` | `demand_flexibility_industry_notification` | silver | eligible | whole_capture per resource_id | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
+| `demand-flexibility` | `demand_flexibility_service_requirement` | silver | held: TODO: REQUIREMENT-ISSUE-AVAILABILITY — the DFS service requirement resources (current and Archive 2025/2026) carry no issue column and publish delivery windows starting on or before their last_modified (archive 1,126 of 1,132 starts, current 1,230 of 1,238), and the current DFS Submission Time_Local is the auction-close deadline, not a publication time; when was each requirement first published, and does NESO retain earlier requirement editions? (The archive requirement dictionary labels From/To GMT while the archive report and summary dictionaries label theirs local time — TODO: ARCHIVE-CLOCK-CONSISTENCY; window_from holds the vendor label of each resource as published.) (unit v0.22-K-DFS-a) | whole_capture per resource_id | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
+| `demand-flexibility` | `demand_flexibility_utilisation_report` | silver | eligible | whole_capture per resource_id | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
+| `demand-flexibility` | `demand_flexibility_utilisation_summary` | silver | eligible | whole_capture per resource_id | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
 | `demand-flexibility-service` | `dfs_industry_notification` | ingest-only (no silver output) | — | — | — | — |
 | `demand-flexibility-service` | `dfs_service_requirements` | ingest-only (no silver output) | — | — | — | — |
 | `demand-flexibility-service` | `dfs_utilisation_report` | ingest-only (no silver output) | — | — | — | — |
@@ -266,7 +266,7 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `resource-adequacy-in-2030s` | `resource_adequacy_2030s_results` | ingest-only (no silver output) | — | — | — | — |
 | `school-holiday-percentages` | `school_holiday_percentages` | silver | held: TODO: the numeric scale of the Total rows: the vendor calls the aggregate a percentage, but the values measure as a fraction equal to the sum of (multiplier x local indicator) within 0.0005; NESO has not stated the encoding (unit E-SEM) | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
 | `short-term-operating-reserve-stor-day-ahead-auction-results` | `stor_da_auction_results` | silver | eligible | whole_capture | utc_instant | CKAN last_modified of the captured file (ADR-030) |
-| `short-term-operating-reserve-stor-day-ahead-buy-curve` | `stor_da_buy_curve` | ingest-only (no silver output) | — | — | — | — |
+| `short-term-operating-reserve-stor-day-ahead-buy-curve` | `stor_da_buy_curve` | silver | eligible | whole_capture | utc_instant | CKAN last_modified of the captured file (ADR-030) |
 | `short-term-operating-reserve-stor-day-ahead-buy-curve` | `stor_da_buy_curve_files` | catalogue only | — | — | — | — |
 | `skip-rates` | `skip_rates_behind_constraints_bmu` | silver | held: TODO: CONSTRAINT-RATE-DENOMINATOR — the dictionary says percentage of in-merit volume skipped, the methodology presentation uses accepted volume; which denominator is the published rate? Also no month-boundary recipe for a UTC month. (unit v0.22-K-BAL-2b) | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
 | `skip-rates` | `skip_rates_behind_constraints_cons` | silver | held: TODO: CONSTRAINT-RATE-DENOMINATOR — the dictionary says percentage of in-merit volume skipped, the methodology presentation uses accepted volume; which denominator is the published rate? Also no month-boundary recipe for a UTC month. (unit v0.22-K-BAL-2b) | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
@@ -470,6 +470,6 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 ## Totals
 
 - Packages: 131 (held: 4)
-- Families: 321: silver 222 (bespoke 3, recorded 219), ingest-only 64, catalogue only 35
-- Silver outputs held: 113
+- Families: 321: silver 227 (bespoke 3, recorded 224), ingest-only 59, catalogue only 35
+- Silver outputs held: 114
 - Resources: 1385

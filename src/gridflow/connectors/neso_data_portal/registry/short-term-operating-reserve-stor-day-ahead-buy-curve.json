@@ -17,7 +17,99 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Buy Curve Name",
+              "Service Catalog",
+              "Curve to be applied to",
+              "Effective From Date",
+              "Effective To Date",
+              "Buy Curve Step: Buy Curve Step Id",
+              "MW",
+              "Availability Price (£/MWh)",
+              "Buy Curve: Buy Curve ID"
+            ],
+            "columns": [
+              {
+                "source": "Buy Curve Name",
+                "name": "buy_curve_name",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Service Catalog",
+                "name": "service_catalog",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Curve to be applied to",
+                "name": "curve_to_be_applied_to",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Effective From Date",
+                "name": "effective_from_date",
+                "dtype": "datetime",
+                "format": "%Y-%m-%d %H:%M:%SZ",
+                "nullable": false,
+                "zone": "UTC"
+              },
+              {
+                "source": "Effective To Date",
+                "name": "effective_to_date",
+                "dtype": "datetime",
+                "format": "%Y-%m-%d %H:%M:%SZ",
+                "nullable": true,
+                "zone": "UTC"
+              },
+              {
+                "source": "Buy Curve Step: Buy Curve Step Id",
+                "name": "buy_curve_step_id",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "MW",
+                "name": "mw",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Availability Price (£/MWh)",
+                "name": "availability_price",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Buy Curve: Buy Curve ID",
+                "name": "buy_curve_id",
+                "dtype": "string",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "utc_instant",
+          "column": "effective_from_date"
+        },
+        "entity_key": [
+          "buy_curve_step_id"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified"
+      }
     },
     {
       "key": "stor_da_buy_curve_files",

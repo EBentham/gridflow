@@ -1,0 +1,5 @@
+Delivery Date,Registered DFS Participant,DFS Unit ID,DFS Volume MW,From,To,Service Requirement Type,Utilisation Price GBP per MWh,Status,North Scotland,South and Central Scotland,North East England,North West England,Yorkshire,East Midlands,West Midlands,London,East England,South East England,South West England,Southern England,North Wales Merseyside and Cheshire,South Wales,Other,Total
+27/03/2026,EQUIWATT LIMITED,EQUIWA-01,7.2,18:00,18:30,Live,225,Rejected,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,7.2,7.2
+27/03/2026,EQUIWATT LIMITED,EQUIWA-01,7.2,18:30,19:00,Live,225,Rejected,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,7.2,7.2
+10/07/2025,GRIDBEYOND LIMITED,GRIDBE-02,4.4,18:00,18:30,Live,140,Rejected,0,0,0,0,0,0,0,0,0,0,0,0,4.4,0.68,3.72,0
+10/07/2025,GRIDBEYOND LIMITED,GRIDBE-02,4.4,18:30,19:00,Live,140,Rejected,0,0,0,0,0,0,0,0,0,0,0,0,4.4,0.68,3.72,0

@@ -1,0 +1,4 @@
+Event ID,Event Type,Event Tag,Delivery Date,From_Local,To_Local,From_UTC,To_UTC,Service Requirement Type,Service Requirement MW,DFS Procured MW,DFS Provider Bids Accepted Total Cost GBP,Settled Volume MW,Settled Cost GBP
+142,Downwards,Energy,06/10/2026,16:00,16:30,15:00,15:30,Live,300,49.9,4816.22,,
+75,Downwards,Energy,24/07/2026,17:00,17:30,16:00,16:30,Live,500,41.2,2595.6,-0.03,-2.65
+75,Downwards,Energy,24/07/2026,17:30,18:00,16:30,17:00,Live,500,51.8,3301.84,12.07,806.42
