@@ -5,6 +5,8 @@ Not a test module (no ``test_`` prefix). It holds:
 - :func:`workbook` — a standard-library XLSX builder (inline-string and numeric
   cells, ``mergeCell``, ``t="e"`` cells, ``<f>`` without ``<v>``, N sheets, a
   repeated sheet name) for the negative cases;
+- :func:`lineage_workbook` — a workbook rebuilt from an AS-5c lineage cell map
+  (``tests/fixtures/neso_data_portal/as5c/lineage_*.json``);
 - :func:`zip_bytes` and :func:`patch_headers` — ZIP builders and corrupters
   (repeated entry names, a wrong CRC, E-23's false size with the prefix CRC);
 - :func:`forbid_zipfile_reads` — a fixture refusing every archive-module read
@@ -18,11 +20,13 @@ Every test module of unit X applies the fixture with
 from __future__ import annotations
 
 import io
+import json
 import struct
 import sys
 import warnings
 import zipfile
 import zlib
+from pathlib import Path
 from typing import TYPE_CHECKING, Any
 from xml.sax.saxutils import escape, quoteattr
 
@@ -32,6 +36,7 @@ if TYPE_CHECKING:
     from collections.abc import Iterator
 
 FIXTURES = "tests/fixtures/neso_data_portal/containers"
+AS5C = Path(__file__).resolve().parents[1] / "fixtures" / "neso_data_portal" / "as5c"
 
 _GUARDED_PREFIXES = ("gridflow.silver.neso_data_portal", "gridflow.connectors.neso_data_portal")
 _READ_METHODS = ("read", "open", "extract", "extractall", "testzip")
@@ -59,7 +64,9 @@ def forbid_zipfile_reads(monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
 Cell = str | int | float | tuple[str, ...]
 """A cell value: a string (inline), a number, ``("e", "#DIV/0!")`` (an error),
 ``("f", "SUM(A1)")`` (a formula with no cached value), ``("fv", "SUM(A1)", "3")``
-(a formula with a cached number) or ``("s", "text")`` (a shared string)."""
+(a formula with a cached number), ``("s", "text")`` (a shared string), ``("n", "1.50")``
+(a numeric cell whose ``<v>`` is the literal text), ``("b", "1")`` (a boolean) or
+``("fs", "RC", "text")`` (a ``t="str"`` formula with its cached text)."""
 
 
 def _split_ref(ref: str) -> tuple[str, int]:
@@ -86,6 +93,12 @@ def _cell_xml(ref: str, value: Cell, shared: list[str]) -> str:
         if kind == "s":
             shared.append(value[1])
             return f'<c r="{ref}" t="s"><v>{len(shared) - 1}</v></c>'
+        if kind == "n":
+            return f'<c r="{ref}"><v>{escape(value[1])}</v></c>'
+        if kind == "b":
+            return f'<c r="{ref}" t="b"><v>{escape(value[1])}</v></c>'
+        if kind == "fs":
+            return f'<c r="{ref}" t="str"><f>{escape(value[1])}</f><v>{escape(value[2])}</v></c>'
         raise ValueError(f"unknown cell kind {kind!r}")
     if isinstance(value, str):
         return (
@@ -206,6 +219,47 @@ def workbook(
         *parts,
     ]
     return zip_bytes([(name, text.encode("utf-8")) for name, text in entries])
+
+
+_LINEAGE_KINDS = {"s", "n", "fs", "e", "f"}
+
+
+def lineage_cells(document: dict[str, Any]) -> dict[str, Cell]:
+    """A lineage cell map's cells as :func:`workbook` cells (formula bodies are ``RC``)."""
+    cells: dict[str, Cell] = {}
+    for ref, (kind, value) in document["cells"].items():
+        if kind not in _LINEAGE_KINDS:
+            raise ValueError(f"unknown lineage cell kind {kind!r}")
+        if kind == "fs":
+            cells[ref] = ("fs", "RC", value)
+        elif kind == "f":
+            cells[ref] = ("f", "RC")
+        else:
+            cells[ref] = (kind, value)
+    return cells
+
+
+def lineage_workbook(
+    name: str, *, cells: dict[str, Cell] | None = None
+) -> tuple[bytes, dict[str, Any]]:
+    """Build the workbook of one AS-5c lineage cell map.
+
+    Args:
+        name: The fixture stem, ``"tr122"`` for ``lineage_tr122.json``.
+        cells: Replace the map's cells (a test's edited copy); ``None`` keeps them.
+
+    Returns:
+        ``(workbook bytes, the cell map document)``.
+    """
+    document: dict[str, Any] = json.loads(
+        (AS5C / f"lineage_{name}.json").read_text(encoding="utf-8")
+    )
+    sheet = document["sheet"]
+    body = workbook(
+        [(sheet, cells if cells is not None else lineage_cells(document))],
+        merges={sheet: list(document["merges"])},
+    )
+    return body, document
 
 
 def zip_bytes(

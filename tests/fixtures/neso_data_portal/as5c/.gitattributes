@@ -1,0 +1,2 @@
+# Keep the vendor bytes exactly: the archive member slices keep their CRLF terminators.
+*.csv -text

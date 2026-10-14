@@ -167,3 +167,48 @@ recover through B's drain (F-13).
 - **R-6** calamine re-decompresses verified parts; a misread is caught by P-6(g).
 - **R-7** Any new covering capture with new bytes voids a grant, forcing re-proof; it
   never hides a row.
+
+## Amendment 1 — composite blocks (v0.22-K-AS-5c)
+
+R-2's flattening recipe, for the FFR post-tender workbooks: merged composite headers on three
+rows starting at row 2, 3, 4 or 6, example rows before every tender block, and block ends that
+differ per workbook. The single-row `xlsx` path (P-6, `read_sheet`, `_check_block`) and every
+existing record are unchanged; an I-6 pin compares the five existing container records' outputs
+with master's.
+
+- **Record (V-20).** `XlsxBlock` holds one resource's `resource_id`, exact `sheet` (trailing
+  spaces kept), `header_first..header_last`, `data_first..data_last` and `columns`, with
+  `header_first <= header_last < data_first <= data_last`. `SchemaRecord.xlsx_blocks` is a
+  tuple of them, on reader `xlsx` only and instead of `xlsx`; it is non-empty and names each
+  resource once. V-14 accepts reader `xlsx` with either spec. The field defaults to `None`, so
+  no existing record dump or fingerprint changes.
+- **Why the map is keyed by resource.** The resource id is already the record's
+  `latest_partition` and each capture's resource is resolved from its sidecar before the read; a
+  filename key would add a proof dependency `equivalence.metadata_dependencies` does not carry.
+- **Dispatch.** `read_xlsx_body` checks the inventory, then picks the block whose
+  `resource_id` is the body's resource; a resource without one fails the capture (no fallback),
+  and a requested child other than `block.sheet` fails. No catalogue label or suffix is read
+  (I-10): `.xlsm` bodies labelled `XLSX` read like plain ones; macros are never run.
+- **Rules (h)-(n)**, continuing P-6 (a)-(g): (h) every populated header-row cell in the columns is
+  a string; (i) a merge touching the header rows lies wholly inside header rows x columns, and a
+  merge touching data rows x columns fails (merges on notice, example and footer rows are
+  ignored); (j) labels, below; (k) data cells are strings, cached formula strings or numbers only
+  (no error, uncached formula or boolean); (l) every data row has a populated cell; (m) no
+  populated cell outside the columns in rows `header_first..data_last`; (n) column `first` of row
+  `data_last + 1` is empty, so the block cannot stop early.
+- **Labels (j).** For each column, the header rows top to bottom: a cell inside a header merge
+  contributes that merge once, valued by its stripped anchor cell; any other cell its own
+  stripped value. The non-empty parts join with `" | "`. A populated non-anchor merge cell whose
+  stripped text differs from the anchor fails (equal copies are ignored); an empty or repeated
+  label fails. Epochs still match the exact label tuple.
+- **Stored text, no calamine.** `read_block` builds the frame from the stdlib parse: one `Utf8`
+  column per label, one row per data row by position only; a cell's value is its stored text
+  exactly (a number's `<v>`, a string's decoded text, a formula string's cached text), an absent
+  or empty cell null. A tender reference stored as `122.16500000000073` stays that string.
+- **Dates stay raw.** TR121's date cells are unstyled `General` numbers and TR164 holds text
+  dates, so no one declared rule types every resource (I-4); the workbook record keeps them as
+  stored serial text with temporal `none`, and no Excel date conversion is built. No style part
+  is read, so no output depends on a number format.
+- **Residual (FM-3).** A `data_first` declared too large would read a tender row as an example
+  row and lose it; position alone cannot detect that. The committed map is pinned to the measured
+  atlas (a literal test table) and activation checks each resource's row count against it.

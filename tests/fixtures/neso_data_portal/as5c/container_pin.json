@@ -1,0 +1,264 @@
+{
+  "current_bsuos_cap_adjustments": {
+    "rows": 3550,
+    "schema": [
+      [
+        "settlement_day",
+        "Date"
+      ],
+      [
+        "settlement_period",
+        "Int64"
+      ],
+      [
+        "bsuos_price_mwh_hour",
+        "Float64"
+      ],
+      [
+        "half_hourly_charge",
+        "Float64"
+      ],
+      [
+        "total_daily_bsuos_charge",
+        "Float64"
+      ],
+      [
+        "run_type",
+        "String"
+      ],
+      [
+        "total_chargeable_energy_volume_mwh",
+        "Float64"
+      ],
+      [
+        "capped_bsuos_price_mwh",
+        "Float64"
+      ],
+      [
+        "revised_half_hourly_charge",
+        "Float64"
+      ],
+      [
+        "total_net_adjustment_to_invoices",
+        "Float64"
+      ],
+      [
+        "child_id",
+        "String"
+      ],
+      [
+        "child_crc32",
+        "Int64"
+      ],
+      [
+        "timestamp_utc",
+        "Datetime(time_unit='us', time_zone='UTC')"
+      ],
+      [
+        "published_at",
+        "Datetime(time_unit='us', time_zone='UTC')"
+      ],
+      [
+        "bronze_capture_id",
+        "String"
+      ],
+      [
+        "capture_written_at",
+        "Datetime(time_unit='us', time_zone='UTC')"
+      ]
+    ],
+    "sha256": "541ddaaadea5787f65a5170c6b1015dbd1777dc949fef91ad28927f9040ad9e1"
+  },
+  "ffr_phase2_result_summary_archive": {
+    "rows": 168,
+    "schema": [
+      [
+        "service",
+        "String"
+      ],
+      [
+        "date",
+        "Date"
+      ],
+      [
+        "efa",
+        "Int64"
+      ],
+      [
+        "cleared_volume",
+        "Float64"
+      ],
+      [
+        "clearing_price",
+        "Float64"
+      ],
+      [
+        "child_id",
+        "String"
+      ],
+      [
+        "child_crc32",
+        "Int64"
+      ],
+      [
+        "timestamp_utc",
+        "Datetime(time_unit='us', time_zone='UTC')"
+      ],
+      [
+        "published_at",
+        "Datetime(time_unit='us', time_zone='UTC')"
+      ],
+      [
+        "bronze_capture_id",
+        "String"
+      ],
+      [
+        "capture_written_at",
+        "Datetime(time_unit='us', time_zone='UTC')"
+      ]
+    ],
+    "sha256": "8bac0f6b213d05ae92b122ee2e468625564b406526ec1ed48e9158feb3f9c32c"
+  },
+  "thermal_constraint_costs_xlsx": {
+    "rows": 21,
+    "schema": [
+      [
+        "settlement_date",
+        "Date"
+      ],
+      [
+        "constraint_group",
+        "String"
+      ],
+      [
+        "daily_cost_gbp",
+        "Int64"
+      ],
+      [
+        "child_id",
+        "String"
+      ],
+      [
+        "child_crc32",
+        "Int64"
+      ],
+      [
+        "resource_id",
+        "String"
+      ],
+      [
+        "timestamp_utc",
+        "Datetime(time_unit='us', time_zone='UTC')"
+      ],
+      [
+        "published_at",
+        "Datetime(time_unit='us', time_zone='UTC')"
+      ],
+      [
+        "bronze_capture_id",
+        "String"
+      ],
+      [
+        "capture_written_at",
+        "Datetime(time_unit='us', time_zone='UTC')"
+      ]
+    ],
+    "sha256": "49f31741b3a4fd442ae72d92b548337ee59118ca77e1543347f80188a633339a"
+  },
+  "tresp_building_block_definitions": {
+    "rows": 35,
+    "schema": [
+      [
+        "demand_generation_storage",
+        "String"
+      ],
+      [
+        "technology",
+        "String"
+      ],
+      [
+        "fes_bb_id_number",
+        "String"
+      ],
+      [
+        "technology_detail",
+        "String"
+      ],
+      [
+        "units",
+        "String"
+      ],
+      [
+        "child_id",
+        "String"
+      ],
+      [
+        "child_crc32",
+        "Int64"
+      ],
+      [
+        "resource_id",
+        "String"
+      ],
+      [
+        "timestamp_utc",
+        "Datetime(time_unit='us', time_zone='UTC')"
+      ],
+      [
+        "published_at",
+        "Datetime(time_unit='us', time_zone='UTC')"
+      ],
+      [
+        "bronze_capture_id",
+        "String"
+      ],
+      [
+        "capture_written_at",
+        "Datetime(time_unit='us', time_zone='UTC')"
+      ]
+    ],
+    "sha256": "fddfe671ed953d04d26cf174aeb7ff8e033725433e6d97d826fb9717d5ba2a7e"
+  },
+  "tresp_gsp_area_names": {
+    "rows": 231,
+    "schema": [
+      [
+        "tresp_gsp_area",
+        "String"
+      ],
+      [
+        "tresp_gsp_area_name",
+        "String"
+      ],
+      [
+        "child_id",
+        "String"
+      ],
+      [
+        "child_crc32",
+        "Int64"
+      ],
+      [
+        "resource_id",
+        "String"
+      ],
+      [
+        "timestamp_utc",
+        "Datetime(time_unit='us', time_zone='UTC')"
+      ],
+      [
+        "published_at",
+        "Datetime(time_unit='us', time_zone='UTC')"
+      ],
+      [
+        "bronze_capture_id",
+        "String"
+      ],
+      [
+        "capture_written_at",
+        "Datetime(time_unit='us', time_zone='UTC')"
+      ]
+    ],
+    "sha256": "5ea096f779bf03bdbed81410b455a1853f5a4b610363bb27fc3b572e6b92c739"
+  }
+}

@@ -1,0 +1,879 @@
+{
+ "resource_id": "9137187c-8626-4d28-a538-3dd9eb395644",
+ "sheet": "TR126",
+ "source_body": "ffr_post_tender_reports_files/2026/10/08/raw_20261008T110143Z_9137187c-8626-4d28-a538-3dd9eb395644_03f01d41.xlsx",
+ "source_sha256": "03f01d41c7e7cd233e68f32abd6cbd443adfb4972265c455eb7807b338fa1a8d",
+ "header_first": 4,
+ "columns": "A:AP",
+ "source_rows": {
+  "1": 1,
+  "2": 2,
+  "3": 3,
+  "4": 4,
+  "5": 5,
+  "6": 6,
+  "7": 7,
+  "8": 8,
+  "9": 9,
+  "10": 10,
+  "190": 11,
+  "192": 13
+ },
+ "cells": {
+  "A1": [
+   "s",
+   "Please find the amended post tender report for TR126- in the original report published on the 16th June.  Three tenders on the original publication were incorrectly listed as rejected when they should have been accepted, these tenders were 126.019, 126.045 and 126.107. All other tenders remain unchanged  "
+  ],
+  "A3": [
+   "s",
+   "Indication of FFR results for Tender Round 126, accepted tenders will be officially notified via an issued acceptance letter."
+  ],
+  "A4": [
+   "s",
+   "Tender Ref"
+  ],
+  "B4": [
+   "s",
+   "Status"
+  ],
+  "C4": [
+   "s",
+   "Rejection code"
+  ],
+  "D4": [
+   "s",
+   "Company Name"
+  ],
+  "E4": [
+   "s",
+   "Tendered Unit \n(BMU/Unit ID)"
+  ],
+  "F4": [
+   "s",
+   "TO connection  /  DNO connection"
+  ],
+  "G4": [
+   "s",
+   "Generation Type"
+  ],
+  "H4": [
+   "s",
+   "Start Date"
+  ],
+  "I4": [
+   "s",
+   "End Date"
+  ],
+  "J4": [
+   "s",
+   "Tendered Period \n(dd.mm.yy - dd.mm.yy)"
+  ],
+  "K4": [
+   "s",
+   "Applicable FFR Capability Data Table"
+  ],
+  "L4": [
+   "s",
+   "Tendered Frames per Service Day"
+  ],
+  "U4": [
+   "s",
+   "Tendered Prices***"
+  ],
+  "X4": [
+   "s",
+   "BMUs  Only - Applicable Balancing Service           (i.e. ABSVD Imbalance) YES/NO"
+  ],
+  "Y4": [
+   "s",
+   "Dynamic Providers Only"
+  ],
+  "AC4": [
+   "s",
+   "Dynamic Providers only"
+  ],
+  "AJ4": [
+   "s",
+   "Please indicate as per detail change provision if you are adding volume"
+  ],
+  "AK4": [
+   "s",
+   "Please state the accepted tender that you are stacking onto"
+  ],
+  "AL4": [
+   "s",
+   "Please state if this is an all or nothing bid.\n\nClearly reference what lines are included in each all or nothing bid"
+  ],
+  "AM4": [
+   "s",
+   "Please indicate if this is a mutually exclusive tender "
+  ],
+  "AN4": [
+   "s",
+   "Non-Dynamic Providers  "
+  ],
+  "AP4": [
+   "s",
+   "Comments "
+  ],
+  "L5": [
+   "s",
+   "Working Days \n(Mon-Fri)"
+  ],
+  "O5": [
+   "s",
+   "Saturdays"
+  ],
+  "R5": [
+   "s",
+   "Sundays/Bank Holidays"
+  ],
+  "U5": [
+   "s",
+   "Availability Fee (£/h)"
+  ],
+  "V5": [
+   "s",
+   "Nomination Fee (£/h)"
+  ],
+  "W5": [
+   "s",
+   "Window Initiation Fee (£/window)"
+  ],
+  "Y5": [
+   "s",
+   "Maximum Part Load Point (MW)"
+  ],
+  "Z5": [
+   "s",
+   "Minimum Part Load Point (MW)"
+  ],
+  "AA5": [
+   "s",
+   "Minimum MEL (MW)"
+  ],
+  "AB5": [
+   "s",
+   "Maximum SEL (MW)"
+  ],
+  "AN5": [
+   "s",
+   "Volume of Response Tendered"
+  ],
+  "L6": [
+   "s",
+   "From"
+  ],
+  "M6": [
+   "s",
+   "To"
+  ],
+  "N6": [
+   "s",
+   "Duration (h)"
+  ],
+  "O6": [
+   "s",
+   "From"
+  ],
+  "P6": [
+   "s",
+   "To"
+  ],
+  "Q6": [
+   "s",
+   "Duration (h)"
+  ],
+  "R6": [
+   "s",
+   "From"
+  ],
+  "S6": [
+   "s",
+   "To"
+  ],
+  "T6": [
+   "s",
+   "Duration (h)"
+  ],
+  "AC6": [
+   "s",
+   "Primary Response (max.) @ 0.2Hz (MW)"
+  ],
+  "AD6": [
+   "s",
+   "Primary Response (max.) @ 0.5Hz (MW)"
+  ],
+  "AE6": [
+   "s",
+   "Primary Response (max.) @ 0.8Hz (MW)"
+  ],
+  "AF6": [
+   "s",
+   "Secondary Response (max.) @ 0.2/0.2Hz (MW)"
+  ],
+  "AG6": [
+   "s",
+   "Secondary Response (max.) @ 0.5/0.5Hz (MW)"
+  ],
+  "AH6": [
+   "s",
+   "High Frequency Response (max.) @ 0.2Hz (MW)"
+  ],
+  "AI6": [
+   "s",
+   "High Frequency Response (max.) @ 0.5Hz (MW)"
+  ],
+  "AN6": [
+   "s",
+   "Automatic Response Energy Deliverable by 10s (MW)"
+  ],
+  "AO6": [
+   "s",
+   "Automatic Response Energy Deliverable by 30s (MW)"
+  ],
+  "A7": [
+   "n",
+   "126"
+  ],
+  "D7": [
+   "s",
+   "Example Company"
+  ],
+  "E7": [
+   "s",
+   "Ex-FFR-1"
+  ],
+  "F7": [
+   "s",
+   "TO connection"
+  ],
+  "G7": [
+   "s",
+   "Wind"
+  ],
+  "H7": [
+   "n",
+   "44013"
+  ],
+  "I7": [
+   "n",
+   "44043"
+  ],
+  "J7": [
+   "fs",
+   "01.07.20 - 31.07.20 (1 months)"
+  ],
+  "K7": [
+   "s",
+   "As per FFR framework agreement "
+  ],
+  "L7": [
+   "n",
+   "2300"
+  ],
+  "M7": [
+   "n",
+   "700"
+  ],
+  "N7": [
+   "n",
+   "8"
+  ],
+  "O7": [
+   "n",
+   "2300"
+  ],
+  "P7": [
+   "n",
+   "700"
+  ],
+  "Q7": [
+   "n",
+   "8"
+  ],
+  "R7": [
+   "n",
+   "2300"
+  ],
+  "S7": [
+   "n",
+   "700"
+  ],
+  "T7": [
+   "n",
+   "8"
+  ],
+  "U7": [
+   "n",
+   "100"
+  ],
+  "V7": [
+   "n",
+   "600"
+  ],
+  "W7": [
+   "s",
+   "-"
+  ],
+  "X7": [
+   "s",
+   "-"
+  ],
+  "Y7": [
+   "s",
+   "-"
+  ],
+  "Z7": [
+   "s",
+   "-"
+  ],
+  "AA7": [
+   "s",
+   "-"
+  ],
+  "AB7": [
+   "s",
+   "-"
+  ],
+  "AC7": [
+   "s",
+   "-"
+  ],
+  "AD7": [
+   "s",
+   "-"
+  ],
+  "AE7": [
+   "s",
+   "-"
+  ],
+  "AF7": [
+   "s",
+   "-"
+  ],
+  "AG7": [
+   "s",
+   "-"
+  ],
+  "AH7": [
+   "s",
+   "-"
+  ],
+  "AI7": [
+   "s",
+   "-"
+  ],
+  "AJ7": [
+   "s",
+   "-"
+  ],
+  "AK7": [
+   "s",
+   "-"
+  ],
+  "AN7": [
+   "s",
+   "-"
+  ],
+  "AO7": [
+   "s",
+   "-"
+  ],
+  "AP7": [
+   "s",
+   "-"
+  ],
+  "A8": [
+   "n",
+   "126"
+  ],
+  "D8": [
+   "s",
+   "Example Company"
+  ],
+  "E8": [
+   "fs",
+   "Ex-FFR-1"
+  ],
+  "F8": [
+   "s",
+   "DNO connection"
+  ],
+  "G8": [
+   "s",
+   "Gas"
+  ],
+  "H8": [
+   "n",
+   "44013"
+  ],
+  "I8": [
+   "n",
+   "44043"
+  ],
+  "J8": [
+   "fs",
+   "01.07.20 - 31.07.20 (1 months)"
+  ],
+  "K8": [
+   "s",
+   "As per FFR framework agreement "
+  ],
+  "L8": [
+   "n",
+   "700"
+  ],
+  "M8": [
+   "n",
+   "2300"
+  ],
+  "N8": [
+   "n",
+   "16"
+  ],
+  "O8": [
+   "n",
+   "700"
+  ],
+  "P8": [
+   "n",
+   "2300"
+  ],
+  "Q8": [
+   "n",
+   "16"
+  ],
+  "R8": [
+   "n",
+   "700"
+  ],
+  "S8": [
+   "n",
+   "2300"
+  ],
+  "T8": [
+   "n",
+   "16"
+  ],
+  "U8": [
+   "n",
+   "600"
+  ],
+  "V8": [
+   "n",
+   "100"
+  ],
+  "W8": [
+   "s",
+   "-"
+  ],
+  "X8": [
+   "s",
+   "-"
+  ],
+  "Y8": [
+   "s",
+   "-"
+  ],
+  "Z8": [
+   "s",
+   "-"
+  ],
+  "AA8": [
+   "s",
+   "-"
+  ],
+  "AB8": [
+   "s",
+   "-"
+  ],
+  "AC8": [
+   "s",
+   "-"
+  ],
+  "AD8": [
+   "s",
+   "-"
+  ],
+  "AE8": [
+   "s",
+   "-"
+  ],
+  "AF8": [
+   "s",
+   "-"
+  ],
+  "AG8": [
+   "s",
+   "-"
+  ],
+  "AH8": [
+   "s",
+   "-"
+  ],
+  "AI8": [
+   "s",
+   "-"
+  ],
+  "AJ8": [
+   "s",
+   "-"
+  ],
+  "AK8": [
+   "s",
+   "-"
+  ],
+  "AN8": [
+   "s",
+   "-"
+  ],
+  "AO8": [
+   "s",
+   "-"
+  ],
+  "AP8": [
+   "s",
+   "-"
+  ],
+  "A9": [
+   "n",
+   "126.001"
+  ],
+  "B9": [
+   "s",
+   "Accepted"
+  ],
+  "C9": [
+   "s",
+   "NA"
+  ],
+  "D9": [
+   "s",
+   "ATTUNE ENERGY"
+  ],
+  "E9": [
+   "s",
+   "ERNES-1"
+  ],
+  "F9": [
+   "s",
+   "DNO connection"
+  ],
+  "G9": [
+   "s",
+   "Bio Fuel"
+  ],
+  "H9": [
+   "n",
+   "44013"
+  ],
+  "I9": [
+   "n",
+   "44043"
+  ],
+  "J9": [
+   "fs",
+   "01.07.20 - 31.07.20 (1 months)"
+  ],
+  "K9": [
+   "s",
+   "As per FFR framework agreement "
+  ],
+  "L9": [
+   "n",
+   "700"
+  ],
+  "M9": [
+   "n",
+   "1500"
+  ],
+  "N9": [
+   "n",
+   "8"
+  ],
+  "O9": [
+   "n",
+   "700"
+  ],
+  "P9": [
+   "n",
+   "1500"
+  ],
+  "Q9": [
+   "n",
+   "8"
+  ],
+  "R9": [
+   "n",
+   "700"
+  ],
+  "S9": [
+   "n",
+   "1500"
+  ],
+  "T9": [
+   "n",
+   "8"
+  ],
+  "U9": [
+   "n",
+   "50"
+  ],
+  "AO9": [
+   "n",
+   "20"
+  ],
+  "A10": [
+   "n",
+   "126.00200000000001"
+  ],
+  "B10": [
+   "s",
+   "Accepted"
+  ],
+  "C10": [
+   "s",
+   "NA"
+  ],
+  "D10": [
+   "s",
+   "FLEXIBLE GENERATION"
+  ],
+  "E10": [
+   "s",
+   "CRMU-1"
+  ],
+  "F10": [
+   "s",
+   "DNO connection"
+  ],
+  "G10": [
+   "s",
+   "Bio Fuel"
+  ],
+  "H10": [
+   "n",
+   "44013"
+  ],
+  "I10": [
+   "n",
+   "44043"
+  ],
+  "J10": [
+   "fs",
+   "01.07.20 - 31.07.20 (1 months)"
+  ],
+  "K10": [
+   "s",
+   "As per FFR framework agreement "
+  ],
+  "L10": [
+   "n",
+   "700"
+  ],
+  "M10": [
+   "n",
+   "1500"
+  ],
+  "N10": [
+   "n",
+   "8"
+  ],
+  "O10": [
+   "n",
+   "700"
+  ],
+  "P10": [
+   "n",
+   "1500"
+  ],
+  "Q10": [
+   "n",
+   "8"
+  ],
+  "R10": [
+   "n",
+   "700"
+  ],
+  "S10": [
+   "n",
+   "1500"
+  ],
+  "T10": [
+   "n",
+   "8"
+  ],
+  "U10": [
+   "n",
+   "53"
+  ],
+  "AM10": [
+   "s",
+   " "
+  ],
+  "AO10": [
+   "n",
+   "20"
+  ],
+  "A11": [
+   "n",
+   "126.18200000000087"
+  ],
+  "B11": [
+   "s",
+   "Accepted"
+  ],
+  "C11": [
+   "s",
+   "NA"
+  ],
+  "D11": [
+   "s",
+   "EDF Energy Customers Limited"
+  ],
+  "E11": [
+   "s",
+   "EDFE-6"
+  ],
+  "F11": [
+   "s",
+   "DNO connection"
+  ],
+  "G11": [
+   "s",
+   "DSF: Storage (for export)"
+  ],
+  "H11": [
+   "n",
+   "44013"
+  ],
+  "I11": [
+   "n",
+   "44043"
+  ],
+  "J11": [
+   "fs",
+   "01.07.20 - 31.07.20 (1 months)"
+  ],
+  "K11": [
+   "s",
+   "As per FFR framework agreement "
+  ],
+  "L11": [
+   "n",
+   "1500"
+  ],
+  "M11": [
+   "n",
+   "2300"
+  ],
+  "N11": [
+   "n",
+   "8"
+  ],
+  "O11": [
+   "n",
+   "1500"
+  ],
+  "P11": [
+   "n",
+   "2300"
+  ],
+  "Q11": [
+   "n",
+   "8"
+  ],
+  "R11": [
+   "n",
+   "1500"
+  ],
+  "S11": [
+   "n",
+   "2300"
+  ],
+  "T11": [
+   "n",
+   "8"
+  ],
+  "U11": [
+   "n",
+   "52.43"
+  ],
+  "AC11": [
+   "n",
+   "2.8"
+  ],
+  "AD11": [
+   "n",
+   "7"
+  ],
+  "AE11": [
+   "n",
+   "7"
+  ],
+  "AF11": [
+   "n",
+   "2.8"
+  ],
+  "AG11": [
+   "n",
+   "7"
+  ],
+  "AH11": [
+   "n",
+   "2.8"
+  ],
+  "AI11": [
+   "n",
+   "7"
+  ],
+  "A13": [
+   "s",
+   "Rejection Codes"
+  ],
+  "B13": [
+   "s",
+   "Code"
+  ],
+  "D13": [
+   "s",
+   "Reason"
+  ]
+ },
+ "merges": [
+  "AN5:AO5",
+  "AL4:AL6",
+  "AM4:AM6",
+  "AN4:AO4",
+  "AB5:AB6",
+  "G4:G6",
+  "H4:H6",
+  "I4:I6",
+  "J4:J6",
+  "AP4:AP6",
+  "L5:N5",
+  "O5:Q5",
+  "R5:T5",
+  "U5:U6",
+  "V5:V6",
+  "W5:W6",
+  "U4:W4",
+  "X4:X6",
+  "Y4:AB4",
+  "AC4:AI5",
+  "AJ4:AJ6",
+  "AK4:AK6",
+  "Y5:Y6",
+  "Z5:Z6",
+  "AA5:AA6",
+  "K4:K6",
+  "L4:T4",
+  "A4:A6",
+  "B4:B6",
+  "C4:C6",
+  "D4:D6",
+  "E4:E6",
+  "F4:F6"
+ ]
+}

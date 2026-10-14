@@ -971,6 +971,15 @@ AS5B_RECORDED = {
 """The five ASDP, ODFM and STOR day-ahead families unit K-AS-5b records (three eligible, two
 held)."""
 
+AS5C_RECORDED = {
+    "ffr_post_tender_reports_workbook",
+    "ffr_phase2_blockorders_archive",
+    "ffr_phase2_linearorders_archive",
+    "ffr_phase2_results_by_unit_archive",
+}
+"""The FFR post-tender workbook family and the three Phase-2 FFR ZIP-archive families unit
+K-AS-5c records (one eligible, three held)."""
+
 AS1_PACKAGE_FILES = {
     "balancing-reserve-auction-requirement-forecast.json",
     "dynamic-containment-4-day-forecast.json",
@@ -1034,7 +1043,7 @@ class TestSeededRegistry:
     def test_every_seeded_package_loads_with_no_record(self) -> None:
         loaded = registry_module.load_registry()
         entries = [entry for _package, entry in loaded.families.values()]
-        assert len(entries) == 317
+        assert len(entries) == 321
         assert sum(entry.legacy for entry in entries) == 3
         assert sum(entry.kind == "files" for entry in entries) == 35
         recorded = {entry.key for entry in entries if entry.record is not None}
@@ -1071,6 +1080,7 @@ class TestSeededRegistry:
             | AS4B_RECORDED
             | AS5A_RECORDED
             | AS5B_RECORDED
+            | AS5C_RECORDED
         )
         with_children = [res for _package, res in loaded.resources.values() if res.children]
         assert len(with_children) == X_RESOURCES_WITH_CHILDREN
@@ -1238,3 +1248,101 @@ class TestReaderSpecs:
         spec = {"member_pattern": "(", "inner": "csv"}
         with pytest.raises(RegistryError, match="member_pattern does not compile"):
             _load(tmp_path, record(reader="zip_member", zip_member=spec))
+
+
+class TestXlsxBlocks:
+    """V-20 / V-14 (ADR-037 amendment 1, AS-5c): composite blocks on reader xlsx only (A-12)."""
+
+    BLOCK = {
+        "resource_id": R1,
+        "sheet": "TR121 ",
+        "header_first": 2,
+        "header_last": 4,
+        "data_first": 7,
+        "data_last": 121,
+        "columns": "A:AP",
+    }
+
+    HELD = TestReaderSpecs.HELD
+
+    def _blocks(self, *blocks: dict[str, Any], **kwargs: Any) -> dict[str, Any]:
+        rec = record(reader=kwargs.pop("reader", "xlsx"), **kwargs)
+        rec["xlsx_blocks"] = list(blocks)
+        return rec
+
+    def test_controls_load(self, tmp_path: Path) -> None:
+        """Detects V-20 or V-14 refusing a valid block map: one or two blocks on reader xlsx load,
+        the sheet name keeps its trailing space, and bounds parse like ``XlsxSpec``."""
+        second = {**self.BLOCK, "resource_id": R2, "sheet": "Sheet1"}
+        loaded = _load(tmp_path, self._blocks(self.BLOCK, second), resources=self.HELD)
+        rec = loaded.families["gen_series"][1].record
+        assert rec is not None and rec.xlsx is None and rec.xlsx_blocks is not None
+        assert [b.resource_id for b in rec.xlsx_blocks] == [R1, R2]
+        assert rec.xlsx_blocks[0].sheet == "TR121 "
+        assert rec.xlsx_blocks[0].bounds == (1, 42)
+        single = {**self.BLOCK, "header_last": 2, "data_first": 3, "data_last": 3}
+        assert _load(tmp_path / "b", self._blocks(single), resources=self.HELD)
+
+    def test_absent_blocks_are_dropped_from_the_dump(self) -> None:
+        """Detects ``xlsx_blocks`` leaking into an existing record's ``exclude_none`` dump (the
+        equivalence fingerprint and the byte-unchanged pins read it)."""
+        rec = SchemaRecord.model_validate(record(reader="xlsx", xlsx=TestReaderSpecs.XLSX))
+        assert rec.xlsx_blocks is None
+        assert "xlsx_blocks" not in rec.model_dump(mode="json", exclude_none=True)
+
+    @pytest.mark.parametrize(
+        ("kwargs", "label"),
+        [
+            ({"reader": "csv"}, "blocks on csv"),
+            (
+                {"reader": "zip_member", "zip_member": {"member_pattern": ".+", "inner": "csv"}},
+                "blocks on zip_member csv",
+            ),
+            (
+                {
+                    "reader": "zip_member",
+                    "zip_member": {"member_pattern": ".+", "inner": "xlsx"},
+                    "xlsx": {"header_row": 1, "columns": "A:B"},
+                },
+                "blocks on zip_member xlsx",
+            ),
+            ({"xlsx": {"header_row": 1, "columns": "A:B"}}, "blocks with xlsx"),
+        ],
+    )
+    def test_v20_refusals(self, tmp_path: Path, kwargs: dict[str, Any], label: str) -> None:
+        """Detects a block map accepted beside another reader spec or on another reader."""
+        _refused(tmp_path, "V-20", self._blocks(self.BLOCK, **kwargs), resources=self.HELD)
+
+    def test_v20_empty_map_is_refused(self, tmp_path: Path) -> None:
+        """Detects an empty block map standing in for 'no blocks' (every capture would fail)."""
+        _refused(tmp_path, "V-20", self._blocks(), resources=self.HELD)
+
+    def test_v20_repeated_resource_is_refused(self, tmp_path: Path) -> None:
+        """Detects two blocks for one resource (the reader would pick one silently)."""
+        twice = {**self.BLOCK, "sheet": "Other"}
+        _refused(tmp_path, "V-20", self._blocks(self.BLOCK, twice), resources=self.HELD)
+
+    def test_reader_xlsx_with_neither_spec_is_v14(self, tmp_path: Path) -> None:
+        """Detects V-14 accepting reader xlsx with neither an xlsx spec nor a block map."""
+        message = _refused(tmp_path, "V-14", record(reader="xlsx"), resources=self.HELD)
+        assert "xlsx_blocks" in message
+
+    @pytest.mark.parametrize(
+        "change",
+        [
+            {"header_last": 1},
+            {"data_first": 4},
+            {"data_last": 6},
+            {"header_first": 0, "header_last": 0},
+            {"columns": "a:b"},
+            {"columns": "C:B"},
+            {"columns": "A"},
+            {"sheet": ""},
+            {"resource_id": ""},
+        ],
+    )
+    def test_malformed_blocks_are_rejected(self, tmp_path: Path, change: dict[str, Any]) -> None:
+        """Detects a block whose rows are out of order, whose column range does not parse or
+        whose resource or sheet is empty passing model validation."""
+        with pytest.raises(RegistryError, match="xlsx"):
+            _load(tmp_path, self._blocks({**self.BLOCK, **change}), resources=self.HELD)

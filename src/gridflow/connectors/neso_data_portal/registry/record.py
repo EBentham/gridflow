@@ -5,7 +5,8 @@ without one stays ingest-only. The record is a registry artefact, so it lives
 beside the package files and is validated when the registry loads:
 
 - the **models** below check each object's own shape (Pydantic, frozen,
-  ``extra="forbid"``);
+  ``extra="forbid"``), the record's reader specs included (V-14, and V-20 for
+  an ``xlsx_blocks`` composite-block map);
 - :func:`validate_record` checks the record against itself, its family and its
   package (rules V-1..V-10, V-13, V-17, V-18, V-19), and :func:`validate_silver_targets` checks
   every ``SILVER`` disposition once all files are loaded (V-11). Every failure
@@ -50,6 +51,7 @@ __all__ = [
     "TemporalRecipe",
     "UnpivotSpec",
     "ValueSpec",
+    "XlsxBlock",
     "XlsxSpec",
     "ZipMemberSpec",
     "column_index",
@@ -489,6 +491,53 @@ class XlsxSpec(_Frozen):
         return column_index(left), column_index(right)
 
 
+class XlsxBlock(_Frozen):
+    """Where one resource's composite-header table sits (ADR-037 amendment 1, V-20).
+
+    One block per resource. Rows between ``header_last`` and ``data_first``,
+    above ``header_first`` and below ``data_last`` are never read; rows are
+    selected by these positions only, never by value.
+
+    Attributes:
+        resource_id: The registry resource the block belongs to.
+        sheet: The exact sheet name (trailing spaces kept).
+        header_first: The 1-based first composite-header row.
+        header_last: The 1-based last composite-header row.
+        data_first: The 1-based first data row.
+        data_last: The 1-based last data row.
+        columns: The column range, ``"A:AP"`` (left <= right).
+    """
+
+    resource_id: str = Field(min_length=1)
+    sheet: str = Field(min_length=1)
+    header_first: int = Field(ge=1)
+    header_last: int
+    data_first: int
+    data_last: int
+    columns: str
+
+    @model_validator(mode="after")
+    def _shape(self) -> XlsxBlock:
+        if not (self.header_first <= self.header_last < self.data_first <= self.data_last):
+            raise ValueError(
+                f"xlsx block rows must be header_first <= header_last < data_first <= "
+                f"data_last, got {self.header_first}, {self.header_last}, {self.data_first}, "
+                f"{self.data_last}"
+            )
+        match = _COLUMN_RANGE.fullmatch(self.columns)
+        if match is None:
+            raise ValueError(f"xlsx block columns {self.columns!r} is not {_COLUMN_RANGE.pattern}")
+        if column_index(match.group(1)) > column_index(match.group(2)):
+            raise ValueError(f"xlsx block columns {self.columns!r}: left is after right")
+        return self
+
+    @property
+    def bounds(self) -> tuple[int, int]:
+        """The 1-based ``(first, last)`` column indexes of :attr:`columns`."""
+        left, right = self.columns.split(":")
+        return column_index(left), column_index(right)
+
+
 class ZipMemberSpec(_Frozen):
     """Which ZIP members a ``zip_member`` record reads and how (ADR-037 P-2, P-7).
 
@@ -534,6 +583,9 @@ class SchemaRecord(_Frozen):
         edition_by_filename: Exact ``(resource_filename, edition)`` pairs; the
             engine stamps the capture's edition as ``edition`` (ADR-042). An
             unlisted filename fails the capture; no fallback.
+        xlsx_blocks: Reader ``xlsx`` only, instead of ``xlsx``: one exact
+            block per resource (V-20); an unlisted resource fails the
+            capture; no fallback.
     """
 
     version: str = Field(min_length=1)
@@ -552,6 +604,7 @@ class SchemaRecord(_Frozen):
     zip_member: ZipMemberSpec | None = None
     latest_partition: Literal["resource_id"] | None = None
     edition_by_filename: tuple[tuple[str, int], ...] | None = None
+    xlsx_blocks: tuple[XlsxBlock, ...] | None = None
 
     @model_validator(mode="after")
     def _shape(self) -> SchemaRecord:
@@ -577,14 +630,31 @@ class SchemaRecord(_Frozen):
         if len(set(filenames)) != len(filenames):
             raise ValueError("edition_by_filename repeats a filename")
 
+    def _blocks(self, blocks: tuple[XlsxBlock, ...]) -> None:
+        """V-20: a block map is reader ``xlsx``'s alone, non-empty, one block per resource."""
+        if self.reader != "xlsx":
+            raise ValueError(f"V-20: xlsx_blocks needs reader xlsx, not {self.reader}")
+        if self.xlsx is not None:
+            raise ValueError("V-20: xlsx_blocks replaces the xlsx spec; declare one, not both")
+        if not blocks:
+            raise ValueError("V-20: xlsx_blocks must be non-empty")
+        ids = [block.resource_id for block in blocks]
+        if len(set(ids)) != len(ids):
+            raise ValueError("V-20: xlsx_blocks repeats a resource_id")
+
     def _reader_specs(self) -> None:
-        """V-14: the reader specs match the reader."""
+        """V-14: the reader specs match the reader (V-20 first, for a block map)."""
+        if self.xlsx_blocks is not None:
+            self._blocks(self.xlsx_blocks)
         if self.reader == "csv":
             if self.xlsx is not None or self.zip_member is not None:
                 raise ValueError("V-14: reader csv takes no xlsx or zip_member spec")
         elif self.reader == "xlsx":
-            if self.xlsx is None or self.zip_member is not None:
-                raise ValueError("V-14: reader xlsx takes an xlsx spec and no zip_member spec")
+            if (self.xlsx is None and self.xlsx_blocks is None) or self.zip_member is not None:
+                raise ValueError(
+                    "V-14: reader xlsx takes an xlsx spec or xlsx_blocks (V-20) and no "
+                    "zip_member spec"
+                )
         else:
             if self.zip_member is None:
                 raise ValueError("V-14: reader zip_member takes a zip_member spec")

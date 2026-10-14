@@ -346,6 +346,16 @@ AS5B_ADDED = frozenset(
 )
 """The five ASDP, ODFM and STOR day-ahead families v0.22-K-AS-5b records (three eligible, two
 held)."""
+AS5C_ADDED = frozenset(
+    {
+        "ffr_post_tender_reports_workbook",
+        "ffr_phase2_blockorders_archive",
+        "ffr_phase2_linearorders_archive",
+        "ffr_phase2_results_by_unit_archive",
+    }
+)
+"""The FFR post-tender workbook family and the three Phase-2 FFR ZIP-archive families
+v0.22-K-AS-5c records (one eligible, three held)."""
 REWORDED_HOLDS = {
     "national_forecast_7d_historic_day_ahead": (
         "TODO: FORECAST_TIMESTAMP has no vendor definition and its zone is undocumented "
@@ -438,6 +448,7 @@ class TestByteUnchanged:
                     *AS4B_ADDED,
                     *AS5A_ADDED,
                     *AS5B_ADDED,
+                    *AS5C_ADDED,
                 }
                 if section != "engine"
                 else set()
@@ -1087,6 +1098,7 @@ class TestRecordRules:
                 "ffr_phase2_auction_phase_blockorders",
                 "ffr_phase2_auction_phase_linearorders",
                 "ffr_post_tender_reports_csv_ext",
+                "ffr_post_tender_reports_workbook",
                 "gtma_trades_data",
                 "gtma_trades_fy",
                 "historic_demand",
