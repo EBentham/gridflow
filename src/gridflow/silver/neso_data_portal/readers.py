@@ -12,7 +12,9 @@ module registered fails each capture with :class:`ReaderUnavailableError`.
 
 Every table a reader yields is all-``Utf8`` with its columns equal to the
 header it parsed (stripped), so P-4 types it by matching that header to one of
-the record's epochs.
+the record's epochs. A record with ``xlsx_blocks`` (AS-5c, ADR-037 amendment 1)
+reads one declared composite block per resource instead: its header is one
+label per column built from the stacked header rows (:func:`read_block`).
 """
 
 from __future__ import annotations
@@ -49,7 +51,11 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     from gridflow.connectors.neso_data_portal.registry import ResourceEntry
-    from gridflow.connectors.neso_data_portal.registry.record import SchemaRecord, XlsxSpec
+    from gridflow.connectors.neso_data_portal.registry.record import (
+        SchemaRecord,
+        XlsxBlock,
+        XlsxSpec,
+    )
 
 __all__ = [
     "CONTAINER_READERS",
@@ -58,7 +64,9 @@ __all__ = [
     "ChildTable",
     "ContainerInventoryError",
     "ReaderUnavailableError",
+    "LABEL_SEPARATOR",
     "XlsxBlockError",
+    "read_block",
     "read_children",
     "read_csv_body",
     "read_sheet",
@@ -69,6 +77,9 @@ __all__ = [
 _UTF8_BOM = b"\xef\xbb\xbf"
 _UTF8_CHUNK = 1 << 20
 _SHARED_STRINGS = "xl/sharedStrings.xml"
+
+LABEL_SEPARATOR = " | "
+"""Joins the stacked header parts of one composite-block column into its label (rule (j))."""
 
 
 class ReaderUnavailableError(Exception):
@@ -242,7 +253,7 @@ def _check_inventory(path: Path, data: bytes, resource: ResourceEntry) -> None:
 
 
 class XlsxBlockError(Exception):
-    """A sheet's table breaks one of the ``xlsx`` block rules (P-6 (a)-(g))."""
+    """A sheet's table breaks one of the ``xlsx`` block rules (P-6 (a)-(g), AS-5c (h)-(n))."""
 
 
 @dataclass(frozen=True)
@@ -451,6 +462,137 @@ def _check_block(sheet: _Sheet, spec: XlsxSpec, label: str) -> tuple[tuple[str, 
     return tuple(header), end
 
 
+def _header_units(
+    sheet: _Sheet, block: XlsxBlock, label: str
+) -> tuple[dict[tuple[int, int], int], list[str]]:
+    """Rule (i) over every merge; each header merge's cells -> its anchor value (rule (j))."""
+    first, last = block.bounds
+    unit_of: dict[tuple[int, int], int] = {}
+    anchors: list[str] = []
+    for ref, top, left, bottom, right in sheet.merges:
+        if (
+            top <= block.data_last
+            and bottom >= block.data_first
+            and left <= last
+            and right >= first
+        ):
+            raise _fail("i", label, f"merged range {ref} intersects the data rows")
+        if not (top <= block.header_last and bottom >= block.header_first):
+            continue
+        if not (
+            block.header_first <= top
+            and bottom <= block.header_last
+            and first <= left
+            and right <= last
+        ):
+            raise _fail(
+                "i",
+                label,
+                f"merged range {ref} leaves the header rows "
+                f"{block.header_first}-{block.header_last} x {block.columns}",
+            )
+        anchor = sheet.cells.get((top, left))
+        value = anchor.value.strip() if anchor is not None else ""
+        for row in range(top, bottom + 1):
+            for column in range(left, right + 1):
+                unit_of[(row, column)] = len(anchors)
+                other = sheet.cells.get((row, column))
+                if (
+                    (row, column) != (top, left)
+                    and other is not None
+                    and other.populated
+                    and other.value.strip() != value
+                ):
+                    raise _fail(
+                        "j",
+                        label,
+                        f"merged cell {_cell_name(row, column)} {other.value!r} differs from "
+                        f"its anchor's {value!r} ({ref})",
+                    )
+        anchors.append(value)
+    return unit_of, anchors
+
+
+def _check_composite(sheet: _Sheet, block: XlsxBlock, label: str) -> tuple[str, ...]:
+    """AS-5c rules (h)-(n) over the stdlib parse; returns one label per column.
+
+    A column's label is its header rows' units top to bottom (a header merge
+    is one unit valued by its stripped anchor cell; any other cell is its own
+    stripped value), the non-empty ones joined with :data:`LABEL_SEPARATOR`.
+    """
+    first, last = block.bounds
+    cells = sheet.cells
+    for (row, column), cell in sorted(cells.items()):
+        if (
+            block.header_first <= row <= block.header_last
+            and first <= column <= last
+            and cell.populated
+            and cell.kind != "string"
+        ):
+            raise _fail(
+                "h", label, f"header cell {_cell_name(row, column)} is not a string ({cell.kind})"
+            )
+
+    unit_of, anchors = _header_units(sheet, block, label)
+    labels: list[str] = []
+    for column in range(first, last + 1):
+        parts: list[str] = []
+        used: set[int] = set()
+        for row in range(block.header_first, block.header_last + 1):
+            unit = unit_of.get((row, column))
+            if unit is not None:
+                if unit in used:
+                    continue
+                used.add(unit)
+                value = anchors[unit]
+            else:
+                stacked = cells.get((row, column))
+                value = stacked.value.strip() if stacked is not None else ""
+            if value:
+                parts.append(value)
+        name = LABEL_SEPARATOR.join(parts)
+        where = f"{_cell_name(block.header_first, column)}:{_cell_name(block.header_last, column)}"
+        if not name:
+            raise _fail("j", label, f"header column {where} has an empty label")
+        if name in labels:
+            raise _fail("j", label, f"header column {where} repeats the label {name!r}")
+        labels.append(name)
+
+    filled: set[int] = set()
+    for (row, column), cell in sorted(cells.items()):
+        if (
+            block.data_first <= row <= block.data_last
+            and first <= column <= last
+            and cell.populated
+        ):
+            if cell.kind not in ("string", "text", "number"):
+                raise _fail(
+                    "k", label, f"data cell {_cell_name(row, column)} is {cell.kind} ({cell.value})"
+                )
+            filled.add(row)
+    for row in range(block.data_first, block.data_last + 1):
+        if row not in filled:
+            raise _fail("l", label, f"data row {row} is empty across {block.columns}")
+    for (row, column), cell in sorted(cells.items()):
+        if (
+            block.header_first <= row <= block.data_last
+            and not first <= column <= last
+            and cell.populated
+        ):
+            raise _fail(
+                "m", label, f"cell {_cell_name(row, column)} outside {block.columns} is populated"
+            )
+    below = cells.get((block.data_last + 1, first))
+    if below is not None and below.populated:
+        raise _fail(
+            "n",
+            label,
+            f"cell {_cell_name(block.data_last + 1, first)} below data_last {block.data_last} "
+            "is populated (the block stops early)",
+        )
+    return tuple(labels)
+
+
 def _sheet_part(container: Container, sheet: str) -> str:
     for name, part in workbook_sheets(container):
         if name == sheet:
@@ -520,17 +662,93 @@ def read_sheet(
     )
 
 
+def read_block(
+    container: Container, block: XlsxBlock, child_id: str, crc32: int | None = None
+) -> ChildTable:
+    """Read one composite block's stored cell text (AS-5c P-4), with no calamine.
+
+    Every workbook entry is verified first. Rows are the declared data rows by
+    position only, in row order; a cell's value is its stored text exactly (a
+    number's ``<v>`` text, a string's decoded text, a formula string's cached
+    text: no strip, no reformat). An absent cell or an empty value is null.
+
+    Args:
+        container: The opened workbook.
+        block: The block's position.
+        child_id: The child id the table is yielded under.
+        crc32: The child's CRC; ``None`` = the worksheet part's.
+
+    Returns:
+        The all-``Utf8`` table, columns = the block's labels.
+
+    Raises:
+        ContainerReadError: A workbook entry fails verification, or a part
+            carries a DOCTYPE.
+        XlsxBlockError: The first rule (h)-(n) the block breaks.
+    """
+    label = f"{container.label}::{block.sheet}"
+    verify_all_entries(container)
+    part = _sheet_part(container, block.sheet)
+    parsed = _parse_sheet(read_xml_part(container, part), _shared_strings(container), label)
+    labels = _check_composite(parsed, block, label)
+    first, _last = block.bounds
+    values: list[list[str | None]] = [[] for _ in labels]
+    for row in range(block.data_first, block.data_last + 1):
+        for offset, column_values in enumerate(values):
+            cell = parsed.cells.get((row, first + offset))
+            column_values.append(cell.value if cell is not None and cell.value != "" else None)
+    frame = pl.DataFrame(
+        dict(zip(labels, values, strict=True)), schema=dict.fromkeys(labels, pl.Utf8)
+    )
+    return ChildTable(
+        child_id=child_id,
+        header=labels,
+        frame=frame,
+        crc32=crc32 if crc32 is not None else container.info(part).CRC,
+    )
+
+
+def _read_blocks(
+    path: Path, blocks: tuple[XlsxBlock, ...], children: tuple[str, ...]
+) -> Iterator[ChildTable]:
+    """The declared block of the body's resource, for each requested child (AS-5c P-2)."""
+    data = path.read_bytes()
+    resource = _resource_for(path)
+    _check_inventory(path, data, resource)
+    block = next((item for item in blocks if item.resource_id == resource.id), None)
+    if block is None:
+        raise XlsxBlockError(
+            f"{path}: resource {resource.id} has no declared xlsx block (V-20); no fallback"
+        )
+    container = open_container(data, str(path))
+    for child in children:
+        if CHILD_SEPARATOR in child:
+            raise ContainerInventoryError(f"{path}: xlsx child {child!r} names a member")
+        if child != block.sheet:
+            raise XlsxBlockError(
+                f"{path}: child {child!r} is not the declared block sheet {block.sheet!r}"
+            )
+        yield read_block(container, block, child)
+
+
 def read_xlsx_body(
     path: Path, record: SchemaRecord, children: tuple[str, ...]
 ) -> Iterator[ChildTable]:
     """Read the requested sheets of one workbook body (P-5, P-6).
 
+    A record with ``xlsx_blocks`` reads its resource's declared composite block
+    instead (AS-5c P-2); a resource without a block fails, with no fallback.
+
     Raises:
         ContainerInventoryError: The body's sheets are not exactly the
             resource's registry inventory, or its resource is unresolvable.
         ContainerReadError: An entry fails verification.
-        XlsxBlockError: A sheet breaks a P-6 rule.
+        XlsxBlockError: A sheet breaks a P-6 rule, or a block breaks a rule
+            (h)-(n), has no declaration, or is asked for another sheet.
     """
+    if record.xlsx_blocks is not None:
+        yield from _read_blocks(path, record.xlsx_blocks, children)
+        return
     if record.xlsx is None:
         raise ContainerInventoryError(f"{path}: an xlsx record needs an xlsx spec (V-14)")
     data = path.read_bytes()
