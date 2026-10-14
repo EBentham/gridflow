@@ -367,6 +367,24 @@ DFSA_ADDED = frozenset(
 )
 """The four Demand Flexibility Service families and the STOR day-ahead buy curve v0.22-K-DFS-a
 records (four eligible, one held)."""
+DFSB_ADDED = frozenset(
+    {
+        "dfs_industry_notification",
+        "dfs_service_requirements",
+        "dfs_utilisation_report",
+        "dfs_utilisation_report_sum",
+        "dfs_live_events_service_requirement",
+        "dfs_live_events_service_update_industry",
+        "dfs_live_events_utilisation_report",
+        "dfs_live_events_utilisation_report_sum",
+        "dfs_test_events_service_requirement",
+        "dfs_test_events_service_update_industry",
+        "dfs_test_events_utilisation_report",
+        "dfs_test_events_utilisation_report_sum",
+    }
+)
+"""The twelve frozen Demand Flexibility Service families (2023/24 service, 2022/23 live events and
+test events) v0.22-K-DFS-b records (ten eligible, two held)."""
 REWORDED_HOLDS = {
     "national_forecast_7d_historic_day_ahead": (
         "TODO: FORECAST_TIMESTAMP has no vendor definition and its zone is undocumented "
@@ -461,6 +479,7 @@ class TestByteUnchanged:
                     *AS5B_ADDED,
                     *AS5C_ADDED,
                     *DFSA_ADDED,
+                    *DFSB_ADDED,
                 }
                 if section != "engine"
                 else set()

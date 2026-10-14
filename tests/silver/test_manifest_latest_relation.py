@@ -69,7 +69,9 @@ from gridflow.silver.schema_manifest import (
 # with v0.22-K-AS-4b's eight EAC-BR archive and mock records, then to two hundred and sixteen
 # with v0.22-K-AS-5a's seven FFR post-tender and Phase-2 FFR auction records, then to two hundred
 # and twenty-one with v0.22-K-AS-5b's five ASDP, ODFM and STOR day-ahead records, then to two
-# hundred and thirty with v0.22-K-DFS-a's four DFS records and the STOR day-ahead buy curve.
+# hundred and thirty with v0.22-K-DFS-a's four DFS records and the STOR day-ahead buy curve, then to
+# two hundred and forty-two with v0.22-K-DFS-b's twelve frozen DFS records (2023/24 service,
+# 2022/23 live events, 2022/23 test events).
 _APPEND_ONLY_DATASETS: tuple[tuple[str, str], ...] = (
     ("elexon", "system_prices"),
     ("elexon", "remit"),
@@ -301,6 +303,18 @@ _APPEND_ONLY_DATASETS: tuple[tuple[str, str], ...] = (
     ("neso_data_portal", "demand_flexibility_utilisation_report"),
     ("neso_data_portal", "demand_flexibility_utilisation_summary"),
     ("neso_data_portal", "stor_da_buy_curve"),
+    ("neso_data_portal", "dfs_industry_notification"),
+    ("neso_data_portal", "dfs_service_requirements"),
+    ("neso_data_portal", "dfs_utilisation_report"),
+    ("neso_data_portal", "dfs_utilisation_report_sum"),
+    ("neso_data_portal", "dfs_live_events_service_requirement"),
+    ("neso_data_portal", "dfs_live_events_service_update_industry"),
+    ("neso_data_portal", "dfs_live_events_utilisation_report"),
+    ("neso_data_portal", "dfs_live_events_utilisation_report_sum"),
+    ("neso_data_portal", "dfs_test_events_service_requirement"),
+    ("neso_data_portal", "dfs_test_events_service_update_industry"),
+    ("neso_data_portal", "dfs_test_events_utilisation_report"),
+    ("neso_data_portal", "dfs_test_events_utilisation_report_sum"),
 )
 
 
@@ -494,9 +508,9 @@ def test_append_only_set_equals_latest_spec_set() -> None:
     spec_set = set(LATEST_VIEW_SPECS)
 
     # Non-vacuity guard: this invariant must never pass because both sides are
-    # empty (F16) -- two hundred and thirty APPEND_ONLY datasets are registered today.
+    # empty (F16) -- two hundred and forty-two APPEND_ONLY datasets are registered today.
     assert len(append_only) > 0
-    assert len(append_only) == 230
+    assert len(append_only) == 242
 
     missing_specs = append_only - spec_set
     extra_specs = spec_set - append_only
@@ -1037,6 +1051,42 @@ _EXPECTED_APPEND_ONLY_DEPRECATED_ALIASES: dict[tuple[str, str], str | None] = {
         "demand_flexibility_utilisation_summary",
     ): "silver_demand_flexibility_utilisation_summary",
     ("neso_data_portal", "stor_da_buy_curve"): "silver_stor_da_buy_curve",
+    ("neso_data_portal", "dfs_industry_notification"): "silver_dfs_industry_notification",
+    ("neso_data_portal", "dfs_service_requirements"): "silver_dfs_service_requirements",
+    ("neso_data_portal", "dfs_utilisation_report"): "silver_dfs_utilisation_report",
+    ("neso_data_portal", "dfs_utilisation_report_sum"): "silver_dfs_utilisation_report_sum",
+    (
+        "neso_data_portal",
+        "dfs_live_events_service_requirement",
+    ): "silver_dfs_live_events_service_requirement",
+    (
+        "neso_data_portal",
+        "dfs_live_events_service_update_industry",
+    ): "silver_dfs_live_events_service_update_industry",
+    (
+        "neso_data_portal",
+        "dfs_live_events_utilisation_report",
+    ): "silver_dfs_live_events_utilisation_report",
+    (
+        "neso_data_portal",
+        "dfs_live_events_utilisation_report_sum",
+    ): "silver_dfs_live_events_utilisation_report_sum",
+    (
+        "neso_data_portal",
+        "dfs_test_events_service_requirement",
+    ): "silver_dfs_test_events_service_requirement",
+    (
+        "neso_data_portal",
+        "dfs_test_events_service_update_industry",
+    ): "silver_dfs_test_events_service_update_industry",
+    (
+        "neso_data_portal",
+        "dfs_test_events_utilisation_report",
+    ): "silver_dfs_test_events_utilisation_report",
+    (
+        "neso_data_portal",
+        "dfs_test_events_utilisation_report_sum",
+    ): "silver_dfs_test_events_utilisation_report_sum",
 }
 
 

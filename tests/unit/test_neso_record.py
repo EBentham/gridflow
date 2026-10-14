@@ -990,6 +990,23 @@ DFSA_RECORDED = {
 """The four Demand Flexibility Service families and the STOR day-ahead buy curve unit K-DFS-a
 records (four eligible, one held)."""
 
+DFSB_RECORDED = {
+    "dfs_industry_notification",
+    "dfs_service_requirements",
+    "dfs_utilisation_report",
+    "dfs_utilisation_report_sum",
+    "dfs_live_events_service_requirement",
+    "dfs_live_events_service_update_industry",
+    "dfs_live_events_utilisation_report",
+    "dfs_live_events_utilisation_report_sum",
+    "dfs_test_events_service_requirement",
+    "dfs_test_events_service_update_industry",
+    "dfs_test_events_utilisation_report",
+    "dfs_test_events_utilisation_report_sum",
+}
+"""The twelve frozen Demand Flexibility Service families (2023/24 service, 2022/23 live events and
+test events) unit K-DFS-b records (ten eligible, two held)."""
+
 AS1_PACKAGE_FILES = {
     "balancing-reserve-auction-requirement-forecast.json",
     "dynamic-containment-4-day-forecast.json",
@@ -1029,6 +1046,12 @@ AS5B_PACKAGE_FILES = {
 DFSA_PACKAGE_FILES = {
     "demand-flexibility.json",
     "short-term-operating-reserve-stor-day-ahead-buy-curve.json",
+}
+
+DFSB_PACKAGE_FILES = {
+    "demand-flexibility-service.json",
+    "demand-flexibility-service-live-events.json",
+    "demand-flexibility-service-test-events.json",
 }
 
 AS3B_PACKAGE_FILES = {
@@ -1097,6 +1120,7 @@ class TestSeededRegistry:
             | AS5B_RECORDED
             | AS5C_RECORDED
             | DFSA_RECORDED
+            | DFSB_RECORDED
         )
         with_children = [res for _package, res in loaded.resources.values() if res.children]
         assert len(with_children) == X_RESOURCES_WITH_CHILDREN
@@ -1147,6 +1171,7 @@ class TestSeededRegistry:
             | AS5A_PACKAGE_FILES
             | AS5B_PACKAGE_FILES
             | DFSA_PACKAGE_FILES
+            | DFSB_PACKAGE_FILES
         )
 
 
