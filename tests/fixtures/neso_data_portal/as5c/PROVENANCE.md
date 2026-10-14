@@ -33,6 +33,37 @@ can depend on a style (K-11).
 TR144's Mon-Fri From heading is the damaged `L` (header variant H22); its example rows carry
 `#REF!` error cells (kept as `e`).
 
+## Phase-2 archive member slices
+
+Each slice is whole CSV records of one ZIP member, cut byte for byte (CRLF kept; no BOM in the
+members; `.gitattributes` keeps them `-text`). Tests assemble each ZIP with
+`zip_bytes(entries, dirs=(folder,))` at the exact member paths below, so the body's children equal
+the registry inventory. Record numbers count the header as record 1.
+
+| Slice | Member (inside the ZIP) | Records kept |
+|---|---|---|
+| `bo22.csv` | `BlockOrders 2019-11-22 to 2019-11-29/NGESO_FRA_2019-11-22_BlockOrders.csv` | 1-3 (header + 2) |
+| `bo29.csv` | `BlockOrders 2019-11-22 to 2019-11-29/NGESO_FRA_2019-11-29_BlockOrders.csv` | 1-3 |
+| `lo22.csv` | `LinearOrders 2019-11-22 to 2020-01-03/NGESO_FRA_2019-11-22_LinearOrders.csv` (14 points) | 1-2 |
+| `lo29.csv` | `LinearOrders 2019-11-22 to 2020-01-03/NGESO_FRA_2019-11-29_LinearOrders.csv` (12 points) | 1-2 |
+| `lo06.csv` | `LinearOrders 2019-11-22 to 2020-01-03/NGESO_FRA_2019-12-06_LinearOrders.csv` (16 points) | 1-2 |
+| `lo13.csv` | `LinearOrders 2019-11-22 to 2020-01-03/NGESO_FRA_2019-12-13_LinearOrders.csv` (16 points) | 1-2 |
+| `lo20.csv` | `LinearOrders 2019-11-22 to 2020-01-03/NGESO_FRA_2019-12-20_LinearOrders.csv` (16 points) | 1-2 |
+| `lo27.csv` | `LinearOrders 2019-11-22 to 2020-01-03/NGESO_FRA_2019-12-27_LinearOrders.csv` (16 points) | 1-2 |
+| `lo03.csv` | `LinearOrders 2019-11-22 to 2020-01-03/NGESO_FRA_2020-01-03_LinearOrders.csv` (16 points) | 1-2 |
+| `ru22.csv` | `ResultByUnit 2019-11-22 to 2019-11-29/NGESO_FRA_2019-11-22_ResultsByUnit.csv` | 1-3, 198-199 (the collided `UF_LJP12` 2019-11-24 EFA 11 DLH pair) |
+| `ru29.csv` | `ResultByUnit 2019-11-22 to 2019-11-29/NGESO_FRA_2019-11-29_ResultsByUnit.csv` | 1-4 (header + 3) |
+
+Source bodies (under `bronze/neso_data_portal/ffr_phase2_auction_files/2026/10/08/`) and sidecar
+values (`url_type` `upload`, `ckan_format` `ZIP`, package `phase-2-ffr-auction-results-summary`,
+`2d649d03-fb37-46a2-ae82-9e651438b559`):
+
+| Slices | Body | SHA-256 | resource_id | resource_name | resource_filename | ckan_last_modified | written_at |
+|---|---|---|---|---|---|---|---|
+| `bo*` | `raw_20261008T105825Z_e988552e-8bc1-43db-af15-cff01e40d83c_f814dbb0.zip` | `f814dbb0ed3cc63bbed0bad846dd1e2157dd4a032de617776a830584db85f031` | `e988552e-8bc1-43db-af15-cff01e40d83c` | `BlockOrders 2019-11-22 to 2019-11-29` | `blockorders-2019-11-22-to-2019-11-29.zip` | `2021-03-31T09:18:59.033322` | `2026-10-08T10:58:25.391428+00:00` |
+| `lo*` | `raw_20261008T105828Z_7ab29f1c-4da1-4f36-b611-cb74f62737fc_6700eaab.zip` | `6700eaab62a92d8666fd0e2d86e55a5af39a0a3cf7abd9922aedcd98d365e7cc` | `7ab29f1c-4da1-4f36-b611-cb74f62737fc` | `LinearOrders 2019-11-22 to 2020-01-03` | `linearorders-2019-11-22-to-2020-01-03.zip` | `2021-03-31T09:19:40.922008` | `2026-10-08T10:58:28.144305+00:00` |
+| `ru*` | `raw_20261008T105830Z_a99410bb-5501-4292-a308-eb7c16b1b3f4_0a4ab749.zip` | `0a4ab749cdd766c6dc2485b35030d6117b48d64b2ea37dff98c0d89d4b8c16f4` | `a99410bb-5501-4292-a308-eb7c16b1b3f4` | `ResultByUnit 2019-11-22 to 2019-11-29` | `resultbyunit-2019-11-22-to-2019-11-29.zip` | `2021-03-31T09:20:11.157228` | `2026-10-08T10:58:30.740041+00:00` |
+
 ## Container output pin
 
 `container_pin.json` is the I-6 golden of `tests/unit/test_neso_as5c_container_pin.py`: per

@@ -349,10 +349,13 @@ held)."""
 AS5C_ADDED = frozenset(
     {
         "ffr_post_tender_reports_workbook",
+        "ffr_phase2_blockorders_archive",
+        "ffr_phase2_linearorders_archive",
+        "ffr_phase2_results_by_unit_archive",
     }
 )
-"""The FFR post-tender workbook family v0.22-K-AS-5c records (eligible, a composite block per
-resource)."""
+"""The FFR post-tender workbook family and the three Phase-2 FFR ZIP-archive families
+v0.22-K-AS-5c records (one eligible, three held)."""
 REWORDED_HOLDS = {
     "national_forecast_7d_historic_day_ahead": (
         "TODO: FORECAST_TIMESTAMP has no vendor definition and its zone is undocumented "

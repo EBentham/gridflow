@@ -292,6 +292,9 @@ _APPEND_ONLY_DATASETS: tuple[tuple[str, str], ...] = (
     ("neso_data_portal", "odfm_market_information_load_factors"),
     ("neso_data_portal", "stor_da_auction_results"),
     ("neso_data_portal", "ffr_post_tender_reports_workbook"),
+    ("neso_data_portal", "ffr_phase2_blockorders_archive"),
+    ("neso_data_portal", "ffr_phase2_linearorders_archive"),
+    ("neso_data_portal", "ffr_phase2_results_by_unit_archive"),
 )
 
 
@@ -485,9 +488,9 @@ def test_append_only_set_equals_latest_spec_set() -> None:
     spec_set = set(LATEST_VIEW_SPECS)
 
     # Non-vacuity guard: this invariant must never pass because both sides are
-    # empty (F16) -- two hundred and twenty-two APPEND_ONLY datasets are registered today.
+    # empty (F16) -- two hundred and twenty-five APPEND_ONLY datasets are registered today.
     assert len(append_only) > 0
-    assert len(append_only) == 222
+    assert len(append_only) == 225
 
     missing_specs = append_only - spec_set
     extra_specs = spec_set - append_only
@@ -999,6 +1002,18 @@ _EXPECTED_APPEND_ONLY_DEPRECATED_ALIASES: dict[tuple[str, str], str | None] = {
         "neso_data_portal",
         "ffr_post_tender_reports_workbook",
     ): "silver_ffr_post_tender_reports_workbook",
+    (
+        "neso_data_portal",
+        "ffr_phase2_blockorders_archive",
+    ): "silver_ffr_phase2_blockorders_archive",
+    (
+        "neso_data_portal",
+        "ffr_phase2_linearorders_archive",
+    ): "silver_ffr_phase2_linearorders_archive",
+    (
+        "neso_data_portal",
+        "ffr_phase2_results_by_unit_archive",
+    ): "silver_ffr_phase2_results_by_unit_archive",
 }
 
 

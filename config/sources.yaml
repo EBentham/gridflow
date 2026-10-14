@@ -955,7 +955,10 @@ sources:
       ffr_phase2_auction_phase_results_unit: {endpoint: "/api/3/action/package_show", schedule: "daily", max_query_days: 1}
       ffr_phase2_auction_phase_resultsbyunit: {endpoint: "/api/3/action/package_show", schedule: "daily", max_query_days: 1}
       ffr_phase2_auction_phase_resultsum: {endpoint: "/api/3/action/package_show", schedule: "daily", max_query_days: 1}
+      ffr_phase2_blockorders_archive: {endpoint: "/api/3/action/package_show", schedule: "daily", max_query_days: 1}
+      ffr_phase2_linearorders_archive: {endpoint: "/api/3/action/package_show", schedule: "daily", max_query_days: 1}
       ffr_phase2_result_summary_archive: {endpoint: "/api/3/action/package_show", schedule: "daily", max_query_days: 1}
+      ffr_phase2_results_by_unit_archive: {endpoint: "/api/3/action/package_show", schedule: "daily", max_query_days: 1}
       ffr_post_tender_reports_csv: {endpoint: "/api/3/action/package_show", schedule: "daily", max_query_days: 1}
       ffr_post_tender_reports_csv_ext: {endpoint: "/api/3/action/package_show", schedule: "daily", max_query_days: 1}
       ffr_post_tender_reports_ext: {endpoint: "/api/3/action/package_show", schedule: "daily", max_query_days: 1}

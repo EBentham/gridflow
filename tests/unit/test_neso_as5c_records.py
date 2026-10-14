@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import copy
 import json
+import re
 import tempfile
 from datetime import UTC, date, datetime
 from pathlib import Path
@@ -37,6 +38,7 @@ from _container_support import (  # noqa: F401 - forbid_zipfile_reads is a fixtu
     forbid_zipfile_reads,
     lineage_cells,
     lineage_workbook,
+    zip_bytes,
 )
 from _neso_generic_support import install_generated, write_capture
 
@@ -279,7 +281,7 @@ def test_a1_every_workbook_resource_is_dispositioned_on_evidence() -> None:
     assert silver == 59
     (tr121,) = [r for r in resources if r["id"].startswith("e692dc29")]
     assert {c["child"]: c["disposition"] for c in tr121["children"]}["Sheet1"] == {"kind": "DOC"}
-    for slug in (FFR_PKG,):
+    for slug in (FFR_PKG, "phase-2-ffr-auction-results-summary"):
         text = json.dumps(_package_doc(slug), ensure_ascii=False)
         assert "records pending in AS-5" not in text, slug
         assert "record pending in AS-5" not in text, slug
@@ -363,7 +365,6 @@ def test_a11_the_workbook_record_is_eligible_and_its_package_stays_eligible() ->
     assert record.entity_key == ("resource_id", "tender_ref")
     assert record.siblings == (WB_DIR,)
     assert family.transformer is None
-    assert Held  # the archive records below are held
 
 
 def test_a5_workbook_clocks_stay_raw_and_published_at_is_the_upload() -> None:
@@ -517,3 +518,374 @@ def test_a10_the_real_macro_workbook_labelled_xlsx_loads_its_156_rows(data: Path
     assert frame.height == 156 and frame["tender_ref"].n_unique() == 156
     completion = read_completion(data, WB, capture_id_for(path, data))
     assert completion is not None and completion["rows_excluded"] == 0
+
+
+# --------------------------------------------------------------------------- #
+# The three Phase-2 archive records (A-5, A-7, A-8, A-11)
+# --------------------------------------------------------------------------- #
+
+P2_PKG = "phase-2-ffr-auction-results-summary"
+P2_PKG_ID = "2d649d03-fb37-46a2-ae82-9e651438b559"
+P2_DIR = "ffr_phase2_auction_files"
+BO = "ffr_phase2_blockorders_archive"
+LO = "ffr_phase2_linearorders_archive"
+RU = "ffr_phase2_results_by_unit_archive"
+RS = "ffr_phase2_result_summary_archive"
+ARCHIVES = (BO, LO, RU)
+QUESTION = (
+    "TODO: PHASE2-ARCHIVE-SEMANTICS — the 2019-11 to 2020-01 Phase-2 FFR archive members have no "
+    "data dictionary: their price unit and hour basis, the export clock of the naive delivery and "
+    "order-entry times, and (for results) whether the archive `Date` is the EFA date of the later "
+    "masterdata exports are undocumented, and the current tables' dictionaries are not transferred "
+    "to the archive."
+)
+COLLISION = (
+    "TODO: PHASE2-ARCHIVE-BYUNIT-COLLISION — the 2019-11-22 Phase-2 FFR ResultsByUnit archive "
+    "member has two rows for LIMEJUMP LTD UF_LJP12, 2019-11-24, EFA 11, DLH with cleared volumes "
+    "0 and 10 at the same clearing price 10.11; which row is the result, or are both legitimate?"
+)
+
+
+class _Zip:
+    """One archive container: its folder, sidecar values and fixture slices by member date."""
+
+    def __init__(
+        self,
+        resource_id: str,
+        name: str,
+        filename: str,
+        modified: str,
+        table: str,
+        slices: dict[str, str],
+    ) -> None:
+        self.resource_id = resource_id
+        self.name = name
+        self.filename = filename
+        self.modified = modified
+        self.folder = f"{name}/"
+        self.table = table
+        self.slices = slices
+
+    def member(self, day: str) -> str:
+        return f"{self.folder}NGESO_FRA_{day}_{self.table}.csv"
+
+    def body(self, **replace: bytes) -> bytes:
+        entries = [
+            (self.member(day), replace.get(day, (FIXTURES / "as5c" / f"{alias}.csv").read_bytes()))
+            for day, alias in self.slices.items()
+        ]
+        return zip_bytes(entries, dirs=(self.folder,))
+
+
+ZIP_OF = {
+    BO: _Zip(
+        "e988552e-8bc1-43db-af15-cff01e40d83c",
+        "BlockOrders 2019-11-22 to 2019-11-29",
+        "blockorders-2019-11-22-to-2019-11-29.zip",
+        "2021-03-31T09:18:59.033322",
+        "BlockOrders",
+        {"2019-11-22": "bo22", "2019-11-29": "bo29"},
+    ),
+    LO: _Zip(
+        "7ab29f1c-4da1-4f36-b611-cb74f62737fc",
+        "LinearOrders 2019-11-22 to 2020-01-03",
+        "linearorders-2019-11-22-to-2020-01-03.zip",
+        "2021-03-31T09:19:40.922008",
+        "LinearOrders",
+        {
+            "2019-11-22": "lo22",
+            "2019-11-29": "lo29",
+            "2019-12-06": "lo06",
+            "2019-12-13": "lo13",
+            "2019-12-20": "lo20",
+            "2019-12-27": "lo27",
+            "2020-01-03": "lo03",
+        },
+    ),
+    RU: _Zip(
+        "a99410bb-5501-4292-a308-eb7c16b1b3f4",
+        "ResultByUnit 2019-11-22 to 2019-11-29",
+        "resultbyunit-2019-11-22-to-2019-11-29.zip",
+        "2021-03-31T09:20:11.157228",
+        "ResultsByUnit",
+        {"2019-11-22": "ru22", "2019-11-29": "ru29"},
+    ),
+}
+RU_HELD_CHILD = ZIP_OF[RU].member("2019-11-22")
+
+
+def _slice_records(alias: str) -> list[bytes]:
+    """The slice's data records (header excluded), CRLF stripped."""
+    return (FIXTURES / "as5c" / f"{alias}.csv").read_bytes().split(b"\r\n")[1:-1]
+
+
+def _archive_capture(data: Path, key: str, body: bytes) -> str:
+    archive = ZIP_OF[key]
+    path, _sidecar = write_capture(
+        data,
+        P2_DIR,
+        package_slug=P2_PKG,
+        package_id=P2_PKG_ID,
+        resource_id=archive.resource_id,
+        resource_name=archive.name,
+        body=body,
+        written_at=WRITTEN,
+        ckan_last_modified=archive.modified,
+        resource_filename=archive.filename,
+        ckan_format="ZIP",
+        extension="zip",
+        partition=DAY,
+    )
+    return capture_id_for(path, data)
+
+
+def _p2_containers() -> list[dict[str, Any]]:
+    return [
+        r for r in _package_doc(P2_PKG)["resources"] if r["family"] == P2_DIR and r.get("children")
+    ]
+
+
+def test_a11_the_three_archive_records_are_held_with_the_question_and_their_package_eligible() -> (
+    None
+):
+    """Detects an archive record published without a dictionary, a hold reworded or filed under
+    the wrong unit, or the package held: each archive record is ``held`` with the spec's
+    PHASE2-ARCHIVE-SEMANTICS question verbatim under this unit, and the package stays eligible."""
+    registry = load_registry()
+    for key in ARCHIVES:
+        package, family = registry.families[key]
+        record = _record(key)
+        held = Held(status="held", question=QUESTION, unit=UNIT)
+        assert record.eligibility == held, key
+        assert effective_eligibility(package, family) == held, key
+        assert package.eligibility == Eligible(status="eligible")
+        assert (record.reader, record.encoding, record.latest) == (
+            "zip_member",
+            "utf-8",
+            "whole_capture",
+        )
+        assert record.zip_member is not None and record.zip_member.inner == "csv"
+        assert record.siblings == (P2_DIR,)
+        assert record.xlsx is None and record.xlsx_blocks is None
+
+
+def test_a7_archive_keys_headers_and_dtypes_are_the_as5a_ones() -> None:
+    """Detects an archive column typed differently from AS-5a's shared field, a key column
+    nullable, or a linear epoch padded to a common width (SR-8): block orders are one 22-column
+    epoch keyed by order and period; linear orders three epochs of 12/14/16 points declaring only
+    their points; results by unit one 7-column epoch with a ``%Y-%m-%d`` date and ``date_sp1``."""
+    shared = {
+        c.source: c
+        for key in (
+            "ffr_phase2_auction_phase_blockorders",
+            "ffr_phase2_auction_phase_linearorders",
+        )
+        for c in _record(key).epochs[0].columns
+    }
+    bo, lo, ru = (_record(k) for k in ARCHIVES)
+    assert bo.entity_key == ("order_id", "order_period_id")
+    assert lo.entity_key == ("market_name", "delivery_start")
+    assert ru.entity_key == ("unit_name", "date", "efa", "service")
+    assert [len(e.header) for e in bo.epochs] == [22]
+    assert [len(e.header) for e in lo.epochs] == [38, 42, 46]
+    assert [len(e.header) for e in ru.epochs] == [7]
+    for record in (bo, lo):
+        assert record.temporal.kind == "none"
+        for epoch in record.epochs:
+            for column in epoch.columns:
+                assert column.nullable == (column.name not in record.entity_key), column.name
+                if column.source in shared:
+                    reference = shared[column.source]
+                    assert (column.name, column.dtype) == (reference.name, reference.dtype)
+                else:
+                    assert column.source[:-1].isdigit() and column.dtype == "float64"
+                    assert column.name == f"{column.source[-1].lower()}{column.source[:-1]}"
+    for epoch in lo.epochs:
+        points = (len(epoch.header) - 14) // 2
+        assert epoch.header[14:] == tuple(f"{n}{x}" for n in range(1, points + 1) for x in "PV")
+    (date_column,) = [c for c in ru.epochs[0].columns if c.name == "date"]
+    assert (date_column.dtype, date_column.format) == ("date", "%Y-%m-%d")
+    assert (ru.temporal.kind, ru.temporal.date_column) == ("date_sp1", "date")
+    dtypes = {c.name: c.dtype for c in ru.epochs[0].columns}
+    assert dtypes == {
+        "company": "string",
+        "unit_name": "string",
+        "date": "date",
+        "efa": "int64",
+        "service": "string",
+        "cleared_volume": "float64",
+        "clearing_price": "float64",
+    }
+
+
+def test_a5_archive_clocks_stay_raw() -> None:
+    """Detects an archive time typed or an issue time declared (I-5): ``order_entry_time``,
+    ``delivery_start`` and ``delivery_end`` are strings, the vintage is the upload's
+    last_modified, and no epoch carries an issue recipe."""
+    for key in ARCHIVES:
+        record = _record(key)
+        assert not has_issue_time(record)
+        assert record.vintage == "ckan_last_modified"
+        for epoch in record.epochs:
+            for column in epoch.columns:
+                if column.name in ("order_entry_time", "delivery_start", "delivery_end"):
+                    assert column.dtype == "string", (key, column.name)
+
+
+def test_a7_each_archive_member_is_owned_once_and_the_summary_archive_is_unchanged() -> None:
+    """Detects a member read by two records, a new pattern reaching a ResultSummary member, a
+    childless SILVER archive or an edited summary archive (I-7): every phase-2 container member
+    matches at most one record's pattern and each SILVER child exactly its owner's; each archive
+    record's SILVER sources are its one container; the summary container and its two children
+    stay SILVER to the summary record, whose pattern and hold are unchanged."""
+    patterns = {
+        key: _record(key).zip_member.member_pattern  # type: ignore[union-attr]
+        for key in (*ARCHIVES, RS)
+    }
+    owners: dict[str, str] = {}
+    for resource in _p2_containers():
+        for child in resource["children"]:
+            matched = [k for k, p in patterns.items() if re.fullmatch(p, child["child"])]
+            assert len(matched) == 1, child["child"]
+            owners[child["child"]] = matched[0]
+            if child["disposition"]["kind"] == "SILVER":
+                assert child["disposition"]["key"] == matched[0], child["child"]
+    summary = [c for c, k in owners.items() if "ResultSummary" in c]
+    assert len(summary) == 2 and {owners[c] for c in summary} == {RS}
+    for key in ARCHIVES:
+        sources = [
+            r for r in _p2_containers() if r["disposition"] == {"kind": "SILVER", "key": key}
+        ]
+        assert [r["id"] for r in sources] == [ZIP_OF[key].resource_id], key
+        assert any(
+            c["disposition"] == {"kind": "SILVER", "key": key} for c in sources[0]["children"]
+        )
+    (rs,) = [r for r in _p2_containers() if r["id"] == "3928f192-97a5-4b4f-9234-0dcc9ad071a0"]
+    assert rs["disposition"] == {"kind": "SILVER", "key": RS}
+    assert [c["disposition"] for c in rs["children"]] == [{"kind": "SILVER", "key": RS}] * 2
+    assert patterns[RS] == "[^/]+/NGESO_FRA_\\d{4}-\\d{2}-\\d{2}_ResultSummary\\.csv"
+    assert _record(RS).eligibility == Held(
+        status="held",
+        question=(
+            "Phase-2 FFR archive: Date and EFA (1-42) semantics are undocumented; timestamp_utc "
+            "is date_sp1 of Date, not an EFA block start"
+        ),
+        unit="AS-5",
+    )
+
+
+def test_a8_the_collided_by_unit_member_is_a_hold_child_with_its_question() -> None:
+    """Detects the 2019-11-22 by-unit member routed to silver or held without the question
+    (I-8): it is a HOLD child under this unit with the collision question verbatim; its sibling
+    member is SILVER to the by-unit record."""
+    (resource,) = [r for r in _p2_containers() if r["id"] == ZIP_OF[RU].resource_id]
+    dispositions = {c["child"]: c["disposition"] for c in resource["children"]}
+    assert dispositions == {
+        RU_HELD_CHILD: {"kind": "HOLD", "reason": COLLISION, "unit": UNIT},
+        ZIP_OF[RU].member("2019-11-29"): {"kind": "SILVER", "key": RU},
+    }
+    assert resource["disposition"] == {"kind": "SILVER", "key": RU}
+
+
+def test_a7_block_orders_load_both_members(data: Path) -> None:
+    """Detects a member dropped or an identifier cast: both BlockOrders members load their slice
+    rows under one capture, ``order_id`` keeps its full digits, times stay raw strings,
+    ``published_at`` is the upload's last_modified and no ``issue_time`` is emitted."""
+    capture_id = _archive_capture(data, BO, ZIP_OF[BO].body())
+    assert get_transformer(SOURCE, BO, data).run(DAY, run_id="r") == 4
+    frame = _silver(data, BO)
+    assert frame["child_id"].value_counts().sort("child_id").rows() == [
+        (ZIP_OF[BO].member("2019-11-22"), 2),
+        (ZIP_OF[BO].member("2019-11-29"), 2),
+    ]
+    assert "100000000000482" in frame["order_id"].to_list()
+    assert frame.schema["order_entry_time"] == pl.Utf8 and frame.schema["efa"] == pl.Int64
+    assert frame.schema["clearing_price"] == pl.Float64
+    assert "issue_time" not in frame.columns
+    assert frame["published_at"].unique().to_list() == [
+        datetime(2021, 3, 31, 9, 18, 59, 33322, UTC)
+    ]
+    completion = read_completion(data, BO, capture_id)
+    assert completion is not None and completion["rows_excluded"] == 0
+
+
+def test_a7_linear_orders_load_three_epochs_in_one_capture(data: Path) -> None:
+    """Detects an epoch missing or points padded with values (SR-8): the seven members of three
+    widths load in one capture; a 12-point member's points 13-16 and a 14-point member's points
+    15-16 are null, the others typed ``float64``."""
+    _archive_capture(data, LO, ZIP_OF[LO].body())
+    assert get_transformer(SOURCE, LO, data).run(DAY, run_id="r") == 7
+    frame = _silver(data, LO)
+    by_member = {row["child_id"]: row for row in frame.to_dicts()}
+    twelve = by_member[ZIP_OF[LO].member("2019-11-29")]
+    fourteen = by_member[ZIP_OF[LO].member("2019-11-22")]
+    sixteen = by_member[ZIP_OF[LO].member("2020-01-03")]
+    assert all(twelve[f"{x}{n}"] is None for n in range(13, 17) for x in "pv")
+    assert all(fourteen[f"{x}{n}"] is None for n in (15, 16) for x in "pv")
+    assert fourteen["p13"] is not None and sixteen["p16"] is not None
+    assert frame.schema["p16"] == pl.Float64 and frame.schema["p3"] == pl.Utf8
+    assert frame.schema["delivery_start"] == pl.Utf8
+
+
+def test_a8_production_dispositions_load_only_the_later_by_unit_member(data: Path) -> None:
+    """Detects one of the collided rows selected (I-8): with both members in the body, only the
+    2019-11-29 member's three rows load; no row is ``UF_LJP12`` on 2019-11-24."""
+    capture_id = _archive_capture(data, RU, ZIP_OF[RU].body())
+    assert get_transformer(SOURCE, RU, data).run(DAY, run_id="r") == 3
+    frame = _silver(data, RU)
+    assert frame["child_id"].unique().to_list() == [ZIP_OF[RU].member("2019-11-29")]
+    assert frame.filter(
+        (pl.col("unit_name") == "UF_LJP12") & (pl.col("date") == date(2019, 11, 24))
+    ).is_empty()
+    assert frame.schema["date"] == pl.Date
+    completion = read_completion(data, RU, capture_id)
+    assert completion is not None and completion["children"] == [ZIP_OF[RU].member("2019-11-29")]
+
+
+def test_a8_reading_the_collided_member_fails_the_whole_capture(
+    data: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Detects the duplicate guard bypassed (I-8's fallback): a test-local registry with the
+    2019-11-22 child SILVER fails the capture with ``DuplicateEntityKeyError`` and no output."""
+    document = copy.deepcopy(_package_doc(P2_PKG))
+    (resource,) = [r for r in document["resources"] if r["id"] == ZIP_OF[RU].resource_id]
+    for child in resource["children"]:
+        child["disposition"] = {"kind": "SILVER", "key": RU}
+    _registry, generated = install_generated(monkeypatch, data / "_reg", [document])
+    capture_id = _archive_capture(data, RU, ZIP_OF[RU].body())
+    with pytest.raises(NesoCaptureFailedError) as info:
+        generated.transformers[RU](data).run(DAY, run_id="r")
+    ((got, cls, _message),) = info.value.failures
+    assert (got, cls) == (capture_id, "DuplicateEntityKeyError")
+    assert read_completion(data, RU, capture_id) is None
+    assert _outputs(data, RU) == []
+
+
+def test_a7_one_bad_by_unit_date_fails_the_whole_capture(data: Path) -> None:
+    """Detects a partial date parse (I-4): one ``2019-11-3x`` Date cell in the SILVER by-unit
+    member fails the capture; nothing loads."""
+    raw = (FIXTURES / "as5c" / "ru29.csv").read_bytes().replace(b"2019-12-01", b"2019-11-3x", 1)
+    capture_id = _archive_capture(data, RU, ZIP_OF[RU].body(**{"2019-11-29": raw}))
+    with pytest.raises(NesoCaptureFailedError) as info:
+        get_transformer(SOURCE, RU, data).run(DAY, run_id="r")
+    ((got, _cls, message),) = info.value.failures
+    assert got == capture_id and "2019-11-3x" in message
+    assert read_completion(data, RU, capture_id) is None
+    assert _outputs(data, RU) == []
+
+
+def test_the_archive_slices_keep_the_vendor_shape() -> None:
+    """Detects a slice cut that lost what the tests rely on: CRLF records, the collided pair as
+    records 4-5 of ``ru22``, and the three linear widths."""
+    for alias in ("bo22", "bo29", "lo22", "lo29", "lo03", "ru22", "ru29"):
+        raw = (FIXTURES / "as5c" / f"{alias}.csv").read_bytes()
+        assert raw.endswith(b"\r\n") and b"\n" not in raw.replace(b"\r\n", b""), alias
+    assert _slice_records("ru22")[2:] == [
+        b"LIMEJUMP LTD,UF_LJP12,2019-11-24,11,DLH,0,10.11",
+        b"LIMEJUMP LTD,UF_LJP12,2019-11-24,11,DLH,10,10.11",
+    ]
+    widths = {
+        alias: (FIXTURES / "as5c" / f"{alias}.csv").read_bytes().split(b"\r\n")[0].count(b",") + 1
+        for alias in ("lo29", "lo22", "lo03")
+    }
+    assert widths == {"lo29": 38, "lo22": 42, "lo03": 46}

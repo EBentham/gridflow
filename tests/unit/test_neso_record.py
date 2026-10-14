@@ -973,9 +973,12 @@ held)."""
 
 AS5C_RECORDED = {
     "ffr_post_tender_reports_workbook",
+    "ffr_phase2_blockorders_archive",
+    "ffr_phase2_linearorders_archive",
+    "ffr_phase2_results_by_unit_archive",
 }
-"""The FFR post-tender workbook family unit K-AS-5c records (eligible, a composite block per
-resource)."""
+"""The FFR post-tender workbook family and the three Phase-2 FFR ZIP-archive families unit
+K-AS-5c records (one eligible, three held)."""
 
 AS1_PACKAGE_FILES = {
     "balancing-reserve-auction-requirement-forecast.json",
@@ -1040,7 +1043,7 @@ class TestSeededRegistry:
     def test_every_seeded_package_loads_with_no_record(self) -> None:
         loaded = registry_module.load_registry()
         entries = [entry for _package, entry in loaded.families.values()]
-        assert len(entries) == 318
+        assert len(entries) == 321
         assert sum(entry.legacy for entry in entries) == 3
         assert sum(entry.kind == "files" for entry in entries) == 35
         recorded = {entry.key for entry in entries if entry.record is not None}

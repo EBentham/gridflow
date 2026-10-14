@@ -110,7 +110,12 @@ ALL_FAMILIES = (*RECORDED, *OWNER_OF)
 TR147_ID = "c99081fb-0211-4a1a-9eed-53497f64a6ea"
 TR154_ID = "7e48c1ce-b4cf-43fa-afe9-4e6730474944"
 ARCHIVE = "ffr_phase2_result_summary_archive"
-AS5C_WORKBOOK = "ffr_post_tender_reports_workbook"
+AS5C_RECORDED = (
+    "ffr_post_tender_reports_workbook",
+    "ffr_phase2_blockorders_archive",
+    "ffr_phase2_linearorders_archive",
+    "ffr_phase2_results_by_unit_archive",
+)
 
 # --------------------------------------------------------------------------- #
 # The spec's silver names and types, positional against each table's vendor header. The key is
@@ -1008,25 +1013,25 @@ def test_the_two_held_records_carry_their_verbatim_question_and_the_unit(key: st
 def test_the_two_packages_stay_eligible_and_the_package_files_hold_the_seven_records() -> None:
     """Detects a package held by accident, a record on the wrong family or a family gaining a
     transformer: the two package files are ``eligible`` and hold the seven records plus the
-    existing summary-archive record and AS-5c's workbook record, no family has a bespoke
-    transformer, and the ZIP container families keep their ``AS-5`` data-container holds (their
-    records are AS-5c). The workbook dispositions are AS-5c's (``test_neso_as5c_records.py``)."""
+    existing summary-archive record and AS-5c's workbook and three archive records, and no
+    family has a bespoke transformer. The workbook and ZIP-archive dispositions are AS-5c's
+    (``test_neso_as5c_records.py``); the summary archive keeps its container and record."""
     found: set[str] = set()
     for package in (FFR_PACKAGE, P2_PACKAGE):
         document = _package_doc(package)
         assert document["eligibility"] == {"status": "eligible"}, package
         found |= {f["key"] for f in document["families"] if "record" in f}
         assert all(f["transformer"] is None for f in document["families"]), package
-    assert found == {*RECORDED, ARCHIVE, AS5C_WORKBOOK}
+    assert found == {*RECORDED, ARCHIVE, *AS5C_RECORDED}
     containers = [
         r
         for r in _package_doc(P2_PACKAGE)["resources"]
         if r["family"] == "ffr_phase2_auction_files"
     ]
-    assert [r["disposition"]["kind"] for r in containers].count("HOLD") == 3
-    assert [
+    assert [r["disposition"]["kind"] for r in containers].count("HOLD") == 0
+    assert ARCHIVE in [
         r["disposition"]["key"] for r in containers if r["disposition"]["kind"] == "SILVER"
-    ] == [ARCHIVE]
+    ]
     assert _record(ARCHIVE).siblings == ("ffr_phase2_auction_files",)
 
 

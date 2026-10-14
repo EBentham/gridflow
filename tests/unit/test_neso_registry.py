@@ -65,8 +65,9 @@ URL_TYPE_TALLY = {"upload": 1233, "datastore": 152}
 # holds the ORPS current long table (repeated complete row, SILVER 1242, HOLD 80); K-AS-5a holds the
 # FFR TR147 (thousands separator) and TR154 (orphan rows) CSV EXT resources (SILVER 1240, HOLD 82);
 # K-AS-5b holds the ODFM instructed V1 upload (SILVER 1239, HOLD 83); K-AS-5c dispositions 59 FFR
-# post-tender workbooks to the workbook record, TR123 and TR125 staying held (SILVER 1298, HOLD 24).
-DISPOSITION_TALLY = {"SILVER": 1298, "HOLD": 24, "DOC": 43, "GIS": 20}
+# post-tender workbooks to the workbook record, TR123 and TR125 staying held, and the BlockOrders,
+# LinearOrders and ResultByUnit ZIPs to their archive records (SILVER 1301, HOLD 21).
+DISPOSITION_TALLY = {"SILVER": 1301, "HOLD": 21, "DOC": 43, "GIS": 20}
 
 
 def _run(code: str, *args: str) -> subprocess.CompletedProcess[str]:
@@ -804,7 +805,7 @@ class TestAgreement:
                 from gridflow.connectors.neso_data_portal.client import NesoDataPortalConnector
                 config = load_settings().get_source_config('neso_data_portal')
                 configured = set(config.datasets)
-                assert len(FAMILIES) == 318, len(FAMILIES)
+                assert len(FAMILIES) == 321, len(FAMILIES)
                 assert configured == set(FAMILIES), sorted(configured ^ set(FAMILIES))[:5]
                 listed = NesoDataPortalConnector(config).list_datasets()
                 assert listed == list(FAMILIES)
