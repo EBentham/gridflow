@@ -1,0 +1,906 @@
+{
+ "resource_id": "31854ad2-0e98-48ab-8893-dc9b9d473091",
+ "sheet": "Sheet1",
+ "source_body": "ffr_post_tender_reports_files/2026/10/08/raw_20261008T110131Z_31854ad2-0e98-48ab-8893-dc9b9d473091_492cb1c1.xlsx",
+ "source_sha256": "492cb1c180795d6e971b5b9e4d12bbd11b8484f36d89229305078a83b81ae72b",
+ "header_first": 6,
+ "columns": "A:AP",
+ "source_rows": {
+  "1": 1,
+  "2": 2,
+  "3": 3,
+  "4": 4,
+  "5": 5,
+  "6": 6,
+  "7": 7,
+  "8": 8,
+  "9": 9,
+  "10": 10,
+  "11": 11,
+  "12": 12,
+  "432": 13,
+  "434": 15
+ },
+ "cells": {
+  "A1": [
+   "s",
+   "Following TR108 results being published, we identified that some tenders were incorrectly accepted and rejected. The tenders affected were 108.155, 108.156,108.161, 108.162, 108.163 and 108.165 associated with the Kiwi Power tenders were due to a manual error. We can confirm that no other providers are affected. \n\nTender line 108.145 associated with Hall Farm has been amended to rejected as the tender is mutually exclusive with accepted tender 108.144.\n\nPlease see the tender round results republication below for details.\n"
+  ],
+  "A5": [
+   "s",
+   "Indication of FFR results for tender round 108, accepted tenders will be officially notified via issued acceptance letter."
+  ],
+  "A6": [
+   "s",
+   "Tender Ref"
+  ],
+  "B6": [
+   "s",
+   "Status"
+  ],
+  "C6": [
+   "s",
+   "Rejection Code"
+  ],
+  "D6": [
+   "s",
+   "Company Name"
+  ],
+  "E6": [
+   "s",
+   "Tendered Unit \n(BMU/Unit ID)"
+  ],
+  "F6": [
+   "s",
+   "TO connection  /  DNO connection"
+  ],
+  "G6": [
+   "s",
+   "Generation Type"
+  ],
+  "H6": [
+   "s",
+   "Start Date"
+  ],
+  "I6": [
+   "s",
+   "End Date"
+  ],
+  "J6": [
+   "s",
+   "Tendered Period \n(dd.mm.yy - dd.mm.yy)"
+  ],
+  "K6": [
+   "s",
+   "Applicable FFR Capability Data Table"
+  ],
+  "L6": [
+   "s",
+   "Tendered Frames per Service Day"
+  ],
+  "U6": [
+   "s",
+   "Tendered Prices***"
+  ],
+  "X6": [
+   "s",
+   "BMUs  Only - Applicable Balancing Service           (i.e. ABSVD Imbalance) YES/NO"
+  ],
+  "Y6": [
+   "s",
+   "Dynamic Providers Only"
+  ],
+  "AC6": [
+   "s",
+   "Dynamic Providers only"
+  ],
+  "AJ6": [
+   "s",
+   "Please indicate as per detail change provision if you are adding volume"
+  ],
+  "AK6": [
+   "s",
+   "Please state the accepted tender that you are stacking onto"
+  ],
+  "AL6": [
+   "s",
+   "Please state if this is an all or nothing bid.\n\nClearly reference what lines are included in each all or nothing bid"
+  ],
+  "AM6": [
+   "s",
+   "Please indicate if this is a mutually exclusive tender "
+  ],
+  "AN6": [
+   "s",
+   "Non-Dynamic Providers  "
+  ],
+  "AP6": [
+   "s",
+   "Comments "
+  ],
+  "L7": [
+   "s",
+   "Working Days \n(Mon-Fri)"
+  ],
+  "O7": [
+   "s",
+   "Saturdays"
+  ],
+  "R7": [
+   "s",
+   "Sundays/Bank Holidays"
+  ],
+  "U7": [
+   "s",
+   "Availability Fee (£/h)"
+  ],
+  "V7": [
+   "s",
+   "Nomination Fee (£/h)"
+  ],
+  "W7": [
+   "s",
+   "Window Initiation Fee (£/window)"
+  ],
+  "Y7": [
+   "s",
+   "Maximum Part Load Point (MW)"
+  ],
+  "Z7": [
+   "s",
+   "Minimum Part Load Point (MW)"
+  ],
+  "AA7": [
+   "s",
+   "Minimum MEL (MW)"
+  ],
+  "AB7": [
+   "s",
+   "Maximum SEL (MW)"
+  ],
+  "AN7": [
+   "s",
+   "Volume of Response Tendered"
+  ],
+  "L8": [
+   "s",
+   "From"
+  ],
+  "M8": [
+   "s",
+   "To"
+  ],
+  "N8": [
+   "s",
+   "Duration (h)"
+  ],
+  "O8": [
+   "s",
+   "From"
+  ],
+  "P8": [
+   "s",
+   "To"
+  ],
+  "Q8": [
+   "s",
+   "Duration (h)"
+  ],
+  "R8": [
+   "s",
+   "From"
+  ],
+  "S8": [
+   "s",
+   "To"
+  ],
+  "T8": [
+   "s",
+   "Duration (h)"
+  ],
+  "AC8": [
+   "s",
+   "Primary Response (max.) @ 0.2Hz (MW)"
+  ],
+  "AD8": [
+   "s",
+   "Primary Response (max.) @ 0.5Hz (MW)"
+  ],
+  "AE8": [
+   "s",
+   "Primary Response (max.) @ 0.8Hz (MW)"
+  ],
+  "AF8": [
+   "s",
+   "Secondary Response (max.) @ 0.2/0.2Hz (MW)"
+  ],
+  "AG8": [
+   "s",
+   "Secondary Response (max.) @ 0.5/0.5Hz (MW)"
+  ],
+  "AH8": [
+   "s",
+   "High Frequency Response (max.) @ 0.2Hz (MW)"
+  ],
+  "AI8": [
+   "s",
+   "High Frequency Response (max.) @ 0.5Hz (MW)"
+  ],
+  "AN8": [
+   "s",
+   "Automatic Response Energy Deliverable by 10s (MW)"
+  ],
+  "AO8": [
+   "s",
+   "Automatic Response Energy Deliverable by 30s (MW)"
+  ],
+  "A9": [
+   "n",
+   "108"
+  ],
+  "D9": [
+   "s",
+   "Example Company"
+  ],
+  "E9": [
+   "s",
+   "Ex-FFR-1"
+  ],
+  "F9": [
+   "s",
+   "TO connection"
+  ],
+  "G9": [
+   "s",
+   "Wind"
+  ],
+  "H9": [
+   "n",
+   "43466"
+  ],
+  "I9": [
+   "n",
+   "43496"
+  ],
+  "J9": [
+   "fs",
+   "01.01.19 - 31.01.19 (1 months)"
+  ],
+  "K9": [
+   "s",
+   "As per FFR framework agreement "
+  ],
+  "L9": [
+   "n",
+   "2300"
+  ],
+  "M9": [
+   "n",
+   "700"
+  ],
+  "N9": [
+   "n",
+   "8"
+  ],
+  "O9": [
+   "n",
+   "2300"
+  ],
+  "P9": [
+   "n",
+   "700"
+  ],
+  "Q9": [
+   "n",
+   "8"
+  ],
+  "R9": [
+   "n",
+   "2300"
+  ],
+  "S9": [
+   "n",
+   "700"
+  ],
+  "T9": [
+   "n",
+   "8"
+  ],
+  "U9": [
+   "n",
+   "100"
+  ],
+  "V9": [
+   "n",
+   "600"
+  ],
+  "W9": [
+   "s",
+   "-"
+  ],
+  "X9": [
+   "s",
+   "-"
+  ],
+  "Y9": [
+   "s",
+   "-"
+  ],
+  "Z9": [
+   "s",
+   "-"
+  ],
+  "AA9": [
+   "s",
+   "-"
+  ],
+  "AB9": [
+   "s",
+   "-"
+  ],
+  "AC9": [
+   "s",
+   "-"
+  ],
+  "AD9": [
+   "s",
+   "-"
+  ],
+  "AE9": [
+   "s",
+   "-"
+  ],
+  "AF9": [
+   "s",
+   "-"
+  ],
+  "AG9": [
+   "s",
+   "-"
+  ],
+  "AH9": [
+   "s",
+   "-"
+  ],
+  "AI9": [
+   "s",
+   "-"
+  ],
+  "AJ9": [
+   "s",
+   "-"
+  ],
+  "AK9": [
+   "s",
+   "-"
+  ],
+  "AN9": [
+   "s",
+   "-"
+  ],
+  "AO9": [
+   "s",
+   "-"
+  ],
+  "AP9": [
+   "s",
+   "-"
+  ],
+  "A10": [
+   "n",
+   "108"
+  ],
+  "D10": [
+   "s",
+   "Example Company"
+  ],
+  "E10": [
+   "fs",
+   "Ex-FFR-1"
+  ],
+  "F10": [
+   "s",
+   "DNO connection"
+  ],
+  "G10": [
+   "s",
+   "Gas"
+  ],
+  "H10": [
+   "n",
+   "43466"
+  ],
+  "I10": [
+   "n",
+   "43496"
+  ],
+  "J10": [
+   "fs",
+   "01.01.19 - 31.01.19 (1 months)"
+  ],
+  "K10": [
+   "s",
+   "As per FFR framework agreement "
+  ],
+  "L10": [
+   "n",
+   "700"
+  ],
+  "M10": [
+   "n",
+   "2300"
+  ],
+  "N10": [
+   "n",
+   "16"
+  ],
+  "O10": [
+   "n",
+   "700"
+  ],
+  "P10": [
+   "n",
+   "2300"
+  ],
+  "Q10": [
+   "n",
+   "16"
+  ],
+  "R10": [
+   "n",
+   "700"
+  ],
+  "S10": [
+   "n",
+   "2300"
+  ],
+  "T10": [
+   "n",
+   "16"
+  ],
+  "U10": [
+   "n",
+   "600"
+  ],
+  "V10": [
+   "n",
+   "100"
+  ],
+  "W10": [
+   "s",
+   "-"
+  ],
+  "X10": [
+   "s",
+   "-"
+  ],
+  "Y10": [
+   "s",
+   "-"
+  ],
+  "Z10": [
+   "s",
+   "-"
+  ],
+  "AA10": [
+   "s",
+   "-"
+  ],
+  "AB10": [
+   "s",
+   "-"
+  ],
+  "AC10": [
+   "s",
+   "-"
+  ],
+  "AD10": [
+   "s",
+   "-"
+  ],
+  "AE10": [
+   "s",
+   "-"
+  ],
+  "AF10": [
+   "s",
+   "-"
+  ],
+  "AG10": [
+   "s",
+   "-"
+  ],
+  "AH10": [
+   "s",
+   "-"
+  ],
+  "AI10": [
+   "s",
+   "-"
+  ],
+  "AJ10": [
+   "s",
+   "-"
+  ],
+  "AK10": [
+   "s",
+   "-"
+  ],
+  "AN10": [
+   "s",
+   "-"
+  ],
+  "AO10": [
+   "s",
+   "-"
+  ],
+  "AP10": [
+   "s",
+   "-"
+  ],
+  "A11": [
+   "n",
+   "108.001"
+  ],
+  "B11": [
+   "s",
+   "Accepted"
+  ],
+  "C11": [
+   "s",
+   "n/a"
+  ],
+  "D11": [
+   "s",
+   "Limejump Ltd"
+  ],
+  "E11": [
+   "s",
+   "LJDYN-6"
+  ],
+  "F11": [
+   "s",
+   "DNO connection"
+  ],
+  "G11": [
+   "s",
+   "DSF: Storage (for export)"
+  ],
+  "H11": [
+   "n",
+   "43466"
+  ],
+  "I11": [
+   "n",
+   "43496"
+  ],
+  "J11": [
+   "fs",
+   "01.01.19 - 31.01.19 (1 months)"
+  ],
+  "K11": [
+   "s",
+   "As per FFR framework agreement "
+  ],
+  "L11": [
+   "n",
+   "700"
+  ],
+  "M11": [
+   "n",
+   "1500"
+  ],
+  "N11": [
+   "n",
+   "8"
+  ],
+  "O11": [
+   "n",
+   "700"
+  ],
+  "P11": [
+   "n",
+   "2300"
+  ],
+  "Q11": [
+   "n",
+   "16"
+  ],
+  "R11": [
+   "n",
+   "700"
+  ],
+  "S11": [
+   "n",
+   "2300"
+  ],
+  "T11": [
+   "n",
+   "16"
+  ],
+  "U11": [
+   "n",
+   "0"
+  ],
+  "AC11": [
+   "n",
+   "8"
+  ],
+  "AD11": [
+   "n",
+   "20"
+  ],
+  "AE11": [
+   "n",
+   "20"
+  ],
+  "AF11": [
+   "n",
+   "8"
+  ],
+  "AG11": [
+   "n",
+   "20"
+  ],
+  "AH11": [
+   "n",
+   "0"
+  ],
+  "AI11": [
+   "n",
+   "0"
+  ],
+  "AL11": [
+   "s",
+   "A"
+  ],
+  "AM11": [
+   "s",
+   "C"
+  ],
+  "A12": [
+   "n",
+   "108.00200000000001"
+  ],
+  "B12": [
+   "s",
+   "Accepted"
+  ],
+  "C12": [
+   "s",
+   "n/a"
+  ],
+  "D12": [
+   "s",
+   "Limejump Ltd"
+  ],
+  "E12": [
+   "s",
+   "LJDYN-6"
+  ],
+  "F12": [
+   "s",
+   "DNO connection"
+  ],
+  "G12": [
+   "s",
+   "DSF: Storage (for export)"
+  ],
+  "H12": [
+   "n",
+   "43466"
+  ],
+  "I12": [
+   "n",
+   "43496"
+  ],
+  "J12": [
+   "fs",
+   "01.01.19 - 31.01.19 (1 months)"
+  ],
+  "K12": [
+   "s",
+   "As per FFR framework agreement "
+  ],
+  "L12": [
+   "n",
+   "1900"
+  ],
+  "M12": [
+   "n",
+   "2300"
+  ],
+  "N12": [
+   "n",
+   "4"
+  ],
+  "Q12": [
+   "s",
+   ""
+  ],
+  "T12": [
+   "s",
+   ""
+  ],
+  "U12": [
+   "n",
+   "0"
+  ],
+  "AC12": [
+   "n",
+   "8"
+  ],
+  "AD12": [
+   "n",
+   "20"
+  ],
+  "AE12": [
+   "n",
+   "20"
+  ],
+  "AF12": [
+   "n",
+   "8"
+  ],
+  "AG12": [
+   "n",
+   "20"
+  ],
+  "AH12": [
+   "n",
+   "0"
+  ],
+  "AI12": [
+   "n",
+   "0"
+  ],
+  "AL12": [
+   "s",
+   "B"
+  ],
+  "AM12": [
+   "s",
+   "D"
+  ],
+  "A13": [
+   "n",
+   "108.458000000002"
+  ],
+  "B13": [
+   "s",
+   "Rejected"
+  ],
+  "C13": [
+   "n",
+   "5"
+  ],
+  "D13": [
+   "s",
+   "First Renewable Alpha Limited"
+  ],
+  "E13": [
+   "s",
+   "TREGN-1"
+  ],
+  "F13": [
+   "s",
+   "DNO connection"
+  ],
+  "G13": [
+   "s",
+   "Diesel"
+  ],
+  "H13": [
+   "n",
+   "43738"
+  ],
+  "I13": [
+   "n",
+   "43921"
+  ],
+  "J13": [
+   "fs",
+   "30.09.19 - 31.03.20 (6 months)"
+  ],
+  "K13": [
+   "s",
+   "As per FFR framework agreement "
+  ],
+  "L13": [
+   "n",
+   "2300"
+  ],
+  "M13": [
+   "n",
+   "2300"
+  ],
+  "N13": [
+   "n",
+   "24"
+  ],
+  "O13": [
+   "n",
+   "2300"
+  ],
+  "P13": [
+   "n",
+   "2300"
+  ],
+  "Q13": [
+   "n",
+   "24"
+  ],
+  "R13": [
+   "n",
+   "2300"
+  ],
+  "S13": [
+   "n",
+   "2300"
+  ],
+  "T13": [
+   "n",
+   "24"
+  ],
+  "U13": [
+   "n",
+   "30"
+  ],
+  "AM13": [
+   "n",
+   "106.45699999999999"
+  ],
+  "AO13": [
+   "n",
+   "10"
+  ],
+  "A15": [
+   "s",
+   "Rejection Codes"
+  ],
+  "B15": [
+   "s",
+   "Code"
+  ],
+  "D15": [
+   "s",
+   "Reason"
+  ]
+ },
+ "merges": [
+  "A1:I3",
+  "AJ6:AJ8",
+  "AK6:AK8",
+  "AL6:AL8",
+  "AM6:AM8",
+  "AN6:AO6",
+  "W7:W8",
+  "Y7:Y8",
+  "Z7:Z8",
+  "AA7:AA8",
+  "AB7:AB8",
+  "H6:H8",
+  "I6:I8",
+  "J6:J8",
+  "AP6:AP8",
+  "K6:K8",
+  "L6:T6",
+  "U6:W6",
+  "X6:X8",
+  "Y6:AB6",
+  "AC6:AI7",
+  "L7:N7",
+  "O7:Q7",
+  "R7:T7",
+  "U7:U8",
+  "AN7:AO7",
+  "V7:V8",
+  "A6:A8",
+  "D6:D8",
+  "E6:E8",
+  "F6:F8",
+  "G6:G8",
+  "B6:B8",
+  "C6:C8"
+ ]
+}
