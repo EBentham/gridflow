@@ -17,7 +17,678 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Country",
+              "EU Scenario",
+              "FES Scenario Alignment",
+              "Variable",
+              "Category",
+              "Type",
+              "SubType",
+              "SubSubType",
+              "2022",
+              "2023",
+              "2024",
+              "2025",
+              "2026",
+              "2027",
+              "2028",
+              "2029",
+              "2030",
+              "2031",
+              "2032",
+              "2033",
+              "2034",
+              "2035",
+              "2036",
+              "2037",
+              "2038",
+              "2039",
+              "2040",
+              "2041",
+              "2042",
+              "2043",
+              "2044",
+              "2045",
+              "2046",
+              "2047",
+              "2048",
+              "2049",
+              "2050"
+            ],
+            "columns": [
+              {
+                "source": "Country",
+                "name": "country",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "EU Scenario",
+                "name": "eu_scenario",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "FES Scenario Alignment",
+                "name": "fes_scenario_alignment",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Variable",
+                "name": "variable",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Category",
+                "name": "category",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Type",
+                "name": "type",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "SubType",
+                "name": "subtype",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "SubSubType",
+                "name": "subsubtype",
+                "dtype": "string",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            },
+            "unpivot": {
+              "years": [
+                [
+                  "2022",
+                  2022
+                ],
+                [
+                  "2023",
+                  2023
+                ],
+                [
+                  "2024",
+                  2024
+                ],
+                [
+                  "2025",
+                  2025
+                ],
+                [
+                  "2026",
+                  2026
+                ],
+                [
+                  "2027",
+                  2027
+                ],
+                [
+                  "2028",
+                  2028
+                ],
+                [
+                  "2029",
+                  2029
+                ],
+                [
+                  "2030",
+                  2030
+                ],
+                [
+                  "2031",
+                  2031
+                ],
+                [
+                  "2032",
+                  2032
+                ],
+                [
+                  "2033",
+                  2033
+                ],
+                [
+                  "2034",
+                  2034
+                ],
+                [
+                  "2035",
+                  2035
+                ],
+                [
+                  "2036",
+                  2036
+                ],
+                [
+                  "2037",
+                  2037
+                ],
+                [
+                  "2038",
+                  2038
+                ],
+                [
+                  "2039",
+                  2039
+                ],
+                [
+                  "2040",
+                  2040
+                ],
+                [
+                  "2041",
+                  2041
+                ],
+                [
+                  "2042",
+                  2042
+                ],
+                [
+                  "2043",
+                  2043
+                ],
+                [
+                  "2044",
+                  2044
+                ],
+                [
+                  "2045",
+                  2045
+                ],
+                [
+                  "2046",
+                  2046
+                ],
+                [
+                  "2047",
+                  2047
+                ],
+                [
+                  "2048",
+                  2048
+                ],
+                [
+                  "2049",
+                  2049
+                ],
+                [
+                  "2050",
+                  2050
+                ]
+              ],
+              "value": {
+                "dtype": "float64",
+                "nullable": true
+              }
+            }
+          },
+          {
+            "header": [
+              "Country",
+              "EU Scenario",
+              "FES Pathway Alignment",
+              "Variable",
+              "Category",
+              "Type",
+              "SubType",
+              "2023",
+              "2024",
+              "2025",
+              "2026",
+              "2027",
+              "2028",
+              "2029",
+              "2030",
+              "2031",
+              "2032",
+              "2033",
+              "2034",
+              "2035",
+              "2036",
+              "2037",
+              "2038",
+              "2039",
+              "2040",
+              "2041",
+              "2042",
+              "2043",
+              "2044",
+              "2045",
+              "2046",
+              "2047",
+              "2048",
+              "2049",
+              "2050"
+            ],
+            "columns": [
+              {
+                "source": "Country",
+                "name": "country",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "EU Scenario",
+                "name": "eu_scenario",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "FES Pathway Alignment",
+                "name": "fes_pathway_alignment",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Variable",
+                "name": "variable",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Category",
+                "name": "category",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Type",
+                "name": "type",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "SubType",
+                "name": "subtype",
+                "dtype": "string",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            },
+            "unpivot": {
+              "years": [
+                [
+                  "2023",
+                  2023
+                ],
+                [
+                  "2024",
+                  2024
+                ],
+                [
+                  "2025",
+                  2025
+                ],
+                [
+                  "2026",
+                  2026
+                ],
+                [
+                  "2027",
+                  2027
+                ],
+                [
+                  "2028",
+                  2028
+                ],
+                [
+                  "2029",
+                  2029
+                ],
+                [
+                  "2030",
+                  2030
+                ],
+                [
+                  "2031",
+                  2031
+                ],
+                [
+                  "2032",
+                  2032
+                ],
+                [
+                  "2033",
+                  2033
+                ],
+                [
+                  "2034",
+                  2034
+                ],
+                [
+                  "2035",
+                  2035
+                ],
+                [
+                  "2036",
+                  2036
+                ],
+                [
+                  "2037",
+                  2037
+                ],
+                [
+                  "2038",
+                  2038
+                ],
+                [
+                  "2039",
+                  2039
+                ],
+                [
+                  "2040",
+                  2040
+                ],
+                [
+                  "2041",
+                  2041
+                ],
+                [
+                  "2042",
+                  2042
+                ],
+                [
+                  "2043",
+                  2043
+                ],
+                [
+                  "2044",
+                  2044
+                ],
+                [
+                  "2045",
+                  2045
+                ],
+                [
+                  "2046",
+                  2046
+                ],
+                [
+                  "2047",
+                  2047
+                ],
+                [
+                  "2048",
+                  2048
+                ],
+                [
+                  "2049",
+                  2049
+                ],
+                [
+                  "2050",
+                  2050
+                ]
+              ],
+              "value": {
+                "dtype": "float64",
+                "nullable": true
+              }
+            }
+          },
+          {
+            "header": [
+              "Country",
+              "EU Scenario",
+              "FES Pathway Alignment",
+              "Variable",
+              "Category",
+              "Type",
+              "SubType",
+              "2024",
+              "2025",
+              "2026",
+              "2027",
+              "2028",
+              "2029",
+              "2030",
+              "2031",
+              "2032",
+              "2033",
+              "2034",
+              "2035",
+              "2036",
+              "2037",
+              "2038",
+              "2039",
+              "2040",
+              "2041",
+              "2042",
+              "2043",
+              "2044",
+              "2045",
+              "2046",
+              "2047",
+              "2048",
+              "2049",
+              "2050"
+            ],
+            "columns": [
+              {
+                "source": "Country",
+                "name": "country",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "EU Scenario",
+                "name": "eu_scenario",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "FES Pathway Alignment",
+                "name": "fes_pathway_alignment",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Variable",
+                "name": "variable",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Category",
+                "name": "category",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Type",
+                "name": "type",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "SubType",
+                "name": "subtype",
+                "dtype": "string",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            },
+            "unpivot": {
+              "years": [
+                [
+                  "2024",
+                  2024
+                ],
+                [
+                  "2025",
+                  2025
+                ],
+                [
+                  "2026",
+                  2026
+                ],
+                [
+                  "2027",
+                  2027
+                ],
+                [
+                  "2028",
+                  2028
+                ],
+                [
+                  "2029",
+                  2029
+                ],
+                [
+                  "2030",
+                  2030
+                ],
+                [
+                  "2031",
+                  2031
+                ],
+                [
+                  "2032",
+                  2032
+                ],
+                [
+                  "2033",
+                  2033
+                ],
+                [
+                  "2034",
+                  2034
+                ],
+                [
+                  "2035",
+                  2035
+                ],
+                [
+                  "2036",
+                  2036
+                ],
+                [
+                  "2037",
+                  2037
+                ],
+                [
+                  "2038",
+                  2038
+                ],
+                [
+                  "2039",
+                  2039
+                ],
+                [
+                  "2040",
+                  2040
+                ],
+                [
+                  "2041",
+                  2041
+                ],
+                [
+                  "2042",
+                  2042
+                ],
+                [
+                  "2043",
+                  2043
+                ],
+                [
+                  "2044",
+                  2044
+                ],
+                [
+                  "2045",
+                  2045
+                ],
+                [
+                  "2046",
+                  2046
+                ],
+                [
+                  "2047",
+                  2047
+                ],
+                [
+                  "2048",
+                  2048
+                ],
+                [
+                  "2049",
+                  2049
+                ],
+                [
+                  "2050",
+                  2050
+                ]
+              ],
+              "value": {
+                "dtype": "float64",
+                "nullable": true
+              }
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "resource_id",
+          "edition",
+          "country",
+          "eu_scenario",
+          "fes_scenario_alignment",
+          "variable",
+          "category",
+          "type",
+          "subtype",
+          "subsubtype",
+          "fes_pathway_alignment",
+          "projection_year"
+        ],
+        "latest": "whole_capture",
+        "latest_partition": "resource_id",
+        "edition_by_filename": [
+          [
+            "fes2023_es2_v001.csv",
+            2023
+          ],
+          [
+            "fes2024_es2_v001.csv",
+            2024
+          ],
+          [
+            "fes2025_es2_v006.csv",
+            2025
+          ]
+        ],
+        "vintage": "ckan_last_modified",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: For each quantitative ES2 edition, what interval does `Demand (TWh)` cover, and what observation date does `Capacity (MW)` represent? Does a year label denote the starting or ending year? What does a blank projection cell mean? Is `10yo2026_es2_v001.csv` intentionally a notes resource, or was the European electricity supply table replaced by an incorrect upload? Please identify or republish the quantitative European supply resource for this edition.",
+          "unit": "E-SEM"
+        }
+      }
     }
   ],
   "resources": [
@@ -61,8 +732,9 @@
       "url_type": "upload",
       "family": "fes_es2_european_supply",
       "disposition": {
-        "kind": "SILVER",
-        "key": "fes_es2_european_supply"
+        "kind": "HOLD",
+        "reason": "the 2026 body is an 11-row `Notes`, `Description` notes table, not the European electricity supply table: it has no projection-year columns and no values, so it cannot be an epoch of the unpivot record (V-18); re-disposition only after NESO confirms the resource's intent (DOC or a reference family) or uploads a quantitative ES2 2026 table (a new last_modified)",
+        "unit": "E-SEM"
       }
     }
   ]

@@ -71,7 +71,8 @@ from gridflow.silver.schema_manifest import (
 # and twenty-one with v0.22-K-AS-5b's five ASDP, ODFM and STOR day-ahead records, then to two
 # hundred and thirty with v0.22-K-DFS-a's four DFS records and the STOR day-ahead buy curve, then to
 # two hundred and forty-two with v0.22-K-DFS-b's twelve frozen DFS records (2023/24 service,
-# 2022/23 live events, 2022/23 test events).
+# 2022/23 live events, 2022/23 test events), then to two hundred and forty-six with
+# v0.22-K-SCN-2a's ES2, FLX1, ED5 and ED6 records.
 _APPEND_ONLY_DATASETS: tuple[tuple[str, str], ...] = (
     ("elexon", "system_prices"),
     ("elexon", "remit"),
@@ -315,6 +316,10 @@ _APPEND_ONLY_DATASETS: tuple[tuple[str, str], ...] = (
     ("neso_data_portal", "dfs_test_events_service_update_industry"),
     ("neso_data_portal", "dfs_test_events_utilisation_report"),
     ("neso_data_portal", "dfs_test_events_utilisation_report_sum"),
+    ("neso_data_portal", "fes_es2_european_supply"),
+    ("neso_data_portal", "fes_flx1_flexibility"),
+    ("neso_data_portal", "fes_ed5_road_transport"),
+    ("neso_data_portal", "fes_ed6_road_transport_notes"),
 )
 
 
@@ -508,9 +513,9 @@ def test_append_only_set_equals_latest_spec_set() -> None:
     spec_set = set(LATEST_VIEW_SPECS)
 
     # Non-vacuity guard: this invariant must never pass because both sides are
-    # empty (F16) -- two hundred and forty-two APPEND_ONLY datasets are registered today.
+    # empty (F16) -- two hundred and forty-six APPEND_ONLY datasets are registered today.
     assert len(append_only) > 0
-    assert len(append_only) == 242
+    assert len(append_only) == 246
 
     missing_specs = append_only - spec_set
     extra_specs = spec_set - append_only
@@ -1087,6 +1092,10 @@ _EXPECTED_APPEND_ONLY_DEPRECATED_ALIASES: dict[tuple[str, str], str | None] = {
         "neso_data_portal",
         "dfs_test_events_utilisation_report_sum",
     ): "silver_dfs_test_events_utilisation_report_sum",
+    ("neso_data_portal", "fes_es2_european_supply"): "silver_fes_es2_european_supply",
+    ("neso_data_portal", "fes_flx1_flexibility"): "silver_fes_flx1_flexibility",
+    ("neso_data_portal", "fes_ed5_road_transport"): "silver_fes_ed5_road_transport",
+    ("neso_data_portal", "fes_ed6_road_transport_notes"): "silver_fes_ed6_road_transport_notes",
 }
 
 

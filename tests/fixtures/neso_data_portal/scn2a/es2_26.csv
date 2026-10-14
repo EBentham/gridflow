@@ -1,0 +1,3 @@
+Notes,Description
+Generation data,"Generation data are modelled in an hourly dispatch model and do not include additional generation required to offset the impact of network constraints. This data will differ from redispatch models and actual historic data which do include these constraints, for example for calculating the unabated gas usage for the Clean Power 2030 metric.   "
+Capacities,"Capacity values are provided on an annual basis, with snapshots taken on 1st January each year."

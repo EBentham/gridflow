@@ -67,7 +67,9 @@ URL_TYPE_TALLY = {"upload": 1233, "datastore": 152}
 # K-AS-5b holds the ODFM instructed V1 upload (SILVER 1239, HOLD 83); K-AS-5c dispositions 59 FFR
 # post-tender workbooks to the workbook record, TR123 and TR125 staying held, and the BlockOrders,
 # LinearOrders and ResultByUnit ZIPs to their archive records (SILVER 1301, HOLD 21).
-DISPOSITION_TALLY = {"SILVER": 1301, "HOLD": 21, "DOC": 43, "GIS": 20}
+# K-SCN-2a holds the ES2 2026 notes body and the FLX1 2023 padded-number body (SILVER 1299,
+# HOLD 23).
+DISPOSITION_TALLY = {"SILVER": 1299, "HOLD": 23, "DOC": 43, "GIS": 20}
 
 
 def _run(code: str, *args: str) -> subprocess.CompletedProcess[str]:

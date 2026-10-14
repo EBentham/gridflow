@@ -1,0 +1,6 @@
+Column,Category,Description
+Data Item,# Cars - All,"All cars (as defined by DfT/DVLA in https://www.gov.uk/government/publications/vehicles-statistics-information/vehicle-licensing-statistics-notes-and-definitions). History from Vehicle licensing data tables - VEH0101. Includes vehicles licenced as taxis from DfT taxi statistics taxi0102 and Scottish Transport Statistics table 1.4.
+([# Cars - Electric Vehicles] + [# Cars - Hydrogen] + [# Cars - Internal Combustion Engine])"
+Data Item,# Vans - All,"History from DfT/DVLA Vehicle licensing data tables - VEH0101. Refers to all vans (also known as light goods vehicles) <3.5t (as defined by DfT/DVLA in https://www.gov.uk/government/publications/vehicles-statistics-information/vehicle-licensing-statistics-notes-and-definitions).
+([# Vans - Electric Vehicles] + [# Vans - Hydrogen] + [# Vans - Internal Combustion Engine])"
+Data Item,V2G Maximum Capacity available at Peak,"Theoretical vehicle-to-grid (V2G) capacity available at time of winter transmission system peak, 5pm-6pm (all engaged cars & vans are parked residentially at this time, and all engaged HGV's and buses are parked at the depot at this time). Capacity actually dispatched depends on market conditions."

@@ -17,7 +17,74 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Column",
+              "Category",
+              "Description"
+            ],
+            "columns": [
+              {
+                "source": "Column",
+                "name": "column_name",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Category",
+                "name": "category",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Description",
+                "name": "description",
+                "dtype": "string",
+                "nullable": false
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "resource_id",
+          "edition",
+          "column_name",
+          "category"
+        ],
+        "latest": "whole_capture",
+        "latest_partition": "resource_id",
+        "edition_by_filename": [
+          [
+            "fes2023_ed6_v001.csv",
+            2023
+          ],
+          [
+            "fes2024_ed6_v001.csv",
+            2024
+          ],
+          [
+            "fes2025_ed6_v006.csv",
+            2025
+          ],
+          [
+            "10yo2026_ed6_v001.csv",
+            2026
+          ]
+        ],
+        "vintage": "ckan_last_modified"
+      }
     }
   ],
   "resources": [
