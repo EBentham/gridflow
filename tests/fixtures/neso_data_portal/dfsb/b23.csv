@@ -1,0 +1,7 @@
+Delivery Date,Registered DFS Participant,DFS Unit ID,DFS Volume MW,From,To,Service Requirement Type,Despatch Time,Utilisation Price GBP per MWh,Status,North Scotland,South and Central Scotland,North East England,North West England,Yorkshire,East Midlands,West Midlands,London,East England,South East England,South West England,Southern England,"North Wales, Merseyside and Cheshire",South Wales,Other,Total
+21/03/2024,AXLE ENERGY LIMITED,Axle-01,10,17:30,18:00,Test,within-day 2,698,Accepted,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10,10
+21/03/2024,CONRAD ENERGY (TRADING) LIMITED,CONRAD-02,3,17:30,18:00,Test,within-day 2,497,Accepted,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,3
+21/03/2024,AXLE ENERGY LIMITED,Axle-01,10,18:30,19:00,Test,within-day 2,898,Rejected,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10,10
+02/03/2024,DRAX ENERGY SOLUTIONS LIMITED,DRAX-03,3,18:00,18:30,Test,within-day 1,950,Accepted,0,0,0,0,0.6,0.6,0.6,0,0,0,0,0,0.6,0.6,0,3
+15/12/2023,AXLE ENERGY LIMITED,Axle-01,6,17:30,18:00,Test,day-ahead,3000,Accepted,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6,6
+01/12/2023,AXLE ENERGY LIMITED,Axle-01,6,16:30,17:00,Live,day-ahead,5999,Accepted,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6,6

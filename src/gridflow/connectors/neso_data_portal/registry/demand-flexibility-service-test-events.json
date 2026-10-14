@@ -17,7 +17,67 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Delivery Date",
+              "From GMT",
+              "To GMT",
+              "DFS Required MW"
+            ],
+            "columns": [
+              {
+                "source": "Delivery Date",
+                "name": "delivery_date",
+                "dtype": "date",
+                "format": "%Y-%m-%d",
+                "nullable": false
+              },
+              {
+                "source": "From GMT",
+                "name": "window_from",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "To GMT",
+                "name": "window_to",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "DFS Required MW",
+                "name": "dfs_required_mw",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "date_sp1",
+          "date_column": "delivery_date"
+        },
+        "entity_key": [
+          "delivery_date",
+          "window_from"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: REQUIREMENT-ISSUE-AVAILABILITY — the 2022/23 DFS test-event service requirement upload (last_modified 2023-03-27) carries no issue column and publishes 40 delivery windows, 38 of them starting on or before its last_modified; when was each requirement first published, and does NESO retain earlier requirement editions?",
+          "unit": "v0.22-K-DFS-b"
+        }
+      }
     },
     {
       "key": "dfs_test_events_utilisation_report",
@@ -28,7 +88,315 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Date",
+              "DFS Provider",
+              "Unit",
+              "DFS Volume",
+              "From",
+              "To",
+              "Price",
+              "Status",
+              "North Scotland",
+              "South and Central Scotland",
+              "North East England",
+              "North West England",
+              "Yorkshire",
+              "East Midlands",
+              "West Midlands",
+              "London",
+              "East England",
+              "South East England",
+              "South West England",
+              "Southern England",
+              "North Wales_Merseyside_Cheshire",
+              "South Wales",
+              "Other",
+              "Total",
+              "D0 North Scotland",
+              "D0 South and Central Scotland",
+              "D0 North East England",
+              "D0 North West England",
+              "D0 Yorkshire",
+              "D0 East Midlands",
+              "D0 West Midlands",
+              "D0 London",
+              "D0 East England",
+              "D0 South East England",
+              "D0 South West England",
+              "D0 Southern England",
+              "D0 North Wales Merseyside and Cheshire",
+              "D0 South Wales",
+              "D0 Other",
+              "D0 Total"
+            ],
+            "columns": [
+              {
+                "source": "Date",
+                "name": "date",
+                "dtype": "date",
+                "format": "%d/%m/%Y",
+                "nullable": false
+              },
+              {
+                "source": "DFS Provider",
+                "name": "dfs_provider",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Unit",
+                "name": "unit",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "DFS Volume",
+                "name": "dfs_volume",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "From",
+                "name": "window_from",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "To",
+                "name": "window_to",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Price",
+                "name": "price",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Status",
+                "name": "status",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "North Scotland",
+                "name": "north_scotland",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "South and Central Scotland",
+                "name": "south_and_central_scotland",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "North East England",
+                "name": "north_east_england",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "North West England",
+                "name": "north_west_england",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Yorkshire",
+                "name": "yorkshire",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "East Midlands",
+                "name": "east_midlands",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "West Midlands",
+                "name": "west_midlands",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "London",
+                "name": "london",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "East England",
+                "name": "east_england",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "South East England",
+                "name": "south_east_england",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "South West England",
+                "name": "south_west_england",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Southern England",
+                "name": "southern_england",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "North Wales_Merseyside_Cheshire",
+                "name": "north_wales_merseyside_cheshire",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "South Wales",
+                "name": "south_wales",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Other",
+                "name": "other",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Total",
+                "name": "total",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "D0 North Scotland",
+                "name": "d0_north_scotland",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "D0 South and Central Scotland",
+                "name": "d0_south_and_central_scotland",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "D0 North East England",
+                "name": "d0_north_east_england",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "D0 North West England",
+                "name": "d0_north_west_england",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "D0 Yorkshire",
+                "name": "d0_yorkshire",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "D0 East Midlands",
+                "name": "d0_east_midlands",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "D0 West Midlands",
+                "name": "d0_west_midlands",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "D0 London",
+                "name": "d0_london",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "D0 East England",
+                "name": "d0_east_england",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "D0 South East England",
+                "name": "d0_south_east_england",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "D0 South West England",
+                "name": "d0_south_west_england",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "D0 Southern England",
+                "name": "d0_southern_england",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "D0 North Wales Merseyside and Cheshire",
+                "name": "d0_north_wales_merseyside_and_cheshire",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "D0 South Wales",
+                "name": "d0_south_wales",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "D0 Other",
+                "name": "d0_other",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "D0 Total",
+                "name": "d0_total",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "date_sp1",
+          "date_column": "date"
+        },
+        "entity_key": [
+          "date",
+          "window_from",
+          "unit"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified"
+      }
     },
     {
       "key": "dfs_test_events_service_update_industry",
@@ -39,7 +407,63 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Date",
+              "Status",
+              "Type",
+              "Time"
+            ],
+            "columns": [
+              {
+                "source": "Date",
+                "name": "date",
+                "dtype": "date",
+                "format": "%Y-%m-%d",
+                "nullable": false
+              },
+              {
+                "source": "Status",
+                "name": "status",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Type",
+                "name": "type",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Time",
+                "name": "time_label",
+                "dtype": "string",
+                "nullable": false
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "date_sp1",
+          "date_column": "date"
+        },
+        "entity_key": [
+          "date",
+          "time_label",
+          "type"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified"
+      }
     },
     {
       "key": "dfs_test_events_utilisation_report_sum",
@@ -50,7 +474,104 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Date",
+              "From",
+              "To",
+              "DFS Required",
+              "DFS Procured",
+              "Bids Accepted Total Cost",
+              "D0 DFS Procured",
+              "D0 Bids Accepted Total Cost",
+              "Settled Volume",
+              "Settled Cost"
+            ],
+            "columns": [
+              {
+                "source": "Date",
+                "name": "date",
+                "dtype": "date",
+                "format": "%d/%m/%Y",
+                "nullable": false
+              },
+              {
+                "source": "From",
+                "name": "window_from",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "To",
+                "name": "window_to",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "DFS Required",
+                "name": "dfs_required",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "DFS Procured",
+                "name": "dfs_procured",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Bids Accepted Total Cost",
+                "name": "bids_accepted_total_cost",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "D0 DFS Procured",
+                "name": "d0_dfs_procured",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "D0 Bids Accepted Total Cost",
+                "name": "d0_bids_accepted_total_cost",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Settled Volume",
+                "name": "settled_volume",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Settled Cost",
+                "name": "settled_cost",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "date_sp1",
+          "date_column": "date"
+        },
+        "entity_key": [
+          "date",
+          "window_from"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified"
+      }
     }
   ],
   "resources": [

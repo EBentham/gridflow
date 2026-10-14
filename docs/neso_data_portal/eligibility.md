@@ -100,18 +100,18 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `demand-flexibility` | `demand_flexibility_service_requirement` | silver | held: TODO: REQUIREMENT-ISSUE-AVAILABILITY — the DFS service requirement resources (current and Archive 2025/2026) carry no issue column and publish delivery windows starting on or before their last_modified (archive 1,126 of 1,132 starts, current 1,230 of 1,238), and the current DFS Submission Time_Local is the auction-close deadline, not a publication time; when was each requirement first published, and does NESO retain earlier requirement editions? (The archive requirement dictionary labels From/To GMT while the archive report and summary dictionaries label theirs local time — TODO: ARCHIVE-CLOCK-CONSISTENCY; window_from holds the vendor label of each resource as published.) (unit v0.22-K-DFS-a) | whole_capture per resource_id | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
 | `demand-flexibility` | `demand_flexibility_utilisation_report` | silver | eligible | whole_capture per resource_id | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
 | `demand-flexibility` | `demand_flexibility_utilisation_summary` | silver | eligible | whole_capture per resource_id | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
-| `demand-flexibility-service` | `dfs_industry_notification` | ingest-only (no silver output) | — | — | — | — |
-| `demand-flexibility-service` | `dfs_service_requirements` | ingest-only (no silver output) | — | — | — | — |
-| `demand-flexibility-service` | `dfs_utilisation_report` | ingest-only (no silver output) | — | — | — | — |
-| `demand-flexibility-service` | `dfs_utilisation_report_sum` | ingest-only (no silver output) | — | — | — | — |
-| `demand-flexibility-service-live-events` | `dfs_live_events_service_requirement` | ingest-only (no silver output) | — | — | — | — |
-| `demand-flexibility-service-live-events` | `dfs_live_events_service_update_industry` | ingest-only (no silver output) | — | — | — | — |
-| `demand-flexibility-service-live-events` | `dfs_live_events_utilisation_report` | ingest-only (no silver output) | — | — | — | — |
-| `demand-flexibility-service-live-events` | `dfs_live_events_utilisation_report_sum` | ingest-only (no silver output) | — | — | — | — |
-| `demand-flexibility-service-test-events` | `dfs_test_events_service_requirement` | ingest-only (no silver output) | — | — | — | — |
-| `demand-flexibility-service-test-events` | `dfs_test_events_service_update_industry` | ingest-only (no silver output) | — | — | — | — |
-| `demand-flexibility-service-test-events` | `dfs_test_events_utilisation_report` | ingest-only (no silver output) | — | — | — | — |
-| `demand-flexibility-service-test-events` | `dfs_test_events_utilisation_report_sum` | ingest-only (no silver output) | — | — | — | — |
+| `demand-flexibility-service` | `dfs_industry_notification` | silver | eligible | whole_capture | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
+| `demand-flexibility-service` | `dfs_service_requirements` | silver | held: TODO: REQUIREMENT-ISSUE-AVAILABILITY — the 2023/24 DFS service requirement upload (last_modified 2024-03-14) carries no issue column and publishes 32 delivery windows, 29 of them starting on or before its last_modified; when was each requirement first published, and does NESO retain earlier requirement editions? (unit v0.22-K-DFS-b) | whole_capture | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
+| `demand-flexibility-service` | `dfs_utilisation_report` | silver | eligible | whole_capture | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
+| `demand-flexibility-service` | `dfs_utilisation_report_sum` | silver | eligible | whole_capture | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
+| `demand-flexibility-service-live-events` | `dfs_live_events_service_requirement` | silver | eligible | whole_capture | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
+| `demand-flexibility-service-live-events` | `dfs_live_events_service_update_industry` | silver | eligible | whole_capture | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
+| `demand-flexibility-service-live-events` | `dfs_live_events_utilisation_report` | silver | eligible | whole_capture | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
+| `demand-flexibility-service-live-events` | `dfs_live_events_utilisation_report_sum` | silver | eligible | whole_capture | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
+| `demand-flexibility-service-test-events` | `dfs_test_events_service_requirement` | silver | held: TODO: REQUIREMENT-ISSUE-AVAILABILITY — the 2022/23 DFS test-event service requirement upload (last_modified 2023-03-27) carries no issue column and publishes 40 delivery windows, 38 of them starting on or before its last_modified; when was each requirement first published, and does NESO retain earlier requirement editions? (unit v0.22-K-DFS-b) | whole_capture | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
+| `demand-flexibility-service-test-events` | `dfs_test_events_service_update_industry` | silver | eligible | whole_capture | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
+| `demand-flexibility-service-test-events` | `dfs_test_events_utilisation_report` | silver | eligible | whole_capture | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
+| `demand-flexibility-service-test-events` | `dfs_test_events_utilisation_report_sum` | silver | eligible | whole_capture | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
 | `demand-profile-dates` | `demand_profile_dates` | ingest-only (no silver output) | — | — | — | — |
 | `disaggregated-bsad` | `disaggregated_bsad` | ingest-only (no silver output) | — | — | — | — |
 | `dynamic-containment-4-day-forecast` | `dc_forecast_4d` | silver | held: TODO: DC-DATE-ORDER — `Date` is published as dd/mm/yyyy or mm/dd/yyyy? The dictionary documents ISO dates; every captured value is ambiguous. (unit v0.22-K-AS-1) | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
@@ -470,6 +470,6 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 ## Totals
 
 - Packages: 131 (held: 4)
-- Families: 321: silver 227 (bespoke 3, recorded 224), ingest-only 59, catalogue only 35
-- Silver outputs held: 114
+- Families: 321: silver 239 (bespoke 3, recorded 236), ingest-only 47, catalogue only 35
+- Silver outputs held: 116
 - Resources: 1385
