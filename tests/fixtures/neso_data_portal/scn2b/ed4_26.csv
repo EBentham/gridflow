@@ -1,0 +1,12 @@
+Item no.,Description,Definition
+1,Annual end-use gas demand from industry,Gas used in industry. This is including: gas for electricity generation from gas distribution network connected Combined Heat and Power plants (CHPs) and Combined Cycle Gas Turbines (CCGTs); and industrial gas usage fitted with CCS.
+2,Annual end-use gas demand from the commercial sector,Gas used in the commercial sector. This excludes gas used for electricity generation by peaking/flexible plants (see item no. 6). Commercial demand here includes networked CNG used for transport.
+3,Gas end-use demand for transport,"Gas used in the transport sector. This includes networked Compressed Natural Gas (CNG) and non-networked Liquified Natural Gas (LNG). Because this includes both non-networked LNG and networked CNG this is not be added to other demand components to get to total gas networked gas demand. The networked element of gas demand for transport is included within the commercial demand, to enable categories to be summed to calculate total gas demand."
+4,Total end-use residential gas demand,"Gas used in the residential sector, including for heating and cooking (using NDM1 gas load band)."
+5,Total gas demand (gas NTS connected only) for electricity generation,"Gas used for power generation by power stations connected to the gas transmission network. This year we have included an outlook for additional gas demand for gas-fired power generation likely to arise from electricity network constraints. In the FES 2026 10 Year Forecast we didn't include this additional gas demand in the annual gas demands quoted in the data workbook, and hence the FES25 10 Year Forecast for power generation is not directly comparable to this year's 2026 10 Year Outlook."
+6,LDZ connected peaking/flexible plants (estimated),Gas used for electricity generation by flexible/peaking plants connected to the gas distribution networks.
+7,Total (NTS+LDZ) gas shrinkage ,Total gas shrinkage from the transmission and distribution networks.
+8,Hydrogen Production: Natural Gas Demand ,Gas used for producing hydrogen via steam methane reforming/auto thermal reforming.
+9,Gas exported from GB,Gas export through to Ireland and Continental Europe.
+10,Total GB Peak 1-in-20 Demand,"Total daily GB gas demand on a cold day expected to occur once every 20 years. Data is in gas years, i.e. 2023 is GY 2023/24 which is 01/10/2023 - 30/09/2024. "
+11,Total GB Gas Demand (Excluding exports and shrinkage),= 1+2+4+5+6+8

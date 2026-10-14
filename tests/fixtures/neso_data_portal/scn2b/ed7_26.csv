@@ -1,0 +1,4 @@
+Scenario,Sector/Aggregation Level,Fuel,Technology,Data Type,Units,2023,2024,2025,2026,2027,2028,2029,2030,2031,2032,2033,2034,2035,2036,2037,2038,2039,2040,2041,2042,2043,2044,2045,2046,2047,2048,2049,2050
+Ten Year Outlook,Commercial,biofuel,Biofuel boiler,Annual,TWh,,,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.004,,,,,,,,,,,,,,
+Ten Year Outlook,Commercial,,ASHP,Annual,uptake,,,2948.0,2549.0,2247.0,5575.0,5540.0,5615.0,5834.0,6294.0,8034.0,9675.0,9735.0,9720.0,,,,,,,,,,,,,,
+Ten Year Outlook,Commercial,,ASHP,Cumulative Annual,stock,,,10730.0,13614.0,16093.0,18260.0,23961.0,29618.0,35389.0,41257.0,47530.0,55526.0,64960.0,72954.0,,,,,,,,,,,,,,

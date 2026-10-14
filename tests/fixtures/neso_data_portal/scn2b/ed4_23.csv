@@ -1,0 +1,11 @@
+Item no.,Description,Definition
+1,Annual end-use gas demand from industry,"Gas used in industry, including for electricty generation from gas distribution network connected combined heat and power plants (CHPs) and Combined Cycle Gas Turbines (CCGTs), and industrial gas usage fitted with CCS"
+2,Annual end-use gas demand from the commercial sector,"Gas used in the commercial sector, excluding gas used for electricty generation by peaking/flexible plants"
+3,Gas end-use demand for transport,"Gas used in the transport sector, including networked CNG and non-networked LNG"
+4,Total end-use residential gas demand,"Gas used in the residential sector, including for heating and cooking (using NDM1 gas load band)"
+5,Total gas demand (gas NTS connected only) for electricity generation,"Gas used for power generation, for power stations connected to the gas transmission network"
+6,LDZ connected peaking/flexible plants (estimated),Gas used for electricty generation by flexible/peaking plants connected to the gas distribution networks
+7,Total (NTS+LDZ) gas shrinkage ,Total gas shrinkage from transmission and distribution networks
+8,Hydrogen Production - Natural Gas Demand ,Gas used for producing hydrogen via steam methane reforming
+9,Gas exported from GB,Gas export through to Ireland and Continental Europe
+10,Total GB Peak 1-in-20 Demand,"Total daily GB gas demand on a cold day expected to occur once every 20 years. Data is in gas years, i.e. 2022 is GY 2022/23 which is 01/10/2022 - 30/09/2023"
