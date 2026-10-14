@@ -17,7 +17,445 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Pathway",
+              "Sector/Aggregation Level",
+              "Fuel",
+              "Technology",
+              "Data Type",
+              "Units",
+              "2023",
+              "2024",
+              "2025",
+              "2026",
+              "2027",
+              "2028",
+              "2029",
+              "2030",
+              "2031",
+              "2032",
+              "2033",
+              "2034",
+              "2035",
+              "2036",
+              "2037",
+              "2038",
+              "2039",
+              "2040",
+              "2041",
+              "2042",
+              "2043",
+              "2044",
+              "2045",
+              "2046",
+              "2047",
+              "2048",
+              "2049",
+              "2050"
+            ],
+            "columns": [
+              {
+                "source": "Pathway",
+                "name": "pathway",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Sector/Aggregation Level",
+                "name": "sector_aggregation_level",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Fuel",
+                "name": "fuel",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Technology",
+                "name": "technology",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Data Type",
+                "name": "data_type",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Units",
+                "name": "units",
+                "dtype": "string",
+                "nullable": false
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            },
+            "unpivot": {
+              "years": [
+                [
+                  "2023",
+                  2023
+                ],
+                [
+                  "2024",
+                  2024
+                ],
+                [
+                  "2025",
+                  2025
+                ],
+                [
+                  "2026",
+                  2026
+                ],
+                [
+                  "2027",
+                  2027
+                ],
+                [
+                  "2028",
+                  2028
+                ],
+                [
+                  "2029",
+                  2029
+                ],
+                [
+                  "2030",
+                  2030
+                ],
+                [
+                  "2031",
+                  2031
+                ],
+                [
+                  "2032",
+                  2032
+                ],
+                [
+                  "2033",
+                  2033
+                ],
+                [
+                  "2034",
+                  2034
+                ],
+                [
+                  "2035",
+                  2035
+                ],
+                [
+                  "2036",
+                  2036
+                ],
+                [
+                  "2037",
+                  2037
+                ],
+                [
+                  "2038",
+                  2038
+                ],
+                [
+                  "2039",
+                  2039
+                ],
+                [
+                  "2040",
+                  2040
+                ],
+                [
+                  "2041",
+                  2041
+                ],
+                [
+                  "2042",
+                  2042
+                ],
+                [
+                  "2043",
+                  2043
+                ],
+                [
+                  "2044",
+                  2044
+                ],
+                [
+                  "2045",
+                  2045
+                ],
+                [
+                  "2046",
+                  2046
+                ],
+                [
+                  "2047",
+                  2047
+                ],
+                [
+                  "2048",
+                  2048
+                ],
+                [
+                  "2049",
+                  2049
+                ],
+                [
+                  "2050",
+                  2050
+                ]
+              ],
+              "value": {
+                "dtype": "float64",
+                "nullable": true
+              }
+            }
+          },
+          {
+            "header": [
+              "Scenario",
+              "Sector/Aggregation Level",
+              "Fuel",
+              "Technology",
+              "Data Type",
+              "Units",
+              "2023",
+              "2024",
+              "2025",
+              "2026",
+              "2027",
+              "2028",
+              "2029",
+              "2030",
+              "2031",
+              "2032",
+              "2033",
+              "2034",
+              "2035",
+              "2036",
+              "2037",
+              "2038",
+              "2039",
+              "2040",
+              "2041",
+              "2042",
+              "2043",
+              "2044",
+              "2045",
+              "2046",
+              "2047",
+              "2048",
+              "2049",
+              "2050"
+            ],
+            "columns": [
+              {
+                "source": "Scenario",
+                "name": "scenario",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Sector/Aggregation Level",
+                "name": "sector_aggregation_level",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Fuel",
+                "name": "fuel",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Technology",
+                "name": "technology",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Data Type",
+                "name": "data_type",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Units",
+                "name": "units",
+                "dtype": "string",
+                "nullable": false
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            },
+            "unpivot": {
+              "years": [
+                [
+                  "2023",
+                  2023
+                ],
+                [
+                  "2024",
+                  2024
+                ],
+                [
+                  "2025",
+                  2025
+                ],
+                [
+                  "2026",
+                  2026
+                ],
+                [
+                  "2027",
+                  2027
+                ],
+                [
+                  "2028",
+                  2028
+                ],
+                [
+                  "2029",
+                  2029
+                ],
+                [
+                  "2030",
+                  2030
+                ],
+                [
+                  "2031",
+                  2031
+                ],
+                [
+                  "2032",
+                  2032
+                ],
+                [
+                  "2033",
+                  2033
+                ],
+                [
+                  "2034",
+                  2034
+                ],
+                [
+                  "2035",
+                  2035
+                ],
+                [
+                  "2036",
+                  2036
+                ],
+                [
+                  "2037",
+                  2037
+                ],
+                [
+                  "2038",
+                  2038
+                ],
+                [
+                  "2039",
+                  2039
+                ],
+                [
+                  "2040",
+                  2040
+                ],
+                [
+                  "2041",
+                  2041
+                ],
+                [
+                  "2042",
+                  2042
+                ],
+                [
+                  "2043",
+                  2043
+                ],
+                [
+                  "2044",
+                  2044
+                ],
+                [
+                  "2045",
+                  2045
+                ],
+                [
+                  "2046",
+                  2046
+                ],
+                [
+                  "2047",
+                  2047
+                ],
+                [
+                  "2048",
+                  2048
+                ],
+                [
+                  "2049",
+                  2049
+                ],
+                [
+                  "2050",
+                  2050
+                ]
+              ],
+              "value": {
+                "dtype": "float64",
+                "nullable": true
+              }
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "resource_id",
+          "edition",
+          "pathway",
+          "sector_aggregation_level",
+          "fuel",
+          "technology",
+          "data_type",
+          "units",
+          "scenario",
+          "projection_year"
+        ],
+        "latest": "whole_capture",
+        "latest_partition": "resource_id",
+        "edition_by_filename": [
+          [
+            "fes2025_ed7_v006.csv",
+            2025
+          ],
+          [
+            "10yo2026_ed7_v001.csv",
+            2026
+          ]
+        ],
+        "vintage": "ckan_last_modified",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: For every ED7 unit and data type, what interval or observation date does a year header denote? What are the scale and denominator of `uptake`, the counting basis and snapshot date of `stock`, and the start/end convention for peak-year labels? How are savings related to the reported technology demand? What does a blank projection cell mean?",
+          "unit": "E-SEM"
+        }
+      }
     },
     {
       "key": "fes_ed3_heat_demand_natural_gas",
@@ -28,7 +466,477 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Scenario",
+              "Sector",
+              "Fuel",
+              "Technology",
+              "Time",
+              "Units",
+              "2020",
+              "2021",
+              "2022",
+              "2023",
+              "2024",
+              "2025",
+              "2026",
+              "2027",
+              "2028",
+              "2029",
+              "2030",
+              "2031",
+              "2032",
+              "2033",
+              "2034",
+              "2035",
+              "2036",
+              "2037",
+              "2038",
+              "2039",
+              "2040",
+              "2041",
+              "2042",
+              "2043",
+              "2044",
+              "2045",
+              "2046",
+              "2047",
+              "2048",
+              "2049",
+              "2050"
+            ],
+            "columns": [
+              {
+                "source": "Scenario",
+                "name": "scenario",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Sector",
+                "name": "sector",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Fuel",
+                "name": "fuel",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Technology",
+                "name": "technology",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Time",
+                "name": "time",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Units",
+                "name": "units",
+                "dtype": "string",
+                "nullable": false
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            },
+            "unpivot": {
+              "years": [
+                [
+                  "2020",
+                  2020
+                ],
+                [
+                  "2021",
+                  2021
+                ],
+                [
+                  "2022",
+                  2022
+                ],
+                [
+                  "2023",
+                  2023
+                ],
+                [
+                  "2024",
+                  2024
+                ],
+                [
+                  "2025",
+                  2025
+                ],
+                [
+                  "2026",
+                  2026
+                ],
+                [
+                  "2027",
+                  2027
+                ],
+                [
+                  "2028",
+                  2028
+                ],
+                [
+                  "2029",
+                  2029
+                ],
+                [
+                  "2030",
+                  2030
+                ],
+                [
+                  "2031",
+                  2031
+                ],
+                [
+                  "2032",
+                  2032
+                ],
+                [
+                  "2033",
+                  2033
+                ],
+                [
+                  "2034",
+                  2034
+                ],
+                [
+                  "2035",
+                  2035
+                ],
+                [
+                  "2036",
+                  2036
+                ],
+                [
+                  "2037",
+                  2037
+                ],
+                [
+                  "2038",
+                  2038
+                ],
+                [
+                  "2039",
+                  2039
+                ],
+                [
+                  "2040",
+                  2040
+                ],
+                [
+                  "2041",
+                  2041
+                ],
+                [
+                  "2042",
+                  2042
+                ],
+                [
+                  "2043",
+                  2043
+                ],
+                [
+                  "2044",
+                  2044
+                ],
+                [
+                  "2045",
+                  2045
+                ],
+                [
+                  "2046",
+                  2046
+                ],
+                [
+                  "2047",
+                  2047
+                ],
+                [
+                  "2048",
+                  2048
+                ],
+                [
+                  "2049",
+                  2049
+                ],
+                [
+                  "2050",
+                  2050
+                ]
+              ],
+              "value": {
+                "dtype": "float64",
+                "nullable": true
+              }
+            }
+          },
+          {
+            "header": [
+              "Pathway",
+              "Sector/Aggregation Level",
+              "Fuel",
+              "Technology",
+              "Data Type",
+              "Units",
+              "2020",
+              "2021",
+              "2022",
+              "2023",
+              "2024",
+              "2025",
+              "2026",
+              "2027",
+              "2028",
+              "2029",
+              "2030",
+              "2031",
+              "2032",
+              "2033",
+              "2034",
+              "2035",
+              "2036",
+              "2037",
+              "2038",
+              "2039",
+              "2040",
+              "2041",
+              "2042",
+              "2043",
+              "2044",
+              "2045",
+              "2046",
+              "2047",
+              "2048",
+              "2049",
+              "2050"
+            ],
+            "columns": [
+              {
+                "source": "Pathway",
+                "name": "pathway",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Sector/Aggregation Level",
+                "name": "sector_aggregation_level",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Fuel",
+                "name": "fuel",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Technology",
+                "name": "technology",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Data Type",
+                "name": "data_type",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Units",
+                "name": "units",
+                "dtype": "string",
+                "nullable": false
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            },
+            "unpivot": {
+              "years": [
+                [
+                  "2020",
+                  2020
+                ],
+                [
+                  "2021",
+                  2021
+                ],
+                [
+                  "2022",
+                  2022
+                ],
+                [
+                  "2023",
+                  2023
+                ],
+                [
+                  "2024",
+                  2024
+                ],
+                [
+                  "2025",
+                  2025
+                ],
+                [
+                  "2026",
+                  2026
+                ],
+                [
+                  "2027",
+                  2027
+                ],
+                [
+                  "2028",
+                  2028
+                ],
+                [
+                  "2029",
+                  2029
+                ],
+                [
+                  "2030",
+                  2030
+                ],
+                [
+                  "2031",
+                  2031
+                ],
+                [
+                  "2032",
+                  2032
+                ],
+                [
+                  "2033",
+                  2033
+                ],
+                [
+                  "2034",
+                  2034
+                ],
+                [
+                  "2035",
+                  2035
+                ],
+                [
+                  "2036",
+                  2036
+                ],
+                [
+                  "2037",
+                  2037
+                ],
+                [
+                  "2038",
+                  2038
+                ],
+                [
+                  "2039",
+                  2039
+                ],
+                [
+                  "2040",
+                  2040
+                ],
+                [
+                  "2041",
+                  2041
+                ],
+                [
+                  "2042",
+                  2042
+                ],
+                [
+                  "2043",
+                  2043
+                ],
+                [
+                  "2044",
+                  2044
+                ],
+                [
+                  "2045",
+                  2045
+                ],
+                [
+                  "2046",
+                  2046
+                ],
+                [
+                  "2047",
+                  2047
+                ],
+                [
+                  "2048",
+                  2048
+                ],
+                [
+                  "2049",
+                  2049
+                ],
+                [
+                  "2050",
+                  2050
+                ]
+              ],
+              "value": {
+                "dtype": "float64",
+                "nullable": true
+              }
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "resource_id",
+          "edition",
+          "scenario",
+          "sector",
+          "fuel",
+          "technology",
+          "time",
+          "units",
+          "pathway",
+          "sector_aggregation_level",
+          "data_type",
+          "projection_year"
+        ],
+        "latest": "whole_capture",
+        "latest_partition": "resource_id",
+        "edition_by_filename": [
+          [
+            "fes2023_ed3_v001.csv",
+            2023
+          ],
+          [
+            "fes2024_ed3_v005.csv",
+            2024
+          ]
+        ],
+        "vintage": "ckan_last_modified",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: For each heat and gas measure, define its year interval or stock/snapshot date and whether the integer labels a starting or ending year. Define the scale and denominator of `uptake`, the basis of `number`, and the timeframe labels including cumulative and peak outputs. Confirm the reported unit for the peak daily gas-demand item in the earlier table. What does each blank projection cell mean?",
+          "unit": "E-SEM"
+        }
+      }
     },
     {
       "key": "fes_ed3_heat_demand_natural_gas_sum_ed",
@@ -39,7 +947,445 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Pathway",
+              "Description",
+              "Fuel",
+              "Component",
+              "Data Type",
+              "Units",
+              "2023",
+              "2024",
+              "2025",
+              "2026",
+              "2027",
+              "2028",
+              "2029",
+              "2030",
+              "2031",
+              "2032",
+              "2033",
+              "2034",
+              "2035",
+              "2036",
+              "2037",
+              "2038",
+              "2039",
+              "2040",
+              "2041",
+              "2042",
+              "2043",
+              "2044",
+              "2045",
+              "2046",
+              "2047",
+              "2048",
+              "2049",
+              "2050"
+            ],
+            "columns": [
+              {
+                "source": "Pathway",
+                "name": "pathway",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Description",
+                "name": "description",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Fuel",
+                "name": "fuel",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Component",
+                "name": "component",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Data Type",
+                "name": "data_type",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Units",
+                "name": "units",
+                "dtype": "string",
+                "nullable": false
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            },
+            "unpivot": {
+              "years": [
+                [
+                  "2023",
+                  2023
+                ],
+                [
+                  "2024",
+                  2024
+                ],
+                [
+                  "2025",
+                  2025
+                ],
+                [
+                  "2026",
+                  2026
+                ],
+                [
+                  "2027",
+                  2027
+                ],
+                [
+                  "2028",
+                  2028
+                ],
+                [
+                  "2029",
+                  2029
+                ],
+                [
+                  "2030",
+                  2030
+                ],
+                [
+                  "2031",
+                  2031
+                ],
+                [
+                  "2032",
+                  2032
+                ],
+                [
+                  "2033",
+                  2033
+                ],
+                [
+                  "2034",
+                  2034
+                ],
+                [
+                  "2035",
+                  2035
+                ],
+                [
+                  "2036",
+                  2036
+                ],
+                [
+                  "2037",
+                  2037
+                ],
+                [
+                  "2038",
+                  2038
+                ],
+                [
+                  "2039",
+                  2039
+                ],
+                [
+                  "2040",
+                  2040
+                ],
+                [
+                  "2041",
+                  2041
+                ],
+                [
+                  "2042",
+                  2042
+                ],
+                [
+                  "2043",
+                  2043
+                ],
+                [
+                  "2044",
+                  2044
+                ],
+                [
+                  "2045",
+                  2045
+                ],
+                [
+                  "2046",
+                  2046
+                ],
+                [
+                  "2047",
+                  2047
+                ],
+                [
+                  "2048",
+                  2048
+                ],
+                [
+                  "2049",
+                  2049
+                ],
+                [
+                  "2050",
+                  2050
+                ]
+              ],
+              "value": {
+                "dtype": "float64",
+                "nullable": true
+              }
+            }
+          },
+          {
+            "header": [
+              "Scenario",
+              "Description",
+              "Fuel",
+              "Component",
+              "Data Type",
+              "Units",
+              "2023",
+              "2024",
+              "2025",
+              "2026",
+              "2027",
+              "2028",
+              "2029",
+              "2030",
+              "2031",
+              "2032",
+              "2033",
+              "2034",
+              "2035",
+              "2036",
+              "2037",
+              "2038",
+              "2039",
+              "2040",
+              "2041",
+              "2042",
+              "2043",
+              "2044",
+              "2045",
+              "2046",
+              "2047",
+              "2048",
+              "2049",
+              "2050"
+            ],
+            "columns": [
+              {
+                "source": "Scenario",
+                "name": "scenario",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Description",
+                "name": "description",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Fuel",
+                "name": "fuel",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Component",
+                "name": "component",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Data Type",
+                "name": "data_type",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Units",
+                "name": "units",
+                "dtype": "string",
+                "nullable": false
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            },
+            "unpivot": {
+              "years": [
+                [
+                  "2023",
+                  2023
+                ],
+                [
+                  "2024",
+                  2024
+                ],
+                [
+                  "2025",
+                  2025
+                ],
+                [
+                  "2026",
+                  2026
+                ],
+                [
+                  "2027",
+                  2027
+                ],
+                [
+                  "2028",
+                  2028
+                ],
+                [
+                  "2029",
+                  2029
+                ],
+                [
+                  "2030",
+                  2030
+                ],
+                [
+                  "2031",
+                  2031
+                ],
+                [
+                  "2032",
+                  2032
+                ],
+                [
+                  "2033",
+                  2033
+                ],
+                [
+                  "2034",
+                  2034
+                ],
+                [
+                  "2035",
+                  2035
+                ],
+                [
+                  "2036",
+                  2036
+                ],
+                [
+                  "2037",
+                  2037
+                ],
+                [
+                  "2038",
+                  2038
+                ],
+                [
+                  "2039",
+                  2039
+                ],
+                [
+                  "2040",
+                  2040
+                ],
+                [
+                  "2041",
+                  2041
+                ],
+                [
+                  "2042",
+                  2042
+                ],
+                [
+                  "2043",
+                  2043
+                ],
+                [
+                  "2044",
+                  2044
+                ],
+                [
+                  "2045",
+                  2045
+                ],
+                [
+                  "2046",
+                  2046
+                ],
+                [
+                  "2047",
+                  2047
+                ],
+                [
+                  "2048",
+                  2048
+                ],
+                [
+                  "2049",
+                  2049
+                ],
+                [
+                  "2050",
+                  2050
+                ]
+              ],
+              "value": {
+                "dtype": "float64",
+                "nullable": true
+              }
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "resource_id",
+          "edition",
+          "pathway",
+          "description",
+          "fuel",
+          "component",
+          "data_type",
+          "units",
+          "scenario",
+          "projection_year"
+        ],
+        "latest": "whole_capture",
+        "latest_partition": "resource_id",
+        "edition_by_filename": [
+          [
+            "fes2025_ed3_v006.csv",
+            2025
+          ],
+          [
+            "10yo2026_ed3_v001.csv",
+            2026
+          ]
+        ],
+        "vintage": "ckan_last_modified",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: What interval does each `Annuals` GWh value cover, and how does its integer year label identify that interval? What does a blank projection cell mean? Please confirm the edition-specific coverage of electricity-generation gas demand and the network-constraint treatment described in ED4.",
+          "unit": "E-SEM"
+        }
+      }
     }
   ],
   "resources": [

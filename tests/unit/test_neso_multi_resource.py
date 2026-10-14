@@ -395,6 +395,16 @@ SCN2A_ADDED = frozenset(
 )
 """The FES ES2, FLX1, ED5 and ED6 families that v0.22-K-SCN-2a records (three held, ED6
 eligible)."""
+SCN2B_ADDED = frozenset(
+    {
+        "fes_ed3_heat_demand_natural_gas",
+        "fes_ed3_heat_demand_natural_gas_sum_ed",
+        "fes_ed3_heat_demand_sum_ed",
+        "fes_ed4_gas_demand_defs",
+    }
+)
+"""The FES ED3 combined, ED3 gas summary, ED7 and ED4 families that v0.22-K-SCN-2b records (three
+held, ED4 eligible)."""
 REWORDED_HOLDS = {
     "national_forecast_7d_historic_day_ahead": (
         "TODO: FORECAST_TIMESTAMP has no vendor definition and its zone is undocumented "
@@ -491,6 +501,7 @@ class TestByteUnchanged:
                     *DFSA_ADDED,
                     *DFSB_ADDED,
                     *SCN2A_ADDED,
+                    *SCN2B_ADDED,
                 }
                 if section != "engine"
                 else set()
@@ -1092,8 +1103,8 @@ class TestRecordRules:
         self,
     ) -> None:
         """Detects a committed record broken by V-4/V-17 or the reserved name, and any
-        family other than the seventy-four resource-partitioned ones opting into the partition (in a
-        fresh interpreter, so nothing collection imported can mask it)."""
+        family other than the seventy-eight resource-partitioned ones opting into the partition
+        (in a fresh interpreter, so nothing collection imported can mask it)."""
         code = textwrap.dedent(
             """
             from gridflow.connectors.neso_data_portal.registry import load_registry
@@ -1131,6 +1142,10 @@ class TestRecordRules:
                 "fes_building_blocks_block_licence_area",
                 "fes_building_blocks_main",
                 "fes_ed1_electricity_demand",
+                "fes_ed3_heat_demand_natural_gas",
+                "fes_ed3_heat_demand_natural_gas_sum_ed",
+                "fes_ed3_heat_demand_sum_ed",
+                "fes_ed4_gas_demand_defs",
                 "fes_ed5_road_transport",
                 "fes_ed6_road_transport_notes",
                 "fes_es1_electricity_supply",
