@@ -17,7 +17,80 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Notification Issued Date",
+              "Notification Issued Time",
+              "Requirement For",
+              "Requirement Type",
+              "Status",
+              "Notification Type"
+            ],
+            "columns": [
+              {
+                "source": "Notification Issued Date",
+                "name": "notification_issued_date",
+                "dtype": "date",
+                "format": "%d/%m/%Y",
+                "nullable": false
+              },
+              {
+                "source": "Notification Issued Time",
+                "name": "notification_issued_time",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Requirement For",
+                "name": "requirement_for",
+                "dtype": "date",
+                "format": "%d/%m/%Y",
+                "nullable": false
+              },
+              {
+                "source": "Requirement Type",
+                "name": "requirement_type",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Status",
+                "name": "status",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Notification Type",
+                "name": "notification_type",
+                "dtype": "string",
+                "nullable": false
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "date_sp1",
+          "date_column": "notification_issued_date"
+        },
+        "entity_key": [
+          "notification_issued_date",
+          "notification_issued_time",
+          "requirement_for",
+          "requirement_type",
+          "notification_type"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified"
+      }
     },
     {
       "key": "dfs_service_requirements",
@@ -28,7 +101,95 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Delivery Date",
+              "From",
+              "To",
+              "DFS Required MW",
+              "Service Requirement Type",
+              "Guaranteed Acceptance Price GBP per MWh",
+              "Despatch Type",
+              "Participant Bids Eligible"
+            ],
+            "columns": [
+              {
+                "source": "Delivery Date",
+                "name": "delivery_date",
+                "dtype": "date",
+                "format": "%d/%m/%Y",
+                "nullable": false
+              },
+              {
+                "source": "From",
+                "name": "window_from",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "To",
+                "name": "window_to",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "DFS Required MW",
+                "name": "dfs_required_mw",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Service Requirement Type",
+                "name": "service_requirement_type",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Guaranteed Acceptance Price GBP per MWh",
+                "name": "guaranteed_acceptance_price_gbp_per_mwh",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Despatch Type",
+                "name": "despatch_type",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Participant Bids Eligible",
+                "name": "participant_bids_eligible",
+                "dtype": "string",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "date_sp1",
+          "date_column": "delivery_date"
+        },
+        "entity_key": [
+          "delivery_date",
+          "window_from"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: REQUIREMENT-ISSUE-AVAILABILITY — the 2023/24 DFS service requirement upload (last_modified 2024-03-14) carries no issue column and publishes 32 delivery windows, 29 of them starting on or before its last_modified; when was each requirement first published, and does NESO retain earlier requirement editions?",
+          "unit": "v0.22-K-DFS-b"
+        }
+      }
     },
     {
       "key": "dfs_utilisation_report",
@@ -39,7 +200,217 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Delivery Date",
+              "Registered DFS Participant",
+              "DFS Unit ID",
+              "DFS Volume MW",
+              "From",
+              "To",
+              "Service Requirement Type",
+              "Despatch Time",
+              "Utilisation Price GBP per MWh",
+              "Status",
+              "North Scotland",
+              "South and Central Scotland",
+              "North East England",
+              "North West England",
+              "Yorkshire",
+              "East Midlands",
+              "West Midlands",
+              "London",
+              "East England",
+              "South East England",
+              "South West England",
+              "Southern England",
+              "North Wales, Merseyside and Cheshire",
+              "South Wales",
+              "Other",
+              "Total"
+            ],
+            "columns": [
+              {
+                "source": "Delivery Date",
+                "name": "delivery_date",
+                "dtype": "date",
+                "format": "%d/%m/%Y",
+                "nullable": false
+              },
+              {
+                "source": "Registered DFS Participant",
+                "name": "registered_dfs_participant",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "DFS Unit ID",
+                "name": "dfs_unit_id",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "DFS Volume MW",
+                "name": "dfs_volume_mw",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "From",
+                "name": "window_from",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "To",
+                "name": "window_to",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Service Requirement Type",
+                "name": "service_requirement_type",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Despatch Time",
+                "name": "despatch_time",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Utilisation Price GBP per MWh",
+                "name": "utilisation_price_gbp_per_mwh",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Status",
+                "name": "status",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "North Scotland",
+                "name": "north_scotland",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "South and Central Scotland",
+                "name": "south_and_central_scotland",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "North East England",
+                "name": "north_east_england",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "North West England",
+                "name": "north_west_england",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Yorkshire",
+                "name": "yorkshire",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "East Midlands",
+                "name": "east_midlands",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "West Midlands",
+                "name": "west_midlands",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "London",
+                "name": "london",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "East England",
+                "name": "east_england",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "South East England",
+                "name": "south_east_england",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "South West England",
+                "name": "south_west_england",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Southern England",
+                "name": "southern_england",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "North Wales, Merseyside and Cheshire",
+                "name": "north_wales_merseyside_and_cheshire",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "South Wales",
+                "name": "south_wales",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Other",
+                "name": "other",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Total",
+                "name": "total",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "date_sp1",
+          "date_column": "delivery_date"
+        },
+        "entity_key": [
+          "delivery_date",
+          "window_from",
+          "dfs_unit_id"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified"
+      }
     },
     {
       "key": "dfs_utilisation_report_sum",
@@ -50,7 +421,97 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Delivery Date",
+              "From",
+              "To",
+              "Service Requirement Type",
+              "DFS Required MW",
+              "DFS Procured MW",
+              "DFS Provider Bids Accepted Total Cost GBP",
+              "Settled Volume MW",
+              "Settled Cost GBP"
+            ],
+            "columns": [
+              {
+                "source": "Delivery Date",
+                "name": "delivery_date",
+                "dtype": "date",
+                "format": "%d/%m/%Y",
+                "nullable": false
+              },
+              {
+                "source": "From",
+                "name": "window_from",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "To",
+                "name": "window_to",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Service Requirement Type",
+                "name": "service_requirement_type",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "DFS Required MW",
+                "name": "dfs_required_mw",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "DFS Procured MW",
+                "name": "dfs_procured_mw",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "DFS Provider Bids Accepted Total Cost GBP",
+                "name": "dfs_provider_bids_accepted_total_cost_gbp",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Settled Volume MW",
+                "name": "settled_volume_mw",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "Settled Cost GBP",
+                "name": "settled_cost_gbp",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "date_sp1",
+          "date_column": "delivery_date"
+        },
+        "entity_key": [
+          "delivery_date",
+          "window_from"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified"
+      }
     }
   ],
   "resources": [
