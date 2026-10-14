@@ -1,0 +1,2 @@
+# Keep the vendor bytes exactly: CRLF terminators and BOMs must survive git unchanged.
+*.csv -text

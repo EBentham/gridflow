@@ -1,0 +1,5 @@
+Country,EU Scenario,FES Pathway Alignment,Variable,Category,Type,SubType,2024,2025,2026,2027,2028,2029,2030,2031,2032,2033,2034,2035,2036,2037,2038,2039,2040,2041,2042,2043,2044,2045,2046,2047,2048,2049,2050
+Austria,EU Green,"Holistic Transition, Electric Engagement",Capacity (MW),Storage,Storage,Battery,150.0,150.0,350.0,550.0,800.0,1000.0,1200.0,1250.0,1300.0,1300.0,1350.0,1400.0,1450.0,1500.0,1550.0,1600.0,1650.0,1650.0,1650.0,1700.0,1700.0,1700.0,1750.0,1850.0,1900.0,2000.0,2050.0
+Austria,EU Green,"Holistic Transition, Electric Engagement",Capacity (MW),Renewable,Biomass,Biomass,410.0,410.0,410.0,410.0,410.0,410.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Austria,EU Green,Holistic Transition,Demand (TWh),Demand,Demand,Demand Total (TWh),69.5,72.3,76.1,80.6,85.0,89.0,91.9,99.1,107.5,114.7,122.5,131.1,136.8,141.1,145.7,150.6,153.2,153.9,155.2,156.2,157.6,157.7,158.4,159.2,160.1,160.4,160.8
+Austria,EU Central,10YF,Demand (TWh),Demand,Demand,Demand Total (TWh),69.52607,71.93018,74.7911,78.04322,81.61849,84.30067,87.40582,90.0905,92.97551,95.33735,97.81347,100.3473,,,,,,,,,,,,,,,
