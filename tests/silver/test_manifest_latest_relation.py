@@ -291,6 +291,7 @@ _APPEND_ONLY_DATASETS: tuple[tuple[str, str], ...] = (
     ("neso_data_portal", "odfm_market_information_instructed"),
     ("neso_data_portal", "odfm_market_information_load_factors"),
     ("neso_data_portal", "stor_da_auction_results"),
+    ("neso_data_portal", "ffr_post_tender_reports_workbook"),
 )
 
 
@@ -484,9 +485,9 @@ def test_append_only_set_equals_latest_spec_set() -> None:
     spec_set = set(LATEST_VIEW_SPECS)
 
     # Non-vacuity guard: this invariant must never pass because both sides are
-    # empty (F16) -- two hundred and twenty-one APPEND_ONLY datasets are registered today.
+    # empty (F16) -- two hundred and twenty-two APPEND_ONLY datasets are registered today.
     assert len(append_only) > 0
-    assert len(append_only) == 221
+    assert len(append_only) == 222
 
     missing_specs = append_only - spec_set
     extra_specs = spec_set - append_only
@@ -994,6 +995,10 @@ _EXPECTED_APPEND_ONLY_DEPRECATED_ALIASES: dict[tuple[str, str], str | None] = {
         "odfm_market_information_load_factors",
     ): "silver_odfm_market_information_load_factors",
     ("neso_data_portal", "stor_da_auction_results"): "silver_stor_da_auction_results",
+    (
+        "neso_data_portal",
+        "ffr_post_tender_reports_workbook",
+    ): "silver_ffr_post_tender_reports_workbook",
 }
 
 

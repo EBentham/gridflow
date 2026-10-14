@@ -960,6 +960,7 @@ sources:
       ffr_post_tender_reports_csv_ext: {endpoint: "/api/3/action/package_show", schedule: "daily", max_query_days: 1}
       ffr_post_tender_reports_ext: {endpoint: "/api/3/action/package_show", schedule: "daily", max_query_days: 1}
       ffr_post_tender_reports_files: {endpoint: "/api/3/action/package_show", schedule: "daily", max_query_days: 1}
+      ffr_post_tender_reports_workbook: {endpoint: "/api/3/action/package_show", schedule: "daily", max_query_days: 1}
       gis_dno_license_areas_files: {endpoint: "/api/3/action/package_show", schedule: "daily", max_query_days: 1}
       gis_gen_charging_zones_files: {endpoint: "/api/3/action/package_show", schedule: "daily", max_query_days: 1}
       gis_grid_supply_points: {endpoint: "/api/3/action/package_show", schedule: "daily", max_query_days: 1}

@@ -971,6 +971,12 @@ AS5B_RECORDED = {
 """The five ASDP, ODFM and STOR day-ahead families unit K-AS-5b records (three eligible, two
 held)."""
 
+AS5C_RECORDED = {
+    "ffr_post_tender_reports_workbook",
+}
+"""The FFR post-tender workbook family unit K-AS-5c records (eligible, a composite block per
+resource)."""
+
 AS1_PACKAGE_FILES = {
     "balancing-reserve-auction-requirement-forecast.json",
     "dynamic-containment-4-day-forecast.json",
@@ -1034,7 +1040,7 @@ class TestSeededRegistry:
     def test_every_seeded_package_loads_with_no_record(self) -> None:
         loaded = registry_module.load_registry()
         entries = [entry for _package, entry in loaded.families.values()]
-        assert len(entries) == 317
+        assert len(entries) == 318
         assert sum(entry.legacy for entry in entries) == 3
         assert sum(entry.kind == "files" for entry in entries) == 35
         recorded = {entry.key for entry in entries if entry.record is not None}
@@ -1071,6 +1077,7 @@ class TestSeededRegistry:
             | AS4B_RECORDED
             | AS5A_RECORDED
             | AS5B_RECORDED
+            | AS5C_RECORDED
         )
         with_children = [res for _package, res in loaded.resources.values() if res.children]
         assert len(with_children) == X_RESOURCES_WITH_CHILDREN

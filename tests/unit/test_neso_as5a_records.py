@@ -110,6 +110,7 @@ ALL_FAMILIES = (*RECORDED, *OWNER_OF)
 TR147_ID = "c99081fb-0211-4a1a-9eed-53497f64a6ea"
 TR154_ID = "7e48c1ce-b4cf-43fa-afe9-4e6730474944"
 ARCHIVE = "ffr_phase2_result_summary_archive"
+AS5C_WORKBOOK = "ffr_post_tender_reports_workbook"
 
 # --------------------------------------------------------------------------- #
 # The spec's silver names and types, positional against each table's vendor header. The key is
@@ -1005,22 +1006,18 @@ def test_the_two_held_records_carry_their_verbatim_question_and_the_unit(key: st
 
 
 def test_the_two_packages_stay_eligible_and_the_package_files_hold_the_seven_records() -> None:
-    """Detects a package held by accident, a record on the wrong family, a family gaining a
-    transformer or the AS-5c families gaining a record: the two package files are ``eligible`` and
-    hold the seven records plus the one existing summary-archive record, no family has a bespoke
-    transformer, and the workbook / ZIP container families keep their ``AS-5`` data-container
-    holds (their records are AS-5c)."""
+    """Detects a package held by accident, a record on the wrong family or a family gaining a
+    transformer: the two package files are ``eligible`` and hold the seven records plus the
+    existing summary-archive record and AS-5c's workbook record, no family has a bespoke
+    transformer, and the ZIP container families keep their ``AS-5`` data-container holds (their
+    records are AS-5c). The workbook dispositions are AS-5c's (``test_neso_as5c_records.py``)."""
     found: set[str] = set()
     for package in (FFR_PACKAGE, P2_PACKAGE):
         document = _package_doc(package)
         assert document["eligibility"] == {"status": "eligible"}, package
         found |= {f["key"] for f in document["families"] if "record" in f}
         assert all(f["transformer"] is None for f in document["families"]), package
-    assert found == {*RECORDED, ARCHIVE}
-    for resource in _package_doc(FFR_PACKAGE)["resources"]:
-        if resource["family"] == "ffr_post_tender_reports_files":
-            assert resource["disposition"]["kind"] == "HOLD" and resource["children"]
-            assert resource["disposition"]["unit"] == "AS-5"
+    assert found == {*RECORDED, ARCHIVE, AS5C_WORKBOOK}
     containers = [
         r
         for r in _package_doc(P2_PACKAGE)["resources"]
