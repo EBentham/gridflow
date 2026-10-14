@@ -356,6 +356,17 @@ AS5C_ADDED = frozenset(
 )
 """The FFR post-tender workbook family and the three Phase-2 FFR ZIP-archive families
 v0.22-K-AS-5c records (one eligible, three held)."""
+DFSA_ADDED = frozenset(
+    {
+        "demand_flexibility_service_requirement",
+        "demand_flexibility_industry_notification",
+        "demand_flexibility_utilisation_report",
+        "demand_flexibility_utilisation_summary",
+        "stor_da_buy_curve",
+    }
+)
+"""The four Demand Flexibility Service families and the STOR day-ahead buy curve v0.22-K-DFS-a
+records (four eligible, one held)."""
 REWORDED_HOLDS = {
     "national_forecast_7d_historic_day_ahead": (
         "TODO: FORECAST_TIMESTAMP has no vendor definition and its zone is undocumented "
@@ -449,6 +460,7 @@ class TestByteUnchanged:
                     *AS5A_ADDED,
                     *AS5B_ADDED,
                     *AS5C_ADDED,
+                    *DFSA_ADDED,
                 }
                 if section != "engine"
                 else set()
@@ -1050,7 +1062,7 @@ class TestRecordRules:
         self,
     ) -> None:
         """Detects a committed record broken by V-4/V-17 or the reserved name, and any
-        family other than the sixty-six resource-partitioned ones opting into the partition (in a
+        family other than the seventy resource-partitioned ones opting into the partition (in a
         fresh interpreter, so nothing collection imported can mask it)."""
         code = textwrap.dedent(
             """
@@ -1076,6 +1088,10 @@ class TestRecordRules:
                 "current_bsuos_historic_rf",
                 "current_bsuos_historic_sf",
                 "da_wind_forecast_historic_day_ahead_bmu",
+                "demand_flexibility_industry_notification",
+                "demand_flexibility_service_requirement",
+                "demand_flexibility_utilisation_report",
+                "demand_flexibility_utilisation_summary",
                 "eac_results_buy_orders_fy",
                 "eac_results_by_unit_fy",
                 "eac_results_sell_orders",
