@@ -1025,6 +1025,20 @@ SCN2B_RECORDED = {
 """The FES ED3 combined, ED3 gas summary, ED7 and ED4 families unit K-SCN-2b records (three held,
 ED4 eligible)."""
 
+SCN3_RECORDED = {
+    "building_heat_model_example_output_half",
+    "fes_ws1_gas_supply",
+    "fes_ws2_gas_emissions",
+    "fes_la_heat_model_domestic",
+    "fes_la_heat_model_residential",
+    "resource_adequacy_2030s_portfolio",
+    "resource_adequacy_2030s_peak_demand",
+    "resource_adequacy_2030s_results",
+}
+"""The Building Heat Model example output, WS1, WS2, local-authority domestic and residential heat
+model and three Resource Adequacy 2030s families unit K-SCN-3 records (five held, Resource Adequacy
+eligible; one WS1 resource HOLD, one WS1 ADR-040 failed entry)."""
+
 SCN2A_PACKAGE_FILES = {
     "fes-european-electricity-supply-data-table-es2.json",
     "fes-flexibility-data-table-data-table-flx1.json",
@@ -1035,6 +1049,14 @@ SCN2A_PACKAGE_FILES = {
 SCN2B_PACKAGE_FILES = {
     "fes-natural-gas-demand-definitions-ed4.json",
     "fes-natural-gas-residential-and-non-domestic-i-c-heat-demand-summary-data-table-ed3.json",
+}
+
+SCN3_PACKAGE_FILES = {
+    "building-heat-model.json",
+    "fes-whole-system-gas-supply-data-table-ws1.json",
+    "fes-whole-system-gas-supply-emissions-data-table-ws2.json",
+    "local-authority-level-spatial-heat-model-outputs-fes.json",
+    "resource-adequacy-in-2030s.json",
 }
 
 AS1_PACKAGE_FILES = {
@@ -1153,6 +1175,7 @@ class TestSeededRegistry:
             | DFSB_RECORDED
             | SCN2A_RECORDED
             | SCN2B_RECORDED
+            | SCN3_RECORDED
         )
         with_children = [res for _package, res in loaded.resources.values() if res.children]
         assert len(with_children) == X_RESOURCES_WITH_CHILDREN
@@ -1206,6 +1229,7 @@ class TestSeededRegistry:
             | DFSB_PACKAGE_FILES
             | SCN2A_PACKAGE_FILES
             | SCN2B_PACKAGE_FILES
+            | SCN3_PACKAGE_FILES
         )
 
 

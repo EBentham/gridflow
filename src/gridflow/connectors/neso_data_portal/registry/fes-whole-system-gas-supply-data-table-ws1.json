@@ -17,7 +17,509 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Fuel Type",
+              "Scenario",
+              "Units",
+              "Category",
+              "Sector",
+              "Fuel",
+              "Feedstock",
+              "Category Lookup",
+              "2020",
+              "2021",
+              "2022",
+              "2023",
+              "2024",
+              "2025",
+              "2026",
+              "2027",
+              "2028",
+              "2029",
+              "2030",
+              "2031",
+              "2032",
+              "2033",
+              "2034",
+              "2035",
+              "2036",
+              "2037",
+              "2038",
+              "2039",
+              "2040",
+              "2041",
+              "2042",
+              "2043",
+              "2044",
+              "2045",
+              "2046",
+              "2047",
+              "2048",
+              "2049",
+              "2050"
+            ],
+            "columns": [
+              {
+                "source": "Fuel Type",
+                "name": "fuel_type",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Scenario",
+                "name": "scenario",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Units",
+                "name": "units",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Category",
+                "name": "category",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Sector",
+                "name": "sector",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Fuel",
+                "name": "fuel",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Feedstock",
+                "name": "feedstock",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Category Lookup",
+                "name": "category_lookup",
+                "dtype": "string",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            },
+            "unpivot": {
+              "years": [
+                [
+                  "2020",
+                  2020
+                ],
+                [
+                  "2021",
+                  2021
+                ],
+                [
+                  "2022",
+                  2022
+                ],
+                [
+                  "2023",
+                  2023
+                ],
+                [
+                  "2024",
+                  2024
+                ],
+                [
+                  "2025",
+                  2025
+                ],
+                [
+                  "2026",
+                  2026
+                ],
+                [
+                  "2027",
+                  2027
+                ],
+                [
+                  "2028",
+                  2028
+                ],
+                [
+                  "2029",
+                  2029
+                ],
+                [
+                  "2030",
+                  2030
+                ],
+                [
+                  "2031",
+                  2031
+                ],
+                [
+                  "2032",
+                  2032
+                ],
+                [
+                  "2033",
+                  2033
+                ],
+                [
+                  "2034",
+                  2034
+                ],
+                [
+                  "2035",
+                  2035
+                ],
+                [
+                  "2036",
+                  2036
+                ],
+                [
+                  "2037",
+                  2037
+                ],
+                [
+                  "2038",
+                  2038
+                ],
+                [
+                  "2039",
+                  2039
+                ],
+                [
+                  "2040",
+                  2040
+                ],
+                [
+                  "2041",
+                  2041
+                ],
+                [
+                  "2042",
+                  2042
+                ],
+                [
+                  "2043",
+                  2043
+                ],
+                [
+                  "2044",
+                  2044
+                ],
+                [
+                  "2045",
+                  2045
+                ],
+                [
+                  "2046",
+                  2046
+                ],
+                [
+                  "2047",
+                  2047
+                ],
+                [
+                  "2048",
+                  2048
+                ],
+                [
+                  "2049",
+                  2049
+                ],
+                [
+                  "2050",
+                  2050
+                ]
+              ],
+              "value": {
+                "dtype": "float64",
+                "nullable": true
+              }
+            }
+          },
+          {
+            "header": [
+              "Fuel Type",
+              "Pathway",
+              "Units",
+              "Category",
+              "Sector",
+              "Fuel",
+              "Feedstock",
+              "Category Lookup",
+              "2020",
+              "2021",
+              "2022",
+              "2023",
+              "2024",
+              "2025",
+              "2026",
+              "2027",
+              "2028",
+              "2029",
+              "2030",
+              "2031",
+              "2032",
+              "2033",
+              "2034",
+              "2035",
+              "2036",
+              "2037",
+              "2038",
+              "2039",
+              "2040",
+              "2041",
+              "2042",
+              "2043",
+              "2044",
+              "2045",
+              "2046",
+              "2047",
+              "2048",
+              "2049",
+              "2050"
+            ],
+            "columns": [
+              {
+                "source": "Fuel Type",
+                "name": "fuel_type",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Pathway",
+                "name": "pathway",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Units",
+                "name": "units",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Category",
+                "name": "category",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Sector",
+                "name": "sector",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Fuel",
+                "name": "fuel",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Feedstock",
+                "name": "feedstock",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "Category Lookup",
+                "name": "category_lookup",
+                "dtype": "string",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            },
+            "unpivot": {
+              "years": [
+                [
+                  "2020",
+                  2020
+                ],
+                [
+                  "2021",
+                  2021
+                ],
+                [
+                  "2022",
+                  2022
+                ],
+                [
+                  "2023",
+                  2023
+                ],
+                [
+                  "2024",
+                  2024
+                ],
+                [
+                  "2025",
+                  2025
+                ],
+                [
+                  "2026",
+                  2026
+                ],
+                [
+                  "2027",
+                  2027
+                ],
+                [
+                  "2028",
+                  2028
+                ],
+                [
+                  "2029",
+                  2029
+                ],
+                [
+                  "2030",
+                  2030
+                ],
+                [
+                  "2031",
+                  2031
+                ],
+                [
+                  "2032",
+                  2032
+                ],
+                [
+                  "2033",
+                  2033
+                ],
+                [
+                  "2034",
+                  2034
+                ],
+                [
+                  "2035",
+                  2035
+                ],
+                [
+                  "2036",
+                  2036
+                ],
+                [
+                  "2037",
+                  2037
+                ],
+                [
+                  "2038",
+                  2038
+                ],
+                [
+                  "2039",
+                  2039
+                ],
+                [
+                  "2040",
+                  2040
+                ],
+                [
+                  "2041",
+                  2041
+                ],
+                [
+                  "2042",
+                  2042
+                ],
+                [
+                  "2043",
+                  2043
+                ],
+                [
+                  "2044",
+                  2044
+                ],
+                [
+                  "2045",
+                  2045
+                ],
+                [
+                  "2046",
+                  2046
+                ],
+                [
+                  "2047",
+                  2047
+                ],
+                [
+                  "2048",
+                  2048
+                ],
+                [
+                  "2049",
+                  2049
+                ],
+                [
+                  "2050",
+                  2050
+                ]
+              ],
+              "value": {
+                "dtype": "float64",
+                "nullable": true
+              }
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "resource_id",
+          "edition",
+          "fuel_type",
+          "scenario",
+          "pathway",
+          "units",
+          "category",
+          "sector",
+          "fuel",
+          "feedstock",
+          "category_lookup",
+          "projection_year"
+        ],
+        "latest": "whole_capture",
+        "latest_partition": "resource_id",
+        "edition_by_filename": [
+          [
+            "fes2023_ws1_v001.csv",
+            2023
+          ],
+          [
+            "fes2025_ws1_v006.csv",
+            2025
+          ],
+          [
+            "10yo2026_ws1_v001.csv",
+            2026
+          ]
+        ],
+        "vintage": "ckan_last_modified",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: For each WS1 edition and quantity class (`TWh`, `GW`, `bcm/yr` rows), what interval or assessment date does a year header denote, and is the integer a starting or ending label? What does a blank projection cell mean? What does the literal `N/A` in `fes2024_ws1_v001.csv` mean? Which omitted dimension distinguishes the four repeated Bioenergy / Waste / `MSW, C&I (biogenic)` rows per pathway in `fes2025_ws1_v006.csv`, and can NESO publish a corrected file?",
+          "unit": "E-SEM"
+        }
+      }
     }
   ],
   "resources": [
@@ -39,8 +541,9 @@
       "url_type": "upload",
       "family": "fes_ws1_gas_supply",
       "disposition": {
-        "kind": "SILVER",
-        "key": "fes_ws1_gas_supply"
+        "kind": "HOLD",
+        "reason": "the 2024 body fails the strict float64 cast on 7128 projection cells, every one the literal `N/A` (264 per column 2023-2049), whose meaning NESO does not document; declaring it a null token would assert an undocumented semantic; re-disposition only after NESO defines `N/A` (then an exact `null_tokens` declaration) or uploads a corrected file (a new last_modified)",
+        "unit": "E-SEM"
       }
     },
     {

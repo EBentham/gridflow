@@ -54,7 +54,7 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `bsuos-monthly-forecast` | `bsuos_monthly_forecast_sum_winter` | ingest-only (no silver output) | — | — | — | — |
 | `bsuos-monthly-forecast` | `bsuos_monthly_forecast_summary` | ingest-only (no silver output) | — | — | — | — |
 | `bsuos-monthly-forecast` | `bsuos_monthly_forecast_summary_pct` | ingest-only (no silver output) | — | — | — | — |
-| `building-heat-model` | `building_heat_model_example_output_half` | ingest-only (no silver output) | — | — | — | — |
+| `building-heat-model` | `building_heat_model_example_output_half` | silver | held: TODO: What unit or scale does NESO declare for `avg_COP_space_heat` and `avg_COP_dhw`? What does a blank gas, electricity or COP cell mean in the example profiles (blank is not zero)? (unit E-SEM) | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
 | `building-heat-model` | `building_heat_model_files` | catalogue only | — | — | — | — |
 | `building-heat-model` | `building_heat_model_list_input` | ingest-only (no silver output) | — | — | — | — |
 | `capacity-market-register` | `capacity_market_auction_cost` | silver | eligible | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
@@ -168,8 +168,8 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `fes-natural-gas-residential-and-non-domestic-i-c-heat-demand-summary-data-table-ed3` | `fes_ed3_heat_demand_sum_ed` | silver | held: TODO: For every ED7 unit and data type, what interval or observation date does a year header denote? What are the scale and denominator of `uptake`, the counting basis and snapshot date of `stock`, and the start/end convention for peak-year labels? How are savings related to the reported technology demand? What does a blank projection cell mean? (unit E-SEM) | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
 | `fes-road-transport-notes-data-table-ed6` | `fes_ed6_road_transport_notes` | silver | eligible | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
 | `fes-road-transport-summary-data-table-ed5` | `fes_ed5_road_transport` | silver | held: TODO: For each ED5 annual-energy, vehicle-count and capacity item, what interval or observation date does the year label denote? For winter-peak items, does the integer label identify the starting or ending winter year? What does a blank projection cell mean? (unit E-SEM) | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
-| `fes-whole-system-gas-supply-data-table-ws1` | `fes_ws1_gas_supply` | ingest-only (no silver output) | — | — | — | — |
-| `fes-whole-system-gas-supply-emissions-data-table-ws2` | `fes_ws2_gas_emissions` | ingest-only (no silver output) | — | — | — | — |
+| `fes-whole-system-gas-supply-data-table-ws1` | `fes_ws1_gas_supply` | silver | held: TODO: For each WS1 edition and quantity class (`TWh`, `GW`, `bcm/yr` rows), what interval or assessment date does a year header denote, and is the integer a starting or ending label? What does a blank projection cell mean? What does the literal `N/A` in `fes2024_ws1_v001.csv` mean? Which omitted dimension distinguishes the four repeated Bioenergy / Waste / `MSW, C&I (biogenic)` rows per pathway in `fes2025_ws1_v006.csv`, and can NESO publish a corrected file? (unit E-SEM) | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
+| `fes-whole-system-gas-supply-emissions-data-table-ws2` | `fes_ws2_gas_emissions` | silver | held: TODO: What emissions unit do the 2023, 2024 and 2026 WS2 year columns carry (their dictionaries give `N/A` or no unit; only 2025 states `MTCO2e`)? For each edition, is a year label a calendar or financial year, and a starting or ending label? What does a blank projection cell mean? (unit E-SEM) | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
 | `firm-frequency-response-post-tender-reports` | `ffr_post_tender_reports_csv` | ingest-only (no silver output) | — | — | — | — |
 | `firm-frequency-response-post-tender-reports` | `ffr_post_tender_reports_csv_ext` | silver | eligible | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
 | `firm-frequency-response-post-tender-reports` | `ffr_post_tender_reports_ext` | ingest-only (no silver output) | — | — | — | — |
@@ -202,8 +202,8 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `levelised-cost-of-green-hydrogen` | `lcoh_capex_opex_input_assumptions_pem` | ingest-only (no silver output) | — | — | — | — |
 | `levelised-cost-of-green-hydrogen` | `lcoh_levelised_cost_blue_hydrogen` | ingest-only (no silver output) | — | — | — | — |
 | `levelised-cost-of-green-hydrogen` | `lcoh_levelised_cost_green_hydrogen` | ingest-only (no silver output) | — | — | — | — |
-| `local-authority-level-spatial-heat-model-outputs-fes` | `fes_la_heat_model_domestic` | ingest-only (no silver output) | — | — | — | — |
-| `local-authority-level-spatial-heat-model-outputs-fes` | `fes_la_heat_model_residential` | ingest-only (no silver output) | — | — | — | — |
+| `local-authority-level-spatial-heat-model-outputs-fes` | `fes_la_heat_model_domestic` | silver | held: TODO: What stock assessment date does `Year` denote in the FES 2022 domestic outputs, and is it a start- or end-of-year snapshot? Is `stock Oil boiler` a number of buildings or a proportion, as the dictionary states? What does a blank hydrogen or hybrid-hydrogen cell in the 2030-2050 slices mean? (unit E-SEM) | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
+| `local-authority-level-spatial-heat-model-outputs-fes` | `fes_la_heat_model_residential` | silver | held: TODO: What exact stock assessment date does `Year` represent in the FES 2024 and FES 2025 residential outputs, and is it a start- or end-of-year convention? (unit E-SEM) | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
 | `long-term-2-52-weeks-ahead-national-demand-forecast` | `demand_forecast_2_52w` | silver | held: TODO: ESI week definition (start and end day, numbering, rollover against calendar_year and financial_year) and why 2027 week 29 appears twice with CDATE_peak 2027-07-21 and 2027-07-22; the NESO dictionary is silent (unit E-SEM) | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
 | `long-term-forecasts-for-dc-dm-dr-requirements` | `dc_dm_dr_long_term_fc` | silver | held: TODO: DX-LT-INTERVAL — what unit and which inclusive endpoint do the `Interval` bands (`0-200` … `1600-1800`) use, and when was the creation-dated forecast available? 324 rows target the creation month. (unit v0.22-K-AS-1) | whole_capture | month | CKAN last_modified of the captured file (ADR-030) |
 | `monthly-operational-metered-wind-output` | `metered_wind_output_monthly` | silver | eligible | whole_capture per resource_id | sp_pair | CKAN last_modified of the captured file (ADR-030) |
@@ -261,9 +261,9 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `regional-breakdown-of-fes-data-electricity` | `fes_regional_storage_lt_1mw_pre2023` | silver | eligible | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
 | `regional-carbon-intensity-forecast` | `regional_ci_forecast` | silver | held: TODO: no issue column; which forecast issue a past target's value reflects, and whether values are revised after the period, is undocumented; whether datetime marks period start or end; meaning of negative intensities (min -13.0) (unit E-SEM) | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
 | `regional-carbon-intensity-forecast` | `regional_ci_forecast_files` | catalogue only | — | — | — | — |
-| `resource-adequacy-in-2030s` | `resource_adequacy_2030s_peak_demand` | ingest-only (no silver output) | — | — | — | — |
-| `resource-adequacy-in-2030s` | `resource_adequacy_2030s_portfolio` | ingest-only (no silver output) | — | — | — | — |
-| `resource-adequacy-in-2030s` | `resource_adequacy_2030s_results` | ingest-only (no silver output) | — | — | — | — |
+| `resource-adequacy-in-2030s` | `resource_adequacy_2030s_peak_demand` | silver | eligible | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
+| `resource-adequacy-in-2030s` | `resource_adequacy_2030s_portfolio` | silver | eligible | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
+| `resource-adequacy-in-2030s` | `resource_adequacy_2030s_results` | silver | eligible | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
 | `school-holiday-percentages` | `school_holiday_percentages` | silver | held: TODO: the numeric scale of the Total rows: the vendor calls the aggregate a percentage, but the values measure as a fraction equal to the sum of (multiplier x local indicator) within 0.0005; NESO has not stated the encoding (unit E-SEM) | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
 | `short-term-operating-reserve-stor-day-ahead-auction-results` | `stor_da_auction_results` | silver | eligible | whole_capture | utc_instant | CKAN last_modified of the captured file (ADR-030) |
 | `short-term-operating-reserve-stor-day-ahead-buy-curve` | `stor_da_buy_curve` | silver | eligible | whole_capture | utc_instant | CKAN last_modified of the captured file (ADR-030) |
@@ -395,7 +395,7 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `fes-natural-gas-residential-and-non-domestic-i-c-heat-demand-summary-data-table-ed3` | eligible | 6 | 0 | 0 | 0 | 0 |
 | `fes-road-transport-notes-data-table-ed6` | eligible | 4 | 0 | 0 | 0 | 0 |
 | `fes-road-transport-summary-data-table-ed5` | eligible | 4 | 0 | 0 | 0 | 0 |
-| `fes-whole-system-gas-supply-data-table-ws1` | eligible | 4 | 0 | 0 | 0 | 0 |
+| `fes-whole-system-gas-supply-data-table-ws1` | eligible | 3 | 0 | 0 | 0 | 1 |
 | `fes-whole-system-gas-supply-emissions-data-table-ws2` | eligible | 4 | 0 | 0 | 0 | 0 |
 | `firm-frequency-response-post-tender-reports` | eligible | 85 | 0 | 0 | 0 | 4 |
 | `future-energy-scenario-electricity-supply-data-table-es1` | eligible | 4 | 0 | 0 | 0 | 3 |
@@ -465,11 +465,11 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `weekly-opmr` | eligible | 1 | 0 | 0 | 0 | 0 |
 | `weekly-wind-availability` | eligible | 1 | 0 | 0 | 0 | 0 |
 | `wind-bmu-boa-volumes` | eligible | 9 | 0 | 0 | 0 | 0 |
-| **Total** | | 1299 | 0 | 43 | 20 | 23 |
+| **Total** | | 1298 | 0 | 43 | 20 | 24 |
 
 ## Totals
 
 - Packages: 131 (held: 4)
-- Families: 321: silver 247 (bespoke 3, recorded 244), ingest-only 39, catalogue only 35
-- Silver outputs held: 122
+- Families: 321: silver 255 (bespoke 3, recorded 252), ingest-only 31, catalogue only 35
+- Silver outputs held: 127
 - Resources: 1385
