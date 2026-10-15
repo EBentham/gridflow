@@ -72,7 +72,8 @@ from gridflow.silver.schema_manifest import (
 # hundred and thirty with v0.22-K-DFS-a's four DFS records and the STOR day-ahead buy curve, then to
 # two hundred and forty-two with v0.22-K-DFS-b's twelve frozen DFS records (2023/24 service,
 # 2022/23 live events, 2022/23 test events), then to two hundred and forty-six with
-# v0.22-K-SCN-2a's ES2, FLX1, ED5 and ED6 records.
+# v0.22-K-SCN-2a's ES2, FLX1, ED5 and ED6 records, then to two hundred and fifty with
+# v0.22-K-SCN-2b's ED3 combined, ED3 gas summary, ED7 and ED4 records.
 _APPEND_ONLY_DATASETS: tuple[tuple[str, str], ...] = (
     ("elexon", "system_prices"),
     ("elexon", "remit"),
@@ -320,6 +321,10 @@ _APPEND_ONLY_DATASETS: tuple[tuple[str, str], ...] = (
     ("neso_data_portal", "fes_flx1_flexibility"),
     ("neso_data_portal", "fes_ed5_road_transport"),
     ("neso_data_portal", "fes_ed6_road_transport_notes"),
+    ("neso_data_portal", "fes_ed3_heat_demand_natural_gas"),
+    ("neso_data_portal", "fes_ed3_heat_demand_natural_gas_sum_ed"),
+    ("neso_data_portal", "fes_ed3_heat_demand_sum_ed"),
+    ("neso_data_portal", "fes_ed4_gas_demand_defs"),
 )
 
 
@@ -513,9 +518,9 @@ def test_append_only_set_equals_latest_spec_set() -> None:
     spec_set = set(LATEST_VIEW_SPECS)
 
     # Non-vacuity guard: this invariant must never pass because both sides are
-    # empty (F16) -- two hundred and forty-six APPEND_ONLY datasets are registered today.
+    # empty (F16) -- two hundred and fifty APPEND_ONLY datasets are registered today.
     assert len(append_only) > 0
-    assert len(append_only) == 246
+    assert len(append_only) == 250
 
     missing_specs = append_only - spec_set
     extra_specs = spec_set - append_only
@@ -1096,6 +1101,16 @@ _EXPECTED_APPEND_ONLY_DEPRECATED_ALIASES: dict[tuple[str, str], str | None] = {
     ("neso_data_portal", "fes_flx1_flexibility"): "silver_fes_flx1_flexibility",
     ("neso_data_portal", "fes_ed5_road_transport"): "silver_fes_ed5_road_transport",
     ("neso_data_portal", "fes_ed6_road_transport_notes"): "silver_fes_ed6_road_transport_notes",
+    (
+        "neso_data_portal",
+        "fes_ed3_heat_demand_natural_gas",
+    ): "silver_fes_ed3_heat_demand_natural_gas",
+    (
+        "neso_data_portal",
+        "fes_ed3_heat_demand_natural_gas_sum_ed",
+    ): "silver_fes_ed3_heat_demand_natural_gas_sum_ed",
+    ("neso_data_portal", "fes_ed3_heat_demand_sum_ed"): "silver_fes_ed3_heat_demand_sum_ed",
+    ("neso_data_portal", "fes_ed4_gas_demand_defs"): "silver_fes_ed4_gas_demand_defs",
 }
 
 

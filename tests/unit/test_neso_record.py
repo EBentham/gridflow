@@ -1016,11 +1016,25 @@ SCN2A_RECORDED = {
 """The FES ES2, FLX1, ED5 and ED6 families unit K-SCN-2a records (three held, ED6 eligible; two
 resources HOLD)."""
 
+SCN2B_RECORDED = {
+    "fes_ed3_heat_demand_natural_gas",
+    "fes_ed3_heat_demand_natural_gas_sum_ed",
+    "fes_ed3_heat_demand_sum_ed",
+    "fes_ed4_gas_demand_defs",
+}
+"""The FES ED3 combined, ED3 gas summary, ED7 and ED4 families unit K-SCN-2b records (three held,
+ED4 eligible)."""
+
 SCN2A_PACKAGE_FILES = {
     "fes-european-electricity-supply-data-table-es2.json",
     "fes-flexibility-data-table-data-table-flx1.json",
     "fes-road-transport-summary-data-table-ed5.json",
     "fes-road-transport-notes-data-table-ed6.json",
+}
+
+SCN2B_PACKAGE_FILES = {
+    "fes-natural-gas-demand-definitions-ed4.json",
+    "fes-natural-gas-residential-and-non-domestic-i-c-heat-demand-summary-data-table-ed3.json",
 }
 
 AS1_PACKAGE_FILES = {
@@ -1138,6 +1152,7 @@ class TestSeededRegistry:
             | DFSA_RECORDED
             | DFSB_RECORDED
             | SCN2A_RECORDED
+            | SCN2B_RECORDED
         )
         with_children = [res for _package, res in loaded.resources.values() if res.children]
         assert len(with_children) == X_RESOURCES_WITH_CHILDREN
@@ -1190,6 +1205,7 @@ class TestSeededRegistry:
             | DFSA_PACKAGE_FILES
             | DFSB_PACKAGE_FILES
             | SCN2A_PACKAGE_FILES
+            | SCN2B_PACKAGE_FILES
         )
 
 

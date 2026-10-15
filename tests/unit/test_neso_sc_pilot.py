@@ -62,6 +62,7 @@ from test_neso_multi_resource import (
     SCN1C_ADDED,
     SCN1D_ADDED,
     SCN2A_ADDED,
+    SCN2B_ADDED,
     SYS1_ADDED,
     TRD_ADDED,
 )
@@ -444,6 +445,10 @@ class TestPilot:
                 "fes_building_blocks_block_licence_area",
                 "fes_building_blocks_main",
                 "fes_ed1_electricity_demand",
+                "fes_ed3_heat_demand_natural_gas",
+                "fes_ed3_heat_demand_natural_gas_sum_ed",
+                "fes_ed3_heat_demand_sum_ed",
+                "fes_ed4_gas_demand_defs",
                 "fes_ed5_road_transport",
                 "fes_ed6_road_transport_notes",
                 "fes_es1_electricity_supply",
@@ -653,5 +658,6 @@ class TestSkeletonAndPin:
                 *DFSA_ADDED,
                 *DFSB_ADDED,
                 *SCN2A_ADDED,
+                *SCN2B_ADDED,
             }, section
         assert set(current["engine"]) == set(golden["engine"])

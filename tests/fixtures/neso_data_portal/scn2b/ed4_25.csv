@@ -1,0 +1,13 @@
+Item no.,Description,Definition
+1,Annual end-use gas demand from industry,Gas used in industry. This is including: gas for electricity generation from gas distribution network connected Combined Heat and Power plants (CHPs) and Combined Cycle Gas Turbines (CCGTs); and industrial gas usage fitted with CCS.
+2,Annual end-use gas demand from the commercial sector,Gas used in the commercial sector. This excludes gas used for electricity generation by peaking/flexible plants (see item no. 6).
+3,Gas end-use demand for transport,Gas used in the transport sector. This includes networked Compressed Natural Gas (CNG) and non-networked Liquified Natural Gas (LNG).
+4,Total end-use residential gas demand,"Gas used in the residential sector, including for heating and cooking (using NDM1 gas load band)."
+5,Total gas demand (gas NTS connected only) for electricity generation,Gas used for power generation by power stations connected to the gas transmission network.
+6,LDZ connected peaking/flexible plants (estimated),Gas used for electricity generation by flexible/peaking plants connected to the gas distribution networks.
+7,Total (NTS+LDZ) gas shrinkage ,Total gas shrinkage from the transmission and distribution networks.
+8,Hydrogen Production: Natural Gas Demand ,Gas used for producing hydrogen via steam methane reforming.
+9,Gas exported from GB,Gas export through to Ireland and Continental Europe.
+10,Total GB Peak 1-in-20 Demand,"Total daily GB gas demand on a cold day expected to occur once every 20 years. Data is in gas years, i.e. 2023 is GY 2023/24 which is 01/10/2023 - 30/09/2024. 
+One of the inputs for the peak day demand analysis is a forecast for gas demand for power generation. Unlike all of the other modelling for FES (including ED3 annual gas demand for electricity generation) which assumes unconstrained networks, for this particular analysis we do include an estimate for increased gas-fired generation arising from electricity network constraints."
+11,Total GB Gas Demand (Excluding exports and shrinkage),= 1+2+3+4+5+6+8
