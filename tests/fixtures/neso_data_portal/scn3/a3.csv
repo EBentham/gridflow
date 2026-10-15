@@ -1,0 +1,5 @@
+Simulation Name,Spotlight year,Historical weather year,Weather-conditional LOLE (h/year),Weather-conditional EEU (MWh/year)
+Portfolio 1,2030/31,1984/85,3.97,34200
+Portfolio 1,2030/31,1999/2000,0,0
+Sensitivity 01: A build-out of batteries and renewables while maintaining 35 GW of unabated gas,2035/36,1984/85,0,0
+Sensitivity 01: A build-out of batteries and renewables while maintaining 35 GW of unabated gas,2040/41,1999/2000,0.04,480

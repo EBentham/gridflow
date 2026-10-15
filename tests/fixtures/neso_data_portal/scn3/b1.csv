@@ -1,0 +1,6 @@
+﻿parameter,run_1,run_2
+model run,1 month - 1 thermostat profile - 1 building archetype,1 month - 1 thermostat profile - 1 building archetype
+heat loss at design temperature (indoor = 20°C),4.128,4.128
+heat loss at design temperature (indoor = 20°C),54.31578947,54.31578947
+DOMESTIC HOT WATER,,
+DOMESTIC HOT WATER,,

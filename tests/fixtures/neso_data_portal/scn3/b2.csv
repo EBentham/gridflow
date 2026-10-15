@@ -1,0 +1,8 @@
+﻿run_id,building_archetype,month,hh_period,start_of_hh_period,heater_output_space_heat,gas_space_heat,avg_COP_space_heat,electricity_space_heat,heater_output_dhw,gas_dhw,avg_COP_dhw,electricity_dhw,total_heater_output,total_gas,total_electricity
+run_1,semi detached – medium ,jan,1,00:00,0,0,,,0.012441981,0.013824424,,0,0.012441981,0.013824424,0
+run_1,semi detached – medium ,jan,24,11:30,0,0,,,0.157948372,0.175498191,,0,0.157948372,0.175498191,0
+run_1,semi detached – medium ,jan,48,23:30,0,0,,,0.02640171,0.029335233,,0,0.02640171,0.029335233,0
+run_2,semi detached – medium ,jan,1,00:00,0,,,0,0,,,0,0,,0
+run_2,semi detached – medium ,jan,2,00:30,0,,,0,2.430375,,2.969475884,0.818452513,2.430375,,0.818452513
+run_2,semi detached – medium ,jan,9,04:00,1.07328,,6.585432242,0.162977913,0,,,0,1.07328,,0.162977913
+run_2,semi detached – medium ,jan,48,23:30,0,,,0,0,,,0,0,,0
