@@ -182,7 +182,7 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `gb-system-inertia-bid-and-offer-costs` | `inertia_bid_offer_costs` | silver | held: TODO: the unit denominator — every field dictionary says £/GVA while the package description says £ per GVAs; the exact averaging-day window; what a zero method value means. (unit E-SEM) | whole_capture | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
 | `gis-boundaries-for-gb-dno-license-areas` | `gis_dno_license_areas_files` | catalogue only | — | — | — | — |
 | `gis-boundaries-for-gb-generation-charging-zones` | `gis_gen_charging_zones_files` | catalogue only | — | — | — | — |
-| `gis-boundaries-for-gb-grid-supply-points` | `gis_grid_supply_points` | ingest-only (no silver output) | — | — | — | — |
+| `gis-boundaries-for-gb-grid-supply-points` | `gis_grid_supply_points` | silver | eligible | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
 | `gis-boundaries-for-gb-grid-supply-points` | `gis_grid_supply_points_files` | catalogue only | — | — | — | — |
 | `historic-demand-data` | `historic_demand` | silver | held: TODO: literal NA in the epoch-2 bodies of 2001-2008 in TSD, the embedded wind/solar columns, SCOTTISH_TRANSFER and every interconnector flow but IFA: missing, not applicable or zero? NESO defines no meaning; those columns stay text across every epoch until it does. (unit E-SEM) | whole_capture per resource_id | sp_pair | CKAN last_modified of the captured file (ADR-030) |
 | `historic-demand-data` | `historic_demand_files` | catalogue only | — | — | — | — |
@@ -470,6 +470,6 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 ## Totals
 
 - Packages: 131 (held: 4)
-- Families: 321: silver 255 (bespoke 3, recorded 252), ingest-only 31, catalogue only 35
+- Families: 321: silver 256 (bespoke 3, recorded 253), ingest-only 30, catalogue only 35
 - Silver outputs held: 127
 - Resources: 1385

@@ -17,7 +17,164 @@
       "empty_allowed": true,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "ng_id",
+              "ggd_id",
+              "gnode_id",
+              "gnode_name",
+              "gnode_lat",
+              "gnode_lon",
+              "gsp_id",
+              "gsp_name",
+              "gsp_lat",
+              "gsp_lon",
+              "dc_id",
+              "dc_name",
+              "dc_lat",
+              "dc_lon",
+              "region_id",
+              "region_name",
+              "has_pv",
+              "pes_id",
+              "pes_name"
+            ],
+            "columns": [
+              {
+                "source": "ng_id",
+                "name": "ng_id",
+                "dtype": "int64",
+                "nullable": false
+              },
+              {
+                "source": "ggd_id",
+                "name": "ggd_id",
+                "dtype": "int64",
+                "nullable": false
+              },
+              {
+                "source": "gnode_id",
+                "name": "gnode_id",
+                "dtype": "int64",
+                "nullable": true
+              },
+              {
+                "source": "gnode_name",
+                "name": "gnode_name",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "gnode_lat",
+                "name": "gnode_lat",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "gnode_lon",
+                "name": "gnode_lon",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "gsp_id",
+                "name": "gsp_id",
+                "dtype": "int64",
+                "nullable": true
+              },
+              {
+                "source": "gsp_name",
+                "name": "gsp_name",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "gsp_lat",
+                "name": "gsp_lat",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "gsp_lon",
+                "name": "gsp_lon",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "dc_id",
+                "name": "dc_id",
+                "dtype": "int64",
+                "nullable": true
+              },
+              {
+                "source": "dc_name",
+                "name": "dc_name",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "dc_lat",
+                "name": "dc_lat",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "dc_lon",
+                "name": "dc_lon",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "region_id",
+                "name": "region_id",
+                "dtype": "int64",
+                "nullable": true
+              },
+              {
+                "source": "region_name",
+                "name": "region_name",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "has_pv",
+                "name": "has_pv",
+                "dtype": "int64",
+                "nullable": false
+              },
+              {
+                "source": "pes_id",
+                "name": "pes_id",
+                "dtype": "int64",
+                "nullable": true
+              },
+              {
+                "source": "pes_name",
+                "name": "pes_name",
+                "dtype": "string",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "ggd_id"
+        ],
+        "latest": "whole_capture",
+        "vintage": "ckan_last_modified"
+      }
     },
     {
       "key": "gis_grid_supply_points_files",
