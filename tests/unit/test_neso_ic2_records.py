@@ -1102,6 +1102,7 @@ def test_the_committed_ledger_carries_the_three_brit_ned_entries() -> None:
         "ffr_post_tender_reports_workbook",
         "ffr_post_tender_reports_workbook",
         "demand_flexibility_utilisation_report",
+        "fes_ws1_gas_supply",
     ]
     directory = "bronze/neso_data_portal/brit_ned/2026/10/08/"
     overlap, failed, encoding = loaded["entries"]

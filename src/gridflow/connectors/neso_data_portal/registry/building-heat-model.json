@@ -17,7 +17,151 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "run_id",
+              "building_archetype",
+              "month",
+              "hh_period",
+              "start_of_hh_period",
+              "heater_output_space_heat",
+              "gas_space_heat",
+              "avg_COP_space_heat",
+              "electricity_space_heat",
+              "heater_output_dhw",
+              "gas_dhw",
+              "avg_COP_dhw",
+              "electricity_dhw",
+              "total_heater_output",
+              "total_gas",
+              "total_electricity"
+            ],
+            "columns": [
+              {
+                "source": "run_id",
+                "name": "run_id",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "building_archetype",
+                "name": "building_archetype",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "month",
+                "name": "month_vendor",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "hh_period",
+                "name": "hh_period",
+                "dtype": "int64",
+                "nullable": false
+              },
+              {
+                "source": "start_of_hh_period",
+                "name": "start_of_hh_period",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "heater_output_space_heat",
+                "name": "heater_output_space_heat",
+                "dtype": "float64",
+                "nullable": false
+              },
+              {
+                "source": "gas_space_heat",
+                "name": "gas_space_heat",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "avg_COP_space_heat",
+                "name": "avg_cop_space_heat",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "electricity_space_heat",
+                "name": "electricity_space_heat",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "heater_output_dhw",
+                "name": "heater_output_dhw",
+                "dtype": "float64",
+                "nullable": false
+              },
+              {
+                "source": "gas_dhw",
+                "name": "gas_dhw",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "avg_COP_dhw",
+                "name": "avg_cop_dhw",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "electricity_dhw",
+                "name": "electricity_dhw",
+                "dtype": "float64",
+                "nullable": false
+              },
+              {
+                "source": "total_heater_output",
+                "name": "total_heater_output",
+                "dtype": "float64",
+                "nullable": false
+              },
+              {
+                "source": "total_gas",
+                "name": "total_gas",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "total_electricity",
+                "name": "total_electricity",
+                "dtype": "float64",
+                "nullable": false
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "resource_id",
+          "run_id",
+          "hh_period"
+        ],
+        "latest": "whole_capture",
+        "latest_partition": "resource_id",
+        "vintage": "ckan_last_modified",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: What unit or scale does NESO declare for `avg_COP_space_heat` and `avg_COP_dhw`? What does a blank gas, electricity or COP cell mean in the example profiles (blank is not zero)?",
+          "unit": "E-SEM"
+        }
+      }
     },
     {
       "key": "building_heat_model_list_input",

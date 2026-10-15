@@ -405,6 +405,21 @@ SCN2B_ADDED = frozenset(
 )
 """The FES ED3 combined, ED3 gas summary, ED7 and ED4 families that v0.22-K-SCN-2b records (three
 held, ED4 eligible)."""
+SCN3_ADDED = frozenset(
+    {
+        "building_heat_model_example_output_half",
+        "fes_ws1_gas_supply",
+        "fes_ws2_gas_emissions",
+        "fes_la_heat_model_domestic",
+        "fes_la_heat_model_residential",
+        "resource_adequacy_2030s_portfolio",
+        "resource_adequacy_2030s_peak_demand",
+        "resource_adequacy_2030s_results",
+    }
+)
+"""The Building Heat Model example output, WS1, WS2, the two local-authority heat model outputs and
+the three Resource Adequacy 2030s families that v0.22-K-SCN-3 records (five held, the Resource
+Adequacy three eligible; one WS1 resource HOLD)."""
 REWORDED_HOLDS = {
     "national_forecast_7d_historic_day_ahead": (
         "TODO: FORECAST_TIMESTAMP has no vendor definition and its zone is undocumented "
@@ -502,6 +517,7 @@ class TestByteUnchanged:
                     *DFSB_ADDED,
                     *SCN2A_ADDED,
                     *SCN2B_ADDED,
+                    *SCN3_ADDED,
                 }
                 if section != "engine"
                 else set()
@@ -1103,7 +1119,7 @@ class TestRecordRules:
         self,
     ) -> None:
         """Detects a committed record broken by V-4/V-17 or the reserved name, and any
-        family other than the seventy-eight resource-partitioned ones opting into the partition
+        family other than the eighty-six resource-partitioned ones opting into the partition
         (in a fresh interpreter, so nothing collection imported can mask it)."""
         code = textwrap.dedent(
             """
@@ -1123,6 +1139,7 @@ class TestRecordRules:
                 "bs_contract_enactment_balancing",
                 "bsad_forward_contracts",
                 "bsuos_monthly_forecast_fc_summary",
+                "building_heat_model_example_output_half",
                 "cmis_intertrip",
                 "constraint_breakdown",
                 "current_bsuos_historic_ii",
@@ -1151,6 +1168,8 @@ class TestRecordRules:
                 "fes_es1_electricity_supply",
                 "fes_es2_european_supply",
                 "fes_flx1_flexibility",
+                "fes_la_heat_model_domestic",
+                "fes_la_heat_model_residential",
                 "fes_regional_demand_active_power",
                 "fes_regional_dg_gt_1mw",
                 "fes_regional_dg_lt_1mw",
@@ -1160,6 +1179,8 @@ class TestRecordRules:
                 "fes_regional_storage_gt_1mw_pre2023",
                 "fes_regional_storage_lt_1mw",
                 "fes_regional_storage_lt_1mw_pre2023",
+                "fes_ws1_gas_supply",
+                "fes_ws2_gas_emissions",
                 "ffr_phase2_auction_phase_blockorders",
                 "ffr_phase2_auction_phase_linearorders",
                 "ffr_post_tender_reports_csv_ext",
@@ -1173,6 +1194,9 @@ class TestRecordRules:
                 "nsl",
                 "odfm_market_information_instructed",
                 "outturn_voltage_costs_historical",
+                "resource_adequacy_2030s_peak_demand",
+                "resource_adequacy_2030s_portfolio",
+                "resource_adequacy_2030s_results",
                 "school_holiday_percentages",
                 "skip_rates_exclusion_reasons",
                 "skip_rates_in_merit_all_bm",

@@ -348,5 +348,17 @@
     "question": "Are the repeated AXLE-01 and AXLE-03 rows of 2025-01-05 16:00 and 16:30 in the archive utilisation report separate bids or a publication defect, and can NESO publish a corrected file or a bid identifier?",
     "evidence": "K-DFS-FACTS demand_flexibility_utilisation_report g3 (TODO: ARCHIVE-REPORT-IDENTITY); ADR-040",
     "ruling": "804"
+  },
+  {
+    "family": "fes_ws1_gas_supply",
+    "category": "failed",
+    "cause": "DuplicateEntityKeyError",
+    "captures": [
+      "bronze/neso_data_portal/fes_ws1_gas_supply/2026/10/08/raw_20261008T105808Z_ebf4f503-0a13-45e6-89ad-b707748613b6_d2b55ccd.csv"
+    ],
+    "reason": "the 2025 body repeats four fuel type / units / category / sector / fuel / feedstock / category lookup tuples (Bioenergy, TWh, Supply, Waste, Waste, `MSW, C&I (biogenic)`, blank) once per pathway with conflicting values (e.g. Electric Engagement on CSV lines 80 and 150: 2050 `0.0` vs `13.465`), so 248 unpivoted rows share 124 keys and the duplicate guard fails the capture; it is never deduplicated and stays unloaded with its failure record",
+    "question": "Which omitted dimension distinguishes the repeated Bioenergy / Waste / MSW, C&I (biogenic) rows of FES 2025 WS1, and can NESO publish a corrected file?",
+    "evidence": "K-SCN-3-FACTS §3.1 g3 (l.387–412), K-SCN-3-SPEC; ADR-040",
+    "ruling": "839"
   }
 ]

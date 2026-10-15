@@ -68,8 +68,9 @@ URL_TYPE_TALLY = {"upload": 1233, "datastore": 152}
 # post-tender workbooks to the workbook record, TR123 and TR125 staying held, and the BlockOrders,
 # LinearOrders and ResultByUnit ZIPs to their archive records (SILVER 1301, HOLD 21).
 # K-SCN-2a holds the ES2 2026 notes body and the FLX1 2023 padded-number body (SILVER 1299,
-# HOLD 23).
-DISPOSITION_TALLY = {"SILVER": 1299, "HOLD": 23, "DOC": 43, "GIS": 20}
+# HOLD 23). K-SCN-3 holds the WS1 2024 body whose projection cells are a literal `N/A` (SILVER
+# 1298, HOLD 24).
+DISPOSITION_TALLY = {"SILVER": 1298, "HOLD": 24, "DOC": 43, "GIS": 20}
 
 
 def _run(code: str, *args: str) -> subprocess.CompletedProcess[str]:

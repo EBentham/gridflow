@@ -17,7 +17,62 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Spotlight year",
+              "Historical weather year",
+              "Peak Demand (MW)"
+            ],
+            "columns": [
+              {
+                "source": "Spotlight year",
+                "name": "spotlight_year",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Historical weather year",
+                "name": "historical_weather_year",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Peak Demand (MW)",
+                "name": "peak_demand_mw",
+                "dtype": "float64",
+                "nullable": false
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "resource_id",
+          "edition",
+          "spotlight_year",
+          "historical_weather_year"
+        ],
+        "latest": "whole_capture",
+        "latest_partition": "resource_id",
+        "edition_by_filename": [
+          [
+            "peak-demand-dataset.csv",
+            2025
+          ]
+        ],
+        "vintage": "ckan_last_modified"
+      }
     },
     {
       "key": "resource_adequacy_2030s_portfolio",
@@ -28,7 +83,84 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Name",
+              "Category",
+              "Technology",
+              "Future Year",
+              "Installed Capacity (MW)",
+              "Stored energy (MWh)"
+            ],
+            "columns": [
+              {
+                "source": "Name",
+                "name": "name",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Category",
+                "name": "category",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Technology",
+                "name": "technology",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Future Year",
+                "name": "future_year",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Installed Capacity (MW)",
+                "name": "installed_capacity_mw",
+                "dtype": "float64",
+                "nullable": false
+              },
+              {
+                "source": "Stored energy (MWh)",
+                "name": "stored_energy_mwh",
+                "dtype": "float64",
+                "nullable": false
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "resource_id",
+          "edition",
+          "name",
+          "technology",
+          "future_year"
+        ],
+        "latest": "whole_capture",
+        "latest_partition": "resource_id",
+        "edition_by_filename": [
+          [
+            "portfolio-capacity-dataset.csv",
+            2025
+          ]
+        ],
+        "vintage": "ckan_last_modified"
+      }
     },
     {
       "key": "resource_adequacy_2030s_results",
@@ -39,7 +171,70 @@
       "empty_allowed": false,
       "max_download_bytes": 536870912,
       "name_regex": null,
-      "transformer": null
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "Simulation Name",
+              "Spotlight year",
+              "Historical weather year",
+              "Weather-conditional LOLE (h/year)",
+              "Weather-conditional EEU (MWh/year)"
+            ],
+            "columns": [
+              {
+                "source": "Simulation Name",
+                "name": "simulation_name",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Spotlight year",
+                "name": "spotlight_year",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Historical weather year",
+                "name": "historical_weather_year",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Weather-conditional LOLE (h/year)",
+                "name": "weather_conditional_lole_h_year",
+                "dtype": "float64",
+                "nullable": false
+              },
+              {
+                "source": "Weather-conditional EEU (MWh/year)",
+                "name": "weather_conditional_eeu_mwh_year",
+                "dtype": "float64",
+                "nullable": false
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "resource_id",
+          "simulation_name",
+          "spotlight_year",
+          "historical_weather_year"
+        ],
+        "latest": "whole_capture",
+        "latest_partition": "resource_id",
+        "vintage": "ckan_last_modified"
+      }
     }
   ],
   "resources": [

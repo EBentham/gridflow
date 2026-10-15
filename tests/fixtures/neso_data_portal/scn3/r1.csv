@@ -1,0 +1,5 @@
+la_code,Local_Authority,Year,Pathway,Sector,stock ASHP,stock Biofuel boiler,stock Biomass boiler,stock Community,stock DH,stock Electric resistive,stock Electric storage,stock GSHP,stock Gas boiler,stock Hybrid (ASHP + Biofuel boiler),stock Hybrid (ASHP + Electric resistive),stock Hybrid (ASHP + Hydrogen boiler),stock Hydrogen boiler,stock Oil boiler
+S12000033,Aberdeen City,2020,Counterfactual,Residential,657.08,0.0,0.0,659.68,647.66,0.0,9631.0,211.82,103983.0,0.0,0.0,0.0,0.0,5788.0
+E06000053,Isles of Scilly,2020,Counterfactual,Residential,15.15,0.0,0.0,42.61,39.73,210.0,420.48,4.95,27.0,0.0,0.0,0.0,0.0,373.0
+S12000033,Aberdeen City,2020,Holistic Transition,Residential,657.08,0.0,0.0,659.68,647.66,0.0,9631.0,211.82,103983.0,0.0,0.0,0.0,0.0,5788.0
+S12000033,Aberdeen City,2020,Hydrogen Evolution,Residential,657.08,0.0,0.0,659.68,647.66,0.0,9631.0,211.82,103983.0,0.0,0.0,0.0,0.0,5788.0

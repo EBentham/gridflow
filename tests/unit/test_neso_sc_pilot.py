@@ -63,6 +63,7 @@ from test_neso_multi_resource import (
     SCN1D_ADDED,
     SCN2A_ADDED,
     SCN2B_ADDED,
+    SCN3_ADDED,
     SYS1_ADDED,
     TRD_ADDED,
 )
@@ -454,6 +455,8 @@ class TestPilot:
                 "fes_es1_electricity_supply",
                 "fes_es2_european_supply",
                 "fes_flx1_flexibility",
+                "fes_la_heat_model_domestic",
+                "fes_la_heat_model_residential",
                 "fes_regional_demand_active_power",
                 "fes_regional_dg_gt_1mw",
                 "fes_regional_dg_lt_1mw",
@@ -463,6 +466,10 @@ class TestPilot:
                 "fes_regional_storage_gt_1mw_pre2023",
                 "fes_regional_storage_lt_1mw",
                 "fes_regional_storage_lt_1mw_pre2023",
+                "fes_ws1_gas_supply",
+                "fes_ws2_gas_emissions",
+                "resource_adequacy_2030s_peak_demand",
+                "resource_adequacy_2030s_portfolio",
             ], opted
             print("OK", opted)
             """
@@ -659,5 +666,6 @@ class TestSkeletonAndPin:
                 *DFSB_ADDED,
                 *SCN2A_ADDED,
                 *SCN2B_ADDED,
+                *SCN3_ADDED,
             }, section
         assert set(current["engine"]) == set(golden["engine"])
