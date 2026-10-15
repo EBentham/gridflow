@@ -1039,6 +1039,9 @@ SCN3_RECORDED = {
 model and three Resource Adequacy 2030s families unit K-SCN-3 records (five held, Resource Adequacy
 eligible; one WS1 resource HOLD, one WS1 ADR-040 failed entry)."""
 
+FILE_RECORDED = {"gis_grid_supply_points"}
+"""The GSP / Gnode / Direct Connect / Region lookup family unit K-FILE records (eligible)."""
+
 SCN2A_PACKAGE_FILES = {
     "fes-european-electricity-supply-data-table-es2.json",
     "fes-flexibility-data-table-data-table-flx1.json",
@@ -1058,6 +1061,8 @@ SCN3_PACKAGE_FILES = {
     "local-authority-level-spatial-heat-model-outputs-fes.json",
     "resource-adequacy-in-2030s.json",
 }
+
+FILE_PACKAGE_FILES = {"gis-boundaries-for-gb-grid-supply-points.json"}
 
 AS1_PACKAGE_FILES = {
     "balancing-reserve-auction-requirement-forecast.json",
@@ -1176,6 +1181,7 @@ class TestSeededRegistry:
             | SCN2A_RECORDED
             | SCN2B_RECORDED
             | SCN3_RECORDED
+            | FILE_RECORDED
         )
         with_children = [res for _package, res in loaded.resources.values() if res.children]
         assert len(with_children) == X_RESOURCES_WITH_CHILDREN
@@ -1230,6 +1236,7 @@ class TestSeededRegistry:
             | SCN2A_PACKAGE_FILES
             | SCN2B_PACKAGE_FILES
             | SCN3_PACKAGE_FILES
+            | FILE_PACKAGE_FILES
         )
 
 
