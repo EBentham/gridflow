@@ -8,7 +8,9 @@ beside the package files and is validated when the registry loads:
   ``extra="forbid"``), the record's reader specs included (V-14, and V-20 for
   an ``xlsx_blocks`` composite-block map);
 - :func:`validate_record` checks the record against itself, its family and its
-  package (rules V-1..V-10, V-13, V-17, V-18, V-19), and :func:`validate_silver_targets` checks
+  package (rules V-1..V-10, V-13, V-17, V-18, V-19), :func:`validate_overlap_groups`
+  checks each package's overlap groups across its records (V-21, ADR-043), and
+  :func:`validate_silver_targets` checks
   every ``SILVER`` disposition once all files are loaded (V-11). Every failure
   raises :class:`RecordError` naming the rule; the loader re-raises it as a
   ``RegistryError`` naming the file and family.
@@ -25,12 +27,15 @@ from __future__ import annotations
 
 import codecs
 import re
-from typing import Annotated, Literal
+from typing import TYPE_CHECKING, Annotated, Literal
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from gridflow.silver.date_columns import DATE_COL_SQL_TYPES
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping
 
 __all__ = [
     "CHILD_SEPARATOR",
@@ -58,6 +63,7 @@ __all__ = [
     "epoch_outputs",
     "has_issue_time",
     "silver_columns",
+    "validate_overlap_groups",
 ]
 
 PROJECTION_YEAR = "projection_year"
@@ -162,6 +168,10 @@ class ColumnSpec(_Frozen):
             each cell before the null-token match and the cast (numeric non-key
             columns only, V-19). ``None``, the default, is omitted from every
             ``exclude_none`` dump.
+        alt_formats: ``datetime`` only: further ``strptime`` formats, tried in
+            order, for a cell ``format`` does not parse (one column's rendering
+            variants). A cell that no format parses fails the capture. ``None``,
+            the default, is omitted from every ``exclude_none`` dump (ADR-043).
     """
 
     source: str
@@ -177,11 +187,14 @@ class ColumnSpec(_Frozen):
     zone_evidence: str | None = None
     ambiguous: Literal["earliest", "latest", "raise"] | None = None
     trim: Literal["ascii"] | None = None
+    alt_formats: tuple[str, ...] | None = None
 
     @model_validator(mode="after")
     def _shape(self) -> ColumnSpec:
         if not SILVER_NAME_PATTERN.fullmatch(self.name):
             raise ValueError(f"column name {self.name!r} is not {SILVER_NAME_PATTERN.pattern}")
+        if self.alt_formats is not None:
+            self._alternative_formats(self.alt_formats)
         if self.formats_by_filename is not None:
             self._filename_formats()
         elif self.dtype in ("date", "datetime"):
@@ -231,6 +244,32 @@ class ColumnSpec(_Frozen):
                     "non-empty zone_evidence and an ambiguous rule"
                 )
         return self
+
+    def _alternative_formats(self, alternatives: tuple[str, ...]) -> None:
+        """The alternative formats' shape (ADR-043): a naive datetime's, non-empty, distinct."""
+        if self.dtype != "datetime":
+            raise ValueError(f"column {self.name!r}: alt_formats applies to datetime columns only")
+        if not self.format:
+            raise ValueError(f"column {self.name!r}: alt_formats needs a format")
+        if "%z" in self.format:
+            raise ValueError(
+                f"column {self.name!r}: alt_formats cannot extend a format carrying %z"
+            )
+        if not alternatives:
+            raise ValueError(f"column {self.name!r}: alt_formats must be non-empty")
+        for alternative in alternatives:
+            if not alternative:
+                raise ValueError(f"column {self.name!r}: an alt_formats entry is empty")
+            if "%z" in alternative:
+                raise ValueError(
+                    f"column {self.name!r}: alt_formats entry {alternative!r} carries %z"
+                )
+            if alternative == self.format:
+                raise ValueError(
+                    f"column {self.name!r}: alt_formats entry {alternative!r} repeats format"
+                )
+        if len(set(alternatives)) != len(alternatives):
+            raise ValueError(f"column {self.name!r}: alt_formats repeats an entry")
 
     def _filename_formats(self) -> None:
         """The per-filename map's shape: ``date`` only, alone, non-empty, unique."""
@@ -586,6 +625,10 @@ class SchemaRecord(_Frozen):
         xlsx_blocks: Reader ``xlsx`` only, instead of ``xlsx``: one exact
             block per resource (V-20); an unlisted resource fails the
             capture; no fallback.
+        overlap_group: Families of one package whose ``_latest`` relations
+            together form one series: reconcile checks their union for keys
+            served by two resources (ADR-043, V-21). ``None``, the default, is
+            omitted from every ``exclude_none`` dump.
     """
 
     version: str = Field(min_length=1)
@@ -605,6 +648,7 @@ class SchemaRecord(_Frozen):
     latest_partition: Literal["resource_id"] | None = None
     edition_by_filename: tuple[tuple[str, int], ...] | None = None
     xlsx_blocks: tuple[XlsxBlock, ...] | None = None
+    overlap_group: str | None = None
 
     @model_validator(mode="after")
     def _shape(self) -> SchemaRecord:
@@ -612,6 +656,10 @@ class SchemaRecord(_Frozen):
             codecs.lookup(self.encoding)
         except LookupError as exc:
             raise ValueError(f"unknown encoding {self.encoding!r}") from exc
+        if self.overlap_group is not None and not SILVER_NAME_PATTERN.fullmatch(self.overlap_group):
+            raise ValueError(
+                f"overlap_group {self.overlap_group!r} is not {SILVER_NAME_PATTERN.pattern}"
+            )
         if len(set(self.entity_key)) != len(self.entity_key):
             raise ValueError(f"entity_key {list(self.entity_key)} repeats a column")
         self._reader_specs()
@@ -841,6 +889,69 @@ def validate_record(
                 f"date column {date_column!r} is a designated date name the manifest types "
                 f"{DATE_COL_SQL_TYPES[date_column]}",
             )
+
+
+def validate_overlap_groups(records: Mapping[str, SchemaRecord]) -> None:
+    """V-21: each overlap group of one package can be checked as one series (ADR-043).
+
+    Every member selects per resource (``latest_partition: resource_id``), the
+    group has at least two members, and every member has the same grain (its
+    ``entity_key`` without ``resource_id``, in order) with the same silver dtype
+    per grain column, so the members' keys are comparable values.
+
+    Args:
+        records: Every recorded family key of one package -> its record.
+
+    Raises:
+        RecordError: The first group that breaks the rule, named ``V-21``.
+    """
+    groups: dict[str, list[str]] = {}
+    for key in sorted(records):
+        group = records[key].overlap_group
+        if group is not None:
+            groups.setdefault(group, []).append(key)
+    for group, members in sorted(groups.items()):
+        for key in members:
+            if records[key].latest_partition != "resource_id":
+                raise _fail(
+                    "V-21",
+                    f"overlap group {group!r}: member {key!r} does not select per resource "
+                    "(latest_partition resource_id)",
+                )
+        if len(members) < 2:
+            raise _fail("V-21", f"overlap group {group!r} has one member ({members[0]!r})")
+        first = members[0]
+        grain = _grain(records[first])
+        for key in members[1:]:
+            other = _grain(records[key])
+            if other != grain:
+                raise _fail(
+                    "V-21",
+                    f"overlap group {group!r}: {key!r} has grain {list(other)}, {first!r} has "
+                    f"{list(grain)}",
+                )
+            for name in grain:
+                expected = _grain_dtype(records[first], name)
+                actual = _grain_dtype(records[key], name)
+                if actual != expected:
+                    raise _fail(
+                        "V-21",
+                        f"overlap group {group!r}: grain column {name!r} is {actual} in {key!r} "
+                        f"and {expected} in {first!r}",
+                    )
+
+
+def _grain(record: SchemaRecord) -> tuple[str, ...]:
+    """The per-resource grain: ``entity_key`` without ``resource_id``, in order."""
+    return tuple(column for column in record.entity_key if column != "resource_id")
+
+
+def _grain_dtype(record: SchemaRecord, name: str) -> str:
+    """A grain column's silver dtype (V-4 admits only outputs, ``issue_time`` and ``edition``)."""
+    columns = silver_columns(record)
+    if name in columns:
+        return columns[name].dtype
+    return "int64" if name == EDITION else "datetime"
 
 
 def _check_scenario(record: SchemaRecord, key_set: set[str]) -> None:

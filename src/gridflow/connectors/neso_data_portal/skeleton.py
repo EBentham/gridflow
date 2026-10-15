@@ -181,9 +181,11 @@ def _files(package: PackageEntry) -> list[str]:
 
 
 def _format_cell(column: ColumnSpec) -> str:
-    """A column's format, or its per-filename formats (ADR-039), or a dash."""
+    """A column's format and alternatives (ADR-043), per-filename formats (ADR-039), or a dash."""
     if column.formats_by_filename is not None:
         return "; ".join(f"`{name}` → `{fmt}`" for name, fmt in column.formats_by_filename)
+    if column.alt_formats is not None:
+        return f"`{column.format}`" + "".join(f" or `{alt}`" for alt in column.alt_formats)
     return f"`{column.format}`" if column.format else _DASH
 
 
@@ -234,10 +236,14 @@ def _schema(record: SchemaRecord, fields: Mapping[str, dict[str, Any]]) -> list[
         if record.edition_by_filename is not None
         else []
     )
+    group = (
+        [f"- Overlap group: `{record.overlap_group}`"] if record.overlap_group is not None else []
+    )
     lines += [
         "- Entity key: " + ", ".join(f"`{name}`" for name in record.entity_key),
         f"- Latest: `{record.latest}`"
         + (f" per `{record.latest_partition}`" if record.latest_partition is not None else ""),
+        *group,
         *edition,
         f"- Temporal recipe: {recipe}",
         "",

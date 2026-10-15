@@ -45,6 +45,7 @@ from gridflow.connectors.neso_data_portal.registry.record import (
     RecordError,
     SchemaRecord,
     _Frozen,
+    validate_overlap_groups,
     validate_record,
 )
 
@@ -452,7 +453,7 @@ def _validate_children(name: str, resource: ResourceEntry) -> None:
 
 
 def _validate_records(name: str, entry: PackageEntry) -> None:
-    """Run every record's V-1..V-10 and V-13 checks (ADR-034 P-1)."""
+    """Run every record's V-1..V-10 and V-13 checks (ADR-034 P-1), then V-21 (ADR-043)."""
     with_record = {family.key: family.record is not None for family in entry.families}
     for family in entry.families:
         if family.record is None:
@@ -477,6 +478,11 @@ def _validate_records(name: str, entry: PackageEntry) -> None:
             )
         except RecordError as exc:
             raise RegistryError(f"registry file {name}: family {family.key!r}: {exc}") from exc
+    recorded = {family.key: family.record for family in entry.families if family.record is not None}
+    try:
+        validate_overlap_groups(recorded)
+    except RecordError as exc:
+        raise RegistryError(f"registry file {name}: {exc}") from exc
 
 
 def _validate_silver_targets(

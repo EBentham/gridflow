@@ -57,6 +57,7 @@ __all__ = [
     "IssueTimeError",
     "UnmappedResourceEditionError",
     "UnmappedResourceFormatError",
+    "UnparsedDatetimeError",
     "edition_for",
     "epoch_for",
     "epoch_formats",
@@ -108,6 +109,10 @@ class UnmappedResourceFormatError(Exception):
 
 class UnmappedResourceEditionError(Exception):
     """An edition-mapped record lists no edition for the capture's file (ADR-042)."""
+
+
+class UnparsedDatetimeError(Exception):
+    """A non-null cell of an ``alt_formats`` column parses under none of its formats (ADR-043)."""
 
 
 @dataclass
@@ -264,7 +269,10 @@ def _cast(spec: ColumnSpec, fmt: str | None) -> pl.Expr:
     if spec.zone is None:
         parsed = col.str.strptime(pl.Datetime("us"), fmt, strict=True)
         return parsed.dt.convert_time_zone("UTC").cast(_UTC_DATETIME)
-    naive = col.str.strptime(pl.Datetime("us"), fmt, strict=True)
+    if spec.alt_formats is not None:
+        naive = _alternatives(spec, fmt)
+    else:
+        naive = col.str.strptime(pl.Datetime("us"), fmt, strict=True)
     if spec.zone == "UTC":
         return naive.dt.replace_time_zone("UTC").cast(_UTC_DATETIME)
     assert spec.ambiguous is not None
@@ -273,6 +281,46 @@ def _cast(spec: ColumnSpec, fmt: str | None) -> pl.Expr:
         .dt.convert_time_zone("UTC")
         .cast(_UTC_DATETIME)
     )
+
+
+def _alternatives(spec: ColumnSpec, fmt: str) -> pl.Expr:
+    """The naive parse of an ``alt_formats`` column: the first format that parses each cell.
+
+    The primary format comes first, so a full cell is never read by a shorter
+    alternative. Each parse is non-strict; :func:`_check_parsed` refuses a
+    non-null cell no format parses before this is used (ADR-043).
+    """
+    assert spec.alt_formats is not None
+    col = pl.col(spec.source)
+    return pl.coalesce(
+        [
+            col.str.strptime(pl.Datetime("us"), each, strict=False)
+            for each in (fmt, *spec.alt_formats)
+        ]
+    )
+
+
+def _check_parsed(
+    frame: pl.DataFrame, specs: tuple[ColumnSpec, ...], formats: dict[str, str | None]
+) -> None:
+    """Fail the capture on a non-null ``alt_formats`` cell no format parses (ADR-043).
+
+    Raises:
+        UnparsedDatetimeError: Naming the column, the count, the formats and up
+            to five sample cells. Nothing is coerced and nothing is excluded.
+    """
+    for spec in specs:
+        if spec.alt_formats is None:
+            continue
+        fmt = formats.get(spec.source)
+        assert fmt is not None
+        bad = frame.filter(pl.col(spec.source).is_not_null() & _alternatives(spec, fmt).is_null())
+        if bad.height:
+            samples = bad.get_column(spec.source).head(_SAMPLE_LIMIT).to_list()
+            raise UnparsedDatetimeError(
+                f"column {spec.name!r} ({spec.source}): {bad.height} cell(s) parse under none of "
+                f"{[fmt, *spec.alt_formats]}; samples: {samples}"
+            )
 
 
 def _null_tokens(spec: ColumnSpec) -> pl.Expr:
@@ -340,6 +388,8 @@ def type_child(table: ChildTable, record: SchemaRecord, ctx: CaptureContext) -> 
         IssueTimeError: A null issue time under a recipe other than ``none``.
         UnmappedResourceFormatError: A per-filename date column does not list
             the capture's ``resource_filename``.
+        UnparsedDatetimeError: A non-null cell of an ``alt_formats`` column
+            parses under none of its formats (ADR-043).
         polars.exceptions.PolarsError: A value outside the declared null
             tokens did not cast (D-41: the capture fails, nothing is coerced).
     """
@@ -365,6 +415,7 @@ def type_child(table: ChildTable, record: SchemaRecord, ctx: CaptureContext) -> 
     tokened = [_null_tokens(spec) for spec in specs if spec.null_tokens]
     if tokened:
         frame = frame.with_columns(tokened)
+    _check_parsed(frame, specs, formats)
     frame = frame.select([_cast(spec, formats.get(spec.source)).alias(spec.name) for spec in specs])
 
     ordered = silver_columns(record)
