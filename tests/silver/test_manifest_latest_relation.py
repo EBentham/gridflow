@@ -75,7 +75,8 @@ from gridflow.silver.schema_manifest import (
 # v0.22-K-SCN-2a's ES2, FLX1, ED5 and ED6 records, then to two hundred and fifty with
 # v0.22-K-SCN-2b's ED3 combined, ED3 gas summary, ED7 and ED4 records, then to two hundred and
 # fifty-eight with v0.22-K-SCN-3's Building Heat Model example output, WS1, WS2, local-authority
-# heat model and Resource Adequacy 2030s records.
+# heat model and Resource Adequacy 2030s records, then to two hundred and fifty-nine with
+# v0.22-K-FILE's GSP / Gnode / Direct Connect / Region lookup record.
 _APPEND_ONLY_DATASETS: tuple[tuple[str, str], ...] = (
     ("elexon", "system_prices"),
     ("elexon", "remit"),
@@ -335,6 +336,7 @@ _APPEND_ONLY_DATASETS: tuple[tuple[str, str], ...] = (
     ("neso_data_portal", "resource_adequacy_2030s_portfolio"),
     ("neso_data_portal", "resource_adequacy_2030s_peak_demand"),
     ("neso_data_portal", "resource_adequacy_2030s_results"),
+    ("neso_data_portal", "gis_grid_supply_points"),
 )
 
 
@@ -528,9 +530,9 @@ def test_append_only_set_equals_latest_spec_set() -> None:
     spec_set = set(LATEST_VIEW_SPECS)
 
     # Non-vacuity guard: this invariant must never pass because both sides are
-    # empty (F16) -- two hundred and fifty-eight APPEND_ONLY datasets are registered today.
+    # empty (F16) -- two hundred and fifty-nine APPEND_ONLY datasets are registered today.
     assert len(append_only) > 0
-    assert len(append_only) == 258
+    assert len(append_only) == 259
 
     missing_specs = append_only - spec_set
     extra_specs = spec_set - append_only
@@ -1141,6 +1143,7 @@ _EXPECTED_APPEND_ONLY_DEPRECATED_ALIASES: dict[tuple[str, str], str | None] = {
         "neso_data_portal",
         "resource_adequacy_2030s_results",
     ): "silver_resource_adequacy_2030s_results",
+    ("neso_data_portal", "gis_grid_supply_points"): "silver_gis_grid_supply_points",
 }
 
 

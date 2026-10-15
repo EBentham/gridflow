@@ -420,6 +420,9 @@ SCN3_ADDED = frozenset(
 """The Building Heat Model example output, WS1, WS2, the two local-authority heat model outputs and
 the three Resource Adequacy 2030s families that v0.22-K-SCN-3 records (five held, the Resource
 Adequacy three eligible; one WS1 resource HOLD)."""
+FILE_ADDED = frozenset({"gis_grid_supply_points"})
+"""The GSP / Gnode / Direct Connect / Region lookup family that v0.22-K-FILE records (eligible; the
+embedded child, the GIS files and the changelog keep their dispositions)."""
 REWORDED_HOLDS = {
     "national_forecast_7d_historic_day_ahead": (
         "TODO: FORECAST_TIMESTAMP has no vendor definition and its zone is undocumented "
@@ -518,6 +521,7 @@ class TestByteUnchanged:
                     *SCN2A_ADDED,
                     *SCN2B_ADDED,
                     *SCN3_ADDED,
+                    *FILE_ADDED,
                 }
                 if section != "engine"
                 else set()

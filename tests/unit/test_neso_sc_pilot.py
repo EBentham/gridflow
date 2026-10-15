@@ -57,6 +57,7 @@ from test_neso_multi_resource import (
     CON_ADDED,
     DFSA_ADDED,
     DFSB_ADDED,
+    FILE_ADDED,
     SCN1A_ADDED,
     SCN1B_ADDED,
     SCN1C_ADDED,
@@ -667,5 +668,6 @@ class TestSkeletonAndPin:
                 *SCN2A_ADDED,
                 *SCN2B_ADDED,
                 *SCN3_ADDED,
+                *FILE_ADDED,
             }, section
         assert set(current["engine"]) == set(golden["engine"])
