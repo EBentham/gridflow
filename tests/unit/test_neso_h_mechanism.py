@@ -12,7 +12,8 @@
 - **T-F5** the interval pre-check (``_proven_disjoint``) decides only proven-disjoint spans and
   never changes a reconcile report;
 - **T-F6** the group overlap check: cross-family overlaps served and reported, one checked
-  member reading the whole group, one adjudication entry per family, unreadable outputs.
+  member reading the whole group, one adjudication entry per family, unreadable outputs, and
+  no collected query caching a member's scan (H7).
 
 Synthetic packages go through a tmp registry (``install_generated``) and a short data root.
 """
@@ -835,6 +836,42 @@ class TestGroupOverlap:
         ]
         assert sorted(failed) == [CSV_A, CSV_B]
         assert all(not gap.drainable for gap in _overlap_gaps(report))
+
+    @pytest.mark.parametrize("disjoint", [True, False], ids=["precheck", "exact"])
+    def test_t_f6_f_no_group_query_caches_a_member_scan(
+        self, data: Path, monkeypatch: pytest.MonkeyPatch, disjoint: bool
+    ) -> None:
+        """Detects the group check materialising the selected rows (H7): a whole-capture
+        selection reads its scan twice, and a query run with common-subplan elimination
+        caches that scan whole (8.7 GB over the real group). No query the check collects,
+        on the pre-check or the exact path, may hold a ``CACHE`` node."""
+        from gridflow.silver.neso_data_portal import reconcile as reconcile_module
+
+        generated = _install_group(monkeypatch, data)
+        second = "2026-02-01 00:00:01" if disjoint else "2026-01-31 23:59:59"
+        _group_capture(data, CSV_A, _seconds("2026-01-31 23:59:59"))
+        _group_capture(data, CSV_B, _seconds(second))
+        _group_capture(data, ZIP_C, _seconds("2026-02-01 00:00:02"))
+        _run_group(generated, data)
+        loaded = registry_module.load_registry()
+        members = [(key, loaded.families[key][1].record) for key in (CSV_A, CSV_B, ZIP_C)]
+
+        real = pl.LazyFrame.collect
+        plans: list[str] = []
+
+        def spy(frame: pl.LazyFrame, *args: Any, **kwargs: Any) -> Any:
+            options = {"engine": kwargs.get("engine", "auto")}
+            if "optimizations" in kwargs:
+                options["optimizations"] = kwargs["optimizations"]
+            plans.append(frame.explain(**options))
+            return real(frame, *args, **kwargs)
+
+        with monkeypatch.context() as patch:
+            patch.setattr(pl.LazyFrame, "collect", spy)
+            gaps = reconcile_module._group_overlaps(members, data, DAY, {CSV_A, CSV_B, ZIP_C})
+        assert len(gaps) == (0 if disjoint else 2)
+        assert len(plans) >= (2 if disjoint else 4)
+        assert [plan for plan in plans if "CACHE[" in plan] == []
 
 
 class TestCommittedGroup:

@@ -496,15 +496,21 @@ def _overlaps(key: str, record: SchemaRecord, data_dir: Path, cutoff: date) -> l
 
 _INTERVAL_DTYPES = (pl.Utf8, pl.Int64, pl.Date)
 
+# A whole-capture selection reads the family's scan twice (row counts, then the
+# semi-join on the winners); common-subplan elimination would cache that scan,
+# materialising every selected row (8.7 GB over the system frequency group).
+# Without it each branch streams its own scan.
+_STREAM_EACH_SCAN = pl.QueryOptFlags(comm_subplan_elim=False)
+
 
 def _proven_disjoint(selected: pl.LazyFrame, grain: list[str]) -> bool:
     """Whether the selected captures' key spans are pairwise disjoint (ADR-043).
 
     Only a one-column grain of dtype ``Utf8``, ``Int64``, ``Date`` or
     ``Datetime`` is decided; anything else, or any null key, returns ``False``
-    (the exact path decides). One streaming ``group_by(bronze_capture_id)`` gives
-    each capture's ``(min, max)``; sorted by ``(min, max)``, a span whose ``min``
-    is at or below the running ``max`` returns ``False``.
+    (the exact path decides). One streaming ``group_by(bronze_capture_id)``, with
+    no cached scan, gives each capture's ``(min, max)``; sorted by ``(min, max)``,
+    a span whose ``min`` is at or below the running ``max`` returns ``False``.
 
     **Soundness.** An overlap needs one non-null key value ``k`` served by two
     selected captures; ``k`` lies in both spans, so after sorting the later
@@ -524,7 +530,7 @@ def _proven_disjoint(selected: pl.LazyFrame, grain: list[str]) -> bool:
             pl.col(column).max().alias("__hi"),
             pl.col(column).null_count().alias("__nulls"),
         )
-        .collect(engine="streaming")
+        .collect(engine="streaming", optimizations=_STREAM_EACH_SCAN)
     )
     if spans.is_empty():
         return True
@@ -554,7 +560,9 @@ def _group_overlaps(
     for families in ``report``; ``peers`` span the group. A check that cannot
     read an output is one ``overlap check failed`` gap per reported member.
 
-    **Memory bound (H7, ADR-040).** The union is never materialised whole. When
+    **Memory bound (H7, ADR-040, ADR-043).** The union is never materialised
+    whole: every query streams with common-subplan elimination off, so the
+    selection's two reads of a member's scan are never cached. When
     :func:`_proven_disjoint` cannot rule overlap out, the selected rows are split
     into ``ceil(rows / OVERLAP_BUCKET_ROWS)`` buckets by a hash of the grain;
     each bucket's shared keys come from a streaming ``group_by``; the serving
@@ -612,13 +620,13 @@ def _group_overlaps(
                 .agg(pl.col("resource_id").n_unique().alias("__resources"))
                 .filter(pl.col("__resources") > 1)
                 .select(grain)
-                .collect(engine="streaming")
+                .collect(engine="streaming", optimizations=_STREAM_EACH_SCAN)
             )
         keys = pl.concat(parts)
         if keys.is_empty():
             return []
         shared = selected.join(keys.lazy(), on=grain, how="semi", nulls_equal=True).collect(
-            engine="streaming"
+            engine="streaming", optimizations=_STREAM_EACH_SCAN
         )
     except (OSError, pl.exceptions.PolarsError) as exc:
         return [
