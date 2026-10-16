@@ -7,7 +7,12 @@
   rendering variants (a date-only midnight beside full cells) with a loud
   ``UnparsedDatetimeError`` for a cell no format parses;
 - **T-F4** ``SchemaRecord.overlap_group`` and V-21: a group is two or more
-  resource-partitioned members with one grain of one dtype.
+  resource-partitioned members with one grain of one dtype; the committed group is exactly the
+  four typed system frequency families;
+- **T-F5** the interval pre-check (``_proven_disjoint``) decides only proven-disjoint spans and
+  never changes a reconcile report;
+- **T-F6** the group overlap check: cross-family overlaps served and reported, one checked
+  member reading the whole group, one adjudication entry per family, unreadable outputs.
 
 Synthetic packages go through a tmp registry (``install_generated``) and a short data root.
 """
@@ -47,6 +52,15 @@ SLUG = "pkg-freq"
 KEY = "freq"
 RID = "f4e90000-0000-4000-8000-00000000000a"
 R3_FORMAT = "%Y-%m-%d %H:%M:%S"
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+TYPED_FAMILIES = (
+    "system_frequency_offset_csv",
+    "system_frequency_offset_zip",
+    "system_frequency_gmt_zip",
+    "system_frequency_gmt_csv",
+)
+H_FAMILIES = frozenset({"system_frequency_dmy_csv", *TYPED_FAMILIES})
+"""The five rendering families v0.22-H adds to ``system-frequency-data`` (P-1)."""
 
 
 def _short_base() -> str:
@@ -151,6 +165,15 @@ class TestByteUnchanged:
             assert set(golden[section]) <= set(current[section]), section
             for key, value in golden[section].items():
                 assert current[section][key] == value, (section, key)
+
+    def test_t_f1_the_only_generated_additions_are_the_five_rendering_families(self) -> None:
+        """Detects a generated family other than P-1's five appearing since the base golden,
+        or a DEM-1 engine digest added or lost."""
+        golden = json.loads(PIN_PATH.read_text(encoding="utf-8"))
+        current = json.loads(dump(generated_pin()))
+        for section in ("sql", "records", "columns"):
+            assert set(current[section]) - set(golden[section]) == H_FAMILIES, section
+        assert set(current["engine"]) == set(golden["engine"])
 
 
 # --------------------------------------------------------------------------- #
@@ -812,3 +835,38 @@ class TestGroupOverlap:
         ]
         assert sorted(failed) == [CSV_A, CSV_B]
         assert all(not gap.drainable for gap in _overlap_gaps(report))
+
+
+class TestCommittedGroup:
+    def test_t_f4_e_exactly_the_four_typed_families_form_the_group(self) -> None:
+        """Detects the raw 2014 family joining the typed group (FM-10), a typed family left
+        out of it (its month edges unchecked), or any other record carrying a group (in a
+        fresh interpreter, so nothing collection imported can mask it)."""
+        import subprocess
+        import sys
+        import textwrap
+
+        code = textwrap.dedent(
+            f"""
+            from gridflow.connectors.neso_data_portal.registry import load_registry
+            registry = load_registry()
+            groups = {{
+                key: entry.record.overlap_group
+                for key, (_package, entry) in registry.families.items()
+                if entry.record is not None and entry.record.overlap_group is not None
+            }}
+            assert groups == dict.fromkeys({list(TYPED_FAMILIES)!r}, "system_frequency"), groups
+            print("OK")
+            """
+        )
+        result = subprocess.run(
+            [sys.executable, "-c", code],
+            cwd=PROJECT_ROOT,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            timeout=300,
+            check=False,
+        )
+        assert result.returncode == 0, (result.stdout, result.stderr)
+        assert "OK" in result.stdout, result.stdout
