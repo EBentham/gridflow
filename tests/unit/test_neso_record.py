@@ -1042,6 +1042,16 @@ eligible; one WS1 resource HOLD, one WS1 ADR-040 failed entry)."""
 FILE_RECORDED = {"gis_grid_supply_points"}
 """The GSP / Gnode / Direct Connect / Region lookup family unit K-FILE records (eligible)."""
 
+H_RECORDED = {
+    "system_frequency_dmy_csv",
+    "system_frequency_offset_csv",
+    "system_frequency_offset_zip",
+    "system_frequency_gmt_zip",
+    "system_frequency_gmt_csv",
+}
+"""The five system frequency rendering families unit v0.22-H records (the 2014 day-first family
+held, the four typed families eligible and one overlap group; one ADR-040 failed entry)."""
+
 SCN2A_PACKAGE_FILES = {
     "fes-european-electricity-supply-data-table-es2.json",
     "fes-flexibility-data-table-data-table-flx1.json",
@@ -1063,6 +1073,8 @@ SCN3_PACKAGE_FILES = {
 }
 
 FILE_PACKAGE_FILES = {"gis-boundaries-for-gb-grid-supply-points.json"}
+
+H_PACKAGE_FILES = {"system-frequency-data.json"}
 
 AS1_PACKAGE_FILES = {
     "balancing-reserve-auction-requirement-forecast.json",
@@ -1138,7 +1150,8 @@ class TestSeededRegistry:
     def test_every_seeded_package_loads_with_no_record(self) -> None:
         loaded = registry_module.load_registry()
         entries = [entry for _package, entry in loaded.families.values()]
-        assert len(entries) == 321
+        # v0.22-H adds the five system frequency rendering families (321 -> 326).
+        assert len(entries) == 326
         assert sum(entry.legacy for entry in entries) == 3
         assert sum(entry.kind == "files" for entry in entries) == 35
         recorded = {entry.key for entry in entries if entry.record is not None}
@@ -1182,6 +1195,7 @@ class TestSeededRegistry:
             | SCN2B_RECORDED
             | SCN3_RECORDED
             | FILE_RECORDED
+            | H_RECORDED
         )
         with_children = [res for _package, res in loaded.resources.values() if res.children]
         assert len(with_children) == X_RESOURCES_WITH_CHILDREN
@@ -1237,6 +1251,7 @@ class TestSeededRegistry:
             | SCN2B_PACKAGE_FILES
             | SCN3_PACKAGE_FILES
             | FILE_PACKAGE_FILES
+            | H_PACKAGE_FILES
         )
 
 

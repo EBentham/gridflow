@@ -401,11 +401,18 @@ class TestOwnerFacts:
                 assert {registry.resources[r.id][0].package for r in csv_zip} == {
                     'system-frequency-data'
                 }
+                # v0.22-H: each ZIP body is SILVER under its rendering's zip_member
+                # family, and its one member child under the same key.
+                zip_keys = {'system_frequency_offset_zip': 12, 'system_frequency_gmt_zip': 27}
                 assert all(
-                    r.disposition.kind == 'SILVER' and r.disposition.key == 'system_frequency'
+                    r.disposition.kind == 'SILVER' and r.disposition.key in zip_keys
                     and len(r.children) == 1
+                    and r.children[0].disposition.kind == 'SILVER'
+                    and r.children[0].disposition.key == r.disposition.key
                     for r in csv_zip
                 )
+                for key, count in zip_keys.items():
+                    assert sum(r.disposition.key == key for r in csv_zip) == count, key
                 print('OK')
                 """
             )
@@ -808,7 +815,7 @@ class TestAgreement:
                 from gridflow.connectors.neso_data_portal.client import NesoDataPortalConnector
                 config = load_settings().get_source_config('neso_data_portal')
                 configured = set(config.datasets)
-                assert len(FAMILIES) == 321, len(FAMILIES)
+                assert len(FAMILIES) == 326, len(FAMILIES)
                 assert configured == set(FAMILIES), sorted(configured ^ set(FAMILIES))[:5]
                 listed = NesoDataPortalConnector(config).list_datasets()
                 assert listed == list(FAMILIES)

@@ -188,6 +188,11 @@ class TestCommittedRegistry:
                                'ffr_phase2_result_summary_archive',
                                'ffr_phase2_results_by_unit_archive',
                                'ffr_post_tender_reports_workbook',
+                               'system_frequency_dmy_csv',
+                               'system_frequency_gmt_csv',
+                               'system_frequency_gmt_zip',
+                               'system_frequency_offset_csv',
+                               'system_frequency_offset_zip',
                                'thermal_constraint_costs_xlsx',
                                'tresp_building_block_definitions',
                                'tresp_gsp_area_names'], fed
