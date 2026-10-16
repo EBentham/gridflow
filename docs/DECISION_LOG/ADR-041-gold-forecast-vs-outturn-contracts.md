@@ -1,6 +1,6 @@
 # ADR-041 — Gold forecast-versus-outturn contracts and held gold views
 
-**Status:** accepted; G-1 disposition ruled by the seat 2026-10-10 (not built; research unit G-R)
+**Status:** proposed (set back from accepted by OWNER ruling 874, 2026-10-16); G-1 disposition ruled by the seat 2026-10-10 (not built; research unit G-R)
 **Date:** 2026-10-10
 **Phase:** v0.22 unit G (gold: demand forecast vs outturn, wind forecast vs outturn,
 interconnector limits unified)
