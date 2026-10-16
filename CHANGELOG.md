@@ -8,6 +8,73 @@ expansion) was paused before release and is intentionally absent.
 
 ## [Unreleased]
 
+## [v0.22] - 2026-10-16 — NESO Data Portal: full catalogue
+
+Every dataset on the NESO Data Portal is now in gridflow. All 131 packages and their 1,385
+files are captured in bronze, and each file has one recorded disposition. Every tabular table
+is typed in silver, and every output is either eligible to publish or held with the exact
+question NESO would need to answer.
+
+### Added
+- **The whole NESO Data Portal catalogue** under the `neso_data_portal` source: 131 packages,
+  326 dataset families, 261 of them typed in silver (695 million rows). New coverage, by area:
+  - **Demand:** 1-, 2-, 7-day and 2–14-day forecasts, historic demand 2001–2026,
+    daily demand update, school-holiday percentages, transmission losses, national-demand BM units.
+  - **Generation:** 14-day and day-ahead wind forecasts (national and per BMU), metered wind
+    output, weekly wind availability, wind BOA volumes, NRAPM, daily and weekly OPMR.
+  - **Interconnectors:** limits for IFA, IFA2, ElecLink, NemoLink, NSL, Viking and BritNed;
+    Nord Pool day-ahead prices; the System Operating Plan.
+  - **Carbon intensity:** national, regional and country forecasts, and balancing actions.
+  - **Capacity market:** all eight register tables.
+  - **Balancing:** current and historic BSUoS, the BSUoS monthly forecast, constraint breakdown and
+    costs, skip rates (175 million rows), AAHEDC and TNUoS tariffs, inertia costs, BSAD and
+    forward contracts.
+  - **Trading:** GTMA trades, contract enactment, index-linked volumes, the interconnector
+    requirement auction, upcoming trades.
+  - **Ancillary services:** Enduring Auction Capability live and mock results (incl. 32 million sell
+    orders), Balancing Reserve, Dynamic Containment/Moderation/Regulation, Static FFR auctions
+    and FFR post-tender reports (Excel workbook editions included), STOR, ASDP, ODFM, ORPS, OBP, industry notifications.
+  - **Demand Flexibility Service:** every season, live and test events.
+  - **Future Energy Scenarios:** ED1, ED3–ED7, ES1, ES2, FLX1, WS1, WS2, building blocks,
+    the regional breakdown, tRESP pathways, local-authority and building heat models, and resource
+    adequacy in the 2030s, with the scenario edition kept as a column and never merged.
+  - **System:** inertia, stability pathfinder, voltage costs and requirement, constraint limits,
+    CMIS, network congestion, and **System Frequency at one-second resolution from 2014
+    (152 monthly files, 397 million rows)**.
+  - **Files:** the GSP lookup table; 20 GIS files (generation charging zones, SSEP zones, ETYS
+    boundaries, GSP regions) catalogued for download.
+- **One generic, registry-driven path for every table.** Each table has a reviewed schema
+  record with strict type casts. Revisions are chosen by when they became available, and
+  point-in-time reads take an as-of parameter. Excel workbooks and ZIP members are read
+  natively (`fastexcel`/calamine, no pandas).
+- **`python -m gridflow.connectors.neso_data_portal.coverage`** checks the catalogue against
+  bronze. Capture reconciliation finds every missing, invalid or overlapping output, and a drain
+  repairs it without rewriting valid files.
+- **An eligibility report** (`docs/neso_data_portal/eligibility.md`), generated from the registry
+  and checked in CI, lists for every output whether it may be published and, if not, why.
+- Vault reference pages for 129 of the 131 packages.
+
+### Changed
+- `daily_wind_availability` drops the all-blank row a `\n\r\n`-terminated file produced
+  (3,589 → 3,588 rows, 0 null BMU ids).
+- NESO requests share a run-scoped pacer (datastore dumps at 2 per minute), and a live
+  capture never overwrites an existing bronze file.
+
+### Data
+- **133 silver outputs are eligible to publish; 128 are held.** A held output is loaded and
+  queryable, but not presented as published, until NESO documents what it needs. Typical gaps
+  are an undocumented time zone or issue time, a year label whose period is unstated, a unit
+  that conflicts between header and dictionary, or the meaning of a blank cell. Four packages
+  are held whole: two pending NESO's confirmation that third-party inputs may be republished
+  (levelised cost of green hydrogen; DNO licence-area boundaries), and two mock-auction
+  packages that are test data.
+- **Vendor defects are recorded, not repaired.** 62 captures stay unloaded with a written reason
+  and question: files that are not valid UTF-8, repeated rows with no lossless key, and uploads
+  that publish the same keys twice. 30 families stay bronze-only for the same reasons. Nothing
+  is silently deduplicated.
+- No gold view was added. The three planned forecast-versus-outturn views are specified, but
+  held until their inputs' semantics are evidenced.
+
 ## [v0.21] - 2026-09-07 — Silver Remediation
 
 Fixed three ways silver could disagree with the bronze it came from: a
