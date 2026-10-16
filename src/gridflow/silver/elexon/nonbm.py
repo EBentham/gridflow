@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 import logging
 from datetime import UTC, date, datetime
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import polars as pl
 
@@ -14,7 +14,31 @@ from gridflow.silver.base import BaseSilverTransformer
 from gridflow.silver.registry import register_transformer
 from gridflow.utils.time import settlement_period_to_utc
 
+if TYPE_CHECKING:
+    from pathlib import Path
+
 logger = logging.getLogger(__name__)
+
+# NONBM ignores these names and returns its latest record whatever the window
+# (connectors/elexon/endpoints.py), so a body fetched with them is not a
+# response for its partition. Such bodies stay in bronze (immutable).
+_IGNORED_WINDOW_PARAMS = frozenset({"publishDateTimeFrom", "publishDateTimeTo"})
+
+
+def _fetched_with_ignored_window(raw_path: Path) -> bool:
+    """Return True when the body's sidecar records the ignored window params."""
+    try:
+        meta = json.loads(raw_path.with_suffix(".meta.json").read_text())
+    except (OSError, json.JSONDecodeError) as e:
+        logger.warning(
+            "NONBM: cannot read the sidecar for %s (%s); its request window is "
+            "unknown, so the body is kept",
+            raw_path,
+            e,
+        )
+        return False
+    params = meta.get("request_params") if isinstance(meta, dict) else None
+    return isinstance(params, dict) and not _IGNORED_WINDOW_PARAMS.isdisjoint(params)
 
 
 class NONBMTransformer(BaseSilverTransformer):
@@ -45,6 +69,15 @@ class NONBMTransformer(BaseSilverTransformer):
             try:
                 data = json.loads(f.read_text())
                 records = data.get("data", []) if isinstance(data, dict) else data
+                if _fetched_with_ignored_window(f):
+                    self.last_excluded_row_count += len(records)
+                    logger.warning(
+                        "NONBM: excluded %d row(s) from %s, fetched with "
+                        "publishDateTimeFrom/To, which the vendor ignores",
+                        len(records),
+                        f,
+                    )
+                    continue
                 rows.extend(records)
             except (json.JSONDecodeError, AttributeError) as e:
                 logger.warning(f"Failed to parse bronze file {f}: {e}")
