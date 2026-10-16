@@ -18,6 +18,309 @@
       "max_download_bytes": 536870912,
       "name_regex": null,
       "transformer": null
+    },
+    {
+      "key": "system_frequency_dmy_csv",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SER",
+      "refresh": "monthly",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "dtm",
+              "f"
+            ],
+            "columns": [
+              {
+                "source": "dtm",
+                "name": "dtm",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "f",
+                "name": "f",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "none"
+        },
+        "entity_key": [
+          "resource_id",
+          "dtm"
+        ],
+        "latest": "whole_capture",
+        "latest_partition": "resource_id",
+        "siblings": [
+          "system_frequency"
+        ],
+        "vintage": "ckan_last_modified",
+        "eligibility": {
+          "status": "held",
+          "question": "TODO: dtm: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced). The 2014 day-first labels carry no offset and NESO's GMT statement starts January 2020; the labels 26/10/2014 01:00:00-01:59:59 repeat, so October 2014 fails its duplicate key (adjudicated, ADR-040), and the December 2014 to January 2015 edge cannot be overlap-checked until the zone is documented.",
+          "unit": "H-R1"
+        }
+      }
+    },
+    {
+      "key": "system_frequency_offset_csv",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SER",
+      "refresh": "monthly",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "dtm",
+              "f"
+            ],
+            "columns": [
+              {
+                "source": "dtm",
+                "name": "dtm",
+                "dtype": "datetime",
+                "format": "%Y-%m-%d %H:%M:%S %z",
+                "nullable": false
+              },
+              {
+                "source": "f",
+                "name": "f",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "utc_instant",
+          "column": "dtm"
+        },
+        "entity_key": [
+          "resource_id",
+          "dtm"
+        ],
+        "latest": "whole_capture",
+        "latest_partition": "resource_id",
+        "siblings": [
+          "system_frequency"
+        ],
+        "vintage": "ckan_last_modified",
+        "overlap_group": "system_frequency"
+      }
+    },
+    {
+      "key": "system_frequency_offset_zip",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SER",
+      "refresh": "monthly",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "zip_member",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "dtm",
+              "f"
+            ],
+            "columns": [
+              {
+                "source": "dtm",
+                "name": "dtm",
+                "dtype": "datetime",
+                "format": "%Y-%m-%d %H:%M:%S %z",
+                "nullable": false
+              },
+              {
+                "source": "f",
+                "name": "f",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "utc_instant",
+          "column": "dtm"
+        },
+        "entity_key": [
+          "resource_id",
+          "dtm"
+        ],
+        "latest": "whole_capture",
+        "latest_partition": "resource_id",
+        "siblings": [
+          "system_frequency"
+        ],
+        "vintage": "ckan_last_modified",
+        "zip_member": {
+          "member_pattern": "f \\d{4} (?:[1-9]|1[0-2])\\.csv",
+          "inner": "csv"
+        },
+        "overlap_group": "system_frequency"
+      }
+    },
+    {
+      "key": "system_frequency_gmt_zip",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SER",
+      "refresh": "monthly",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "zip_member",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "dtm",
+              "f"
+            ],
+            "columns": [
+              {
+                "source": "dtm",
+                "name": "dtm",
+                "dtype": "datetime",
+                "format": "%Y-%m-%d %H:%M:%S",
+                "nullable": false,
+                "zone": "UTC",
+                "alt_formats": [
+                  "%Y-%m-%d"
+                ]
+              },
+              {
+                "source": "f",
+                "name": "f",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "utc_instant",
+          "column": "dtm"
+        },
+        "entity_key": [
+          "resource_id",
+          "dtm"
+        ],
+        "latest": "whole_capture",
+        "latest_partition": "resource_id",
+        "siblings": [
+          "system_frequency"
+        ],
+        "vintage": "ckan_last_modified",
+        "zip_member": {
+          "member_pattern": "fNew \\d{4} (?:[1-9]|1[0-2])\\.csv",
+          "inner": "csv"
+        },
+        "overlap_group": "system_frequency"
+      }
+    },
+    {
+      "key": "system_frequency_gmt_csv",
+      "kind": "tabular",
+      "legacy": false,
+      "archetype": "SER",
+      "refresh": "monthly",
+      "empty_allowed": false,
+      "max_download_bytes": 536870912,
+      "name_regex": null,
+      "transformer": null,
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "dtm",
+              "f"
+            ],
+            "columns": [
+              {
+                "source": "dtm",
+                "name": "dtm",
+                "dtype": "datetime",
+                "format": "%Y-%m-%d %H:%M:%S",
+                "nullable": false,
+                "zone": "UTC",
+                "alt_formats": [
+                  "%Y-%m-%d"
+                ]
+              },
+              {
+                "source": "f",
+                "name": "f",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "utc_instant",
+          "column": "dtm"
+        },
+        "entity_key": [
+          "resource_id",
+          "dtm"
+        ],
+        "latest": "whole_capture",
+        "latest_partition": "resource_id",
+        "siblings": [
+          "system_frequency"
+        ],
+        "vintage": "ckan_last_modified",
+        "overlap_group": "system_frequency"
+      }
     }
   ],
   "resources": [
@@ -29,7 +332,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_dmy_csv"
       }
     },
     {
@@ -40,7 +343,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_dmy_csv"
       }
     },
     {
@@ -51,7 +354,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_dmy_csv"
       }
     },
     {
@@ -62,7 +365,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_dmy_csv"
       }
     },
     {
@@ -73,7 +376,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_dmy_csv"
       }
     },
     {
@@ -84,7 +387,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_dmy_csv"
       }
     },
     {
@@ -95,7 +398,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_dmy_csv"
       }
     },
     {
@@ -106,7 +409,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_dmy_csv"
       }
     },
     {
@@ -117,7 +420,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_dmy_csv"
       }
     },
     {
@@ -128,7 +431,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_dmy_csv"
       }
     },
     {
@@ -139,7 +442,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_dmy_csv"
       }
     },
     {
@@ -150,7 +453,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_dmy_csv"
       }
     },
     {
@@ -161,7 +464,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_offset_csv"
       }
     },
     {
@@ -172,7 +475,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_offset_csv"
       }
     },
     {
@@ -183,7 +486,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_offset_csv"
       }
     },
     {
@@ -194,7 +497,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_offset_csv"
       }
     },
     {
@@ -205,7 +508,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_offset_csv"
       }
     },
     {
@@ -216,7 +519,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_offset_csv"
       }
     },
     {
@@ -227,7 +530,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_offset_csv"
       }
     },
     {
@@ -238,7 +541,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_offset_csv"
       }
     },
     {
@@ -249,7 +552,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_offset_csv"
       }
     },
     {
@@ -260,7 +563,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_offset_csv"
       }
     },
     {
@@ -271,7 +574,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_offset_csv"
       }
     },
     {
@@ -282,7 +585,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_offset_csv"
       }
     },
     {
@@ -293,7 +596,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_offset_csv"
       }
     },
     {
@@ -304,7 +607,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_offset_csv"
       }
     },
     {
@@ -315,7 +618,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_offset_csv"
       }
     },
     {
@@ -326,7 +629,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_offset_csv"
       }
     },
     {
@@ -337,7 +640,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_offset_csv"
       }
     },
     {
@@ -348,7 +651,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_offset_csv"
       }
     },
     {
@@ -359,7 +662,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_offset_csv"
       }
     },
     {
@@ -370,7 +673,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_offset_csv"
       }
     },
     {
@@ -381,7 +684,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_offset_csv"
       }
     },
     {
@@ -392,7 +695,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_offset_csv"
       }
     },
     {
@@ -403,7 +706,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_offset_csv"
       }
     },
     {
@@ -414,7 +717,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_offset_csv"
       }
     },
     {
@@ -425,7 +728,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_offset_csv"
       }
     },
     {
@@ -436,7 +739,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_offset_csv"
       }
     },
     {
@@ -447,7 +750,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_offset_csv"
       }
     },
     {
@@ -458,7 +761,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_offset_csv"
       }
     },
     {
@@ -469,7 +772,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_offset_csv"
       }
     },
     {
@@ -480,7 +783,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_offset_csv"
       }
     },
     {
@@ -491,7 +794,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_offset_csv"
       }
     },
     {
@@ -502,7 +805,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_offset_csv"
       }
     },
     {
@@ -513,7 +816,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_offset_csv"
       }
     },
     {
@@ -524,7 +827,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_offset_csv"
       }
     },
     {
@@ -535,7 +838,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_offset_csv"
       }
     },
     {
@@ -546,7 +849,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_offset_csv"
       }
     },
     {
@@ -557,7 +860,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_offset_csv"
       }
     },
     {
@@ -568,7 +871,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_offset_csv"
       }
     },
     {
@@ -579,7 +882,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_offset_csv"
       }
     },
     {
@@ -590,7 +893,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_offset_csv"
       }
     },
     {
@@ -601,7 +904,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_offset_csv"
       }
     },
     {
@@ -612,7 +915,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_offset_csv"
       }
     },
     {
@@ -623,7 +926,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_offset_csv"
       }
     },
     {
@@ -634,7 +937,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_offset_csv"
       }
     },
     {
@@ -645,7 +948,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_offset_csv"
       }
     },
     {
@@ -656,7 +959,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_offset_csv"
       }
     },
     {
@@ -667,7 +970,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_offset_csv"
       }
     },
     {
@@ -678,7 +981,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_offset_csv"
       }
     },
     {
@@ -689,14 +992,14 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_offset_zip"
       },
       "children": [
         {
           "child": "f 2019 12.csv",
           "disposition": {
             "kind": "SILVER",
-            "key": "system_frequency"
+            "key": "system_frequency_offset_zip"
           }
         }
       ]
@@ -709,14 +1012,14 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_offset_zip"
       },
       "children": [
         {
           "child": "f 2019 11.csv",
           "disposition": {
             "kind": "SILVER",
-            "key": "system_frequency"
+            "key": "system_frequency_offset_zip"
           }
         }
       ]
@@ -729,14 +1032,14 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_offset_zip"
       },
       "children": [
         {
           "child": "f 2019 10.csv",
           "disposition": {
             "kind": "SILVER",
-            "key": "system_frequency"
+            "key": "system_frequency_offset_zip"
           }
         }
       ]
@@ -749,14 +1052,14 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_offset_zip"
       },
       "children": [
         {
           "child": "f 2019 9.csv",
           "disposition": {
             "kind": "SILVER",
-            "key": "system_frequency"
+            "key": "system_frequency_offset_zip"
           }
         }
       ]
@@ -769,14 +1072,14 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_offset_zip"
       },
       "children": [
         {
           "child": "f 2019 8.csv",
           "disposition": {
             "kind": "SILVER",
-            "key": "system_frequency"
+            "key": "system_frequency_offset_zip"
           }
         }
       ]
@@ -789,14 +1092,14 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_offset_zip"
       },
       "children": [
         {
           "child": "f 2019 7.csv",
           "disposition": {
             "kind": "SILVER",
-            "key": "system_frequency"
+            "key": "system_frequency_offset_zip"
           }
         }
       ]
@@ -809,14 +1112,14 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_offset_zip"
       },
       "children": [
         {
           "child": "f 2019 6.csv",
           "disposition": {
             "kind": "SILVER",
-            "key": "system_frequency"
+            "key": "system_frequency_offset_zip"
           }
         }
       ]
@@ -829,14 +1132,14 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_offset_zip"
       },
       "children": [
         {
           "child": "f 2019 5.csv",
           "disposition": {
             "kind": "SILVER",
-            "key": "system_frequency"
+            "key": "system_frequency_offset_zip"
           }
         }
       ]
@@ -849,14 +1152,14 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_offset_zip"
       },
       "children": [
         {
           "child": "f 2019 4.csv",
           "disposition": {
             "kind": "SILVER",
-            "key": "system_frequency"
+            "key": "system_frequency_offset_zip"
           }
         }
       ]
@@ -869,14 +1172,14 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_offset_zip"
       },
       "children": [
         {
           "child": "f 2019 3.csv",
           "disposition": {
             "kind": "SILVER",
-            "key": "system_frequency"
+            "key": "system_frequency_offset_zip"
           }
         }
       ]
@@ -889,14 +1192,14 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_offset_zip"
       },
       "children": [
         {
           "child": "f 2019 2.csv",
           "disposition": {
             "kind": "SILVER",
-            "key": "system_frequency"
+            "key": "system_frequency_offset_zip"
           }
         }
       ]
@@ -909,14 +1212,14 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_offset_zip"
       },
       "children": [
         {
           "child": "f 2019 1.csv",
           "disposition": {
             "kind": "SILVER",
-            "key": "system_frequency"
+            "key": "system_frequency_offset_zip"
           }
         }
       ]
@@ -929,14 +1232,14 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_zip"
       },
       "children": [
         {
           "child": "fNew 2020 1.csv",
           "disposition": {
             "kind": "SILVER",
-            "key": "system_frequency"
+            "key": "system_frequency_gmt_zip"
           }
         }
       ]
@@ -949,14 +1252,14 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_zip"
       },
       "children": [
         {
           "child": "fNew 2020 2.csv",
           "disposition": {
             "kind": "SILVER",
-            "key": "system_frequency"
+            "key": "system_frequency_gmt_zip"
           }
         }
       ]
@@ -969,14 +1272,14 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_zip"
       },
       "children": [
         {
           "child": "fNew 2020 3.csv",
           "disposition": {
             "kind": "SILVER",
-            "key": "system_frequency"
+            "key": "system_frequency_gmt_zip"
           }
         }
       ]
@@ -989,14 +1292,14 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_zip"
       },
       "children": [
         {
           "child": "fNew 2020 4.csv",
           "disposition": {
             "kind": "SILVER",
-            "key": "system_frequency"
+            "key": "system_frequency_gmt_zip"
           }
         }
       ]
@@ -1009,14 +1312,14 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_zip"
       },
       "children": [
         {
           "child": "fNew 2020 5.csv",
           "disposition": {
             "kind": "SILVER",
-            "key": "system_frequency"
+            "key": "system_frequency_gmt_zip"
           }
         }
       ]
@@ -1029,14 +1332,14 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_zip"
       },
       "children": [
         {
           "child": "fNew 2020 6.csv",
           "disposition": {
             "kind": "SILVER",
-            "key": "system_frequency"
+            "key": "system_frequency_gmt_zip"
           }
         }
       ]
@@ -1049,14 +1352,14 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_zip"
       },
       "children": [
         {
           "child": "fNew 2020 7.csv",
           "disposition": {
             "kind": "SILVER",
-            "key": "system_frequency"
+            "key": "system_frequency_gmt_zip"
           }
         }
       ]
@@ -1069,14 +1372,14 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_zip"
       },
       "children": [
         {
           "child": "fNew 2020 8.csv",
           "disposition": {
             "kind": "SILVER",
-            "key": "system_frequency"
+            "key": "system_frequency_gmt_zip"
           }
         }
       ]
@@ -1089,14 +1392,14 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_zip"
       },
       "children": [
         {
           "child": "fNew 2020 9.csv",
           "disposition": {
             "kind": "SILVER",
-            "key": "system_frequency"
+            "key": "system_frequency_gmt_zip"
           }
         }
       ]
@@ -1109,14 +1412,14 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_zip"
       },
       "children": [
         {
           "child": "fNew 2020 10.csv",
           "disposition": {
             "kind": "SILVER",
-            "key": "system_frequency"
+            "key": "system_frequency_gmt_zip"
           }
         }
       ]
@@ -1129,14 +1432,14 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_zip"
       },
       "children": [
         {
           "child": "fNew 2020 11.csv",
           "disposition": {
             "kind": "SILVER",
-            "key": "system_frequency"
+            "key": "system_frequency_gmt_zip"
           }
         }
       ]
@@ -1149,14 +1452,14 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_zip"
       },
       "children": [
         {
           "child": "fNew 2020 12.csv",
           "disposition": {
             "kind": "SILVER",
-            "key": "system_frequency"
+            "key": "system_frequency_gmt_zip"
           }
         }
       ]
@@ -1169,14 +1472,14 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_zip"
       },
       "children": [
         {
           "child": "fNew 2021 1.csv",
           "disposition": {
             "kind": "SILVER",
-            "key": "system_frequency"
+            "key": "system_frequency_gmt_zip"
           }
         }
       ]
@@ -1189,14 +1492,14 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_zip"
       },
       "children": [
         {
           "child": "fNew 2021 2.csv",
           "disposition": {
             "kind": "SILVER",
-            "key": "system_frequency"
+            "key": "system_frequency_gmt_zip"
           }
         }
       ]
@@ -1209,14 +1512,14 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_zip"
       },
       "children": [
         {
           "child": "fNew 2021 3.csv",
           "disposition": {
             "kind": "SILVER",
-            "key": "system_frequency"
+            "key": "system_frequency_gmt_zip"
           }
         }
       ]
@@ -1229,14 +1532,14 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_zip"
       },
       "children": [
         {
           "child": "fNew 2021 4.csv",
           "disposition": {
             "kind": "SILVER",
-            "key": "system_frequency"
+            "key": "system_frequency_gmt_zip"
           }
         }
       ]
@@ -1249,14 +1552,14 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_zip"
       },
       "children": [
         {
           "child": "fNew 2021 5.csv",
           "disposition": {
             "kind": "SILVER",
-            "key": "system_frequency"
+            "key": "system_frequency_gmt_zip"
           }
         }
       ]
@@ -1269,14 +1572,14 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_zip"
       },
       "children": [
         {
           "child": "fNew 2021 6.csv",
           "disposition": {
             "kind": "SILVER",
-            "key": "system_frequency"
+            "key": "system_frequency_gmt_zip"
           }
         }
       ]
@@ -1289,14 +1592,14 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_zip"
       },
       "children": [
         {
           "child": "fNew 2021 7.csv",
           "disposition": {
             "kind": "SILVER",
-            "key": "system_frequency"
+            "key": "system_frequency_gmt_zip"
           }
         }
       ]
@@ -1309,14 +1612,14 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_zip"
       },
       "children": [
         {
           "child": "fNew 2021 8.csv",
           "disposition": {
             "kind": "SILVER",
-            "key": "system_frequency"
+            "key": "system_frequency_gmt_zip"
           }
         }
       ]
@@ -1329,14 +1632,14 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_zip"
       },
       "children": [
         {
           "child": "fNew 2021 9.csv",
           "disposition": {
             "kind": "SILVER",
-            "key": "system_frequency"
+            "key": "system_frequency_gmt_zip"
           }
         }
       ]
@@ -1349,14 +1652,14 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_zip"
       },
       "children": [
         {
           "child": "fNew 2021 10.csv",
           "disposition": {
             "kind": "SILVER",
-            "key": "system_frequency"
+            "key": "system_frequency_gmt_zip"
           }
         }
       ]
@@ -1369,14 +1672,14 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_zip"
       },
       "children": [
         {
           "child": "fNew 2021 11.csv",
           "disposition": {
             "kind": "SILVER",
-            "key": "system_frequency"
+            "key": "system_frequency_gmt_zip"
           }
         }
       ]
@@ -1389,14 +1692,14 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_zip"
       },
       "children": [
         {
           "child": "fNew 2021 12.csv",
           "disposition": {
             "kind": "SILVER",
-            "key": "system_frequency"
+            "key": "system_frequency_gmt_zip"
           }
         }
       ]
@@ -1409,14 +1712,14 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_zip"
       },
       "children": [
         {
           "child": "fNew 2022 1.csv",
           "disposition": {
             "kind": "SILVER",
-            "key": "system_frequency"
+            "key": "system_frequency_gmt_zip"
           }
         }
       ]
@@ -1429,14 +1732,14 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_zip"
       },
       "children": [
         {
           "child": "fNew 2022 2.csv",
           "disposition": {
             "kind": "SILVER",
-            "key": "system_frequency"
+            "key": "system_frequency_gmt_zip"
           }
         }
       ]
@@ -1449,14 +1752,14 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_zip"
       },
       "children": [
         {
           "child": "fNew 2022 3.csv",
           "disposition": {
             "kind": "SILVER",
-            "key": "system_frequency"
+            "key": "system_frequency_gmt_zip"
           }
         }
       ]
@@ -1469,7 +1772,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_csv"
       }
     },
     {
@@ -1480,7 +1783,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_csv"
       }
     },
     {
@@ -1491,7 +1794,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_csv"
       }
     },
     {
@@ -1502,7 +1805,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_csv"
       }
     },
     {
@@ -1513,7 +1816,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_csv"
       }
     },
     {
@@ -1524,7 +1827,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_csv"
       }
     },
     {
@@ -1535,7 +1838,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_csv"
       }
     },
     {
@@ -1546,7 +1849,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_csv"
       }
     },
     {
@@ -1557,7 +1860,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_csv"
       }
     },
     {
@@ -1568,7 +1871,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_csv"
       }
     },
     {
@@ -1579,7 +1882,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_csv"
       }
     },
     {
@@ -1590,7 +1893,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_csv"
       }
     },
     {
@@ -1601,7 +1904,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_csv"
       }
     },
     {
@@ -1612,7 +1915,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_csv"
       }
     },
     {
@@ -1623,7 +1926,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_csv"
       }
     },
     {
@@ -1634,7 +1937,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_csv"
       }
     },
     {
@@ -1645,7 +1948,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_csv"
       }
     },
     {
@@ -1656,7 +1959,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_csv"
       }
     },
     {
@@ -1667,7 +1970,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_csv"
       }
     },
     {
@@ -1678,7 +1981,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_csv"
       }
     },
     {
@@ -1689,7 +1992,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_csv"
       }
     },
     {
@@ -1700,7 +2003,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_csv"
       }
     },
     {
@@ -1711,7 +2014,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_csv"
       }
     },
     {
@@ -1722,7 +2025,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_csv"
       }
     },
     {
@@ -1733,7 +2036,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_csv"
       }
     },
     {
@@ -1744,7 +2047,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_csv"
       }
     },
     {
@@ -1755,7 +2058,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_csv"
       }
     },
     {
@@ -1766,7 +2069,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_csv"
       }
     },
     {
@@ -1777,7 +2080,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_csv"
       }
     },
     {
@@ -1788,7 +2091,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_csv"
       }
     },
     {
@@ -1799,7 +2102,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_csv"
       }
     },
     {
@@ -1810,7 +2113,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_csv"
       }
     },
     {
@@ -1821,7 +2124,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_csv"
       }
     },
     {
@@ -1832,7 +2135,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_csv"
       }
     },
     {
@@ -1843,7 +2146,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_csv"
       }
     },
     {
@@ -1854,7 +2157,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_csv"
       }
     },
     {
@@ -1865,7 +2168,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_csv"
       }
     },
     {
@@ -1876,7 +2179,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_csv"
       }
     },
     {
@@ -1887,7 +2190,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_csv"
       }
     },
     {
@@ -1898,7 +2201,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_csv"
       }
     },
     {
@@ -1909,7 +2212,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_csv"
       }
     },
     {
@@ -1920,7 +2223,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_csv"
       }
     },
     {
@@ -1931,7 +2234,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_csv"
       }
     },
     {
@@ -1942,7 +2245,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_csv"
       }
     },
     {
@@ -1953,7 +2256,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_csv"
       }
     },
     {
@@ -1964,7 +2267,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_csv"
       }
     },
     {
@@ -1975,7 +2278,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_csv"
       }
     },
     {
@@ -1986,7 +2289,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_csv"
       }
     },
     {
@@ -1997,7 +2300,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_csv"
       }
     },
     {
@@ -2008,7 +2311,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_csv"
       }
     },
     {
@@ -2019,7 +2322,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_csv"
       }
     },
     {
@@ -2030,7 +2333,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_csv"
       }
     },
     {
@@ -2041,7 +2344,7 @@
       "family": "system_frequency",
       "disposition": {
         "kind": "SILVER",
-        "key": "system_frequency"
+        "key": "system_frequency_gmt_csv"
       }
     }
   ]

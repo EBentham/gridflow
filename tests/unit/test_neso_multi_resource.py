@@ -420,6 +420,17 @@ SCN3_ADDED = frozenset(
 """The Building Heat Model example output, WS1, WS2, the two local-authority heat model outputs and
 the three Resource Adequacy 2030s families that v0.22-K-SCN-3 records (five held, the Resource
 Adequacy three eligible; one WS1 resource HOLD)."""
+H_ADDED = frozenset(
+    {
+        "system_frequency_dmy_csv",
+        "system_frequency_offset_csv",
+        "system_frequency_offset_zip",
+        "system_frequency_gmt_zip",
+        "system_frequency_gmt_csv",
+    }
+)
+"""The five system frequency rendering families that v0.22-H records (the 2014 day-first family
+held, the four typed families one overlap group)."""
 FILE_ADDED = frozenset({"gis_grid_supply_points"})
 """The GSP / Gnode / Direct Connect / Region lookup family that v0.22-K-FILE records (eligible; the
 embedded child, the GIS files and the changelog keep their dispositions)."""
@@ -522,6 +533,7 @@ class TestByteUnchanged:
                     *SCN2B_ADDED,
                     *SCN3_ADDED,
                     *FILE_ADDED,
+                    *H_ADDED,
                 }
                 if section != "engine"
                 else set()
@@ -1123,7 +1135,7 @@ class TestRecordRules:
         self,
     ) -> None:
         """Detects a committed record broken by V-4/V-17 or the reserved name, and any
-        family other than the eighty-six resource-partitioned ones opting into the partition
+        family other than the ninety-one resource-partitioned ones opting into the partition
         (in a fresh interpreter, so nothing collection imported can mask it)."""
         code = textwrap.dedent(
             """
@@ -1208,6 +1220,11 @@ class TestRecordRules:
                 "ssel_contract_enactment",
                 "stability_pathfinder_availability_report",
                 "stability_pathfinder_utilisation_report",
+                "system_frequency_dmy_csv",
+                "system_frequency_gmt_csv",
+                "system_frequency_gmt_zip",
+                "system_frequency_offset_csv",
+                "system_frequency_offset_zip",
                 "system_inertia",
                 "system_inertia_cost",
                 "thermal_constraint_costs",

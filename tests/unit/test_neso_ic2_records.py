@@ -1047,8 +1047,9 @@ def test_the_committed_ledger_carries_the_three_brit_ned_entries() -> None:
     day-ahead constraint archive (632), the six Pathfinder captures (642), the Historic II
     overlap (653), the 22 invalid-encoding BSUoS monthly forecast captures (667), the GTMA FY
     overlap (707), the five BSAD failed captures (748), the FFR 162.198 overlap (780), the two
-    FFR TR127 / TR136 amended-edition overlaps (798) and the DFS archive utilisation report failed
-    capture (804), appended last."""
+    FFR TR127 / TR136 amended-edition overlaps (798), the DFS archive utilisation report failed
+    capture (804), the WS1 2025 capture (839) and the October 2014 system frequency capture (861),
+    appended last."""
     loaded = _fresh_interpreter(
         """
         import json
@@ -1103,6 +1104,7 @@ def test_the_committed_ledger_carries_the_three_brit_ned_entries() -> None:
         "ffr_post_tender_reports_workbook",
         "demand_flexibility_utilisation_report",
         "fes_ws1_gas_supply",
+        "system_frequency_dmy_csv",
     ]
     directory = "bronze/neso_data_portal/brit_ned/2026/10/08/"
     overlap, failed, encoding = loaded["entries"]

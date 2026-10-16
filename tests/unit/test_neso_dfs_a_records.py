@@ -912,15 +912,16 @@ FFR = "ffr_post_tender_reports_workbook"
 def test_the_ledger_appends_exactly_the_three_dfs_a_entries_last() -> None:
     """Detects an open reconcile gap, an entry naming other captures, a wider scope, a dropped
     ruling or an entry the registry does not back. The ledger validates against the registry and
-    ends with, in order (before K-SCN-3's single WS1 2025 entry): the TR127 ``overlap`` (ruling
-    798, the original 68529290 and the amended 16773f53 workbooks), the TR136 ``overlap`` (ruling
-    798, 7912d65a and a85e6149) and the archive utilisation report as a ``failed``
-    ``DuplicateEntityKeyError`` (ruling 804, cc36fff5). Every reason / question / evidence is a
-    non-empty single line, every reason says ``never deduplicated``, the overlap entries name both
-    editions, and no other DFS-a family has an entry."""
+    ends with, in order (before K-SCN-3's single WS1 2025 entry and v0.22-H's October 2014
+    entry): the TR127 ``overlap`` (ruling 798, the original 68529290 and the amended 16773f53
+    workbooks), the TR136 ``overlap`` (ruling 798, 7912d65a and a85e6149) and the archive
+    utilisation report as a ``failed`` ``DuplicateEntityKeyError`` (ruling 804, cc36fff5). Every
+    reason / question / evidence is a non-empty single line, every reason says ``never
+    deduplicated``, the overlap entries name both editions, and no other DFS-a family has an
+    entry."""
     entries = registry_module.load_reconcile_adjudications()
     assert registry_module.reconcile_adjudication_problems(load_registry(), entries) == []
-    tr127, tr136, report = entries[-4:-1]
+    tr127, tr136, report = entries[-5:-2]
     assert [(e.family, e.category, e.cause, e.ruling) for e in (tr127, tr136, report)] == [
         (FFR, "overlap", None, "798"),
         (FFR, "overlap", None, "798"),

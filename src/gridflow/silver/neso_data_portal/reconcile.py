@@ -16,7 +16,8 @@ carry one capture, or two bespoke captures resolve to one output path);
 cutoff from the grant's registry position, no longer digest to its evidence's
 components, or whose scope is empty; ADR-037 P-13); ``overlap`` (a
 resource-partitioned family whose `_latest` serves one entity key from two
-resources' captures, ADR-039).
+resources' captures, ADR-039, or, for an overlap group, two resources of the
+group's families, ADR-043).
 
 **Adjudication (ADR-040).** After the raw gaps are built, each is matched
 against the registry's ``_reconcile_adjudications.json``: an entry in scope
@@ -26,7 +27,9 @@ with the entry's cause, an ``overlap`` gap only when every capture serving its
 shared keys is named too. Covered gaps move to :attr:`ReconcileReport.adjudicated`;
 they are listed (``ADJUDICATED`` lines) but do not fail the run. A named
 capture with no covered gap is a ``stale_adjudication`` gap, which is never
-drainable and never adjudicable. A ledger that fails to load or names what the
+drainable and never adjudicable, unless it is a peer of an ``overlap`` gap the
+entry covers and the entry's family has no gap on it (another family of an
+overlap group, ADR-043). A ledger that fails to load or names what the
 registry does not back raises :class:`RegistryError`.
 
 **Drain.** Recovers ``missing``, attempt-``failed``,
@@ -95,6 +98,7 @@ from gridflow.storage.paths import PathBuilder
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Sequence
+    from collections.abc import Set as AbstractSet
     from datetime import date
 
     from gridflow.connectors.neso_data_portal.captures import Capture
@@ -480,34 +484,129 @@ def _family_gaps(
 def _overlaps(key: str, record: SchemaRecord, data_dir: Path, cutoff: date) -> list[Gap]:
     """``overlap``: entity keys the family's ``_latest`` serves from two resources (ADR-039).
 
-    The selection is :func:`select_latest_vintage` over the family's outputs and
-    its completion records up to the cutoff, the one Polars renderer of
-    ``_latest``, so the report and the view agree by construction. One gap per
-    selected capture holding any such key; never drainable. A check that cannot
-    read an output is one ``overlap check failed`` gap, never a pass.
-
-    **Memory bound (H7, ADR-040).** The family is never materialised whole (a
-    whole-family window over 21.9M rows segfaulted). The selected rows are split
-    into ``ceil(rows / OVERLAP_BUCKET_ROWS)`` buckets by a hash of the grain; each
-    bucket's shared keys come from a streaming ``group_by``; the serving captures
-    come from one streaming semi-join of the selection on those keys, with null
-    equality so a key holding a null still matches. Equal keys (nulls included)
-    hash equal within a process, so a key never spans two buckets and the report
-    does not depend on the bucket count.
+    The one-member case of :func:`_group_overlaps`: the selection is
+    :func:`select_latest_vintage` over the family's outputs and its completion
+    records up to the cutoff, the one Polars renderer of ``_latest``, so the
+    report and the view agree by construction. One gap per selected capture
+    holding any such key; never drainable. A check that cannot read an output is
+    one ``overlap check failed`` gap, never a pass.
     """
-    root = PathBuilder(data_dir).silver_dir(SOURCE, key)
-    grain = [column for column in record.entity_key if column != "resource_id"]
-    try:
-        files = sorted(root.rglob("[!.]*.parquet")) if root.is_dir() else []
-        if not files:
-            return []
-        completions = scan_completions(data_dir, key).filter(pl.col("partition_date") <= cutoff)
-        selected = select_latest_vintage(
-            pl.scan_parquet(files, hive_partitioning=False),
-            latest_spec_for_record(record, key),
-            completions=completions,
+    return _group_overlaps([(key, record)], data_dir, cutoff, {key})
+
+
+_INTERVAL_DTYPES = (pl.Utf8, pl.Int64, pl.Date)
+
+# A whole-capture selection reads the family's scan twice (row counts, then the
+# semi-join on the winners); common-subplan elimination would cache that scan,
+# materialising every selected row (8.7 GB over the system frequency group).
+# Without it each branch streams its own scan.
+_STREAM_EACH_SCAN = pl.QueryOptFlags(comm_subplan_elim=False)
+
+
+def _proven_disjoint(selected: pl.LazyFrame, grain: list[str]) -> bool:
+    """Whether the selected captures' key spans are pairwise disjoint (ADR-043).
+
+    Only a one-column grain of dtype ``Utf8``, ``Int64``, ``Date`` or
+    ``Datetime`` is decided; anything else, or any null key, returns ``False``
+    (the exact path decides). One streaming ``group_by(bronze_capture_id)``, with
+    no cached scan, gives each capture's ``(min, max)``; sorted by ``(min, max)``,
+    a span whose ``min`` is at or below the running ``max`` returns ``False``.
+
+    **Soundness.** An overlap needs one non-null key value ``k`` served by two
+    selected captures; ``k`` lies in both spans, so after sorting the later
+    span's ``min <= k <=`` the running max and the sweep returns ``False``.
+    ``True`` therefore implies the exact path finds no shared key.
+    """
+    if len(grain) != 1:
+        return False
+    (column,) = grain
+    dtype = selected.collect_schema()[column]
+    if not (isinstance(dtype, pl.Datetime) or any(dtype == kind for kind in _INTERVAL_DTYPES)):
+        return False
+    spans = (
+        selected.group_by("bronze_capture_id")
+        .agg(
+            pl.col(column).min().alias("__lo"),
+            pl.col(column).max().alias("__hi"),
+            pl.col(column).null_count().alias("__nulls"),
         )
-        rows = pl.scan_parquet(files, hive_partitioning=False).select(pl.len()).collect().item()
+        .collect(engine="streaming", optimizations=_STREAM_EACH_SCAN)
+    )
+    if spans.is_empty():
+        return True
+    if spans["__nulls"].sum():
+        return False
+    running: Any = None
+    for lo, hi in spans.sort(["__lo", "__hi"]).select("__lo", "__hi").iter_rows():
+        if running is not None and lo <= running:
+            return False
+        running = hi if running is None or hi > running else running
+    return True
+
+
+def _group_overlaps(
+    members: Sequence[tuple[str, SchemaRecord]],
+    data_dir: Path,
+    cutoff: date,
+    report: AbstractSet[str],
+) -> list[Gap]:
+    """``overlap`` over the union of a group's ``_latest`` selections (ADR-039, ADR-043).
+
+    Each member with outputs contributes :func:`select_latest_vintage` over its
+    own files, spec and completions up to the cutoff, reduced to its grain,
+    ``resource_id``, ``bronze_capture_id`` and its family key; the members are
+    concatenated. One gap per selected capture holding a key another resource of
+    the group also serves, filed under the capture's own family and emitted only
+    for families in ``report``; ``peers`` span the group. A check that cannot
+    read an output is one ``overlap check failed`` gap per reported member.
+
+    **Memory bound (H7, ADR-040, ADR-043).** The union is never materialised
+    whole: every query streams with common-subplan elimination off, so the
+    selection's two reads of a member's scan are never cached. When
+    :func:`_proven_disjoint` cannot rule overlap out, the selected rows are split
+    into ``ceil(rows / OVERLAP_BUCKET_ROWS)`` buckets by a hash of the grain;
+    each bucket's shared keys come from a streaming ``group_by``; the serving
+    captures come from one streaming semi-join of the selection on those keys,
+    with null equality so a key holding a null still matches. Equal keys (nulls
+    included) hash equal within a process, so a key never spans two buckets and
+    the report does not depend on the bucket count.
+
+    Args:
+        members: ``(family key, record)`` of every member, sorted; V-21 gives
+            them one grain of one dtype.
+        data_dir: The data root.
+        cutoff: The last bronze partition date considered (inclusive).
+        report: The checked family keys.
+
+    Returns:
+        The ``overlap`` gaps of the checked members.
+    """
+    grain = [column for column in members[0][1].entity_key if column != "resource_id"]
+    paths = PathBuilder(data_dir)
+    try:
+        selections: list[pl.LazyFrame] = []
+        rows = 0
+        for key, record in members:
+            root = paths.silver_dir(SOURCE, key)
+            files = sorted(root.rglob("[!.]*.parquet")) if root.is_dir() else []
+            if not files:
+                continue
+            completions = scan_completions(data_dir, key).filter(pl.col("partition_date") <= cutoff)
+            selections.append(
+                select_latest_vintage(
+                    pl.scan_parquet(files, hive_partitioning=False),
+                    latest_spec_for_record(record, key),
+                    completions=completions,
+                ).select(*grain, "resource_id", "bronze_capture_id", pl.lit(key).alias("__family"))
+            )
+            rows += (
+                pl.scan_parquet(files, hive_partitioning=False).select(pl.len()).collect().item()
+            )
+        if not selections:
+            return []
+        selected = selections[0] if len(selections) == 1 else pl.concat(selections)
+        if _proven_disjoint(selected, grain):
+            return []
         buckets = max(1, math.ceil(rows / OVERLAP_BUCKET_ROWS))
         parts: list[pl.DataFrame] = []
         for index in range(buckets):
@@ -521,31 +620,38 @@ def _overlaps(key: str, record: SchemaRecord, data_dir: Path, cutoff: date) -> l
                 .agg(pl.col("resource_id").n_unique().alias("__resources"))
                 .filter(pl.col("__resources") > 1)
                 .select(grain)
-                .collect(engine="streaming")
+                .collect(engine="streaming", optimizations=_STREAM_EACH_SCAN)
             )
         keys = pl.concat(parts)
         if keys.is_empty():
             return []
-        shared = (
-            selected.select(*grain, "resource_id", "bronze_capture_id")
-            .join(keys.lazy(), on=grain, how="semi", nulls_equal=True)
-            .collect(engine="streaming")
+        shared = selected.join(keys.lazy(), on=grain, how="semi", nulls_equal=True).collect(
+            engine="streaming", optimizations=_STREAM_EACH_SCAN
         )
     except (OSError, pl.exceptions.PolarsError) as exc:
-        return [Gap("overlap", key, None, "-", f"overlap check failed: {exc}")]
+        return [
+            Gap("overlap", key, None, "-", f"overlap check failed: {exc}")
+            for key, _record in members
+            if key in report
+        ]
 
     resources_by_key: dict[tuple[Any, ...], set[str]] = {}
     captures_by_key: dict[tuple[Any, ...], set[str]] = {}
     keys_by_capture: dict[str, list[tuple[Any, ...]]] = {}
     resource_of_capture: dict[str, str] = {}
+    family_of_capture: dict[str, str] = {}
     for row in shared.iter_rows(named=True):
         entity = tuple(row[column] for column in grain)
         resources_by_key.setdefault(entity, set()).add(row["resource_id"])
         captures_by_key.setdefault(entity, set()).add(row["bronze_capture_id"])
         keys_by_capture.setdefault(row["bronze_capture_id"], []).append(entity)
         resource_of_capture[row["bronze_capture_id"]] = row["resource_id"]
+        family_of_capture[row["bronze_capture_id"]] = row["__family"]
     gaps: list[Gap] = []
     for capture_id, entities in sorted(keys_by_capture.items()):
+        family = family_of_capture[capture_id]
+        if family not in report:
+            continue
         own = resource_of_capture[capture_id]
         others = sorted(set().union(*(resources_by_key[e] for e in entities)) - {own})
         peers = set().union(*(captures_by_key[e] for e in entities)) - {capture_id}
@@ -554,7 +660,7 @@ def _overlaps(key: str, record: SchemaRecord, data_dir: Path, cutoff: date) -> l
         gaps.append(
             Gap(
                 "overlap",
-                key,
+                family,
                 _partition_or_none(Path(capture_id)),
                 capture_id,
                 f"{len(entities)} key(s) also served by resource(s) {others}; first: {rendered}",
@@ -682,6 +788,7 @@ def _adjudicate(
     open_gaps: list[Gap] = []
     adjudicated: list[AdjudicatedGap] = []
     covered: set[tuple[int, str]] = set()
+    vouched: set[tuple[int, str]] = set()
     for gap in gaps:
         match = next(
             ((index, entry) for index, entry in enumerate(scoped) if _covers(entry, gap)), None
@@ -692,6 +799,15 @@ def _adjudicate(
         index, entry = match
         adjudicated.append(AdjudicatedGap(gap, entry))
         covered.add((index, gap.capture_id))
+        vouched.update((index, peer) for peer in gap.peers)
+    # A named peer of a covered overlap on which the entry's own family has no gap
+    # is another overlap-group family's capture (ADR-043): its own family's entry
+    # covers its gap, so it is accounted here, not stale. Within one family every
+    # peer has its own gap, so this never applies outside a group.
+    own = {(gap.family, gap.capture_id) for gap in gaps}
+    accounted = covered | {
+        (index, capture) for index, capture in vouched if (scoped[index].family, capture) not in own
+    }
     stale = [
         Gap(
             STALE_ADJUDICATION,
@@ -703,7 +819,7 @@ def _adjudicate(
         )
         for index, entry in enumerate(scoped)
         for capture in entry.captures
-        if (index, capture) not in covered
+        if (index, capture) not in accounted
     ]
     return open_gaps, adjudicated, stale
 
@@ -735,12 +851,27 @@ def reconcile(
     if problems:
         raise RegistryError("; ".join(problems))
     gaps: list[Gap] = []
+    checked_groups: set[tuple[str, str]] = set()
     for key in families:
         family_gaps, _expected_pairs = _family_gaps(key, registry, data_dir, cutoff)
         gaps.extend(family_gaps)
-        record = registry.families[key][1].record
-        if record is not None and record.latest_partition is not None:
+        package, family = registry.families[key]
+        record = family.record
+        if record is None or record.latest_partition is None:
+            continue
+        if record.overlap_group is None:
             gaps.extend(_overlaps(key, record, data_dir, cutoff))
+            continue
+        slot = (package.package, record.overlap_group)
+        if slot in checked_groups:
+            continue
+        checked_groups.add(slot)
+        members: list[tuple[str, SchemaRecord]] = []
+        for member in package.families:
+            if member.record is not None and member.record.overlap_group == record.overlap_group:
+                members.append((member.key, member.record))
+        members.sort(key=lambda pair: pair[0])
+        gaps.extend(_group_overlaps(members, data_dir, cutoff, set(families)))
     gaps.extend(_stale_covered(registry, data_dir, cutoff, families))
     open_gaps, adjudicated, stale = _adjudicate(gaps, entries, families, cutoff)
     return ReconcileReport(

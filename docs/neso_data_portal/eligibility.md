@@ -290,6 +290,11 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `stor-windows` | `stor_windows` | silver | eligible | whole_capture | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
 | `super-stable-export-limit-contract-enactment` | `ssel_contract_enactment` | silver | held: TODO: COST-DIMENSION — the dictionary labels `Cost` £/h but describes it as total cost (price × volume × duration); which is published? (unit v0.22-K-TRD) | whole_capture per resource_id | utc_instant | gridflow capture time |
 | `system-frequency-data` | `system_frequency` | ingest-only (no silver output) | — | — | — | — |
+| `system-frequency-data` | `system_frequency_dmy_csv` | silver | held: TODO: dtm: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced). The 2014 day-first labels carry no offset and NESO's GMT statement starts January 2020; the labels 26/10/2014 01:00:00-01:59:59 repeat, so October 2014 fails its duplicate key (adjudicated, ADR-040), and the December 2014 to January 2015 edge cannot be overlap-checked until the zone is documented. (unit H-R1) | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
+| `system-frequency-data` | `system_frequency_gmt_csv` | silver | eligible | whole_capture per resource_id | utc_instant | CKAN last_modified of the captured file (ADR-030) |
+| `system-frequency-data` | `system_frequency_gmt_zip` | silver | eligible | whole_capture per resource_id | utc_instant | CKAN last_modified of the captured file (ADR-030) |
+| `system-frequency-data` | `system_frequency_offset_csv` | silver | eligible | whole_capture per resource_id | utc_instant | CKAN last_modified of the captured file (ADR-030) |
+| `system-frequency-data` | `system_frequency_offset_zip` | silver | eligible | whole_capture per resource_id | utc_instant | CKAN last_modified of the captured file (ADR-030) |
 | `system-inertia` | `system_inertia` | silver | eligible | whole_capture per resource_id | sp_pair | CKAN last_modified of the captured file (ADR-030) |
 | `system-inertia-cost` | `system_inertia_cost` | silver | eligible | whole_capture per resource_id | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
 | `system-operating-plan-sop` | `system_operating_plan` | silver | held: TODO: the dump returns each plan's latest version and NESO does not state that its values are fixed and public at their creation time, and every target precedes the capture, so the forward-target rule (RULINGS 529) cannot apply. (unit E-SEM) | whole_capture | utc_instant | gridflow capture time |
@@ -470,6 +475,6 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 ## Totals
 
 - Packages: 131 (held: 4)
-- Families: 321: silver 256 (bespoke 3, recorded 253), ingest-only 30, catalogue only 35
-- Silver outputs held: 127
+- Families: 326: silver 261 (bespoke 3, recorded 258), ingest-only 30, catalogue only 35
+- Silver outputs held: 128
 - Resources: 1385

@@ -1055,6 +1055,11 @@ sources:
       stor_da_buy_curve_files: {endpoint: "/api/3/action/package_show", schedule: "daily", max_query_days: 1}
       stor_windows: {endpoint: "/api/3/action/package_show", schedule: "daily", max_query_days: 1}
       system_frequency: {endpoint: "/api/3/action/package_show", schedule: "daily", max_query_days: 1}
+      system_frequency_dmy_csv: {endpoint: "/api/3/action/package_show", schedule: "daily", max_query_days: 1}
+      system_frequency_gmt_csv: {endpoint: "/api/3/action/package_show", schedule: "daily", max_query_days: 1}
+      system_frequency_gmt_zip: {endpoint: "/api/3/action/package_show", schedule: "daily", max_query_days: 1}
+      system_frequency_offset_csv: {endpoint: "/api/3/action/package_show", schedule: "daily", max_query_days: 1}
+      system_frequency_offset_zip: {endpoint: "/api/3/action/package_show", schedule: "daily", max_query_days: 1}
       system_inertia: {endpoint: "/api/3/action/package_show", schedule: "daily", max_query_days: 1}
       system_inertia_cost: {endpoint: "/api/3/action/package_show", schedule: "daily", max_query_days: 1}
       system_operating_plan: {endpoint: "/api/3/action/package_show", schedule: "daily", max_query_days: 1}
