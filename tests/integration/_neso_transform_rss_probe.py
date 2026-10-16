@@ -4,7 +4,8 @@ Run in a FRESH interpreter by ``test_neso_transform_memory_gate.py``; never
 collected by pytest (no ``test_`` prefix)::
 
     python tests/integration/_neso_transform_rss_probe.py --members N \\
-        --engine {generic,perfile} --data-dir <tmp> [--warmup W]
+        --engine {generic,perfile} --data-dir <tmp> [--warmup W] \\
+        [--reader {csv,zip_member}]
 
 It writes N CSV captures of ~75 MiB each into one bronze date partition (one
 header ``row_id,value,label``; ``row_id`` a monotonically increasing counter, so
@@ -28,6 +29,12 @@ reader ``csv``, ``row_id`` int64 / ``value`` float64 / ``label`` string (all
 non-nullable), temporal ``none``, key ``(row_id,)``, ``key_latest``,
 ``ckan_last_modified``. ``perfile`` runs a synthetic ``VINTAGE_PER_BRONZE_FILE``
 subclass over the same bodies (the B8 red control).
+
+**Reader.** ``--reader zip_member`` (generic engine only; v0.22-H, ADR-043) writes
+each body as a deflated ZIP holding one member ``m.csv`` with the same ~75 MiB
+rows, streamed into the archive, and gives the family reader ``zip_member``
+(``member_pattern`` ``m\\.csv``, inner ``csv``) with each resource carrying the
+child ``m.csv``. The default ``csv`` is the original gate, unchanged.
 """
 
 from __future__ import annotations
@@ -52,6 +59,7 @@ MIB = 1024 * 1024
 BODY_BYTES = 75 * MIB
 HEADER = ("row_id", "value", "label")
 FAMILY = "rss_probe_generic"
+MEMBER = "m.csv"
 PKG = "eeeeeeee-1111-4000-8000-000000000000"
 PARTITION = date(2026, 10, 7)
 WARMUP_PARTITION = date(2026, 9, 1)
@@ -81,10 +89,33 @@ def _body_writer(member: int, counts: list[int]) -> Any:
     return _write
 
 
-def _write_bronze(data_dir: Path, key: str, members: range, partition: date = PARTITION) -> int:
+def _zip_writer(member: int, counts: list[int]) -> Any:
+    """The same rows as :func:`_body_writer`, streamed into a deflated one-member ZIP."""
+    import zipfile
+
+    inner = _body_writer(member, counts)
+
+    def _write(handle: BinaryIO) -> None:
+        with (
+            zipfile.ZipFile(handle, "w", zipfile.ZIP_DEFLATED) as archive,
+            archive.open(MEMBER, "w") as stream,
+        ):
+            inner(stream)  # type: ignore[arg-type]
+
+    return _write
+
+
+def _write_bronze(
+    data_dir: Path,
+    key: str,
+    members: range,
+    partition: date = PARTITION,
+    reader: str = "csv",
+) -> int:
     counts: list[int] = []
     base = datetime(partition.year, partition.month, partition.day, 6, tzinfo=UTC)
     stamp = partition.isoformat()
+    writer = _zip_writer if reader == "zip_member" else _body_writer
     for member in members:
         write_capture(
             data_dir,
@@ -93,20 +124,36 @@ def _write_bronze(data_dir: Path, key: str, members: range, partition: date = PA
             package_id=PKG,
             resource_id=_rid(member),
             resource_name=f"Member {member}",
-            body_writer=_body_writer(member, counts),
+            body_writer=writer(member, counts),
             written_at=base + timedelta(minutes=member),
             ckan_last_modified=f"{stamp}T05:{member:02d}:00.000001",
             partition=partition,
+            extension="zip" if reader == "zip_member" else "csv",
         )
     return sum(counts)
 
 
-def _registry_documents(members: int) -> dict[str, Any]:
+def _registry_documents(members: int, reader: str = "csv") -> dict[str, Any]:
     columns = [
         {"source": "row_id", "name": "row_id", "dtype": "int64", "nullable": False},
         {"source": "value", "name": "value", "dtype": "float64", "nullable": False},
         {"source": "label", "name": "label", "dtype": "string", "nullable": False},
     ]
+    rec: dict[str, Any] = {
+        "version": "1",
+        "reader": reader,
+        "encoding": "utf-8",
+        "epochs": [{"header": list(HEADER), "columns": columns, "issue": {"kind": "none"}}],
+        "temporal": {"kind": "none"},
+        "entity_key": ["row_id"],
+        "latest": "key_latest",
+        "vintage": "ckan_last_modified",
+    }
+    disposition = {"kind": "SILVER", "key": FAMILY}
+    extra: dict[str, Any] = {}
+    if reader == "zip_member":
+        rec["zip_member"] = {"member_pattern": "m\\.csv", "inner": "csv"}
+        extra = {"children": [{"child": MEMBER, "disposition": disposition}]}
     return {
         "package": "rss-probe-generic",
         "package_id": PKG,
@@ -125,18 +172,7 @@ def _registry_documents(members: int) -> dict[str, Any]:
                 "max_download_bytes": 200 * MIB,
                 "name_regex": r"^Member \d+$",
                 "transformer": None,
-                "record": {
-                    "version": "1",
-                    "reader": "csv",
-                    "encoding": "utf-8",
-                    "epochs": [
-                        {"header": list(HEADER), "columns": columns, "issue": {"kind": "none"}}
-                    ],
-                    "temporal": {"kind": "none"},
-                    "entity_key": ["row_id"],
-                    "latest": "key_latest",
-                    "vintage": "ckan_last_modified",
-                },
+                "record": rec,
             }
         ],
         "resources": [
@@ -146,21 +182,22 @@ def _registry_documents(members: int) -> dict[str, Any]:
                 "format": "CSV",
                 "url_type": "upload",
                 "family": FAMILY,
-                "disposition": {"kind": "SILVER", "key": FAMILY},
+                "disposition": disposition,
+                **extra,
             }
             for member in range(members)
         ],
     }
 
 
-def _run_generic(data_dir: Path, members: int, warmup: int) -> int:
+def _run_generic(data_dir: Path, members: int, warmup: int, reader: str = "csv") -> int:
     from gridflow.connectors.neso_data_portal import registry as registry_module
     from gridflow.silver.neso_data_portal import generic
 
     directory = data_dir / "_registry"
     directory.mkdir()
     (directory / "rss-probe-generic.json").write_text(
-        registry_module.dump_json(_registry_documents(warmup + members)), encoding="utf-8"
+        registry_module.dump_json(_registry_documents(warmup + members, reader)), encoding="utf-8"
     )
     (directory / "_frozen_keys.json").write_text("[]", encoding="utf-8")
     (directory / "_adjudications.json").write_text("[]", encoding="utf-8")
@@ -220,14 +257,20 @@ def main() -> None:
     parser.add_argument("--engine", choices=("generic", "perfile"), required=True)
     parser.add_argument("--data-dir", type=Path, required=True)
     parser.add_argument("--warmup", type=int, default=0)
+    parser.add_argument("--reader", choices=("csv", "zip_member"), default="csv")
     args = parser.parse_args()
     data_dir: Path = args.data_dir
     warmup: int = args.warmup
+    reader: str = args.reader
+    if reader != "csv" and args.engine != "generic":
+        parser.error("--reader zip_member needs --engine generic")
     if warmup:
-        _write_bronze(data_dir, FAMILY, range(warmup), WARMUP_PARTITION)
-    generated_rows = _write_bronze(data_dir, FAMILY, range(warmup, warmup + args.members))
+        _write_bronze(data_dir, FAMILY, range(warmup), WARMUP_PARTITION, reader)
+    generated_rows = _write_bronze(
+        data_dir, FAMILY, range(warmup, warmup + args.members), reader=reader
+    )
     rows = (
-        _run_generic(data_dir, args.members, warmup)
+        _run_generic(data_dir, args.members, warmup, reader)
         if args.engine == "generic"
         else _run_perfile(data_dir, warmup)
     )

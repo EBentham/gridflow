@@ -18,6 +18,9 @@ Red controls (not committed): the ``perfile`` engine at ``d7cf513``, whose
 per-file branch retained each body's frame, peaked at 1.16 GB for 2 captures
 and 2.16 GB for 5.
 
+The ZIP test (v0.22-H, ADR-043) runs the same gate through the ``zip_member``
+reader: each capture is a deflated one-member ZIP of the same rows.
+
 Marked ``slow``: excluded from the local fast gate, run by CI (``-m "not live"``).
 """
 
@@ -37,7 +40,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 WARMUP = 8
 
 
-def _probe(members: int, data_dir: Path) -> dict[str, Any]:
+def _probe(members: int, data_dir: Path, reader: str = "csv") -> dict[str, Any]:
     result = subprocess.run(
         [
             sys.executable,
@@ -50,6 +53,8 @@ def _probe(members: int, data_dir: Path) -> dict[str, Any]:
             str(data_dir),
             "--warmup",
             str(WARMUP),
+            "--reader",
+            reader,
         ],
         cwd=PROJECT_ROOT,
         capture_output=True,
@@ -76,6 +81,27 @@ def test_peak_rss_does_not_grow_with_captures_per_date(
         shutil.rmtree(small_dir, ignore_errors=True)
         shutil.rmtree(large_dir, ignore_errors=True)
     print(f"generic transform peak RSS: 5 captures {small}, 20 captures {large}")
+    for members, outcome in ((5, small), (20, large)):
+        assert outcome["outputs"] == members, outcome
+        assert outcome["rows"] == outcome["rows_written_to_bronze"], outcome
+    assert large["peak_rss"] <= 1.10 * small["peak_rss"], (small, large)
+
+
+@pytest.mark.slow
+def test_peak_rss_flat_for_zip_member_captures(
+    tmp_path_factory: pytest.TempPathFactory,
+) -> None:
+    """Detects the ``zip_member`` path retaining a capture's member bytes or frame (H7):
+    the same 5-vs-20 gate, every capture a deflated one-member ZIP of the same rows."""
+    small_dir = tmp_path_factory.mktemp("z5")
+    large_dir = tmp_path_factory.mktemp("z20")
+    try:
+        small = _probe(5, small_dir, "zip_member")
+        large = _probe(20, large_dir, "zip_member")
+    finally:
+        shutil.rmtree(small_dir, ignore_errors=True)
+        shutil.rmtree(large_dir, ignore_errors=True)
+    print(f"zip_member transform peak RSS: 5 captures {small}, 20 captures {large}")
     for members, outcome in ((5, small), (20, large)):
         assert outcome["outputs"] == members, outcome
         assert outcome["rows"] == outcome["rows_written_to_bronze"], outcome
