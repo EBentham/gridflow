@@ -70,14 +70,17 @@ uv network ops (lock/sync) need `--system-certs` on this machine (Avast TLS).
 - No manual path construction. Use `PathBuilder` from `storage/paths.py`.
 - No `Path.rename()` for atomic writes on Windows. Use `os.replace()` —
   already encapsulated in `storage/parquet.write_parquet`.
-- Bronze is immutable. Never edit bronze in place.
+- Bronze is append-only by default. Changing or backfilling it is allowed without
+  asking, with the class-2 receipt (snapshot of anything overwritten, counts before/after,
+  RULINGS line); deleting bronze with no snapshot stays gated (OWNER 2026-10-18).
 
 **Process:**
 - Never commit code to `main` — feature branches + PR. Docs-only commits (`*.md`,
   `.planning/`, `docs/`) may land on `main` directly (guard exemption, 2026-09-01).
 - Conventional commits: `feat:`, `fix:`, `test:`, `refactor:`, `chore:`, `docs:`.
-- No live API ingestion (`gridflow ingest` against a real key) without explicit
-  user confirmation.
+- Live API ingestion (`gridflow ingest` against a real key) is allowed without asking,
+  with the same class-2 receipt (OWNER 2026-10-18); run it with `GRIDFLOW_ALLOW_INGEST=1`,
+  the guard's approved-ingest flag.
 - No new top-level packages under `src/gridflow/` without discussion.
 - No cloud dependencies. Local-only is a hard constraint.
 - Do not invent rate limits, endpoints, or schemas. If it's not documented,
