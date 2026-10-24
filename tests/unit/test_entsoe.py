@@ -53,6 +53,7 @@ from gridflow.schemas.entsoe import (
     EntsoeWaterReservoirs,
     EntsoeWindSolarForecast,
 )
+from gridflow.silver.entsoe._outages import parse_outage_xml
 from gridflow.silver.entsoe.activated_balancing_prices import ActivatedBalancingPricesTransformer
 from gridflow.silver.entsoe.activated_balancing_qty import ActivatedBalancingQtyTransformer
 from gridflow.silver.entsoe.actual_generation import ActualGenerationTransformer
@@ -90,7 +91,6 @@ from gridflow.silver.entsoe.load_forecast_monthly import LoadForecastMonthlyTran
 from gridflow.silver.entsoe.load_forecast_weekly import LoadForecastWeeklyTransformer
 from gridflow.silver.entsoe.load_forecast_yearly import LoadForecastYearlyTransformer
 from gridflow.silver.entsoe.net_transfer_capacity import NetTransferCapacityTransformer
-from gridflow.silver.entsoe._outages import parse_outage_xml
 from gridflow.silver.entsoe.outages_generation import OutagesGenerationTransformer
 from gridflow.silver.entsoe.outages_h7 import (
     OutagesConsumptionTransformer,

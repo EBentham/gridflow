@@ -1,3 +1,4 @@
+# ruff: noqa: E501  (vendor XML element names are long)
 """Outage silver: PT1M steps, document identity, revisions and day ownership.
 
 Regression tests for backlog 13ai (PT1M unmapped, stamps reaching 2069),
