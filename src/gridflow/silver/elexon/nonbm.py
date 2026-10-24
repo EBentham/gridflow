@@ -19,26 +19,37 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-# NONBM ignores these names and returns its latest record whatever the window
-# (connectors/elexon/endpoints.py), so a body fetched with them is not a
-# response for its partition. Such bodies stay in bronze (immutable).
+# NONBM ignores publishDateTimeFrom/To and returns its latest record whatever
+# the window (connectors/elexon/endpoints.py), so only a body whose sidecar
+# shows it was fetched with from/to is a response for its partition. Fail
+# closed: a body with no readable proof is excluded, because the stale record
+# looks like valid data. Excluded bodies stay in bronze (immutable).
+_HONOURED_WINDOW_PARAMS = frozenset({"from", "to"})
 _IGNORED_WINDOW_PARAMS = frozenset({"publishDateTimeFrom", "publishDateTimeTo"})
 
 
-def _fetched_with_ignored_window(raw_path: Path) -> bool:
-    """Return True when the body's sidecar records the ignored window params."""
+def _window_exclusion_reason(raw_path: Path) -> str | None:
+    """Say why a NONBM bronze body cannot be trusted to match its window.
+
+    Args:
+        raw_path: Path of the ``raw_*.json`` body; its sidecar sits beside it.
+
+    Returns:
+        None when the sidecar records ``from``/``to`` and none of the ignored
+        names, else a short reason for the exclusion warning.
+    """
     try:
-        meta = json.loads(raw_path.with_suffix(".meta.json").read_text())
-    except (OSError, json.JSONDecodeError) as e:
-        logger.warning(
-            "NONBM: cannot read the sidecar for %s (%s); its request window is "
-            "unknown, so the body is kept",
-            raw_path,
-            e,
-        )
-        return False
+        meta = json.loads(raw_path.with_suffix(".meta.json").read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as e:
+        return f"its sidecar cannot be read ({e})"
     params = meta.get("request_params") if isinstance(meta, dict) else None
-    return isinstance(params, dict) and not _IGNORED_WINDOW_PARAMS.isdisjoint(params)
+    if not isinstance(params, dict):
+        return "its sidecar records no request_params"
+    if not _IGNORED_WINDOW_PARAMS.isdisjoint(params):
+        return "it was fetched with publishDateTimeFrom/To, which the vendor ignores"
+    if not _HONOURED_WINDOW_PARAMS.issubset(params):
+        return "its sidecar records no from/to window"
+    return None
 
 
 class NONBMTransformer(BaseSilverTransformer):
@@ -69,14 +80,10 @@ class NONBMTransformer(BaseSilverTransformer):
             try:
                 data = json.loads(f.read_text())
                 records = data.get("data", []) if isinstance(data, dict) else data
-                if _fetched_with_ignored_window(f):
+                reason = _window_exclusion_reason(f)
+                if reason is not None:
                     self.last_excluded_row_count += len(records)
-                    logger.warning(
-                        "NONBM: excluded %d row(s) from %s, fetched with "
-                        "publishDateTimeFrom/To, which the vendor ignores",
-                        len(records),
-                        f,
-                    )
+                    logger.warning("NONBM: excluded %d row(s) from %s: %s", len(records), f, reason)
                     continue
                 rows.extend(records)
             except (json.JSONDecodeError, AttributeError) as e:

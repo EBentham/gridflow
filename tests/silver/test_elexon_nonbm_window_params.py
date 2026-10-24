@@ -11,9 +11,11 @@ from __future__ import annotations
 import json
 import logging
 from datetime import UTC, date, datetime
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 import polars as pl
+import pytest
 
 from gridflow.bronze.writer import BronzeWriter
 from gridflow.connectors.base import RawResponse
@@ -21,9 +23,7 @@ from gridflow.silver.elexon.nonbm import NONBMTransformer
 from gridflow.storage.paths import PathBuilder
 
 if TYPE_CHECKING:
-    from pathlib import Path
-
-    import pytest
+    from collections.abc import Callable
 
 AUG_1 = date(2026, 8, 1)
 WINDOW_START = datetime(2026, 8, 1, tzinfo=UTC)
@@ -122,18 +122,44 @@ def test_from_to_body_survives_beside_an_ignored_params_body(tmp_path: Path) -> 
     assert silver["generation_mw"].to_list() == [12.5, 12.5]
 
 
-def test_body_without_a_readable_sidecar_is_kept_and_warned(
-    tmp_path: Path, caplog: pytest.LogCaptureFixture
-) -> None:
-    _write_body(tmp_path, [_in_window_record(23)], from_param="from", to_param="to")
+def _sidecars(tmp_path: Path) -> list[Path]:
     partition = PathBuilder(tmp_path).bronze_date_dir("elexon", "nonbm", AUG_1)
-    for sidecar in partition.glob("raw_*.meta.json"):
-        sidecar.unlink()
+    return sorted(partition.glob("raw_*.meta.json"))
+
+
+def _strip_window(sidecar: Path) -> None:
+    meta = json.loads(sidecar.read_text(encoding="utf-8"))
+    meta["request_params"] = {"page": 1}
+    sidecar.write_text(json.dumps(meta), encoding="utf-8")
+
+
+@pytest.mark.parametrize(
+    ("damage", "reason"),
+    [
+        (Path.unlink, "sidecar cannot be read"),
+        (lambda p: p.write_bytes(b"\xff\xfe{not utf-8"), "sidecar cannot be read"),
+        (lambda p: p.write_text("{truncated", encoding="utf-8"), "sidecar cannot be read"),
+        (_strip_window, "no from/to window"),
+    ],
+    ids=["missing", "not-utf8", "bad-json", "no-window"],
+)
+def test_body_without_proof_of_a_from_to_window_is_excluded(
+    tmp_path: Path,
+    caplog: pytest.LogCaptureFixture,
+    damage: Callable[[Path], object],
+    reason: str,
+) -> None:
+    # Fail closed: the stale latest record looks like valid data, so a body
+    # whose sidecar cannot show a from/to fetch must not reach silver.
+    _write_body(tmp_path, [STALE_LATEST_RECORD], from_param="from", to_param="to")
+    (sidecar,) = _sidecars(tmp_path)
+    damage(sidecar)
 
     transformer = NONBMTransformer(tmp_path)
     with caplog.at_level(logging.WARNING, logger="gridflow.silver.elexon.nonbm"):
-        rows = transformer.run(AUG_1, run_id="nonbm-no-sidecar")
+        rows = transformer.run(AUG_1, run_id="nonbm-unproven")
 
-    assert rows == 1
-    assert transformer.last_excluded_row_count == 0
-    assert "cannot read the sidecar" in caplog.text
+    assert rows == 0
+    assert transformer.last_excluded_row_count == 1
+    assert reason in caplog.text
+    assert not PathBuilder(tmp_path).silver_file("elexon", "nonbm", AUG_1).exists()
