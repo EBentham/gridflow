@@ -176,6 +176,8 @@ def record_dtypes(record: SchemaRecord) -> dict[str, str]:
         out[EDITION] = "int64"
     if record.latest_partition == "resource_id":
         out["resource_id"] = "string"
+    if record.occurrence_column is not None:
+        out[record.occurrence_column] = "int64"
     out.update(
         {
             "timestamp_utc": "datetime",
@@ -611,6 +613,20 @@ def finish_capture(
             f"({dict(sorted(tally.counts.items()))}); nothing is written"
         )
 
+    if record.occurrence_column is not None:
+        # Before any join (``_with_timestamp_utc``) can reorder rows: the
+        # ordinal is the body order. Per-capture stamps are constant here, so
+        # counting over the typed key columns alone is the same partition.
+        counted = [
+            column
+            for column in record.entity_key
+            if column != record.occurrence_column and column in frame.columns
+        ]
+        frame = frame.with_columns(
+            pl.int_range(1, pl.len() + 1, dtype=pl.Int64)
+            .over(counted)
+            .alias(record.occurrence_column)
+        )
     frame = _with_timestamp_utc(frame, record, ctx)
     if record.vintage == "issue_time_evidenced":
         published = pl.col("issue_time").cast(_UTC_DATETIME)

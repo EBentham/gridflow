@@ -45,7 +45,6 @@ from gridflow.silver.latest_views import (
     latest_select_sql,
     select_latest_vintage,
 )
-from gridflow.silver.neso_data_portal.casting import DuplicateEntityKeyError
 from gridflow.silver.neso_data_portal.completion import (
     NesoCaptureFailedError,
     capture_id_for,
@@ -55,7 +54,6 @@ from gridflow.silver.neso_data_portal.completion import (
 from gridflow.silver.neso_data_portal.reconcile import reconcile
 from gridflow.silver.registry import get_transformer
 from gridflow.storage.duckdb import init_catalogue
-from gridflow.storage.paths import PathBuilder
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
@@ -80,8 +78,9 @@ Q = (
     "TODO: dtm: the zone, period start/end and clock of these datetimes are undocumented "
     "(local_instant is forbidden until evidenced). The 2014 day-first labels carry no offset "
     "and NESO's GMT statement starts January 2020; the labels 26/10/2014 01:00:00-01:59:59 "
-    "repeat, so October 2014 fails its duplicate key (adjudicated, ADR-040), and the December "
-    "2014 to January 2015 edge cannot be overlap-checked until the zone is documented."
+    "repeat with different readings and are told apart only by dtm_occurrence (body order), and "
+    "the December 2014 to January 2015 edge cannot be overlap-checked until the zone is "
+    "documented."
 )
 OCTOBER_2014 = (
     "bronze/neso_data_portal/system_frequency/2026/10/08/"
@@ -437,38 +436,26 @@ class TestRenderings:
         assert eligibility.unit == "H-R1"
         assert eligibility.question == Q
 
-    def test_t_f9_b_october_2014s_repeated_hour_fails_and_is_adjudicated(
-        self, data: Path, tmp_path: Path
+    def test_t_f9_b_october_2014s_repeated_hour_loads_keyed_by_its_occurrence(
+        self, data: Path
     ) -> None:
-        """Detects the repeated 26/10/2014 01:00:00 label resolved by row order or silently
-        merged (H5, ratification note 1): the capture fails ``DuplicateEntityKeyError`` with
-        a failure record and no output, reconcile reports it ``failed`` with that cause, and
-        P-6's entry, naming this capture, adjudicates it."""
-        capture_id = capture(data, "2014-10", fixture("f-2014-10.csv"))
-        with pytest.raises(NesoCaptureFailedError) as info:
-            run(data, DMY)
-        assert failure_names(info) == [DuplicateEntityKeyError.__name__]
-        assert read_completion(data, DMY, capture_id) is None
-        assert no_silver(data, DMY)
-        failures = list(PathBuilder(data).completion_failure_dir(SOURCE, DMY).glob("*.json"))
-        assert len(failures) == 1, "one failure record is written"
-        record = json.loads(failures[0].read_text(encoding="utf-8"))
-        assert record["error_class"] == DuplicateEntityKeyError.__name__
-
-        directory = _copied_registry(tmp_path / "registry")
-        ledger_path = directory / "_reconcile_adjudications.json"
-        ledger = json.loads(ledger_path.read_text(encoding="utf-8"))
-        (entry,) = [row for row in ledger if row["family"] == DMY]
-        entry["captures"] = [capture_id]
-        ledger_path.write_text(registry_module.dump_json(ledger), encoding="utf-8")
-        report = reconcile(data, registry_module.load_registry(directory), [DMY], DAY)
-        assert report.passed, report.lines()
-        ((item,),) = [report.adjudicated]
-        assert (item.gap.category, item.gap.capture_id, item.gap.cause) == (
-            "failed",
-            capture_id,
-            DuplicateEntityKeyError.__name__,
-        )
+        """Detects the repeated 26/10/2014 01:00:00 label failing the capture (20ao), merged,
+        deduplicated or resolved to an instant: both rows load with their own readings, the raw
+        label kept, ``dtm_occurrence`` 1 then 2 in body order, every other label 1, and the key
+        (resource_id, dtm, dtm_occurrence) unique; no adjudication entry remains."""
+        raw = fixture("f-2014-10.csv")
+        capture_id = capture(data, "2014-10", raw)
+        assert run(data, DMY) == len(body_cells(raw))
+        assert read_completion(data, DMY, capture_id) is not None
+        frame = silver(data, DMY)
+        assert frame.schema["dtm"] == pl.Utf8
+        assert frame.schema["dtm_occurrence"] == pl.Int64
+        repeated = frame.filter(pl.col("dtm") == "26/10/2014 01:00:00").sort("dtm_occurrence")
+        assert repeated.select("dtm_occurrence", "f").rows() == [(1, 50.029), (2, 49.94)]
+        others = frame.filter(pl.col("dtm") != "26/10/2014 01:00:00")
+        assert others["dtm_occurrence"].to_list() == [1, 1, 1]
+        assert frame.select("resource_id", "dtm", "dtm_occurrence").is_duplicated().sum() == 0
+        assert not [e for e in registry_module.load_reconcile_adjudications() if e.family == DMY]
 
     def test_t_f9_c_offsets_convert_across_the_dst_edge_and_a_missing_one_fails(
         self, data: Path
@@ -685,8 +672,12 @@ class TestRegistryPins:
             for key in ranges:
                 rec = registry.families[key][1].record
                 assert rec.siblings == ('system_frequency',)
-                assert rec.version == '1' and rec.encoding == 'utf-8'
-                assert rec.entity_key == ('resource_id', 'dtm')
+                # 2: the 2014 record gained dtm_occurrence (20ao), so its outputs re-transform.
+                assert rec.version == ('2' if key == '{DMY}' else '1') and rec.encoding == 'utf-8'
+                assert rec.entity_key == (
+                    ('resource_id', 'dtm', 'dtm_occurrence') if key == '{DMY}'
+                    else ('resource_id', 'dtm'))
+                assert rec.occurrence_column == ('dtm_occurrence' if key == '{DMY}' else None)
                 assert rec.latest == 'whole_capture' and rec.latest_partition == 'resource_id'
                 assert rec.vintage == 'ckan_last_modified'
                 (epoch,) = rec.epochs
@@ -719,14 +710,7 @@ class TestRegistryPins:
                 else:
                     assert rec.reader == 'csv' and rec.zip_member is None
             entries = load_reconcile_adjudications()
-            (entry,) = [e for e in entries if e.family == '{DMY}']
-            assert entry.category == 'failed' and entry.cause == 'DuplicateEntityKeyError'
-            assert entry.captures == ({OCTOBER_2014!r},)
-            assert entry.ruling == '861'
-            assert entry.question == ('Which of the two October 2014 rows of each repeated '
-                                      '01:00-01:59 label is the first (BST) hour?')
-            assert entry.reason.startswith("October 2014's labels 26/10/2014 01:00:00-01:59:59")
-            assert entry.evidence == 'v0.22-H RESEARCH (a), (e); ADR-040'
+            assert not [e for e in entries if e.family == '{DMY}']
             assert reconcile_adjudication_problems(registry, entries) == []
             print('OK')
             """
@@ -814,3 +798,40 @@ class TestFormatBoundaries:
         by_capture = {gap.capture_id: gap.peers for gap in gaps}
         assert by_capture[early] == (late,) and by_capture[late] == (early,)
         assert silver(data, early_key)["dtm"].to_list() == silver(data, late_key)["dtm"].to_list()
+
+
+# --------------------------------------------------------------------------- #
+# 20ao: the occurrence column's load-time rule (V-22)
+# --------------------------------------------------------------------------- #
+
+
+@pytest.mark.parametrize(
+    ("update", "fragment"),
+    [
+        ({"occurrence_column": "Dtm Occurrence"}, "not a silver name"),
+        ({"occurrence_column": "f"}, "collides"),
+        ({"occurrence_column": "resource_id"}, "collides"),
+        ({"entity_key": ("resource_id", "dtm")}, "must be in entity_key"),
+    ],
+    ids=["bad-name", "typed-output", "reserved", "not-in-key"],
+)
+def test_v22_an_occurrence_column_outside_its_rule_is_refused(
+    update: dict[str, object], fragment: str
+) -> None:
+    """Detects an occurrence column that could shadow a vendor or engine column, or that the
+    key does not carry (so repeats would still collide)."""
+    from gridflow.connectors.neso_data_portal.registry.record import RecordError, validate_record
+
+    package, family = load_registry().families[DMY]
+    record = family.record
+    assert record is not None
+    broken = record.model_copy(update=update)
+    with pytest.raises(RecordError, match=fragment):
+        validate_record(
+            broken,
+            key=DMY,
+            kind="tabular",
+            legacy=False,
+            package_families={f.key: f.record is not None for f in package.families},
+            family_url_types=frozenset({"upload"}),
+        )

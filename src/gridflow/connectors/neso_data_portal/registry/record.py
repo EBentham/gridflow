@@ -665,6 +665,13 @@ class SchemaRecord(_Frozen):
             together form one series: reconcile checks their union for keys
             served by two resources (ADR-043, V-21). ``None``, the default, is
             omitted from every ``exclude_none`` dump.
+        occurrence_column: An ``int64`` output naming each row's 1-based
+            occurrence, in body order, of its other ``entity_key`` values, for
+            a body that repeats a key label with different readings (October
+            2014's system frequency repeats the hour 01:00 to 01:59). It is part
+            of ``entity_key``; nothing about the repeat is inferred beyond its
+            order. ``None``, the default, is omitted from every ``exclude_none``
+            dump.
     """
 
     version: str = Field(min_length=1)
@@ -685,6 +692,7 @@ class SchemaRecord(_Frozen):
     edition_by_filename: tuple[tuple[str, int], ...] | None = None
     xlsx_blocks: tuple[XlsxBlock, ...] | None = None
     overlap_group: str | None = None
+    occurrence_column: str | None = None
 
     @model_validator(mode="after")
     def _shape(self) -> SchemaRecord:
@@ -847,11 +855,24 @@ def validate_record(
     outputs = set(dtypes)
     issue = has_issue_time(record)
     key_set = set(record.entity_key)
+    occurrence = record.occurrence_column
+    if occurrence is not None:
+        if not SILVER_NAME_PATTERN.fullmatch(occurrence):
+            raise _fail("V-22", f"occurrence_column {occurrence!r} is not a silver name")
+        if occurrence in outputs or occurrence in RESERVED:
+            raise _fail("V-22", f"occurrence_column {occurrence!r} collides with another column")
+        if occurrence not in key_set:
+            raise _fail("V-22", f"occurrence_column {occurrence!r} must be in entity_key")
+        if not key_set & outputs:
+            raise _fail(
+                "V-22", "occurrence_column counts repeats of a typed entity_key column; none"
+            )
     admissible = (
         outputs
         | {"issue_time"}
         | ({"resource_id"} if record.latest_partition else set())
         | ({EDITION} if record.edition_by_filename is not None else set())
+        | ({occurrence} if occurrence is not None else set())
     )
     if not key_set <= admissible:
         raise _fail(
@@ -987,7 +1008,7 @@ def _grain_dtype(record: SchemaRecord, name: str) -> str:
     columns = silver_columns(record)
     if name in columns:
         return columns[name].dtype
-    return "int64" if name == EDITION else "datetime"
+    return "int64" if name in (EDITION, record.occurrence_column) else "datetime"
 
 
 def _check_scenario(record: SchemaRecord, key_set: set[str]) -> None:
