@@ -186,3 +186,22 @@ def test_non_validity_datasets_keep_the_start_date_rule(tmp_data_dir: Path) -> N
     silver = _silver(tmp_data_dir, "nominations", _DAY)
     assert silver["id"].to_list() == ["today"]
     assert silver["timestamp_utc"].item() == _GAS_DAY_START
+
+
+def test_register_timestamp_falls_back_row_wise_past_null_columns(tmp_data_dir: Path) -> None:
+    transformer = get_transformer("entsog", "operator_point_directions", tmp_data_dir)
+    raw = pl.DataFrame(
+        {
+            "id": ["a", "b"],
+            "validFrom": [None, None],
+            "lastUpdateDateTime": ["2026-09-27T02:18:00+02:00", "2026-09-26T10:00:00+02:00"],
+        }
+    )
+
+    silver = transformer.transform(raw)
+
+    assert silver["timestamp_utc"].null_count() == 0
+    assert silver["timestamp_utc"].to_list() == [
+        datetime(2026, 9, 26, 8, tzinfo=UTC),
+        datetime(2026, 9, 27, 0, 18, tzinfo=UTC),
+    ]

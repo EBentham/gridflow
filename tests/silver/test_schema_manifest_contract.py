@@ -70,6 +70,8 @@ def test_manifest_has_ratified_date_columns() -> None:
     assert DESIGNATED_DATE_COLS[("entsog", "aggregate_interconnections")] == "ingested_at"
     assert DESIGNATED_DATE_COLS[("entsog", "balancing_zones")] == "ingested_at"
     assert DESIGNATED_DATE_COLS[("entsog", "connection_points")] == "ingested_at"
+    assert DESIGNATED_DATE_COLS[("entsog", "interconnections")] == "ingested_at"
+    assert DESIGNATED_DATE_COLS[("entsog", "operator_point_directions")] == "ingested_at"
     assert ("elexon", "bod") not in DESIGNATED_DATE_COLS
     entry = _silver_entry("elexon", "system_prices")
     # system_prices is APPEND_ONLY with a registered _latest spec (N-5, D-1/D-2):

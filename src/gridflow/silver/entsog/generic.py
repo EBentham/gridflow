@@ -210,9 +210,14 @@ class GenericEntsogJsonTransformer(BaseSilverTransformer):
                 ).alias("timestamp_utc")
             ).drop(_GAS_DAY_START_COLUMN)
 
-        timestamp_source = next((col for col in _TIMESTAMP_PRIORITY if col in df.columns), None)
-        if timestamp_source and "timestamp_utc" not in df.columns:
-            df = df.with_columns(pl.col(timestamp_source).alias("timestamp_utc"))
+        # Row-wise: a candidate column can exist yet be null on every row
+        # (cmp_unsuccessful_requests sends periodFrom null, the registers send
+        # validFrom null), so the first PRESENT column is not enough.
+        timestamp_sources = [col for col in _TIMESTAMP_PRIORITY if col in df.columns]
+        if timestamp_sources and "timestamp_utc" not in df.columns:
+            df = df.with_columns(
+                pl.coalesce([pl.col(col) for col in timestamp_sources]).alias("timestamp_utc")
+            )
 
         for column in list(df.columns):
             if _looks_numeric(column):
