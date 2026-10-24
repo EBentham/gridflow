@@ -153,6 +153,33 @@ def partition_validity_records_to_gas_day(
     return kept, undated_count
 
 
+def gas_day_stamp(
+    record: dict[str, Any],
+    target_date: date,
+    window_fields: Iterable[tuple[str, str]],
+) -> datetime:
+    """Return the instant a validity record is stamped at in gas day ``target_date``.
+
+    The record's window start (from the same ``window_fields`` pair that
+    :func:`partition_validity_records_to_gas_day` tests) when it falls inside the
+    gas day, otherwise the gas-day start, so the stamp always lies in
+    ``[gas-day start, gas-day end)`` and names exactly one gas day.
+
+    Args:
+        record: One raw ENTSO-G record kept for ``target_date``.
+        target_date: The gas day being read.
+        window_fields: ``(from, to)`` field pairs, in priority order.
+
+    Returns:
+        A UTC-aware datetime inside the gas day.
+    """
+    start, end = gas_day_bounds(target_date)
+    window = _record_window(record, tuple(window_fields))
+    if window is not None and start <= window[0] < end:
+        return window[0]
+    return start
+
+
 def log_undated_records(
     undated_count: int,
     target_date: date,
@@ -279,16 +306,25 @@ def _record_date(
     return None
 
 
+def _record_window(
+    record: dict[str, Any],
+    window_fields: tuple[tuple[str, str], ...],
+) -> tuple[datetime, datetime | None] | None:
+    for from_field, to_field in window_fields:
+        window_start = parse_entsog_datetime(record.get(from_field))
+        if window_start is not None:
+            return window_start, parse_entsog_datetime(record.get(to_field))
+    return None
+
+
 def _window_overlaps(
     record: dict[str, Any],
     window_fields: tuple[tuple[str, str], ...],
     start: datetime,
     end: datetime,
 ) -> bool:
-    for from_field, to_field in window_fields:
-        window_start = parse_entsog_datetime(record.get(from_field))
-        if window_start is None:
-            continue
-        window_end = parse_entsog_datetime(record.get(to_field))
-        return window_start < end and (window_end is None or window_end > start)
-    return False
+    window = _record_window(record, window_fields)
+    if window is None:
+        return False
+    window_start, window_end = window
+    return window_start < end and (window_end is None or window_end > start)

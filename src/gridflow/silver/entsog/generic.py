@@ -22,7 +22,7 @@ from gridflow.silver.base import (
     BronzeReadSelection,
 )
 from gridflow.silver.entsog.datetime import (
-    gas_day_bounds,
+    gas_day_stamp,
     log_undated_records,
     parse_entsog_datetime_expr,
     partition_records_to_target_date,
@@ -59,14 +59,14 @@ _TIMESTAMP_PRIORITY = [
     "valid_from",
     "last_update_date_time",
 ]
-_GAS_DAY_START_FIELD = "gfGasDayStart"
-"""Transient raw field carrying the partition's gas-day start into ``transform``.
+_GAS_DAY_STAMP_FIELD = "gfGasDayStamp"
+"""Transient raw field carrying a validity record's gas-day stamp into ``transform``.
 
-Added by the read hook to every record of a validity-window dataset and
-dropped by ``transform`` once it has stamped ``timestamp_utc``.
+Added by the read hook to every record of a validity-window dataset (where the
+partition's gas day is known) and dropped by ``transform`` once it has become
+``timestamp_utc``.
 """
-_GAS_DAY_START_COLUMN = "gf_gas_day_start"
-_WINDOW_START_COLUMNS = ("period_from", "capacity_from")
+_GAS_DAY_STAMP_COLUMN = "gf_gas_day_stamp"
 _COLUMN_ALIASES = {"dataset": "data_set"}
 """Vendor spellings folded onto one column.
 
@@ -176,8 +176,15 @@ class GenericEntsogJsonTransformer(BaseSilverTransformer):
                     records, target_date, _RAW_TIMESTAMP_PRIORITY, _RAW_VALIDITY_WINDOWS
                 )
                 undated_total += undated
-                gas_day_start = gas_day_bounds(target_date)[0].isoformat()
-                records = [{**record, _GAS_DAY_START_FIELD: gas_day_start} for record in records]
+                records = [
+                    {
+                        **record,
+                        _GAS_DAY_STAMP_FIELD: gas_day_stamp(
+                            record, target_date, _RAW_VALIDITY_WINDOWS
+                        ).isoformat(),
+                    }
+                    for record in records
+                ]
             elif self.date_window_dataset and records:
                 records, undated = partition_records_to_target_date(
                     records, target_date, _RAW_TIMESTAMP_PRIORITY
@@ -206,15 +213,11 @@ class GenericEntsogJsonTransformer(BaseSilverTransformer):
             if column in _DATETIME_COLUMNS:
                 df = df.with_columns(parse_entsog_datetime_expr(column).alias(column))
 
-        if _GAS_DAY_START_COLUMN in df.columns:
-            # A validity record stands for its gas day in this partition: stamp it
-            # at the gas-day start, or at its own start when that is later.
-            window_starts = [pl.col(col) for col in _WINDOW_START_COLUMNS if col in df.columns]
+        if _GAS_DAY_STAMP_COLUMN in df.columns:
+            # A validity record stands for its gas day in this partition.
             df = df.with_columns(
-                pl.max_horizontal(
-                    *window_starts, parse_entsog_datetime_expr(_GAS_DAY_START_COLUMN)
-                ).alias("timestamp_utc")
-            ).drop(_GAS_DAY_START_COLUMN)
+                parse_entsog_datetime_expr(_GAS_DAY_STAMP_COLUMN).alias("timestamp_utc")
+            ).drop(_GAS_DAY_STAMP_COLUMN)
 
         # Row-wise: a candidate column can exist yet be null on every row
         # (cmp_unsuccessful_requests sends periodFrom null, the registers send

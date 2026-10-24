@@ -19,6 +19,7 @@ import pytest
 import gridflow.silver.entsog  # noqa: F401 -- registers the generic entsog family
 from gridflow.silver.entsog.datetime import (
     gas_day_bounds,
+    gas_day_stamp,
     partition_validity_records_to_gas_day,
 )
 from gridflow.silver.registry import get_transformer
@@ -124,7 +125,28 @@ def test_capacity_keeps_long_validity_records_stamped_on_the_gas_day(
     long_row = silver.filter(pl.col("id") == "long")
     assert long_row["period_from"].item() == datetime(2015, 10, 30, 5, tzinfo=UTC)
     assert long_row["value"].item() == 1000.0
-    assert "gf_gas_day_start" not in silver.columns
+    assert "gf_gas_day_stamp" not in silver.columns
+
+
+def test_stamp_uses_the_filtered_window_and_stays_inside_the_gas_day() -> None:
+    windows = (("periodFrom", "periodTo"), ("capacityFrom", "capacityTo"))
+    # The period window is the one tested for overlap; a later capacity start
+    # must not pull the stamp out of the gas day (Sol review, 2026-10-24).
+    both = {
+        "periodFrom": "2026-08-03T06:00:00+02:00",
+        "periodTo": "2026-08-06T06:00:00+02:00",
+        "capacityFrom": "2026-10-01T06:00:00+02:00",
+    }
+    assert gas_day_stamp(both, date(2026, 8, 4), windows) == datetime(2026, 8, 4, 4, tzinfo=UTC)
+    # Kept by the start-date rule (auction held on the day) for a later product.
+    auction = {
+        "auctionFrom": "2026-08-03T09:00:00+02:00",
+        "capacityFrom": "2026-09-01T06:00:00+02:00",
+        "capacityTo": "2026-10-01T06:00:00+02:00",
+    }
+    assert gas_day_stamp(auction, _DAY, windows) == _GAS_DAY_START
+    intraday = {"periodFrom": "2026-08-03T14:00:00+02:00", "periodTo": "2026-08-04T06:00:00+02:00"}
+    assert gas_day_stamp(intraday, _DAY, windows) == datetime(2026, 8, 3, 12, tzinfo=UTC)
 
 
 @pytest.mark.parametrize(
