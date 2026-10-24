@@ -502,6 +502,34 @@ def select_latest_vintage(
     return out.drop(rank_alias) if drop_rank else out
 
 
+def complete_captures(lf: pl.LazyFrame, completions: pl.LazyFrame, family: str) -> pl.LazyFrame:
+    """The completion records of ``family``'s complete captures (ADR-034 P-10).
+
+    A capture is complete when its outcome is ``valid_empty`` with a zero row
+    count, or ``populated`` with a row count equal to its rows in ``lf``. This is
+    the Polars form of the eligible-completions filter :func:`latest_select_sql`
+    renders, and the one definition every Polars reader of "complete" uses.
+
+    Args:
+        lf: The family's all-vintage rows (``bronze_capture_id`` on every row).
+        completions: Completion records; only ``family``'s take part.
+        family: The completion records' ``family`` value.
+
+    Returns:
+        The complete captures' completion records, columns unchanged.
+    """
+    counts = lf.group_by("bronze_capture_id").agg(pl.len().alias("__n"))
+    return (
+        completions.filter(pl.col("family") == family)
+        .join(counts, on="bronze_capture_id", how="left")
+        .filter(
+            ((pl.col("outcome") == "valid_empty") & (pl.col("row_count") == 0))
+            | ((pl.col("outcome") == "populated") & (pl.col("__n") == pl.col("row_count")))
+        )
+        .drop("__n")
+    )
+
+
 def _whole_capture(
     lf: pl.LazyFrame,
     spec: LatestViewSpec,
@@ -509,15 +537,8 @@ def _whole_capture(
     completions: pl.LazyFrame,
 ) -> pl.LazyFrame:
     """The Polars mirror of :func:`latest_select_sql`'s whole-capture branch."""
-    counts = lf.group_by("bronze_capture_id").agg(pl.len().alias("__n"))
-    eligible = (
-        completions.filter(pl.col("family") == spec.completion_family)
-        .join(counts, on="bronze_capture_id", how="left")
-        .filter(
-            ((pl.col("outcome") == "valid_empty") & (pl.col("row_count") == 0))
-            | ((pl.col("outcome") == "populated") & (pl.col("__n") == pl.col("row_count")))
-        )
-    )
+    assert spec.completion_family is not None  # _resolve_selection guarantees it
+    eligible = complete_captures(lf, completions, spec.completion_family)
     if as_of is not None:
         eligible = eligible.filter(pl.col("available_at") <= as_of)
     ranked = eligible.sort(list(_WHOLE_CAPTURE_ORDER), descending=True, nulls_last=True)
