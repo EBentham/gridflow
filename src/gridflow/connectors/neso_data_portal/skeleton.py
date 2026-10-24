@@ -181,7 +181,10 @@ def _files(package: PackageEntry) -> list[str]:
 
 
 def _format_cell(column: ColumnSpec) -> str:
-    """A column's format and alternatives (ADR-043), per-filename formats (ADR-039), or a dash."""
+    """A column's format and alternatives (ADR-043), per-filename formats (ADR-039), per-file
+    candidates (one per body), or a dash."""
+    if column.file_formats is not None:
+        return "one of " + " or ".join(f"`{fmt}`" for fmt in column.file_formats) + " per file"
     if column.formats_by_filename is not None:
         return "; ".join(f"`{name}` → `{fmt}`" for name, fmt in column.formats_by_filename)
     if column.alt_formats is not None:

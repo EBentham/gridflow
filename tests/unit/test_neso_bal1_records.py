@@ -1534,3 +1534,23 @@ def test_file_formats_shape_is_refused_naming_the_column(
     spec.update(overrides)
     with pytest.raises(ValueError, match=fragment):
         ColumnSpec.model_validate(spec)
+
+
+def test_the_skeleton_page_shows_the_per_file_date_candidates() -> None:
+    """Detects a ``file_formats`` column rendered as a dash: the current BSUoS page names both
+    candidates and that each file takes one."""
+    page = skeleton.render_package(
+        load_registry(),
+        {
+            "name": CUR_PACKAGE,
+            "title": CUR_PACKAGE,
+            "organization": {"title": "NESO"},
+            "license_title": "NESO Open Data Licence",
+            "extras": [],
+        },
+        None,
+    )
+    cells = [line for line in page.splitlines() if line.startswith("| Settlement Date |")]
+    assert cells
+    expected = f"one of `{DATE_FORMAT}` or `{DAY_FIRST_FORMAT}` per file"
+    assert all(expected in line for line in cells)
