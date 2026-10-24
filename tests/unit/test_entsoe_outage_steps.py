@@ -166,6 +166,22 @@ class TestDayOwnership:
         assert both["timestamp_utc"].n_unique() == 2
         assert (both["step_end_utc"] - both["timestamp_utc"]).dt.total_hours().to_list() == [24, 24]
 
+    def test_superseded_revision_does_not_return_on_days_it_alone_covers(
+        self, tmp_path: Path
+    ) -> None:
+        """Review finding: clipping before choosing the revision kept revision 1
+        on 9 Sep although revision 2 moved the outage to start on 10 Sep."""
+        (tmp_path / "raw_1.xml").write_bytes(
+            _a80("doc", 1, start="2026-09-08T00:00Z", end="2026-09-12T00:00Z")
+        )
+        (tmp_path / "raw_2.xml").write_bytes(
+            _a80("doc", 2, start="2026-09-10T00:00Z", end="2026-09-12T00:00Z")
+        )
+        assert read_outage_partition(tmp_path, date(2026, 9, 9)).is_empty()
+        assert read_outage_partition(tmp_path, date(2026, 9, 10))["revision_number"].to_list() == [
+            "2"
+        ]
+
     def test_production_table_keys_on_document(self) -> None:
         """13ak: production's timeseries_mrid is always "1", so two documents collided."""
         rows = [

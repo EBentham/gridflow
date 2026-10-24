@@ -92,7 +92,8 @@ def read_outage_partition(bronze_path: Path, target_date: date) -> pl.DataFrame:
         target_date: The partition's UTC day.
 
     Returns:
-        Step rows overlapping ``target_date``, clipped to it; empty when none.
+        Step rows of each document's latest revision that overlap
+        ``target_date``, clipped to it; empty when none.
     """
     rows: list[dict[str, Any]] = []
     for xml_file in sorted(bronze_path.glob("raw_*.xml")):
@@ -102,7 +103,29 @@ def read_outage_partition(bronze_path: Path, target_date: date) -> pl.DataFrame:
             logger.warning("Failed to parse ENTSO-E XML %s: %s", xml_file, exc)
     if not rows:
         return pl.DataFrame()
-    return clip_to_day(pl.DataFrame(rows, infer_schema_length=None), target_date)
+    # Revision first, clip second: clipping first would let a superseded
+    # revision survive on a day the latest revision no longer covers.
+    steps = keep_latest_revision(pl.DataFrame(rows, infer_schema_length=None))
+    return clip_to_day(steps, target_date)
+
+
+def keep_latest_revision(df: pl.DataFrame) -> pl.DataFrame:
+    """Keep only rows from each document's highest ``revision_number``.
+
+    A later revision supersedes the whole document, so older revisions are
+    dropped by document, not point by point. A missing revision counts as
+    lower than any present one.
+
+    Args:
+        df: Parsed outage rows with ``document_mrid`` and ``revision_number``.
+
+    Returns:
+        The rows of each document's latest revision.
+    """
+    if df.is_empty() or "document_mrid" not in df.columns or "revision_number" not in df.columns:
+        return df
+    revision = pl.col("revision_number").cast(pl.Int64, strict=False).fill_null(-1)
+    return df.filter(revision == revision.max().over("document_mrid"))
 
 
 def clip_to_day(df: pl.DataFrame, target_date: date) -> pl.DataFrame:
@@ -188,8 +211,7 @@ def latest_revision_steps(df: pl.DataFrame, identity: Sequence[str]) -> pl.DataF
     Returns:
         The de-duplicated frame, sorted by document and time.
     """
-    latest = pl.col("revision_number").fill_null(-1)
-    df = df.filter(latest == latest.max().over("document_mrid"))
+    df = keep_latest_revision(df)
     key = [*identity, "timestamp_utc"]
     order = [c for c in ("document_created_at",) if c in df.columns]
     if order:
