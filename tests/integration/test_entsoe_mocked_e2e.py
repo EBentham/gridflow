@@ -438,6 +438,32 @@ class TestEntsoeUrlConstructionAllDatasets:
 
     @respx.mock
     @pytest.mark.asyncio
+    async def test_paging_cap_fails_the_fetch_instead_of_returning_short(
+        self,
+        entsoe_source_config: SourceConfig,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        """A request still returning full pages at the cap must raise: a short
+        result would be recorded as a successful ingest and advance the
+        watermark past series that were never fetched."""
+        from gridflow.connectors.entsoe import client as entsoe_client
+
+        monkeypatch.setattr(entsoe_client, "_ENTSOE_MAX_PAGES", 2)
+        full = (
+            b"<ReserveBid_MarketDocument>"
+            + b"<Bid_TimeSeries/>" * 100
+            + b"</ReserveBid_MarketDocument>"
+        )
+        respx.get(f"{ENTSOE_BASE}/api").mock(
+            return_value=httpx.Response(200, content=full, headers={"content-type": "text/xml"})
+        )
+
+        async with EntsoeConnector(entsoe_source_config) as connector:
+            with pytest.raises(entsoe_client.EntsoePagingLimitError):
+                await connector.fetch(dataset="balancing_energy_bids", start=START, end=END)
+
+    @respx.mock
+    @pytest.mark.asyncio
     async def test_non_paginated_doc_type_makes_single_request(
         self,
         entsoe_source_config: SourceConfig,

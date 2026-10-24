@@ -65,13 +65,17 @@ _ACK_REASON_NS = {
 # loop.
 _ENTSOE_PAGE_SIZE = 100
 
-# Runaway guard: stop after this many pages (1,000,000 series) and log loudly
+# Runaway guard: fail the fetch after this many pages (1,000,000 series)
 # rather than loop forever if the vendor ever keeps returning full pages.
 _ENTSOE_MAX_PAGES = 10_000
 
 # A37 replies (ReserveBid_MarketDocument) name their series Bid_TimeSeries;
 # every other document type uses TimeSeries.
 _SERIES_ELEMENT_NAMES = frozenset({"TimeSeries", "Bid_TimeSeries"})
+
+
+class EntsoePagingLimitError(RuntimeError):
+    """Raised when a paged ENTSO-E request still returns full pages at the page cap."""
 
 
 class EntsoeConnector(BaseConnector):
@@ -360,14 +364,13 @@ class EntsoeConnector(BaseConnector):
                 break
             pages_fetched += 1
             if pages_fetched >= _ENTSOE_MAX_PAGES:
-                logger.error(
-                    "ENTSO-E %s paging stopped after %d pages at offset %d with full "
-                    "pages still arriving; later series were not fetched",
-                    dataset,
-                    _ENTSOE_MAX_PAGES,
-                    offset,
+                # Fail the fetch rather than return a short one: a partial
+                # result would count as a successful ingest and move the
+                # watermark past series that were never fetched.
+                raise EntsoePagingLimitError(
+                    f"ENTSO-E {dataset} paging stopped after {_ENTSOE_MAX_PAGES} pages at "
+                    f"offset {offset} with full pages still arriving"
                 )
-                break
             offset += _ENTSOE_PAGE_SIZE
         return all_responses
 
