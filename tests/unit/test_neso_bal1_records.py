@@ -1505,8 +1505,18 @@ def test_a_body_mixing_iso_and_day_first_dates_fails_loud(data: Path) -> None:
         ({"file_formats": ["%d-%m-%Y", "%d-%m-%Y"]}, "repeats an entry"),
         ({"file_formats": ["%d-%m-%Y", "%m-%d-%Y"]}, "day-first and a month-first"),
         ({"file_formats": ["%Y-%m-%d", "%Y-%d-%m"]}, "day-first and a month-first"),
+        ({"file_formats": ["%d-%m-%Y", "%m-%d-%Y "]}, "day-first and a month-first"),
     ],
-    ids=["datetime", "with-format", "one", "empty", "duplicate", "dmy-mdy", "ymd-ydm"],
+    ids=[
+        "datetime",
+        "with-format",
+        "one",
+        "empty",
+        "duplicate",
+        "dmy-mdy",
+        "ymd-ydm",
+        "dmy-mdy-padded",
+    ],
 )
 def test_file_formats_shape_is_refused_naming_the_column(
     overrides: dict[str, Any], fragment: str

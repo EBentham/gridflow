@@ -177,8 +177,9 @@ class ColumnSpec(_Frozen):
             uploads of one resource. Each file takes exactly one: the single
             candidate under which every non-null cell of that file parses. No
             candidate, or more than one, fails the capture, so a day-first and a
-            month-first reading are never chosen cell by cell. ``None``, the
-            default, is omitted from every ``exclude_none`` dump.
+            month-first reading are never chosen cell by cell (an all-null
+            column has nothing to decide and types null under any candidate).
+            ``None``, the default, is omitted from every ``exclude_none`` dump.
     """
 
     source: str
@@ -298,10 +299,11 @@ class ColumnSpec(_Frozen):
         # A body's cells cannot tell a day-first from a month-first reading of one
         # shape when every day is 12 or less, so a mixed body could fit one of them
         # and be misread without a failure. Such a pair is never a candidate set.
-        swapped = {
-            c.replace("%d", "\0").replace("%m", "%d").replace("\0", "%m") for c in candidates
-        }
-        if any(c in swapped and "%d" in c and "%m" in c for c in candidates):
+        # Whitespace is dropped first: the parser treats it as optional, so
+        # ``%m-%d-%Y `` reads exactly what ``%m-%d-%Y`` reads.
+        shapes = ["".join(c.split()) for c in candidates]
+        swapped = {s.replace("%d", "\0").replace("%m", "%d").replace("\0", "%m") for s in shapes}
+        if any(s in swapped and "%d" in s and "%m" in s for s in shapes):
             raise ValueError(
                 f"column {self.name!r}: file_formats holds a day-first and a month-first "
                 "reading of one shape; the cells cannot decide between them"
