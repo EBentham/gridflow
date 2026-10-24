@@ -385,26 +385,27 @@ class TestEntsoeUrlConstructionAllDatasets:
         entsoe_source_config: SourceConfig,
     ) -> None:
         """G9 ENTSOE-01: doc types with `offset` in optional_params (A37,
-        A15, A38, etc.) must page through results — fetch offset=0,
-        offset=4800, ... until a page returns fewer than 4800 TimeSeries
-        elements. Previously the connector made a single request and
-        silently dropped any data past 4800 series.
+        A15) must page through results: offset=0, 100, ... until a page
+        returns fewer than 100 series. A reply carries at most 100 series
+        (live probe 2026-10-24), so the page size is 100, not 4800.
 
-        Handler is keyed off the `offset` query param: offset=0 returns a
-        full page (4800 TimeSeries) → connector continues; offset=4800
-        returns a partial page (100 TimeSeries) → connector stops.
-        Per-zone (the connector iterates DEFAULT_ZONES for the default
-        "zone" domain style), so we expect 2 calls × N zones total.
+        Handler is keyed off the `offset` query param: offset=0 and 100 return
+        a full page of 100 ``Bid_TimeSeries`` (the A37 series name) and
+        offset=200 a partial page of 7, so each zone takes three calls.
         """
         from gridflow.connectors.entsoe.endpoints import DEFAULT_ZONES
 
-        full_page_xml = b"<root>" + (b"<TimeSeries/>" * 4800) + b"</root>"
-        partial_page_xml = b"<root>" + (b"<TimeSeries/>" * 100) + b"</root>"
+        def page(n: int) -> bytes:
+            return (
+                b"<ReserveBid_MarketDocument>"
+                + (b"<Bid_TimeSeries/>" * n)
+                + b"</ReserveBid_MarketDocument>"
+            )
 
         def handler(request: httpx.Request) -> httpx.Response:
             params = dict(request.url.params)
             offset = int(params.get("offset", "0"))
-            body = full_page_xml if offset == 0 else partial_page_xml
+            body = page(100) if offset < 200 else page(7)
             return httpx.Response(
                 200,
                 content=body,
@@ -420,21 +421,20 @@ class TestEntsoeUrlConstructionAllDatasets:
                 end=END,
             )
 
-        # Each zone goes: offset=0 (full → loop) → offset=4800 (partial → stop).
-        expected_calls = 2 * len(DEFAULT_ZONES)
+        expected_calls = 3 * len(DEFAULT_ZONES)
         assert len(route.calls) == expected_calls, (
             f"G9 ENTSOE-01 regression: expected {expected_calls} paginated "
-            f"calls (2 per zone × {len(DEFAULT_ZONES)} zones), got "
+            f"calls (3 per zone x {len(DEFAULT_ZONES)} zones), got "
             f"{len(route.calls)}"
         )
 
         offsets_seen = {dict(call.request.url.params).get("offset", "") for call in route.calls}
-        assert offsets_seen == {"0", "4800"}, (
-            f"G9 ENTSOE-01 regression: expected offset values 0 and 4800, got {offsets_seen}"
+        assert offsets_seen == {"0", "100", "200"}, (
+            f"G9 ENTSOE-01 regression: expected offset values 0, 100 and 200, got {offsets_seen}"
         )
 
-        # Both pages collected per zone: 2 RawResponses × N zones.
         assert len(responses) == expected_calls
+        assert sorted({r.record_count for r in responses}) == [7, 100]
 
     @respx.mock
     @pytest.mark.asyncio
