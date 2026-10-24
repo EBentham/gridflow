@@ -347,6 +347,9 @@ class TestWithFirstSeen:
 # observed_snapshot
 # --------------------------------------------------------------------------- #
 
+LONDON_BEFORE_C2 = (T2 - timedelta(minutes=30)).astimezone(ZoneInfo("Europe/London"))
+"""An as-of just before c2 whose London wall clock (BST, UTC+1) is after c2's UTC instant."""
+
 AT_C1 = {
     ("A", "c1"),
     ("C1", "c1"),
@@ -414,9 +417,9 @@ class TestObservedSnapshot:
         assert _ids(whole) == {("AR2", "c2b")}
 
     def test_an_as_of_in_another_zone_is_the_same_instant(self, policy: Registry) -> None:
-        """Detects an as-of compared by wall clock instead of by instant."""
-        london = (T2 + timedelta(days=1)).astimezone(ZoneInfo("Europe/London"))
-        assert _ids(_snapshot(policy, london)) == AT_C2
+        """Detects an as-of read by its wall clock instead of its instant: 30 minutes before
+        c2 in Europe/London (BST) is 10:30 local, which read as UTC would select c2."""
+        assert _ids(_snapshot(policy, LONDON_BEFORE_C2)) == AT_C1
 
     def test_a_naive_as_of_is_refused(self, policy: Registry) -> None:
         """Detects a naive as-of being read in some local zone."""
@@ -444,6 +447,13 @@ ARCHIVE_FIRSTS = {
 
 
 class TestObservedArchive:
+    def test_an_as_of_in_another_zone_is_the_same_instant(self, policy: Registry) -> None:
+        """Detects an as-of read by its wall clock instead of its instant: 30 minutes before
+        c2 in Europe/London must not admit the versions first seen at c2 or c2b."""
+        assert _ids(_archive(policy, LONDON_BEFORE_C2)) == {
+            r for r in ARCHIVE_FIRSTS if r[1] == "c1"
+        }
+
     def test_one_row_per_observed_version_from_its_first_capture(self, policy: Registry) -> None:
         """Detects a version repeated per vintage, a representative taken from a later
         capture, a past-at-first-sight version (C2, F, I) kept, or an incomplete capture's
@@ -593,6 +603,27 @@ class TestPolicyLoad:
             load_observed_before_target(_policy_registry(tmp_path / "a", listed=["obs_typo"]))
         with pytest.raises(RegistryError, match="repeats"):
             load_observed_before_target(_policy_registry(tmp_path / "b", listed=[FAMILY, FAMILY]))
+
+    def test_load_registry_refuses_a_missing_ledger(self, tmp_path: Path) -> None:
+        """Detects an ordinary registry load accepting a registry whose policy ledger is
+        absent, so only the selectors would notice."""
+        directory = _policy_registry(tmp_path)
+        (directory / registry_module.OBSERVED_BEFORE_TARGET_FILE).unlink()
+        with pytest.raises(RegistryError, match="_observed_before_target.json"):
+            registry_module.load_registry(directory)
+
+    def test_load_registry_refuses_an_invalid_ledger(self, tmp_path: Path) -> None:
+        """Detects an ordinary registry load accepting a ledger that admits a family the rule
+        cannot reach (here an eligible record), or a malformed entry."""
+        bad = _policy_registry(tmp_path / "a", extra=[("obs_open", record())], listed=["obs_open"])
+        with pytest.raises(RegistryError, match="the record is not held"):
+            registry_module.load_registry(bad)
+        malformed = _policy_registry(tmp_path / "b")
+        (malformed / registry_module.OBSERVED_BEFORE_TARGET_FILE).write_text(
+            '[{"family": "obs_series"}]', encoding="utf-8"
+        )
+        with pytest.raises(RegistryError, match="_observed_before_target.json"):
+            registry_module.load_registry(malformed)
 
     def test_a_missing_file_is_never_read_as_empty(self, tmp_path: Path) -> None:
         """Detects an absent policy file loading as an empty list (silent loss of the rule)."""
