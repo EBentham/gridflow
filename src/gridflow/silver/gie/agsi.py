@@ -550,8 +550,11 @@ class UnavailabilityTransformer(AgsiJsonTransformer):
     ENTITY_KEY_COLUMNS = (
         "outage_date",
         "country_code",
+        "country_name",
         "company_eic",
+        "company_name",
         "facility_eic",
+        "facility_name",
         "published",
         "start",
         "end",
@@ -593,7 +596,7 @@ class UnavailabilityTransformer(AgsiJsonTransformer):
         return pl.DataFrame(rows, schema=_UNAVAILABILITY_RAW_SCHEMA)
 
     def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
-        """Type the flattened records, then deduplicate on the full record key.
+        """Deduplicate the vendor records as written, then type them.
 
         ``published``, ``start`` and ``end`` stay naive: AGSI states no timezone
         and its reporters mix clocks (Austrian and Dutch stamps move between
@@ -606,10 +609,14 @@ class UnavailabilityTransformer(AgsiJsonTransformer):
                 ``outage_date``).
 
         Returns:
-            One row per ``ENTITY_KEY_COLUMNS`` value, sorted deterministically.
+            One row per distinct vendor record and day, sorted deterministically.
         """
         if raw_df.is_empty():
             return pl.DataFrame()
+        # On the vendor strings, before parsing: a date-only end and a midnight
+        # end mean different windows but type to one datetime, and unparseable
+        # values all type to null, so a typed-key dedup could merge real notices.
+        raw_df = raw_df.unique(keep="first", maintain_order=True)
 
         unparseable = 0
         rows: list[dict[str, Any]] = []
@@ -633,8 +640,16 @@ class UnavailabilityTransformer(AgsiJsonTransformer):
             )
 
         df = pl.DataFrame(rows, schema=_UNAVAILABILITY_SILVER_SCHEMA)
-        df = df.unique(subset=list(self.ENTITY_KEY_COLUMNS), keep="first", maintain_order=True)
-        return df.sort(list(self.ENTITY_KEY_COLUMNS), nulls_last=True)
+        collisions = int(df.select(list(self.ENTITY_KEY_COLUMNS)).is_duplicated().sum())
+        if collisions:
+            logger.warning(
+                "%s/%s: %d row(s) are distinct vendor records that type to one key "
+                "(kept, never merged)",
+                self.source,
+                self.dataset,
+                collisions,
+            )
+        return df.sort(list(self.ENTITY_KEY_COLUMNS), nulls_last=True, maintain_order=True)
 
     def _bronze_files(self, target_date: date) -> list[Path]:
         files = self._bronze_files_for_date(target_date)

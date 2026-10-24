@@ -207,3 +207,32 @@ def test_read_bronze_keeps_undated_records_and_warns_once(
     warnings = [r for r in caplog.records if "had no parseable start/end" in r.getMessage()]
     assert len(warnings) == 1
     assert "2 record(s)" in warnings[0].getMessage()
+
+
+def test_dedup_drops_only_records_repeated_verbatim(tmp_data_dir: Path) -> None:
+    """Detects a key narrower than the vendor record (a renamed facility merged into its
+    namesake) or a dedup after parsing (a date-only end and a midnight end typing to one
+    datetime, merged): only the verbatim repeat is dropped."""
+    renamed = _live("2026-08-01 06:00:00", "2026-08-02 06:00:00", facility="A")
+    renamed["facility"] = {**renamed["facility"], "name": "VGS SEDIANE B (renamed)"}
+    records = [
+        _live("2026-08-01 06:00:00", "2026-08-02 06:00:00", facility="A"),
+        _live("2026-08-01 06:00:00", "2026-08-02 06:00:00", facility="A"),
+        renamed,
+        _live("2026-08-01 06:00:00", "2026-08-02", facility="B"),
+        _live("2026-08-01 06:00:00", "2026-08-02 00:00:00", facility="B"),
+    ]
+    _seed_range_bronze(tmp_data_dir, records)
+    transformer = UnavailabilityTransformer(tmp_data_dir)
+
+    rows = transformer.run(date(2026, 8, 1), run_id="dedup")
+
+    assert rows == 4
+    persisted = pl.read_parquet(
+        next(transformer.silver_dir.rglob("unavailability_20260801.parquet"))
+    )
+    assert sorted(persisted.filter(pl.col("facility_eic") == "A")["facility_name"]) == [
+        "VGS SEDIANE B",
+        "VGS SEDIANE B (renamed)",
+    ]
+    assert persisted.filter(pl.col("facility_eic") == "B").height == 2
