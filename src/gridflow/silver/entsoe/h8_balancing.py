@@ -348,18 +348,27 @@ def _with_optional_columns(df: pl.DataFrame) -> pl.DataFrame:
     return df
 
 
-#: Bodies of one reply (the entries of one ZIP) are stamped microseconds
-#: apart; re-fetches of the same request are minutes or days apart.
-_SAME_FETCH_WINDOW = timedelta(seconds=60)
+#: Pages of one paged request are fetched seconds apart (a few minutes for
+#: the hundreds of FR A37 pages); re-fetches of a request are hours or days
+#: apart. Fetches of one request closer than this belong to one run.
+_SAME_RUN_GAP = timedelta(minutes=10)
+
+#: Sidecar request params that do not identify the request: the token, the
+#: ZIP entry (one reply, several bodies) and the page offset (one paged fetch).
+_NOT_REQUEST_IDENTITY = frozenset({"securityToken", "zip_entry", "offset"})
 
 
 def _latest_fetch_files(xml_files: list[Path]) -> list[Path]:
-    """Keep, for each distinct request, only the bodies from its latest fetch.
+    """Keep, for each distinct request, only the bodies of its latest fetch run.
 
-    The request is the sidecar's ``request_params`` without the security
-    token and the ZIP entry name. Bodies fetched within
-    ``_SAME_FETCH_WINDOW`` of a request's latest ``fetched_at`` count as that
-    fetch. A body whose sidecar is missing or unreadable is kept.
+    The request is the sidecar's ``request_params`` without
+    ``_NOT_REQUEST_IDENTITY``, so every page of a paged request is one fetch.
+    A request's fetch times split into runs wherever consecutive fetches are
+    more than ``_SAME_RUN_GAP`` apart, and only the latest run is kept: a
+    re-fetch that returns fewer pages drops all of the older fetch, trailing
+    pages included. Two runs closer than the gap would both be kept. A body
+    whose sidecar is missing, unreadable, has no request params or a naive
+    ``fetched_at`` is kept and logged.
 
     Args:
         xml_files: Raw bodies of one bronze partition.
@@ -367,28 +376,42 @@ def _latest_fetch_files(xml_files: list[Path]) -> list[Path]:
     Returns:
         The kept bodies, in their original order.
     """
-    latest: dict[str, datetime] = {}
     fetch_of: dict[Path, tuple[str, datetime]] = {}
+    times_by_request: dict[str, list[datetime]] = {}
     for xml_file in xml_files:
         meta_path = xml_file.with_name(xml_file.name.removesuffix(".xml") + ".meta.json")
         try:
             meta = json.loads(meta_path.read_text(encoding="utf-8"))
-            params = {
-                k: v
-                for k, v in (meta.get("request_params") or {}).items()
-                if k not in {"securityToken", "zip_entry"}
-            }
-            request = json.dumps(params, sort_keys=True)
+            params = meta["request_params"]
             fetched_at = datetime.fromisoformat(str(meta["fetched_at"]))
-        except (OSError, ValueError, KeyError, AttributeError, TypeError) as exc:
+        except (OSError, ValueError, KeyError, TypeError) as exc:
             logger.warning("Keeping %s without a usable sidecar: %s", xml_file.name, exc)
             continue
+        if not isinstance(params, dict) or not params or fetched_at.tzinfo is None:
+            logger.warning(
+                "Keeping %s: sidecar has no request params or a naive fetched_at",
+                xml_file.name,
+            )
+            continue
+        request = json.dumps(
+            {k: v for k, v in params.items() if k not in _NOT_REQUEST_IDENTITY},
+            sort_keys=True,
+            default=str,
+        )
         fetch_of[xml_file] = (request, fetched_at)
-        latest[request] = max(latest.get(request, fetched_at), fetched_at)
+        times_by_request.setdefault(request, []).append(fetched_at)
+
+    run_start: dict[str, datetime] = {}
+    for request, times in times_by_request.items():
+        times.sort()
+        start = times[-1]
+        for earlier in reversed(times[:-1]):
+            if start - earlier > _SAME_RUN_GAP:
+                break
+            start = earlier
+        run_start[request] = start
     return [
-        f
-        for f in xml_files
-        if f not in fetch_of or latest[fetch_of[f][0]] - fetch_of[f][1] <= _SAME_FETCH_WINDOW
+        f for f in xml_files if f not in fetch_of or fetch_of[f][1] >= run_start[fetch_of[f][0]]
     ]
 
 

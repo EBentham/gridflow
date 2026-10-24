@@ -165,20 +165,60 @@ class TestBalancingEnergyBids:
 
 
 class TestLatestFetchPerRequest:
-    def test_keeps_every_zip_entry_of_the_latest_fetch_only(self, tmp_path: Path) -> None:
-        def body(name: str, fetched_at: str, area: str, entry: str | None = None) -> Path:
-            params = {"documentType": "A37", "connecting_Domain": area, "offset": "0"}
+    @staticmethod
+    def _body(
+        tmp_path: Path,
+        name: str,
+        fetched_at: str,
+        params: dict[str, str] | None,
+    ) -> Path:
+        meta: dict[str, object] = {"fetched_at": fetched_at}
+        if params is not None:
+            meta["request_params"] = params
+        (tmp_path / f"{name}.meta.json").write_text(json.dumps(meta))
+        path = tmp_path / f"{name}.xml"
+        path.write_bytes(b"<x/>")
+        return path
+
+    def test_keeps_every_zip_entry_and_page_of_the_latest_fetch_only(self, tmp_path: Path) -> None:
+        def req(area: str, offset: str, entry: str | None = None) -> dict[str, str]:
+            params = {"documentType": "A37", "connecting_Domain": area, "offset": offset}
             if entry:
                 params["zip_entry"] = entry
-            (tmp_path / f"{name}.meta.json").write_text(
-                json.dumps({"fetched_at": fetched_at, "request_params": params})
-            )
-            path = tmp_path / f"{name}.xml"
-            path.write_bytes(b"<x/>")
-            return path
+            return params
 
-        old = body("raw_1", "2026-08-16T14:12:07.979160+00:00", "FR", "001")
-        new_a = body("raw_2", "2026-08-20T09:00:00.000010+00:00", "FR", "001")
-        new_b = body("raw_3", "2026-08-20T09:00:00.000002+00:00", "FR", "002")
-        other = body("raw_4", "2026-08-16T14:12:11.401764+00:00", "NL")
-        assert _latest_fetch_files([old, new_a, new_b, other]) == [new_a, new_b, other]
+        b = self._body
+        old = b(tmp_path, "raw_1", "2026-08-16T14:12:07.979160+00:00", req("FR", "0", "001"))
+        new_a = b(tmp_path, "raw_2", "2026-08-20T09:00:00.000010+00:00", req("FR", "0", "001"))
+        new_b = b(tmp_path, "raw_3", "2026-08-20T09:00:00.000002+00:00", req("FR", "0", "002"))
+        new_p2 = b(tmp_path, "raw_4", "2026-08-20T09:02:30+00:00", req("FR", "100"))
+        other = b(tmp_path, "raw_5", "2026-08-16T14:12:11.401764+00:00", req("NL", "0"))
+        files = [old, new_a, new_b, new_p2, other]
+        assert _latest_fetch_files(files) == [new_a, new_b, new_p2, other]
+
+    def test_a_shorter_refetch_drops_the_older_trailing_pages(self, tmp_path: Path) -> None:
+        """Review finding: keying on offset kept page three of a 250-offer fetch
+        after a 150-offer re-fetch, so silver held offers that no longer exist."""
+
+        def req(offset: str) -> dict[str, str]:
+            return {"documentType": "A15", "area_Domain": "FR", "offset": offset}
+
+        old = [
+            self._body(tmp_path, f"raw_old{o}", f"2026-08-16T14:00:0{i}+00:00", req(o))
+            for i, o in enumerate(("0", "100", "200"))
+        ]
+        new = [
+            self._body(tmp_path, f"raw_new{o}", f"2026-08-20T09:00:0{i}+00:00", req(o))
+            for i, o in enumerate(("0", "100"))
+        ]
+        assert _latest_fetch_files([*old, *new]) == new
+
+    def test_bodies_without_request_identity_or_aware_time_are_kept(self, tmp_path: Path) -> None:
+        """Review findings: empty params merged unrelated bodies, and a naive
+        fetched_at crashed the comparison."""
+        b = self._body
+        fr = b(tmp_path, "raw_1", "2026-08-16T14:00:00+00:00", {})
+        nl = b(tmp_path, "raw_2", "2026-08-16T14:02:00+00:00", None)
+        aware = b(tmp_path, "raw_3", "2026-08-16T14:03:00+00:00", {"area_Domain": "BE"})
+        naive = b(tmp_path, "raw_4", "2026-08-16T14:04:00", {"area_Domain": "BE"})
+        assert _latest_fetch_files([fr, nl, aware, naive]) == [fr, nl, aware, naive]
