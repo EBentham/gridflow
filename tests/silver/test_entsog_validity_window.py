@@ -163,6 +163,8 @@ def test_cmp_keeps_capacity_window_records_and_stamps_statements(
     silver = _silver(tmp_data_dir, dataset, _DAY)
     assert silver["timestamp_utc"].null_count() == 0
     assert silver["timestamp_utc"].to_list() == [_GAS_DAY_START, _GAS_DAY_START]
+    assert "dataset" not in silver.columns
+    assert silver["data_set"].to_list() == [3, 3]
 
 
 def test_non_validity_datasets_keep_the_start_date_rule(tmp_data_dir: Path) -> None:

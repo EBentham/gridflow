@@ -67,6 +67,12 @@ dropped by ``transform`` once it has stamped ``timestamp_utc``.
 """
 _GAS_DAY_START_COLUMN = "gf_gas_day_start"
 _WINDOW_START_COLUMNS = ("period_from", "capacity_from")
+_COLUMN_ALIASES = {"dataset": "data_set"}
+"""Vendor spellings folded onto one column.
+
+ENTSO-G's "no capacity" statement rows send ``dataset`` where the valued rows
+send ``dataSet``, with the same codes (CMP unavailable 4, CMP unsuccessful 2).
+"""
 _NUMERIC_SUFFIXES = (
     "_value",
     "_price",
@@ -416,7 +422,8 @@ def _camel_to_snake(value: str) -> str:
 def _normalise_column_names(df: pl.DataFrame) -> pl.DataFrame:
     normalised: dict[str, list[str]] = {}
     for column in df.columns:
-        normalised.setdefault(_camel_to_snake(column), []).append(column)
+        snake = _camel_to_snake(column)
+        normalised.setdefault(_COLUMN_ALIASES.get(snake, snake), []).append(column)
 
     result = df
     collisions = {target: columns for target, columns in normalised.items() if len(columns) > 1}
