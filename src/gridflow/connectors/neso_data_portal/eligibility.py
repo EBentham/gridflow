@@ -17,6 +17,11 @@ same discipline as ``registry yaml --check``.
 2. else the record's own ``eligibility`` when it sets one;
 3. else ``eligible``.
 
+A held output whose family is on ``_observed_before_target.json`` stays held;
+the report adds that its rows gridflow observed before their target start may be
+read through the observed-before-target selectors (ADR-044), and the totals
+count such outputs.
+
 Exit codes: 0 the committed file agrees (or was written), 1 drift, 2 usage.
 """
 
@@ -44,6 +49,8 @@ __all__ = [
     "CLOCK_LABELS",
     "DEFAULT_PATH",
     "DISPOSITION_ORDER",
+    "OBSERVED_BEFORE_TARGET_TEXT",
+    "describe_eligibility",
     "effective_eligibility",
     "main",
     "render",
@@ -58,6 +65,12 @@ CLOCK_LABELS: dict[str, str] = {
     "issue_time_evidenced": "vendor issue time per row",
 }
 """``published_at`` per record vintage; ``available_at`` follows it (ADR-034/035)."""
+
+OBSERVED_BEFORE_TARGET_TEXT = (
+    "rows gridflow observed before their target start are readable through"
+    " `observed_snapshot` / `observed_archive` (known-at = first capture, ADR-044)"
+)
+"""The clause a held output on the observed-before-target policy adds to its text."""
 
 _ELIGIBLE = Eligible(status="eligible")
 
@@ -80,18 +93,42 @@ def effective_eligibility(package: PackageEntry, family: FamilyEntry) -> Eligibi
     return _ELIGIBLE
 
 
-def describe_eligibility(eligibility: Eligibility) -> str:
-    """One-line text of an eligibility: ``eligible`` or ``held: <question> (unit <unit>)``."""
+def describe_eligibility(eligibility: Eligibility, *, observed: bool = False) -> str:
+    """One-line text of an eligibility.
+
+    Args:
+        eligibility: The eligibility to describe.
+        observed: Whether the output's family is on the observed-before-target
+            policy (ADR-044).
+
+    Returns:
+        ``eligible``, or ``held: <question> (unit <unit>)``, followed for an
+        observed family by ``; <OBSERVED_BEFORE_TARGET_TEXT>``.
+    """
     if isinstance(eligibility, Held):
-        return f"held: {eligibility.question} (unit {eligibility.unit})"
+        text = f"held: {eligibility.question} (unit {eligibility.unit})"
+        return f"{text}; {OBSERVED_BEFORE_TARGET_TEXT}" if observed else text
     return "eligible"
+
+
+def observed_families(registry: Registry) -> frozenset[str]:
+    """The family keys of ``registry``'s validated observed-before-target policy.
+
+    Args:
+        registry: The loaded registry.
+
+    Returns:
+        The keys listed in its ``_observed_before_target.json``.
+    """
+    entries = registry_module.load_observed_before_target(registry.root, registry=registry)
+    return frozenset(entry.family for entry in entries)
 
 
 def _cell(text: str) -> str:
     return " ".join(text.split()).replace("|", "\\|")
 
 
-def _family_row(package: PackageEntry, family: FamilyEntry) -> str:
+def _family_row(package: PackageEntry, family: FamilyEntry, observed: frozenset[str]) -> str:
     dash = "—"
     if family.legacy:
         output = "bespoke silver"
@@ -100,7 +137,9 @@ def _family_row(package: PackageEntry, family: FamilyEntry) -> str:
     elif family.record is not None:
         record = family.record
         output = "silver"
-        eligibility = describe_eligibility(effective_eligibility(package, family))
+        eligibility = describe_eligibility(
+            effective_eligibility(package, family), observed=family.key in observed
+        )
         latest = (
             f"{record.latest} per {record.latest_partition}"
             if record.latest_partition is not None
@@ -152,9 +191,10 @@ def render(registry: Registry) -> str:
     ]
     outputs: Counter[str] = Counter()
     held_outputs = 0
+    observed = observed_families(registry)
     for package in registry.packages:
         for family in sorted(package.families, key=lambda f: f.key):
-            lines.append(_family_row(package, family))
+            lines.append(_family_row(package, family, observed))
             if family.legacy:
                 outputs["bespoke"] += 1
             elif family.record is not None:
@@ -202,6 +242,8 @@ def render(registry: Registry) -> str:
         f" {outputs['recorded']}), ingest-only {outputs['ingest_only']}, catalogue only"
         f" {outputs['files']}",
         f"- Silver outputs held: {held_outputs}",
+        f"- Held outputs with rows readable as observed before their target start (ADR-044):"
+        f" {len(observed)}",
         f"- Resources: {sum(totals.values())}",
         "",
     ]
