@@ -3,8 +3,9 @@
 from __future__ import annotations
 
 import logging
-from datetime import UTC, date, datetime, time
+from datetime import UTC, date, datetime, time, timedelta
 from typing import TYPE_CHECKING, Any
+from zoneinfo import ZoneInfo
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -21,6 +22,10 @@ _FALLBACK_FORMATS = (
     "%d/%m/%Y %H:%M:%S",
     "%d/%m/%Y",
 )
+# The European gas day runs 06:00 to 06:00 CET/CEST (05:00 to 05:00 UK local, the
+# same instants), which is the day ENTSO-G's ``periodType=day`` records describe.
+_GAS_DAY_ZONE = ZoneInfo("Europe/Brussels")
+_GAS_DAY_START = time(6)
 
 
 def parse_entsog_datetime(value: Any) -> datetime | None:
@@ -83,6 +88,67 @@ def partition_records_to_target_date(
             kept.append(record)
             undated_count += 1
         elif record_date == target_date:
+            kept.append(record)
+    return kept, undated_count
+
+
+def gas_day_bounds(gas_day: date) -> tuple[datetime, datetime]:
+    """Return the UTC ``[start, end)`` instants of one European gas day.
+
+    Args:
+        gas_day: The gas day, named by the calendar date it starts on.
+
+    Returns:
+        The gas day's start and end as UTC-aware datetimes (23, 24 or 25 hours
+        apart across the clock changes).
+    """
+    start = datetime.combine(gas_day, _GAS_DAY_START, tzinfo=_GAS_DAY_ZONE)
+    end = datetime.combine(gas_day + timedelta(days=1), _GAS_DAY_START, tzinfo=_GAS_DAY_ZONE)
+    return start.astimezone(UTC), end.astimezone(UTC)
+
+
+def partition_validity_records_to_gas_day(
+    records: Iterable[dict[str, Any]],
+    target_date: date,
+    timestamp_fields: Iterable[str],
+    window_fields: Iterable[tuple[str, str]],
+) -> tuple[list[dict[str, Any]], int]:
+    """Keep the validity records in force on gas day ``target_date``.
+
+    Capacity and CMP records describe a validity window (a gas-year product,
+    a 2015-2048 technical capacity), and ENTSO-G serves every record whose
+    window overlaps the requested day. :func:`partition_records_to_target_date`
+    keeps only the ones that START on the day, which drops nearly all of them.
+    This keeps a record when its window overlaps the gas day, and also keeps
+    everything that rule already keeps (records dated ``target_date``, such as
+    the zero-length "no capacity" statement rows, and undated records), so it
+    never drops a record the start-date rule would keep. Each kept record
+    stands for that record ON this gas day; it is never expanded to other days.
+
+    Args:
+        records: Raw ENTSO-G records from one bronze day.
+        target_date: The gas day being read.
+        timestamp_fields: Field names probed for the start-date rule, in
+            priority order.
+        window_fields: ``(from, to)`` field pairs, in priority order; the first
+            pair with a parseable ``from`` is the record's window. A missing or
+            unparseable ``to`` means the window is open-ended.
+
+    Returns:
+        ``(kept, undated_count)``, as :func:`partition_records_to_target_date`.
+    """
+    gas_day_start, gas_day_end = gas_day_bounds(target_date)
+    window_pairs = tuple(window_fields)
+    kept: list[dict[str, Any]] = []
+    undated_count = 0
+    for record in records:
+        record_date = _record_date(record, timestamp_fields)
+        if record_date is None:
+            kept.append(record)
+            undated_count += 1
+        elif record_date == target_date or _window_overlaps(
+            record, window_pairs, gas_day_start, gas_day_end
+        ):
             kept.append(record)
     return kept, undated_count
 
@@ -211,3 +277,18 @@ def _record_date(
         if parsed is not None:
             return parsed.date()
     return None
+
+
+def _window_overlaps(
+    record: dict[str, Any],
+    window_fields: tuple[tuple[str, str], ...],
+    start: datetime,
+    end: datetime,
+) -> bool:
+    for from_field, to_field in window_fields:
+        window_start = parse_entsog_datetime(record.get(from_field))
+        if window_start is None:
+            continue
+        window_end = parse_entsog_datetime(record.get(to_field))
+        return window_start < end and (window_end is None or window_end > start)
+    return False
