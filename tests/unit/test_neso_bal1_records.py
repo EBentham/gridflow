@@ -67,7 +67,7 @@ from gridflow.connectors.neso_data_portal.registry import (
     SilverDisposition,
     load_registry,
 )
-from gridflow.connectors.neso_data_portal.registry.record import has_issue_time
+from gridflow.connectors.neso_data_portal.registry.record import ColumnSpec, has_issue_time
 from gridflow.silver.neso_data_portal import generic
 from gridflow.silver.neso_data_portal.completion import (
     NesoCaptureFailedError,
@@ -90,6 +90,7 @@ REGISTRY_DIR = Path(registry_module.__file__).parent
 DAY = date(2026, 10, 8)
 POUND = "£"
 DATE_FORMAT = "%Y-%m-%dT%H:%M:%S "
+DAY_FIRST_FORMAT = "%d-%m-%Y "
 
 TARIFF_HOLD = (
     "TODO: precise issue clock and availability of each publication at its Published Date, and "
@@ -629,7 +630,14 @@ def test_every_bsuos_record_keys_on_the_run_and_a_settlement_pair(key: str) -> N
         assert (run.source, run.dtype, run.nullable) == ("Run Type", "string", False)
         assert run.null_tokens == ()
         day = by_name[date_name]
-        assert (day.dtype, day.format, day.nullable) == ("date", DATE_FORMAT, False)
+        if key in CURRENT:
+            # 20y: NESO's 2026-10-16 uploads switched the current files to day-first dates;
+            # each file takes the one candidate every cell fits.
+            assert (day.dtype, day.format, day.nullable) == ("date", None, False)
+            assert day.file_formats == (DATE_FORMAT, DAY_FIRST_FORMAT)
+        else:
+            assert (day.dtype, day.format, day.nullable) == ("date", DATE_FORMAT, False)
+            assert day.file_formats is None
         assert day.formats_by_filename is None and day.zone is None
         period = by_name["settlement_period"]
         assert (period.dtype, period.nullable, period.min, period.max) == ("int64", False, 1, 50)
@@ -1431,3 +1439,88 @@ def test_the_skeleton_pages_render_the_new_records() -> None:
         assert f"`{key}`" in page, key
         seen.add(key)
     assert seen == set(FAMILIES)
+
+
+# --------------------------------------------------------------------------- #
+# 20y: the 2026-10-16 day-first uploads of the current files
+# --------------------------------------------------------------------------- #
+
+
+def _day_first_body() -> bytes:
+    """The 2026-10-16 II cut (no BOM) with the bronze original's CRLF line endings."""
+    raw = (FIXTURES / "ii_day_first.csv").read_bytes().replace(b"\r\n", b"\n")
+    return raw.replace(b"\n", b"\r\n")
+
+
+def test_a_day_first_current_upload_types_the_same_settlement_dates(data: Path) -> None:
+    """Detects the 2026-10-16 day-first upload failing every row against the frozen ISO format,
+    or a ``DD-MM-YYYY`` label read month-first: the cut loads every row with zero exclusions, its
+    1 and 2 April keys equal the 2026-10-08 ISO capture's, and ``13-04-2026`` is 13 April."""
+    raw = _day_first_body()
+    assert not raw.startswith(b"\xef\xbb\xbf")
+    capture_id = capture(data, "ii", raw=raw)
+    written = get_transformer(SOURCE, "current_bsuos_ii", data).run(DAY, run_id="r")
+    source = rows("ii", raw)
+    assert written == len(source)
+    completion = read_completion(data, "current_bsuos_ii", capture_id)
+    assert completion is not None
+    assert (completion["outcome"], completion["rows_excluded"]) == ("populated", 0)
+    frame = _silver(data, "current_bsuos_ii")
+    assert frame.schema["settlement_date"] == pl.Date
+    assert sorted(set(frame["settlement_date"].to_list())) == [
+        date(2026, 4, 1),
+        date(2026, 4, 2),
+        date(2026, 4, 13),
+    ]
+    iso_keys = {(_day(r["Settlement Date"]), int(r["Settlement Period"])) for r in rows("ii")}
+    day_first_keys = {
+        (d, p)
+        for d, p in zip(frame["settlement_date"], frame["settlement_period"], strict=True)
+        if d != date(2026, 4, 13)
+    }
+    assert day_first_keys == iso_keys
+
+
+def test_a_body_mixing_iso_and_day_first_dates_fails_loud(data: Path) -> None:
+    """Detects a body read two ways cell by cell: one ISO row beside the day-first rows fits
+    neither candidate across the whole file, so the capture fails ``UnresolvedFileFormatError``
+    and nothing is written."""
+    lines = _day_first_body().split(b"\r\n")
+    assert lines[1].startswith(b"01-04-2026,")
+    lines[1] = b"2026-04-01T00:00:00" + lines[1][len(b"01-04-2026") :]
+    capture(data, "ii", raw=b"\r\n".join(lines))
+    with pytest.raises(NesoCaptureFailedError) as info:
+        get_transformer(SOURCE, "current_bsuos_ii", data).run(DAY, run_id="r")
+    assert [cls for _capture, cls, _message in info.value.failures] == ["UnresolvedFileFormatError"]
+    assert _no_silver(data, "current_bsuos_ii")
+
+
+@pytest.mark.parametrize(
+    ("overrides", "fragment"),
+    [
+        ({"dtype": "datetime", "zone": "UTC"}, "date columns only"),
+        ({"format": "%Y-%m-%d"}, "replaces format"),
+        ({"file_formats": ["%d-%m-%Y"]}, "two or more"),
+        ({"file_formats": ["%d-%m-%Y", ""]}, "empty"),
+        ({"file_formats": ["%d-%m-%Y", "%d-%m-%Y"]}, "repeats an entry"),
+        ({"file_formats": ["%d-%m-%Y", "%m-%d-%Y"]}, "day-first and a month-first"),
+        ({"file_formats": ["%Y-%m-%d", "%Y-%d-%m"]}, "day-first and a month-first"),
+    ],
+    ids=["datetime", "with-format", "one", "empty", "duplicate", "dmy-mdy", "ymd-ydm"],
+)
+def test_file_formats_shape_is_refused_naming_the_column(
+    overrides: dict[str, Any], fragment: str
+) -> None:
+    """Detects a candidate set the body cannot decide safely: ``file_formats`` is a date
+    column's alone, two or more distinct non-empty formats, never a day-first and month-first
+    reading of one shape (a mixed body whose days are all 12 or less would fit one silently)."""
+    spec: dict[str, Any] = {
+        "source": "Settlement Date",
+        "name": "settlement_date",
+        "dtype": "date",
+        "nullable": False,
+        "file_formats": ["%Y-%m-%dT%H:%M:%S ", "%d-%m-%Y "],
+    }
+    spec.update(overrides)
+    with pytest.raises(ValueError, match=fragment):
+        ColumnSpec.model_validate(spec)

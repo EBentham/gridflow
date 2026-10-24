@@ -172,6 +172,13 @@ class ColumnSpec(_Frozen):
             order, for a cell ``format`` does not parse (one column's rendering
             variants). A cell that no format parses fails the capture. ``None``,
             the default, is omitted from every ``exclude_none`` dump (ADR-043).
+        file_formats: ``date`` only, instead of ``format``: candidate
+            ``strptime`` formats for a column whose rendering changed between
+            uploads of one resource. Each file takes exactly one: the single
+            candidate under which every non-null cell of that file parses. No
+            candidate, or more than one, fails the capture, so a day-first and a
+            month-first reading are never chosen cell by cell. ``None``, the
+            default, is omitted from every ``exclude_none`` dump.
     """
 
     source: str
@@ -179,6 +186,7 @@ class ColumnSpec(_Frozen):
     dtype: Dtype
     format: str | None = None
     formats_by_filename: tuple[tuple[str, str], ...] | None = None
+    file_formats: tuple[str, ...] | None = None
     null_tokens: tuple[str, ...] = ()
     nullable: bool
     min: float | None = None
@@ -195,7 +203,9 @@ class ColumnSpec(_Frozen):
             raise ValueError(f"column name {self.name!r} is not {SILVER_NAME_PATTERN.pattern}")
         if self.alt_formats is not None:
             self._alternative_formats(self.alt_formats)
-        if self.formats_by_filename is not None:
+        if self.file_formats is not None:
+            self._file_formats(self.file_formats)
+        elif self.formats_by_filename is not None:
             self._filename_formats()
         elif self.dtype in ("date", "datetime"):
             if not self.format:
@@ -270,6 +280,32 @@ class ColumnSpec(_Frozen):
                 )
         if len(set(alternatives)) != len(alternatives):
             raise ValueError(f"column {self.name!r}: alt_formats repeats an entry")
+
+    def _file_formats(self, candidates: tuple[str, ...]) -> None:
+        """The per-file candidates' shape: ``date`` only, alone, two or more, distinct."""
+        if self.dtype != "date":
+            raise ValueError(f"column {self.name!r}: file_formats applies to date columns only")
+        if self.format is not None or self.formats_by_filename is not None:
+            raise ValueError(
+                f"column {self.name!r}: file_formats replaces format and formats_by_filename"
+            )
+        if len(candidates) < 2:
+            raise ValueError(f"column {self.name!r}: file_formats needs two or more candidates")
+        if any(not candidate for candidate in candidates):
+            raise ValueError(f"column {self.name!r}: a file_formats entry is empty")
+        if len(set(candidates)) != len(candidates):
+            raise ValueError(f"column {self.name!r}: file_formats repeats an entry")
+        # A body's cells cannot tell a day-first from a month-first reading of one
+        # shape when every day is 12 or less, so a mixed body could fit one of them
+        # and be misread without a failure. Such a pair is never a candidate set.
+        swapped = {
+            c.replace("%d", "\0").replace("%m", "%d").replace("\0", "%m") for c in candidates
+        }
+        if any(c in swapped and "%d" in c and "%m" in c for c in candidates):
+            raise ValueError(
+                f"column {self.name!r}: file_formats holds a day-first and a month-first "
+                "reading of one shape; the cells cannot decide between them"
+            )
 
     def _filename_formats(self) -> None:
         """The per-filename map's shape: ``date`` only, alone, non-empty, unique."""
