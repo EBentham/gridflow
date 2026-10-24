@@ -180,9 +180,9 @@ def test_run_writes_only_overlapping_outages_per_day(
     assert rows == len(facilities) < len(_RANGE_RECORDS)
     parquet = next(transformer.silver_dir.rglob(f"unavailability_{target:%Y%m%d}.parquet"))
     persisted = pl.read_parquet(parquet)
-    eics = sorted(json.loads(value)["eic"] for value in persisted["facility"].to_list())
+    eics = sorted(persisted["facility_eic"].to_list())
     assert eics == sorted(facilities)
-    assert persisted["dataset_version"].unique().to_list() == ["1.1.0"]
+    assert persisted["dataset_version"].unique().to_list() == ["2.0.0"]
 
 
 def test_read_bronze_keeps_undated_records_and_warns_once(
@@ -202,7 +202,7 @@ def test_read_bronze_keeps_undated_records_and_warns_once(
     with caplog.at_level("WARNING", logger="gridflow.silver.gie.agsi"):
         df = transformer.read_bronze(date(2026, 8, 1))
 
-    eics = sorted(row["eic"] for row in df["facility"].to_list())
+    eics = sorted(df["facility_eic"].to_list())
     assert eics == ["A", "undated-1", "undated-2"]
     warnings = [r for r in caplog.records if "had no parseable start/end" in r.getMessage()]
     assert len(warnings) == 1

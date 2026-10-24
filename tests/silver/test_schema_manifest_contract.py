@@ -66,7 +66,7 @@ def test_manifest_has_ratified_date_columns() -> None:
     assert DESIGNATED_DATE_COLS[("gie_agsi", "about_listing")] == "ingested_at"
     assert DESIGNATED_DATE_COLS[("gie_agsi", "about_summary")] == "ingested_at"
     assert DESIGNATED_DATE_COLS[("gie_agsi", "news")] == "ingested_at"
-    assert DESIGNATED_DATE_COLS[("gie_agsi", "unavailability")] == "ingested_at"
+    assert DESIGNATED_DATE_COLS[("gie_agsi", "unavailability")] == "outage_date"
     assert DESIGNATED_DATE_COLS[("entsog", "aggregate_interconnections")] == "ingested_at"
     assert DESIGNATED_DATE_COLS[("entsog", "balancing_zones")] == "ingested_at"
     assert DESIGNATED_DATE_COLS[("entsog", "connection_points")] == "ingested_at"
