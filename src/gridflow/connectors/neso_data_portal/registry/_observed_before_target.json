@@ -1,0 +1,52 @@
+[
+  {
+    "family": "bsuos_fixed_tariffs",
+    "rationale": "held only on when each publication was available; a tariff row observed before its first applicable settlement period is the publication as then known, Draft/Final status preserved",
+    "evidence": "research neso-known-at-20261024 holds48.md class A, forward-measure.md §1 (2 of 17 versions); ADR-044"
+  },
+  {
+    "family": "country_ci_forecast",
+    "rationale": "held only on which issue a past target's value reflects; a row observed before its target start is forecast content as then known",
+    "evidence": "research neso-known-at-20261024 holds48.md class A, forward-measure.md §1 (202 of 141,523 versions); ADR-044"
+  },
+  {
+    "family": "daily_opmr",
+    "rationale": "held only on the history-bearing body; a margin row observed before its target day starts is the report as then known, publication-date label preserved",
+    "evidence": "research neso-known-at-20261024 holds48.md class A, forward-measure.md §1 (213 of 26,950 versions); ADR-044"
+  },
+  {
+    "family": "ifa2_ifa_itl",
+    "rationale": "held only on whether past issued limits are unchanged since upload; a limit observed before its period starts is the issued limit as then known",
+    "evidence": "research neso-known-at-20261024 holds48.md class A, forward-measure.md §1 (11 of 7,920 versions); ADR-044"
+  },
+  {
+    "family": "ifa_itl",
+    "rationale": "held only on whether past issued limits are unchanged since upload; a limit observed before its period starts is the issued limit as then known",
+    "evidence": "research neso-known-at-20261024 holds48.md class A, forward-measure.md §1 (11 of 11,782 versions); ADR-044"
+  },
+  {
+    "family": "national_ci_forecast",
+    "rationale": "held only on which issue a past target's value reflects; a row observed before its target start is forecast content as then known",
+    "evidence": "research neso-known-at-20261024 holds48.md class A, forward-measure.md §1 (1,942 of 156,096 versions); ADR-044"
+  },
+  {
+    "family": "system_operating_plan",
+    "rationale": "held only on whether plan values are fixed and public at creation; a plan row observed before its target starts is the plan snapshot as then known",
+    "evidence": "research neso-known-at-20261024 holds48.md class A, forward-measure.md §1 (1 of 10,358 versions); ADR-044"
+  },
+  {
+    "family": "viking_link_ntc",
+    "rationale": "held only on whether past issued limits are unchanged since upload; a limit observed before its period starts is the issued limit as then known",
+    "evidence": "research neso-known-at-20261024 holds48.md class A, forward-measure.md §1 (69 of 20,087 versions); ADR-044"
+  },
+  {
+    "family": "wind_forecast_14d_day_ahead_bmu",
+    "rationale": "held only on when each value was available; a row observed before its target start is rolling forecast content as then known",
+    "evidence": "research neso-known-at-20261024 holds48.md class A, forward-measure.md §1 (306,195 of 307,562 versions); ADR-044"
+  },
+  {
+    "family": "wind_forecast_14d_days_ahead",
+    "rationale": "held only on whether the body mixes retrospective values with forecasts; a row observed before its target start is forecast content as then known",
+    "evidence": "research neso-known-at-20261024 holds48.md class A, forward-measure.md §1 (1,338 of 1,344 versions); ADR-044"
+  }
+]
