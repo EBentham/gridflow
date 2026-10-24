@@ -201,6 +201,7 @@ def _run_generic(data_dir: Path, members: int, warmup: int, reader: str = "csv")
     )
     (directory / "_frozen_keys.json").write_text("[]", encoding="utf-8")
     (directory / "_adjudications.json").write_text("[]", encoding="utf-8")
+    (directory / "_observed_before_target.json").write_text("[]", encoding="utf-8")
     loaded = registry_module.load_registry(directory)
 
     def _load(path: Path | None = None) -> registry_module.Registry:

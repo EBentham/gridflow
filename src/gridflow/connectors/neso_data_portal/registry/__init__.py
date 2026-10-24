@@ -734,13 +734,15 @@ def _load(path: Path | None) -> Registry:
     _validate_silver_targets(file_names, packages, families)
     _validate_covered(file_names, packages, families, resources)
     packages.sort(key=lambda entry: entry.package)
-    return Registry(
+    registry = Registry(
         root=path,
         packages=tuple(packages),
         families=families,
         resources=resources,
         _names=names,
     )
+    load_observed_before_target(path, registry=registry)
+    return registry
 
 
 def load_registry(path: Path | None = None) -> Registry:
@@ -760,7 +762,8 @@ def load_registry(path: Path | None = None) -> Registry:
             key, a non-compiling ``name_regex``, a frozen schema record breaking
             V-1..V-10 or V-13, an ungrounded COVERED grant (V-12), a
             SILVER target whose reader does not fit the body's shape (V-15,
-            V-15b)).
+            V-15b), or an ``_observed_before_target.json`` that is missing or
+            admits a family the rule cannot reach (ADR-044)).
     """
     return _load(None if path is None else Path(path))
 

@@ -142,6 +142,7 @@ def _install_registry(data_dir: Path, members: int) -> None:
     (directory / "rss-probe.json").write_text(json.dumps(document), encoding="utf-8")
     (directory / "_frozen_keys.json").write_text("[]", encoding="utf-8")
     (directory / "_adjudications.json").write_text("[]", encoding="utf-8")
+    (directory / "_observed_before_target.json").write_text("[]", encoding="utf-8")
     real_load = registry_module.load_registry
     loaded = real_load(directory)
     registry_module.load_registry = lambda path=None: (  # type: ignore[assignment]

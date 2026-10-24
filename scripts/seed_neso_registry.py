@@ -780,6 +780,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     (out / "_frozen_keys.json").write_text(dump_json(legacy_ledger), encoding="utf-8", newline="\n")
     (out / "_adjudications.json").write_text(dump_json([]), encoding="utf-8", newline="\n")
+    (out / "_observed_before_target.json").write_text(dump_json([]), encoding="utf-8", newline="\n")
 
     # P-1 validity, through the real loader.
     try:
