@@ -630,3 +630,52 @@ def test_latest_views_for_remit_and_fou2t14d(
 
     assert remit_rows == [("m1", 2)]
     assert fou_rows == [("WIND", 120)]
+
+
+def test_pruned_hand_written_dataset_does_not_break_init_or_refresh(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A dataset whose parquet is gone but whose directory remains (as after
+    ``gridflow prune``) must not abort a production init or refresh.
+
+    The failed re-registration used to leave the earlier init's view in place,
+    and its ``_latest`` then bound the dead glob and raised an IOException.
+    """
+    monkeypatch.setattr("gridflow.storage.duckdb._register_gold_views", lambda con: None)
+    data_dir = tmp_path / "data"
+    db_path = tmp_path / "gridflow.duckdb"
+    parquet = (
+        data_dir / "silver" / "elexon" / "system_prices" / "year=2024" / "month=01" / "sp.parquet"
+    )
+    _write_parquet(
+        pl.DataFrame(
+            {
+                "settlement_date": ["2024-01-15"],
+                "settlement_period": [1],
+                "run_type": ["II"],
+                "value": [7],
+            }
+        ),
+        parquet,
+    )
+    init_catalogue(db_path, data_dir)
+    parquet.unlink()
+
+    # Production mode: strict mode would raise on the absent parquet instead.
+    monkeypatch.delenv("PYTEST_CURRENT_TEST", raising=False)
+    monkeypatch.delenv("GRIDFLOW_ENV", raising=False)
+    init_catalogue(db_path, data_dir)
+    refresh_views(db_path, data_dir)
+
+    con = get_connection(db_path, read_only=True)
+    try:
+        names = {
+            row[0]
+            for row in con.execute(
+                "SELECT table_name FROM information_schema.tables WHERE table_schema = 'main'"
+            ).fetchall()
+        }
+    finally:
+        con.close()
+    assert "silver_elexon_system_prices" not in names
+    assert "silver_elexon_system_prices_latest" not in names
