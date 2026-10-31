@@ -2247,17 +2247,24 @@ class TestParserA03ForwardFill:
         assert "document-a03" in caplog.text
         assert "series-a03" in caplog.text
 
-    def test_a03_unmapped_resolution_warns_and_keeps_declared_points_only(self, caplog):
+    @pytest.mark.parametrize("curve_type", ["A03", "A01"])
+    @pytest.mark.parametrize("resolution", ["PT5M", ""])
+    def test_unmapped_resolution_refuses_the_period(self, caplog, curve_type: str, resolution: str):
+        """Position 2 of a PT5M series starts at 04:05; the old one-hour default
+        stamped it 05:00. A period whose resolution is unknown is refused."""
         records = parse_timeseries_xml(
             self._xml(
-                "<Point><position>1</position><quantity>100</quantity></Point>",
-                resolution="PT5M",
+                """
+<Point><position>1</position><quantity>100</quantity></Point>
+<Point><position>2</position><quantity>50</quantity></Point>""",
+                curve_type=curve_type,
+                resolution=resolution,
             ),
             value_tag="quantity",
         )
 
-        assert len(records) == 1
-        assert "Skipping ENTSO-E A03 forward-fill" in caplog.text
+        assert records == []
+        assert "Skipping ENTSO-E period" in caplog.text
         assert "document-a03" in caplog.text
         assert "series-a03" in caplog.text
 
