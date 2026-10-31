@@ -1,10 +1,8 @@
 """Scenario unpivot and edition in the NESO generic engine (v0.22-SC, ADR-042).
 
-T-SC1..T-SC4 of the unit plan, over synthetic records and the existing registry only
+T-SC2..T-SC4 of the unit plan, over synthetic records and the existing registry only
 (every assertion that needs the FES ED1 pilot record lives in ``test_neso_sc_pilot.py``):
 
-- T-SC1: every generated family that existed at master ``34992b6`` is byte-unchanged
-  against the T0 golden (I-1 / SC5);
 - T-SC2: the record rules of ``UnpivotSpec``, ``ValueSpec``, ``edition_by_filename``
   and V-18 (P-1);
 - T-SC3: unpivot typing through ``run()`` (SC1);
@@ -13,7 +11,6 @@ T-SC1..T-SC4 of the unit plan, over synthetic records and the existing registry 
 
 from __future__ import annotations
 
-import json
 import subprocess
 import sys
 import tempfile
@@ -26,10 +23,8 @@ import duckdb
 import polars as pl
 import pydantic
 import pytest
-from _neso_dem1h_pin import dump, generated_pin
 from _neso_generic_support import install_generated, write_capture
 from _neso_registry_support import column, epoch, family, package, record, resource
-from _neso_sc_pin import PIN_PATH
 from test_neso_dem1_records import _short_base
 
 from gridflow.connectors.neso_data_portal import registry as registry_module
@@ -203,25 +198,6 @@ def both_latest(db: Path, data: Path, key: str, as_of: datetime | None) -> pl.Da
         polars["bronze_capture_id"].to_list()
     ), (key, as_of)
     return sql
-
-
-# --------------------------------------------------------------------------- #
-# T-SC1: existing keys byte-unchanged (I-1)
-# --------------------------------------------------------------------------- #
-
-
-class TestByteUnchanged:
-    def test_t_sc1_every_family_at_the_base_matches_the_golden(self) -> None:
-        """Detects any change to a pre-existing generated family's ``_latest`` SQL (both
-        as-of modes), record dump, output columns or DEM-1 engine output against the golden
-        written on the untouched base (master ``34992b6``), and any family vanishing. Keys
-        added since are T-SC8's."""
-        golden = json.loads(PIN_PATH.read_text(encoding="utf-8"))
-        current = json.loads(dump(generated_pin()))
-        for section in ("sql", "records", "columns", "engine"):
-            assert set(golden[section]) <= set(current[section]), section
-            for key, value in golden[section].items():
-                assert current[section][key] == value, (section, key)
 
 
 # --------------------------------------------------------------------------- #

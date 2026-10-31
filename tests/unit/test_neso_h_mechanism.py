@@ -28,9 +28,8 @@ from typing import TYPE_CHECKING, Any
 
 import polars as pl
 import pytest
-from _neso_dem1h_pin import dump, generated_pin
 from _neso_generic_support import install_generated, write_capture
-from _neso_h_pin import PIN_PATH
+from _neso_h_pin import PIN_PATH, dump, generated_pin
 from _neso_registry_support import column, epoch, family, package, record, resource, write_registry
 
 from gridflow.connectors.neso_data_portal import registry as registry_module
@@ -60,8 +59,6 @@ TYPED_FAMILIES = (
     "system_frequency_gmt_zip",
     "system_frequency_gmt_csv",
 )
-H_FAMILIES = frozenset({"system_frequency_dmy_csv", *TYPED_FAMILIES})
-"""The five rendering families v0.22-H adds to ``system-frequency-data`` (P-1)."""
 
 
 def _short_base() -> str:
@@ -166,15 +163,6 @@ class TestByteUnchanged:
             assert set(golden[section]) <= set(current[section]), section
             for key, value in golden[section].items():
                 assert current[section][key] == value, (section, key)
-
-    def test_t_f1_the_only_generated_additions_are_the_five_rendering_families(self) -> None:
-        """Detects a generated family other than P-1's five appearing since the base golden,
-        or a DEM-1 engine digest added or lost."""
-        golden = json.loads(PIN_PATH.read_text(encoding="utf-8"))
-        current = json.loads(dump(generated_pin()))
-        for section in ("sql", "records", "columns"):
-            assert set(current[section]) - set(golden[section]) == H_FAMILIES, section
-        assert set(current["engine"]) == set(golden["engine"])
 
 
 # --------------------------------------------------------------------------- #

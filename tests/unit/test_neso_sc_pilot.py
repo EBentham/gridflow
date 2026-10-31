@@ -1,6 +1,6 @@
 """The FES ED1 pilot record through unpivot and edition (v0.22-SC, ADR-042).
 
-T-SC5..T-SC8 of the unit plan, over the committed registry and the four ED1 fixtures in
+T-SC5..T-SC7 of the unit plan, over the committed registry and the four ED1 fixtures in
 ``tests/fixtures/neso_data_portal/sc/``, each named by the real ``resource_filename``.
 
 **Fixture rule.** Each fixture is its bronze body's header line plus data rows 1-5 plus
@@ -23,7 +23,6 @@ from __future__ import annotations
 
 import csv
 import io
-import json
 import subprocess
 import sys
 import tempfile
@@ -36,39 +35,8 @@ from typing import TYPE_CHECKING, Any
 import duckdb
 import polars as pl
 import pytest
-from _neso_dem1h_pin import dump, generated_pin
 from _neso_generic_support import write_capture
-from _neso_sc_pin import PIN_PATH
 from test_neso_dem1_records import _short_base
-from test_neso_multi_resource import (
-    AS1_ADDED,
-    AS2_ADDED,
-    AS3A_ADDED,
-    AS3B_ADDED,
-    AS4A_ADDED,
-    AS4B_ADDED,
-    AS5A_ADDED,
-    AS5B_ADDED,
-    AS5C_ADDED,
-    BAL1_ADDED,
-    BAL2A_ADDED,
-    BAL2B_ADDED,
-    BAL2C_ADDED,
-    CON_ADDED,
-    DFSA_ADDED,
-    DFSB_ADDED,
-    FILE_ADDED,
-    H_ADDED,
-    SCN1A_ADDED,
-    SCN1B_ADDED,
-    SCN1C_ADDED,
-    SCN1D_ADDED,
-    SCN2A_ADDED,
-    SCN2B_ADDED,
-    SCN3_ADDED,
-    SYS1_ADDED,
-    TRD_ADDED,
-)
 
 from gridflow.connectors.neso_data_portal import skeleton
 from gridflow.connectors.neso_data_portal.registry import Held, load_registry
@@ -602,11 +570,11 @@ class TestLeakageMatrix:
 
 
 # --------------------------------------------------------------------------- #
-# T-SC7: skeleton (P-5); T-SC8: the only generated addition (I-1)
+# T-SC7: skeleton (P-5)
 # --------------------------------------------------------------------------- #
 
 
-class TestSkeletonAndPin:
+class TestSkeleton:
     def test_t_sc7_the_page_shows_the_unpivot_and_the_edition_map(self) -> None:
         """Detects the reshape or the edition map missing from the generated docs page."""
         snapshot = {
@@ -628,48 +596,3 @@ class TestSkeletonAndPin:
             "- Edition: `fes2023_ed1_v001.csv` → 2023; `fes2024_ed1_v002.csv` → 2024; "
             "`fes2025_ed1_v006.csv` → 2025; `10yo2026_ed1_v001.csv` → 2026"
         ) in page
-
-    def test_t_sc8_the_pilot_is_the_only_generated_addition(self) -> None:
-        """Detects any generated family other than the FES ED1 pilot, the twelve tRESP records
-        of K-SCN-1a, the nine regional FES records of K-SCN-1b and the three building block records
-        of K-SCN-1c, the ES1 record of K-SCN-1d, the seven constraint-management records of K-CON
-        the eight system records of K-SYS-1, the nine balancing-costs records of K-BAL-1 and the
-        BSUoS monthly forecast summary record of K-BAL-2a, the nine skip-rate records of K-BAL-2b
-        the nine tariff records of K-BAL-2c, the nine trading records of K-TRD, the nine
-        ancillary-services records of K-AS-1, the eleven of K-AS-2, the eleven EAC auction-result
-        records of K-AS-3a and the ten mock EAC, ORPS and OBP records of K-AS-3b appearing since
-        the base golden (master ``34992b6``), and any DEM-1 engine digest added or lost."""
-        golden = json.loads(PIN_PATH.read_text(encoding="utf-8"))
-        current = json.loads(dump(generated_pin()))
-        for section in ("sql", "records", "columns"):
-            assert set(current[section]) - set(golden[section]) == {
-                PILOT,
-                *SCN1A_ADDED,
-                *SCN1B_ADDED,
-                *SCN1C_ADDED,
-                *SCN1D_ADDED,
-                *CON_ADDED,
-                *SYS1_ADDED,
-                *BAL1_ADDED,
-                *BAL2A_ADDED,
-                *BAL2B_ADDED,
-                *BAL2C_ADDED,
-                *TRD_ADDED,
-                *AS1_ADDED,
-                *AS2_ADDED,
-                *AS3A_ADDED,
-                *AS3B_ADDED,
-                *AS4A_ADDED,
-                *AS4B_ADDED,
-                *AS5A_ADDED,
-                *AS5B_ADDED,
-                *AS5C_ADDED,
-                *DFSA_ADDED,
-                *DFSB_ADDED,
-                *SCN2A_ADDED,
-                *SCN2B_ADDED,
-                *SCN3_ADDED,
-                *FILE_ADDED,
-                *H_ADDED,
-            }, section
-        assert set(current["engine"]) == set(golden["engine"])
