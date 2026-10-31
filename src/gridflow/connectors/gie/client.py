@@ -417,13 +417,18 @@ class GieConnector(BaseConnector):
 
     @RETRY_POLICY
     async def _request(self, path: str, params: dict[str, Any]) -> httpx.Response:
-        """Rate-limited, retried HTTP GET request."""
+        """Paced, retried HTTP GET request.
+
+        GIE allows 60 calls a minute, so every send, retries included, is paced
+        at ``rate_limit_per_second`` (1 in ``sources.yaml``).
+        """
         if self._client is None:
             raise RuntimeError("Connector not initialized. Use 'async with' context manager.")
         if self._semaphore is None:
             raise RuntimeError("Semaphore not initialized. Use 'async with' context manager.")
 
         async with self._semaphore:
+            await self._throttle_request()
             resp = await self._client.get(path, params=params)
             resp.raise_for_status()
             return resp

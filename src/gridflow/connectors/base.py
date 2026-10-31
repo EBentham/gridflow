@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
+import asyncio
 import ssl
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import UTC, date, datetime
+from time import monotonic
 from typing import TYPE_CHECKING, Any, ClassVar, Literal, Protocol, runtime_checkable
 
 import certifi
@@ -16,6 +18,11 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     from gridflow.config.settings import SourceConfig
+
+# The next free send slot per source, shared by every connector instance in the
+# process: the runner builds a new connector for each dataset and backfill
+# chunk, and a vendor's rate limit spans them all.
+_NEXT_SEND_AT: dict[str, float] = {}
 
 
 def _make_ssl_context() -> ssl.SSLContext:
@@ -190,8 +197,6 @@ class BaseConnector(ABC):
         ...
 
     async def __aenter__(self) -> BaseConnector:
-        import asyncio
-
         self._semaphore = asyncio.Semaphore(self.config.rate_limit_per_second)
         self._client = httpx.AsyncClient(
             base_url=self.config.base_url,
@@ -204,6 +209,23 @@ class BaseConnector(ABC):
     async def __aexit__(self, *exc: Any) -> None:
         if self._client:
             await self._client.aclose()
+
+    async def _throttle_request(self) -> None:
+        """Start this source's sends at least ``1 / rate_limit_per_second`` apart.
+
+        The semaphore only caps how many requests are in flight; a vendor that
+        limits the request rate (ENTSO-E rejects bursts, GIE allows 60 calls a
+        minute) needs this too. Each call reserves the next free slot before it
+        waits, so concurrent requests and the next connector instance queue
+        behind it. Call it inside the semaphore, before each send.
+        """
+        if self.config.rate_limit_per_second <= 0:
+            return
+        now = monotonic()
+        slot = max(now, _NEXT_SEND_AT.get(self.source_name, now))
+        _NEXT_SEND_AT[self.source_name] = slot + 1.0 / self.config.rate_limit_per_second
+        if slot > now:
+            await asyncio.sleep(slot - now)
 
     def _auth_headers(self) -> dict[str, str]:
         """Build auth headers from config. Override for non-header auth."""

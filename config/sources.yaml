@@ -449,7 +449,8 @@ sources:
     base_url: "https://alsi.gie.eu"
     api_key_env: "GIE_API_KEY"
     api_key_header: "x-key"
-    rate_limit_per_second: 5
+    # GIE allows 60 calls a minute (GIE_MAX_CALLS_PER_MINUTE); requests are paced at this rate.
+    rate_limit_per_second: 1
     timeout: 30
     max_retries: 3
     datasets:

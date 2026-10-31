@@ -728,8 +728,8 @@ class NesoDataPortalConnector(BaseConnector):
         CKAN lane (1 req/s) by default, and the datastore lane (2 req/min) for
         dump downloads and ``datastore_search`` calls (ADR-035). The interval
         holds across connector instances, dataset handoffs and, once bound,
-        processes. Not hoisted into ``BaseConnector``: that would change the
-        pacing of every other source.
+        processes. It overrides the base pacer, which has one lane and holds
+        within one process only.
 
         Gates **every** outbound send without exception: each CKAN action call,
         the redirector request, each redirect hop, and each retry attempt —

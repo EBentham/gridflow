@@ -8,13 +8,12 @@ import io
 import logging
 import zipfile
 from datetime import datetime
-from time import monotonic
 from typing import TYPE_CHECKING, Any
 
 import httpx
 
 from gridflow.bronze.sanitize import sanitize_url
-from gridflow.connectors.base import BaseConnector, RawResponse, _make_ssl_context
+from gridflow.connectors.base import BaseConnector, RawResponse
 from gridflow.connectors.entsoe.endpoints import (
     BIDDING_ZONES,
     DEFAULT_CONTROL_AREAS,
@@ -82,20 +81,6 @@ class EntsoeConnector(BaseConnector):
 
     def _auth_headers(self) -> dict[str, str]:
         return {}
-
-    async def __aenter__(self) -> EntsoeConnector:
-        import asyncio
-
-        self._semaphore = asyncio.Semaphore(self.config.rate_limit_per_second)
-        self._rate_limit_lock = asyncio.Lock()
-        self._last_request_at = 0.0
-        self._client = httpx.AsyncClient(
-            base_url=self.config.base_url,
-            timeout=self.config.timeout,
-            verify=_make_ssl_context(),
-            # No auth headers — token goes in query params
-        )
-        return self
 
     # ------------------------------------------------------------------
     # Public interface
@@ -407,23 +392,6 @@ class EntsoeConnector(BaseConnector):
             resp = await self._client.get(path, params=params)
             self._raise_for_status(resp)
             return resp
-
-    async def _throttle_request(self) -> None:
-        """Pace requests; ENTSO-E rejects bursts even when calls are sequential."""
-        import asyncio
-
-        if self.config.rate_limit_per_second <= 0:
-            return
-        lock = getattr(self, "_rate_limit_lock", None)
-        if lock is None:
-            return
-
-        min_interval = 1.0 / self.config.rate_limit_per_second
-        async with lock:
-            elapsed = monotonic() - getattr(self, "_last_request_at", 0.0)
-            if elapsed < min_interval:
-                await asyncio.sleep(min_interval - elapsed)
-            self._last_request_at = monotonic()
 
     def _raise_for_status(self, response: httpx.Response) -> None:
         """Raise an ENTSO-E-aware HTTP error with acknowledgement details."""
